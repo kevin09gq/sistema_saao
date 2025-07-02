@@ -1,0 +1,3 @@
+<?php
+// Configuración general del sistema
+// ...existing code...
