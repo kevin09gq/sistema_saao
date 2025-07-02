@@ -1,3 +1,4 @@
-<?php
-// Configuración general del sistema
-// ...existing code...
+<?php 
+session_start();
+$rutaRaiz = "/sistema_saao/";
+?>

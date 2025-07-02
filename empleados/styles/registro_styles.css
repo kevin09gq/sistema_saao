@@ -1,0 +1,50 @@
+.card-header {
+     background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+     color: #fff;
+ }
+
+ .section-icon {
+     font-size: 2rem;
+     margin-right: 10px;
+     color: #198754;
+ }
+
+ .form-section-title {
+     display: flex;
+     align-items: center;
+     margin-bottom: 1rem;
+ }
+
+ .card {
+     border-radius: 16px;
+     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+ }
+
+ /* Borde verde (éxito) */
+.border-success {
+  border-color: #28a745 !important; /* verde */ 
+  box-shadow: 0 0 5px rgba(40, 167, 69, 0.5); /* sombra verde */
+  transition: border-color 0.3s ease, box-shadow 0.3s
+}
+
+/* Borde rojo (error) */
+.border-danger {
+  border-color: #dc3545 !important; /* rojo */
+  box-shadow: 0 0 5px rgba(220, 53, 69, 0.5); /* sombra roja */
+  transition: border-color 0.3s ease, box-shadow 0.3s;
+}
+
+/* Estilos consistentes para los controles del formulario */
+.form-control,
+.form-select {
+    height: 38px;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: 0.25rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s;
+}
+
+textarea.form-control {
+    height: auto;
+}

@@ -1,0 +1,22 @@
+/* Fondo general de la página */
+body {
+    background-color: #f8fafc;
+}
+
+/* Estilo del logo en la barra de navegación */
+.navbar-brand img {
+    height: 40px;
+    margin-right: 10px;
+}
+
+/* Sección principal de bienvenida (Hero Section) */
+.hero-section {
+    padding: 60px 0;
+    background: linear-gradient(90deg, #e0ffe0 0%, #fff 100%);
+}
+
+/* Tarjetas de funcionalidades principales */
+.card {
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
