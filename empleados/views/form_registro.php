@@ -24,6 +24,24 @@ include("../../config/config.php");
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-lg-10">
+                <!-- Botón para subir archivo Excel con estilos profesionales -->
+                <div class="mb-4">
+                    <form id="form_excel" enctype="multipart/form-data" class="row g-2 align-items-center bg-light p-3 rounded shadow-sm">
+                        <div class="col-auto">
+                            <label for="archivo_excel" class="form-label mb-0 fw-semibold text-success">
+                                <i class="bi bi-file-earmark-excel-fill fs-3"></i> Subir archivo Excel:
+                            </label>
+                        </div>
+                        <div class="col">
+                            <input type="file" class="form-control border-success" id="archivo_excel" name="archivo_excel" accept=".xls,.xlsx" required>
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-success px-4 shadow" id="btn_cargar_excel">
+                                <i class="bi bi-upload me-1"></i> Cargar Excel
+                            </button>
+                        </div>
+                    </form>
+                </div>
                 <div class="card">
                     <div class="card-header text-center">
                         <span class="form-section-title justify-content-center">
@@ -160,6 +178,31 @@ include("../../config/config.php");
     <!-- JS personalizados -->
     <script src="../../public/js/validaciones.js"></script>
     <script src="../controllers/registro_empleado.js"></script>
+    <script>
+    // JS para enviar el archivo Excel por AJAX y mostrar el JSON en consola
+    $('#btn_cargar_excel').on('click', function(e) {
+        e.preventDefault();
+        var formData = new FormData($('#form_excel')[0]);
+        $.ajax({
+            url: '../controllers/leer_excel_backend.php',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(res) {
+                try {
+                    const json = JSON.parse(res);
+                    console.log(json);
+                } catch (e) {
+                    console.error('No es un JSON válido:', res);
+                }
+            },
+            error: function(err) {
+                console.error('Error al leer el archivo:', err);
+            }
+        });
+    });
+    </script>
 
 </body>
 
