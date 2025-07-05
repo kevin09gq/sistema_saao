@@ -172,7 +172,7 @@ CREATE TABLE gafetes (
 );
 
 -- Insertar estatus true y false
-INSERT INTO status (nombre_status) VALUES ('Activo'), ('Inactivo');
+INSERT INTO status (nombre_status) VALUES ('true'), ('false');
 
 -- Insertar departamentos
 INSERT INTO departamentos (id_departamento, nombre_departamento) VALUES
