@@ -24,19 +24,21 @@ include("../../config/config.php");
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-lg-10">
-                <!-- Botón para subir archivo Excel con estilos profesionales -->
+                <!-- Formulario para subir archivo Excel -->
                 <div class="mb-4">
-                    <form method="post" action="subir_excel.php" enctype="multipart/form-data" class="row g-2 align-items-center bg-light p-3 rounded shadow-sm">
+                    <form id="form_excel" enctype="multipart/form-data" class="row g-2 align-items-center bg-light p-3 rounded shadow-sm">
                         <div class="col-auto">
                             <label for="archivo_excel" class="form-label mb-0 fw-semibold text-success">
                                 <i class="bi bi-file-earmark-excel-fill fs-3"></i> Subir archivo Excel:
                             </label>
                         </div>
                         <div class="col">
+                            <!-- Input para seleccionar el archivo Excel -->
                             <input type="file" class="form-control border-success" id="archivo_excel" name="archivo_excel" accept=".xls,.xlsx" required>
                         </div>
                         <div class="col-auto">
-                            <button type="submit" class="btn btn-success px-4 shadow">
+                            <!-- Botón para cargar el archivo, NO hace submit tradicional -->
+                            <button type="button" class="btn btn-success px-4 shadow" id="btn_cargar_excel">
                                 <i class="bi bi-upload me-1"></i> Cargar Excel
                             </button>
                         </div>
@@ -171,15 +173,40 @@ include("../../config/config.php");
     </div>
     <!-- jQuery CDN -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
     <!-- Bootstrap JS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
     <!-- JS personalizados -->
     <script src="../../public/js/validaciones.js"></script>
     <script src="../controllers/registro_empleado.js"></script>
-    <script src="../controllers/leer_excel.js"></script>
-
+    <script>
+    // Cuando se da click en el botón de cargar Excel
+    $('#btn_cargar_excel').on('click', function(e) {
+        e.preventDefault(); // Evita que el formulario se envíe de forma tradicional
+        var formData = new FormData($('#form_excel')[0]); // Obtiene el archivo seleccionado
+        // Envia el archivo por AJAX al backend PHP
+        $.ajax({
+            url: '../controllers/leer_excel_backend.php', // Archivo PHP que procesa el Excel
+            type: 'POST',
+            data: formData,
+            processData: false, // Necesario para enviar archivos
+            contentType: false, // Necesario para enviar archivos
+            success: function(res) {
+                // Si la respuesta es un JSON válido, lo muestra en consola
+                try {
+                    const json = JSON.parse(res);
+                    console.log(json); // Aquí verás el resultado: departamentos y empleados
+                } catch (e) {
+                    // Si hay error, muestra el texto recibido
+                    console.error('No es un JSON válido:', res);
+                }
+            },
+            error: function(err) {
+                // Si hay error en la petición AJAX
+                console.error('Error al leer el archivo:', err);
+            }
+        });
+    });
+    </script>
 </body>
 
 </html>

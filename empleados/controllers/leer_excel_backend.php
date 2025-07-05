@@ -1,5 +1,5 @@
 <?php
-require '../../vendor/autoload.php'; // Ajusta la ruta si es necesario
+require '../../vendor/autoload.php';
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 if (!isset($_FILES['archivo_excel'])) {
@@ -16,24 +16,43 @@ $departamentos = [];
 $actualDepto = null;
 
 foreach ($rows as $row) {
-    // Detectar inicio de departamento
-    if (isset($row[0]) && is_string($row[0]) && strpos(trim($row[0]), "'") === 0) {
-        if (preg_match("/^'(\d+)\s+([^\d]+)/", $row[0], $match)) {
+    if (isset($row[0]) && is_string($row[0])) {
+        $cell = ltrim($row[0], "'");
+        // Si contiene "Reg Pat IMSS" o "Reg. Pat. IMSS", corta desde ahí
+        $cell = preg_replace('/(Reg\.? Pat\.? IMSS.*)$/i', '', $cell);
+        // Buscar número al inicio, luego espacios, luego nombre de departamento
+        if (preg_match('/^(\d+)\s+(.+)/u', $cell, $match)) {
+            $nombreDepto = trim($match[1] . ' ' . $match[2]);
+            // Guarda el anterior departamento antes de crear uno nuevo
+            if ($actualDepto !== null) {
+                $departamentos[] = $actualDepto;
+            }
             $actualDepto = [
-                'clave' => trim($match[1]),
-                'nombre' => trim($match[2]),
-                'trabajadores' => []
+                'nombre' => $nombreDepto,
+                'empleados' => []
             ];
-            $departamentos[] = &$actualDepto;
+            continue;
         }
     }
-    // Detectar trabajador (clave, nombre)
-    elseif ($actualDepto && isset($row[0]) && is_numeric($row[0]) && isset($row[1]) && is_string($row[1])) {
-        $actualDepto['trabajadores'][] = [
-            'clave' => $row[0],
-            'nombre' => trim($row[1])
-        ];
+    // Si hay un departamento actual, buscar empleados: columna A numérica (clave), columna B string (nombre)
+    if (
+        $actualDepto &&
+        isset($row[0]) && is_numeric($row[0]) &&
+        isset($row[1]) && is_string($row[1]) && trim($row[1]) !== ''
+    ) {
+        $nombreEmpleado = trim($row[1]);
+        // Solo agregar si el nombre tiene al menos dos palabras (nombre y apellido)
+        if (preg_match('/^[A-ZÁÉÍÓÚÑ]+\\s+[A-ZÁÉÍÓÚÑ]+/u', $nombreEmpleado)) {
+            $actualDepto['empleados'][] = [
+                'clave' => $row[0],
+                'nombre' => $nombreEmpleado
+            ];
+        }
     }
 }
-echo json_encode($departamentos);
+// Al final, guarda el último departamento si existe
+if ($actualDepto !== null) {
+    $departamentos[] = $actualDepto;
+}
 
+echo json_encode(['departamentos' => $departamentos]);
