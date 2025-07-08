@@ -1,0 +1,157 @@
+ body {
+     background: #f8fafc;
+     font-family: 'Inter', Arial, sans-serif;
+ }
+
+ .topbar {
+     background: #fff;
+     border-bottom: 1px solid #e5e7eb;
+     padding: 1rem 0.5rem;
+     display: flex;
+     align-items: center;
+     justify-content: space-between;
+ }
+
+ .avatar {
+     width: 36px;
+     height: 36px;
+     border-radius: 50%;
+     object-fit: cover;
+     margin-right: 10px;
+ }
+
+ .btn-add {
+     background: #22c55e;
+     color: #fff;
+     border-radius: 8px;
+     font-weight: 600;
+     padding: 0.25rem 0.8rem;   /* Menos padding */
+     font-size: 0.95rem;        /* Letra más pequeña */
+     border: none;
+     transition: background 0.2s;
+     line-height: 1.2;
+ }
+
+ .btn-add:hover {
+     background: #16a34a;
+ }
+
+ .search-box {
+     border-radius: 8px;
+     border: 1px solid #e5e7eb;
+     padding: 0.4rem 1rem;
+     outline: none;
+     width: 200px;
+ }
+
+ .nav-tabs {
+     border-bottom: 1px solid #e5e7eb;
+ }
+
+ .nav-tabs .nav-link {
+     color: #64748b;
+     border: none;
+     border-bottom: 2px solid transparent;
+     font-weight: 500;
+ }
+
+ .nav-tabs .nav-link.active {
+     color: #22c55e;
+     border-bottom: 2px solid #22c55e;
+     background: none;
+ }
+
+ .table {
+     background: #fff;
+     border-radius: 12px;
+     overflow: hidden;
+     margin-bottom: 0;
+ }
+
+ .table th,
+ .table td {
+     vertical-align: middle;
+     border-top: none;
+ }
+
+ .table thead th {
+     color: #94a3b8;
+     font-weight: 600;
+     background: #fff;
+ }
+
+ .table tbody tr {
+     transition: background 0.2s;
+ }
+
+ .table tbody tr.selected,
+ .table tbody tr:hover {
+     background: #e7f9f0;
+ }
+
+ .status {
+     font-size: 0.95em;
+     font-weight: 600;
+     border-radius: 12px;
+     padding: 0.2em 0.8em;
+ }
+
+ .status-activo {
+     background: #dcfce7;
+     color: #22c55e;
+ }
+
+ .status-inactivo {
+     background: #fee2e2;
+     color: #ef4444;
+ }
+
+ .btn-view {
+     background: #e0f2fe;
+     color: #0ea5e9;
+     border-radius: 8px;
+     font-weight: 600;
+     border: none;
+     padding: 0.3rem 1.1rem;
+     transition: background 0.2s;
+ }
+
+ .btn-view:hover {
+     background: #bae6fd;
+ }
+
+ .pagination {
+     justify-content: center;
+ }
+
+ .pagination .page-link {
+     color: #22c55e;
+     border: none;
+     background: none;
+     font-weight: 500;
+ }
+
+ .pagination .active .page-link {
+     background: #22c55e;
+     color: #fff;
+     border-radius: 6px;
+ }
+
+ .table-responsive {
+     border-radius: 12px;
+ }
+
+ .name-company {
+     display: flex;
+     flex-direction: column;
+ }
+
+ .name {
+     font-weight: 600;
+     color: #222;
+ }
+
+ .company {
+     font-size: 0.9em;
+     color: #22c55e;
+ }

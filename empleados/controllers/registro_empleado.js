@@ -24,8 +24,7 @@ $(document).ready(function () {
             $(this).removeClass('border-success border-danger')
                 .addClass(isValid ? 'border-success' : 'border-danger');
         });
-    }
-    ;
+    };
 
 
     //Funcion para obtener los departamentos
@@ -134,7 +133,7 @@ $(document).ready(function () {
                 emergencia_domicilio: emergencia_domicilio || ""
             };
 
-            console.log(datos);
+          
             
 
           $.ajax({
