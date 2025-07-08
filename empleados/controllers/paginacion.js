@@ -76,7 +76,7 @@ function renderTablaEmpleados() {
                 <td>${emp.clave_empleado}</td>
                 <td><span class="status ${emp.id_status == 1 ? 'status-activo' : 'status-inactivo'}">${emp.nombre_status}</span></td>
                 <td class="text-end">
-                    <button class="btn btn-view" onclick="abrirModalActualizar('${emp.id_empleado}', '${emp.clave_empleado}')">Actualizar</button>
+                    <button class="btn btn-view btn-actualizar" onclick="abrirModalActualizar('${emp.id_empleado}', '${emp.clave_empleado}')">Actualizar</button>
                 </td>
             </tr>
         `;

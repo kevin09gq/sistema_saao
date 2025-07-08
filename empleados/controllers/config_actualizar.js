@@ -69,4 +69,14 @@ $(document).ready(function () {
         setFiltroEstado("Todos");
     });
 
+
+   $(document).on("click", ".btn-actualizar", function () {
+       // Luego mostrar el modal
+    $("#modal_actualizar_empleado").modal("show");
+});
+
+
+    // Función para cargar los datos del empleado en el modal
+  
+
 });
