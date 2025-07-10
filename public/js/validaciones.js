@@ -1,13 +1,13 @@
 
 //Expresiones Regulares
 function validarNombre(nombre) {
-    var validar = /^([A-ZÁÉÍÓÚÑa-záéíóúñ]+(?:\s[A-ZÁÉÍÓÚÑa-záéíóúñ]+)*)$/;
-    return validar.test(nombre.trim());
+    const validar = /^([A-ZÁÉÍÓÚÑa-záéíóúñ]+)( [A-ZÁÉÍÓÚÑa-záéíóúñ]+)*$/;
+    return validar.test(nombre);
 }
 
 function validarApellido(apellido) {
     var validar = /^(?:(?:[Dd]e(?:l)?|[Dd]e\s+(?:la|los|las))\s+)?([A-ZÁÉÍÓÚÑa-záéíóúñ]+(?:\s[A-ZÁÉÍÓÚÑa-záéíóúñ]+)*)$/;
-    return validar.test(apellido.trim());
+    return validar.test(apellido);
 }
 
 function validarClave(clave) {

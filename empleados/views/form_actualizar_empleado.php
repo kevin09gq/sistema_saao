@@ -92,9 +92,10 @@
                             <div class="tab-pane fade show active" id="tab_trabajador" role="tabpanel" aria-labelledby="tab-trabajador">
                                 <input type="hidden" id="modal_id_empleado" name="id_empleado">
                                 <div class="row">
+                                    <input type="hidden" id="empleado_id" value="">
                                     <div class="col-md-4 mb-3">
                                         <label for="modal_clave_empleado" class="form-label">Clave</label>
-                                        <input type="text" class="form-control" id="modal_clave_empleado" name="clave_empleado" readonly>
+                                        <input type="text" class="form-control" id="modal_clave_empleado" name="clave_empleado">
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label for="modal_nombre_empleado" class="form-label">Nombre</label>
@@ -200,6 +201,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../controllers/paginacion.js"></script>
     <script src="../controllers/config_actualizar.js"></script>
+    <script src="../../public/js/validaciones.js"></script>
+
 </body>
 
 </html>
