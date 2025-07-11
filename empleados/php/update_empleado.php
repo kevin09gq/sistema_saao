@@ -1,4 +1,5 @@
 <?php
+include("../../config/config.php");
 include("../../conexion/conexion.php");
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -33,31 +34,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Verificar si no hay campos obligatorios vacíos
     if (empty($clave_empleado) || empty($nombre_empleado) || empty($ap_paterno) || empty($ap_materno) || empty($sexo)) {
-        print_r("Existen campos obligatorios vacíos.");
         exit;
     }
-
 
     // Regla 1: Si hay teléfono, parentesco o domicilio, debe haber nombre completo del contacto
     $hay_dato_contacto = !empty($emergencia_telefono) || !empty($emergencia_parentesco) || !empty($emergencia_domicilio);
     $nombre_incompleto = empty($emergencia_nombre) || empty($emergencia_ap_paterno) || empty($emergencia_ap_materno);
 
     if ($hay_dato_contacto && $nombre_incompleto) {
-        print_r("Si llenas el teléfono, parentesco o domicilio del contacto de emergencia, también debes llenar el nombre completo (nombre y apellidos).");
+        $respuesta = array(
+            "title" => "ADVERTENCIA",
+            "text" => "Por favor, completa los datos del contacto de emergencia.",
+            "type" => "warning",
+            "icon" => $rutaRaiz . "plugins/toasts/icons/icon_warning.png",
+            "timeout" => 3000,
+        );
+        header('Content-Type: application/json');
+        echo json_encode($respuesta);
         exit();
     }
 
     // Regla 2: Si se llena una parte del nombre, deben estar las 3
     $hay_algo_nombre = !empty($emergencia_nombre) || !empty($emergencia_ap_paterno) || !empty($emergencia_ap_materno);
     if ($hay_algo_nombre && $nombre_incompleto) {
-        print_r("Si llenas una parte del nombre del contacto de emergencia, debes completar los tres campos: nombre, apellido paterno y apellido materno.");
+        $respuesta = array(
+            "title" => "ADVERTENCIA",
+            "text" => "Por favor, completa el nombre del contacto de emergencia.",
+            "type" => "warning",
+            "icon" => $rutaRaiz . "plugins/toasts/icons/icon_warning.png",
+            "timeout" => 3000,
+        );
+        header('Content-Type: application/json');
+        echo json_encode($respuesta);
         exit();
     }
 
     // Verificar si todos los campos de contacto de emergencia están vacíos
-    if (empty($emergencia_nombre) && empty($emergencia_ap_paterno) && empty($emergencia_ap_materno) &&
-        empty($emergencia_parentesco) && empty($emergencia_telefono) && empty($emergencia_domicilio)) {
-        
+    if (
+        empty($emergencia_nombre) && empty($emergencia_ap_paterno) && empty($emergencia_ap_materno) &&
+        empty($emergencia_parentesco) && empty($emergencia_telefono) && empty($emergencia_domicilio)
+    ) {
         // Verificar si el empleado se encuentra en la tabla empleado_contacto
         $sql_check_contacto = $conexion->prepare("SELECT COUNT(*) FROM empleado_contacto WHERE id_empleado = ?");
         $sql_check_contacto->bind_param("i", $id_empleado);
@@ -66,21 +82,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sql_check_contacto->fetch();
         $sql_check_contacto->close();
 
-        // si el empleado se encuentra en la tabla empleado_contacto se le actualizaria el id_contacto a NULL
+        // Si el empleado se encuentra en la tabla empleado_contacto se le actualiza el id_contacto a NULL
         if ($existe_contacto > 0) {
             // Si el empleado tiene un contacto registrado, se elimina la relación
             $sql_delete_contacto = $conexion->prepare("UPDATE empleado_contacto SET id_contacto = NULL, parentesco = NULL WHERE id_empleado = ?");
             $sql_delete_contacto->bind_param("i", $id_empleado);
             $sql_delete_contacto->execute();
             $sql_delete_contacto->close();
-
-
         }
-
-        exit();
-
     }
-
 
     // Verificar si la clave de empleado ya existe para otro empleado
     $sql_check = $conexion->prepare("SELECT COUNT(*) FROM info_empleados WHERE clave_empleado = ? AND id_empleado != ?");
@@ -91,16 +101,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $sql_check->close();
 
     if ($count > 0) {
+        $respuesta = array(
+            "title" => "ADVERTENCIA",
+            "text" => "Clave de empleado ya está en uso.",
+            "type" => "info",
+            "icon" => $rutaRaiz . "plugins/toasts/icons/icon_info.png",
+            "timeout" => 3000,
+        );
 
-        print_r("La clave que intentas usar ya está ocupada. No se puede actualizar.");
-        exit; // Detiene el script para que no haga el UPDATE
+        header('Content-Type: application/json');
+        echo json_encode($respuesta);
+        exit;
     }
 
-    // Verificar si el ID departamento es 0, si es 0 quiere decir que no se asigna a ningún departamento
-    // y se debe usar NULL en la consulta 
-
+    // Verificar si el ID departamento es 0
     if ($id_departamento === "0" || $id_departamento === 0) {
-        // Consulta sin parametro para id_departamento (usa NULL directo)
+        // Consulta sin parámetro para id_departamento (usa NULL directo)
         $update_empleado = $conexion->prepare("UPDATE info_empleados
         SET 
             clave_empleado = ?,
@@ -169,15 +185,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $update_empleado->execute();
-    // Validar si se actualizo la información del empleado correctamente
-    if ($conexion->affected_rows > 0) {
-        print_r("Empleado actualizado correctamente.");
-    }
-
     $update_empleado->close();
 
-    // Verificar si el contacto de emergencia ya esta registrado en la tabla contacto_emergencia
-
+    // Verificar si el contacto de emergencia ya está registrado
     $sql_check_contacto_emergencia = $conexion->prepare("SELECT COUNT(*) FROM contacto_emergencia WHERE nombre = ? AND ap_paterno = ? AND ap_materno = ?");
     $sql_check_contacto_emergencia->bind_param("sss", $emergencia_nombre, $emergencia_ap_paterno, $emergencia_ap_materno);
     $sql_check_contacto_emergencia->execute();
@@ -185,10 +195,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $sql_check_contacto_emergencia->fetch();
     $sql_check_contacto_emergencia->close();
 
+    // Si hay datos de contacto de emergencia, se procede a verificar si ya existe
     if ($count_contacto_emergencia > 0) {
-        // Quiere decir que el contacto de emergencia ya esta registrado, por lo tanto solo se establece la relación al empleado
-
-        //obtenemos el id_contacto del contacto de emergencia
+        //Obtenemos el id_contacto del contacto de emergencia
         $sql_id_contacto_emergencia = $conexion->prepare("SELECT id_contacto FROM contacto_emergencia WHERE nombre = ? AND ap_paterno = ? AND ap_materno = ?");
         $sql_id_contacto_emergencia->bind_param("sss", $emergencia_nombre, $emergencia_ap_paterno, $emergencia_ap_materno);
         $sql_id_contacto_emergencia->execute();
@@ -196,35 +205,79 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sql_id_contacto_emergencia->fetch();
         $sql_id_contacto_emergencia->close();
 
-        // primero actualizamos la información del contacto de emergencia
-        $sql_update_contacto_emergencia = $conexion->prepare("UPDATE contacto_emergencia SET 
-                    telefono = ?, 
-                    domicilio = ? 
-                WHERE id_contacto = ?");
-        $sql_update_contacto_emergencia->bind_param(
-            "ssi",
-            $emergencia_telefono,
-            $emergencia_domicilio,
-            $id_contacto_emergencia
-        );
-        $sql_update_contacto_emergencia->execute();
-        $sql_update_contacto_emergencia->close();
+        // Verificar si el empleado ya esta registrado en la tabla empleado_contacto
+        $sql_check_contacto = $conexion->prepare("SELECT COUNT(*) FROM empleado_contacto WHERE id_empleado = ?");
+        $sql_check_contacto->bind_param("i", $id_empleado);
+        $sql_check_contacto->execute();
+        $sql_check_contacto->bind_result($existe_contacto);
+        $sql_check_contacto->fetch();
+        $sql_check_contacto->close();
 
-        // Ahora actualizamos la relacion de el contacto de emergencia al empleado
-        $sql_update_contacto_emergencia = $conexion->prepare("UPDATE empleado_contacto SET id_contacto = ?, parentesco = ? WHERE id_empleado = ?");
-        $sql_update_contacto_emergencia->bind_param("isi", $id_contacto_emergencia, $emergencia_parentesco, $id_empleado);
-        $sql_update_contacto_emergencia->execute();
-        if ($conexion->affected_rows > 0) {
-            print_r("Contacto de emergencia actualizado correctamente.");
+        // Si el empleado ya se encuentra en la tabla empleado_contacto  
+        if ($existe_contacto > 0) {
+            // Actualizar información del contacto de emergencia
+            $sql_update_contacto_emergencia = $conexion->prepare("UPDATE contacto_emergencia SET 
+            telefono = ?, 
+            domicilio = ? 
+            WHERE id_contacto = ?");
+            $sql_update_contacto_emergencia->bind_param(
+                "ssi",
+                $emergencia_telefono,
+                $emergencia_domicilio,
+                $id_contacto_emergencia
+            );
+            $sql_update_contacto_emergencia->execute();
+            $sql_update_contacto_emergencia->close();
+
+            // Actualizar relación del contacto de emergencia al empleado
+            $sql_update_contacto_emergencia = $conexion->prepare("UPDATE empleado_contacto SET id_contacto = ?, parentesco = ? WHERE id_empleado = ?");
+            $sql_update_contacto_emergencia->bind_param("isi", $id_contacto_emergencia, $emergencia_parentesco, $id_empleado);
+            $sql_update_contacto_emergencia->execute();
+            if ($conexion->affected_rows > 0) {
+                $respuesta = array(
+                    "title" => "SUCCESS",
+                    "text" => "Actualización exitosa.",
+                    "type" => "success",
+                    "icon" => $rutaRaiz . "plugins/toasts/icons/icon_success.png",
+                    "timeout" => 3000,
+                );
+                header('Content-Type: application/json');
+                echo json_encode($respuesta);
+                exit();
+            } else {
+                $respuesta = array(
+                    "title" => "SUCCESS",
+                    "text" => "Actualización exitosa.",
+                    "type" => "success",
+                    "icon" => $rutaRaiz . "plugins/toasts/icons/icon_success.png",
+                    "timeout" => 3000,
+                );
+                header('Content-Type: application/json');
+                echo json_encode($respuesta);
+                exit();
+            }
         } else {
-            print_r("No se realizaron cambios en el contacto de emergencia. Peros se actualizo");
+            // Si el empleado no está registrado en la tabla empleado_contacto, se insertara una nueva relacion de empleado_contacto
+            // Ahora insertamos el nuevo contacto al empleado
+            $sql_insert_contacto_empleado = $conexion->prepare("INSERT INTO empleado_contacto (id_empleado, id_contacto, parentesco) VALUES (?, ?, ?)");
+            $sql_insert_contacto_empleado->bind_param("iis", $id_empleado, $id_contacto_emergencia, $emergencia_parentesco);
+            $sql_insert_contacto_empleado->execute();
+            if ($conexion->affected_rows > 0) {
+                $respuesta = array(
+                    "title" => "SUCCESS",
+                    "text" => "Actualización exitosa.",
+                    "type" => "success",
+                    "icon" => $rutaRaiz . "plugins/toasts/icons/icon_success.png",
+                    "timeout" => 3000,
+                );
+                header('Content-Type: application/json');
+                echo json_encode($respuesta);
+                exit();
+            }
         }
-        exit;
     }
 
-
-    //Verificar si el id_empleado esta registrado en la tabla empleado_contacto
-
+    // Verificar si el id_empleado está registrado en la tabla empleado_contacto
     $sql_check_contacto = $conexion->prepare("SELECT COUNT(*) FROM empleado_contacto WHERE id_empleado = ?");
     $sql_check_contacto->bind_param("i", $id_empleado);
     $sql_check_contacto->execute();
@@ -233,8 +286,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $sql_check_contacto->close();
 
     if ($existe > 0) {
-
-        //Como si esta registrado en la tabla empleado_contacto, obtnemos el id_contacto al cual esta relacionado
+        // Obtener el id_contacto relacionado
         $sql_id_contacto = $conexion->prepare("SELECT id_contacto FROM empleado_contacto WHERE id_empleado = ?");
         $sql_id_contacto->bind_param("i", $id_empleado);
         $sql_id_contacto->execute();
@@ -242,10 +294,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sql_id_contacto->fetch();
         $sql_id_contacto->close();
 
+        // Verificar si el id_contacto es NULL
         if ($id_contacto === null) {
-            // El empleado no tiene un contacto relacionado
+            // Verificar si todos los campos de contacto de emergencia están vacíos
+            if (
+                empty($emergencia_nombre) && empty($emergencia_ap_paterno) && empty($emergencia_ap_materno) &&
+                empty($emergencia_parentesco) && empty($emergencia_telefono) && empty($emergencia_domicilio)
+            ) {
+                $respuesta = array(
+                    "title" => "SUCCESS",
+                    "text" => "Actualización exitosa.",
+                    "type" => "warning",
+                    "icon" => $rutaRaiz . "plugins/toasts/icons/icon_success.png",
+                    "timeout" => 3000,
+                );
 
-            //Verificamos que si existe el contacto de emergencia en la tabla contacto_emergencia
+                header('Content-Type: application/json');
+                echo json_encode($respuesta);
+                exit();
+            }
+
+            // Verificar si existe el contacto de emergencia
             $sql_check_contacto_emergencia = $conexion->prepare("SELECT COUNT(*) FROM contacto_emergencia WHERE nombre = ? AND ap_paterno = ? AND ap_materno = ?");
             $sql_check_contacto_emergencia->bind_param("sss", $emergencia_nombre, $emergencia_ap_paterno, $emergencia_ap_materno);
             $sql_check_contacto_emergencia->execute();
@@ -254,7 +323,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sql_check_contacto_emergencia->close();
 
             if ($count_contacto_emergencia > 0) {
-                // si existe, obtenemos el id_contacto de la tabla contacto_emergencia
+                // Obtener el id_contacto de la tabla contacto_emergencia
                 $sql_id_contacto_emergencia = $conexion->prepare("SELECT id_contacto FROM contacto_emergencia WHERE nombre = ? AND ap_paterno = ? AND ap_materno = ?");
                 $sql_id_contacto_emergencia->bind_param("sss", $emergencia_nombre, $emergencia_ap_paterno, $emergencia_ap_materno);
                 $sql_id_contacto_emergencia->execute();
@@ -262,7 +331,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $sql_id_contacto_emergencia->fetch();
                 $sql_id_contacto_emergencia->close();
 
-                // primero actualizamos la información del contacto de emergencia
+                // Actualizar la información del contacto de emergencia
                 $sql_update_contacto_emergencia = $conexion->prepare("UPDATE contacto_emergencia SET 
                     telefono = ?, 
                     domicilio = ? 
@@ -276,48 +345,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $sql_update_contacto_emergencia->execute();
                 $sql_update_contacto_emergencia->close();
 
-
-                // Ahora actualizamos el id contacto al empleado, relacionamos el contacto de emergencia al empleado
-
+                // Actualizar el id_contacto al empleado
                 $sql_update_contacto_emergencia = $conexion->prepare("UPDATE empleado_contacto SET id_contacto = ?, parentesco = ? WHERE id_empleado = ?");
                 $sql_update_contacto_emergencia->bind_param("isi", $id_contacto_emergencia, $emergencia_parentesco, $id_empleado);
                 $sql_update_contacto_emergencia->execute();
-                print_r("Contacto de emergencia relacionado al empleado correctamente.");
-                exit();
+                if ($conexion->affected_rows > 0) {
+                    $respuesta = array(
+                        "title" => "SUCCESS",
+                        "text" => "Actualización exitosa.",
+                        "type" => "success",
+                        "icon" => $rutaRaiz . "plugins/toasts/icons/icon_success.png",
+                        "timeout" => 3000,
+                    );
+
+                    header('Content-Type: application/json');
+                    echo json_encode($respuesta);
+                    exit();
+                }
             }
 
             // Si no existe, se inserta un nuevo contacto de emergencia
-            $sql_insert_contacto = $conexion->prepare(
-                query: "INSERT INTO contacto_emergencia (nombre, ap_paterno, ap_materno, telefono, domicilio)
-                VALUES (?, ?, ?, ?, ?)"
-            );
-            $sql_insert_contacto->bind_param(
-                "sssss",
-                $emergencia_nombre,
-                $emergencia_ap_paterno,
-                $emergencia_ap_materno,
-                $emergencia_telefono,
-                $emergencia_domicilio
-            );
+            $sql_insert_contacto = $conexion->prepare("INSERT INTO contacto_emergencia (nombre, ap_paterno, ap_materno, telefono, domicilio) VALUES (?, ?, ?, ?, ?)");
+            $sql_insert_contacto->bind_param("sssss", $emergencia_nombre, $emergencia_ap_paterno, $emergencia_ap_materno, $emergencia_telefono, $emergencia_domicilio);
             $sql_insert_contacto->execute();
             if ($conexion->affected_rows > 0) {
                 $nuevo_id_contacto = $conexion->insert_id;
 
-                // Ahora relacionamos el nuevo contacto al empleado
-                $sql_relacionar_contacto = $conexion->prepare("UPDATE empleado_contacto SET id_contacto = ?, parentesco = ? WHERE id_empleado = ?");
-                $sql_relacionar_contacto->bind_param("isi", $nuevo_id_contacto, $emergencia_parentesco, $id_empleado);
-                $sql_relacionar_contacto->execute();
+                // Ahora insertamos el nuevo contacto al empleado
+                $sql_insert_contacto_empleado = $conexion->prepare("INSERT INTO empleado_contacto (id_empleado, id_contacto, parentesco) VALUES (?, ?, ?)");
+                $sql_insert_contacto_empleado->bind_param("iis", $id_empleado, $nuevo_id_contacto, $emergencia_parentesco);
+                $sql_insert_contacto_empleado->execute();
                 if ($conexion->affected_rows > 0) {
-                    print_r("Nuevo contacto de emergencia insertado y relacionado al empleado correctamente.");
-                } else {
-                    print_r("Error al relacionar el nuevo contacto al empleado.");
+                    $respuesta = array(
+                        "title" => "SUCCESS",
+                        "text" => "Actualización exitosa.",
+                        "type" => "success",
+                        "icon" => $rutaRaiz . "plugins/toasts/icons/icon_success.png",
+                        "timeout" => 3000,
+                    );
+                    header('Content-Type: application/json');
+                    echo json_encode($respuesta);
+                    exit();
                 }
             }
         } else {
-            // El id_empleado si tiene un contacto relacionado
-
-            //Verificar si ese id_contacto esta relacionado a mas de uno de los contactos
-
+            // El id_empleado tiene un contacto relacionado
+            // Verificar si ese id_contacto está relacionado a más de uno de los contactos
             $sql_check_contacto_relacionado = $conexion->prepare("SELECT COUNT(*) FROM empleado_contacto WHERE id_contacto = ?");
             $sql_check_contacto_relacionado->bind_param("i", $id_contacto);
             $sql_check_contacto_relacionado->execute();
@@ -326,39 +399,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sql_check_contacto_relacionado->close();
 
             if ($count_contacto > 1) {
-                // Si el id_contacto esta relacionado a mas de un empleado, se tendra que insertar un nuevo contacto
-                // y relacionarlo al empleado
-                $sql_insert_contacto = $conexion->prepare(
-                    query: "INSERT INTO contacto_emergencia (nombre, ap_paterno, ap_materno, telefono, domicilio)
-                    VALUES (?, ?, ?, ?, ?)"
-                );
-                $sql_insert_contacto->bind_param(
-                    "sssss",
-                    $emergencia_nombre,
-                    $emergencia_ap_paterno,
-                    $emergencia_ap_materno,
-                    $emergencia_telefono,
-                    $emergencia_domicilio
-                );
+                // Si el id_contacto está relacionado a más de un empleado, se tiene que insertar un nuevo contacto
+                $sql_insert_contacto = $conexion->prepare("INSERT INTO contacto_emergencia (nombre, ap_paterno, ap_materno, telefono, domicilio) VALUES (?, ?, ?, ?, ?)");
+                $sql_insert_contacto->bind_param("sssss", $emergencia_nombre, $emergencia_ap_paterno, $emergencia_ap_materno, $emergencia_telefono, $emergencia_domicilio);
                 $sql_insert_contacto->execute();
                 if ($conexion->affected_rows > 0) {
                     $nuevo_id_contacto = $conexion->insert_id;
 
                     // Ahora relacionamos el nuevo contacto al empleado
-                    $sql_relacionar_contacto = $conexion->prepare("UPDATE empleado_contacto
-                    SET id_contacto = ?, parentesco = ? WHERE id_empleado = ?");
-
-                    $sql_relacionar_contacto->bind_param("isi", $nuevo_id_contacto, $parentesco, $id_empleado);
+                    $sql_relacionar_contacto = $conexion->prepare("UPDATE empleado_contacto SET id_contacto = ?, parentesco = ? WHERE id_empleado = ?");
+                    $sql_relacionar_contacto->bind_param("isi", $nuevo_id_contacto, $emergencia_parentesco, $id_empleado);
                     $sql_relacionar_contacto->execute();
                     if ($conexion->affected_rows > 0) {
-                        print_r("Nuevo contacto de emergencia insertado y relacionado al empleado correctamente.");
-                    } else {
-                        print_r("Error al relacionar el nuevo contacto al empleado.");
+                        $respuesta = array(
+                            "title" => "SUCCESS",
+                            "text" => "Actualización exitosa.",
+                            "type" => "success",
+                            "icon" => $rutaRaiz . "plugins/toasts/icons/icon_success.png",
+                            "timeout" => 3000,
+                        );
+
+                        header('Content-Type: application/json');
+                        echo json_encode($respuesta);
+                        exit();
                     }
                 }
             } else {
-                // Como solo esta relacionado a un empleado, se actualiza el contacto de emergencia
-
+                // Como solo está relacionado a un empleado, se actualiza el contacto de emergencia
                 $sql_update_contacto_emergencia = $conexion->prepare("UPDATE contacto_emergencia SET 
                     nombre = ?, 
                     ap_paterno = ?, 
@@ -377,17 +444,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
                 $sql_update_contacto_emergencia->execute();
                 if ($conexion->affected_rows > 0) {
-                    //Actualizamos la relacion de el contacto de emergencia al empleado sobre todo el parentesco
+                    // Actualizamos la relación del contacto de emergencia al empleado
                     $sql_update_contacto_emergencia = $conexion->prepare("UPDATE empleado_contacto SET parentesco = ? WHERE id_empleado = ?");
                     $sql_update_contacto_emergencia->bind_param("si", $emergencia_parentesco, $id_empleado);
                     $sql_update_contacto_emergencia->execute();
-                    print_r("Contacto de emergencia actualizado correctamente.");
+                    $respuesta = array(
+                        "title" => "SUCCESS",
+                        "text" => "Actualización exitosa.",
+                        "type" => "success",
+                        "icon" => $rutaRaiz . "plugins/toasts/icons/icon_success.png",
+                        "timeout" => 3000,
+                    );
+                    header('Content-Type: application/json');
+                    echo json_encode($respuesta);
+                    exit();
                 }
             }
         }
     } else {
-        // Si no existe, se tendra que insertar el id_empleado a la tabla empleado_contacto
-
+        // Si no existe, se tiene que insertar el id_empleado a la tabla empleado_contacto
         // Verificamos que si existe el contacto de emergencia en la tabla contacto_emergencia
         $sql_check_contacto_emergencia = $conexion->prepare("SELECT COUNT(*) FROM contacto_emergencia WHERE nombre = ? AND ap_paterno = ? AND ap_materno = ?");
         $sql_check_contacto_emergencia->bind_param("sss", $emergencia_nombre, $emergencia_ap_paterno, $emergencia_ap_materno);
@@ -397,7 +472,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sql_check_contacto_emergencia->close();
 
         if ($count_contacto_emergencia > 0) {
-            // si existe, obtenemos el id_contacto de la tabla contacto_emergencia
+            // Si existe, obtenemos el id_contacto de la tabla contacto_emergencia
             $sql_id_contacto_emergencia = $conexion->prepare("SELECT id_contacto FROM contacto_emergencia WHERE nombre = ? AND ap_paterno = ? AND ap_materno = ?");
             $sql_id_contacto_emergencia->bind_param("sss", $emergencia_nombre, $emergencia_ap_paterno, $emergencia_ap_materno);
             $sql_id_contacto_emergencia->execute();
@@ -405,11 +480,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sql_id_contacto_emergencia->fetch();
             $sql_id_contacto_emergencia->close();
 
-
-            // primero actualizamos la información del contacto de emergencia
+            // Actualizar la información del contacto de emergencia
             $sql_update_contacto_emergencia = $conexion->prepare("UPDATE contacto_emergencia SET 
-                    telefono = ?, 
-                    domicilio = ? 
+                telefono = ?, 
+                domicilio = ? 
                 WHERE id_contacto = ?");
             $sql_update_contacto_emergencia->bind_param(
                 "ssi",
@@ -424,25 +498,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sql_insert_contacto_empleado = $conexion->prepare("INSERT INTO empleado_contacto (id_empleado, id_contacto, parentesco) VALUES (?, ?, ?)");
             $sql_insert_contacto_empleado->bind_param("iis", $id_empleado, $id_contacto_emergencia, $emergencia_parentesco);
             $sql_insert_contacto_empleado->execute();
-            $sql_insert_contacto_empleado->close();
-
+            if ($conexion->affected_rows > 0) {
+                $respuesta = array(
+                    "title" => "SUCCESS",
+                    "text" => "Actualización exitosa.",
+                    "type" => "success",
+                    "icon" => $rutaRaiz . "plugins/toasts/icons/icon_success.png",
+                    "timeout" => 3000,
+                );
+                header('Content-Type: application/json');
+                echo json_encode($respuesta);
+                exit();
+            }
         } else {
-
-            // Si no
-
             // Si no existe, se inserta un nuevo contacto de emergencia
-            $sql_insert_contacto = $conexion->prepare(
-                query: "INSERT INTO contacto_emergencia (nombre, ap_paterno, ap_materno, telefono, domicilio)
-                VALUES (?, ?, ?, ?, ?)"
-            );
-            $sql_insert_contacto->bind_param(
-                "sssss",
-                $emergencia_nombre,
-                $emergencia_ap_paterno,
-                $emergencia_ap_materno,
-                $emergencia_telefono,
-                $emergencia_domicilio
-            );
+            $sql_insert_contacto = $conexion->prepare("INSERT INTO contacto_emergencia (nombre, ap_paterno, ap_materno, telefono, domicilio) VALUES (?, ?, ?, ?, ?)");
+            $sql_insert_contacto->bind_param("sssss", $emergencia_nombre, $emergencia_ap_paterno, $emergencia_ap_materno, $emergencia_telefono, $emergencia_domicilio);
             $sql_insert_contacto->execute();
             if ($conexion->affected_rows > 0) {
                 $nuevo_id_contacto = $conexion->insert_id;
@@ -452,9 +523,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $sql_insert_contacto_empleado->bind_param("iis", $id_empleado, $nuevo_id_contacto, $emergencia_parentesco);
                 $sql_insert_contacto_empleado->execute();
                 if ($conexion->affected_rows > 0) {
-                    print_r("Nuevo contacto de emergencia insertado y relacionado al empleado correctamente.");
-                } else {
-                    print_r("Error al relacionar el nuevo contacto al empleado.");
+                    $respuesta = array(
+                        "title" => "SUCCESS",
+                        "text" => "Actualización exitosa.",
+                        "type" => "success",
+                        "icon" => $rutaRaiz . "plugins/toasts/icons/icon_success.png",
+                        "timeout" => 3000,
+                    );
+                    header('Content-Type: application/json');
+                    echo json_encode($respuesta);
+                    exit();
                 }
             }
         }

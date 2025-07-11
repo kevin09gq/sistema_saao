@@ -1,5 +1,9 @@
 <!DOCTYPE html>
+<?php
+include("../../config/config.php");
+?>
 <html lang="es">
+
 
 <head>
     <meta charset="UTF-8">
@@ -8,6 +12,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Inter:400,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../styles/actualizar_empleado.css">
+    <link rel="stylesheet" href="<?= $rutaRaiz ?>/plugins/toasts/vanillatoasts.css">
 </head>
 
 <body>
@@ -17,7 +22,7 @@
 
             <div class="d-flex align-items-center gap-2">
                 <select class="form-select me-2" id="filtroDepartamento" style="min-width:200px;">
-                  
+
 
                 </select>
                 <input type="text" class="search-box me-2" placeholder="Buscar..." id="buscadorEmpleado">
@@ -112,18 +117,18 @@
                                         <input type="text" class="form-control" id="modal_apellido_materno" name="apellido_materno">
                                     </div>
                                     <div class="col-md-4 mb-3">
-                                        <label for="modal_domicilio" class="form-label">Domicilio</label>
-                                        <input type="text" class="form-control" id="modal_domicilio" name="domicilio">
-                                    </div>
-                                    <div class="col-md-4 mb-3">
                                         <label for="modal_imss" class="form-label">IMSS</label>
                                         <input type="text" class="form-control" id="modal_imss" name="imss">
                                     </div>
-                                </div>
-                                <div class="row">
                                     <div class="col-md-4 mb-3">
                                         <label for="modal_curp" class="form-label">CURP</label>
                                         <input type="text" class="form-control" id="modal_curp" name="curp">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-8 mb-3">
+                                        <label for="modal_domicilio" class="form-label">Domicilio</label>
+                                        <textarea class="form-control" id="modal_domicilio" name="domicilio" rows="2"></textarea>
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label for="modal_sexo" class="form-label">Sexo</label>
@@ -133,21 +138,23 @@
                                             <option value="F">Femenino</option>
                                         </select>
                                     </div>
+                                </div>
+                                <div class="row">
                                     <div class="col-md-4 mb-3">
                                         <label for="modal_grupo_sanguineo" class="form-label">Grupo Sanguíneo</label>
                                         <input type="text" class="form-control" id="modal_grupo_sanguineo" name="grupo_sanguineo">
                                     </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-md-4 mb-3">
                                         <label for="modal_enfermedades_alergias" class="form-label">Enfermedades/Alergias</label>
                                         <input type="text" class="form-control" id="modal_enfermedades_alergias" name="enfermedades_alergias">
                                     </div>
-                                    <div class="col-md-3 mb-3">
+                                    <div class="col-md-4 mb-3">
                                         <label for="modal_fecha_ingreso" class="form-label">Fecha de Ingreso</label>
                                         <input type="date" class="form-control" id="modal_fecha_ingreso" name="fecha_ingreso">
                                     </div>
-                                    <div class="col-md-3 mb-3">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
                                         <label for="modal_departamento" class="form-label">Departamento</label>
                                         <select class="form-select" id="modal_departamento" name="id_departamento">
                                             <!-- Opciones dinámicas -->
@@ -176,20 +183,22 @@
                                         <label for="modal_emergencia_telefono" class="form-label">Teléfono</label>
                                         <input type="text" class="form-control" id="modal_emergencia_telefono" name="emergencia_telefono">
                                     </div>
-                                    <div class="col-md-5 mb-3">
-                                        <label for="modal_emergencia_domicilio" class="form-label">Domicilio</label>
-                                        <input type="text" class="form-control" id="modal_emergencia_domicilio" name="emergencia_domicilio">
-                                    </div>
-                                    <div class="col-md-3 mb-3">
+                                    <div class="col-md-4 mb-3">
                                         <label for="modal_emergencia_parentesco" class="form-label">Parentesco</label>
                                         <input type="text" class="form-control" id="modal_emergencia_parentesco" name="emergencia_parentesco">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label for="modal_emergencia_domicilio" class="form-label">Domicilio</label>
+                                        <textarea class="form-control" id="modal_emergencia_domicilio" name="emergencia_domicilio" rows="2"></textarea>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" id="btn_cancelar" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                         <button type="submit" id="btn_actualizar" class="btn btn-primary">Guardar Cambios</button>
                     </div>
                 </form>
@@ -202,6 +211,7 @@
     <script src="../controllers/paginacion.js"></script>
     <script src="../controllers/config_actualizar.js"></script>
     <script src="../../public/js/validaciones.js"></script>
+    <script src="<?= $rutaRaiz ?>/plugins/toasts/vanillatoasts.js""></script
 
 </body>
 

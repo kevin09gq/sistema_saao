@@ -74,7 +74,7 @@ function renderTablaEmpleados() {
                     </div>
                 </td>
                 <td>${emp.clave_empleado}</td>
-                <td><span class="status ${emp.id_status == 1 ? 'status-activo' : 'status-inactivo'}">${emp.nombre_status}</span></td>
+                <td><span id="btn_status" data-id-empleado="${emp.id_empleado}" data-id-status="${emp.id_status}" class="status ${emp.id_status == 1 ? 'status-activo' : 'status-inactivo'}">${emp.nombre_status}</span></td>
                 <td class="text-end">
                     <button class="btn btn-view btn-actualizar" data-id="${emp.id_empleado}" data-clave="${emp.clave_empleado}"> Actualizar </button>
                 </td>
@@ -135,4 +135,38 @@ function cambiarPagina(nuevaPagina) {
     if (nuevaPagina < 1 || nuevaPagina > totalPaginas) return;
     paginaActual = nuevaPagina;
     renderTablaEmpleados();
+}
+
+function paginacionStatus(empleadosData) {
+    // Verificar si la página actual sigue siendo válida
+    let filtrados = empleadosData;
+    if (filtroDepartamento !== "0") {
+        filtrados = empleadosData.filter(emp => String(emp.id_departamento) === String(filtroDepartamento));
+    }
+    if (filtroEstado !== "Todos") {
+        filtrados = filtrados.filter(emp => emp.nombre_status === filtroEstado);
+    }
+    if (busquedaActual && busquedaActual.trim() !== "") {
+        filtrados = filtrados.filter(emp => {
+            let texto = (
+                emp.nombre + " " +
+                emp.ap_paterno + " " +
+                emp.ap_materno + " " +
+                emp.clave_empleado
+            ).toLowerCase();
+            return texto.includes(busquedaActual);
+        });
+    }
+
+    let totalPaginas = Math.ceil(filtrados.length / empleadosPorPagina);
+
+    // Si la página actual es mayor que el total de páginas, ir a la última página válida
+    if (paginaActual > totalPaginas && totalPaginas > 0) {
+        paginaActual = totalPaginas;
+    } else if (totalPaginas === 0) {
+        paginaActual = 1;
+    }
+
+    renderTablaEmpleados();
+
 }

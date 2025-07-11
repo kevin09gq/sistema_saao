@@ -15,11 +15,19 @@ if (isset($_GET['accion']) || isset($_POST['accion'])) {
                 $idEmpleado = $_POST['id_empleado'];
                 $idClave = $_POST['clave_empleado'];
                 dataEmpleado($idEmpleado, $idClave);
-            } else {
+            }
+            break;
+
+        case 'cambiarStatus':
+            if (isset($_POST['id_empleado']) && isset($_POST['id_status'])) {
+                $idEmpleado = $_POST['id_empleado'];
+                $idStatus = $_POST['id_status'];
+                cambiarStatus($idEmpleado, $idStatus);
             }
 
 
             break;
+
         default:
     }
 } else {
@@ -130,4 +138,22 @@ function dataEmpleado($idEmpleado, $idClave)
 
     header('Content-Type: application/json');
     echo json_encode($empleado, JSON_UNESCAPED_UNICODE);
+}
+
+function cambiarStatus($idEmpleado, $idStatus)
+{
+    global $conexion;
+
+    if ($idStatus == 1) {
+        $idStatus = 2; // Cambiar a Inactivo
+    } elseif ($idStatus == 2) {
+        $idStatus = 1; // Cambiar a Activo
+    }
+
+    $sql = $conexion->prepare("UPDATE info_empleados SET id_status = ? WHERE id_empleado = ?");
+    $sql->bind_param("ii", $idStatus, $idEmpleado);
+    $sql->execute();
+    print_r(true);
+
+    $sql->close();
 }

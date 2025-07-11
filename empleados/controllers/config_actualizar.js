@@ -1,4 +1,6 @@
 $(document).ready(function () {
+    const rutaPlugins = '/sistema_saao/';
+
     getDepartamentos();
     obtenerDatosEmpleados();
     departamentoSeleccionado();
@@ -196,8 +198,7 @@ $(document).ready(function () {
                             }
                         });
 
-                        // Finalmente mostramos el modal
-                        $("#modal_actualizar_empleado").modal("show");
+
 
                         validarCampos($("#modal_clave_empleado"), validarClave);
                         validarCampos($("#modal_nombre_empleado"), validarNombre);
@@ -226,12 +227,22 @@ $(document).ready(function () {
                         validarDatos($("#modal_emergencia_parentesco"), validarParentesco);
 
                     }
+
                 },
 
             });
+
+            // Finalmente mostramos el modal
+            $("#modal_actualizar_empleado").modal("show");
         });
     }
 
+
+    // Evento para enviar el formulario de actualización
+    // Se valida que los campos obligatorios no estén vacíos y que los opcionales sean válidos
+    // Si hay algún error, se muestra un mensaje de advertencia
+    // Si todo es correcto, se envían los datos al servidor para actualizar el empleado
+    // y se actualiza la tabla de empleados
 
     $("#form_modal_actualizar_empleado").submit(function (e) {
         e.preventDefault();
@@ -280,12 +291,28 @@ $(document).ready(function () {
 
 
         if (!obligatoriosValidos) {
-            console.log("Existen campos obligatorios vacíos o incorrectos.");
+
+            VanillaToasts.create({
+                title: 'ADVERTENCIA!',
+                text: 'Existen campos obligatorios vacíos o incorrectos.',
+                type: 'warning', //valores aceptados: success, warning, info, error
+                icon: rutaPlugins + 'plugins/toasts/icons/icon_warning.png',
+                timeout: 3000, // visible 3 segundos
+            });
+
             return;
         }
 
         if (!opcionalesValidos) {
-            console.log("Hay datos opcionales incorrectos.");
+
+            VanillaToasts.create({
+                title: 'ADVERTENCIA!',
+                text: 'Hay datos opcionales incorrectos.',
+                type: 'warning', //valores aceptados: success, warning, info, error
+                icon: rutaPlugins + 'plugins/toasts/icons/icon_warning.png',
+                timeout: 3000, // visible 3 segundos
+            });
+
             return;
         }
         // Construir objeto con todos los datos, enviando "" si están vacíos
@@ -318,13 +345,57 @@ $(document).ready(function () {
             url: "../php/update_empleado.php",
             data: datos,
             success: function (response) {
-                console.log(response);
+                //Actualizar la tabla de empleados
+                obtenerDatosEmpleados();
+
+                VanillaToasts.create({
+                    title: response.title,
+                    text: response.text,
+                    type: response.type, // 'success', 'info', 'warning', etc.
+                    icon: response.icon, // URL del icono
+                    timeout: response.timeout // Tiempo de duración en milisegundos
+                });
 
             }
         });
 
     });
 
+
+    // Cambiar el Status del Empleado
+    $(document).on("click", "#btn_status", function () {
+        let idEmpleado = $(this).data("id-empleado");
+        let idStatus = $(this).data("id-status");
+
+        let datos = {
+            id_empleado: idEmpleado,
+            id_status: idStatus,
+            accion: "cambiarStatus"
+        };
+
+        $.ajax({
+            type: "POST",
+            url: "../php/obtenerEmpleados.php",
+            data: datos,
+            success: function (response) {
+                if (response == true) {
+                    // Actualizar solo los datos sin cambiar la página actual
+                    $.ajax({
+                        type: "POST",
+                        url: "../php/obtenerEmpleados.php",
+                        data: {
+                            accion: "cargarEmpleados",
+                        },
+                        dataType: "json",
+                        success: function (empleados) {
+                            empleadosData = empleados;
+                            paginacionStatus(empleadosData);                            
+                        }
+                    });
+                }
+            }
+        });
+    });
 
 
 });
