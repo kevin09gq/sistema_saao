@@ -463,7 +463,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } else {
         // Si no existe, se tiene que insertar el id_empleado a la tabla empleado_contacto
-        // Verificamos que si existe el contacto de emergencia en la tabla contacto_emergencia
+        // Verificamos si existe el contacto de emergencia en la tabla contacto_emergencia
         $sql_check_contacto_emergencia = $conexion->prepare("SELECT COUNT(*) FROM contacto_emergencia WHERE nombre = ? AND ap_paterno = ? AND ap_materno = ?");
         $sql_check_contacto_emergencia->bind_param("sss", $emergencia_nombre, $emergencia_ap_paterno, $emergencia_ap_materno);
         $sql_check_contacto_emergencia->execute();
@@ -511,6 +511,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit();
             }
         } else {
+
+            // Verificar si todos los campos de contacto de emergencia están vacíos
+            if (
+                empty($emergencia_nombre) && empty($emergencia_ap_paterno) && empty($emergencia_ap_materno) &&
+                empty($emergencia_parentesco) && empty($emergencia_telefono) && empty($emergencia_domicilio)
+            ) {
+                $respuesta = array(
+                    "title" => "SUCCESS",
+                    "text" => "Actualización exitosa.",
+                    "type" => "warning",
+                    "icon" => $rutaRaiz . "plugins/toasts/icons/icon_success.png",
+                    "timeout" => 3000,
+                );
+
+                header('Content-Type: application/json');
+                echo json_encode($respuesta);
+                exit();
+            }
+            
             // Si no existe, se inserta un nuevo contacto de emergencia
             $sql_insert_contacto = $conexion->prepare("INSERT INTO contacto_emergencia (nombre, ap_paterno, ap_materno, telefono, domicilio) VALUES (?, ?, ?, ?, ?)");
             $sql_insert_contacto->bind_param("sssss", $emergencia_nombre, $emergencia_ap_paterno, $emergencia_ap_materno, $emergencia_telefono, $emergencia_domicilio);

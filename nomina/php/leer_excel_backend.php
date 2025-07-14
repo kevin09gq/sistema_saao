@@ -14,44 +14,69 @@ $rows = $sheet->toArray();
 
 $departamentos = [];
 $actualDepto = null;
+$ultimoEmpleadoIdx = null;
 
 foreach ($rows as $row) {
     if (isset($row[0]) && is_string($row[0])) {
         $cell = ltrim($row[0], "'");
-        // Si contiene "Reg Pat IMSS" o "Reg. Pat. IMSS", corta desde ahí
         $cell = preg_replace('/(Reg\.? Pat\.? IMSS.*)$/i', '', $cell);
-        // Buscar número al inicio, luego espacios, luego nombre de departamento
         if (preg_match('/^(\d+)\s+(.+)/u', $cell, $match)) {
             $nombreDepto = trim($match[1] . ' ' . $match[2]);
-            // Guarda el anterior departamento antes de crear uno nuevo
             if ($actualDepto !== null) {
+                $actualDepto['empleados'] = array_filter($actualDepto['empleados'], function($e) { return $e !== null; });
+                $actualDepto['empleados'] = array_values($actualDepto['empleados']);
                 $departamentos[] = $actualDepto;
             }
             $actualDepto = [
                 'nombre' => $nombreDepto,
                 'empleados' => []
             ];
+            $ultimoEmpleadoIdx = null;
             continue;
         }
     }
-    // Si hay un departamento actual, buscar empleados: columna A numérica (clave), columna B string (nombre)
+    // Detectar empleado
     if (
         $actualDepto &&
         isset($row[0]) && is_numeric($row[0]) &&
         isset($row[1]) && is_string($row[1]) && trim($row[1]) !== ''
     ) {
         $nombreEmpleado = trim($row[1]);
-        // Solo agregar si el nombre tiene al menos dos palabras (nombre y apellido)
-        if (preg_match('/^[A-ZÁÉÍÓÚÑ]+\\s+[A-ZÁÉÍÓÚÑ]+/u', $nombreEmpleado)) {
+        if (preg_match('/^[A-ZÁÉÍÓÚÑ]+\s+[A-ZÁÉÍÓÚÑ]+/u', $nombreEmpleado)) {
             $actualDepto['empleados'][] = [
                 'clave' => $row[0],
-                'nombre' => $nombreEmpleado
+                'nombre' => $nombreEmpleado,
+                'conceptos' => []
+            ];
+            $ultimoEmpleadoIdx = count($actualDepto['empleados']) - 1;
+            continue;
+        }
+        // No cerrar $ultimoEmpleadoIdx aquí, para no perder la asociación de conceptos
+    }
+    // Romper asociación si es una fila de totales
+    if (
+        isset($row[1]) && is_string($row[1]) &&
+        preg_match('/total departamento|total percepciones|neto del departamento|total de empleados/i', $row[1])
+    ) {
+        $ultimoEmpleadoIdx = null;
+    }
+    // Asociar conceptos solo si hay un empleado actual
+    if ($actualDepto && $ultimoEmpleadoIdx !== null && isset($row[5]) && isset($row[6]) && isset($row[8])) {
+        $codigoConcepto = trim($row[5]);
+        $nombreConcepto = trim($row[6]);
+        $resultadoConcepto = trim($row[8]);
+        if (in_array($codigoConcepto, ['45','52','16'])) {
+            $actualDepto['empleados'][$ultimoEmpleadoIdx]['conceptos'][] = [
+                'codigo' => $codigoConcepto,
+                'nombre' => $nombreConcepto,
+                'resultado' => $resultadoConcepto
             ];
         }
     }
 }
-// Al final, guarda el último departamento si existe
 if ($actualDepto !== null) {
+    $actualDepto['empleados'] = array_filter($actualDepto['empleados'], function($e) { return $e !== null; });
+    $actualDepto['empleados'] = array_values($actualDepto['empleados']);
     $departamentos[] = $actualDepto;
 }
 
