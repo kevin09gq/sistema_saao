@@ -16,7 +16,6 @@ include("../../config/config.php");
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="../../public/styles/main.css">
     <link rel="stylesheet" href="../styles/registro_styles.css">
-
 </head>
 
 <body>
@@ -25,136 +24,131 @@ include("../../config/config.php");
         <div class="row justify-content-center">
             <div class="col-lg-10">
                 <!-- Formulario para subir archivo Excel -->
-                <div class="mb-4">
-                    <form id="form_excel" enctype="multipart/form-data" class="row g-2 align-items-center bg-light p-3 rounded shadow-sm">
-                        <div class="col-auto">
-                            <label for="archivo_excel" class="form-label mb-0 fw-semibold text-success">
-                                <i class="bi bi-file-earmark-excel-fill fs-3"></i> Subir archivo Excel:
-                            </label>
-                        </div>
-                        <div class="col">
-                            <!-- Input para seleccionar el archivo Excel -->
-                            <input type="file" class="form-control border-success" id="archivo_excel" name="archivo_excel" accept=".xls,.xlsx" required>
-                        </div>
-                        <div class="col-auto">
-                            <!-- Botón para cargar el archivo, NO hace submit tradicional -->
-                            <button type="button" class="btn btn-success px-4 shadow" id="btn_cargar_excel">
-                                <i class="bi bi-upload me-1"></i> Cargar Excel
-                            </button>
-                        </div>
-                    </form>
-                </div>
+
+
                 <div class="card">
-                    <div class="card-header text-center">
+                    <div class="card-header text-center bg-primary text-white">
                         <span class="form-section-title justify-content-center">
-                            <i class="bi bi-person-plus-fill section-icon"></i>
+                            <i class="bi bi-person-plus-fill section-icon fs-3 me-2"></i>
                             <span class="fs-4 fw-bold">Registrar Nuevo Empleado</span>
                         </span>
                     </div>
                     <div class="card-body">
                         <form method="" action="" id="form_registro_empleado">
-                            <!-- Información del trabajador -->
-                            <div class="form-section-title">
-                                <i class="bi bi-person-badge-fill section-icon"></i>
-                                <span class="fs-5 fw-semibold">Información del trabajador</span>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-3 mb-3">
-                                    <label for="clave_trabajador" class="form-label">Clave de Empleado</label>
-                                    <input type="text" class="form-control" id="clave_trabajador" name="clave_empleado">
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label for="nombre_trabajador" class="form-label">Nombre(s)</label>
-                                    <input type="text" class="form-control" id="nombre_trabajador" name="nombre" >
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label for="apellido_paterno" class="form-label">Apellido Paterno</label>
-                                    <input type="text" class="form-control" id="apellido_paterno" name="ap_paterno">
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label for="apellido_materno" class="form-label">Apellido Materno</label>
-                                    <input type="text" class="form-control" id="apellido_materno" name="ap_materno">
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="domicilio_trabajador" class="form-label">Domicilio</label>
-                                <input type="text" class="form-control" id="domicilio_trabajador" name="domicilio">
-                            </div>
-                            <div class="row">
-                                <div class="col-md-3 mb-3">
-                                    <label for="imss_trabajador" class="form-label">IMSS</label>
-                                    <input type="text" class="form-control" id="imss_trabajador" name="imss">
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label for="curp_trabajador" class="form-label">CURP</label>
-                                    <input type="text" class="form-control" id="curp_trabajador" name="curp">
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label for="sexo_trabajador" class="form-label">Sexo</label>
-                                    <select class="form-select" id="sexo_trabajador" name="sexo">
-                                        <option value="">Selecciona</option>
-                                        <option value="M">Masculino</option>
-                                        <option value="F">Femenino</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label for="grupo_sanguineo_trabajador" class="form-label">Grupo Sanguíneo</label>
-                                    <input type="text" class="form-control" id="grupo_sanguineo_trabajador" name="grupo_sanguineo" >
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="enfermedades_alergias_trabajador" class="form-label">Enfermedades/Alergias</label>
-                                <textarea class="form-control" id="enfermedades_alergias_trabajador" name="enfermedades_alergias" rows="2"></textarea>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label for="departamento_trabajador" class="form-label">Departamento</label>
-                                    <select class="form-select" id="departamento_trabajador" name="id_departamento">
-                                        <option value="">Selecciona un departamento</option>
-                                        
-                                    </select>
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label for="fecha_ingreso_trabajador" class="form-label">Fecha de Ingreso</label>
-                                    <input type="date" class="form-control" id="fecha_ingreso_trabajador" name="fecha_ingreso">
-                                </div>
-                            </div>
-                            <hr class="my-4">
+                            <!-- Nav tabs -->
+                            <ul class="nav nav-tabs mb-4" id="registroTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="tab-trabajador" data-bs-toggle="tab" data-bs-target="#tab_trabajador" type="button" role="tab" aria-controls="tab_trabajador" aria-selected="true">
+                                        <i class="bi bi-person-badge-fill me-2"></i>Información del Trabajador
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="tab-emergencia" data-bs-toggle="tab" data-bs-target="#tab_emergencia" type="button" role="tab" aria-controls="tab_emergencia" aria-selected="false">
+                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>Contacto de Emergencia
+                                    </button>
+                                </li>
+                            </ul>
 
-                            <!-- En caso de emergencia -->
-                            <div class="form-section-title">
-                                <i class="bi bi-exclamation-triangle-fill section-icon"></i>
-                                <span class="fs-5 fw-semibold">En caso de emergencia</span>
+                            <!-- Tab content -->
+                            <div class="tab-content" id="registroTabsContent">
+                                <!-- Tab Información del trabajador -->
+                                <div class="tab-pane fade show active" id="tab_trabajador" role="tabpanel" aria-labelledby="tab-trabajador">
+                                    <div class="row">
+                                        <div class="col-md-3 mb-3">
+                                            <label for="clave_trabajador" class="form-label">Clave de Empleado</label>
+                                            <input type="text" class="form-control" id="clave_trabajador" name="clave_empleado">
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="nombre_trabajador" class="form-label">Nombre(s)</label>
+                                            <input type="text" class="form-control" id="nombre_trabajador" name="nombre">
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="apellido_paterno" class="form-label">Apellido Paterno</label>
+                                            <input type="text" class="form-control" id="apellido_paterno" name="ap_paterno">
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="apellido_materno" class="form-label">Apellido Materno</label>
+                                            <input type="text" class="form-control" id="apellido_materno" name="ap_materno">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="domicilio_trabajador" class="form-label">Domicilio</label>
+                                        <textarea class="form-control" id="domicilio_trabajador" name="domicilio" rows="2"></textarea>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-3 mb-3">
+                                            <label for="imss_trabajador" class="form-label">IMSS</label>
+                                            <input type="text" class="form-control" id="imss_trabajador" name="imss">
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="curp_trabajador" class="form-label">CURP</label>
+                                            <input type="text" class="form-control" id="curp_trabajador" name="curp">
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="sexo_trabajador" class="form-label">Sexo</label>
+                                            <select class="form-select" id="sexo_trabajador" name="sexo">
+                                                <option value="">Selecciona</option>
+                                                <option value="M">Masculino</option>
+                                                <option value="F">Femenino</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="grupo_sanguineo_trabajador" class="form-label">Grupo Sanguíneo</label>
+                                            <input type="text" class="form-control" id="grupo_sanguineo_trabajador" name="grupo_sanguineo">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="enfermedades_alergias_trabajador" class="form-label">Enfermedades/Alergias</label>
+                                        <textarea class="form-control" id="enfermedades_alergias_trabajador" name="enfermedades_alergias" rows="2"></textarea>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label for="departamento_trabajador" class="form-label">Departamento</label>
+                                            <select class="form-select" id="departamento_trabajador" name="id_departamento">
+                                                <option value="">Selecciona un departamento</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="fecha_ingreso_trabajador" class="form-label">Fecha de Ingreso</label>
+                                            <input type="date" class="form-control" id="fecha_ingreso_trabajador" name="fecha_ingreso">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tab Contacto de emergencia -->
+                                <div class="tab-pane fade" id="tab_emergencia" role="tabpanel" aria-labelledby="tab-emergencia">
+                                    <div class="row">
+                                        <div class="col-md-3 mb-3">
+                                            <label for="nombre_emergencia" class="form-label">Nombre</label>
+                                            <input type="text" class="form-control" id="nombre_emergencia" name="emergencia_nombre">
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="ap_paterno_emergencia" class="form-label">Apellido Paterno</label>
+                                            <input type="text" class="form-control" id="ap_paterno_emergencia" name="emergencia_ap_paterno">
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="ap_materno_emergencia" class="form-label">Apellido Materno</label>
+                                            <input type="text" class="form-control" id="ap_materno_emergencia" name="emergencia_ap_materno">
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="parentesco_emergencia" class="form-label">Parentesco</label>
+                                            <input type="text" class="form-control" id="parentesco_emergencia" name="emergencia_parentesco">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="telefono_emergencia" class="form-label">Teléfono</label>
+                                            <input type="text" class="form-control" id="telefono_emergencia" name="emergencia_telefono">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="domicilio_emergencia" class="form-label">Domicilio</label>
+                                            <textarea class="form-control" id="domicilio_emergencia" name="emergencia_domicilio" rows="2"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="row">
-                                <div class="col-md-3 mb-3">
-                                    <label for="nombre_emergencia" class="form-label">Nombre</label>
-                                    <input type="text" class="form-control" id="nombre_emergencia" name="emergencia_nombre">
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label for="ap_paterno_emergencia" class="form-label">Apellido Paterno</label>
-                                    <input type="text" class="form-control" id="ap_paterno_emergencia" name="emergencia_ap_paterno">
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label for="ap_materno_emergencia" class="form-label">Apellido Materno</label>
-                                    <input type="text" class="form-control" id="ap_materno_emergencia" name="emergencia_ap_materno">
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label for="parentesco_emergencia" class="form-label">Parentesco</label>
-                                    <input type="text" class="form-control" id="parentesco_emergencia" name="emergencia_parentesco">
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="telefono_emergencia" class="form-label">Teléfono</label>
-                                    <input type="text" class="form-control" id="telefono_emergencia" name="emergencia_telefono">
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="domicilio_emergencia" class="form-label">Domicilio</label>
-                                    <input type="text" class="form-control" id="domicilio_emergencia" name="emergencia_domicilio">
-                                </div>
-                            </div>
-                            <!-- Botón de registro -->
+
+                            <!-- Botones de acción -->
                             <div class="mt-4 text-center">
                                 <button type="submit" class="btn btn-success btn-lg px-5 me-2" id="btn_registrar_empleado">
                                     <i class="bi bi-person-check-fill me-2"></i>
@@ -171,6 +165,7 @@ include("../../config/config.php");
             </div>
         </div>
     </div>
+
     <!-- jQuery CDN -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <!-- Bootstrap JS CDN -->
@@ -178,35 +173,7 @@ include("../../config/config.php");
     <!-- JS personalizados -->
     <script src="../../public/js/validaciones.js"></script>
     <script src="../controllers/registro_empleado.js"></script>
-    <script>
-    // Cuando se da click en el botón de cargar Excel
-    $('#btn_cargar_excel').on('click', function(e) {
-        e.preventDefault(); // Evita que el formulario se envíe de forma tradicional
-        var formData = new FormData($('#form_excel')[0]); // Obtiene el archivo seleccionado
-        // Envia el archivo por AJAX al backend PHP
-        $.ajax({
-            url: '../controllers/leer_excel_backend.php', // Archivo PHP que procesa el Excel
-            type: 'POST',
-            data: formData,
-            processData: false, // Necesario para enviar archivos
-            contentType: false, // Necesario para enviar archivos
-            success: function(res) {
-                // Si la respuesta es un JSON válido, lo muestra en consola
-                try {
-                    const json = JSON.parse(res);
-                    console.log(json); // Aquí verás el resultado: departamentos y empleados
-                } catch (e) {
-                    // Si hay error, muestra el texto recibido
-                    console.error('No es un JSON válido:', res);
-                }
-            },
-            error: function(err) {
-                // Si hay error en la petición AJAX
-                console.error('Error al leer el archivo:', err);
-            }
-        });
-    });
-    </script>
+
 </body>
 
 </html>
