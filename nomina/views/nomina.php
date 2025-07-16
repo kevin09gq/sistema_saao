@@ -29,6 +29,27 @@
         </form>
     </div>
 
+    <!-- NUEVO FORMULARIO PARA OTRO EXCEL -->
+    <div class="mb-4">
+        <form id="form_excel2" enctype="multipart/form-data" class="row g-2 align-items-center bg-light p-3 rounded shadow-sm">
+            <div class="col-auto">
+                <label for="archivo_excel2" class="form-label mb-0 fw-semibold text-primary">
+                    <i class="bi bi-file-earmark-excel-fill fs-3"></i> Subir otro archivo Excel:
+                </label>
+            </div>
+            <div class="col">
+                <!-- Input para seleccionar el segundo archivo Excel -->
+                <input type="file" class="form-control border-primary" id="archivo_excel2" name="archivo_excel2" accept=".xls,.xlsx" required>
+            </div>
+            <div class="col-auto">
+                <!-- Botón para cargar el segundo archivo -->
+                <button type="button" class="btn btn-primary px-4 shadow" id="btn_cargar_excel2">
+                    <i class="bi bi-upload me-1"></i> Cargar Excel 2
+                </button>
+            </div>
+        </form>
+    </div>
+
 
      <!-- jQuery CDN -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
