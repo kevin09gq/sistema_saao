@@ -2,29 +2,32 @@
 require '../../vendor/autoload.php';
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
-if (!isset($_FILES['archivo_excel2']) || !is_uploaded_file($_FILES['archivo_excel2']['tmp_name'])) {
-    echo json_encode(['error' => 'No se envió archivo o el archivo es inválido']);
-    exit;
-}
-
 $tmpFile = $_FILES['archivo_excel2']['tmp_name'];
 $spreadsheet = IOFactory::load($tmpFile);
 $sheet = $spreadsheet->getActiveSheet();
-$rows = $sheet->toArray();
+$highestRow = $sheet->getHighestRow();
+
+// Fuerza el cálculo de fórmulas
+$spreadsheet->getCalculationEngine()->disableCalculationCache();
 
 $empleados = [];
 $empleadoActual = null;
 $leyendoRegistros = false;
 
-foreach ($rows as $row) {
-    $colA = isset($row[0]) ? trim($row[0]) : '';
+for ($i = 1; $i <= $highestRow; $i++) {
+    $colA = trim($sheet->getCell("A{$i}")->getValue());
+    $colD = trim($sheet->getCell("D{$i}")->getValue());
+    $colE = trim($sheet->getCell("E{$i}")->getValue());
+    $colG = trim($sheet->getCell("G{$i}")->getValue());
+    $colJ = trim($sheet->getCell("J{$i}")->getValue());
 
+    // Detectar inicio de un nuevo empleado
     if ($colA === "Nombre") {
         if ($empleadoActual !== null) {
             $empleados[] = $empleadoActual;
         }
         $empleadoActual = [
-            'nombre' => isset($row[3]) ? trim($row[3]) : "",
+            'nombre' => $colD,
             'registros' => [],
             'horas_totales' => "",
             'tiempo_total' => ""
@@ -32,16 +35,34 @@ foreach ($rows as $row) {
         $leyendoRegistros = false;
     } elseif ($colA === "ID") {
         $leyendoRegistros = true;
-    } elseif (strpos($colA, 'Horas totales') !== false) {
-        $empleadoActual['horas_totales'] = isset($row[4]) ? trim($row[4]) : "";
-    } elseif (strpos($row[6] ?? '', 'Tiempo total') !== false) {
-        $empleadoActual['tiempo_total'] = isset($row[9]) ? trim($row[9]) : "";
+    } elseif (stripos($colA, 'Horas totales') !== false) {
+        if ($empleadoActual !== null) {
+            $empleadoActual['horas_totales'] = $colE;
+
+            // Convertir a HH:MM y asignar a tiempo_total
+            if (is_numeric($colE)) {
+                $horas = floor($colE);
+                $minutos = round(($colE - $horas) * 60);
+                $empleadoActual['tiempo_total'] = sprintf("%d:%02d", $horas, $minutos);
+            }
+        }
+    } elseif (stripos($colG, 'Tiempo total') !== false) {
+        if ($empleadoActual !== null) {
+            // Usar getCalculatedValue por si es fórmula, si no, getValue
+            $valorCalculado = $sheet->getCell("J{$i}")->getCalculatedValue();
+            if ($valorCalculado === null || $valorCalculado === '') {
+                $valorCalculado = $sheet->getCell("J{$i}")->getValue();
+            }
+            $empleadoActual['tiempo_total'] = $valorCalculado;
+            $empleados[] = $empleadoActual;
+            $empleadoActual = null;
+        }
         $leyendoRegistros = false;
     } elseif ($leyendoRegistros && is_numeric($colA)) {
-        $fecha = isset($row[2]) ? trim($row[2]) : "";
-        $entrada = isset($row[4]) ? trim($row[4]) : "";
-        $salida = isset($row[5]) ? trim($row[5]) : "";
-        $trabajado = isset($row[9]) ? trim($row[9]) : "";
+        $fecha = trim($sheet->getCell("C{$i}")->getValue());
+        $entrada = trim($sheet->getCell("E{$i}")->getValue());
+        $salida = trim($sheet->getCell("F{$i}")->getValue());
+        $trabajado = trim($sheet->getCell("J{$i}")->getValue());
 
         if ($fecha !== "" || $entrada !== "" || $salida !== "" || $trabajado !== "") {
             $empleadoActual['registros'][] = [
@@ -54,8 +75,10 @@ foreach ($rows as $row) {
     }
 }
 
+// Si quedó un empleado pendiente al final
 if ($empleadoActual !== null) {
     $empleados[] = $empleadoActual;
 }
 
 echo json_encode(['empleados' => $empleados], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+?>

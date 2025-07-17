@@ -17,6 +17,26 @@ $actualDepto = null;
 $ultimoEmpleadoIdx = null;
 $procesandoEmpleados = false;
 
+// Variables para semana y fechas
+$numeroSemana = null;
+$fechaInicio = null;
+$fechaCierre = null;
+
+// Buscar datos generales en las primeras filas
+foreach ($rows as $row) {
+    // Buscar número de semana
+    foreach ($row as $cell) {
+        if (is_string($cell) && preg_match('/Per[ií]odo\s+Semanal\s+No\.\s*(\d+)/iu', $cell, $matchSemana)) {
+            $numeroSemana = $matchSemana[1];
+        }
+        // Buscar fechas de inicio y cierre
+        if (is_string($cell) && preg_match('/Lista\s+de\s+Raya\s+del\s+(\d{2}\/\w+\/\d{4})\s+al\s+(\d{2}\/\w+\/\d{4})/iu', $cell, $matchFechas)) {
+            $fechaInicio = $matchFechas[1];
+            $fechaCierre = $matchFechas[2];
+        }
+    }
+}
+
 foreach ($rows as $row) {
     // Detectar nuevo departamento
     if (isset($row[0]) && is_string($row[0])) {
@@ -116,4 +136,12 @@ if ($actualDepto !== null) {
     $departamentos[] = $actualDepto;
 }
 
-echo json_encode(['departamentos' => $departamentos]);
+// Salida con identificadores
+$output = [
+    'numero_semana' => $numeroSemana,
+    'fecha_inicio' => $fechaInicio,
+    'fecha_cierre' => $fechaCierre,
+    'departamentos' => $departamentos
+];
+
+echo json_encode($output);
