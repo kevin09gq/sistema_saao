@@ -5,7 +5,7 @@ if(isset($_POST['clave'])) {
     $clave = (int)$_POST['clave'];
 
     
-    $sql = $conexion->prepare("SELECT COUNT(*) FROM info_empleados WHERE clave_empleado = ?");
+    $sql = $conexion->prepare("SELECT COUNT(*) FROM info_empleados WHERE clave_empleado = ? id_status = 1");
     $sql->bind_param("i", $clave);
     $sql->execute();
     $sql->bind_result($count);

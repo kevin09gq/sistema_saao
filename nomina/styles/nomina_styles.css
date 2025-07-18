@@ -402,7 +402,7 @@ body {
     left: 16px;
     top: 50%;
     transform: translateY(-50%);
-    color: hsl(160, 84%, 39%);
+     color: #10b981;
     font-size: 16px;
     z-index: 2;
     transition: all 0.3s ease;

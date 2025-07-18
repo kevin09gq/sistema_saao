@@ -76,7 +76,7 @@
                 <i class="bi bi-plus"></i>
                 A Todos
             </button>
-            <button class="btn-agregar-todos" id="btn_mostrar_algunos" data-bs-toggle="modal" data-bs-target="#modalSeleccionEmpleados">
+            <button class="btn-agregar-todos" id="btn_mostrar_algunos">
                 <i class="bi bi-plus"></i>
                 Seleccionar
             </button>

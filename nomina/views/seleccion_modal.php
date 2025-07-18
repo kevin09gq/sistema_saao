@@ -44,24 +44,7 @@
 
                     <div class="empleados-lista" id="empleados-lista">
 
-                        <!-- Departamento: Producción 40 Libras -->
-                        <div class="departamento-grupo" data-departamento="produccion-40">
-                            <h6 class="departamento-titulo">Producción 40 Libras</h6>
-                            <div class="empleados-departamento">
-                                <div class="empleado-item">
-                                    <div class="form-check">
-                                        <input class="form-check-input empleado-checkbox" type="checkbox" value="1" id="emp-1">
-                                        <label class="form-check-label" for="emp-1">
-                                            <div class="empleado-info">
-                                                <span class="empleado-nombre">ABUNDIO SANTOS ALICIA</span>
-                                                <span class="empleado-clave">Clave: 001</span>
-                                            </div>
-                                        </label>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
+                       
 
                     </div>
                 </div>
