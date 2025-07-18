@@ -23,7 +23,6 @@ include("../../config/config.php");
             <div class="d-flex align-items-center gap-2">
                 <select class="form-select me-2" id="filtroDepartamento" style="min-width:200px;">
 
-
                 </select>
                 <input type="text" class="search-box me-2" placeholder="Buscar..." id="buscadorEmpleado">
                 <button class="btn btn-add" id="btnAgregarEmpleado">+ Agregar Empleado</button>
