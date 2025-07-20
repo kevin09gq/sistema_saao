@@ -18,7 +18,7 @@
     ?>
 
     <!-- Contenedor principal centrado -->
-    <div class="container-nomina" id="container-nomina" hidden>
+    <div class="container-nomina" id="container-nomina" >
         <!-- Contenedor tipo navbar para formulario y filtros -->
         <div class="navbar-nomina">
             <div class="titulo-nomina">Procesamiento de Nómina</div>

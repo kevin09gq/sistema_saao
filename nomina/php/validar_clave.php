@@ -1,24 +1,25 @@
 <?php
 include "../../conexion/conexion.php";
+$data = json_decode(file_get_contents("php://input"), true);
+$claves = $data["claves"] ?? [];
 
-if(isset($_POST['clave'])) {
-    $clave = (int)$_POST['clave'];
+$placeholders = implode(',', array_fill(0, count($claves), '?'));
+$tipos = str_repeat('i', count($claves));
 
-    
-    $sql = $conexion->prepare("SELECT COUNT(*) FROM info_empleados WHERE clave_empleado = ? id_status = 1");
-    $sql->bind_param("i", $clave);
+$resultado = [];
+
+if (!empty($claves)) {
+    $sql = $conexion->prepare(
+        "SELECT clave_empleado FROM info_empleados WHERE clave_empleado IN ($placeholders) AND id_status = 1"
+    );
+    $sql->bind_param($tipos, ...$claves);
     $sql->execute();
-    $sql->bind_result($count);
-    $sql->fetch();
-    $sql->close();
-    if($count > 0) {
-        print_r(true);
-    } else {
-       print_r(false);
+    $res = $sql->get_result();
+    while ($row = $res->fetch_assoc()) {
+        $resultado[] = $row['clave_empleado'];
     }
+    $sql->close();
+}
 
- }
-   
-
-
-?>
+echo json_encode($resultado);
+$conexion->close();

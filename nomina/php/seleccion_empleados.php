@@ -45,7 +45,7 @@ function cargarTodosEmpleados()
     FROM info_empleados e
     LEFT JOIN departamentos d ON e.id_departamento = d.id_departamento
     WHERE e.id_status = 1
-    ORDER BY d.nombre_departamento, e.nombre, e.ap_paterno, e.ap_materno
+    ORDER BY d.nombre_departamento, e.ap_paterno 
 ");
 
     $sql->execute();
@@ -54,7 +54,7 @@ function cargarTodosEmpleados()
     $empleadosPorDepartamento = array();
 
     while ($row = $resultado->fetch_assoc()) {
-        $nombreCompleto = trim($row['nombre'] . ' ' . $row['ap_paterno'] . ' ' . $row['ap_materno']);
+        $nombreCompleto = trim($row['ap_paterno'] . ' ' . $row['ap_materno'] . ' ' . $row['nombre']);
 
         // Asegurarse de limpiar bien el nombre del departamento
         $departamento = isset($row['nombre_departamento']) && trim($row['nombre_departamento']) !== ""
@@ -95,7 +95,7 @@ function cargarEmpleadosPorDepa($idDepartamento)
     FROM info_empleados e
     LEFT JOIN departamentos d ON e.id_departamento = d.id_departamento
     WHERE e.id_status = 1 AND e.id_departamento = ?
-    ORDER BY d.nombre_departamento, e.nombre, e.ap_paterno, e.ap_materno 
+    ORDER BY d.nombre_departamento, e.ap_paterno
 ");
     $sql->bind_param("i", $idDepartamento);
     $sql->execute();
@@ -104,7 +104,7 @@ function cargarEmpleadosPorDepa($idDepartamento)
     $empleadosPorDepartamento = array();
 
     while ($row = $resultado->fetch_assoc()) {
-        $nombreCompleto = trim($row['nombre'] . ' ' . $row['ap_paterno'] . ' ' . $row['ap_materno']);
+        $nombreCompleto = trim($row['ap_paterno'] . ' ' . $row['ap_materno'] . ' ' . $row['nombre']);
 
         // Asegurarse de limpiar bien el nombre del departamento
         $departamento = isset($row['nombre_departamento']) && trim($row['nombre_departamento']) !== ""
