@@ -1,4 +1,5 @@
 jsonGlobal = null; // Variable global para almacenar el JSON unido
+window.empleadosOriginales = [];
 
 $(document).ready(function () {
     obtenerArchivos();
@@ -72,9 +73,9 @@ $(document).ready(function () {
                                     jsonGlobal = jsonUnido; // Guardar en variable global
                                     actualizarCabeceraNomina(jsonGlobal); // <-- Agrega esto
                                     console.log('JSON unido:', jsonUnido);
-                                    
-                                     $("#tabla-nomina-responsive").removeAttr("hidden");
-                                     $("#container-nomina").attr("hidden", true);
+
+                                    $("#tabla-nomina-responsive").removeAttr("hidden");
+                                    $("#container-nomina").attr("hidden", true);
 
                                     /*
                                     // Guardar el JSON unido en info_nomina.json
@@ -114,27 +115,43 @@ $(document).ready(function () {
     // Evento para mostrar todos los datos en la tabla
     $("#btn_mostrar_todos").click(function (e) {
         e.preventDefault();
-        mostrarDatos(jsonGlobal);
+        // Convierte el JSON global a un array plano de empleados, agrupados y ordenados por el orden del JSON y por apellidos dentro de cada departamento
+        let empleadosPlanos = [];
+        if (jsonGlobal && jsonGlobal.departamentos) {
+            jsonGlobal.departamentos.forEach(depto => {
+                // Ordena los empleados del departamento por apellidos
+                let empleadosOrdenados = (depto.empleados || []).slice().sort(compararPorApellidos);
+                empleadosOrdenados.forEach(emp => {
+                    empleadosPlanos.push({
+                        ...emp,
+                        id_departamento: depto.nombre.split(' ')[0],
+                        nombre_departamento: depto.nombre.replace(/^\d+\s*/, '')
+                    });
+                });
+            });
+        }
+        window.empleadosOriginales = empleadosPlanos; // Guarda el array base actual
+        setEmpleadosPaginados(empleadosPlanos); // Inicializa la paginación
         $("#filtro-departamento").removeAttr("hidden");
         $("#busqueda-container").removeAttr("hidden");
     });
 
-    // Evento de búsqueda por nombre
+    // Evento de búsqueda por nombre o clave
     $('#campo-busqueda').on('input', function () {
-        const texto = $(this).val().toLowerCase();
-        // Recorre cada fila de la tabla y oculta/muestra según búsqueda
-        $('#tabla-nomina-body tr').each(function () {
-            const fila = $(this);
-            // Busca en las columnas de nombre y clave (asume nombre en la 2da columna, clave en el texto de la fila)
-            const nombre = fila.find('td').eq(1).text().toLowerCase();
-            const claveMatch = nombre.match(/\b\d+\b/); // Busca clave en el nombre si está
-            const clave = claveMatch ? claveMatch[0] : '';
-            if (nombre.includes(texto) || clave.includes(texto)) {
-                fila.show();
-            } else {
-                fila.hide();
-            }
+        const texto = $(this).val().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        console.log("Empleados base para filtrar:", window.empleadosOriginales); // <-- Depuración
+        if (texto === "") {
+            setEmpleadosPaginados(window.empleadosOriginales);
+            return;
+        }
+        const filtrados = window.empleadosOriginales.filter(emp => {
+            // Usa el campo correcto según tu estructura de datos
+            const nombre = (emp.nombre || emp.nombre_completo || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const clave = String(emp.clave || emp.clave_empleado || '').toLowerCase();
+            return nombre.includes(texto) || clave.includes(texto);
         });
+        console.log("Filtrados:", filtrados); // <-- Depuración
+        setEmpleadosPaginados(filtrados);
     });
 
 });
@@ -362,20 +379,98 @@ function filtroDepartamento() {
     $('#filtro-departamento').change(function () {
         let idSeleccionado = $(this).val();
 
+        let empleadosPlanos = [];
         if (idSeleccionado == "0") {
-            // Mostrar todos los empleados
-            mostrarDatos(jsonGlobal);
+            // Todos los empleados de todos los departamentos (orden y agrupación como el JSON)
+            if (jsonGlobal && jsonGlobal.departamentos) {
+                jsonGlobal.departamentos.forEach(depto => {
+                    let empleadosOrdenados = (depto.empleados || []).slice().sort(compararPorApellidos);
+                    empleadosOrdenados.forEach(emp => {
+                        empleadosPlanos.push({
+                            ...emp,
+                            id_departamento: depto.nombre.split(' ')[0],
+                            nombre_departamento: depto.nombre.replace(/^\d+\s*/, '')
+                        });
+                    });
+                });
+            }
         } else {
-            // Filtrar por departamento usando el número al inicio del nombre
-            let jsonFiltrado = JSON.parse(JSON.stringify(jsonGlobal)); // Copia profunda
-            jsonFiltrado.departamentos = jsonGlobal.departamentos.filter(depto => {
-                const idDepto = depto.nombre.split(' ')[0];
-                return String(idDepto) === String(idSeleccionado);
+            // Solo empleados del departamento seleccionado
+            if (jsonGlobal && jsonGlobal.departamentos) {
+                let depto = jsonGlobal.departamentos.find(d => d.nombre.split(' ')[0] === idSeleccionado);
+                if (depto && depto.empleados) {
+                    let empleadosOrdenados = (depto.empleados || []).slice().sort(compararPorApellidos);
+                    empleadosOrdenados.forEach(emp => {
+                        empleadosPlanos.push({
+                            ...emp,
+                            id_departamento: idSeleccionado,
+                            nombre_departamento: depto.nombre.replace(/^\d+\s*/, '')
+                        });
+                    });
+                }
+            }
+        }
+        window.empleadosOriginales = empleadosPlanos; // Guarda el array base actual
+        setEmpleadosPaginados(empleadosPlanos); // Esto actualiza la paginación y la tabla
+    });
+}
+
+// Función global para renderizar la tabla de nómina con los empleados de la página actual
+function renderEmpleadosTabla(empleadosPagina, inicio) {
+  
+    let numeroFila = inicio + 1;
+
+    // 1. Junta las claves de los empleados de la página actual
+    let claves = empleadosPagina.map(emp => parseInt(emp.clave));
+
+    // 2. Valida las claves antes de mostrar
+    $.ajax({
+        type: "POST",
+        url: "../php/validar_clave.php",
+        data: JSON.stringify({ claves: claves }),
+        contentType: "application/json",
+        success: function (clavesValidasJSON) {
+            const clavesValidas = JSON.parse(clavesValidasJSON);
+              $('#tabla-nomina-body').empty();
+
+            empleadosPagina.forEach(emp => {
+                if (clavesValidas.includes(parseInt(emp.clave))) {
+                    // Obtener conceptos
+                    const conceptos = emp.conceptos || [];
+                    const getConcepto = (codigo) => {
+                        const c = conceptos.find(c => c.codigo === codigo);
+                        return c ? parseFloat(c.resultado).toFixed(2) : '';
+                    };
+                    const infonavit = getConcepto('16');
+                    const isr = getConcepto('45');
+                    const imss = getConcepto('52');
+                    let fila = `
+                        <tr>
+                            <td>${numeroFila++}</td>
+                            <td>${emp.nombre}</td>
+                            <td>${emp.nombre_departamento}</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>${emp.neto_pagar ?? ''}</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>${infonavit}</td>
+                            <td>${isr}</td>
+                            <td>${imss}</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    `;
+                    $('#tabla-nomina-body').append(fila);
+                }
             });
-            mostrarDatos(jsonFiltrado);
         }
     });
 }
+window.renderEmpleadosTabla = renderEmpleadosTabla;
 
 
 

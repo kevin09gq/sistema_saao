@@ -242,41 +242,37 @@ function confirmarSeleccionClaves() {
             return;
         }
 
-
         // 3. Validar que jsonGlobal exista y esté bien formado
         if (!jsonGlobal || !jsonGlobal.departamentos) {
             alert("El JSON global aún no está cargado. Procesa los archivos primero.");
             return;
         }
 
-        // 4. Crear un nuevo JSON que solo contenga empleados seleccionados
-        let nuevoJson = {
-            departamentos: []
-        };
-
-        // 5. Recorrer todos los departamentos
-        jsonGlobal.departamentos.forEach(depto => {
-            // 5.1. Filtrar solo los empleados cuyas claves están en el set (comparando como string)
-            let empleadosFiltrados = (depto.empleados || []).filter(emp =>
-                clavesArray.map(String).includes(String(emp.clave))
-            );
-
-            // 5.2. Si hay empleados filtrados, agregamos el departamento
-            if (empleadosFiltrados.length > 0) {
-                nuevoJson.departamentos.push({
-                    ...depto, // Copiamos los datos del departamento
-                    empleados: empleadosFiltrados // Solo los empleados seleccionados
+        // 4. Crear un array plano de empleados seleccionados, agrupados y ordenados por el orden del JSON y por apellidos dentro de cada departamento
+        let empleadosSeleccionados = [];
+        if (jsonGlobal && jsonGlobal.departamentos) {
+            jsonGlobal.departamentos.forEach(depto => {
+                // Ordena los empleados del departamento por apellidos
+                let empleadosOrdenados = (depto.empleados || []).slice().sort(compararPorApellidos);
+                empleadosOrdenados.forEach(emp => {
+                    if (clavesArray.map(String).includes(String(emp.clave))) {
+                        empleadosSeleccionados.push({
+                            ...emp,
+                            id_departamento: depto.nombre.split(' ')[0],
+                            nombre_departamento: depto.nombre.replace(/^\d+\s*/, '')
+                        });
+                    }
                 });
-            }
-        });
-
-
-
-        // (Opcional) Aquí puedes llamar otra función para enviar o mostrar ese JSON
-        mostrarDatos(nuevoJson);
-         $("#filtro-departamento").attr("hidden", true);
-         $("#busqueda-container").removeAttr("hidden");
-
+            });
+        }
+        // 5. Actualiza el array base y la paginación
+        window.empleadosOriginales = empleadosSeleccionados.slice(); // Usa slice() para evitar referencias
+        setEmpleadosPaginados(empleadosSeleccionados);
+        // 6. Oculta el filtro de departamento y muestra la búsqueda (opcional)
+        $("#filtro-departamento").attr("hidden", true);
+        $("#busqueda-container").removeAttr("hidden");
+        // 7. Cierra el modal
+        $("#modalSeleccionEmpleados").modal('hide');
     });
 }
 

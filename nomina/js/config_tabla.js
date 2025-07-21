@@ -1,7 +1,7 @@
 // Paginación simple para nómina (sin API, solo funciones y variables globales)
 let empleadosPaginados = [];
 let paginaActualNomina = 1;
-const empleadosPorPagina = 8;
+const empleadosPorPagina = 7;
 
 function setEmpleadosPaginados(array) {
     empleadosPaginados = array;
