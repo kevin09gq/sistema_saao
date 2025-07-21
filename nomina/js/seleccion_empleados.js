@@ -274,6 +274,8 @@ function confirmarSeleccionClaves() {
 
         // (Opcional) Aquí puedes llamar otra función para enviar o mostrar ese JSON
         mostrarDatos(nuevoJson);
+         $("#filtro-departamento").attr("hidden", true);
+         $("#busqueda-container").removeAttr("hidden");
 
     });
 }

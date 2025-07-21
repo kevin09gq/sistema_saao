@@ -50,21 +50,21 @@
     </div>
 
     <!-- Tabla -->
-    <div class="container-tabla-nomina">
+    <div class="container-tabla-nomina" id="tabla-nomina-responsive" hidden>
         <div class="header-tabla">
-            <h3>NÓMINA DEL 20 AL 26 DE JUNIO DEL 2025</h3>
-            <span class="sem-info">SEM 26</span>
+            <h3 id = nombre_nomina></h3>
+            <span class="sem-info" id = "num_semana"></span>
         </div>
 
         <!-- Controles de filtro y búsqueda -->
         <div class="controles-tabla">
             <div class="filtros-container">
-                <select class="filtro-departamento" id="filtro-departamento">
-                    <option value="todos">Todos</option>
+                <select class="filtro-departamento" id="filtro-departamento" hidden>
+                   
 
                 </select>
 
-                <div class="busqueda-container">
+                <div class="busqueda-container" id = "busqueda-container" hidden>
                     <i class="bi bi-search"></i>
                     <input type="text" class="campo-busqueda" placeholder="Buscar..." id="campo-busqueda">
                 </div>
@@ -111,6 +111,7 @@
                 </tbody>
             </table>
         </div>
+        <ul id="paginacion-nomina" class="pagination" style="margin: 20px 0 0 0; justify-content: center;"></ul>
     </div>
 
     <!-- Incluir el modal -->
@@ -123,6 +124,8 @@
     <!--JS Personalizado-->
     <script src="../js/leer_excel.js"></script>
     <script src="../js/seleccion_empleados.js"></script>
+     <script src="../js/config_tabla.js"></script>
+
 </body>
 
 </html>
