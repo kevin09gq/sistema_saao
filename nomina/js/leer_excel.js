@@ -154,8 +154,8 @@ $(document).ready(function () {
         setEmpleadosPaginados(filtrados);
     });
 
+    inicializarMenuContextual(); 
 });
-
 
 // Función para descomponer el nombre en apellido paterno, materno y nombres
 function descomponerNombre(nombreCompleto) {
@@ -417,7 +417,7 @@ function filtroDepartamento() {
 
 // Función global para renderizar la tabla de nómina con los empleados de la página actual
 function renderEmpleadosTabla(empleadosPagina, inicio) {
-  
+
     let numeroFila = inicio + 1;
 
     // 1. Junta las claves de los empleados de la página actual
@@ -431,7 +431,7 @@ function renderEmpleadosTabla(empleadosPagina, inicio) {
         contentType: "application/json",
         success: function (clavesValidasJSON) {
             const clavesValidas = JSON.parse(clavesValidasJSON);
-              $('#tabla-nomina-body').empty();
+            $('#tabla-nomina-body').empty();
 
             empleadosPagina.forEach(emp => {
                 if (clavesValidas.includes(parseInt(emp.clave))) {
@@ -471,6 +471,58 @@ function renderEmpleadosTabla(empleadosPagina, inicio) {
     });
 }
 window.renderEmpleadosTabla = renderEmpleadosTabla;
+
+function inicializarMenuContextual() {
+    $(document).on('contextmenu', '#tabla-nomina-body tr', function (e) {
+        e.preventDefault();
+        $('#menu-contextual')
+            .css({
+                left: e.pageX + 'px',
+                top: e.pageY + 'px'
+            })
+            .removeAttr('hidden');
+    });
+
+    $(document).on('click', function (e) {
+        if (!$(e.target).closest('#menu-contextual').length) {
+            $('#menu-contextual').attr('hidden', true);
+        }
+    });
+
+    // Mostrar el modal al hacer click en "Ver detalles"
+    $(document).on('click', '#menu-contextual', function () {
+        $('#menu-contextual').attr('hidden', true);
+        $('#modal-detalles').fadeIn();
+
+        // Activar el primer tab siempre que se abra el modal
+        $('#modalTabs .nav-link').removeClass('active');
+        $('#tab-info').addClass('active');
+        $('.tab-pane').removeClass('show active');
+        $('#tab_info').addClass('show active');
+    });
+
+    // Cerrar el modal
+    $(document).on('click', '#cerrar-modal-detalles, #btn-cancelar-detalles', function () {
+        $('#modal-detalles').fadeOut();
+    });
+
+    // Puedes agregar funcionalidad al botón guardar aquí si lo necesitas
+    $(document).on('click', '#btn-guardar-detalles', function () {
+        // Aquí va tu lógica de guardado
+        alert('Guardado (demo)');
+        $('#modal-detalles').fadeOut();
+    });
+
+    // Tabs manuales si no usas Bootstrap JS
+    $('#modalTabs .nav-link').on('click', function () {
+        var target = $(this).attr('data-bs-target');
+        $('#modalTabs .nav-link').removeClass('active');
+        $(this).addClass('active');
+        $('.tab-pane').removeClass('show active');
+        $(target).addClass('show active');
+    });
+}
+
 
 
 

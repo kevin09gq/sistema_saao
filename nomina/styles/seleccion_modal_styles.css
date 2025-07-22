@@ -104,6 +104,25 @@
     border-radius: 4px;
 }
 
+
+.pagination {
+     justify-content: center;
+ }
+
+ .pagination .page-link {
+     color: #22c55e;
+     border: none;
+     background: none;
+     font-weight: 500;
+ }
+
+ .pagination .active .page-link {
+     background: #22c55e;
+     color: #fff;
+     border-radius: 6px;
+ }
+
+
 /* Responsive para el modal */
 @media (max-width: 768px) {
     .filtros-modal {

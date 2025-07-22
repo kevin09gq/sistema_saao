@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="../styles/nomina_styles.css">
     <link rel="stylesheet" href="../styles/seleccion_modal_styles.css">
+    <link rel="stylesheet" href="../styles/detalles_modal.css">
 </head>
 
 <body>
@@ -18,7 +19,7 @@
     ?>
 
     <!-- Contenedor principal centrado -->
-    <div class="container-nomina" id="container-nomina" >
+    <div class="container-nomina" id="container-nomina">
         <!-- Contenedor tipo navbar para formulario y filtros -->
         <div class="navbar-nomina">
             <div class="titulo-nomina">Procesamiento de Nómina</div>
@@ -52,19 +53,19 @@
     <!-- Tabla -->
     <div class="container-tabla-nomina" id="tabla-nomina-responsive" hidden>
         <div class="header-tabla">
-            <h3 id = nombre_nomina></h3>
-            <span class="sem-info" id = "num_semana"></span>
+            <h3 id=nombre_nomina></h3>
+            <span class="sem-info" id="num_semana"></span>
         </div>
 
         <!-- Controles de filtro y búsqueda -->
         <div class="controles-tabla">
             <div class="filtros-container">
                 <select class="filtro-departamento" id="filtro-departamento" hidden>
-                   
+
 
                 </select>
 
-                <div class="busqueda-container" id = "busqueda-container" hidden>
+                <div class="busqueda-container" id="busqueda-container" hidden>
                     <i class="bi bi-search"></i>
                     <input type="text" class="campo-busqueda" placeholder="Buscar..." id="campo-busqueda">
                 </div>
@@ -116,6 +117,13 @@
 
     <!-- Incluir el modal -->
     <?php include 'seleccion_modal.php'; ?>
+    <?php include 'detalles_modal.php'; ?>
+
+    <!-- Menú contextual personalizado -->
+    <div id="menu-contextual" hidden style="position:absolute; z-index:9999; background:#fff; border:1px solid #ccc; padding:6px 12px; font-size:14px; cursor:pointer;">
+        Ver detalles
+    </div>
+
 
     <!-- jQuery CDN -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -124,7 +132,7 @@
     <!--JS Personalizado-->
     <script src="../js/leer_excel.js"></script>
     <script src="../js/seleccion_empleados.js"></script>
-     <script src="../js/config_tabla.js"></script>
+    <script src="../js/config_tabla.js"></script>
 
 </body>
 
