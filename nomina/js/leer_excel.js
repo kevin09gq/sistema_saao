@@ -6,7 +6,7 @@ $(document).ready(function () {
     cargarDepartamentos();
     filtroDepartamento();
 
-
+ 
     // Función para obtener los archivos y procesarlos
     function obtenerArchivos(params) {
         // Verificar que los elementos existen antes de usarlos
@@ -154,7 +154,7 @@ $(document).ready(function () {
         setEmpleadosPaginados(filtrados);
     });
 
-    inicializarMenuContextual(); 
+    inicializarMenuContextual();
 });
 
 // Función para descomponer el nombre en apellido paterno, materno y nombres
@@ -445,7 +445,7 @@ function renderEmpleadosTabla(empleadosPagina, inicio) {
                     const isr = getConcepto('45');
                     const imss = getConcepto('52');
                     let fila = `
-                        <tr>
+                        <tr data-clave="${emp.clave}">
                             <td>${numeroFila++}</td>
                             <td>${emp.nombre}</td>
                             <td>${emp.nombre_departamento}</td>
@@ -473,61 +473,48 @@ function renderEmpleadosTabla(empleadosPagina, inicio) {
 window.renderEmpleadosTabla = renderEmpleadosTabla;
 
 function inicializarMenuContextual() {
+    // Mostrar menú contextual al hacer clic derecho en una fila
     $(document).on('contextmenu', '#tabla-nomina-body tr', function (e) {
         e.preventDefault();
+        const clave = $(this).data('clave');
+        buscarDatos(clave); // Llama a la función para establecer datos en el modal
+
         $('#menu-contextual')
-            .css({
-                left: e.pageX + 'px',
-                top: e.pageY + 'px'
-            })
+            .css({ left: e.pageX, top: e.pageY })
             .removeAttr('hidden');
     });
 
+    // Ocultar menú contextual al hacer clic fuera
     $(document).on('click', function (e) {
         if (!$(e.target).closest('#menu-contextual').length) {
             $('#menu-contextual').attr('hidden', true);
         }
     });
 
-    // Mostrar el modal al hacer click en "Ver detalles"
+    // Mostrar modal de detalles al hacer clic en "Ver detalles"
     $(document).on('click', '#menu-contextual', function () {
         $('#menu-contextual').attr('hidden', true);
         $('#modal-detalles').fadeIn();
 
-        // Activar el primer tab siempre que se abra el modal
+        // Mostrar primer tab al abrir
         $('#modalTabs .nav-link').removeClass('active');
         $('#tab-info').addClass('active');
         $('.tab-pane').removeClass('show active');
         $('#tab_info').addClass('show active');
     });
 
-    // Cerrar el modal
+    // Cerrar modal
     $(document).on('click', '#cerrar-modal-detalles, #btn-cancelar-detalles', function () {
         $('#modal-detalles').fadeOut();
     });
 
-    // Puedes agregar funcionalidad al botón guardar aquí si lo necesitas
-    $(document).on('click', '#btn-guardar-detalles', function () {
-        // Aquí va tu lógica de guardado
-        alert('Guardado (demo)');
-        $('#modal-detalles').fadeOut();
-    });
-
-    // Tabs manuales si no usas Bootstrap JS
+    // Cambiar pestañas en el modal (si no usas Bootstrap JS)
     $('#modalTabs .nav-link').on('click', function () {
-        var target = $(this).attr('data-bs-target');
+        const target = $(this).attr('data-bs-target');
         $('#modalTabs .nav-link').removeClass('active');
         $(this).addClass('active');
         $('.tab-pane').removeClass('show active');
         $(target).addClass('show active');
     });
 }
-
-
-
-
-
-
-
-
 

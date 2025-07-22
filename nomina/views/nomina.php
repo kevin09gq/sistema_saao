@@ -133,6 +133,8 @@
     <script src="../js/leer_excel.js"></script>
     <script src="../js/seleccion_empleados.js"></script>
     <script src="../js/config_tabla.js"></script>
+   <script src="../js/detalles_modal.js"></script>
+
 
 </body>
 
