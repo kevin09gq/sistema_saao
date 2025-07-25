@@ -120,6 +120,7 @@
                     "clave": "9",
                     "nombre": "GUTIERREZ MELENDEZ GUADALUPE",
                     "neto_pagar": 2001.24,
+
                     "conceptos": [
                         {
                             "codigo": "45",
@@ -134,12 +135,19 @@
                     ],
                     "horas_totales": "42.78",
                     "tiempo_total": "42:47",
+                    "minutosTotales": 2567,
+                    "Minutos_normales": 2567,
+                    "Minutos_extras": 0,
+                    "sueldo_base": 2001.24,
+                    "sueldo_extras": 0,
+                                       
                     "registros": [
                         {
                             "fecha": "21/06/2025",
                             "entrada": "",
                             "salida": "",
-                            "trabajado": ""
+                            "trabajado": "",
+                            "hora_comida":0
                         },
                         {
                             "fecha": "22/06/2025",
@@ -151,7 +159,8 @@
                             "fecha": "23/06/2025",
                             "entrada": "08:55",
                             "salida": "12:55",
-                            "trabajado": "04:00"
+                            "trabajado": "04:00",
+                            "hora_comida":1
                         },
                         {
                             "fecha": "23/06/2025",

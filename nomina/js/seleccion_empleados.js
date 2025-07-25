@@ -256,6 +256,10 @@ function confirmarSeleccionClaves() {
                 let empleadosOrdenados = (depto.empleados || []).slice().sort(compararPorApellidos);
                 empleadosOrdenados.forEach(emp => {
                     if (clavesArray.map(String).includes(String(emp.clave))) {
+                        // Solo aplica calcularCamposEmpleado para "Produccion 40 Libras"
+                        if (typeof calcularCamposEmpleado === "function" && (depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS')) {
+                            calcularCamposEmpleado(emp);
+                        }
                         empleadosSeleccionados.push({
                             ...emp,
                             id_departamento: depto.nombre.split(' ')[0],

@@ -6,7 +6,7 @@ $(document).ready(function () {
     cargarDepartamentos();
     filtroDepartamento();
 
- 
+
     // Función para obtener los archivos y procesarlos
     function obtenerArchivos(params) {
         // Verificar que los elementos existen antes de usarlos
@@ -115,13 +115,15 @@ $(document).ready(function () {
     // Evento para mostrar todos los datos en la tabla
     $("#btn_mostrar_todos").click(function (e) {
         e.preventDefault();
-        // Convierte el JSON global a un array plano de empleados, agrupados y ordenados por el orden del JSON y por apellidos dentro de cada departamento
         let empleadosPlanos = [];
         if (jsonGlobal && jsonGlobal.departamentos) {
             jsonGlobal.departamentos.forEach(depto => {
-                // Ordena los empleados del departamento por apellidos
                 let empleadosOrdenados = (depto.empleados || []).slice().sort(compararPorApellidos);
                 empleadosOrdenados.forEach(emp => {
+                    // Solo aplica calcularCamposEmpleado para "Produccion 40 Libras"
+                    if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS')) {
+                        calcularCamposEmpleado(emp);
+                    }
                     empleadosPlanos.push({
                         ...emp,
                         id_departamento: depto.nombre.split(' ')[0],
@@ -130,8 +132,8 @@ $(document).ready(function () {
                 });
             });
         }
-        window.empleadosOriginales = empleadosPlanos; // Guarda el array base actual
-        setEmpleadosPaginados(empleadosPlanos); // Inicializa la paginación
+        window.empleadosOriginales = empleadosPlanos;
+        setEmpleadosPaginados(empleadosPlanos);
         $("#filtro-departamento").removeAttr("hidden");
         $("#busqueda-container").removeAttr("hidden");
     });
@@ -139,7 +141,6 @@ $(document).ready(function () {
     // Evento de búsqueda por nombre o clave
     $('#campo-busqueda').on('input', function () {
         const texto = $(this).val().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        console.log("Empleados base para filtrar:", window.empleadosOriginales); // <-- Depuración
         if (texto === "") {
             setEmpleadosPaginados(window.empleadosOriginales);
             return;
@@ -150,7 +151,6 @@ $(document).ready(function () {
             const clave = String(emp.clave || emp.clave_empleado || '').toLowerCase();
             return nombre.includes(texto) || clave.includes(texto);
         });
-        console.log("Filtrados:", filtrados); // <-- Depuración
         setEmpleadosPaginados(filtrados);
     });
 
@@ -179,82 +179,6 @@ function compararPorApellidos(a, b) {
     return nomA.localeCompare(nomB, 'es', { sensitivity: 'base' });
 }
 
-// Función para validar claves y llenar la tabla
-function mostrarDatos(jsonUnido) {
-    $('#tabla-nomina-body').empty();
-
-    if (!jsonUnido || !jsonUnido.departamentos) return;
-
-    let claves = [];
-
-    // Reunir todas las claves para validar en lote
-    jsonUnido.departamentos.forEach(depto => {
-        if (depto.empleados) {
-            depto.empleados.forEach(emp => {
-                if (emp.clave) {
-                    claves.push(parseInt(emp.clave));
-                }
-            });
-        }
-    });
-
-    // Enviar todas las claves en un solo request
-    $.ajax({
-        type: "POST",
-        url: "../php/validar_clave.php",
-        data: JSON.stringify({ claves: claves }),
-        contentType: "application/json",
-        success: function (clavesValidasJSON) {
-            const clavesValidas = JSON.parse(clavesValidasJSON);
-            let numeroFila = 1;
-
-            jsonUnido.departamentos.forEach(depto => {
-                if (depto.empleados) {
-                    // Ordenar empleados correctamente
-                    depto.empleados.sort(compararPorApellidos);
-
-                    depto.empleados.forEach(emp => {
-                        if (clavesValidas.includes(parseInt(emp.clave))) {
-
-                            // Obtener conceptos
-                            const conceptos = emp.conceptos || [];
-                            const getConcepto = (codigo) => {
-                                const c = conceptos.find(c => c.codigo === codigo);
-                                return c ? parseFloat(c.resultado).toFixed(2) : '';
-                            };
-
-                            const infonavit = getConcepto('16');
-                            const isr = getConcepto('45');
-                            const imss = getConcepto('52');
-
-                            let fila = `
-                                <tr>
-                                    <td>${numeroFila++}</td>
-                                    <td>${emp.nombre}</td>
-                                    <td>${depto.nombre.replace(/^\d+\s*/, '')}</td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td>${emp.neto_pagar ?? ''}</td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td>${infonavit}</td>
-                                    <td>${isr}</td>
-                                    <td>${imss}</td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                </tr>
-                            `;
-                            $('#tabla-nomina-body').append(fila);
-                        }
-                    });
-                }
-            });
-        }
-    });
-}
 
 // Función para unir dos JSON con normalización
 function unirJson(json1, json2) {
@@ -435,8 +359,25 @@ function renderEmpleadosTabla(empleadosPagina, inicio) {
 
             empleadosPagina.forEach(emp => {
                 if (clavesValidas.includes(parseInt(emp.clave))) {
+                    // Obtener el empleado actualizado desde jsonGlobal (si existe)
+                    let empActual = emp;
+                    if (window.jsonGlobal && window.jsonGlobal.departamentos) {
+                        window.jsonGlobal.departamentos.forEach(depto => {
+                            (depto.empleados || []).forEach(e => {
+                                if (String(e.clave) === String(emp.clave)) {
+                                    // Mezcla los datos actualizados del objeto global
+                                    empActual = {
+                                        ...emp,
+                                        ...e,
+                                        id_departamento: emp.id_departamento,
+                                        nombre_departamento: emp.nombre_departamento
+                                    };
+                                }
+                            });
+                        });
+                    }
                     // Obtener conceptos
-                    const conceptos = emp.conceptos || [];
+                    const conceptos = empActual.conceptos || [];
                     const getConcepto = (codigo) => {
                         const c = conceptos.find(c => c.codigo === codigo);
                         return c ? parseFloat(c.resultado).toFixed(2) : '';
@@ -445,14 +386,14 @@ function renderEmpleadosTabla(empleadosPagina, inicio) {
                     const isr = getConcepto('45');
                     const imss = getConcepto('52');
                     let fila = `
-                        <tr data-clave="${emp.clave}">
+                        <tr data-clave="${empActual.clave}">
                             <td>${numeroFila++}</td>
-                            <td>${emp.nombre}</td>
-                            <td>${emp.nombre_departamento}</td>
+                            <td>${empActual.nombre}</td>
+                            <td>${empActual.nombre_departamento}</td>
+                            <td>${empActual.sueldo_base ?? ''}</td>
                             <td></td>
-                            <td></td>
-                            <td></td>
-                            <td>${emp.neto_pagar ?? ''}</td>
+                            <td${empActual.sueldo_extra ?? ''}></td>
+                            <td>${empActual.neto_pagar ?? ''}</td>
                             <td></td>
                             <td></td>
                             <td></td>
@@ -473,15 +414,34 @@ function renderEmpleadosTabla(empleadosPagina, inicio) {
 window.renderEmpleadosTabla = renderEmpleadosTabla;
 
 function inicializarMenuContextual() {
-    // Mostrar menú contextual al hacer clic derecho en una fila
+    // Mostrar menú contextual solo para "Produccion 40 Libras"
     $(document).on('contextmenu', '#tabla-nomina-body tr', function (e) {
         e.preventDefault();
         const clave = $(this).data('clave');
-        buscarDatos(clave); // Llama a la función para establecer datos en el modal
 
-        $('#menu-contextual')
-            .css({ left: e.pageX, top: e.pageY })
-            .removeAttr('hidden');
+        // Busca el empleado y su departamento en jsonGlobal
+        let esProduccion40 = false;
+        if (window.jsonGlobal && window.jsonGlobal.departamentos) {
+            window.jsonGlobal.departamentos.forEach(depto => {
+                (depto.empleados || []).forEach(emp => {
+                    if (String(emp.clave) === String(clave)) {
+                        if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS')) {
+                            esProduccion40 = true;
+                        }
+                    }
+                });
+            });
+        }
+
+        if (esProduccion40) {
+            buscarDatos(clave); // Llama a la función para establecer datos en el modal
+            $('#menu-contextual')
+                .css({ left: e.pageX, top: e.pageY })
+                .removeAttr('hidden');
+        } else {
+            // Si no es de Produccion 40 Libras, oculta el menú contextual si estuviera visible
+            $('#menu-contextual').attr('hidden', true);
+        }
     });
 
     // Ocultar menú contextual al hacer clic fuera
@@ -516,5 +476,73 @@ function inicializarMenuContextual() {
         $('.tab-pane').removeClass('show active');
         $(target).addClass('show active');
     });
+}
+
+// Nueva función para calcular y actualizar campos en cada empleado
+function calcularCamposEmpleado(emp) {
+    if (!window.rangosHorasJson) {
+        console.warn('rangos_horas.js no está cargado');
+        return;
+    }
+    // Convierte tiempo_total a minutos
+    const tiempoTotal = emp.tiempo_total || "00:00";
+    const minutosTotales = horaToMinutos(tiempoTotal);
+
+    let sueldoBase = 0;
+    let sueldoFinal = 0;
+    let minutosExtras = 0;
+    let extra = 0;
+    let rangoNormal = null;
+    let rangoExtra = null;
+    let maxMinutosNormales = 0;
+
+    window.rangosHorasJson.forEach(rango => {
+        if (rango.tipo === "hora_extra") {
+            rangoExtra = rango;
+        } else {
+            if (rango.minutos > maxMinutosNormales) {
+                maxMinutosNormales = rango.minutos;
+            }
+            if (minutosTotales <= rango.minutos && !rangoNormal) {
+                rangoNormal = rango;
+            }
+        }
+    });
+
+    // CASO 1: Más de maxMinutosNormales (tiene horas extra)
+    if (minutosTotales > maxMinutosNormales && rangoExtra) {
+        minutosExtras = minutosTotales - maxMinutosNormales;
+        extra = minutosExtras * rangoExtra.costo_por_minuto;
+        const ultimoRango = window.rangosHorasJson.find(r => r.minutos === maxMinutosNormales);
+        sueldoBase = ultimoRango ? ultimoRango.sueldo_base : 0;
+        sueldoFinal = sueldoBase + extra;
+    }
+    // CASO 2: Igual al rango exacto → sueldo base
+    else if (rangoNormal && minutosTotales === rangoNormal.minutos) {
+        sueldoBase = rangoNormal.sueldo_base;
+        sueldoFinal = sueldoBase;
+    }
+    // CASO 3: Menor al rango → costo por minuto
+    else if (rangoNormal && minutosTotales < rangoNormal.minutos) {
+        sueldoBase = minutosTotales * rangoNormal.costo_por_minuto;
+        sueldoFinal = sueldoBase;
+    }
+
+    // Actualiza el objeto empleado
+    emp.Minutos_trabajados = minutosTotales;
+    emp.Minutos_normales = Math.min(minutosTotales, maxMinutosNormales);
+    emp.Minutos_extra = minutosExtras;
+    emp.sueldo_base = Number(sueldoBase.toFixed(2));
+    emp.sueldo_extra = Number(extra.toFixed(2));
+    emp.neto_pagar = Number(sueldoFinal.toFixed(2));
+
+    return emp;
+}
+
+// Utilidad para convertir "hh:mm" a minutos
+function horaToMinutos(hora) {
+    if (!hora || hora.indexOf(':') === -1) return 0;
+    const [h, m] = hora.split(':').map(Number);
+    return h * 60 + m;
 }
 

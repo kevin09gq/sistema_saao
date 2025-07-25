@@ -127,15 +127,16 @@
 
     <!-- jQuery CDN -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- Plugin Inputmask -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.7/jquery.inputmask.min.js"></script>
     <!-- Bootstrap JS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <!--JS Personalizado-->
     <script src="../js/leer_excel.js"></script>
     <script src="../js/seleccion_empleados.js"></script>
     <script src="../js/config_tabla.js"></script>
-   <script src="../js/detalles_modal.js"></script>
-
-
+    <script src="../js/detalles_modal.js"></script>
+    <script src="../js/rangos_horas.js"></script>
 </body>
 
 </html>

@@ -44,8 +44,8 @@
                    
 
                 </ul>
-                <div class="registros-totales">
-                    Horas totales: <span id="horas-totales">37.10</span> &nbsp; | &nbsp; Tiempo total: <span id="tiempo-total">37:06</span>
+                <div class="registros-totales" id="registros-totales">
+                    Horas totales: <span id="horas-totales"></span> &nbsp; | &nbsp; Tiempo total: <span id="tiempo-total"></span>
                 </div>
             </div>
         </div>
