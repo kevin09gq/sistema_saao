@@ -5,6 +5,10 @@ if (isset($_GET['accion']) || isset($_POST['accion'])) {
     $accion = $_GET['accion'] ?? $_POST['accion'];
 
     switch ($accion) {
+        case 'cargarDepartamento':
+            cargarDepartamento();
+
+            break;
         case 'cargarTodosEmpleados':
             cargarTodosEmpleados();
 
@@ -15,12 +19,11 @@ if (isset($_GET['accion']) || isset($_POST['accion'])) {
 
                 $idDepartamento = $_POST['id_departamento'];
                 if ($idDepartamento > 0) {
-                     cargarEmpleadosPorDepa($idDepartamento);
-                }else{
+                    cargarEmpleadosPorDepa($idDepartamento);
+                } else {
                     cargarTodosEmpleados();
                 }
-               
-            } 
+            }
 
             break;
 
@@ -28,6 +31,32 @@ if (isset($_GET['accion']) || isset($_POST['accion'])) {
         default:
     }
 }
+
+function cargarDepartamento()
+{
+    global $conexion;
+
+    $sql = "SELECT * FROM departamentos WHERE id_departamento = 4";
+    $query = $conexion->query($sql);
+
+    if (!$query) {
+        die("Ocurrió un error: " . $conexion->connect_error);
+    }
+
+    $arreglo = array();
+    while ($row = $query->fetch_object()) {
+        $arreglo[] = array(
+            "id_departamento" => $row->id_departamento,
+            "nombre_departamento" => $row->nombre_departamento,
+        );
+    }
+
+    $json = json_encode($arreglo, JSON_UNESCAPED_UNICODE);
+
+    print_r($json);
+}
+
+
 
 function cargarTodosEmpleados()
 {
@@ -44,7 +73,7 @@ function cargarTodosEmpleados()
         d.nombre_departamento
     FROM info_empleados e
     LEFT JOIN departamentos d ON e.id_departamento = d.id_departamento
-    WHERE e.id_status = 1
+    WHERE e.id_status = 1 AND e.id_departamento = 4
     ORDER BY d.nombre_departamento, e.ap_paterno 
 ");
 

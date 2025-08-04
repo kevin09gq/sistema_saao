@@ -1,0 +1,16 @@
+# Permitir descarga de archivos
+<FilesMatch "\.(xlsx|pdf)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
+
+# Configurar headers para descarga
+<FilesMatch "\.xlsx$">
+    Header set Content-Type "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    Header set Content-Disposition "attachment"
+</FilesMatch>
+
+<FilesMatch "\.pdf$">
+    Header set Content-Type "application/pdf"
+    Header set Content-Disposition "attachment"
+</FilesMatch> 

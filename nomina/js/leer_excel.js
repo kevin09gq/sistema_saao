@@ -131,6 +131,7 @@ $(document).ready(function () {
                     });
                 });
             });
+            
         }
         window.empleadosOriginales = empleadosPlanos;
         setEmpleadosPaginados(empleadosPlanos);
@@ -361,17 +362,18 @@ function renderEmpleadosTabla(empleadosPagina, inicio) {
                 if (clavesValidas.includes(parseInt(emp.clave))) {
                     // Obtener el empleado actualizado desde jsonGlobal (si existe)
                     let empActual = emp;
+                    let nombreDepartamento = emp.nombre_departamento || '';
                     if (window.jsonGlobal && window.jsonGlobal.departamentos) {
                         window.jsonGlobal.departamentos.forEach(depto => {
                             (depto.empleados || []).forEach(e => {
                                 if (String(e.clave) === String(emp.clave)) {
-                                    // Mezcla los datos actualizados del objeto global
                                     empActual = {
                                         ...emp,
                                         ...e,
                                         id_departamento: emp.id_departamento,
                                         nombre_departamento: emp.nombre_departamento
                                     };
+                                    nombreDepartamento = depto.nombre.replace(/^\d+\s*/, '');
                                 }
                             });
                         });
@@ -385,15 +387,23 @@ function renderEmpleadosTabla(empleadosPagina, inicio) {
                     const infonavit = getConcepto('16');
                     const isr = getConcepto('45');
                     const imss = getConcepto('52');
+
+                    // Detecta si es Produccion 40 Libras
+                    const esProduccion40 = (nombreDepartamento || '').toUpperCase().includes('PRODUCCION 40 LIBRAS');
+
+                    // Para 40 Libras: neto_pagar = sueldo_base, sueldo_extra va en su columna, infonavit va en su columna
+                    // Para otros departamentos: usa neto_pagar y conceptos normalmente
+                    let sueldoNeto = esProduccion40 ? (empActual.sueldo_base ?? '') : (empActual.neto_pagar ?? '');
+                    let sueldoExtra = esProduccion40 ? (empActual.sueldo_extra ?? '') : '';
                     let fila = `
                         <tr data-clave="${empActual.clave}">
                             <td>${numeroFila++}</td>
                             <td>${empActual.nombre}</td>
-                            <td>${empActual.nombre_departamento}</td>
+                            <td>${nombreDepartamento}</td>
                             <td>${empActual.sueldo_base ?? ''}</td>
                             <td></td>
-                            <td${empActual.sueldo_extra ?? ''}></td>
-                            <td>${empActual.neto_pagar ?? ''}</td>
+                            <td>${sueldoExtra}</td>
+                            <td>${sueldoNeto}</td>
                             <td></td>
                             <td></td>
                             <td></td>

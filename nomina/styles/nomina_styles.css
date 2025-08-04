@@ -693,3 +693,87 @@ body {
     margin: 0;
     font-size: 14px;
 }
+
+/* Estilos para botones de exportación */
+.export-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn-export-excel,
+.btn-export-pdf {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: white;
+}
+
+.btn-export-excel {
+    background: linear-gradient(135deg, #217346 0%, #1e6b3d 100%);
+    box-shadow: 0 2px 4px rgba(33, 115, 70, 0.2);
+}
+
+.btn-export-excel:hover {
+    background: linear-gradient(135deg, #1e6b3d 0%, #185a32 100%);
+    box-shadow: 0 4px 8px rgba(33, 115, 70, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-export-pdf {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
+}
+
+.btn-export-pdf:hover {
+    background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-export-excel:active,
+.btn-export-pdf:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-export-excel i,
+.btn-export-pdf i {
+    font-size: 16px;
+}
+
+/* Responsive para botones de exportación */
+@media (max-width: 768px) {
+    .export-buttons {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+    
+    .btn-export-excel,
+    .btn-export-pdf {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .btn-export-excel,
+    .btn-export-pdf {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+    
+    .btn-export-excel i,
+    .btn-export-pdf i {
+        font-size: 14px;
+    }
+}

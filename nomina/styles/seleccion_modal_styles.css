@@ -72,7 +72,7 @@
     border-bottom: none;
 }
 
-.empleado-info {
+.empleado-info-seleccion {
     display: flex;
     flex-direction: column;
     margin-left: 10px;

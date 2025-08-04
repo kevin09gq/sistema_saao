@@ -81,6 +81,18 @@
                 <i class="bi bi-plus"></i>
                 Seleccionar
             </button>
+            
+            <!-- Botones de exportación -->
+            <div class="export-buttons">
+                <button class="btn-export-excel" id="btn_export_excel" title="Exportar a Excel">
+                    <i class="bi bi-file-earmark-excel"></i>
+                    Excel
+                </button>
+                <button class="btn-export-pdf" id="btn_export_pdf" title="Exportar a PDF">
+                    <i class="bi bi-file-earmark-pdf"></i>
+                    PDF
+                </button>
+            </div>
         </div>
 
 
@@ -131,12 +143,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.7/jquery.inputmask.min.js"></script>
     <!-- Bootstrap JS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <!--JS Personalizado-->
+    <!--JS Personalizado 
     <script src="../js/leer_excel.js"></script>
     <script src="../js/seleccion_empleados.js"></script>
     <script src="../js/config_tabla.js"></script>
     <script src="../js/detalles_modal.js"></script>
-    <script src="../js/rangos_horas.js"></script>
+    <script src="../js/rangos_horas.js"></script>  
+
+    -->
+    <script src="../jsPrueba/leer_excel.js"></script>
+    <script src="../jsPrueba/rangos_horas.js"></script>
+    <script src="../jsPrueba/config_tabla.js"></script>
+    <script src="../jsPrueba/seleccion_empleados.js"></script>
+    <script src="../jsPrueba/detalles_modal.js"></script>
 </body>
 
 </html>

@@ -38,12 +38,7 @@ function buscarDatos(claveEmpleado) {
 function establecerDatosModal(nombre, clave, neto_pagar, horas_totales, tiempo_total, conceptos, registros) {
 
     //Muestra los datos en el modal "Trabajador"
-    $('#campo-nombre').html('<strong>Nombre:</strong> ' + nombre);
-    $('#campo-clave').html('<strong>Clave:</strong> ' + clave);
-    $('#campo-neto-pagar').html('<strong>Neto a pagar:</strong> $' + neto_pagar);
-    $('#campo-horas-totales').html('<strong>Horas totales:</strong> ' + horas_totales);
-    $('#campo-tiempo-total').html('<strong>Tiempo total:</strong> ' + tiempo_total);
-
+    
 
     //Muestra los datos en el modal "Concpetos"
     // Limpia el contenedor de conceptos antes de agregar nuevos
@@ -276,8 +271,7 @@ function actualizarEmpleadoYRegistro(clave, indexRegistro, entrada, salida, comi
                     // Si necesitas recalcular neto_pagar, hazlo aquí según tu lógica general
                 }
 
-                // Imprime el objeto actualizado del empleado en consola
-                console.log(emp);
+                
             }
         });
     });

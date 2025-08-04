@@ -120,7 +120,6 @@
                     "clave": "9",
                     "nombre": "GUTIERREZ MELENDEZ GUADALUPE",
                     "neto_pagar": 2001.24,
-
                     "conceptos": [
                         {
                             "codigo": "45",
@@ -131,6 +130,11 @@
                             "codigo": "52",
                             "nombre": "I.M.S.S.",
                             "resultado": "52.67"
+                        },
+                        {
+                            "codigo": "16",
+                            "nombre": "Préstamo infonavit (CF)",
+                            "resultado": "186.22"
                         }
                     ],
                     "horas_totales": "42.78",
@@ -140,6 +144,14 @@
                     "Minutos_extras": 0,
                     "sueldo_base": 2001.24,
                     "sueldo_extras": 0,
+                    "incentivo": 0,
+                    "prestamo": 0,
+                    "uniformes": 0,
+                    "checador": 0,
+                    "fa_gafet_cofia": 0,
+                    "inasistencias_horas": 0,
+                    "inasistencias_descuento": 0,
+
                                        
                     "registros": [
                         {
@@ -147,7 +159,7 @@
                             "entrada": "",
                             "salida": "",
                             "trabajado": "",
-                            "hora_comida":0
+                            "hora_comida": 0
                         },
                         {
                             "fecha": "22/06/2025",
@@ -160,7 +172,7 @@
                             "entrada": "08:55",
                             "salida": "12:55",
                             "trabajado": "04:00",
-                            "hora_comida":1
+                            "hora_comida": 1
                         },
                         {
                             "fecha": "23/06/2025",
