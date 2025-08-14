@@ -1,4 +1,5 @@
 $(document).ready(function () {
+    const rutaRaiz = '/sistema_saao/';
     const rutaPlugins = '/sistema_saao/';
 
     getDepartamentos();
@@ -11,7 +12,7 @@ $(document).ready(function () {
     function getDepartamentos() {
         $.ajax({
             type: "GET",
-            url: "../php/obtenerDepartamentos.php",
+            url: rutaRaiz + "public/php/obtenerDepartamentos.php",
             success: function (response) {
                 if (!response.error) {
                     let departamentos = JSON.parse(response);
@@ -133,7 +134,7 @@ $(document).ready(function () {
                 data: data,
                 success: function (empleado) {
                     if (!empleado.error) {
-                        // Extraemos todos los datos del empleado
+                        // Extraemos todos los datos del empleado incluyendo los nuevos campos
                         let nombreEmpleado = empleado.nombre_empleado;
                         let apPaternoEmpleado = empleado.apellido_paterno_empleado;
                         let apMaternoEmpleado = empleado.apellido_materno_empleado;
@@ -144,7 +145,14 @@ $(document).ready(function () {
                         let grupoSanguineo = empleado.grupo_sanguineo;
                         let enfermedades = empleado.enfermedades_alergias;
                         let fechaIngreso = empleado.fecha_ingreso;
-                        let idDepartamentoEmpleado = empleado.id_departamento; // 👈 ID del departamento
+                        let idDepartamentoEmpleado = empleado.id_departamento;
+                        
+                        // Nuevos campos
+                        let fechaNacimiento = empleado.fecha_nacimiento;
+                        let numCasillero = empleado.num_casillero;
+                        let idEmpresa = empleado.id_empresa;
+                        let idArea = empleado.id_area;
+                        let idPuesto = empleado.id_puesto;
 
                         let nombreContacto = empleado.nombre_contacto;
                         let apPaternoContacto = empleado.apellido_paterno_contacto;
@@ -166,6 +174,10 @@ $(document).ready(function () {
                         $("#modal_grupo_sanguineo").val(grupoSanguineo);
                         $("#modal_enfermedades_alergias").val(enfermedades);
                         $("#modal_fecha_ingreso").val(fechaIngreso);
+                        
+                        // Nuevos campos
+                        $("#modal_fecha_nacimiento").val(fechaNacimiento);
+                        $("#modal_num_casillero").val(numCasillero);
 
                         $("#modal_emergencia_nombre").val(nombreContacto);
                         $("#modal_emergencia_ap_paterno").val(apPaternoContacto);
@@ -174,10 +186,10 @@ $(document).ready(function () {
                         $("#modal_emergencia_domicilio").val(domicilioContacto);
                         $("#modal_emergencia_parentesco").val(parentescoContacto);
 
-                        // Ahora cargamos los departamentos y seleccionamos el que corresponde
+                        // Cargar departamentos con la ruta correcta
                         $.ajax({
                             type: "GET",
-                            url: "../php/obtenerDepartamentos.php",
+                            url: rutaRaiz + "public/php/obtenerDepartamentos.php", // Ruta corregida
                             success: function (response) {
                                 let departamentos = JSON.parse(response);
                                 let opciones = `<option value="0">Ninguno</option>`;
@@ -188,8 +200,6 @@ $(document).ready(function () {
                                 });
 
                                 $("#modal_departamento").html(opciones);
-                                // Seleccionar automáticamente el departamento del empleado
-                                // Si idDepartamentoEmpleado es null, undefined o vacío, seleccionamos "Ninguno"
                                 if (!idDepartamentoEmpleado || idDepartamentoEmpleado === "0") {
                                     $("#modal_departamento").val("0");
                                 } else {
@@ -198,7 +208,71 @@ $(document).ready(function () {
                             }
                         });
 
+                        // Cargar empresas
+                        $.ajax({
+                            type: "GET",
+                            url: rutaRaiz + "public/php/obtenerEmpresa.php", // Ruta corregida
+                            success: function (response) {
+                                let empresas = JSON.parse(response);
+                                let opciones = `<option value="0">Ninguna</option>`;
 
+                                empresas.forEach((element) => {
+                                    opciones += `
+                                <option value="${element.id_empresa}">${element.nombre_empresa}</option>`;
+                                });
+
+                                $("#modal_empresa").html(opciones);
+                                if (!idEmpresa || idEmpresa === "0") {
+                                    $("#modal_empresa").val("0");
+                                } else {
+                                    $("#modal_empresa").val(idEmpresa);
+                                }
+                            }
+                        });
+
+                        // Cargar áreas
+                        $.ajax({
+                            type: "GET",
+                            url: rutaRaiz + "public/php/obtenerAreas.php", // Ruta corregida
+                            success: function (response) {
+                                let areas = JSON.parse(response);
+                                let opciones = `<option value="0">Ninguna</option>`;
+
+                                areas.forEach((element) => {
+                                    opciones += `
+                                <option value="${element.id_area}">${element.nombre_area}</option>`;
+                                });
+
+                                $("#modal_area").html(opciones);
+                                if (!idArea || idArea === "0") {
+                                    $("#modal_area").val("0");
+                                } else {
+                                    $("#modal_area").val(idArea);
+                                }
+                            }
+                        });
+
+                        // Cargar puestos
+                        $.ajax({
+                            type: "GET",
+                            url: rutaRaiz + "public/php/obtenerPuestos.php", // Ruta corregida
+                            success: function (response) {
+                                let puestos = JSON.parse(response);
+                                let opciones = `<option value="0">Ninguno</option>`;
+
+                                puestos.forEach((element) => {
+                                    opciones += `
+                                <option value="${element.id_puestoEspecial}">${element.nombre_puesto}</option>`;
+                                });
+
+                                $("#modal_puesto").html(opciones);
+                                if (!idPuesto || idPuesto === "0") {
+                                    $("#modal_puesto").val("0");
+                                } else {
+                                    $("#modal_puesto").val(idPuesto);
+                                }
+                            }
+                        });
 
                         validarCampos($("#modal_clave_empleado"), validarClave);
                         validarCampos($("#modal_nombre_empleado"), validarNombre);
@@ -261,6 +335,13 @@ $(document).ready(function () {
         let enfermedades = $("#modal_enfermedades_alergias").val();
         let fechaIngreso = $("#modal_fecha_ingreso").val();
         let idDepartamento = $("#modal_departamento").val();
+        
+        // Nuevos campos agregados
+        let fechaNacimiento = $("#modal_fecha_nacimiento").val();
+        let numCasillero = $("#modal_num_casillero").val();
+        let idEmpresa = $("#modal_empresa").val();
+        let idArea = $("#modal_area").val();
+        let idPuesto = $("#modal_puesto").val();
 
         // Datos de emergencia
         let emergenciaNombre = $("#modal_emergencia_nombre").val();
@@ -330,6 +411,14 @@ $(document).ready(function () {
             enfermedades_alergias: enfermedades || "",
             fecha_ingreso: fechaIngreso || "",
             id_departamento: idDepartamento || "",
+            
+            // Nuevos campos agregados
+            fecha_nacimiento: fechaNacimiento || "",
+            num_casillero: numCasillero || "",
+            id_empresa: idEmpresa || "",
+            id_area: idArea || "",
+            id_puestoEspecial: idPuesto || "",
+            
             nombre_contacto: emergenciaNombre || "",
             apellido_paterno_contacto: emergenciaApPaterno || "",
             apellido_materno_contacto: emergenciaApMaterno || "",
@@ -389,7 +478,7 @@ $(document).ready(function () {
                         dataType: "json",
                         success: function (empleados) {
                             empleadosData = empleados;
-                            paginacionStatus(empleadosData);                            
+                            paginacionStatus(empleadosData);
                         }
                     });
                 }

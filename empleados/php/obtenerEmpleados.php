@@ -91,8 +91,16 @@ function dataEmpleado($idEmpleado, $idClave)
         e.grupo_sanguineo,
         e.enfermedades_alergias,
         e.fecha_ingreso,
+        e.fecha_nacimiento,
+        e.num_casillero,
         d.id_departamento AS id_departamento,
         d.nombre_departamento AS departamento,
+        emp.id_empresa AS id_empresa,
+        emp.nombre_empresa AS nombre_empresa,
+        a.id_area AS id_area,
+        a.nombre_area AS nombre_area,
+        p.id_puestoEspecial AS id_puesto,
+        p.nombre_puesto AS nombre_puesto,
         c.nombre AS nombre_contacto,
         c.ap_paterno AS apellido_paterno_contacto,
         c.ap_materno AS apellido_materno_contacto,
@@ -104,9 +112,16 @@ function dataEmpleado($idEmpleado, $idClave)
     LEFT JOIN 
         departamentos d ON e.id_departamento = d.id_departamento
     LEFT JOIN 
+        empresa emp ON e.id_empresa = emp.id_empresa
+    LEFT JOIN 
+        areas a ON e.id_area = a.id_area
+    LEFT JOIN 
+        puestos_especiales p ON e.id_puestoEspecial = p.id_puestoEspecial
+    LEFT JOIN 
         empleado_contacto ec ON e.id_empleado = ec.id_empleado
     LEFT JOIN 
-        contacto_emergencia c ON ec.id_contacto = c.id_contacto WHERE e.id_empleado = ? AND e.clave_empleado = ?");
+        contacto_emergencia c ON ec.id_contacto = c.id_contacto 
+    WHERE e.id_empleado = ? AND e.clave_empleado = ?");
 
     $sql->bind_param("is", $idEmpleado, $idClave);
     $sql->execute();
@@ -125,8 +140,16 @@ function dataEmpleado($idEmpleado, $idClave)
             'grupo_sanguineo' => $row['grupo_sanguineo'],
             'enfermedades_alergias' => $row['enfermedades_alergias'],
             'fecha_ingreso' => $row['fecha_ingreso'],
+            'fecha_nacimiento' => $row['fecha_nacimiento'],
+            'num_casillero' => $row['num_casillero'],
             'id_departamento' => $row['id_departamento'],
             'departamento' => $row['departamento'],
+            'id_empresa' => $row['id_empresa'],
+            'nombre_empresa' => $row['nombre_empresa'],
+            'id_area' => $row['id_area'],
+            'nombre_area' => $row['nombre_area'],
+            'id_puesto' => $row['id_puesto'],
+            'nombre_puesto' => $row['nombre_puesto'],
             'nombre_contacto' => $row['nombre_contacto'],
             'apellido_paterno_contacto' => $row['apellido_paterno_contacto'],
             'apellido_materno_contacto' => $row['apellido_materno_contacto'],

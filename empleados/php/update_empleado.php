@@ -17,6 +17,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fecha_ingreso = $_POST['fecha_ingreso'] ?? null;
     $id_departamento = $_POST['id_departamento'] ?? null;
 
+    // Nuevos campos agregados
+    $fecha_nacimiento = $_POST['fecha_nacimiento'] ?? null;
+    $num_casillero = $_POST['num_casillero'] ?? null;
+    $id_empresa = $_POST['id_empresa'] ?? null;
+    $id_area = $_POST['id_area'] ?? null;
+    $id_puestoEspecial = $_POST['id_puestoEspecial'] ?? null;
+
     // Contacto de emergencia
     $emergencia_nombre = $_POST['nombre_contacto'] ?? null;
     $emergencia_ap_paterno = $_POST['apellido_paterno_contacto'] ?? null;
@@ -31,6 +38,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $fecha_ingreso = null;
     }
+
+    // Convertir fecha de nacimiento si viene
+    if ($fecha_nacimiento) {
+        $fecha_nacimiento = date('Y-m-d', strtotime($fecha_nacimiento));
+    } else {
+        $fecha_nacimiento = null;
+    }
+
+    // Convertir valores "0" a NULL para los campos opcionales
+    $id_empresa = ($id_empresa === "0" || $id_empresa === 0 || empty($id_empresa)) ? null : (int)$id_empresa;
+    $id_area = ($id_area === "0" || $id_area === 0 || empty($id_area)) ? null : (int)$id_area;
+    $id_puestoEspecial = ($id_puestoEspecial === "0" || $id_puestoEspecial === 0 || empty($id_puestoEspecial)) ? null : (int)$id_puestoEspecial;
 
     // Verificar si no hay campos obligatorios vacíos
     if (empty($clave_empleado) || empty($nombre_empleado) || empty($ap_paterno) || empty($ap_materno) || empty($sexo)) {
@@ -130,11 +149,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             grupo_sanguineo = ?,
             enfermedades_alergias = ?,
             fecha_ingreso = ?,
+            fecha_nacimiento = ?,
+            num_casillero = ?,
+            id_empresa = ?,
+            id_area = ?,
+            id_puestoEspecial = ?,
             id_departamento = NULL
         WHERE id_empleado = ?");
 
         $update_empleado->bind_param(
-            "sssssssssssi",
+            "sssssssssssssiiii",
             $clave_empleado,
             $nombre_empleado,
             $ap_paterno,
@@ -146,6 +170,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $grupo_sanguineo,
             $enfermedades_alergias,
             $fecha_ingreso,
+            $fecha_nacimiento,
+            $num_casillero,
+            $id_empresa,
+            $id_area,
+            $id_puestoEspecial,
             $id_empleado
         );
     } else {
@@ -163,11 +192,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             grupo_sanguineo = ?,
             enfermedades_alergias = ?,
             fecha_ingreso = ?,
+            fecha_nacimiento = ?,
+            num_casillero = ?,
+            id_empresa = ?,
+            id_area = ?,
+            id_puestoEspecial = ?,
             id_departamento = ?
         WHERE id_empleado = ?");
 
         $update_empleado->bind_param(
-            "sssssssssssii",
+            "sssssssssssssiiiii",
             $clave_empleado,
             $nombre_empleado,
             $ap_paterno,
@@ -179,6 +213,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $grupo_sanguineo,
             $enfermedades_alergias,
             $fecha_ingreso,
+            $fecha_nacimiento,
+            $num_casillero,
+            $id_empresa,
+            $id_area,
+            $id_puestoEspecial,
             $id_departamento,
             $id_empleado
         );

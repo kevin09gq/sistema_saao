@@ -144,6 +144,16 @@ include("../../config/config.php");
                                         <input type="text" class="form-control" id="modal_grupo_sanguineo" name="grupo_sanguineo">
                                     </div>
                                     <div class="col-md-4 mb-3">
+                                        <label for="modal_fecha_nacimiento" class="form-label">Fecha de Nacimiento</label>
+                                        <input type="date" class="form-control" id="modal_fecha_nacimiento" name="fecha_nacimiento">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="modal_num_casillero" class="form-label">Número de Casillero</label>
+                                        <input type="text" class="form-control" id="modal_num_casillero" name="num_casillero" placeholder="Ej: 101 o A15">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
                                         <label for="modal_enfermedades_alergias" class="form-label">Enfermedades/Alergias</label>
                                         <input type="text" class="form-control" id="modal_enfermedades_alergias" name="enfermedades_alergias">
                                     </div>
@@ -151,12 +161,35 @@ include("../../config/config.php");
                                         <label for="modal_fecha_ingreso" class="form-label">Fecha de Ingreso</label>
                                         <input type="date" class="form-control" id="modal_fecha_ingreso" name="fecha_ingreso">
                                     </div>
+                                    <div class="col-md-4 mb-3">
+                                        <!-- Espacio vacío para mantener simetría -->
+                                    </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-4 mb-3">
                                         <label for="modal_departamento" class="form-label">Departamento</label>
                                         <select class="form-select" id="modal_departamento" name="id_departamento">
                                             <!-- Opciones dinámicas -->
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="modal_empresa" class="form-label">Empresa</label>
+                                        <select class="form-select" id="modal_empresa" name="id_empresa">
+                                            <option value="">Selecciona una empresa</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="modal_area" class="form-label">Área</label>
+                                        <select class="form-select" id="modal_area" name="id_area">
+                                            <option value="">Selecciona un área</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="modal_puesto" class="form-label">Puesto</label>
+                                        <select class="form-select" id="modal_puesto" name="id_puestoEspecial">
+                                            <option value="">Selecciona un puesto</option>
                                         </select>
                                     </div>
                                 </div>
