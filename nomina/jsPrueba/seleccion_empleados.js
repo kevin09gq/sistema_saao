@@ -1,5 +1,5 @@
 // Ruta base para los plugins y recursos
-const ruta = '/sistema_saao/';
+
 // Set para guardar las claves de los empleados seleccionados
 let clavesSeleccionadas = new Set();
 

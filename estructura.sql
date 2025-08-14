@@ -12,8 +12,6 @@ CREATE TABLE info_admin (
     id_admin INT AUTO_INCREMENT PRIMARY KEY,
     id_rol INT NOT NULL,
     nombre VARCHAR(100) NOT NULL,
-    ap_paterno VARCHAR(100),
-    ap_materno VARCHAR(100),
     correo VARCHAR(100),
     contrasena VARCHAR(255),
     FOREIGN KEY (id_rol) REFERENCES rol(id_rol)
@@ -172,7 +170,7 @@ CREATE TABLE gafetes (
 );
 
 -- Insertar estatus true y false
-INSERT INTO status (nombre_status) VALUES ('true'), ('false');
+INSERT INTO status (nombre_status) VALUES ('Activo'), ('Baja');
 
 -- Insertar departamentos
 INSERT INTO departamentos (id_departamento, nombre_departamento) VALUES

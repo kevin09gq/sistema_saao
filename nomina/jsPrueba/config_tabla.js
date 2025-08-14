@@ -3,6 +3,9 @@ let empleadosPaginados = [];
 let paginaActualNomina = 1;
 const empleadosPorPagina = 7;
 
+
+
+
 function setEmpleadosPaginados(array) {
     empleadosPaginados = array;
     paginaActualNomina = 1;
@@ -60,3 +63,90 @@ function mostrarDatosTabla() {
         }
     }
 }
+
+// ========================================
+// PAGINACIÓN PARA TABLA DE DISPERSIÓN
+// ========================================
+
+// Variables para paginación de dispersión
+let empleadosDispersionPaginados = [];
+let paginaActualDispersion = 1;
+const empleadosPorPaginaDispersion = 7;
+
+// Función para establecer empleados paginados para dispersión
+function setEmpleadosDispersionPaginados(array) {
+    empleadosDispersionPaginados = array;
+    paginaActualDispersion = 1;
+    renderTablaDispersionPaginada();
+}
+
+// Función para renderizar tabla de dispersión paginada
+function renderTablaDispersionPaginada() {
+    const inicio = (paginaActualDispersion - 1) * empleadosPorPaginaDispersion;
+    const fin = inicio + empleadosPorPaginaDispersion;
+    const empleadosPagina = empleadosDispersionPaginados.slice(inicio, fin);
+    
+    // Renderiza la tabla con los empleados de la página actual
+    mostrarDatosTablaDispersionPaginada(empleadosPagina);
+    renderPaginacionDispersion();
+}
+
+// Función para mostrar datos de la tabla de dispersión con paginación
+function mostrarDatosTablaDispersionPaginada(empleadosPagina) {
+    // Limpiar la tabla
+    $('#tabla-dispersion-body').empty();
+    
+    let numeroFila = ((paginaActualDispersion - 1) * empleadosPorPaginaDispersion) + 1;
+    
+    // Función para mostrar cadena vacía en lugar de 0, NaN o valores vacíos
+    const mostrarValor = (valor) => {
+        if (valor === 0 || valor === '0' || valor === '' || valor === null || valor === undefined || isNaN(valor)) {
+            return '';
+        }
+        return valor;
+    };
+    
+    // Renderizar solo los empleados de la página actual
+    empleadosPagina.forEach(emp => {
+        if (emp && emp.clave && emp.nombre) {
+            let fila = `
+                <tr data-clave="${emp.clave}">
+                    <td>${numeroFila++}</td>
+                    <td>${emp.clave}</td>
+                    <td>${emp.nombre}</td>
+                    <td>${mostrarValor(emp.neto_pagar)}</td>
+                </tr>
+            `;
+            $('#tabla-dispersion-body').append(fila);
+        }
+    });
+}
+
+// Función para renderizar paginación de dispersión
+function renderPaginacionDispersion() {
+    const totalPaginas = Math.ceil(empleadosDispersionPaginados.length / empleadosPorPaginaDispersion);
+    let html = '';
+    if (totalPaginas > 1) {
+        html += `<li class="page-item${paginaActualDispersion === 1 ? ' disabled' : ''}">
+            <a class="page-link" href="#" onclick="cambiarPaginaDispersion(${paginaActualDispersion - 1}); return false;">&laquo;</a>
+        </li>`;
+        for (let i = 1; i <= totalPaginas; i++) {
+            html += `<li class="page-item${paginaActualDispersion === i ? ' active' : ''}">
+                <a class="page-link" href="#" onclick="cambiarPaginaDispersion(${i}); return false;">${i}</a>
+            </li>`;
+        }
+        html += `<li class="page-item${paginaActualDispersion === totalPaginas ? ' disabled' : ''}">
+            <a class="page-link" href="#" onclick="cambiarPaginaDispersion(${paginaActualDispersion + 1}); return false;">&raquo;</a>
+        </li>`;
+    }
+    $("#paginacion-dispersion").html(html);
+}
+
+// Función para cambiar página en dispersión
+function cambiarPaginaDispersion(nuevaPagina) {
+    const totalPaginas = Math.ceil(empleadosDispersionPaginados.length / empleadosPorPaginaDispersion);
+    if (nuevaPagina < 1 || nuevaPagina > totalPaginas) return;
+    paginaActualDispersion = nuevaPagina;
+    renderTablaDispersionPaginada();
+}
+

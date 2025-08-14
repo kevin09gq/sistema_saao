@@ -72,7 +72,7 @@ function establecerDatosModal(nombre, clave, neto_pagar, horas_totales, tiempo_t
 
     //Muestra los datos en el modal "Registros"
     $('#registros-cards').empty();
-    registros.forEach(registro => {
+    (registros || []).forEach(registro => {
         const valorComida = typeof registro.hora_comida !== "undefined" ? registro.hora_comida : "";
         const registroCard = `
             <li>
@@ -96,11 +96,14 @@ function establecerDatosModal(nombre, clave, neto_pagar, horas_totales, tiempo_t
         $('#registros-cards').append(registroCard);
     });
 
-    $('#horas-totales').text(horas_totales);
-    $('#tiempo-total').text(tiempo_total);
+    // Asegurar valores por defecto antes de cálculos
+    const noRegistros = !registros || registros.length === 0;
+    $('#horas-totales').text(noRegistros ? '0' : (horas_totales || '0'));
+    $('#tiempo-total').text(noRegistros ? '00:00' : (tiempo_total || '00:00'));
+
     formatoHora();
 
-    // Agregar un pequeño delay para asegurar que el DOM esté listo
+    // (Re)iniciar listeners de cálculo
     setTimeout(() => {
         calcularHorasTrabajadas();
     }, 200);
@@ -128,6 +131,9 @@ function formatoHora() {
 
 // Evento para actualizar trabajado al escribir en entrada, salida o comida1
 function calcularHorasTrabajadas() {
+    // Evitar handlers duplicados al reabrir/cambiar de empleado
+    $('#registros-cards').off('keyup change', '.entrada, .salida, .solo-numeros');
+
     $('#registros-cards').on('keyup change', '.entrada, .salida, .solo-numeros', function () {
         const $row = $(this).closest('li');
         const indexRegistro = $row.index();
@@ -160,13 +166,14 @@ function calcularHorasTrabajadas() {
             }
         });
         // Horas totales en decimal (ej: 37.10)
-        const horasTotalesDecimal = (totalMinutos / 60).toFixed(2);
+        let horasTotalesDecimal = (totalMinutos / 60);
+        horasTotalesDecimal = isNaN(horasTotalesDecimal) ? '' : horasTotalesDecimal.toFixed(2);
         // Tiempo total en formato hh:mm
         const tiempoTotal = minutosToHora(totalMinutos);
 
         // Establece los valores en el modal
-        $('#horas-totales').text(horasTotalesDecimal);
-        $('#tiempo-total').text(tiempoTotal);
+        $('#horas-totales').text(horasTotalesDecimal === '' ? '0' : horasTotalesDecimal);
+        $('#tiempo-total').text(tiempoTotal || '00:00');
 
         // Obtener el empleado actual usando la clave
         let empleado = null;
@@ -256,7 +263,9 @@ function actualizarInformacionEmpleado(claveEncontrada) {
             const fecha = $li.find('.registro-fecha').text();
             const entrada = $li.find('.entrada').val();
             const salida = $li.find('.salida').val();
-            const comida = parseInt($li.find('.solo-numeros').val());
+            // --- CORREGIDO: Si el campo está vacío o NaN, pon 0 ---
+            let comida = parseInt($li.find('.solo-numeros').val());
+            comida = isNaN(comida) ? '' : comida;
             const trabajado = $li.find('.trabajado').val();
 
             // Crear objeto de registro actualizado
@@ -283,8 +292,8 @@ function actualizarInformacionEmpleado(claveEncontrada) {
         });
 
         // Actualizar tiempo_total y horas_totales
-        empleadoEncontrado.tiempo_total = minutosToHora(totalMinutos);
-        empleadoEncontrado.horas_totales = (totalMinutos / 60).toFixed(2);
+        empleadoEncontrado.tiempo_total = totalMinutos > 0 ? minutosToHora(totalMinutos) : '';
+        empleadoEncontrado.horas_totales = totalMinutos > 0 ? (totalMinutos / 60).toFixed(2) : '';
 
         // Recalcular todos los campos del empleado usando la función existente
         calcularCamposEmpleado(empleadoEncontrado);

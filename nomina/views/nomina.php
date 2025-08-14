@@ -43,8 +43,6 @@
                         <i class="bi bi-arrow-repeat"></i> Procesar
                     </button>
 
-
-
                 </div>
             </form>
         </div>
@@ -54,23 +52,33 @@
     <div class="container-tabla-nomina" id="tabla-nomina-responsive" hidden>
         <div class="header-tabla">
             <h3 id=nombre_nomina></h3>
-            <span class="sem-info" id="num_semana"></span>
+            <div class="header-controls">
+                <span class="sem-info" id="num_semana"></span>
+                <div class="mini-tabs">
+                    <button class="mini-tab active" type="button" id="btn_tabla_nomina">
+                        <i class="bi bi-table"></i>
+                    </button>
+                    <button class="mini-tab" type="button" id="btn_tabla_dispersión">
+                        <i class="bi bi-table"></i>
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Controles de filtro y búsqueda -->
         <div class="controles-tabla">
             <div class="filtros-container">
                 <select class="filtro-departamento" id="filtro-departamento" hidden>
-
-
                 </select>
 
                 <div class="busqueda-container" id="busqueda-container" hidden>
                     <i class="bi bi-search"></i>
                     <input type="text" class="campo-busqueda" placeholder="Buscar..." id="campo-busqueda">
                 </div>
-
-
+                <div class="busqueda-container" id="busqueda-container-dispersion" hidden>
+                    <i class="bi bi-search"></i>
+                    <input type="text" class="campo-busqueda" placeholder="Buscar..." id="campo-busqueda-dispersion">
+                </div>
             </div>
 
             <button class="btn-agregar-todos" id="btn_mostrar_todos">
@@ -81,7 +89,7 @@
                 <i class="bi bi-plus"></i>
                 Seleccionar
             </button>
-            
+
             <!-- Botones de exportación -->
             <div class="export-buttons">
                 <button class="btn-export-excel" id="btn_export_excel" title="Exportar a Excel">
@@ -95,36 +103,57 @@
             </div>
         </div>
 
-
-
-        <div class="table-responsive">
-            <table class="table-nomina" id="tabla-nomina">
-                <thead>
-                    <tr>
-                        <th rowspan="2">#</th>
-                        <th rowspan="2">NOMBRE</th>
-                        <th rowspan="2">PUESTO</th>
-                        <th rowspan="2">SUELDO <br>NETO</th>
-                        <th rowspan="2">INCENTIVO</th>
-                        <th rowspan="2">EXTRA</th>
-                        <th rowspan="2">TARJETA</th>
-                        <th rowspan="2">PRÉSTAMO</th>
-                        <th rowspan="2">INASISTENCIAS</th>
-                        <th rowspan="2">UNIFORMES</th>
-                        <th rowspan="2">INFONAVIT</th>
-                        <th rowspan="2">ISR</th>
-                        <th rowspan="2">IMSS</th>
-                        <th rowspan="2">Checador</th>
-                        <th rowspan="2">F.A /<br>GAFET/<br>COFIA</th>
-                        <th rowspan="2">SUELDO A <br>COBRAR</th>
-                    </tr>
-                </thead>
-                <tbody id="tabla-nomina-body">
-                    <!-- Los datos se cargarán aquí dinámicamente -->
-                </tbody>
-            </table>
+        <div id="tabla-nomina-container">
+            <div class="table-responsive">
+                <table class="table-nomina" id="tabla-nomina">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">#</th>
+                            <th rowspan="2">NOMBRE</th>
+                            <th rowspan="2">PUESTO</th>
+                            <th rowspan="2">SUELDO <br>NETO</th>
+                            <th rowspan="2">INCENTIVO</th>
+                            <th rowspan="2">EXTRA</th>
+                            <th rowspan="2">TARJETA</th>
+                            <th rowspan="2">PRÉSTAMO</th>
+                            <th rowspan="2">INASISTENCIAS</th>
+                            <th rowspan="2">UNIFORMES</th>
+                            <th rowspan="2">INFONAVIT</th>
+                            <th rowspan="2">ISR</th>
+                            <th rowspan="2">IMSS</th>
+                            <th rowspan="2">Checador</th>
+                            <th rowspan="2">F.A /<br>GAFET/<br>COFIA</th>
+                            <th rowspan="2">SUELDO A <br>COBRAR</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-nomina-body">
+                        <!-- Los datos se cargarán aquí dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+            <ul id="paginacion-nomina" class="pagination" style="margin: 20px 0 0 0; justify-content: center;"></ul>
         </div>
-        <ul id="paginacion-nomina" class="pagination" style="margin: 20px 0 0 0; justify-content: center;"></ul>
+
+        <!-- Tabla de dispersión de tarjeta -->
+        <div class="" id="tabla-dispersion-tarjeta" hidden>
+            <div class="table-responsive">
+                <table class="table-nomina" id="tabla-dispersion">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">#</th>
+                            <th rowspan="2">CLAVE</th>
+                            <th rowspan="2">NOMBRE</th>
+                            <th rowspan="2">SUELDO <br>NETO</th>
+
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-dispersion-body">
+                        <!-- Los datos se cargarán aquí dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+            <ul id="paginacion-dispersion" class="pagination" style="margin: 20px 0 0 0; justify-content: center;"></ul>
+        </div>
     </div>
 
     <!-- Incluir el modal -->
@@ -156,6 +185,7 @@
     <script src="../jsPrueba/config_tabla.js"></script>
     <script src="../jsPrueba/seleccion_empleados.js"></script>
     <script src="../jsPrueba/detalles_modal.js"></script>
+      <script src="../jsPrueba/generar_excel.js"></script>
 </body>
 
 </html>

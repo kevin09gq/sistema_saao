@@ -1,8 +1,12 @@
 jsonGlobal = null;
 window.empleadosOriginales = [];
+window.empleadosOriginalesDispersion = [];
+const ruta = '/sistema_saao/';
 // Variables para manejo de búsqueda y paginación
 let empleadosFiltrados = [];
 let timeoutBusqueda = null;
+let empleadosFiltradosDispersion = [];
+let timeoutBusquedaDispersion = null;
 
 $(document).ready(function () {
     obtenerArchivos();
@@ -88,6 +92,7 @@ $(document).ready(function () {
     }
 
     inicializarMenuContextual();
+    configTablas();
 });
 
 
@@ -197,10 +202,10 @@ function establecerDatosEmpleados() {
                 empleadosOrdenados.forEach(emp => {
                     // Aplicar calcularCamposEmpleado para "Produccion 40 Libras"
                     calcularCamposEmpleado(emp);
-                    
+
                     // Agregar incentivo solo para empleados de 40 libras
                     emp.incentivo = 250; // Inicializar incentivo en 250
-                    
+
                     // Agregar propiedades de deducciones solo para empleados de 40 libras
                     emp.prestamo = 0;
                     emp.uniformes = 0;
@@ -208,7 +213,7 @@ function establecerDatosEmpleados() {
                     emp.fa_gafet_cofia = 0;
                     emp.inasistencias_horas = 0;
                     emp.inasistencias_descuento = 0;
-                    
+
                     empleadosPlanos.push({
                         ...emp,
                         id_departamento: depto.nombre.split(' ')[0],
@@ -221,6 +226,8 @@ function establecerDatosEmpleados() {
     }
     window.empleadosOriginales = empleadosPlanos;
     empleadosFiltrados = [...empleadosPlanos]; // Inicializar empleados filtrados
+    console.log('Empleados originales:', empleadosPlanos);
+
 
     setEmpleadosPaginados(empleadosPlanos);
 
@@ -379,8 +386,6 @@ function mostrarDatosTablaPaginada(empleadosPagina) {
         contentType: "application/json",
         success: function (clavesValidasJSON) {
             const clavesValidas = JSON.parse(clavesValidasJSON);
-
-
             let numeroFila = ((paginaActualNomina - 1) * empleadosPorPagina) + 1;
             $('#tabla-nomina-body').empty();
 
@@ -465,6 +470,30 @@ $('#campo-busqueda').on('input', function () {
     }, 300);
 });
 
+$('#campo-busqueda-dispersion').on('input', function () {
+    const termino = $(this).val().trim().toLowerCase();
+
+    // Debounce: esperar 300ms después de que el usuario deje de escribir
+    if (timeoutBusquedaDispersion) clearTimeout(timeoutBusquedaDispersion);
+
+    timeoutBusquedaDispersion = setTimeout(function () {
+        // Filtrar empleados por nombre o clave
+        empleadosFiltradosDispersion = termino ?
+            window.empleadosOriginalesDispersion.filter(emp =>
+                (emp.nombre || '').toLowerCase().includes(termino) ||
+                (emp.clave || '').toString().includes(termino)
+            ) :
+            [...window.empleadosOriginalesDispersion];
+
+        // Actualizar paginación con resultados filtrados
+        paginaActualDispersion = 1;
+        setEmpleadosDispersionPaginados(empleadosFiltradosDispersion);
+    }, 300);
+});
+
+
+
+
 
 // Función para mostrar el menu contextual de empleados
 function inicializarMenuContextual() {
@@ -491,10 +520,10 @@ function inicializarMenuContextual() {
     $(document).on('contextmenu', '#tabla-nomina-body tr', function (e) {
         e.preventDefault();
         const clave = $(this).data('clave');
-        
+
         // Búsqueda rápida usando Map
         const empleadoInfo = empleadosMap.get(String(clave));
-        
+
         if (empleadoInfo && empleadoInfo.esProduccion40) {
             // Guardar la clave para usar en "Ver detalles" sin buscar de nuevo
             $('#menu-contextual').data('clave-actual', clave);
@@ -516,13 +545,13 @@ function inicializarMenuContextual() {
     // Mostrar modal de detalles al hacer clic en "Ver detalles"
     $(document).on('click', '#menu-contextual', function () {
         $('#menu-contextual').attr('hidden', true);
-        
+
         // Obtener la clave guardada y buscar datos
         const clave = $(this).data('clave-actual');
         if (clave) {
             buscarDatos(clave);
         }
-        
+
         $('#modal-detalles').fadeIn();
 
         // Mostrar primer tab al abrir
@@ -546,4 +575,191 @@ function inicializarMenuContextual() {
         $(target).addClass('show active');
     });
 }
+
+// Función para mostrar las tablas correspondientes
+function configTablas() {
+    // Funcionalidad para los mini-tabs
+    $(document).on('click', '.mini-tab', function () {
+        // Remover clase active de todos los tabs
+        $('.mini-tab').removeClass('active');
+        // Agregar clase active al tab clickeado
+        $(this).addClass('active');
+    });
+
+    $('#btn_tabla_nomina').click(function (e) {
+        e.preventDefault();
+        $('#tabla-nomina-container').removeAttr("hidden");
+        $('#tabla-dispersion-tarjeta').attr("hidden", true);
+        $("#filtro-departamento").attr("hidden", true);
+        $("#busqueda-container").removeAttr("hidden");
+        $("#busqueda-container-dispersion").attr("hidden", true);
+    });
+
+    $('#btn_tabla_dispersión').click(function (e) {
+        e.preventDefault();
+        $('#tabla-nomina-container').attr("hidden", true);
+        $('#tabla-dispersion-tarjeta').removeAttr("hidden");
+        $("#filtro-departamento").removeAttr("hidden");
+        cargarDepartamentosFiltro();
+        obtenerEmpleadosPorDepartamento();
+        validarClaves();
+        $("#busqueda-container-dispersion").removeAttr("hidden");
+        $("#busqueda-container").attr("hidden", true);
+    });
+}
+
+// Función para cargar los departamentos en el filtro
+function cargarDepartamentosFiltro() {
+    $.ajax({
+        type: "POST",
+        url: ruta + "public/php/obtenerDepartamentos.php",
+
+        success: function (response) {
+            if (!response.error) {
+                let departamentos = JSON.parse(response);
+                // Opción para mostrar todos los departamentos
+                let opciones = ``;
+                opciones += `
+                <option value="0">Todos</option>
+                `;
+
+                // Agrega cada departamento como opción en el select
+                departamentos.forEach((element) => {
+                    opciones += `
+                    <option value="${element.id_departamento}">${element.nombre_departamento}</option>
+                `;
+                });
+
+                // Llena el select con las opciones
+                $("#filtro-departamento").html(opciones);
+            }
+        },
+
+
+    });
+}
+
+// Función para obtener empleados por departamento al cambiar el filtro
+function obtenerEmpleadosPorDepartamento() {
+    $('#filtro-departamento').change(function () {
+        let idSeleccionado = $(this).val();
+        console.log(`ID seleccionado: ${idSeleccionado}`);
+
+        let empleadosPlanos = [];
+        if (idSeleccionado == "0") {
+            // Todos los empleados de todos los departamentos (orden y agrupación como el JSON)
+            if (jsonGlobal && jsonGlobal.departamentos) {
+                jsonGlobal.departamentos.forEach(depto => {
+                    let empleadosOrdenados = (depto.empleados || []).slice().sort(compararPorApellidos);
+                    empleadosOrdenados.forEach(emp => {
+                        empleadosPlanos.push({
+                            ...emp,
+                            id_departamento: depto.nombre.split(' ')[0],
+                            nombre_departamento: depto.nombre.replace(/^\d+\s*/, '')
+                        });
+                    });
+                });
+            }
+        } else {
+            // Solo empleados del departamento seleccionado
+            if (jsonGlobal && jsonGlobal.departamentos) {
+                // Busca por id_departamento (que es un número o string)
+                let depto = jsonGlobal.departamentos.find(d =>
+                    (d.id_departamento && String(d.id_departamento) === String(idSeleccionado)) ||
+                    (d.nombre && d.nombre.split(' ')[0] === idSeleccionado)
+                );
+                if (depto && depto.empleados) {
+                    let empleadosOrdenados = (depto.empleados || []).slice().sort(compararPorApellidos);
+                    empleadosOrdenados.forEach(emp => {
+                        empleadosPlanos.push({
+                            ...emp,
+                            id_departamento: depto.id_departamento || (depto.nombre ? depto.nombre.split(' ')[0] : ''),
+                            nombre_departamento: depto.nombre_departamento || (depto.nombre ? depto.nombre.replace(/^\d+\s*/, '') : '')
+                        });
+                    });
+                }
+            }
+        }
+        window.empleadosOriginalesDispersion = empleadosPlanos; // Guarda el array base actual
+        setEmpleadosDispersionPaginados(empleadosPlanos); // Esto actualiza la paginación y la tabla
+        empleadosFiltradosDispersion = [...empleadosPlanos]; // Inicializar empleados filtrados
+
+    });
+}
+
+// Función para obtener las claves de todos los empleados
+function clavesEmpleados() {
+    let claves = [];
+    if (jsonGlobal && jsonGlobal.departamentos) {
+        jsonGlobal.departamentos.forEach(depto => {
+            (depto.empleados || []).forEach(emp => {
+                if (emp.clave) {
+                    claves.push(emp.clave);
+                }
+            });
+        });
+    }
+    // console.log('Claves de empleados:', claves);
+    return claves;
+}
+
+function validarClaves() {
+    // AJAX para validar claves directamente aquí
+    let claves = clavesEmpleados();
+    $.ajax({
+        type: "POST",
+        url: "../php/validar_clave.php",
+        data: JSON.stringify({ claves: claves }),
+        contentType: "application/json",
+        success: function (clavesValidasJSON) {
+            const clavesValidas = JSON.parse(clavesValidasJSON);
+
+            // Obtener todos los empleados y filtrar solo los válidos
+            let todosEmpleados = obtenerTodosEmpleadosDispersion();
+            let empleadosValidos = todosEmpleados.filter(emp =>
+                clavesValidas.includes(String(emp.clave)) || clavesValidas.includes(Number(emp.clave))
+            );
+
+            // Establecer empleados paginados para dispersión
+            setEmpleadosDispersionPaginados(empleadosValidos);
+        },
+
+    });
+}
+
+// Función para obtener todos los empleados para dispersión (ordenados por departamento y luego por apellido paterno A-Z en cada departamento)
+function obtenerTodosEmpleadosDispersion() {
+    let todosEmpleados = [];
+    if (jsonGlobal && jsonGlobal.departamentos) {
+        // Ordenar departamentos por nombre (alfabético)
+        const departamentosOrdenados = jsonGlobal.departamentos.slice().sort((a, b) => {
+            const nombreA = (a.nombre_departamento || a.nombre || '').toUpperCase();
+            const nombreB = (b.nombre_departamento || b.nombre || '').toUpperCase();
+            return nombreA.localeCompare(nombreB, 'es', { sensitivity: 'base' });
+        });
+
+        departamentosOrdenados.forEach(depto => {
+            if (depto.empleados) {
+                // Ordenar empleados del departamento por apellido paterno (A-Z)
+                depto.empleados = depto.empleados.slice().sort(compararPorApellidos);
+                depto.empleados.forEach(emp => {
+                    if (emp && emp.clave && emp.nombre) {
+                        emp._nombre_departamento = depto.nombre_departamento || depto.nombre || '';
+                        todosEmpleados.push(emp);
+                    }
+                });
+            }
+        });
+
+    }
+
+    window.empleadosOriginalesDispersion = todosEmpleados;
+    empleadosFiltradosDispersion = [...todosEmpleados]; // Inicializar empleados filtrados
+    return todosEmpleados;
+}
+
+
+
+
+
 
