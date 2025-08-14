@@ -71,9 +71,23 @@ include("../../config/config.php");
                                             <input type="text" class="form-control" id="apellido_materno" name="ap_materno">
                                         </div>
                                     </div>
-                                    <div class="mb-3">
-                                        <label for="domicilio_trabajador" class="form-label">Domicilio</label>
-                                        <textarea class="form-control" id="domicilio_trabajador" name="domicilio" rows="2"></textarea>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="domicilio_trabajador" class="form-label">Domicilio</label>
+                                            <textarea class="form-control" id="domicilio_trabajador" name="domicilio" rows="2"></textarea>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento</label>
+                                            <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento">
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="sexo_trabajador" class="form-label">Sexo</label>
+                                            <select class="form-select" id="sexo_trabajador" name="sexo">
+                                                <option value="">Selecciona</option>
+                                                <option value="M">Masculino</option>
+                                                <option value="F">Femenino</option>
+                                            </select>
+                                        </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-3 mb-3">
@@ -85,30 +99,46 @@ include("../../config/config.php");
                                             <input type="text" class="form-control" id="curp_trabajador" name="curp">
                                         </div>
                                         <div class="col-md-3 mb-3">
-                                            <label for="sexo_trabajador" class="form-label">Sexo</label>
-                                            <select class="form-select" id="sexo_trabajador" name="sexo">
-                                                <option value="">Selecciona</option>
-                                                <option value="M">Masculino</option>
-                                                <option value="F">Femenino</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-3 mb-3">
                                             <label for="grupo_sanguineo_trabajador" class="form-label">Grupo Sanguíneo</label>
                                             <input type="text" class="form-control" id="grupo_sanguineo_trabajador" name="grupo_sanguineo">
                                         </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="enfermedades_alergias_trabajador" class="form-label">Enfermedades/Alergias</label>
-                                        <textarea class="form-control" id="enfermedades_alergias_trabajador" name="enfermedades_alergias" rows="2"></textarea>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="num_casillero" class="form-label">Número de Casillero</label>
+                                            <input type="text" class="form-control" id="num_casillero" name="num_casillero" placeholder="Ej: 101 o A15">
+                                        </div>
                                     </div>
                                     <div class="row">
-                                        <div class="col-md-4 mb-3">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="empresa_trabajador" class="form-label">Empresa</label>
+                                            <select class="form-select" id="empresa_trabajador" name="id_empresa">
+                                                <option value="">Selecciona una empresa</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="enfermedades_alergias_trabajador" class="form-label">Enfermedades/Alergias</label>
+                                            <textarea class="form-control" id="enfermedades_alergias_trabajador" name="enfermedades_alergias" rows="2"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-3 mb-3">
+                                            <label for="area_trabajador" class="form-label">Área</label>
+                                            <select class="form-select" id="area_trabajador" name="id_area">
+                                                <option value="">Selecciona un área</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
                                             <label for="departamento_trabajador" class="form-label">Departamento</label>
                                             <select class="form-select" id="departamento_trabajador" name="id_departamento">
                                                 <option value="">Selecciona un departamento</option>
                                             </select>
                                         </div>
-                                        <div class="col-md-4 mb-3">
+                                        <div class="col-md-3 mb-3">
+                                            <label for="puesto_trabajador" class="form-label">Puesto</label>
+                                            <select class="form-select" id="puesto_trabajador" name="id_puesto">
+                                                <option value="">Selecciona un puesto</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
                                             <label for="fecha_ingreso_trabajador" class="form-label">Fecha de Ingreso</label>
                                             <input type="date" class="form-control" id="fecha_ingreso_trabajador" name="fecha_ingreso">
                                         </div>

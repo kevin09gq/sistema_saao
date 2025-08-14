@@ -1,3 +1,4 @@
+const rutaRaiz = '/sistema_saao/';
 $(document).ready(function () {
     // Funciones de validación
     validarDatos("#nombre_trabajador", validarNombre);
@@ -15,8 +16,10 @@ $(document).ready(function () {
 
     // Cargar departamentos al iniciar
     obtenerDepartamentos();
+    obtenerAreas();
+    obtenerEmpresa();
     registrarEmpleado();
-
+    obtenerPuesto();
 
     function validarDatos(selector, validacion) {
         $(selector).on('input', function () {
@@ -31,7 +34,7 @@ $(document).ready(function () {
     function obtenerDepartamentos() {
         $.ajax({
             type: "GET",
-            url: "../php/obtenerDepartamentos.php",
+            url: rutaRaiz + "public/php/obtenerDepartamentos.php",
             success: function (response) {
                 let departamentos = JSON.parse(response);
                 let opciones = `<option value="">Selecciona un departamento</option>`;
@@ -46,7 +49,79 @@ $(document).ready(function () {
                 $("#departamento_trabajador").html(opciones);
             },
             error: function () {
-                console.error("Error al cargar departamentos");
+
+            }
+        });
+    }
+
+    //Funcion para obtener las Areas
+    function obtenerAreas() {
+        $.ajax({
+            type: "GET",
+            url: rutaRaiz + "public/php/obtenerAreas.php",
+            success: function (response) {
+                let areas = JSON.parse(response);
+                let opciones = `<option value="">Selecciona un área</option>`;
+
+                areas.forEach((element) => {
+                    opciones += `
+                                 <option value="${element.id_area}">${element.nombre_area}</option>
+                                     `;
+                });
+
+                // Asegúrate de usar el ID correcto del select
+                $("#area_trabajador").html(opciones);
+            },
+            error: function () {
+
+            }
+        });
+    }
+
+     //Funcion para obtener las Areas
+    function obtenerEmpresa() {
+        $.ajax({
+            type: "GET",
+            url: rutaRaiz + "public/php/obtenerEmpresa.php",
+            success: function (response) {
+                let empresas = JSON.parse(response);
+                let opciones = `<option value="">Selecciona una empresa</option>`;
+
+                empresas.forEach((element) => {
+                    opciones += `
+                                 <option value="${element.id_empresa}">${element.nombre_empresa}</option>
+                                     `;
+                });
+
+                // Asegúrate de usar el ID correcto del select
+                $("#empresa_trabajador").html(opciones);
+            },
+            error: function () {
+
+            }
+        });
+    }
+
+     //Funcion para obtener las Areas
+    function obtenerPuesto() {
+        $.ajax({
+            type: "GET",
+            url: rutaRaiz + "public/php/obtenerPuestos.php",
+            success: function (response) {
+                let puestos = JSON.parse(response);
+                let opciones = `<option value="">Selecciona un puesto</option>`;
+
+                puestos.forEach((element) => {
+                    opciones += `
+                                 <option value="${element.id_puestoEspecial}">${element.nombre_puesto}</option>
+                                     `;
+                });
+
+                // Asegúrate de usar el ID correcto del select
+                $("#puesto_trabajador").html(opciones);
+            },
+            error: function () {
+
             }
         });
     }
@@ -72,6 +147,13 @@ $(document).ready(function () {
             const enfermedades_alergias = $("#enfermedades_alergias_trabajador").val().trim();
             const fecha_ingreso = $("#fecha_ingreso_trabajador").val();
             const id_departamento = $("#departamento_trabajador").val();
+            const num_casillero = $("#num_casillero").val().trim();
+            
+            // Nuevos campos opcionales
+            const id_area = $("#area_trabajador").val();
+            const id_puestoEspecial = $("#puesto_trabajador").val(); // Cambiado de id_puesto a id_puestoEspecial
+            const id_empresa = $("#empresa_trabajador").val();
+            const fecha_nacimiento = $("#fecha_nacimiento").val();
 
             // Datos de emergencia (opcionales)
             const emergencia_nombre = $("#nombre_emergencia").val().trim();
@@ -125,6 +207,14 @@ $(document).ready(function () {
                 enfermedades_alergias: enfermedades_alergias || "",
                 fecha_ingreso: fecha_ingreso || "",
                 id_departamento: id_departamento || "",
+                num_casillero: num_casillero || "",
+                
+                // Nuevos campos opcionales
+                fecha_nacimiento: fecha_nacimiento || "",
+                id_area: id_area || "",
+                id_puestoEspecial: id_puestoEspecial || "", // Cambiado de id_puesto a id_puestoEspecial
+                id_empresa: id_empresa || "",
+                
                 emergencia_nombre: emergencia_nombre || "",
                 emergencia_ap_paterno: emergencia_ap_paterno || "",
                 emergencia_ap_materno: emergencia_ap_materno || "",
@@ -133,10 +223,7 @@ $(document).ready(function () {
                 emergencia_domicilio: emergencia_domicilio || ""
             };
 
-          
-            
-
-          $.ajax({
+            $.ajax({
                 type: "POST",
                 url: "../php/registro_empleado.php",
                 data: datos,
