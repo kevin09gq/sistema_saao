@@ -219,7 +219,8 @@ VALUES (2, 1, 'FIDENCIO', 'ABURTO', 'JIMENEZ', 'M', 2, 2);
 INSERT INTO info_empleados (id_rol, id_status, nombre, ap_paterno, ap_materno, sexo, id_departamento, clave_empleado)
 VALUES (2, 1, 'OMAR URIEL', 'FLORES', 'ROJAS', 'M', 2, 7);
 INSERT INTO info_empleados (id_rol, id_status, nombre, ap_paterno, ap_materno, sexo, id_departamento, clave_empleado)
-VALUES (2, 1, 'ROBERTO', 'RIVERA', 'HERNANDEZ', 'M', 2, 16);
+VALUES (2, 1, 'ROBERTO', 'RIVERA', 'HERNANDEZ', 'M', 
+2, 16);
 INSERT INTO info_empleados (id_rol, id_status, nombre, ap_paterno, ap_materno, sexo, id_departamento, clave_empleado)
 VALUES (2, 1, 'ESMERALDA', 'ROCHA', 'GARCIA', 'F', 2, 17);
 INSERT INTO info_empleados (id_rol, id_status, nombre, ap_paterno, ap_materno, sexo, id_departamento, clave_empleado)

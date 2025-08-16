@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="../styles/nomina_styles.css">
     <link rel="stylesheet" href="../styles/seleccion_modal_styles.css">
     <link rel="stylesheet" href="../styles/detalles_modal.css">
+    <link rel="stylesheet" href="../styles/horario_modal.css">
 </head>
 
 <body>
@@ -54,6 +55,10 @@
             <h3 id=nombre_nomina></h3>
             <div class="header-controls">
                 <span class="sem-info" id="num_semana"></span>
+                <button class="btn-horarios" type="button" id="btn_horarios" data-bs-toggle="modal" data-bs-target="#horarios_modal">
+                    <i class="bi bi-clock"></i>
+                    Horarios
+                </button>
                 <div class="mini-tabs">
                     <button class="mini-tab active" type="button" id="btn_tabla_nomina">
                         <i class="bi bi-table"></i>
@@ -81,7 +86,7 @@
                 </div>
             </div>
 
-            <button class="btn-agregar-todos" id="btn_mostrar_todos">
+            <button class="btn-agregar-todos" id="btn_mostrar_todos" hidden>
                 <i class="bi bi-plus"></i>
                 A Todos
             </button>
@@ -159,6 +164,7 @@
     <!-- Incluir el modal -->
     <?php include 'seleccion_modal.php'; ?>
     <?php include 'detalles_modal.php'; ?>
+    <?php include 'horarios_modal.php'; ?>
 
     <!-- Menú contextual personalizado -->
     <div id="menu-contextual" hidden style="position:absolute; z-index:9999; background:#fff; border:1px solid #ccc; padding:6px 12px; font-size:14px; cursor:pointer;">
@@ -179,13 +185,76 @@
     <script src="../js/detalles_modal.js"></script>
     <script src="../js/rangos_horas.js"></script>  
 
-    -->
+    
     <script src="../jsPrueba/leer_excel.js"></script>
     <script src="../jsPrueba/rangos_horas.js"></script>
     <script src="../jsPrueba/config_tabla.js"></script>
     <script src="../jsPrueba/seleccion_empleados.js"></script>
     <script src="../jsPrueba/detalles_modal.js"></script>
-      <script src="../jsPrueba/generar_excel.js"></script>
+    <script src="../jsPrueba/generar_excel.js"></script>
+    <script src="../jsPrueba/rangos_horarios.js"></script>
+    <script src="../jsPrueba/horarios_modal.js"></script>
+
+-->
+
+    <script src="../jsPrueba2/leer_excel.js"></script>
+    <script src="../jsPrueba2/config_tabla.js"></script>
+    <script src="../jsPrueba2/seleccion_empleados.js"></script>
+    <script src="../jsPrueba2/detalles_modal.js"></script>
+    <script src="../jsPrueba2/rangos_horas.js"></script>
+    
+    <script>
+        // Script para manejar componentes dinámicos del sueldo extra
+        $(document).ready(function() {
+            let contadorConceptos = 1;
+            
+            // Función para calcular el total
+            function calcularTotalExtra() {
+                let total = 0;
+                $('.componente-extra').each(function() {
+                    let valor = parseFloat($(this).val()) || 0;
+                    total += valor;
+                });
+                $('#mod-total-extra').val(total.toFixed(2));
+            }
+            
+            // Evento del botón "Otra?"
+            $(document).on('click', '#btn-agregar-concepto', function() {
+                contadorConceptos++;
+                let nuevoConcepto = `
+                    <div class="col-md-6 mb-2 concepto-dinamico" data-concepto="${contadorConceptos}">
+                        <label class="form-label fw-normal small">Concepto Personalizado</label>
+                        <div class="input-group input-group-sm">
+                            <input type="text" class="form-control" placeholder="Nombre" id="nombre-concepto-${contadorConceptos}" style="max-width: 120px;">
+                            <input type="number" step="0.01" class="form-control mod-input-azul componente-extra" id="valor-concepto-${contadorConceptos}" placeholder="Monto">
+                            <button class="btn btn-outline-danger btn-eliminar-concepto" type="button" data-concepto="${contadorConceptos}" title="Eliminar">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                $('#componentes-sueldo-extra').append(nuevoConcepto);
+                calcularTotalExtra();
+            });
+            
+            // Evento para eliminar concepto dinámico
+            $(document).on('click', '.btn-eliminar-concepto', function() {
+                let conceptoId = $(this).data('concepto');
+                $(`.concepto-dinamico[data-concepto="${conceptoId}"]`).remove();
+                calcularTotalExtra();
+            });
+            
+            // Calcular automáticamente cuando cambien los valores
+            $(document).on('input', '.componente-extra', function() {
+                calcularTotalExtra();
+            });
+            
+            // Calcular total al cargar el modal
+            $(document).on('shown.bs.modal', '#modal-detalles', function() {
+                calcularTotalExtra();
+            });
+        });
+    </script>
 </body>
 
 </html>

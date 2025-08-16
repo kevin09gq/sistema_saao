@@ -1,0 +1,351 @@
+/* Botón de horarios en el header */
+.btn-horarios {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s ease;
+    margin-right: 15px;
+}
+
+.btn-horarios:hover {
+    background: linear-gradient(135deg, #15803d 0%, #14532d 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
+}
+
+.btn-horarios i {
+    font-size: 16px;
+}
+
+/* Estilos del modal */
+#horarios_modal .modal-dialog {
+    max-width: 80%;
+}
+
+#horarios_modal .modal-content {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Container de horarios */
+.horarios-container {
+    padding: 15px;
+}
+
+/* Tabla de horarios */
+.tabla-horarios {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.tabla-horarios thead {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    color: white;
+}
+
+.encabezado-tiempo,
+.encabezado-dia {
+    padding: 10px 8px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.encabezado-dia {
+    background: rgba(255, 255, 255, 0.1);
+    width: 80px;
+}
+
+.encabezado-tiempo {
+    min-width: 70px;
+}
+
+.fila-horario {
+    transition: all 0.3s ease;
+}
+
+.fila-horario:hover {
+    background-color: #f0fdf4;
+}
+
+.fila-horario.separador {
+    border-top: 2px solid #22c55e;
+    background-color: #f0fdf4;
+}
+
+.etiqueta-horario {
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    padding: 12px 15px;
+    text-align: center;
+    font-weight: 600;
+    color: #166534;
+    border-right: 2px solid #d1d5db;
+}
+
+.etiqueta-dia {
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    padding: 8px 10px;
+    text-align: center;
+    font-weight: 600;
+    color: #166534;
+    border-right: 2px solid #d1d5db;
+    font-size: 12px;
+}
+
+.celda-hora,
+.celda-total,
+.celda-comida {
+    padding: 8px 6px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 500;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.celda-hora {
+    color: #374151;
+    background-color: #ffffff;
+}
+
+.celda-total {
+    background-color: #ecfdf5;
+    color: #047857;
+    font-weight: 600;
+}
+
+.celda-comida {
+    background-color: #fef7e0;
+    color: #b7791f;
+    font-weight: 600;
+    position: relative;
+}
+
+/* Estilos para la fila de totales */
+.fila-total {
+    background-color: #f0fdf4;
+    border-top: 2px solid #22c55e;
+    transition: all 0.3s ease;
+}
+
+.fila-total:hover {
+    background-color: #dcfce7;
+}
+
+.etiqueta-total {
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    padding: 8px 10px;
+    text-align: center;
+    font-weight: 600;
+    color: #166534;
+    border-right: 2px solid #d1d5db;
+    font-size: 12px;
+}
+
+.celda-total-general {
+    background-color: #ffffff;
+    color: #374151;
+    font-weight: 500;
+    font-size: 12px;
+    text-align: center;
+    padding: 8px 6px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.celda-total-horas-semana {
+    background-color: #ecfdf5;
+    color: #047857;
+    font-weight: 600;
+    font-size: 12px;
+    text-align: center;
+    padding: 8px 6px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.celda-total-comida-semana {
+    background-color: #fef7e0;
+    color: #b7791f;
+    font-weight: 600;
+    font-size: 12px;
+    text-align: center;
+    padding: 8px 6px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+/* Indicador visual para horas de comida válidas */
+.celda-comida[data-valido="true"]::after {
+    content: "✓";
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    color: #22c55e;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+/* Indicador visual para horas de comida inválidas */
+.celda-comida[data-valido="false"]::after {
+    content: "⚠";
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    color: #ef4444;
+    font-size: 10px;
+}
+
+/* Estilos para celdas editables */
+.editable {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.editable:hover {
+    background-color: #f0f9ff !important;
+    border: 1px solid #22c55e;
+}
+
+/* Estilos para inputs de edición */
+.input-hora {
+    width: 100%;
+    border: 2px solid #22c55e;
+    border-radius: 4px;
+    padding: 4px 6px;
+    font-size: 12px;
+    text-align: center;
+    background-color: #ffffff;
+    color: #374151;
+}
+
+.input-hora:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+}
+
+/* Footer del modal */
+#horarios_modal .modal-footer {
+    border-top: 1px solid #e5e7eb;
+    padding: 15px 20px;
+    background-color: #f9fafb;
+    border-radius: 0 0 15px 15px;
+}
+
+#horarios_modal .btn {
+    padding: 8px 15px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 13px;
+    transition: all 0.3s ease;
+}
+
+#horarios_modal .btn-primary {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    border: none;
+}
+
+#horarios_modal .btn-primary:hover {
+    background: linear-gradient(135deg, #15803d 0%, #14532d 100%);
+    transform: translateY(-2px);
+}
+
+#horarios_modal .btn-secondary {
+    background-color: #6b7280;
+    border: none;
+}
+
+#horarios_modal .btn-secondary:hover {
+    background-color: #4b5563;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #horarios_modal .modal-dialog {
+        max-width: 95%;
+        margin: 5px;
+    }
+
+    .tabla-horarios {
+        font-size: 10px;
+    }
+
+    .encabezado-tiempo,
+    .encabezado-dia,
+    .etiqueta-dia {
+        padding: 6px 4px;
+        font-size: 10px;
+    }
+
+    .celda-hora,
+    .celda-total,
+    .celda-comida {
+        padding: 6px 4px;
+        font-size: 10px;
+    }
+
+    .horarios-container {
+        padding: 10px;
+    }
+}
+
+#horarios_modal .btn-primary:hover {
+    background: linear-gradient(135deg, #15803d 0%, #14532d 100%);
+    transform: translateY(-2px);
+}
+
+#horarios_modal .btn-secondary {
+    background-color: #6b7280;
+    border: none;
+}
+
+#horarios_modal .btn-secondary:hover {
+    background-color: #4b5563;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #horarios_modal .modal-dialog {
+        max-width: 98%;
+        margin: 10px;
+    }
+
+    .tabla-horarios {
+        font-size: 12px;
+    }
+
+    .encabezado-tiempo,
+    .encabezado-dia,
+    .etiqueta-dia,
+    .etiqueta-total-semana {
+        padding: 8px 6px;
+        font-size: 12px;
+    }
+
+    .celda-hora,
+    .celda-total,
+    .celda-comida,
+    .celda-total-horas,
+    .celda-total-minutos,
+    .celda-total-comida,
+    .celda-total-minutos-comida {
+        padding: 8px 6px;
+        font-size: 12px;
+    }
+}
+
+.etiqueta-total {
+    font-size: 11px;
+}

@@ -8,11 +8,6 @@
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tab-conceptos" data-bs-toggle="tab" data-bs-target="#tab_conceptos" type="button" role="tab" aria-controls="tab_conceptos" aria-selected="false">
-                    Conceptos
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
                 <button class="nav-link" id="tab-registros" data-bs-toggle="tab" data-bs-target="#tab_registros" type="button" role="tab" aria-controls="tab_registros" aria-selected="false">
                     Registros
                 </button>
@@ -32,11 +27,11 @@
                 <div class="empleado-info">
                     <div class="info-row">
                         <span class="info-label">Clave:</span>
-                        <span class="info-value" id="campo-clave">9</span>
+                        <span class="info-value" id="campo-clave"></span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">Nombre:</span>
-                        <span class="info-value">GUTIERREZ MELENDEZ GUADALUPE</span>
+                        <span class="info-value" id="campo-nombre"></span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">Neto a pagar:</span>
@@ -44,240 +39,10 @@
                     </div>
                 </div>
 
-                <!-- Sección de tiempo trabajado -->
-                <div class="seccion-calculos">
-                    <h5 style="margin:25px 0 15px 0; color:#333; border-bottom:2px solid #007bff; padding-bottom:5px;">
-                        <i class="bi bi-clock"></i> Tiempo Trabajado
-                    </h5>
+               
 
-                    <div class="calculo-item">
-                        <div class="calculo-header">
-                            <span class="calculo-titulo">Horas Totales</span>
-                            <span class="calculo-formula">42.78 horas</span>
-                        </div>
-                        <div class="calculo-conversion">
-                            <span class="conversion-texto">= 42 horas + 0.78 × 60 minutos</span>
-                            <span class="conversion-resultado">= 42:47 (2,567 minutos)</span>
-                        </div>
-                    </div>
-
-                    <div class="calculo-item">
-                        <div class="calculo-header">
-                            <span class="calculo-titulo">Tiempo Total</span>
-                            <span class="calculo-formula">42:47</span>
-                        </div>
-                        <div class="calculo-conversion">
-                            <span class="conversion-texto">= 42 × 60 + 47 minutos</span>
-                            <span class="conversion-resultado">= 2,567 minutos</span>
-                        </div>
-                    </div>
-
-                    <div class="calculo-item">
-                        <div class="calculo-header">
-                            <span class="calculo-titulo">Minutos Normales</span>
-                            <span class="calculo-formula">2,567 minutos</span>
-                        </div>
-                        <div class="calculo-conversion">
-                            <span class="conversion-texto">= 2,567 ÷ 60</span>
-                            <span class="conversion-resultado">= 42.78 horas</span>
-                        </div>
-                    </div>
-
-                    <div class="calculo-item">
-                        <div class="calculo-header">
-                            <span class="calculo-titulo">Minutos Extras</span>
-                            <span class="calculo-formula">0 minutos</span>
-                        </div>
-                        <div class="calculo-conversion">
-                            <span class="conversion-texto">= 0 ÷ 60</span>
-                            <span class="conversion-resultado">= 0.00 horas</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sección de sueldo -->
-                <div class="seccion-calculos">
-                    <h5 style="margin:25px 0 15px 0; color:#333; border-bottom:2px solid #28a745; padding-bottom:5px;">
-                        <i class="bi bi-calculator"></i> Cálculo de Sueldo
-                    </h5>
-
-                    <div class="calculo-item">
-                        <div class="calculo-header">
-                            <span class="calculo-titulo">Sueldo Base</span>
-                            <span class="calculo-formula">$2,001.24</span>
-                        </div>
-                        <div class="calculo-conversion">
-                            <span class="conversion-texto">= 2,567 minutos × $0.78 por minuto</span>
-                            <span class="conversion-resultado">= $2,001.24</span>
-                        </div>
-                    </div>
-
-                    <div class="calculo-item">
-                        <div class="calculo-header">
-                            <span class="calculo-titulo">Sueldo Extras</span>
-                            <span class="calculo-formula">$0.00</span>
-                        </div>
-                        <div class="calculo-conversion">
-                            <span class="conversion-texto">= 0 minutos × $1.20 por minuto extra</span>
-                            <span class="conversion-resultado">= $0.00</span>
-                        </div>
-                    </div>
-
-                    <div class="calculo-item total">
-                        <div class="calculo-header">
-                            <span class="calculo-titulo">Total Sueldo</span>
-                            <span class="calculo-formula">$2,001.24</span>
-                        </div>
-                        <div class="calculo-conversion">
-                            <span class="conversion-texto">= $2,001.24 + $0.00</span>
-                            <span class="conversion-resultado">= $2,001.24</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sección de incentivos -->
-                <div class="seccion-calculos">
-                    <h5 style="margin:25px 0 15px 0; color:#333; border-bottom:2px solid #ffc107; padding-bottom:5px;">
-                        <i class="bi bi-plus-circle"></i> Incentivos
-                    </h5>
-
-                    <div class="calculo-item incentivo">
-                        <div class="calculo-header">
-                            <span class="calculo-titulo">Incentivo por Asistencia</span>
-                            <span class="calculo-formula">$250.00</span>
-                        </div>
-                        <div class="calculo-conversion">
-                            <span class="conversion-texto">= Sin faltas en la semana</span>
-                            <span class="conversion-resultado">= $250.00</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sección de deducciones -->
-                <div class="seccion-calculos">
-                    <h5 style="margin:25px 0 15px 0; color:#333; border-bottom:2px solid #dc3545; padding-bottom:5px;">
-                        <i class="bi bi-dash-circle"></i> Deducciones
-                    </h5>
-
-                    <div class="calculo-item">
-                        <div class="calculo-header">
-                            <span class="calculo-titulo">I.S.R. (mes)</span>
-                            <span class="calculo-formula">$46.09</span>
-                        </div>
-                        <div class="calculo-conversion">
-                            <span class="conversion-texto">= $2,001.24 × 2.3%</span>
-                            <span class="conversion-resultado">= $46.09</span>
-                        </div>
-                    </div>
-
-                    <div class="calculo-item">
-                        <div class="calculo-header">
-                            <span class="calculo-titulo">I.M.S.S.</span>
-                            <span class="calculo-formula">$52.67</span>
-                        </div>
-                        <div class="calculo-conversion">
-                            <span class="conversion-texto">= $2,001.24 × 2.63%</span>
-                            <span class="conversion-resultado">= $52.67</span>
-                        </div>
-                    </div>
-
-                    <div class="calculo-item">
-                        <div class="calculo-header">
-                            <span class="calculo-titulo">INFONAVIT</span>
-                            <span class="calculo-formula">$35.00</span>
-                        </div>
-                        <div class="calculo-conversion">
-                            <span class="conversion-texto">= Descuento fijo mensual</span>
-                            <span class="conversion-resultado">= $35.00</span>
-                        </div>
-                    </div>
-
-                    <div class="calculo-item">
-                        <div class="calculo-header">
-                            <span class="calculo-titulo">PRÉSTAMO</span>
-                            <span class="calculo-formula">$150.00</span>
-                        </div>
-                        <div class="calculo-conversion">
-                            <span class="conversion-texto">= Préstamo personal</span>
-                            <span class="conversion-resultado">= $150.00</span>
-                        </div>
-                    </div>
-
-                    <div class="calculo-item">
-                        <div class="calculo-header">
-                            <span class="calculo-titulo">INASISTENCIAS</span>
-                            <span class="calculo-formula">$0.00</span>
-                        </div>
-                        <div class="calculo-conversion">
-                            <span class="conversion-texto">= 0 días × $200 por día</span>
-                            <span class="conversion-resultado">= $0.00</span>
-                        </div>
-                    </div>
-
-                    <div class="calculo-item">
-                        <div class="calculo-header">
-                            <span class="calculo-titulo">UNIFORMES</span>
-                            <span class="calculo-formula">$75.00</span>
-                        </div>
-                        <div class="calculo-conversion">
-                            <span class="conversion-texto">= Uniforme nuevo solicitado</span>
-                            <span class="conversion-resultado">= $75.00</span>
-                        </div>
-                    </div>
-
-                    <div class="calculo-item">
-                        <div class="calculo-header">
-                            <span class="calculo-titulo">Checador</span>
-                            <span class="calculo-formula">$20.00</span>
-                        </div>
-                        <div class="calculo-conversion">
-                            <span class="conversion-texto">= 1 olvido × $20 por olvido</span>
-                            <span class="conversion-resultado">= $20.00</span>
-                        </div>
-                    </div>
-
-                    <div class="calculo-item">
-                        <div class="calculo-header">
-                            <span class="calculo-titulo">F.A /GAFET/COFIA</span>
-                            <span class="calculo-formula">$45.00</span>
-                        </div>
-                        <div class="calculo-conversion">
-                            <span class="conversion-texto">= Equipo de seguridad</span>
-                            <span class="conversion-resultado">= $45.00</span>
-                        </div>
-                    </div>
-
-                    <div class="calculo-item total">
-                        <div class="calculo-header">
-                            <span class="calculo-titulo">Total Deducciones</span>
-                            <span class="calculo-formula">$423.76</span>
-                        </div>
-                        <div class="calculo-conversion">
-                            <span class="conversion-texto">= $46.09 + $52.67 + $35.00 + $150.00 + $0.00 + $75.00 + $20.00 + $45.00</span>
-                            <span class="conversion-resultado">= $423.76</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Neto final -->
-                <div class="calculo-item neto-final">
-                    <div class="calculo-header">
-                        <span class="calculo-titulo">SUELDO A COBRAR</span>
-                        <span class="calculo-formula">$1,827.48</span>
-                    </div>
-                    <div class="calculo-conversion">
-                        <span class="conversion-texto">= $2,001.24 + $250.00 - $423.76</span>
-                        <span class="conversion-resultado">= $1,827.48</span>
-                    </div>
-                </div>
             </div>
-            <!-- Conceptos -->
-            <div class="tab-pane fade" id="tab_conceptos" role="tabpanel" aria-labelledby="tab-conceptos">
-                <h4 style="margin-bottom:10px;">Conceptos</h4>
-                <div class="conceptos-cards" id="conceptos-cards" style="display:flex; flex-wrap:wrap; gap:16px;">
-
-                </div>
-            </div>
+         
             <!-- Registros -->
             <div class="tab-pane fade" id="tab_registros" role="tabpanel" aria-labelledby="tab-registros">
                 <h4 style="margin-bottom:10px;">Registros de Entrada y Salida</h4>
@@ -298,24 +63,87 @@
                             <i class="bi bi-cash-coin"></i> Percepciones
                         </div>
                         <div class="card-body mod-card-body-azul">
-                            <div class="row mb-3 align-items-end">
-                                <div class="col-md-4 mb-2">
+                            <!-- Primera fila: Campos principales con altura fija -->
+                            <div class="row mb-4">
+                                <div class="col-md-4 d-flex flex-column">
                                     <label class="form-label fw-semibold">Sueldo Neto ($)</label>
-                                    <input type="number" step="0.01" class="form-control mod-input-azul" id="mod-sueldo-neto" value="">
+                                    <div class="flex-grow-1 d-flex align-items-end">
+                                        <input type="number" step="0.01" class="form-control mod-input-azul" id="mod-sueldo-neto" value="">
+                                    </div>
                                 </div>
-                                <div class="col-md-4 mb-2">
-                                    <label class="form-label fw-semibold">Sueldo Extra ($)</label>
-                                    <input type="number" step="0.01" class="form-control mod-input-azul" id="mod-sueldo-extra" value="">
-                                </div>
-                                <div class="col-md-4 mb-2 d-flex flex-column justify-content-end">
-                                    <div class="d-flex align-items-center mb-2">
+                                
+                                <div class="col-md-4 d-flex flex-column">
+                                    <label class="form-label fw-semibold">Incentivo ($)</label>
+                                    <div class="d-flex align-items-center mb-1">
                                         <input class="form-check-input me-2" type="checkbox" id="mod-incentivo-check" checked>
-                                        <label class="form-check-label fw-semibold mb-0" for="mod-incentivo-check">
-                                            ¿Aplica Incentivo?
+                                        <label class="form-check-label small mb-0" for="mod-incentivo-check">
+                                            Aplicar incentivo
                                         </label>
                                     </div>
-                                    <label class="form-label fw-semibold mb-1" for="mod-incentivo-monto">Monto Incentivo ($)</label>
-                                    <input type="number" step="0.01" class="form-control mod-input-cyan" id="mod-incentivo-monto" value="250" >
+                                    <input type="number" step="0.01" class="form-control mod-input-cyan" id="mod-incentivo-monto" value="250" placeholder="Monto del incentivo">
+                                </div>
+                                
+                                <div class="col-md-4 d-flex flex-column">
+                                    <label class="form-label fw-semibold">Total Sueldo Extra ($)</label>
+                                    <small class="text-muted mb-1">Calculado automáticamente</small>
+                                    <input type="number" step="0.01" class="form-control mod-input-azul fw-bold" id="mod-total-extra" value="" readonly style="background-color: #f8f9fa; font-weight: bold;">
+                                </div>
+                            </div>
+                            
+                            <!-- Separador visual -->
+                            <hr class="my-3">
+                            
+                            <!-- Título de componentes -->
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <h6 class="fw-semibold text-primary mb-0">
+                                        <i class="bi bi-list-ul"></i> Componentes del Sueldo Extra
+                                    </h6>
+                                    <small class="text-muted">Configure los diferentes conceptos que conforman el sueldo extra</small>
+                                </div>
+                            </div>
+                            
+                            <!-- Componentes organizados con altura uniforme -->
+                            <div class="row" id="componentes-sueldo-extra">
+                                <div class="col-md-3 mb-3 d-flex flex-column">
+                                    <label class="form-label fw-normal">Horas Extras</label>
+                                    <div class="flex-grow-1 d-flex align-items-end">
+                                        <input type="number" step="0.01" class="form-control mod-input-azul componente-extra" id="mod-horas-extras" value="" placeholder="0.00">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-3 mb-3 d-flex flex-column">
+                                    <label class="form-label fw-normal">Bono Antigüedad</label>
+                                    <div class="d-flex align-items-center mb-1">
+                                        <input class="form-check-input me-2" type="checkbox" id="mod-bono-antiguedad-check" checked>
+                                        <label class="form-check-label small mb-0" for="mod-bono-antiguedad-check">
+                                            Aplicar bono
+                                        </label>
+                                    </div>
+                                    <input type="number" step="0.01" class="form-control mod-input-azul componente-extra" id="mod-bono-antiguedad" value="200">
+                                </div>
+                                
+                                <div class="col-md-3 mb-3 d-flex flex-column">
+                                    <label class="form-label fw-normal">Actividades Especiales</label>
+                                    <div class="flex-grow-1 d-flex align-items-end">
+                                        <input type="number" step="0.01" class="form-control mod-input-azul componente-extra" id="mod-actividades-especiales" value="" placeholder="0.00">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-3 mb-3 d-flex flex-column">
+                                    <label class="form-label fw-normal">Puesto</label>
+                                    <div class="flex-grow-1 d-flex align-items-end">
+                                        <input type="number" step="0.01" class="form-control mod-input-azul componente-extra" id="mod-bono-responsabilidad" value="200">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Botón para agregar más conceptos -->
+                            <div class="row">
+                                <div class="col-12 text-center">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" id="btn-agregar-concepto">
+                                        <i class="bi bi-plus-circle"></i> Agregar Otro Concepto
+                                    </button>
                                 </div>
                             </div>
                         </div>

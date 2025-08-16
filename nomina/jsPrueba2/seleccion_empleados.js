@@ -1,12 +1,13 @@
 // Ruta base para los plugins y recursos
-const rutaPlugins = '/sistema_saao/';
+
 // Set para guardar las claves de los empleados seleccionados
 let clavesSeleccionadas = new Set();
+let datosEmpleadosCargados = false; // Variable para controlar si ya se cargaron los datos
 
 $(document).ready(function () {
     // Inicializa los eventos y funciones principales al cargar la página
     datosModal();
-    filtradoPorDepartamento();
+   // filtradoPorDepartamento();
     seleccionarTodos();
     filtrarPorNombreEmpleado();
     confirmarSeleccionClaves();
@@ -16,10 +17,18 @@ $(document).ready(function () {
         $("#btn_mostrar_algunos").click(function (e) {
             e.preventDefault();
 
-            // Cargar departamentos en el select
-            obtenerDepartamentos();
-            // Cargar empleados y mostrarlos en el modal
-            infoEmpleado();
+            // Solo cargar datos la primera vez
+            if (!datosEmpleadosCargados) {
+                // Cargar departamentos en el select
+                obtenerDepartamentos();
+                // Cargar empleados y mostrarlos en el modal
+                infoEmpleado();
+                datosEmpleadosCargados = true;
+            } else {
+                // Si ya se cargaron los datos, solo actualizar el estado de los checkboxes
+                actualizarEstadoCheckboxes();
+            }
+            
             // Mostrar el modal
             $("#modalSeleccionEmpleados").modal('show');
         });
@@ -29,12 +38,13 @@ $(document).ready(function () {
 // Función para obtener los departamentos y llenar el select del filtro
 function obtenerDepartamentos() {
     $.ajax({
-        type: "GET",
-        url: rutaPlugins + "public/php/obtenerDepartamentos.php",
+        type: "POST",
+        url: "../php/seleccion_empleados.php",
+        data: { accion: 'cargarDepartamento' },
         success: function (response) {
             let departamentos = JSON.parse(response);
             // Opción para mostrar todos los departamentos
-            let opciones = `<option value="0">Todos</option>`;
+            let opciones = ``;
 
             // Agrega cada departamento como opción en el select
             departamentos.forEach((element) => {
@@ -47,7 +57,7 @@ function obtenerDepartamentos() {
             $("#filtro-departamento-modal").html(opciones);
         },
         error: function () {
-            console.error("Error al cargar departamentos");
+
         }
     });
 }
@@ -104,7 +114,7 @@ function imprimirDatos(response) {
                             <div class="form-check">
                                 <input class="form-check-input empleado-checkbox" data-clave="${emp.clave_empleado}" type="checkbox" value="${emp.id_empleado}" id="${idCheckbox}" ${checked}>
                                 <label class="form-check-label" for="${idCheckbox}">
-                                    <div class="empleado-info">
+                                    <div class="empleado-info-seleccion">
                                         <span class="empleado-nombre">${emp.nombre_completo}</span>
                                         <span class="empleado-clave">Clave: ${emp.clave_empleado}</span>
                                     </div>
@@ -164,6 +174,16 @@ function imprimirDatos(response) {
         actualizarContador(); // Actualiza el contador de seleccionados
     });
 
+    actualizarSeleccionTodos();
+    actualizarContador();
+}
+
+// Nueva función para actualizar solo el estado de los checkboxes
+function actualizarEstadoCheckboxes() {
+    $(".empleado-checkbox").each(function () {
+        const clave = $(this).data("clave");
+        $(this).prop("checked", clavesSeleccionadas.has(clave));
+    });
     actualizarSeleccionTodos();
     actualizarContador();
 }
@@ -248,34 +268,37 @@ function confirmarSeleccionClaves() {
             return;
         }
 
-        // 4. Crear un array plano de empleados seleccionados, agrupados y ordenados por el orden del JSON y por apellidos dentro de cada departamento
+        // 4. Filtrar empleados del jsonGlobal usando las claves seleccionadas
         let empleadosSeleccionados = [];
-        if (jsonGlobal && jsonGlobal.departamentos) {
-            jsonGlobal.departamentos.forEach(depto => {
-                // Ordena los empleados del departamento por apellidos
-                let empleadosOrdenados = (depto.empleados || []).slice().sort(compararPorApellidos);
-                empleadosOrdenados.forEach(emp => {
-                    if (clavesArray.map(String).includes(String(emp.clave))) {
-                        // Solo aplica calcularCamposEmpleado para "Produccion 40 Libras"
-                        if (typeof calcularCamposEmpleado === "function" && (depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS')) {
-                            calcularCamposEmpleado(emp);
-                        }
-                        empleadosSeleccionados.push({
-                            ...emp,
-                            id_departamento: depto.nombre.split(' ')[0],
-                            nombre_departamento: depto.nombre.replace(/^\d+\s*/, '')
-                        });
-                    }
-                });
+        jsonGlobal.departamentos.forEach(depto => {
+            (depto.empleados || []).forEach(emp => {
+                if (clavesArray.includes(String(emp.clave)) || clavesArray.includes(Number(emp.clave))) {
+                    empleadosSeleccionados.push({
+                        ...emp,
+                        id_departamento: depto.nombre.split(' ')[0],
+                        nombre_departamento: depto.nombre.replace(/^\d+\s*/, '')
+                    });
+                }
             });
-        }
-        // 5. Actualiza el array base y la paginación
-        window.empleadosOriginales = empleadosSeleccionados.slice(); // Usa slice() para evitar referencias
+        });
+
+        // 5. Actualizar empleadosFiltrados y empleadosOriginales con los seleccionados
+        window.empleadosOriginales = empleadosSeleccionados;
+        empleadosFiltrados = [...empleadosSeleccionados];
+
+        // 6. Actualizar la paginación con los empleados seleccionados
+        paginaActualNomina = 1;
         setEmpleadosPaginados(empleadosSeleccionados);
-        // 6. Oculta el filtro de departamento y muestra la búsqueda (opcional)
+
+        // 7. Mostrar la tabla y ocultar el contenedor de archivos
+        $("#tabla-nomina-responsive").removeAttr("hidden");
+        $("#container-nomina").attr("hidden", true);
+
+        // 8. Oculta el filtro de departamento y muestra la búsqueda
         $("#filtro-departamento").attr("hidden", true);
         $("#busqueda-container").removeAttr("hidden");
-        // 7. Cierra el modal
+        
+        // 9. Cierra el modal
         $("#modalSeleccionEmpleados").modal('hide');
     });
 }
