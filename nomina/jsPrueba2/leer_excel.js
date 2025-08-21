@@ -10,6 +10,16 @@ let timeoutBusquedaDispersion = null;
 
 $(document).ready(function () {
     obtenerArchivos();
+    $('#btn_horarios').click(function (e) {
+        e.preventDefault();
+        setDataTableHorarios(window.horariosSemanales);
+        activarFormatoHora();
+        actualizarHorariosSemanalesActualizados();
+
+        // Inicializar totales después de cargar la tabla
+        inicializarTotales();
+
+    });
 });
 
 /*
@@ -86,6 +96,8 @@ function obtenerArchivos(params) {
                                 $("#container-nomina").attr("hidden", true);
                                 establecerDatosEmpleados(); // Llama a la función para establecer los datos de empleados
                                 busquedaNomina();
+                                redondearRegistrosEmpleados(); // Nueva función para redondear registros
+
                             } catch (e) {
 
                             } finally {
@@ -420,6 +432,11 @@ function mostrarDatosTablaPaginada(empleadosPagina) {
     inicializarMenuContextual(); // Re-inicializar el menú contextual después de renderizar la tabla
 }
 
+
+
+
+
+
 /*
  * ================================================================
  * MÓDULO DE MENÚ CONTEXTUAL Y DETALLES DE EMPLEADOS
@@ -546,5 +563,445 @@ function busquedaNomina() {
 
 }
 
+/*
+ * ================================================================
+ * MÓDULO DE REDONDEO DE REGISTROS DE EMPLEADOS
+ * ================================================================
+ * Este módulo se encarga de:
+ * - Redondear los registros de checador según las reglas establecidas
+ * - Aplicar diferentes lógicas según el tipo de horario configurado
+ * - Mostrar los resultados en consola para verificación
+ * ================================================================
+ */
 
+function redondearRegistrosEmpleados() {
+    window.horariosSemanalesActualizados = JSON.parse(JSON.stringify(window.horariosSemanales));
 
+    if (!jsonGlobal || !jsonGlobal.departamentos || !window.horariosSemanalesActualizados || !window.empleadosOriginales) {
+        return;
+    }
+
+    // Función para obtener día de la semana desde fecha
+    function obtenerDiaSemana(fecha) {
+        const [dia, mes, anio] = fecha.split('/');
+        const fechaObj = new Date(anio, mes - 1, dia);
+        const dias = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+        return dias[fechaObj.getDay()];
+    }
+
+    // Conversión hora ↔ minutos
+    function horaAMinutos(hora) {
+        if (!hora || hora === "" || hora === "00:00") return null;
+        const [h, m] = hora.split(':').map(Number);
+        return h * 60 + m;
+    }
+    function minutosAHora(minutos) {
+        const horas = Math.floor(minutos / 60);
+        const mins = minutos % 60;
+        return `${horas.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+    }
+
+    // Detectar entrada temprana / salida tardía
+    function detectarEntradaTemprana(horaReal, horaOficial) {
+        const minutosReal = horaAMinutos(horaReal);
+        const minutosOficial = horaAMinutos(horaOficial);
+        if (minutosReal && minutosOficial && minutosReal < minutosOficial) {
+            const diferencia = minutosOficial - minutosReal;
+            return (diferencia >= 50) ? diferencia : 0;
+        }
+        return 0;
+    }
+    function detectarSalidaTardia(horaReal, horaOficial) {
+        const minutosReal = horaAMinutos(horaReal);
+        const minutosOficial = horaAMinutos(horaOficial);
+        if (minutosReal && minutosOficial && minutosReal > minutosOficial) {
+            const diferencia = minutosReal - minutosOficial;
+            return (diferencia >= 50) ? diferencia : 0;
+        }
+        return 0;
+    }
+    
+    // Nueva función para detectar llegada tardía después de comer
+    function detectarLlegadaTardiaComer(horaReal, horaOficial) {
+        const minutosReal = horaAMinutos(horaReal);
+        const minutosOficial = horaAMinutos(horaOficial);
+        if (minutosReal && minutosOficial && minutosReal > minutosOficial) {
+            const diferencia = minutosReal - minutosOficial;
+            // Tolerancia de 30 minutos
+            return (diferencia > 30) ? diferencia : 0;
+        }
+        return 0;
+    }
+
+    // Redondeo por tipo
+    function redondearHora(horaReal, horaOficial, tipo) {
+        if (!horaReal || horaReal === "") return horaReal;
+        const minutosReal = horaAMinutos(horaReal);
+        const minutosOficial = horaAMinutos(horaOficial);
+        if (!minutosOficial) return horaReal;
+
+        switch (tipo) {
+            case 'entrada':
+                return minutosReal <= minutosOficial ? horaOficial : horaReal;
+            case 'salidaComer':
+                // Usar rango dinámico basado en la hora oficial de salida a comer
+                const rangoMinSalidaComer = minutosOficial - 30; // 30 minutos antes
+                const rangoMaxSalidaComer = minutosOficial + 15; // 15 minutos después
+                if (minutosReal >= rangoMinSalidaComer && minutosReal <= rangoMaxSalidaComer) {
+                    return horaOficial;
+                }
+                return horaReal;
+            case 'entradaComer':
+                // Usar rango dinámico basado en la hora oficial de entrada de comer
+                const rangoMinEntradaComer = minutosOficial - 30; // 30 minutos antes
+                const rangoMaxEntradaComer = minutosOficial + 15; // 15 minutos después
+                if (minutosReal >= rangoMinEntradaComer && minutosReal <= rangoMaxEntradaComer) {
+                    return horaOficial;
+                }
+                return horaReal;
+            case 'salida':
+                // Si sale dentro del rango ±50 minutos después, redondear a oficial
+                if (minutosReal >= minutosOficial && minutosReal <= minutosOficial + 50) {
+                    return horaOficial;
+                }
+                // Si sale muy tarde (más de 50 minutos después), también redondear a oficial
+                if (minutosReal > minutosOficial + 50) {
+                    return horaOficial;
+                }
+                // Si sale antes pero dentro de 15 minutos de tolerancia, redondear a oficial
+                if (minutosReal >= minutosOficial - 15 && minutosReal < minutosOficial) {
+                    return horaOficial;
+                }
+                // Si sale más de 15 minutos antes, mantener hora real
+                return horaReal;
+            default:
+                return horaReal;
+        }
+    }
+
+    // Calcular tiempo trabajado
+    function calcularTiempoTrabajado(registrosDia, horarioOficial) {
+        if (!registrosDia || registrosDia.length === 0) return 0;
+        
+        // Buscar primera entrada válida y última salida válida
+        let primeraEntrada = null;
+        let ultimaSalida = null;
+        
+        // Buscar primera entrada diferente de "00:00"
+        for (let registro of registrosDia) {
+            if (registro.entrada && registro.entrada !== "00:00") {
+                primeraEntrada = horaAMinutos(registro.entrada);
+                break;
+            }
+        }
+        
+        // Buscar última salida diferente de "00:00"
+        for (let i = registrosDia.length - 1; i >= 0; i--) {
+            const registro = registrosDia[i];
+            if (registro.salida && registro.salida !== "00:00") {
+                ultimaSalida = horaAMinutos(registro.salida);
+                break;
+            }
+        }
+        
+        // Si tenemos entrada y salida válidas, calcular diferencia
+        let totalMinutos = 0;
+        if (primeraEntrada !== null && ultimaSalida !== null) {
+            totalMinutos = ultimaSalida - primeraEntrada;
+        }
+
+        // Descontar tiempo de comida solo si está definido y es diferente de 00:00
+        if (horarioOficial && horarioOficial.horasComida && horarioOficial.horasComida !== "00:00") {
+            const minutosComida = horaAMinutos(horarioOficial.horasComida);
+            if (minutosComida) {
+                totalMinutos -= minutosComida;
+            }
+        }
+        
+        return Math.max(0, totalMinutos);
+    }
+
+    // Nueva función para detectar olvidos del checador
+    function detectarOlvidosChecador(registrosDia, horarioOficial) {
+        const olvidos = [];
+        
+        // Para horarios completos (con comida)
+        const tieneHorarioCompleto = 
+            horarioOficial.entrada !== "00:00" &&
+            horarioOficial.salidaComida !== "00:00" &&
+            horarioOficial.entradaComida !== "00:00" &&
+            horarioOficial.salida !== "00:00";
+            
+        if (tieneHorarioCompleto) {
+            // Verificar los 4 registros esperados
+            if (registrosDia.length < 2) {
+                olvidos.push("Faltan registros completos");
+                return olvidos;
+            }
+            
+            // Verificar entrada
+            if (!registrosDia[0] || !registrosDia[0].entrada || registrosDia[0].entrada === "00:00") {
+                olvidos.push("Entrada");
+            }
+            
+            // Verificar salida a comer
+            if (!registrosDia[0] || !registrosDia[0].salida || registrosDia[0].salida === "00:00") {
+                olvidos.push("Salir a comer");
+            }
+            
+            // Verificar regreso de comer
+            if (!registrosDia[1] || !registrosDia[1].entrada || registrosDia[1].entrada === "00:00") {
+                olvidos.push("Regreso de comer");
+            }
+            
+            // Verificar salida final
+            if (!registrosDia[1] || !registrosDia[1].salida || registrosDia[1].salida === "00:00") {
+                olvidos.push("Salida final");
+            }
+        } else {
+            // Para horarios simples (sin comida) - solo verificar entrada y salida
+            const tieneEntradaSalida = 
+                horarioOficial.entrada !== "00:00" && 
+                horarioOficial.salida !== "00:00";
+                
+            if (tieneEntradaSalida) {
+                if (registrosDia.length === 0) {
+                    olvidos.push("Entrada y Salida");
+                    return olvidos;
+                }
+                
+                // Verificar entrada
+                if (!registrosDia[0] || !registrosDia[0].entrada || registrosDia[0].entrada === "00:00") {
+                    olvidos.push("Entrada");
+                }
+                
+                // Verificar salida
+                const ultimoRegistro = registrosDia[registrosDia.length - 1];
+                if (!ultimoRegistro || !ultimoRegistro.salida || ultimoRegistro.salida === "00:00") {
+                    olvidos.push("Salida");
+                }
+            }
+        }
+        
+        return olvidos;
+    }
+
+    // Nueva función para completar registros faltantes con horarios oficiales
+    function completarRegistrosFaltantes(registrosDia, horarioOficial) {
+        const tieneHorarioCompleto = 
+            horarioOficial.entrada !== "00:00" &&
+            horarioOficial.salidaComida !== "00:00" &&
+            horarioOficial.entradaComida !== "00:00" &&
+            horarioOficial.salida !== "00:00";
+
+        const tieneEntradaSalida = 
+            horarioOficial.entrada !== "00:00" && 
+            horarioOficial.salida !== "00:00";
+
+        if (tieneHorarioCompleto) {
+            // Asegurar que hay 2 registros para horario completo
+            while (registrosDia.length < 2) {
+                registrosDia.push({ entrada: "00:00", salida: "00:00" });
+            }
+
+            // Completar entrada si está vacía
+            if (!registrosDia[0].entrada || registrosDia[0].entrada === "00:00") {
+                registrosDia[0].entrada = horarioOficial.entrada;
+            }
+
+            // Completar salida a comer si está vacía
+            if (!registrosDia[0].salida || registrosDia[0].salida === "00:00") {
+                registrosDia[0].salida = horarioOficial.salidaComida;
+            }
+
+            // Completar regreso de comer si está vacío
+            if (!registrosDia[1].entrada || registrosDia[1].entrada === "00:00") {
+                registrosDia[1].entrada = horarioOficial.entradaComida;
+            }
+
+            // Completar salida final si está vacía
+            if (!registrosDia[1].salida || registrosDia[1].salida === "00:00") {
+                registrosDia[1].salida = horarioOficial.salida;
+            }
+
+        } else if (tieneEntradaSalida) {
+            // Asegurar que hay al menos 1 registro para horario simple
+            if (registrosDia.length === 0) {
+                registrosDia.push({ entrada: "00:00", salida: "00:00" });
+            }
+
+            // Completar entrada si está vacía
+            if (!registrosDia[0].entrada || registrosDia[0].entrada === "00:00") {
+                registrosDia[0].entrada = horarioOficial.entrada;
+            }
+
+            // Para horarios simples, determinar si necesita más registros
+            if (registrosDia.length === 1) {
+                // Si solo hay un registro, completar la salida
+                if (!registrosDia[0].salida || registrosDia[0].salida === "00:00") {
+                    registrosDia[0].salida = horarioOficial.salida;
+                }
+            } else {
+                // Si hay múltiples registros, poner salida en el último
+                const ultimoIndex = registrosDia.length - 1;
+                if (!registrosDia[ultimoIndex].salida || registrosDia[ultimoIndex].salida === "00:00") {
+                    registrosDia[ultimoIndex].salida = horarioOficial.salida;
+                }
+            }
+        }
+
+        return registrosDia;
+    }
+
+    // Procesar empleados
+    window.empleadosOriginales.forEach(empleado => {
+        console.log(`\n=== EMPLEADO: ${empleado.nombre} (Clave: ${empleado.clave}) ===`);
+        
+        const registrosPorFecha = {};
+        let totalMinutosSemana = 0; // Variable para acumular minutos de toda la semana
+        
+        if (empleado.registros) {
+            empleado.registros.forEach(registro => {
+                if (registro.fecha && (registro.entrada || registro.salida)) {
+                    if (!registrosPorFecha[registro.fecha]) registrosPorFecha[registro.fecha] = [];
+                    registrosPorFecha[registro.fecha].push(registro);
+                }
+            });
+        }
+
+        Object.keys(registrosPorFecha).forEach(fecha => {
+            const diaSemana = obtenerDiaSemana(fecha);
+            const horarioOficial = window.horariosSemanalesActualizados.semana[diaSemana];
+            if (!horarioOficial) return;
+
+            const registrosDia = registrosPorFecha[fecha];
+            console.log(`\nFECHA: ${fecha} (${diaSemana.toUpperCase()})`);
+            
+            // Mostrar registros ORIGINALES
+            console.log('Registros ORIGINALES:');
+            registrosDia.forEach((reg, i) => {
+                console.log(`  ${i + 1}. Entrada: ${reg.entrada} | Salida: ${reg.salida}`);
+            });
+            
+            // Crear copia para comparar
+            const registrosOriginales = JSON.parse(JSON.stringify(registrosDia));
+            
+            const tieneHorarioCompleto =
+                horarioOficial.entrada !== "00:00" &&
+                horarioOficial.salidaComida !== "00:00" &&
+                horarioOficial.entradaComida !== "00:00" &&
+                horarioOficial.salida !== "00:00";
+
+            const tieneEntradaSalida =
+                horarioOficial.entrada !== "00:00" &&
+                horarioOficial.salida !== "00:00" &&
+                (horarioOficial.salidaComida === "00:00" || horarioOficial.entradaComida === "00:00");
+
+            // Detectar olvidos del checador ANTES del redondeo
+            const olvidosChecador = detectarOlvidosChecador(registrosDia, horarioOficial);
+
+            // Completar registros faltantes con horarios oficiales
+            completarRegistrosFaltantes(registrosDia, horarioOficial);
+
+            // Detectar entrada temprana y salida tardía ANTES del redondeo
+            let entradaTemprana = 0;
+            let salidaTardia = 0;
+            let llegadaTardiaComer = 0;
+
+            if (registrosDia.length >= 1 && horarioOficial.entrada !== "00:00") {
+                entradaTemprana = detectarEntradaTemprana(registrosDia[0].entrada, horarioOficial.entrada);
+            }
+            if (registrosDia.length >= 1 && horarioOficial.salida !== "00:00") {
+                const ultimo = registrosDia[registrosDia.length - 1];
+                salidaTardia = detectarSalidaTardia(ultimo.salida, horarioOficial.salida);
+            }
+            
+            // Detectar llegada tardía después de comer (solo para horarios completos)
+            if (tieneHorarioCompleto && registrosDia.length >= 2 && horarioOficial.entradaComida !== "00:00") {
+                llegadaTardiaComer = detectarLlegadaTardiaComer(registrosDia[1].entrada, horarioOficial.entradaComida);
+            }
+
+            // Aplicar redondeo
+            if (tieneHorarioCompleto && registrosDia.length >= 2) {
+                // Para horario completo, esperamos al menos 2 registros
+                // Registro 1: entrada + salida a comer
+                registrosDia[0].entrada = redondearHora(registrosDia[0].entrada, horarioOficial.entrada, 'entrada');
+                registrosDia[0].salida = redondearHora(registrosDia[0].salida, horarioOficial.salidaComida, 'salidaComer');
+                
+                // Registro 2: entrada de comer + salida final
+                registrosDia[1].entrada = redondearHora(registrosDia[1].entrada, horarioOficial.entradaComida, 'entradaComer');
+                registrosDia[1].salida = redondearHora(registrosDia[1].salida, horarioOficial.salida, 'salida');
+                
+                // Limpiar registros adicionales si los hay (poner en 00:00)
+                for (let i = 2; i < registrosDia.length; i++) {
+                    registrosDia[i].entrada = "00:00";
+                    registrosDia[i].salida = "00:00";
+                }
+            } else if (tieneEntradaSalida) {
+                registrosDia.forEach((registro, index) => {
+                    if (index === 0) {
+                        registro.entrada = redondearHora(registro.entrada, horarioOficial.entrada, 'entrada');
+                        registro.salida = (registrosDia.length > 1) ? "00:00" :
+                            redondearHora(registro.salida, horarioOficial.salida, 'salida');
+                    } else if (index === registrosDia.length - 1) {
+                        registro.entrada = "00:00";
+                        registro.salida = redondearHora(registro.salida, horarioOficial.salida, 'salida');
+                    } else {
+                        registro.entrada = "00:00";
+                        registro.salida = "00:00";
+                    }
+                });
+            }
+
+            // Mostrar registros REDONDEADOS
+            console.log('Registros REDONDEADOS:');
+            registrosDia.forEach((reg, i) => {
+                const entradaLabel = i === 0 ? 'Entrada' : i === 1 ? 'Regreso Comer' : 'Entrada';
+                const salidaLabel = i === 0 ? 'Salir Comer' : i === 1 ? 'Salida' : 'Salida';
+                console.log(`  ${i + 1}. ${entradaLabel}: ${reg.entrada} | ${salidaLabel}: ${reg.salida}`);
+            });
+
+            // Calcular tiempo trabajado
+            const minutosTrabajados = calcularTiempoTrabajado(registrosDia, horarioOficial);
+            const horasTrabajadas = minutosAHora(minutosTrabajados);
+            console.log(`Tiempo total trabajado: ${horasTrabajadas} (${minutosTrabajados} minutos)`);
+
+            // Acumular minutos para el total semanal
+            totalMinutosSemana += minutosTrabajados;
+
+            // Mostrar hora de comida si existe
+            if (horarioOficial && horarioOficial.horasComida && horarioOficial.horasComida !== "00:00") {
+                console.log(`Hora de comida: ${horarioOficial.horasComida}`);
+            }
+
+            // Mostrar entrada temprana si existe
+            if (entradaTemprana > 0) {
+                console.log(`Entrada temprana: ${minutosAHora(entradaTemprana)}`);
+            }
+
+            // Mostrar salida tardía si existe
+            if (salidaTardia > 0) {
+                console.log(`Salida tardía: ${minutosAHora(salidaTardia)}`);
+            }
+            
+            // Mostrar llegada tardía después de comer si existe
+            if (llegadaTardiaComer > 0) {
+                console.log(`Llegada tardía después de comer: ${minutosAHora(llegadaTardiaComer)} (se perdieron ${minutosAHora(llegadaTardiaComer)} de trabajo)`);
+            }
+            
+            // Mostrar olvidos del checador si existen
+            if (olvidosChecador.length > 0) {
+                console.log(`⚠️ OLVIDOS DEL CHECADOR: ${olvidosChecador.join(', ')}`);
+            }
+            
+            console.log('─'.repeat(50));
+        });
+        
+        // Mostrar totales semanales al final de cada empleado
+        const horasSemanales = minutosAHora(totalMinutosSemana);
+        console.log(`\n🕒 TOTAL SEMANAL: ${horasSemanales} (${totalMinutosSemana} minutos)`);
+        console.log('═'.repeat(60));
+    });
+
+    console.log('\n=== REDONDEO COMPLETADO ===');
+}

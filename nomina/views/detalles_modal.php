@@ -38,20 +38,40 @@
                         <span class="info-value">$2,001.</span>
                     </div>
                 </div>
-
-               
-
             </div>
          
             <!-- Registros -->
             <div class="tab-pane fade" id="tab_registros" role="tabpanel" aria-labelledby="tab-registros">
-                <h4 style="margin-bottom:10px;">Registros de Entrada y Salida</h4>
-                <ul class="registros-timeline" id="registros-cards">
-
-
-                </ul>
-                <div class="registros-totales" id="registros-totales">
-                    Horas totales: <span id="horas-totales"></span> &nbsp; | &nbsp; Tiempo total: <span id="tiempo-total"></span>
+                <h4 style="margin-bottom:20px;">Registros de Entrada y Salida</h4>
+                                
+                <div class="table-responsive">
+                    <table class="tabla-registros" id="tabla-registros">
+                        <thead>
+                            <tr>
+                                <th class="encabezado-dia">DÍA</th>
+                                <th class="encabezado-tiempo">ENTRADA</th>
+                                <th class="encabezado-tiempo">SALIDA COMIDA</th>
+                                <th class="encabezado-tiempo">ENTRADA COMIDA</th>
+                                <th class="encabezado-tiempo">SALIDA</th>
+                                <th class="encabezado-tiempo">TOTAL HORAS</th>
+                                <th class="encabezado-tiempo">TOTAL MINUTOS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-registros-body">
+                           
+                        </tbody>
+                        <tfoot>
+                            <tr class="fila-total-registros">
+                                <td class="etiqueta-total-registros">TOTAL</td>
+                                <td class="celda-total-general-registros"></td>
+                                <td class="celda-total-general-registros"></td>
+                                <td class="celda-total-general-registros"></td>
+                                <td class="celda-total-general-registros"></td>
+                                <td class="celda-total-horas-registros"></td>
+                                <td class="celda-total-minutos-registros"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
             </div>
             <!-- Modificar Detalles -->

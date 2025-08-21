@@ -1,0 +1,107 @@
+/* Estilos para los gafetes */
+.gafete {
+    width: 88mm;
+    height: 57mm;
+    border: 1px solid #ddd;
+    margin: 10px auto;
+    display: inline-block;
+    page-break-inside: avoid;
+    position: relative;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.logo-empresa {
+    text-align: center;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.foto-empleado {
+    width: 30mm;
+    height: 35mm;
+    margin: 5mm auto;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.foto-empleado .iniciales {
+    font-size: 24px;
+    font-weight: bold;
+    color: #666;
+}
+
+.datos-empleado {
+    padding: 5px;
+    text-align: center;
+}
+
+.nombre-empleado {
+    font-weight: bold;
+    font-size: 12pt;
+    margin: 5px 0;
+    color: #333;
+}
+
+.puesto-empleado, .departamento-empleado {
+    font-size: 10pt;
+    margin: 2px 0;
+    color: #555;
+}
+
+.codigo-barras {
+    text-align: center;
+    margin: 5px 0;
+    padding: 5px;
+    font-family: 'Libre Barcode 39', cursive;
+    font-size: 20pt;
+    white-space: nowrap;
+}
+
+/* Estilos para la impresión */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #contenedorGafetes, #contenedorGafetes * {
+        visibility: visible;
+    }
+    #contenedorGafetes {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+    .no-print, .no-print * {
+        display: none !important;
+    }
+    .gafete {
+        border: none;
+        margin: 0;
+        box-shadow: none;
+        page-break-after: always;
+    }
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    .col-6 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+    .col-md-4 {
+        flex: 0 0 33.333333%;
+        max-width: 33.333333%;
+    }
+    .col-lg-3 {
+        flex: 0 0 25%;
+        max-width: 25%;
+    }
+}

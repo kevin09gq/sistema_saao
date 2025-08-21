@@ -202,6 +202,8 @@
     <script src="../jsPrueba2/seleccion_empleados.js"></script>
     <script src="../jsPrueba2/detalles_modal.js"></script>
     <script src="../jsPrueba2/rangos_horas.js"></script>
+    <script src="../jsPrueba2/rangos_horarios.js"></script>
+    <script src="../jsPrueba2/horarios_modal.js"></script>
     
     <script>
         // Script para manejar componentes dinámicos del sueldo extra

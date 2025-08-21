@@ -1,0 +1,723 @@
+/* Estilos generales */
+body {
+    background: linear-gradient(135deg, #f0f9f4 0%, #e1f5e8 100%);
+    font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+}
+
+.card {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 25px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+}
+
+.card-header {
+    font-weight: 600;
+    padding: 1.2rem 1.5rem;
+    background: linear-gradient(135deg, #27ae60 0%, #219653 100%) !important;
+    border-bottom: none;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #2ecc71, #27ae60);
+}
+
+/* Estilos para el encabezado ordenable */
+th[data-sortable] {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+th[data-sortable]:hover {
+    background-color: #f8f9fa;
+}
+
+/* Estilos para la lista de departamentos */
+#listaDepartamentos {
+    max-height: 520px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Estilos para el encabezado ordenable */
+th[data-sortable] {
+    cursor: pointer;
+    position: relative;
+    padding-right: 40px !important;
+}
+
+th[data-sortable] .sort-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: #6c757d;
+    transition: color 0.2s;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+th[data-sortable]:hover .sort-icon {
+    color: #ffffff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+th[data-sort-asc] .sort-icon::after {
+    content: '▲';
+    letter-spacing: 0;
+}
+
+th[data-sort-desc] .sort-icon::after {
+    content: '▼';
+    letter-spacing: 0;
+}
+
+th[data-sortable] .sort-icon::after {
+    content: '▲ ▼';
+    opacity: 0.3;
+    font-size: 10px;
+    letter-spacing: 2px;
+}
+
+th[data-sort-asc] .sort-icon,
+th[data-sort-desc] .sort-icon {
+    color: #ffffff;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+/* Estilo de scroll personalizado */
+#listaDepartamentos::-webkit-scrollbar {
+    width: 6px;
+}
+
+#listaDepartamentos::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+#listaDepartamentos::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #27ae60, #219653);
+    border-radius: 10px;
+}
+
+#listaDepartamentos .list-group-item {
+    border-left: none;
+    border-right: none;
+    padding: 0.9rem 1.5rem;
+    margin-bottom: 5px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border-radius: 8px !important;
+    border: 1px solid rgba(0,0,0,0.05);
+    font-size: 0.95rem;
+    color: #4a5568;
+}
+
+#listaDepartamentos .list-group-item:hover {
+    background-color: #f8fafc;
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+#listaDepartamentos .list-group-item.active {
+    background: linear-gradient(135deg, #27ae60, #219653);
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+}
+
+#listaDepartamentos .list-group-item i {
+    margin-right: 12px;
+    transition: all 0.3s ease;
+}
+
+#listaDepartamentos .list-group-item.active i {
+    transform: scale(1.2);
+}
+
+/* Estilos para la tabla de empleados */
+#tablaEmpleados {
+    font-size: 0.9rem;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+#tablaEmpleados thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* Estilos para la barra de herramientas de botones */
+.card-header .btn-toolbar {
+    flex-wrap: nowrap;
+    margin-left: auto;
+}
+
+.card-header .btn-group {
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+
+.card-header .btn-group .btn {
+    white-space: nowrap;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+/* Asegurar que los botones permanezcan en línea */
+.card-header .d-flex {
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Ajustes para pantallas pequeñas */
+@media (max-width: 768px) {
+    .card-header .btn-toolbar {
+        width: 100%;
+        margin-top: 0.5rem;
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+    .card-header .btn-group {
+        width: 100%;
+        justify-content: space-between;
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+    .card-header .btn {
+        font-size: 0.75rem;
+        padding: 0.2rem 0.5rem;
+        margin-bottom: 0.5rem;
+        width: 100%;
+        text-align: left;
+    }
+    .card-header .btn i {
+        margin-right: 2px;
+    }
+}
+
+#tablaEmpleados th {
+    font-weight: 600;
+    background: linear-gradient(135deg, #27ae60 0%, #219653 100%);
+    color: white;
+    border: none;
+    padding: 12px 15px;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+}
+
+#tablaEmpleados th:first-child {
+    border-top-left-radius: 10px;
+}
+
+#tablaEmpleados th:last-child {
+    border-top-right-radius: 10px;
+}
+
+#tablaEmpleados tbody tr {
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #edf2f7;
+}
+
+#tablaEmpleados tbody tr:last-child {
+    border-bottom: none;
+}
+
+#tablaEmpleados tbody tr:hover {
+    background-color: #f8fafc;
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+#tablaEmpleados tbody tr td {
+    padding: 12px 15px;
+    vertical-align: middle;
+    color: #4a5568;
+    border-top: 1px solid #edf2f7;
+}
+
+#tablaEmpleados tbody tr:first-child td {
+    border-top: none;
+}
+
+/* Estilos para los botones de acción */
+.btn {
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border: none;
+    border-radius: 8px;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    padding: 0.5rem 1rem;
+    white-space: nowrap;
+}
+
+.btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+    border-radius: 6px;
+}
+
+/* Ajustes para los botones en la tarjeta de empleados */
+.card-header .d-flex {
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.card-header .btn-group {
+    display: flex;
+    flex-wrap: nowrap;
+    margin-right: 0.5rem;
+}
+
+.card-header .btn-sm {
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #27ae60 0%, #219653 100%);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #27ae60 0%, #219653 100%);
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%);
+    color: white;
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    opacity: 0.95;
+}
+
+.btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para los checkboxes */
+.form-check-input {
+    width: 1.2em;
+    height: 1.2em;
+    margin-top: 0.2em;
+    cursor: pointer;
+    border: 2px solid #cbd5e0;
+    transition: all 0.2s ease;
+}
+
+.form-check-input:checked {
+    background-color: #27ae60;
+    border-color: #27ae60;
+    box-shadow: 0 0 0 0.25rem rgba(46, 204, 113, 0.25);
+}
+
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.25rem rgba(46, 204, 113, 0.25);
+    border-color: #27ae60;
+}
+
+/* Estilos para el modal de gafetes */
+#modalGafetes .modal-content {
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+}
+
+#modalGafetes .modal-header {
+    background: linear-gradient(135deg, #27ae60 0%, #219653 100%);
+    border-bottom: none;
+    padding: 1.5rem 2rem;
+}
+
+#modalGafetes .modal-title {
+    font-weight: 600;
+    font-size: 1.4rem;
+    color: white;
+}
+
+#contenidoGafetes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+    justify-content: center;
+    padding: 30px;
+    background-color: #f8fafc;
+    min-height: 60vh;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+/* Estilo de scroll personalizado para el modal */
+#contenidoGafetes::-webkit-scrollbar {
+    width: 8px;
+}
+
+#contenidoGafetes::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+#contenidoGafetes::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #27ae60, #219653);
+    border-radius: 10px;
+}
+
+.modal-footer {
+    background-color: #f8fafc;
+    border-top: 1px solid #edf2f7;
+    padding: 1.2rem 2rem;
+}
+
+.gafete {
+    width: 5.5cm;
+    height: 9cm;
+    border: none;
+    border-radius: 12px;
+    padding: 0.1cm 0.4cm 0.4cm 0.4cm;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    page-break-inside: avoid;
+    margin: 0.3cm;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #ffffff, #f0f9f4);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.gafete:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+}
+
+.gafete-header {
+    text-align: center;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0.05cm 0.3cm;
+    margin: -0.4cm -0.4cm 0.4cm -0.4cm;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #27ae60 0%, #219653 100%);
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.gafete-header::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, #2ecc71, #27ae60);
+}
+
+.gafete-header img {
+    max-height: 1.2cm;
+    width: auto;
+    object-fit: contain;
+    margin-top: -0.2cm;
+}
+
+.gafete-header img[src*="logo2"] {
+    margin-top: -0.3cm;
+}
+
+.gafete-header h5 {
+    margin: 0.1cm 0;
+    font-size: 10pt;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.gafete-body {
+    text-align: center;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 0.2cm;
+    background: linear-gradient(135deg, #ffffff, #f8f9fa);
+    overflow: hidden;
+    min-height: 0;
+    justify-content: flex-start;
+}
+
+.gafete-body h4 {
+    font-size: 10pt;
+    margin: 0.1cm 0;
+    line-height: 1.2;
+    font-weight: 600;
+}
+
+.gafete-foto {
+    width: 2.5cm;
+    height: 3cm;
+    margin: 0.2cm auto 0.3cm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.marco-foto {
+    width: 100%;
+    height: 100%;
+    border: 3px dashed #28a745;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    box-shadow: 0 3px 6px rgba(40, 167, 69, 0.2);
+    position: relative;
+    background: linear-gradient(135deg, #f0f9f4, #e1f5e8);
+}
+
+.texto-foto {
+    color: #6c757d;
+    font-size: 0.9rem;
+    font-weight: bold;
+    text-align: center;
+    padding: 0.5rem;
+    background: white;
+    border-radius: 10px;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.gafete-info {
+    margin-top: 0.2cm;
+    text-align: left;
+    font-size: 8pt;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+.gafete-info p {
+    margin: 0.1cm 0;
+    line-height: 1.2;
+    color: #28a745;
+    font-weight: 500;
+}
+
+.gafete-info strong {
+    display: inline-block;
+    min-width: 2cm;
+    font-weight: 600;
+}
+
+.gafete-info h2 {
+    text-align: center;
+    margin: 2rem 0 3rem;
+    color: #2c3e50;
+    font-weight: 700;
+    position: relative;
+    display: inline-block;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0 1.5rem;
+    letter-spacing: 0.5px;
+}
+
+.gafete-info h2::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, #2ecc71, #27ae60);
+    border-radius: 2px;
+}
+
+/* Estilos para la impresión */
+@page {
+    size: A4;
+    margin: 1cm;
+    padding: 0;
+}
+
+@media print {
+    body, html {
+        margin: 0;
+        padding: 0;
+        visibility: hidden;
+        background: white;
+    }
+    
+    #modalGafetes {
+        visibility: visible;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+    }
+    
+    .modal-dialog {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .modal-content {
+        border: none;
+        box-shadow: none;
+        background: transparent;
+        padding: 0;
+        margin: 0;
+    }
+    
+    #contenidoGafetes {
+        visibility: visible;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .gafetes-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5cm;
+        width: 100%;
+        page-break-inside: avoid;
+    }
+    
+    .gafete {
+        width: 5.5cm !important;
+        height: 9cm !important;
+        margin: 0 auto;
+        box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        border: none;
+        page-break-inside: avoid;
+        break-inside: avoid;
+        background: white;
+        overflow: hidden;
+        padding: 0.1cm 0.4cm 0.4cm 0.4cm !important;
+    }
+    
+    /* Asegurar que no se corten los gafetes entre páginas */
+    .gafete {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+    
+    /* Ajustar para cuando hay un número impar de gafetes */
+    .gafete:nth-child(3n) {
+        margin-right: 0;
+    }
+    
+    .gafete:nth-child(3n+1) {
+        clear: left;
+    }
+    
+    /* Ocultar elementos no deseados en la impresión */
+    .modal-header,
+    .modal-footer,
+    .btn-close,
+    .modal-backdrop,
+    .modal-footer, 
+    .modal-header {
+        display: none !important;
+    }
+    
+    /* Asegurar que los gafetes se ajusten a la página */
+    @page :first {
+        margin-top: 0;
+    }
+    
+    /* Ajustar para impresión a color */
+    @media print and (color) {
+        * {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+    }
+    
+    /* Estilos para los saltos de página */
+    .page-break {
+        page-break-after: always;
+        break-after: page;
+        width: 100%;
+        height: 0;
+        margin: 0;
+        padding: 0;
+    }
+    
+    /* Asegurar que los gafetes no se corten entre páginas */
+    .gafete {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+    
+    /* Ajustar el espaciado entre filas de gafetes */
+    .gafetes-container {
+        row-gap: 1cm;
+    }
+
+    .gafete-info,
+    .gafete-info p,
+    .gafete-info strong,
+    .gafete-info h2 {
+      font-size: 20pt !important;
+      text-align: center !important;
+    }
+
+    .gafete, .gafete * {
+      font-size: 26pt !important;
+    text-align: center !important;
+      margin-bottom: 0.5em !important;
+  }
+    .gafetes-container, .gafetes-fila-atras {
+        border: none !important;
+        background: none !important;
+        box-shadow: none !important;
+    }
+    .gafete[style*='visibility:hidden'] {
+        border: none !important;
+        background: none !important;
+        box-shadow: none !important;
+    }
+}
