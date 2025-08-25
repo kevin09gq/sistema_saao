@@ -512,7 +512,23 @@ body {
 
 
 
- 
+/* Efecto visual para filas actualizadas */
+.fila-actualizada {
+    background-color: #d1fae5 !important;
+    border: 2px solid #10b981 !important;
+    animation: filaActualizadaFlash 2s ease-out;
+}
+
+@keyframes filaActualizadaFlash {
+    0% {
+        background-color: #22c55e;
+        box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+    }
+    100% {
+        background-color: #d1fae5;
+        box-shadow: none;
+    }
+}
 
 /* Responsive design */
 @media (max-width: 768px) {

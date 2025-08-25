@@ -205,58 +205,7 @@
     <script src="../jsPrueba2/rangos_horarios.js"></script>
     <script src="../jsPrueba2/horarios_modal.js"></script>
     
-    <script>
-        // Script para manejar componentes dinámicos del sueldo extra
-        $(document).ready(function() {
-            let contadorConceptos = 1;
-            
-            // Función para calcular el total
-            function calcularTotalExtra() {
-                let total = 0;
-                $('.componente-extra').each(function() {
-                    let valor = parseFloat($(this).val()) || 0;
-                    total += valor;
-                });
-                $('#mod-total-extra').val(total.toFixed(2));
-            }
-            
-            // Evento del botón "Otra?"
-            $(document).on('click', '#btn-agregar-concepto', function() {
-                contadorConceptos++;
-                let nuevoConcepto = `
-                    <div class="col-md-6 mb-2 concepto-dinamico" data-concepto="${contadorConceptos}">
-                        <label class="form-label fw-normal small">Concepto Personalizado</label>
-                        <div class="input-group input-group-sm">
-                            <input type="text" class="form-control" placeholder="Nombre" id="nombre-concepto-${contadorConceptos}" style="max-width: 120px;">
-                            <input type="number" step="0.01" class="form-control mod-input-azul componente-extra" id="valor-concepto-${contadorConceptos}" placeholder="Monto">
-                            <button class="btn btn-outline-danger btn-eliminar-concepto" type="button" data-concepto="${contadorConceptos}" title="Eliminar">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-                $('#componentes-sueldo-extra').append(nuevoConcepto);
-                calcularTotalExtra();
-            });
-            
-            // Evento para eliminar concepto dinámico
-            $(document).on('click', '.btn-eliminar-concepto', function() {
-                let conceptoId = $(this).data('concepto');
-                $(`.concepto-dinamico[data-concepto="${conceptoId}"]`).remove();
-                calcularTotalExtra();
-            });
-            
-            // Calcular automáticamente cuando cambien los valores
-            $(document).on('input', '.componente-extra', function() {
-                calcularTotalExtra();
-            });
-            
-            // Calcular total al cargar el modal
-            $(document).on('shown.bs.modal', '#modal-detalles', function() {
-                calcularTotalExtra();
-            });
-        });
-    </script>
+  
 </body>
 
 </html>

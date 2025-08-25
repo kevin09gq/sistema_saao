@@ -3,7 +3,7 @@ window.horariosSemanales = {
     semana: {
         viernes: {
             dia: "Viernes",
-            entrada: "09:00",
+            entrada: "08:00",
             salidaComida: "00:00",
             entradaComida: "00:00",
             salida: "19:00",

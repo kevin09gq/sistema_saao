@@ -10,9 +10,10 @@ let timeoutBusquedaDispersion = null;
 
 $(document).ready(function () {
     obtenerArchivos();
+    window.horariosSemanalesActualizados = JSON.parse(JSON.stringify(window.horariosSemanales));
     $('#btn_horarios').click(function (e) {
         e.preventDefault();
-        setDataTableHorarios(window.horariosSemanales);
+        setDataTableHorarios(window.horariosSemanalesActualizados);
         activarFormatoHora();
         actualizarHorariosSemanalesActualizados();
 
@@ -138,14 +139,21 @@ function unirJson(json1, json2) {
     // Recorre departamentos y empleados
     if (json1 && json1.departamentos) {
         json1.departamentos.forEach(depto => {
+            // ✅ SOLO AGREGAR REGISTROS PARA PRODUCCION 40 LIBRAS
+            const esProduccion40 = (depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS');
+
             if (depto.empleados) {
                 depto.empleados.forEach(emp1 => {
                     const nombreNormalizado = normalizar(emp1.nombre);
                     if (empleados2Map[nombreNormalizado]) {
                         const emp2 = empleados2Map[nombreNormalizado];
-                        emp1.horas_totales = emp2.horas_totales;
-                        emp1.tiempo_total = emp2.tiempo_total;
-                        emp1.registros = emp2.registros;
+
+                        // Solo agregar datos de horarios si es el departamento de Producción 40 Libras
+                        if (esProduccion40) {
+
+                            emp1.registros = emp2.registros;
+                        }
+                        // Para otros departamentos, no agregar registros de horarios
                     }
                 });
             }
@@ -277,11 +285,23 @@ function establecerDatosEmpleados() {
             if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS')) {
                 let empleadosOrdenados = (depto.empleados || []).slice().sort(compararPorApellidos);
                 empleadosOrdenados.forEach(emp => {
-                    // Aplicar calcularCamposEmpleado para "Produccion 40 Libras"
-                    // calcularCamposEmpleado(emp);
-
                     // Agregar incentivo solo para empleados de 40 libras
-                    emp.incentivo = 250; // Inicializar incentivo en 250
+                    emp.incentivo = 250;
+
+                    // ✅ INICIALIZAR BONO DE ANTIGÜEDAD
+                    emp.bono_antiguedad = 0;
+                    
+                    // ✅ INICIALIZAR ACTIVIDADES ESPECIALES
+                    emp.actividades_especiales = 0;
+                    
+                    // ✅ INICIALIZAR BONO RESPONSABILIDAD
+                    emp.bono_responsabilidad = 0;
+                    
+                    // ✅ INICIALIZAR CONCEPTOS ADICIONALES
+                    emp.conceptos_adicionales = [];
+                    
+                    // ✅ INICIALIZAR SUELDO EXTRA FINAL con el valor de sueldo_extra (horas extras)
+                    emp.sueldo_extra_final = emp.sueldo_extra || 0;
 
                     // Agregar propiedades de deducciones solo para empleados de 40 libras
                     emp.prestamo = 0;
@@ -294,25 +314,21 @@ function establecerDatosEmpleados() {
                     empleadosPlanos.push({
                         ...emp,
                         id_departamento: depto.nombre.split(' ')[0],
-                        nombre_departamento: depto.nombre.replace(/^\d+\s*/, '')
+                        nombre_departamento: depto.nombre.replace(/^\d+\s*/, ''),
+                        puesto: emp.puesto || emp.nombre_departamento || depto.nombre.replace(/^\d+\s*/, '') // Preservar puesto original
                     });
                 });
             }
         });
-
     }
+
     window.empleadosOriginales = empleadosPlanos;
-    empleadosFiltrados = [...empleadosPlanos]; // Inicializar empleados filtrados
-    console.log('Empleados originales:', empleadosPlanos);
+    empleadosFiltrados = [...empleadosPlanos];
 
 
-    setEmpleadosPaginados(empleadosPlanos);
-
-    // Actualiza jsonGlobal con los empleados planos Y mantiene los demás departamentos
     actualizarJsonGlobalConEmpleadosOriginales();
     console.log('jsonGlobal actualizado:', jsonGlobal);
 
-    //$("#filtro-departamento").removeAttr("hidden");
     $("#busqueda-container").removeAttr("hidden");
 }
 
@@ -389,8 +405,8 @@ function mostrarDatosTablaPaginada(empleadosPagina) {
                     const isr = getConcepto('45');
                     const imss = getConcepto('52');
 
-                    // Solo mostrar el nombre del departamento sin el número inicial
-                    let nombreDepartamento = (emp.nombre_departamento || '').trim();
+                    // Usar el puesto original del empleado
+                    let puestoEmpleado = emp.puesto || emp.nombre_departamento || '';
 
                     // Obtener el incentivo si existe
                     const incentivo = emp.incentivo ? emp.incentivo.toFixed(2) : '';
@@ -407,10 +423,10 @@ function mostrarDatosTablaPaginada(empleadosPagina) {
                         <tr data-clave="${emp.clave}">
                             <td>${numeroFila++}</td>
                             <td>${emp.nombre}</td>
-                            <td>${nombreDepartamento}</td>
+                            <td>${puestoEmpleado}</td>
                             <td>${mostrarValor(emp.sueldo_base)}</td>
                             <td>${mostrarValor(incentivo)}</td>
-                            <td>${mostrarValor(emp.sueldo_extra)}</td>
+                            <td>${mostrarValor(emp.sueldo_extra_final)}</td>
                             <td>${mostrarValor(emp.neto_pagar)}</td>
                             <td>${mostrarValor(emp.prestamo)}</td>
                             <td>${mostrarValor(emp.inasistencias_descuento)}</td>
@@ -575,7 +591,7 @@ function busquedaNomina() {
  */
 
 function redondearRegistrosEmpleados() {
-    window.horariosSemanalesActualizados = JSON.parse(JSON.stringify(window.horariosSemanales));
+
 
     if (!jsonGlobal || !jsonGlobal.departamentos || !window.horariosSemanalesActualizados || !window.empleadosOriginales) {
         return;
@@ -620,7 +636,7 @@ function redondearRegistrosEmpleados() {
         }
         return 0;
     }
-    
+
     // Nueva función para detectar llegada tardía después de comer
     function detectarLlegadaTardiaComer(horaReal, horaOficial) {
         const minutosReal = horaAMinutos(horaReal);
@@ -682,11 +698,11 @@ function redondearRegistrosEmpleados() {
     // Calcular tiempo trabajado
     function calcularTiempoTrabajado(registrosDia, horarioOficial) {
         if (!registrosDia || registrosDia.length === 0) return 0;
-        
+
         // Buscar primera entrada válida y última salida válida
         let primeraEntrada = null;
         let ultimaSalida = null;
-        
+
         // Buscar primera entrada diferente de "00:00"
         for (let registro of registrosDia) {
             if (registro.entrada && registro.entrada !== "00:00") {
@@ -694,7 +710,7 @@ function redondearRegistrosEmpleados() {
                 break;
             }
         }
-        
+
         // Buscar última salida diferente de "00:00"
         for (let i = registrosDia.length - 1; i >= 0; i--) {
             const registro = registrosDia[i];
@@ -703,7 +719,7 @@ function redondearRegistrosEmpleados() {
                 break;
             }
         }
-        
+
         // Si tenemos entrada y salida válidas, calcular diferencia
         let totalMinutos = 0;
         if (primeraEntrada !== null && ultimaSalida !== null) {
@@ -717,64 +733,64 @@ function redondearRegistrosEmpleados() {
                 totalMinutos -= minutosComida;
             }
         }
-        
+
         return Math.max(0, totalMinutos);
     }
 
     // Nueva función para detectar olvidos del checador
     function detectarOlvidosChecador(registrosDia, horarioOficial) {
         const olvidos = [];
-        
+
         // Para horarios completos (con comida)
-        const tieneHorarioCompleto = 
+        const tieneHorarioCompleto =
             horarioOficial.entrada !== "00:00" &&
             horarioOficial.salidaComida !== "00:00" &&
             horarioOficial.entradaComida !== "00:00" &&
             horarioOficial.salida !== "00:00";
-            
+
         if (tieneHorarioCompleto) {
             // Verificar los 4 registros esperados
             if (registrosDia.length < 2) {
                 olvidos.push("Faltan registros completos");
                 return olvidos;
             }
-            
+
             // Verificar entrada
             if (!registrosDia[0] || !registrosDia[0].entrada || registrosDia[0].entrada === "00:00") {
                 olvidos.push("Entrada");
             }
-            
+
             // Verificar salida a comer
             if (!registrosDia[0] || !registrosDia[0].salida || registrosDia[0].salida === "00:00") {
                 olvidos.push("Salir a comer");
             }
-            
+
             // Verificar regreso de comer
             if (!registrosDia[1] || !registrosDia[1].entrada || registrosDia[1].entrada === "00:00") {
                 olvidos.push("Regreso de comer");
             }
-            
+
             // Verificar salida final
             if (!registrosDia[1] || !registrosDia[1].salida || registrosDia[1].salida === "00:00") {
                 olvidos.push("Salida final");
             }
         } else {
             // Para horarios simples (sin comida) - solo verificar entrada y salida
-            const tieneEntradaSalida = 
-                horarioOficial.entrada !== "00:00" && 
+            const tieneEntradaSalida =
+                horarioOficial.entrada !== "00:00" &&
                 horarioOficial.salida !== "00:00";
-                
+
             if (tieneEntradaSalida) {
                 if (registrosDia.length === 0) {
                     olvidos.push("Entrada y Salida");
                     return olvidos;
                 }
-                
+
                 // Verificar entrada
                 if (!registrosDia[0] || !registrosDia[0].entrada || registrosDia[0].entrada === "00:00") {
                     olvidos.push("Entrada");
                 }
-                
+
                 // Verificar salida
                 const ultimoRegistro = registrosDia[registrosDia.length - 1];
                 if (!ultimoRegistro || !ultimoRegistro.salida || ultimoRegistro.salida === "00:00") {
@@ -782,20 +798,20 @@ function redondearRegistrosEmpleados() {
                 }
             }
         }
-        
+
         return olvidos;
     }
 
     // Nueva función para completar registros faltantes con horarios oficiales
     function completarRegistrosFaltantes(registrosDia, horarioOficial) {
-        const tieneHorarioCompleto = 
+        const tieneHorarioCompleto =
             horarioOficial.entrada !== "00:00" &&
             horarioOficial.salidaComida !== "00:00" &&
             horarioOficial.entradaComida !== "00:00" &&
             horarioOficial.salida !== "00:00";
 
-        const tieneEntradaSalida = 
-            horarioOficial.entrada !== "00:00" && 
+        const tieneEntradaSalida =
+            horarioOficial.entrada !== "00:00" &&
             horarioOficial.salida !== "00:00";
 
         if (tieneHorarioCompleto) {
@@ -856,10 +872,14 @@ function redondearRegistrosEmpleados() {
     // Procesar empleados
     window.empleadosOriginales.forEach(empleado => {
         console.log(`\n=== EMPLEADO: ${empleado.nombre} (Clave: ${empleado.clave}) ===`);
-        
+
         const registrosPorFecha = {};
         let totalMinutosSemana = 0; // Variable para acumular minutos de toda la semana
-        
+
+        // Encontrar el empleado correspondiente en jsonGlobal para actualizar
+        const empleadoEnJson = encontrarEmpleadoEnJsonGlobal(empleado.clave);
+        const registrosRedondeados = [];
+
         if (empleado.registros) {
             empleado.registros.forEach(registro => {
                 if (registro.fecha && (registro.entrada || registro.salida)) {
@@ -874,18 +894,17 @@ function redondearRegistrosEmpleados() {
             const horarioOficial = window.horariosSemanalesActualizados.semana[diaSemana];
             if (!horarioOficial) return;
 
-            const registrosDia = registrosPorFecha[fecha];
+            // 🔹 CAMBIAR ESTA LÍNEA - HACER COPIA PROFUNDA
+            const registrosDia = JSON.parse(JSON.stringify(registrosPorFecha[fecha])); // ✅ COPIA, NO REFERENCIA
             console.log(`\nFECHA: ${fecha} (${diaSemana.toUpperCase()})`);
-            
+
             // Mostrar registros ORIGINALES
             console.log('Registros ORIGINALES:');
             registrosDia.forEach((reg, i) => {
                 console.log(`  ${i + 1}. Entrada: ${reg.entrada} | Salida: ${reg.salida}`);
             });
-            
-            // Crear copia para comparar
-            const registrosOriginales = JSON.parse(JSON.stringify(registrosDia));
-            
+
+
             const tieneHorarioCompleto =
                 horarioOficial.entrada !== "00:00" &&
                 horarioOficial.salidaComida !== "00:00" &&
@@ -915,7 +934,7 @@ function redondearRegistrosEmpleados() {
                 const ultimo = registrosDia[registrosDia.length - 1];
                 salidaTardia = detectarSalidaTardia(ultimo.salida, horarioOficial.salida);
             }
-            
+
             // Detectar llegada tardía después de comer (solo para horarios completos)
             if (tieneHorarioCompleto && registrosDia.length >= 2 && horarioOficial.entradaComida !== "00:00") {
                 llegadaTardiaComer = detectarLlegadaTardiaComer(registrosDia[1].entrada, horarioOficial.entradaComida);
@@ -927,11 +946,11 @@ function redondearRegistrosEmpleados() {
                 // Registro 1: entrada + salida a comer
                 registrosDia[0].entrada = redondearHora(registrosDia[0].entrada, horarioOficial.entrada, 'entrada');
                 registrosDia[0].salida = redondearHora(registrosDia[0].salida, horarioOficial.salidaComida, 'salidaComer');
-                
+
                 // Registro 2: entrada de comer + salida final
                 registrosDia[1].entrada = redondearHora(registrosDia[1].entrada, horarioOficial.entradaComida, 'entradaComer');
                 registrosDia[1].salida = redondearHora(registrosDia[1].salida, horarioOficial.salida, 'salida');
-                
+
                 // Limpiar registros adicionales si los hay (poner en 00:00)
                 for (let i = 2; i < registrosDia.length; i++) {
                     registrosDia[i].entrada = "00:00";
@@ -969,6 +988,25 @@ function redondearRegistrosEmpleados() {
             // Acumular minutos para el total semanal
             totalMinutosSemana += minutosTrabajados;
 
+            // GUARDAR REGISTRO REDONDEADO - AQUÍ DENTRO DEL BUCLE
+            if (empleadoEnJson) {
+                const registroRedondeado = {
+                    fecha: fecha,
+                    dia: diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1),
+                    entrada: registrosDia[0]?.entrada || "00:00",
+                    salida_comer: tieneHorarioCompleto ? (registrosDia[0]?.salida || "00:00") : "00:00",
+                    entrada_comer: tieneHorarioCompleto ? (registrosDia[1]?.entrada || "00:00") : "00:00",
+                    salida: registrosDia[registrosDia.length - 1]?.salida || "00:00",
+                    hora_comida: horarioOficial.horasComida || "00:00",
+                    trabajado: horasTrabajadas,
+                    olvido_checador: olvidosChecador.length > 0,
+                    entrada_temprana: minutosAHora(entradaTemprana),
+                    salida_tardia: minutosAHora(salidaTardia)
+                };
+
+                registrosRedondeados.push(registroRedondeado);
+            }
+
             // Mostrar hora de comida si existe
             if (horarioOficial && horarioOficial.horasComida && horarioOficial.horasComida !== "00:00") {
                 console.log(`Hora de comida: ${horarioOficial.horasComida}`);
@@ -983,25 +1021,153 @@ function redondearRegistrosEmpleados() {
             if (salidaTardia > 0) {
                 console.log(`Salida tardía: ${minutosAHora(salidaTardia)}`);
             }
-            
+
             // Mostrar llegada tardía después de comer si existe
             if (llegadaTardiaComer > 0) {
                 console.log(`Llegada tardía después de comer: ${minutosAHora(llegadaTardiaComer)} (se perdieron ${minutosAHora(llegadaTardiaComer)} de trabajo)`);
             }
-            
+
             // Mostrar olvidos del checador si existen
             if (olvidosChecador.length > 0) {
                 console.log(`⚠️ OLVIDOS DEL CHECADOR: ${olvidosChecador.join(', ')}`);
             }
-            
+
             console.log('─'.repeat(50));
         });
-        
+
+        // GUARDAR TOTALES AL FINAL DE CADA EMPLEADO
+        if (empleadoEnJson) {
+
+            empleadoEnJson.tiempo_total_redondeado = minutosAHora(totalMinutosSemana); // <-- "60:46"
+            empleadoEnJson.total_minutos_redondeados = totalMinutosSemana; // <-- 3646 minutos
+            empleadoEnJson.registros_redondeados = registrosRedondeados;
+
+            console.log(`✅ DATOS GUARDADOS EN JSON - Empleado: ${empleado.nombre}`);
+            console.log(`   Tiempo redondeado: ${empleadoEnJson.tiempo_total_redondeado} (${empleadoEnJson.total_minutos_redondeados} minutos)`);
+            console.log(`   Registros redondeados: ${registrosRedondeados.length}`);
+        }
+
         // Mostrar totales semanales al final de cada empleado
         const horasSemanales = minutosAHora(totalMinutosSemana);
         console.log(`\n🕒 TOTAL SEMANAL: ${horasSemanales} (${totalMinutosSemana} minutos)`);
         console.log('═'.repeat(60));
     });
 
+    // Función auxiliar para encontrar empleado en jsonGlobal
+    function encontrarEmpleadoEnJsonGlobal(clave) {
+        if (!jsonGlobal || !jsonGlobal.departamentos) return null;
+
+        for (let depto of jsonGlobal.departamentos) {
+            if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS')) {
+                for (let emp of depto.empleados || []) {
+                    if (emp.clave === clave) {
+                        return emp;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    // Al final de la función, después de procesar todos los empleados
     console.log('\n=== REDONDEO COMPLETADO ===');
+
+    // ✅ CALCULAR CAMPOS Y SINCRONIZAR CON EMPLEADOS ORIGINALES
+    console.log('🔄 Calculando sueldos basados en tiempo redondeado...');
+    
+    // Procesar solo empleados que tienen registros redondeados
+    window.empleadosOriginales.forEach(empleado => {
+        const empleadoEnJson = encontrarEmpleadoEnJsonGlobal(empleado.clave);
+        if (empleadoEnJson && empleadoEnJson.tiempo_total_redondeado) {
+            // Calcular en JSON
+            calcularCamposEmpleado(empleadoEnJson);
+            
+            // ✅ SINCRONIZAR: Copiar valores calculados a empleadosOriginales
+            empleado.sueldo_base = empleadoEnJson.sueldo_base;
+            empleado.sueldo_extra = empleadoEnJson.sueldo_extra;
+            empleado.sueldo_extra_final = empleadoEnJson.sueldo_extra
+            empleado.tiempo_total_redondeado = empleadoEnJson.tiempo_total_redondeado;
+            empleado.total_minutos_redondeados = empleadoEnJson.total_minutos_redondeados;
+            empleado.Minutos_trabajados = empleadoEnJson.Minutos_trabajados;
+            empleado.Minutos_normales = empleadoEnJson.Minutos_normales;
+            empleado.Minutos_extra = empleadoEnJson.Minutos_extra;
+            
+}
+    });
+    
+ 
+    // ✅ ACTUALIZAR TABLA CON VALORES SINCRONIZADOS
+    setEmpleadosPaginados(window.empleadosOriginales);
+
+    
+    console.log('JSON GLOBAL ACTUALIZADO:', jsonGlobal);
+}
+
+// Función auxiliar para convertir hora (HH:MM) a minutos
+function horaToMinutos(tiempo) {
+    if (!tiempo || tiempo === "00:00") return 0;
+    const [horas, minutos] = tiempo.split(':').map(Number);
+    return (horas * 60) + minutos;
+}
+
+// Función para calcular y actualizar campos en cada empleado
+function calcularCamposEmpleado(emp) {
+    if (!window.rangosHorasJson) {
+
+        return emp;
+    }
+
+    // Convierte tiempo_total_redondeado a minutos
+    const tiempoTotal = emp.tiempo_total_redondeado || "00:00";
+    const minutosTotales = horaToMinutos(tiempoTotal);
+
+    let sueldoBase = 0;
+    let sueldoFinal = 0;
+    let minutosExtras = 0;
+    let extra = 0;
+    let rangoNormal = null;
+    let rangoExtra = null;
+    let maxMinutosNormales = 0;
+
+    window.rangosHorasJson.forEach(rango => {
+        if (rango.tipo === "hora_extra") {
+            rangoExtra = rango;
+        } else {
+            if (rango.minutos > maxMinutosNormales) {
+                maxMinutosNormales = rango.minutos;
+            }
+            if (minutosTotales <= rango.minutos && !rangoNormal) {
+                rangoNormal = rango;
+            }
+        }
+    });
+
+    // CASO 1: Más de maxMinutosNormales (tiene horas extra)
+    if (minutosTotales > maxMinutosNormales && rangoExtra) {
+        minutosExtras = minutosTotales - maxMinutosNormales;
+        extra = minutosExtras * rangoExtra.costo_por_minuto;
+        const ultimoRango = window.rangosHorasJson.find(r => r.minutos === maxMinutosNormales);
+        sueldoBase = ultimoRango ? ultimoRango.sueldo_base : 0;
+        sueldoFinal = sueldoBase + extra;
+    }
+    // CASO 2: Igual al rango exacto → sueldo base
+    else if (rangoNormal && minutosTotales === rangoNormal.minutos) {
+        sueldoBase = rangoNormal.sueldo_base;
+        sueldoFinal = sueldoBase;
+    }
+    // CASO 3: Menor al rango → costo por minuto
+    else if (rangoNormal && minutosTotales < rangoNormal.minutos) {
+        sueldoBase = minutosTotales * rangoNormal.costo_por_minuto;
+        sueldoFinal = sueldoBase;
+    }
+
+    // Actualiza el objeto empleado
+    emp.Minutos_trabajados = minutosTotales;
+    emp.Minutos_normales = Math.min(minutosTotales, maxMinutosNormales);
+    emp.Minutos_extra = minutosExtras;
+    emp.sueldo_base = Number(sueldoBase.toFixed(2));
+    emp.sueldo_extra = Number(extra.toFixed(2));
+
+
+    return emp;
 }

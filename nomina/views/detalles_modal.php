@@ -39,40 +39,110 @@
                     </div>
                 </div>
             </div>
-         
+
             <!-- Registros -->
             <div class="tab-pane fade" id="tab_registros" role="tabpanel" aria-labelledby="tab-registros">
                 <h4 style="margin-bottom:20px;">Registros de Entrada y Salida</h4>
-                                
-                <div class="table-responsive">
-                    <table class="tabla-registros" id="tabla-registros">
+
+                <div class="table-container">
+                    <table class="custom-table">
                         <thead>
                             <tr>
-                                <th class="encabezado-dia">DÍA</th>
-                                <th class="encabezado-tiempo">ENTRADA</th>
-                                <th class="encabezado-tiempo">SALIDA COMIDA</th>
-                                <th class="encabezado-tiempo">ENTRADA COMIDA</th>
-                                <th class="encabezado-tiempo">SALIDA</th>
-                                <th class="encabezado-tiempo">TOTAL HORAS</th>
-                                <th class="encabezado-tiempo">TOTAL MINUTOS</th>
+                                <th>Día</th>
+                                <th>Entrada</th>
+                                <th>Salida Comida</th>
+                                <th>Entrada Comida</th>
+                                <th>Salida</th>
+                                <th>Total Horas</th>
+                                <th>Total Minutos</th>
+                                <th>Horas Comida</th>
                             </tr>
                         </thead>
-                        <tbody id="tabla-registros-body">
+                        <tbody>
                            
                         </tbody>
                         <tfoot>
-                            <tr class="fila-total-registros">
-                                <td class="etiqueta-total-registros">TOTAL</td>
-                                <td class="celda-total-general-registros"></td>
-                                <td class="celda-total-general-registros"></td>
-                                <td class="celda-total-general-registros"></td>
-                                <td class="celda-total-general-registros"></td>
-                                <td class="celda-total-horas-registros"></td>
-                                <td class="celda-total-minutos-registros"></td>
+                            <tr>
+                                <th>TOTAL</th>
+                                <th>--</th>
+                                <th>--</th>
+                                <th>--</th>
+                                <th>--</th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
+
+                <!-- Eventos Especiales -->
+                <div class="eventos-especiales-container" style="margin-top: 30px;">
+                    <h5 style="color: #22c55e; margin-bottom: 20px; border-bottom: 2px solid #22c55e; padding-bottom: 8px;">
+                        <i class="bi bi-clock-history"></i> Eventos Especiales
+                    </h5>
+                    
+                    <div class="row">
+                        <!-- Entradas Tempranas -->
+                        <div class="col-md-4 mb-3">
+                            <div class="evento-card entrada-temprana">
+                                <div class="evento-header">
+                                    <i class="bi bi-sunrise"></i>
+                                    <span>Entradas Tempranas</span>
+                                </div>
+                                <div class="evento-content" id="entradas-tempranas-content">
+                                  
+                                </div>
+                                <div class="evento-total">
+                                    <strong>Total: <span id="total-entradas-tempranas"></span></strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Salidas Tardías -->
+                        <div class="col-md-4 mb-3">
+                            <div class="evento-card salida-tardia">
+                                <div class="evento-header">
+                                    <i class="bi bi-sunset"></i>
+                                    <span>Salidas Tardías</span>
+                                </div>
+                                <div class="evento-content" id="salidas-tardias-content">
+                                  
+                                </div>
+                                <div class="evento-total">
+                                    <strong>Total: <span id="total-salidas-tardias"></span></strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Olvidos del Checador -->
+                        <div class="col-md-4 mb-3">
+                            <div class="evento-card olvido-checador">
+                                <div class="evento-header">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    <span>Olvidos del Checador</span>
+                                </div>
+                                <div class="evento-content" id="olvidos-checador-content">
+                                 
+                                </div>
+                                <div class="evento-total">
+                                    <strong>Total: <span id="total-olvidos-checador"></span></strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resumen General -->
+                    <div class="resumen-eventos">
+                        <div class="resumen-card">
+                            <div class="resumen-item">
+                                <span class="resumen-label">Tiempo Extra Total:</span>
+                                <span class="resumen-valor" id="tiempo-extra-total"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
             <!-- Modificar Detalles -->
             <div class="tab-pane fade" id="tab_modificar_detalles" role="tabpanel" aria-labelledby="tab-modificar-detalles">
@@ -91,7 +161,7 @@
                                         <input type="number" step="0.01" class="form-control mod-input-azul" id="mod-sueldo-neto" value="">
                                     </div>
                                 </div>
-                                
+
                                 <div class="col-md-4 d-flex flex-column">
                                     <label class="form-label fw-semibold">Incentivo ($)</label>
                                     <div class="d-flex align-items-center mb-1">
@@ -102,17 +172,17 @@
                                     </div>
                                     <input type="number" step="0.01" class="form-control mod-input-cyan" id="mod-incentivo-monto" value="250" placeholder="Monto del incentivo">
                                 </div>
-                                
+
                                 <div class="col-md-4 d-flex flex-column">
                                     <label class="form-label fw-semibold">Total Sueldo Extra ($)</label>
                                     <small class="text-muted mb-1">Calculado automáticamente</small>
                                     <input type="number" step="0.01" class="form-control mod-input-azul fw-bold" id="mod-total-extra" value="" readonly style="background-color: #f8f9fa; font-weight: bold;">
                                 </div>
                             </div>
-                            
+
                             <!-- Separador visual -->
                             <hr class="my-3">
-                            
+
                             <!-- Título de componentes -->
                             <div class="row mb-3">
                                 <div class="col-12">
@@ -122,7 +192,7 @@
                                     <small class="text-muted">Configure los diferentes conceptos que conforman el sueldo extra</small>
                                 </div>
                             </div>
-                            
+
                             <!-- Componentes organizados con altura uniforme -->
                             <div class="row" id="componentes-sueldo-extra">
                                 <div class="col-md-3 mb-3 d-flex flex-column">
@@ -131,33 +201,33 @@
                                         <input type="number" step="0.01" class="form-control mod-input-azul componente-extra" id="mod-horas-extras" value="" placeholder="0.00">
                                     </div>
                                 </div>
-                                
+
                                 <div class="col-md-3 mb-3 d-flex flex-column">
                                     <label class="form-label fw-normal">Bono Antigüedad</label>
                                     <div class="d-flex align-items-center mb-1">
-                                        <input class="form-check-input me-2" type="checkbox" id="mod-bono-antiguedad-check" checked>
+                                        <input class="form-check-input me-2" type="checkbox" id="mod-bono-antiguedad-check">
                                         <label class="form-check-label small mb-0" for="mod-bono-antiguedad-check">
                                             Aplicar bono
                                         </label>
                                     </div>
-                                    <input type="number" step="0.01" class="form-control mod-input-azul componente-extra" id="mod-bono-antiguedad" value="200">
+                                    <input type="number" step="0.01" class="form-control mod-input-azul componente-extra" id="mod-bono-antiguedad" value="0" disabled>
                                 </div>
-                                
+
                                 <div class="col-md-3 mb-3 d-flex flex-column">
                                     <label class="form-label fw-normal">Actividades Especiales</label>
                                     <div class="flex-grow-1 d-flex align-items-end">
-                                        <input type="number" step="0.01" class="form-control mod-input-azul componente-extra" id="mod-actividades-especiales" value="" placeholder="0.00">
+                                        <input type="number" step="0.01" class="form-control mod-input-azul componente-extra" id="mod-actividades-especiales" value="" placeholder="0">
                                     </div>
                                 </div>
-                                
+
                                 <div class="col-md-3 mb-3 d-flex flex-column">
                                     <label class="form-label fw-normal">Puesto</label>
                                     <div class="flex-grow-1 d-flex align-items-end">
-                                        <input type="number" step="0.01" class="form-control mod-input-azul componente-extra" id="mod-bono-responsabilidad" value="200">
+                                        <input type="number" step="0.01" class="form-control mod-input-azul componente-extra" id="mod-bono-responsabilidad" value="0">
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Botón para agregar más conceptos -->
                             <div class="row">
                                 <div class="col-12 text-center">
@@ -198,7 +268,7 @@
                             <div class="row mb-3">
                                 <div class="col-md-3 mb-2">
                                     <label class="form-label fw-semibold">Tarjeta ($)</label>
-                                    <input type="number" step="0.01" class="form-control mod-input-rosa" id="mod-tarjeta" value="" >
+                                    <input type="number" step="0.01" class="form-control mod-input-rosa" id="mod-tarjeta" value="">
                                 </div>
                                 <div class="col-md-3 mb-2">
                                     <label class="form-label fw-semibold">Préstamo ($)</label>

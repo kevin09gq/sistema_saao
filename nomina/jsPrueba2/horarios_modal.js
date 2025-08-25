@@ -26,6 +26,7 @@ function setDataTableHorarios(data) {
     });
 
 
+
 }
 
 
@@ -333,12 +334,15 @@ function convertirMinutosAHora(totalMinutos) {
 
 // Nueva función para actualizar los datos cuando se edite
 function actualizarHorariosSemanalesActualizados() {
-    $("#guardar-cambios").click(function (e) {
+    $("#guardar-cambios").off('click').on('click', function (e) {
         e.preventDefault();
 
+        console.log('🔄 Guardando cambios en horarios...');
 
-        // Crear una copia del JSON original
-        window.horariosSemanalesActualizados = JSON.parse(JSON.stringify(window.horariosSemanales));
+        // Crear una copia del JSON original SI NO EXISTE window.horariosSemanalesActualizados
+        if (!window.horariosSemanalesActualizados) {
+            window.horariosSemanalesActualizados = JSON.parse(JSON.stringify(window.horariosSemanales));
+        }
 
         // Recorrer cada fila de la tabla para obtener los datos actuales
         $(".tabla-horarios tbody tr").each(function () {
@@ -370,10 +374,43 @@ function actualizarHorariosSemanalesActualizados() {
             }
         });
 
+        console.log('✅ Horarios actualizados:', window.horariosSemanalesActualizados);
+        console.log('🔄 Re-procesando registros de empleados...');
+        
+        // ✅ AQUÍ: Re-procesar todos los registros redondeados con los nuevos horarios
+        if (typeof redondearRegistrosEmpleados === 'function') {
+            redondearRegistrosEmpleados();
+            console.log('✅ Registros redondeados actualizados con los nuevos horarios');
+            
+            // ✅ SINCRONIZACIÓN YA SE HACE DENTRO DE redondearRegistrosEmpleados()
+            
+        } else {
+            console.error('❌ Función redondearRegistrosEmpleados no encontrada');
+        }
+        
+        // ✅ LA TABLA YA SE ACTUALIZA DENTRO DE redondearRegistrosEmpleados()
+        
         // Cerrar el modal
         $('#horarios_modal').modal('hide');
-
+        
+        console.log('✅ Proceso de actualización completado');
     });
+}
+
+// ✅ FUNCIÓN AUXILIAR AGREGADA: Función para encontrar empleado en jsonGlobal
+function encontrarEmpleadoEnJsonGlobal(clave) {
+    if (!window.jsonGlobal || !window.jsonGlobal.departamentos) return null;
+
+    for (let depto of window.jsonGlobal.departamentos) {
+        if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS')) {
+            for (let emp of depto.empleados || []) {
+                if (emp.clave === clave) {
+                    return emp;
+                }
+            }
+        }
+    }
+    return null;
 }
 
 // Nueva función para calcular las horas totales del día automáticamente
@@ -564,6 +601,8 @@ function calcularTotalesSemana() {
     console.log('Total Comida Semana:', totalComidaFormateadas);
 }
 
+
+
 // Función para inicializar los totales cuando se carga la tabla
 function inicializarTotales() {
     // Calcular totales iniciales cuando se carga la tabla
@@ -571,6 +610,9 @@ function inicializarTotales() {
         calcularTotalesSemana();
     }, 500); // Dar tiempo a que se cargue la tabla
 }
+
+
+
 
 
 
