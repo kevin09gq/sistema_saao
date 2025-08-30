@@ -54,7 +54,7 @@ foreach ($rows as $row) {
                 'empleados' => []
             ];
             
-            // ✅ Verificar si es el departamento de Producción 40 Libras
+            //   Verificar si es el departamento de Producción 40 Libras
             $esProduccion40 = stripos($nombreCompleto, 'PRODUCCION 40 LIBRAS') !== false;
             
             $ultimoEmpleadoIdx = null;
@@ -77,7 +77,7 @@ foreach ($rows as $row) {
                 'neto_pagar' => null
             ];
             
-            // ✅ Solo agregar array de conceptos si es Producción 40 Libras
+            //   Solo agregar array de conceptos si es Producción 40 Libras
             $esProduccion40 = stripos($actualDepto['nombre'], 'PRODUCCION 40 LIBRAS') !== false;
             if ($esProduccion40) {
                 $empleado['conceptos'] = [];

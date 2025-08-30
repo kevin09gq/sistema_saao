@@ -90,7 +90,6 @@ function obtenerArchivos(params) {
                                 // Unir ambos JSON y mostrar el resultado
                                 const jsonUnido = unirJson(json1, json2);
                                 jsonGlobal = jsonUnido; // Guardar en variable global
-                                console.log('JSON unido:', jsonUnido);
                                 actualizarCabeceraNomina(jsonUnido);
 
                                 $("#tabla-nomina-responsive").removeAttr("hidden");
@@ -139,7 +138,7 @@ function unirJson(json1, json2) {
     // Recorre departamentos y empleados
     if (json1 && json1.departamentos) {
         json1.departamentos.forEach(depto => {
-            // ✅ SOLO AGREGAR REGISTROS PARA PRODUCCION 40 LIBRAS
+            //   SOLO AGREGAR REGISTROS PARA PRODUCCION 40 LIBRAS
             const esProduccion40 = (depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS');
 
             if (depto.empleados) {
@@ -288,19 +287,19 @@ function establecerDatosEmpleados() {
                     // Agregar incentivo solo para empleados de 40 libras
                     emp.incentivo = 250;
 
-                    // ✅ INICIALIZAR BONO DE ANTIGÜEDAD
+                    //   INICIALIZAR BONO DE ANTIGÜEDAD
                     emp.bono_antiguedad = 0;
-                    
-                    // ✅ INICIALIZAR ACTIVIDADES ESPECIALES
+
+                    //   INICIALIZAR ACTIVIDADES ESPECIALES
                     emp.actividades_especiales = 0;
-                    
-                    // ✅ INICIALIZAR BONO RESPONSABILIDAD
+
+                    //   INICIALIZAR BONO RESPONSABILIDAD
                     emp.bono_responsabilidad = 0;
-                    
-                    // ✅ INICIALIZAR CONCEPTOS ADICIONALES
+
+                    //   INICIALIZAR CONCEPTOS ADICIONALES
                     emp.conceptos_adicionales = [];
-                    
-                    // ✅ INICIALIZAR SUELDO EXTRA FINAL con el valor de sueldo_extra (horas extras)
+
+                    //   INICIALIZAR SUELDO EXTRA FINAL con el valor de sueldo_extra (horas extras)
                     emp.sueldo_extra_final = emp.sueldo_extra || 0;
 
                     // Agregar propiedades de deducciones solo para empleados de 40 libras
@@ -308,8 +307,11 @@ function establecerDatosEmpleados() {
                     emp.uniformes = 0;
                     emp.checador = 0;
                     emp.fa_gafet_cofia = 0;
-                    emp.inasistencias_horas = 0;
+                    emp.inasistencias_minutos = 0;
                     emp.inasistencias_descuento = 0;
+
+                    //   INICIALIZAR SUELDO A COBRAR
+                    emp.sueldo_a_cobrar = 0;
 
                     empleadosPlanos.push({
                         ...emp,
@@ -352,103 +354,6 @@ function actualizarJsonGlobalConEmpleadosOriginales() {
         // Los demás departamentos mantienen sus empleados originales sin procesar
     });
 }
-
-
-// Función para obtener las claves de empleados del departamento "PRODUCCION 40 LIBRAS"
-function obtenerClavesEmpleados() {
-    // Obtiene solo las claves de empleados del departamento "PRODUCCION 40 LIBRAS"
-    let claves = [];
-    if (jsonGlobal && jsonGlobal.departamentos) {
-        jsonGlobal.departamentos.forEach(depto => {
-            if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS')) {
-                (depto.empleados || []).forEach(emp => {
-                    if (emp.clave) {
-                        claves.push(emp.clave);
-                    }
-                });
-            }
-        });
-    }
-
-    return claves;
-}
-
-// Función para mostrar datos de la tabla con paginación
-function mostrarDatosTablaPaginada(empleadosPagina) {
-    // Obtener todas las claves de empleados del departamento "PRODUCCION 40 LIBRAS"
-    let claves = obtenerClavesEmpleados();
-
-
-    // Enviar todas las claves de "PRODUCCION 40 LIBRAS" en un request AJAX
-    $.ajax({
-        type: "POST",
-        url: "../php/validar_clave.php",
-        data: JSON.stringify({ claves: claves }),
-        contentType: "application/json",
-        success: function (clavesValidasJSON) {
-            const clavesValidas = JSON.parse(clavesValidasJSON);
-            let numeroFila = ((paginaActualNomina - 1) * empleadosPorPagina) + 1;
-            $('#tabla-nomina-body').empty();
-
-            // Renderizar solo los empleados de la página actual
-            empleadosPagina.forEach(emp => {
-                // Como empleadosPagina ya contiene solo empleados de "PRODUCCION 40 LIBRAS", 
-                // solo verificamos que la clave sea válida
-                if (clavesValidas.includes(String(emp.clave)) || clavesValidas.includes(Number(emp.clave))) {
-                    // Obtener conceptos
-                    const conceptos = emp.conceptos || [];
-                    const getConcepto = (codigo) => {
-                        const c = conceptos.find(c => c.codigo === codigo);
-                        return c ? parseFloat(c.resultado).toFixed(2) : '';
-                    };
-                    const infonavit = getConcepto('16');
-                    const isr = getConcepto('45');
-                    const imss = getConcepto('52');
-
-                    // Usar el puesto original del empleado
-                    let puestoEmpleado = emp.puesto || emp.nombre_departamento || '';
-
-                    // Obtener el incentivo si existe
-                    const incentivo = emp.incentivo ? emp.incentivo.toFixed(2) : '';
-
-                    // Función para mostrar cadena vacía en lugar de 0, NaN o valores vacíos
-                    const mostrarValor = (valor) => {
-                        if (valor === 0 || valor === '0' || valor === '' || valor === null || valor === undefined || isNaN(valor)) {
-                            return '';
-                        }
-                        return valor;
-                    };
-
-                    let fila = `
-                        <tr data-clave="${emp.clave}">
-                            <td>${numeroFila++}</td>
-                            <td>${emp.nombre}</td>
-                            <td>${puestoEmpleado}</td>
-                            <td>${mostrarValor(emp.sueldo_base)}</td>
-                            <td>${mostrarValor(incentivo)}</td>
-                            <td>${mostrarValor(emp.sueldo_extra_final)}</td>
-                            <td>${mostrarValor(emp.neto_pagar)}</td>
-                            <td>${mostrarValor(emp.prestamo)}</td>
-                            <td>${mostrarValor(emp.inasistencias_descuento)}</td>
-                            <td>${mostrarValor(emp.uniformes)}</td>
-                            <td>${mostrarValor(infonavit)}</td>
-                            <td>${mostrarValor(isr)}</td>
-                            <td>${mostrarValor(imss)}</td>
-                            <td>${mostrarValor(emp.checador)}</td>
-                            <td>${mostrarValor(emp.fa_gafet_cofia)}</td>
-                            <td></td>
-                        </tr>
-                    `;
-                    $('#tabla-nomina-body').append(fila);
-                }
-            });
-        }
-    });
-
-    inicializarMenuContextual(); // Re-inicializar el menú contextual después de renderizar la tabla
-}
-
-
 
 
 
@@ -572,6 +477,7 @@ function busquedaNomina() {
                 [...window.empleadosOriginales];
 
             // Actualizar paginación con resultados filtrados
+            // Nota: setEmpleadosPaginados ahora filtra empleados registrados automáticamente
             paginaActualNomina = 1;
             setEmpleadosPaginados(empleadosFiltrados);
         }, 300);
@@ -590,14 +496,16 @@ function busquedaNomina() {
  * ================================================================
  */
 
+let registrosYaRedondeados = false;
+
+
+
+
 function redondearRegistrosEmpleados() {
-
-
     if (!jsonGlobal || !jsonGlobal.departamentos || !window.horariosSemanalesActualizados || !window.empleadosOriginales) {
         return;
     }
 
-    // Función para obtener día de la semana desde fecha
     function obtenerDiaSemana(fecha) {
         const [dia, mes, anio] = fecha.split('/');
         const fechaObj = new Date(anio, mes - 1, dia);
@@ -605,7 +513,6 @@ function redondearRegistrosEmpleados() {
         return dias[fechaObj.getDay()];
     }
 
-    // Conversión hora ↔ minutos
     function horaAMinutos(hora) {
         if (!hora || hora === "" || hora === "00:00") return null;
         const [h, m] = hora.split(':').map(Number);
@@ -617,7 +524,6 @@ function redondearRegistrosEmpleados() {
         return `${horas.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
     }
 
-    // Detectar entrada temprana / salida tardía
     function detectarEntradaTemprana(horaReal, horaOficial) {
         const minutosReal = horaAMinutos(horaReal);
         const minutosOficial = horaAMinutos(horaOficial);
@@ -637,19 +543,16 @@ function redondearRegistrosEmpleados() {
         return 0;
     }
 
-    // Nueva función para detectar llegada tardía después de comer
     function detectarLlegadaTardiaComer(horaReal, horaOficial) {
         const minutosReal = horaAMinutos(horaReal);
         const minutosOficial = horaAMinutos(horaOficial);
         if (minutosReal && minutosOficial && minutosReal > minutosOficial) {
             const diferencia = minutosReal - minutosOficial;
-            // Tolerancia de 30 minutos
             return (diferencia > 30) ? diferencia : 0;
         }
         return 0;
     }
 
-    // Redondeo por tipo
     function redondearHora(horaReal, horaOficial, tipo) {
         if (!horaReal || horaReal === "") return horaReal;
         const minutosReal = horaAMinutos(horaReal);
@@ -660,58 +563,46 @@ function redondearRegistrosEmpleados() {
             case 'entrada':
                 return minutosReal <= minutosOficial ? horaOficial : horaReal;
             case 'salidaComer':
-                // Usar rango dinámico basado en la hora oficial de salida a comer
-                const rangoMinSalidaComer = minutosOficial - 30; // 30 minutos antes
-                const rangoMaxSalidaComer = minutosOficial + 15; // 15 minutos después
+                const rangoMinSalidaComer = minutosOficial - 30;
+                const rangoMaxSalidaComer = minutosOficial + 15;
                 if (minutosReal >= rangoMinSalidaComer && minutosReal <= rangoMaxSalidaComer) {
                     return horaOficial;
                 }
                 return horaReal;
             case 'entradaComer':
-                // Usar rango dinámico basado en la hora oficial de entrada de comer
-                const rangoMinEntradaComer = minutosOficial - 30; // 30 minutos antes
-                const rangoMaxEntradaComer = minutosOficial + 15; // 15 minutos después
+                const rangoMinEntradaComer = minutosOficial - 30;
+                const rangoMaxEntradaComer = minutosOficial + 15;
                 if (minutosReal >= rangoMinEntradaComer && minutosReal <= rangoMaxEntradaComer) {
                     return horaOficial;
                 }
                 return horaReal;
             case 'salida':
-                // Si sale dentro del rango ±50 minutos después, redondear a oficial
                 if (minutosReal >= minutosOficial && minutosReal <= minutosOficial + 50) {
                     return horaOficial;
                 }
-                // Si sale muy tarde (más de 50 minutos después), también redondear a oficial
                 if (minutosReal > minutosOficial + 50) {
                     return horaOficial;
                 }
-                // Si sale antes pero dentro de 15 minutos de tolerancia, redondear a oficial
                 if (minutosReal >= minutosOficial - 15 && minutosReal < minutosOficial) {
                     return horaOficial;
                 }
-                // Si sale más de 15 minutos antes, mantener hora real
                 return horaReal;
             default:
                 return horaReal;
         }
     }
 
-    // Calcular tiempo trabajado
     function calcularTiempoTrabajado(registrosDia, horarioOficial) {
         if (!registrosDia || registrosDia.length === 0) return 0;
-
-        // Buscar primera entrada válida y última salida válida
         let primeraEntrada = null;
         let ultimaSalida = null;
 
-        // Buscar primera entrada diferente de "00:00"
         for (let registro of registrosDia) {
             if (registro.entrada && registro.entrada !== "00:00") {
                 primeraEntrada = horaAMinutos(registro.entrada);
                 break;
             }
         }
-
-        // Buscar última salida diferente de "00:00"
         for (let i = registrosDia.length - 1; i >= 0; i--) {
             const registro = registrosDia[i];
             if (registro.salida && registro.salida !== "00:00") {
@@ -720,28 +611,21 @@ function redondearRegistrosEmpleados() {
             }
         }
 
-        // Si tenemos entrada y salida válidas, calcular diferencia
         let totalMinutos = 0;
         if (primeraEntrada !== null && ultimaSalida !== null) {
             totalMinutos = ultimaSalida - primeraEntrada;
         }
-
-        // Descontar tiempo de comida solo si está definido y es diferente de 00:00
         if (horarioOficial && horarioOficial.horasComida && horarioOficial.horasComida !== "00:00") {
             const minutosComida = horaAMinutos(horarioOficial.horasComida);
             if (minutosComida) {
                 totalMinutos -= minutosComida;
             }
         }
-
         return Math.max(0, totalMinutos);
     }
 
-    // Nueva función para detectar olvidos del checador
     function detectarOlvidosChecador(registrosDia, horarioOficial) {
         const olvidos = [];
-
-        // Para horarios completos (con comida)
         const tieneHorarioCompleto =
             horarioOficial.entrada !== "00:00" &&
             horarioOficial.salidaComida !== "00:00" &&
@@ -749,60 +633,43 @@ function redondearRegistrosEmpleados() {
             horarioOficial.salida !== "00:00";
 
         if (tieneHorarioCompleto) {
-            // Verificar los 4 registros esperados
             if (registrosDia.length < 2) {
                 olvidos.push("Faltan registros completos");
                 return olvidos;
             }
-
-            // Verificar entrada
             if (!registrosDia[0] || !registrosDia[0].entrada || registrosDia[0].entrada === "00:00") {
                 olvidos.push("Entrada");
             }
-
-            // Verificar salida a comer
             if (!registrosDia[0] || !registrosDia[0].salida || registrosDia[0].salida === "00:00") {
                 olvidos.push("Salir a comer");
             }
-
-            // Verificar regreso de comer
             if (!registrosDia[1] || !registrosDia[1].entrada || registrosDia[1].entrada === "00:00") {
                 olvidos.push("Regreso de comer");
             }
-
-            // Verificar salida final
             if (!registrosDia[1] || !registrosDia[1].salida || registrosDia[1].salida === "00:00") {
                 olvidos.push("Salida final");
             }
         } else {
-            // Para horarios simples (sin comida) - solo verificar entrada y salida
             const tieneEntradaSalida =
                 horarioOficial.entrada !== "00:00" &&
                 horarioOficial.salida !== "00:00";
-
             if (tieneEntradaSalida) {
                 if (registrosDia.length === 0) {
                     olvidos.push("Entrada y Salida");
                     return olvidos;
                 }
-
-                // Verificar entrada
                 if (!registrosDia[0] || !registrosDia[0].entrada || registrosDia[0].entrada === "00:00") {
                     olvidos.push("Entrada");
                 }
-
-                // Verificar salida
                 const ultimoRegistro = registrosDia[registrosDia.length - 1];
                 if (!ultimoRegistro || !ultimoRegistro.salida || ultimoRegistro.salida === "00:00") {
                     olvidos.push("Salida");
                 }
             }
         }
-
         return olvidos;
     }
 
-    // Nueva función para completar registros faltantes con horarios oficiales
     function completarRegistrosFaltantes(registrosDia, horarioOficial) {
         const tieneHorarioCompleto =
             horarioOficial.entrada !== "00:00" &&
@@ -815,70 +682,50 @@ function redondearRegistrosEmpleados() {
             horarioOficial.salida !== "00:00";
 
         if (tieneHorarioCompleto) {
-            // Asegurar que hay 2 registros para horario completo
             while (registrosDia.length < 2) {
                 registrosDia.push({ entrada: "00:00", salida: "00:00" });
             }
-
-            // Completar entrada si está vacía
             if (!registrosDia[0].entrada || registrosDia[0].entrada === "00:00") {
                 registrosDia[0].entrada = horarioOficial.entrada;
             }
-
-            // Completar salida a comer si está vacía
             if (!registrosDia[0].salida || registrosDia[0].salida === "00:00") {
                 registrosDia[0].salida = horarioOficial.salidaComida;
             }
-
-            // Completar regreso de comer si está vacío
             if (!registrosDia[1].entrada || registrosDia[1].entrada === "00:00") {
                 registrosDia[1].entrada = horarioOficial.entradaComida;
             }
-
-            // Completar salida final si está vacía
             if (!registrosDia[1].salida || registrosDia[1].salida === "00:00") {
                 registrosDia[1].salida = horarioOficial.salida;
             }
-
         } else if (tieneEntradaSalida) {
-            // Asegurar que hay al menos 1 registro para horario simple
             if (registrosDia.length === 0) {
                 registrosDia.push({ entrada: "00:00", salida: "00:00" });
             }
-
-            // Completar entrada si está vacía
             if (!registrosDia[0].entrada || registrosDia[0].entrada === "00:00") {
                 registrosDia[0].entrada = horarioOficial.entrada;
             }
-
-            // Para horarios simples, determinar si necesita más registros
             if (registrosDia.length === 1) {
-                // Si solo hay un registro, completar la salida
                 if (!registrosDia[0].salida || registrosDia[0].salida === "00:00") {
                     registrosDia[0].salida = horarioOficial.salida;
                 }
             } else {
-                // Si hay múltiples registros, poner salida en el último
                 const ultimoIndex = registrosDia.length - 1;
                 if (!registrosDia[ultimoIndex].salida || registrosDia[ultimoIndex].salida === "00:00") {
                     registrosDia[ultimoIndex].salida = horarioOficial.salida;
                 }
             }
         }
-
         return registrosDia;
     }
 
-    // Procesar empleados
     window.empleadosOriginales.forEach(empleado => {
-        console.log(`\n=== EMPLEADO: ${empleado.nombre} (Clave: ${empleado.clave}) ===`);
-
         const registrosPorFecha = {};
-        let totalMinutosSemana = 0; // Variable para acumular minutos de toda la semana
-
-        // Encontrar el empleado correspondiente en jsonGlobal para actualizar
+        let totalMinutosSemana = 0;
         const empleadoEnJson = encontrarEmpleadoEnJsonGlobal(empleado.clave);
         const registrosRedondeados = [];
+        
+        // 🆕 CONTADOR DE OLVIDOS DEL CHECADOR PARA DESCUENTO
+        let totalOlvidosChecadorSemana = 0;
 
         if (empleado.registros) {
             empleado.registros.forEach(registro => {
@@ -893,18 +740,7 @@ function redondearRegistrosEmpleados() {
             const diaSemana = obtenerDiaSemana(fecha);
             const horarioOficial = window.horariosSemanalesActualizados.semana[diaSemana];
             if (!horarioOficial) return;
-
-            // 🔹 CAMBIAR ESTA LÍNEA - HACER COPIA PROFUNDA
-            const registrosDia = JSON.parse(JSON.stringify(registrosPorFecha[fecha])); // ✅ COPIA, NO REFERENCIA
-            console.log(`\nFECHA: ${fecha} (${diaSemana.toUpperCase()})`);
-
-            // Mostrar registros ORIGINALES
-            console.log('Registros ORIGINALES:');
-            registrosDia.forEach((reg, i) => {
-                console.log(`  ${i + 1}. Entrada: ${reg.entrada} | Salida: ${reg.salida}`);
-            });
-
-
+            const registrosDia = JSON.parse(JSON.stringify(registrosPorFecha[fecha]));
             const tieneHorarioCompleto =
                 horarioOficial.entrada !== "00:00" &&
                 horarioOficial.salidaComida !== "00:00" &&
@@ -916,13 +752,14 @@ function redondearRegistrosEmpleados() {
                 horarioOficial.salida !== "00:00" &&
                 (horarioOficial.salidaComida === "00:00" || horarioOficial.entradaComida === "00:00");
 
-            // Detectar olvidos del checador ANTES del redondeo
             const olvidosChecador = detectarOlvidosChecador(registrosDia, horarioOficial);
-
-            // Completar registros faltantes con horarios oficiales
+            
+            // 🆕 CONTAR OLVIDOS PARA EL DESCUENTO SEMANAL
+            if (olvidosChecador.length > 0) {
+                totalOlvidosChecadorSemana++;
+            }
+            
             completarRegistrosFaltantes(registrosDia, horarioOficial);
-
-            // Detectar entrada temprana y salida tardía ANTES del redondeo
             let entradaTemprana = 0;
             let salidaTardia = 0;
             let llegadaTardiaComer = 0;
@@ -934,24 +771,15 @@ function redondearRegistrosEmpleados() {
                 const ultimo = registrosDia[registrosDia.length - 1];
                 salidaTardia = detectarSalidaTardia(ultimo.salida, horarioOficial.salida);
             }
-
-            // Detectar llegada tardía después de comer (solo para horarios completos)
             if (tieneHorarioCompleto && registrosDia.length >= 2 && horarioOficial.entradaComida !== "00:00") {
                 llegadaTardiaComer = detectarLlegadaTardiaComer(registrosDia[1].entrada, horarioOficial.entradaComida);
             }
 
-            // Aplicar redondeo
             if (tieneHorarioCompleto && registrosDia.length >= 2) {
-                // Para horario completo, esperamos al menos 2 registros
-                // Registro 1: entrada + salida a comer
                 registrosDia[0].entrada = redondearHora(registrosDia[0].entrada, horarioOficial.entrada, 'entrada');
                 registrosDia[0].salida = redondearHora(registrosDia[0].salida, horarioOficial.salidaComida, 'salidaComer');
-
-                // Registro 2: entrada de comer + salida final
                 registrosDia[1].entrada = redondearHora(registrosDia[1].entrada, horarioOficial.entradaComida, 'entradaComer');
                 registrosDia[1].salida = redondearHora(registrosDia[1].salida, horarioOficial.salida, 'salida');
-
-                // Limpiar registros adicionales si los hay (poner en 00:00)
                 for (let i = 2; i < registrosDia.length; i++) {
                     registrosDia[i].entrada = "00:00";
                     registrosDia[i].salida = "00:00";
@@ -972,23 +800,10 @@ function redondearRegistrosEmpleados() {
                 });
             }
 
-            // Mostrar registros REDONDEADOS
-            console.log('Registros REDONDEADOS:');
-            registrosDia.forEach((reg, i) => {
-                const entradaLabel = i === 0 ? 'Entrada' : i === 1 ? 'Regreso Comer' : 'Entrada';
-                const salidaLabel = i === 0 ? 'Salir Comer' : i === 1 ? 'Salida' : 'Salida';
-                console.log(`  ${i + 1}. ${entradaLabel}: ${reg.entrada} | ${salidaLabel}: ${reg.salida}`);
-            });
-
-            // Calcular tiempo trabajado
             const minutosTrabajados = calcularTiempoTrabajado(registrosDia, horarioOficial);
             const horasTrabajadas = minutosAHora(minutosTrabajados);
-            console.log(`Tiempo total trabajado: ${horasTrabajadas} (${minutosTrabajados} minutos)`);
-
-            // Acumular minutos para el total semanal
             totalMinutosSemana += minutosTrabajados;
 
-            // GUARDAR REGISTRO REDONDEADO - AQUÍ DENTRO DEL BUCLE
             if (empleadoEnJson) {
                 const registroRedondeado = {
                     fecha: fecha,
@@ -1003,60 +818,32 @@ function redondearRegistrosEmpleados() {
                     entrada_temprana: minutosAHora(entradaTemprana),
                     salida_tardia: minutosAHora(salidaTardia)
                 };
-
                 registrosRedondeados.push(registroRedondeado);
             }
-
-            // Mostrar hora de comida si existe
-            if (horarioOficial && horarioOficial.horasComida && horarioOficial.horasComida !== "00:00") {
-                console.log(`Hora de comida: ${horarioOficial.horasComida}`);
-            }
-
-            // Mostrar entrada temprana si existe
-            if (entradaTemprana > 0) {
-                console.log(`Entrada temprana: ${minutosAHora(entradaTemprana)}`);
-            }
-
-            // Mostrar salida tardía si existe
-            if (salidaTardia > 0) {
-                console.log(`Salida tardía: ${minutosAHora(salidaTardia)}`);
-            }
-
-            // Mostrar llegada tardía después de comer si existe
-            if (llegadaTardiaComer > 0) {
-                console.log(`Llegada tardía después de comer: ${minutosAHora(llegadaTardiaComer)} (se perdieron ${minutosAHora(llegadaTardiaComer)} de trabajo)`);
-            }
-
-            // Mostrar olvidos del checador si existen
-            if (olvidosChecador.length > 0) {
-                console.log(`⚠️ OLVIDOS DEL CHECADOR: ${olvidosChecador.join(', ')}`);
-            }
-
-            console.log('─'.repeat(50));
         });
 
-        // GUARDAR TOTALES AL FINAL DE CADA EMPLEADO
         if (empleadoEnJson) {
-
-            empleadoEnJson.tiempo_total_redondeado = minutosAHora(totalMinutosSemana); // <-- "60:46"
-            empleadoEnJson.total_minutos_redondeados = totalMinutosSemana; // <-- 3646 minutos
+            empleadoEnJson.tiempo_total_redondeado = minutosAHora(totalMinutosSemana);
+            empleadoEnJson.total_minutos_redondeados = totalMinutosSemana;
             empleadoEnJson.registros_redondeados = registrosRedondeados;
-
-            console.log(`✅ DATOS GUARDADOS EN JSON - Empleado: ${empleado.nombre}`);
-            console.log(`   Tiempo redondeado: ${empleadoEnJson.tiempo_total_redondeado} (${empleadoEnJson.total_minutos_redondeados} minutos)`);
-            console.log(`   Registros redondeados: ${registrosRedondeados.length}`);
+            
+            // 🆕 APLICAR DESCUENTO POR OLVIDOS DEL CHECADOR
+            // Calcular descuento: $20 por cada día que olvidó checar
+            const descuentoPorOlvido = totalOlvidosChecadorSemana * 20;
+            
+            // Asignar al empleadoEnJson para que se incluya en el cálculo del sueldo a cobrar
+            empleadoEnJson.checador_descuento_olvidos = descuentoPorOlvido;
         }
 
-        // Mostrar totales semanales al final de cada empleado
         const horasSemanales = minutosAHora(totalMinutosSemana);
-        console.log(`\n🕒 TOTAL SEMANAL: ${horasSemanales} (${totalMinutosSemana} minutos)`);
-        console.log('═'.repeat(60));
+        
+        // Asignar directamente al empleado para mostrar en la tabla
+        const descuentoPorOlvido = totalOlvidosChecadorSemana * 20;
+        empleado.checador_tabla_descuento = descuentoPorOlvido;
     });
 
-    // Función auxiliar para encontrar empleado en jsonGlobal
     function encontrarEmpleadoEnJsonGlobal(clave) {
         if (!jsonGlobal || !jsonGlobal.departamentos) return null;
-
         for (let depto of jsonGlobal.departamentos) {
             if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS')) {
                 for (let emp of depto.empleados || []) {
@@ -1069,20 +856,10 @@ function redondearRegistrosEmpleados() {
         return null;
     }
 
-    // Al final de la función, después de procesar todos los empleados
-    console.log('\n=== REDONDEO COMPLETADO ===');
-
-    // ✅ CALCULAR CAMPOS Y SINCRONIZAR CON EMPLEADOS ORIGINALES
-    console.log('🔄 Calculando sueldos basados en tiempo redondeado...');
-    
-    // Procesar solo empleados que tienen registros redondeados
     window.empleadosOriginales.forEach(empleado => {
         const empleadoEnJson = encontrarEmpleadoEnJsonGlobal(empleado.clave);
         if (empleadoEnJson && empleadoEnJson.tiempo_total_redondeado) {
-            // Calcular en JSON
             calcularCamposEmpleado(empleadoEnJson);
-            
-            // ✅ SINCRONIZAR: Copiar valores calculados a empleadosOriginales
             empleado.sueldo_base = empleadoEnJson.sueldo_base;
             empleado.sueldo_extra = empleadoEnJson.sueldo_extra;
             empleado.sueldo_extra_final = empleadoEnJson.sueldo_extra
@@ -1091,16 +868,16 @@ function redondearRegistrosEmpleados() {
             empleado.Minutos_trabajados = empleadoEnJson.Minutos_trabajados;
             empleado.Minutos_normales = empleadoEnJson.Minutos_normales;
             empleado.Minutos_extra = empleadoEnJson.Minutos_extra;
+            empleado.sueldo_a_cobrar = empleadoEnJson.sueldo_a_cobrar;
             
-}
+            // 🆕 USAR EL DESCUENTO CALCULADO PARA LA TABLA (NO EL DEL jsonGlobal)
+            // Si existe el descuento calculado, usarlo; sino, usar el valor original del jsonGlobal
+            empleado.checador = empleado.checador_tabla_descuento !== undefined ? 
+                                empleado.checador_tabla_descuento : 
+                                (empleadoEnJson.checador || 0);
+        }
     });
-    
- 
-    // ✅ ACTUALIZAR TABLA CON VALORES SINCRONIZADOS
     setEmpleadosPaginados(window.empleadosOriginales);
-
-    
-    console.log('JSON GLOBAL ACTUALIZADO:', jsonGlobal);
 }
 
 // Función auxiliar para convertir hora (HH:MM) a minutos
@@ -1168,6 +945,70 @@ function calcularCamposEmpleado(emp) {
     emp.sueldo_base = Number(sueldoBase.toFixed(2));
     emp.sueldo_extra = Number(extra.toFixed(2));
 
+    //  CALCULAR SUELDO A COBRAR
+    calcularSueldoACobraPorEmpleado(emp);
 
     return emp;
+}
+
+// Función para calcular sueldo a cobrar de un empleado específico
+function calcularSueldoACobraPorEmpleado(emp) {
+    // === CALCULAR TOTAL PERCEPCIONES ===
+    const sueldoNeto = parseFloat(emp.sueldo_base) || 0;  // Sueldo Neto
+    const incentivo = parseFloat(emp.incentivo) || 0;
+
+    //   CALCULAR SUELDO EXTRA FINAL (horas extras + bonos + actividades + conceptos adicionales)
+    const horasExtras = parseFloat(emp.sueldo_extra) || 0;
+    const bonoAntiguedad = parseFloat(emp.bono_antiguedad) || 0;
+    const actividadesEspeciales = parseFloat(emp.actividades_especiales) || 0;
+    const bonoResponsabilidad = parseFloat(emp.bono_responsabilidad) || 0;
+
+    // Sumar conceptos adicionales si existen
+    let conceptosAdicionalesTotales = 0;
+    if (emp.conceptos_adicionales && Array.isArray(emp.conceptos_adicionales)) {
+        conceptosAdicionalesTotales = emp.conceptos_adicionales.reduce((total, concepto) => {
+            return total + (parseFloat(concepto.valor) || 0);
+        }, 0);
+    }
+
+    // Total de sueldo extra final
+    const sueldoExtraFinal = horasExtras + bonoAntiguedad + actividadesEspeciales + bonoResponsabilidad + conceptosAdicionalesTotales;
+
+    // Actualizar sueldo_extra_final en el empleado
+    emp.sueldo_extra_final = sueldoExtraFinal;
+
+    const totalPercepciones = sueldoNeto + incentivo + sueldoExtraFinal;
+
+    // === CALCULAR TOTAL CONCEPTOS (ISR, IMSS, INFONAVIT) ===
+    let totalConceptos = 0;
+    const conceptos = emp.conceptos || [];
+    conceptos.forEach(concepto => {
+        if (['45', '52', '16'].includes(concepto.codigo)) { // ISR, IMSS, INFONAVIT
+            totalConceptos += parseFloat(concepto.resultado) || 0;
+        }
+    });
+
+    // === CALCULAR TOTAL DEDUCCIONES ===
+    const tarjeta = parseFloat(emp.neto_pagar) || 0;  // TARJETA (campo neto_pagar)
+    const prestamo = parseFloat(emp.prestamo) || 0;
+    const inasistencias = parseFloat(emp.inasistencias_descuento) || 0;
+    const uniformes = parseFloat(emp.uniformes) || 0;
+    
+    // 🆕 USAR EL DESCUENTO CALCULADO POR OLVIDOS DEL CHECADOR PARA EL SUELDO A COBRAR
+    // Si existe el descuento calculado, usarlo; sino, usar el valor original del checador
+    const checador = parseFloat(emp.checador_descuento_olvidos) !== undefined && !isNaN(parseFloat(emp.checador_descuento_olvidos)) ? 
+                     parseFloat(emp.checador_descuento_olvidos) : 
+                     parseFloat(emp.checador) || 0;
+                     
+    const faGafetCofia = parseFloat(emp.fa_gafet_cofia) || 0;
+
+    // Total de deducciones incluye conceptos + otras deducciones
+    const totalDeducciones = tarjeta + prestamo + inasistencias + uniformes + checador + faGafetCofia + totalConceptos;
+
+    // === CALCULAR SUELDO A COBRAR ===
+    emp.sueldo_a_cobrar = totalPercepciones - totalDeducciones;
+
+
+
+    return emp.sueldo_a_cobrar;
 }

@@ -1,15 +1,49 @@
-// Paginación simple para nómina (sin API, solo funciones y variables globales)
+// Paginación simple para nómina 
 let empleadosPaginados = [];
 let paginaActualNomina = 1;
 const empleadosPorPagina = 7;
 
-
-
-
 function setEmpleadosPaginados(array) {
-    empleadosPaginados = array;
-    paginaActualNomina = 1;
-    renderTablaPaginada();
+    // Filtrar solo empleados registrados antes de paginar
+    filtrarEmpleadosRegistradosYPaginar(array);
+}
+
+// Nueva función para filtrar empleados registrados antes de la paginación
+function filtrarEmpleadosRegistradosYPaginar(todosLosEmpleados) {
+    // Obtener claves de empleados registrados
+    let claves = obtenerClavesEmpleados();
+    
+    // Enviar petición AJAX para validar claves
+    $.ajax({
+        type: "POST",
+        url: "../php/validar_clave.php",
+        data: JSON.stringify({ claves: claves }),
+        contentType: "application/json",
+        success: function (clavesValidasJSON) {
+            const clavesValidas = JSON.parse(clavesValidasJSON);
+            
+            // Filtrar solo empleados que están registrados en la base de datos
+            const empleadosRegistrados = todosLosEmpleados.filter(emp => {
+                return clavesValidas.includes(String(emp.clave)) || clavesValidas.includes(Number(emp.clave));
+            });
+            
+            // Ahora asignar a empleadosPaginados solo los empleados registrados
+            empleadosPaginados = empleadosRegistrados;
+            paginaActualNomina = 1;
+            
+            // Actualizar empleados filtrados globales
+            actualizarEmpleadosFiltradosGlobales();
+            
+            renderTablaPaginada();
+        },
+        error: function(xhr, status, error) {
+            console.error('Error al validar claves:', error);
+            // En caso de error, usar todos los empleados
+            empleadosPaginados = todosLosEmpleados;
+            paginaActualNomina = 1;
+            renderTablaPaginada();
+        }
+    });
 }
 
 function renderTablaPaginada() {
@@ -22,7 +56,97 @@ function renderTablaPaginada() {
     renderPaginacionNomina();
 }
 
-// La función mostrarDatosTablaPaginada() ahora está en leer_excel.js
+// Función para obtener las claves de empleados del departamento "PRODUCCION 40 LIBRAS"
+function obtenerClavesEmpleados() {
+    // Obtiene solo las claves de empleados del departamento "PRODUCCION 40 LIBRAS"
+    let claves = [];
+    if (jsonGlobal && jsonGlobal.departamentos) {
+        jsonGlobal.departamentos.forEach(depto => {
+            if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS')) {
+                (depto.empleados || []).forEach(emp => {
+                    if (emp.clave) {
+                        claves.push(emp.clave);
+                    }
+                });
+            }
+        });
+    }
+
+    return claves;
+}
+
+// Función para mostrar datos de la tabla con paginación
+function mostrarDatosTablaPaginada(empleadosPagina) {
+    // Limpiar la tabla
+    $('#tabla-nomina-body').empty();
+    
+    // Calcular el número de fila inicial para la página actual
+    let numeroFila = ((paginaActualNomina - 1) * empleadosPorPagina) + 1;
+    
+    // Renderizar solo los empleados de la página actual
+    // Nota: empleadosPagina ya contiene solo empleados registrados
+    empleadosPagina.forEach(emp => {
+        // Obtener conceptos
+        const conceptos = emp.conceptos || [];
+        const getConcepto = (codigo) => {
+            const c = conceptos.find(c => c.codigo === codigo);
+            return c ? parseFloat(c.resultado).toFixed(2) : '';
+        };
+        const infonavit = getConcepto('16');
+        const isr = getConcepto('45');
+        const imss = getConcepto('52');
+
+        // Usar el puesto original del empleado
+        let puestoEmpleado = emp.puesto || emp.nombre_departamento || '';
+
+        // Obtener el incentivo si existe
+        const incentivo = emp.incentivo ? emp.incentivo.toFixed(2) : '';
+
+        // Función para mostrar cadena vacía en lugar de 0, NaN o valores vacíos
+        const mostrarValor = (valor) => {
+            if (valor === 0 || valor === '0' || valor === '' || valor === null || valor === undefined || isNaN(valor)) {
+                return '';
+            }
+            return valor;
+        };
+
+        let fila = `
+            <tr data-clave="${emp.clave}">
+                <td>${numeroFila++}</td>
+                <td>${emp.nombre}</td>
+                <td>${puestoEmpleado}</td>
+                <td>${mostrarValor(emp.sueldo_base)}</td>
+                <td>${mostrarValor(incentivo)}</td>
+                <td>${mostrarValor(emp.sueldo_extra_final)}</td>
+                <td>${mostrarValor(emp.neto_pagar)}</td>
+                <td>${mostrarValor(emp.prestamo)}</td>
+                <td>${mostrarValor(emp.inasistencias_descuento)}</td>
+                <td>${mostrarValor(emp.uniformes)}</td>
+                <td>${mostrarValor(infonavit)}</td>
+                <td>${mostrarValor(isr)}</td>
+                <td>${mostrarValor(imss)}</td>
+                <td>${mostrarValor(emp.checador)}</td>
+                <td>${mostrarValor(emp.fa_gafet_cofia)}</td>
+                <td>${mostrarValor(emp.sueldo_a_cobrar ? emp.sueldo_a_cobrar.toFixed(2) : '')}</td>
+            </tr>
+        `;
+        $('#tabla-nomina-body').append(fila);
+    });
+    
+    // Re-inicializar el menú contextual después de renderizar la tabla
+    inicializarMenuContextual();
+}
+
+// Función para actualizar empleados filtrados globales cuando se cambie el set paginado
+function actualizarEmpleadosFiltradosGlobales() {
+    if (window.empleadosFiltrados) {
+        window.empleadosFiltrados = [...empleadosPaginados];
+    }
+}
+
+// ========================================
+// PAGINACIÓN PARA TABLA PRINCIPAL
+// ========================================
 
 function renderPaginacionNomina() {
     const totalPaginas = Math.ceil(empleadosPaginados.length / empleadosPorPagina);
@@ -149,4 +273,3 @@ function cambiarPaginaDispersion(nuevaPagina) {
     paginaActualDispersion = nuevaPagina;
     renderTablaDispersionPaginada();
 }
-

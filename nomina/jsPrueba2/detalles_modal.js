@@ -1,4 +1,3 @@
-
 /*
  * ================================================================
  * MÓDULO DE BÚSQUEDA Y CARGA DE DATOS DEL EMPLEADO
@@ -25,23 +24,24 @@ function buscarDatos(claveEmpleado) {
     });
 
     if (empleadoEncontrado) {
+        // 🔥 ACTIVAR MODAL ANTES DE CONFIGURAR DATOS
+        activarModal();
+        
+        // 🆕 RESETEAR ESTADO DE MINI-TABS ANTES DE MOSTRAR DATOS
+        resetearEstadoMiniTabs();
 
         establecerDatosTrabajador(empleadoEncontrado.clave, empleadoEncontrado.nombre);
         establecerDatosConceptos(empleadoEncontrado.conceptos || []);
         llenarTablaHorariosSemanales(empleadoEncontrado);
         establecerDatosPercepciones(empleadoEncontrado);
+        establecerDatosDeducciones(empleadoEncontrado);
+        establecerMinutosHoras(empleadoEncontrado.Minutos_extra, empleadoEncontrado.Minutos_normales);
     }
 }
 
 /*
  * ================================================================
- * MÓDULO DE CONFIGURACIÓN DE DATOS EN MODAL
- * ================================================================
- * Este módulo se encarga de:
- * - Establecer datos básicos del trabajador (clave y nombre) en el modal
- * - Configurar valores de conceptos (ISR, IMSS, INFONAVIT) en formularios
- * - Manejar eventos de actualización en tiempo real de conceptos
- * - Sincronizar cambios con el JSON global del sistema
+ * MODULO TRABAJADOR
  * ================================================================
  */
 
@@ -51,13 +51,26 @@ function establecerDatosTrabajador(clave, nombre) {
 }
 
 
+
+
 /*
  * ================================================================
- * PERCEPCIONES
+ * MÓDULO MODIFICAR DETALLES
+ * ================================================================
+ * Este módulo maneja la edición de datos del empleado en el modal
+ * Incluye: percepciones, bonos, conceptos adicionales y cálculos
  * ================================================================
  */
 
+/*
+ * ----------------------------------------------------------------
+ * SUBSECCIÓN: PERCEPCIONES
+ * ----------------------------------------------------------------
+ * Gestiona datos de sueldos, bonos e incentivos del empleado
+ * ----------------------------------------------------------------
+ */
 
+// Inicializar campos de percepciones con datos del empleado
 function establecerDatosPercepciones(empleado) {
     // Limpiar inputs antes de establecer valores
     $("#mod-sueldo-neto").val(0);
@@ -72,70 +85,81 @@ function establecerDatosPercepciones(empleado) {
     if (empleado.sueldo_extra && !isNaN(empleado.sueldo_extra)) {
         $("#mod-horas-extras").val(empleado.sueldo_extra);
     }
-    
+
     // Establecer total extra con sueldo_extra_final si existe
     if (empleado.sueldo_extra_final && !isNaN(empleado.sueldo_extra_final)) {
         $("#mod-total-extra").val(empleado.sueldo_extra_final);
     }
-    
+
     // Establecer actividades especiales del empleado
     if (empleado.actividades_especiales && !isNaN(empleado.actividades_especiales)) {
         $("#mod-actividades-especiales").val(empleado.actividades_especiales);
     }
-    
+
     // Establecer bono responsabilidad del empleado
     if (empleado.bono_responsabilidad && !isNaN(empleado.bono_responsabilidad)) {
         $("#mod-bono-responsabilidad").val(empleado.bono_responsabilidad);
+    }
+
+    //   Establecer sueldo a cobrar del empleado
+    if (empleado.sueldo_a_cobrar && !isNaN(empleado.sueldo_a_cobrar)) {
+        $("#mod-sueldo-a-cobrar").val(empleado.sueldo_a_cobrar.toFixed(2));
     }
 
     // Agregar eventos para actualizar sueldos en tiempo real (solo jsonGlobal, no tabla)
     $("#mod-sueldo-neto").off('input').on('input', function () {
         const clave = $('#campo-clave').text().trim();
         const sueldoBase = parseFloat($(this).val());
-        actualizarSueldoEnJsonGlobal(clave, 'sueldo_base', sueldoBase);
+        actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'sueldo_base', sueldoBase);
+        actualizarSueldoACobrarEnTiempoReal(clave); //   Actualizar sueldo a cobrar
     });
 
     $("#mod-horas-extras").off('input').on('input', function () {
         const clave = $('#campo-clave').text().trim();
         const sueldoExtra = parseFloat($(this).val());
-        actualizarSueldoEnJsonGlobal(clave, 'sueldo_extra', sueldoExtra);
+        actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'sueldo_extra', sueldoExtra);
         calcularTotalExtra(); // Recalcular total
+        actualizarSueldoACobrarEnTiempoReal(clave); //   Actualizar sueldo a cobrar
     });
 
     $("#mod-incentivo-monto").off('input').on('input', function () {
         const clave = $('#campo-clave').text().trim();
         const incentivo = parseFloat($(this).val());
-        actualizarIncentivoEnJsonGlobal(clave, incentivo);
+        actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'incentivo', incentivo);
+        actualizarSueldoACobrarEnTiempoReal(clave); //   Actualizar sueldo a cobrar
     });
 
     $("#mod-actividades-especiales").off('input').on('input', function () {
         const clave = $('#campo-clave').text().trim();
         const actividadesEspeciales = parseFloat($(this).val()) || 0;
-        actualizarActividadesEspecialesEnJsonGlobal(clave, actividadesEspeciales);
+        actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'actividades_especiales', actividadesEspeciales);
         calcularTotalExtra(); // Recalcular total
+        actualizarSueldoACobrarEnTiempoReal(clave); //   Actualizar sueldo a cobrar
     });
 
     $("#mod-bono-responsabilidad").off('input').on('input', function () {
         const clave = $('#campo-clave').text().trim();
         const bonoResponsabilidad = parseFloat($(this).val()) || 0;
-        actualizarBonoResponsabilidadEnJsonGlobal(clave, bonoResponsabilidad);
+        actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'bono_responsabilidad', bonoResponsabilidad);
         calcularTotalExtra(); // Recalcular total
+        actualizarSueldoACobrarEnTiempoReal(clave); //   Actualizar sueldo a cobrar
     });
 
-    // Ya no es necesario configurar el botón aquí, se usará delegación de eventos
-    
+
     // Cargar conceptos adicionales existentes del empleado
     cargarConceptosAdicionalesExistentes(empleado);
 
- 
+
     configCheckBox(empleado.incentivo, empleado.bono_antiguedad);
-    
+
     // Calcular total extra inicial después de cargar todos los valores
     setTimeout(() => {
         calcularTotalExtra();
+        actualizarSueldoACobrarEnTiempoReal($('#campo-clave').text().trim()); //   Calcular sueldo a cobrar inicial
     }, 100);
 }
 
+// Configurar checkboxes de incentivo y bono de antigüedad
 function configCheckBox(incentivo, bonoAntiguedad) {
 
     // CONFIGURAR CHECKBOX E INPUT DEL INCENTIVO
@@ -170,14 +194,15 @@ function configCheckBox(incentivo, bonoAntiguedad) {
         // ACTUALIZAR INCENTIVO EN JSON CUANDO CAMBIE EL CHECKBOX
         const clave = $('#campo-clave').text().trim();
         const valorIncentivo = isChecked ? parseFloat(inputIncentivo.val()) : 0;
-        actualizarIncentivoEnJsonGlobal(clave, valorIncentivo);
+        actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'incentivo', valorIncentivo);
+        actualizarSueldoACobrarEnTiempoReal(clave); //   Actualizar sueldo a cobrar
     });
-    
-    // ✅ CONFIGURAR CHECKBOX E INPUT DEL BONO DE ANTIGÜEDAD
+
+    // CONFIGURAR CHECKBOX E INPUT DEL BONO DE ANTIGÜEDAD
     const checkboxBonoAntiguedad = $("#mod-bono-antiguedad-check");
     const inputBonoAntiguedad = $("#mod-bono-antiguedad");
 
-    // ✅ ESTABLECER ESTADO INICIAL BASADO EN LOS DATOS DEL EMPLEADO
+    // ESTABLECER ESTADO INICIAL BASADO EN LOS DATOS DEL EMPLEADO
     if (bonoAntiguedad && bonoAntiguedad > 0) {
         checkboxBonoAntiguedad.prop('checked', true);
         inputBonoAntiguedad.prop('disabled', false);
@@ -205,8 +230,9 @@ function configCheckBox(incentivo, bonoAntiguedad) {
         // ACTUALIZAR BONO EN JSON CUANDO CAMBIE EL CHECKBOX
         const clave = $('#campo-clave').text().trim();
         const valorBono = isChecked ? parseFloat(inputBonoAntiguedad.val()) : 0;
-        actualizarBonoAntiguedadEnJsonGlobal(clave, valorBono);
+        actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'bono_antiguedad', valorBono);
         calcularTotalExtra(); // Recalcular total
+        actualizarSueldoACobrarEnTiempoReal(clave); //   Actualizar sueldo a cobrar
     });
 
     // Evento para actualizar valor cuando se modifica el input del bono
@@ -214,281 +240,204 @@ function configCheckBox(incentivo, bonoAntiguedad) {
         if (!$(this).prop('disabled')) {
             const clave = $('#campo-clave').text().trim();
             const valorBono = parseFloat($(this).val()) || 0;
-            actualizarBonoAntiguedadEnJsonGlobal(clave, valorBono);
+            actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'bono_antiguedad', valorBono);
             calcularTotalExtra(); // Recalcular total
+            actualizarSueldoACobrarEnTiempoReal(clave); //   Actualizar sueldo a cobrar
         }
     });
 }
 
 
-// Función para actualizar sueldo solo en jsonGlobal (sin afectar tabla)
-function actualizarSueldoEnJsonGlobal(clave, tipo, valor) {
-    // Actualizar en jsonGlobal
-    if (window.jsonGlobal && window.jsonGlobal.departamentos) {
-        window.jsonGlobal.departamentos.forEach(depto => {
-            (depto.empleados || []).forEach(emp => {
-                if (String(emp.clave) === String(clave)) {
-                    emp[tipo] = valor;
-                }
-            });
-        });
-    }
-
-    // Actualizar en empleadosOriginales
-    if (window.empleadosOriginales) {
-        const empleadoOriginal = window.empleadosOriginales.find(emp => String(emp.clave) === String(clave));
-        if (empleadoOriginal) {
-            empleadoOriginal[tipo] = valor;
-        }
-    }
-
-    // Actualizar en empleadosFiltrados
-    if (empleadosFiltrados) {
-        const empleadoFiltrado = empleadosFiltrados.find(emp => String(emp.clave) === String(clave));
-        if (empleadoFiltrado) {
-            empleadoFiltrado[tipo] = valor;
-        }
-    }
-
-
-}
- 
-function actualizarIncentivoEnJsonGlobal(clave, valor) {
-    // Actualizar en jsonGlobal
-    if (window.jsonGlobal && window.jsonGlobal.departamentos) {
-        window.jsonGlobal.departamentos.forEach(depto => {
-            (depto.empleados || []).forEach(emp => {
-                if (String(emp.clave) === String(clave)) {
-                    emp.incentivo = valor;
-                }
-            });
-        });
-    }
-
-    // Actualizar en empleadosOriginales
-    if (window.empleadosOriginales) {
-        const empleadoOriginal = window.empleadosOriginales.find(emp => String(emp.clave) === String(clave));
-        if (empleadoOriginal) {
-            empleadoOriginal.incentivo = valor;
-        }
-    }
-
-    // Actualizar en empleadosFiltrados
-    if (empleadosFiltrados) {
-        const empleadoFiltrado = empleadosFiltrados.find(emp => String(emp.clave) === String(clave));
-        if (empleadoFiltrado) {
-            empleadoFiltrado.incentivo = valor;
-        }
-    }
-}
-
-function actualizarBonoAntiguedadEnJsonGlobal(clave, valor) {
-    // Actualizar en jsonGlobal
-    if (window.jsonGlobal && window.jsonGlobal.departamentos) {
-        window.jsonGlobal.departamentos.forEach(depto => {
-            (depto.empleados || []).forEach(emp => {
-                if (String(emp.clave) === String(clave)) {
-                    emp.bono_antiguedad = valor;
-                }
-            });
-        });
-    }
-
-    // Actualizar en empleadosOriginales
-    if (window.empleadosOriginales) {
-        const empleadoOriginal = window.empleadosOriginales.find(emp => String(emp.clave) === String(clave));
-        if (empleadoOriginal) {
-            empleadoOriginal.bono_antiguedad = valor;
-        }
-    }
-
-    // Actualizar en empleadosFiltrados
-    if (empleadosFiltrados) {
-        const empleadoFiltrado = empleadosFiltrados.find(emp => String(emp.clave) === String(clave));
-        if (empleadoFiltrado) {
-            empleadoFiltrado.bono_antiguedad = valor;
-        }
-    }
-
-   
-}
-
 /*
- * ================================================================
- * FUNCIÓN PARA CALCULAR TOTAL EXTRA AUTOMÁTICAMENTE
- * ================================================================
- * Esta función calcula automáticamente el total de sueldos extra
- * sumando: horas extras + bono antigüedad + actividades especiales + puesto
- * ================================================================
+ * ----------------------------------------------------------------
+ * SUBSECCIÓN: FUNCIONES AUXILIARES
+ * ----------------------------------------------------------------
+ * Funciones de soporte para actualización y cálculos
+ * ----------------------------------------------------------------
  */
+
+// Función universal para actualizar cualquier propiedad del empleado en todas las estructuras JSON
+function actualizarPropiedadEmpleadoEnJsonGlobal(clave, propiedad, valor) {
+    // Actualizar en jsonGlobal
+    if (window.jsonGlobal && window.jsonGlobal.departamentos) {
+        window.jsonGlobal.departamentos.forEach(depto => {
+            (depto.empleados || []).forEach(emp => {
+                if (String(emp.clave) === String(clave)) {
+                    emp[propiedad] = valor;
+                }
+            });
+        });
+    }
+
+    // Actualizar en empleadosOriginales
+    if (window.empleadosOriginales) {
+        const empleadoOriginal = window.empleadosOriginales.find(emp => String(emp.clave) === String(clave));
+        if (empleadoOriginal) {
+            empleadoOriginal[propiedad] = valor;
+        }
+    }
+
+    // Actualizar en empleadosFiltrados
+    if (empleadosFiltrados) {
+        const empleadoFiltrado = empleadosFiltrados.find(emp => String(emp.clave) === String(clave));
+        if (empleadoFiltrado) {
+            empleadoFiltrado[propiedad] = valor;
+        }
+    }
+}
+
+
+
+// Calcular total de sueldo extra sumando todos los componentes
 function calcularTotalExtra() {
     // Obtener valores de todos los campos que conforman el total extra
     const horasExtras = parseFloat($('#mod-horas-extras').val()) || 0;
     const bonoAntiguedad = parseFloat($('#mod-bono-antiguedad').val()) || 0;
     const actividadesEspeciales = parseFloat($('#mod-actividades-especiales').val()) || 0;
     const bonoResponsabilidad = parseFloat($('#mod-bono-responsabilidad').val()) || 0;
-    
+
     // Sumar conceptos adicionales dinámicos
     let conceptosAdicionalesTotales = 0;
-    $('.concepto-adicional .concepto-valor').each(function() {
+    $('.concepto-adicional .concepto-valor').each(function () {
         const valor = parseFloat($(this).val()) || 0;
         conceptosAdicionalesTotales += valor;
     });
-    
+
     // Calcular el total
     const totalExtra = horasExtras + bonoAntiguedad + actividadesEspeciales + bonoResponsabilidad + conceptosAdicionalesTotales;
-    
+
     // Actualizar el campo total extra
     $('#mod-total-extra').val(totalExtra.toFixed(2));
-    
-    // Opcional: Mostrar en consola para debugging
-    console.log('Cálculo Total Extra:', {
-        horasExtras: horasExtras,
-        bonoAntiguedad: bonoAntiguedad,
-        actividadesEspeciales: actividadesEspeciales,
-        bonoResponsabilidad: bonoResponsabilidad,
-        conceptosAdicionales: conceptosAdicionalesTotales,
-        total: totalExtra
-    });
-    
+
     // Actualizar en el JSON global también
     const clave = $('#campo-clave').text().trim();
     if (clave) {
         actualizarTotalExtraEnJsonGlobal(clave, totalExtra);
+        actualizarSueldoACobrarEnTiempoReal(clave); //   Actualizar sueldo a cobrar cuando cambie el total extra
     }
 }
 
-/*
- * ================================================================
- * FUNCIÓN PARA ACTUALIZAR TOTAL EXTRA EN JSON GLOBAL
- * ================================================================
- */
+
+// Actualizar total extra final en el JSON global del empleado
 function actualizarTotalExtraEnJsonGlobal(clave, totalExtra) {
-    // Actualizar en jsonGlobal
-    if (window.jsonGlobal && window.jsonGlobal.departamentos) {
-        window.jsonGlobal.departamentos.forEach(depto => {
-            (depto.empleados || []).forEach(emp => {
-                if (String(emp.clave) === String(clave)) {
-                    emp.total_extra_calculado = totalExtra;
-                    emp.sueldo_extra_final = totalExtra; // Nueva propiedad
-                }
-            });
-        });
-    }
-
-    // Actualizar en empleadosOriginales
-    if (window.empleadosOriginales) {
-        const empleadoOriginal = window.empleadosOriginales.find(emp => String(emp.clave) === String(clave));
-        if (empleadoOriginal) {
-            empleadoOriginal.total_extra_calculado = totalExtra;
-            empleadoOriginal.sueldo_extra_final = totalExtra; // Nueva propiedad
-        }
-    }
-
-    // Actualizar en empleadosFiltrados
-    if (empleadosFiltrados) {
-        const empleadoFiltrado = empleadosFiltrados.find(emp => String(emp.clave) === String(clave));
-        if (empleadoFiltrado) {
-            empleadoFiltrado.total_extra_calculado = totalExtra;
-            empleadoFiltrado.sueldo_extra_final = totalExtra; // Nueva propiedad
-        }
-    }
-    
-    console.log(`✅ sueldo_extra_final actualizado para empleado ${clave}: $${totalExtra.toFixed(2)}`);
+    // Usar la función universal para actualizar ambas propiedades
+    actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'total_extra_calculado', totalExtra);
+    actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'sueldo_extra_final', totalExtra);
 }
 
-function actualizarActividadesEspecialesEnJsonGlobal(clave, valor) {
-    // Actualizar en jsonGlobal
-    if (window.jsonGlobal && window.jsonGlobal.departamentos) {
-        window.jsonGlobal.departamentos.forEach(depto => {
-            (depto.empleados || []).forEach(emp => {
-                if (String(emp.clave) === String(clave)) {
-                    emp.actividades_especiales = valor;
-                }
-            });
-        });
-    }
+// Calcular sueldo a cobrar: (Sueldo Neto + Incentivo + Extra) - (Tarjeta + Préstamo + Inasistencias + Uniformes + INFONAVIT + ISR + IMSS + Checador + F.A/GAFET/COFIA)
+function calcularSueldoACobrar(clave) {
+    // Obtener empleado actualizado
+    const empleado = obtenerEmpleadoActualizado(clave);
+    if (!empleado) return 0;
 
-    // Actualizar en empleadosOriginales
-    if (window.empleadosOriginales) {
-        const empleadoOriginal = window.empleadosOriginales.find(emp => String(emp.clave) === String(clave));
-        if (empleadoOriginal) {
-            empleadoOriginal.actividades_especiales = valor;
-        }
-    }
+    // === CALCULAR TOTAL PERCEPCIONES ===
+    const sueldoNeto = parseFloat(empleado.sueldo_base) || 0;  // Sueldo Neto (antes era sueldo_base)
+    const incentivo = parseFloat(empleado.incentivo) || 0;
+    const extra = parseFloat(empleado.sueldo_extra_final) || 0;
+    const totalPercepciones = sueldoNeto + incentivo + extra;
 
-    // Actualizar en empleadosFiltrados
-    if (empleadosFiltrados) {
-        const empleadoFiltrado = empleadosFiltrados.find(emp => String(emp.clave) === String(clave));
-        if (empleadoFiltrado) {
-            empleadoFiltrado.actividades_especiales = valor;
+    // === CALCULAR TOTAL CONCEPTOS (ISR, IMSS, INFONAVIT) ===
+    let totalConceptos = 0;
+    const conceptos = empleado.conceptos || [];
+    conceptos.forEach(concepto => {
+        if (['45', '52', '16'].includes(concepto.codigo)) { // ISR, IMSS, INFONAVIT
+            totalConceptos += parseFloat(concepto.resultado) || 0;
         }
-    }
+    });
+
+    // === CALCULAR TOTAL DEDUCCIONES (incluyendo TARJETA) ===
+    const tarjeta = parseFloat(empleado.neto_pagar) || 0;  // TARJETA (campo neto_pagar)
+    const prestamo = parseFloat(empleado.prestamo) || 0;
+    const inasistencias = parseFloat(empleado.inasistencias_descuento) || 0;
+    const uniformes = parseFloat(empleado.uniformes) || 0;
+    const checador = parseFloat(empleado.checador) || 0;
+    const faGafetCofia = parseFloat(empleado.fa_gafet_cofia) || 0;
+
+    // Total de deducciones incluye conceptos (INFONAVIT, ISR, IMSS) + otras deducciones
+    const totalDeducciones = tarjeta + prestamo + inasistencias + uniformes + checador + faGafetCofia + totalConceptos;
+
+    // === CALCULAR SUELDO A COBRAR ===
+    const sueldoACobrar = totalPercepciones - totalDeducciones;
+
+    // Actualizar en JSON global
+    actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'sueldo_a_cobrar', sueldoACobrar);
+
+  
+    return sueldoACobrar;
 }
 
-function actualizarBonoResponsabilidadEnJsonGlobal(clave, valor) {
-    // Actualizar en jsonGlobal
-    if (window.jsonGlobal && window.jsonGlobal.departamentos) {
-        window.jsonGlobal.departamentos.forEach(depto => {
-            (depto.empleados || []).forEach(emp => {
-                if (String(emp.clave) === String(clave)) {
-                    emp.bono_responsabilidad = valor;
-                }
-            });
-        });
-    }
-
-    // Actualizar en empleadosOriginales
-    if (window.empleadosOriginales) {
-        const empleadoOriginal = window.empleadosOriginales.find(emp => String(emp.clave) === String(clave));
-        if (empleadoOriginal) {
-            empleadoOriginal.bono_responsabilidad = valor;
-        }
-    }
-
-    // Actualizar en empleadosFiltrados
-    if (empleadosFiltrados) {
-        const empleadoFiltrado = empleadosFiltrados.find(emp => String(emp.clave) === String(clave));
-        if (empleadoFiltrado) {
-            empleadoFiltrado.bono_responsabilidad = valor;
-        }
-    }
-}
 
 /*
- * ================================================================
- * MÓDULO DE CONCEPTOS ADICIONALES DINÁMICOS
- * ================================================================
- * Este módulo se encarga de:
- * - Agregar campos dinámicos para conceptos personalizados
- * - Guardar conceptos adicionales en el empleado
- * - Inicializar conceptos existentes al abrir el modal
- * - Eliminar conceptos adicionales
- * ================================================================
+ * ----------------------------------------------------------------
+ * SUBSECCIÓN: CONCEPTOS ADICIONALES DINÁMICOS
+ * ----------------------------------------------------------------
+ * Gestiona la adición, eliminación y actualización de conceptos personalizados
+ * ----------------------------------------------------------------
  */
 
-// Configurar delegación de eventos para el botón (se ejecuta una sola vez)
-$(document).ready(function() {
+// Inicializar eventos para conceptos adicionales dinámicos
+$(document).ready(function () {
     // Usar delegación de eventos para que funcione sin importar cuándo se cargue el modal
-    $(document).on('click', '#btn-agregar-concepto', function(e) {
+    $(document).on('click', '#btn-agregar-concepto', function (e) {
         e.preventDefault();
-        console.log('Botón agregar concepto clickeado'); // Para debugging
+      
         agregarCampoConceptoAdicional();
     });
-    
+
     // Configurar botón Guardar Detalles
-    $(document).on('click', '#btn-guardar-detalles', function(e) {
+    $(document).on('click', '#btn-guardar-detalles', function (e) {
         e.preventDefault();
-        console.log('Guardando detalles del empleado...');
+       
         guardarDetallesEmpleado();
+    });
+
+    // LIMPIAR EVENTOS AL CERRAR EL MODAL
+    $(document).on('click', '#cerrar-modal-detalles, #btn-cancelar-detalles', function () {
+        limpiarEventosModal(); // Limpiar antes de cerrar
+        $('#modal-detalles').fadeOut();
+    });
+
+    // También limpiar si se cierra con ESC o clic fuera del modal
+    $(document).on('keydown', function(e) {
+        if (e.key === 'Escape' && modalDetallesActivo) {
+            limpiarEventosModal();
+            $('#modal-detalles').fadeOut();
+        }
+    });
+    
+    // Limpiar si se hace clic fuera del modal
+    $('#modal-detalles').on('click', function(e) {
+        if (e.target === this) {
+            limpiarEventosModal();
+            $('#modal-detalles').fadeOut();
+        }
+    });
+
+    // 🆕 FUNCIONALIDAD PARA CAMBIAR ENTRE VISTAS DE REGISTROS
+    $(document).on('change', 'input[name="vista-registros"]', function() {
+        const vistaSeleccionada = $(this).attr('id');
+        
+        if (vistaSeleccionada === 'btn-redondeados') {
+            // Mostrar tabla redondeados, ocultar checador
+            $('#tabla-checador').attr('hidden', true);
+            $('#tabla-redondeados').removeAttr('hidden');
+        } else if (vistaSeleccionada === 'btn-checador') {
+            // Mostrar tabla checador, ocultar redondeados
+            $('#tabla-redondeados').attr('hidden', true);
+            $('#tabla-checador').removeAttr('hidden');
+            // Llenar tabla del checador si no está llena
+            //llenarTablaChecador();
+        }
     });
 });
 
+// Agregar nuevo campo de concepto adicional al formulario
 function agregarCampoConceptoAdicional(nombre = '', valor = 0) {
-    console.log('Agregando campo concepto adicional:', nombre, valor); // Para debugging
-    
+   
+
     const conceptoIndex = Date.now() + '_' + Math.random().toString(36).substr(2, 5);
-    
+
     const nuevoConcepto = `
         <div class="col-md-6 mb-3 d-flex flex-column concepto-adicional" data-concepto-index="${conceptoIndex}">
             <div class="d-flex align-items-center mb-1">
@@ -501,56 +450,59 @@ function agregarCampoConceptoAdicional(nombre = '', valor = 0) {
             <input type="number" step="0.01" class="form-control mod-input-azul concepto-valor componente-extra" placeholder="0.00" value="${valor}">
         </div>
     `;
-    
+
     // Verificar que el contenedor existe
     const $contenedor = $('#componentes-sueldo-extra');
     const $botonContainer = $contenedor.find('.col-12').last();
-    
+
     if ($botonContainer.length > 0) {
         // Insertar antes del botón "Agregar Otro Concepto"
         $(nuevoConcepto).insertBefore($botonContainer);
-        console.log('Campo agregado correctamente');
+       
     } else {
         // Si no encuentra el contenedor del botón, agregar al final del contenedor
         $contenedor.append(nuevoConcepto);
-        console.log('Campo agregado al final del contenedor');
     }
-    
+
     // Configurar eventos para el nuevo concepto
     configurarEventosConceptoAdicional(conceptoIndex);
 }
 
+// Configurar eventos (eliminar, modificar) para un concepto adicional específico
 function configurarEventosConceptoAdicional(conceptoIndex) {
     const $concepto = $(`.concepto-adicional[data-concepto-index="${conceptoIndex}"]`);
-    
+
     // Evento para eliminar concepto
-    $concepto.find('.btn-eliminar-concepto').on('click', function() {
+    $concepto.find('.btn-eliminar-concepto').on('click', function () {
         const clave = $('#campo-clave').text().trim();
         $concepto.remove();
         // Actualizar JSON después de eliminar
         setTimeout(() => {
             actualizarConceptosAdicionalesEnJsonGlobal(clave);
             calcularTotalExtra(); // Recalcular total cuando se elimine un concepto
+            actualizarSueldoACobrarEnTiempoReal(clave); //   Actualizar sueldo a cobrar
         }, 100);
     });
-    
+
     // Eventos para actualizar valores en tiempo real
-    $concepto.find('.concepto-nombre, .concepto-valor').on('input', function() {
+    $concepto.find('.concepto-nombre, .concepto-valor').on('input', function () {
         const clave = $('#campo-clave').text().trim();
         actualizarConceptosAdicionalesEnJsonGlobal(clave);
         calcularTotalExtra(); // Recalcular total cuando cambien conceptos adicionales
+        actualizarSueldoACobrarEnTiempoReal(clave); //   Actualizar sueldo a cobrar
     });
 }
 
+// Actualizar lista completa de conceptos adicionales en el JSON global
 function actualizarConceptosAdicionalesEnJsonGlobal(clave) {
     const conceptosAdicionales = [];
-    
+
     // Recopilar todos los conceptos adicionales del modal
-    $('.concepto-adicional').each(function() {
+    $('.concepto-adicional').each(function () {
         const $concepto = $(this);
         const nombre = $concepto.find('.concepto-nombre').val().trim();
         const valor = parseFloat($concepto.find('.concepto-valor').val()) || 0;
-        
+
         if (nombre) { // Solo agregar si tiene nombre
             conceptosAdicionales.push({
                 nombre: nombre,
@@ -558,7 +510,7 @@ function actualizarConceptosAdicionalesEnJsonGlobal(clave) {
             });
         }
     });
-    
+
     // Actualizar en jsonGlobal
     if (window.jsonGlobal && window.jsonGlobal.departamentos) {
         window.jsonGlobal.departamentos.forEach(depto => {
@@ -585,21 +537,22 @@ function actualizarConceptosAdicionalesEnJsonGlobal(clave) {
             empleadoFiltrado.conceptos_adicionales = conceptosAdicionales;
         }
     }
-    
-    console.log('Conceptos adicionales actualizados:', conceptosAdicionales);
+
+  
 }
 
+// Cargar conceptos adicionales existentes del empleado al abrir el modal
 function cargarConceptosAdicionalesExistentes(empleado) {
     // Limpiar conceptos adicionales previos
     $('.concepto-adicional').remove();
-    
+
     // Cargar conceptos adicionales existentes
     if (empleado.conceptos_adicionales && Array.isArray(empleado.conceptos_adicionales)) {
         empleado.conceptos_adicionales.forEach(concepto => {
             agregarCampoConceptoAdicional(concepto.nombre, concepto.valor);
         });
     }
-    
+
     // Recalcular total después de cargar conceptos
     setTimeout(() => {
         calcularTotalExtra();
@@ -609,11 +562,14 @@ function cargarConceptosAdicionalesExistentes(empleado) {
 
 
 /*
- * ================================================================
- * CONCEPTOS
- * ================================================================
+ * ----------------------------------------------------------------
+ * SUBSECCIÓN: CONCEPTOS
+ * ----------------------------------------------------------------
+ * Maneja conceptos de deducciones fiscales y legales (ISR, IMSS, INFONAVIT)
+ * ----------------------------------------------------------------
  */
 
+// Inicializar campos de conceptos con datos del empleado y configurar eventos
 function establecerDatosConceptos(conceptos) {
     // Limpiar todos los inputs antes de establecer nuevos valores
     $("#mod-isr").val(0);
@@ -638,23 +594,26 @@ function establecerDatosConceptos(conceptos) {
         const clave = $('#campo-clave').text().trim();
         const isr = parseFloat($(this).val());
         actualizarConceptoEnJsonGlobal(clave, '45', isr); // 45 es el código del ISR
+        actualizarSueldoACobrarEnTiempoReal(clave); //   Actualizar sueldo a cobrar
     });
 
     $("#mod-imss").off('input').on('input', function () {
         const clave = $('#campo-clave').text().trim();
         const imss = parseFloat($(this).val());
         actualizarConceptoEnJsonGlobal(clave, '52', imss); // 52 es el código del IMSS
+        actualizarSueldoACobrarEnTiempoReal(clave); //   Actualizar sueldo a cobrar
     });
 
     $("#mod-infonavit").off('input').on('input', function () {
         const clave = $('#campo-clave').text().trim();
         const infonavit = parseFloat($(this).val());
         actualizarConceptoEnJsonGlobal(clave, '16', infonavit); // 16 es el código del INFONAVIT
+        actualizarSueldoACobrarEnTiempoReal(clave); //   Actualizar sueldo a cobrar
     });
 
 }
 
-// Función para actualizar conceptos solo en jsonGlobal (sin afectar tabla)
+// Actualizar concepto específico por código en todas las estructuras JSON del empleado
 function actualizarConceptoEnJsonGlobal(clave, codigoConcepto, valor) {
     // Función auxiliar para obtener el nombre del concepto
     const getConceptoNombre = (codigo) => {
@@ -723,6 +682,254 @@ function actualizarConceptoEnJsonGlobal(clave, codigoConcepto, valor) {
 
 
 /*
+ * ----------------------------------------------------------------
+ * SUBSECCIÓN: DEDUCCIONES
+ * ----------------------------------------------------------------
+ * Gestiona deducciones del empleado (préstamos, uniformes, inasistencias, etc.)
+ * Incluye cálculo automático de descuentos por inasistencias
+ * ----------------------------------------------------------------
+ */
+
+// Inicializar campos de deducciones con datos del empleado y configurar eventos
+function establecerDatosDeducciones(empleado) {
+    // Limpiar todos los inputs antes de establecer nuevos valores
+    $("#mod-tarjeta").val(0);
+    $("#mod-prestamo").val(0);
+    $("#mod-uniformes").val(0);
+    $("#mod-checador").val(0);
+    $("#mod-fa-gafet-cofia").val(0);
+    $("#mod-inasistencias-horas").val(0);
+    $("#mod-inasistencias-descuento").val(0);
+
+    // Establecer los valores del empleado (si existen)
+    $("#mod-tarjeta").val(empleado.neto_pagar || 0);
+    $("#mod-prestamo").val(empleado.prestamo || 0);
+    $("#mod-uniformes").val(empleado.uniformes || 0);
+    $("#mod-checador").val(empleado.checador || 0);
+    $("#mod-fa-gafet-cofia").val(empleado.fa_gafet_cofia || 0);
+    $("#mod-inasistencias-minutos").val(empleado.inasistencias_minutos || 0);
+    $("#mod-inasistencias-descuento").val(empleado.inasistencias_descuento || 0);
+
+    // Eventos para actualizar deducciones en tiempo real (solo jsonGlobal, no tabla)
+    $("#mod-tarjeta").off('input').on('input', function () {
+        const clave = $('#campo-clave').text().trim();
+        const neto_pagar = parseFloat($(this).val());
+        actualizarDeduccionEnJsonGlobal(clave, 'neto_pagar', neto_pagar);
+        actualizarSueldoACobrarEnTiempoReal(clave);
+    });
+
+    $("#mod-prestamo").off('input').on('input', function () {
+        const clave = $('#campo-clave').text().trim();
+        const prestamo = parseFloat($(this).val());
+        actualizarDeduccionEnJsonGlobal(clave, 'prestamo', isNaN(prestamo) ? 0 : prestamo);
+        actualizarSueldoACobrarEnTiempoReal(clave);
+    });
+
+    $("#mod-uniformes").off('input').on('input', function () {
+        const clave = $('#campo-clave').text().trim();
+        const uniformes = parseFloat($(this).val());
+        actualizarDeduccionEnJsonGlobal(clave, 'uniformes', isNaN(uniformes) ? 0 : uniformes);
+        actualizarSueldoACobrarEnTiempoReal(clave);
+    });
+
+    $("#mod-checador").off('input').on('input', function () {
+        const clave = $('#campo-clave').text().trim();
+        const checador = parseFloat($(this).val());
+        actualizarDeduccionEnJsonGlobal(clave, 'checador', isNaN(checador) ? 0 : checador);
+        actualizarSueldoACobrarEnTiempoReal(clave);
+    });
+
+    $("#mod-fa-gafet-cofia").off('input').on('input', function () {
+        const clave = $('#campo-clave').text().trim();
+        const faGafetCofia = parseFloat($(this).val());
+        actualizarDeduccionEnJsonGlobal(clave, 'fa_gafet_cofia', isNaN(faGafetCofia) ? 0 : faGafetCofia);
+        actualizarSueldoACobrarEnTiempoReal(clave);
+    });
+
+    // Evento para calcular descuento por inasistencias basado en minutos
+    $("#mod-inasistencias-minutos").off('input').on('input', function () {
+        const clave = $('#campo-clave').text().trim();
+        const minutos = parseFloat($(this).val()) || 0;
+
+        // Obtener costo por minuto del archivo rangos_horas.js
+        let costoPorMinuto = 1.34; // Valor por defecto
+
+        if (window.rangosHorasJson) {
+            // Buscar el rango de hora_extra que contiene el costo por minuto para penalizaciones
+            const rangoExtra = window.rangosHorasJson.find(rango => rango.tipo === "hora_extra");
+            if (rangoExtra && rangoExtra.costo_por_minuto) {
+                costoPorMinuto = rangoExtra.costo_por_minuto;
+            }
+        }
+
+        // Calcular el descuento: minutos * costo por minuto
+        const descuento = minutos * costoPorMinuto;
+
+        // Actualizar el campo de descuento
+        $("#mod-inasistencias-descuento").val(descuento.toFixed(2));
+
+        // Actualizar ambos valores en el JSON global
+        actualizarDeduccionEnJsonGlobal(clave, 'inasistencias_minutos', minutos);
+        actualizarDeduccionEnJsonGlobal(clave, 'inasistencias_descuento', descuento);
+        actualizarSueldoACobrarEnTiempoReal(clave);
+    });
+
+    // Evento para actualizar descuento manual (si el usuario modifica directamente el descuento)
+    $("#mod-inasistencias-descuento").off('input').on('input', function () {
+        const clave = $('#campo-clave').text().trim();
+        const descuento = parseFloat($(this).val()) || 0;
+        actualizarDeduccionEnJsonGlobal(clave, 'inasistencias_descuento', descuento);
+        actualizarSueldoACobrarEnTiempoReal(clave);
+    });
+}
+
+
+/*
+ * ----------------------------------------------------------------
+ * SUBSECCIÓN: SUELDO A COBRAR
+ * ----------------------------------------------------------------
+ * Gestiona únicamente el establecimiento del valor en el input
+ * de sueldo a cobrar
+ * ----------------------------------------------------------------
+ */
+
+// Función para actualizar sueldo a cobrar en tiempo real
+function actualizarSueldoACobrarEnTiempoReal(clave) {
+    if (!clave) {
+        return;
+    }
+
+    const empleado = obtenerEmpleadoActualizado(clave);
+    if (!empleado) {
+       
+        return;
+    }
+
+    // === CALCULAR TOTAL PERCEPCIONES ===
+    const sueldoNeto = parseFloat(empleado.sueldo_base) || 0;
+    const incentivo = parseFloat(empleado.incentivo) || 0;
+    const extra = parseFloat(empleado.sueldo_extra_final) || 0;
+    const totalPercepciones = sueldoNeto + incentivo + extra;
+
+    // === CALCULAR TOTAL CONCEPTOS (ISR, IMSS, INFONAVIT) ===
+    let totalConceptos = 0;
+    const conceptos = empleado.conceptos || [];
+    conceptos.forEach(concepto => {
+        if (['45', '52', '16'].includes(concepto.codigo)) {
+            totalConceptos += parseFloat(concepto.resultado) || 0;
+        }
+    });
+
+    // === CALCULAR TOTAL DEDUCCIONES ===
+    const tarjeta = parseFloat(empleado.neto_pagar) || 0;
+    const prestamo = parseFloat(empleado.prestamo) || 0;
+    const inasistencias = parseFloat(empleado.inasistencias_descuento) || 0;
+    const uniformes = parseFloat(empleado.uniformes) || 0;
+    const checador = parseFloat(empleado.checador) || 0;
+    const faGafetCofia = parseFloat(empleado.fa_gafet_cofia) || 0;
+
+    const totalDeducciones = tarjeta + prestamo + inasistencias + uniformes + checador + faGafetCofia + totalConceptos;
+
+    // === CALCULAR SUELDO A COBRAR ===
+    const sueldoACobrar = totalPercepciones - totalDeducciones;
+
+    // === ACTUALIZAR EN INTERFAZ ===
+    $("#mod-sueldo-a-cobrar").val(sueldoACobrar.toFixed(2));
+
+    // === ACTUALIZAR EN JSON GLOBAL ===
+    actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'sueldo_a_cobrar', sueldoACobrar);
+
+    return sueldoACobrar;
+}
+
+// Función para actualizar deducciones solo en jsonGlobal (sin afectar tabla)
+function actualizarDeduccionEnJsonGlobal(clave, tipoDeduccion, valor) {
+    // Actualizar en jsonGlobal
+    if (window.jsonGlobal && window.jsonGlobal.departamentos) {
+        window.jsonGlobal.departamentos.forEach(depto => {
+            (depto.empleados || []).forEach(emp => {
+                if (String(emp.clave) === String(clave)) {
+                    emp[tipoDeduccion] = valor;
+                }
+            });
+        });
+    }
+
+    // Actualizar en empleadosOriginales
+    if (window.empleadosOriginales) {
+        const empleadoOriginal = window.empleadosOriginales.find(emp => String(emp.clave) === String(clave));
+        if (empleadoOriginal) {
+            empleadoOriginal[tipoDeduccion] = valor;
+        }
+    }
+
+    // Actualizar en empleadosFiltrados
+    if (empleadosFiltrados) {
+        const empleadoFiltrado = empleadosFiltrados.find(emp => String(emp.clave) === String(clave));
+        if (empleadoFiltrado) {
+            empleadoFiltrado[tipoDeduccion] = valor;
+        }
+    }
+}
+function actualizarSueldoEnTabla(clave, sueldoACobrar) {
+    const $fila = $(`#tabla-nomina-body tr[data-clave="${clave}"]`);
+
+    if ($fila.length === 0) {
+     
+        return;
+    }
+
+    // Función para mostrar cadena vacía en lugar de 0
+    const mostrarValor = (valor) => {
+        if (valor === 0 || valor === '0' || valor === '' || valor === null || valor === undefined || isNaN(valor)) {
+            return '';
+        }
+        return valor;
+    };
+
+    // Actualizar la columna del sueldo a cobrar (columna 16, índice 15)
+    const celdas = $fila.find('td');
+    $(celdas[15]).text(mostrarValor(sueldoACobrar.toFixed(2)));
+
+    // Agregar efecto visual para indicar que se actualizó
+    $fila.addClass('fila-actualizada');
+    setTimeout(() => {
+        $fila.removeClass('fila-actualizada');
+    }, 1000);
+}
+
+// Función para actualizar deducciones solo en jsonGlobal (sin afectar tabla)
+function actualizarDeduccionEnJsonGlobal(clave, tipoDeduccion, valor) {
+    // Actualizar en jsonGlobal
+    if (window.jsonGlobal && window.jsonGlobal.departamentos) {
+        window.jsonGlobal.departamentos.forEach(depto => {
+            (depto.empleados || []).forEach(emp => {
+                if (String(emp.clave) === String(clave)) {
+                    emp[tipoDeduccion] = valor;
+                }
+            });
+        });
+    }
+
+    // Actualizar en empleadosOriginales
+    if (window.empleadosOriginales) {
+        const empleadoOriginal = window.empleadosOriginales.find(emp => String(emp.clave) === String(clave));
+        if (empleadoOriginal) {
+            empleadoOriginal[tipoDeduccion] = valor;
+        }
+    }
+
+    // Actualizar en empleadosFiltrados
+    if (empleadosFiltrados) {
+        const empleadoFiltrado = empleadosFiltrados.find(emp => String(emp.clave) === String(clave));
+        if (empleadoFiltrado) {
+            empleadoFiltrado[tipoDeduccion] = valor;
+        }
+    }
+}
+
+
+/*
  * ================================================================
  * FUNCIÓN PARA GUARDAR DETALLES DEL EMPLEADO
  * ================================================================
@@ -732,41 +939,41 @@ function actualizarConceptoEnJsonGlobal(clave, codigoConcepto, valor) {
  */
 function guardarDetallesEmpleado() {
     const clave = $('#campo-clave').text().trim();
-    
-    if (!clave) {
-        console.error('No se encontró la clave del empleado');
-        return;
-    }
-    
-    console.log('✅ Guardando cambios para empleado:', clave);
-    
+
+
+
     // 1. Asegurar que el total extra esté calculado
     calcularTotalExtra();
-    
-    // 2. Obtener datos actualizados del empleado desde jsonGlobal
+
+    // 2. Calcular sueldo a cobrar automáticamente
+    calcularSueldoACobrar(clave);
+
+    // 3. Obtener datos actualizados del empleado desde jsonGlobal
     const empleadoActualizado = obtenerEmpleadoActualizado(clave);
-    
+
     if (!empleadoActualizado) {
-        console.error('No se encontró el empleado en jsonGlobal');
+       
         return;
     }
-    
-    // 3. Actualizar la fila de la tabla
+
+    // 4. Actualizar la fila de la tabla
     actualizarFilaTabla(clave, empleadoActualizado);
-    
-    // 4. Cerrar el modal
+
+    // 5. LIMPIAR EVENTOS ANTES DE CERRAR
+    limpiarEventosModal();
+
+    // 6. Cerrar el modal
     $('#modal-detalles').fadeOut();
-    
-    // 5. Log de confirmación
-    console.log('✅ Detalles guardados correctamente para:', empleadoActualizado.nombre);
+
+
 }
 
 
- // FUNCIÓN PARA OBTENER EMPLEADO ACTUALIZADO
- 
+// FUNCIÓN PARA OBTENER EMPLEADO ACTUALIZADO
+
 function obtenerEmpleadoActualizado(clave) {
     if (!window.jsonGlobal || !window.jsonGlobal.departamentos) return null;
-    
+
     for (let depto of window.jsonGlobal.departamentos) {
         const empleado = (depto.empleados || []).find(emp => String(emp.clave) === String(clave));
         if (empleado) {
@@ -777,26 +984,25 @@ function obtenerEmpleadoActualizado(clave) {
 }
 
 //FUNCIÓN PARA ACTUALIZAR FILA DE LA TABLA
- 
+
 function actualizarFilaTabla(clave, empleado) {
     const $fila = $(`#tabla-nomina-body tr[data-clave="${clave}"]`);
-    
+
     if ($fila.length === 0) {
-        console.warn('No se encontró la fila en la tabla para la clave:', clave);
         return;
     }
-    
+
     // Obtener conceptos
     const conceptos = empleado.conceptos || [];
     const getConcepto = (codigo) => {
         const c = conceptos.find(c => c.codigo === codigo);
         return c ? parseFloat(c.resultado).toFixed(2) : '';
     };
-    
+
     const infonavit = getConcepto('16');
     const isr = getConcepto('45');
     const imss = getConcepto('52');
-    
+
     // Función para mostrar cadena vacía en lugar de 0, NaN o valores vacíos
     const mostrarValor = (valor) => {
         if (valor === 0 || valor === '0' || valor === '' || valor === null || valor === undefined || isNaN(valor)) {
@@ -804,25 +1010,25 @@ function actualizarFilaTabla(clave, empleado) {
         }
         return valor;
     };
-    
+
     // Solo mostrar el puesto original del empleado
     let puestoEmpleado = empleado.puesto || empleado.nombre_departamento || '';
-    
+
     // Obtener el incentivo si existe
     const incentivo = empleado.incentivo ? empleado.incentivo.toFixed(2) : '';
-    
+
     // Usar sueldo_extra_final si existe, sino usar sueldo_extra
     const sueldoExtra = empleado.sueldo_extra_final || empleado.sueldo_extra || 0;
-    
+
     // Actualizar las celdas de la fila
     const celdas = $fila.find('td');
-    
+
     // Actualizar cada celda (manteniendo el número de fila)
     $(celdas[1]).text(empleado.nombre); // Nombre
     $(celdas[2]).text(puestoEmpleado); // Puesto (mantener el original)
     $(celdas[3]).text(mostrarValor(empleado.sueldo_base)); // Sueldo base
     $(celdas[4]).text(mostrarValor(incentivo)); // Incentivo
-    $(celdas[5]).text(mostrarValor(sueldoExtra.toFixed(2))); // Extra (ahora usa sueldo_extra_final)
+    $(celdas[5]).text(mostrarValor(sueldoExtra.toFixed(2))); // Extra (ahora usay sueldo_extra_final)
     $(celdas[6]).text(mostrarValor(empleado.neto_pagar)); // Neto a pagar
     $(celdas[7]).text(mostrarValor(empleado.prestamo)); // Préstamo
     $(celdas[8]).text(mostrarValor(empleado.inasistencias_descuento)); // Inasistencias
@@ -832,18 +1038,16 @@ function actualizarFilaTabla(clave, empleado) {
     $(celdas[12]).text(mostrarValor(imss)); // IMSS
     $(celdas[13]).text(mostrarValor(empleado.checador)); // Checador
     $(celdas[14]).text(mostrarValor(empleado.fa_gafet_cofia)); // F.A/GAFET/COFIA
-    // La última celda (SUELDO A COBRAR) se mantiene igual
-    
+    $(celdas[15]).text(mostrarValor(empleado.sueldo_a_cobrar ? empleado.sueldo_a_cobrar.toFixed(2) : '')); // SUELDO A COBRAR
+
     // Agregar efecto visual para indicar que se actualizó
     $fila.addClass('fila-actualizada');
     setTimeout(() => {
         $fila.removeClass('fila-actualizada');
     }, 2000);
-    
-    console.log('✅ Fila de tabla actualizada para empleado:', empleado.nombre);
+
+
 }
-
-
 
 /*
  * ================================================================
@@ -853,13 +1057,13 @@ function actualizarFilaTabla(clave, empleado) {
 
 
 function llenarTablaHorariosSemanales(empleado) {
-    // ✅ LIMPIAR TABLA SIEMPRE AL INICIO
+    //   LIMPIAR TABLA SIEMPRE AL INICIO
     const tbody = $('#tab_registros .custom-table tbody');
     const tfoot = $('#tab_registros .custom-table tfoot');
     tbody.empty();
     tfoot.empty();
 
-    // ✅ LIMPIAR TAMBIÉN EVENTOS ESPECIALES
+    //   LIMPIAR TAMBIÉN EVENTOS ESPECIALES
     $('#entradas-tempranas-content').empty();
     $('#salidas-tardias-content').empty();
     $('#olvidos-checador-content').empty();
@@ -868,10 +1072,9 @@ function llenarTablaHorariosSemanales(empleado) {
     $('#total-olvidos-checador').text('0 eventos');
     $('#tiempo-extra-total').text('0 min');
 
-    // ✅ VERIFICAR SI EL EMPLEADO TIENE DATOS REDONDEADOS
+    //   VERIFICAR SI EL EMPLEADO TIENE DATOS REDONDEADOS
     if (!empleado.tiempo_total_redondeado || !empleado.registros_redondeados || empleado.registros_redondeados.length === 0) {
-        console.log('❌ No hay datos redondeados para este empleado:', empleado.nombre);
-
+       
         // Mostrar mensaje en la tabla indicando que no hay datos
         const filaMensaje = `
             <tr>
@@ -897,12 +1100,10 @@ function llenarTablaHorariosSemanales(empleado) {
         `;
         tfoot.html(filaTotalesVacia);
 
-        return; // ✅ SALIR DE LA FUNCIÓN SI NO HAY DATOS
+        return; //   SALIR DE LA FUNCIÓN SI NO HAY DATOS
     }
 
-    // ✅ CONTINUAR CON EL CÓDIGO NORMAL SI HAY DATOS
-    console.log('✅ Llenando tabla con datos del empleado:', empleado.nombre);
-
+  
     // Mapear días de la semana EMPEZANDO DESDE VIERNES
     const diasSemana = ['viernes', 'sabado', 'domingo', 'lunes', 'martes', 'miercoles', 'jueves'];
     const diasEspañol = ['Viernes', 'Sábado', 'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves'];
@@ -943,10 +1144,10 @@ function llenarTablaHorariosSemanales(empleado) {
             fila = `
                 <tr>
                     <td class="day-cell">${diaEspañol}</td>
-                    <td>${datos.entrada || '--'}</td>
-                    <td>${datos.salida_comer || '--'}</td>
-                    <td>${datos.entrada_comer || '--'}</td>
-                    <td>${datos.salida || '--'}</td>
+                    <td contenteditable="true">${datos.entrada || '--'}</td>
+                    <td contenteditable="true">${datos.salida_comer || '--'}</td>
+                    <td contenteditable="true">${datos.entrada_comer || '--'}</td>
+                    <td contenteditable="true">${datos.salida || '--'}</td>
                     <td>${datos.trabajado || '--'}</td>
                     <td>${minutosDelDia.toString().padStart(2, '0')}</td>
                     <td>${datos.hora_comida || '--'}</td>
@@ -963,10 +1164,10 @@ function llenarTablaHorariosSemanales(empleado) {
             fila = `
                 <tr>
                     <td class="day-cell">${diaEspañol}</td>
-                    <td>--</td>
-                    <td>--</td>
-                    <td>--</td>
-                    <td>--</td>
+                    <td contenteditable="true">--</td>
+                    <td contenteditable="true">--</td>
+                    <td contenteditable="true">--</td>
+                    <td contenteditable="true">--</td>
                     <td>--</td>
                     <td>--</td>
                     <td>--</td>
@@ -998,22 +1199,14 @@ function llenarTablaHorariosSemanales(empleado) {
 
     $('#tab_registros .custom-table tfoot').html(filaTotales);
 
-    console.log('✅ Tabla actualizada con datos reales del empleado:', {
-        nombre: empleado.nombre,
-        totalSemanal: totalHorasSemana,
-        totalMinutos: totalMinutosFinal,
-        totalComida: totalHorasComida,
-        registros: empleado.registros_redondeados.length
-    });
-
     // Al final de la función, después de actualizar la tabla
     llenarEventosEspeciales(empleado);
 }
 
 function llenarEventosEspeciales(empleado) {
-    
+
     if (!empleado.registros_redondeados || empleado.registros_redondeados.length === 0) {
-     
+
         return;
     }
 
@@ -1101,6 +1294,171 @@ function llenarEventosEspeciales(empleado) {
     $('#total-olvidos-checador').text(`${totalOlvidosChecador} ${totalOlvidosChecador === 1 ? 'evento' : 'eventos'}`);
     $('#tiempo-extra-total').text(minutosAHora(totalEntradaTempranaMinutos + totalSalidaTardiaMinutos));
 
+
+}
+
+function establecerMinutosHoras(minutosExtra, minutosNormales) {
+    //Limpiar campos
+    $("#minutos-normales-trabajados").val("");
+    $("#minutos-extra-trabajados").val("");
+
+    $("#minutos-normales-trabajados").val(minutosNormales);
+    $("#minutos-extra-trabajados").val(minutosExtra);
+}
+
+/*
+ * ================================================================
+ * MÓDULO DE GESTIÓN DE EVENTOS DEL MODAL
+ * ================================================================
+ * Controla la activación y desactivación de eventos para evitar
+ * conflictos cuando el modal se cierra
+ * ================================================================
+ */
+
+// Variable global para controlar si el modal está activo
+let modalDetallesActivo = false;
+
+// Función para limpiar todos los event listeners del modal
+function limpiarEventosModal() {
+    // Limpiar eventos de inputs de percepciones
+    $("#mod-sueldo-neto").off('input');
+    $("#mod-horas-extras").off('input');
+    $("#mod-incentivo-monto").off('input');
+    $("#mod-actividades-especiales").off('input');
+    $("#mod-bono-responsabilidad").off('input');
+    
+    // Limpiar eventos de checkboxes
+    $("#mod-incentivo-check").off('change');
+    $("#mod-bono-antiguedad-check").off('change');
+    $("#mod-bono-antiguedad").off('input');
+    
+    // Limpiar eventos de conceptos
+    $("#mod-isr").off('input');
+    $("#mod-imss").off('input');
+    $("#mod-infonavit").off('input');
+    
+    // Limpiar eventos de deducciones
+    $("#mod-tarjeta").off('input');
+    $("#mod-prestamo").off('input');
+    $("#mod-uniformes").off('input');
+    $("#mod-checador").off('input');
+    $("#mod-fa-gafet-cofia").off('input');
+    $("#mod-inasistencias-minutos").off('input');
+    $("#mod-inasistencias-descuento").off('input');
+    
+    // Limpiar eventos de conceptos adicionales
+    $('.concepto-adicional').off();
+    $('.btn-eliminar-concepto').off('click');
+    $('.concepto-nombre, .concepto-valor').off('input');
+    
+    // RESETEAR ESTADO DE MINI-TABS AL LIMPIAR
+    resetearEstadoMiniTabs();
+    
+    // Marcar modal como inactivo
+    modalDetallesActivo = false;
+}
+
+// Función para activar el modal y configurar eventos
+function activarModal() {
+    modalDetallesActivo = true;
+   
+}
+
+// FUNCIONALIDAD PARA MINI-TABS DE REGISTROS (adaptada de configTablas)
+$(document).on('click', '.mini-tab-registros', function (e) {
+    e.preventDefault();
+    
+    // Remover clase active de todos los mini-tabs de registros
+    $('.mini-tab-registros').removeClass('active');
+    // Agregar clase active al tab clickeado
+    $(this).addClass('active');
+    
+    const tabId = $(this).attr('id');
+    
+    if (tabId === 'btn-redondeados') {
+        // Mostrar tabla redondeados, ocultar checador
+        $('#tabla-checador').hide();
+        $('#tabla-redondeados').show();
+    } else if (tabId === 'btn-checador') {
+        // Mostrar tabla checador, ocultar redondeados
+        $('#tabla-redondeados').hide();
+        $('#tabla-checador').show();
+        // Llenar tabla del checador
+        llenarTablaChecador();
+    }
+});
+
+// 🆕 FUNCIÓN PARA LLENAR LA TABLA DEL CHECADOR
+function llenarTablaChecador() {
+   
+    
+    const clave = $('#campo-clave').text().trim();
+    if (!clave) {
+      
+        return;
+    }
+    
+    // Buscar empleado en jsonGlobal
+    const empleado = obtenerEmpleadoActualizado(clave);
+    if (!empleado) {
+   
+        mostrarMensajeNoRegistrosChecador();
+        return;
+    }
+    
+
+    if (!empleado.registros || empleado.registros.length === 0) {
+     
+        mostrarMensajeNoRegistrosChecador();
+        return;
+    }
+    
+    const tbody = $('#tabla-checador tbody');
+    tbody.empty();
+    
+    // Recorrer los registros del empleado
+    empleado.registros.forEach((registro, index) => {
+        
+        const fecha = registro.fecha || '--';
+        const entrada = registro.entrada || '--';
+        const salida = registro.salida || '--';
+        
+        const fila = `
+            <tr>
+                <td>${fecha}</td>
+                <td>${entrada}</td>
+                <td>${salida}</td>
+            </tr>
+        `;
+        
+        tbody.append(fila);
+    });
+    
+   
+}
+
+//  FUNCIÓN PARA MOSTRAR MENSAJE CUANDO NO HAY REGISTROS
+function mostrarMensajeNoRegistrosChecador() {
+    const tbody = $('#tabla-checador tbody');
+    tbody.html(`
+        <tr>
+            <td colspan="3" style="text-align: center; padding: 40px; color: #999; font-style: italic;">
+                <i class="bi bi-info-circle"></i> No hay registros del checador disponibles para este empleado
+            </td>
+        </tr>
+    `);
+}
+
+//  FUNCIÓN PARA RESETEAR ESTADO DE MINI-TABS
+function resetearEstadoMiniTabs() {
+    // Resetear clases activas de los botones
+    $('.mini-tab-registros').removeClass('active');
+    $('#btn-redondeados').addClass('active');
+    
+    // Mostrar tabla redondeados por defecto y ocultar checador
+    $('#tabla-checador').hide();
+    $('#tabla-redondeados').show();
+    
     
 }
 
