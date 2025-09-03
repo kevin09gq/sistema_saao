@@ -24,10 +24,10 @@ function buscarDatos(claveEmpleado) {
     });
 
     if (empleadoEncontrado) {
-        // 🔥 ACTIVAR MODAL ANTES DE CONFIGURAR DATOS
+        //  ACTIVAR MODAL ANTES DE CONFIGURAR DATOS
         activarModal();
-        
-        // 🆕 RESETEAR ESTADO DE MINI-TABS ANTES DE MOSTRAR DATOS
+
+        // RESETEAR ESTADO DE MINI-TABS ANTES DE MOSTRAR DATOS
         resetearEstadoMiniTabs();
 
         establecerDatosTrabajador(empleadoEncontrado.clave, empleadoEncontrado.nombre);
@@ -37,6 +37,25 @@ function buscarDatos(claveEmpleado) {
         establecerDatosDeducciones(empleadoEncontrado);
         establecerMinutosHoras(empleadoEncontrado.Minutos_extra, empleadoEncontrado.Minutos_normales);
     }
+}
+
+// Variable global para controlar si el modal está activo
+let modalDetallesActivo = false;
+
+// Función para activar el modal y configurar eventos
+function activarModal() {
+    modalDetallesActivo = true;
+}
+
+// Función para resetear estado de mini-tabs
+function resetearEstadoMiniTabs() {
+    // Resetear clases activas de los botones
+    $('.mini-tab-registros').removeClass('active');
+    $('#btn-redondeados').addClass('active');
+
+    // Mostrar tabla redondeados por defecto y ocultar checador
+    $('#tabla-checador').hide();
+    $('#tabla-redondeados').show();
 }
 
 /*
@@ -363,7 +382,7 @@ function calcularSueldoACobrar(clave) {
     // Actualizar en JSON global
     actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'sueldo_a_cobrar', sueldoACobrar);
 
-  
+
     return sueldoACobrar;
 }
 
@@ -381,14 +400,14 @@ $(document).ready(function () {
     // Usar delegación de eventos para que funcione sin importar cuándo se cargue el modal
     $(document).on('click', '#btn-agregar-concepto', function (e) {
         e.preventDefault();
-      
+
         agregarCampoConceptoAdicional();
     });
 
     // Configurar botón Guardar Detalles
     $(document).on('click', '#btn-guardar-detalles', function (e) {
         e.preventDefault();
-       
+
         guardarDetallesEmpleado();
     });
 
@@ -399,25 +418,25 @@ $(document).ready(function () {
     });
 
     // También limpiar si se cierra con ESC o clic fuera del modal
-    $(document).on('keydown', function(e) {
+    $(document).on('keydown', function (e) {
         if (e.key === 'Escape' && modalDetallesActivo) {
             limpiarEventosModal();
             $('#modal-detalles').fadeOut();
         }
     });
-    
+
     // Limpiar si se hace clic fuera del modal
-    $('#modal-detalles').on('click', function(e) {
+    $('#modal-detalles').on('click', function (e) {
         if (e.target === this) {
             limpiarEventosModal();
             $('#modal-detalles').fadeOut();
         }
     });
 
-    // 🆕 FUNCIONALIDAD PARA CAMBIAR ENTRE VISTAS DE REGISTROS
-    $(document).on('change', 'input[name="vista-registros"]', function() {
+    //     FUNCIONALIDAD PARA CAMBIAR ENTRE VISTAS DE REGISTROS
+    $(document).on('change', 'input[name="vista-registros"]', function () {
         const vistaSeleccionada = $(this).attr('id');
-        
+
         if (vistaSeleccionada === 'btn-redondeados') {
             // Mostrar tabla redondeados, ocultar checador
             $('#tabla-checador').attr('hidden', true);
@@ -434,7 +453,7 @@ $(document).ready(function () {
 
 // Agregar nuevo campo de concepto adicional al formulario
 function agregarCampoConceptoAdicional(nombre = '', valor = 0) {
-   
+
 
     const conceptoIndex = Date.now() + '_' + Math.random().toString(36).substr(2, 5);
 
@@ -458,7 +477,7 @@ function agregarCampoConceptoAdicional(nombre = '', valor = 0) {
     if ($botonContainer.length > 0) {
         // Insertar antes del botón "Agregar Otro Concepto"
         $(nuevoConcepto).insertBefore($botonContainer);
-       
+
     } else {
         // Si no encuentra el contenedor del botón, agregar al final del contenedor
         $contenedor.append(nuevoConcepto);
@@ -538,7 +557,7 @@ function actualizarConceptosAdicionalesEnJsonGlobal(clave) {
         }
     }
 
-  
+
 }
 
 // Cargar conceptos adicionales existentes del empleado al abrir el modal
@@ -801,7 +820,7 @@ function actualizarSueldoACobrarEnTiempoReal(clave) {
 
     const empleado = obtenerEmpleadoActualizado(clave);
     if (!empleado) {
-       
+
         return;
     }
 
@@ -875,7 +894,7 @@ function actualizarSueldoEnTabla(clave, sueldoACobrar) {
     const $fila = $(`#tabla-nomina-body tr[data-clave="${clave}"]`);
 
     if ($fila.length === 0) {
-     
+
         return;
     }
 
@@ -940,32 +959,102 @@ function actualizarDeduccionEnJsonGlobal(clave, tipoDeduccion, valor) {
 function guardarDetallesEmpleado() {
     const clave = $('#campo-clave').text().trim();
 
+    // 1. GUARDAR HORARIOS MODIFICADOS DE LA TABLA
+    guardarHorariosModificadosEnJsonGlobal(clave);
 
-
-    // 1. Asegurar que el total extra esté calculado
+    // 2. Asegurar que el total extra esté calculado
     calcularTotalExtra();
 
-    // 2. Calcular sueldo a cobrar automáticamente
+    // 3. Calcular sueldo a cobrar automáticamente
     calcularSueldoACobrar(clave);
 
-    // 3. Obtener datos actualizados del empleado desde jsonGlobal
+    // 4. Obtener datos actualizados del empleado desde jsonGlobal
     const empleadoActualizado = obtenerEmpleadoActualizado(clave);
 
     if (!empleadoActualizado) {
-       
-        return;
+          return;
     }
 
-    // 4. Actualizar la fila de la tabla
+    // 5. Actualizar la fila de la tabla
     actualizarFilaTabla(clave, empleadoActualizado);
 
-    // 5. LIMPIAR EVENTOS ANTES DE CERRAR
+    // 6. LIMPIAR EVENTOS ANTES DE CERRAR
     limpiarEventosModal();
 
-    // 6. Cerrar el modal
+    // 7. Cerrar el modal
     $('#modal-detalles').fadeOut();
 
+}
 
+//     FUNCIÓN PARA GUARDAR HORARIOS MODIFICADOS DE LA TABLA EN JSONGLOBAL
+function guardarHorariosModificadosEnJsonGlobal(clave) {
+  
+    const empleado = obtenerEmpleadoActualizado(clave);
+    if (!empleado || !empleado.registros_redondeados) {
+          return;
+    }
+
+    // Obtener horarios actuales de la tabla editada
+    const diasSemana = ['viernes', 'sabado', 'domingo', 'lunes', 'martes', 'miercoles', 'jueves'];
+    const horariosActualizados = {};
+
+    // Capturar datos de cada fila de la tabla
+    $('#tab_registros .custom-table tbody tr').each(function (index) {
+        const $fila = $(this);
+        const celdas = $fila.find('td');
+
+        if (celdas.length >= 8 && index < diasSemana.length) {
+            const dia = diasSemana[index];
+
+            horariosActualizados[dia] = {
+                entrada: $(celdas[1]).text().trim(),
+                salida_comer: $(celdas[2]).text().trim(),
+                entrada_comer: $(celdas[3]).text().trim(),
+                salida: $(celdas[4]).text().trim(),
+                trabajado: $(celdas[5]).text().trim(),
+                minutos_trabajados: parseInt($(celdas[6]).text().trim()) || 0,
+                hora_comida: $(celdas[7]).text().trim()
+            };
+        }
+    });
+
+   
+    // Actualizar los registros_redondeados en jsonGlobal
+    empleado.registros_redondeados.forEach(registro => {
+        const dia = registro.dia.toLowerCase();
+        const datosActualizados = horariosActualizados[dia];
+
+        if (datosActualizados) {
+          
+            // Actualizar todos los campos del registro
+            registro.entrada = datosActualizados.entrada;
+            registro.salida_comer = datosActualizados.salida_comer;
+            registro.entrada_comer = datosActualizados.entrada_comer;
+            registro.salida = datosActualizados.salida;
+            registro.trabajado = datosActualizados.trabajado;
+            registro.hora_comida = datosActualizados.hora_comida;
+
+        }
+    });
+
+    // Obtener totales actualizados de la tabla
+    const $filaTotalTfoot = $('#tabla-redondeados:visible .custom-table tfoot tr');
+    if ($filaTotalTfoot.length > 0) {
+        const celdasTotal = $filaTotalTfoot.find('th');
+        if (celdasTotal.length >= 7) {
+            const tiempoTotalTexto = $(celdasTotal[5]).text().trim();
+            const totalMinutosTexto = $(celdasTotal[6]).text().trim();
+            const totalMinutos = parseInt(totalMinutosTexto) || 0;
+
+            // Actualizar los totales en el empleado
+            empleado.tiempo_total_redondeado = tiempoTotalTexto;
+            empleado.total_minutos_redondeados = totalMinutos;
+            empleado.Minutos_trabajados = totalMinutos;
+
+               }
+    }
+
+   
 }
 
 
@@ -1057,150 +1146,10 @@ function actualizarFilaTabla(clave, empleado) {
 
 
 function llenarTablaHorariosSemanales(empleado) {
-    //   LIMPIAR TABLA SIEMPRE AL INICIO
-    const tbody = $('#tab_registros .custom-table tbody');
-    const tfoot = $('#tab_registros .custom-table tfoot');
-    tbody.empty();
-    tfoot.empty();
-
-    //   LIMPIAR TAMBIÉN EVENTOS ESPECIALES
-    $('#entradas-tempranas-content').empty();
-    $('#salidas-tardias-content').empty();
-    $('#olvidos-checador-content').empty();
-    $('#total-entradas-tempranas').text('0 min');
-    $('#total-salidas-tardias').text('0 min');
-    $('#total-olvidos-checador').text('0 eventos');
-    $('#tiempo-extra-total').text('0 min');
-
-    //   VERIFICAR SI EL EMPLEADO TIENE DATOS REDONDEADOS
-    if (!empleado.tiempo_total_redondeado || !empleado.registros_redondeados || empleado.registros_redondeados.length === 0) {
-       
-        // Mostrar mensaje en la tabla indicando que no hay datos
-        const filaMensaje = `
-            <tr>
-                <td colspan="8" style="text-align: center; padding: 40px; color: #999; font-style: italic;">
-                    <i class="bi bi-info-circle"></i> No hay registros de horarios disponibles para este empleado
-                </td>
-            </tr>
-        `;
-        tbody.html(filaMensaje);
-
-        // Fila de totales vacía
-        const filaTotalesVacia = `
-            <tr>
-                <th>TOTAL</th>
-                <th>--</th>
-                <th>--</th>
-                <th>--</th>
-                <th>--</th>
-                <th>00:00</th>
-                <th>0</th>
-                <th>00:00</th>
-            </tr>
-        `;
-        tfoot.html(filaTotalesVacia);
-
-        return; //   SALIR DE LA FUNCIÓN SI NO HAY DATOS
-    }
-
-  
-    // Mapear días de la semana EMPEZANDO DESDE VIERNES
-    const diasSemana = ['viernes', 'sabado', 'domingo', 'lunes', 'martes', 'miercoles', 'jueves'];
-    const diasEspañol = ['Viernes', 'Sábado', 'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves'];
-
-    // Crear mapa de datos por día
-    const datosPorDia = {};
-    empleado.registros_redondeados.forEach(registro => {
-        datosPorDia[registro.dia.toLowerCase()] = registro;
-    });
-
-    // Variables para totales
-    let totalMinutosSemana = empleado.total_minutos_redondeados || 0;
-    let totalMinutosComida = 0;
-
-    // Función para extraer minutos de formato "HH:MM"
-    function extraerMinutos(hora) {
-        if (!hora || hora === "00:00" || hora === "--") return 0;
-        const [h, m] = hora.split(':');
-        return parseInt(m) || 0;
-    }
-    function horaAMinutos(hora) {
-        if (!hora || hora === "" || hora === "00:00") return 0;
-        const [h, m] = hora.split(':').map(Number);
-        return h * 60 + m;
-    }
-
-    // Llenar cada fila de la tabla
-    diasSemana.forEach((dia, index) => {
-        const diaEspañol = diasEspañol[index];
-        const datos = datosPorDia[dia];
-
-        let fila = '';
-
-        if (datos && datos.trabajado !== "00:00") {
-            // Día con trabajo
-            const minutosDelDia = horaAMinutos(datos.trabajado);
-
-            fila = `
-                <tr>
-                    <td class="day-cell">${diaEspañol}</td>
-                    <td contenteditable="true">${datos.entrada || '--'}</td>
-                    <td contenteditable="true">${datos.salida_comer || '--'}</td>
-                    <td contenteditable="true">${datos.entrada_comer || '--'}</td>
-                    <td contenteditable="true">${datos.salida || '--'}</td>
-                    <td>${datos.trabajado || '--'}</td>
-                    <td>${minutosDelDia.toString().padStart(2, '0')}</td>
-                    <td>${datos.hora_comida || '--'}</td>
-                </tr>
-            `;
-
-            // Acumular tiempo de comida
-            if (datos.hora_comida && datos.hora_comida !== "00:00") {
-                const [h, m] = datos.hora_comida.split(':');
-                totalMinutosComida += (parseInt(h) * 60 + parseInt(m));
-            }
-        } else {
-            // Día sin trabajo
-            fila = `
-                <tr>
-                    <td class="day-cell">${diaEspañol}</td>
-                    <td contenteditable="true">--</td>
-                    <td contenteditable="true">--</td>
-                    <td contenteditable="true">--</td>
-                    <td contenteditable="true">--</td>
-                    <td>--</td>
-                    <td>--</td>
-                    <td>--</td>
-                </tr>
-            `;
-        }
-
-        tbody.append(fila);
-    });
-
-    // Convertir totales a formato HH:MM
-    const totalHorasSemana = empleado.tiempo_total_redondeado || "00:00";
-    const totalHorasComida = `${Math.floor(totalMinutosComida / 60).toString().padStart(2, '0')}:${(totalMinutosComida % 60).toString().padStart(2, '0')}`;
-    const totalMinutosFinal = horaAMinutos(totalHorasSemana);
-
-    // Actualizar fila de totales
-    const filaTotales = `
-        <tr>
-            <th>TOTAL</th>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th>${totalHorasSemana}</th>
-            <th>${totalMinutosFinal}</th>
-            <th>${totalHorasComida}</th>
-        </tr>
-    `;
-
-    $('#tab_registros .custom-table tfoot').html(filaTotales);
-
-    // Al final de la función, después de actualizar la tabla
     llenarEventosEspeciales(empleado);
+
+    //     APLICAR FORMATO DE HORA A CAMPOS EDITABLES
+    aplicarFormatoHoraCamposEditables();
 }
 
 function llenarEventosEspeciales(empleado) {
@@ -1293,8 +1242,6 @@ function llenarEventosEspeciales(empleado) {
     $('#total-salidas-tardias').text(minutosAHora(totalSalidaTardiaMinutos));
     $('#total-olvidos-checador').text(`${totalOlvidosChecador} ${totalOlvidosChecador === 1 ? 'evento' : 'eventos'}`);
     $('#tiempo-extra-total').text(minutosAHora(totalEntradaTempranaMinutos + totalSalidaTardiaMinutos));
-
-
 }
 
 function establecerMinutosHoras(minutosExtra, minutosNormales) {
@@ -1306,17 +1253,314 @@ function establecerMinutosHoras(minutosExtra, minutosNormales) {
     $("#minutos-extra-trabajados").val(minutosExtra);
 }
 
-/*
- * ================================================================
- * MÓDULO DE GESTIÓN DE EVENTOS DEL MODAL
- * ================================================================
- * Controla la activación y desactivación de eventos para evitar
- * conflictos cuando el modal se cierra
- * ================================================================
- */
+//     FUNCIÓN PARA RECALCULAR EVENTOS ESPECIALES CUANDO SE MODIFICAN HORARIOS
+function recalcularEventosEspeciales(empleado) {
+  
+    // Verificar que tenemos acceso a los horarios oficiales
+    if (!window.horariosSemanales || !window.horariosSemanales.semana) {
+         return;
+    }
 
-// Variable global para controlar si el modal está activo
-let modalDetallesActivo = false;
+    // Obtener datos ORIGINALES del empleado (antes de modificaciones en tabla)
+    if (!empleado.registros_redondeados || empleado.registros_redondeados.length === 0) {
+        return;
+    }
+
+    // Limpiar contenedores de eventos
+    const entradasTempranasContainer = $('#entradas-tempranas-content');
+    const salidasTardiasContainer = $('#salidas-tardias-content');
+    const olvidosChecadorContainer = $('#olvidos-checador-content');
+
+    entradasTempranasContainer.empty();
+    salidasTardiasContainer.empty();
+    olvidosChecadorContainer.empty();
+
+    let totalEntradaTempranaMinutos = 0;
+    let totalSalidaTardiaMinutos = 0;
+    let totalOlvidosChecador = 0;
+    let diasConEventos = 0;
+
+    function minutosAHora(minutos) {
+        if (minutos === 0) return "0 min";
+        const h = Math.floor(minutos / 60);
+        const m = minutos % 60;
+        if (h > 0 && m > 0) return `${h}h ${m}min`;
+        if (h > 0) return `${h}h`;
+        return `${m}min`;
+    }
+
+    function horaAMinutos(hora) {
+        if (!hora || hora === "00:00" || hora === "--") return 0;
+        const [h, m] = hora.split(':').map(Number);
+        return h * 60 + m;
+    }
+
+    empleado.registros_redondeados.forEach(registro => {
+        const entradaTemprana = horaAMinutos(registro.entrada_temprana || "00:00");
+        const salidaTardia = horaAMinutos(registro.salida_tardia || "00:00");
+        const olvidoChecador = registro.olvido_checador || false;
+
+        let tieneEventos = false;
+
+        // Entrada temprana
+        if (entradaTemprana > 0) {
+            const eventoItem = `
+                <div class="evento-item">
+                    <span class="evento-dia">${registro.dia}:</span>
+                    <span class="evento-tiempo">${minutosAHora(entradaTemprana)}</span>
+                </div>
+            `;
+            entradasTempranasContainer.append(eventoItem);
+            totalEntradaTempranaMinutos += entradaTemprana;
+            tieneEventos = true;
+        }
+
+        // Salida tardía
+        if (salidaTardia > 0) {
+            const eventoItem = `
+                <div class="evento-item">
+                    <span class="evento-dia">${registro.dia}:</span>
+                    <span class="evento-tiempo">${minutosAHora(salidaTardia)}</span>
+                </div>
+            `;
+            salidasTardiasContainer.append(eventoItem);
+            totalSalidaTardiaMinutos += salidaTardia;
+            tieneEventos = true;
+        }
+
+        // Olvido del checador
+        if (olvidoChecador) {
+            const eventoItem = `
+                <div class="evento-item">
+                    <span class="evento-dia">${registro.dia}:</span>
+                    <span class="evento-tiempo">Olvido</span>
+                </div>
+            `;
+            olvidosChecadorContainer.append(eventoItem);
+            totalOlvidosChecador++;
+            tieneEventos = true;
+        }
+
+        if (tieneEventos) diasConEventos++;
+    });
+
+    // Actualizar totales
+    $('#total-entradas-tempranas').text(minutosAHora(totalEntradaTempranaMinutos));
+    $('#total-salidas-tardias').text(minutosAHora(totalSalidaTardiaMinutos));
+    $('#total-olvidos-checador').text(`${totalOlvidosChecador} ${totalOlvidosChecador === 1 ? 'evento' : 'eventos'}`);
+    $('#tiempo-extra-total').text(minutosAHora(totalEntradaTempranaMinutos + totalSalidaTardiaMinutos));
+}
+
+// FUNCIÓN SIMPLE PARA ELIMINAR EVENTO ESPECIAL DEL DÍA MODIFICADO
+
+//  FUNCIÓN SIMPLE PARA ELIMINAR EVENTO ESPECIAL DEL DÍA MODIFICADO Y ACTUALIZAR DATOS ORIGINALES
+function eliminarEventoEspecialDia(diaModificado, tipoModificacion) {
+   
+    // Mapear días
+    const diasSemana = ['viernes', 'sabado', 'domingo', 'lunes', 'martes', 'miercoles', 'jueves'];
+    const diasEspañol = ['Viernes', 'Sábado', 'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves'];
+
+    const indiceDiaModificado = diasSemana.indexOf(diaModificado);
+    const diaEspañolModificado = diasEspañol[indiceDiaModificado];
+
+    if (tipoModificacion === 'entrada') {
+        //  ELIMINAR EVENTO DE ENTRADA TEMPRANA DE ESTE DÍA
+        $(`#entradas-tempranas-content .evento-item:contains("${diaEspañolModificado}")`).remove();
+        
+    } else if (tipoModificacion === 'salida') {
+        //  ELIMINAR EVENTO DE SALIDA TARDÍA DE ESTE DÍA
+        $(`#salidas-tardias-content .evento-item:contains("${diaEspañolModificado}")`).remove();
+        }
+
+    // ACTUALIZAR LOS DATOS ORIGINALES DEL EMPLEADO PARA QUE NO VUELVAN A APARECER
+    const clave = $('#campo-clave').text().trim();
+    if (clave) {
+        actualizarEventosEspecialesEnDatosOriginales(clave, diaModificado, tipoModificacion);
+    }
+
+    //  RECALCULAR TOTALES después de eliminar eventos
+    recalcularTotalesEventos();
+}
+
+//  FUNCIÓN PARA ACTUALIZAR LOS DATOS ORIGINALES Y ELIMINAR EVENTOS ESPECIALES PERMANENTEMENTE
+function actualizarEventosEspecialesEnDatosOriginales(clave, diaModificado, tipoModificacion) {
+   
+    // Función auxiliar para limpiar evento en un empleado específico
+    function limpiarEventoEnEmpleado(empleado) {
+        if (!empleado.registros_redondeados) return;
+
+        // Buscar el registro del día modificado
+        const registro = empleado.registros_redondeados.find(reg => 
+            reg.dia.toLowerCase() === diaModificado
+        );
+
+        if (registro) {
+            if (tipoModificacion === 'entrada') {
+                // Limpiar entrada temprana
+                registro.entrada_temprana = "00:00";
+              
+            } else if (tipoModificacion === 'salida') {
+                // Limpiar salida tardía
+                registro.salida_tardia = "00:00";
+              
+            }
+        }
+    }
+
+    // Actualizar en jsonGlobal
+    if (window.jsonGlobal && window.jsonGlobal.departamentos) {
+        window.jsonGlobal.departamentos.forEach(depto => {
+            (depto.empleados || []).forEach(emp => {
+                if (String(emp.clave) === String(clave)) {
+                    limpiarEventoEnEmpleado(emp);
+                }
+            });
+        });
+    }
+
+    // Actualizar en empleadosOriginales
+    if (window.empleadosOriginales) {
+        const empleadoOriginal = window.empleadosOriginales.find(emp => String(emp.clave) === String(clave));
+        if (empleadoOriginal) {
+            limpiarEventoEnEmpleado(empleadoOriginal);
+        }
+    }
+
+    // Actualizar en empleadosFiltrados
+    if (window.empleadosFiltrados) {
+        const empleadoFiltrado = window.empleadosFiltrados.find(emp => String(emp.clave) === String(clave));
+        if (empleadoFiltrado) {
+            limpiarEventoEnEmpleado(empleadoFiltrado);
+        }
+    }
+
+   }
+
+
+// Función para aplicar formato de hora a campos editables (basada en horarios_modal.js)
+function aplicarFormatoHoraCamposEditables() {
+    // Seleccionar solo las celdas editables de tiempo
+    const camposEditables = $('#tab_registros .custom-table tbody td[contenteditable="true"]');
+
+    camposEditables.each(function () {
+        const $campo = $(this);
+
+        // Evento input - Filtrar y formatear mientras escribe
+        $campo.off('input.formato').on('input.formato', function () {
+            let valor = $(this).text();
+
+            // Solo permitir números y dos puntos
+            valor = valor.replace(/[^0-9:]/g, '');
+            valor = valor.replace(/:+/g, ':');
+
+            // Limitar a 5 caracteres máximo (HH:MM)
+            if (valor.length > 5) {
+                valor = valor.substring(0, 5);
+            }
+
+            // No permitir que empiece con :
+            if (valor.startsWith(':')) {
+                valor = valor.substring(1);
+            }
+
+            // Auto-formatear horas si exceden 23
+            if (valor.length >= 2 && !valor.includes(':')) {
+                let horas = valor.substring(0, 2);
+                if (parseInt(horas) > 23) {
+                    horas = "23";
+                }
+                valor = horas + valor.substring(2);
+            }
+
+            // Agregar : automáticamente después de 2 dígitos
+            if (valor.length === 2 && !valor.includes(':')) {
+                valor += ':';
+            }
+
+            // Validar minutos si ya tiene :
+            if (valor.includes(':') && valor.length >= 5) {
+                let partes = valor.split(':');
+                if (partes[1] && parseInt(partes[1]) > 59) {
+                    partes[1] = "59";
+                }
+                valor = partes[0] + ':' + (partes[1] || '');
+            }
+
+            $(this).text(valor);
+
+            // Mover cursor al final
+            let range = document.createRange();
+            let sel = window.getSelection();
+            range.selectNodeContents(this);
+            range.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(range);
+        });
+
+        // Evento blur - Completar formato al salir del campo
+        $campo.off('blur.formato').on('blur.formato', function () {
+            let valor = $(this).text();
+
+            // Si está vacío, poner "--"
+            if (valor === "") {
+                $(this).text("--");
+                return;
+            }
+
+            // Si es "--", mantenerlo
+            if (valor === "--") {
+                return;
+            }
+
+            // Completar formato según la longitud
+            if (valor.length === 1) {
+                $(this).text("0" + valor + ":00");
+            } else if (valor.length === 2 && !valor.includes(':')) {
+                $(this).text(valor + ":00");
+            } else if (valor.length === 3 && valor.includes(':')) {
+                $(this).text(valor + "00");
+            } else if (valor.length === 4 && valor.includes(':')) {
+                $(this).text(valor + "0");
+            }
+
+            //     RECALCULAR HORAS DESPUÉS DE FORMATEAR
+            const $fila = $(this).closest('tr');
+            const indiceCelda = $(this).index();
+
+            // Si cambió entrada, salida_comer o entrada_comer → recalcular comida y totales
+            if (indiceCelda >= 1 && indiceCelda <= 3) {
+                calcularHorasComidaFila($fila);
+                calcularHorasTotalesFila($fila);
+            }
+
+            // Si cambió entrada o salida → recalcular totales
+            if (indiceCelda === 1 || indiceCelda === 4) {
+                calcularHorasTotalesFila($fila);
+            }
+
+            //     Si cambió hora de comida (columna 8, índice 7) → recalcular totales
+            if (indiceCelda === 7) {
+                calcularHorasTotalesFila($fila);
+            }
+
+            //     LÓGICA SIMPLIFICADA: ELIMINAR EVENTO ESPECIAL CUANDO SE MODIFIQUE ENTRADA O SALIDA
+            if (indiceCelda === 1 || indiceCelda === 4) {
+                // Determinar qué día se modificó basado en la fila
+                const diasSemana = ['viernes', 'sabado', 'domingo', 'lunes', 'martes', 'miercoles', 'jueves'];
+                const indiceFila = $fila.index(); // Posición de la fila en la tabla
+
+                if (indiceFila >= 0 && indiceFila < diasSemana.length) {
+                    const diaModificado = diasSemana[indiceFila];
+                    const tipoModificacion = indiceCelda === 1 ? 'entrada' : 'salida';
+
+                 
+                    // 🗑️ SIMPLEMENTE ELIMINAR EL EVENTO ESPECIAL DE ESE DÍA
+                    eliminarEventoEspecialDia(diaModificado, tipoModificacion);
+                }
+            }
+        });
+    });
+}
 
 // Función para limpiar todos los event listeners del modal
 function limpiarEventosModal() {
@@ -1326,17 +1570,17 @@ function limpiarEventosModal() {
     $("#mod-incentivo-monto").off('input');
     $("#mod-actividades-especiales").off('input');
     $("#mod-bono-responsabilidad").off('input');
-    
+
     // Limpiar eventos de checkboxes
     $("#mod-incentivo-check").off('change');
     $("#mod-bono-antiguedad-check").off('change');
     $("#mod-bono-antiguedad").off('input');
-    
+
     // Limpiar eventos de conceptos
     $("#mod-isr").off('input');
     $("#mod-imss").off('input');
     $("#mod-infonavit").off('input');
-    
+
     // Limpiar eventos de deducciones
     $("#mod-tarjeta").off('input');
     $("#mod-prestamo").off('input');
@@ -1345,36 +1589,43 @@ function limpiarEventosModal() {
     $("#mod-fa-gafet-cofia").off('input');
     $("#mod-inasistencias-minutos").off('input');
     $("#mod-inasistencias-descuento").off('input');
-    
+
     // Limpiar eventos de conceptos adicionales
     $('.concepto-adicional').off();
     $('.btn-eliminar-concepto').off('click');
     $('.concepto-nombre, .concepto-valor').off('input');
-    
+
+    //     LIMPIAR EVENTOS DE FORMATO DE HORA (incluyendo columna Horas Comida)
+    $('#tab_registros .custom-table tbody td[contenteditable="true"]').off('input.formato blur.formato');
+
+    //     LIMPIAR COMPLETAMENTE EVENTOS ESPECIALES
+    $('#entradas-tempranas-content').empty();
+    $('#salidas-tardias-content').empty();
+    $('#olvidos-checador-content').empty();
+    $('#total-entradas-tempranas').text('0 min');
+    $('#total-salidas-tardias').text('0 min');
+    $('#total-olvidos-checador').text('0 eventos');
+    $('#tiempo-extra-total').text('0 min');
+
+  
     // RESETEAR ESTADO DE MINI-TABS AL LIMPIAR
     resetearEstadoMiniTabs();
-    
+
     // Marcar modal como inactivo
     modalDetallesActivo = false;
-}
-
-// Función para activar el modal y configurar eventos
-function activarModal() {
-    modalDetallesActivo = true;
-   
 }
 
 // FUNCIONALIDAD PARA MINI-TABS DE REGISTROS (adaptada de configTablas)
 $(document).on('click', '.mini-tab-registros', function (e) {
     e.preventDefault();
-    
+
     // Remover clase active de todos los mini-tabs de registros
     $('.mini-tab-registros').removeClass('active');
     // Agregar clase active al tab clickeado
     $(this).addClass('active');
-    
+
     const tabId = $(this).attr('id');
-    
+
     if (tabId === 'btn-redondeados') {
         // Mostrar tabla redondeados, ocultar checador
         $('#tabla-checador').hide();
@@ -1388,53 +1639,101 @@ $(document).on('click', '.mini-tab-registros', function (e) {
     }
 });
 
-// 🆕 FUNCIÓN PARA LLENAR LA TABLA DEL CHECADOR
+//     FUNCIÓN PARA LLENAR LA TABLA DEL CHECADOR
 function llenarTablaChecador() {
-   
-    
+
     const clave = $('#campo-clave').text().trim();
     if (!clave) {
-      
-        return;
+            return;
     }
-    
+
     // Buscar empleado en jsonGlobal
     const empleado = obtenerEmpleadoActualizado(clave);
     if (!empleado) {
-   
-        mostrarMensajeNoRegistrosChecador();
+          mostrarMensajeNoRegistrosChecador();
         return;
     }
-    
 
+  
     if (!empleado.registros || empleado.registros.length === 0) {
-     
-        mostrarMensajeNoRegistrosChecador();
+         mostrarMensajeNoRegistrosChecador();
         return;
     }
-    
+
     const tbody = $('#tabla-checador tbody');
     tbody.empty();
+
+    // Definir días de la semana empezando por viernes
+    const diasSemana = ['Viernes', 'Sábado', 'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves'];
     
-    // Recorrer los registros del empleado
-    empleado.registros.forEach((registro, index) => {
+    // Función para obtener el día de la semana de una fecha
+    function obtenerDiaSemana(fechaStr) {
+        if (!fechaStr || fechaStr === '--') return '--';
         
+        try {
+            // Asumir formato DD/MM/YYYY o similar
+            const partes = fechaStr.split('/');
+            if (partes.length === 3) {
+                const fecha = new Date(partes[2], partes[1] - 1, partes[0]);
+                const diasJS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+                return diasJS[fecha.getDay()];
+            }
+        } catch (error) {
+            }
+        return '--';
+    }
+
+    // Función para convertir día a índice para ordenamiento (viernes = 0)
+    function obtenerIndiceDia(dia) {
+        const indice = diasSemana.indexOf(dia);
+        return indice === -1 ? 999 : indice; // Si no se encuentra, poner al final
+    }
+
+    // Procesar y organizar registros
+    const registrosConDia = empleado.registros.map(registro => {
         const fecha = registro.fecha || '--';
+        const diaSemana = obtenerDiaSemana(fecha);
         const entrada = registro.entrada || '--';
         const salida = registro.salida || '--';
         
+        return {
+            dia: diaSemana,
+            fecha: fecha,
+            entrada: entrada,
+            salida: salida,
+            indiceDia: obtenerIndiceDia(diaSemana)
+        };
+    });
+
+    // Ordenar por día empezando desde viernes
+    registrosConDia.sort((a, b) => a.indiceDia - b.indiceDia);
+
+
+    // Llenar la tabla con los registros organizados
+    registrosConDia.forEach((registro, index) => {
+        // Determinar clase CSS para completitud del registro
+        let claseRegistro = '';
+        if (registro.entrada !== '--' && registro.salida !== '--') {
+            claseRegistro = 'registro-completo';
+        } else if (registro.entrada === '--' && registro.salida === '--') {
+            claseRegistro = 'registro-vacio';
+        } else {
+            claseRegistro = 'registro-incompleto';
+        }
+
         const fila = `
-            <tr>
-                <td>${fecha}</td>
-                <td>${entrada}</td>
-                <td>${salida}</td>
+            <tr class="${claseRegistro}">
+                <td><strong>${registro.dia}</strong></td>
+                <td>${registro.fecha}</td>
+                <td>${registro.entrada}</td>
+                <td>${registro.salida}</td>
             </tr>
         `;
-        
+
         tbody.append(fila);
     });
-    
-   
+
+
 }
 
 //  FUNCIÓN PARA MOSTRAR MENSAJE CUANDO NO HAY REGISTROS
@@ -1442,23 +1741,732 @@ function mostrarMensajeNoRegistrosChecador() {
     const tbody = $('#tabla-checador tbody');
     tbody.html(`
         <tr>
-            <td colspan="3" style="text-align: center; padding: 40px; color: #999; font-style: italic;">
+            <td colspan="4" style="text-align: center; padding: 40px; color: #999; font-style: italic;">
                 <i class="bi bi-info-circle"></i> No hay registros del checador disponibles para este empleado
             </td>
         </tr>
     `);
 }
 
-//  FUNCIÓN PARA RESETEAR ESTADO DE MINI-TABS
-function resetearEstadoMiniTabs() {
-    // Resetear clases activas de los botones
-    $('.mini-tab-registros').removeClass('active');
-    $('#btn-redondeados').addClass('active');
-    
-    // Mostrar tabla redondeados por defecto y ocultar checador
-    $('#tabla-checador').hide();
-    $('#tabla-redondeados').show();
-    
-    
+/*
+ * ================================================================
+ * MÓDULO DE FORMATO DE HORA - BASADO EN HORARIOS_MODAL.JS
+ * ================================================================
+ * Aplica la misma lógica de validación y formato de horarios_modal.js
+ * ================================================================
+ */
+
+// Función para aplicar formato de hora a campos editables (basada en horarios_modal.js)
+function aplicarFormatoHoraCamposEditables() {
+    // Seleccionar solo las celdas editables de tiempo
+    const camposEditables = $('#tab_registros .custom-table tbody td[contenteditable="true"]');
+
+    camposEditables.each(function () {
+        const $campo = $(this);
+
+        // Evento input - Filtrar y formatear mientras escribe
+        $campo.off('input.formato').on('input.formato', function () {
+            let valor = $(this).text();
+
+            // Solo permitir números y dos puntos
+            valor = valor.replace(/[^0-9:]/g, '');
+            valor = valor.replace(/:+/g, ':');
+
+            // Limitar a 5 caracteres máximo (HH:MM)
+            if (valor.length > 5) {
+                valor = valor.substring(0, 5);
+            }
+
+            // No permitir que empiece con :
+            if (valor.startsWith(':')) {
+                valor = valor.substring(1);
+            }
+
+            // Auto-formatear horas si exceden 23
+            if (valor.length >= 2 && !valor.includes(':')) {
+                let horas = valor.substring(0, 2);
+                if (parseInt(horas) > 23) {
+                    horas = "23";
+                }
+                valor = horas + valor.substring(2);
+            }
+
+            // Agregar : automáticamente después de 2 dígitos
+            if (valor.length === 2 && !valor.includes(':')) {
+                valor += ':';
+            }
+
+            // Validar minutos si ya tiene :
+            if (valor.includes(':') && valor.length >= 5) {
+                let partes = valor.split(':');
+                if (partes[1] && parseInt(partes[1]) > 59) {
+                    partes[1] = "59";
+                }
+                valor = partes[0] + ':' + (partes[1] || '');
+            }
+
+            $(this).text(valor);
+
+            // Mover cursor al final
+            let range = document.createRange();
+            let sel = window.getSelection();
+            range.selectNodeContents(this);
+            range.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(range);
+        });
+
+        // Evento blur - Completar formato al salir del campo
+        $campo.off('blur.formato').on('blur.formato', function () {
+            let valor = $(this).text();
+
+            // Si está vacío, poner "--"
+            if (valor === "") {
+                $(this).text("--");
+                return;
+            }
+
+            // Si es "--", mantenerlo
+            if (valor === "--") {
+                return;
+            }
+
+            // Completar formato según la longitud
+            if (valor.length === 1) {
+                $(this).text("0" + valor + ":00");
+            } else if (valor.length === 2 && !valor.includes(':')) {
+                $(this).text(valor + ":00");
+            } else if (valor.length === 3 && valor.includes(':')) {
+                $(this).text(valor + "00");
+            } else if (valor.length === 4 && valor.includes(':')) {
+                $(this).text(valor + "0");
+            }
+
+            //     RECALCULAR HORAS DESPUÉS DE FORMATEAR
+            const $fila = $(this).closest('tr');
+            const indiceCelda = $(this).index();
+
+            // Si cambió entrada, salida_comer o entrada_comer → recalcular comida y totales
+            if (indiceCelda >= 1 && indiceCelda <= 3) {
+                calcularHorasComidaFila($fila);
+                calcularHorasTotalesFila($fila);
+            }
+
+            // Si cambió entrada o salida → recalcular totales
+            if (indiceCelda === 1 || indiceCelda === 4) {
+                calcularHorasTotalesFila($fila);
+            }
+
+            //     Si cambió hora de comida (columna 8, índice 7) → recalcular totales
+            if (indiceCelda === 7) {
+                calcularHorasTotalesFila($fila);
+            }
+
+            // 🗑️ ELIMINAR EVENTO ESPECIAL CUANDO SE MODIFIQUE CUALQUIER HORA
+            if (indiceCelda === 1 || indiceCelda === 4) {
+                // Determinar qué día se modificó basado en la fila
+                const diasSemana = ['viernes', 'sabado', 'domingo', 'lunes', 'martes', 'miercoles', 'jueves'];
+                const indiceFila = $fila.index(); // Posición de la fila en la tabla
+
+                if (indiceFila >= 0 && indiceFila < diasSemana.length) {
+                    const diaModificado = diasSemana[indiceFila];
+                    const tipoModificacion = indiceCelda === 1 ? 'entrada' : 'salida';
+
+                    // 🗑️ ELIMINAR EVENTO ESPECIAL DE ESE DÍA
+                    eliminarEventoEspecialDia(diaModificado, tipoModificacion);
+                }
+            }
+        });
+    });
 }
 
+// Función para limpiar todos los event listeners del modal
+function limpiarEventosModal() {
+    // Limpiar eventos de inputs de percepciones
+    $("#mod-sueldo-neto").off('input');
+    $("#mod-horas-extras").off('input');
+    $("#mod-incentivo-monto").off('input');
+    $("#mod-actividades-especiales").off('input');
+    $("#mod-bono-responsabilidad").off('input');
+
+    // Limpiar eventos de checkboxes
+    $("#mod-incentivo-check").off('change');
+    $("#mod-bono-antiguedad-check").off('change');
+    $("#mod-bono-antiguedad").off('input');
+
+    // Limpiar eventos de conceptos
+    $("#mod-isr").off('input');
+    $("#mod-imss").off('input');
+    $("#mod-infonavit").off('input');
+
+    // Limpiar eventos de deducciones
+    $("#mod-tarjeta").off('input');
+    $("#mod-prestamo").off('input');
+    $("#mod-uniformes").off('input');
+    $("#mod-checador").off('input');
+    $("#mod-fa-gafet-cofia").off('input');
+    $("#mod-inasistencias-minutos").off('input');
+    $("#mod-inasistencias-descuento").off('input');
+
+    // Limpiar eventos de conceptos adicionales
+    $('.concepto-adicional').off();
+    $('.btn-eliminar-concepto').off('click');
+    $('.concepto-nombre, .concepto-valor').off('input');
+
+    //     LIMPIAR EVENTOS DE FORMATO DE HORA (incluyendo columna Horas Comida)
+    $('#tab_registros .custom-table tbody td[contenteditable="true"]').off('input.formato blur.formato');
+
+    //     LIMPIAR COMPLETAMENTE EVENTOS ESPECIALES
+    $('#entradas-tempranas-content').empty();
+    $('#salidas-tardias-content').empty();
+    $('#olvidos-checador-content').empty();
+    $('#total-entradas-tempranas').text('0 min');
+    $('#total-salidas-tardias').text('0 min');
+    $('#total-olvidos-checador').text('0 eventos');
+    $('#tiempo-extra-total').text('0 min');
+
+
+    // RESETEAR ESTADO DE MINI-TABS AL LIMPIAR
+    resetearEstadoMiniTabs();
+
+    // Marcar modal como inactivo
+    modalDetallesActivo = false;
+}
+
+
+// Función para validar si una hora es válida
+function esHoraValidaTabla(hora) {
+    const patron = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+
+    if (!patron.test(hora)) {
+        return false;
+    }
+
+    if (hora.includes("NaN")) {
+        return false;
+    }
+
+    return true;
+}
+
+// Función para convertir hora HH:MM a minutos
+function convertirHoraAMinutosTabla(hora) {
+    if (!hora || hora === "" || hora.includes("NaN") || hora === "--") {
+        return NaN;
+    }
+
+    const partes = hora.split(':');
+
+    if (partes.length !== 2) {
+        return NaN;
+    }
+
+    const horas = parseInt(partes[0]);
+    const minutos = parseInt(partes[1]);
+
+    if (isNaN(horas) || isNaN(minutos)) {
+        return NaN;
+    }
+
+    return (horas * 60) + minutos;
+}
+
+// Función para convertir minutos a hora HH:MM
+function convertirMinutosAHoraTabla(totalMinutos) {
+    if (isNaN(totalMinutos) || totalMinutos < 0) {
+        return "00:00";
+    }
+
+    const horas = Math.floor(totalMinutos / 60);
+    const minutos = totalMinutos % 60;
+
+    if (isNaN(horas) || isNaN(minutos)) {
+        return "00:00";
+    }
+
+    return horas.toString().padStart(2, '0') + ':' + minutos.toString().padStart(2, '0');
+}
+
+// Función para calcular horas de comida en una fila
+function calcularHorasComidaFila($fila) {
+    // Obtener las celdas de la fila
+    const celdas = $fila.find('td');
+    const entrada = $(celdas[1]).text().trim();
+    const salidaComida = $(celdas[2]).text().trim();
+    const entradaComida = $(celdas[3]).text().trim();
+    const $celdaHorasComida = $(celdas[7]); // Columna "Horas Comida"
+    const horaComidaActual = $celdaHorasComida.text().trim();
+
+    //     SI YA EXISTE UNA HORA DE COMIDA MANUAL, NO LA SOBREESCRIBIR
+    if (horaComidaActual && horaComidaActual !== "00:00" && horaComidaActual !== "--" && esHoraValidaTabla(horaComidaActual)) {
+        // Ya hay una hora de comida establecida manualmente, no calcular automáticamente
+        return;
+    }
+
+    // Si no hay entrada, poner 00:00
+    if (entrada === "00:00" || entrada === "" || entrada === "--") {
+        $celdaHorasComida.text("00:00");
+        return;
+    }
+
+    // Si no hay horarios de comida completos, poner 00:00
+    if ((salidaComida === "00:00" || salidaComida === "" || salidaComida === "--") &&
+        (entradaComida === "00:00" || entradaComida === "" || entradaComida === "--")) {
+        $celdaHorasComida.text("00:00");
+        return;
+    }
+
+    if (salidaComida === "00:00" || salidaComida === "" || salidaComida === "--" ||
+        entradaComida === "00:00" || entradaComida === "" || entradaComida === "--") {
+        $celdaHorasComida.text("00:00");
+        return;
+    }
+
+    // Validar formato de horas
+    if (!esHoraValidaTabla(salidaComida) || !esHoraValidaTabla(entradaComida)) {
+        $celdaHorasComida.text("00:00");
+        return;
+    }
+
+    // Convertir a minutos
+    const salidaMinutos = convertirHoraAMinutosTabla(salidaComida);
+    const entradaMinutos = convertirHoraAMinutosTabla(entradaComida);
+
+    if (isNaN(salidaMinutos) || isNaN(entradaMinutos)) {
+        $celdaHorasComida.text("00:00");
+        return;
+    }
+
+    // Calcular diferencia
+    const diferenciaMinutos = entradaMinutos - salidaMinutos;
+
+    if (diferenciaMinutos <= 0) {
+        $celdaHorasComida.text("00:00");
+        return;
+    }
+
+    const horasComida = convertirMinutosAHoraTabla(diferenciaMinutos);
+
+    if (horasComida.includes("NaN")) {
+        $celdaHorasComida.text("00:00");
+        return;
+    }
+
+    // Solo establecer el valor calculado si no hay una hora manual
+    $celdaHorasComida.text(horasComida);
+}
+
+// Función para calcular horas totales trabajadas en una fila
+function calcularHorasTotalesFila($fila) {
+    const celdas = $fila.find('td');
+    const entrada = $(celdas[1]).text().trim();
+    const salidaComida = $(celdas[2]).text().trim();
+    const entradaComida = $(celdas[3]).text().trim();
+    const salida = $(celdas[4]).text().trim();
+    const $celdaTotalHoras = $(celdas[5]); // Columna "Total Horas"
+    const $celdaTotalMinutos = $(celdas[6]); // Columna "Total Minutos"
+
+    // Si no hay entrada o salida, poner 00:00
+    if (entrada === "00:00" || entrada === "" || entrada === "--" ||
+        salida === "00:00" || salida === "" || salida === "--") {
+        $celdaTotalHoras.text("00:00");
+        $celdaTotalMinutos.text("0");
+        //     NO RECALCULAR TOTALES AQUÍ PARA EVITAR BUCLE INFINITO
+        return;
+    }
+
+    // Validar formato
+    if (!esHoraValidaTabla(entrada) || !esHoraValidaTabla(salida)) {
+        $celdaTotalHoras.text("00:00");
+        $celdaTotalMinutos.text("0");
+        return;
+    }
+
+    // Convertir a minutos
+    const entradaMinutos = convertirHoraAMinutosTabla(entrada);
+    const salidaMinutos = convertirHoraAMinutosTabla(salida);
+
+    if (isNaN(entradaMinutos) || isNaN(salidaMinutos)) {
+        $celdaTotalHoras.text("00:00");
+        $celdaTotalMinutos.text("0");
+        return;
+    }
+
+    // Calcular tiempo total trabajado
+    let totalMinutosTrabajados = salidaMinutos - entradaMinutos;
+
+    // Manejar cambio de día (ej: 23:00 a 01:00)
+    if (totalMinutosTrabajados < 0) {
+        totalMinutosTrabajados += (24 * 60);
+    }
+
+    //     PRIORIZAR SIEMPRE LA COLUMNA "HORAS COMIDA" EDITABLE
+    let tiempoComidaMinutos = 0;
+    const horaComidaExistente = $(celdas[7]).text().trim(); // Hora de comida ya establecida
+
+    // PRIMERA PRIORIDAD: Usar la columna "Horas Comida" si tiene un valor válido
+    if (horaComidaExistente && horaComidaExistente !== "00:00" && horaComidaExistente !== "--" && esHoraValidaTabla(horaComidaExistente)) {
+        tiempoComidaMinutos = convertirHoraAMinutosTabla(horaComidaExistente);
+    }
+    // SEGUNDA PRIORIDAD: Solo si la columna "Horas Comida" está vacía, calcular usando horarios específicos
+    else if (salidaComida !== "00:00" && salidaComida !== "" && salidaComida !== "--" &&
+        entradaComida !== "00:00" && entradaComida !== "" && entradaComida !== "--") {
+
+        if (esHoraValidaTabla(salidaComida) && esHoraValidaTabla(entradaComida)) {
+            const salidaComidaMinutos = convertirHoraAMinutosTabla(salidaComida);
+            const entradaComidaMinutos = convertirHoraAMinutosTabla(entradaComida);
+
+            if (!isNaN(salidaComidaMinutos) && !isNaN(entradaComidaMinutos)) {
+                tiempoComidaMinutos = entradaComidaMinutos - salidaComidaMinutos;
+            }
+        }
+    }
+
+    // Restar tiempo de comida si es válido
+    if (tiempoComidaMinutos > 0) {
+        totalMinutosTrabajados -= tiempoComidaMinutos;
+    }
+
+    // Validar resultado
+    if (totalMinutosTrabajados <= 0) {
+        $celdaTotalHoras.text("00:00");
+        $celdaTotalMinutos.text("0");
+        return;
+    }
+
+    // Convertir y actualizar
+    const horasTotales = convertirMinutosAHoraTabla(totalMinutosTrabajados);
+
+    if (horasTotales.includes("NaN")) {
+        $celdaTotalHoras.text("00:00");
+        $celdaTotalMinutos.text("0");
+        return;
+    }
+
+    $celdaTotalHoras.text(horasTotales);
+    $celdaTotalMinutos.text(totalMinutosTrabajados.toString());
+
+    //     USAR TIMEOUT PARA EVITAR MÚLTIPLES EJECUCIONES
+    clearTimeout(window.recalcularTimeout);
+    window.recalcularTimeout = setTimeout(() => {
+        recalcularTotalesSemana();
+    }, 300);
+}
+
+// Función para recalcular los totales de la semana (fila TOTAL)
+function recalcularTotalesSemana() {
+
+    //     VERIFICAR QUE SOLO ESTAMOS EN LA TABLA VISIBLE
+    const $tablaVisible = $('#tabla-redondeados:visible .custom-table tbody tr');
+
+    if ($tablaVisible.length === 0) {
+
+        return;
+    }
+
+    let totalHorasSemanales = 0;
+    let totalComidaSemanales = 0;
+
+    //     USAR SELECTOR MÁS ESPECÍFICO PARA EVITAR DUPLICADOS
+    $tablaVisible.each(function (index) {
+        const $fila = $(this);
+        const celdas = $fila.find('td');
+
+        //     VERIFICAR MÁS ESTRICTAMENTE QUE ES UNA FILA DE DATOS VÁLIDA
+        if (celdas.length >= 8) {
+            const primeraCelda = $(celdas[0]).text().trim();
+
+            // Excluir filas de mensajes informativos
+            if (primeraCelda.includes('No hay registros') ||
+                primeraCelda.includes('info-circle') ||
+                primeraCelda === '' ||
+                celdas.length < 8) {
+                  return true; // Continuar con la siguiente fila
+            }
+
+            //     VALIDAR QUE ES UN DÍA DE LA SEMANA VÁLIDO
+            const diasValidos = ['viernes', 'sábado', 'domingo', 'lunes', 'martes', 'miércoles', 'jueves'];
+            if (!diasValidos.includes(primeraCelda.toLowerCase())) {
+                 return true;
+            }
+
+            //     OBTENER VALORES DE MINUTOS DIRECTAMENTE (COLUMNA 6)
+            const minutosTexto = $(celdas[6]).text().trim();
+            const minutosHoras = parseInt(minutosTexto) || 0;
+
+         
+            //     SOLO SUMAR SI ES UN NÚMERO VÁLIDO Y NO ES "--"
+            if (minutosHoras > 0 && minutosTexto !== '--') {
+                totalHorasSemanales += minutosHoras;
+            }
+
+            // Sumar horas de comida (columna 8, índice 7)
+            const horasComida = $(celdas[7]).text().trim();
+            if (horasComida && horasComida !== "00:00" && horasComida !== "--" && horasComida !== "") {
+                const minutosComida = convertirHoraAMinutosTabla(horasComida);
+                if (!isNaN(minutosComida) && minutosComida > 0) {
+                    totalComidaSemanales += minutosComida;
+                 }
+            }
+        }
+    });
+
+
+    // Convertir totales a formato HH:MM
+    const totalHorasFormateadas = convertirMinutosAHoraTabla(totalHorasSemanales);
+    const totalComidaFormateadas = convertirMinutosAHoraTabla(totalComidaSemanales);
+
+  
+    //     ACTUALIZAR SOLO LA FILA TOTAL DE LA TABLA VISIBLE
+    const $filaTotalTfoot = $('#tabla-redondeados:visible .custom-table tfoot tr');
+    if ($filaTotalTfoot.length > 0) {
+        const celdasTotal = $filaTotalTfoot.find('th');
+        if (celdasTotal.length >= 8) {
+            // Limpiar y establecer nuevos valores
+            $(celdasTotal[5]).empty().text(totalHorasFormateadas);      // Total Horas
+            $(celdasTotal[6]).empty().text(totalHorasSemanales);        // Total Minutos
+            $(celdasTotal[7]).empty().text(totalComidaFormateadas);     // Total Horas Comida
+  }
+    }
+
+    //     SOLO EJECUTAR UNA VEZ EL RECÁLCULO DE MINUTOS
+    setTimeout(() => {
+        recalcularMinutosNormalesYExtras();
+    }, 100);
+}
+
+//     FUNCIÓN PARA RECALCULAR MINUTOS NORMALES Y EXTRAS (MEJORADA)
+function recalcularMinutosNormalesYExtras() {
+ 
+    //     OBTENER EL TOTAL SOLO DE LA TABLA VISIBLE
+    const $filaTotalTfoot = $('#tabla-redondeados:visible .custom-table tfoot tr');
+    if ($filaTotalTfoot.length === 0) {
+        return;
+    }
+
+    const celdasTotal = $filaTotalTfoot.find('th');
+    if (celdasTotal.length < 7) {
+        return;
+    }
+
+    //     OBTENER DIRECTAMENTE EL VALOR DE LA CELDA DE TOTAL MINUTOS
+    const totalMinutosTrabajadosTexto = $(celdasTotal[6]).text().trim();
+    const totalMinutosTrabajados = parseInt(totalMinutosTrabajadosTexto) || 0;
+
+
+    // Obtener minutos normales de la semana (48 horas = 2880 minutos)
+    const minutosNormalesSemanales = 2880; // 48 horas * 60 minutos
+
+    // Calcular minutos normales y extras
+    let minutosNormales = 0;
+    let minutosExtras = 0;
+
+    if (totalMinutosTrabajados <= minutosNormalesSemanales) {
+        // No hay extras, solo normales
+        minutosNormales = totalMinutosTrabajados;
+        minutosExtras = 0;
+    } else {
+        // Hay extras
+        minutosNormales = minutosNormalesSemanales;
+        minutosExtras = totalMinutosTrabajados - minutosNormalesSemanales;
+    }
+
+    //     ACTUALIZAR LOS INPUTS DE MINUTOS (LIMPIAR PRIMERO)
+    $("#minutos-normales-trabajados").val('').val(minutosNormales);
+    $("#minutos-extra-trabajados").val('').val(minutosExtras);
+
+    //     ACTUALIZAR EN EL JSON GLOBAL TAMBIÉN
+    const clave = $('#campo-clave').text().trim();
+    if (clave) {
+        actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'Minutos_normales', minutosNormales);
+        actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'Minutos_extra', minutosExtras);
+        actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'Minutos_trabajados', totalMinutosTrabajados);
+        actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'total_minutos_redondeados', totalMinutosTrabajados);
+
+        // También actualizar el tiempo total en formato HH:MM
+        const tiempoTotalFormateado = convertirMinutosAHoraTabla(totalMinutosTrabajados);
+        actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'tiempo_total_redondeado', tiempoTotalFormateado);
+
+     
+        //     RECALCULAR HORAS EXTRAS EN PESOS Y ACTUALIZAR CAMPOS
+        recalcularHorasExtrasEnPesos(clave, minutosExtras);
+    }
+
+    //     FUNCIÓN PARA RECALCULAR HORAS EXTRAS EN PESOS
+    function recalcularHorasExtrasEnPesos(clave, minutosExtras) {
+      
+        // Obtener costo por minuto de horas extra
+        let costoPorMinuto = 1.34; // Valor por defecto
+
+        if (window.rangosHorasJson) {
+            const rangoExtra = window.rangosHorasJson.find(rango => rango.tipo === "hora_extra");
+            if (rangoExtra && rangoExtra.costo_por_minuto) {
+                costoPorMinuto = rangoExtra.costo_por_minuto;
+            }
+        }
+
+        // Calcular horas extras en pesos
+        const horasExtrasEnPesos = minutosExtras * costoPorMinuto;
+
+       
+        // Actualizar el campo "Horas Extras" en el modal
+        $("#mod-horas-extras").val(horasExtrasEnPesos.toFixed(2));
+
+        // Actualizar en el JSON global
+        actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'sueldo_extra', horasExtrasEnPesos);
+
+        // Recalcular total extra (incluye horas extras + bonos + conceptos adicionales)
+        calcularTotalExtra();
+
+        // Actualizar sueldo a cobrar
+        actualizarSueldoACobrarEnTiempoReal(clave);
+
+       
+    }
+
+    //     MODIFICAR TAMBIÉN LA FUNCIÓN calcularHorasTotalesFila PARA EVITAR BUCLES
+    function calcularHorasTotalesFila($fila) {
+        const celdas = $fila.find('td');
+        const entrada = $(celdas[1]).text().trim();
+        const salidaComida = $(celdas[2]).text().trim();
+        const entradaComida = $(celdas[3]).text().trim();
+        const salida = $(celdas[4]).text().trim();
+        const $celdaTotalHoras = $(celdas[5]); // Columna "Total Horas"
+        const $celdaTotalMinutos = $(celdas[6]); // Columna "Total Minutos"
+
+        // Si no hay entrada o salida, poner 00:00
+        if (entrada === "00:00" || entrada === "" || entrada === "--" ||
+            salida === "00:00" || salida === "" || salida === "--") {
+            $celdaTotalHoras.text("00:00");
+            $celdaTotalMinutos.text("0");
+            //     NO RECALCULAR TOTALES AQUÍ PARA EVITAR BUCLE INFINITO
+            return;
+        }eliminarEventoEspecialDia
+
+        // Validar formato
+        if (!esHoraValidaTabla(entrada) || !esHoraValidaTabla(salida)) {
+            $celdaTotalHoras.text("00:00");
+            $celdaTotalMinutos.text("0");
+            return;
+        }
+
+        // Convertir a minutos
+        const entradaMinutos = convertirHoraAMinutosTabla(entrada);
+        const salidaMinutos = convertirHoraAMinutosTabla(salida);
+
+        if (isNaN(entradaMinutos) || isNaN(salidaMinutos)) {
+            $celdaTotalHoras.text("00:00");
+            $celdaTotalMinutos.text("0");
+            return;
+        }
+
+        // Calcular tiempo total trabajado
+        let totalMinutosTrabajados = salidaMinutos - entradaMinutos;
+
+        // Manejar cambio de día (ej: 23:00 a 01:00)
+        if (totalMinutosTrabajados < 0) {
+            totalMinutosTrabajados += (24 * 60);
+        }
+
+        //     PRIORIZAR SIEMPRE LA COLUMNA "HORAS COMIDA" EDITABLE
+        let tiempoComidaMinutos = 0;
+        const horaComidaExistente = $(celdas[7]).text().trim(); // Hora de comida ya establecida
+
+        // PRIMERA PRIORIDAD: Usar la columna "Horas Comida" si tiene un valor válido
+        if (horaComidaExistente && horaComidaExistente !== "00:00" && horaComidaExistente !== "--" && esHoraValidaTabla(horaComidaExistente)) {
+            tiempoComidaMinutos = convertirHoraAMinutosTabla(horaComidaExistente);
+        }
+        // SEGUNDA PRIORIDAD: Solo si la columna "Horas Comida" está vacía, calcular usando horarios específicos
+        else if (salidaComida !== "00:00" && salidaComida !== "" && salidaComida !== "--" &&
+            entradaComida !== "00:00" && entradaComida !== "" && entradaComida !== "--") {
+
+            if (esHoraValidaTabla(salidaComida) && esHoraValidaTabla(entradaComida)) {
+                const salidaComidaMinutos = convertirHoraAMinutosTabla(salidaComida);
+                const entradaComidaMinutos = convertirHoraAMinutosTabla(entradaComida);
+
+                if (!isNaN(salidaComidaMinutos) && !isNaN(entradaComidaMinutos)) {
+                    tiempoComidaMinutos = entradaComidaMinutos - salidaComidaMinutos;
+                }
+            }
+        }
+
+        // Restar tiempo de comida si es válido
+        if (tiempoComidaMinutos > 0) {
+            totalMinutosTrabajados -= tiempoComidaMinutos;
+        }
+
+        // Validar resultado
+        if (totalMinutosTrabajados <= 0) {
+            $celdaTotalHoras.text("00:00");
+            $celdaTotalMinutos.text("0");
+            return;
+        }
+
+        // Convertir y actualizar
+        const horasTotales = convertirMinutosAHoraTabla(totalMinutosTrabajados);
+
+        if (horasTotales.includes("NaN")) {
+            $celdaTotalHoras.text("00:00");
+            $celdaTotalMinutos.text("0");
+            return;
+        }
+
+        $celdaTotalHoras.text(horasTotales);
+        $celdaTotalMinutos.text(totalMinutosTrabajados.toString());
+
+        //     USAR TIMEOUT PARA EVITAR MÚLTIPLES EJECUCIONES
+        clearTimeout(window.recalcularTimeout);
+        window.recalcularTimeout = setTimeout(() => {
+            recalcularTotalesSemana();
+        }, 300);
+    }
+}
+
+// Función para recalcular los totales de eventos especiales (salida tardía, entrada temprana, tiempo extra total)
+function recalcularTotalesEventos() {
+    let totalEntradaTemprana = 0;
+    let totalSalidaTardia = 0;
+
+    // Función auxiliar para convertir tiempo en formato "Xh Ymin" o "Zmin" a minutos
+    function convertirTiempoAMinutos(tiempo) {
+        if (!tiempo) return 0;
+        let minutos = 0;
+        if (tiempo.includes('h')) {
+            const partes = tiempo.split('h');
+            minutos += parseInt(partes[0]) * 60;
+            if (partes[1] && partes[1].includes('min')) {
+                minutos += parseInt(partes[1].replace('min', ''));
+            }
+        } else if (tiempo.includes('min')) {
+            minutos = parseInt(tiempo.replace('min', ''));
+        }
+        return minutos;
+    }
+
+    // Sumar minutos de entradas tempranas
+    $('#entradas-tempranas-content .evento-tiempo').each(function() {
+        const tiempo = $(this).text().trim();
+        totalEntradaTemprana += convertirTiempoAMinutos(tiempo);
+    });
+
+    // Sumar minutos de salidas tardías
+    $('#salidas-tardias-content .evento-tiempo').each(function() {
+        const tiempo = $(this).text().trim();
+        totalSalidaTardia += convertirTiempoAMinutos(tiempo);
+    });
+
+    // Función auxiliar para convertir minutos a formato "Xh Ymin" o "Zmin"
+    function minutosAHora(minutos) {
+        if (minutos === 0) return "0 min";
+        const h = Math.floor(minutos / 60);
+        const m = minutos % 60;
+        if (h > 0 && m > 0) return `${h}h ${m}min`;
+        if (h > 0) return `${h}h`;
+        return `${m}min`;
+    }
+
+    // Actualizar los totales en la interfaz
+    $('#total-entradas-tempranas').text(minutosAHora(totalEntradaTemprana));
+    $('#total-salidas-tardias').text(minutosAHora(totalSalidaTardia));
+    $('#tiempo-extra-total').text(minutosAHora(totalEntradaTemprana + totalSalidaTardia));
+}

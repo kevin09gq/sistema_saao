@@ -135,6 +135,26 @@
     position: relative;
 }
 
+.celda-total-minutos-semana {
+    background-color: #f3f4f6;
+    color: #374151;
+    font-weight: 600;
+    font-size: 12px;
+    text-align: center;
+    padding: 8px 6px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.celda-minutos {
+    background-color: #f8fafc;
+    color: #64748b;
+    font-weight: 500;
+    font-size: 12px;
+    text-align: center;
+    padding: 8px 6px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
 /* Estilos para la fila de totales */
 .fila-total {
     background-color: #f0fdf4;
@@ -338,9 +358,9 @@
     .celda-total,
     .celda-comida,
     .celda-total-horas,
-    .celda-total-minutos,
+    .celda-minutos,
     .celda-total-comida,
-    .celda-total-minutos-comida {
+    .celda-total-minutos-semana {
         padding: 8px 6px;
         font-size: 12px;
     }

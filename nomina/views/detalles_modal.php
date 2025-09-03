@@ -94,6 +94,7 @@
                     <table class="custom-table">
                         <thead>
                             <tr>
+                                <th>Día</th>
                                 <th>Fecha</th>
                                 <th>Entrada</th>
                                 <th>Salida</th>

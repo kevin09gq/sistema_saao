@@ -17,8 +17,13 @@ $(document).ready(function () {
         activarFormatoHora();
         actualizarHorariosSemanalesActualizados();
 
-        // Inicializar totales después de cargar la tabla
-        inicializarTotales();
+        // Calcular minutos para cada fila inmediatamente después de cargar
+        setTimeout(function() {
+            $(".tabla-horarios tbody tr").each(function () {
+                calcularMinutosTotales($(this));
+            });
+            calcularTotalesSemana();
+        }, 100);
 
     });
 });
@@ -724,7 +729,7 @@ function redondearRegistrosEmpleados() {
         const empleadoEnJson = encontrarEmpleadoEnJsonGlobal(empleado.clave);
         const registrosRedondeados = [];
         
-        // 🆕 CONTADOR DE OLVIDOS DEL CHECADOR PARA DESCUENTO
+        //    CONTADOR DE OLVIDOS DEL CHECADOR PARA DESCUENTO
         let totalOlvidosChecadorSemana = 0;
 
         if (empleado.registros) {
@@ -754,7 +759,7 @@ function redondearRegistrosEmpleados() {
 
             const olvidosChecador = detectarOlvidosChecador(registrosDia, horarioOficial);
             
-            // 🆕 CONTAR OLVIDOS PARA EL DESCUENTO SEMANAL
+            //    CONTAR OLVIDOS PARA EL DESCUENTO SEMANAL
             if (olvidosChecador.length > 0) {
                 totalOlvidosChecadorSemana++;
             }
@@ -827,7 +832,7 @@ function redondearRegistrosEmpleados() {
             empleadoEnJson.total_minutos_redondeados = totalMinutosSemana;
             empleadoEnJson.registros_redondeados = registrosRedondeados;
             
-            // 🆕 APLICAR DESCUENTO POR OLVIDOS DEL CHECADOR
+            //    APLICAR DESCUENTO POR OLVIDOS DEL CHECADOR
             // Calcular descuento: $20 por cada día que olvidó checar
             const descuentoPorOlvido = totalOlvidosChecadorSemana * 20;
             
@@ -862,7 +867,7 @@ function redondearRegistrosEmpleados() {
             calcularCamposEmpleado(empleadoEnJson);
             empleado.sueldo_base = empleadoEnJson.sueldo_base;
             empleado.sueldo_extra = empleadoEnJson.sueldo_extra;
-            empleado.sueldo_extra_final = empleadoEnJson.sueldo_extra
+            empleado.sueldo_extra_final = empleadoEnJson.sueldo_extra;
             empleado.tiempo_total_redondeado = empleadoEnJson.tiempo_total_redondeado;
             empleado.total_minutos_redondeados = empleadoEnJson.total_minutos_redondeados;
             empleado.Minutos_trabajados = empleadoEnJson.Minutos_trabajados;
@@ -870,11 +875,14 @@ function redondearRegistrosEmpleados() {
             empleado.Minutos_extra = empleadoEnJson.Minutos_extra;
             empleado.sueldo_a_cobrar = empleadoEnJson.sueldo_a_cobrar;
             
-            // 🆕 USAR EL DESCUENTO CALCULADO PARA LA TABLA (NO EL DEL jsonGlobal)
-            // Si existe el descuento calculado, usarlo; sino, usar el valor original del jsonGlobal
-            empleado.checador = empleado.checador_tabla_descuento !== undefined ? 
-                                empleado.checador_tabla_descuento : 
-                                (empleadoEnJson.checador || 0);
+            //    ASIGNAR DESCUENTO POR OLVIDOS AL jsonGlobal
+            // Si existe el descuento calculado por olvidos, asignarlo al jsonGlobal
+            if (empleado.checador_tabla_descuento !== undefined) {
+                empleadoEnJson.checador = empleado.checador_tabla_descuento;
+            }
+            
+            // Sincronizar con empleado para la tabla
+            empleado.checador = empleadoEnJson.checador;
         }
     });
     setEmpleadosPaginados(window.empleadosOriginales);
@@ -994,7 +1002,7 @@ function calcularSueldoACobraPorEmpleado(emp) {
     const inasistencias = parseFloat(emp.inasistencias_descuento) || 0;
     const uniformes = parseFloat(emp.uniformes) || 0;
     
-    // 🆕 USAR EL DESCUENTO CALCULADO POR OLVIDOS DEL CHECADOR PARA EL SUELDO A COBRAR
+    //    USAR EL DESCUENTO CALCULADO POR OLVIDOS DEL CHECADOR PARA EL SUELDO A COBRAR
     // Si existe el descuento calculado, usarlo; sino, usar el valor original del checador
     const checador = parseFloat(emp.checador_descuento_olvidos) !== undefined && !isNaN(parseFloat(emp.checador_descuento_olvidos)) ? 
                      parseFloat(emp.checador_descuento_olvidos) : 

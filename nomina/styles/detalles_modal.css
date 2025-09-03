@@ -994,6 +994,23 @@
     background-color: #fef2f2; /* Rojo muy suave para registros incompletos */
 }
 
+#tabla-checador .custom-table tbody tr.registro-vacio {
+    background-color: #fefce8; /* Amarillo muy suave para registros vacíos */
+}
+
+/* Estilos para la columna de día */
+#tabla-checador .custom-table tbody td:first-child {
+    font-weight: 600;
+    color: #374151;
+    background-color: rgba(249, 250, 251, 0.5);
+    border-right: 2px solid #e5e7eb;
+}
+
+/* Destacar viernes como inicio de semana */
+#tabla-checador .custom-table tbody tr:has(td:first-child:contains("Viernes")) {
+    border-top: 3px solid #10b981;
+}
+
 #tabla-checador .estado-badge {
     padding: 4px 8px;
     border-radius: 12px;

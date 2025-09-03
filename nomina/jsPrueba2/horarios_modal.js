@@ -16,6 +16,7 @@ function setDataTableHorarios(data) {
         fila.append($("<td>").addClass("celda-hora editable").attr("contenteditable", "true").text(diaInfo.salida));
         fila.append($("<td>").addClass("celda-total editable").attr("contenteditable", "true").text(diaInfo.totalHoras));
         fila.append($("<td>").addClass("celda-comida editable").attr("contenteditable", "true").text(diaInfo.horasComida));
+        fila.append($("<td>").addClass("celda-minutos").text("0"));
 
         tbody.append(fila);
     });
@@ -316,6 +317,25 @@ function encontrarEmpleadoEnJsonGlobal(clave) {
     return null;
 }
 
+function calcularMinutosTotales(fila) {
+    var totalHoras = fila.find('.celda-total.editable').text();
+    var celdaMinutos = fila.find('.celda-minutos');
+
+    if (totalHoras === "00:00" || totalHoras === "" || !esHoraValida(totalHoras)) {
+        celdaMinutos.text("0");
+        return;
+    }
+
+    var totalMinutos = convertirHoraAMinutos(totalHoras);
+    
+    if (isNaN(totalMinutos)) {
+        celdaMinutos.text("0");
+        return;
+    }
+
+    celdaMinutos.text(totalMinutos.toString());
+}
+
 function calcularHorasTotales(fila) {
     var entrada = fila.find('.celda-hora.editable').eq(0).text();
     var salida = fila.find('.celda-hora.editable').eq(3).text();
@@ -325,11 +345,13 @@ function calcularHorasTotales(fila) {
 
     if (entrada === "00:00" || entrada === "" || salida === "00:00" || salida === "") {
         celdaTotalHoras.text("00:00");
+        calcularMinutosTotales(fila);
         return;
     }
 
     if (!esHoraValida(entrada) || !esHoraValida(salida)) {
         celdaTotalHoras.text("00:00");
+        calcularMinutosTotales(fila);
         return;
     }
 
@@ -338,6 +360,7 @@ function calcularHorasTotales(fila) {
 
     if (isNaN(entradaMinutos) || isNaN(salidaMinutos)) {
         celdaTotalHoras.text("00:00");
+        calcularMinutosTotales(fila);
         return;
     }
 
@@ -366,6 +389,7 @@ function calcularHorasTotales(fila) {
 
     if (totalMinutosTrabajados <= 0) {
         celdaTotalHoras.text("00:00");
+        calcularMinutosTotales(fila);
         return;
     }
 
@@ -373,10 +397,12 @@ function calcularHorasTotales(fila) {
 
     if (horasTotales.includes("NaN")) {
         celdaTotalHoras.text("00:00");
+        calcularMinutosTotales(fila);
         return;
     }
 
     celdaTotalHoras.text(horasTotales);
+    calcularMinutosTotales(fila);
     calcularTotalesSemana();
 }
 
@@ -388,11 +414,13 @@ function calcularHorasTotalesConComidaManual(fila) {
 
     if (entrada === "00:00" || entrada === "" || salida === "00:00" || salida === "") {
         celdaTotalHoras.text("00:00");
+        calcularMinutosTotales(fila);
         return;
     }
 
     if (!esHoraValida(entrada) || !esHoraValida(salida)) {
         celdaTotalHoras.text("00:00");
+        calcularMinutosTotales(fila);
         return;
     }
 
@@ -401,6 +429,7 @@ function calcularHorasTotalesConComidaManual(fila) {
 
     if (isNaN(entradaMinutos) || isNaN(salidaMinutos)) {
         celdaTotalHoras.text("00:00");
+        calcularMinutosTotales(fila);
         return;
     }
 
@@ -419,6 +448,7 @@ function calcularHorasTotalesConComidaManual(fila) {
 
     if (totalMinutosTrabajados <= 0) {
         celdaTotalHoras.text("00:00");
+        calcularMinutosTotales(fila);
         return;
     }
 
@@ -426,16 +456,19 @@ function calcularHorasTotalesConComidaManual(fila) {
 
     if (horasTotales.includes("NaN")) {
         celdaTotalHoras.text("00:00");
+        calcularMinutosTotales(fila);
         return;
     }
 
     celdaTotalHoras.text(horasTotales);
+    calcularMinutosTotales(fila);
     calcularTotalesSemana();
 }
 
 function calcularTotalesSemana() {
     var totalHorasSemanales = 0;
     var totalComidaSemanales = 0;
+    var totalMinutosSemanales = 0;
 
     $(".tabla-horarios tbody tr").each(function () {
         var fila = $(this);
@@ -455,6 +488,14 @@ function calcularTotalesSemana() {
                 totalComidaSemanales += minutosComida;
             }
         }
+
+        var minutosDia = fila.find('.celda-minutos').text();
+        if (minutosDia && minutosDia !== "0") {
+            var minutosNumero = parseInt(minutosDia);
+            if (!isNaN(minutosNumero)) {
+                totalMinutosSemanales += minutosNumero;
+            }
+        }
     });
 
     var totalHorasFormateadas = convertirMinutosAHora(totalHorasSemanales);
@@ -462,6 +503,7 @@ function calcularTotalesSemana() {
 
     $(".celda-total-horas-semana").text(totalHorasFormateadas);
     $(".celda-total-comida-semana").text(totalComidaFormateadas);
+    $(".celda-total-minutos-semana").text(totalMinutosSemanales.toString());
 }
 
 function inicializarTotales() {
