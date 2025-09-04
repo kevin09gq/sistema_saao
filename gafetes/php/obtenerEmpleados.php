@@ -43,6 +43,7 @@ while ($row = $query->fetch_object()) {
         'nombre_departamento' => $row->nombre_departamento,
         'id_area' => $row->id_area,
         'nombre_area' => $row->nombre_area,
+        'id_empresa' => $row->id_empresa,
         'puesto' => $row->puesto ?? 'No especificado',
         'foto' => !empty($row->foto) ? $row->foto : null,
         'sexo' => $row->sexo ?? null,

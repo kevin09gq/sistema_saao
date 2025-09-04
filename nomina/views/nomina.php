@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="../styles/seleccion_modal_styles.css">
     <link rel="stylesheet" href="../styles/detalles_modal.css">
     <link rel="stylesheet" href="../styles/horario_modal.css">
+    <link rel="stylesheet" href="../styles/detalle_modal_dispersion.css">
+    <link rel="stylesheet" href="../styles/modal_sumas.css">
 </head>
 
 <body>
@@ -67,6 +69,12 @@
                         <i class="bi bi-table"></i>
                     </button>
                 </div>
+                <button class="btn-suma" type="button" id="btn_suma">
+                    <i class="bi bi-calculator"></i>
+                </button>
+                 <button class="btn-suma" type="button" id="btn_suma_dispersion" hidden>
+                    <i class="bi bi-calculator"></i>
+                </button>
             </div>
         </div>
 
@@ -165,12 +173,19 @@
     <?php include 'seleccion_modal.php'; ?>
     <?php include 'detalles_modal.php'; ?>
     <?php include 'horarios_modal.php'; ?>
+    <?php include 'detalle_modal_dispersion.php'; ?>
+    <?php include 'modal_sumas.php'; ?>
+    <?php include 'modal_suma_dispersion.php'; ?>
 
     <!-- Menú contextual personalizado -->
     <div id="menu-contextual" hidden style="position:absolute; z-index:9999; background:#fff; border:1px solid #ccc; padding:6px 12px; font-size:14px; cursor:pointer;">
         Ver detalles
     </div>
 
+    <!-- Menú contextual para dispersión -->
+    <div id="menu-contextual-dispersion" hidden style="position:absolute; z-index:9999; background:#fff; border:1px solid #ccc; padding:6px 12px; font-size:14px; cursor:pointer; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+      Actualizar Sueldo
+    </div>
 
     <!-- jQuery CDN -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -178,32 +193,17 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.7/jquery.inputmask.min.js"></script>
     <!-- Bootstrap JS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <!--JS Personalizado 
-    <script src="../js/leer_excel.js"></script>
-    <script src="../js/seleccion_empleados.js"></script>
-    <script src="../js/config_tabla.js"></script>
-    <script src="../js/detalles_modal.js"></script>
-    <script src="../js/rangos_horas.js"></script>  
 
-    
-    <script src="../jsPrueba/leer_excel.js"></script>
-    <script src="../jsPrueba/rangos_horas.js"></script>
-    <script src="../jsPrueba/config_tabla.js"></script>
-    <script src="../jsPrueba/seleccion_empleados.js"></script>
-    <script src="../jsPrueba/detalles_modal.js"></script>
-    <script src="../jsPrueba/generar_excel.js"></script>
-    <script src="../jsPrueba/rangos_horarios.js"></script>
-    <script src="../jsPrueba/horarios_modal.js"></script>
-
--->
 
     <script src="../jsPrueba2/leer_excel.js"></script>
     <script src="../jsPrueba2/config_tabla.js"></script>
     <script src="../jsPrueba2/seleccion_empleados.js"></script>
     <script src="../jsPrueba2/detalles_modal.js"></script>
+    <script src="../jsPrueba2/detalle_modal_dispersion.js"></script>
     <script src="../jsPrueba2/rangos_horas.js"></script>
     <script src="../jsPrueba2/rangos_horarios.js"></script>
     <script src="../jsPrueba2/horarios_modal.js"></script>
+    <script src="../jsPrueba2/calcular_sumas.js"></script>
     
   
 </body>

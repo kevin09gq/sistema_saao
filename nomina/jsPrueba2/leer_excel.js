@@ -25,6 +25,8 @@ function configTablas() {
         $("#filtro-departamento").attr("hidden", true);
         $("#busqueda-container").removeAttr("hidden");
         $("#busqueda-container-dispersion").attr("hidden", true);
+        $("#btn_suma").removeAttr("hidden");
+        $("#btn_suma_dispersion").attr("hidden", true);
     });
 
     $('#btn_tabla_dispersión').click(function (e) {
@@ -37,6 +39,8 @@ function configTablas() {
         validarClaves();
         $("#busqueda-container-dispersion").removeAttr("hidden");
         $("#busqueda-container").attr("hidden", true);
+         $("#btn_suma_dispersion").removeAttr("hidden");
+        $("#btn_suma").attr("hidden", true);
     });
 }
 
@@ -1206,6 +1210,12 @@ function validarClaves() {
             
             // 🆕 GUARDAR CLAVES VÁLIDAS GLOBALMENTE
             clavesValidasGlobal = clavesValidas;
+            
+            // 🆕 HACER CLAVES DISPONIBLES PARA EL MODAL DE DISPERSIÓN
+            if (typeof window.clavesValidasGlobal === 'undefined') {
+                window.clavesValidasGlobal = clavesValidas;
+            }
+            
            
             // Obtener todos los empleados y filtrar solo los válidos
             let todosEmpleados = obtenerTodosEmpleadosDispersion();
@@ -1213,21 +1223,29 @@ function validarClaves() {
                 clavesValidas.includes(String(emp.clave)) || clavesValidas.includes(Number(emp.clave))
             );
 
+           
             // Establecer empleados paginados para dispersión
             setEmpleadosDispersionPaginados(empleadosValidos);
             
-            // 🆕 ACTUALIZAR EL FILTRO PARA QUE MUESTRE "TODOS" PERO SOLO REGISTRADOS
+            // ACTUALIZAR EL FILTRO PARA QUE MUESTRE "TODOS" PERO SOLO REGISTRADOS
             $('#filtro-departamento').val('0').trigger('change');
+            
+            // INICIALIZAR MENÚ CONTEXTUAL DE DISPERSIÓN DESPUÉS DE CARGAR CLAVES VÁLIDAS
+            if (typeof inicializarMenuContextualDispersion === 'function') {
+                inicializarMenuContextualDispersion();
+                
+            }
         },
         error: function(xhr, status, error) {
-           // En caso de error, mostrar todos los empleados
+          
+            // En caso de error, mostrar todos los empleados
             let todosEmpleados = obtenerTodosEmpleadosDispersion();
             setEmpleadosDispersionPaginados(todosEmpleados);
         }
     });
 }
 
-// 🆕 MODIFICAR FUNCIÓN PARA FILTRAR DESDE EL INICIO
+//  MODIFICAR FUNCIÓN PARA FILTRAR DESDE EL INICIO
 function obtenerTodosEmpleadosDispersion() {
     let todosEmpleados = [];
     if (jsonGlobal && jsonGlobal.departamentos) {

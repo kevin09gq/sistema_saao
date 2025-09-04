@@ -194,6 +194,209 @@ th[data-sort-desc] .sort-icon {
     gap: 0.5rem;
 }
 
+/* Estilos mejorados para botones de selección */
+#seleccionarTodos, #deseleccionarTodos {
+    font-weight: 600;
+    border-width: 2px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#seleccionarTodos {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border-color: #28a745;
+    color: white;
+}
+
+#seleccionarTodos:hover {
+    background: linear-gradient(135deg, #218838, #1db584);
+    border-color: #1e7e34;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+#deseleccionarTodos {
+    background: linear-gradient(135deg, #ffc107, #fd7e14);
+    border-color: #ffc107;
+    color: #212529;
+}
+
+#deseleccionarTodos:hover {
+    background: linear-gradient(135deg, #e0a800, #ea5a00);
+    border-color: #d39e00;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
+    color: white;
+}
+
+/* Estilos mejorados para todos los botones de acción */
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-width: 1px;
+}
+
+.btn-sm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #ffc107, #fd7e14);
+    border-color: #ffc107;
+}
+
+.btn-warning:hover {
+    background: linear-gradient(135deg, #e0a800, #ea5a00);
+    border-color: #d39e00;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border-color: #28a745;
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #218838, #1db584);
+    border-color: #1e7e34;
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #17a2b8, #138496);
+    border-color: #17a2b8;
+}
+
+.btn-info:hover {
+    background: linear-gradient(135deg, #138496, #0f6674);
+    border-color: #117a8b;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0056b3, #004085);
+    border-color: #0056b3;
+}
+
+.btn-outline-danger {
+    border-width: 2px;
+    font-weight: 500;
+}
+
+.btn-outline-danger:hover {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    border-color: #dc3545;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+
+/* Espaciado mejorado para contenedores de botones */
+.gap-2 {
+    gap: 0.5rem !important;
+}
+
+.gap-3 {
+    gap: 1rem !important;
+}
+
+/* Efectos adicionales para botones */
+.btn i {
+    margin-right: 0.5rem;
+    transition: transform 0.2s ease;
+}
+
+.btn:hover i {
+    transform: scale(1.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-header .d-flex {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .btn-group {
+        width: 100%;
+    }
+    
+    .btn-group .btn {
+        flex: 1;
+    }
+    
+    .d-flex.flex-wrap {
+        justify-content: center;
+    }
+}
+
+/* Badge counter styles */
+#contadorEmpleados {
+    font-size: 0.75rem;
+    font-weight: 600;
+    min-width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse 0.3s ease-in-out;
+    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+    border: 2px solid white;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+/* Container for button + badge to prevent layout shift */
+.btn-with-badge {
+    position: relative;
+    display: inline-block;
+}
+
+.btn-with-badge .badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    z-index: 1;
+}
+
+/* Custom button colors for specific functions */
+#generarFoto {
+    background: linear-gradient(135deg, #8e44ad, #9b59b6) !important;
+    border-color: #8e44ad !important;
+    color: white !important;
+}
+
+#generarFoto:hover {
+    background: linear-gradient(135deg, #7d3c98, #8e44ad) !important;
+    border-color: #7d3c98 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(142, 68, 173, 0.3) !important;
+}
+
+#actualizarLogos {
+    background: linear-gradient(135deg, #e67e22, #f39c12) !important;
+    border-color: #e67e22 !important;
+    color: white !important;
+}
+
+#actualizarLogos:hover {
+    background: linear-gradient(135deg, #d35400, #e67e22) !important;
+    border-color: #d35400 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(230, 126, 34, 0.3) !important;
+}
+
 /* Ajustes para pantallas pequeñas */
 @media (max-width: 768px) {
     .card-header .btn-toolbar {
@@ -317,6 +520,1008 @@ th[data-sort-desc] .sort-icon {
 
 .btn-secondary {
     background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+}
+
+/* Estilos para el botón de editar */
+.btn-editar {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    color: white;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    font-size: 0.8rem;
+    font-weight: 500;
+    box-shadow: 0 2px 6px rgba(40, 167, 69, 0.25);
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+}
+
+.btn-editar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition: left 0.6s;
+}
+
+.btn-editar:hover {
+    background: linear-gradient(135deg, #218838 0%, #1dd1a1 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.35);
+    color: white;
+    border: none;
+}
+
+.btn-editar:hover::before {
+    left: 100%;
+}
+
+.btn-editar:active {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(40, 167, 69, 0.3);
+}
+
+.btn-editar:focus {
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.25);
+    outline: none;
+    border: none;
+}
+
+.btn-editar i {
+    font-size: 0.95rem;
+    margin-right: 0.4rem;
+    transition: transform 0.3s ease;
+}
+
+.btn-editar:hover i {
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* Texto del botón de editar */
+.btn-editar .btn-text {
+    margin-left: 0.3rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+/* Efecto de reflejo para todos los botones principales */
+#generarGafetes, #generarFoto, #subirFotos, #actualizarLogos, #limpiarFotos, #limpiarLogos {
+    position: relative !important;
+    overflow: hidden !important;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+
+#generarGafetes::before, #generarFoto::before, #subirFotos::before, 
+#actualizarLogos::before, #limpiarFotos::before, #limpiarLogos::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition: left 0.6s;
+    z-index: 1;
+}
+
+#generarGafetes:hover::before, #generarFoto:hover::before, #subirFotos:hover::before,
+#actualizarLogos:hover::before, #limpiarFotos:hover::before, #limpiarLogos:hover::before {
+    left: 100%;
+}
+
+#generarGafetes:hover, #generarFoto:hover, #subirFotos:hover, 
+#actualizarLogos:hover, #limpiarFotos:hover, #limpiarLogos:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Efecto de reflejo para botones de selección */
+#seleccionarTodos, #deseleccionarTodos {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+#seleccionarTodos::before, #deseleccionarTodos::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition: left 0.6s;
+}
+
+#seleccionarTodos:hover::before, #deseleccionarTodos:hover::before {
+    left: 100%;
+}
+
+#seleccionarTodos:hover, #deseleccionarTodos:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive: ocultar texto en pantallas pequeñas */
+@media (max-width: 768px) {
+    .btn-editar .btn-text {
+        display: none;
+    }
+    
+    .btn-editar {
+        padding: 0.3rem 0.5rem;
+    }
+    
+    .btn-editar i {
+        margin-right: 0;
+        font-size: 0.9rem;
+    }
+}
+
+/* Mejorar tabla en dispositivos pequeños */
+@media (max-width: 576px) {
+    .table-responsive {
+        font-size: 0.85rem;
+    }
+    
+    .btn-editar {
+        padding: 0.25rem 0.4rem;
+    }
+}
+
+/* ======================================
+   MODAL ACTUALIZAR EMPLEADO - DISEÑO MEJORADO
+   ====================================== */
+
+/* Estilos para el modal de actualización de empleado */
+#modal_actualizar_empleado .modal-content {
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+}
+
+#modal_actualizar_empleado .modal-header {
+    background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+    border-bottom: none;
+    padding: 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+#modal_actualizar_empleado .modal-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    animation: shimmer 3s infinite;
+}
+
+#modal_actualizar_empleado .modal-title {
+    color: white;
+    font-weight: 600;
+    font-size: 1.4rem;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#modal_actualizar_empleado .modal-title i {
+    font-size: 1.2rem;
+    margin-right: 10px;
+}
+
+#modal_actualizar_empleado .btn-close {
+    filter: invert(1);
+    opacity: 0.8;
+    transition: opacity 0.3s;
+}
+
+#modal_actualizar_empleado .btn-close:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+#modal_actualizar_empleado .modal-body {
+    padding: 1.5rem;
+    background: #f8fafc;
+}
+
+/* Estilos para las pestañas del modal */
+#modal_actualizar_empleado .nav-tabs {
+    border-bottom: 2px solid #e2e8f0;
+    margin-bottom: 1.5rem;
+    background: white;
+    border-radius: 10px;
+    padding: 0.5rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+#modal_actualizar_empleado .nav-tabs .nav-link {
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.25rem;
+    font-weight: 600;
+    color: #718096;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+#modal_actualizar_empleado .nav-tabs .nav-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.6s;
+}
+
+#modal_actualizar_empleado .nav-tabs .nav-link:hover::before {
+    transform: translateX(100%);
+}
+
+#modal_actualizar_empleado .nav-tabs .nav-link.active {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+}
+
+#modal_actualizar_empleado .nav-tabs .nav-link i {
+    margin-right: 8px;
+    font-size: 1.1rem;
+}
+
+/* Estilos para los formularios dentro del modal */
+#modal_actualizar_empleado .form-label {
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+#modal_actualizar_empleado .form-control,
+#modal_actualizar_empleado .form-select {
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+}
+
+#modal_actualizar_empleado .form-control:focus,
+#modal_actualizar_empleado .form-select:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+    outline: none;
+}
+
+#modal_actualizar_empleado .form-control::placeholder {
+    color: #a0aec0;
+}
+
+#modal_actualizar_empleado .form-control:focus::placeholder {
+    color: transparent;
+}
+
+#modal_actualizar_empleado .form-text {
+    font-size: 0.8rem;
+    color: #718096;
+    margin-top: 0.3rem;
+}
+
+#modal_actualizar_empleado .card {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    border: none;
+    margin-bottom: 1.5rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+#modal_actualizar_empleado .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+#modal_actualizar_empleado .card-header {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
+    border-bottom: none;
+    padding: 1rem 1.5rem;
+    color: white;
+    font-weight: 600;
+}
+
+#modal_actualizar_empleado .card-header i {
+    margin-right: 8px;
+}
+
+#modal_actualizar_empleado .card-body {
+    padding: 1.5rem;
+}
+
+#modal_actualizar_empleado .img-thumbnail {
+    border-radius: 10px;
+    border: 3px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+#modal_actualizar_empleado .img-thumbnail:hover {
+    border-color: #3498db;
+    transform: scale(1.02);
+}
+
+#modal_actualizar_empleado .btn {
+    border-radius: 8px;
+    padding: 0.65rem 1.25rem;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#modal_actualizar_empleado .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+#modal_actualizar_empleado .btn:hover::before {
+    left: 100%;
+}
+
+#modal_actualizar_empleado .btn-success {
+    background: linear-gradient(135deg, #27ae60 0%, #219653 100%);
+    color: white;
+}
+
+#modal_actualizar_empleado .btn-success:hover {
+    background: linear-gradient(135deg, #219653 0%, #1e7a46 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(39, 174, 96, 0.4);
+}
+
+#modal_actualizar_empleado .btn-danger {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+}
+
+#modal_actualizar_empleado .btn-danger:hover {
+    background: linear-gradient(135deg, #c0392b 0%, #a5281b 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(231, 76, 60, 0.4);
+}
+
+#modal_actualizar_empleado .btn-primary {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+}
+
+#modal_actualizar_empleado .btn-primary:hover {
+    background: linear-gradient(135deg, #2980b9 0%, #2573a7 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(52, 152, 219, 0.4);
+}
+
+#modal_actualizar_empleado .btn-secondary {
+    background: linear-gradient(135deg, #7f8c8d 0%, #95a5a6 100%);
+    color: white;
+}
+
+#modal_actualizar_empleado .btn-secondary:hover {
+    background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(127, 140, 141, 0.4);
+}
+
+#modal_actualizar_empleado .modal-footer {
+    padding: 1.25rem 1.5rem;
+    border-top: 1px solid #e2e8f0;
+    background: #f1f5f9;
+    justify-content: flex-end;
+}
+
+#modal_actualizar_empleado .modal-footer .btn {
+    margin-left: 0.75rem;
+    min-width: 120px;
+}
+
+/* Estilos responsivos para el modal */
+@media (max-width: 768px) {
+    #modal_actualizar_empleado .modal-dialog {
+        margin: 1rem;
+        max-width: calc(100% - 2rem);
+    }
+    
+    #modal_actualizar_empleado .modal-header,
+    #modal_actualizar_empleado .modal-body,
+    #modal_actualizar_empleado .modal-footer {
+        padding: 1.25rem;
+    }
+    
+    #modal_actualizar_empleado .nav-tabs .nav-link {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    #modal_actualizar_empleado .form-control,
+    #modal_actualizar_empleado .form-select {
+        padding: 0.65rem 0.9rem;
+    }
+    
+    #modal_actualizar_empleado .card-body {
+        padding: 1.25rem;
+    }
+    
+    #modal_actualizar_empleado .modal-footer .btn {
+        min-width: 100px;
+        padding: 0.6rem 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    #modal_actualizar_empleado .modal-title {
+        font-size: 1.2rem;
+    }
+    
+    #modal_actualizar_empleado .nav-tabs {
+        flex-direction: column;
+    }
+    
+    #modal_actualizar_empleado .nav-tabs .nav-item {
+        margin-bottom: 0.5rem;
+    }
+    
+    #modal_actualizar_empleado .nav-tabs .nav-link {
+        text-align: center;
+        justify-content: center;
+    }
+    
+    #modal_actualizar_empleado .row > .col-md-4 {
+        margin-bottom: 1rem;
+    }
+    
+    #modal_actualizar_empleado .modal-footer {
+        flex-direction: column;
+    }
+    
+    #modal_actualizar_empleado .modal-footer .btn {
+        width: 100%;
+        margin: 0.3rem 0;
+    }
+}
+
+/* Animaciones */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#modal_actualizar_empleado .tab-pane {
+    animation: fadeInUp 0.3s ease forwards;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Reduce animation intensity for formal design */
+#modalActualizarLogos .modal-header::before,
+#modal_actualizar_empleado .modal-header::before {
+    animation-duration: 6s;
+    opacity: 0.3;
+}
+
+/* ======================================
+   MODAL ACTUALIZAR LOGOS - DISEÑO FORMAL
+   ====================================== */
+
+/* Estilos para el modal de actualización de logos */
+#modalActualizarLogos .modal-content {
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    background: #ffffff;
+}
+
+#modalActualizarLogos .modal-header {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    border-bottom: 1px solid #e1e8ed;
+    padding: 1.25rem 1.5rem;
+    text-align: left;
+}
+
+#modalActualizarLogos .modal-title {
+    color: white;
+    font-weight: 600;
+    font-size: 1.25rem;
+    margin: 0;
+    letter-spacing: 0.3px;
+    display: flex;
+    align-items: center;
+}
+
+#modalActualizarLogos .modal-title i {
+    font-size: 1.1rem;
+    margin-right: 10px;
+}
+
+#modalActualizarLogos .btn-close {
+    filter: invert(1);
+    opacity: 0.9;
+    transition: opacity 0.3s;
+    padding: 0.5rem;
+}
+
+#modalActualizarLogos .btn-close:hover {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+#modalActualizarLogos .modal-body {
+    padding: 1.5rem;
+    background: #f8f9fa;
+}
+
+#modalActualizarLogos .alert {
+    border-radius: 8px;
+    border: 1px solid #d1d8e0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 1.25rem;
+    background: #ffffff;
+}
+
+#modalActualizarLogos .alert i {
+    font-size: 1.1rem;
+}
+
+#modalActualizarLogos .card {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e1e8ed;
+    margin-bottom: 1.25rem;
+    transition: box-shadow 0.3s ease;
+    height: 100%;
+    background: #ffffff;
+}
+
+#modalActualizarLogos .card:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+#modalActualizarLogos .card-header {
+    border-bottom: 1px solid #e1e8ed;
+    padding: 0.9rem 1.25rem;
+    color: #2c3e50;
+    font-weight: 600;
+    background: #f8f9fa;
+}
+
+#modalActualizarLogos .card-header.bg-info {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
+    color: white;
+    border-bottom: none;
+}
+
+#modalActualizarLogos .card-header.bg-success {
+    background: linear-gradient(135deg, #27ae60 0%, #219653 100%) !important;
+    color: white;
+    border-bottom: none;
+}
+
+#modalActualizarLogos .card-header i {
+    margin-right: 8px;
+}
+
+#modalActualizarLogos .card-body {
+    padding: 1.25rem;
+}
+
+/* Estilos para los elementos de logo */
+.logo-item {
+    margin-bottom: 1.25rem;
+    padding: 1rem;
+    border-radius: 6px;
+    background: #ffffff;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    border: 1px solid #e1e8ed;
+}
+
+.logo-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.logo-item h6 {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 0.9rem;
+    display: flex;
+    align-items: center;
+    font-size: 0.95rem;
+}
+
+.logo-item h6 i {
+    color: #3498db;
+}
+
+.logo-preview-container {
+    text-align: center;
+    margin-bottom: 0.9rem;
+    min-height: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid #e1e8ed;
+}
+
+.logo-preview {
+    max-width: 100%;
+    max-height: 90px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e1e8ed;
+    object-fit: contain;
+}
+
+.no-logo {
+    color: #7f8c8d;
+    font-style: normal;
+    padding: 0.8rem;
+    border: 1px dashed #d1d8e0;
+    border-radius: 4px;
+    width: 100%;
+    text-align: center;
+    font-size: 0.85rem;
+}
+
+.file-input-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.logo-file-input {
+    display: none;
+}
+
+.custom-file-label {
+    display: inline-block;
+    padding: 0.55rem 1.1rem;
+    background: #3498db;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: 1px solid #2980b9;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    width: 100%;
+    font-size: 0.85rem;
+}
+
+.custom-file-label:hover {
+    background: #2980b9;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(52, 152, 219, 0.2);
+}
+
+.custom-file-label:active {
+    transform: translateY(0);
+}
+
+.custom-file-label i {
+    margin-right: 6px;
+    font-size: 0.9rem;
+}
+
+.delete-logo-container {
+    margin-top: 0.75rem;
+}
+
+.delete-logo-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+#modalActualizarLogos .modal-footer {
+    padding: 1.1rem 1.5rem;
+    border-top: 1px solid #e1e8ed;
+    background: #f8f9fa;
+    justify-content: space-between;
+}
+
+#modalActualizarLogos .btn {
+    border-radius: 4px;
+    padding: 0.55rem 1.1rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    font-size: 0.85rem;
+}
+
+#modalActualizarLogos .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+#modalActualizarLogos .btn:active {
+    transform: translateY(0);
+}
+
+#modalActualizarLogos .btn-outline-danger {
+    background: #ffffff;
+    color: #e74c3c;
+    border: 1px solid #e74c3c;
+}
+
+#modalActualizarLogos .btn-outline-danger:hover {
+    background: #e74c3c;
+    color: white;
+    border-color: #c0392b;
+    box-shadow: 0 3px 8px rgba(231, 76, 60, 0.2);
+}
+
+#modalActualizarLogos .btn-secondary {
+    background: #7f8c8d;
+    color: white;
+    border: 1px solid #7f8c8d;
+}
+
+#modalActualizarLogos .btn-secondary:hover {
+    background: #95a5a6;
+    border-color: #7f8c8d;
+    box-shadow: 0 3px 8px rgba(127, 140, 141, 0.2);
+}
+
+#modalActualizarLogos .btn-primary {
+    background: #3498db;
+    color: white;
+    border: 1px solid #2980b9;
+}
+
+#modalActualizarLogos .btn-primary:hover {
+    background: #2980b9;
+    border-color: #2573a7;
+    box-shadow: 0 3px 8px rgba(52, 152, 219, 0.2);
+}
+
+#modalActualizarLogos .btn i {
+    margin-right: 6px;
+    font-size: 0.9rem;
+}
+
+/* Estilos responsivos para el modal de logos */
+@media (max-width: 768px) {
+    #modalActualizarLogos .modal-dialog {
+        margin: 0.75rem;
+        max-width: calc(100% - 1.5rem);
+    }
+    
+    #modalActualizarLogos .modal-header,
+    #modalActualizarLogos .modal-body,
+    #modalActualizarLogos .modal-footer {
+        padding: 1.1rem;
+    }
+    
+    .logo-item {
+        padding: 0.75rem;
+    }
+    
+    .logo-preview {
+        max-height: 70px;
+    }
+    
+    .custom-file-label {
+        padding: 0.5rem 0.9rem;
+        font-size: 0.8rem;
+    }
+    
+    #modalActualizarLogos .card-body {
+        padding: 1rem;
+    }
+    
+    .logo-preview-container {
+        min-height: 90px;
+    }
+    
+    .logo-item h6 {
+        font-size: 0.9rem;
+    }
+    
+    #modalActualizarLogos .btn {
+        padding: 0.5rem 0.9rem;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 576px) {
+    #modalActualizarLogos .modal-title {
+        font-size: 1.2rem;
+    }
+    
+    .logo-item h6 {
+        font-size: 0.95rem;
+    }
+    
+    .logo-preview-container {
+        min-height: 100px;
+    }
+    
+    .custom-file-label {
+        padding: 0.5rem 0.8rem;
+    }
+    
+    #modalActualizarLogos .modal-footer {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    #modalActualizarLogos .modal-footer .btn {
+        width: 100%;
+        margin: 0;
+    }
+}
+
+/* ======================================
+   ALERTAS ESTILO GAFETES (MISMO QUE FOTOS)
+   ====================================== */
+
+/* Alertas específicas para gafetes - Diseño Formal */
+.alerta-gafete {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    max-width: 400px;
+}
+
+.alerta-gafete.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.alerta-gafete.alerta-warning .alerta-content {
+    background: #ffffff;
+    color: #856404;
+    padding: 14px 18px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 1px solid #fff3cd;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.alerta-gafete.alerta-info .alerta-content {
+    background: #ffffff;
+    color: #0c5460;
+    padding: 14px 18px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 1px solid #d1ecf1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.alerta-gafete.alerta-danger .alerta-content {
+    background: #ffffff;
+    color: #721c24;
+    padding: 14px 18px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 1px solid #f5c6cb;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.alerta-gafete.alerta-success .alerta-content {
+    background: #ffffff;
+    color: #155724;
+    padding: 14px 18px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 1px solid #c3e6cb;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.alerta-gafete .alerta-content i {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.alerta-gafete .alerta-content span {
+    flex: 1;
+    font-weight: 500;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.alerta-gafete .btn-close-alerta {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 1.2rem;
+    font-weight: normal;
+    cursor: pointer;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    flex-shrink: 0;
+}
+
+.alerta-gafete .btn-close-alerta:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Responsive para alertas de gafetes */
+@media (max-width: 480px) {
+    .alerta-gafete {
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
 }
 
 .btn:hover {
@@ -719,5 +1924,866 @@ th[data-sort-desc] .sort-icon {
         border: none !important;
         background: none !important;
         box-shadow: none !important;
+    }
+}
+
+/* ======================================
+   MODAL DE CONFIRMACIÓN LIMPIAR FOTOS
+   ====================================== */
+
+/* Estilos para el modal de confirmación de limpiar fotos - Diseño Formal */
+#modalConfirmacionLimpiar .modal-content.confirmacion-limpiar {
+    border: none;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    background: #ffffff;
+}
+
+#modalConfirmacionLimpiar .modal-header {
+    background: #ff6b35;
+    border-bottom: 1px solid #e1e8ed;
+    padding: 1.2rem 1.5rem;
+    text-align: left;
+}
+
+#modalConfirmacionLimpiar .confirmacion-icon {
+    background: rgba(255, 255, 255, 0.15);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 0 0.8rem 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#modalConfirmacionLimpiar .confirmacion-icon i {
+    font-size: 1.5rem;
+    color: white;
+}
+
+#modalConfirmacionLimpiar .modal-title {
+    color: white;
+    font-weight: 600;
+    font-size: 1.2rem;
+    margin: 0;
+    letter-spacing: 0.2px;
+}
+
+#modalConfirmacionLimpiar .modal-body {
+    padding: 1.5rem;
+    text-align: left;
+    background: #f8f9fa;
+}
+
+#modalConfirmacionLimpiar .confirmacion-mensaje p {
+    margin-bottom: 0.8rem;
+    line-height: 1.5;
+    font-size: 0.95rem;
+}
+
+#modalConfirmacionLimpiar .confirmacion-mensaje p:first-child {
+    font-size: 1rem;
+    color: #2c3e50;
+    margin-bottom: 0.7rem;
+    font-weight: 500;
+}
+
+#modalConfirmacionLimpiar .confirmacion-mensaje .text-muted {
+    font-size: 0.85rem;
+    color: #7f8c8d !important;
+    margin-bottom: 1.2rem;
+}
+
+#modalConfirmacionLimpiar .alert {
+    border: 1px solid #fff3cd;
+    border-radius: 6px;
+    background: #ffffff;
+    font-size: 0.85rem;
+    padding: 0.8rem 1rem;
+}
+
+#modalConfirmacionLimpiar .modal-footer {
+    padding: 1.2rem 1.5rem;
+    border-top: 1px solid #e1e8ed;
+    background: #ffffff;
+    justify-content: flex-end;
+}
+
+#modalConfirmacionLimpiar .btn {
+    padding: 0.55rem 1.2rem;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    font-size: 0.85rem;
+}
+
+#modalConfirmacionLimpiar .btn-secondary {
+    background: #7f8c8d;
+    color: white;
+    border: 1px solid #7f8c8d;
+}
+
+#modalConfirmacionLimpiar .btn-secondary:hover {
+    background: #95a5a6;
+    border-color: #7f8c8d;
+    box-shadow: 0 2px 6px rgba(127, 140, 141, 0.2);
+}
+
+#modalConfirmacionLimpiar .btn-danger {
+    background: #ef4444;
+    color: white;
+    border: 1px solid #dc2626;
+}
+
+#modalConfirmacionLimpiar .btn-danger:hover {
+    background: #dc2626;
+    border-color: #b91c1c;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.2);
+}
+
+#modalConfirmacionLimpiar .btn i {
+    margin-right: 0.4rem;
+    font-size: 0.9rem;
+}
+
+#modalConfirmacionLimpiar .modal-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    animation: shimmer 3s infinite;
+}
+
+#modalConfirmacionLimpiar .confirmacion-icon {
+    background: rgba(255, 255, 255, 0.2);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem auto;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+#modalConfirmacionLimpiar .confirmacion-icon i {
+    font-size: 2.5rem;
+    color: white;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+#modalConfirmacionLimpiar .modal-title {
+    color: white;
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    letter-spacing: -0.5px;
+}
+
+#modalConfirmacionLimpiar .modal-body {
+    padding: 2rem;
+    text-align: center;
+}
+
+#modalConfirmacionLimpiar .confirmacion-mensaje p {
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+#modalConfirmacionLimpiar .confirmacion-mensaje p:first-child {
+    font-size: 1.1rem;
+    color: #2d3748;
+    margin-bottom: 0.8rem;
+}
+
+#modalConfirmacionLimpiar .confirmacion-mensaje .text-muted {
+    font-size: 0.95rem;
+    color: #718096 !important;
+    margin-bottom: 1.5rem;
+}
+
+#modalConfirmacionLimpiar .alert {
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border-left: 4px solid #ffc107;
+    font-size: 0.9rem;
+}
+
+#modalConfirmacionLimpiar .modal-footer {
+    padding: 1.5rem 2rem 2rem 2rem;
+    border-top: 1px solid #e2e8f0;
+    background: #f8fafc;
+    justify-content: space-between;
+}
+
+#modalConfirmacionLimpiar .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+#modalConfirmacionLimpiar .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+#modalConfirmacionLimpiar .btn:hover::before {
+    left: 100%;
+}
+
+#modalConfirmacionLimpiar .btn-secondary {
+    background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(100, 116, 139, 0.3);
+}
+
+#modalConfirmacionLimpiar .btn-secondary:hover {
+    background: linear-gradient(135deg, #475569 0%, #334155 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(100, 116, 139, 0.4);
+}
+
+#modalConfirmacionLimpiar .btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+}
+
+#modalConfirmacionLimpiar .btn-danger:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+#modalConfirmacionLimpiar .btn i {
+    margin-right: 0.5rem;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive para modal de confirmación */
+@media (max-width: 576px) {
+    #modalConfirmacionLimpiar .modal-dialog {
+        margin: 0.75rem;
+        max-width: calc(100% - 1.5rem);
+    }
+    
+    #modalConfirmacionLimpiar .modal-header,
+    #modalConfirmacionLimpiar .modal-body,
+    #modalConfirmacionLimpiar .modal-footer {
+        padding: 1.2rem;
+    }
+    
+    #modalConfirmacionLimpiar .confirmacion-icon {
+        width: 45px;
+        height: 45px;
+    }
+    
+    #modalConfirmacionLimpiar .confirmacion-icon i {
+        font-size: 1.3rem;
+    }
+    
+    #modalConfirmacionLimpiar .modal-title {
+        font-size: 1.1rem;
+    }
+    
+    #modalConfirmacionLimpiar .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* ======================================
+   MODAL DE CONFIRMACIÓN LIMPIAR LOGOS
+   ====================================== */
+
+/* Estilos para el modal de confirmación de limpiar logos - Diseño Formal */
+#modalConfirmacionLimpiarLogos .modal-content.confirmacion-limpiar-logos {
+    border: none;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    background: #ffffff;
+}
+
+#modalConfirmacionLimpiarLogos .modal-header {
+    background: #8e44ad;
+    border-bottom: 1px solid #e1e8ed;
+    padding: 1.2rem 1.5rem;
+    text-align: left;
+}
+
+#modalConfirmacionLimpiarLogos .confirmacion-icon {
+    background: rgba(255, 255, 255, 0.15);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 0 0.8rem 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#modalConfirmacionLimpiarLogos .confirmacion-icon i {
+    font-size: 1.5rem;
+    color: white;
+}
+
+#modalConfirmacionLimpiarLogos .modal-title {
+    color: white;
+    font-weight: 600;
+    font-size: 1.2rem;
+    margin: 0;
+    letter-spacing: 0.2px;
+}
+
+#modalConfirmacionLimpiarLogos .modal-body {
+    padding: 1.5rem;
+    text-align: left;
+    background: #f8f9fa;
+}
+
+#modalConfirmacionLimpiarLogos .confirmacion-mensaje p {
+    margin-bottom: 0.8rem;
+    line-height: 1.5;
+    font-size: 0.95rem;
+}
+
+#modalConfirmacionLimpiarLogos .confirmacion-mensaje p:first-child {
+    font-size: 1rem;
+    color: #2c3e50;
+    margin-bottom: 0.7rem;
+    font-weight: 500;
+}
+
+#modalConfirmacionLimpiarLogos .confirmacion-mensaje .text-muted {
+    font-size: 0.85rem;
+    color: #7f8c8d !important;
+    margin-bottom: 1.2rem;
+}
+
+#modalConfirmacionLimpiarLogos .alert {
+    border: 1px solid #fff3cd;
+    border-radius: 6px;
+    background: #ffffff;
+    font-size: 0.85rem;
+    padding: 0.8rem 1rem;
+}
+
+#modalConfirmacionLimpiarLogos .modal-footer {
+    padding: 1.2rem 1.5rem;
+    border-top: 1px solid #e1e8ed;
+    background: #ffffff;
+    justify-content: flex-end;
+}
+
+#modalConfirmacionLimpiarLogos .btn {
+    padding: 0.55rem 1.2rem;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    font-size: 0.85rem;
+}
+
+#modalConfirmacionLimpiarLogos .btn-secondary {
+    background: #7f8c8d;
+    color: white;
+    border: 1px solid #7f8c8d;
+}
+
+#modalConfirmacionLimpiarLogos .btn-secondary:hover {
+    background: #95a5a6;
+    border-color: #7f8c8d;
+    box-shadow: 0 2px 6px rgba(127, 140, 141, 0.2);
+}
+
+#modalConfirmacionLimpiarLogos .btn-danger {
+    background: #8e44ad;
+    color: white;
+    border: 1px solid #7d3c98;
+}
+
+#modalConfirmacionLimpiarLogos .btn-danger:hover {
+    background: #7d3c98;
+    border-color: #6c3483;
+    box-shadow: 0 2px 6px rgba(142, 68, 173, 0.2);
+}
+
+#modalConfirmacionLimpiarLogos .btn i {
+    margin-right: 0.4rem;
+    font-size: 0.9rem;
+}
+
+#modalConfirmacionLimpiarLogos .modal-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    animation: shimmer 3s infinite;
+}
+
+#modalConfirmacionLimpiarLogos .confirmacion-icon {
+    background: rgba(255, 255, 255, 0.2);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem auto;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+#modalConfirmacionLimpiarLogos .confirmacion-icon i {
+    font-size: 2.5rem;
+    color: white;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+#modalConfirmacionLimpiarLogos .modal-title {
+    color: white;
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    letter-spacing: -0.5px;
+}
+
+#modalConfirmacionLimpiarLogos .modal-body {
+    padding: 2rem;
+    text-align: center;
+}
+
+#modalConfirmacionLimpiarLogos .confirmacion-mensaje p {
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+#modalConfirmacionLimpiarLogos .confirmacion-mensaje p:first-child {
+    font-size: 1.1rem;
+    color: #2d3748;
+    margin-bottom: 0.8rem;
+}
+
+#modalConfirmacionLimpiarLogos .confirmacion-mensaje .text-muted {
+    font-size: 0.95rem;
+    color: #718096 !important;
+    margin-bottom: 1.5rem;
+}
+
+#modalConfirmacionLimpiarLogos .alert {
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border-left: 4px solid #ffc107;
+    font-size: 0.9rem;
+}
+
+#modalConfirmacionLimpiarLogos .modal-footer {
+    padding: 1.5rem 2rem 2rem 2rem;
+    border-top: 1px solid #e2e8f0;
+    background: #f8fafc;
+    justify-content: space-between;
+}
+
+#modalConfirmacionLimpiarLogos .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+#modalConfirmacionLimpiarLogos .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+#modalConfirmacionLimpiarLogos .btn:hover::before {
+    left: 100%;
+}
+
+#modalConfirmacionLimpiarLogos .btn-secondary {
+    background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(100, 116, 139, 0.3);
+}
+
+#modalConfirmacionLimpiarLogos .btn-secondary:hover {
+    background: linear-gradient(135deg, #475569 0%, #334155 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(100, 116, 139, 0.4);
+}
+
+#modalConfirmacionLimpiarLogos .btn-danger {
+    background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(142, 68, 173, 0.3);
+}
+
+#modalConfirmacionLimpiarLogos .btn-danger:hover {
+    background: linear-gradient(135deg, #7d3c98 0%, #8e44ad 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(142, 68, 173, 0.4);
+}
+
+#modalConfirmacionLimpiarLogos .btn i {
+    margin-right: 0.5rem;
+}
+
+/* Responsive para modal de confirmación de logos */
+@media (max-width: 576px) {
+    #modalConfirmacionLimpiarLogos .modal-dialog {
+        margin: 0.75rem;
+        max-width: calc(100% - 1.5rem);
+    }
+    
+    #modalConfirmacionLimpiarLogos .modal-header,
+    #modalConfirmacionLimpiarLogos .modal-body,
+    #modalConfirmacionLimpiarLogos .modal-footer {
+        padding: 1.2rem;
+    }
+    
+    #modalConfirmacionLimpiarLogos .confirmacion-icon {
+        width: 45px;
+        height: 45px;
+    }
+    
+    #modalConfirmacionLimpiarLogos .confirmacion-icon i {
+        font-size: 1.3rem;
+    }
+    
+    #modalConfirmacionLimpiarLogos .modal-title {
+        font-size: 1.1rem;
+    }
+    
+    #modalConfirmacionLimpiarLogos .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* ======================================
+   MODAL DE CONFIRMACIÓN ELIMINAR LOGO
+   ====================================== */
+
+/* Estilos para el modal de confirmación de eliminar logo - Diseño Formal */
+#modalConfirmacionEliminarLogo .modal-content.confirmacion-limpiar-logos {
+    border: none;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    background: #ffffff;
+}
+
+#modalConfirmacionEliminarLogo .modal-header {
+    background: #c0392b;
+    border-bottom: 1px solid #e1e8ed;
+    padding: 1.2rem 1.5rem;
+    text-align: left;
+}
+
+#modalConfirmacionEliminarLogo .confirmacion-icon {
+    background: rgba(255, 255, 255, 0.15);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 0 0.8rem 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#modalConfirmacionEliminarLogo .confirmacion-icon i {
+    font-size: 1.5rem;
+    color: white;
+}
+
+#modalConfirmacionEliminarLogo .modal-title {
+    color: white;
+    font-weight: 600;
+    font-size: 1.2rem;
+    margin: 0;
+    letter-spacing: 0.2px;
+}
+
+#modalConfirmacionEliminarLogo .modal-body {
+    padding: 1.5rem;
+    text-align: left;
+    background: #f8f9fa;
+}
+
+#modalConfirmacionEliminarLogo .confirmacion-mensaje p {
+    margin-bottom: 0.8rem;
+    line-height: 1.5;
+    font-size: 0.95rem;
+}
+
+#modalConfirmacionEliminarLogo .confirmacion-mensaje p:first-child {
+    font-size: 1rem;
+    color: #2c3e50;
+    margin-bottom: 0.7rem;
+    font-weight: 500;
+}
+
+#modalConfirmacionEliminarLogo .confirmacion-mensaje .text-muted {
+    font-size: 0.85rem;
+    color: #7f8c8d !important;
+    margin-bottom: 1.2rem;
+}
+
+#modalConfirmacionEliminarLogo .alert {
+    border: 1px solid #fff3cd;
+    border-radius: 6px;
+    background: #ffffff;
+    font-size: 0.85rem;
+    padding: 0.8rem 1rem;
+}
+
+#modalConfirmacionEliminarLogo .modal-footer {
+    padding: 1.2rem 1.5rem;
+    border-top: 1px solid #e1e8ed;
+    background: #ffffff;
+    justify-content: flex-end;
+}
+
+#modalConfirmacionEliminarLogo .btn {
+    padding: 0.55rem 1.2rem;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    font-size: 0.85rem;
+}
+
+#modalConfirmacionEliminarLogo .btn-secondary {
+    background: #7f8c8d;
+    color: white;
+    border: 1px solid #7f8c8d;
+}
+
+#modalConfirmacionEliminarLogo .btn-secondary:hover {
+    background: #95a5a6;
+    border-color: #7f8c8d;
+    box-shadow: 0 2px 6px rgba(127, 140, 141, 0.2);
+}
+
+#modalConfirmacionEliminarLogo .btn-danger {
+    background: #e74c3c;
+    color: white;
+    border: 1px solid #c0392b;
+}
+
+#modalConfirmacionEliminarLogo .btn-danger:hover {
+    background: #c0392b;
+    border-color: #a5281b;
+    box-shadow: 0 2px 6px rgba(231, 76, 60, 0.2);
+}
+
+#modalConfirmacionEliminarLogo .btn i {
+    margin-right: 0.4rem;
+    font-size: 0.9rem;
+}
+
+#modalConfirmacionEliminarLogo .modal-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    animation: shimmer 3s infinite;
+}
+
+#modalConfirmacionEliminarLogo .confirmacion-icon {
+    background: rgba(255, 255, 255, 0.2);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem auto;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+#modalConfirmacionEliminarLogo .confirmacion-icon i {
+    font-size: 2.5rem;
+    color: white;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+#modalConfirmacionEliminarLogo .modal-title {
+    color: white;
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    letter-spacing: -0.5px;
+}
+
+#modalConfirmacionEliminarLogo .modal-body {
+    padding: 2rem;
+    text-align: center;
+}
+
+#modalConfirmacionEliminarLogo .confirmacion-mensaje p {
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+#modalConfirmacionEliminarLogo .confirmacion-mensaje p:first-child {
+    font-size: 1.1rem;
+    color: #2d3748;
+    margin-bottom: 0.8rem;
+}
+
+#modalConfirmacionEliminarLogo .confirmacion-mensaje .text-muted {
+    font-size: 0.95rem;
+    color: #718096 !important;
+    margin-bottom: 1.5rem;
+}
+
+#modalConfirmacionEliminarLogo .alert {
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border-left: 4px solid #ffc107;
+    font-size: 0.9rem;
+}
+
+#modalConfirmacionEliminarLogo .modal-footer {
+    padding: 1.5rem 2rem 2rem 2rem;
+    border-top: 1px solid #e2e8f0;
+    background: #f8fafc;
+    justify-content: space-between;
+}
+
+#modalConfirmacionEliminarLogo .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+#modalConfirmacionEliminarLogo .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+#modalConfirmacionEliminarLogo .btn:hover::before {
+    left: 100%;
+}
+
+#modalConfirmacionEliminarLogo .btn-secondary {
+    background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(100, 116, 139, 0.3);
+}
+
+#modalConfirmacionEliminarLogo .btn-secondary:hover {
+    background: linear-gradient(135deg, #475569 0%, #334155 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(100, 116, 139, 0.4);
+}
+
+#modalConfirmacionEliminarLogo .btn-danger {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+}
+
+#modalConfirmacionEliminarLogo .btn-danger:hover {
+    background: linear-gradient(135deg, #c0392b 0%, #a5281b 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+}
+
+#modalConfirmacionEliminarLogo .btn i {
+    margin-right: 0.5rem;
+}
+
+/* Responsive para modal de confirmación de eliminar logo */
+@media (max-width: 576px) {
+    #modalConfirmacionEliminarLogo .modal-dialog {
+        margin: 0.75rem;
+        max-width: calc(100% - 1.5rem);
+    }
+    
+    #modalConfirmacionEliminarLogo .modal-header,
+    #modalConfirmacionEliminarLogo .modal-body,
+    #modalConfirmacionEliminarLogo .modal-footer {
+        padding: 1.2rem;
+    }
+    
+    #modalConfirmacionEliminarLogo .confirmacion-icon {
+        width: 45px;
+        height: 45px;
+    }
+    
+    #modalConfirmacionEliminarLogo .confirmacion-icon i {
+        font-size: 1.3rem;
+    }
+    
+    #modalConfirmacionEliminarLogo .modal-title {
+        font-size: 1.1rem;
+    }
+    
+    #modalConfirmacionEliminarLogo .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
     }
 }

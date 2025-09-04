@@ -13,10 +13,29 @@ include("config/config.php");
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="public/styles/main.css">
+    <!-- Iconos Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 </head>
 
 <body>
     <?php include("public/views/navbar.php"); ?>
+    
+    <!-- Botón de notificación -->
+    <button class="notification-btn" id="notificationButton">
+        <i class="bi bi-bell-fill" style="font-size: 22px;"></i>
+        <span class="notification-badge" id="notificationBadge">0</span>
+    </button>
+
+    <!-- Panel de notificaciones -->
+    <div id="notificationPanel" class="notification-panel">
+        <div class="notification-header">
+            <h5>Notificaciones</h5>
+            <button type="button" class="btn-close btn-close-white" aria-label="Close" onclick="closeNotificationPanel()"></button>
+        </div>
+        <div class="notification-body" id="notificationPanelContent">
+            <!-- Las notificaciones se cargarán aquí -->
+        </div>
+    </div>
 
     <!-- Sección principal de bienvenida (Hero Section) -->
     <section class="hero-section text-center">
@@ -35,7 +54,7 @@ include("config/config.php");
                         <img src="https://img.icons8.com/color/48/id-verified.png" alt="Gafetes">
                         <h5 class="card-title mt-3">Gestión de Gafetes</h5>
                         <p class="card-text">Crea, imprime y administra gafetes personalizados para los empleados.</p>
-                        <a href="#" class="btn btn-success">Ir a Gafetes</a>
+                        <a href="gafetes/" class="btn btn-success">Ir a Gafetes</a>
                     </div>
                 </div>
             </div>
@@ -69,6 +88,8 @@ include("config/config.php");
 
     <!-- Bootstrap JS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Script de notificaciones -->
+    <script src="public/js/notifications.js"></script>
 </body>
 
 </html>

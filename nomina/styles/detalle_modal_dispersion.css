@@ -1,0 +1,404 @@
+/* ========================================
+   MODAL DE DISPERSIÓN - SUELDO NETO
+   ======================================== */
+
+.modal-dispersion {
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: auto;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+}
+
+.modal-dispersion-content {
+    background: #ffffff;
+    padding: 32px 40px;
+    border-radius: 8px;
+    min-width: 450px;
+    max-width: 500px;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.15);
+    position: relative;
+    animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-dispersion-close {
+    position: absolute;
+    right: 16px;
+    top: 12px;
+    font-size: 22px;
+    cursor: pointer;
+    color: #888;
+    transition: color 0.2s ease;
+}
+
+.modal-dispersion-close:hover {
+    color: #ef4444;
+}
+
+/* ========================================
+   HEADER
+   ======================================== */
+
+.header-dispersion {
+    margin-bottom: 24px;
+    text-align: center;
+    border-bottom: 2px solid #22c55e;
+    padding-bottom: 12px;
+}
+
+.titulo-dispersion {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #22c55e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.titulo-dispersion i {
+    font-size: 22px;
+    color: #22c55e;
+}
+
+/* ========================================
+   CONTENIDO
+   ======================================== */
+
+.contenido-dispersion {
+    margin-bottom: 24px;
+}
+
+/* Información del empleado - Estilo similar a empleado-info */
+.info-empleado-dispersion {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid #e9ecef;
+}
+
+.dato-empleado {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.dato-empleado:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.etiqueta-empleado {
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+}
+
+.valor-empleado {
+    font-weight: 700;
+    color: #212529;
+    font-size: 14px;
+}
+
+/* Campo de sueldo neto - Estilo similar a mod-card */
+.campo-sueldo-container {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.07);
+    margin-bottom: 20px;
+}
+
+.campo-sueldo-header {
+    background: #e6f7ed;
+    color: #22c55e;
+    font-weight: 600;
+    border-radius: 12px 12px 0 0;
+    margin: -20px -20px 16px -20px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.label-sueldo-neto {
+    display: block;
+    font-weight: 700;
+    color: #22c55e;
+    font-size: 16px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.label-sueldo-neto i {
+    font-size: 18px;
+    color: #22c55e;
+}
+
+.input-container {
+    position: relative;
+    margin-bottom: 8px;
+}
+
+.simbolo-peso {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: 700;
+    color: #22c55e;
+    font-size: 18px;
+    z-index: 1;
+}
+
+.input-sueldo-neto {
+    width: 100%;
+    padding: 16px 16px 16px 40px;
+    border: 2px solid #22c55e;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #22c55e;
+    background: #f0fff4;
+    text-align: center;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.input-sueldo-neto:focus {
+    border-color: #16a34a;
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.15);
+    background: #ecfdf5;
+    transform: scale(1.02);
+}
+
+.input-sueldo-neto::placeholder {
+    color: #9ca3af;
+    font-weight: 500;
+}
+
+/* ========================================
+   FOOTER
+   ======================================== */
+
+.footer-dispersion {
+    text-align: right;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.btn-cancelar-dispersion,
+.btn-guardar-dispersion {
+    min-width: 110px;
+    font-size: 16px;
+    padding: 12px 18px;
+    border-radius: 6px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+}
+
+.btn-cancelar-dispersion {
+    background: #e5e7eb;
+    color: #374151;
+    border: 1px solid #d1d5db;
+}
+
+.btn-cancelar-dispersion:hover {
+    background: #d1d5db;
+    opacity: 0.92;
+    transform: translateY(-1px);
+}
+
+.btn-guardar-dispersion {
+    background: #22c55e;
+    color: white;
+    border: 1px solid #22c55e;
+}
+
+.btn-guardar-dispersion:hover {
+    background: #16a34a;
+    opacity: 0.92;
+    transform: translateY(-1px);
+}
+
+.btn-guardar-dispersion:active,
+.btn-cancelar-dispersion:active {
+    transform: translateY(0);
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+    .modal-dispersion-content {
+        margin: 20px;
+        min-width: auto;
+        max-width: calc(100vw - 40px);
+        padding: 30px 20px;
+    }
+    
+    .titulo-dispersion {
+        font-size: 18px;
+    }
+    
+    .footer-dispersion {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .btn-cancelar-dispersion,
+    .btn-guardar-dispersion {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    .input-sueldo-neto {
+        font-size: 16px;
+        padding: 14px 14px 14px 36px;
+    }
+    
+    .simbolo-peso {
+        left: 14px;
+        font-size: 16px;
+    }
+    
+    .campo-sueldo-container {
+        padding: 16px;
+    }
+    
+    .campo-sueldo-header {
+        margin: -16px -16px 12px -16px;
+        padding: 12px 16px;
+    }
+}
+
+/* ========================================
+   ESTADOS Y ANIMACIONES
+   ======================================== */
+
+.modal-dispersion-content.closing {
+    animation: fadeOutDown 0.2s ease-in forwards;
+}
+
+@keyframes fadeOutDown {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+}
+
+/* Validación visual */
+.input-sueldo-neto.valido {
+    border-color: #22c55e;
+    background: #f0fff4;
+}
+
+.input-sueldo-neto.invalido {
+    border-color: #ef4444;
+    background: #fef2f2;
+    animation: shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Loader para botón de guardar */
+.btn-guardar-dispersion.loading {
+    pointer-events: none;
+    opacity: 0.7;
+    position: relative;
+    color: transparent;
+}
+
+.btn-guardar-dispersion.loading::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Efecto hover mejorado */
+.input-sueldo-neto:hover {
+    border-color: #16a34a;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.1);
+}
+
+/* Estilos adicionales para mejor integración visual */
+.modal-dispersion {
+    font-family: 'Inter', sans-serif;
+}
+
+.modal-dispersion-content {
+    color: #374151;
+}
+
+/* Animación de entrada suave */
+.modal-dispersion.show {
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+    }
+    to {
+        opacity: 1;
+        backdrop-filter: blur(2px);
+    }
+}
