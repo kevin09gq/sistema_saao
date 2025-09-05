@@ -16,6 +16,7 @@ include("../../config/config.php");
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="../../public/styles/main.css">
     <link rel="stylesheet" href="../styles/registro_styles.css">
+     <link rel="stylesheet" href="<?= $rutaRaiz ?>/plugins/toasts/vanillatoasts.css">
 </head>
 
 <body>
@@ -30,7 +31,7 @@ include("../../config/config.php");
                     <div class="card-header text-center bg-primary text-white">
                         <span class="form-section-title justify-content-center">
                             <i class="bi bi-person-plus-fill section-icon fs-3 me-2"></i>
-                            <span class="fs-4 fw-bold">Registrar Nuevo Empleado</span>
+                            <span class="fs-5 fw-semibold titulo-empleado">Registrar Nuevo Empleado</span>
                         </span>
                     </div>
                     <div class="card-body">
@@ -203,6 +204,7 @@ include("../../config/config.php");
     <!-- JS personalizados -->
     <script src="../../public/js/validaciones.js"></script>
     <script src="../controllers/registro_empleado.js"></script>
+     <script src="<?= $rutaRaiz ?>/plugins/toasts/vanillatoasts.js""></script
 
 </body>
 

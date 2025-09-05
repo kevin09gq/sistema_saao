@@ -18,6 +18,9 @@
 
 <body>
     <?php
+    // Incluir la configuración para las rutas
+    include "../../config/config.php";
+    // Incluir el navbar
     include "../../public/views/navbar.php"
     ?>
 

@@ -1,4 +1,5 @@
 <?php
+include("../../config/config.php");
 include("../../conexion/conexion.php");
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -43,7 +44,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // VALIDAR CAMPOS OBLIGATORIOS
     // =============================
     if (empty($clave_empleado) || empty($nombre) || empty($ap_paterno) || empty($sexo)) {
-        exit("Error: Todos los campos obligatorios deben estar llenos.");
+
+         $respuesta = array(
+            "title" => "ADVERTENCIA",
+            "text" => "Existen campos obligatorios vacíos.",
+            "type" => "warning",
+            "icon" => $rutaRaiz . "plugins/toasts/icons/icon_warning.png",
+            "timeout" => 3000,
+        );
+        header('Content-Type: application/json');
+        echo json_encode($respuesta);
+        exit();
+    }
+
+    // =============================
+    // VALIDAR CONTACTO DE EMERGENCIA
+    // =============================
+    // Verificar si se llenó algún campo del contacto de emergencia
+    $alguno_contacto_lleno = !empty($emergencia_nombre) || !empty($emergencia_ap_paterno) || 
+                            !empty($emergencia_ap_materno) || !empty($emergencia_parentesco) || 
+                            !empty($emergencia_telefono) || !empty($emergencia_domicilio);
+    
+    // Si se llenó algún campo, verificar que esté el nombre completo
+    if ($alguno_contacto_lleno) {
+        if (empty($emergencia_nombre) || empty($emergencia_ap_paterno) || empty($emergencia_ap_materno)) {
+            $respuesta = array(
+                "title" => "ADVERTENCIA",
+                "text" => "Si proporciona información del contacto de emergencia, debe incluir el nombre completo (nombre, apellido paterno y apellido materno).",
+                "type" => "warning",
+                "icon" => $rutaRaiz . "plugins/toasts/icons/icon_warning.png",
+                "timeout" => 4000,
+            );
+            header('Content-Type: application/json');
+            echo json_encode($respuesta);
+            exit();
+        }
     }
 
     // =============================
@@ -57,7 +92,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $sql->close();
 
     if ($id_empleado_existente) {
-        exit("Error: La clave de empleado ya existe.");
+        $respuesta = array(
+            "title" => "ADVERTENCIA",
+            "text" => "La clave de empleado ya existe.",
+            "type" => "warning",
+            "icon" => $rutaRaiz . "plugins/toasts/icons/icon_warning.png",
+            "timeout" => 3000,
+        );
+        header('Content-Type: application/json');
+        echo json_encode($respuesta);
+        exit();
     }
 
     // =============================
@@ -154,5 +198,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sqlRel->close();
     }
 
-    echo "Empleado registrado correctamente.";
+    $respuesta = array(
+        "success" => true,
+        "title" => "ÉXITO",
+        "text" => "Empleado registrado correctamente.",
+        "type" => "success",
+        "icon" => $rutaRaiz . "plugins/toasts/icons/icon_success.png",
+        "timeout" => 3000,
+    );
+    header('Content-Type: application/json');
+    echo json_encode($respuesta);
 }

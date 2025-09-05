@@ -66,6 +66,7 @@ try {
     if (move_uploaded_file($archivo['tmp_name'], $ruta_completa)) {
         
         // Actualizar la base de datos con la nueva ruta
+        // La ruta debe ser relativa al directorio raíz para que se pueda acceder desde el frontend
         $ruta_relativa = 'fotos_empleados/' . $nombre_archivo;
         $stmt_actualizar = $conexion->prepare("UPDATE info_empleados SET ruta_foto = ? WHERE id_empleado = ?");
         $stmt_actualizar->bind_param("si", $ruta_relativa, $id_empleado);
@@ -73,27 +74,43 @@ try {
         if ($stmt_actualizar->execute()) {
             
             // Eliminar la foto anterior si existe
-            if ($foto_anterior && $foto_anterior['ruta_foto'] && file_exists($directorio_fotos . $foto_anterior['ruta_foto'])) {
-                unlink($directorio_fotos . $foto_anterior['ruta_foto']);
+            if ($foto_anterior && $foto_anterior['ruta_foto']) {
+                // Construir la ruta completa del archivo anterior
+                $ruta_archivo_anterior = __DIR__ . '/../../' . $foto_anterior['ruta_foto'];
+                if (file_exists($ruta_archivo_anterior)) {
+                    unlink($ruta_archivo_anterior);
+                }
             }
             
-            echo json_encode([
+            // Devolver una respuesta JSON válida
+            $response = [
                 'success' => true, 
                 'message' => 'Foto actualizada correctamente',
-                'nombre_archivo' => $ruta_relativa
-            ]);
+                'ruta_foto' => $ruta_relativa
+            ];
+            echo json_encode($response);
+            exit;
             
         } else {
             // Si falla la actualización en BD, eliminar archivo subido
-            unlink($ruta_completa);
+            if (file_exists($ruta_completa)) {
+                unlink($ruta_completa);
+            }
             echo json_encode(['success' => false, 'message' => 'Error al actualizar la base de datos']);
+            exit;
         }
         
     } else {
         echo json_encode(['success' => false, 'message' => 'Error al guardar el archivo']);
+        exit;
     }
 
 } catch (Exception $e) {
-    echo json_encode(['success' => false, 'message' => 'Error interno del servidor']);
+    // En caso de error, intentar eliminar el archivo si fue creado
+    if (isset($ruta_completa) && file_exists($ruta_completa)) {
+        unlink($ruta_completa);
+    }
+    echo json_encode(['success' => false, 'message' => 'Error interno del servidor: ' . $e->getMessage()]);
+    exit;
 }
 ?>

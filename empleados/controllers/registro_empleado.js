@@ -1,4 +1,5 @@
 const rutaRaiz = '/sistema_saao/';
+const rutaPlugins = '/sistema_saao/';
 $(document).ready(function () {
     // Funciones de validación
     validarDatos("#nombre_trabajador", validarNombre);
@@ -78,7 +79,7 @@ $(document).ready(function () {
         });
     }
 
-     //Funcion para obtener las Areas
+    //Funcion para obtener las Areas
     function obtenerEmpresa() {
         $.ajax({
             type: "GET",
@@ -102,7 +103,7 @@ $(document).ready(function () {
         });
     }
 
-     //Funcion para obtener las Areas
+    //Funcion para obtener las Areas
     function obtenerPuesto() {
         $.ajax({
             type: "GET",
@@ -127,6 +128,31 @@ $(document).ready(function () {
     }
 
 
+    // Función para limpiar el formulario después de un registro exitoso
+    function limpiarFormulario() {
+        // Limpiar campos de texto
+        $("#clave_trabajador, #nombre_trabajador, #apellido_paterno, #apellido_materno").val("");
+        $("#domicilio_trabajador, #imss_trabajador, #curp_trabajador, #grupo_sanguineo_trabajador").val("");
+        $("#enfermedades_alergias_trabajador, #fecha_ingreso_trabajador, #num_casillero, #fecha_nacimiento").val("");
+        
+        // Limpiar campos de contacto de emergencia
+        $("#nombre_emergencia, #ap_paterno_emergencia, #ap_materno_emergencia").val("");
+        $("#parentesco_emergencia, #telefono_emergencia, #domicilio_emergencia").val("");
+        
+        // Resetear selects a su opción por defecto
+        $("#sexo_trabajador").val("");
+        $("#departamento_trabajador").val("");
+        $("#area_trabajador").val("");
+        $("#puesto_trabajador").val("");
+        $("#empresa_trabajador").val("");
+        
+        // Remover clases de validación
+        $("input, select, textarea").removeClass('border-success border-danger');
+        
+        // Opcional: hacer scroll hacia arriba del formulario
+        $("html, body").animate({ scrollTop: 0 }, 500);
+    }
+
     // Asocia el evento submit al formulario (correcto para enviar datos después)
     function registrarEmpleado() {
         $("#form_registro_empleado").on("submit", function (e) {
@@ -148,7 +174,7 @@ $(document).ready(function () {
             const fecha_ingreso = $("#fecha_ingreso_trabajador").val();
             const id_departamento = $("#departamento_trabajador").val();
             const num_casillero = $("#num_casillero").val().trim();
-            
+
             // Nuevos campos opcionales
             const id_area = $("#area_trabajador").val();
             const id_puestoEspecial = $("#puesto_trabajador").val(); // Cambiado de id_puesto a id_puestoEspecial
@@ -184,12 +210,25 @@ $(document).ready(function () {
             if (emergencia_telefono && !validarTelefono(emergencia_telefono)) opcionalesValidos = false;
 
             if (!obligatoriosValidos) {
-                console.log("Existen campos obligatorios vacíos o incorrectos.");
+                VanillaToasts.create({
+                    title: 'ADVERTENCIA!',
+                    text: 'Existen campos obligatorios vacíos o incorrectos.',
+                    type: 'warning', //valores aceptados: success, warning, info, error
+                    icon: rutaPlugins + 'plugins/toasts/icons/icon_warning.png',
+                    timeout: 3000, // visible 3 segundos
+                });
                 return;
             }
 
             if (!opcionalesValidos) {
-                console.log("Hay datos opcionales incorrectos.");
+                
+                VanillaToasts.create({
+                    title: 'ADVERTENCIA!',
+                    text: 'Hay datos opcionales incorrectos.',
+                    type: 'warning', //valores aceptados: success, warning, info, error
+                    icon: rutaPlugins + 'plugins/toasts/icons/icon_warning.png',
+                    timeout: 3000, // visible 3 segundos
+                });
                 return;
             }
 
@@ -208,13 +247,13 @@ $(document).ready(function () {
                 fecha_ingreso: fecha_ingreso || "",
                 id_departamento: id_departamento || "",
                 num_casillero: num_casillero || "",
-                
+
                 // Nuevos campos opcionales
                 fecha_nacimiento: fecha_nacimiento || "",
                 id_area: id_area || "",
                 id_puestoEspecial: id_puestoEspecial || "", // Cambiado de id_puesto a id_puestoEspecial
                 id_empresa: id_empresa || "",
-                
+
                 emergencia_nombre: emergencia_nombre || "",
                 emergencia_ap_paterno: emergencia_ap_paterno || "",
                 emergencia_ap_materno: emergencia_ap_materno || "",
@@ -228,9 +267,44 @@ $(document).ready(function () {
                 url: "../php/registro_empleado.php",
                 data: datos,
                 success: function (response) {
-                    if (!response.error) {
-                        console.log(response);
+                    try {
+                        // Intentar parsear la respuesta como JSON
+                        let respuesta = typeof response === 'string' ? JSON.parse(response) : response;
+                        
+                        // Mostrar el toast con la respuesta del servidor
+                        VanillaToasts.create({
+                            title: respuesta.title,
+                            text: respuesta.text,
+                            type: respuesta.type,
+                            icon: respuesta.icon,
+                            timeout: respuesta.timeout
+                        });
+                        
+                        // Si el registro fue exitoso, limpiar el formulario
+                        if (respuesta.success) {
+                            limpiarFormulario();
+                        }
+                    } catch (e) {
+                        // Si no es JSON válido, mostrar mensaje de error
+                        VanillaToasts.create({
+                            title: 'ERROR',
+                            text: 'Error en la respuesta del servidor.',
+                            type: 'error',
+                            icon: rutaPlugins + 'plugins/toasts/icons/icon_error.png',
+                            timeout: 3000
+                        });
+                        console.error('Error parsing response:', e);
                     }
+                },
+                error: function (xhr, status, error) {
+                    VanillaToasts.create({
+                        title: 'ERROR',
+                        text: 'Error de conexión con el servidor.',
+                        type: 'error',
+                        icon: rutaPlugins + 'plugins/toasts/icons/icon_error.png',
+                        timeout: 3000
+                    });
+                    console.error('AJAX Error:', error);
                 }
             });
         })

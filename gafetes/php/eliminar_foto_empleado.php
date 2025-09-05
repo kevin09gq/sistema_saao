@@ -35,9 +35,8 @@ try {
         
         // Eliminar el archivo físico si existe
         if ($ruta_foto) {
-            // Extraer el nombre del archivo de la ruta completa
-            $nombre_archivo = basename($ruta_foto);
-            $ruta_archivo = '../fotos_empleados/' . $nombre_archivo;
+            // Construir la ruta completa del archivo
+            $ruta_archivo = __DIR__ . '/../../' . $ruta_foto;
             
             if (file_exists($ruta_archivo)) {
                 if (unlink($ruta_archivo)) {
@@ -45,31 +44,37 @@ try {
                         'success' => true, 
                         'message' => 'Foto eliminada correctamente'
                     ]);
+                    exit;
                 } else {
                     // Aunque el archivo no se pudo eliminar, la BD se actualizó
                     echo json_encode([
                         'success' => true, 
-                        'message' => 'Referencia eliminada (archivo no encontrado)'
+                        'message' => 'Referencia eliminada (no se pudo eliminar el archivo físico)'
                     ]);
+                    exit;
                 }
             } else {
                 echo json_encode([
                     'success' => true, 
                     'message' => 'Referencia eliminada (archivo no encontrado)'
                 ]);
+                exit;
             }
         } else {
             echo json_encode([
                 'success' => true, 
                 'message' => 'No había foto para eliminar'
             ]);
+            exit;
         }
         
     } else {
         echo json_encode(['success' => false, 'message' => 'Error al actualizar la base de datos']);
+        exit;
     }
 
 } catch (Exception $e) {
-    echo json_encode(['success' => false, 'message' => 'Error interno del servidor']);
+    echo json_encode(['success' => false, 'message' => 'Error interno del servidor: ' . $e->getMessage()]);
+    exit;
 }
 ?>

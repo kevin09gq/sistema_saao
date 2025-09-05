@@ -1450,6 +1450,100 @@ $(document).ready(function () {
     }
 
     // ======================================
+    // FUNCIÓN DE ALERTA ESTILO GAFETES
+    // ======================================
+    
+    // Función para mostrar alertas (compatible con otras partes del sistema)
+    function mostrarAlerta(mensaje, tipo = 'info') {
+        // Reutilizar la función mostrarAlertaGafete ya existente
+        mostrarAlertaGafete(mensaje, tipo);
+    }
+    
+    // Función para mostrar alertas específicas de gafetes (mismo estilo que fotos)
+    function mostrarAlertaGafete(mensaje, tipo = 'info') {
+        const alerta = document.createElement('div');
+        alerta.className = `alerta-gafete alerta-${tipo}`;
+        alerta.innerHTML = `
+            <div class="alerta-content">
+                <i class="bi bi-${tipo === 'warning' ? 'exclamation-triangle-fill' : tipo === 'danger' || tipo === 'error' ? 'x-circle-fill' : 'info-circle-fill'}"></i>
+                <span>${mensaje}</span>
+                <button type="button" class="btn-close-alerta">×</button>
+            </div>
+        `;
+        
+        document.body.appendChild(alerta);
+        
+        // Mostrar con animación
+        setTimeout(() => {
+            alerta.classList.add('show');
+        }, 100);
+        
+        // Configurar botón de cerrar
+        alerta.querySelector('.btn-close-alerta').addEventListener('click', () => {
+            alerta.classList.remove('show');
+            setTimeout(() => {
+                if (alerta.parentNode) {
+                    alerta.parentNode.removeChild(alerta);
+                }
+            }, 300);
+        });
+        
+        // Auto-cerrar después de 5 segundos
+        setTimeout(() => {
+            if (alerta.parentNode) {
+                alerta.classList.remove('show');
+                setTimeout(() => {
+                    if (alerta.parentNode) {
+                        alerta.parentNode.removeChild(alerta);
+                    }
+                }, 300);
+            }
+        }, 5000);
+    }
+    
+    // Función para mostrar alertas específicas de gafetes (mismo estilo que fotos)
+    function mostrarAlertaGafete(mensaje, tipo = 'info') {
+        const alerta = document.createElement('div');
+        alerta.className = `alerta-gafete alerta-${tipo}`;
+        alerta.innerHTML = `
+            <div class="alerta-content">
+                <i class="bi bi-${tipo === 'warning' ? 'exclamation-triangle-fill' : tipo === 'danger' ? 'x-circle-fill' : 'info-circle-fill'}"></i>
+                <span>${mensaje}</span>
+                <button type="button" class="btn-close-alerta">×</button>
+            </div>
+        `;
+        
+        document.body.appendChild(alerta);
+        
+        // Mostrar con animación
+        setTimeout(() => {
+            alerta.classList.add('show');
+        }, 100);
+        
+        // Configurar botón de cerrar
+        alerta.querySelector('.btn-close-alerta').addEventListener('click', () => {
+            alerta.classList.remove('show');
+            setTimeout(() => {
+                if (alerta.parentNode) {
+                    alerta.parentNode.removeChild(alerta);
+                }
+            }, 300);
+        });
+        
+        // Auto-cerrar después de 5 segundos
+        setTimeout(() => {
+            if (alerta.parentNode) {
+                alerta.classList.remove('show');
+                setTimeout(() => {
+                    if (alerta.parentNode) {
+                        alerta.parentNode.removeChild(alerta);
+                    }
+                }, 300);
+            }
+        }, 5000);
+    }
+    
+    // ======================================
     // FUNCIONES DE VALIDACIÓN
     // ======================================
 
@@ -1747,20 +1841,26 @@ $(document).ready(function () {
     });
 
     // ======================================
-    // FUNCIONALIDAD DE FOTO EN MODAL
-    // ======================================
 
     // Función para cargar y mostrar la foto actual del empleado
     function cargarFotoEmpleado(empleado) {
         const $fotoPreview = $('#foto_preview');
         const $noFotoPreview = $('#no_foto_preview');
         
-        if (empleado.ruta_foto) {
+        console.log('Datos del empleado recibidos en cargarFotoEmpleado:', empleado);
+        console.log('Ruta de foto:', empleado.ruta_foto);
+        
+        // Store employee data globally for access in other functions
+        window.empleadoActual = empleado;
+        
+        if (empleado.ruta_foto && empleado.ruta_foto.trim() !== '') {
+            console.log('Mostrando foto:', empleado.ruta_foto);
             $fotoPreview.attr('src', empleado.ruta_foto);
             $fotoPreview.show();
             $noFotoPreview.hide();
             $('#btn_eliminar_foto').prop('disabled', false);
         } else {
+            console.log('No hay foto disponible');
             $fotoPreview.hide();
             $noFotoPreview.show();
             $('#btn_eliminar_foto').prop('disabled', true);
@@ -1807,6 +1907,9 @@ $(document).ready(function () {
         const file = fileInput.files[0];
         const idEmpleado = $('#empleado_id').val();
         
+        console.log('Intentando subir foto:', file);
+        console.log('ID Empleado:', idEmpleado);
+        
         if (!file || !idEmpleado) {
             mostrarAlerta('Seleccione una foto e intente de nuevo', 'warning');
             return;
@@ -1823,17 +1926,26 @@ $(document).ready(function () {
         $btnSubir.prop('disabled', true);
         
         $.ajax({
-            url: '../empleados/php/subir_foto.php',
+            url: 'php/subir_foto_empleado.php',
             type: 'POST',
             data: formData,
             processData: false,
             contentType: false,
             success: function(response) {
+                console.log('Respuesta del servidor:', response);
                 try {
-                    const result = JSON.parse(response);
+                    // Handle both JSON and plain text responses
+                    let result;
+                    if (typeof response === 'string') {
+                        result = JSON.parse(response);
+                    } else {
+                        result = response;
+                    }
+                    console.log('Resultado parseado:', result);
                     if (result.success) {
                         mostrarAlerta('Foto subida correctamente', 'success');
                         // Actualizar la vista previa de la foto
+                        console.log('Actualizando vista previa con ruta:', result.ruta_foto);
                         $('#foto_preview').attr('src', result.ruta_foto).show();
                         $('#no_foto_preview').hide();
                         $('#btn_eliminar_foto').prop('disabled', false);
@@ -1841,14 +1953,27 @@ $(document).ready(function () {
                         $('#nueva_foto').val('');
                         $('#nueva_foto_preview_container').hide();
                         $('#btn_subir_foto').prop('disabled', true);
+                        
+                        // Actualizar también la ruta de foto en el objeto empleado actual
+                        // para que se refleje en otros lugares donde se use
+                        if (typeof window.empleadoActual !== 'undefined') {
+                            window.empleadoActual.ruta_foto = result.ruta_foto;
+                        }
+                        
+                        // Forzar la actualización de la imagen para evitar problemas de caché
+                        $('#foto_preview').attr('src', result.ruta_foto + '?t=' + new Date().getTime());
                     } else {
                         mostrarAlerta(result.message || 'Error al subir la foto', 'error');
                     }
                 } catch (e) {
+                    console.error('Error al procesar la respuesta del servidor:', e);
+                    console.error('Respuesta recibida:', response);
                     mostrarAlerta('Error al procesar la respuesta del servidor', 'error');
                 }
             },
             error: function(xhr, status, error) {
+                console.error('Error al subir la foto:', error);
+                console.log('Detalles del error:', xhr, status);
                 mostrarAlerta('Error al subir la foto: ' + error, 'error');
             },
             complete: function() {
@@ -1862,6 +1987,8 @@ $(document).ready(function () {
     // Event listener para eliminar foto
     $('#btn_eliminar_foto').on('click', function() {
         const idEmpleado = $('#empleado_id').val();
+        
+        console.log('Intentando eliminar foto para empleado ID:', idEmpleado);
         
         if (!idEmpleado) {
             mostrarAlerta('No se puede eliminar la foto: ID de empleado no encontrado', 'warning');
@@ -1879,30 +2006,29 @@ $(document).ready(function () {
         $btnEliminar.prop('disabled', true);
         
         $.ajax({
-            url: '../empleados/php/eliminar_foto.php',
+            url: 'php/eliminar_foto_empleado.php',
             type: 'POST',
             data: { id_empleado: idEmpleado },
-            success: function(response) {
-                try {
-                    const result = JSON.parse(response);
-                    if (result.success) {
-                        mostrarAlerta('Foto eliminada correctamente', 'success');
-                        // Actualizar la vista previa
-                        $('#foto_preview').hide();
-                        $('#no_foto_preview').show();
-                        $('#btn_eliminar_foto').prop('disabled', true);
-                        // Limpiar el input y la vista previa de nueva foto
-                        $('#nueva_foto').val('');
-                        $('#nueva_foto_preview_container').hide();
-                        $('#btn_subir_foto').prop('disabled', true);
-                    } else {
-                        mostrarAlerta(result.message || 'Error al eliminar la foto', 'error');
-                    }
-                } catch (e) {
-                    mostrarAlerta('Error al procesar la respuesta del servidor', 'error');
+            dataType: 'json', // Especificar que esperamos JSON
+            success: function(result) {
+                console.log('Respuesta del servidor al eliminar foto:', result);
+                if (result.success) {
+                    mostrarAlerta('Foto eliminada correctamente', 'success');
+                    // Actualizar la vista previa
+                    $('#foto_preview').hide();
+                    $('#no_foto_preview').show();
+                    $('#btn_eliminar_foto').prop('disabled', true);
+                    // Limpiar el input y la vista previa de nueva foto
+                    $('#nueva_foto').val('');
+                    $('#nueva_foto_preview_container').hide();
+                    $('#btn_subir_foto').prop('disabled', true);
+                } else {
+                    mostrarAlerta(result.message || 'Error al eliminar la foto', 'error');
                 }
             },
             error: function(xhr, status, error) {
+                console.error('Error al eliminar la foto:', error);
+                console.log('Detalles del error:', xhr, status);
                 mostrarAlerta('Error al eliminar la foto: ' + error, 'error');
             },
             complete: function() {

@@ -3,6 +3,7 @@ include("../conexion/conexion.php");
 ?>
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,13 +15,19 @@ include("../conexion/conexion.php");
     <link rel="stylesheet" href="css/logos-gafetes.css">
     <link rel="stylesheet" href="../public/styles/main.css">
 </head>
+
 <body>
-    <!-- Incluir la barra de navegación -->
-    <?php include("../public/views/navbar.php"); ?>
-    
+     <?php
+    // Incluir la configuración para las rutas
+    include "../config/config.php";
+    // Incluir el navbar
+    include "../public/views/navbar.php"
+    ?>
+
+
     <div class="container mt-4">
         <h2 class="text-center mb-4">Generador de Gafetes</h2>
-        
+
         <div class="row">
             <div class="col-md-4">
                 <div class="card">
@@ -37,7 +44,7 @@ include("../conexion/conexion.php");
                     </div>
                 </div>
             </div>
-            
+
             <div class="col-md-8">
                 <div class="card">
                     <!-- Encabezado con título y búsqueda -->
@@ -52,7 +59,7 @@ include("../conexion/conexion.php");
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Barra de acciones -->
                     <div class="card-header bg-light border-bottom py-2">
                         <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3">
@@ -141,17 +148,17 @@ include("../conexion/conexion.php");
                         <i class="bi bi-info-circle-fill me-2"></i>
                         Seleccione los empleados y sus respectivas fotos. Puede seleccionar varias fotos a la vez.
                     </div>
-                    
+
                     <div id="listaEmpleadosSeleccionados" class="mb-3">
                         <!-- Aquí se mostrarán los empleados seleccionados -->
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="fotosEmpleados" class="form-label">Seleccionar Fotos</label>
                         <input class="form-control" type="file" id="fotosEmpleados" multiple accept="image/*">
                         <div class="form-text">Seleccione las fotos correspondientes a los empleados seleccionados.</div>
                     </div>
-                    
+
                     <div id="vistaPreviaFotos" class="row g-2">
                         <!-- Aquí se mostrará la vista previa de las fotos seleccionadas -->
                     </div>
@@ -185,7 +192,7 @@ include("../conexion/conexion.php");
                             <small>Actualice los logos de las empresas y áreas. Estos logos aparecerán en los gafetes correspondientes.</small>
                         </div>
                     </div>
-                    
+
                     <!-- Pestañas para Empresas y Áreas -->
                     <ul class="nav nav-tabs" id="logosTabs" role="tablist">
                         <li class="nav-item" role="presentation">
@@ -199,7 +206,7 @@ include("../conexion/conexion.php");
                             </button>
                         </li>
                     </ul>
-                    
+
                     <!-- Contenido de las pestañas -->
                     <div class="tab-content" id="logosTabContent">
                         <!-- Pestaña de Empresas -->
@@ -218,7 +225,7 @@ include("../conexion/conexion.php");
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Pestaña de Áreas -->
                         <div class="tab-pane fade" id="areas" role="tabpanel" aria-labelledby="areas-tab">
                             <div class="card border-0">
@@ -292,11 +299,11 @@ include("../conexion/conexion.php");
                             <small>A continuación se muestran las fotos de los empleados seleccionados.</small>
                         </div>
                     </div>
-                    
+
                     <div id="listaEmpleadosFotos" class="mb-3">
                         <!-- Aquí se mostrará la lista de empleados seleccionados -->
                     </div>
-                    
+
                     <div id="contenidoFotos" class="border rounded p-3 bg-light">
                         <!-- Aquí se mostrarán las fotos -->
                     </div>
@@ -513,22 +520,22 @@ include("../conexion/conexion.php");
                                                 <div class="mb-4">
                                                     <h6 class="mb-3">Foto Actual</h6>
                                                     <div id="foto_preview_container" class="d-inline-block">
-                                                        <img id="foto_preview" src="" alt="Foto del empleado" 
-                                                             class="img-thumbnail" 
-                                                             style="width: 200px; height: 240px; object-fit: cover; display: none;">
+                                                        <img id="foto_preview" src="" alt="Foto del empleado"
+                                                            class="img-thumbnail"
+                                                            style="width: 200px; height: 240px; object-fit: cover; display: none;">
                                                         <div id="no_foto_preview" class="text-muted">
                                                             <i class="bi bi-person-circle" style="font-size: 100px;"></i>
                                                             <p class="mt-2">No hay foto disponible</p>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <!-- Input para subir nueva foto -->
                                                 <div class="mb-4">
                                                     <label for="nueva_foto" class="form-label">Seleccionar nueva foto</label>
                                                     <div class="input-group">
-                                                        <input type="file" class="form-control" id="nueva_foto" name="nueva_foto" 
-                                                               accept="image/*" capture="environment">
+                                                        <input type="file" class="form-control" id="nueva_foto" name="nueva_foto"
+                                                            accept="image/*" capture="environment">
                                                         <label class="input-group-text" for="nueva_foto">
                                                             <i class="bi bi-folder2-open"></i>
                                                         </label>
@@ -537,15 +544,15 @@ include("../conexion/conexion.php");
                                                         Formatos permitidos: JPG, PNG, GIF. Tamaño máximo: 5MB
                                                     </div>
                                                 </div>
-                                                
+
                                                 <!-- Vista previa de la nueva foto -->
                                                 <div class="mb-4" id="nueva_foto_preview_container" style="display: none;">
                                                     <h6>Vista previa de la nueva foto:</h6>
-                                                    <img id="nueva_foto_preview" src="" alt="Vista previa" 
-                                                         class="img-thumbnail" 
-                                                         style="width: 200px; height: 240px; object-fit: cover;">
+                                                    <img id="nueva_foto_preview" src="" alt="Vista previa"
+                                                        class="img-thumbnail"
+                                                        style="width: 200px; height: 240px; object-fit: cover;">
                                                 </div>
-                                                
+
                                                 <!-- Botones de acción -->
                                                 <div class="d-flex justify-content-center gap-3">
                                                     <button type="button" id="btn_subir_foto" class="btn btn-success" disabled>
@@ -633,4 +640,5 @@ include("../conexion/conexion.php");
     <script src="js/subirFotos.js"></script>
     <script src="js/generarFotos.js"></script>
 </body>
+
 </html>

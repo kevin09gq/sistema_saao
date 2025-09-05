@@ -29,8 +29,6 @@ $(document).ready(function () {
         });
     }
 
-
-
     function obtenerDatosEmpleados() {
         $.ajax({
             type: "POST",
