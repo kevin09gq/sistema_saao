@@ -8,6 +8,21 @@ $(document).ready(function () {
     filtrosBusqueda();
     setValoresModal();
 
+    // Función para formatear texto a mayúsculas mientras se escribe
+    function formatearMayusculas(selector) {
+        $(selector).on('input', function () {
+            // Obtener la posición actual del cursor
+            const cursorPosition = this.selectionStart;
+            // Convertir el valor a mayúsculas
+            const valorMayusculas = $(this).val().toUpperCase();
+            // Establecer el nuevo valor
+            $(this).val(valorMayusculas);
+            // Restaurar la posición del cursor
+            this.setSelectionRange(cursorPosition, cursorPosition);
+        });
+    };
+
+
     // Se Obtienen los departamentos
     function getDepartamentos() {
         $.ajax({
@@ -305,6 +320,18 @@ $(document).ready(function () {
                         validarDatos($("#modal_emergencia_ap_materno"), validarApellido);
                         validarDatos($("#modal_emergencia_telefono"), validarTelefono);
                         validarDatos($("#modal_emergencia_parentesco"), validarParentesco);
+
+                        // Aplicar formateo a mayúsculas para los campos requeridos
+                        formatearMayusculas("#modal_clave_empleado");
+                        formatearMayusculas("#modal_nombre_empleado");
+                        formatearMayusculas("#modal_apellido_paterno");
+                        formatearMayusculas("#modal_apellido_materno");
+                        formatearMayusculas("#modal_curp");
+                        
+                        // Formatear campos del contacto de emergencia a mayúsculas
+                        formatearMayusculas("#modal_emergencia_nombre");
+                        formatearMayusculas("#modal_emergencia_ap_paterno");
+                        formatearMayusculas("#modal_emergencia_ap_materno");
 
                     }
 
