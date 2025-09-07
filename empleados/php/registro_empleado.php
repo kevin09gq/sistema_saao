@@ -26,6 +26,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_puestoEspecial = $_POST['id_puestoEspecial'] ?? null;
     $id_empresa = $_POST['id_empresa'] ?? null;
 
+    // Campos de salario
+    $salario_diario = $_POST['salario_diario'] ?? null;
+    $salario_mensual = $_POST['salario_mensual'] ?? null;
+
     // Contacto de emergencia
     $emergencia_nombre = $_POST['emergencia_nombre'] ?? null;
     $emergencia_ap_paterno = $_POST['emergencia_ap_paterno'] ?? null;
@@ -112,6 +116,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_puestoEspecial = !empty($id_puestoEspecial) ? (int)$id_puestoEspecial : null;
     $id_empresa = !empty($id_empresa) ? (int)$id_empresa : null;
 
+    // Convertir salarios a decimal o null
+    $salario_diario = !empty($salario_diario) ? (float)$salario_diario : null;
+    $salario_mensual = !empty($salario_mensual) ? (float)$salario_mensual : null;
+
     // =============================
     // INSERTAR EMPLEADO
     // =============================
@@ -120,12 +128,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             id_rol, id_status, nombre, ap_paterno, ap_materno, domicilio,
             imss, curp, sexo, enfermedades_alergias, grupo_sanguineo,
             fecha_ingreso, fecha_nacimiento, num_casillero, id_departamento, 
-            id_area, id_puestoEspecial, id_empresa, clave_empleado
-        ) VALUES (2, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            id_area, id_puestoEspecial, id_empresa, clave_empleado, salario_semanal, salario_mensual
+        ) VALUES (2, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     );
 
     $sql->bind_param(
-        "sssssssssssssiiis", // 17 parámetros: 13 strings + 4 enteros
+        "sssssssssssssiiisdd", // 19 parámetros: 13 strings + 4 enteros + 2 decimales
         $nombre,
         $ap_paterno,
         $ap_materno,
@@ -142,7 +150,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id_area,
         $id_puestoEspecial,
         $id_empresa,
-        $clave_empleado
+        $clave_empleado,
+        $salario_diario,
+        $salario_mensual
     );
 
     if (!$sql->execute()) {

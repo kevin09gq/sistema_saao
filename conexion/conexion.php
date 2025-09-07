@@ -1,4 +1,4 @@
 <?php
-$conexion = mysqli_connect("localhost", "root", "cuates2003", "control_nomina");
+$conexion = mysqli_connect("localhost", "root", "cuates2003", "sistema_nomina");
 
 ?>

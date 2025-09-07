@@ -151,6 +151,10 @@ $(document).ready(function () {
                         let idEmpresa = empleado.id_empresa;
                         let idArea = empleado.id_area;
                         let idPuesto = empleado.id_puesto;
+                        
+                        // Campos de salario
+                        let salarioSemanal = empleado.salario_semanal;
+                        let salarioMensual = empleado.salario_mensual;
 
                         let nombreContacto = empleado.nombre_contacto;
                         let apPaternoContacto = empleado.apellido_paterno_contacto;
@@ -176,6 +180,10 @@ $(document).ready(function () {
                         // Nuevos campos
                         $("#modal_fecha_nacimiento").val(fechaNacimiento);
                         $("#modal_num_casillero").val(numCasillero);
+                        
+                        // Campos de salario
+                        $("#modal_salario_semanal").val(salarioSemanal);
+                        $("#modal_salario_mensual").val(salarioMensual);
 
                         $("#modal_emergencia_nombre").val(nombreContacto);
                         $("#modal_emergencia_ap_paterno").val(apPaternoContacto);
@@ -340,6 +348,10 @@ $(document).ready(function () {
         let idEmpresa = $("#modal_empresa").val();
         let idArea = $("#modal_area").val();
         let idPuesto = $("#modal_puesto").val();
+        
+        // Campos de salario
+        let salarioSemanal = $("#modal_salario_semanal").val();
+        let salarioMensual = $("#modal_salario_mensual").val();
 
         // Datos de emergencia
         let emergenciaNombre = $("#modal_emergencia_nombre").val();
@@ -416,6 +428,10 @@ $(document).ready(function () {
             id_empresa: idEmpresa || "",
             id_area: idArea || "",
             id_puestoEspecial: idPuesto || "",
+            
+            // Campos de salario
+            salario_semanal: salarioSemanal || "",
+            salario_mensual: salarioMensual || "",
             
             nombre_contacto: emergenciaNombre || "",
             apellido_paterno_contacto: emergenciaApPaterno || "",

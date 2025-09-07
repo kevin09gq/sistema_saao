@@ -76,7 +76,8 @@ try {
             // Eliminar la foto anterior si existe
             if ($foto_anterior && $foto_anterior['ruta_foto']) {
                 // Construir la ruta completa del archivo anterior
-                $ruta_archivo_anterior = __DIR__ . '/../../' . $foto_anterior['ruta_foto'];
+                // Asegurarse de que la ruta sea correcta en todos los entornos
+                $ruta_archivo_anterior = dirname(__DIR__) . '/' . $foto_anterior['ruta_foto'];
                 if (file_exists($ruta_archivo_anterior)) {
                     unlink($ruta_archivo_anterior);
                 }
@@ -92,11 +93,13 @@ try {
             exit;
             
         } else {
+            // Registrar el error específico
+            $error = $stmt_actualizar->error;
             // Si falla la actualización en BD, eliminar archivo subido
             if (file_exists($ruta_completa)) {
                 unlink($ruta_completa);
             }
-            echo json_encode(['success' => false, 'message' => 'Error al actualizar la base de datos']);
+            echo json_encode(['success' => false, 'message' => 'Error al actualizar la base de datos: ' . $error]);
             exit;
         }
         

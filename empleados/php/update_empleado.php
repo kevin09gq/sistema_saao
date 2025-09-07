@@ -23,6 +23,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_empresa = $_POST['id_empresa'] ?? null;
     $id_area = $_POST['id_area'] ?? null;
     $id_puestoEspecial = $_POST['id_puestoEspecial'] ?? null;
+    
+    // Campos de salario
+    $salario_semanal = $_POST['salario_semanal'] ?? null;
+    $salario_mensual = $_POST['salario_mensual'] ?? null;
 
     // Contacto de emergencia
     $emergencia_nombre = $_POST['nombre_contacto'] ?? null;
@@ -50,6 +54,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_empresa = ($id_empresa === "0" || $id_empresa === 0 || empty($id_empresa)) ? null : (int)$id_empresa;
     $id_area = ($id_area === "0" || $id_area === 0 || empty($id_area)) ? null : (int)$id_area;
     $id_puestoEspecial = ($id_puestoEspecial === "0" || $id_puestoEspecial === 0 || empty($id_puestoEspecial)) ? null : (int)$id_puestoEspecial;
+    
+    // Convertir salarios a decimal o null
+    $salario_semanal = !empty($salario_semanal) ? (float)$salario_semanal : null;
+    $salario_mensual = !empty($salario_mensual) ? (float)$salario_mensual : null;
 
     // Verificar si no hay campos obligatorios vacíos
     if (empty($clave_empleado) || empty($nombre_empleado) || empty($ap_paterno) || empty($ap_materno) || empty($sexo)) {
@@ -154,11 +162,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             id_empresa = ?,
             id_area = ?,
             id_puestoEspecial = ?,
+            salario_semanal = ?,
+            salario_mensual = ?,
             id_departamento = NULL
         WHERE id_empleado = ?");
 
         $update_empleado->bind_param(
-            "sssssssssssssiiii",
+            "sssssssssssssiiiddi",
             $clave_empleado,
             $nombre_empleado,
             $ap_paterno,
@@ -175,6 +185,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id_empresa,
             $id_area,
             $id_puestoEspecial,
+            $salario_semanal,
+            $salario_mensual,
             $id_empleado
         );
     } else {
@@ -197,11 +209,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             id_empresa = ?,
             id_area = ?,
             id_puestoEspecial = ?,
+            salario_semanal = ?,
+            salario_mensual = ?,
             id_departamento = ?
         WHERE id_empleado = ?");
 
         $update_empleado->bind_param(
-            "sssssssssssssiiiii",
+            "sssssssssssssiiiiddi",
             $clave_empleado,
             $nombre_empleado,
             $ap_paterno,
@@ -218,6 +232,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id_empresa,
             $id_area,
             $id_puestoEspecial,
+            $salario_semanal,
+            $salario_mensual,
             $id_departamento,
             $id_empleado
         );

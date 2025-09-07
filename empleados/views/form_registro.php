@@ -144,6 +144,16 @@ include("../../config/config.php");
                                             <input type="date" class="form-control" id="fecha_ingreso_trabajador" name="fecha_ingreso">
                                         </div>
                                     </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="salario_semanal" class="form-label">Salario Semanal</label>
+                                            <input type="number" class="form-control" id="salario_semanal" name="salario_semanal" step="0.01" placeholder="0.00">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="salario_mensual" class="form-label">Salario Mensual</label>
+                                            <input type="number" class="form-control" id="salario_mensual" name="salario_mensual" step="0.01" placeholder="0.00">
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <!-- Tab Contacto de emergencia -->
@@ -185,10 +195,10 @@ include("../../config/config.php");
                                     <i class="bi bi-person-check-fill me-2"></i>
                                     Registrar Empleado
                                 </button>
-                                <a href="../index.php" class="btn btn-danger btn-lg px-5">
+                                <button type="button" class="btn btn-danger btn-lg px-5" id="btn_cancelar_form">
                                     <i class="bi bi-x-circle-fill me-2"></i>
                                     Cancelar
-                                </a>
+                                </button>
                             </div>
                         </form>
                     </div>

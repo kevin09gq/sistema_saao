@@ -74,10 +74,13 @@ document.addEventListener('DOMContentLoaded', function() {
             empleadosSeleccionados = empleadosCompletos;
         }
         
+        // Validar que haya empleados seleccionados
         if (empleadosSeleccionados.length === 0) {
-            mostrarAlerta('Por favor, seleccione al menos un empleado', 'warning');
+            mostrarAlerta('Por favor, seleccione al menos un empleado antes de subir fotos.', 'warning');
             const modal = bootstrap.Modal.getInstance(document.getElementById('modalSubirFotos'));
-            modal.hide();
+            if (modal) {
+                modal.hide();
+            }
             return;
         }
         
@@ -160,6 +163,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 col.querySelector('.btn-delete').addEventListener('click', function() {
                     col.remove();
                     actualizarContadoresFotos();
+                    // Actualizar las opciones de los selectores restantes
+                    actualizarSelectoresEmpleados();
                 });
                 
                 fotosContainer.appendChild(col);
@@ -179,7 +184,52 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
+        
+        // Agregar manejador de eventos para los selectores de empleado
+        setTimeout(() => {
+            const selectores = document.querySelectorAll('.selector-empleado');
+            selectores.forEach(selector => {
+                selector.addEventListener('change', function() {
+                    actualizarSelectoresEmpleados();
+                });
+            });
+        }, 100);
     });
+    
+    // Función para actualizar las opciones de los selectores de empleado
+    function actualizarSelectoresEmpleados() {
+        const empleados = obtenerEmpleadosSeleccionados();
+        const selectores = document.querySelectorAll('.selector-empleado');
+        const empleadosSeleccionados = [];
+        
+        // Obtener los empleados ya seleccionados
+        selectores.forEach(selector => {
+            if (selector.value) {
+                empleadosSeleccionados.push(selector.value);
+            }
+        });
+        
+        // Actualizar las opciones de cada selector
+        selectores.forEach(selector => {
+            const valorActual = selector.value;
+            const indice = selector.dataset.fileIndex;
+            const empleadosDisponibles = empleados.filter(emp => {
+                return !empleadosSeleccionados.includes(emp.id) || emp.id === valorActual;
+            });
+            
+            // Reconstruir las opciones del selector
+            selector.innerHTML = '<option value="" selected disabled>Seleccionar empleado</option>';
+            empleadosDisponibles.forEach(emp => {
+                const option = document.createElement('option');
+                option.value = emp.id;
+                option.textContent = `${emp.nombre} (${emp.clave})`;
+                if (emp.id === valorActual) {
+                    option.selected = true;
+                }
+                selector.appendChild(option);
+            });
+        });
+    }
     
     // Función para actualizar los contadores de fotos
     function actualizarContadoresFotos() {
@@ -193,20 +243,47 @@ document.addEventListener('DOMContentLoaded', function() {
     btnSubir.addEventListener('click', async function() {
         const formData = new FormData();
         let hasValidFiles = false;
+        let hasUnassignedPhotos = false;
+        let hasFiles = false;
         
         // Obtener los archivos del input principal
         const archivos = Array.from(inputFotos.files);
+        hasFiles = archivos.length > 0;
         
-        // Recolectar todas las fotos con sus respectivos empleados
-        archivos.forEach((archivo, index) => {
-            const selector = document.querySelector(`.selector-empleado[data-file-index="${index}"]`);
+        // Verificar si hay fotos sin asignar a empleados
+        const photoCards = document.querySelectorAll('.photo-card');
+        photoCards.forEach((card, index) => {
+            const selector = card.querySelector(`.selector-empleado[data-file-index="${index}"]`);
+            const fileInput = archivos[index];
             
-            if (selector && selector.value && archivo) {
-                formData.append(`fotos[]`, archivo);
+            if (fileInput && (!selector || !selector.value)) {
+                hasUnassignedPhotos = true;
+            }
+            
+            if (selector && selector.value && fileInput) {
+                formData.append(`fotos[]`, fileInput);
                 formData.append(`empleado_id[]`, selector.value);
                 hasValidFiles = true;
             }
         });
+        
+        // Validar que haya empleados seleccionados
+        if (empleadosSeleccionados.length === 0) {
+            mostrarAlerta('Por favor, seleccione al menos un empleado antes de subir fotos.', 'warning');
+            return;
+        }
+        
+        // Validar que se hayan seleccionado archivos
+        if (!hasFiles) {
+            mostrarAlerta('Por favor, seleccione al menos una foto para subir.', 'warning');
+            return;
+        }
+        
+        // Validar que todas las fotos estén asignadas a empleados
+        if (hasUnassignedPhotos) {
+            mostrarAlerta('Por favor, asigne todos los empleados a sus respectivas fotos.', 'warning');
+            return;
+        }
         
         if (!hasValidFiles) {
             mostrarAlerta('Por favor, asigna al menos una foto a un empleado.', 'warning');
@@ -297,25 +374,45 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Función para mostrar alertas
     function mostrarAlerta(mensaje, tipo = 'info') {
+        // Implementación directa de la alerta para evitar problemas de scope
         const alerta = document.createElement('div');
-        alerta.className = `alert alert-${tipo} alert-dismissible fade show`;
-        alerta.role = 'alert';
+        alerta.className = `alerta-gafete alerta-${tipo}`;
         alerta.innerHTML = `
-            ${mensaje}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+            <div class="alerta-content">
+                <i class="bi bi-${tipo === 'warning' ? 'exclamation-triangle-fill' : tipo === 'danger' ? 'x-circle-fill' : 'info-circle-fill'}"></i>
+                <span>${mensaje}</span>
+                <button type="button" class="btn-close-alerta">×</button>
+            </div>
         `;
         
-        // Insertar la alerta al principio del contenedor principal
-        const contenedor = document.querySelector('.container');
-        if (contenedor) {
-            contenedor.insertBefore(alerta, contenedor.firstChild);
-            
-            // Eliminar la alerta después de 5 segundos
+        document.body.appendChild(alerta);
+        
+        // Mostrar con animación
+        setTimeout(() => {
+            alerta.classList.add('show');
+        }, 100);
+        
+        // Configurar botón de cerrar
+        alerta.querySelector('.btn-close-alerta').addEventListener('click', () => {
+            alerta.classList.remove('show');
             setTimeout(() => {
+                if (alerta.parentNode) {
+                    alerta.parentNode.removeChild(alerta);
+                }
+            }, 300);
+        });
+        
+        // Auto-cerrar después de 5 segundos
+        setTimeout(() => {
+            if (alerta.parentNode) {
                 alerta.classList.remove('show');
-                setTimeout(() => alerta.remove(), 150);
-            }, 5000);
-        }
+                setTimeout(() => {
+                    if (alerta.parentNode) {
+                        alerta.parentNode.removeChild(alerta);
+                    }
+                }, 300);
+            }
+        }, 5000);
     }
     
     // Función para mostrar mensaje de éxito discreto

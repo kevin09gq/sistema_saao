@@ -1081,7 +1081,7 @@ $(document).ready(function () {
                 }
                 
                 const $reverso = $(
-                    "<div class=\"gafete\" style=\"transform: rotate(180deg); border:2px solid " + colorArea + " !important;height:9cm !important;min-height:9cm !important;max-height:9cm !important;width:6cm !important;min-width:6cm !important;max-width:6cm !important;font-family:Segoe UI Black;margin-bottom:0!important;margin-top:0!important;padding:0.2cm !important;font-size:6pt !important;overflow:hidden;box-sizing:border-box;\">" +
+                    "<div class=\"gafete\" style=\"border:2px solid " + colorArea + " !important;height:9cm !important;min-height:9cm !important;max-height:9cm !important;width:6cm !important;min-width:6cm !important;max-width:6cm !important;font-family:Segoe UI Black;margin-bottom:0!important;margin-top:0!important;padding:0.2cm !important;font-size:6pt !important;overflow:hidden;box-sizing:border-box;\">" +
                         logoReversoHtml +
                         "<div class=\"gafete-body\" style=\"justify-content: flex-start; font-size:5pt;\">" +
                             "<div style='font-size:6pt;'>" +
@@ -1100,13 +1100,29 @@ $(document).ready(function () {
                     // Si NO tiene IMSS, generar contenedor más pequeño solo para el frente
                     $columna = $('<div style="display:flex;flex-direction:column;justify-content:flex-start;align-items:center;gap:0;margin:0;padding:0;width:6cm !important;min-width:6cm !important;max-width:6cm !important;height:10cm !important;min-height:10cm !important;max-height:10cm !important;position:relative;"></div>');
                 }
-                // Agregar el frente a la columna
-                $columna.append($frente);
                 
+                // Para empleados con IMSS, mostrar primero el reverso y luego el frente
                 if (tieneIMSS) {
-                    // Solo si tiene IMSS, agregar el reverso
-                    // Agregar un pequeño espacio entre frente y reverso
+                    // Agregar el reverso primero (arriba) sin rotación
+                    $columna.append($reverso);
+                    
+                    // Agregar un pequeño espacio entre reverso y frente
                     $columna.append($('<div style="height:0.2cm;"></div>'));
+                    
+                    // Aplicar rotación de 180 grados al frente para que se vea de cabeza
+                    $frente.css({
+                        'transform': 'rotate(180deg)',
+                        'margin': '0 auto',
+                        'padding': '0',
+                        'width': '6cm !important',
+                        'min-width': '6cm !important',
+                        'max-width': '6cm !important',
+                        'height': '9.5cm !important',
+                        'min-height': '9.5cm !important',
+                        'max-height': '9.5cm !important',
+                        'position': 'relative',
+                        'display': 'block'
+                    });
                     
                     // Ajustar estilos para mantener consistencia del gafete completo
                     $reverso.css({
@@ -1121,22 +1137,11 @@ $(document).ready(function () {
                         'position': 'relative',
                         'display': 'block'
                     });
-                    $frente.css({
-                        'margin': '0 auto',
-                        'padding': '0',
-                        'width': '6cm !important',
-                        'min-width': '6cm !important',
-                        'max-width': '6cm !important',
-                        'height': '9.5cm !important',
-                        'min-height': '9.5cm !important',
-                        'max-height': '9.5cm !important',
-                        'display': 'block'
-                    });
                     
-                    // Agregar el reverso debajo del frente
-                    $columna.append($reverso);
+                    // Agregar el frente después (abajo) - de cabeza
+                    $columna.append($frente);
                 } else {
-                    // Si no tiene IMSS, solo ajustar estilos del frente para gafete simplificado
+                    // Para empleados sin IMSS, solo mostrar el frente
                     $frente.css({
                         'margin': '0 auto',
                         'padding': '0',
@@ -1148,6 +1153,7 @@ $(document).ready(function () {
                         'max-height': '9cm !important',
                         'display': 'block'
                     });
+                    $columna.append($frente);
                 }
                 $pagina.append($columna);
             });
@@ -1995,12 +2001,89 @@ $(document).ready(function () {
             return;
         }
         
-        // Confirmar eliminación
-        if (!confirm('¿Está seguro de que desea eliminar la foto de este empleado?')) {
-            return;
+        // Mostrar modal de confirmación personalizado
+        mostrarConfirmacionEliminarFoto(idEmpleado);
+    });
+    
+    // Función para mostrar confirmación personalizada para eliminar foto
+    function mostrarConfirmacionEliminarFoto(idEmpleado) {
+        // Crear el modal de confirmación
+        const modalId = 'modalConfirmacionEliminarFoto';
+        
+        // Eliminar modal existente si lo hay
+        const modalExistente = document.getElementById(modalId);
+        if (modalExistente) {
+            modalExistente.remove();
         }
         
-        const $btnEliminar = $(this);
+        // Crear el nuevo modal
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.id = modalId;
+        modal.tabIndex = -1;
+        modal.setAttribute('aria-labelledby', 'modalConfirmacionEliminarFotoLabel');
+        modal.setAttribute('aria-hidden', 'true');
+        
+        modal.innerHTML = `
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content confirmacion-modal">
+                    <div class="confirmacion-header">
+                        <div class="confirmacion-icon">
+                            <i class="bi bi-trash3-fill"></i>
+                        </div>
+                        <h5 class="confirmacion-title" id="modalConfirmacionEliminarFotoLabel">
+                            Confirmar Eliminación
+                        </h5>
+                    </div>
+                    <div class="confirmacion-body">
+                        <p class="confirmacion-message">
+                            ¿Está seguro de que desea eliminar la foto de este empleado?
+                        </p>
+                        <div class="confirmacion-warning">
+                            <small>Esta acción no se puede deshacer</small>
+                        </div>
+                    </div>
+                    <div class="confirmacion-footer">
+                        <button type="button" class="btn btn-confirmacion btn-cancelar" data-bs-dismiss="modal">
+                            <i class="bi bi-x-lg"></i> Cancelar
+                        </button>
+                        <button type="button" class="btn btn-confirmacion btn-confirmar" id="btnConfirmarEliminarFoto">
+                            <i class="bi bi-trash3"></i> Sí, Eliminar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Agregar el modal al DOM
+        document.body.appendChild(modal);
+        
+        // Configurar eventos
+        const btnConfirmar = modal.querySelector('#btnConfirmarEliminarFoto');
+        btnConfirmar.addEventListener('click', () => {
+            // Cerrar el modal
+            const modalInstance = bootstrap.Modal.getInstance(modal);
+            modalInstance.hide();
+            
+            // Ejecutar la eliminación
+            ejecutarEliminarFoto(idEmpleado);
+        });
+        
+        // Limpiar el modal del DOM cuando se cierre
+        modal.addEventListener('hidden.bs.modal', () => {
+            modal.remove();
+        });
+        
+        // Mostrar el modal
+        const modalInstance = new bootstrap.Modal(modal, {
+            backdrop: 'static',
+            keyboard: false
+        });
+        modalInstance.show();
+    }
+    // Función para ejecutar la eliminación de la foto
+    function ejecutarEliminarFoto(idEmpleado) {
+        const $btnEliminar = $('#btn_eliminar_foto');
         const textoOriginal = $btnEliminar.html();
         $btnEliminar.html('<i class="bi bi-hourglass-split"></i> Eliminando...');
         $btnEliminar.prop('disabled', true);
@@ -2037,7 +2120,7 @@ $(document).ready(function () {
                 $btnEliminar.prop('disabled', false);
             }
         });
-    });
+    }
 
     // Event listener para abrir el modal de editar empleado
     $('#btn_editar_empleado').on('click', function() {
@@ -2130,6 +2213,436 @@ $(document).ready(function () {
     }
     
     // ======================================
+    // FUNCIONES DE VALIDACIÓN
+    // ======================================
+    
+    // Función para validar campos de texto
+    function validarCampoTexto(campo, mensaje) {
+        if (campo.val().trim() === '') {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        return true;
+    }
+
+    // Función para validar campos de correo electrónico
+    function validarCorreoElectronico(campo, mensaje) {
+        const correo = campo.val().trim();
+        if (correo === '') {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        const correoValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!correoValido.test(correo)) {
+            mostrarAlerta('Correo electrónico no válido', 'error');
+            campo.focus();
+            return false;
+        }
+        return true;
+    }
+
+    // Función para validar campos de teléfono
+    function validarTelefono(campo, mensaje) {
+        const telefono = campo.val().trim();
+        if (telefono === '') {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        const telefonoValido = /^\d{10}$/;
+        if (!telefonoValido.test(telefono)) {
+            mostrarAlerta('Teléfono no válido (debe ser de 10 dígitos)', 'error');
+            campo.focus();
+            return false;
+        }
+        return true;
+    }
+
+    // Función para validar campos de contraseña
+    function validarContraseña(campo, mensaje) {
+        const contraseña = campo.val().trim();
+        if (contraseña === '') {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        const contraseñaValida = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+        if (!contraseñaValida.test(contraseña)) {
+            mostrarAlerta('Contraseña no válida (debe tener al menos 8 caracteres, una letra y un número)', 'error');
+            campo.focus();
+            return false;
+        }
+        return true;
+    }
+
+    // Función para validar campos de contraseña coincidentes
+    function validarContraseñasCoincidentes(campo1, campo2, mensaje) {
+        if (campo1.val() !== campo2.val()) {
+            mostrarAlerta(mensaje, 'error');
+            campo2.focus();
+            return false;
+        }
+        return true;
+    }
+
+    // Función para validar campos de foto
+    function validarFoto(campo, mensaje) {
+        const archivo = campo[0].files[0];
+        if (!archivo) {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        const tiposValidos = ['image/jpeg', 'image/png'];
+        if (!tiposValidos.includes(archivo.type)) {
+            mostrarAlerta('Formato de archivo no válido (solo se permiten JPEG y PNG)', 'error');
+            campo.focus();
+            return false;
+        }
+        return true;
+    }
+
+    // Función para validar campos de selección
+    function validarSeleccion(campo, mensaje) {
+        if (campo.val() === '') {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        return true;
+    }
+
+    // Función para validar campos de fecha
+    function validarFecha(campo, mensaje) {
+        const fecha = campo.val().trim();
+        if (fecha === '') {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        const fechaValida = /^\d{4}-\d{2}-\d{2}$/;
+        if (!fechaValida.test(fecha)) {
+            mostrarAlerta('Fecha no válida (debe ser en formato YYYY-MM-DD)', 'error');
+            campo.focus();
+            return false;
+        }
+        return true;
+    }
+
+    // Función para validar campos de número
+    function validarNumero(campo, mensaje) {
+        const numero = campo.val().trim();
+        if (numero === '') {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        const numeroValido = /^\d+$/;
+        if (!numeroValido.test(numero)) {
+            mostrarAlerta('Número no válido', 'error');
+            campo.focus();
+            return false;
+        }
+        return true;
+    }
+
+    // Función para validar campos de número decimal
+    function validarNumeroDecimal(campo, mensaje) {
+        const numero = campo.val().trim();
+        if (numero === '') {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        const numeroValido = /^\d+(\.\d{1,2})?$/;
+        if (!numeroValido.test(numero)) {
+            mostrarAlerta('Número decimal no válido', 'error');
+            campo.focus();
+            return false;
+        }
+        return true;
+    }
+
+    // Función para validar campos de número entero
+    function validarNumeroEntero(campo, mensaje) {
+        const numero = campo.val().trim();
+        if (numero === '') {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        const numeroValido = /^\d+$/;
+        if (!numeroValido.test(numero)) {
+            mostrarAlerta('Número entero no válido', 'error');
+            campo.focus();
+            return false;
+        }
+        return true;
+    }
+
+    // Función para validar campos de número positivo
+    function validarNumeroPositivo(campo, mensaje) {
+        const numero = campo.val().trim();
+        if (numero === '') {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        const numeroValido = /^\d+(\.\d{1,2})?$/;
+        if (!numeroValido.test(numero) || parseFloat(numero) <= 0) {
+            mostrarAlerta('Número positivo no válido', 'error');
+            campo.focus();
+            return false;
+        }
+        return true;
+    }
+
+    // Función para validar campos de número negativo
+    function validarNumeroNegativo(campo, mensaje) {
+        const numero = campo.val().trim();
+        if (numero === '') {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        const numeroValido = /^-\d+(\.\d{1,2})?$/;
+        if (!numeroValido.test(numero)) {
+            mostrarAlerta('Número negativo no válido', 'error');
+            campo.focus();
+            return false;
+        }
+        return true;
+    }
+
+    // Función para validar campos de número entero positivo
+    function validarNumeroEnteroPositivo(campo, mensaje) {
+        const numero = campo.val().trim();
+        if (numero === '') {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        const numeroValido = /^\d+$/;
+        if (!numeroValido.test(numero) || parseInt(numero) <= 0) {
+            mostrarAlerta('Número entero positivo no válido', 'error');
+            campo.focus();
+            return false;
+        }
+        return true;
+    }
+
+    // Función para validar campos de número entero negativo
+    function validarNumeroEnteroNegativo(campo, mensaje) {
+        const numero = campo.val().trim();
+        if (numero === '') {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        const numeroValido = /^-\d+$/;
+        if (!numeroValido.test(numero)) {
+            mostrarAlerta('Número entero negativo no válido', 'error');
+            campo.focus();
+            return false;
+        }
+        return true;
+    }
+
+    // Función para validar campos de texto con longitud mínima
+    function validarTextoMinimo(campo, longitud, mensaje) {
+        if (campo.val().trim().length < longitud) {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        return true;
+    }
+
+    // Función para validar campos de texto con longitud máxima
+    function validarTextoMaximo(campo, longitud, mensaje) {
+        if (campo.val().trim().length > longitud) {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        return true;
+    }
+
+    // Función para validar campos de texto con longitud exacta
+    function validarTextoExacto(campo, longitud, mensaje) {
+        if (campo.val().trim().length !== longitud) {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        return true;
+    }
+
+    // Función para validar campos de texto con expresión regular
+    function validarTextoExpresion(campo, expresion, mensaje) {
+        const texto = campo.val().trim();
+        if (texto === '') {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        if (!expresion.test(texto)) {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        return true;
+    }
+
+    // Función para validar campos de texto con caracteres permitidos
+    function validarTextoPermitidos(campo, caracteres, mensaje) {
+        const texto = campo.val().trim();
+        if (texto === '') {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        if (!/^[\w\s]+$/.test(texto)) {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        return true;
+    }
+
+    // Función para validar campos de texto con caracteres no permitidos
+    function validarTextoNoPermitidos(campo, caracteres, mensaje) {
+        const texto = campo.val().trim();
+        if (texto === '') {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        if (/[^\w\s]/.test(texto)) {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        return true;
+    }
+
+    // Función para validar campos de texto con palabras clave
+    function validarTextoClaves(campo, claves, mensaje) {
+        const texto = campo.val().trim();
+        if (texto === '') {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        const palabras = texto.split(' ');
+        for (let palabra of palabras) {
+            if (!claves.includes(palabra)) {
+                mostrarAlerta(mensaje, 'error');
+                campo.focus();
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Función para validar campos de texto sin palabras clave
+    function validarTextoSinClaves(campo, claves, mensaje) {
+        const texto = campo.val().trim();
+        if (texto === '') {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        const palabras = texto.split(' ');
+        for (let palabra of palabras) {
+            if (claves.includes(palabra)) {
+                mostrarAlerta(mensaje, 'error');
+                campo.focus();
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Función para validar campos de texto con palabras clave exactas
+    function validarTextoClavesExactas(campo, claves, mensaje) {
+        const texto = campo.val().trim();
+        if (texto === '') {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        const palabras = texto.split(' ');
+        if (palabras.length !== claves.length) {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        for (let i = 0; i < palabras.length; i++) {
+            if (palabras[i] !== claves[i]) {
+                mostrarAlerta(mensaje, 'error');
+                campo.focus();
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Función para validar campos de texto con palabras clave en orden
+    function validarTextoClavesOrden(campo, claves, mensaje) {
+        const texto = campo.val().trim();
+        if (texto === '') {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        const palabras = texto.split(' ');
+        const clavesOrdenadas = claves.sort();
+        const palabrasOrdenadas = palabras.sort();
+        if (palabrasOrdenadas.length !== clavesOrdenadas.length) {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        for (let i = 0; i < palabrasOrdenadas.length; i++) {
+            if (palabrasOrdenadas[i] !== clavesOrdenadas[i]) {
+                mostrarAlerta(mensaje, 'error');
+                campo.focus();
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Función para validar campos de texto con palabras clave en orden inverso
+    function validarTextoClavesOrdenInverso(campo, claves, mensaje) {
+        const texto = campo.val().trim();
+        if (texto === '') {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        const palabras = texto.split(' ');
+        const clavesOrdenInverso = claves.reverse();
+        const palabrasOrdenInverso = palabras.reverse();
+        if (palabrasOrdenInverso.length !== clavesOrdenInverso.length) {
+            mostrarAlerta(mensaje, 'error');
+            campo.focus();
+            return false;
+        }
+        for (let i = 0; i < palabrasOrdenInverso.length; i++) {
+            if (palabrasOrdenInverso[i] !== clavesOrdenInverso[i]) {
+                mostrarAlerta(mensaje, 'error');
+                campo.focus();
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    // ======================================
     // FUNCIÓN DE CONFIRMACIÓN LIMPIAR FOTOS
     // ======================================
     
@@ -2199,16 +2712,16 @@ $(document).ready(function () {
             limpiarFotosHuerfanas();
         });
         
-        // Limpiar el modal del DOM cuando se cierre
-        modal.addEventListener('hidden.bs.modal', () => {
-            modal.remove();
-        });
-        
-        // Mostrar el modal
-        const modalInstance = new bootstrap.Modal(modal, {
-            backdrop: 'static',
-            keyboard: false
-        });
-        modalInstance.show();
+    // Limpiar el modal del DOM cuando se cierre
+    modal.addEventListener('hidden.bs.modal', () => {
+        modal.remove();
+    });
+    
+    // Mostrar el modal
+    const modalInstance = new bootstrap.Modal(modal, {
+        backdrop: 'static',
+        keyboard: false
+    });
+    modalInstance.show();
     }
 });

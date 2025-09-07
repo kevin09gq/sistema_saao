@@ -27,6 +27,7 @@ $(document).ready(function () {
      */
     $('#btn_suma').on('click', function () {
         abrirModalSumas();
+        console.log(jsonGlobal)
     });
 
     /**

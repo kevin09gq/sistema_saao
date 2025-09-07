@@ -336,7 +336,7 @@ function establecerDatosEmpleados() {
                     emp.actividades_especiales = 0;
 
                     //   INICIALIZAR BONO RESPONSABILIDAD
-                    emp.bono_responsabilidad = 0;
+                    emp.bono_puesto = 0;
 
                     //   INICIALIZAR CONCEPTOS ADICIONALES
                     emp.conceptos_adicionales = [];
@@ -895,7 +895,7 @@ function redondearRegistrosEmpleados() {
             const descuentoPorOlvido = totalOlvidosChecadorSemana * 20;
             
             // Asignar al empleadoEnJson para que se incluya en el cálculo del sueldo a cobrar
-            empleadoEnJson.checador_descuento_olvidos = descuentoPorOlvido;
+            empleadoEnJson.checador = descuentoPorOlvido;
         }
 
         const horasSemanales = minutosAHora(totalMinutosSemana);
@@ -1027,7 +1027,7 @@ function calcularSueldoACobraPorEmpleado(emp) {
     const horasExtras = parseFloat(emp.sueldo_extra) || 0;
     const bonoAntiguedad = parseFloat(emp.bono_antiguedad) || 0;
     const actividadesEspeciales = parseFloat(emp.actividades_especiales) || 0;
-    const bonoResponsabilidad = parseFloat(emp.bono_responsabilidad) || 0;
+    const bonoPuesto = parseFloat(emp.bono_puesto) || 0;
 
     // Sumar conceptos adicionales si existen
     let conceptosAdicionalesTotales = 0;
@@ -1038,7 +1038,7 @@ function calcularSueldoACobraPorEmpleado(emp) {
     }
 
     // Total de sueldo extra final
-    const sueldoExtraFinal = horasExtras + bonoAntiguedad + actividadesEspeciales + bonoResponsabilidad + conceptosAdicionalesTotales;
+    const sueldoExtraFinal = horasExtras + bonoAntiguedad + actividadesEspeciales + bonoPuesto + conceptosAdicionalesTotales;
 
     // Actualizar sueldo_extra_final en el empleado
     emp.sueldo_extra_final = sueldoExtraFinal;
@@ -1062,8 +1062,8 @@ function calcularSueldoACobraPorEmpleado(emp) {
     
     //    USAR EL DESCUENTO CALCULADO POR OLVIDOS DEL CHECADOR PARA EL SUELDO A COBRAR
     // Si existe el descuento calculado, usarlo; sino, usar el valor original del checador
-    const checador = parseFloat(emp.checador_descuento_olvidos) !== undefined && !isNaN(parseFloat(emp.checador_descuento_olvidos)) ? 
-                     parseFloat(emp.checador_descuento_olvidos) : 
+    const checador = parseFloat(emp.checador) !== undefined && !isNaN(parseFloat(emp.checador)) ? 
+                     parseFloat(emp.checador) : 
                      parseFloat(emp.checador) || 0;
                      
     const faGafetCofia = parseFloat(emp.fa_gafet_cofia) || 0;

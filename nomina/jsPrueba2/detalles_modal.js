@@ -116,8 +116,8 @@ function establecerDatosPercepciones(empleado) {
     }
 
     // Establecer bono responsabilidad del empleado
-    if (empleado.bono_responsabilidad && !isNaN(empleado.bono_responsabilidad)) {
-        $("#mod-bono-responsabilidad").val(empleado.bono_responsabilidad);
+    if (empleado.bono_puesto && !isNaN(empleado.bono_puesto)) {
+        $("#mod-bono-responsabilidad").val(empleado.bono_puesto);
     }
 
     //   Establecer sueldo a cobrar del empleado
@@ -158,8 +158,8 @@ function establecerDatosPercepciones(empleado) {
 
     $("#mod-bono-responsabilidad").off('input').on('input', function () {
         const clave = $('#campo-clave').text().trim();
-        const bonoResponsabilidad = parseFloat($(this).val()) || 0;
-        actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'bono_responsabilidad', bonoResponsabilidad);
+        const bonoPuesto = parseFloat($(this).val()) || 0;
+        actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'bono_puesto', bonoPuesto);
         calcularTotalExtra(); // Recalcular total
         actualizarSueldoACobrarEnTiempoReal(clave); //   Actualizar sueldo a cobrar
     });
@@ -313,7 +313,7 @@ function calcularTotalExtra() {
     const horasExtras = parseFloat($('#mod-horas-extras').val()) || 0;
     const bonoAntiguedad = parseFloat($('#mod-bono-antiguedad').val()) || 0;
     const actividadesEspeciales = parseFloat($('#mod-actividades-especiales').val()) || 0;
-    const bonoResponsabilidad = parseFloat($('#mod-bono-responsabilidad').val()) || 0;
+    const bonoPuesto = parseFloat($('#mod-bono-responsabilidad').val()) || 0;
 
     // Sumar conceptos adicionales dinámicos
     let conceptosAdicionalesTotales = 0;
@@ -323,7 +323,7 @@ function calcularTotalExtra() {
     });
 
     // Calcular el total
-    const totalExtra = horasExtras + bonoAntiguedad + actividadesEspeciales + bonoResponsabilidad + conceptosAdicionalesTotales;
+    const totalExtra = horasExtras + bonoAntiguedad + actividadesEspeciales + bonoPuesto + conceptosAdicionalesTotales;
 
     // Actualizar el campo total extra
     $('#mod-total-extra').val(totalExtra.toFixed(2));

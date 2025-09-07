@@ -194,6 +194,14 @@ include("../../config/config.php");
                                             <option value="">Selecciona un puesto</option>
                                         </select>
                                     </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="modal_salario_semanal" class="form-label">Salario Semanal</label>
+                                        <input type="number" step="0.01" class="form-control" id="modal_salario_semanal" name="salario_diario" placeholder="0.00">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="modal_salario_mensual" class="form-label">Salario Mensual</label>
+                                        <input type="number" step="0.01" class="form-control" id="modal_salario_mensual" name="salario_mensual" placeholder="0.00">
+                                    </div>
                                 </div>
                             </div>
                             <!-- Contacto de emergencia -->

@@ -36,7 +36,8 @@ try {
         // Eliminar el archivo físico si existe
         if ($ruta_foto) {
             // Construir la ruta completa del archivo
-            $ruta_archivo = __DIR__ . '/../../' . $ruta_foto;
+            // Asegurarse de que la ruta sea correcta en todos los entornos
+            $ruta_archivo = dirname(__DIR__) . '/' . $ruta_foto;
             
             if (file_exists($ruta_archivo)) {
                 if (unlink($ruta_archivo)) {

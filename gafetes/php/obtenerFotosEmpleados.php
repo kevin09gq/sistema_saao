@@ -45,6 +45,8 @@ try {
     $resultado = $stmt->get_result();
     
     $empleados = [];
+    $empleadosSinFoto = []; // Array para almacenar empleados sin foto
+    
     while ($fila = $resultado->fetch_assoc()) {
         // Verificar si la foto existe en el sistema de archivos
         $rutaFoto = null;
@@ -53,6 +55,17 @@ try {
             if (file_exists($rutaCompleta)) {
                 $rutaFoto = $fila['ruta_foto'];
             }
+        }
+        
+        // Si el empleado no tiene foto, agregarlo a la lista de empleados sin foto
+        if (empty($rutaFoto)) {
+            $empleadosSinFoto[] = [
+                'id' => $fila['id_empleado'],
+                'clave_empleado' => $fila['clave_empleado'],
+                'nombre' => $fila['nombre'],
+                'ap_paterno' => $fila['ap_paterno'],
+                'ap_materno' => $fila['ap_materno']
+            ];
         }
         
         $empleados[] = [
@@ -66,6 +79,26 @@ try {
     }
     
     $stmt->close();
+    
+    // Verificar si hay empleados sin foto
+    if (!empty($empleadosSinFoto)) {
+        // Crear mensaje con los nombres de los empleados sin foto
+        $nombresEmpleadosSinFoto = [];
+        foreach ($empleadosSinFoto as $empleado) {
+            $nombreCompleto = $empleado['nombre'];
+            if (!empty($empleado['ap_paterno'])) {
+                $nombreCompleto .= ' ' . $empleado['ap_paterno'];
+            }
+            if (!empty($empleado['ap_materno'])) {
+                $nombreCompleto .= ' ' . $empleado['ap_materno'];
+            }
+            $nombresEmpleadosSinFoto[] = $nombreCompleto . ' (' . $empleado['clave_empleado'] . ')';
+        }
+        
+        $respuesta['message'] = 'Los siguientes empleados no tienen foto asignada: ' . implode(', ', $nombresEmpleadosSinFoto);
+        echo json_encode($respuesta);
+        exit;
+    }
     
     if (empty($empleados)) {
         $respuesta['message'] = 'No se encontraron empleados con los IDs proporcionados.';

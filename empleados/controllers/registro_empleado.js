@@ -15,18 +15,59 @@ $(document).ready(function () {
     validarDatos("#parentesco_emergencia", validarParentesco);
     validarDatos("#telefono_emergencia", validarTelefono);
 
+    // Formatear campos a mayúsculas mientras el usuario escribe
+    formatearMayusculas("#nombre_trabajador");
+    formatearMayusculas("#apellido_paterno");
+    formatearMayusculas("#apellido_materno");
+    formatearMayusculas("#curp_trabajador");
+    formatearMayusculas("#grupo_sanguineo_trabajador");
+    
+    // Formatear campos del contacto de emergencia a mayúsculas
+    formatearMayusculas("#nombre_emergencia");
+    formatearMayusculas("#ap_paterno_emergencia");
+    formatearMayusculas("#ap_materno_emergencia");
+
     // Cargar departamentos al iniciar
     obtenerDepartamentos();
     obtenerAreas();
     obtenerEmpresa();
     registrarEmpleado();
     obtenerPuesto();
+    
+    // Agregar funcionalidad al botón cancelar
+    $(document).on('click', '#btn_cancelar_form', function(e) {
+        e.preventDefault();
+        limpiarFormulario();
+        
+        // Mostrar mensaje de confirmación
+        VanillaToasts.create({
+            title: 'Formulario Limpiado',
+            text: 'Todos los campos han sido vaciados.',
+            type: 'info',
+            icon: rutaPlugins + 'plugins/toasts/icons/icon_info.png',
+            timeout: 2000
+        });
+    });
 
     function validarDatos(selector, validacion) {
         $(selector).on('input', function () {
             const isValid = validacion($(this).val());
             $(this).removeClass('border-success border-danger')
                 .addClass(isValid ? 'border-success' : 'border-danger');
+        });
+    };
+
+    // Función para formatear texto a mayúsculas mientras se escribe
+    function formatearMayusculas(selector) {
+        $(selector).on('input', function () {
+            // Obtener la posición actual del cursor
+            const cursorPosition = this.selectionStart;
+            // Convertir el valor a mayúsculas
+            const valorMayusculas = $(this).val().toUpperCase();
+            // Establecer el nuevo valor
+            $(this).val(valorMayusculas);
+            // Restaurar la posición del cursor
+            this.setSelectionRange(cursorPosition, cursorPosition);
         });
     };
 
@@ -135,6 +176,9 @@ $(document).ready(function () {
         $("#domicilio_trabajador, #imss_trabajador, #curp_trabajador, #grupo_sanguineo_trabajador").val("");
         $("#enfermedades_alergias_trabajador, #fecha_ingreso_trabajador, #num_casillero, #fecha_nacimiento").val("");
         
+        // Limpiar campos de salario
+        $("#salario_semanal, #salario_mensual").val("");
+        
         // Limpiar campos de contacto de emergencia
         $("#nombre_emergencia, #ap_paterno_emergencia, #ap_materno_emergencia").val("");
         $("#parentesco_emergencia, #telefono_emergencia, #domicilio_emergencia").val("");
@@ -180,6 +224,10 @@ $(document).ready(function () {
             const id_puestoEspecial = $("#puesto_trabajador").val(); // Cambiado de id_puesto a id_puestoEspecial
             const id_empresa = $("#empresa_trabajador").val();
             const fecha_nacimiento = $("#fecha_nacimiento").val();
+
+            // Campos de salario (opcionales)
+            const salario_diario = $("#salario_semanal").val().trim();
+            const salario_mensual = $("#salario_mensual").val().trim();
 
             // Datos de emergencia (opcionales)
             const emergencia_nombre = $("#nombre_emergencia").val().trim();
@@ -254,6 +302,10 @@ $(document).ready(function () {
                 id_puestoEspecial: id_puestoEspecial || "", // Cambiado de id_puesto a id_puestoEspecial
                 id_empresa: id_empresa || "",
 
+                // Campos de salario
+                salario_diario: salario_diario || "",
+                salario_mensual: salario_mensual || "",
+
                 emergencia_nombre: emergencia_nombre || "",
                 emergencia_ap_paterno: emergencia_ap_paterno || "",
                 emergencia_ap_materno: emergencia_ap_materno || "",
@@ -304,7 +356,6 @@ $(document).ready(function () {
                         icon: rutaPlugins + 'plugins/toasts/icons/icon_error.png',
                         timeout: 3000
                     });
-                    console.error('AJAX Error:', error);
                 }
             });
         })
