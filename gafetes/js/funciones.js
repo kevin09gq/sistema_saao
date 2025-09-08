@@ -25,7 +25,6 @@ $(document).ready(function () {
                     const area = window.actualizadorLogos.areas.find(a => a.id_area == empleado.id_area);
                     if (area && area.logo_area) {
                         logoAreaUrl = `logos_area/${area.logo_area}`;
-                        console.log('Logo de área encontrado:', logoAreaUrl);
                     }
                 }
 
@@ -34,17 +33,13 @@ $(document).ready(function () {
                     const empresa = window.actualizadorLogos.empresas.find(e => e.id_empresa == empleado.id_empresa);
                     if (empresa && empresa.logo_empresa) {
                         logoEmpresaUrl = `logos_empresa/${empresa.logo_empresa}`;
-                        console.log('Logo de empresa encontrado:', logoEmpresaUrl);
                     } else {
-                        console.log('No se encontró el logo para la empresa ID:', empleado.id_empresa);
-                        console.log('Empresas disponibles:', window.actualizadorLogos.empresas);
                     }
                 }
             } else {
-                console.log('actualizadorLogos no está disponible');
             }
         } catch (error) {
-            console.error('Error en obtenerLogosDinamicos:', error);
+           
         }
 
         return { logoAreaUrl, logoEmpresaUrl };
@@ -197,7 +192,6 @@ $(document).ready(function () {
 
     // Evento para imprimir gafetes
     $('#imprimirGafetes').click(function () {
-        console.log('Botón imprimir clickeado');
         
         // Verificar que hay empleados seleccionados
         if (!empleadosSeleccionados || empleadosSeleccionados.size === 0) {
@@ -205,7 +199,6 @@ $(document).ready(function () {
             return;
         }
         
-        console.log('Empleados seleccionados:', empleadosSeleccionados.size);
         
         // Cerrar el modal si está abierto
         const modalInstance = bootstrap.Modal.getInstance(document.getElementById('modalGafetes'));
@@ -215,19 +208,16 @@ $(document).ready(function () {
         
         // Esperar un poco para que el modal se cierre completamente
         setTimeout(() => {
-            console.log('Generando gafetes para impresión...');
             
             // Mostrar los gafetes en el DOM (sin mostrar modal)
             mostrarGafetes(true); // true = modo impresion
             
             // Esperar un poco más para que se genere el contenido
             setTimeout(() => {
-                console.log('Obteniendo contenido de gafetes...');
                 
                 // Obtener solo el contenido de los gafetes
                 const contenidoGafetes = $('#contenidoGafetes').html();
                 
-                console.log('Contenido obtenido:', contenidoGafetes ? 'Sí' : 'No');
                 
                 if (!contenidoGafetes) {
                     alert('Error: No se pudo generar el contenido de los gafetes');
@@ -235,7 +225,6 @@ $(document).ready(function () {
                 }
                 
                 // Crear una nueva ventana solo para imprimir
-                console.log('Creando ventana de impresión...');
                 const ventanaImpresion = window.open('', '_blank', 'width=800,height=600');
                 
                 if (!ventanaImpresion) {
@@ -524,10 +513,8 @@ $(document).ready(function () {
         `;
 
                 // Escribir el contenido en la nueva ventana
-                console.log('Escribiendo contenido en ventana de impresión...');
                 ventanaImpresion.document.write(htmlImpresion);
                 ventanaImpresion.document.close();
-                console.log('Ventana de impresión configurada correctamente');
                 
             }, 500); // Esperar 500ms para que se genere el contenido
         }, 300); // Esperar 300ms para que se cierre el modal
@@ -566,9 +553,7 @@ $(document).ready(function () {
                 });
             },
             error: function (xhr, status, error) {
-                console.error('Error al cargar departamentos:', error);
-                console.error('Status:', status);
-                console.error('Response:', xhr.responseText);
+               
                 
                 let errorMessage = 'Error al cargar los departamentos. ';
                 if (xhr.responseText) {
@@ -615,7 +600,7 @@ $(document).ready(function () {
                 actualizarTablaEmpleados();
             },
             error: function (xhr, status, error) {
-                console.error('Error al cargar empleados:', error);
+              
                 alert('Error al cargar los empleados. Por favor, intente nuevamente.');
             }
         });
@@ -845,9 +830,13 @@ $(document).ready(function () {
                 if (cantidadNombres === 1) {
                     fontSizeRectangulo = '17pt'; // Tamaño por defecto para un nombre
                 } else if (cantidadNombres === 2) {
-                    fontSizeRectangulo = '14pt'; // Tamaño reducido para dos nombres
+                    // Para dos nombres, verificar longitud total
+                    const nombreCompleto = nombresArray.join(' ');
+                    fontSizeRectangulo = nombreCompleto.length > 11 ? '13.2pt' : '17pt';
                 } else {
-                    fontSizeRectangulo = '12pt'; // Tamaño más pequeño para tres o más nombres
+                    // Tres o más nombres
+                    const nombreCompleto = nombresArray.join(' ');
+                    fontSizeRectangulo = nombreCompleto.length > 23 ? '7.4pt' : '11pt';
                 }
                 const departamento = obtenerNombreDepartamento(empleado.id_departamento);
                 // Calcular tamaño de fuente para el departamento
@@ -968,8 +957,10 @@ $(document).ready(function () {
                 }
                 // Si no tiene IMSS, no mostrar campos adicionales (diseño simplificado)
                 
+                // Aplicar rotación solo si tiene IMSS
+                const estiloRotacion = tieneIMSS ? 'transform: rotate(180deg);' : '';
                 const $frente = $(
-                    "<div class=\"gafete\" style=\"border:2px solid " + colorArea + " !important;height:9cm !important;min-height:9cm !important;max-height:9cm !important;width:6cm !important;min-width:6cm !important;max-width:6cm !important;font-family:Segoe UI Black;margin-bottom:0!important;margin-top:0!important;padding:0.2cm !important;font-size:7pt !important;\">" +
+                    "<div class=\"gafete\" style=\"border:2px solid " + colorArea + " !important;height:9cm !important;min-height:9cm !important;max-height:9cm !important;width:6cm !important;min-width:6cm !important;max-width:6cm !important;font-family:Segoe UI Black;margin-bottom:0!important;margin-top:0!important;padding:0.2cm !important;font-size:7pt !important;" + estiloRotacion + "\">" +
                         logoHtml +         
                         "<div class=\"gafete-body\" style=\"font-size:7pt;display:flex;flex-direction:row;align-items:flex-start;gap:0.2cm;min-height:5.5cm;" + (tieneIMSS ? '' : 'justify-content:center;align-items:flex-end;padding-bottom:0.2cm !important;') + "\">" +
                             "<div style=\"flex:1;display:flex;flex-direction:column;justify-content:flex-start;align-items:flex-start;gap:0.1cm;\">" +
@@ -997,17 +988,28 @@ $(document).ready(function () {
                             "</div>" +
                         "</div>" +
                         "<div class=\"gafete-nombre-rect\" style=\"margin-top:auto;display:flex;justify-content:center;align-items:center;" + (tieneIMSS ? '' : 'margin-top:0.6cm;') + "\">" +
-                                    "<div style=\"width:100%;background:" + colorArea + ";border:none;border-radius:4px;padding:0.1cm 0;text-align:center;font-size:" + fontSizeRectangulo + " !important;font-weight:bold;letter-spacing:0.5px;color:#fff;margin-top:0.1cm;\">" + empleado.nombre + "</div>" +
+                                    "<div style=\"width:100%;background:" + colorArea + ";border:none;border-radius:4px;padding:0.1cm 0;text-align:center;font-size:" + fontSizeRectangulo + 
+                                    " !important;font-weight:bold;letter-spacing:0.5px;color:" + 
+                                    (empleado.nombre_area ? 
+                                        (empleado.nombre_area.toLowerCase().includes('huasteca') ? '#082B11' : 
+                                         empleado.nombre_area.toLowerCase().includes('pilar') ? '#201433' : 
+                                         '#fff') 
+                                    : '#fff') + 
+                                    ";margin-top:0.1cm;\">" + empleado.nombre + "</div>" +
                         "</div>" +
                     "</div>"
                 );
                 // --- Reverso ---
+                // Calcular tamaño de fuente para domicilio de trabajador
+                const domicilioTrabajador = empleado.domicilio ? empleado.domicilio : 'N/A';
+                const fontSizeDomicilioTrabajador = domicilioTrabajador.length > 89 ? '6.1pt' : '6.5pt';
+                
                 const datosAtras = 
-                    "<div style='margin-bottom:0.08cm;'>" +
+                    "<div style='margin-bottom:0.03cm;'>" +
                        "<span style='font-size:7pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;line-height:1 !important;'>Domicilio de Trabajador:</span><br>" +
-                        "<span style='font-size:6.5pt !important;color:" + colorTextoDatos + ";'>" + (empleado.domicilio ? empleado.domicilio : 'N/A') + "</span>" +
+                        "<span style='font-size:" + fontSizeDomicilioTrabajador + " !important;color:" + colorTextoDatos + ";'>" + domicilioTrabajador + "</span>" +
                     "</div>" +
-                    "<div style='display:flex;justify-content:space-between;gap:0.12cm;margin-bottom:0.08cm !important;'>" +
+                    "<div style='display:flex;justify-content:space-between;gap:0.12cm;margin-bottom:0.03cm !important;'>" +
                         "<div style='flex:1;'>" +
                             "<span style='font-size:7pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;line-height:1 !important;'>IMSS:</span><br>" +
                             "<span style='font-size:6.5pt !important;color:" + colorTextoDatos + ";line-height:1 !important;'>" + (empleado.imss ? empleado.imss : 'N/A') + "</span>" +
@@ -1017,31 +1019,38 @@ $(document).ready(function () {
                             "<span style='font-size:6.5pt !important;color:" + colorTextoDatos + ";line-height:1 !important;'>" + (empleado.curp ? empleado.curp : 'N/A') + "</span>" +
                         "</div>" +
                     "</div>" +
-                    "<div style='margin-bottom:0.08cm !important;'>" +
+                    "<div style='margin-bottom:0.03cm !important;'>" +
                         "<span style='font-size:7pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;line-height:1 !important;'>Fecha de nacimiento:</span><br>" +
                         "<span style='font-size:6.5pt !important;color:" + colorTextoDatos + ";line-height:1 !important;'>" + (empleado.fecha_nacimiento ? formatearFechaYMDaDMY(empleado.fecha_nacimiento) : 'N/A') + "</span>" +
                     "</div>" +
-                    "<div style='margin-bottom:0.08cm !important;'>" +
+                    "<div style='margin-bottom:0.03cm !important;'>" +
                         "<span style='font-size:7pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;line-height:1 !important;'>Enfermedades/Alergias:</span><br>" +
                         "<span style='font-size:6.5pt !important;color:" + colorTextoDatos + ";line-height:1 !important;'>" + (empleado.enfermedades_alergias ? empleado.enfermedades_alergias : 'N/A') + "</span>" +
                     "</div>" +
-                    "<div style='margin-bottom:0.08cm !important;'>" +
-                        "<span style='font-size:7pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;line-height:1 !important;'>Grupo sanguíneo:</span><br>" +
-                        "<span style='font-size:6.5pt !important;color:" + colorTextoDatos + ";line-height:1 !important;'>" + (empleado.grupo_sanguineo ? empleado.grupo_sanguineo : 'N/A') + "</span>" +
+                    "<div style='display:flex;justify-content:space-between;gap:0.12cm;margin-bottom:0.03cm !important;'>" +
+                        "<div style='flex:1;'>" +
+                            "<span style='font-size:7pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;line-height:1 !important;'>Grupo sanguíneo:</span><br>" +
+                            "<span style='font-size:6.5pt !important;color:" + colorTextoDatos + ";line-height:1 !important;'>" + (empleado.grupo_sanguineo ? empleado.grupo_sanguineo : 'N/A') + "</span>" +
+                        "</div>" +
+                        "<div style='flex:1;'>" +
+                            "<span style='font-size:7pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;line-height:1 !important;'>Fecha de ingreso:</span><br>" +
+                            "<span style='font-size:6.5pt !important;color:" + colorTextoDatos + ";line-height:1 !important;'>" + (empleado.fecha_ingreso ? formatearFechaYMDaDMY(empleado.fecha_ingreso) : 'N/A') + "</span>" +
+                        "</div>" +
                     "</div>" +
-                    "<div style='margin-bottom:0.06cm !important;'>" +
-                        "<span style='font-size:7pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;line-height:1 !important;'>Fecha de ingreso:</span><br>" +
-                        "<span style='font-size:6.5pt !important;color:" + colorTextoDatos + ";line-height:1 !important;'>" + (empleado.fecha_ingreso ? formatearFechaYMDaDMY(empleado.fecha_ingreso) : 'N/A') + "</span>" +
-                    "</div>" +
-                    "<div style='background:" + colorHexToRgba(colorArea, 0.12) + ";border-radius:4px;padding:0.08cm 0.10cm;margin-top:0.06cm;width:100%;box-sizing:border-box;'>" +
-                        "<div style=\"margin-bottom:0.08cm !important;\"><span style=\"font-size:7pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;\">En caso de emergencia llamar a:</span></div>" +
-                        "<div style='text-align:center;margin-bottom:0.03cm;'>" +
-                            "<span style='font-size:7pt !important;color:" + colorTextoDatos + ";'>" +
+                    "<div style='background:" + colorHexToRgba(colorArea, 0.12) + ";border-radius:4px;padding:0.03cm 0.05cm;margin-top:0.03cm;width:100%;box-sizing:border-box;'>" +
+                        "<div style=\"margin-bottom:0.03cm !important;\"><span style=\"font-size:7pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;\">En caso de emergencia llamar a:</span></div>" +
+                        "<div style='text-align:center;margin-bottom:0.01cm;'>" +
+                            "<span style='font-size:" + 
+                            (empleado.emergencia_nombre_contacto && empleado.emergencia_nombre_contacto.trim().split(/\s+/).length >= 2 ? '6.2pt' : '6.5pt') + 
+                            " !important;color:" + colorTextoDatos + ";'>" +
                                 (empleado.emergencia_parentesco ? empleado.emergencia_parentesco : 'N/A') + " - " + (empleado.emergencia_nombre_contacto ? empleado.emergencia_nombre_contacto : 'N/A') +
                             "</span>" +
                         "</div>" +
-                        "<div style='text-align:center;margin-bottom:0.03cm;'><span style='font-size:7pt !important;color:" + colorTextoDatos + ";'>" + formatearTelefono(empleado.emergencia_telefono) + "</span></div>" +
-                        "<div style='text-align:center;'><span style='font-size:6.5pt !important;color:" + colorTextoDatos + ";'>" + (empleado.emergencia_domicilio ? empleado.emergencia_domicilio : 'N/A') + "</span></div>" +
+                        "<div style='text-align:center;margin-bottom:0.01cm;'><span style='font-size:7pt !important;color:" + colorTextoDatos + ";'>" + formatearTelefono(empleado.emergencia_telefono) + "</span></div>" +
+                        "<div style='text-align:center;margin-bottom:0.01cm;'>" +
+                            "<span style='font-size:" + (empleado.emergencia_domicilio && empleado.emergencia_domicilio.length > 89 ? '6.1pt' : '6.5pt') + " !important;color:" + colorTextoDatos + ";'>" + 
+                            (empleado.emergencia_domicilio ? empleado.emergencia_domicilio : 'N/A') + "</span>" +
+                        "</div>" +
                     "</div>";
                 // Lógica de posicionamiento inteligente de logos para el reverso (solo para empleados con IMSS)
                 let logoReversoHtml = '';
@@ -1103,13 +1112,7 @@ $(document).ready(function () {
                 
                 // Para empleados con IMSS, mostrar primero el reverso y luego el frente
                 if (tieneIMSS) {
-                    // Agregar el reverso primero (arriba) sin rotación
-                    $columna.append($reverso);
-                    
-                    // Agregar un pequeño espacio entre reverso y frente
-                    $columna.append($('<div style="height:0.2cm;"></div>'));
-                    
-                    // Aplicar rotación de 180 grados al frente para que se vea de cabeza
+                    // Aplicar rotación de 180 grados solo al frente
                     $frente.css({
                         'transform': 'rotate(180deg)',
                         'margin': '0 auto',
@@ -1124,7 +1127,7 @@ $(document).ready(function () {
                         'display': 'block'
                     });
                     
-                    // Ajustar estilos para mantener consistencia del gafete completo
+                    // El reverso se mantiene en su orientación normal
                     $reverso.css({
                         'margin': '0 auto',
                         'padding': '0',
@@ -1138,10 +1141,16 @@ $(document).ready(function () {
                         'display': 'block'
                     });
                     
-                    // Agregar el frente después (abajo) - de cabeza
+                    // Agregar el frente primero (arriba) - rotado 180 grados
                     $columna.append($frente);
+                    
+                    // Agregar un pequeño espacio entre frente y reverso
+                    $columna.append($('<div style="height:0.2cm;"></div>'));
+                    
+                    // Agregar el reverso después (abajo) - en orientación normal
+                    $columna.append($reverso);
                 } else {
-                    // Para empleados sin IMSS, solo mostrar el frente
+                    // Para empleados sin IMSS, solo mostrar el frente rotado 180 grados
                     $frente.css({
                         'margin': '0 auto',
                         'padding': '0',
@@ -1318,17 +1327,15 @@ $(document).ready(function () {
                     
                     // Log detalles para desarrolladores
                     if (response.fotos_eliminadas && response.fotos_eliminadas.length > 0) {
-                        console.log('Fotos eliminadas:', response.fotos_eliminadas);
                     }
                 } else {
                     mostrarAlertaLimpieza('Error durante la limpieza: ' + response.message, 'danger');
                     if (response.errores && response.errores.length > 0) {
-                        console.error('Errores:', response.errores);
+                     
                     }
                 }
             },
             error: function(xhr, status, error) {
-                console.error('Error en la petición:', error);
                 mostrarAlertaLimpieza('Error de conexión al servidor durante la limpieza de fotos.', 'danger');
             },
             complete: function() {
@@ -1352,18 +1359,15 @@ $(document).ready(function () {
                 dataType: 'json',
                 success: function(response) {
                     if (response.success) {
-                        console.log('Fechas actualizadas para el empleado ' + idEmpleado + ':', response);
                         // Actualizar el contador de notificaciones después de actualizar las fechas
                         if (typeof updateNotificationCount === 'function') {
                             updateNotificationCount();
                         }
                     } else {
-                        console.error('Error al actualizar fechas para el empleado ' + idEmpleado + ':', response.message);
-                    }
+                        }
                 },
                 error: function(xhr, status, error) {
-                    console.error('Error en la solicitud AJAX para el empleado ' + idEmpleado + ':', error);
-                }
+                     }
             });
         });
     }
@@ -1555,13 +1559,17 @@ $(document).ready(function () {
 
     // Funciones de validación importadas
     function validarNombre(nombre) {
+        // Convertir a mayúsculas antes de validar
+        const nombreMayusculas = nombre.toUpperCase();
         const validar = /^([A-ZÁÉÍÓÚÑa-záéíóúñ]+)( [A-ZÁÉÍÓÚÑa-záéíóúñ]+)*$/;
-        return validar.test(nombre);
+        return validar.test(nombreMayusculas);
     }
 
     function validarApellido(apellido) {
+        // Convertir a mayúsculas antes de validar
+        const apellidoMayusculas = apellido.toUpperCase();
         var validar = /^(?:(?:[Dd]e(?:l)?|[Dd]e\s+(?:la|los|las))\s+)?([A-ZÁÉÍÓÚÑa-záéíóúñ]+(?:\s[A-ZÁÉÍÓÚÑa-záéíóúñ]+)*)$/;
-        return validar.test(apellido);
+        return validar.test(apellidoMayusculas);
     }
 
     function validarClave(clave) {
@@ -1624,8 +1632,7 @@ $(document).ready(function () {
                 }
             },
             error: function(xhr, status, error) {
-                console.error('Error al obtener datos del empleado:', error);
-                alert('Error al cargar los datos del empleado');
+                  alert('Error al cargar los datos del empleado');
             }
         });
     }
@@ -1751,13 +1758,13 @@ $(document).ready(function () {
     $("#form_modal_actualizar_empleado").submit(function (e) {
         e.preventDefault();
 
-        // Recopilar todos los datos del formulario
+        // Recopilar todos los datos del formulario y convertir nombres y apellidos a mayúsculas
         let datos = {
             id_empleado: $("#empleado_id").val(),
             clave_empleado: $("#modal_clave_empleado").val(),
-            nombre_empleado: $("#modal_nombre_empleado").val(),
-            apellido_paterno_empleado: $("#modal_apellido_paterno").val(),
-            apellido_materno_empleado: $("#modal_apellido_materno").val(),
+            nombre_empleado: $("#modal_nombre_empleado").val().toUpperCase(),
+            apellido_paterno_empleado: $("#modal_apellido_paterno").val().toUpperCase(),
+            apellido_materno_empleado: $("#modal_apellido_materno").val().toUpperCase(),
             domicilio_empleado: $("#modal_domicilio").val() || "",
             imss: $("#modal_imss").val() || "",
             curp: $("#modal_curp").val() || "",
@@ -1771,9 +1778,9 @@ $(document).ready(function () {
             id_empresa: $("#modal_empresa").val() || "",
             id_area: $("#modal_area").val() || "",
             id_puestoEspecial: $("#modal_puesto").val() || "",
-            nombre_contacto: $("#modal_emergencia_nombre").val() || "",
-            apellido_paterno_contacto: $("#modal_emergencia_ap_paterno").val() || "",
-            apellido_materno_contacto: $("#modal_emergencia_ap_materno").val() || "",
+            nombre_contacto: $("#modal_emergencia_nombre").val().toUpperCase() || "",
+            apellido_paterno_contacto: $("#modal_emergencia_ap_paterno").val().toUpperCase() || "",
+            apellido_materno_contacto: $("#modal_emergencia_ap_materno").val().toUpperCase() || "",
             telefono_contacto: $("#modal_emergencia_telefono").val() || "",
             domicilio_contacto: $("#modal_emergencia_domicilio").val() || "",
             parentesco: $("#modal_emergencia_parentesco").val() || ""
@@ -1832,7 +1839,6 @@ $(document).ready(function () {
                     // Forzar una actualización de la interfaz si el empleado actualizado está seleccionado
                     setTimeout(() => {
                         // Pequeño retraso para asegurar que los datos se hayan cargado
-                        console.log('Empleado actualizado y datos recargados');
                     }, 100);
                 }
                 
@@ -1840,8 +1846,7 @@ $(document).ready(function () {
                 mostrarAlerta('Empleado actualizado correctamente', 'success');
             },
             error: function(xhr, status, error) {
-                console.error('Error al actualizar empleado:', error);
-                mostrarAlerta('Error al actualizar el empleado. Por favor, inténtelo de nuevo.', 'error');
+                 mostrarAlerta('Error al actualizar el empleado. Por favor, inténtelo de nuevo.', 'error');
             }
         });
     });
@@ -1853,20 +1858,16 @@ $(document).ready(function () {
         const $fotoPreview = $('#foto_preview');
         const $noFotoPreview = $('#no_foto_preview');
         
-        console.log('Datos del empleado recibidos en cargarFotoEmpleado:', empleado);
-        console.log('Ruta de foto:', empleado.ruta_foto);
         
         // Store employee data globally for access in other functions
         window.empleadoActual = empleado;
         
         if (empleado.ruta_foto && empleado.ruta_foto.trim() !== '') {
-            console.log('Mostrando foto:', empleado.ruta_foto);
             $fotoPreview.attr('src', empleado.ruta_foto);
             $fotoPreview.show();
             $noFotoPreview.hide();
             $('#btn_eliminar_foto').prop('disabled', false);
         } else {
-            console.log('No hay foto disponible');
             $fotoPreview.hide();
             $noFotoPreview.show();
             $('#btn_eliminar_foto').prop('disabled', true);
@@ -1913,8 +1914,6 @@ $(document).ready(function () {
         const file = fileInput.files[0];
         const idEmpleado = $('#empleado_id').val();
         
-        console.log('Intentando subir foto:', file);
-        console.log('ID Empleado:', idEmpleado);
         
         if (!file || !idEmpleado) {
             mostrarAlerta('Seleccione una foto e intente de nuevo', 'warning');
@@ -1938,7 +1937,6 @@ $(document).ready(function () {
             processData: false,
             contentType: false,
             success: function(response) {
-                console.log('Respuesta del servidor:', response);
                 try {
                     // Handle both JSON and plain text responses
                     let result;
@@ -1947,11 +1945,9 @@ $(document).ready(function () {
                     } else {
                         result = response;
                     }
-                    console.log('Resultado parseado:', result);
                     if (result.success) {
                         mostrarAlerta('Foto subida correctamente', 'success');
                         // Actualizar la vista previa de la foto
-                        console.log('Actualizando vista previa con ruta:', result.ruta_foto);
                         $('#foto_preview').attr('src', result.ruta_foto).show();
                         $('#no_foto_preview').hide();
                         $('#btn_eliminar_foto').prop('disabled', false);
@@ -1972,14 +1968,11 @@ $(document).ready(function () {
                         mostrarAlerta(result.message || 'Error al subir la foto', 'error');
                     }
                 } catch (e) {
-                    console.error('Error al procesar la respuesta del servidor:', e);
-                    console.error('Respuesta recibida:', response);
+                   
                     mostrarAlerta('Error al procesar la respuesta del servidor', 'error');
                 }
             },
             error: function(xhr, status, error) {
-                console.error('Error al subir la foto:', error);
-                console.log('Detalles del error:', xhr, status);
                 mostrarAlerta('Error al subir la foto: ' + error, 'error');
             },
             complete: function() {
@@ -1994,7 +1987,6 @@ $(document).ready(function () {
     $('#btn_eliminar_foto').on('click', function() {
         const idEmpleado = $('#empleado_id').val();
         
-        console.log('Intentando eliminar foto para empleado ID:', idEmpleado);
         
         if (!idEmpleado) {
             mostrarAlerta('No se puede eliminar la foto: ID de empleado no encontrado', 'warning');
@@ -2094,7 +2086,7 @@ $(document).ready(function () {
             data: { id_empleado: idEmpleado },
             dataType: 'json', // Especificar que esperamos JSON
             success: function(result) {
-                console.log('Respuesta del servidor al eliminar foto:', result);
+              
                 if (result.success) {
                     mostrarAlerta('Foto eliminada correctamente', 'success');
                     // Actualizar la vista previa
@@ -2110,8 +2102,7 @@ $(document).ready(function () {
                 }
             },
             error: function(xhr, status, error) {
-                console.error('Error al eliminar la foto:', error);
-                console.log('Detalles del error:', xhr, status);
+             
                 mostrarAlerta('Error al eliminar la foto: ' + error, 'error');
             },
             complete: function() {
@@ -2245,16 +2236,35 @@ $(document).ready(function () {
 
     // Función para validar campos de teléfono
     function validarTelefono(campo, mensaje) {
-        const telefono = campo.val().trim();
+        // Verificar si campo es un objeto jQuery o un valor directo
+        let telefono;
+        if (typeof campo === 'string') {
+            // Si es un string, usarlo directamente
+            telefono = campo.trim();
+        } else if (campo && typeof campo.val === 'function') {
+            // Si es un objeto jQuery, usar su método val()
+            telefono = campo.val().trim();
+        } else {
+            // Si no es ninguno de los anteriores, mostrar error
+            mostrarAlerta('Campo de teléfono inválido', 'error');
+            return false;
+        }
+        
         if (telefono === '') {
             mostrarAlerta(mensaje, 'error');
-            campo.focus();
+            // Solo intentar enfocar si campo es un objeto jQuery
+            if (campo && typeof campo.focus === 'function') {
+                campo.focus();
+            }
             return false;
         }
         const telefonoValido = /^\d{10}$/;
         if (!telefonoValido.test(telefono)) {
             mostrarAlerta('Teléfono no válido (debe ser de 10 dígitos)', 'error');
+            // Solo intentar enfocar si campo es un objeto jQuery
+            if (campo && typeof campo.focus === 'function') {
             campo.focus();
+            }
             return false;
         }
         return true;

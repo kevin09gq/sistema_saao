@@ -51,7 +51,7 @@ class ActualizadorLogos {
             this.empresas = empresasData;
             this.areas = areasData;
         } catch (error) {
-            console.error('Error al cargar datos iniciales de logos:', error);
+           
             // No mostrar error al usuario ya que es carga en background
         }
     }
@@ -70,7 +70,7 @@ class ActualizadorLogos {
             this.renderizarEmpresas();
             this.renderizarAreas();
         } catch (error) {
-            console.error('Error al cargar datos:', error);
+          
             this.mostrarError('Error al cargar los datos de empresas y áreas');
         }
     }
@@ -364,7 +364,7 @@ class ActualizadorLogos {
                     }
                 })
                 .catch(error => {
-                    console.error('Error al eliminar logo:', error);
+                 
                     this.mostrarError('Error al eliminar el logo');
                 });
         });
@@ -396,7 +396,6 @@ class ActualizadorLogos {
                     resolve(response);
                 },
                 error: (xhr, status, error) => {
-                    console.error(`Error al eliminar logo ${tipo}_${id}:`, error);
                     reject(new Error(`Error AJAX: ${error}`));
                 }
             });
@@ -444,7 +443,7 @@ class ActualizadorLogos {
             }
 
         } catch (error) {
-            console.error('Error al actualizar logos:', error);
+           
             this.mostrarError('Error al actualizar los logos');
         } finally {
             // Ocultar loading
@@ -471,7 +470,6 @@ class ActualizadorLogos {
                     resolve(response);
                 },
                 error: (xhr, status, error) => {
-                    console.error(`Error al subir logo ${logoData.tipo}_${logoData.id}:`, error);
                     resolve({
                         success: false,
                         message: `Error al subir logo de ${logoData.nombre}: ${error}`
@@ -657,56 +655,45 @@ class ActualizadorLogos {
             }
 
         } catch (error) {
-            console.error('Error al limpiar logos huérfanos:', error);
+           
             this.mostrarError('Error al limpiar los logos huérfanos');
         }
     }
 
     // Función para obtener logos dinámicos de un empleado
     static obtenerLogosDinamicos(empleado) {
-        console.log('Obteniendo logos para empleado:', empleado);
         
         let logoAreaUrl = null; // Sin fallback por defecto
         let logoEmpresaUrl = null; // Sin fallback por defecto
 
         if (!window.actualizadorLogos) {
-            console.log('actualizadorLogos no está disponible');
             return { logoAreaUrl, logoEmpresaUrl };
         }
 
-        console.log('Datos disponibles - Areas:', window.actualizadorLogos.areas.length, 'Empresas:', window.actualizadorLogos.empresas.length);
 
         // Si el empleado tiene área, buscar su logo
         if (empleado.id_area) {
             const area = window.actualizadorLogos.areas.find(a => a.id_area == empleado.id_area);
-            console.log(`Buscando área ${empleado.id_area}:`, area);
             if (area && area.logo_area) {
                 logoAreaUrl = `logos_area/${area.logo_area}`;
-                console.log('Logo de área encontrado:', logoAreaUrl);
             }
         } else {
-            console.log('Empleado sin id_area:', empleado.clave_empleado);
         }
 
         // Si el empleado tiene empresa, buscar su logo
         if (empleado.id_empresa) {
             const empresa = window.actualizadorLogos.empresas.find(e => e.id_empresa == empleado.id_empresa);
-            console.log(`Buscando empresa ${empleado.id_empresa}:`, empresa);
             if (empresa && empresa.logo_empresa) {
                 logoEmpresaUrl = `logos_empresa/${empresa.logo_empresa}`;
-                console.log('Logo de empresa encontrado:', logoEmpresaUrl);
             }
         } else {
-            console.log('Empleado sin id_empresa:', empleado.clave_empleado);
         }
 
-        console.log('URLs finales - Area:', logoAreaUrl, 'Empresa:', logoEmpresaUrl);
         return { logoAreaUrl, logoEmpresaUrl };
     }
 
     // Función para interceptar y reemplazar URLs de logos estáticos
     static reemplazarLogosEstaticos() {
-        console.log('Configurando interceptación de logos post-renderizado...');
         
         // NO interceptamos la función mostrarGafetes original
         // En su lugar, interceptamos cuando se actualiza el contenido del DOM
@@ -715,7 +702,6 @@ class ActualizadorLogos {
     
     // Función para interceptar actualizaciones del DOM
     static interceptarActualizacionesDOM() {
-        console.log('Configurando observador del DOM para detectar gafetes...');
         
         // Crear un MutationObserver para detectar cuando se agregan gafetes al DOM
         const observer = new MutationObserver((mutations) => {
@@ -726,7 +712,6 @@ class ActualizadorLogos {
                             // Verificar si el nodo contiene gafetes
                             const gafetes = node.querySelectorAll ? node.querySelectorAll('.gafete') : [];
                             if (gafetes.length > 0 || (node.classList && node.classList.contains('gafete'))) {
-                                console.log('Detectados gafetes en el DOM, procesando logos...');
                                 setTimeout(() => {
                                     ActualizadorLogos.procesarLogosEnGafetes();
                                 }, 100); // Pequeño delay para asegurar que el DOM esté completo
@@ -744,7 +729,6 @@ class ActualizadorLogos {
                 childList: true,
                 subtree: true
             });
-            console.log('Observer configurado para contenidoGafetes');
         }
         
         // También observar el modal de gafetes
@@ -754,7 +738,6 @@ class ActualizadorLogos {
                 childList: true,
                 subtree: true
             });
-            console.log('Observer configurado para modalGafetes');
         }
         
         // Guardar referencia del observer
@@ -763,7 +746,6 @@ class ActualizadorLogos {
     
     // Función para interceptar append y modificar HTML antes del renderizado
     static interceptarAppendHTML() {
-        console.log('Interceptando jQuery append...');
         
         // Guardar la función original de append
         if (!window.jQueryAppendOriginal) {
@@ -772,7 +754,6 @@ class ActualizadorLogos {
             $.fn.append = function(content) {
                 // Si el contenido contiene logos estáticos, reemplazarlos
                 if (typeof content === 'string' && (content.includes('img/logo.jpg') || content.includes('img/logo2.png'))) {
-                    console.log('Detectado HTML con logos estáticos, reemplazando...');
                     content = ActualizadorLogos.reemplazarLogosEnHTML(content);
                 }
                 
@@ -793,7 +774,7 @@ class ActualizadorLogos {
         
         // Buscar por clave de empleado en el HTML
         for (const empleado of window.todosLosEmpleados) {
-            if (html.includes(empleado.clave_empleado)) {
+            if (empleado.clave_empleado && html.includes(empleado.clave_empleado.toString())) {
                 empleadoEncontrado = empleado;
                 break;
             }
@@ -802,25 +783,26 @@ class ActualizadorLogos {
         // Buscar por nombre si no se encontró por clave
         if (!empleadoEncontrado) {
             for (const empleado of window.todosLosEmpleados) {
-                const primerNombre = empleado.nombre ? empleado.nombre.split(' ')[0] : '';
-                if (primerNombre && primerNombre.length > 2 && html.includes(primerNombre)) {
-                    empleadoEncontrado = empleado;
-                    break;
+                if (empleado.nombre) {
+                    const nombres = empleado.nombre.split(' ');
+                    for (const nombre of nombres) {
+                        if (nombre.length > 2 && html.includes(nombre)) {
+                            empleadoEncontrado = empleado;
+                            break;
+                        }
+                    }
                 }
             }
         }
         
         if (empleadoEncontrado) {
-            console.log('Empleado encontrado en HTML:', empleadoEncontrado.clave_empleado);
             const { logoAreaUrl, logoEmpresaUrl } = ActualizadorLogos.obtenerLogosDinamicos(empleadoEncontrado);
             
             // Reemplazar las URLs en el HTML
             html = html.replace(/src="img\/logo\.jpg"/g, `src="${logoAreaUrl}"`);
             html = html.replace(/src="img\/logo2\.png"/g, `src="${logoEmpresaUrl}"`);
             
-            console.log('HTML modificado con logos dinámicos');
         } else {
-            console.log('No se pudo identificar empleado en el HTML');
         }
         
         return html;
@@ -828,26 +810,21 @@ class ActualizadorLogos {
 
     // Función para procesar y reemplazar logos en los gafetes ya generados
     static procesarLogosEnGafetes() {
-        console.log('Procesando logos en gafetes renderizados...');
         
         if (!window.actualizadorLogos) {
-            console.log('actualizadorLogos no disponible, esperando...');
             return;
         }
         
         if (window.actualizadorLogos.areas.length === 0 || window.actualizadorLogos.empresas.length === 0) {
-            console.log('Datos de logos no disponibles, cargando...');
             window.actualizadorLogos.cargarDatosIniciales().then(() => {
                 ActualizadorLogos.procesarLogosEnGafetes();
             });
             return;
         }
 
-        console.log('Datos disponibles - Áreas:', window.actualizadorLogos.areas.length, 'Empresas:', window.actualizadorLogos.empresas.length);
 
         // Buscar todas las imágenes de logos en los gafetes
         const imagenes = document.querySelectorAll('#contenidoGafetes img, #modalGafetes img');
-        console.log('Imágenes encontradas en gafetes:', imagenes.length);
         
         let logosReemplazados = 0;
         
@@ -856,13 +833,12 @@ class ActualizadorLogos {
             
             // Solo procesar logos estáticos
             if (src === 'img/logo.jpg' || src === 'img/logo2.png') {
-                console.log(`Procesando imagen ${index + 1}: ${src}`);
                 
                 // Encontrar el empleado correspondiente a este gafete
                 const empleado = ActualizadorLogos.encontrarEmpleadoPorImagen(img);
                 
                 if (empleado) {
-                    console.log('Empleado encontrado:', empleado.clave_empleado);
+                    
                     const { logoAreaUrl, logoEmpresaUrl } = ActualizadorLogos.obtenerLogosDinamicos(empleado);
                     
                     let nuevoSrc = null;
@@ -870,10 +846,8 @@ class ActualizadorLogos {
                     // Reemplazar según el tipo de logo
                     if (src === 'img/logo.jpg') {
                         nuevoSrc = logoAreaUrl;
-                        console.log(`Reemplazando logo de área: ${src} → ${nuevoSrc}`);
                     } else if (src === 'img/logo2.png') {
                         nuevoSrc = logoEmpresaUrl;
-                        console.log(`Reemplazando logo de empresa: ${src} → ${nuevoSrc}`);
                     }
                     
                     if (nuevoSrc && nuevoSrc !== src) {
@@ -883,7 +857,6 @@ class ActualizadorLogos {
                         
                         // Añadir error handler para ocultar imagen si no carga
                         img.onerror = function() {
-                            console.log('Error cargando logo dinámico, ocultando imagen');
                             this.style.display = 'none';
                             this.onerror = null;
                         };
@@ -894,17 +867,13 @@ class ActualizadorLogos {
                         img.setAttribute('data-logo-procesado', 'true');
                     }
                 } else {
-                    console.log('No se pudo encontrar empleado para la imagen', index + 1);
                 }
             } else if (img.getAttribute('data-logo-procesado') !== 'true') {
-                console.log(`Imagen ${index + 1} no es un logo estático: ${src}`);
             }
         });
         
-        console.log(`Procesamiento completado. Logos reemplazados: ${logosReemplazados}`);
-        
         if (logosReemplazados > 0) {
-            console.log('✅ Logos dinámicos aplicados exitosamente');
+            // Logos reemplazados exitosamente
         }
     }
     
@@ -913,23 +882,19 @@ class ActualizadorLogos {
         // Buscar el contenedor de gafete más cercano
         const gafete = img.closest('.gafete');
         if (!gafete) {
-            console.log('No se encontró contenedor .gafete para la imagen');
             return null;
         }
 
         // Obtener todo el texto del gafete
         const textoGafete = gafete.textContent || gafete.innerText || '';
-        console.log('Texto del gafete:', textoGafete.substring(0, 100) + '...');
         
         // Buscar empleados usando datos globales
         const empleados = window.todosLosEmpleados || [];
         
         if (empleados.length === 0) {
-            console.log('No hay empleados disponibles en window.todosLosEmpleados');
             // Intentar obtener del set de empleados seleccionados
             if (window.empleadosSeleccionados && window.empleadosSeleccionados.size > 0) {
                 const empleadosSeleccionadosArray = Array.from(window.empleadosSeleccionados);
-                console.log('Usando empleados seleccionados:', empleadosSeleccionadosArray);
                 // Para este caso, retornar el primer empleado como aproximación
                 // En una implementación real, necesitaríamos obtener los datos completos
                 return { id_empleado: empleadosSeleccionadosArray[0] };
@@ -940,7 +905,6 @@ class ActualizadorLogos {
         // Método 1: Buscar por clave de empleado (más confiable)
         for (const empleado of empleados) {
             if (empleado.clave_empleado && textoGafete.includes(empleado.clave_empleado.toString())) {
-                console.log(`Empleado encontrado por clave: ${empleado.clave_empleado}`);
                 return empleado;
             }
         }
@@ -951,7 +915,6 @@ class ActualizadorLogos {
                 const nombres = empleado.nombre.split(' ');
                 for (const nombre of nombres) {
                     if (nombre.length > 2 && textoGafete.includes(nombre)) {
-                        console.log(`Empleado encontrado por nombre: ${nombre} (${empleado.clave_empleado})`);
                         return empleado;
                     }
                 }
@@ -961,44 +924,16 @@ class ActualizadorLogos {
         // Método 3: Buscar por apellidos
         for (const empleado of empleados) {
             if (empleado.ap_paterno && empleado.ap_paterno.length > 3 && textoGafete.includes(empleado.ap_paterno)) {
-                console.log(`Empleado encontrado por apellido paterno: ${empleado.ap_paterno} (${empleado.clave_empleado})`);
                 return empleado;
             }
         }
         
-        console.log('No se pudo identificar el empleado en este gafete');
         return null;
     }
 
     // Función de debug para verificar el estado del sistema
     static debugLogos() {
-        console.log('=== DEBUG LOGOS (Post-Renderizado) ===');
-        console.log('window.actualizadorLogos disponible:', !!window.actualizadorLogos);
-        if (window.actualizadorLogos) {
-            console.log('Número de áreas:', window.actualizadorLogos.areas.length);
-            console.log('Áreas:', window.actualizadorLogos.areas);
-            console.log('Número de empresas:', window.actualizadorLogos.empresas.length);
-            console.log('Empresas:', window.actualizadorLogos.empresas);
-        }
-        console.log('window.empleadosSeleccionados disponible:', !!window.empleadosSeleccionados);
-        if (window.empleadosSeleccionados) {
-            console.log('Número de empleados seleccionados:', window.empleadosSeleccionados.size);
-        }
-        console.log('window.todosLosEmpleados disponible:', !!window.todosLosEmpleados);
-        if (window.todosLosEmpleados) {
-            console.log('Número de empleados:', window.todosLosEmpleados.length);
-        }
-        console.log('Observer configurado:', !!window.logoObserver);
-        
-        // Contar imágenes de logos estáticos en el DOM
-        const imagenesEstaticas = document.querySelectorAll('img[src="img/logo.jpg"], img[src="img/logo2.png"]');
-        console.log('Imágenes estáticas encontradas:', imagenesEstaticas.length);
-        
-        const imagenesProcesadas = document.querySelectorAll('img[data-logo-procesado="true"]');
-        console.log('Imágenes ya procesadas:', imagenesProcesadas.length);
-        
-        console.log('Sistema de reemplazo post-renderizado activo');
-        console.log('==========================================');
+        // Función de depuración sin logs de consola
     }
 }
 
@@ -1014,19 +949,13 @@ $(document).ready(() => {
     
     // Exponer función para procesar logos manualmente
     window.procesarLogos = () => {
-        console.log('Procesando logos manualmente...');
         ActualizadorLogos.procesarLogosEnGafetes();
     };
     
     // Procesar logos automáticamente cuando se muestre el modal de gafetes
     $('#modalGafetes').on('shown.bs.modal', () => {
-        console.log('Modal de gafetes mostrado, procesando logos...');
         setTimeout(() => {
             ActualizadorLogos.procesarLogosEnGafetes();
         }, 500); // Delay para asegurar que el contenido esté renderizado
     });
-    
-    console.log('Sistema de logos dinámicos inicializado.');
-    console.log('- Usa debugLogos() para verificar el estado.');
-    console.log('- Usa procesarLogos() para procesar logos manualmente.');
 });

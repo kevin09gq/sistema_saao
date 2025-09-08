@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Script subirFotos.js cargado correctamente');
-    const btnSubirFotos = document.getElementById('subirFotos');
+     const btnSubirFotos = document.getElementById('subirFotos');
     const inputFotos = document.getElementById('fotosEmpleados');
     const vistaPreviaFotos = document.getElementById('vistaPreviaFotos');
     const listaEmpleadosSeleccionados = document.getElementById('listaEmpleadosSeleccionados');
@@ -22,15 +21,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Si no está disponible globalmente, obtener desde los checkboxes
         if (empleadosSeleccionadosGlobal.size === 0) {
             const checkboxes = document.querySelectorAll('#tablaEmpleados input[type="checkbox"]:checked');
-            console.log('Empleados seleccionados desde checkboxes:', checkboxes.length);
             
             empleadosSeleccionados = Array.from(checkboxes).map(checkbox => {
                 const fila = checkbox.closest('tr');
                 const nombre = fila.querySelector('td:nth-child(2)')?.textContent.trim() || 'Sin nombre';
                 const clave = fila.querySelector('td:first-child')?.textContent.trim() || 'Sin clave';
                 
-                console.log(`Empleado: ${nombre} (${clave})`);
-                
+             
                 return {
                     id: checkbox.value,
                     nombre: nombre,
@@ -39,7 +36,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         } else {
             // Usar los empleados seleccionados globalmente
-            console.log('Empleados seleccionados globalmente:', empleadosSeleccionadosGlobal.size);
             
             // Obtener los datos de los empleados desde todosLosEmpleados si está disponible
             const empleadosCompletos = [];
@@ -345,11 +341,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Mostrar errores si los hay (pero sin alertas molestas)
             if (data.errores && data.errores.length > 0) {
-                console.log('Algunos archivos tuvieron errores:', data.errores);
             }
         } catch (error) {
-            console.error('Error:', error);
-            // Remover estado de carga si hay error
+           // Remover estado de carga si hay error
             tarjetas.forEach(tarjeta => {
                 tarjeta.classList.remove('uploading');
             });

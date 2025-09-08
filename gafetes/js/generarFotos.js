@@ -1,14 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Script generarFotos.js cargado correctamente');
     
     // Función principal para generar fotos
     function generarFotosEmpleados() {
         // Obtener empleados seleccionados desde la variable global o desde checkboxes
         let empleadosSeleccionados = new Set();
-        
-        console.log('=== DEBUG INICIO ===');
-        console.log('Variable global window.empleadosSeleccionados:', window.empleadosSeleccionados);
-        console.log('Tipo de variable global:', typeof window.empleadosSeleccionados);
         
         // Método 1: Intentar acceder a la variable global
         if (window.empleadosSeleccionados && window.empleadosSeleccionados.size > 0) {
@@ -19,74 +14,51 @@ document.addEventListener('DOMContentLoaded', function() {
                     empleadosSeleccionados.add(numericId);
                 }
             });
-            console.log('Método 1: Variable global encontrada, IDs normalizados a enteros');
-            console.log('Método 1: IDs encontrados:', Array.from(empleadosSeleccionados));
         } 
         
         // Método 2: Si no hay variable global o está vacía, obtener desde checkboxes directamente
         if (empleadosSeleccionados.size === 0) {
             const checkboxes = document.querySelectorAll('#tablaEmpleados input[type="checkbox"]:checked');
-            console.log('Método 2: Checkboxes encontrados:', checkboxes.length);
             checkboxes.forEach((checkbox, index) => {
                 const value = parseInt(checkbox.value);
                 if (!isNaN(value)) {
                     empleadosSeleccionados.add(value);
-                    console.log(`Checkbox ${index + 1}: value=${checkbox.value}, parsed=${value}`);
                 }
             });
-            console.log('Método 2: Obtenido desde checkboxes');
         }
         
         // Método 3: Último intento con jQuery si está disponible
         if (empleadosSeleccionados.size === 0 && typeof $ !== 'undefined') {
-            console.log('Método 3: Intentando con jQuery');
             const jqueryCheckboxes = $('#tablaEmpleados input[type="checkbox"]:checked');
-            console.log('Método 3: jQuery checkboxes encontrados:', jqueryCheckboxes.length);
             jqueryCheckboxes.each(function(index) {
                 const value = parseInt($(this).val());
                 if (!isNaN(value)) {
                     empleadosSeleccionados.add(value);
-                    console.log(`jQuery checkbox ${index + 1}: value=${$(this).val()}, parsed=${value}`);
                 }
             });
-            console.log('Método 3: Obtenido con jQuery');
         }
         
         // Método 4: Alternativo usando clase específica
         if (empleadosSeleccionados.size === 0) {
-            console.log('Método 4: Intentando con clase .empleado-checkbox');
             const empleadoCheckboxes = document.querySelectorAll('.empleado-checkbox:checked');
-            console.log('Método 4: Checkboxes con clase empleado-checkbox:', empleadoCheckboxes.length);
             empleadoCheckboxes.forEach((checkbox, index) => {
                 const value = parseInt(checkbox.value);
                 if (!isNaN(value)) {
                     empleadosSeleccionados.add(value);
-                    console.log(`Empleado checkbox ${index + 1}: value=${checkbox.value}, parsed=${value}`);
                 }
             });
         }
         
         // Método 5: Último recurso - buscar por data-id
         if (empleadosSeleccionados.size === 0) {
-            console.log('Método 5: Último recurso - buscar por data-id');
             const dataIdCheckboxes = document.querySelectorAll('input[data-id]:checked');
-            console.log('Método 5: Checkboxes con data-id encontrados:', dataIdCheckboxes.length);
             dataIdCheckboxes.forEach((checkbox, index) => {
                 const dataId = parseInt(checkbox.getAttribute('data-id'));
                 if (!isNaN(dataId)) {
                     empleadosSeleccionados.add(dataId);
-                    console.log(`Data-id checkbox ${index + 1}: data-id=${checkbox.getAttribute('data-id')}, parsed=${dataId}`);
                 }
             });
         }
-        
-        console.log('=== RESULTADO FINAL ===');
-        console.log('Empleados seleccionados:', Array.from(empleadosSeleccionados));
-        console.log('Cantidad de empleados seleccionados:', empleadosSeleccionados.size);
-        console.log('Variable global contenido:', window.empleadosSeleccionados ? Array.from(window.empleadosSeleccionados) : 'No disponible');
-        console.log('Total checkboxes en tabla:', document.querySelectorAll('#tablaEmpleados input[type="checkbox"]').length);
-        console.log('Total checkboxes marcados en tabla:', document.querySelectorAll('#tablaEmpleados input[type="checkbox"]:checked').length);
-        console.log('=== FIN DEBUG ===');
         
         // Verificar si hay empleados seleccionados
         if (empleadosSeleccionados.size === 0) {
@@ -111,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 generarContenidoFotos(empleados);
             })
             .catch(error => {
-                console.error('Error al generar fotos:', error);
+              
                 mostrarAlertaFoto('Error al generar las fotos: ' + error.message, 'danger');
             })
             .finally(() => {
@@ -144,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(data.message || 'Error al obtener datos de empleados');
             }
         } catch (error) {
-            console.error('Error en obtenerDatosEmpleados:', error);
+       
             throw error;
         }
     }
@@ -397,7 +369,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 try {
                     ventana.close();
                 } catch (e) {
-                    console.log('No se pudo cerrar la ventana automáticamente');
                 }
             }
         };
