@@ -115,83 +115,19 @@ CREATE TABLE info_admin (
 -- TABLAS DE NÓMINA
 -- =============================
 
-
-CREATE TABLE fecha_nomina (
-    num_semana INT NOT NULL,
-    ano VARCHAR(6) NOT NULL,
-    PRIMARY KEY (num_semana)
-);
-
-
 CREATE TABLE nomina (
-    id_empleado INT NOT NULL,
-    numero_semana INT NOT NULL,
-    incentivo DECIMAL NULL,
-    extras DECIMAL NULL,
-    prestamo DECIMAL NULL,
-    inasistencias DECIMAL NULL,
-    uniformes DECIMAL NULL,
-    infonavit DECIMAL NULL,
-    isr DECIMAL NULL,
-    immss DECIMAL NULL,
-    checadora DECIMAL NULL,
-    fa_gafet_cofian DECIMAL NULL,
-    sueldo_a_cobrar DECIMAL NULL,
-    minutos_extras DECIMAL NULL,
-    minutos_trabajados DECIMAL NULL,
-    actividades_especiales DECIMAL NULL,
-    bono_antiguedad DECIMAL NULL,
-    bono_puesto DECIMAL NULL,
-    inasistencias_descuenta DECIMAL NULL,
-    inasistencias_minutos DECIMAL NULL,
-    sueldo_base DECIMAL NULL,
-    sueldo_extra  DECIMAL NULL,
-    sueldo_extra_final DECIMAL NULL,
-    tiempo_redondeado VARCHAR(10),
-    total_extra_calculado DECIMAL NULL,
-    total_minutos_redondeados DECIMAL NULL,
-    FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado),
-    FOREIGN KEY (numero_semana) REFERENCES fecha_nomina(num_semana)
+  id_nomina_json INT  PRIMARY KEY,
+  id_empresa INT NOT NULL,
+  datos_nomina JSON NOT NULL,
+  FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
 );
 
-CREATE TABLE tarjeta (
-    id_empleado INT NOT NULL,
-    num_semana INT NOT NULL,
-    tarjeta DECIMAL DEFAULT 0,
-    FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado),
-    FOREIGN KEY (num_semana) REFERENCES fecha_nomina(num_semana)
+CREATE TABLE horarios_oficiales (
+  id_horario INT  PRIMARY KEY,
+  id_empresa INT NOT NULL,
+  horario_json JSON NOT NULL,
+  FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
 );
-
-
-CREATE TABLE horarios_semanales (
-    numero_semana INT NOT NULL,
-    dia VARCHAR(20) NOT NULL,
-    entrada_comer VARCHAR,
-    salida_comer VARCHAR,
-    salida VARCHAR,
-    total_horas VARCHAR,
-    horas_comida VARCHAR
-    FOREIGN KEY (numero_semana) REFERENCES fecha_nomina(num_semana)
-);
-
-CREATE TABLE registros_redondeados (
-    id_empleado INT NOT NULL,
-    num_semana INT NOT NULL,
-    dia VARCHAR(20),
-    fecha VARCHAR(20),
-    hora_entrada VARCHAR(20),
-    entrada_comer VARCHAR(20),
-    salida_comer VARCHAR(20),
-    salida VARCHAR(20),
-    hora_comida VARCHAR(20),
-    entrada_temprana VARCHAR(20),
-    salida_tardia VARCHAR(20),
-    trabajado VARCHAR(20),
-    olvido_checador BOOLEAN,
-    FOREIGN KEY (num_semana) REFERENCES fecha_nomina(num_semana),
-    FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado)
-);
-
 
 
 -- =============================

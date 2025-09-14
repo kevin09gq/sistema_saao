@@ -253,7 +253,7 @@ include("../../config/config.php");
     <script src="../controllers/paginacion.js"></script>
     <script src="../controllers/config_actualizar.js"></script>
     <script src="../../public/js/validaciones.js"></script>
-    <script src="<?= $rutaRaiz ?>/plugins/toasts/vanillatoasts.js""></script
+    <script src="<?= $rutaRaiz ?>/plugins/toasts/vanillatoasts.js""></script>
 
 </body>
 

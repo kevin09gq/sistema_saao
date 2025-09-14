@@ -184,33 +184,46 @@ INSERT INTO departamentos (id_departamento, nombre_departamento) VALUES
 (8, 'Administracion Sucursal CdMx');
 
 
--- Adminstracion
+-- Administracion
 INSERT INTO info_empleados (id_rol, id_status, nombre, ap_paterno, ap_materno, sexo, id_departamento, clave_empleado)
-VALUES (2, 1, 'LETICIA', 'ALVAREZ', 'SOSA', 'F', 1, 3);
+VALUES (2, 1, 'LETICIA', 'ALVAREZ', 'SOSA', 'F', 1, '003');
+
 INSERT INTO info_empleados (id_rol, id_status, nombre, ap_paterno, ap_materno, sexo, id_departamento, clave_empleado)
-VALUES (2, 1, 'GUADALUPE', 'GUTIERREZ', 'MELENDEZ', 'M', 1, 9);
+VALUES (2, 1, 'GUADALUPE', 'GUTIERREZ', 'MELENDEZ', 'M', 1, '009');
+
 INSERT INTO info_empleados (id_rol, id_status, nombre, ap_paterno, ap_materno, sexo, id_departamento, clave_empleado)
-VALUES (2, 1, 'DORA GUILLERMINA', 'GARCIA', 'CELIS', 'F', 1, 15);
+VALUES (2, 1, 'DORA GUILLERMINA', 'GARCIA', 'CELIS', 'F', 1, '015');
+
 INSERT INTO info_empleados (id_rol, id_status, nombre, ap_paterno, ap_materno, sexo, id_departamento, clave_empleado)
-VALUES (2, 1, 'MANUEL ANTONIO', 'SAAVEDRA', 'BONILLA', 'M', 1, 19);
+VALUES (2, 1, 'MANUEL ANTONIO', 'SAAVEDRA', 'BONILLA', 'M', 1, '019');
+
 INSERT INTO info_empleados (id_rol, id_status, nombre, ap_paterno, ap_materno, sexo, id_departamento, clave_empleado)
-VALUES (2, 1, 'GAMALIEL', 'PADILLA', 'VILLEGAS', 'M', 1, 40);
+VALUES (2, 1, 'GAMALIEL', 'PADILLA', 'VILLEGAS', 'M', 1, '040');
+
 INSERT INTO info_empleados (id_rol, id_status, nombre, ap_paterno, ap_materno, sexo, id_departamento, clave_empleado)
-VALUES (2, 1, 'EVA MARIA', 'LARA', 'BARRIOS', 'F', 1, 88);
+VALUES (2, 1, 'EVA MARIA', 'LARA', 'BARRIOS', 'F', 1, '088');
+
 INSERT INTO info_empleados (id_rol, id_status, nombre, ap_paterno, ap_materno, sexo, id_departamento, clave_empleado)
-VALUES (2, 1, 'JOAN', 'MELO', 'HERNANDEZ', 'M', 1, 93);
+VALUES (2, 1, 'JOAN', 'MELO', 'HERNANDEZ', 'M', 1, '093');
+
 INSERT INTO info_empleados (id_rol, id_status, nombre, ap_paterno, ap_materno, sexo, id_departamento, clave_empleado)
-VALUES (2, 1, 'IVETTE', 'BRINGAS', 'MEJIA', 'M', 1, 99);
+VALUES (2, 1, 'IVETTE', 'BRINGAS', 'MEJIA', 'M', 1, '099');
+
 INSERT INTO info_empleados (id_rol, id_status, nombre, ap_paterno, ap_materno, sexo, id_departamento, clave_empleado)
-VALUES (2, 1, 'ZAIDE ABIGAHIL', 'BARRIENTOS', 'GOMEZ', 'M', 1, 166);
+VALUES (2, 1, 'ZAIDE ABIGAHIL', 'BARRIENTOS', 'GOMEZ', 'M', 1, '166');
+
 INSERT INTO info_empleados (id_rol, id_status, nombre, ap_paterno, ap_materno, sexo, id_departamento, clave_empleado)
-VALUES (2, 1, 'ESMERALDA', 'LORENZO', 'BARTOLOME', 'F', 1, 178);
+VALUES (2, 1, 'ESMERALDA', 'LORENZO', 'BARTOLOME', 'F', 1, '178');
+
 INSERT INTO info_empleados (id_rol, id_status, nombre, ap_paterno, ap_materno, sexo, id_departamento, clave_empleado)
-VALUES (2, 1, 'IVAN', 'GARCIA', 'OCHOA', 'M', 1, 179);
+VALUES (2, 1, 'IVAN', 'GARCIA', 'OCHOA', 'M', 1, '179');
+
 INSERT INTO info_empleados (id_rol, id_status, nombre, ap_paterno, ap_materno, sexo, id_departamento, clave_empleado)
-VALUES (2, 1, 'RAMON ARTURO', 'RODRIGUEZ', 'ARROYO', 'M', 1, 240);
+VALUES (2, 1, 'RAMON ARTURO', 'RODRIGUEZ', 'ARROYO', 'M', 1, '240');
+
 INSERT INTO info_empleados (id_rol, id_status, nombre, ap_paterno, ap_materno, sexo, id_departamento, clave_empleado)
-VALUES (2, 1, 'ERICK ADRIAN', 'ROMAN', 'MENDEZ', 'M', 1, 272);
+VALUES (2, 1, 'ERICK ADRIAN', 'ROMAN', 'MENDEZ', 'M', 1, '272');
+
 
 -- Personal de Confianza Produccion
 

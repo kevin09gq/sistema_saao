@@ -4,6 +4,13 @@ let paginaActualNomina = 1;
 const empleadosPorPagina = 7;
 
 function setEmpleadosPaginados(array) {
+    // Recalcular sueldos antes de filtrar
+    array.forEach(emp => {
+        if (typeof calcularSueldoACobraPorEmpleado === 'function') {
+            calcularSueldoACobraPorEmpleado(emp);
+        }
+    });
+    
     // Filtrar solo empleados registrados antes de paginar
     filtrarEmpleadosRegistradosYPaginar(array);
 }
@@ -25,6 +32,13 @@ function filtrarEmpleadosRegistradosYPaginar(todosLosEmpleados) {
             // Filtrar solo empleados que están registrados en la base de datos
             const empleadosRegistrados = todosLosEmpleados.filter(emp => {
                 return clavesValidas.includes(String(emp.clave)) || clavesValidas.includes(Number(emp.clave));
+            });
+            
+            // Recalcular sueldos antes de asignar
+            empleadosRegistrados.forEach(emp => {
+                if (typeof calcularSueldoACobraPorEmpleado === 'function') {
+                    calcularSueldoACobraPorEmpleado(emp);
+                }
             });
             
             // Ahora asignar a empleadosPaginados solo los empleados registrados
@@ -50,6 +64,13 @@ function renderTablaPaginada() {
     const inicio = (paginaActualNomina - 1) * empleadosPorPagina;
     const fin = inicio + empleadosPorPagina;
     const empleadosPagina = empleadosPaginados.slice(inicio, fin);
+    
+    // Recalcular sueldos antes de renderizar
+    empleadosPagina.forEach(emp => {
+        if (typeof calcularSueldoACobraPorEmpleado === 'function') {
+            calcularSueldoACobraPorEmpleado(emp);
+        }
+    });
     
     // Renderiza la tabla con los empleados de la página actual
     mostrarDatosTablaPaginada(empleadosPagina);
@@ -86,6 +107,11 @@ function mostrarDatosTablaPaginada(empleadosPagina) {
     // Renderizar solo los empleados de la página actual
     // Nota: empleadosPagina ya contiene solo empleados registrados
     empleadosPagina.forEach(emp => {
+        // Recalcular sueldo a cobrar antes de mostrar
+        if (typeof calcularSueldoACobraPorEmpleado === 'function') {
+            calcularSueldoACobraPorEmpleado(emp);
+        }
+        
         // Obtener conceptos
         const conceptos = emp.conceptos || [];
         const getConcepto = (codigo) => {
@@ -99,15 +125,17 @@ function mostrarDatosTablaPaginada(empleadosPagina) {
         // Usar el puesto original del empleado
         let puestoEmpleado = emp.puesto || emp.nombre_departamento || '';
 
-        // Obtener el incentivo si existe
-        const incentivo = emp.incentivo ? emp.incentivo.toFixed(2) : '';
+        // Obtener el incentivo si existe y formatearlo correctamente
+        const incentivo = emp.incentivo ? parseFloat(emp.incentivo).toFixed(2) : '';
 
         // Función para mostrar cadena vacía en lugar de 0, NaN o valores vacíos
         const mostrarValor = (valor) => {
             if (valor === 0 || valor === '0' || valor === '' || valor === null || valor === undefined || isNaN(valor)) {
                 return '';
             }
-            return valor;
+            // Formatear números con dos decimales
+            const num = parseFloat(valor);
+            return isNaN(num) ? '' : num.toFixed(2);
         };
 
         let fila = `
@@ -127,7 +155,7 @@ function mostrarDatosTablaPaginada(empleadosPagina) {
                 <td>${mostrarValor(imss)}</td>
                 <td>${mostrarValor(emp.checador)}</td>
                 <td>${mostrarValor(emp.fa_gafet_cofia)}</td>
-                <td>${mostrarValor(emp.sueldo_a_cobrar ? emp.sueldo_a_cobrar.toFixed(2) : '')}</td>
+                <td>${mostrarValor(emp.sueldo_a_cobrar)}</td>
             </tr>
         `;
         $('#tabla-nomina-body').append(fila);
@@ -199,6 +227,13 @@ const empleadosPorPaginaDispersion = 7;
 
 // Función para establecer empleados paginados para dispersión
 function setEmpleadosDispersionPaginados(array) {
+    // Recalcular sueldos antes de asignar
+    array.forEach(emp => {
+        if (typeof calcularSueldoACobraPorEmpleado === 'function') {
+            calcularSueldoACobraPorEmpleado(emp);
+        }
+    });
+    
     empleadosDispersionPaginados = array;
     paginaActualDispersion = 1;
     renderTablaDispersionPaginada();
@@ -209,6 +244,13 @@ function renderTablaDispersionPaginada() {
     const inicio = (paginaActualDispersion - 1) * empleadosPorPaginaDispersion;
     const fin = inicio + empleadosPorPaginaDispersion;
     const empleadosPagina = empleadosDispersionPaginados.slice(inicio, fin);
+    
+    // Recalcular sueldos antes de renderizar
+    empleadosPagina.forEach(emp => {
+        if (typeof calcularSueldoACobraPorEmpleado === 'function') {
+            calcularSueldoACobraPorEmpleado(emp);
+        }
+    });
     
     // Renderiza la tabla con los empleados de la página actual
     mostrarDatosTablaDispersionPaginada(empleadosPagina);
@@ -227,7 +269,9 @@ function mostrarDatosTablaDispersionPaginada(empleadosPagina) {
         if (valor === 0 || valor === '0' || valor === '' || valor === null || valor === undefined || isNaN(valor)) {
             return '';
         }
-        return valor;
+        // Formatear números con dos decimales
+        const num = parseFloat(valor);
+        return isNaN(num) ? '' : num.toFixed(2);
     };
     
     // Renderizar solo los empleados de la página actual

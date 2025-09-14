@@ -478,6 +478,9 @@ $(document).ready(function () {
                 //Actualizar la tabla de empleados
                 obtenerDatosEmpleados();
 
+                // Cerrar el modal
+                $("#modal_actualizar_empleado").modal("hide");
+
                 VanillaToasts.create({
                     title: response.title,
                     text: response.text,

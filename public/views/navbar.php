@@ -20,7 +20,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="<?= $rutaRaiz ?>/gafetes/index.php">
+                    <a class="nav-link" href="<?= $rutaRaiz ?>/gafetes/gafetes.php">
                         <i class="bi bi-credit-card me-2"></i>
                         Gafetes
                     </a>
@@ -55,4 +55,4 @@
 </nav>
 
 <!-- Incluir estilos del navbar -->
-<link rel="stylesheet" href="<?= $rutaRaiz ?>/public/styles/navbar_styles.css">
+<link rel="stylesheet" href="<?=$rutaRaiz ?>/public/styles/navbar_styles.css">

@@ -27,6 +27,17 @@ function configTablas() {
         $("#busqueda-container-dispersion").attr("hidden", true);
         $("#btn_suma").removeAttr("hidden");
         $("#btn_suma_dispersion").attr("hidden", true);
+
+        // Refrescar la tabla de nómina para asegurar que los cálculos estén actualizados
+        if (typeof setEmpleadosPaginados === 'function' && window.empleadosOriginales) {
+            // Recalcular sueldos antes de mostrar
+            window.empleadosOriginales.forEach(emp => {
+                if (typeof calcularSueldoACobraPorEmpleado === 'function') {
+                    calcularSueldoACobraPorEmpleado(emp);
+                }
+            });
+            setEmpleadosPaginados(window.empleadosOriginales);
+        }
     });
 
     $('#btn_tabla_dispersión').click(function (e) {
@@ -39,15 +50,29 @@ function configTablas() {
         validarClaves();
         $("#busqueda-container-dispersion").removeAttr("hidden");
         $("#busqueda-container").attr("hidden", true);
-         $("#btn_suma_dispersion").removeAttr("hidden");
+        $("#btn_suma_dispersion").removeAttr("hidden");
         $("#btn_suma").attr("hidden", true);
+
+        // Refrescar la tabla de dispersión para asegurar que los datos estén actualizados
+        if (typeof setEmpleadosDispersionPaginados === 'function' && window.empleadosOriginalesDispersion) {
+            // Recalcular sueldos antes de mostrar
+            window.empleadosOriginalesDispersion.forEach(emp => {
+                if (typeof calcularSueldoACobraPorEmpleado === 'function') {
+                    calcularSueldoACobraPorEmpleado(emp);
+                }
+            });
+            setEmpleadosDispersionPaginados(window.empleadosOriginalesDispersion);
+        }
     });
 }
 
 $(document).ready(function () {
+    // Verificar si hay datos guardados de nómina
+    verificarDatosGuardados();
     obtenerArchivos();
     configTablas();
-    window.horariosSemanalesActualizados = JSON.parse(JSON.stringify(window.horariosSemanales));
+
+
     $('#btn_horarios').click(function (e) {
         e.preventDefault();
         setDataTableHorarios(window.horariosSemanalesActualizados);
@@ -55,15 +80,353 @@ $(document).ready(function () {
         actualizarHorariosSemanalesActualizados();
 
         // Calcular minutos para cada fila inmediatamente después de cargar
-        setTimeout(function() {
+        setTimeout(function () {
             $(".tabla-horarios tbody tr").each(function () {
                 calcularMinutosTotales($(this));
             });
             calcularTotalesSemana();
         }, 100);
-
     });
+
+    // Establecer Datos Por Defecto en la tabla de Horarios
+    // Este Evento se llamara cuando se una el JsonGlobal
+
+    // Llamamos la función pasándole el JSON que está en rangos_horarios.js
+    function setDataTableHorarios(data) {
+        var tbody = $(".tabla-horarios tbody");
+        tbody.empty();
+
+        //  DEFINIR EL ORDEN CORRECTO DE LOS DÍAS (empezando desde viernes)
+        const ordenDias = ['viernes', 'sabado', 'domingo', 'lunes', 'martes', 'miercoles', 'jueves'];
+
+        //  PROCESAR LOS DÍAS EN EL ORDEN CORRECTO
+        ordenDias.forEach(function (claveDia) {
+            // Verificar que el día existe en los datos
+            if (data.semana && data.semana[claveDia]) {
+                var diaInfo = data.semana[claveDia];
+                var fila = $("<tr>").addClass("fila-horario");
+
+                fila.append($("<td>").addClass("etiqueta-dia").text(diaInfo.dia));
+                fila.append($("<td>").addClass("celda-hora editable").attr("contenteditable", "true").text(diaInfo.entrada));
+                fila.append($("<td>").addClass("celda-hora editable").attr("contenteditable", "true").text(diaInfo.salidaComida));
+                fila.append($("<td>").addClass("celda-hora editable").attr("contenteditable", "true").text(diaInfo.entradaComida));
+                fila.append($("<td>").addClass("celda-hora editable").attr("contenteditable", "true").text(diaInfo.salida));
+                fila.append($("<td>").addClass("celda-total editable").attr("contenteditable", "true").text(diaInfo.totalHoras));
+                fila.append($("<td>").addClass("celda-comida editable").attr("contenteditable", "true").text(diaInfo.horasComida));
+                fila.append($("<td>").addClass("celda-minutos").text("0"));
+
+                tbody.append(fila);
+            }
+        });
+    }
+
+    // Guardar datos antes de cambiar de página
+    $(window).on('beforeunload', function () {
+        if (jsonGlobal && window.empleadosOriginales && window.empleadosOriginales.length > 0) {
+            guardarDatosNomina();
+        }
+    });
+
+    // Botón para limpiar datos y volver al inicio
+    $('#btn_limpiar_datos').on('click', function (e) {
+        e.preventDefault();
+
+        // Confirmar antes de limpiar usando SweetAlert2
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: '¿Deseas limpiar todos los datos y volver al inicio?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, limpiar datos',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Limpiar datos del localStorage
+                limpiarDatosNomina();
+
+                // Restaurar horarios oficiales a su estado original
+                if (typeof window.horariosSemanales !== 'undefined') {
+                    window.horariosSemanalesActualizados = JSON.parse(JSON.stringify(window.horariosSemanales));
+                }
+
+                // Mostrar el contenedor inicial y ocultar la tabla
+                $("#container-nomina").removeAttr("hidden");
+                $("#tabla-nomina-responsive").attr("hidden", true);
+
+                // Limpiar variables globales
+                jsonGlobal = null;
+                window.empleadosOriginales = [];
+                window.empleadosOriginalesDispersion = [];
+
+                // Resetear formulario
+                $('#form_excel')[0].reset();
+
+                // Limpiar tabla si existe
+                $('#tabla-nomina-body').empty();
+                $('#tabla-dispersion-body').empty();
+
+                // Mostrar mensaje de éxito
+                Swal.fire({
+                    title: '¡Limpieza completada!',
+                    text: 'Los datos han sido limpiados correctamente',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }
+        });
+    });
+
+    // Escuchar cambios en la tabla de nómina para guardar automáticamente
+    $(document).on('input', '#tabla-nomina-body td[contenteditable]', function () {
+        const $celda = $(this);
+        const $fila = $celda.closest('tr');
+        const clave = $fila.data('clave');
+        const columna = $celda.index();
+        const valor = $celda.text().trim();
+
+        // Actualizar el empleado correspondiente
+        actualizarEmpleadoEnDatos(clave, columna, valor);
+
+        // Guardar cambios automáticamente
+        guardarDatosNomina();
+    });
+
+    // Cuando la página se carga completamente, asegurarse de que los sueldos estén actualizados
+    setTimeout(function () {
+        if (window.empleadosOriginales && window.empleadosOriginales.length > 0) {
+            // Recalcular todos los sueldos a cobrar
+            window.empleadosOriginales.forEach(emp => {
+                if (typeof calcularSueldoACobraPorEmpleado === 'function') {
+                    calcularSueldoACobraPorEmpleado(emp);
+                }
+            });
+
+            // Actualizar la tabla si está visible
+            if (!$('#tabla-nomina-container').attr("hidden")) {
+                if (typeof setEmpleadosPaginados === 'function') {
+                    setEmpleadosPaginados(window.empleadosOriginales);
+                }
+            }
+        }
+    }, 500);
 });
+/*
+ * ================================================================
+ * MÓDULO DE PERSISTENCIA DE DATOS DE NÓMINA
+ * ================================================================
+ * Funciones para guardar y recuperar el estado de la nómina
+ * ================================================================
+ */
+
+// Guardar datos en localStorage
+function guardarDatosNomina() {
+    // Sincronizar cambios antes de guardar
+    sincronizarCambiosConJsonGlobal();
+
+    if (jsonGlobal && window.empleadosOriginales) {
+        // Crear una copia profunda de los datos para guardar
+        const datosAGuardar = {
+            jsonGlobal: JSON.parse(JSON.stringify(jsonGlobal)),
+            empleadosOriginales: JSON.parse(JSON.stringify(window.empleadosOriginales)),
+            empleadosOriginalesDispersion: JSON.parse(JSON.stringify(window.empleadosOriginalesDispersion || [])),
+            horariosSemanalesActualizados: window.horariosSemanalesActualizados ? JSON.parse(JSON.stringify(window.horariosSemanalesActualizados)) : null,
+            timestamp: new Date().getTime()
+        };
+
+        // Asegurarse de que todos los valores numéricos estén formateados correctamente antes de guardar
+        datosAGuardar.empleadosOriginales.forEach(emp => {
+            // Recalcular sueldo a cobrar antes de guardar
+            if (typeof calcularSueldoACobraPorEmpleado === 'function') {
+                calcularSueldoACobraPorEmpleado(emp);
+            }
+
+            // Formatear todos los campos numéricos con dos decimales
+            const camposNumericos = [
+                'incentivo', 'sueldo_extra_final', 'neto_pagar', 'prestamo',
+                'inasistencias_descuento', 'uniformes', 'checador', 'fa_gafet_cofia',
+                'sueldo_a_cobrar', 'sueldo_base', 'sueldo_extra', 'bono_antiguedad',
+                'actividades_especiales', 'bono_puesto'
+            ];
+
+            camposNumericos.forEach(campo => {
+                if (emp[campo] !== undefined && typeof emp[campo] === 'number') {
+                    emp[campo] = parseFloat(emp[campo].toFixed(2));
+                }
+            });
+        });
+
+        // También formatear empleados de dispersión
+        if (datosAGuardar.empleadosOriginalesDispersion) {
+            datosAGuardar.empleadosOriginalesDispersion.forEach(emp => {
+                // Recalcular sueldo a cobrar antes de guardar
+                if (typeof calcularSueldoACobraPorEmpleado === 'function') {
+                    calcularSueldoACobraPorEmpleado(emp);
+                }
+
+                // Formatear todos los campos numéricos con dos decimales
+                const camposNumericos = [
+                    'incentivo', 'sueldo_extra_final', 'neto_pagar', 'prestamo',
+                    'inasistencias_descuento', 'uniformes', 'checador', 'fa_gafet_cofia',
+                    'sueldo_a_cobrar', 'sueldo_base', 'sueldo_extra', 'bono_antiguedad',
+                    'actividades_especiales', 'bono_puesto'
+                ];
+
+                camposNumericos.forEach(campo => {
+                    if (emp[campo] !== undefined && typeof emp[campo] === 'number') {
+                        emp[campo] = parseFloat(emp[campo].toFixed(2));
+                    }
+                });
+            });
+        }
+
+        try {
+            localStorage.setItem('datosNomina_saao', JSON.stringify(datosAGuardar));
+        } catch (error) {
+        }
+    }
+}
+
+// Recuperar datos del localStorage
+function recuperarDatosNomina() {
+    try {
+        const datos = localStorage.getItem('datosNomina_saao');
+        if (datos) {
+            const datosNomina = JSON.parse(datos);
+
+            // Verificar que los datos no sean muy antiguos (24 horas)
+            const ahora = new Date().getTime();
+            const tiempoLimite = 24 * 60 * 60 * 1000; // 24 horas
+
+            if (ahora - datosNomina.timestamp < tiempoLimite) {
+                return datosNomina;
+            } else {
+                // Limpiar datos antiguos
+                limpiarDatosNomina();
+            }
+        }
+    } catch (error) {
+        limpiarDatosNomina(); // Limpiar datos corruptos
+    }
+    return null;
+}
+
+// Limpiar datos guardados
+function limpiarDatosNomina() {
+    localStorage.removeItem('datosNomina_saao');
+}
+
+// Verificar y restaurar datos al cargar la página
+function verificarDatosGuardados() {
+    const datosGuardados = recuperarDatosNomina();
+
+    if (datosGuardados) {
+        // Restaurar variables globales tal como fueron guardadas
+        jsonGlobal = datosGuardados.jsonGlobal;
+        window.empleadosOriginales = datosGuardados.empleadosOriginales;
+        window.empleadosOriginalesDispersion = datosGuardados.empleadosOriginalesDispersion || [];
+
+        if (datosGuardados.horariosSemanalesActualizados) {
+            window.horariosSemanalesActualizados = datosGuardados.horariosSemanalesActualizados;
+        }
+
+        // Recalcular sueldos a cobrar para todos los empleados restaurados
+        if (window.empleadosOriginales && window.empleadosOriginales.length > 0) {
+            window.empleadosOriginales.forEach(emp => {
+                if (typeof calcularSueldoACobraPorEmpleado === 'function') {
+                    calcularSueldoACobraPorEmpleado(emp);
+                }
+            });
+        }
+
+        // También recalcular sueldos de empleados de dispersión
+        if (window.empleadosOriginalesDispersion && window.empleadosOriginalesDispersion.length > 0) {
+            window.empleadosOriginalesDispersion.forEach(emp => {
+                if (typeof calcularSueldoACobraPorEmpleado === 'function') {
+                    calcularSueldoACobraPorEmpleado(emp);
+                }
+            });
+        }
+
+        // Restaurar la vista de la tabla sin recalcular
+        restaurarVistaNomina();
+
+    }
+}
+
+// Restaurar la vista con los datos recuperados
+function restaurarVistaNomina() {
+
+    // Ocultar formulario inicial y mostrar tabla
+    $("#container-nomina").attr("hidden", true);
+    $("#tabla-nomina-responsive").removeAttr("hidden");
+
+    // Actualizar cabecera
+    actualizarCabeceraNomina(jsonGlobal);
+
+    // Reconfigurar datos y tabla sin recalcular automáticamente
+    establecerDatosEmpleados();
+    busquedaNomina();
+
+    // Mostrar los datos tal como fueron guardados
+    setEmpleadosPaginados(window.empleadosOriginales);
+
+    // Configurar controles de búsqueda
+    $("#busqueda-container").removeAttr("hidden");
+
+    // Formatear números en los empleados restaurados y recalcular sueldos
+    if (window.empleadosOriginales && window.empleadosOriginales.length > 0) {
+        window.empleadosOriginales.forEach(emp => {
+            // Asegurarse de que los valores numéricos estén formateados correctamente
+            if (typeof emp.incentivo === 'number') emp.incentivo = parseFloat(emp.incentivo.toFixed(2));
+            if (typeof emp.sueldo_extra_final === 'number') emp.sueldo_extra_final = parseFloat(emp.sueldo_extra_final.toFixed(2));
+            if (typeof emp.neto_pagar === 'number') emp.neto_pagar = parseFloat(emp.neto_pagar.toFixed(2));
+            if (typeof emp.prestamo === 'number') emp.prestamo = parseFloat(emp.prestamo.toFixed(2));
+            if (typeof emp.inasistencias_descuento === 'number') emp.inasistencias_descuento = parseFloat(emp.inasistencias_descuento.toFixed(2));
+            if (typeof emp.uniformes === 'number') emp.uniformes = parseFloat(emp.uniformes.toFixed(2));
+            if (typeof emp.checador === 'number') emp.checador = parseFloat(emp.checador.toFixed(2));
+            if (typeof emp.fa_gafet_cofia === 'number') emp.fa_gafet_cofia = parseFloat(emp.fa_gafet_cofia.toFixed(2));
+            if (typeof emp.sueldo_base === 'number') emp.sueldo_base = parseFloat(emp.sueldo_base.toFixed(2));
+            if (typeof emp.sueldo_extra === 'number') emp.sueldo_extra = parseFloat(emp.sueldo_extra.toFixed(2));
+
+            // Recalcular sueldo a cobrar para asegurar que esté actualizado
+            if (typeof calcularSueldoACobraPorEmpleado === 'function') {
+                calcularSueldoACobraPorEmpleado(emp);
+            }
+
+            // Asegurarse de que el sueldo a cobrar también esté formateado correctamente
+            if (typeof emp.sueldo_a_cobrar === 'number') emp.sueldo_a_cobrar = parseFloat(emp.sueldo_a_cobrar.toFixed(2));
+        });
+    }
+
+    // También formatear y recalcular empleados de dispersión
+    if (window.empleadosOriginalesDispersion && window.empleadosOriginalesDispersion.length > 0) {
+        window.empleadosOriginalesDispersion.forEach(emp => {
+            // Asegurarse de que los valores numéricos estén formateados correctamente
+            if (typeof emp.incentivo === 'number') emp.incentivo = parseFloat(emp.incentivo.toFixed(2));
+            if (typeof emp.sueldo_extra_final === 'number') emp.sueldo_extra_final = parseFloat(emp.sueldo_extra_final.toFixed(2));
+            if (typeof emp.neto_pagar === 'number') emp.neto_pagar = parseFloat(emp.neto_pagar.toFixed(2));
+            if (typeof emp.prestamo === 'number') emp.prestamo = parseFloat(emp.prestamo.toFixed(2));
+            if (typeof emp.inasistencias_descuento === 'number') emp.inasistencias_descuento = parseFloat(emp.inasistencias_descuento.toFixed(2));
+            if (typeof emp.uniformes === 'number') emp.uniformes = parseFloat(emp.uniformes.toFixed(2));
+            if (typeof emp.checador === 'number') emp.checador = parseFloat(emp.checador.toFixed(2));
+            if (typeof emp.fa_gafet_cofia === 'number') emp.fa_gafet_cofia = parseFloat(emp.fa_gafet_cofia.toFixed(2));
+            if (typeof emp.sueldo_base === 'number') emp.sueldo_base = parseFloat(emp.sueldo_base.toFixed(2));
+            if (typeof emp.sueldo_extra === 'number') emp.sueldo_extra = parseFloat(emp.sueldo_extra.toFixed(2));
+
+            // Recalcular sueldo a cobrar para asegurar que esté actualizado
+            if (typeof calcularSueldoACobraPorEmpleado === 'function') {
+                calcularSueldoACobraPorEmpleado(emp);
+            }
+
+            // Asegurarse de que el sueldo a cobrar también esté formateado correctamente
+            if (typeof emp.sueldo_a_cobrar === 'number') emp.sueldo_a_cobrar = parseFloat(emp.sueldo_a_cobrar.toFixed(2));
+        });
+    }
+}
 
 /*
  * ================================================================
@@ -131,15 +494,56 @@ function obtenerArchivos(params) {
                                 const json2 = JSON.parse(res2);
                                 // Unir ambos JSON y mostrar el resultado
                                 const jsonUnido = unirJson(json1, json2);
-                                jsonGlobal = jsonUnido; // Guardar en variable global
-                                actualizarCabeceraNomina(jsonUnido);
 
-                                $("#tabla-nomina-responsive").removeAttr("hidden");
-                                $("#container-nomina").attr("hidden", true);
-                                establecerDatosEmpleados(); // Llama a la función para establecer los datos de empleados
-                                busquedaNomina();
-                                redondearRegistrosEmpleados(); // Nueva función para redondear registros
+                                // Verificar si ya existe un JSON con el mismo número de semana en la base de datos
+                                // En la función obtenerArchivos, modificar la parte donde se verifica la nómina existente:
 
+                                verificarNominaExistente(jsonUnido.numero_semana, function (existe) {
+                                    if (existe) {
+                                        // Obtener el JSON de la base de datos y asignarlo a jsonGlobal
+                                        obtenerNominaDeBaseDatos(jsonUnido.numero_semana, function (jsonBaseDatos) {
+                                            if (jsonBaseDatos) {
+                                                jsonGlobal = jsonBaseDatos; // Usar el JSON de la base de datos
+                                            } else {
+                                                jsonGlobal = jsonUnido; // En caso de error, usar el JSON unido
+                                            }
+
+                                            // ESTABLECER HORARIOS DESPUÉS DE OBTENER LA NÓMINA
+                                            establecerHorariosSemanales(jsonGlobal.numero_semana, function () {
+                                                // Verificar que el JSON tenga las fechas necesarias antes de continuar
+                                                if (jsonGlobal && jsonGlobal.fecha_inicio && jsonGlobal.fecha_cierre) {
+                                                    actualizarCabeceraNomina(jsonGlobal);
+                                                }
+
+                                                $("#tabla-nomina-responsive").removeAttr("hidden");
+                                                $("#container-nomina").attr("hidden", true);
+                                                establecerDatosEmpleados();
+                                                busquedaNomina();
+                                                redondearRegistrosEmpleados();
+
+                                                // Guardar datos en localStorage después de procesar
+                                                guardarDatosNomina();
+                                            });
+                                        });
+                                        return;
+                                    } else {
+                                        jsonGlobal = jsonUnido; // Guardar en variable global
+
+                                        // ESTABLECER HORARIOS PARA NÓMINA NUEVA
+                                        establecerHorariosSemanales(jsonGlobal.numero_semana, function () {
+                                            actualizarCabeceraNomina(jsonUnido);
+
+                                            $("#tabla-nomina-responsive").removeAttr("hidden");
+                                            $("#container-nomina").attr("hidden", true);
+                                            establecerDatosEmpleados();
+                                            busquedaNomina();
+                                            redondearRegistrosEmpleados();
+
+                                            // Guardar datos en localStorage después de procesar
+                                            guardarDatosNomina();
+                                        });
+                                    }
+                                });
                             } catch (e) {
 
                             } finally {
@@ -230,14 +634,19 @@ function actualizarCabeceraNomina(json) {
 
     // Extraer día, mes y año de las fechas
     function descomponerFecha(fecha) {
+        // Verificar que la fecha no sea null o undefined
+        if (!fecha) {
+            return { dia: '', mes: '', anio: '' };
+        }
+
         // Ejemplo: "21/Jun/2025" o "21/05/2025"
         const partes = fecha.split('/');
-        let dia = partes[0];
-        let mes = partes[1];
-        let anio = partes[2];
+        let dia = partes[0] || '';
+        let mes = partes[1] || '';
+        let anio = partes[2] || '';
 
         // Si el mes es numérico, conviértelo a nombre
-        if (/^\\d+$/.test(mes)) {
+        if (/^\d+$/.test(mes)) {
             mes = mesEnLetras(parseInt(mes, 10));
         } else {
             // Si el mes es abreviado (Jun), conviértelo a nombre completo
@@ -248,6 +657,13 @@ function actualizarCabeceraNomina(json) {
             mes = mesesAbrev[mes] || mes;
         }
         return { dia, mes, anio };
+    }
+
+    // Verificar que las fechas existan antes de procesarlas
+    if (!json.fecha_inicio || !json.fecha_cierre) {
+        $('#nombre_nomina').text('NÓMINA');
+        $('#num_semana').text(`SEM ${json.numero_semana || ''}`);
+        return;
     }
 
     const ini = descomponerFecha(json.fecha_inicio);
@@ -326,34 +742,73 @@ function establecerDatosEmpleados() {
             if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS')) {
                 let empleadosOrdenados = (depto.empleados || []).slice().sort(compararPorApellidos);
                 empleadosOrdenados.forEach(emp => {
-                    // Agregar incentivo solo para empleados de 40 libras
-                    emp.incentivo = 250;
+                    // Solo inicializar valores si no existen (para preservar modificaciones)
+                    if (emp.incentivo === undefined) {
+                        emp.incentivo = 250;
+                    }
 
-                    //   INICIALIZAR BONO DE ANTIGÜEDAD
-                    emp.bono_antiguedad = 0;
+                    //   INICIALIZAR BONO DE ANTIGÜEDAD si no existe
+                    if (emp.bono_antiguedad === undefined) {
+                        emp.bono_antiguedad = 0;
+                    }
 
-                    //   INICIALIZAR ACTIVIDADES ESPECIALES
-                    emp.actividades_especiales = 0;
+                    //   INICIALIZAR ACTIVIDADES ESPECIALES si no existe
+                    if (emp.actividades_especiales === undefined) {
+                        emp.actividades_especiales = 0;
+                    }
 
-                    //   INICIALIZAR BONO RESPONSABILIDAD
-                    emp.bono_puesto = 0;
+                    //   INICIALIZAR BONO RESPONSABILIDAD si no existe
+                    if (emp.bono_puesto === undefined) {
+                        emp.bono_puesto = 0;
+                    }
 
-                    //   INICIALIZAR CONCEPTOS ADICIONALES
-                    emp.conceptos_adicionales = [];
+                    //   INICIALIZAR CONCEPTOS ADICIONALES si no existe
+                    if (emp.conceptos_adicionales === undefined) {
+                        emp.conceptos_adicionales = [];
+                    }
 
-                    //   INICIALIZAR SUELDO EXTRA FINAL con el valor de sueldo_extra (horas extras)
-                    emp.sueldo_extra_final = emp.sueldo_extra || 0;
+                    //   INICIALIZAR SUELDO EXTRA FINAL si no existe
+                    if (emp.sueldo_extra_final === undefined) {
+                        emp.sueldo_extra_final = emp.sueldo_extra || 0;
+                    }
 
-                    // Agregar propiedades de deducciones solo para empleados de 40 libras
-                    emp.prestamo = 0;
-                    emp.uniformes = 0;
-                    emp.checador = 0;
-                    emp.fa_gafet_cofia = 0;
-                    emp.inasistencias_minutos = 0;
-                    emp.inasistencias_descuento = 0;
+                    // Agregar propiedades de deducciones solo si no existen (para preservar modificaciones)
+                    if (emp.prestamo === undefined) {
+                        emp.prestamo = 0;
+                    }
+                    if (emp.uniformes === undefined) {
+                        emp.uniformes = 0;
+                    }
+                    if (emp.checador === undefined) {
+                        emp.checador = 0;
+                    }
+                    if (emp.fa_gafet_cofia === undefined) {
+                        emp.fa_gafet_cofia = 0;
+                    }
+                    if (emp.inasistencias_minutos === undefined) {
+                        emp.inasistencias_minutos = 0;
+                    }
+                    if (emp.inasistencias_descuento === undefined) {
+                        emp.inasistencias_descuento = 0;
+                    }
 
-                    //   INICIALIZAR SUELDO A COBRAR
-                    emp.sueldo_a_cobrar = 0;
+                    //   INICIALIZAR SUELDO A COBRAR si no existe
+                    if (emp.sueldo_a_cobrar === undefined) {
+                        emp.sueldo_a_cobrar = 0;
+                    }
+
+                    // Asegurarse de que todos los valores numéricos tengan formato correcto
+                    emp.incentivo = typeof emp.incentivo === 'number' ? parseFloat(emp.incentivo.toFixed(2)) : emp.incentivo;
+                    emp.bono_antiguedad = typeof emp.bono_antiguedad === 'number' ? parseFloat(emp.bono_antiguedad.toFixed(2)) : emp.bono_antiguedad;
+                    emp.actividades_especiales = typeof emp.actividades_especiales === 'number' ? parseFloat(emp.actividades_especiales.toFixed(2)) : emp.actividades_especiales;
+                    emp.bono_puesto = typeof emp.bono_puesto === 'number' ? parseFloat(emp.bono_puesto.toFixed(2)) : emp.bono_puesto;
+                    emp.sueldo_extra_final = typeof emp.sueldo_extra_final === 'number' ? parseFloat(emp.sueldo_extra_final.toFixed(2)) : emp.sueldo_extra_final;
+                    emp.prestamo = typeof emp.prestamo === 'number' ? parseFloat(emp.prestamo.toFixed(2)) : emp.prestamo;
+                    emp.uniformes = typeof emp.uniformes === 'number' ? parseFloat(emp.uniformes.toFixed(2)) : emp.uniformes;
+                    emp.checador = typeof emp.checador === 'number' ? parseFloat(emp.checador.toFixed(2)) : emp.checador;
+                    emp.fa_gafet_cofia = typeof emp.fa_gafet_cofia === 'number' ? parseFloat(emp.fa_gafet_cofia.toFixed(2)) : emp.fa_gafet_cofia;
+                    emp.inasistencias_descuento = typeof emp.inasistencias_descuento === 'number' ? parseFloat(emp.inasistencias_descuento.toFixed(2)) : emp.inasistencias_descuento;
+                    emp.sueldo_a_cobrar = typeof emp.sueldo_a_cobrar === 'number' ? parseFloat(emp.sueldo_a_cobrar.toFixed(2)) : emp.sueldo_a_cobrar;
 
                     empleadosPlanos.push({
                         ...emp,
@@ -369,10 +824,12 @@ function establecerDatosEmpleados() {
     window.empleadosOriginales = empleadosPlanos;
     empleadosFiltrados = [...empleadosPlanos];
 
-
     actualizarJsonGlobalConEmpleadosOriginales();
-   
+
     $("#busqueda-container").removeAttr("hidden");
+
+    // Guardar datos después de establecer empleados
+    guardarDatosNomina();
 }
 
 // Actualiza jsonGlobal con los datos de empleadosOriginales
@@ -396,8 +853,75 @@ function actualizarJsonGlobalConEmpleadosOriginales() {
     });
 }
 
+// Función para sincronizar cambios de la tabla con jsonGlobal
+function sincronizarCambiosConJsonGlobal() {
+    if (!jsonGlobal || !jsonGlobal.departamentos || !window.empleadosOriginales) return;
 
+    // Actualizar empleados en jsonGlobal con los valores actuales de empleadosOriginales
+    jsonGlobal.departamentos.forEach(depto => {
+        if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS')) {
+            depto.empleados = depto.empleados.map(emp => {
+                // Buscar empleado actualizado en empleadosOriginales
+                const empActualizado = window.empleadosOriginales.find(e => e.clave === emp.clave);
+                if (empActualizado) {
+                    // Conservar todos los campos actualizados
+                    return { ...emp, ...empActualizado };
+                }
+                return emp;
+            });
+        }
+    });
+}
 
+// Función para actualizar un empleado en los datos cuando se modifican en la tabla
+function actualizarEmpleadoEnDatos(clave, columna, valor) {
+    // Encontrar el empleado en empleadosOriginales
+    const empleado = window.empleadosOriginales.find(emp => emp.clave == clave);
+    if (!empleado) return;
+
+    // Convertir valor a número si es posible
+    let valorNumerico = valor === '' ? 0 : parseFloat(valor) || valor;
+
+    // Si es un número, formatearlo con dos decimales
+    if (typeof valorNumerico === 'number' && !isNaN(valorNumerico)) {
+        valorNumerico = parseFloat(valorNumerico.toFixed(2));
+    }
+
+    // Actualizar el campo correspondiente según la columna
+    switch (columna) {
+        case 4: // Incentivo
+            empleado.incentivo = valorNumerico;
+            break;
+        case 5: // Extra
+            empleado.sueldo_extra_final = valorNumerico;
+            break;
+        case 6: // Tarjeta
+            empleado.neto_pagar = valorNumerico;
+            break;
+        case 7: // Préstamo
+            empleado.prestamo = valorNumerico;
+            break;
+        case 8: // Inasistencias
+            empleado.inasistencias_descuento = valorNumerico;
+            break;
+        case 9: // Uniformes
+            empleado.uniformes = valorNumerico;
+            break;
+        case 13: // Checador
+            empleado.checador = valorNumerico;
+            break;
+        case 14: // F.A / GAFET / COFIA
+            empleado.fa_gafet_cofia = valorNumerico;
+            break;
+        // No actualizamos ISR, IMSS, INFONAVIT ni Sueldo a cobrar ya que son calculados
+    }
+
+    // Recalcular sueldo a cobrar
+    calcularSueldoACobraPorEmpleado(empleado);
+
+    // Actualizar en jsonGlobal
+    sincronizarCambiosConJsonGlobal();
+}
 
 /*
  * ================================================================
@@ -525,25 +1049,25 @@ function busquedaNomina() {
     });
 
     $('#campo-busqueda-dispersion').on('input', function () {
-    const termino = $(this).val().trim().toLowerCase();
+        const termino = $(this).val().trim().toLowerCase();
 
-    // Debounce: esperar 300ms después de que el usuario deje de escribir
-    if (timeoutBusquedaDispersion) clearTimeout(timeoutBusquedaDispersion);
+        // Debounce: esperar 300ms después de que el usuario deje de escribir
+        if (timeoutBusquedaDispersion) clearTimeout(timeoutBusquedaDispersion);
 
-    timeoutBusquedaDispersion = setTimeout(function () {
-        // Filtrar empleados por nombre o clave
-        empleadosFiltradosDispersion = termino ?
-            window.empleadosOriginalesDispersion.filter(emp =>
-                (emp.nombre || '').toLowerCase().includes(termino) ||
-                (emp.clave || '').toString().includes(termino)
-            ) :
-            [...window.empleadosOriginalesDispersion];
+        timeoutBusquedaDispersion = setTimeout(function () {
+            // Filtrar empleados por nombre o clave
+            empleadosFiltradosDispersion = termino ?
+                window.empleadosOriginalesDispersion.filter(emp =>
+                    (emp.nombre || '').toLowerCase().includes(termino) ||
+                    (emp.clave || '').toString().includes(termino)
+                ) :
+                [...window.empleadosOriginalesDispersion];
 
-        // Actualizar paginación con resultados filtrados
-        paginaActualDispersion = 1;
-        setEmpleadosDispersionPaginados(empleadosFiltradosDispersion);
-    }, 300);
-});
+            // Actualizar paginación con resultados filtrados
+            paginaActualDispersion = 1;
+            setEmpleadosDispersionPaginados(empleadosFiltradosDispersion);
+        }, 300);
+    });
 
 
 }
@@ -564,9 +1088,46 @@ let registrosYaRedondeados = false;
 
 
 
-function redondearRegistrosEmpleados() {
+function redondearRegistrosEmpleados(forzarRecalculo = false) {
     if (!jsonGlobal || !jsonGlobal.departamentos || !window.horariosSemanalesActualizados || !window.empleadosOriginales) {
         return;
+    }
+
+    // Verificar si los datos vienen de la base de datos (ya tienen total_minutos_redondeados)
+    const datosVienenDeBD = window.empleadosOriginales.some(emp =>
+        emp.total_minutos_redondeados !== undefined && emp.total_minutos_redondeados > 0
+    );
+
+    // Si se fuerza recálculo (modificación de horarios oficiales), no preservar datos de BD
+    const debeRecalcularTodo = forzarRecalculo || !datosVienenDeBD;
+
+    // Función auxiliar para encontrar empleado en jsonGlobal
+    function encontrarEmpleadoEnJsonGlobal(clave) {
+        if (!jsonGlobal || !jsonGlobal.departamentos) return null;
+        for (let depto of jsonGlobal.departamentos) {
+            if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS')) {
+                for (let emp of depto.empleados || []) {
+                    if (emp.clave === clave) {
+                        return emp;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    // Si se debe recalcular todo, no preservar datos de BD
+    let minutosTotalesBD = new Map();
+    if (datosVienenDeBD && !debeRecalcularTodo) {
+
+        // Preservar los minutos totales de la BD antes del redondeo
+        window.empleadosOriginales.forEach(empleado => {
+            const empleadoEnJson = encontrarEmpleadoEnJsonGlobal(empleado.clave);
+            if (empleadoEnJson && empleadoEnJson.total_minutos_redondeados) {
+                minutosTotalesBD.set(empleado.clave, empleadoEnJson.total_minutos_redondeados);
+            }
+        });
+    } else if (debeRecalcularTodo) {
     }
 
     function obtenerDiaSemana(fecha) {
@@ -786,7 +1347,7 @@ function redondearRegistrosEmpleados() {
         let totalMinutosSemana = 0;
         const empleadoEnJson = encontrarEmpleadoEnJsonGlobal(empleado.clave);
         const registrosRedondeados = [];
-        
+
         //    CONTADOR DE OLVIDOS DEL CHECADOR PARA DESCUENTO
         let totalOlvidosChecadorSemana = 0;
 
@@ -816,12 +1377,12 @@ function redondearRegistrosEmpleados() {
                 (horarioOficial.salidaComida === "00:00" || horarioOficial.entradaComida === "00:00");
 
             const olvidosChecador = detectarOlvidosChecador(registrosDia, horarioOficial);
-            
+
             //    CONTAR OLVIDOS PARA EL DESCUENTO SEMANAL
             if (olvidosChecador.length > 0) {
                 totalOlvidosChecadorSemana++;
             }
-            
+
             completarRegistrosFaltantes(registrosDia, horarioOficial);
             let entradaTemprana = 0;
             let salidaTardia = 0;
@@ -886,42 +1447,42 @@ function redondearRegistrosEmpleados() {
         });
 
         if (empleadoEnJson) {
-            empleadoEnJson.tiempo_total_redondeado = minutosAHora(totalMinutosSemana);
-            empleadoEnJson.total_minutos_redondeados = totalMinutosSemana;
+            // Si se debe recalcular todo, usar los minutos calculados
+            if (debeRecalcularTodo) {
+                empleadoEnJson.tiempo_total_redondeado = minutosAHora(totalMinutosSemana);
+                empleadoEnJson.total_minutos_redondeados = totalMinutosSemana;
+            } else if (datosVienenDeBD && minutosTotalesBD.has(empleado.clave)) {
+                // Si los datos vienen de la BD y no se fuerza recálculo, usar los minutos totales preservados
+                const minutosBD = minutosTotalesBD.get(empleado.clave);
+                empleadoEnJson.tiempo_total_redondeado = minutosAHora(minutosBD);
+                empleadoEnJson.total_minutos_redondeados = minutosBD;
+            } else {
+                // Si son datos nuevos, calcular normalmente
+                empleadoEnJson.tiempo_total_redondeado = minutosAHora(totalMinutosSemana);
+                empleadoEnJson.total_minutos_redondeados = totalMinutosSemana;
+            }
             empleadoEnJson.registros_redondeados = registrosRedondeados;
-            
+
             //    APLICAR DESCUENTO POR OLVIDOS DEL CHECADOR
             // Calcular descuento: $20 por cada día que olvidó checar
             const descuentoPorOlvido = totalOlvidosChecadorSemana * 20;
-            
+
             // Asignar al empleadoEnJson para que se incluya en el cálculo del sueldo a cobrar
             empleadoEnJson.checador = descuentoPorOlvido;
         }
 
         const horasSemanales = minutosAHora(totalMinutosSemana);
-        
+
         // Asignar directamente al empleado para mostrar en la tabla
         const descuentoPorOlvido = totalOlvidosChecadorSemana * 20;
         empleado.checador_tabla_descuento = descuentoPorOlvido;
     });
 
-    function encontrarEmpleadoEnJsonGlobal(clave) {
-        if (!jsonGlobal || !jsonGlobal.departamentos) return null;
-        for (let depto of jsonGlobal.departamentos) {
-            if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS')) {
-                for (let emp of depto.empleados || []) {
-                    if (emp.clave === clave) {
-                        return emp;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
     window.empleadosOriginales.forEach(empleado => {
         const empleadoEnJson = encontrarEmpleadoEnJsonGlobal(empleado.clave);
         if (empleadoEnJson && empleadoEnJson.tiempo_total_redondeado) {
+
+
             calcularCamposEmpleado(empleadoEnJson);
             empleado.sueldo_base = empleadoEnJson.sueldo_base;
             empleado.sueldo_extra = empleadoEnJson.sueldo_extra;
@@ -932,13 +1493,13 @@ function redondearRegistrosEmpleados() {
             empleado.Minutos_normales = empleadoEnJson.Minutos_normales;
             empleado.Minutos_extra = empleadoEnJson.Minutos_extra;
             empleado.sueldo_a_cobrar = empleadoEnJson.sueldo_a_cobrar;
-            
+
             //    ASIGNAR DESCUENTO POR OLVIDOS AL jsonGlobal
             // Si existe el descuento calculado por olvidos, asignarlo al jsonGlobal
             if (empleado.checador_tabla_descuento !== undefined) {
                 empleadoEnJson.checador = empleado.checador_tabla_descuento;
             }
-            
+
             // Sincronizar con empleado para la tabla
             empleado.checador = empleadoEnJson.checador;
         }
@@ -1041,7 +1602,7 @@ function calcularSueldoACobraPorEmpleado(emp) {
     const sueldoExtraFinal = horasExtras + bonoAntiguedad + actividadesEspeciales + bonoPuesto + conceptosAdicionalesTotales;
 
     // Actualizar sueldo_extra_final en el empleado
-    emp.sueldo_extra_final = sueldoExtraFinal;
+    emp.sueldo_extra_final = parseFloat(sueldoExtraFinal.toFixed(2));
 
     const totalPercepciones = sueldoNeto + incentivo + sueldoExtraFinal;
 
@@ -1059,27 +1620,26 @@ function calcularSueldoACobraPorEmpleado(emp) {
     const prestamo = parseFloat(emp.prestamo) || 0;
     const inasistencias = parseFloat(emp.inasistencias_descuento) || 0;
     const uniformes = parseFloat(emp.uniformes) || 0;
-    
+
     //    USAR EL DESCUENTO CALCULADO POR OLVIDOS DEL CHECADOR PARA EL SUELDO A COBRAR
     // Si existe el descuento calculado, usarlo; sino, usar el valor original del checador
-    const checador = parseFloat(emp.checador) !== undefined && !isNaN(parseFloat(emp.checador)) ? 
-                     parseFloat(emp.checador) : 
-                     parseFloat(emp.checador) || 0;
-                     
+    const checador = parseFloat(emp.checador) !== undefined && !isNaN(parseFloat(emp.checador)) ?
+        parseFloat(emp.checador) :
+        parseFloat(emp.checador) || 0;
+
     const faGafetCofia = parseFloat(emp.fa_gafet_cofia) || 0;
 
     // Total de deducciones incluye conceptos + otras deducciones
     const totalDeducciones = tarjeta + prestamo + inasistencias + uniformes + checador + faGafetCofia + totalConceptos;
 
     // === CALCULAR SUELDO A COBRAR ===
-    emp.sueldo_a_cobrar = totalPercepciones - totalDeducciones;
-
-
+    emp.sueldo_a_cobrar = parseFloat((totalPercepciones - totalDeducciones).toFixed(2));
 
     return emp.sueldo_a_cobrar;
 }
 
-
+// Hacer la función disponible globalmente
+window.calcularSueldoACobraPorEmpleado = calcularSueldoACobraPorEmpleado;
 
 /*
  * ================================================================
@@ -1124,7 +1684,7 @@ function cargarDepartamentosFiltro() {
 function obtenerEmpleadosPorDepartamento() {
     $('#filtro-departamento').change(function () {
         let idSeleccionado = $(this).val();
-        
+
         let empleadosPlanos = [];
         if (idSeleccionado == "0") {
             // Todos los empleados de todos los departamentos (orden y agrupación como el JSON)
@@ -1161,20 +1721,20 @@ function obtenerEmpleadosPorDepartamento() {
             }
         }
 
-        // 🆕 FILTRAR SOLO EMPLEADOS REGISTRADOS EN BASE DE DATOS
+        //  FILTRAR SOLO EMPLEADOS REGISTRADOS EN BASE DE DATOS
         if (clavesValidasGlobal.length > 0) {
             const empleadosRegistrados = empleadosPlanos.filter(emp => {
-                return clavesValidasGlobal.includes(String(emp.clave)) || 
-                       clavesValidasGlobal.includes(Number(emp.clave));
+                return clavesValidasGlobal.includes(String(emp.clave)) ||
+                    clavesValidasGlobal.includes(Number(emp.clave));
             });
-            
-            
+
+
             window.empleadosOriginalesDispersion = empleadosRegistrados;
             setEmpleadosDispersionPaginados(empleadosRegistrados);
             empleadosFiltradosDispersion = [...empleadosRegistrados];
         } else {
             // Si no hay claves válidas cargadas, usar todos (fallback)
-             window.empleadosOriginalesDispersion = empleadosPlanos;
+            window.empleadosOriginalesDispersion = empleadosPlanos;
             setEmpleadosDispersionPaginados(empleadosPlanos);
             empleadosFiltradosDispersion = [...empleadosPlanos];
         }
@@ -1193,7 +1753,7 @@ function clavesEmpleados() {
             });
         });
     }
- 
+
     return claves;
 }
 
@@ -1207,37 +1767,37 @@ function validarClaves() {
         contentType: "application/json",
         success: function (clavesValidasJSON) {
             const clavesValidas = JSON.parse(clavesValidasJSON);
-            
-            // 🆕 GUARDAR CLAVES VÁLIDAS GLOBALMENTE
+
+            //  GUARDAR CLAVES VÁLIDAS GLOBALMENTE
             clavesValidasGlobal = clavesValidas;
-            
-            // 🆕 HACER CLAVES DISPONIBLES PARA EL MODAL DE DISPERSIÓN
+
+            //  HACER CLAVES DISPONIBLES PARA EL MODAL DE DISPERSIÓN
             if (typeof window.clavesValidasGlobal === 'undefined') {
                 window.clavesValidasGlobal = clavesValidas;
             }
-            
-           
+
+
             // Obtener todos los empleados y filtrar solo los válidos
             let todosEmpleados = obtenerTodosEmpleadosDispersion();
             let empleadosValidos = todosEmpleados.filter(emp =>
                 clavesValidas.includes(String(emp.clave)) || clavesValidas.includes(Number(emp.clave))
             );
 
-           
+
             // Establecer empleados paginados para dispersión
             setEmpleadosDispersionPaginados(empleadosValidos);
-            
+
             // ACTUALIZAR EL FILTRO PARA QUE MUESTRE "TODOS" PERO SOLO REGISTRADOS
             $('#filtro-departamento').val('0').trigger('change');
-            
+
             // INICIALIZAR MENÚ CONTEXTUAL DE DISPERSIÓN DESPUÉS DE CARGAR CLAVES VÁLIDAS
             if (typeof inicializarMenuContextualDispersion === 'function') {
                 inicializarMenuContextualDispersion();
-                
+
             }
         },
-        error: function(xhr, status, error) {
-          
+        error: function (xhr, status, error) {
+
             // En caso de error, mostrar todos los empleados
             let todosEmpleados = obtenerTodosEmpleadosDispersion();
             setEmpleadosDispersionPaginados(todosEmpleados);
@@ -1270,6 +1830,133 @@ function obtenerTodosEmpleadosDispersion() {
         });
     }
 
-    // 🆕 NO ASIGNAR DIRECTAMENTE, DEJAR QUE LAS FUNCIONES DE FILTRADO LO HAGAN
+    //  NO ASIGNAR DIRECTAMENTE, DEJAR QUE LAS FUNCIONES DE FILTRADO LO HAGAN
     return todosEmpleados;
+}
+
+
+
+// Función para verificar si ya existe una nómina con el mismo número de semana
+function verificarNominaExistente(numeroSemana, callback) {
+    $.ajax({
+        type: "POST",
+        url: "../php/verificar_nomina.php",
+        data: {
+            accion: "verificar",
+            numero_semana: numeroSemana
+        },
+        dataType: "json",
+        success: function (response) {
+            if (response.existe) {
+                callback(true);
+            } else {
+                callback(false);
+            }
+        },
+        error: function (xhr, status, error) {
+            callback(false);
+        }
+    });
+}
+
+// Función para obtener el JSON de la base de datos
+function obtenerNominaDeBaseDatos(numeroSemana, callback) {
+    $.ajax({
+        type: "POST",
+        url: "../php/verificar_nomina.php",
+        data: {
+            accion: "obtener",
+            numero_semana: numeroSemana
+        },
+        dataType: "json",
+        success: function (response) {
+            if (response.success && response.nomina) {
+                callback(response.nomina);
+            } else {
+                callback(null);
+            }
+        },
+        error: function (xhr, status, error) {
+            callback(null);
+        }
+    });
+}
+
+// Función para verificar si existen horarios oficiales guardados
+function verificarHorariosExistentes(numeroSemana, callback) {
+    $.ajax({
+        type: "POST",
+        url: "../php/verificar_nomina.php",
+        data: {
+            accion: "verificar_horarios",
+            numero_semana: numeroSemana
+        },
+        dataType: "json",
+        success: function (response) {
+            if (response.existe) {
+                callback(true);
+            } else {
+                callback(false);
+            }
+        },
+        error: function (xhr, status, error) {
+            callback(false);
+        }
+    });
+}
+
+// Función para obtener horarios de la base de datos
+function obtenerHorariosDeBD(numeroSemana, callback) {
+    $.ajax({
+        type: "POST",
+        url: "../php/verificar_nomina.php",
+        data: {
+            accion: "obtener_horarios",
+            numero_semana: numeroSemana
+        },
+        dataType: "json",
+        success: function (response) {
+            if (response.success && response.horarios) {
+                callback(response.horarios);
+            } else {
+                callback(null);
+            }
+        },
+        error: function (xhr, status, error) {
+            callback(null);
+        }
+    });
+}
+
+// Función para establecer horarios (desde BD o por defecto)
+function establecerHorariosSemanales(numeroSemana, callback) {
+    // Primero verificar si existen horarios guardados para esta semana
+    verificarHorariosExistentes(numeroSemana, function (existenHorarios) {
+        if (existenHorarios) {
+            // Obtener horarios de la base de datos
+            obtenerHorariosDeBD(numeroSemana, function (horariosDB) {
+                if (horariosDB) {
+                    // Usar horarios de la base de datos
+                    window.horariosSemanalesActualizados = horariosDB;
+                } else {
+                    // Si hay error, usar horarios por defecto con número de semana
+                    establecerHorariosPorDefecto(numeroSemana);
+                }
+                if (callback) callback();
+            });
+        } else {
+            // No existen horarios, usar los por defecto con número de semana
+            establecerHorariosPorDefecto(numeroSemana);
+            if (callback) callback();
+        }
+    });
+}
+
+// Función para establecer horarios por defecto con número de semana
+function establecerHorariosPorDefecto(numeroSemana) {
+    if (window.horariosSemanales) {
+        window.horariosSemanalesActualizados = JSON.parse(JSON.stringify(window.horariosSemanales));
+        // Agregar número de semana
+        window.horariosSemanalesActualizados.numero_semana = numeroSemana;
+    }
 }

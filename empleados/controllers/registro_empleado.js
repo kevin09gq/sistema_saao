@@ -345,7 +345,7 @@ $(document).ready(function () {
                             icon: rutaPlugins + 'plugins/toasts/icons/icon_error.png',
                             timeout: 3000
                         });
-                        console.error('Error parsing response:', e);
+                       
                     }
                 },
                 error: function (xhr, status, error) {

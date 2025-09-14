@@ -217,6 +217,11 @@ function guardarCambiosDispersion(clave) {
             // Actualizar la tabla visual
             actualizarTablaVisual(clave, nuevoSueldo);
 
+            // Guardar datos en localStorage para persistencia
+            if (typeof guardarDatosNomina === 'function') {
+                guardarDatosNomina();
+            }
+
             // Cerrar modal después de un breve delay
             setTimeout(() => {
                 cerrarModalDispersion();
@@ -250,6 +255,12 @@ function actualizarSueldoEnJsonGlobal(clave, nuevoSueldo) {
             depto.empleados.forEach(empleado => {
                 if (String(empleado.clave) === String(clave)) {
                     empleado.neto_pagar = nuevoSueldo;
+                    // Recalcular sueldo a cobrar después de actualizar neto_pagar
+                    if (typeof calcularSueldoACobraPorEmpleado === 'function') {
+                        calcularSueldoACobraPorEmpleado(empleado);
+                    } else {
+                        calcularSueldoACobraSimplificado(empleado);
+                    }
                     empleadoEncontrado = true;
 
                 }
@@ -270,6 +281,10 @@ function actualizarEnOtrasEstructuras(clave, nuevoSueldo) {
         const empleado = window.empleadosOriginales.find(emp => String(emp.clave) === String(clave));
         if (empleado) {
             empleado.neto_pagar = nuevoSueldo;
+            // Recalcular sueldo a cobrar después de actualizar neto_pagar
+            if (typeof calcularSueldoACobraPorEmpleado === 'function') {
+                calcularSueldoACobraPorEmpleado(empleado);
+            }
 
         }
     }
@@ -279,6 +294,10 @@ function actualizarEnOtrasEstructuras(clave, nuevoSueldo) {
         const empleado = window.empleadosOriginalesDispersion.find(emp => String(emp.clave) === String(clave));
         if (empleado) {
             empleado.neto_pagar = nuevoSueldo;
+            // Recalcular sueldo a cobrar después de actualizar neto_pagar
+            if (typeof calcularSueldoACobraPorEmpleado === 'function') {
+                calcularSueldoACobraPorEmpleado(empleado);
+            }
 
         }
     }
@@ -288,6 +307,10 @@ function actualizarEnOtrasEstructuras(clave, nuevoSueldo) {
         const empleado = window.empleadosFiltradosDispersion.find(emp => String(emp.clave) === String(clave));
         if (empleado) {
             empleado.neto_pagar = nuevoSueldo;
+            // Recalcular sueldo a cobrar después de actualizar neto_pagar
+            if (typeof calcularSueldoACobraPorEmpleado === 'function') {
+                calcularSueldoACobraPorEmpleado(empleado);
+            }
         }
     }
 }
@@ -405,7 +428,12 @@ function recalcularSueldoACobrar(clave, $fila) {
     }
 
     // Recalcular sueldo a cobrar usando la misma lógica que el sistema
-    const sueldoACobrar = calcularSueldoACobraSimplificado(empleado);
+    let sueldoACobrar;
+    if (typeof calcularSueldoACobraPorEmpleado === 'function') {
+        sueldoACobrar = calcularSueldoACobraPorEmpleado(empleado);
+    } else {
+        sueldoACobrar = calcularSueldoACobraSimplificado(empleado);
+    }
 
     // Actualizar la columna SUELDO A COBRAR (columna 16, índice 15)
     const $celdas = $fila.find('td');

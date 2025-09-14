@@ -295,10 +295,18 @@ function actualizarHorariosSemanalesActualizados() {
         });
 
         if (typeof redondearRegistrosEmpleados === 'function') {
-            redondearRegistrosEmpleados();
+            // Forzar recálculo completo cuando se modifican horarios oficiales
+            redondearRegistrosEmpleados(true);
+            
+            // Actualizar la tabla para mostrar los cambios
+            if (typeof setEmpleadosPaginados === 'function' && window.empleadosOriginales) {
+                setEmpleadosPaginados(window.empleadosOriginales);
+            }
         }
 
         $('#horarios_modal').modal('hide');
+        console.log(jsonGlobal);
+        
     });
 }
 

@@ -14,6 +14,8 @@
     <link rel="stylesheet" href="../styles/horario_modal.css">
     <link rel="stylesheet" href="../styles/detalle_modal_dispersion.css">
     <link rel="stylesheet" href="../styles/modal_sumas.css">
+    <!-- SweetAlert2 CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
@@ -48,7 +50,6 @@
                     <button type="button" id="btn_procesar_ambos">
                         <i class="bi bi-arrow-repeat"></i> Procesar
                     </button>
-
                 </div>
             </form>
         </div>
@@ -75,7 +76,7 @@
                 <button class="btn-suma" type="button" id="btn_suma">
                     <i class="bi bi-calculator"></i>
                 </button>
-                 <button class="btn-suma" type="button" id="btn_suma_dispersion" hidden>
+                <button class="btn-suma" type="button" id="btn_suma_dispersion" hidden>
                     <i class="bi bi-calculator"></i>
                 </button>
             </div>
@@ -115,6 +116,14 @@
                 <button class="btn-export-pdf" id="btn_export_pdf" title="Exportar a PDF">
                     <i class="bi bi-file-earmark-pdf"></i>
                     PDF
+                </button>
+                <button class="btn-guardar-nomina" id="btn_guardar_nomina" title="Guardar nómina">
+                    <i class="bi bi-save"></i>
+                    Guardar Nómina
+                </button>
+                <button class="btn-limpiar-datos" id="btn_limpiar_datos" title="Limpiar datos y volver al inicio">
+                    <i class="bi bi-trash"></i>
+                    Subir Nuevamente
                 </button>
             </div>
         </div>
@@ -187,7 +196,7 @@
 
     <!-- Menú contextual para dispersión -->
     <div id="menu-contextual-dispersion" hidden style="position:absolute; z-index:9999; background:#fff; border:1px solid #ccc; padding:6px 12px; font-size:14px; cursor:pointer; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.15);">
-      Actualizar Sueldo
+        Actualizar Sueldo
     </div>
 
     <!-- jQuery CDN -->
@@ -207,7 +216,8 @@
     <script src="../jsPrueba2/rangos_horarios.js"></script>
     <script src="../jsPrueba2/horarios_modal.js"></script>
     <script src="../jsPrueba2/calcular_sumas.js"></script>
-    
+    <script src="../jsPrueba2/guardar_nomina.js"></script>
+
   
 </body>
 

@@ -553,7 +553,7 @@ body {
     animation: filaActualizadaFlash 2s ease-out;
 }
 
-/* 🆕 Efecto visual para filas actualizadas en dispersión */
+/*  Efecto visual para filas actualizadas en dispersión */
 .fila-actualizada {
     background-color: #dcfce7 !important;
     transform: scale(1.01);
@@ -1097,5 +1097,87 @@ body {
     #tabla-dispersion td:nth-child(4) {
         min-width: 70px;
         max-width: 100px;
+    }
+}
+
+/* Estilos para botones de guardar nómina y limpiar datos */
+.btn-guardar-nomina,
+.btn-limpiar-datos {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-guardar-nomina {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+.btn-guardar-nomina:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-limpiar-datos {
+    background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+    box-shadow: 0 2px 4px rgba(52, 211, 153, 0.2);
+}
+
+.btn-limpiar-datos:hover {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 4px 8px rgba(52, 211, 153, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-guardar-nomina:active,
+.btn-limpiar-datos:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-guardar-nomina:disabled,
+.btn-limpiar-datos:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.btn-guardar-nomina i,
+.btn-limpiar-datos i {
+    font-size: 16px;
+}
+
+/* Responsive para botones de guardar y limpiar */
+@media (max-width: 768px) {
+    .btn-guardar-nomina,
+    .btn-limpiar-datos {
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .btn-guardar-nomina,
+    .btn-limpiar-datos {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+    
+    .btn-guardar-nomina i,
+    .btn-limpiar-datos i {
+        font-size: 14px;
     }
 }

@@ -1,4 +1,4 @@
 <?php 
 
-$rutaRaiz = "/sistema_saao/";
+$rutaRaiz = "/sistema_saao";
 ?>
