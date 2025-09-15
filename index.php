@@ -9,12 +9,12 @@ include("config/config.php");
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema Empacadora de Limón</title>
-    <!-- Bootstrap CSS CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="public/styles/main.css">
     <!-- Iconos Bootstrap -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
 </head>
 
 <body>
@@ -86,10 +86,14 @@ include("config/config.php");
         <small>&copy; 2024 Empacadora de Limón. Todos los derechos reservados.</small>
     </footer>
 
-    <!-- Bootstrap JS CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="<?= JQUERY_JS ?>"></script>
+    <!-- Bootstrap JS -->
+    <script src="<?= BOOTSTRAP_JS ?>"></script>
     <!-- Script de notificaciones -->
     <script src="public/js/notifications.js"></script>
+    <!-- Script para funcionalidad del navbar -->
+    <script src="public/js/navbar.js"></script>
 </body>
 
 </html>

@@ -9,10 +9,10 @@ include("../../config/config.php");
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registrar Empleado</title>
-    <!-- Bootstrap CSS CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <!-- Iconos Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="../../public/styles/main.css">
     <link rel="stylesheet" href="../styles/registro_styles.css">
@@ -207,10 +207,10 @@ include("../../config/config.php");
         </div>
     </div>
 
-    <!-- jQuery CDN -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <!-- Bootstrap JS CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="<?= JQUERY_JS ?>"></script>
+    <!-- Bootstrap JS -->
+    <script src="<?= BOOTSTRAP_JS ?>"></script>
     <!-- JS personalizados -->
     <script src="../../public/js/validaciones.js"></script>
     <script src="../controllers/registro_empleado.js"></script>

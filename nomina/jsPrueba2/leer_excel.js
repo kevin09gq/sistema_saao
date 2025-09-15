@@ -73,6 +73,7 @@ $(document).ready(function () {
     configTablas();
 
 
+
     $('#btn_horarios').click(function (e) {
         e.preventDefault();
         setDataTableHorarios(window.horariosSemanalesActualizados);
@@ -146,6 +147,7 @@ $(document).ready(function () {
             if (result.isConfirmed) {
                 // Limpiar datos del localStorage
                 limpiarDatosNomina();
+                $("#container-nomina").attr("hidden", true);
 
                 // Restaurar horarios oficiales a su estado original
                 if (typeof window.horariosSemanales !== 'undefined') {
@@ -187,6 +189,7 @@ $(document).ready(function () {
         const clave = $fila.data('clave');
         const columna = $celda.index();
         const valor = $celda.text().trim();
+        
 
         // Actualizar el empleado correspondiente
         actualizarEmpleadoEnDatos(clave, columna, valor);
@@ -324,6 +327,15 @@ function verificarDatosGuardados() {
     const datosGuardados = recuperarDatosNomina();
 
     if (datosGuardados) {
+        // 🆕 VERIFICAR SI HAY DATOS VÁLIDOS ANTES DE RESTAURAR LA VISTA
+        if (!datosGuardados.jsonGlobal || !datosGuardados.empleadosOriginales || datosGuardados.empleadosOriginales.length === 0) {
+            // Si no hay datos válidos, limpiar y mostrar formulario
+            limpiarDatosNomina();
+            $("#container-nomina").removeAttr("hidden");
+            $("#tabla-nomina-responsive").attr("hidden", true);
+            return;
+        }
+
         // Restaurar variables globales tal como fueron guardadas
         jsonGlobal = datosGuardados.jsonGlobal;
         window.empleadosOriginales = datosGuardados.empleadosOriginales;
@@ -351,16 +363,18 @@ function verificarDatosGuardados() {
             });
         }
 
-        // Restaurar la vista de la tabla sin recalcular
-        restaurarVistaNomina();
-
+        // 🆕 RESTAURAR LA VISTA DIRECTAMENTE SIN MOSTRAR PRIMERO EL FORMULARIO
+        restaurarVistaNominaDirecta();
+    } else {
+        // 🆕 ASEGURAR QUE EL FORMULARIO ESTÉ VISIBLE SI NO HAY DATOS
+        $("#container-nomina").removeAttr("hidden");
+        $("#tabla-nomina-responsive").attr("hidden", true);
     }
 }
 
-// Restaurar la vista con los datos recuperados
-function restaurarVistaNomina() {
-
-    // Ocultar formulario inicial y mostrar tabla
+// 🆕 NUEVA FUNCIÓN PARA RESTAURAR VISTA DIRECTAMENTE
+function restaurarVistaNominaDirecta() {
+    // Cambiar de vista inmediatamente sin mostrar el formulario primero
     $("#container-nomina").attr("hidden", true);
     $("#tabla-nomina-responsive").removeAttr("hidden");
 
@@ -426,6 +440,12 @@ function restaurarVistaNomina() {
             if (typeof emp.sueldo_a_cobrar === 'number') emp.sueldo_a_cobrar = parseFloat(emp.sueldo_a_cobrar.toFixed(2));
         });
     }
+}
+
+// 🆕 MANTENER LA FUNCIÓN ORIGINAL PARA CUANDO SE USA DESDE OTROS LUGARES
+function restaurarVistaNomina() {
+    // Esta función se mantiene para compatibilidad con otras partes del código
+    restaurarVistaNominaDirecta();
 }
 
 /*

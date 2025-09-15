@@ -1,4 +1,3 @@
-
 <!-- Barra de navegación principal -->
 <nav class="navbar navbar-expand-lg navbar-custom shadow-sm">
     <div class="container">
@@ -14,13 +13,13 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link active" href="<?= $rutaRaiz ?>/index.php">
+                    <a class="nav-link" href="<?= $rutaRaiz ?>/index.php" data-page="inicio">
                         <i class="bi bi-house-fill me-2"></i>
                         Inicio
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="<?= $rutaRaiz ?>/gafetes/gafetes.php">
+                    <a class="nav-link" href="<?= $rutaRaiz ?>/gafetes/gafetes.php" data-page="gafetes">
                         <i class="bi bi-credit-card me-2"></i>
                         Gafetes
                     </a>
@@ -32,13 +31,13 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="<?= $rutaRaiz ?>/nomina/views/nomina.php">
+                    <a class="nav-link" href="<?= $rutaRaiz ?>/nomina/views/nomina.php" data-page="nomina">
                         <i class="bi bi-calculator me-2"></i>
                         Nómina
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="<?= $rutaRaiz ?>/empleados/views/form_actualizar_empleado.php">
+                    <a class="nav-link" href="<?= $rutaRaiz ?>/empleados/views/form_actualizar_empleado.php" data-page="empleados">
                         <i class="bi bi-people me-2"></i>
                         Empleados
                     </a>
@@ -55,4 +54,8 @@
 </nav>
 
 <!-- Incluir estilos del navbar -->
-<link rel="stylesheet" href="<?=$rutaRaiz ?>/public/styles/navbar_styles.css">
+<link rel="stylesheet" href="<?= $rutaRaiz ?>/public/styles/navbar_styles.css">
+<!-- Iconos Bootstrap (asegurar que estén disponibles en todas las vistas) -->
+<link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
+<!-- Script para funcionalidad del navbar -->
+<script src="<?= $rutaRaiz ?>/public/js/navbar.js"></script>

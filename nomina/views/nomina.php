@@ -5,9 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nómina</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <?php 
+    include "../../config/config.php";
+    ?>
+    <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Inter:400,600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <link rel="stylesheet" href="../styles/nomina_styles.css">
     <link rel="stylesheet" href="../styles/seleccion_modal_styles.css">
     <link rel="stylesheet" href="../styles/detalles_modal.css">
@@ -20,14 +23,12 @@
 
 <body>
     <?php
-    // Incluir la configuración para las rutas
-    include "../../config/config.php";
-    // Incluir el navbar
+    // Incluir el navbar (config.php ya fue incluido en el head)
     include "../../public/views/navbar.php"
     ?>
 
     <!-- Contenedor principal centrado -->
-    <div class="container-nomina" id="container-nomina">
+    <div class="container-nomina" id="container-nomina" hidden>
         <!-- Contenedor tipo navbar para formulario y filtros -->
         <div class="navbar-nomina">
             <div class="titulo-nomina">Procesamiento de Nómina</div>
@@ -199,13 +200,12 @@
         Actualizar Sueldo
     </div>
 
-    <!-- jQuery CDN -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- jQuery -->
+    <script src="<?= JQUERY_JS ?>"></script>
     <!-- Plugin Inputmask -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.7/jquery.inputmask.min.js"></script>
-    <!-- Bootstrap JS CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
+    <!-- Bootstrap JS -->
+    <script src="<?= BOOTSTRAP_JS ?>"></script>
 
     <script src="../jsPrueba2/leer_excel.js"></script>
     <script src="../jsPrueba2/config_tabla.js"></script>
@@ -218,7 +218,6 @@
     <script src="../jsPrueba2/calcular_sumas.js"></script>
     <script src="../jsPrueba2/guardar_nomina.js"></script>
 
-  
 </body>
 
 </html>

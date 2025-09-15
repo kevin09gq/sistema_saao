@@ -8,8 +8,11 @@ include("../conexion/conexion.php");
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador de Gafetes</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <?php 
+    include "../config/config.php";
+    ?>
+    <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
+    <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/subir-fotos.css">
     <link rel="stylesheet" href="css/logos-gafetes.css">
@@ -19,9 +22,7 @@ include("../conexion/conexion.php");
 
 <body>
     <?php
-    // Incluir la configuración para las rutas
-    include "../config/config.php";
-    // Incluir el navbar
+    // Incluir el navbar (config.php ya fue incluido en el head)
     include "../public/views/navbar.php";
     ?>
 
@@ -633,8 +634,10 @@ include("../conexion/conexion.php");
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="<?= JQUERY_JS ?>"></script>
+    <!-- Bootstrap JS -->
+    <script src="<?= BOOTSTRAP_JS ?>"></script>
     <script src="js/actualizarLogos.js"></script>
     <script src="js/funciones.js"></script>
     <script src="js/subirFotos.js"></script>
