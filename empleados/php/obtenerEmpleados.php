@@ -92,7 +92,7 @@ function dataEmpleado($idEmpleado, $idClave)
         e.enfermedades_alergias,
         e.fecha_ingreso,
         e.fecha_nacimiento,
-        e.num_casillero,
+        c.num_casillero AS num_casillero,
         e.ruta_foto,
         e.salario_semanal,
         e.salario_mensual,
@@ -104,14 +104,16 @@ function dataEmpleado($idEmpleado, $idClave)
         a.nombre_area AS nombre_area,
         p.id_puestoEspecial AS id_puesto,
         p.nombre_puesto AS nombre_puesto,
-        c.nombre AS nombre_contacto,
-        c.ap_paterno AS apellido_paterno_contacto,
-        c.ap_materno AS apellido_materno_contacto,
-        c.telefono AS telefono_contacto,
-        c.domicilio AS domicilio_contacto,
+        cont.nombre AS nombre_contacto,
+        cont.ap_paterno AS apellido_paterno_contacto,
+        cont.ap_materno AS apellido_materno_contacto,
+        cont.telefono AS telefono_contacto,
+        cont.domicilio AS domicilio_contacto,
         ec.parentesco
     FROM 
         info_empleados e
+    LEFT JOIN 
+        casilleros c ON e.id_empleado = c.id_empleado
     LEFT JOIN 
         departamentos d ON e.id_departamento = d.id_departamento
     LEFT JOIN 
@@ -123,7 +125,7 @@ function dataEmpleado($idEmpleado, $idClave)
     LEFT JOIN 
         empleado_contacto ec ON e.id_empleado = ec.id_empleado
     LEFT JOIN 
-        contacto_emergencia c ON ec.id_contacto = c.id_contacto 
+        contacto_emergencia cont ON ec.id_contacto = cont.id_contacto 
     WHERE e.id_empleado = ? AND e.clave_empleado = ?");
 
     $sql->bind_param("is", $idEmpleado, $idClave);

@@ -87,6 +87,7 @@ $(document).ready(function() {
                 let titulo = "";
                 let mensaje = "";
                 let icono = "success";
+                console.log(jsonGlobal);
                 
                 if (response.action === 'updated') {
                     titulo = "¡Nómina Actualizada!";

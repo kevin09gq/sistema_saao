@@ -217,6 +217,7 @@
     <script src="../jsPrueba2/horarios_modal.js"></script>
     <script src="../jsPrueba2/calcular_sumas.js"></script>
     <script src="../jsPrueba2/guardar_nomina.js"></script>
+    <script src="../jsPrueba2/generar_excel_pdf.js"></script>
 
 </body>
 

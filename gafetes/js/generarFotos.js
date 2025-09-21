@@ -174,6 +174,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <small class="text-muted d-block" style="font-size: 0.65rem;">Clave: ${empleado.clave_empleado}</small>
                                 <small class="text-muted" style="font-size: 0.65rem; line-height: 1.2;">${empleado.nombre}</small>
                             </div>
+                            <div class="input-group input-group-sm mt-1">
+                                <span class="input-group-text">Copias</span>
+                                <input type="number" class="form-control form-control-sm copias-input" data-id="${(typeof empleado.id !== 'undefined' ? empleado.id : (typeof empleado.id_empleado !== 'undefined' ? empleado.id_empleado : ''))}" value="1" min="1" max="50" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -186,10 +190,34 @@ document.addEventListener('DOMContentLoaded', function() {
         // Configurar el botón de imprimir
         const btnImprimir = document.getElementById('imprimirFotos');
         btnImprimir.onclick = function() {
+            // Leer cantidades de copias indicadas
+            const inputs = document.querySelectorAll('.copias-input');
+            const copiasMap = {};
+            inputs.forEach(inp => {
+                const id = parseInt(inp.getAttribute('data-id'));
+                let val = parseInt(inp.value);
+                if (isNaN(val) || val < 1) val = 1;
+                if (val > 50) val = 50;
+                if (!isNaN(id)) {
+                    copiasMap[id] = val;
+                }
+            });
+
+            // Expandir la lista de empleados según copias
+            const empleadosExpandido = [];
+            empleados.forEach(emp => {
+                var rawKey = (typeof emp.id !== 'undefined') ? emp.id : ((typeof emp.id_empleado !== 'undefined') ? emp.id_empleado : null);
+                var key = parseInt(rawKey);
+                const n = (!isNaN(key) && copiasMap[key]) ? copiasMap[key] : 1;
+                for (let i = 0; i < n; i++) {
+                    empleadosExpandido.push(emp);
+                }
+            });
+
             modal.hide();
             // Esperar a que se cierre el modal antes de abrir la ventana de impresión
             setTimeout(() => {
-                abrirVentanaImpresion(empleados);
+                abrirVentanaImpresion(empleadosExpandido);
             }, 300);
         };
         

@@ -327,7 +327,7 @@ function verificarDatosGuardados() {
     const datosGuardados = recuperarDatosNomina();
 
     if (datosGuardados) {
-        // 🆕 VERIFICAR SI HAY DATOS VÁLIDOS ANTES DE RESTAURAR LA VISTA
+        //  VERIFICAR SI HAY DATOS VÁLIDOS ANTES DE RESTAURAR LA VISTA
         if (!datosGuardados.jsonGlobal || !datosGuardados.empleadosOriginales || datosGuardados.empleadosOriginales.length === 0) {
             // Si no hay datos válidos, limpiar y mostrar formulario
             limpiarDatosNomina();
@@ -363,7 +363,7 @@ function verificarDatosGuardados() {
             });
         }
 
-        // 🆕 RESTAURAR LA VISTA DIRECTAMENTE SIN MOSTRAR PRIMERO EL FORMULARIO
+        // 🆕 RESTAURAR LA VISTA DIRECTA SIN MOSTRAR PRIMERO EL FORMULARIO
         restaurarVistaNominaDirecta();
     } else {
         // 🆕 ASEGURAR QUE EL FORMULARIO ESTÉ VISIBLE SI NO HAY DATOS
@@ -1768,12 +1768,15 @@ function clavesEmpleados() {
         jsonGlobal.departamentos.forEach(depto => {
             (depto.empleados || []).forEach(emp => {
                 if (emp.clave) {
-                    claves.push(emp.clave);
+                    // Formatear la clave: convertir a string y añadir ceros a la izquierda
+                    // para que tenga 3 dígitos (001, 020, 099, etc.)
+                    const claveFormateada = String(emp.clave).padStart(3, '0');
+                    claves.push(claveFormateada);
                 }
             });
         });
     }
-
+    console.log("Claves de empleados obtenidas:", claves);
     return claves;
 }
 

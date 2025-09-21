@@ -94,16 +94,54 @@ function renderPaginacion(totalFiltrados) {
         return;
     }
 
+    // Botón anterior
     paginacionHtml += `<li class="page-item${paginaActual === 1 ? ' disabled' : ''}">
         <a class="page-link" href="#" onclick="cambiarPagina(${paginaActual - 1}); return false;">&laquo;</a>
     </li>`;
-
-    for (let i = 1; i <= totalPaginas; i++) {
-        paginacionHtml += `<li class="page-item${paginaActual === i ? ' active' : ''}">
-            <a class="page-link" href="#" onclick="cambiarPagina(${i}); return false;">${i}</a>
-        </li>`;
+    
+    // Determinar qué números de página mostrar
+    const paginasVisibles = 5; // Número de páginas a mostrar además de la primera y última
+    const paginas = [];
+    
+    // Siempre agregar la primera página
+    paginas.push(1);
+    
+    // Calcular el rango alrededor de la página actual
+    const inicio = Math.max(2, paginaActual - Math.floor(paginasVisibles/2));
+    const fin = Math.min(totalPaginas - 1, inicio + paginasVisibles - 1);
+    
+    // Agregar ellipsis después de la página 1 si es necesario
+    if (inicio > 2) {
+        paginas.push('...');
     }
+    
+    // Agregar páginas del rango calculado
+    for (let i = inicio; i <= fin; i++) {
+        paginas.push(i);
+    }
+    
+    // Agregar ellipsis antes de la última página si es necesario
+    if (fin < totalPaginas - 1) {
+        paginas.push('...');
+    }
+    
+    // Siempre agregar la última página si hay más de una página
+    if (totalPaginas > 1) {
+        paginas.push(totalPaginas);
+    }
+    
+    // Generar HTML para cada número de página o ellipsis
+    paginas.forEach(pagina => {
+        if (pagina === '...') {
+            paginacionHtml += `<li class="page-item disabled"><a class="page-link" href="#">...</a></li>`;
+        } else {
+            paginacionHtml += `<li class="page-item${paginaActual === pagina ? ' active' : ''}">
+                <a class="page-link" href="#" onclick="cambiarPagina(${pagina}); return false;">${pagina}</a>
+            </li>`;
+        }
+    });
 
+    // Botón siguiente
     paginacionHtml += `<li class="page-item${paginaActual === totalPaginas ? ' disabled' : ''}">
         <a class="page-link" href="#" onclick="cambiarPagina(${paginaActual + 1}); return false;">&raquo;</a>
     </li>`;

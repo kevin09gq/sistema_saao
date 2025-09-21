@@ -8,12 +8,10 @@ include("../conexion/conexion.php");
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador de Gafetes</title>
-    <?php 
-    include "../config/config.php";
-    ?>
-    <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
-    <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <link rel="stylesheet" href="css/estilos.css">
+    <link rel="stylesheet" href="css/casillero.css">
     <link rel="stylesheet" href="css/subir-fotos.css">
     <link rel="stylesheet" href="css/logos-gafetes.css">
     <link rel="stylesheet" href="css/confirmacion.css">
@@ -22,7 +20,9 @@ include("../conexion/conexion.php");
 
 <body>
     <?php
-    // Incluir el navbar (config.php ya fue incluido en el head)
+    // Incluir la configuración para las rutas
+    include "../config/config.php";
+    // Incluir el navbar
     include "../public/views/navbar.php";
     ?>
 
@@ -91,6 +91,9 @@ include("../conexion/conexion.php");
                                 <button id="limpiarFotos" class="btn btn-outline-danger btn-sm" title="Eliminar fotos no utilizadas">
                                     <i class="bi bi-trash3"></i> Limpiar Fotos
                                 </button>
+                                <button id="btnCasillero" class="btn btn-info btn-sm text-white" title="Casillero">
+                                    <i class="bi bi-box-seam"></i> Casillero
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -105,7 +108,10 @@ include("../conexion/conexion.php");
                                         <th>Nombre</th>
                                         <th>Departamento</th>
                                         <th>Área</th>
+                                        <th>Estado</th>
+                                        <th>IMSS</th>
                                         <th>Seleccionar</th>
+                                        <th>Foto</th>
                                         <th>Editar</th>
                                     </tr>
                                 </thead>
@@ -634,14 +640,127 @@ include("../conexion/conexion.php");
         </div>
     </div>
 
-    <!-- jQuery -->
-    <script src="<?= JQUERY_JS ?>"></script>
-    <!-- Bootstrap JS -->
-    <script src="<?= BOOTSTRAP_JS ?>"></script>
+    <!-- Modal para editar casillero -->
+    <div class="modal fade" id="modalEditarCasillero" tabindex="-1" aria-labelledby="modalEditarCasilleroLabel" aria-hidden="true" style="z-index: 1061;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalEditarCasilleroLabel">
+                        <i class="bi bi-pencil-square"></i> Editar Casillero
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Contenedor para mostrar información del empleado asignado -->
+                    <div id="infoEmpleadoAsignado" class="mb-3"></div>
+                    
+                    <!-- Pestañas -->
+                    <ul class="nav nav-tabs mb-3" id="casilleroTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="editar-tab" data-bs-toggle="tab" data-bs-target="#editar" type="button" role="tab" aria-controls="editar" aria-selected="true">
+                                <i class="bi bi-pencil-square"></i> Editar
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="asignar-tab" data-bs-toggle="tab" data-bs-target="#asignar" type="button" role="tab" aria-controls="asignar" aria-selected="false">
+                                <i class="bi bi-person-plus"></i> Asignar Empleado
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- Contenido de las pestañas -->
+                    <div class="tab-content" id="casilleroTabsContent">
+                        <!-- Pestaña Editar -->
+                        <div class="tab-pane fade show active" id="editar" role="tabpanel" aria-labelledby="editar-tab">
+                            <form id="formEditarCasillero">
+                                <input type="hidden" id="casillero_id" name="casillero_id">
+                                <div class="mb-3">
+                                    <label for="nuevo_numero" class="form-label">Nuevo Número de Casillero</label>
+                                    <input type="text" class="form-control" id="nuevo_numero" name="nuevo_numero" required>
+                                    <div class="form-text">Ingrese el nuevo número para este casillero.</div>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Pestaña Asignar Empleado -->
+                        <div class="tab-pane fade" id="asignar" role="tabpanel" aria-labelledby="asignar-tab">
+                            <div class="mb-3">
+                                <label for="buscarEmpleado" class="form-label">Buscar Empleado</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="buscarEmpleado" placeholder="Nombre o ID del empleado">
+                                    <button class="btn btn-outline-secondary" type="button" id="btnBuscarEmpleado">
+                                        <i class="bi bi-search"></i> Buscar
+                                    </button>
+                                </div>
+                                <div class="form-text">Escriba el nombre o ID del empleado y presione Buscar</div>
+                            </div>
+                            
+                            <div id="resultadoBusqueda" class="mt-3">
+                                <div class="text-center text-muted">
+                                    <i class="bi bi-person-lines-fill fs-1"></i>
+                                    <p class="mt-2">Busque un empleado para asignar al casillero</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="btnEliminarCasillero">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-primary" id="btnGuardarCambios">
+                        <i class="bi bi-save"></i> Guardar Cambios
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar nuevo casillero -->
+    <div class="modal fade" id="modalAgregarCasillero" tabindex="-1" aria-labelledby="modalAgregarCasilleroLabel" aria-hidden="true" style="z-index: 1071;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalAgregarCasilleroLabel">
+                        <i class="bi bi-plus-circle"></i> Agregar Nuevo Casillero
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formAgregarCasillero">
+                        <div class="mb-3">
+                            <label for="numeroCasillero" class="form-label">Número del Casillero</label>
+                            <input type="text" class="form-control" id="numeroCasillero" name="numeroCasillero" placeholder="Ej: 1, 1A, 2B, etc." required>
+                            <div class="form-text">Ingrese el número identificador único para el nuevo casillero.</div>
+                        </div>
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading"><i class="bi bi-info-circle"></i> Nota importante</h6>
+                            <p class="mb-0">El sistema validará automáticamente que el número de casillero no entre en conflicto con los existentes. Por ejemplo, si ya existe "1", no podrá crear "1A" y viceversa.</p>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-primary" id="btnConfirmarAgregar">
+                        <i class="bi bi-plus-circle"></i> Agregar Casillero
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/actualizarLogos.js"></script>
+    <script src="js/generarFotos.js?v=<?php echo filemtime(__DIR__ . '/js/generarFotos.js'); ?>"></script>
     <script src="js/funciones.js"></script>
     <script src="js/subirFotos.js"></script>
-    <script src="js/generarFotos.js"></script>
+    <script src="js/casillero.js"></script>
 </body>
 
 </html>

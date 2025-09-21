@@ -53,12 +53,16 @@ $(document).ready(function () {
     
     // Hacer variables accesibles globalmente
     window.todosLosEmpleados = todosLosEmpleados;
+    
+    // Objeto para almacenar las preferencias de inclusión de fotos por empleado
+    window.fotoInclusion = {};
 
     // Evento para seleccionar todos los empleados
     $('#seleccionarTodos').click(function () {
         $('.empleado-checkbox').prop('checked', true);
         empleadosSeleccionados = new Set(empleados.map(e => e.id_empleado));
         window.empleadosSeleccionados = empleadosSeleccionados;
+        
         actualizarContadorSeleccionados();
     });
 
@@ -67,6 +71,10 @@ $(document).ready(function () {
         $('.empleado-checkbox').prop('checked', false);
         empleadosSeleccionados.clear();
         window.empleadosSeleccionados = empleadosSeleccionados;
+        
+        // Limpiar las preferencias de inclusión de fotos
+        window.fotoInclusion = {};
+        
         actualizarContadorSeleccionados();
     });
 
@@ -148,6 +156,11 @@ $(document).ready(function () {
             mostrarAlertaGafete('Por favor, seleccione al menos un empleado para generar el gafete.', 'warning');
             return;
         }
+        
+        // ACTUALIZACIÓN: Refrescar datos de empleados seleccionados antes de generar gafetes
+        // para asegurar que se usen los datos más recientes
+        refrescarDatosEmpleadosSeleccionados();
+        
         // Mostrar solo la lista de empleados seleccionados en el modal
         mostrarListaEmpleadosSeleccionados();
     });
@@ -174,11 +187,19 @@ $(document).ready(function () {
         const idEmpleado = $(this).val(); // Usamos value en lugar de data-id
         if ($(this).is(':checked')) {
             empleadosSeleccionados.add(idEmpleado);
+
         } else {
             empleadosSeleccionados.delete(idEmpleado);
+
         }
         window.empleadosSeleccionados = empleadosSeleccionados;
         actualizarContadorSeleccionados();
+    });
+    
+    // Evento para manejar la selección/deselección de fotos individuales
+    $(document).on('change', '.foto-checkbox', function () {
+        const idEmpleado = $(this).val();
+        window.fotoInclusion[idEmpleado] = $(this).is(':checked');
     });
 
     // Evento para editar empleado
@@ -655,6 +676,28 @@ $(document).ready(function () {
         for (let i = inicio; i < fin; i++) {
             const empleado = empleadosOrdenados[i];
             const estaSeleccionado = empleadosSeleccionados.has(empleado.id_empleado);
+            // Verificar si la foto debe estar seleccionada según la preferencia del usuario
+            const fotoSeleccionada = window.fotoInclusion[empleado.id_empleado] || false;
+            
+            // Determinar el estado del gafete
+            let estadoGafete = 'Sin fecha';
+            if (empleado.fecha_vigencia) {
+                const fechaVigencia = new Date(empleado.fecha_vigencia);
+                const hoy = new Date();
+                // Resetear horas para comparar solo fechas
+                fechaVigencia.setHours(0, 0, 0, 0);
+                hoy.setHours(0, 0, 0, 0);
+                
+                if (fechaVigencia >= hoy) {
+                    estadoGafete = 'Vigente';
+                } else {
+                    estadoGafete = 'Expirado';
+                }
+            }
+            
+            // Determinar si el empleado tiene IMSS
+            const tieneIMSS = empleado.imss && empleado.imss !== 'N/A' && empleado.imss.trim() !== '';
+            
             $cuerpo.append(`
                 <tr>
                     <td>${empleado.clave_empleado}</td>
@@ -662,9 +705,24 @@ $(document).ready(function () {
                     <td>${obtenerNombreDepartamento(empleado.id_departamento)}</td>
                     <td>${empleado.nombre_area || 'Sin asignar'}</td>
                     <td class="text-center">
+                        <span class="badge ${estadoGafete === 'Vigente' ? 'bg-success' : estadoGafete === 'Expirado' ? 'bg-danger' : 'bg-secondary'}">
+                            ${estadoGafete}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge ${tieneIMSS ? 'bg-primary' : 'bg-secondary'}">
+                            ${tieneIMSS ? 'Sí' : 'No'}
+                        </span>
+                    </td>
+                    <td class="text-center">
                         <input type="checkbox" class="form-check-input empleado-checkbox" 
                                data-id="${empleado.id_empleado}" value="${empleado.id_empleado}" 
                                ${estaSeleccionado ? 'checked' : ''}>
+                    </td>
+                    <td class="text-center">
+                        <input type="checkbox" class="form-check-input foto-checkbox" 
+                               data-id="${empleado.id_empleado}" value="${empleado.id_empleado}" 
+                               ${fotoSeleccionada ? 'checked' : ''}>
                     </td>
                     <td class="text-center">
                         <button class="btn btn-sm btn-editar" 
@@ -692,16 +750,17 @@ $(document).ready(function () {
     function obtenerColorArea(empleado) {
         if (!empleado.nombre_area) return '#06320c'; // Color por defecto
         
-        const area = empleado.nombre_area.toLowerCase();
+        // Usar el nombre del área tal como viene de la base de datos (con la primera letra mayúscula)
+        const area = empleado.nombre_area;
         
         switch (area) {
-            case 'empaque':
+            case 'Empaque':
                 return 'rgb(0, 77, 23)'; // COLOR CITRICOS SAAO
-            case 'rancho relicario':
+            case 'Rancho Relicario':
                 return 'rgb(181, 6, 0)'; // COLOR RANCHO EL RELICARIO
-            case 'rancho pilar':
+            case 'Rancho Pilar':
                 return 'rgb(194, 158, 240)'; // Lila claro
-            case 'rancho huasteca':
+            case 'Rancho Huasteca':
                 return 'rgb(50, 186, 91)'; // RANCHO LA HUASTECA
             default:
                 return 'rgb(0, 77, 23)'; // COLOR CITRICOS SAAO por defecto
@@ -712,16 +771,17 @@ $(document).ready(function () {
     function obtenerColorTextoDatos(empleado) {
         if (!empleado.nombre_area) return '#06320c'; // Color por defecto
         
-        const area = empleado.nombre_area.toLowerCase();
+        // Usar el nombre del área tal como viene de la base de datos (con la primera letra mayúscula)
+        const area = empleado.nombre_area;
         
         switch (area) {
-            case 'empaque':
+            case 'Empaque':
                 return '#053010'; // COLOR ESPECÍFICO PARA EMPAQUE
-            case 'rancho relicario':
+            case 'Rancho Relicario':
                 return '#540000'; // COLOR RANCHO EL RELICARIO
-            case 'rancho pilar':
+            case 'Rancho Pilar':
                 return '#140329'; // Lila claro
-            case 'rancho huasteca':
+            case 'Rancho Huasteca':
                 return '#0B3617'; // RANCHO LA HUASTECA
             default:
                 return '#06320c'; // COLOR CITRICOS SAAO por defecto
@@ -739,6 +799,46 @@ $(document).ready(function () {
         } else {
             // Volver al color original cuando no hay empleados seleccionados
             $boton.removeClass('btn-success').addClass('btn-warning');
+        }
+    }
+    
+    // Función para refrescar los datos de los empleados seleccionados
+    function refrescarDatosEmpleadosSeleccionados() {
+        // Esta función asegura que los datos de los empleados seleccionados estén actualizados
+        // antes de generar los gafetes
+        
+        // Hacer una llamada AJAX para obtener los datos más recientes de los empleados seleccionados
+        const idsSeleccionados = Array.from(empleadosSeleccionados);
+        
+        if (idsSeleccionados.length > 0) {
+            // Actualizar los datos de todos los empleados seleccionados con información fresca
+            $.ajax({
+                url: 'php/obtenerEmpleados.php',
+                type: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    // Actualizar la cache con los datos más recientes
+                    todosLosEmpleados = data;
+                    window.todosLosEmpleados = todosLosEmpleados;
+                    
+                    // También actualizar el array empleados para mantener consistencia
+                    // (esto afecta la tabla actual)
+                    empleados = data;
+                    
+                    // Si hay un término de búsqueda activo, actualizar empleadosFiltrados también
+                    if ($('#buscadorEmpleados').val().trim() !== '') {
+                        const termino = $('#buscadorEmpleados').val().toLowerCase();
+                        empleadosFiltrados = empleados.filter(empleado => {
+                            const nombreCompleto = `${empleado.nombre} ${empleado.ap_paterno || ''} ${empleado.ap_materno || ''}`.toLowerCase();
+                            const clave = empleado.clave_empleado.toString().toLowerCase();
+                            return nombreCompleto.includes(termino) || clave.includes(termino);
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    // En caso de error, continuar con los datos existentes
+                }
+            });
         }
     }
 
@@ -792,6 +892,67 @@ $(document).ready(function () {
         // Actualizar las fechas de creación y vigencia para los empleados seleccionados
         actualizarFechasGafetes();
         
+        // Obtener datos frescos de los empleados antes de generar los gafetes
+        $.ajax({
+            url: 'php/obtenerEmpleados.php',
+            type: 'GET',
+            dataType: 'json',
+            success: function(empleadosFrescos) {
+                // Crear un mapa para acceso rápido a los datos frescos
+                const mapaEmpleadosFrescos = {};
+                empleadosFrescos.forEach(emp => {
+                    mapaEmpleadosFrescos[emp.id_empleado] = emp;
+                });
+                
+                // Combinar datos frescos con datos en cache
+                // (preservar datos de empleados no devueltos por la consulta)
+                const idsUnicos = [...new Set(Array.from(empleadosSeleccionados))];
+                idsUnicos.forEach(id => {
+                    const empleadoCache = todosLosEmpleados.find(e => e.id_empleado == id);
+                    const empleadoFresco = mapaEmpleadosFrescos[id];
+                    
+                    if (empleadoFresco && empleadoCache) {
+                        // Actualizar campos que pueden haber cambiado
+                        empleadoCache.id_area = empleadoFresco.id_area;
+                        empleadoCache.nombre_area = empleadoFresco.nombre_area;
+                        empleadoCache.id_empresa = empleadoFresco.id_empresa;
+                        empleadoCache.nombre_empresa = empleadoFresco.nombre_empresa;
+                        // Agregar otros campos que puedan cambiar
+                        empleadoCache.imss = empleadoFresco.imss;
+                        empleadoCache.curp = empleadoFresco.curp;
+                        empleadoCache.sexo = empleadoFresco.sexo;
+                        empleadoCache.fecha_nacimiento = empleadoFresco.fecha_nacimiento;
+                        empleadoCache.fecha_ingreso = empleadoFresco.fecha_ingreso;
+                        empleadoCache.domicilio = empleadoFresco.domicilio;
+                        empleadoCache.enfermedades_alergias = empleadoFresco.enfermedades_alergias;
+                        empleadoCache.grupo_sanguineo = empleadoFresco.grupo_sanguineo;
+                        empleadoCache.num_casillero = empleadoFresco.num_casillero;
+                        empleadoCache.ruta_foto = empleadoFresco.ruta_foto;
+                        empleadoCache.id_departamento = empleadoFresco.id_departamento;
+                        empleadoCache.nombre_departamento = empleadoFresco.nombre_departamento;
+                        // Datos de emergencia
+                        empleadoCache.emergencia_parentesco = empleadoFresco.emergencia_parentesco;
+                        empleadoCache.emergencia_nombre_contacto = empleadoFresco.emergencia_nombre_contacto;
+                        empleadoCache.emergencia_telefono = empleadoFresco.emergencia_telefono;
+                        empleadoCache.emergencia_domicilio = empleadoFresco.emergencia_domicilio;
+                    } else if (empleadoFresco && !empleadoCache) {
+                        // Si el empleado no estaba en cache, agregarlo
+                        todosLosEmpleados.push(empleadoFresco);
+                    }
+                });
+                
+                // Ahora generar los gafetes con datos actualizados
+                generarGafetesConDatosActualizados(modoImpresion);
+            },
+            error: function(xhr, status, error) {
+                // En caso de error, continuar con los datos existentes
+                generarGafetesConDatosActualizados(modoImpresion);
+            }
+        });
+    }
+    
+    // Función auxiliar para generar gafetes con datos ya actualizados
+    function generarGafetesConDatosActualizados(modoImpresion = false) {
         const $contenido = $('#contenidoGafetes');
         $contenido.empty();
         const idsUnicos = [...new Set(Array.from(empleadosSeleccionados))];
@@ -842,19 +1003,46 @@ $(document).ready(function () {
                 // Calcular tamaño de fuente para el departamento
                 const deptoLength = departamento.replace(/\s+/g, '').length;
                 const fontSizeDepto = deptoLength >= 13 ? '8.2pt' : '10pt';
-                const fotoHtml = empleado.ruta_foto ? `<img src="${empleado.ruta_foto}" alt="Foto" class="foto-empleado" style="width:100%;height:100%;object-fit:cover;">` : '';
+                // Verificar si se debe incluir la foto según la preferencia del usuario
+                const incluirFoto = window.fotoInclusion && window.fotoInclusion[empleado.id_empleado] !== undefined ? 
+                                    window.fotoInclusion[empleado.id_empleado] : 
+                                    false; // Por defecto NO incluir la foto si no hay preferencia
+                // Ajustar la ruta de la foto para que sea relativa al directorio gafetes
+                let rutaFotoAjustada = empleado.ruta_foto;
+                if (empleado.ruta_foto) {
+                    // Verificar si la ruta ya es correcta (relativa al directorio gafetes)
+                    if (!empleado.ruta_foto.startsWith('../') && !empleado.ruta_foto.startsWith('http')) {
+                        // Si la ruta comienza con 'fotos_empleados/', ya está en la ubicación correcta
+                        if (empleado.ruta_foto.startsWith('fotos_empleados/')) {
+                            rutaFotoAjustada = empleado.ruta_foto; // Ya está en la ubicación correcta
+                        } else {
+                            rutaFotoAjustada = '../' + empleado.ruta_foto; // Ajustar para directorio gafetes
+                        }
+                    } else {
+                        rutaFotoAjustada = empleado.ruta_foto; // Mantener la ruta original si ya es relativa o absoluta
+                    }
+                }
+                // Agregar timestamp para evitar problemas de caché
+                const timestamp = new Date().getTime();
+                const fotoHtml = (empleado.ruta_foto && incluirFoto) ? `<img src="${rutaFotoAjustada}?t=${timestamp}" alt="Foto" class="foto-empleado" style="width:100%;height:100%;object-fit:cover;">` : '';
                 const meses = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
                 const fechaInicio = new Date();
                 const fechaFin = new Date(fechaInicio);
-                fechaFin.setMonth(fechaFin.getMonth() + 6);
+                
+                // Determinar si el empleado tiene IMSS válido
+                const tieneIMSS = empleado.imss && empleado.imss !== 'N/A' && empleado.imss.trim() !== '';
+                
+                // Establecer la vigencia: 1 mes para empleados sin IMSS, 6 meses para empleados con IMSS
+                const mesesVigencia = tieneIMSS ? 6 : 1;
+                fechaFin.setMonth(fechaFin.getMonth() + mesesVigencia);
                 if (fechaFin.getDate() !== fechaInicio.getDate()) {
                     fechaFin.setDate(0);
                 }
                 const pad = n => n.toString().padStart(2, '0');
                 const formato = (f) => `${pad(f.getDate())}/${meses[f.getMonth()]}/${f.getFullYear()}`;
                 
-                // Determinar si el empleado tiene IMSS válido (MOVER ANTES de vigenciaHtml)
-                const tieneIMSS = empleado.imss && empleado.imss !== 'N/A' && empleado.imss.trim() !== '';
+                // Ya se determinó si el empleado tiene IMSS válido anteriormente
+                // const tieneIMSS = empleado.imss && empleado.imss !== 'N/A' && empleado.imss.trim() !== '';
                 
                 // Crear vigenciaHtml condicional según IMSS
                 let vigenciaHtml;
@@ -975,7 +1163,7 @@ $(document).ready(function () {
                                 "<div style=\"flex:0 0 2.5cm;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;\">" +
                                 vigenciaHtml +
                                 "<div class=\"gafete-foto\" style=\"margin:0.1cm 0;\">" +
-                                    "<div class=\"marco-foto\" style=\"width:2.5cm !important;height:3cm !important;border:1px solid #000;border-radius:0;margin:0 auto;overflow:hidden;\">" + fotoHtml + "</div>" +
+                                    "<div class=\"marco-foto\" style=\"width:2.5cm !important;height:3cm !important;border:" + (empleado.ruta_foto && incluirFoto ? "none" : "1px solid #000") + ";border-radius:0;margin:0 auto;overflow:hidden;display:flex;align-items:center;justify-content:center;\">" + fotoHtml + "</div>" +
                                 "</div>" +
                                 (tieneIMSS ? 
                                     "<div class=\"gafete-sello\" style=\"margin-top:0.1cm;text-align:center;font-size:5pt !important;font-weight:bold;letter-spacing:0.5px;\">" +
@@ -1002,7 +1190,12 @@ $(document).ready(function () {
                 // --- Reverso ---
                 // Calcular tamaño de fuente para domicilio de trabajador
                 const domicilioTrabajador = empleado.domicilio ? empleado.domicilio : 'N/A';
-                const fontSizeDomicilioTrabajador = domicilioTrabajador.length > 89 ? '6.1pt' : '6.5pt';
+                const lenDomicilio = domicilioTrabajador.length;
+                const fontSizeDomicilioTrabajador = lenDomicilio > 90 ? '5.3pt' : (lenDomicilio > 81 ? '5.8pt' : '6.3pt');
+                // Calcular tamaño de fuente dinámico para Enfermedades/Alergias
+                // >125 caracteres => 5.7pt, >110 => 6pt, si no => 6.5pt
+                const lenEA = (empleado.enfermedades_alergias ? empleado.enfermedades_alergias.length : 0);
+                const fontSizeEnfermedadesAlergias = lenEA > 125 ? '5.7pt' : (lenEA > 110 ? '6pt' : '6.5pt');
                 
                 const datosAtras = 
                     "<div style='margin-bottom:0.03cm;'>" +
@@ -1025,7 +1218,7 @@ $(document).ready(function () {
                     "</div>" +
                     "<div style='margin-bottom:0.03cm !important;'>" +
                         "<span style='font-size:7pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;line-height:1 !important;'>Enfermedades/Alergias:</span><br>" +
-                        "<span style='font-size:6.5pt !important;color:" + colorTextoDatos + ";line-height:1 !important;'>" + (empleado.enfermedades_alergias ? empleado.enfermedades_alergias : 'N/A') + "</span>" +
+                        "<span style='font-size:" + fontSizeEnfermedadesAlergias + " !important;color:" + colorTextoDatos + ";line-height:1 !important;'>" + (empleado.enfermedades_alergias ? empleado.enfermedades_alergias : 'N/A') + "</span>" +
                     "</div>" +
                     "<div style='display:flex;justify-content:space-between;gap:0.12cm;margin-bottom:0.03cm !important;'>" +
                         "<div style='flex:1;'>" +
@@ -1048,7 +1241,7 @@ $(document).ready(function () {
                         "</div>" +
                         "<div style='text-align:center;margin-bottom:0.01cm;'><span style='font-size:7pt !important;color:" + colorTextoDatos + ";'>" + formatearTelefono(empleado.emergencia_telefono) + "</span></div>" +
                         "<div style='text-align:center;margin-bottom:0.01cm;'>" +
-                            "<span style='font-size:" + (empleado.emergencia_domicilio && empleado.emergencia_domicilio.length > 89 ? '6.1pt' : '6.5pt') + " !important;color:" + colorTextoDatos + ";'>" + 
+                            "<span style='font-size:" + (empleado.emergencia_domicilio ? (empleado.emergencia_domicilio.length > 90 ? '5.3pt' : (empleado.emergencia_domicilio.length > 81 ? '5.8pt' : '6.3pt')) : '6.3pt') + " !important;color:" + colorTextoDatos + ";'>" + 
                             (empleado.emergencia_domicilio ? empleado.emergencia_domicilio : 'N/A') + "</span>" +
                         "</div>" +
                     "</div>";
@@ -1462,13 +1655,13 @@ $(document).ready(function () {
     // ======================================
     // FUNCIÓN DE ALERTA ESTILO GAFETES
     // ======================================
-    
+
     // Función para mostrar alertas (compatible con otras partes del sistema)
     function mostrarAlerta(mensaje, tipo = 'info') {
         // Reutilizar la función mostrarAlertaGafete ya existente
         mostrarAlertaGafete(mensaje, tipo);
     }
-    
+
     // Función para mostrar alertas específicas de gafetes (mismo estilo que fotos)
     function mostrarAlertaGafete(mensaje, tipo = 'info') {
         const alerta = document.createElement('div');
@@ -1476,48 +1669,6 @@ $(document).ready(function () {
         alerta.innerHTML = `
             <div class="alerta-content">
                 <i class="bi bi-${tipo === 'warning' ? 'exclamation-triangle-fill' : tipo === 'danger' || tipo === 'error' ? 'x-circle-fill' : 'info-circle-fill'}"></i>
-                <span>${mensaje}</span>
-                <button type="button" class="btn-close-alerta">×</button>
-            </div>
-        `;
-        
-        document.body.appendChild(alerta);
-        
-        // Mostrar con animación
-        setTimeout(() => {
-            alerta.classList.add('show');
-        }, 100);
-        
-        // Configurar botón de cerrar
-        alerta.querySelector('.btn-close-alerta').addEventListener('click', () => {
-            alerta.classList.remove('show');
-            setTimeout(() => {
-                if (alerta.parentNode) {
-                    alerta.parentNode.removeChild(alerta);
-                }
-            }, 300);
-        });
-        
-        // Auto-cerrar después de 5 segundos
-        setTimeout(() => {
-            if (alerta.parentNode) {
-                alerta.classList.remove('show');
-                setTimeout(() => {
-                    if (alerta.parentNode) {
-                        alerta.parentNode.removeChild(alerta);
-                    }
-                }, 300);
-            }
-        }, 5000);
-    }
-    
-    // Función para mostrar alertas específicas de gafetes (mismo estilo que fotos)
-    function mostrarAlertaGafete(mensaje, tipo = 'info') {
-        const alerta = document.createElement('div');
-        alerta.className = `alerta-gafete alerta-${tipo}`;
-        alerta.innerHTML = `
-            <div class="alerta-content">
-                <i class="bi bi-${tipo === 'warning' ? 'exclamation-triangle-fill' : tipo === 'danger' ? 'x-circle-fill' : 'info-circle-fill'}"></i>
                 <span>${mensaje}</span>
                 <button type="button" class="btn-close-alerta">×</button>
             </div>
@@ -1820,7 +1971,16 @@ $(document).ready(function () {
             type: "POST",
             url: "../empleados/php/update_empleado.php",
             data: datos,
+            dataType: "json", // Asegurar que la respuesta se trate como JSON
             success: function (response) {
+                // Verificar si hay una advertencia (casillero ocupado u otros errores)
+                if (response.type === 'warning' || response.type === 'info') {
+                    // Mostrar la advertencia con el mensaje específico
+                    mostrarAlerta(response.text, response.type);
+                    return;
+                }
+                
+                // Si no hay advertencia, continuar con el flujo normal
                 // Cerrar el modal
                 $("#modal_actualizar_empleado").modal("hide");
                 
@@ -1832,13 +1992,29 @@ $(document).ready(function () {
                 // Esto es importante para que los gafetes se generen con los datos actualizados
                 cargarEmpleadosPorDepartamento('todos', true);
                 
-                // Actualizar también el conjunto de empleados seleccionados para reflejar los cambios
-                // Esto asegura que cuando se generen los gafetes, los datos sean los más recientes
-                const idEmpleado = datos.id_empleado;
-                if (empleadosSeleccionados.has(idEmpleado)) {
-                    // Forzar una actualización de la interfaz si el empleado actualizado está seleccionado
-                    setTimeout(() => {
-                        // Pequeño retraso para asegurar que los datos se hayan cargado
+                // ACTUALIZACIÓN IMPORTANTE: Actualizar también los datos en la cache de empleados seleccionados
+                // para que los gafetes se generen con los datos más recientes sin necesidad de recargar la página
+                if (empleadosSeleccionados.has(datos.id_empleado)) {
+                    // Actualizar los datos del empleado en la cache
+                    setTimeout(function() {
+                        // Buscar y actualizar el empleado en todosLosEmpleados
+                        const empleadoIndex = todosLosEmpleados.findIndex(e => e.id_empleado == datos.id_empleado);
+                        if (empleadoIndex !== -1) {
+                            // Actualizar solo los campos que pueden cambiar
+                            todosLosEmpleados[empleadoIndex].id_area = datos.id_area || null;
+                            // Obtener el nombre del área seleccionada
+                            const nombreArea = $("#modal_area option:selected").text();
+                            todosLosEmpleados[empleadoIndex].nombre_area = nombreArea !== 'Ninguna' ? nombreArea : null;
+                            
+                            // Forzar una actualización visual si los gafetes están siendo mostrados
+                            if ($('#modalGafetes').hasClass('show')) {
+                                // Si el modal de gafetes está abierto, cerrarlo y mostrar un mensaje
+                                $('#modalGafetes').modal('hide');
+                                setTimeout(function() {
+                                    mostrarAlerta('Datos actualizados. Por favor, genere nuevamente los gafetes para ver los cambios.', 'info');
+                                }, 300);
+                            }
+                        }
                     }, 100);
                 }
                 

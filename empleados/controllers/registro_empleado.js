@@ -314,6 +314,9 @@ $(document).ready(function () {
                 emergencia_domicilio: emergencia_domicilio || ""
             };
 
+            console.log(datos); // Verifica los datos antes de enviarlos
+            
+
             $.ajax({
                 type: "POST",
                 url: "../php/registro_empleado.php",
@@ -345,7 +348,7 @@ $(document).ready(function () {
                             icon: rutaPlugins + 'plugins/toasts/icons/icon_error.png',
                             timeout: 3000
                         });
-                       
+                        console.error('Error parsing response:', e);
                     }
                 },
                 error: function (xhr, status, error) {

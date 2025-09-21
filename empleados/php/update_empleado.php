@@ -158,7 +158,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             enfermedades_alergias = ?,
             fecha_ingreso = ?,
             fecha_nacimiento = ?,
-            num_casillero = ?,
             id_empresa = ?,
             id_area = ?,
             id_puestoEspecial = ?,
@@ -168,7 +167,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         WHERE id_empleado = ?");
 
         $update_empleado->bind_param(
-            "sssssssssssssiiiddi",
+            "sssssssssssssiiddi",
             $clave_empleado,
             $nombre_empleado,
             $ap_paterno,
@@ -181,7 +180,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $enfermedades_alergias,
             $fecha_ingreso,
             $fecha_nacimiento,
-            $num_casillero,
             $id_empresa,
             $id_area,
             $id_puestoEspecial,
@@ -205,7 +203,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             enfermedades_alergias = ?,
             fecha_ingreso = ?,
             fecha_nacimiento = ?,
-            num_casillero = ?,
             id_empresa = ?,
             id_area = ?,
             id_puestoEspecial = ?,
@@ -215,7 +212,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         WHERE id_empleado = ?");
 
         $update_empleado->bind_param(
-            "sssssssssssssiiiiddi",
+            "sssssssssssssiiiddi",
             $clave_empleado,
             $nombre_empleado,
             $ap_paterno,
@@ -228,7 +225,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $enfermedades_alergias,
             $fecha_ingreso,
             $fecha_nacimiento,
-            $num_casillero,
             $id_empresa,
             $id_area,
             $id_puestoEspecial,
@@ -241,6 +237,82 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $update_empleado->execute();
     $update_empleado->close();
+
+// Primero, obtener el casillero actual del empleado
+$sql_check_casillero_actual = $conexion->prepare("SELECT num_casillero FROM casilleros WHERE id_empleado = ?");
+$sql_check_casillero_actual->bind_param("i", $id_empleado);
+$sql_check_casillero_actual->execute();
+$resultado_casillero_actual = $sql_check_casillero_actual->get_result();
+$casillero_actual = $resultado_casillero_actual->fetch_assoc();
+$sql_check_casillero_actual->close();
+
+// Si se ingresó un número de casillero
+if (!empty($num_casillero)) {
+    // Verificar si existe
+    $sql_verificar_casillero = $conexion->prepare("SELECT num_casillero FROM casilleros WHERE num_casillero = ?");
+    $sql_verificar_casillero->bind_param("s", $num_casillero);
+    $sql_verificar_casillero->execute();
+    $resultado_verificar = $sql_verificar_casillero->get_result();
+    $existe_casillero = $resultado_verificar->num_rows > 0;
+    $sql_verificar_casillero->close();
+
+    if (!$existe_casillero) {
+        $respuesta = array(
+            "title" => "ADVERTENCIA",
+            "text" => "El casillero $num_casillero no existe en el sistema.",
+            "type" => "warning",
+            "icon" => $rutaRaiz . "plugins/toasts/icons/icon_warning.png",
+            "timeout" => 5000,
+        );
+        header('Content-Type: application/json');
+        echo json_encode($respuesta);
+        exit();
+    }
+
+    // Verificar si está ocupado por otro empleado
+    $sql_verificar_ocupado = $conexion->prepare("SELECT id_empleado FROM casilleros WHERE num_casillero = ? AND id_empleado IS NOT NULL AND id_empleado != ?");
+    $sql_verificar_ocupado->bind_param("si", $num_casillero, $id_empleado);
+    $sql_verificar_ocupado->execute();
+    $resultado_ocupado = $sql_verificar_ocupado->get_result();
+    $casillero_ocupado = $resultado_ocupado->num_rows > 0;
+    $sql_verificar_ocupado->close();
+
+    if ($casillero_ocupado) {
+        $respuesta = array(
+            "title" => "ADVERTENCIA",
+            "text" => "El casillero $num_casillero ya está ocupado por otro empleado.",
+            "type" => "warning",
+            "icon" => $rutaRaiz . "plugins/toasts/icons/icon_warning.png",
+            "timeout" => 5000,
+        );
+        header('Content-Type: application/json');
+        echo json_encode($respuesta);
+        exit();
+    }
+
+    // Si tenía un casillero anterior diferente, liberarlo
+    if ($casillero_actual && $casillero_actual['num_casillero'] != $num_casillero) {
+        $sql_liberar_casillero = $conexion->prepare("UPDATE casilleros SET id_empleado = NULL WHERE num_casillero = ?");
+        $sql_liberar_casillero->bind_param("s", $casillero_actual['num_casillero']);
+        $sql_liberar_casillero->execute();
+        $sql_liberar_casillero->close();
+    }
+
+    // Asignar el nuevo casillero
+    $sql_asignar_casillero = $conexion->prepare("UPDATE casilleros SET id_empleado = ? WHERE num_casillero = ?");
+    $sql_asignar_casillero->bind_param("is", $id_empleado, $num_casillero);
+    $sql_asignar_casillero->execute();
+    $sql_asignar_casillero->close();
+
+} else {
+    // Si no se ingresó casillero y el empleado tenía uno, liberarlo
+    if ($casillero_actual) {
+        $sql_eliminar_casillero = $conexion->prepare("UPDATE casilleros SET id_empleado = NULL WHERE num_casillero = ?");
+        $sql_eliminar_casillero->bind_param("s", $casillero_actual['num_casillero']);
+        $sql_eliminar_casillero->execute();
+        $sql_eliminar_casillero->close();
+    }
+}
 
     // Verificar si el contacto de emergencia ya está registrado
     $sql_check_contacto_emergencia = $conexion->prepare("SELECT COUNT(*) FROM contacto_emergencia WHERE nombre = ? AND ap_paterno = ? AND ap_materno = ?");
@@ -612,3 +684,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+?>

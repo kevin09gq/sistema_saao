@@ -593,14 +593,14 @@ th[data-sort-desc] .sort-icon {
 }
 
 /* Efecto de reflejo para todos los botones principales */
-#generarGafetes, #generarFoto, #subirFotos, #actualizarLogos, #limpiarFotos, #limpiarLogos {
+#generarGafetes, #generarFoto, #subirFotos, #actualizarLogos, #limpiarFotos, #limpiarLogos, #btnCasillero {
     position: relative !important;
     overflow: hidden !important;
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
 }
 
 #generarGafetes::before, #generarFoto::before, #subirFotos::before, 
-#actualizarLogos::before, #limpiarFotos::before, #limpiarLogos::before {
+#actualizarLogos::before, #limpiarFotos::before, #limpiarLogos::before, #btnCasillero::before {
     content: '';
     position: absolute;
     top: 0;
@@ -613,12 +613,12 @@ th[data-sort-desc] .sort-icon {
 }
 
 #generarGafetes:hover::before, #generarFoto:hover::before, #subirFotos:hover::before,
-#actualizarLogos:hover::before, #limpiarFotos:hover::before, #limpiarLogos:hover::before {
+#actualizarLogos:hover::before, #limpiarFotos:hover::before, #limpiarLogos:hover::before, #btnCasillero:hover::before {
     left: 100%;
 }
 
 #generarGafetes:hover, #generarFoto:hover, #subirFotos:hover, 
-#actualizarLogos:hover, #limpiarFotos:hover, #limpiarLogos:hover {
+#actualizarLogos:hover, #limpiarFotos:hover, #limpiarLogos:hover, #btnCasillero:hover {
     transform: translateY(-2px) !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
@@ -1416,16 +1416,19 @@ th[data-sort-desc] .sort-icon {
    ALERTAS ESTILO GAFETES (MISMO QUE FOTOS)
    ====================================== */
 
-/* Alertas específicas para gafetes - Diseño Formal */
 .alerta-gafete {
     position: fixed;
     top: 20px;
     right: 20px;
-    z-index: 9999;
-    opacity: 0;
-    transform: translateX(100%);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    left: auto;
     max-width: 400px;
+    width: auto;
+    opacity: 0;
+    transform: translateX(20px);
+    transition: all 0.3s ease;
+    z-index: 2000;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+    border-radius: 10px;
 }
 
 .alerta-gafete.show {
@@ -1437,9 +1440,8 @@ th[data-sort-desc] .sort-icon {
     background: #ffffff;
     color: #856404;
     padding: 14px 18px;
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    border: 1px solid #fff3cd;
+    border-radius: 10px;
+    border-left: 5px solid #ffc107;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -1449,9 +1451,8 @@ th[data-sort-desc] .sort-icon {
     background: #ffffff;
     color: #0c5460;
     padding: 14px 18px;
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    border: 1px solid #d1ecf1;
+    border-radius: 10px;
+    border-left: 5px solid #0dcaf0;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -1461,9 +1462,8 @@ th[data-sort-desc] .sort-icon {
     background: #ffffff;
     color: #721c24;
     padding: 14px 18px;
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    border: 1px solid #f5c6cb;
+    border-radius: 10px;
+    border-left: 5px solid #dc3545;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -1473,9 +1473,8 @@ th[data-sort-desc] .sort-icon {
     background: #ffffff;
     color: #155724;
     padding: 14px 18px;
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    border: 1px solid #c3e6cb;
+    border-radius: 10px;
+    border-left: 5px solid #198754;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -1497,17 +1496,14 @@ th[data-sort-desc] .sort-icon {
     background: none;
     border: none;
     color: inherit;
-    font-size: 1.2rem;
-    font-weight: normal;
-    cursor: pointer;
-    padding: 0;
-    width: 20px;
-    height: 20px;
-    display: flex;
+    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 4px;
-    transition: background-color 0.2s;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
     flex-shrink: 0;
 }
 
@@ -1523,6 +1519,38 @@ th[data-sort-desc] .sort-icon {
         max-width: none;
     }
 }
+
+/* Título y barra de progreso para alertas de gafete */
+.alerta-gafete .alerta-title {
+    font-weight: 700;
+    margin-right: 6px;
+}
+
+.alerta-gafete .alerta-progress {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    width: 100%;
+    background: rgba(0,0,0,0.05);
+    overflow: hidden;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+.alerta-gafete .alerta-progress > span {
+    display: block;
+    height: 100%;
+    width: 100%;
+    transform-origin: left;
+    transform: scaleX(1);
+    transition: transform 5s linear;
+}
+
+.alerta-gafete.alerta-success .alerta-progress > span { background: #198754; }
+.alerta-gafete.alerta-warning .alerta-progress > span { background: #ffc107; }
+.alerta-gafete.alerta-danger  .alerta-progress > span { background: #dc3545; }
+.alerta-gafete.alerta-info    .alerta-progress > span { background: #0dcaf0; }
 
 .btn:hover {
     transform: translateY(-2px);

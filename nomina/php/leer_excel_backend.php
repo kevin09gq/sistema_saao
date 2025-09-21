@@ -71,8 +71,11 @@ foreach ($rows as $row) {
     ) {
         $nombreEmpleado = trim($row[1]);
         if (preg_match('/^[A-ZÁÉÍÓÚÑ]+\s+[A-ZÁÉÍÓÚÑ]+/u', $nombreEmpleado)) {
+            // Formatear la clave para que tenga 3 dígitos con ceros a la izquierda
+            $claveFormateada = str_pad((string)$row[0], 3, '0', STR_PAD_LEFT);
+            
             $empleado = [
-                'clave' => $row[0],
+                'clave' => $claveFormateada,
                 'nombre' => $nombreEmpleado,
                 'neto_pagar' => null
             ];

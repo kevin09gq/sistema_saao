@@ -179,19 +179,61 @@ function actualizarEmpleadosFiltradosGlobales() {
 function renderPaginacionNomina() {
     const totalPaginas = Math.ceil(empleadosPaginados.length / empleadosPorPagina);
     let html = '';
+    
     if (totalPaginas > 1) {
+        // Botón anterior
         html += `<li class="page-item${paginaActualNomina === 1 ? ' disabled' : ''}">
             <a class="page-link" href="#" onclick="cambiarPaginaNomina(${paginaActualNomina - 1}); return false;">&laquo;</a>
         </li>`;
-        for (let i = 1; i <= totalPaginas; i++) {
-            html += `<li class="page-item${paginaActualNomina === i ? ' active' : ''}">
-                <a class="page-link" href="#" onclick="cambiarPaginaNomina(${i}); return false;">${i}</a>
-            </li>`;
+        
+        // Determinar qué números de página mostrar
+        const paginasVisibles = 5; // Número de páginas a mostrar además de la primera y última
+        const paginas = [];
+        
+        // Siempre agregar la primera página
+        paginas.push(1);
+        
+        // Calcular el rango alrededor de la página actual
+        const inicio = Math.max(2, paginaActualNomina - Math.floor(paginasVisibles/2));
+        const fin = Math.min(totalPaginas - 1, inicio + paginasVisibles - 1);
+        
+        // Agregar ellipsis después de la página 1 si es necesario
+        if (inicio > 2) {
+            paginas.push('...');
         }
+        
+        // Agregar páginas del rango calculado
+        for (let i = inicio; i <= fin; i++) {
+            paginas.push(i);
+        }
+        
+        // Agregar ellipsis antes de la última página si es necesario
+        if (fin < totalPaginas - 1) {
+            paginas.push('...');
+        }
+        
+        // Siempre agregar la última página si hay más de una página
+        if (totalPaginas > 1) {
+            paginas.push(totalPaginas);
+        }
+        
+        // Generar HTML para cada número de página o ellipsis
+        paginas.forEach(pagina => {
+            if (pagina === '...') {
+                html += `<li class="page-item disabled"><a class="page-link" href="#">...</a></li>`;
+            } else {
+                html += `<li class="page-item${paginaActualNomina === pagina ? ' active' : ''}">
+                    <a class="page-link" href="#" onclick="cambiarPaginaNomina(${pagina}); return false;">${pagina}</a>
+                </li>`;
+            }
+        });
+        
+        // Botón siguiente
         html += `<li class="page-item${paginaActualNomina === totalPaginas ? ' disabled' : ''}">
             <a class="page-link" href="#" onclick="cambiarPaginaNomina(${paginaActualNomina + 1}); return false;">&raquo;</a>
         </li>`;
     }
+    
     $("#paginacion-nomina").html(html);
 }
 
@@ -294,19 +336,61 @@ function mostrarDatosTablaDispersionPaginada(empleadosPagina) {
 function renderPaginacionDispersion() {
     const totalPaginas = Math.ceil(empleadosDispersionPaginados.length / empleadosPorPaginaDispersion);
     let html = '';
+    
     if (totalPaginas > 1) {
+        // Botón anterior
         html += `<li class="page-item${paginaActualDispersion === 1 ? ' disabled' : ''}">
             <a class="page-link" href="#" onclick="cambiarPaginaDispersion(${paginaActualDispersion - 1}); return false;">&laquo;</a>
         </li>`;
-        for (let i = 1; i <= totalPaginas; i++) {
-            html += `<li class="page-item${paginaActualDispersion === i ? ' active' : ''}">
-                <a class="page-link" href="#" onclick="cambiarPaginaDispersion(${i}); return false;">${i}</a>
-            </li>`;
+        
+        // Determinar qué números de página mostrar
+        const paginasVisibles = 5; // Número de páginas a mostrar además de la primera y última
+        const paginas = [];
+        
+        // Siempre agregar la primera página
+        paginas.push(1);
+        
+        // Calcular el rango alrededor de la página actual
+        const inicio = Math.max(2, paginaActualDispersion - Math.floor(paginasVisibles/2));
+        const fin = Math.min(totalPaginas - 1, inicio + paginasVisibles - 1);
+        
+        // Agregar ellipsis después de la página 1 si es necesario
+        if (inicio > 2) {
+            paginas.push('...');
         }
+        
+        // Agregar páginas del rango calculado
+        for (let i = inicio; i <= fin; i++) {
+            paginas.push(i);
+        }
+        
+        // Agregar ellipsis antes de la última página si es necesario
+        if (fin < totalPaginas - 1) {
+            paginas.push('...');
+        }
+        
+        // Siempre agregar la última página si hay más de una página
+        if (totalPaginas > 1) {
+            paginas.push(totalPaginas);
+        }
+        
+        // Generar HTML para cada número de página o ellipsis
+        paginas.forEach(pagina => {
+            if (pagina === '...') {
+                html += `<li class="page-item disabled"><a class="page-link" href="#">...</a></li>`;
+            } else {
+                html += `<li class="page-item${paginaActualDispersion === pagina ? ' active' : ''}">
+                    <a class="page-link" href="#" onclick="cambiarPaginaDispersion(${pagina}); return false;">${pagina}</a>
+                </li>`;
+            }
+        });
+        
+        // Botón siguiente
         html += `<li class="page-item${paginaActualDispersion === totalPaginas ? ' disabled' : ''}">
             <a class="page-link" href="#" onclick="cambiarPaginaDispersion(${paginaActualDispersion + 1}); return false;">&raquo;</a>
         </li>`;
     }
+    
     $("#paginacion-dispersion").html(html);
 }
 

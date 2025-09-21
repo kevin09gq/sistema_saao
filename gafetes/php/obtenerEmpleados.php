@@ -6,13 +6,14 @@ include("../../conexion/conexion.php");
 $idDepartamento = isset($_GET['id_departamento']) ? intval($_GET['id_departamento']) : null;
 
 // Construir la consulta SQL
-$sql = "SELECT e.*, d.nombre_departamento, a.nombre_area, emp.nombre_empresa AS nombre_empresa, ec.parentesco as emergencia_parentesco, ce.telefono as emergencia_telefono, ce.domicilio as emergencia_domicilio, ce.nombre as emergencia_nombre, ce.ap_paterno as emergencia_ap_paterno, ce.ap_materno as emergencia_ap_materno 
+$sql = "SELECT e.*, d.nombre_departamento, a.nombre_area, emp.nombre_empresa AS nombre_empresa, ec.parentesco as emergencia_parentesco, ce.telefono as emergencia_telefono, ce.domicilio as emergencia_domicilio, ce.nombre as emergencia_nombre, ce.ap_paterno as emergencia_ap_paterno, ce.ap_materno as emergencia_ap_materno, c.num_casillero as num_casillero
         FROM info_empleados e 
         LEFT JOIN departamentos d ON e.id_departamento = d.id_departamento 
         LEFT JOIN areas a ON e.id_area = a.id_area 
         LEFT JOIN empresa emp ON e.id_empresa = emp.id_empresa 
         LEFT JOIN empleado_contacto ec ON e.id_empleado = ec.id_empleado 
         LEFT JOIN contacto_emergencia ce ON ec.id_contacto = ce.id_contacto 
+        LEFT JOIN casilleros c ON e.id_empleado = c.id_empleado
         WHERE e.id_status = 1";
 
 // Si se especificó un departamento, filtrar por él
@@ -45,10 +46,13 @@ while ($row = $query->fetch_object()) {
         'nombre_area' => $row->nombre_area,
         'id_empresa' => $row->id_empresa,
         'puesto' => $row->puesto ?? 'No especificado',
-        'foto' => !empty($row->foto) ? $row->foto : null,
+        // Verificar si la foto existe en el sistema de archivos
+        'ruta_foto' => (!empty($row->ruta_foto) && (file_exists(__DIR__ . '/../' . $row->ruta_foto) || file_exists(__DIR__ . '/gafetes/' . $row->ruta_foto))) ? $row->ruta_foto : null,
         'sexo' => $row->sexo ?? null,
         'fecha_ingreso' => $row->fecha_ingreso ?? null,
         'fecha_nacimiento' => $row->fecha_nacimiento ?? null,
+        'fecha_creacion' => $row->fecha_creacion ?? null,
+        'fecha_vigencia' => $row->fecha_vigencia ?? null,
         'nombre_empresa' => $row->nombre_empresa ?? 'N/A',
         // Campos adicionales para gafete
         'domicilio' => $row->domicilio ?? 'N/A',

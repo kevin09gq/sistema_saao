@@ -263,7 +263,8 @@ function convertirMinutosAHora(totalMinutos) {
 function actualizarHorariosSemanalesActualizados() {
     $("#guardar-cambios").off('click').on('click', function (e) {
         e.preventDefault();
-
+       
+        
         if (!window.horariosSemanalesActualizados) {
             window.horariosSemanalesActualizados = JSON.parse(JSON.stringify(window.horariosSemanales));
         }
