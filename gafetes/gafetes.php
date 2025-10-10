@@ -10,12 +10,77 @@ include("../conexion/conexion.php");
     <title>Generador de Gafetes</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/casillero.css">
     <link rel="stylesheet" href="css/subir-fotos.css">
     <link rel="stylesheet" href="css/logos-gafetes.css">
     <link rel="stylesheet" href="css/confirmacion.css">
     <link rel="stylesheet" href="../public/styles/main.css">
+    
+    <!-- Estilos personalizados para validación de campos -->
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(220, 53, 69, 0.4), inset 0 1px 3px rgba(220, 53, 69, 0.1);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(220, 53, 69, 0.6), inset 0 1px 3px rgba(220, 53, 69, 0.2);
+            }
+        }
+        
+        @keyframes successGlow {
+            0%, 100% {
+                box-shadow: 0 0 15px rgba(40, 167, 69, 0.3), inset 0 1px 3px rgba(40, 167, 69, 0.1);
+            }
+            50% {
+                box-shadow: 0 0 25px rgba(40, 167, 69, 0.5), inset 0 1px 3px rgba(40, 167, 69, 0.2);
+            }
+        }
+        
+        .campo-invalido {
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        .campo-valido {
+            animation: successGlow 2s ease-in-out infinite;
+        }
+        
+        .error-indicator, .success-indicator {
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        .error-indicator i, .success-indicator i {
+            margin-right: 4px;
+            font-size: 14px;
+        }
+        
+        /* Efecto hover mejorado para campos */
+        input:hover, select:hover, textarea:hover {
+            transition: all 0.3s ease;
+        }
+        
+        /* Efecto focus mejorado */
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+            border-color: #0d6efd;
+            transition: all 0.3s ease;
+        }
+    </style>
 </head>
 
 <body>
@@ -28,34 +93,44 @@ include("../conexion/conexion.php");
 
     <div class="container mt-4">
         <h2 class="text-center mb-4">Generador de Gafetes</h2>
-
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="card-title mb-0">Departamentos</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="list-group" id="listaDepartamentos">
-                            <a href="#" class="list-group-item list-group-item-action active" data-departamento="todos">
-                                <i class="bi bi-people-fill me-2"></i>Todos los empleados
-                            </a>
-                            <!-- Los departamentos se cargarán aquí dinámicamente -->
-                        </div>
-                    </div>
+        
+        <!-- Offcanvas Departamentos -->
+        <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasDepartamentos" aria-labelledby="offcanvasDepartamentosLabel">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title" id="offcanvasDepartamentosLabel"><i class="bi bi-building me-2"></i>Departamentos</h5>
+                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <div class="list-group" id="listaDepartamentos">
+                    <a href="#" class="list-group-item list-group-item-action active" data-departamento="todos">
+                        <i class="bi bi-people-fill me-2"></i>Todos los empleados
+                    </a>
+                    <!-- Los departamentos se cargarán aquí dinámicamente -->
                 </div>
             </div>
+        </div>
 
-            <div class="col-md-8">
+        <div class="row">
+            <div class="col-12">
                 <div class="card">
                     <!-- Encabezado con título y búsqueda -->
                     <div class="card-header bg-success text-white">
                         <div class="d-flex align-items-center justify-content-between">
                             <h5 class="card-title mb-0">Empleados</h5>
-                            <div class="d-flex">
-                                <div class="input-group input-group-sm" style="width: 250px;">
-                                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-                                    <input type="text" id="buscadorEmpleados" class="form-control" placeholder="Buscar empleado...">
+                            <div class="d-flex align-items-center gap-2">
+                                <button class="btn btn-outline-light btn-sm d-flex align-items-center" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDepartamentos" aria-controls="offcanvasDepartamentos">
+                                    <i class="bi bi-filter-right me-1"></i> Departamentos
+                                </button>
+                                <div class="input-group input-group-sm position-relative" style="width: 250px;">
+                                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                                    <input type="text" id="buscadorEmpleados" class="form-control border-start-0 pe-5" placeholder="Buscar empleado..." style="padding-right: 2.5rem !important;">
+                                    <button class="btn btn-link text-secondary position-absolute end-0 top-50 translate-middle-y border-0 p-0 me-2" 
+                                            type="button" 
+                                            id="limpiarBuscador" 
+                                            style="display: none; z-index: 10; background: transparent;"
+                                            title="Limpiar búsqueda">
+                                        <i class="bi bi-x-circle-fill" style="font-size: 1.1rem;"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -94,6 +169,9 @@ include("../conexion/conexion.php");
                                 <button id="btnCasillero" class="btn btn-info btn-sm text-white" title="Casillero">
                                     <i class="bi bi-box-seam"></i> Casillero
                                 </button>
+                                <button id="resetearToggles" class="btn btn-outline-warning btn-sm" title="Resetear toggles IMSS a estado original" onclick="resetearTogglesIMSS()">
+                                    <i class="bi bi-arrow-clockwise"></i> Reset IMSS
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -110,6 +188,7 @@ include("../conexion/conexion.php");
                                         <th>Área</th>
                                         <th>Estado</th>
                                         <th>IMSS</th>
+                                        <th>Orden Nombre</th>
                                         <th>Seleccionar</th>
                                         <th>Foto</th>
                                         <th>Editar</th>
@@ -447,8 +526,17 @@ include("../conexion/conexion.php");
                                     <div class="col-md-4 mb-4">
                                         <label for="modal_num_casillero" class="form-label">Número de Casillero</label>
                                         <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-inbox"></i></span>
+                                            <button class="btn btn-outline-info" type="button" id="btnAbrirCasillero" title="Abrir casillero">
+                                                <i class="bi bi-inbox"></i>
+                                            </button>
                                             <input type="text" class="form-control" id="modal_num_casillero" name="num_casillero" placeholder="Ej: 101 o A15">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-4">
+                                        <label for="modal_biometrico" class="form-label">Biométrico</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-fingerprint"></i></span>
+                                            <input type="number" class="form-control" id="modal_biometrico" name="biometrico" min="0" placeholder="ID biométrico">
                                         </div>
                                     </div>
                                 </div>
@@ -468,7 +556,18 @@ include("../conexion/conexion.php");
                                         </div>
                                     </div>
                                     <div class="col-md-4 mb-4">
-                                        <!-- Espacio vacío para mantener simetría -->
+                                        <label for="modal_fecha_reingreso" class="form-label">Fecha de Reingreso</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-calendar-range"></i></span>
+                                            <input type="date" class="form-control" id="modal_fecha_reingreso" name="fecha_reingreso">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-4">
+                                        <label for="modal_telefono_empleado" class="form-label">Teléfono</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                                            <input type="text" class="form-control" id="modal_telefono_empleado" name="telefono_empleado" placeholder="Teléfono del empleado">
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="row">
@@ -684,14 +783,17 @@ include("../conexion/conexion.php");
 
                         <!-- Pestaña Asignar Empleado -->
                         <div class="tab-pane fade" id="asignar" role="tabpanel" aria-labelledby="asignar-tab">
-                            <div class="mb-3">
+                            <div class="mb-3 position-relative">
                                 <label for="buscarEmpleado" class="form-label">Buscar Empleado</label>
                                 <div class="input-group">
-                                    <input type="text" class="form-control" id="buscarEmpleado" placeholder="Nombre o ID del empleado">
-                                    <button class="btn btn-outline-secondary" type="button" id="btnBuscarEmpleado">
+                                    <input type="text" class="form-control pe-5" id="buscarEmpleado" placeholder="Nombre o ID del empleado">
+                                    <button class="btn btn-outline-primary" type="button" id="btnBuscarEmpleado">
                                         <i class="bi bi-search"></i> Buscar
                                     </button>
                                 </div>
+                                <button class="btn btn-link p-0 position-absolute" type="button" id="btnLimpiarBusquedaEmpleado" title="Limpiar búsqueda" style="right: 115px; top: 40px;">
+                                    <i class="bi bi-x-circle-fill text-secondary"></i>
+                                </button>
                                 <div class="form-text">Escriba el nombre o ID del empleado y presione Buscar</div>
                             </div>
                             
@@ -761,6 +863,33 @@ include("../conexion/conexion.php");
     <script src="js/funciones.js"></script>
     <script src="js/subirFotos.js"></script>
     <script src="js/casillero.js"></script>
+    <script>
+        // Abrir modal de Casillero desde el botón junto al campo "Número de Casillero"
+        document.addEventListener('DOMContentLoaded', function() {
+            const btnAbrirCasillero = document.getElementById('btnAbrirCasillero');
+            if (btnAbrirCasillero) {
+                btnAbrirCasillero.addEventListener('click', function() {
+                    // Si existe la función para cargar el modal, úsala; luego mostrarlo
+                    if (typeof cargarModalCasillero === 'function') {
+                        cargarModalCasillero().then(() => {
+                            const modalEl = document.getElementById('modalCasillero');
+                            if (modalEl) {
+                                const modal = new bootstrap.Modal(modalEl);
+                                modal.show();
+                            }
+                        });
+                    } else {
+                        // Fallback: si ya está en el DOM, mostrarlo directamente
+                        const modalEl = document.getElementById('modalCasillero');
+                        if (modalEl) {
+                            const modal = new bootstrap.Modal(modalEl);
+                            modal.show();
+                        }
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>

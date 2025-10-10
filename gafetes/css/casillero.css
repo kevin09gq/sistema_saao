@@ -67,27 +67,27 @@
 
 /* Estilos para los casilleros - Aumentar tamaño */
 .casillero-item {
-    width: 80px; /* Aumentar el ancho */
-    height: 80px; /* Aumentar la altura */
-    border-radius: 6px; /* Aumentar el radio de borde */
+    width: 90px; /* Aumentar el ancho para acomodar dos nombres */
+    height: 90px; /* Aumentar la altura para acomodar dos nombres */
+    border-radius: 6px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 0.9rem; /* Aumentar el tamaño de la fuente */
+    font-size: 0.9rem;
     text-align: center;
     padding: 4px;
     box-sizing: border-box;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15); /* Aumentar la sombra */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
     cursor: pointer;
     position: relative;
-    transition: transform 0.2s, box-shadow 0.2s; /* Agregar transición suave */
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .casillero-item:hover {
-    transform: translateY(-2px); /* Efecto de elevación al pasar el mouse */
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Aumentar la sombra al pasar el mouse */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
 .casillero-item.bg-success {
@@ -98,67 +98,51 @@
     background: #dc3545;
 }
 
+.casillero-item.bg-warning {
+    background: #ffc107;
+    color: #212529;
+}
+
 .casillero-numero {
     font-weight: bold;
     line-height: 1.2;
     margin-bottom: 2px;
-    font-size: 1.1rem; /* Aumentar el tamaño del número */
+    font-size: 1.1rem;
 }
 
 .casillero-estado {
-    font-size: 0.7rem; /* Aumentar el tamaño del estado */
+    font-size: 0.7rem;
     opacity: 0.9;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .casillero-empleado {
-    font-size: 0.65rem; /* Aumentar el tamaño del nombre del empleado */
+    font-size: 0.7rem;
     line-height: 1.2;
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    margin-top: 3px;
-    padding: 0 3px;
+    margin-top: 2px;
+    padding: 0 2px;
     box-sizing: border-box;
-}
-
-/* Estilos para la información del empleado en el modal */
-#infoEmpleadoAsignado .alert {
-    border-radius: 0.375rem;
-    margin-bottom: 1rem;
-}
-
-#infoEmpleadoAsignado .alert h6 {
-    margin-top: 0;
-    margin-bottom: 0.5rem;
-    font-size: 1rem;
-}
-
-#infoEmpleadoAsignado .alert p {
-    margin-bottom: 0.25rem;
-    font-size: 0.875rem;
-}
-
-#infoEmpleadoAsignado .alert button {
-    margin-top: 0.5rem;
 }
 
 /* Contenedor de casilleros */
 #contenedor-casilleros {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px; /* Aumentar el espacio entre casilleros */
-    padding: 8px;
-    min-height: 120px;
+    gap: 8px;
+    padding: 10px;
+    min-height: 150px;
 }
 
 /* Estilos para dispositivos móviles */
 @media (max-width: 768px) {
     .casillero-item {
-        width: 65px;
-        height: 65px;
+        width: 75px;
+        height: 75px;
         font-size: 0.75rem;
     }
     
@@ -171,7 +155,7 @@
     }
     
     .casillero-empleado {
-        font-size: 0.5rem;
+        font-size: 0.55rem;
     }
     
     .casillero-card {

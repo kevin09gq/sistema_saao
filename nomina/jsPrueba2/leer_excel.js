@@ -27,6 +27,7 @@ function configTablas() {
         $("#busqueda-container-dispersion").attr("hidden", true);
         $("#btn_suma").removeAttr("hidden");
         $("#btn_suma_dispersion").attr("hidden", true);
+        $("#filtro-seguro").removeAttr("hidden");
 
         // Refrescar la tabla de nómina para asegurar que los cálculos estén actualizados
         if (typeof setEmpleadosPaginados === 'function' && window.empleadosOriginales) {
@@ -189,7 +190,7 @@ $(document).ready(function () {
         const clave = $fila.data('clave');
         const columna = $celda.index();
         const valor = $celda.text().trim();
-        
+
 
         // Actualizar el empleado correspondiente
         actualizarEmpleadoEnDatos(clave, columna, valor);
@@ -327,7 +328,7 @@ function verificarDatosGuardados() {
     const datosGuardados = recuperarDatosNomina();
 
     if (datosGuardados) {
-        //  VERIFICAR SI HAY DATOS VÁLIDOS ANTES DE RESTAURAR LA VISTA
+        // 🆕 VERIFICAR SI HAY DATOS VÁLIDOS ANTES DE RESTAURAR LA VISTA
         if (!datosGuardados.jsonGlobal || !datosGuardados.empleadosOriginales || datosGuardados.empleadosOriginales.length === 0) {
             // Si no hay datos válidos, limpiar y mostrar formulario
             limpiarDatosNomina();
@@ -390,6 +391,8 @@ function restaurarVistaNominaDirecta() {
 
     // Configurar controles de búsqueda
     $("#busqueda-container").removeAttr("hidden");
+    $("#filtro-seguro").removeAttr("hidden");
+
 
     // Formatear números en los empleados restaurados y recalcular sueldos
     if (window.empleadosOriginales && window.empleadosOriginales.length > 0) {
@@ -514,9 +517,8 @@ function obtenerArchivos(params) {
                                 const json2 = JSON.parse(res2);
                                 // Unir ambos JSON y mostrar el resultado
                                 const jsonUnido = unirJson(json1, json2);
-
-                                // Verificar si ya existe un JSON con el mismo número de semana en la base de datos
-                                // En la función obtenerArchivos, modificar la parte donde se verifica la nómina existente:
+                                empleadosNoUnidos(json1, json2);
+                                enviarIdBiometricosNoUnidos(json1, json2);
 
                                 verificarNominaExistente(jsonUnido.numero_semana, function (existe) {
                                     if (existe) {
@@ -537,9 +539,12 @@ function obtenerArchivos(params) {
 
                                                 $("#tabla-nomina-responsive").removeAttr("hidden");
                                                 $("#container-nomina").attr("hidden", true);
-                                                establecerDatosEmpleados();
+
+                                                //  USAR FUNCIÓN ESPECIAL PARA DATOS EXISTENTES
+                                                establecerDatosEmpleadosExistentes();
                                                 busquedaNomina();
-                                                redondearRegistrosEmpleados();
+                                                //  NO RECALCULAR REGISTROS PARA NÓMINA EXISTENTE
+                                                redondearRegistrosEmpleados(false, false);
 
                                                 // Guardar datos en localStorage después de procesar
                                                 guardarDatosNomina();
@@ -555,9 +560,12 @@ function obtenerArchivos(params) {
 
                                             $("#tabla-nomina-responsive").removeAttr("hidden");
                                             $("#container-nomina").attr("hidden", true);
-                                            establecerDatosEmpleados();
+
+                                            // 🆕 PASAR PARÁMETRO INDICANDO QUE ES NÓMINA NUEVA
+                                            establecerDatosEmpleados(true);
                                             busquedaNomina();
-                                            redondearRegistrosEmpleados();
+                                            // 🆕 RECALCULAR PARA NÓMINA NUEVA
+                                            redondearRegistrosEmpleados(true, true);
 
                                             // Guardar datos en localStorage después de procesar
                                             guardarDatosNomina();
@@ -847,6 +855,40 @@ function establecerDatosEmpleados() {
     actualizarJsonGlobalConEmpleadosOriginales();
 
     $("#busqueda-container").removeAttr("hidden");
+    $("#filtro-seguro").removeAttr("hidden");
+
+    // Guardar datos después de establecer empleados
+    guardarDatosNomina();
+}
+
+//  NUEVA FUNCIÓN PARA CARGAR DATOS EXISTENTES SIN RECALCULAR
+function establecerDatosEmpleadosExistentes() {
+    let empleadosPlanos = [];
+    if (jsonGlobal && jsonGlobal.departamentos) {
+        jsonGlobal.departamentos.forEach(depto => {
+            // Solo procesar empleados del departamento "PRODUCCION 40 LIBRAS"
+            if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS')) {
+                let empleadosOrdenados = (depto.empleados || []).slice().sort(compararPorApellidos);
+                empleadosOrdenados.forEach(emp => {
+                    // PRESERVAR TODOS LOS VALORES EXISTENTES - NO INICIALIZAR NADA
+                    empleadosPlanos.push({
+                        ...emp,
+                        id_departamento: depto.nombre.split(' ')[0],
+                        nombre_departamento: depto.nombre.replace(/^\d+\s*/, ''),
+                        puesto: emp.puesto || emp.nombre_departamento || depto.nombre.replace(/^\d+\s*/, '') // Preservar puesto original
+                    });
+                });
+            }
+        });
+    }
+
+    window.empleadosOriginales = empleadosPlanos;
+    empleadosFiltrados = [...empleadosPlanos];
+
+    // NO actualizar jsonGlobal porque ya viene correcto de la BD
+    $("#busqueda-container").removeAttr("hidden");
+    $("#filtro-seguro").removeAttr("hidden");
+
 
     // Guardar datos después de establecer empleados
     guardarDatosNomina();
@@ -1108,8 +1150,15 @@ let registrosYaRedondeados = false;
 
 
 
-function redondearRegistrosEmpleados(forzarRecalculo = false) {
+function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = true) {
     if (!jsonGlobal || !jsonGlobal.departamentos || !window.horariosSemanalesActualizados || !window.empleadosOriginales) {
+        return;
+    }
+
+    // Si es nómina existente y no se fuerza recálculo, NO recalcular sueldos base
+    if (!esNominaNueva && !forzarRecalculo) {
+        // Solo mostrar datos sin recalcular
+        setEmpleadosPaginados(window.empleadosOriginales);
         return;
     }
 
@@ -1205,29 +1254,32 @@ function redondearRegistrosEmpleados(forzarRecalculo = false) {
 
         switch (tipo) {
             case 'entrada':
+                // Redondear a la hora oficial de entrada si se marca hasta 40 minutos después
+                if (minutosReal >= minutosOficial && minutosReal <= minutosOficial + 40) {
+                    return horaOficial;
+                }
                 return minutosReal <= minutosOficial ? horaOficial : horaReal;
             case 'salidaComer':
-                const rangoMinSalidaComer = minutosOficial - 30;
-                const rangoMaxSalidaComer = minutosOficial + 15;
-                if (minutosReal >= rangoMinSalidaComer && minutosReal <= rangoMaxSalidaComer) {
+                // Redondear a la hora oficial de salida a comer si está dentro de -30 a +30 minutos
+                if (minutosReal >= minutosOficial - 30 && minutosReal <= minutosOficial + 30) {
                     return horaOficial;
                 }
                 return horaReal;
             case 'entradaComer':
-                const rangoMinEntradaComer = minutosOficial - 30;
-                const rangoMaxEntradaComer = minutosOficial + 15;
-                if (minutosReal >= rangoMinEntradaComer && minutosReal <= rangoMaxEntradaComer) {
+                // Redondear a la hora oficial de entrada después de comer si está dentro de -30 a +30 minutos
+                if (minutosReal >= minutosOficial - 30 && minutosReal <= minutosOficial + 30) {
                     return horaOficial;
                 }
                 return horaReal;
             case 'salida':
+
                 if (minutosReal >= minutosOficial && minutosReal <= minutosOficial + 50) {
                     return horaOficial;
                 }
                 if (minutosReal > minutosOficial + 50) {
                     return horaOficial;
                 }
-                if (minutosReal >= minutosOficial - 15 && minutosReal < minutosOficial) {
+                if (minutosReal >= minutosOficial - 30 && minutosReal < minutosOficial) {
                     return horaOficial;
                 }
                 return horaReal;
@@ -1545,6 +1597,16 @@ function calcularCamposEmpleado(emp) {
     const tiempoTotal = emp.tiempo_total_redondeado || "00:00";
     const minutosTotales = horaToMinutos(tiempoTotal);
 
+    // Si no hay minutos trabajados, retornar con sueldo base 0
+    if (minutosTotales === 0) {
+        emp.sueldo_base = 0;
+        emp.sueldo_extra = 0;
+        emp.Minutos_trabajados = 0;
+        emp.Minutos_normales = 0;
+        emp.Minutos_extra = 0;
+        return emp;
+    }
+
     let sueldoBase = 0;
     let sueldoFinal = 0;
     let minutosExtras = 0;
@@ -1574,14 +1636,9 @@ function calcularCamposEmpleado(emp) {
         sueldoBase = ultimoRango ? ultimoRango.sueldo_base : 0;
         sueldoFinal = sueldoBase + extra;
     }
-    // CASO 2: Igual al rango exacto → sueldo base
-    else if (rangoNormal && minutosTotales === rangoNormal.minutos) {
+    // CASO 2: Dentro de cualquier rango normal (hasta 48 horas) - Asignar sueldo base del rango
+    else if (rangoNormal) {
         sueldoBase = rangoNormal.sueldo_base;
-        sueldoFinal = sueldoBase;
-    }
-    // CASO 3: Menor al rango → costo por minuto
-    else if (rangoNormal && minutosTotales < rangoNormal.minutos) {
-        sueldoBase = minutosTotales * rangoNormal.costo_por_minuto;
         sueldoFinal = sueldoBase;
     }
 
@@ -1768,15 +1825,12 @@ function clavesEmpleados() {
         jsonGlobal.departamentos.forEach(depto => {
             (depto.empleados || []).forEach(emp => {
                 if (emp.clave) {
-                    // Formatear la clave: convertir a string y añadir ceros a la izquierda
-                    // para que tenga 3 dígitos (001, 020, 099, etc.)
-                    const claveFormateada = String(emp.clave).padStart(3, '0');
-                    claves.push(claveFormateada);
+                    claves.push(emp.clave);
                 }
             });
         });
     }
-    console.log("Claves de empleados obtenidas:", claves);
+
     return claves;
 }
 
@@ -1983,3 +2037,131 @@ function establecerHorariosPorDefecto(numeroSemana) {
         window.horariosSemanalesActualizados.numero_semana = numeroSemana;
     }
 }
+
+
+/*
+ * ================================================================
+ * MÓDULO DE NOMINA PARA QUE NO TIENEN SEGUROS
+ * ================================================================
+ * 
+ * ================================================================
+ */
+
+function empleadosNoUnidos(json1, json2) {
+    const normalizar = s => s
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .toUpperCase();
+
+    // Crear set de nombres normalizados de json1
+    const nombresJson1 = new Set();
+    if (json1 && json1.departamentos) {
+        json1.departamentos.forEach(depto => {
+            if (depto.empleados) {
+                depto.empleados.forEach(emp1 => {
+                    nombresJson1.add(normalizar(emp1.nombre));
+                });
+            }
+        });
+    }
+
+    // Buscar empleados de json2 que NO están en json1
+    const noUnidos = [];
+    if (json2 && json2.empleados) {
+        json2.empleados.forEach(emp2 => {
+            const nombreOrdenado = ordenarNombre(emp2.nombre); // Reordenar el nombre
+            if (!nombresJson1.has(normalizar(nombreOrdenado))) {
+                noUnidos.push({
+                    ...emp2,
+                    nombre: nombreOrdenado // Actualizar el nombre con el orden correcto
+                });
+            }
+        });
+    }
+
+    // validaEmpleadosEnServidor(noUnidos);
+    console.log(noUnidos);
+
+    return noUnidos;
+}
+function ordenarNombre(nombreCompleto) {
+    // Dividir el nombre completo en partes
+    const partes = nombreCompleto.trim().split(/\s+/);
+
+    // Verificar que haya al menos 3 partes (Nombres, Apellido Paterno, Apellido Materno)
+    if (partes.length < 3) {
+        return nombreCompleto; // Si no hay suficientes partes, devolver el nombre original
+    }
+
+    // Las últimas dos partes son los apellidos y las primeras son los nombres
+    const apellidoMaterno = partes.pop(); // Último elemento
+    const apellidoPaterno = partes.pop(); // Penúltimo elemento
+    const nombres = partes.join(' '); // El resto son los nombres
+
+    // Retornar el nombre reordenado: Apellido Paterno + Apellido Materno + Nombres
+    return `${apellidoPaterno} ${apellidoMaterno} ${nombres}`;
+}
+
+function obtenerIdBiometricoEmpleadosNoUnidos(json1, json2) {
+    const normalizar = s => s
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .toUpperCase();
+
+    // Crear set de nombres normalizados de json1
+    const nombresJson1 = new Set();
+    if (json1 && json1.departamentos) {
+        json1.departamentos.forEach(depto => {
+            if (depto.empleados) {
+                depto.empleados.forEach(emp1 => {
+                    nombresJson1.add(normalizar(emp1.nombre));
+                });
+            }
+        });
+    }
+
+    // Buscar empleados de json2 que NO están en json1 y obtener sus id_biometrico
+    const idsBiometricosNoUnidos = [];
+    if (json2 && json2.empleados) {
+        json2.empleados.forEach(emp2 => {
+            const nombreOrdenado = ordenarNombre(emp2.nombre); // Reordenar el nombre
+            if (!nombresJson1.has(normalizar(nombreOrdenado)) && emp2.id_biometrico) {
+                idsBiometricosNoUnidos.push(emp2.id_biometrico);
+            }
+        });
+    }
+
+    return idsBiometricosNoUnidos;
+}
+
+function enviarIdBiometricosNoUnidos(json1, json2) {
+    const idsBiometricos = obtenerIdBiometricoEmpleadosNoUnidos(json1, json2);
+
+    if (idsBiometricos.length > 0) {
+        $.ajax({
+            type: "POST",
+            url: "../php/validar_biometrico.php",
+            data: JSON.stringify({ biometricos: idsBiometricos }),
+            contentType: "application/json",
+            success: function (response) {
+                try {
+                    const empleadosRegistrados = JSON.parse(response);
+                    console.log("Empleados registrados en la base de datos:", empleadosRegistrados);
+                    // Aquí puedes manejar los datos recibidos, como mostrarlos en la interfaz
+                } catch (error) {
+                    console.error("Error al procesar la respuesta del servidor:", error);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Error al enviar los datos al servidor:", error);
+            }
+        });
+    } else {
+        console.log("No hay IDs biométricos no unidos para enviar.");
+    }
+}
+
+
+

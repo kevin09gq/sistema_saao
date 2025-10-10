@@ -51,7 +51,6 @@ function filtrarEmpleadosRegistradosYPaginar(todosLosEmpleados) {
             renderTablaPaginada();
         },
         error: function(xhr, status, error) {
-            console.error('Error al validar claves:', error);
             // En caso de error, usar todos los empleados
             empleadosPaginados = todosLosEmpleados;
             paginaActualNomina = 1;
@@ -251,7 +250,6 @@ function mostrarDatosTabla() {
         renderTablaPaginada();
     } else {
         // Fallback: mostrar todos los datos sin paginación
-        console.warn('No hay datos paginados, mostrando todos los datos');
         if (window.empleadosOriginales && window.empleadosOriginales.length > 0) {
             setEmpleadosPaginados(window.empleadosOriginales);
         }

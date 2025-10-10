@@ -11,7 +11,7 @@ function validarApellido(apellido) {
 }
 
 function validarClave(clave) {
-    var validar = /^\d+$/;
+    var validar = /^(\d+|SS\/\d{3})$/;
     return validar.test(clave);
 }
 
@@ -32,7 +32,7 @@ function validarGrupoSanguineo(grupo) {
 }
 
 function validarParentesco(parentesco) {
-    var validar = /^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)*$/;
+    const validar = /^([A-ZÁÉÍÓÚÑa-záéíóúñ]+)( [A-ZÁÉÍÓÚÑa-záéíóúñ]+)*$/;
     return validar.test(parentesco);
 }
 

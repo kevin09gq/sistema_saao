@@ -335,8 +335,7 @@ function actualizarTablaDispersion(clave, nuevoSueldo) {
     const $fila = $(`#tabla-dispersion-body tr[data-clave="${clave}"]`);
 
     if ($fila.length === 0) {
-        console.warn(`⚠️ No se encontró fila en tabla dispersión para empleado: ${clave}`);
-        return;
+       return;
     }
 
     // Buscar la celda del sueldo neto (columna 4, índice 3)
@@ -356,7 +355,6 @@ function actualizarTablaNomina(clave, nuevoSueldo) {
     const esEmpleado40Libras = verificarEmpleado40Libras(clave);
 
     if (!esEmpleado40Libras) {
-        console.log(`🚫 Empleado ${clave} no es de 40 LIBRAS, no se actualiza tabla nómina`);
         return;
     }
 
@@ -364,8 +362,7 @@ function actualizarTablaNomina(clave, nuevoSueldo) {
     const $filaNomina = $(`#tabla-nomina-body tr[data-clave="${clave}"]`);
 
     if ($filaNomina.length === 0) {
-        console.warn(`⚠️ No se encontró fila en tabla nómina para empleado: ${clave}`);
-        return;
+       return;
     }
 
     // Actualizar la columna TARJETA (columna 7, índice 6)
@@ -376,7 +373,6 @@ function actualizarTablaNomina(clave, nuevoSueldo) {
         // Recalcular sueldo a cobrar si es necesario
         recalcularSueldoACobrar(clave, $filaNomina);
 
-        console.log('✅ Tabla nómina actualizada - columna TARJETA');
     }
 }
 
@@ -439,7 +435,7 @@ function recalcularSueldoACobrar(clave, $fila) {
     const $celdas = $fila.find('td');
     if ($celdas.length >= 16) {
         $($celdas[15]).text(sueldoACobrar.toFixed(2));
-        console.log('✅ Sueldo a cobrar recalculado en tabla nómina');
+       
     }
 }
 

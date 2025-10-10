@@ -145,7 +145,6 @@ $('#btn_export_pdf').on('click', function () {
             URL.revokeObjectURL(url);
         },
         error: function (xhr, textStatus, errorThrown) {
-            console.error('Error AJAX:', textStatus, errorThrown);
             
             let errorMessage = 'Error al generar el archivo PDF.';
             try {

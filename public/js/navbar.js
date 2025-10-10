@@ -30,8 +30,12 @@ document.addEventListener('DOMContentLoaded', function() {
             return 'gafetes';
         } else if (path.includes('/nomina/')) {
             return 'nomina';
+        } else if (path.includes('/empleados/views/form_registro.php')) {
+            return 'empleados_registro';
         } else if (path.includes('/empleados/')) {
             return 'empleados';
+        } else if (path.includes('/config/settings/views/configuracion.php')) {
+            return 'configuracion';
         }
         
         return 'inicio'; // default

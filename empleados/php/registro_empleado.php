@@ -34,6 +34,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id_area = $_POST['id_area'] ?? null;
         $id_puestoEspecial = $_POST['id_puestoEspecial'] ?? null;
         $id_empresa = $_POST['id_empresa'] ?? null;
+        $biometrico = $_POST['biometrico'] ?? null;
+        $telefono_empleado = $_POST['telefono_empleado'] ?? null;
+        
 
         // Campos de salario
         $salario_diario = $_POST['salario_diario'] ?? null;
@@ -103,11 +106,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sql->close();
 
         // =============================
-        // 🆕 VALIDAR NÚMERO DE CASILLERO
+        //  VALIDAR NÚMERO BIOMÉTRICO
+        // =============================
+        if (!empty($biometrico)) {
+            $sqlBiometrico = $conexion->prepare("SELECT id_empleado FROM info_empleados WHERE biometrico = ?");
+            if (!$sqlBiometrico) {
+                throw new Exception("Error al preparar consulta de verificación biométrica: " . $conexion->error);
+            }
+            
+            $sqlBiometrico->bind_param("i", $biometrico);
+            $sqlBiometrico->execute();
+            $resultadoBiometrico = $sqlBiometrico->get_result();
+            
+            if ($resultadoBiometrico->num_rows > 0) {
+                $respuesta = array(
+                    "success" => false,
+                    "title" => "ADVERTENCIA",
+                    "text" => "El número biométrico ya está registrado a otro empleado.",
+                    "type" => "warning",
+                    "icon" => $rutaRaiz . "/plugins/toasts/icons/icon_warning.png",
+                    "timeout" => 3000,
+                );
+                echo json_encode($respuesta);
+                exit();
+            }
+            $sqlBiometrico->close();
+        }
+        
+        // =============================
+        // VALIDAR NÚMERO DE CASILLERO
         // =============================
         if (!empty($num_casillero)) {
             // Verificar si el casillero existe
-            $sqlCasillero = $conexion->prepare("SELECT num_casillero, id_empleado FROM casilleros WHERE num_casillero = ?");
+            $sqlCasillero = $conexion->prepare("SELECT num_casillero FROM casilleros WHERE num_casillero = ?");
             if (!$sqlCasillero) {
                 throw new Exception("Error al preparar consulta de casillero: " . $conexion->error);
             }
@@ -128,25 +159,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
                 echo json_encode($respuesta);
                 exit();
-            } else {
-                // El casillero existe, verificar si está ocupado
-                $rowCasillero = $resultadoCasillero->fetch_assoc();
-                if (!empty($rowCasillero['id_empleado'])) {
-                    // El casillero está ocupado por otro empleado
-                    $respuesta = array(
-                        "success" => false,
-                        "title" => "ADVERTENCIA",
-                        "text" => "El casillero '{$num_casillero}' ya está ocupado por otro empleado.",
-                        "type" => "warning",
-                        "icon" => $rutaRaiz . "/plugins/toasts/icons/icon_warning.png",
-                        "timeout" => 3000,
-                    );
-                    echo json_encode($respuesta);
-                    exit();
-                }
             }
+            
+            // Verificar cuántos empleados ya están asignados a este casillero
+            $sqlContar = $conexion->prepare("SELECT COUNT(*) as total FROM empleado_casillero WHERE num_casillero = ?");
+            $sqlContar->bind_param("s", $num_casillero);
+            $sqlContar->execute();
+            $resultadoContar = $sqlContar->get_result();
+            $rowContar = $resultadoContar->fetch_assoc();
+            
+            if ($rowContar['total'] >= 2) {
+                // El casillero ya tiene 2 empleados asignados
+                $respuesta = array(
+                    "success" => false,
+                    "title" => "ADVERTENCIA",
+                    "text" => "El casillero '{$num_casillero}' ya tiene el máximo de 2 empleados asignados.",
+                    "type" => "warning",
+                    "icon" => $rutaRaiz . "/plugins/toasts/icons/icon_warning.png",
+                    "timeout" => 3000,
+                );
+                echo json_encode($respuesta);
+                exit();
+            }
+            
             $sqlCasillero->close();
+            $sqlContar->close();
         }
+
 
         // =============================
         // CONVERTIR CAMPOS VACÍOS A NULL
@@ -155,6 +194,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id_area = !empty($id_area) ? (int)$id_area : null;
         $id_puestoEspecial = !empty($id_puestoEspecial) ? (int)$id_puestoEspecial : null;
         $id_empresa = !empty($id_empresa) ? (int)$id_empresa : null;
+        $biometrico = !empty($biometrico) ? (int)$biometrico : null;
 
         // Convertir salarios a decimal o null
         $salario_diario = !empty($salario_diario) ? (float)$salario_diario : null;
@@ -168,8 +208,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 id_rol, id_status, nombre, ap_paterno, ap_materno, domicilio,
                 imss, curp, sexo, enfermedades_alergias, grupo_sanguineo,
                 fecha_ingreso, fecha_nacimiento, id_departamento, 
-                id_area, id_puestoEspecial, id_empresa, clave_empleado, salario_semanal, salario_mensual
-            ) VALUES (2, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                id_area, id_puestoEspecial, id_empresa, clave_empleado, salario_semanal, salario_mensual, biometrico, telefono_empleado
+            ) VALUES (2, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         );
 
         if (!$sql) {
@@ -177,7 +217,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $sql->bind_param(
-            "ssssssssssssiiisdd", // 19 parámetros
+            "ssssssssssssiiisddis", // 19 parámetros
             $nombre,
             $ap_paterno,
             $ap_materno,
@@ -195,7 +235,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id_empresa,
             $clave_empleado,
             $salario_diario,
-            $salario_mensual
+            $salario_mensual,
+            $biometrico,
+            $telefono_empleado
         );
 
         if (!$sql->execute()) {
@@ -209,7 +251,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // 🆕 ASIGNAR CASILLERO AL EMPLEADO
         // =============================
         if (!empty($num_casillero)) {
-            $sqlAsignarCasillero = $conexion->prepare("UPDATE casilleros SET id_empleado = ? WHERE num_casillero = ?");
+            $sqlAsignarCasillero = $conexion->prepare("INSERT INTO empleado_casillero (id_empleado, num_casillero) VALUES (?, ?)");
             if (!$sqlAsignarCasillero) {
                 throw new Exception("Error al preparar consulta de asignación de casillero: " . $conexion->error);
             }
@@ -220,6 +262,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $sqlAsignarCasillero->close();
         }
+
 
         // =============================
         // INSERTAR CONTACTO DE EMERGENCIA (si se proporcionó)
@@ -270,6 +313,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception("Error al registrar relación empleado-contacto: " . $sqlRel->error);
             }
             $sqlRel->close();
+        }
+
+        // =============================
+        // PROCESAR BENEFICIARIOS
+        // =============================
+        if (!empty($_POST['beneficiarios'])) {
+            $beneficiarios = $_POST['beneficiarios']; // Array de beneficiarios
+
+            foreach ($beneficiarios as $beneficiario) {
+                $nombre = $beneficiario['nombre'] ?? null;
+                $ap_paterno = $beneficiario['ap_paterno'] ?? null;
+                $ap_materno = $beneficiario['ap_materno'] ?? null;
+                $parentesco = $beneficiario['parentesco'] ?? null;
+                $porcentaje = $beneficiario['porcentaje'] ?? null;
+
+                // Validar que al menos el nombre esté presente
+                if (empty($nombre)) {
+                    continue; // Saltar beneficiarios sin nombre
+                }
+
+                // Verificar si el beneficiario ya existe
+                $sqlBeneficiario = $conexion->prepare(
+                    "SELECT id_beneficiario FROM beneficiarios WHERE nombre = ? AND ap_paterno = ? AND ap_materno = ?"
+                );
+                $sqlBeneficiario->bind_param("sss", $nombre, $ap_paterno, $ap_materno);
+                $sqlBeneficiario->execute();
+                $resultadoBeneficiario = $sqlBeneficiario->get_result();
+
+                if ($resultadoBeneficiario->num_rows > 0) {
+                    // El beneficiario ya existe, obtener su ID
+                    $rowBeneficiario = $resultadoBeneficiario->fetch_assoc();
+                    $id_beneficiario = $rowBeneficiario['id_beneficiario'];
+                } else {
+                    // El beneficiario no existe, registrarlo
+                    $sqlInsertBeneficiario = $conexion->prepare(
+                        "INSERT INTO beneficiarios (nombre, ap_paterno, ap_materno) VALUES (?, ?, ?)"
+                    );
+                    $sqlInsertBeneficiario->bind_param("sss", $nombre, $ap_paterno, $ap_materno);
+
+                    if (!$sqlInsertBeneficiario->execute()) {
+                        throw new Exception("Error al registrar beneficiario: " . $sqlInsertBeneficiario->error);
+                    }
+
+                    $id_beneficiario = $conexion->insert_id; // Obtener el ID del beneficiario recién registrado
+                    $sqlInsertBeneficiario->close();
+                }
+                $sqlBeneficiario->close();
+
+                // Relacionar el beneficiario con el empleado
+                $sqlEmpleadoBeneficiario = $conexion->prepare(
+                    "INSERT INTO empleado_beneficiario (id_empleado, id_beneficiario, parentesco, porcentaje) VALUES (?, ?, ?, ?)"
+                );
+                $sqlEmpleadoBeneficiario->bind_param("iisd", $id_empleado, $id_beneficiario, $parentesco, $porcentaje);
+
+                if (!$sqlEmpleadoBeneficiario->execute()) {
+                    throw new Exception("Error al registrar relación empleado-beneficiario: " . $sqlEmpleadoBeneficiario->error);
+                }
+                $sqlEmpleadoBeneficiario->close();
+            }
         }
 
         // =============================

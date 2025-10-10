@@ -86,7 +86,9 @@
         <!-- Controles de filtro y búsqueda -->
         <div class="controles-tabla">
             <div class="filtros-container">
-                <select class="filtro-departamento" id="filtro-departamento" hidden>
+                <select class="filtro-seguro" id="filtro-seguro" hidden>
+                    <option value="con_seguro">Con seguro</option>
+                    <option value="sin_seguro">Sin seguro</option>
                 </select>
 
                 <div class="busqueda-container" id="busqueda-container" hidden>
@@ -206,13 +208,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.7/jquery.inputmask.min.js"></script>
     <!-- Bootstrap JS -->
     <script src="<?= BOOTSTRAP_JS ?>"></script>
-
+    <script src="../../config/settings/js/obtener_tabulador.js"></script>
     <script src="../jsPrueba2/leer_excel.js"></script>
     <script src="../jsPrueba2/config_tabla.js"></script>
     <script src="../jsPrueba2/seleccion_empleados.js"></script>
     <script src="../jsPrueba2/detalles_modal.js"></script>
     <script src="../jsPrueba2/detalle_modal_dispersion.js"></script>
-    <script src="../jsPrueba2/rangos_horas.js"></script>
     <script src="../jsPrueba2/rangos_horarios.js"></script>
     <script src="../jsPrueba2/horarios_modal.js"></script>
     <script src="../jsPrueba2/calcular_sumas.js"></script>

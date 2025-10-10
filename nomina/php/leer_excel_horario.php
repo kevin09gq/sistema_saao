@@ -28,6 +28,7 @@ for ($i = 1; $i <= $highestRow; $i++) {
         }
         $empleadoActual = [
             'nombre' => $colD,
+            'id_biometrico' => null, // Agregar campo para ID biométrico
             'registros' => [],
             'horas_totales' => "",
             'tiempo_total' => ""
@@ -59,6 +60,11 @@ for ($i = 1; $i <= $highestRow; $i++) {
         }
         $leyendoRegistros = false;
     } elseif ($leyendoRegistros && is_numeric($colA)) {
+        // Capturar el ID biométrico del primer registro
+        if ($empleadoActual !== null && $empleadoActual['id_biometrico'] === null) {
+            $empleadoActual['id_biometrico'] = $colA;
+        }
+        
         $fecha = trim($sheet->getCell("C{$i}")->getValue());
         $entrada = trim($sheet->getCell("E{$i}")->getValue());
         $salida = trim($sheet->getCell("F{$i}")->getValue());

@@ -7,7 +7,7 @@ let datosEmpleadosCargados = false; // Variable para controlar si ya se cargaron
 $(document).ready(function () {
     // Inicializa los eventos y funciones principales al cargar la página
     datosModal();
-   // filtradoPorDepartamento();
+    // filtradoPorDepartamento();
     seleccionarTodos();
     filtrarPorNombreEmpleado();
     confirmarSeleccionClaves();
@@ -28,7 +28,7 @@ $(document).ready(function () {
                 // Si ya se cargaron los datos, solo actualizar el estado de los checkboxes
                 actualizarEstadoCheckboxes();
             }
-            
+
             // Mostrar el modal
             $("#modalSeleccionEmpleados").modal('show');
         });
@@ -88,7 +88,6 @@ function infoEmpleado() {
             imprimirDatos(response)
         },
         error: function () {
-            console.error("Error al cargar empleados");
         }
     });
 }
@@ -297,7 +296,7 @@ function confirmarSeleccionClaves() {
         // 8. Oculta el filtro de departamento y muestra la búsqueda
         $("#filtro-departamento").attr("hidden", true);
         $("#busqueda-container").removeAttr("hidden");
-        
+
         // 9. Cierra el modal
         $("#modalSeleccionEmpleados").modal('hide');
     });

@@ -170,3 +170,9 @@
   box-shadow: 0 0 5px rgba(220, 53, 69, 0.5); /* sombra roja */
   transition: border-color 0.3s ease, box-shadow 0.3s;
 }
+
+a {
+    color: inherit;         /* usa el color del texto normal */
+    text-decoration: none;  /* quita el subrayado */
+   
+}

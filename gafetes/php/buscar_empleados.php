@@ -41,14 +41,13 @@ try {
     $terminos = array_filter(explode(' ', $busqueda));
     $busquedaLike = "%$busqueda%";
     
-    // Consulta corregida para buscar empleados
+    // Consulta corregida para buscar empleados (usando la nueva estructura de casilleros)
     $sql = "SELECT 
                 e.id_empleado, 
                 TRIM(e.nombre) as nombre, 
                 TRIM(e.ap_paterno) as apellido_paterno, 
                 TRIM(IFNULL(e.ap_materno, '')) as apellido_materno
             FROM info_empleados e
-            LEFT JOIN casilleros c ON e.id_empleado = c.id_empleado
             WHERE e.id_status = 1 
             AND (
                 CONCAT_WS(' ', e.nombre, e.ap_paterno, e.ap_materno) LIKE ?
@@ -88,10 +87,10 @@ try {
     $empleados = [];
     while ($row = $result->fetch_assoc()) {
         $empleados[] = [
-            'id_empleado' => $row['id_empleado'],
-            'nombre' => $row['nombre'],
-            'apellido_paterno' => $row['apellido_paterno'],
-            'apellido_materno' => $row['apellido_materno']
+            'id_empleado' => (int)$row['id_empleado'], // Asegurar que sea entero
+            'nombre' => (string)$row['nombre'], // Asegurar que sea string
+            'apellido_paterno' => (string)$row['apellido_paterno'], // Asegurar que sea string
+            'apellido_materno' => (string)$row['apellido_materno'] // Asegurar que sea string
         ];
     }
     
@@ -158,3 +157,4 @@ if (isset($conexion) && $conexion) {
 
 // Enviar respuesta JSON
 echo json_encode($response, JSON_UNESCAPED_UNICODE);
+?>

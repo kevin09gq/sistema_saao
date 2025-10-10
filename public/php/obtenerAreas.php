@@ -1,21 +1,31 @@
 <?php
 include("../../conexion/conexion.php");
 
-$sql = "SELECT * FROM areas";
-$query = $conexion->query($sql);
-
-if (!$query) {
-    die("Ocurrió un error: " . $conexion->connect_error);
+// Verificar la conexión
+if (!$conexion) {
+    die(json_encode(array("error" => true, "message" => "Error de conexión: " . mysqli_connect_error())));
 }
 
-$arreglo = array();
-while ($row = $query->fetch_object()) {
-    $arreglo[] = array(
-        "id_area" => $row->id_area,
-        "nombre_area" => $row->nombre_area,
-    );
+// Consulta para obtener todas las áreas
+$sql = "SELECT id_area, nombre_area, logo_area FROM areas ORDER BY nombre_area";
+$resultado = mysqli_query($conexion, $sql);
+
+// Verificar si hay resultados
+if (!$resultado) {
+    die(json_encode(array("error" => true, "message" => "Error en la consulta: " . mysqli_error($conexion))));
 }
 
-$json = json_encode($arreglo, JSON_UNESCAPED_UNICODE);
+// Crear array para almacenar las áreas
+$areas = array();
 
-print_r($json);
+// Obtener cada fila como un array asociativo
+while ($fila = mysqli_fetch_assoc($resultado)) {
+    $areas[] = $fila;
+}
+
+// Devolver las áreas como JSON
+echo json_encode($areas);
+
+// Cerrar la conexión
+mysqli_close($conexion);
+?>

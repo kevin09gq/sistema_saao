@@ -25,19 +25,25 @@ try {
     }
     
     // Verificar si el casillero existe
-    $stmt = $conexion->prepare("SELECT id_empleado FROM casilleros WHERE num_casillero = ?");
+    $stmt = $conexion->prepare("SELECT COUNT(*) as total FROM casilleros WHERE num_casillero = ?");
     $stmt->bind_param('s', $numCasillero);
     $stmt->execute();
     $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
     
-    if ($result->num_rows === 0) {
+    if ($row['total'] === 0) {
         echo json_encode(['success' => false, 'error' => 'No existe un casillero con este número']);
         exit;
     }
     
     // Verificar si el casillero está ocupado
-    $row = $result->fetch_assoc();
-    if ($row['id_empleado'] !== null) {
+    $stmt_count = $conexion->prepare("SELECT COUNT(*) as total FROM empleado_casillero WHERE num_casillero = ?");
+    $stmt_count->bind_param('s', $numCasillero);
+    $stmt_count->execute();
+    $result_count = $stmt_count->get_result();
+    $row_count = $result_count->fetch_assoc();
+    
+    if ($row_count['total'] > 0) {
         echo json_encode(['success' => false, 'error' => 'No se puede eliminar un casillero ocupado. Libere el casillero primero.']);
         exit;
     }
@@ -59,6 +65,7 @@ try {
 
 if (isset($conexion) && $conexion) {
     if (isset($stmt) && $stmt) $stmt->close();
+    if (isset($stmt_count) && $stmt_count) $stmt_count->close();
     $conexion->close();
 }
 ?>

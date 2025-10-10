@@ -58,6 +58,22 @@
                             <p class="mt-2">Cargando casilleros...</p>
                         </div>
                     </div>
+                    
+                    <!-- Controles de paginación -->
+                    <div class="row mt-3" id="controles-paginacion" style="display: none;">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="text-muted">
+                                    <small id="info-paginacion">Mostrando 0 de 0 casilleros</small>
+                                </div>
+                                <nav aria-label="Paginación de casilleros">
+                                    <ul class="pagination pagination-sm mb-0" id="paginacion-casilleros">
+                                        <!-- Los botones de paginación se generarán dinámicamente -->
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -66,9 +82,6 @@
                 </button>
                 <button type="button" class="btn btn-success" id="btnAgregarCasillero">
                     <i class="bi bi-plus-circle"></i> Agregar Casillero
-                </button>
-                <button type="button" class="btn btn-primary" id="guardarCasillero">
-                    <i class="bi bi-save"></i> Guardar
                 </button>
             </div>
         </div>

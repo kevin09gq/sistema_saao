@@ -15,6 +15,8 @@ include("../../config/config.php");
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <link rel="stylesheet" href="../styles/actualizar_empleado.css">
     <link rel="stylesheet" href="<?= $rutaRaiz ?>/plugins/toasts/vanillatoasts.css">
+    <!-- SweetAlert2 CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
@@ -27,7 +29,7 @@ include("../../config/config.php");
 
                 </select>
                 <input type="text" class="search-box me-2" placeholder="Buscar..." id="buscadorEmpleado">
-                <button class="btn btn-add" id="btnAgregarEmpleado">+ Agregar Empleado</button>
+                <button class="btn btn-add" id="btnAgregarEmpleado"><a href="form_registro.php" style="text-decoration: none">+ Agregar Empleado</a></button>
             </div>
         </div>
 
@@ -91,6 +93,16 @@ include("../../config/config.php");
                                     Contacto de emergencia
                                 </button>
                             </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-reingresos" data-bs-toggle="tab" data-bs-target="#tab_reingresos" type="button" role="tab" aria-controls="tab_reingresos" aria-selected="false">
+                                    Reingresos
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-beneficiarios" data-bs-toggle="tab" data-bs-target="#tab_beneficiarios" type="button" role="tab" aria-controls="tab_beneficiarios" aria-selected="false">
+                                    Beneficiarios
+                                </button>
+                            </li>
                         </ul>
                         <!-- Tab panes -->
                         <div class="tab-content">
@@ -151,7 +163,20 @@ include("../../config/config.php");
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label for="modal_num_casillero" class="form-label">Número de Casillero</label>
-                                        <input type="text" class="form-control" id="modal_num_casillero" name="num_casillero" placeholder="Ej: 101 o A15">
+                                        <div class="input-group">
+                                            <button class="btn btn-outline-info" type="button" id="btnAbrirCasilleroEmpleado" title="Seleccionar casillero">
+                                                <i class="bi bi-inbox"></i>
+                                            </button>
+                                            <input type="text" class="form-control" id="modal_num_casillero" name="num_casillero" placeholder="Ej: 101 o A15">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="modal_biometrico" class="form-label">Biométrico</label>
+                                        <input type="number" class="form-control" id="modal_biometrico" name="biometrico" min="0" placeholder="ID biométrico">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="modal_telefono_empleado" class="form-label">Teléfono</label>
+                                        <input type="text" class="form-control" id="modal_telefono_empleado" name="telefono_empleado" placeholder="Teléfono del empleado">
                                     </div>
                                 </div>
                                 <div class="row">
@@ -163,9 +188,7 @@ include("../../config/config.php");
                                         <label for="modal_fecha_ingreso" class="form-label">Fecha de Ingreso</label>
                                         <input type="date" class="form-control" id="modal_fecha_ingreso" name="fecha_ingreso">
                                     </div>
-                                    <div class="col-md-4 mb-3">
-                                        <!-- Espacio vacío para mantener simetría -->
-                                    </div>
+                                   
                                 </div>
                                 <div class="row">
                                     <div class="col-md-4 mb-3">
@@ -237,6 +260,68 @@ include("../../config/config.php");
                                     </div>
                                 </div>
                             </div>
+                            <!-- Reingresos -->
+                            <div class="tab-pane fade" id="tab_reingresos" role="tabpanel" aria-labelledby="tab-reingresos">
+                                <div class="mb-3">
+                                    <h6>Historial de Reingresos y Salidas</h6>
+                                    <table class="table table-bordered table-sm" id="tabla_historial_reingresos">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Fecha de Reingreso</th>
+                                                <th>Fecha Baja</th>
+                                                <th>Acciones</th>
+
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbody_historial_reingresos">
+                                          
+                                        </tbody>
+                                    </table>
+                                    <button type="button" class="btn btn-outline-primary btn-sm mt-3" id="btn_nuevo_reingreso">
+                                        <i class="bi bi-plus-circle"></i> Nuevo reingreso
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- Beneficiarios -->
+                            <div class="tab-pane fade" id="tab_beneficiarios" role="tabpanel" aria-labelledby="tab-beneficiarios">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <table class="table table-bordered">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Nombre</th>
+                                                    <th>Apellido Paterno</th>
+                                                    <th>Apellido Materno</th>
+                                                    <th>Parentesco</th>
+                                                    <th>Porcentaje</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id ="tbody_beneficiarios">
+                                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                    <tr>
+                                                        <td>
+                                                            <input type="text" class="form-control" name="beneficiario_nombre[]" placeholder="Nombre">
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control" name="beneficiario_ap_paterno[]" placeholder="Apellido Paterno">
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control" name="beneficiario_ap_materno[]" placeholder="Apellido Materno">
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control" name="beneficiario_parentesco[]" placeholder="Parentesco">
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" class="form-control" name="beneficiario_porcentaje[]" placeholder="%" min="0" max="100" step="1">
+                                                        </td>
+                                                    </tr>
+                                                <?php endfor; ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -253,8 +338,37 @@ include("../../config/config.php");
     <script src="<?= BOOTSTRAP_JS ?>"></script>
     <script src="../controllers/paginacion.js"></script>
     <script src="../controllers/config_actualizar.js"></script>
+    <script src="../controllers/casillero_empleado.js"></script>
     <script src="../../public/js/validaciones.js"></script>
     <script src="<?= $rutaRaiz ?>/plugins/toasts/vanillatoasts.js""></script>
+
+    <!-- Modal estático para editar historial de reingreso -->
+    <div class="modal fade" id="modal_historial_reingreso" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Editar reingreso</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="modal_hist_id_historial" />
+                    <div class="mb-3">
+                        <label class="form-label">Fecha de reingreso</label>
+                        <input type="date" class="form-control" id="modal_hist_fecha_reingreso" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Fecha de Baja (opcional)</label>
+                        <input type="date" class="form-control" id="modal_hist_fecha_salida" />
+                        <div class="form-text">Déjalo vacío si el período sigue activo.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-warning" id="btn_guardar_historial">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </body>
 

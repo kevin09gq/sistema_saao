@@ -1,3 +1,91 @@
+/* Estilo para el botón de limpiar búsqueda */
+#limpiarBuscador {
+    transition: all 0.2s ease-in-out;
+    opacity: 0.6;
+}
+
+#limpiarBuscador:hover {
+    opacity: 1;
+    color: #dc3545 !important;
+    transform: scale(1.15);
+}
+
+#limpiarBuscador:active {
+    transform: scale(0.95);
+}
+
+/* Estilo personalizado para el botón de reset IMSS */
+#resetearToggles {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    border: none;
+    transition: all 0.2s ease-in-out;
+}
+
+#resetearToggles:hover {
+    background: linear-gradient(135deg, #2980b9 0%, #2471a3 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para el botón de limpieza de búsqueda */
+#btnLimpiarBusquedaEmpleado {
+    display: none;
+    position: absolute;
+    right: 120px; /* Ajustar según el ancho del botón de búsqueda */
+    top: 40px;
+    background: transparent;
+    border: none;
+    color: #6c757d;
+    padding: 0;
+    font-size: 1.1rem;
+    cursor: pointer;
+    z-index: 5;
+    transition: all 0.2s ease-in-out;
+    opacity: 0.6;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+#btnLimpiarBusquedaEmpleado:hover {
+    color: #dc3545;
+    opacity: 1;
+    background-color: rgba(220, 53, 69, 0.1);
+    transform: scale(1.1);
+}
+
+#btnLimpiarBusquedaEmpleado.visible {
+    display: flex;
+}
+
+/* Asegurar que el input tenga espacio para el botón de limpieza */
+#buscarEmpleado {
+    padding-right: 40px !important;
+    position: relative;
+}
+
+/* Asegurar que el input no se solape con los botones */
+#buscarEmpleado {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right: none;
+}
+
+/* Ajustar el botón de búsqueda */
+#btnBuscarEmpleado {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 15px;
+}
+
 /* Estilos generales */
 body {
     background: linear-gradient(135deg, #f0f9f4 0%, #e1f5e8 100%);
@@ -46,6 +134,60 @@ body {
 th[data-sortable] {
     cursor: pointer;
     transition: background-color 0.2s;
+}
+
+/* Estilos para la tabla de empleados */
+#tablaEmpleados {
+    table-layout: auto;
+    width: 100%;
+}
+
+#tablaEmpleados th,
+#tablaEmpleados td {
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+/* Ajustes específicos para las columnas Nombre y Departamento */
+#tablaEmpleados th:nth-child(2),
+#tablaEmpleados td:nth-child(2) {
+    width: 120px; /* Ancho fijo para la columna Nombre */
+    max-width: 120px;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    padding: 5px;
+}
+
+#tablaEmpleados th:nth-child(3),
+#tablaEmpleados td:nth-child(3) {
+    width: 100px; /* Ancho fijo para la columna Departamento */
+    max-width: 100px;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    padding: 5px;
+}
+
+/* Estilos específicos para la columna de orden de nombre */
+.orden-nombre-select {
+    min-width: 140px;
+    font-size: 11px !important;
+}
+
+/* Ajustes para las columnas de botones */
+#tablaEmpleados th:nth-child(8),
+#tablaEmpleados th:nth-child(9),
+#tablaEmpleados th:nth-child(10) {
+    width: 80px;
+    text-align: center;
+}
+
+#tablaEmpleados td:nth-child(8),
+#tablaEmpleados td:nth-child(9),
+#tablaEmpleados td:nth-child(10) {
+    width: 80px;
+    text-align: center;
 }
 
 th[data-sortable]:hover {
@@ -162,12 +304,30 @@ th[data-sort-desc] .sort-icon {
     font-size: 0.9rem;
     border-collapse: separate;
     border-spacing: 0;
+    width: 100%;
+    margin-left: 0; /* Move table to the left */
 }
 
 #tablaEmpleados thead {
     position: sticky;
     top: 0;
     z-index: 10;
+}
+
+/* Ajustes específicos para las columnas */
+#tablaEmpleados th:nth-child(3),
+#tablaEmpleados td:nth-child(3) {
+    text-align: left; /* Move department text to the left */
+    width: 12%; /* Make department column smaller */
+    padding-left: 5px;
+}
+
+/* Ajustar el contenedor de la tabla para mayor ancho */
+.card-body .table-responsive {
+    margin-left: -10px; /* Move table container to the left */
+    margin-right: -10px;
+    padding-left: 5px;
+    padding-right: 5px;
 }
 
 /* Estilos para la barra de herramientas de botones */

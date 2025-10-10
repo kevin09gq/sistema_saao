@@ -13,7 +13,6 @@ CREATE TABLE empresa (
 );
 
 
-
 CREATE TABLE areas (
     id_area INT AUTO_INCREMENT PRIMARY KEY,
     nombre_area VARCHAR(100) NOT NULL,
@@ -44,13 +43,21 @@ CREATE TABLE rol (
 -- =============================
 -- TABLAS DE EMPLEADOS
 -- =============================
+
+CREATE TABLE beneficiarios (
+    id_beneficiario INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    ap_paterno VARCHAR(100),
+    ap_materno VARCHAR(100)
+);
+
 CREATE TABLE contacto_emergencia (
     id_contacto INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
     ap_paterno VARCHAR(100),
     ap_materno VARCHAR(100),
     telefono VARCHAR(20),
-    domicilio VARCHAR(255)
+    domicilio VARCHAR(900)
 );
 
 CREATE TABLE info_empleados (
@@ -78,6 +85,8 @@ CREATE TABLE info_empleados (
     id_departamento INT,
     id_area INT,
     id_empresa INT,
+    biometrico INT,
+    telefono_empleado VARCHAR(15),
     FOREIGN KEY (id_rol) REFERENCES rol(id_rol),
     FOREIGN KEY (id_status) REFERENCES status(id_status),
     FOREIGN KEY (id_puestoEspecial) REFERENCES puestos_especiales(id_puestoEspecial),
@@ -85,6 +94,18 @@ CREATE TABLE info_empleados (
     FOREIGN KEY (id_area) REFERENCES areas(id_area),
     FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
 );
+
+-- =============================
+-- TABLA HISTORIAL DE REINGRESOS/SALIDAS
+-- =============================
+CREATE TABLE historial_reingresos (
+    id_historial INT AUTO_INCREMENT PRIMARY KEY,
+    id_empleado INT NOT NULL,
+    fecha_reingreso DATE NOT NULL,
+    fecha_salida DATE NULL,
+    FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado)
+);
+
 
 CREATE TABLE empleado_contacto (
     id_empleado_contacto INT AUTO_INCREMENT PRIMARY KEY,
@@ -95,10 +116,25 @@ CREATE TABLE empleado_contacto (
     FOREIGN KEY (id_contacto) REFERENCES contacto_emergencia(id_contacto)
 );
 
+CREATE TABLE empleado_beneficiario (
+    id_empleado_beneficiario INT AUTO_INCREMENT PRIMARY KEY,
+    id_empleado INT NOT NULL,
+    id_beneficiario INT NOT NULL,
+    parentesco VARCHAR(100),
+    porcentaje DECIMAL(5,2) DEFAULT 0,
+    FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado),
+    FOREIGN KEY (id_beneficiario) REFERENCES beneficiarios(id_beneficiario)
+);
+
 CREATE TABLE casilleros (
-    num_casillero VARCHAR(100) PRIMARY KEY, 
-    id_empleado INT NULL,
-    FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado)
+  num_casillero varchar(50) PRIMARY KEY 
+);
+
+CREATE TABLE empleado_casillero (
+    id_empleado INT NOT NULL,
+    num_casillero VARCHAR(50) NOT NULL,
+    FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado),
+    FOREIGN KEY (num_casillero) REFERENCES casilleros(num_casillero)
 );
 
 
@@ -130,6 +166,13 @@ CREATE TABLE horarios_oficiales (
   id_horario INT  PRIMARY KEY,
   id_empresa INT NOT NULL,
   horario_json JSON NOT NULL,
+  FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
+);
+
+CREATE TABLE tabulador (
+  id_tabulador INT  PRIMARY KEY,
+  id_empresa INT NOT NULL,
+  info_tabulador JSON NOT NULL,
   FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
 );
 
@@ -175,3 +218,58 @@ INSERT INTO departamentos (id_departamento, nombre_departamento) VALUES
 (8, 'Administracion Sucursal CdMx');
 
 
+-- Procedimiento para crear casilleros del 1 al 300
+DELIMITER //
+CREATE PROCEDURE crear_casilleros()
+BEGIN
+    DECLARE i INT DEFAULT 1;
+    WHILE i <= 300 DO
+        INSERT INTO casilleros (num_casillero)
+        VALUES (i);
+        SET i = i + 1;
+    END WHILE;
+END //
+DELIMITER ;
+
+-- Ejecutar el procedimiento
+CALL crear_casilleros();
+
+INSERT INTO tabulador (id_tabulador,id_empresa, info_tabulador) 
+VALUES (
+    1,1,
+    '[
+      {
+        "rango": { "desde": "01:00", "hasta": "20:59" },
+        "minutos": 1259,
+        "sueldo_base": 1350.00,
+        "sueldo_especial": 1550.00,
+        "costo_por_minuto": 1.07
+      },
+      {
+        "rango": { "desde": "21:00", "hasta": "30:59" },
+        "minutos": 1859,
+        "sueldo_base": 1550.00,
+        "sueldo_especial": 1750.00,
+        "costo_por_minuto": 0.83
+      },
+      {
+        "rango": { "desde": "31:00", "hasta": "40:59" },
+        "minutos": 2459,
+        "sueldo_base": 1750.00,
+        "sueldo_especial": 1950.00,
+        "costo_por_minuto": 0.71
+      },
+      {
+        "rango": { "desde": "41:00", "hasta": "48:00" },
+        "minutos": 2880,
+        "sueldo_base": 1952.00,
+        "sueldo_especial": 2152.00,
+        "costo_por_minuto": 0.67
+      },
+      {
+        "rango": { "desde": "48:01", "hasta": "en adelante" },
+        "tipo": "hora_extra",
+        "costo_por_minuto": 1.34
+      }
+    ]'
+);

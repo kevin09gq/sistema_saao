@@ -16,7 +16,7 @@ include("../../config/config.php");
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="../../public/styles/main.css">
     <link rel="stylesheet" href="../styles/registro_styles.css">
-     <link rel="stylesheet" href="<?= $rutaRaiz ?>/plugins/toasts/vanillatoasts.css">
+    <link rel="stylesheet" href="<?= $rutaRaiz ?>/plugins/toasts/vanillatoasts.css">
 </head>
 
 <body>
@@ -46,6 +46,11 @@ include("../../config/config.php");
                                 <li class="nav-item" role="presentation">
                                     <button class="nav-link" id="tab-emergencia" data-bs-toggle="tab" data-bs-target="#tab_emergencia" type="button" role="tab" aria-controls="tab_emergencia" aria-selected="false">
                                         <i class="bi bi-exclamation-triangle-fill me-2"></i>Contacto de Emergencia
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="tab-beneficiarios" data-bs-toggle="tab" data-bs-target="#tab_beneficiarios" type="button" role="tab" aria-controls="tab_beneficiarios" aria-selected="false">
+                                        <i class="bi bi-people-fill me-2"></i>Beneficiarios
                                     </button>
                                 </li>
                             </ul>
@@ -105,7 +110,22 @@ include("../../config/config.php");
                                         </div>
                                         <div class="col-md-3 mb-3">
                                             <label for="num_casillero" class="form-label">Número de Casillero</label>
-                                            <input type="text" class="form-control" id="num_casillero" name="num_casillero" placeholder="Ej: 101 o A15">
+                                            <div class="input-group">
+                                                <button class="btn btn-outline-info" type="button" id="btnAbrirCasilleroRegistro" title="Seleccionar casillero">
+                                                    <i class="bi bi-inbox"></i>
+                                                </button>
+                                                <input type="text" class="form-control" id="num_casillero" name="num_casillero" placeholder="Ej: 101 o A15">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-3 mb-3">
+                                            <label for="biometrico" class="form-label">Biométrico</label>
+                                            <input type="number" class="form-control" id="biometrico" name="biometrico" min="0" placeholder="ID biométrico">
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="telefono_empleado" class="form-label">Teléfono</label>
+                                            <input type="number" class="form-control" id="telefono_empleado" name="telefono_empleado" min="0" placeholder="Teléfono">
                                         </div>
                                     </div>
                                     <div class="row">
@@ -187,6 +207,62 @@ include("../../config/config.php");
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- Tab Beneficiarios -->
+                                <div class="tab-pane fade" id="tab_beneficiarios" role="tabpanel" aria-labelledby="tab-beneficiarios">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <table class="table table-bordered">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Nombre</th>
+                                                        <th>Apellido Paterno</th>
+                                                        <th>Apellido Materno</th>
+                                                        <th>Parentesco</th>
+                                                        <th>Porcentaje</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td><input type="text" class="form-control" name="beneficiario_nombre[]" placeholder="Nombre"></td>
+                                                        <td><input type="text" class="form-control" name="beneficiario_ap_paterno[]" placeholder="Apellido Paterno"></td>
+                                                        <td><input type="text" class="form-control" name="beneficiario_ap_materno[]" placeholder="Apellido Materno"></td>
+                                                        <td><input type="text" class="form-control" name="beneficiario_parentesco[]" placeholder="Parentesco"></td>
+                                                        <td><input type="number" class="form-control" name="beneficiario_porcentaje[]" placeholder="%" min="0" max="100" step="1"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><input type="text" class="form-control" name="beneficiario_nombre[]" placeholder="Nombre"></td>
+                                                        <td><input type="text" class="form-control" name="beneficiario_ap_paterno[]" placeholder="Apellido Paterno"></td>
+                                                        <td><input type="text" class="form-control" name="beneficiario_ap_materno[]" placeholder="Apellido Materno"></td>
+                                                        <td><input type="text" class="form-control" name="beneficiario_parentesco[]" placeholder="Parentesco"></td>
+                                                        <td><input type="number" class="form-control" name="beneficiario_porcentaje[]" placeholder="%" min="0" max="100" step="1"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><input type="text" class="form-control" name="beneficiario_nombre[]" placeholder="Nombre"></td>
+                                                        <td><input type="text" class="form-control" name="beneficiario_ap_paterno[]" placeholder="Apellido Paterno"></td>
+                                                        <td><input type="text" class="form-control" name="beneficiario_ap_materno[]" placeholder="Apellido Materno"></td>
+                                                        <td><input type="text" class="form-control" name="beneficiario_parentesco[]" placeholder="Parentesco"></td>
+                                                        <td><input type="number" class="form-control" name="beneficiario_porcentaje[]" placeholder="%" min="0" max="100" step="1"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><input type="text" class="form-control" name="beneficiario_nombre[]" placeholder="Nombre"></td>
+                                                        <td><input type="text" class="form-control" name="beneficiario_ap_paterno[]" placeholder="Apellido Paterno"></td>
+                                                        <td><input type="text" class="form-control" name="beneficiario_ap_materno[]" placeholder="Apellido Materno"></td>
+                                                        <td><input type="text" class="form-control" name="beneficiario_parentesco[]" placeholder="Parentesco"></td>
+                                                        <td><input type="number" class="form-control" name="beneficiario_porcentaje[]" placeholder="%" min="0" max="100" step="1"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><input type="text" class="form-control" name="beneficiario_nombre[]" placeholder="Nombre"></td>
+                                                        <td><input type="text" class="form-control" name="beneficiario_ap_paterno[]" placeholder="Apellido Paterno"></td>
+                                                        <td><input type="text" class="form-control" name="beneficiario_ap_materno[]" placeholder="Apellido Materno"></td>
+                                                        <td><input type="text" class="form-control" name="beneficiario_parentesco[]" placeholder="Parentesco"></td>
+                                                        <td><input type="number" class="form-control" name="beneficiario_porcentaje[]" placeholder="%" min="0" max="100" step="1"></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Botones de acción -->
@@ -214,7 +290,8 @@ include("../../config/config.php");
     <!-- JS personalizados -->
     <script src="../../public/js/validaciones.js"></script>
     <script src="../controllers/registro_empleado.js"></script>
-     <script src="<?= $rutaRaiz ?>/plugins/toasts/vanillatoasts.js""></script
+    <script src="../controllers/casillero_registro.js"></script>
+    <script src="<?= $rutaRaiz ?>/plugins/toasts/vanillatoasts.js""></script>
 
 </body>
 

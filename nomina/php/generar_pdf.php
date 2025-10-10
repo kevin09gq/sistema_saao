@@ -25,15 +25,6 @@ try {
         enviarError('Faltan datos de fechas en la información recibida.');
     }
 
- 
-    
-  
-    
-  
-    
-
- 
-
     // Requerir mPDF
     require_once __DIR__ . '/../../vendor/autoload.php';
     
@@ -136,7 +127,7 @@ try {
                 border: 1px solid #000;
                 padding: 3px;
                 text-align: center;
-                height: 18px;
+                height: 30px;
                 font-size: 6.9pt;
             }
             .nombre {

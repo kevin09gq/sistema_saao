@@ -4,6 +4,7 @@ require_once __DIR__ . '/../../conexion/conexion.php';
 
 // Obtener datos del POST
 $num_casillero = isset($_POST['num_casillero']) ? trim($_POST['num_casillero']) : '';
+$id_empleado = isset($_POST['id_empleado']) ? intval($_POST['id_empleado']) : 0;
 
 // Validar datos
 if (empty($num_casillero)) {
@@ -18,22 +19,17 @@ try {
         throw new Exception('No se pudo establecer conexión con la base de datos');
     }
     
-    // Primero obtener el id_empleado actual del casillero
-    $stmt = $conexion->prepare("SELECT id_empleado FROM casilleros WHERE num_casillero = ?");
-    $stmt->bind_param("s", $num_casillero);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    if ($row = $result->fetch_assoc()) {
-        $id_empleado = $row['id_empleado'];
+    // Si se proporciona un id_empleado, liberar solo ese empleado del casillero
+    // Si no se proporciona, liberar todos los empleados del casillero
+    if ($id_empleado > 0) {
+        // Liberar solo un empleado específico del casillero
+        $stmt = $conexion->prepare("DELETE FROM empleado_casillero WHERE id_empleado = ? AND num_casillero = ?");
+        $stmt->bind_param("is", $id_empleado, $num_casillero);
     } else {
-        $id_empleado = null;
+        // Liberar todos los empleados del casillero
+        $stmt = $conexion->prepare("DELETE FROM empleado_casillero WHERE num_casillero = ?");
+        $stmt->bind_param("s", $num_casillero);
     }
-    $stmt->close();
-    
-    // Actualizar el casillero para establecer id_empleado a NULL
-    $stmt = $conexion->prepare("UPDATE casilleros SET id_empleado = NULL WHERE num_casillero = ?");
-    $stmt->bind_param("s", $num_casillero);
     
     if ($stmt->execute()) {
         $stmt->close();

@@ -36,10 +36,12 @@ try {
     // Aplicar filtro
     switch ($filtro) {
         case 'disponibles':
-            $where_conditions[] = "c.id_empleado IS NULL";
+            // Casilleros que tienen menos de 2 empleados asignados
+            $where_conditions[] = "(SELECT COUNT(*) FROM empleado_casillero ec WHERE ec.num_casillero = c.num_casillero) < 2";
             break;
         case 'asignados':
-            $where_conditions[] = "c.id_empleado IS NOT NULL";
+            // Casilleros que tienen al menos un empleado asignado
+            $where_conditions[] = "(SELECT COUNT(*) FROM empleado_casillero ec WHERE ec.num_casillero = c.num_casillero) > 0";
             break;
         default:
             // No se aplica filtro
@@ -61,7 +63,15 @@ try {
     }
     
     // Primero obtener el total de casilleros según el filtro y búsqueda
-    $total_query = "SELECT COUNT(*) as total FROM casilleros c LEFT JOIN info_empleados e ON c.id_empleado = e.id_empleado $where_clause";
+    $total_query = "SELECT COUNT(*) as total FROM (
+                        SELECT c.num_casillero 
+                        FROM casilleros c 
+                        LEFT JOIN empleado_casillero ec ON c.num_casillero = ec.num_casillero 
+                        LEFT JOIN info_empleados e ON ec.id_empleado = e.id_empleado 
+                        $where_clause 
+                        GROUP BY c.num_casillero
+                    ) as subquery";
+    
     $total_result = $conexion->query($total_query);
     $total_row = $total_result->fetch_assoc();
     $total_casilleros = $total_row['total'];
@@ -75,17 +85,17 @@ try {
     // Ordenamiento numérico correcto para casilleros con números y letras
     $query = "SELECT 
                 c.num_casillero, 
-                c.id_empleado,
+                COUNT(ec.id_empleado) as total_empleados,
                 CASE 
-                    WHEN c.id_empleado IS NOT NULL THEN 'Ocupado'
+                    WHEN COUNT(ec.id_empleado) > 0 THEN 'Ocupado'
                     ELSE 'Disponible'
                 END as estado,
-                e.nombre as empleado_nombre,
-                e.ap_paterno as empleado_ap_paterno,
-                e.ap_materno as empleado_ap_materno
+                GROUP_CONCAT(CONCAT(e.nombre, ' ', e.ap_paterno, ' ', COALESCE(e.ap_materno, '')) SEPARATOR ', ') as empleado_nombre
               FROM casilleros c
-              LEFT JOIN info_empleados e ON c.id_empleado = e.id_empleado
+              LEFT JOIN empleado_casillero ec ON c.num_casillero = ec.num_casillero
+              LEFT JOIN info_empleados e ON ec.id_empleado = e.id_empleado
               $where_clause
+              GROUP BY c.num_casillero
               ORDER BY 
                 CAST(REGEXP_REPLACE(c.num_casillero, '[^0-9]', '') AS UNSIGNED),
                 c.num_casillero
@@ -104,17 +114,11 @@ try {
     $casilleros = [];
     
     while($row = $result->fetch_assoc()) {
-        // Formatear el nombre completo del empleado si está asignado
-        $empleado_nombre_completo = '';
-        if ($row['id_empleado'] && $row['empleado_nombre']) {
-            $empleado_nombre_completo = trim($row['empleado_nombre'] . ' ' . $row['empleado_ap_paterno'] . ' ' . ($row['empleado_ap_materno'] ?? ''));
-        }
-        
         $casilleros[] = [
-            'num_casillero' => $row['num_casillero'],
+            'num_casillero' => (string)$row['num_casillero'], // Asegurarse de que sea string
             'estado' => $row['estado'],
-            'id_empleado' => $row['id_empleado'],
-            'empleado_nombre' => $empleado_nombre_completo
+            'total_empleados' => (int)$row['total_empleados'], // Asegurarse de que sea entero
+            'empleado_nombre' => $row['empleado_nombre'] ?? '' // Asegurarse de que sea string
         ];
     }
     

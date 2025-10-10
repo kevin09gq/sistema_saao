@@ -39,9 +39,22 @@
                 <li class="nav-item">
                     <a class="nav-link" href="<?= $rutaRaiz ?>/empleados/views/form_actualizar_empleado.php" data-page="empleados">
                         <i class="bi bi-people me-2"></i>
-                        Empleados
+                        ActualizarEmpleados
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="<?= $rutaRaiz ?>/empleados/views/form_registro.php" data-page="empleados_registro">
+                        <i class="bi bi-person-plus me-2"></i>
+                        Registrar
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="<?= $rutaRaiz ?>/config/settings/views/configuracion.php" data-page="configuracion">
+                        <i class="fas fa-cogs"></i> Configuración
+                    </a>
+                </li>
+                
                 <li class="nav-item">
                     <a class="nav-link btn-salir" href="#">
                         <i class="bi bi-box-arrow-right me-2"></i>

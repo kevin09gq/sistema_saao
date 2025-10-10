@@ -6,14 +6,15 @@ include("../../conexion/conexion.php");
 $idDepartamento = isset($_GET['id_departamento']) ? intval($_GET['id_departamento']) : null;
 
 // Construir la consulta SQL
-$sql = "SELECT e.*, d.nombre_departamento, a.nombre_area, emp.nombre_empresa AS nombre_empresa, ec.parentesco as emergencia_parentesco, ce.telefono as emergencia_telefono, ce.domicilio as emergencia_domicilio, ce.nombre as emergencia_nombre, ce.ap_paterno as emergencia_ap_paterno, ce.ap_materno as emergencia_ap_materno, c.num_casillero as num_casillero
+$sql = "SELECT e.*, d.nombre_departamento, a.nombre_area, emp.nombre_empresa AS nombre_empresa, ec.parentesco as emergencia_parentesco, ce.telefono as emergencia_telefono, ce.domicilio as emergencia_domicilio, ce.nombre as emergencia_nombre, ce.ap_paterno as emergencia_ap_paterno, ce.ap_materno as emergencia_ap_materno, 
+        (SELECT GROUP_CONCAT(c.num_casillero) FROM empleado_casillero ec INNER JOIN casilleros c ON ec.num_casillero = c.num_casillero WHERE ec.id_empleado = e.id_empleado) as num_casillero,
+        (SELECT MAX(fecha_reingreso) FROM historial_reingresos WHERE id_empleado = e.id_empleado) as fecha_reingreso
         FROM info_empleados e 
         LEFT JOIN departamentos d ON e.id_departamento = d.id_departamento 
         LEFT JOIN areas a ON e.id_area = a.id_area 
         LEFT JOIN empresa emp ON e.id_empresa = emp.id_empresa 
         LEFT JOIN empleado_contacto ec ON e.id_empleado = ec.id_empleado 
         LEFT JOIN contacto_emergencia ce ON ec.id_contacto = ce.id_contacto 
-        LEFT JOIN casilleros c ON e.id_empleado = c.id_empleado
         WHERE e.id_status = 1";
 
 // Si se especificó un departamento, filtrar por él
@@ -65,7 +66,11 @@ while ($row = $query->fetch_object()) {
         'emergencia_parentesco' => $row->emergencia_parentesco ?? 'N/A',
         'emergencia_nombre_contacto' => trim(($row->emergencia_nombre ?? '') . ' ' . ($row->emergencia_ap_paterno ?? '') . ' ' . ($row->emergencia_ap_materno ?? '')) ?: 'N/A',
         'emergencia_telefono' => $row->emergencia_telefono ?? 'N/A',
-        'emergencia_domicilio' => $row->emergencia_domicilio ?? 'N/A'
+        'emergencia_domicilio' => $row->emergencia_domicilio ?? 'N/A',
+        // Campo biométrico
+        'biometrico' => $row->biometrico ?? 'N/A',
+        // Fecha de reingreso
+        'fecha_reingreso' => $row->fecha_reingreso ?? null
     ];
 }
 

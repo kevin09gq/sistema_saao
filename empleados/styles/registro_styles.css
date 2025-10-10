@@ -86,7 +86,7 @@ body {
 .form-control,
 .form-select {
     height: 42px;
-    padding: 0.75rem;
+    padding: 0.375rem 0.75rem; /* Cambia el padding vertical a 0.375rem */
     font-size: 0.95rem;
     line-height: 1.5;
     border: 2px solid #e5e7eb;
@@ -139,6 +139,7 @@ textarea.form-control {
     background-position: right 0.75rem center;
     background-size: 16px 12px;
     cursor: pointer;
+  
 }
 
 .form-select:focus {

@@ -11,6 +11,20 @@ $(document).ready(function () {
     let todosLosEmpleados = [];
     let ordenClave = 'asc'; // 'asc' o 'desc' para controlar el orden de la columna Clave
 
+    // Función para formatear texto a mayúsculas mientras se escribe
+    function formatearMayusculas(selector) {
+        $(selector).on('input', function () {
+            // Obtener la posición actual del cursor
+            const cursorPosition = this.selectionStart;
+            // Convertir el valor a mayúsculas
+            const valorMayusculas = $(this).val().toUpperCase();
+            // Establecer el nuevo valor
+            $(this).val(valorMayusculas);
+            // Restaurar la posición del cursor
+            this.setSelectionRange(cursorPosition, cursorPosition);
+        });
+    }
+
     // Función para obtener logos dinámicos según el empleado
     function obtenerLogosDinamicos(empleado) {
         // Sin rutas por defecto - solo usar si hay logos específicos
@@ -56,6 +70,46 @@ $(document).ready(function () {
     
     // Objeto para almacenar las preferencias de inclusión de fotos por empleado
     window.fotoInclusion = {};
+    
+    // Objeto para almacenar las preferencias de orden de nombre por empleado
+    window.ordenNombre = {};
+    
+    // Objeto para almacenar el estado del toggle IMSS por empleado
+    window.imssToggleState = {};
+    
+    // Función para cargar el estado del toggle desde localStorage
+    function cargarEstadoToggleIMSS() {
+        const estadoGuardado = localStorage.getItem('imssToggleState');
+        if (estadoGuardado) {
+            try {
+                window.imssToggleState = JSON.parse(estadoGuardado);
+            } catch (e) {
+                console.warn('Error al cargar estado del toggle IMSS:', e);
+                window.imssToggleState = {};
+            }
+        }
+    }
+    
+    // Función para guardar el estado del toggle en localStorage
+    function guardarEstadoToggleIMSS() {
+        localStorage.setItem('imssToggleState', JSON.stringify(window.imssToggleState));
+    }
+    
+    // Función para resetear todos los toggles IMSS a su estado original
+    function resetearTogglesIMSS() {
+        if (confirm('¿Estás seguro de que quieres resetear todos los toggles IMSS a su estado original?')) {
+            localStorage.removeItem('imssToggleState');
+            window.imssToggleState = {};
+            // Recargar la tabla para mostrar los estados originales
+            actualizarTablaEmpleados();
+        }
+    }
+    
+    // Hacer la función accesible globalmente para uso en consola o botones
+    window.resetearTogglesIMSS = resetearTogglesIMSS;
+    
+    // Cargar el estado guardado al iniciar
+    cargarEstadoToggleIMSS();
 
     // Evento para seleccionar todos los empleados
     $('#seleccionarTodos').click(function () {
@@ -72,8 +126,10 @@ $(document).ready(function () {
         empleadosSeleccionados.clear();
         window.empleadosSeleccionados = empleadosSeleccionados;
         
-        // Limpiar las preferencias de inclusión de fotos
+        // Limpiar las preferencias de inclusión de fotos, orden de nombre y toggle IMSS
         window.fotoInclusion = {};
+        window.ordenNombre = {};
+        // No limpiar window.imssToggleState para mantener las preferencias del usuario
         
         actualizarContadorSeleccionados();
     });
@@ -127,6 +183,13 @@ $(document).ready(function () {
     // Evento para el buscador
     $('#buscadorEmpleados').on('input', function () {
         const termino = $(this).val().toLowerCase();
+        
+        // Mostrar u ocultar el botón de limpiar
+        if (termino.length > 0) {
+            $('#limpiarBuscador').show();
+        } else {
+            $('#limpiarBuscador').hide();
+        }
 
         // Filtrar empleados
         empleadosFiltrados = empleados.filter(empleado => {
@@ -140,6 +203,15 @@ $(document).ready(function () {
         paginaActual = 1;
 
         // Actualizar la tabla
+        actualizarTablaEmpleados();
+    });
+    
+    // Evento para limpiar el buscador
+    $('#limpiarBuscador').click(function () {
+        $('#buscadorEmpleados').val('');
+        $('#limpiarBuscador').hide();
+        empleadosFiltrados = [];
+        paginaActual = 1;
         actualizarTablaEmpleados();
     });
 
@@ -201,6 +273,29 @@ $(document).ready(function () {
         const idEmpleado = $(this).val();
         window.fotoInclusion[idEmpleado] = $(this).is(':checked');
     });
+    
+    // Evento para manejar el cambio de orden de nombre
+    $(document).on('change', '.orden-nombre-select', function () {
+        const idEmpleado = $(this).val();
+        const orden = $(this).find('option:selected').data('orden');
+        window.ordenNombre[idEmpleado] = orden;
+    });
+    
+    // Evento para manejar el cambio del toggle IMSS
+    $(document).on('change', '.imss-toggle', function () {
+        const idEmpleado = $(this).data('empleado-id');
+        const isChecked = $(this).is(':checked');
+        
+        // Guardar el estado del toggle
+        window.imssToggleState[idEmpleado] = isChecked;
+        
+        // Guardar en localStorage para persistencia
+        guardarEstadoToggleIMSS();
+        
+        // Actualizar el texto del label
+        const $label = $(this).siblings('label').find('.toggle-text');
+        $label.text(isChecked ? 'Con IMSS' : 'Sin IMSS');
+    });
 
     // Evento para editar empleado
     $(document).on('click', '.btn-editar', function () {
@@ -220,7 +315,6 @@ $(document).ready(function () {
             return;
         }
         
-        
         // Cerrar el modal si está abierto
         const modalInstance = bootstrap.Modal.getInstance(document.getElementById('modalGafetes'));
         if (modalInstance) {
@@ -230,31 +324,102 @@ $(document).ready(function () {
         // Esperar un poco para que el modal se cierre completamente
         setTimeout(() => {
             
-            // Mostrar los gafetes en el DOM (sin mostrar modal)
-            mostrarGafetes(true); // true = modo impresion
+            // Limpiar el contenido antes de generar
+            $('#contenidoGafetes').empty();
             
-            // Esperar un poco más para que se genere el contenido
-            setTimeout(() => {
+            // Generar los gafetes directamente para impresión
+            generarGafetesParaImpresion();
+            
+        }, 300);
+    });
+    
+    // Nueva función específica para generar gafetes para impresión
+    function generarGafetesParaImpresion() {
+        // IMPORTANTE: Primero actualizar las fechas de vigencia
+        actualizarFechasGafetes().then(function() {
+            // Una vez actualizadas las fechas, obtener datos frescos de los empleados
+            obtenerDatosFrescosParaImpresion();
+        }).catch(function(error) {
+            console.error('Error al actualizar fechas, continuando con impresión:', error);
+            // Aún con error, intentar generar los gafetes
+            obtenerDatosFrescosParaImpresion();
+        });
+    }
+    
+    // Función auxiliar para obtener datos frescos para impresión
+    function obtenerDatosFrescosParaImpresion() {
+        // Obtener datos frescos de los empleados antes de generar los gafetes
+        $.ajax({
+            url: 'php/obtenerEmpleados.php',
+            type: 'GET',
+            dataType: 'json',
+            success: function(empleadosFrescos) {
+                // Crear un mapa para acceso rápido a los datos frescos
+                const mapaEmpleadosFrescos = {};
+                empleadosFrescos.forEach(emp => {
+                    mapaEmpleadosFrescos[emp.id_empleado] = emp;
+                });
                 
-                // Obtener solo el contenido de los gafetes
-                const contenidoGafetes = $('#contenidoGafetes').html();
+                // Actualizar la caché con los datos frescos
+                const idsUnicos = [...new Set(Array.from(empleadosSeleccionados))];
+                idsUnicos.forEach(id => {
+                    const empleadoCache = todosLosEmpleados.find(e => e && e.id_empleado == id);
+                    const empleadoFresco = mapaEmpleadosFrescos[id];
+                    
+                    if (empleadoFresco) {
+                        if (empleadoCache) {
+                            Object.assign(empleadoCache, empleadoFresco);
+                        } else {
+                            todosLosEmpleados.push(empleadoFresco);
+                        }
+                    }
+                });
                 
+                // Generar los gafetes con datos actualizados
+                generarGafetesConDatosActualizados(true); // true = modo impresión
                 
-                if (!contenidoGafetes) {
-                    alert('Error: No se pudo generar el contenido de los gafetes');
-                    return;
-                }
-                
-                // Crear una nueva ventana solo para imprimir
-                const ventanaImpresion = window.open('', '_blank', 'width=800,height=600');
-                
-                if (!ventanaImpresion) {
-                    alert('No se pudo abrir la ventana de impresión. Verifique que no esté bloqueando ventanas emergentes.');
-                    return;
-                }
-                
-                // Crear el HTML completo para la ventana de impresión
-                const htmlImpresion = `
+                // Esperar a que se genere el contenido y luego imprimir
+                setTimeout(() => {
+                    procesarImpresion();
+                }, 500);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error al obtener empleados:', error);
+                // En caso de error, continuar con los datos existentes
+                generarGafetesConDatosActualizados(true);
+                setTimeout(() => {
+                    procesarImpresion();
+                }, 500);
+            }
+        });
+    }
+    
+    // Función para procesar la impresión
+    function procesarImpresion() {
+        // Obtener solo el contenido de los gafetes
+        const contenidoGafetes = $('#contenidoGafetes').html();
+        
+        if (!contenidoGafetes || contenidoGafetes.trim() === '') {
+            alert('Error: No se pudo generar el contenido de los gafetes');
+            return;
+        }
+        
+        // Verificar que el contenido contiene gafetes y no solo texto
+        if (!contenidoGafetes.includes('gafete') && !contenidoGafetes.includes('gafetes-pagina')) {
+            alert('Error: El contenido generado no contiene gafetes válidos');
+            return;
+        }
+        
+        // Crear una nueva ventana solo para imprimir
+        const ventanaImpresion = window.open('', '_blank', 'width=800,height=600');
+        
+        if (!ventanaImpresion) {
+            alert('No se pudo abrir la ventana de impresión. Verifique que no esté bloqueando ventanas emergentes.');
+            return;
+        }
+        
+        // Crear el HTML completo para la ventana de impresión
+        const htmlImpresion = `
             <!DOCTYPE html>
             <html>
             <head>
@@ -280,6 +445,32 @@ $(document).ready(function () {
                         justify-content: start;
                         /* gap: 0.5cm; */
                         width: 100%;
+                        page-break-inside: avoid;
+                        margin: 0;
+                        padding: 0;
+                    }
+                    
+                    .gafetes-pagina-sin-imss {
+                        display: grid !important;
+                        grid-template-columns: repeat(3, 6cm) !important;
+                        grid-template-rows: repeat(2, auto) !important;
+                        justify-content: center !important;
+                        align-items: start !important;
+                        gap: 0.5cm !important;
+                        width: 100% !important;
+                        page-break-inside: avoid;
+                        margin: 0;
+                        padding: 0;
+                    }
+                    
+                    .gafetes-pagina-mixta {
+                        display: grid !important;
+                        grid-template-columns: repeat(3, 6cm) !important;
+                        grid-template-rows: repeat(2, auto) !important;
+                        justify-content: center !important;
+                        align-items: start !important;
+                        gap: 0.5cm !important;
+                        width: 100% !important;
                         page-break-inside: avoid;
                         margin: 0;
                         padding: 0;
@@ -472,6 +663,32 @@ $(document).ready(function () {
                             justify-content: start;
                             /* gap: 0.5cm; */
                         }
+                        
+                        .gafetes-pagina-sin-imss {
+                            display: grid !important;
+                            grid-template-columns: repeat(3, 6cm) !important;
+                            grid-template-rows: repeat(2, auto) !important;
+                            justify-content: center !important;
+                            align-items: start !important;
+                            gap: 0.5cm !important;
+                            width: 100% !important;
+                            page-break-inside: avoid;
+                            margin: 0;
+                            padding: 0;
+                        }
+                        
+                        .gafetes-pagina-mixta {
+                            display: grid !important;
+                            grid-template-columns: repeat(3, 6cm) !important;
+                            grid-template-rows: repeat(2, auto) !important;
+                            justify-content: center !important;
+                            align-items: start !important;
+                            gap: 0.5cm !important;
+                            width: 100% !important;
+                            page-break-inside: avoid;
+                            margin: 0;
+                            padding: 0;
+                        }
                         .gafete-atras, .gafete-atras * {
                             font-size: 14pt !important;
                             margin-bottom: 0.4em !important;
@@ -533,13 +750,10 @@ $(document).ready(function () {
             </html>
         `;
 
-                // Escribir el contenido en la nueva ventana
-                ventanaImpresion.document.write(htmlImpresion);
-                ventanaImpresion.document.close();
-                
-            }, 500); // Esperar 500ms para que se genere el contenido
-        }, 300); // Esperar 300ms para que se cierre el modal
-    });
+        // Escribir el contenido en la nueva ventana
+        ventanaImpresion.document.write(htmlImpresion);
+        ventanaImpresion.document.close();
+    }
 
     // Función para cargar departamentos
     function cargarDepartamentos() {
@@ -658,7 +872,7 @@ $(document).ready(function () {
         $cuerpo.empty();
 
         if (totalEmpleados === 0) {
-            $cuerpo.append('<tr><td colspan="5" class="text-center">No se encontraron empleados</td></tr>');
+            $cuerpo.append('<tr><td colspan="10" class="text-center">No se encontraron empleados</td></tr>');
             return;
         }
 
@@ -698,6 +912,20 @@ $(document).ready(function () {
             // Determinar si el empleado tiene IMSS
             const tieneIMSS = empleado.imss && empleado.imss !== 'N/A' && empleado.imss.trim() !== '';
             
+            // Inicializar el estado del toggle si no existe (basado en si tiene IMSS)
+            // Solo inicializar si no hay estado guardado previamente
+            if (window.imssToggleState[empleado.id_empleado] === undefined) {
+                window.imssToggleState[empleado.id_empleado] = tieneIMSS;
+                // Guardar el estado inicial
+                guardarEstadoToggleIMSS();
+            }
+            
+            // Obtener el estado actual del toggle
+            const toggleIMSS = window.imssToggleState[empleado.id_empleado];
+            
+            // Obtener el orden de nombre seleccionado para este empleado (por defecto: nombre primero)
+            const ordenSeleccionado = window.ordenNombre[empleado.id_empleado] || 'nombre-primero';
+            
             $cuerpo.append(`
                 <tr>
                     <td>${empleado.clave_empleado}</td>
@@ -710,9 +938,25 @@ $(document).ready(function () {
                         </span>
                     </td>
                     <td class="text-center">
-                        <span class="badge ${tieneIMSS ? 'bg-primary' : 'bg-secondary'}">
-                            ${tieneIMSS ? 'Sí' : 'No'}
-                        </span>
+                        <div class="form-check form-switch d-flex justify-content-center">
+                            <input class="form-check-input imss-toggle" type="checkbox" 
+                                   id="imss_toggle_${empleado.id_empleado}" 
+                                   data-empleado-id="${empleado.id_empleado}"
+                                   ${toggleIMSS ? 'checked' : ''}>
+                            <label class="form-check-label ms-2 small" for="imss_toggle_${empleado.id_empleado}">
+                                <span class="toggle-text">${toggleIMSS ? 'Con IMSS' : 'Sin IMSS'}</span>
+                            </label>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <select class="form-select form-select-sm orden-nombre-select" value="${empleado.id_empleado}">
+                            <option value="${empleado.id_empleado}" data-orden="nombre-primero" ${ordenSeleccionado === 'nombre-primero' ? 'selected' : ''}>
+                                Nombre + Apellidos
+                            </option>
+                            <option value="${empleado.id_empleado}" data-orden="apellido-primero" ${ordenSeleccionado === 'apellido-primero' ? 'selected' : ''}>
+                                Apellidos + Nombre
+                            </option>
+                        </select>
                     </td>
                     <td class="text-center">
                         <input type="checkbox" class="form-check-input empleado-checkbox" 
@@ -725,12 +969,11 @@ $(document).ready(function () {
                                ${fotoSeleccionada ? 'checked' : ''}>
                     </td>
                     <td class="text-center">
-                        <button class="btn btn-sm btn-editar" 
+                        <button class="btn btn-sm btn-outline-primary btn-editar" 
                                 data-id="${empleado.id_empleado}" 
                                 data-clave="${empleado.clave_empleado}" 
                                 title="Editar información del empleado">
                             <i class="bi bi-pencil-square"></i>
-                            <span class="btn-text">Editar</span>
                         </button>
                     </td>
                 </tr>
@@ -890,8 +1133,19 @@ $(document).ready(function () {
     // Función para mostrar los gafetes en el modal o para impresión (estructura y diseño original)
     function mostrarGafetes(modoImpresion = false) {
         // Actualizar las fechas de creación y vigencia para los empleados seleccionados
-        actualizarFechasGafetes();
-        
+        // IMPORTANTE: Esperar a que las fechas se actualicen antes de continuar
+        actualizarFechasGafetes().then(function() {
+            // Una vez actualizadas las fechas, obtener datos frescos de los empleados
+            obtenerDatosFrescosYGenerarGafetes(modoImpresion);
+        }).catch(function(error) {
+            console.error('Error al actualizar fechas, continuando con generación:', error);
+            // Aún con error, intentar generar los gafetes
+            obtenerDatosFrescosYGenerarGafetes(modoImpresion);
+        });
+    }
+    
+    // Función auxiliar para obtener datos frescos y generar gafetes
+    function obtenerDatosFrescosYGenerarGafetes(modoImpresion) {
         // Obtener datos frescos de los empleados antes de generar los gafetes
         $.ajax({
             url: 'php/obtenerEmpleados.php',
@@ -923,6 +1177,8 @@ $(document).ready(function () {
                         empleadoCache.sexo = empleadoFresco.sexo;
                         empleadoCache.fecha_nacimiento = empleadoFresco.fecha_nacimiento;
                         empleadoCache.fecha_ingreso = empleadoFresco.fecha_ingreso;
+                        empleadoCache.fecha_creacion = empleadoFresco.fecha_creacion;
+                        empleadoCache.fecha_vigencia = empleadoFresco.fecha_vigencia;
                         empleadoCache.domicilio = empleadoFresco.domicilio;
                         empleadoCache.enfermedades_alergias = empleadoFresco.enfermedades_alergias;
                         empleadoCache.grupo_sanguineo = empleadoFresco.grupo_sanguineo;
@@ -969,18 +1225,207 @@ $(document).ready(function () {
             const nombreB = `${empB.nombre} ${empB.ap_paterno || ''} ${empB.ap_materno || ''}`.trim().toLowerCase();
             return nombreA.localeCompare(nombreB);
         });
-        const columnas = 3;
-        // Agrupar empleados en páginas de 3
-        for (let i = 0; i < idsUnicos.length; i += columnas) {
-            const grupo = idsUnicos.slice(i, i + columnas);
-            // Contenedor de la "página"
-            const $pagina = $('<div class="gafetes-pagina" style="width:100%;display:grid;grid-template-columns:repeat(3,6cm);justify-content:center;align-items:start;gap:0.5cm;page-break-after:always;min-height:20cm;"></div>');
-            // Por cada empleado en la página, crear una columna con frente y reverso
-            grupo.forEach(idEmpleado => {
+        // Determinar qué empleados tienen IMSS y cuáles no
+        const empleadosConIMSS = [];
+        const empleadosSinIMSS = [];
+        
+        idsUnicos.forEach(idEmpleado => {
+            const empleado = todosLosEmpleados.find(e => e.id_empleado == idEmpleado);
+            if (empleado) {
+                // Usar el estado del toggle en lugar de verificar el campo IMSS
+                // Si no hay estado guardado, usar el valor del campo IMSS como predeterminado
+                const tieneIMSSToggle = window.imssToggleState[idEmpleado] !== undefined ? 
+                    window.imssToggleState[idEmpleado] : 
+                    (empleado.imss && empleado.imss !== 'N/A' && empleado.imss.trim() !== '');
+                
+                if (tieneIMSSToggle) {
+                    empleadosConIMSS.push(idEmpleado);
+                } else {
+                    empleadosSinIMSS.push(idEmpleado);
+                }
+            }
+        });
+        
+        // Verificar si hay mezcla de tipos
+        const hayMezcla = empleadosConIMSS.length > 0 && empleadosSinIMSS.length > 0;
+        
+        if (hayMezcla) {
+            // Lógica para mezclar gafetes con y sin IMSS en la misma página
+            procesarGafetesMezclados(empleadosConIMSS, empleadosSinIMSS, $contenido);
+        } else {
+            // Lógica original para un solo tipo
+            if (empleadosConIMSS.length > 0) {
+                // Solo empleados con IMSS (3 por página)
+                const columnas = 3;
+                for (let i = 0; i < empleadosConIMSS.length; i += columnas) {
+                    const grupo = empleadosConIMSS.slice(i, i + columnas);
+                    const $pagina = $('<div class="gafetes-pagina" style="width:100%;display:grid;grid-template-columns:repeat(3,6cm);justify-content:center;align-items:start;gap:0.5cm;page-break-after:always;min-height:20cm;"></div>');
+                    generarGafetesEnPagina(grupo, $pagina, true);
+                    $contenido.append($pagina);
+                }
+            }
+            
+            if (empleadosSinIMSS.length > 0) {
+                // Solo empleados sin IMSS (6 por página)
+                const gafetesPorPagina = 6;
+                for (let i = 0; i < empleadosSinIMSS.length; i += gafetesPorPagina) {
+                    const grupo = empleadosSinIMSS.slice(i, i + gafetesPorPagina);
+                    const $pagina = $('<div class="gafetes-pagina-sin-imss" style="width:100%;display:grid;grid-template-columns:repeat(3,6cm);grid-template-rows:repeat(2,auto);justify-content:center;align-items:start;gap:0.5cm;page-break-after:always;min-height:20cm;"></div>');
+                    generarGafetesEnPagina(grupo, $pagina, false);
+                    $contenido.append($pagina);
+                }
+            }
+        }
+        
+        // Llamar a la función para continuar con el resto de la lógica
+        continuarGeneracionGafetes(modoImpresion);
+    }
+    
+    // Nueva función para procesar gafetes mezclados (con y sin IMSS en la misma página)
+    function procesarGafetesMezclados(empleadosConIMSS, empleadosSinIMSS, $contenido) {
+        // Estrategia mejorada: llenar por columnas, no por espacios
+        // Una página tiene 3 columnas, cada columna puede tener:
+        // - 1 gafete con IMSS (frente arriba + reverso abajo)
+        // - 2 gafetes sin IMSS (uno arriba + uno abajo)
+        
+        let colaConIMSS = [...empleadosConIMSS];
+        let colaSinIMSS = [...empleadosSinIMSS];
+        
+        while (colaConIMSS.length > 0 || colaSinIMSS.length > 0) {
+            const $pagina = $('<div class="gafetes-pagina-mixta" style="width:100%;display:grid;grid-template-columns:repeat(3,6cm);grid-template-rows:repeat(2,auto);justify-content:center;align-items:start;gap:0.5cm;page-break-after:always;min-height:20cm;"></div>');
+            
+            let columnasUsadas = 0;
+            const maxColumnas = 3;
+            let grupoMixto = [];
+            
+            // Llenar página columna por columna
+            while (columnasUsadas < maxColumnas && (colaConIMSS.length > 0 || colaSinIMSS.length > 0)) {
+                // Priorizar empleados con IMSS (ocupan 1 columna completa)
+                if (colaConIMSS.length > 0) {
+                    grupoMixto.push({ id: colaConIMSS.shift(), tieneIMSS: true, columna: columnasUsadas });
+                    columnasUsadas += 1;
+                } 
+                // Si no hay empleados con IMSS, llenar con 2 empleados sin IMSS (1 columna)
+                else if (colaSinIMSS.length > 0) {
+                    // Primer empleado sin IMSS en la fila superior
+                    grupoMixto.push({ id: colaSinIMSS.shift(), tieneIMSS: false, columna: columnasUsadas, fila: 0 });
+                    
+                    // Segundo empleado sin IMSS en la fila inferior (si hay)
+                    if (colaSinIMSS.length > 0) {
+                        grupoMixto.push({ id: colaSinIMSS.shift(), tieneIMSS: false, columna: columnasUsadas, fila: 1 });
+                    }
+                    
+                    columnasUsadas += 1;
+                }
+            }
+            
+            // Solo agregar la página si tiene contenido
+            if (grupoMixto.length > 0) {
+                generarGafetesMixtos(grupoMixto, $pagina);
+                $contenido.append($pagina);
+            }
+        }
+    }
+    
+    // Función auxiliar para generar gafetes mixtos en una página
+    function generarGafetesMixtos(grupoMixto, $pagina) {
+        // Crear una matriz 2x3 para organizar los gafetes
+        const matriz = [
+            [null, null, null], // Fila superior
+            [null, null, null]  // Fila inferior
+        ];
+        
+        // Colocar gafetes en la matriz según su tipo y posición
+        grupoMixto.forEach(item => {
+            const empleado = todosLosEmpleados.find(e => e.id_empleado == item.id);
+            if (!empleado) return;
+            
+            if (item.tieneIMSS) {
+                // Gafete con IMSS ocupa toda la columna (fila 0 y 1)
+                const gafeteCompleto = generarGafeteCompleto(empleado, true);
+                // Marcar ambas posiciones de la columna como ocupadas
+                matriz[0][item.columna] = { elemento: gafeteCompleto, tipo: 'imss-frente' };
+                matriz[1][item.columna] = { elemento: null, tipo: 'imss-reverso' }; // El reverso está incluido en el gafeteCompleto
+            } else {
+                // Gafete sin IMSS ocupa solo una celda
+                const gafeteSolo = generarGafeteCompleto(empleado, false);
+                matriz[item.fila][item.columna] = { elemento: gafeteSolo, tipo: 'sin-imss' };
+            }
+        });
+        
+        // Agregar elementos a la página en orden de grid (fila por fila)
+        for (let fila = 0; fila < 2; fila++) {
+            for (let col = 0; col < 3; col++) {
+                const celda = matriz[fila][col];
+                
+                if (celda && celda.elemento) {
+                    // Agregar el gafete real
+                    $pagina.append(celda.elemento);
+                } else if (celda && celda.tipo === 'imss-reverso') {
+                    // Esta celda está ocupada por el reverso de un gafete con IMSS, no agregar nada
+                    // El CSS grid se encargará del posicionamiento
+                } else {
+                    // Celda vacía, agregar espacio en blanco
+                    $pagina.append(`<div style="width:6cm;min-width:6cm;max-width:6cm;height:10cm;min-height:10cm;"></div>`);
+                }
+            }
+        }
+    }
+    
+    // Función auxiliar para generar un gafete completo (reutiliza lógica existente)
+    function generarGafeteCompleto(empleado, tieneIMSS) {
+        const idEmpleado = empleado.id_empleado;
+        
+        if (tieneIMSS) {
+            // Crear contenedor para gafete con IMSS que ocupe 2 filas (grid-row: span 2)
+            const $contenedor = $('<div style="grid-row:span 2;display:flex;flex-direction:column;justify-content:flex-start;align-items:center;gap:0;margin:0;padding:0;width:6cm !important;min-width:6cm !important;max-width:6cm !important;height:20cm !important;min-height:20cm !important;max-height:20cm !important;position:relative;"></div>');
+            
+            // Generar el gafete usando la función existente
+            const $paginaTemporal = $('<div></div>');
+            generarGafetesEnPagina([idEmpleado], $paginaTemporal, true);
+            const gafeteGenerado = $paginaTemporal.children().first();
+            
+            // Copiar el contenido del gafete generado al contenedor
+            $contenedor.html(gafeteGenerado.html());
+            $contenedor.attr('class', gafeteGenerado.attr('class'));
+            
+            return $contenedor;
+        } else {
+            // Crear contenedor para gafete sin IMSS (solo 1 fila)
+            const $contenedor = $('<div style="display:flex;flex-direction:column;justify-content:flex-start;align-items:center;gap:0;margin:0;padding:0;width:6cm !important;min-width:6cm !important;max-width:6cm !important;height:10cm !important;min-height:10cm !important;max-height:10cm !important;position:relative;"></div>');
+            
+            // Generar el gafete usando la función existente
+            const $paginaTemporal = $('<div></div>');
+            generarGafetesEnPagina([idEmpleado], $paginaTemporal, false);
+            const gafeteGenerado = $paginaTemporal.children().first();
+            
+            // Copiar el contenido del gafete generado al contenedor
+            $contenedor.html(gafeteGenerado.html());
+            $contenedor.attr('class', gafeteGenerado.attr('class'));
+            
+            return $contenedor;
+        }
+    }
+    
+    // Nueva función auxiliar para generar gafetes en una página
+    function generarGafetesEnPagina(grupo, $pagina, tienenIMSS) {
+        // Por cada empleado en el grupo, crear gafete(s)
+        grupo.forEach(idEmpleado => {
                 const empleado = todosLosEmpleados.find(e => e.id_empleado == idEmpleado); // <-- CAMBIO: buscar en todosLosEmpleados
                 if (!empleado) return;
                 // --- Frente ---
-                const nombreCompleto = `${empleado.nombre} ${empleado.ap_paterno || ''} ${empleado.ap_materno || ''}`.trim();
+                // Obtener el orden de nombre seleccionado para este empleado
+                const ordenNombre = window.ordenNombre[empleado.id_empleado] || 'nombre-primero';
+                let nombreCompleto;
+                
+                if (ordenNombre === 'apellido-primero') {
+                    // Apellidos + Nombre
+                    const apellidos = `${empleado.ap_paterno || ''} ${empleado.ap_materno || ''}`.trim();
+                    nombreCompleto = apellidos ? `${apellidos} ${empleado.nombre}`.trim() : empleado.nombre;
+                } else {
+                    // Nombre + Apellidos (por defecto)
+                    nombreCompleto = `${empleado.nombre} ${empleado.ap_paterno || ''} ${empleado.ap_materno || ''}`.trim();
+                }
                 const primerNombre = empleado.nombre ? empleado.nombre.split(' ')[0] : '';
                 
                 // Calcular tamaño de fuente dinámico para el rectángulo del nombre (solo primer nombre)
@@ -989,11 +1434,11 @@ $(document).ready(function () {
                 let fontSizeRectangulo;
                 
                 if (cantidadNombres === 1) {
-                    fontSizeRectangulo = '17pt'; // Tamaño por defecto para un nombre
+                    fontSizeRectangulo = '16.5pt'; // Tamaño por defecto para un nombre
                 } else if (cantidadNombres === 2) {
                     // Para dos nombres, verificar longitud total
                     const nombreCompleto = nombresArray.join(' ');
-                    fontSizeRectangulo = nombreCompleto.length > 11 ? '13.2pt' : '17pt';
+                    fontSizeRectangulo = nombreCompleto.length > 11 ? '12.5pt' : '16.5pt';
                 } else {
                     // Tres o más nombres
                     const nombreCompleto = nombresArray.join(' ');
@@ -1029,8 +1474,10 @@ $(document).ready(function () {
                 const fechaInicio = new Date();
                 const fechaFin = new Date(fechaInicio);
                 
-                // Determinar si el empleado tiene IMSS válido
-                const tieneIMSS = empleado.imss && empleado.imss !== 'N/A' && empleado.imss.trim() !== '';
+                // Determinar si el empleado tiene IMSS válido usando el estado del toggle
+                const tieneIMSS = window.imssToggleState[empleado.id_empleado] !== undefined ? 
+                    window.imssToggleState[empleado.id_empleado] : 
+                    (empleado.imss && empleado.imss !== 'N/A' && empleado.imss.trim() !== '');
                 
                 // Establecer la vigencia: 1 mes para empleados sin IMSS, 6 meses para empleados con IMSS
                 const mesesVigencia = tieneIMSS ? 6 : 1;
@@ -1039,7 +1486,7 @@ $(document).ready(function () {
                     fechaFin.setDate(0);
                 }
                 const pad = n => n.toString().padStart(2, '0');
-                const formato = (f) => `${pad(f.getDate())}/${meses[f.getMonth()]}/${f.getFullYear()}`;
+                const formato = (f) => `${pad(f.getDate())}/${pad(f.getMonth() + 1)}/${f.getFullYear()}`;
                 
                 // Ya se determinó si el empleado tiene IMSS válido anteriormente
                 // const tieneIMSS = empleado.imss && empleado.imss !== 'N/A' && empleado.imss.trim() !== '';
@@ -1047,19 +1494,25 @@ $(document).ready(function () {
                 // Crear vigenciaHtml condicional según IMSS
                 let vigenciaHtml;
                 if (tieneIMSS) {
-                    // Si tiene IMSS, mostrar nombre de empresa (diseño completo)
+                    // Si tiene IMSS, mostrar nombre de empresa (diseño completo) con posición absoluta
                     vigenciaHtml = `
-                        <div style='font-size:5.3pt !important;font-weight:bold;text-align:center;margin:0 auto 0.1cm;max-width:100%;'>
-                            ${empleado.nombre_empresa ? `<div style='font-size:6.5pt !important;font-weight:bold;color:#020500;text-align:center;line-height:1.05;margin-bottom:0.05cm;'>${empleado.nombre_empresa}</div>` : ''}
-                            <div style='white-space:nowrap;'>Vigencia: <span style='background:#ffe066;padding:0 0.1cm;border-radius:2px;font-size:5.3pt !important;'>${formato(fechaInicio)}</span></div>
-                            <div style='white-space:nowrap;'><span style='background:#ffe066;padding:0 0.1cm;border-radius:2px;font-size:5.3pt !important;'>AL ${formato(fechaFin)}</span></div>
+                        <div style='position:absolute;top:1.3cm;right:0.2cm;font-size:5.3pt !important;font-weight:bold;text-align:center;width:2.5cm;'>
+                            ${empleado.nombre_empresa ? `<div style='font-size:6.5pt !important;font-weight:bold;color:#020500;text-align:center;line-height:1.05;margin-bottom:0.03cm;'>${empleado.nombre_empresa}</div>` : ''}
+                            <div style='text-align:center;font-weight:bold;margin-bottom:0.03cm;'>Vigencia:</div>
+                            <span style="background:#ffe066; padding:0 2px; border-radius:2px; font-size:5.3pt; white-space:nowrap;">
+    ${formato(fechaInicio)} AL ${formato(fechaFin)}
+</span>
+
                         </div>`;
                 } else {
-                    // Si NO tiene IMSS, NO mostrar nombre de empresa (diseño simplificado)
+                    // Si NO tiene IMSS, NO mostrar nombre de empresa
                     vigenciaHtml = `
-                        <div style='font-size:5.3pt !important;font-weight:bold;text-align:center;margin:0 auto 0.1cm;max-width:100%;'>
-                            <div style='white-space:nowrap;'>Vigencia: <span style='background:#ffe066;padding:0 0.1cm;border-radius:2px;font-size:5.3pt !important;'>${formato(fechaInicio)}</span></div>
-                            <div style='white-space:nowrap;'><span style='background:#ffe066;padding:0 0.1cm;border-radius:2px;font-size:5.3pt !important;'>AL ${formato(fechaFin)}</span></div>
+                      <div style='position:absolute;top:2cm;right:0.2cm;font-size:5.3pt !important;font-weight:bold;text-align:center;width:2.5cm;'>
+                            <div style='text-align:center;font-weight:bold;margin-bottom:0.03cm;'>Vigencia:</div>
+                            <span style="background:#ffe066; padding:0 2px; border-radius:2px; font-size:5.3pt; white-space:nowrap;">
+    ${formato(fechaInicio)} AL ${formato(fechaFin)}
+</span>
+
                         </div>`;
                 }
                 // Agrupar palabras como DE, DEL, LA, LOS, LAS, Y con la siguiente para que no queden solas en un renglón
@@ -1076,17 +1529,146 @@ $(document).ready(function () {
                         nombreAgrupado.push(nombrePartes[i]);
                     }
                 }
-                // Determinar el tamaño de letra según la longitud de las palabras (simplificado)
-                const nombreSinEspacios = nombreCompleto.replace(/\s+/g, '');
-                let fontSizeNombre;
-                if (nombreAgrupado.some(p => p.replace(/\s+/g, '').length >= 13)) {
-                    fontSizeNombre = '8.5pt';
-                } else if (nombreSinEspacios.length >= 13) {
-                    fontSizeNombre = '8.7pt';
-                } else {
-                    fontSizeNombre = '11pt';
+                // Función para calcular el ancho visual aproximado del texto
+                function calcularAnchoVisual(texto) {
+                    // Pesos de ancho por letra (valores relativos)
+                    const pesos = {
+                        'M': 1.8, 'W': 1.8, 'D': 1.5, 'O': 1.4, 'Q': 1.4,
+                        'B': 1.3, 'G': 1.3, 'P': 1.3, 'R': 1.3, 'S': 1.2,
+                        'U': 1.2, 'V': 1.2, 'X': 1.2, 'Z': 1.2, 'A': 1.1,
+                        'C': 1.1, 'E': 1.1, 'F': 1.1, 'H': 1.1, 'I': 0.8,
+                        'J': 0.9, 'K': 1.1, 'L': 0.9, 'N': 1.1, 'T': 0.9,
+                        'Y': 1.1, 'Ñ': 1.2, ' ': 0.5
+                    };
+                    
+                    // Convertir a mayúsculas y calcular ancho total
+                    return texto.toUpperCase().split('').reduce((ancho, letra) => {
+                        return ancho + (pesos[letra] || 1.0); // Usar 1.0 como valor por defecto
+                    }, 0);
                 }
-                const nombreEnLineas = nombreAgrupado.map(p => "<span style='display:block;text-align:left !important;font-size:inherit !important;'>" + p + "</span>").join('');
+                
+                // Dividir el nombre completo en palabras y limpiar espacios vacíos
+                // Cada palabra irá en una línea separada
+                const palabras = nombreCompleto.split(/\s+/).filter(p => p.trim() !== '');
+                let palabrasUnidas = palabras;
+                
+                // Calcular el ancho visual de cada línea
+                const anchosVisuales = palabrasUnidas.map(calcularAnchoVisual);
+                const maxAnchoVisual = Math.max(...anchosVisuales);
+                const totalLineas = palabrasUnidas.length;
+                
+                // Encontrar la palabra más ancha
+                let palabraMasAncha = '';
+                palabrasUnidas.forEach(palabra => {
+                    const ancho = calcularAnchoVisual(palabra);
+                    if (ancho > calcularAnchoVisual(palabraMasAncha)) {
+                        palabraMasAncha = palabra;
+                    }
+                });
+                
+                // Determinar el tamaño de fuente basado en DOS factores:
+                // 1. Número de renglones (saltos de línea) que ocupa el nombre completo
+                // 2. Longitud en caracteres de la palabra más larga
+                // IMPORTANTE: Todo el nombre (todas las líneas) tendrá el MISMO tamaño de fuente
+                
+                let fontSizeNombre;
+                const palabrasNombre = nombreCompleto.split(' ');
+                const palabraMasLarga = Math.max(...palabrasNombre.map(p => p.length));
+                
+                // Lógica basada en número de renglones (saltos de línea)
+                if (totalLineas >= 6) {
+                    // 6 o más renglones
+                    if (palabraMasLarga >= 13) {
+                        fontSizeNombre = '7.8pt'; // 13+ caracteres
+                    } else if (palabraMasLarga === 12) {
+                        fontSizeNombre = '8.8pt'; // 12 caracteres
+                    } else if (palabraMasLarga === 11) {
+                        fontSizeNombre = '10pt';   // 11 caracteres
+                    } else if (palabraMasLarga === 10) {
+                        fontSizeNombre = '11.2pt';   // 10 caracteres
+                    } else if (palabraMasLarga === 9){
+                        fontSizeNombre = '12.3pt';   // 9 caracteres
+                    }else {
+                        fontSizeNombre = '12.8pt'; // 1-8 caracteres
+                    }
+                } else if (totalLineas === 5) {
+                    // 5 renglones
+                    if (palabraMasLarga >= 13) {
+                        fontSizeNombre = '9.4pt'; // 13+ caracteres
+                    } else if (palabraMasLarga === 12) {
+                        fontSizeNombre = '10.4pt'; // 12 caracteres
+                    } else if (palabraMasLarga === 11) {
+                        fontSizeNombre = '11.8pt';   // 11 caracteres
+                    } else if (palabraMasLarga === 10) {
+                        fontSizeNombre = '12.6pt';   // 10 caracteres
+                    } else if (palabraMasLarga === 9){
+                        fontSizeNombre = '13.1pt';   // 9 caracteres
+                    }else {
+                        fontSizeNombre = '13pt'; // 1-8 caracteres
+                    }
+                } else if (totalLineas === 4) {
+                    // 4 renglones
+                    if (palabraMasLarga >= 13) {
+                        fontSizeNombre = '9.4pt'; // 13+ caracteres
+                    } else if (palabraMasLarga === 12) {
+                        fontSizeNombre = '10.4pt'; // 12 caracteres
+                    } else if (palabraMasLarga === 11) {
+                        fontSizeNombre = '11.6pt';   // 11 caracteres
+                    } else if (palabraMasLarga === 10) {
+                        fontSizeNombre = '12.6pt';   // 10 caracteres
+                    } else if (palabraMasLarga === 9){
+                        fontSizeNombre = '13.2pt';   // 9 caracteres
+                    }else {
+                        fontSizeNombre = '14pt'; // 1-8 caracteres
+                    }
+                } else if (totalLineas === 3) {
+                    // 3 renglones
+                    if (palabraMasLarga >= 13) {
+                        fontSizeNombre = '9.2pt'; // 13+ caracteres
+                    }else if (palabraMasLarga === 12) {
+                            fontSizeNombre = '10.1pt'; // 12 caracteres
+                    } else if (palabraMasLarga === 11) {
+                        fontSizeNombre = '10.6pt';   // 11 caracteres
+                    } else if (palabraMasLarga === 10) {
+                        fontSizeNombre = '11.9pt';   // 10 caracteres
+                    } else if (palabraMasLarga === 9){
+                        fontSizeNombre = '12.8pt';   // 9 caracteres
+                    }else if (palabraMasLarga === 8){
+                        fontSizeNombre = '13.8pt';   // 8 caracteres
+                    }else if (palabraMasLarga === 7){
+                        fontSizeNombre = '15pt';   // 7 caracteres
+                    }else if (palabraMasLarga === 6){
+                        fontSizeNombre = '18pt';   // 6 caracteres
+                    }else if (palabraMasLarga === 5){
+                            fontSizeNombre = '20pt';   // 5 caracteres
+                    }else {
+                        fontSizeNombre = '21pt'; // 1-4 caracteres
+                    }
+                } else if (totalLineas === 2) {
+                    // 2 renglones
+                    if (palabraMasLarga >= 11) {
+                        fontSizeNombre = '11pt';   // 11+ caracteres
+                    } else if (palabraMasLarga >= 9) {
+                        fontSizeNombre = '12pt';   // 9-10 caracteres
+                    } else {
+                        fontSizeNombre = '13pt';   // 1-8 caracteres
+                    }
+                } else {
+                    // 1 renglón
+                    if (palabraMasLarga >= 11) {
+                        fontSizeNombre = '12pt';   // 11+ caracteres
+                    } else if (palabraMasLarga >= 9) {
+                        fontSizeNombre = '13pt';   // 9-10 caracteres
+                    } else {
+                        fontSizeNombre = '14pt';   // 1-8 caracteres
+                    }
+                }
+                // Usar palabrasUnidas para el formato final con ajuste de interlineado
+                const lineHeight = Math.min(1.1, 1.2 - (totalLineas * 0.05)); // Reducir interlineado para múltiples líneas
+                const nombreEnLineas = palabrasUnidas.map((p, index) => {
+                    // Aplicar el mismo tamaño de fuente a todas las líneas
+                    return `<span style="display:block;text-align:left !important;font-size:${fontSizeNombre} !important;line-height:${lineHeight} !important;margin-bottom:0.05cm;">${p}</span>`;
+                }).join('');
                 const colorArea = obtenerColorArea(empleado);
                 const colorTextoDatos = obtenerColorTextoDatos(empleado);
                 
@@ -1107,9 +1689,9 @@ $(document).ready(function () {
                                 "<div style=\"background:white;padding:0.05cm;display:inline-block;\">" +
                                     "<img src=\"" + logoAreaUrl + "\" alt=\"Logo Área\" class=\"gafete-logo-area\" style=\"max-width:1.8cm;max-height:1.6cm;object-fit:contain;display:block;margin-top:0.02cm;\">" +
                                 "</div>" +
-                                "<div style=\"display:flex;flex-direction:column;align-items:flex-end;gap:0.05cm;max-width:2.8cm;\">" +
-                                    "<div style=\"background:white;padding:0.05cm;display:inline-block;\">" +
-                                        "<img src=\"" + logoEmpresaUrl + "\" alt=\"Logo Empresa\" class=\"gafete-logo-empresa\" style=\"max-width:2.5cm;max-height:1.4cm;object-fit:contain;display:block;\">" +
+                                "<div style=\"display:flex;flex-direction:column;align-items:flex-end;gap:0.05cm;max-width:3.0cm;\">" +
+                                    "<div style=\"background:transparent;padding:0.05cm;display:inline-block;\">" +
+                                        "<img src=\"" + logoEmpresaUrl + "\" alt=\"Logo Empresa\" class=\"gafete-logo-empresa\" style=\"max-width:2.8cm;max-height:1.8cm;object-fit:contain;display:block;\">" +
                                     "</div>" +
                                 "</div>" +
                             "</div>";
@@ -1118,10 +1700,13 @@ $(document).ready(function () {
                         const logoSrc = logoAreaUrl || logoEmpresaUrl;
                         const logoAlt = logoAreaUrl ? 'Logo Área' : 'Logo Empresa';
                         const logoClass = logoAreaUrl ? 'gafete-logo-area' : 'gafete-logo-empresa';
+                        const maxWidth = logoAreaUrl ? '2.5cm' : '2.8cm';
+                        const maxHeight = logoAreaUrl ? '1.6cm' : '1.8cm';
+                        const bgColor = logoAreaUrl ? 'white' : 'transparent';
                         logoHtml = 
                             "<div style=\"width:100%;display:flex;justify-content:center;align-items:flex-start;margin-bottom:0.06cm;\">" +
-                                "<div style=\"background:white;padding:0.05cm;display:inline-block;\">" +
-                                    "<img src=\"" + logoSrc + "\" alt=\"" + logoAlt + "\" class=\"" + logoClass + "\" style=\"max-width:2.5cm;max-height:1.6cm;object-fit:contain;display:block;margin-top:0.02cm;\">" +
+                                "<div style=\"background:" + bgColor + ";padding:0.05cm;display:inline-block;\">" +
+                                    "<img src=\"" + logoSrc + "\" alt=\"" + logoAlt + "\" class=\"" + logoClass + "\" style=\"max-width:" + maxWidth + ";max-height:" + maxHeight + ";object-fit:contain;display:block;margin-top:0.02cm;\">" +
                                 "</div>" +
                             "</div>";
                     } else {
@@ -1135,55 +1720,184 @@ $(document).ready(function () {
                 
                 let camposAdicionales = '';
                 
-                // Si el empleado tiene IMSS, mostrar todos los campos (diseño estándar)
+                // Si el empleado tiene IMSS, mostrar todos los campos con posición absoluta
+                // Ajustar posiciones y tamaños según el número de líneas del nombre
+                let topArea, topClave, topBiometrico, fontSize;
+                
                 if (tieneIMSS) {
+                    if (totalLineas === 3) {
+                        // 3 líneas: ajustar según caracteres
+                        if (palabraMasLarga === 5) {
+                            // 5 caracteres: bajar todos los datos
+                            topArea = '3cm';
+                            topClave = '4.4cm';
+                            topBiometrico = '5cm';
+                            fontSize = '9.2pt';
+                        } else if (palabraMasLarga === 6) {
+                            // 6 caracteres: bajar todos los datos y usar tamaño de fuente normal
+                            topArea = '2.8cm';
+                            topClave = '4.4cm';
+                            topBiometrico = '5cm';
+                            fontSize = '9.4pt';
+                        } else if (palabraMasLarga === 7) {
+                            // 7 caracteres: bajar Clave y Biométrico
+                            topArea = '2.6cm';
+                            topClave = '4.2cm';
+                            topBiometrico = '4.9cm';
+                            fontSize = '9.4pt';
+                        } else if (palabraMasLarga === 8) {
+                            // 7 caracteres: bajar Clave y Biométrico
+                            topArea = '2.3cm';
+                            topClave = '4cm';
+                            topBiometrico = '4.8cm';
+                            fontSize = '9.4pt';
+                        } else {                            
+                            // Si la palabra más larga tiene 9 caracteres, bajar Clave y Biométrico
+                            if (palabraMasLarga >= 9) {
+                                topArea ='2.3cm';
+                                topClave = '4cm';
+                                topBiometrico = '4.8cm';
+                                fontSize = '9.4pt';
+                            }
+                            fontSize = '9.4pt';
+                        }
+                    } else if (totalLineas === 4) {
+                        // 4 líneas: subir el área
+                        topArea = '2.7cm';
+                        topClave = '4.3cm';
+                        topBiometrico = '5.2cm';
+                        fontSize = '9.1pt';
+                    } else if (totalLineas === 5) {
+                        // 5 líneas: ajustar según caracteres
+                        if (palabraMasLarga === 7) {
+                            // 7 caracteres: subir más el área
+                            topArea = '2.9cm';
+                            topClave = '4.4cm';
+                            topBiometrico = '5.1cm';
+                        } else if (palabraMasLarga === 8) {
+                            // 8 caracteres: bajar datos y subir área
+                            topArea = '3cm';
+                            topClave = '4.5cm';
+                            topBiometrico = '5.3cm';
+                        } else if (palabraMasLarga === 9) {
+                            // 9 caracteres: subir el área
+                            topArea = '2.9cm';
+                            topClave = '4.4cm';
+                            topBiometrico = '5.2cm';
+                        } else {
+                            // Otros casos
+                            topArea = '3cm';
+                            topClave = '4.2cm';
+                            topBiometrico = '5.1cm';
+                        }
+                        fontSize = '8.7pt';
+                    } else if (totalLineas === 6) {
+                        // 6 líneas: posiciones actuales
+                        topArea = '3.2cm';
+                        topClave = '4.6cm';
+                        topBiometrico = '5.1cm';
+                        fontSize = '8.7pt';
+                    } else {
+                        // 7+ líneas: posiciones actuales
+                        topArea = '3cm';
+                        topClave = '4.2cm';
+                        topBiometrico = '5.1cm';
+                        fontSize = '8pt';
+                    }
+                    
                     camposAdicionales = 
-                        "<div style=\"font-size:8pt !important;text-align:left;padding-left:0.1cm;margin-top:0.2cm;\"><strong style='color:" + colorTextoDatos + ";font-size:8pt !important;'>Clave:</strong> " +
+                        "<div style=\"position:absolute;top:" + topArea + ";left:0cm;font-size:" + fontSize + " !important;text-align:left !important;\"><strong style='color:" + colorTextoDatos + ";font-size:" + fontSize + " !important;'>Área:</strong><br>" +
+                         "<span class='dato-gafete-frente' style='color:" + colorTextoDatos + ";text-align:left !important;font-size:" + fontSize + " !important;line-height:0.9 !important;'>" + departamento + "</span></div>" +
+                        "<div style=\"position:absolute;top:" + topClave + ";left:0cm;font-size:" + fontSize + " !important;text-align:left;\"><strong style='color:" + colorTextoDatos + ";font-size:" + fontSize + " !important;'>Clave:</strong> " +
                          "<span class='dato-gafete-frente' style='color:" + colorTextoDatos + ";'>" + empleado.clave_empleado + "</span></div>" +
-                        "<div style=\"font-size:8pt !important;text-align:left;padding-left:0.1cm;margin-top:0.2cm;\"><strong style='color:" + colorTextoDatos + ";font-size:8pt !important;'>Sexo:</strong> " +
-                         "<span class='dato-gafete-frente' style='color:" + colorTextoDatos + ";'>" + (empleado.sexo ? empleado.sexo : 'N/A') + "</span></div>";
+                        "<div style=\"position:absolute;top:4.8cm;right:-1.8cm;font-size:8.6pt !important;text-align:left;\"><strong style='color:" + colorTextoDatos + ";font-size:8.6pt!important;'>Sexo:</strong> " +
+                         "<span class='dato-gafete-frente' style='color:" + colorTextoDatos + ";'>" + (empleado.sexo ? empleado.sexo : 'N/A') + "</span></div>" +
+                        "<div style=\"position:absolute;top:" + topBiometrico + ";left:0cm;font-size:" + fontSize + " !important;text-align:left;white-space:nowrap;\"><strong style='color:" + colorTextoDatos + ";font-size:" + fontSize + " !important;display:inline;'>Biométrico:</strong> " +
+                         "<span class='dato-gafete-frente' style='color:" + colorTextoDatos + ";display:inline;'>" + (empleado.biometrico ? empleado.biometrico : 'N/A') + "</span></div>";
                 }
-                // Si no tiene IMSS, no mostrar campos adicionales (diseño simplificado)
+                
                 
                 // Aplicar rotación solo si tiene IMSS
                 const estiloRotacion = tieneIMSS ? 'transform: rotate(180deg);' : '';
+                
+                // Definir el HTML del marco de la foto según si tiene IMSS o no
+                let fotoHtmlContenedor = '';
+                if (tieneIMSS) {
+                    // Para gafetes con IMSS: posición absoluta fija
+                    fotoHtmlContenedor = "<div class=\"gafete-foto\" style=\"position:absolute;top:2.4cm;right:0.1cm;z-index:10;\">" +
+                        "<div class=\"marco-foto\" style=\"width:2.5cm !important;height:3cm !important;border:" + (empleado.ruta_foto && incluirFoto ? "none" : "1px solid #000") + ";border-radius:0;margin:0;overflow:hidden;display:flex;align-items:center;justify-content:center;\">" + fotoHtml + "</div>" +
+                    "</div>";
+                } else {
+                    // Para gafetes sin IMSS: dentro del contenedor flex
+                    fotoHtmlContenedor = "<div class=\"gafete-foto\" style=\"position:absolute;top:2.9cm;right:0.1cm;z-index:10;\">" +
+                        "<div class=\"marco-foto\" style=\"width:2.5cm !important;height:3cm !important;border:" + (empleado.ruta_foto && incluirFoto ? "none" : "1px solid #000") + ";border-radius:0;margin:0;overflow:hidden;display:flex;align-items:center;justify-content:center;\">" + fotoHtml + "</div>" +
+                    "</div>";
+                }
+                
+                // Crear elementos con posición absoluta para gafetes con IMSS (al mismo nivel que la foto)
+                let elementosAbsolutos = '';
+                if (tieneIMSS) {
+                    // Ajustar posición del nombre según número de líneas
+                    let topNombre = totalLineas === 3 ? '2cm' : '1.8cm';
+                    
+                    elementosAbsolutos = 
+                        "<div style=\"position:absolute;top:" + topNombre + ";left:0.2cm;width:3cm;\">" +
+                            "<div style='position: absolute; top: 0cm;'><strong style='color:" + colorTextoDatos + ";font-size:8pt !important;text-align:left !important;'>Trabajador:</strong></div>" +
+                            "<div style='margin-top: 0.3cm;'><span class='nombre-gafete-frente' style='color:" + colorTextoDatos + ";text-align:left !important;font-size:9.5pt !important;font-weight:800;line-height:1.1;display:block;'>" + nombreEnLineas + "</span></div>" +
+                        "</div>" +
+                        vigenciaHtml +
+                        "<div class=\"gafete-sello\" style=\"position:absolute;top:5.6cm;right:0.1cm;text-align:center;font-size:5.5pt !important;font-weight:bold;letter-spacing:0.5px;width:2.5cm;\">" +
+                            "Sello de autenticidad" +
+                        "</div>" +
+                        "<div style=\"position:absolute;top:6.2cm;right:0.2cm;text-align:left;font-size:7.5pt !important;font-weight:bold;letter-spacing:0.5px;color:" + colorTextoDatos + ";width:2.5cm;\">" +
+                            "Casillero: " + empleado.num_casillero +
+                        "</div>";
+                }
+
                 const $frente = $(
-                    "<div class=\"gafete\" style=\"border:2px solid " + colorArea + " !important;height:9cm !important;min-height:9cm !important;max-height:9cm !important;width:6cm !important;min-width:6cm !important;max-width:6cm !important;font-family:Segoe UI Black;margin-bottom:0!important;margin-top:0!important;padding:0.2cm !important;font-size:7pt !important;" + estiloRotacion + "\">" +
-                        logoHtml +         
-                        "<div class=\"gafete-body\" style=\"font-size:7pt;display:flex;flex-direction:row;align-items:flex-start;gap:0.2cm;min-height:5.5cm;" + (tieneIMSS ? '' : 'justify-content:center;align-items:flex-end;padding-bottom:0.2cm !important;') + "\">" +
-                            "<div style=\"flex:1;display:flex;flex-direction:column;justify-content:flex-start;align-items:flex-start;gap:0.1cm;\">" +
-                                "<div style=\"font-size:13px !important;font-weight:800;text-align:left !important;padding-left:0.1cm;padding-top:0.2cm;padding-bottom:0.05cm;line-height:1.1;color:" + colorTextoDatos + ";\">" +
-                                    "<strong style='color:" + colorTextoDatos + ";font-size:8pt !important;text-align:left !important;'>Trabajador:</strong>" +
-                                    "<span class='nombre-gafete-frente' style='color:" + colorTextoDatos + ";text-align:left !important;font-size:" + fontSizeNombre + " !important;font-weight:800;line-height:1.1;display:block;'>" + nombreEnLineas + "</span>" +
-                                "</div>" +
-                                "<div style=\"font-size:7pt;text-align:left !important;padding-left:0.1cm;margin-top:0.05cm;\"><strong style='color:" + colorTextoDatos + ";font-size:8pt !important;'>Área:</strong><br>" +
-                                 "<span class='dato-gafete-frente' style='color:" + colorTextoDatos + ";text-align:left !important;font-size:" + fontSizeDepto + " !important;'>" + departamento + "</span></div>" +
+                    "<div class=\"gafete\" style=\"border:2px solid " + colorArea + " !important;height:9cm !important;min-height:9cm !important;max-height:9cm !important;width:6cm !important;min-width:6cm !important;max-width:6cm !important;font-family:Segoe UI Black;margin-bottom:0!important;margin-top:0!important;padding:0cm !important;font-size:7pt !important;position:relative;" + estiloRotacion + "\">" +
+                        logoHtml +
+                        (tieneIMSS ? fotoHtmlContenedor : '') +
+                        (tieneIMSS ? elementosAbsolutos : '') +
+                        "<div class=\"gafete-body\" style=\"font-size:7pt;display:flex;flex-direction:row;align-items:flex-start;gap:0.1cm;min-height:5.5cm;height:5.5cm;" + (tieneIMSS ? '' : 'justify-content:flex-start;align-items:flex-end;padding-bottom:0.1cm !important;') + "\">" +
+                            "<div style=\"" + (tieneIMSS ? 'width:3cm;height:5.5cm;position:relative;' : 'flex:1;display:flex;flex-direction:column;justify-content:flex-start;align-items:flex-start;gap:0.05cm;') + "text-align:left !important;\">" +
+                            //nombre sin imss    
+                            (tieneIMSS ? '' : 
+                                    "<div style=\"position: absolute; top:" + (totalLineas >= 5 ? '1.2cm' : '1.9cm') + "; left:0.2cm; width:3cm; font-size:13px !important;font-weight:800;text-align:left !important;line-height:1.1;color:" + colorTextoDatos + ";\">" +
+                                        "<div style='margin-bottom: 0.05cm;text-align:left !important;'><strong style='color:" + colorTextoDatos + ";font-size:8pt !important;text-align:left !important;'>Trabajador:</strong></div>" +
+                                        "<div style='text-align:left !important;'><span class='nombre-gafete-frente' style='color:" + colorTextoDatos + ";text-align:left !important;font-size:10pt !important;font-weight:800;line-height:1.1;display:block;'>" + nombreEnLineas + "</span></div>" +
+                                    "</div>"
+                                ) +
+                                (tieneIMSS ? '' : 
+                                    "<div style=\"position:absolute;top:4.8cm;left:0.2cm;width:2.8cm;font-size:7pt;text-align:left !important;\"><strong style='color:" + colorTextoDatos + ";font-size:8pt !important;'>Área:</strong><br>" +
+                                     "<span class='dato-gafete-frente' style='color:" + colorTextoDatos + ";text-align:left !important;font-size:" + fontSizeDepto + " !important;word-wrap:break-word;white-space:normal;display:block;'>" + departamento + "</span></div>"
+                                ) +
                                 camposAdicionales +
                             "</div>" +
-                                "<div style=\"flex:0 0 2.5cm;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;\">" +
-                                vigenciaHtml +
-                                "<div class=\"gafete-foto\" style=\"margin:0.1cm 0;\">" +
-                                    "<div class=\"marco-foto\" style=\"width:2.5cm !important;height:3cm !important;border:" + (empleado.ruta_foto && incluirFoto ? "none" : "1px solid #000") + ";border-radius:0;margin:0 auto;overflow:hidden;display:flex;align-items:center;justify-content:center;\">" + fotoHtml + "</div>" +
-                                "</div>" +
                                 (tieneIMSS ? 
-                                    "<div class=\"gafete-sello\" style=\"margin-top:0.1cm;text-align:center;font-size:5pt !important;font-weight:bold;letter-spacing:0.5px;\">" +
-                                        "Sello de autenticidad" +
-                                    "</div>" +
-                                    "<div style=\"margin-top:0.3cm;text-align:left;font-size:7pt !important;font-weight:bold;letter-spacing:0.5px;color:" + colorTextoDatos + ";\">" +
-                                        "Casillero: " + empleado.num_casillero +
+                                    // Para gafetes CON IMSS: espacio vacío ya que los elementos están posicionados absolutamente
+                                    "<div style=\"flex:0 0 2.5cm;\"></div>"
+                                : 
+                                    // Contenedor para gafetes SIN IMSS
+                                    "<div style=\"flex:0 0 2.5cm;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-start;margin-left:0.5cm;\">" +
+                                        vigenciaHtml +
+                                        fotoHtmlContenedor +
                                     "</div>"
-                                 : '') +
-                            "</div>" +
+                                ) +
                         "</div>" +
-                        "<div class=\"gafete-nombre-rect\" style=\"margin-top:auto;display:flex;justify-content:center;align-items:center;" + (tieneIMSS ? '' : 'margin-top:0.6cm;') + "\">" +
-                                    "<div style=\"width:100%;background:" + colorArea + ";border:none;border-radius:4px;padding:0.1cm 0;text-align:center;font-size:" + fontSizeRectangulo + 
-                                    " !important;font-weight:bold;letter-spacing:0.5px;color:" + 
+                        "<div class=\"gafete-nombre-rect\" style=\"" + 
+                            (tieneIMSS ? 
+                                'position:absolute;bottom:-0.5cm;left:0;right:0;width:100%;height:0.8cm;display:flex;align-items:flex-end;' : 
+                                'position:absolute;bottom:-1.8cm;left:0;right:0;width:100%;height:0.8cm;display:flex;align-items:flex-end;') + 
+                            "\">" +
+                                    "<div style=\"width:100%;background:" + colorArea + ";border:none;border-radius:4px 4px 0 0;padding:0.1cm 0;text-align:center !important;font-size:" + fontSizeRectangulo + 
+                                    " !important;font-weight:bold;letter-spacing:0.5px;white-space:nowrap;overflow:hidden;color:" + 
                                     (empleado.nombre_area ? 
                                         (empleado.nombre_area.toLowerCase().includes('huasteca') ? '#082B11' : 
                                          empleado.nombre_area.toLowerCase().includes('pilar') ? '#201433' : 
                                          '#fff') 
                                     : '#fff') + 
-                                    ";margin-top:0.1cm;\">" + empleado.nombre + "</div>" +
+                                    ";position:absolute;bottom:0;left:0;right:0;\">" + empleado.nombre + "</div>" +
                         "</div>" +
                     "</div>"
                 );
@@ -1191,90 +1905,109 @@ $(document).ready(function () {
                 // Calcular tamaño de fuente para domicilio de trabajador
                 const domicilioTrabajador = empleado.domicilio ? empleado.domicilio : 'N/A';
                 const lenDomicilio = domicilioTrabajador.length;
-                const fontSizeDomicilioTrabajador = lenDomicilio > 90 ? '5.3pt' : (lenDomicilio > 81 ? '5.8pt' : '6.3pt');
+                const fontSizeDomicilioTrabajador = lenDomicilio > 80 ? '5.7pt' : 
+                                    (lenDomicilio > 70 ? '6.9pt' : 
+                                     (lenDomicilio > 60 ? '6.9pt' : 
+                                      (lenDomicilio > 50 ? '6.9pt' : '7pt')));
                 // Calcular tamaño de fuente dinámico para Enfermedades/Alergias
                 // >125 caracteres => 5.7pt, >110 => 6pt, si no => 6.5pt
                 const lenEA = (empleado.enfermedades_alergias ? empleado.enfermedades_alergias.length : 0);
-                const fontSizeEnfermedadesAlergias = lenEA > 125 ? '5.7pt' : (lenEA > 110 ? '6pt' : '6.5pt');
+                const fontSizeEnfermedadesAlergias = lenEA > 125 ? '6.3pt' : (lenEA > 110 ? '6.6pt' : '6.9pt');
+                
+                // Definir colores alternados para los fondos
+                const colorGrisClaro = '#D0D0D0';
+                const colorVerdeClaro = '#D7F5DE';
+                
+                // Calcular tamaño de fuente para nombre de contacto según número de palabras
+                const nombreContacto = empleado.emergencia_nombre_contacto ? empleado.emergencia_nombre_contacto : 'N/A';
+                const numPalabrasContacto = nombreContacto.trim().split(/\s+/).length;
+                const fontSizeContacto = numPalabrasContacto >= 2 ? '5.5pt' : '7pt';
                 
                 const datosAtras = 
-                    "<div style='margin-bottom:0.03cm;'>" +
-                       "<span style='font-size:7pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;line-height:1 !important;'>Domicilio de Trabajador:</span><br>" +
-                        "<span style='font-size:" + fontSizeDomicilioTrabajador + " !important;color:" + colorTextoDatos + ";'>" + domicilioTrabajador + "</span>" +
+                    
+                    "<div style='background:" + colorVerdeClaro + ";padding:0.03cm 0.1cm;margin-bottom:0.15cm;border-radius:4px;'>" +
+                       "<div style='font-size:7.7pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;line-height:1.2 !important;margin-bottom:0.02cm;'>Domicilio de Trabajador:</div>" +
+                       "<div style='font-size:" + fontSizeDomicilioTrabajador + " !important;color:" + colorTextoDatos + ";line-height:1.2;'>" + domicilioTrabajador + "</div>" +
                     "</div>" +
-                    "<div style='display:flex;justify-content:space-between;gap:0.12cm;margin-bottom:0.03cm !important;'>" +
-                        "<div style='flex:1;'>" +
-                            "<span style='font-size:7pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;line-height:1 !important;'>IMSS:</span><br>" +
-                            "<span style='font-size:6.5pt !important;color:" + colorTextoDatos + ";line-height:1 !important;'>" + (empleado.imss ? empleado.imss : 'N/A') + "</span>" +
+                    
+                    "<div style='display:flex;justify-content:space-between;gap:0.1cm;margin-bottom:0.15cm; margin-top:0.11cm'>" +
+                        "<div style='flex:1;background:" + colorVerdeClaro + ";padding:0.03cm 0.1cm;border-radius:4px;'>" +
+                            "<div style='font-size:7.7pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;line-height:1.2 !important;margin-bottom:0.02cm; margin-top:0.17cm; white-space:nowrap;'>IMSS:</div>" +
+                            "<div style='font-size:7pt !important;color:" + colorTextoDatos + ";line-height:1.2;'>" + (tieneIMSS && empleado.imss ? empleado.imss : 'N/A') + "</div>" +
                         "</div>" +
-                        "<div style='flex:1;'>" +
-                            "<span style='font-size:7pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;line-height:1 !important;'>CURP:</span><br>" +
-                            "<span style='font-size:6.5pt !important;color:" + colorTextoDatos + ";line-height:1 !important;'>" + (empleado.curp ? empleado.curp : 'N/A') + "</span>" +
-                        "</div>" +
-                    "</div>" +
-                    "<div style='margin-bottom:0.03cm !important;'>" +
-                        "<span style='font-size:7pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;line-height:1 !important;'>Fecha de nacimiento:</span><br>" +
-                        "<span style='font-size:6.5pt !important;color:" + colorTextoDatos + ";line-height:1 !important;'>" + (empleado.fecha_nacimiento ? formatearFechaYMDaDMY(empleado.fecha_nacimiento) : 'N/A') + "</span>" +
-                    "</div>" +
-                    "<div style='margin-bottom:0.03cm !important;'>" +
-                        "<span style='font-size:7pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;line-height:1 !important;'>Enfermedades/Alergias:</span><br>" +
-                        "<span style='font-size:" + fontSizeEnfermedadesAlergias + " !important;color:" + colorTextoDatos + ";line-height:1 !important;'>" + (empleado.enfermedades_alergias ? empleado.enfermedades_alergias : 'N/A') + "</span>" +
-                    "</div>" +
-                    "<div style='display:flex;justify-content:space-between;gap:0.12cm;margin-bottom:0.03cm !important;'>" +
-                        "<div style='flex:1;'>" +
-                            "<span style='font-size:7pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;line-height:1 !important;'>Grupo sanguíneo:</span><br>" +
-                            "<span style='font-size:6.5pt !important;color:" + colorTextoDatos + ";line-height:1 !important;'>" + (empleado.grupo_sanguineo ? empleado.grupo_sanguineo : 'N/A') + "</span>" +
-                        "</div>" +
-                        "<div style='flex:1;'>" +
-                            "<span style='font-size:7pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;line-height:1 !important;'>Fecha de ingreso:</span><br>" +
-                            "<span style='font-size:6.5pt !important;color:" + colorTextoDatos + ";line-height:1 !important;'>" + (empleado.fecha_ingreso ? formatearFechaYMDaDMY(empleado.fecha_ingreso) : 'N/A') + "</span>" +
+                        "<div style='flex:1;background:" + colorVerdeClaro + ";padding:0.03cm 0.1cm;border-radius:4px;'>" +
+                            "<div style='font-size:7.7pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;line-height:1.2 !important;margin-bottom:0.02cm;white-space:nowrap;'>CURP:</div>" +
+                            "<div style='font-size:7pt !important;color:" + colorTextoDatos + ";line-height:1.2;'>" + (empleado.curp ? empleado.curp : 'N/A') + "</div>" +
                         "</div>" +
                     "</div>" +
-                    "<div style='background:" + colorHexToRgba(colorArea, 0.12) + ";border-radius:4px;padding:0.03cm 0.05cm;margin-top:0.03cm;width:100%;box-sizing:border-box;'>" +
-                        "<div style=\"margin-bottom:0.03cm !important;\"><span style=\"font-size:7pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;\">En caso de emergencia llamar a:</span></div>" +
-                        "<div style='text-align:center;margin-bottom:0.01cm;'>" +
-                            "<span style='font-size:" + 
-                            (empleado.emergencia_nombre_contacto && empleado.emergencia_nombre_contacto.trim().split(/\s+/).length >= 2 ? '6.2pt' : '6.5pt') + 
-                            " !important;color:" + colorTextoDatos + ";'>" +
-                                (empleado.emergencia_parentesco ? empleado.emergencia_parentesco : 'N/A') + " - " + (empleado.emergencia_nombre_contacto ? empleado.emergencia_nombre_contacto : 'N/A') +
-                            "</span>" +
+                    // 3. Fecha de nacimiento - Verde claro
+                    "<div style='background:" + colorVerdeClaro + ";padding:0.03cm 0.1cm;margin-bottom:0.15cm;border-radius:4px;margin-top:0.11cm;'>" +
+                        "<div style='font-size:7.7pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;line-height:1.2 !important;margin-bottom:0.02cm;white-space:nowrap;'>Fecha de nacimiento:</div>" +
+                        "<div style='font-size:7pt !important;color:" + colorTextoDatos + ";line-height:1.2;'>" + (empleado.fecha_nacimiento ? formatearFechaYMDaDMY(empleado.fecha_nacimiento) : 'N/A') + "</div>" +
+                    "</div>" +
+                    // 4. Enfermedades/Alergias - Gris claro
+                    "<div style='background:" + colorVerdeClaro + ";padding:0.03cm 0.1cm;margin-bottom:0.15cm;border-radius:4px;margin-top:0.11cm;'>" +
+                        "<div style='font-size:7.7pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;line-height:1.2 !important;margin-bottom:0.02cm;white-space:nowrap;'>Enfermedades/Alergias:</div>" +
+                        "<div style='font-size:" + fontSizeEnfermedadesAlergias + " !important;color:" + colorTextoDatos + ";line-height:1.2;'>" + (empleado.enfermedades_alergias ? empleado.enfermedades_alergias : 'N/A') + "</div>" +
+                    "</div>" +
+                    // 5. Grupo sanguíneo (Verde claro) y Fecha de ingreso/ reingreso (Gris claro) - Colores alternados
+                    "<div style='display:flex;justify-content:space-between;gap:0.1cm;margin-bottom:0.11cm;'>" +
+                        "<div style='flex:1;background:" + colorVerdeClaro + ";padding:0.03cm 0.1cm;border-radius:4px; margin-top:0.13cm;'>" +
+                            "<div style='font-size:7.7pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;line-height:1.2 !important;margin-bottom:0.02cm;white-space:nowrap;'>Grupo sanguíneo:</div>" +
+                            "<div style='font-size:7pt !important;color:" + colorTextoDatos + ";line-height:1.2;'>" + (empleado.grupo_sanguineo ? empleado.grupo_sanguineo : 'N/A') + "</div>" +
                         "</div>" +
-                        "<div style='text-align:center;margin-bottom:0.01cm;'><span style='font-size:7pt !important;color:" + colorTextoDatos + ";'>" + formatearTelefono(empleado.emergencia_telefono) + "</span></div>" +
-                        "<div style='text-align:center;margin-bottom:0.01cm;'>" +
-                            "<span style='font-size:" + (empleado.emergencia_domicilio ? (empleado.emergencia_domicilio.length > 90 ? '5.3pt' : (empleado.emergencia_domicilio.length > 81 ? '5.8pt' : '6.3pt')) : '6.3pt') + " !important;color:" + colorTextoDatos + ";'>" + 
-                            (empleado.emergencia_domicilio ? empleado.emergencia_domicilio : 'N/A') + "</span>" +
+                        "<div style='flex:1;background:" + colorVerdeClaro + ";padding:0.03cm 0.1cm;border-radius:4px; margin-top:0.13cm;'>" +
+                            "<div style='font-size:7.7pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;line-height:1.2 !important;margin-bottom:0.02cm;white-space:nowrap;'>Fecha de ingreso:</div>" +
+                            "<div style='font-size:7pt !important;color:" + colorTextoDatos + ";line-height:1.2;'>" + (empleado.fecha_reingreso ? formatearFechaYMDaDMY(empleado.fecha_reingreso) : (empleado.fecha_ingreso ? formatearFechaYMDaDMY(empleado.fecha_ingreso) : 'N/A')) + "</div>" +
+                        "</div>" +
+                    "</div>" +
+                    // 6. Contacto de emergencia - Gris claro
+                    "<div style='background:" + colorGrisClaro + ";border-radius:4px;padding:0.03cm 0.1cm;margin-top:0.05cm;width:100%;box-sizing:border-box;'>" +
+                        "<div style=\"margin-bottom:0.03cm !important;\"><span style=\"font-size:7.5pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;\">En caso de emergencia llamar a:</span></div>" +
+                        "<div style='text-align:center;margin:0.05cm 0;'>" +
+                            "<div style='font-size:" + fontSizeContacto + " !important;color:" + colorTextoDatos + ";line-height:1.2;'>" +
+                                (empleado.emergencia_parentesco ? empleado.emergencia_parentesco : 'N/A') + " - " + nombreContacto +
+                            "</div>" +
+                        "</div>" +
+                        "<div style='text-align:center;margin:0.05cm 0;'>" +
+                            "<div style='font-size:7.3pt !important;color:" + colorTextoDatos + ";line-height:1.2;'>" + formatearTelefono(empleado.emergencia_telefono) + "</div>" +
+                        "</div>" +
+                        "<div style='text-align:center;margin:0.05cm 0;'>" +
+                            "<div style='font-size:" + (empleado.emergencia_domicilio ? (empleado.emergencia_domicilio.length > 80 ? '5.6pt' : (empleado.emergencia_domicilio.length > 70 ? '6.5pt' : (empleado.emergencia_domicilio.length > 60 ? '6.5pt' : (empleado.emergencia_domicilio.length > 50 ? '7pt' : '7pt')))) : '7pt') + " !important;color:" + colorTextoDatos + ";line-height:1.2;'>" + 
+                            (empleado.emergencia_domicilio ? empleado.emergencia_domicilio : 'N/A') + "</div>" +
                         "</div>" +
                     "</div>";
-                // Lógica de posicionamiento inteligente de logos para el reverso (solo para empleados con IMSS)
+                // Lógica personalizada para el reverso según la empresa
                 let logoReversoHtml = '';
                 
-                // Solo mostrar logos en el reverso si el empleado tiene IMSS
+                // Solo mostrar contenido en el reverso si el empleado tiene IMSS
                 if (tieneIMSS) {
-                    if (logoAreaUrl && logoEmpresaUrl) {
-                        // Ambos logos: distribuidos en los extremos
+                    // Verificar el nombre de la empresa
+                    const nombreEmpresa = empleado.nombre_empresa ? empleado.nombre_empresa.toLowerCase() : '';
+                    
+                    if (nombreEmpresa.includes('citricos saao') || nombreEmpresa.includes('cítricos saao')) {
+                        // Para CITRICOS SAAO: Mostrar texto "SAAO" con fuente Mistral
                         logoReversoHtml = 
-                            "<div style=\"width:100%;display:flex;justify-content:space-between;align-items:center;margin-bottom:0.1cm;\">" +
-                                "<div style=\"background:white;padding:0.05cm;display:inline-block;\">" +
-                                    "<img src=\"" + logoAreaUrl + "\" alt=\"Logo Área\" class=\"gafete-logo-reverso-area\" style=\"max-width:1.8cm;max-height:1.8cm;object-fit:contain;display:block;\">" +
-                                "</div>" +
-                                "<div style=\"background:white;padding:0.05cm;display:inline-block;\">" +
-                                    "<img src=\"" + logoEmpresaUrl + "\" alt=\"Logo Empresa\" class=\"gafete-logo-reverso-empresa\" style=\"max-width:2.8cm;max-height:1.8cm;object-fit:contain;display:block;\">" +
+                            "<div style=\"width:100%;display:flex;justify-content:center;align-items:center;margin-bottom:0cm;\">" +
+                                "<div style=\"font-family:'Mistral', cursive;font-size:45pt !important;font-weight:bold;color:#004D17;text-align:center;line-height:0.9;\">" +
+                                    "SAAO" +
                                 "</div>" +
                             "</div>";
-                    } else if (logoAreaUrl || logoEmpresaUrl) {
-                        // Solo un logo: centrado horizontalmente
-                        const logoSrc = logoAreaUrl || logoEmpresaUrl;
-                        const logoAlt = logoAreaUrl ? 'Logo Área' : 'Logo Empresa';
-                        const maxWidth = logoAreaUrl ? '1.8cm' : '2.8cm';
-                        const logoClass = logoAreaUrl ? 'gafete-logo-reverso-area' : 'gafete-logo-reverso-empresa';
-                        logoReversoHtml = 
-                            "<div style=\"width:100%;display:flex;justify-content:center;align-items:center;margin-bottom:0.1cm;\">" +
-                                "<div style=\"background:white;padding:0.05cm;display:inline-block;\">" +
-                                    "<img src=\"" + logoSrc + "\" alt=\"" + logoAlt + "\" class=\"" + logoClass + "\" style=\"max-width:" + maxWidth + ";max-height:1.8cm;object-fit:contain;display:block;\">" +
-                                "</div>" +
-                            "</div>";
+                    } else if (nombreEmpresa.includes('sb group') || nombreEmpresa.includes('sb')) {
+                        // Para SB GROUP: Mostrar solo el logo de la empresa (si existe)
+                        if (logoEmpresaUrl) {
+                            logoReversoHtml = 
+                                "<div style=\"width:100%;display:flex;justify-content:center;align-items:center;margin-bottom:-0.8cm;margin-top:-0.5cm;\">" +
+                                    "<div style=\"background:transparent;padding:0;display:inline-block;\">" +
+                                        "<img src=\"" + logoEmpresaUrl + "\" alt=\"Logo Empresa\" class=\"gafete-logo-reverso-empresa\" style=\"max-width:4cm;max-height:2.5cm;object-fit:contain;display:block;\">" +
+                                    "</div>" +
+                                "</div>";
+                        } else {
+                            // Sin logo: espacio mínimo
+                            logoReversoHtml = "<div style=\"width:100%;margin-bottom:0.1cm;\"></div>";
+                        }
                     } else {
-                        // Sin logos: espacio mínimo
+                        // Para otras empresas: comportamiento por defecto (sin logos)
                         logoReversoHtml = "<div style=\"width:100%;margin-bottom:0.1cm;\"></div>";
                     }
                 } else {
@@ -1283,106 +2016,117 @@ $(document).ready(function () {
                 }
                 
                 const $reverso = $(
-                    "<div class=\"gafete\" style=\"border:2px solid " + colorArea + " !important;height:9cm !important;min-height:9cm !important;max-height:9cm !important;width:6cm !important;min-width:6cm !important;max-width:6cm !important;font-family:Segoe UI Black;margin-bottom:0!important;margin-top:0!important;padding:0.2cm !important;font-size:6pt !important;overflow:hidden;box-sizing:border-box;\">" +
+                    "<div class=\"gafete\" style=\"border:2px solid " + colorArea + " !important;height:9cm !important;min-height:9cm !important;max-height:9cm !important;width:6cm !important;min-width:6cm !important;max-width:6cm !important;font-family:Segoe UI Black;margin-bottom:0!important;margin-top:0!important;padding:0.02cm 0.1cm 0.1cm 0.1cm !important;font-size:6pt !important;overflow:hidden;box-sizing:border-box;\">" +
                         logoReversoHtml +
-                        "<div class=\"gafete-body\" style=\"justify-content: flex-start; font-size:5pt;\">" +
+                        "<div class=\"gafete-body\" style=\"justify-content: flex-start; font-size:5pt; margin-top:-0.2cm;\">" +
                             "<div style='font-size:6pt;'>" +
                                 datosAtras.replace(/(Domicilio de trabajador:|Domicilio:|Domicilio de emergencia:)/g, '<span style=\"font-size:6pt;\">$1') + "</div>" +
                         "</div>" +
                     "</div>"
                 );
                 
-                // Crear contenedor columna con lógica condicional para IMSS
-                let $columna;
+            // Crear contenedor columna con lógica condicional para IMSS
+            // Verificar el estado del toggle individual de este empleado
+            const tieneIMSSIndividual = window.imssToggleState[empleado.id_empleado] !== undefined ? 
+                window.imssToggleState[empleado.id_empleado] : 
+                (empleado.imss && empleado.imss !== 'N/A' && empleado.imss.trim() !== '');
+            
+            let $columna;
+            
+            if (tieneIMSSIndividual) {
+                // Si tienen IMSS, generar gafete completo (frente y reverso)
+                $columna = $('<div style="display:flex;flex-direction:column;justify-content:flex-start;align-items:center;gap:0;margin:0;padding:0;width:6cm !important;min-width:6cm !important;max-width:6cm !important;height:19cm !important;min-height:19cm !important;max-height:19cm !important;position:relative;"></div>');
                 
-                if (tieneIMSS) {
-                    // Si tiene IMSS, generar gafete completo (frente y reverso)
-                    $columna = $('<div style="display:flex;flex-direction:column;justify-content:flex-start;align-items:center;gap:0;margin:0;padding:0;width:6cm !important;min-width:6cm !important;max-width:6cm !important;height:20cm !important;min-height:20cm !important;max-height:20cm !important;position:relative;"></div>');
-                } else {
-                    // Si NO tiene IMSS, generar contenedor más pequeño solo para el frente
-                    $columna = $('<div style="display:flex;flex-direction:column;justify-content:flex-start;align-items:center;gap:0;margin:0;padding:0;width:6cm !important;min-width:6cm !important;max-width:6cm !important;height:10cm !important;min-height:10cm !important;max-height:10cm !important;position:relative;"></div>');
-                }
-                
-                // Para empleados con IMSS, mostrar primero el reverso y luego el frente
-                if (tieneIMSS) {
-                    // Aplicar rotación de 180 grados solo al frente
-                    $frente.css({
-                        'transform': 'rotate(180deg)',
-                        'margin': '0 auto',
-                        'padding': '0',
-                        'width': '6cm !important',
-                        'min-width': '6cm !important',
-                        'max-width': '6cm !important',
-                        'height': '9.5cm !important',
-                        'min-height': '9.5cm !important',
-                        'max-height': '9.5cm !important',
-                        'position': 'relative',
-                        'display': 'block'
-                    });
-                    
-                    // El reverso se mantiene en su orientación normal
-                    $reverso.css({
-                        'margin': '0 auto',
-                        'padding': '0',
-                        'width': '6cm !important',
-                        'min-width': '6cm !important',
-                        'max-width': '6cm !important',
-                        'height': '9.5cm !important',
-                        'min-height': '9.5cm !important',
-                        'max-height': '9.5cm !important',
-                        'position': 'relative',
-                        'display': 'block'
-                    });
-                    
-                    // Agregar el frente primero (arriba) - rotado 180 grados
-                    $columna.append($frente);
-                    
-                    // Agregar un pequeño espacio entre frente y reverso
-                    $columna.append($('<div style="height:0.2cm;"></div>'));
-                    
-                    // Agregar el reverso después (abajo) - en orientación normal
-                    $columna.append($reverso);
-                } else {
-                    // Para empleados sin IMSS, solo mostrar el frente rotado 180 grados
-                    $frente.css({
-                        'margin': '0 auto',
-                        'padding': '0',
-                        'width': '6cm !important',
-                        'min-width': '6cm !important',
-                        'max-width': '6cm !important',
-                        'height': '9cm !important',
-                        'min-height': '9cm !important',
-                        'max-height': '9cm !important',
-                        'display': 'block'
-                    });
-                    $columna.append($frente);
-                }
-                $pagina.append($columna);
-            });
-            // Si hay menos de 3 empleados, rellenar columnas vacías para mantener el layout
-            for (let j = grupo.length; j < columnas; j++) {
-                // Usar altura variable dependiendo si hay empleados con IMSS en el grupo
-                const hayEmpleadosConIMSS = grupo.some(emp => emp.imss && emp.imss !== 'N/A' && emp.imss.trim() !== '');
-                const alturaColumna = hayEmpleadosConIMSS ? '20cm' : '10cm';
-                $pagina.append(`<div style="width:6cm;min-width:6cm;max-width:6cm;height:${alturaColumna};min-height:${alturaColumna};"></div>`);
-            }
-            $contenido.append($pagina);
-            // Ajustar tamaño de fuente del nombre si se desborda
-            setTimeout(() => {
-                $pagina.find('.nombre-gafete-frente').each(function () {
-                    const $nombre = $(this);
-                    const $marco = $nombre.closest('.gafete').find('.gafete-nombre-rect > div');
-                    // Ancho máximo permitido (en px, 5.5cm aprox a 96dpi)
-                    const maxWidthPx = 208; // 5.5cm * 37.8px/cm
-                    // Solo reducir si se desborda
-                    let fontSize = parseFloat($nombre.css('font-size'));
-                    while ($nombre[0].scrollWidth > maxWidthPx && fontSize > 7) {
-                        fontSize -= 0.5;
-                        $nombre.css('font-size', fontSize + 'pt');
-                    }
+                // Aplicar rotación de 180 grados solo al frente
+                $frente.css({
+                    'transform': 'rotate(180deg)',
+                    'margin': '0 auto',
+                    'padding': '0',
+                    'width': '6cm !important',
+                    'min-width': '6cm !important',
+                    'max-width': '6cm !important',
+                    'height': '9cm !important',
+                    'min-height': '9cm !important',
+                    'max-height': '9cm !important',
+                    'position': 'relative',
+                    'display': 'block'
                 });
-            }, 10);
+                
+                // El reverso se mantiene en su orientación normal
+                $reverso.css({
+                    'margin': '0 auto',
+                    'padding': '0',
+                    'width': '6cm !important',
+                    'min-width': '6cm !important',
+                    'max-width': '6cm !important',
+                    'height': '9cm !important',
+                    'min-height': '9cm !important',
+                    'max-height': '9cm !important',
+                    'position': 'relative',
+                    'display': 'block'
+                });
+                
+                // Agregar el frente primero (arriba) - rotado 180 grados
+                $columna.append($frente);
+                
+                // Reducir el espacio entre frente y reverso para que estén casi rozándose
+                $columna.append($('<div style="height:0.05cm;"></div>'));
+                
+                // Agregar el reverso después (abajo) - en orientación normal
+                $columna.append($reverso);
+            } else {
+                // Para empleados sin IMSS, generar contenedor más pequeño solo para el frente
+                $columna = $('<div style="display:flex;flex-direction:column;justify-content:flex-start;align-items:center;gap:0;margin:0;padding:0;width:6cm !important;min-width:6cm !important;max-width:6cm !important;height:10cm !important;min-height:10cm !important;max-height:10cm !important;position:relative;"></div>');
+                
+                // Para empleados sin IMSS, solo mostrar el frente rotado 180 grados
+                $frente.css({
+                    'margin': '0 auto',
+                    'padding': '0',
+                    'width': '6cm !important',
+                    'min-width': '6cm !important',
+                    'max-width': '6cm !important',
+                    'height': '9cm !important',
+                    'min-height': '9cm !important',
+                    'max-height': '9cm !important',
+                    'display': 'block'
+                });
+                $columna.append($frente);
+            }
+            $pagina.append($columna);
+        });
+        
+        // Rellenar espacios vacíos si es necesario
+        if (tienenIMSS) {
+            // Para empleados con IMSS, rellenar hasta 3 columnas
+            for (let j = grupo.length; j < 3; j++) {
+                $pagina.append(`<div style="width:6cm;min-width:6cm;max-width:6cm;height:20cm;min-height:20cm;"></div>`);
+            }
+        } else {
+            // Para empleados sin IMSS, rellenar hasta 6 espacios (2 filas x 3 columnas)
+            for (let j = grupo.length; j < 6; j++) {
+                $pagina.append(`<div style="width:6cm;min-width:6cm;max-width:6cm;height:10cm;min-height:10cm;"></div>`);
+            }
         }
+        
+        // Ajustar tamaño de fuente del nombre si se desborda
+        setTimeout(() => {
+            $pagina.find('.nombre-gafete-frente').each(function () {
+                const $nombre = $(this);
+                const $marco = $nombre.closest('.gafete').find('.gafete-nombre-rect > div');
+                // Ancho máximo permitido (en px, 5.5cm aprox a 96dpi)
+                const maxWidthPx = 208; // 5.5cm * 37.8px/cm
+                // Solo reducir si se desborda
+                let fontSize = parseFloat($nombre.css('font-size'));
+                while ($nombre[0].scrollWidth > maxWidthPx && fontSize > 7) {
+                    fontSize -= 0.5;
+                    $nombre.css('font-size', fontSize + 'pt');
+                }
+            });
+        }, 10);
+    }
+    
+    // Continuar con el resto de la función generarGafetesConDatosActualizados
+    function continuarGeneracionGafetes(modoImpresion) {
         // Si no es modo impresión, mostrar el modal
         if (!modoImpresion) {
             const modal = new bootstrap.Modal(document.getElementById('modalGafetes'));
@@ -1542,26 +2286,63 @@ $(document).ready(function () {
     
     // Función para actualizar las fechas de creación y vigencia de los gafetes
     function actualizarFechasGafetes() {
+        // Crear un array de promesas para esperar a que todas las actualizaciones terminen
+        const promesas = [];
+        
         // Iterar sobre los empleados seleccionados y actualizar sus fechas
         empleadosSeleccionados.forEach(function(idEmpleado) {
-            // Hacer una solicitud AJAX para actualizar las fechas en la base de datos
-            $.ajax({
+            // Obtener el estado del toggle IMSS para este empleado
+            const empleado = todosLosEmpleados.find(e => e.id_empleado == idEmpleado);
+            let imssToggle = null;
+            
+            if (empleado) {
+                // Usar el estado del toggle si existe, si no, usar el valor del campo IMSS
+                imssToggle = window.imssToggleState[idEmpleado] !== undefined ? 
+                    window.imssToggleState[idEmpleado] : 
+                    (empleado.imss && empleado.imss !== 'N/A' && empleado.imss.trim() !== '');
+            }
+            
+            // Crear una promesa para cada actualización
+            const promesa = $.ajax({
                 url: 'php/actualizarFechasGafete.php',
                 method: 'POST',
-                data: { id_empleado: idEmpleado },
-                dataType: 'json',
-                success: function(response) {
-                    if (response.success) {
-                        // Actualizar el contador de notificaciones después de actualizar las fechas
-                        if (typeof updateNotificationCount === 'function') {
-                            updateNotificationCount();
-                        }
-                    } else {
-                        }
+                data: { 
+                    id_empleado: idEmpleado,
+                    imss_toggle: imssToggle
                 },
-                error: function(xhr, status, error) {
-                     }
+                dataType: 'json'
+            }).done(function(response) {
+                console.log('Respuesta del servidor para empleado ' + idEmpleado + ':', response);
+                if (response.success) {
+                    // Actualizar las fechas en el objeto del empleado en cache
+                    if (empleado) {
+                        empleado.fecha_creacion = response.fecha_creacion;
+                        empleado.fecha_vigencia = response.fecha_vigencia;
+                    }
+                    console.log('✓ Fechas actualizadas para empleado ' + idEmpleado + ': Creación=' + response.fecha_creacion + ', Vigencia=' + response.fecha_vigencia + ', Filas afectadas=' + response.affected_rows);
+                } else {
+                    console.error('✗ Error en respuesta para empleado ' + idEmpleado + ':', response.message);
+                }
+            }).fail(function(xhr, status, error) {
+                console.error('✗ Error AJAX al actualizar fechas para empleado ' + idEmpleado + ':', {
+                    status: status,
+                    error: error,
+                    responseText: xhr.responseText
+                });
             });
+            
+            promesas.push(promesa);
+        });
+        
+        // Retornar una promesa que se resuelve cuando todas las actualizaciones terminan
+        return Promise.all(promesas).then(function() {
+            // Actualizar el contador de notificaciones después de actualizar todas las fechas
+            if (typeof updateNotificationCount === 'function') {
+                updateNotificationCount();
+            }
+            console.log('Todas las fechas han sido actualizadas correctamente');
+        }).catch(function(error) {
+            console.error('Error al actualizar algunas fechas:', error);
         });
     }
 
@@ -1718,6 +2499,10 @@ $(document).ready(function () {
 
     function validarApellido(apellido) {
         // Convertir a mayúsculas antes de validar
+    }
+
+        function validarApellido(apellido) {
+        // Convertir a mayúsculas antes de validar
         const apellidoMayusculas = apellido.toUpperCase();
         var validar = /^(?:(?:[Dd]e(?:l)?|[Dd]e\s+(?:la|los|las))\s+)?([A-ZÁÉÍÓÚÑa-záéíóúñ]+(?:\s[A-ZÁÉÍÓÚÑa-záéíóúñ]+)*)$/;
         return validar.test(apellidoMayusculas);
@@ -1744,7 +2529,8 @@ $(document).ready(function () {
     }
 
     function validarParentesco(parentesco) {
-        var validar = /^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)*$/;
+        // Permitir mayúsculas y minúsculas, pero validar que sean letras y espacios
+        var validar = /^([A-Za-zÁÉÍÓÚÑáéíóúñ]+)(\s[A-Za-zÁÉÍÓÚÑáéíóúñ]+)*$/;
         return validar.test(parentesco);
     }
 
@@ -1780,6 +2566,12 @@ $(document).ready(function () {
                     
                     // Mostrar el modal
                     $("#modal_actualizar_empleado").modal("show");
+                    
+                    // Aplicar formateo a mayúsculas para los campos del contacto de emergencia (excepto parentesco)
+                    formatearMayusculas("#modal_emergencia_nombre");
+                    formatearMayusculas("#modal_emergencia_ap_paterno");
+                    formatearMayusculas("#modal_emergencia_ap_materno");
+                    // No aplicar formateo automático a parentesco para permitir mayúsculas y minúsculas
                 }
             },
             error: function(xhr, status, error) {
@@ -1803,8 +2595,11 @@ $(document).ready(function () {
         $("#modal_grupo_sanguineo").val(empleado.grupo_sanguineo || '');
         $("#modal_enfermedades_alergias").val(empleado.enfermedades_alergias || '');
         $("#modal_fecha_ingreso").val(empleado.fecha_ingreso || '');
+        $("#modal_fecha_reingreso").val(empleado.ultima_fecha_reingreso || '');
         $("#modal_fecha_nacimiento").val(empleado.fecha_nacimiento || '');
         $("#modal_num_casillero").val(empleado.num_casillero || '');
+        $("#modal_biometrico").val(empleado.biometrico || '');
+        $("#modal_telefono_empleado").val(empleado.telefono_empleado || '');
 
         // Datos de contacto de emergencia
         $("#modal_emergencia_nombre").val(empleado.nombre_contacto || '');
@@ -1905,9 +2700,106 @@ $(document).ready(function () {
         });
     }
 
+    // Función para resaltar campos inválidos con efecto profesional
+    function resaltarCampoInvalido(campoId) {
+        const campo = $("#" + campoId);
+        const parent = campo.parent();
+        
+        // Limpiar estilos previos
+        campo.removeClass('border-success border-primary campo-valido');
+        
+        // Agregar clase personalizada para campo inválido
+        campo.addClass('campo-invalido');
+        
+        // Aplicar estilos profesionales con gradiente y animación
+        campo.css({
+            'border': '2px solid #dc3545',
+            'border-radius': '8px',
+            'box-shadow': '0 0 20px rgba(220, 53, 69, 0.4), inset 0 1px 3px rgba(220, 53, 69, 0.1)',
+            'background': 'linear-gradient(to right, rgba(220, 53, 69, 0.05), rgba(255, 255, 255, 0))',
+            'transition': 'all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+            'transform': 'scale(1.02)',
+            'position': 'relative',
+            'z-index': '10'
+        });
+        
+        // Agregar animación de pulso continuo
+        campo.addClass('animate__animated animate__headShake');
+        
+        // No mostrar indicador de texto, solo efecto visual
+        // Los indicadores de texto han sido eliminados por solicitud del usuario
+        
+        // Quitar la animación después de que termine
+        setTimeout(() => {
+            campo.removeClass('animate__animated animate__headShake');
+        }, 1000);
+        
+        // Scroll suave al primer campo inválido
+        if ($('.campo-invalido').first().attr('id') === campoId) {
+            $('html, body').animate({
+                scrollTop: campo.offset().top - 150
+            }, 500);
+        }
+    }
+
+    // Función para limpiar resaltado de campos
+    function limpiarResaltadoCampos() {
+        // Remover todas las clases de validación
+        $('.campo-invalido, .campo-valido').removeClass('campo-invalido campo-valido animate__animated animate__headShake animate__pulse');
+        
+        // Remover indicadores de error
+        $('.error-indicator, .success-indicator').fadeOut(200, function() {
+            $(this).remove();
+        });
+        
+        // Restaurar estilos originales con transición suave
+        $('input, select, textarea').css({
+            'border': '',
+            'border-radius': '',
+            'box-shadow': '',
+            'background': '',
+            'transition': 'all 0.3s ease',
+            'transform': '',
+            'z-index': ''
+        });
+    }
+
+    // Función para resaltar campo válido con efecto profesional
+    function resaltarCampoValido(campoId) {
+        const campo = $("#" + campoId);
+        
+        // Limpiar estilos previos
+        campo.removeClass('border-danger border-primary campo-invalido');
+        
+        // Agregar clase personalizada para campo válido
+        campo.addClass('campo-valido');
+        
+        // Aplicar estilos profesionales con gradiente y animación
+        campo.css({
+            'border': '2px solid #28a745',
+            'border-radius': '8px',
+            'box-shadow': '0 0 15px rgba(40, 167, 69, 0.3), inset 0 1px 3px rgba(40, 167, 69, 0.1)',
+            'background': 'linear-gradient(to right, rgba(40, 167, 69, 0.05), rgba(255, 255, 255, 0))',
+            'transition': 'all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+            'transform': 'scale(1.01)'
+        });
+        
+        // No mostrar indicador de texto, solo efecto visual
+        // Los indicadores de texto han sido eliminados por solicitud del usuario
+        
+        // Animación sutil de confirmación
+        campo.addClass('animate__animated animate__pulse');
+        setTimeout(() => {
+            campo.removeClass('animate__animated animate__pulse');
+        }, 600);
+    }
+
     // Evento para enviar el formulario de actualización
     $("#form_modal_actualizar_empleado").submit(function (e) {
         e.preventDefault();
+        
+        // Limpiar resaltados anteriores
+        limpiarResaltadoCampos();
 
         // Recopilar todos los datos del formulario y convertir nombres y apellidos a mayúsculas
         let datos = {
@@ -1923,9 +2815,12 @@ $(document).ready(function () {
             grupo_sanguineo: $("#modal_grupo_sanguineo").val() || "",
             enfermedades_alergias: $("#modal_enfermedades_alergias").val() || "",
             fecha_ingreso: $("#modal_fecha_ingreso").val() || "",
+            fecha_reingreso: $("#modal_fecha_reingreso").val() || "",
             id_departamento: $("#modal_departamento").val() || "",
             fecha_nacimiento: $("#modal_fecha_nacimiento").val() || "",
             num_casillero: $("#modal_num_casillero").val() || "",
+            biometrico: $("#modal_biometrico").val() || "",
+            telefono_empleado: $("#modal_telefono_empleado").val() || "",
             id_empresa: $("#modal_empresa").val() || "",
             id_area: $("#modal_area").val() || "",
             id_puestoEspecial: $("#modal_puesto").val() || "",
@@ -1938,31 +2833,117 @@ $(document).ready(function () {
         };
 
         // Validación mejorada con las funciones de validación
-        let obligatoriosValidos = (
-            validarClave(datos.clave_empleado) &&
-            validarNombre(datos.nombre_empleado) &&
-            validarApellido(datos.apellido_paterno_empleado) &&
-            validarApellido(datos.apellido_materno_empleado) &&
-            datos.sexo
-        );
+        let obligatoriosValidos = true;
+        
+        // Validar campos obligatorios y resaltar inválidos
+        if (!validarClave(datos.clave_empleado)) {
+            resaltarCampoInvalido('modal_clave_empleado');
+            obligatoriosValidos = false;
+        } else {
+            resaltarCampoValido('modal_clave_empleado');
+        }
+        
+        if (!validarNombre(datos.nombre_empleado)) {
+            resaltarCampoInvalido('modal_nombre_empleado');
+            obligatoriosValidos = false;
+        } else {
+            resaltarCampoValido('modal_nombre_empleado');
+        }
+        
+        if (!validarApellido(datos.apellido_paterno_empleado)) {
+            resaltarCampoInvalido('modal_apellido_paterno');
+            obligatoriosValidos = false;
+        } else {
+            resaltarCampoValido('modal_apellido_paterno');
+        }
+        
+        if (!validarApellido(datos.apellido_materno_empleado)) {
+            resaltarCampoInvalido('modal_apellido_materno');
+            obligatoriosValidos = false;
+        } else {
+            resaltarCampoValido('modal_apellido_materno');
+        }
+        
+        if (!datos.sexo) {
+            resaltarCampoInvalido('modal_sexo');
+            obligatoriosValidos = false;
+        } else {
+            resaltarCampoValido('modal_sexo');
+        }
 
         let opcionalesValidos = true;
-        if (datos.imss && !validarNSS(datos.imss)) opcionalesValidos = false;
-        if (datos.curp && !validarCURP(datos.curp)) opcionalesValidos = false;
-        if (datos.grupo_sanguineo && !validarGrupoSanguineo(datos.grupo_sanguineo)) opcionalesValidos = false;
-        if (datos.nombre_contacto && !validarNombre(datos.nombre_contacto)) opcionalesValidos = false;
-        if (datos.apellido_paterno_contacto && !validarApellido(datos.apellido_paterno_contacto)) opcionalesValidos = false;
-        if (datos.apellido_materno_contacto && !validarApellido(datos.apellido_materno_contacto)) opcionalesValidos = false;
-        if (datos.parentesco && !validarParentesco(datos.parentesco)) opcionalesValidos = false;
-        if (datos.telefono_contacto && !validarTelefono(datos.telefono_contacto)) opcionalesValidos = false;
+        
+        // Validar campos opcionales y resaltar inválidos
+        if (datos.imss && !validarNSS(datos.imss)) {
+            resaltarCampoInvalido('modal_imss');
+            opcionalesValidos = false;
+        } else if (datos.imss) {
+            resaltarCampoValido('modal_imss');
+        }
+        
+        if (datos.curp && !validarCURP(datos.curp)) {
+            resaltarCampoInvalido('modal_curp');
+            opcionalesValidos = false;
+        } else if (datos.curp) {
+            resaltarCampoValido('modal_curp');
+        }
+        
+        if (datos.grupo_sanguineo && !validarGrupoSanguineo(datos.grupo_sanguineo)) {
+            resaltarCampoInvalido('modal_grupo_sanguineo');
+            opcionalesValidos = false;
+        } else if (datos.grupo_sanguineo) {
+            resaltarCampoValido('modal_grupo_sanguineo');
+        }
+        
+        if (datos.nombre_contacto && !validarNombre(datos.nombre_contacto)) {
+            resaltarCampoInvalido('modal_emergencia_nombre');
+            opcionalesValidos = false;
+        } else if (datos.nombre_contacto) {
+            resaltarCampoValido('modal_emergencia_nombre');
+        }
+        
+        if (datos.apellido_paterno_contacto && !validarApellido(datos.apellido_paterno_contacto)) {
+            resaltarCampoInvalido('modal_emergencia_ap_paterno');
+            opcionalesValidos = false;
+        } else if (datos.apellido_paterno_contacto) {
+            resaltarCampoValido('modal_emergencia_ap_paterno');
+        }
+        
+        if (datos.apellido_materno_contacto && !validarApellido(datos.apellido_materno_contacto)) {
+            resaltarCampoInvalido('modal_emergencia_ap_materno');
+            opcionalesValidos = false;
+        } else if (datos.apellido_materno_contacto) {
+            resaltarCampoValido('modal_emergencia_ap_materno');
+        }
+        
+        if (datos.parentesco && !validarParentesco(datos.parentesco)) {
+            resaltarCampoInvalido('modal_emergencia_parentesco');
+            opcionalesValidos = false;
+        } else if (datos.parentesco) {
+            resaltarCampoValido('modal_emergencia_parentesco');
+        }
+        
+        if (datos.telefono_contacto && !validarTelefono(datos.telefono_contacto)) {
+            resaltarCampoInvalido('modal_emergencia_telefono');
+            opcionalesValidos = false;
+        } else if (datos.telefono_contacto) {
+            resaltarCampoValido('modal_emergencia_telefono');
+        }
+        
+        if (datos.telefono_empleado && !validarTelefono(datos.telefono_empleado)) {
+            resaltarCampoInvalido('modal_telefono_empleado');
+            opcionalesValidos = false;
+        } else if (datos.telefono_empleado) {
+            resaltarCampoValido('modal_telefono_empleado');
+        }
 
         if (!obligatoriosValidos) {
-            mostrarAlerta('Existen campos obligatorios vacíos o incorrectos.', 'warning');
+            mostrarAlerta('Existen campos obligatorios vacíos o incorrectos. Revisa los campos marcados en rojo.', 'warning');
             return;
         }
 
         if (!opcionalesValidos) {
-            mostrarAlerta('Hay datos opcionales incorrectos.', 'warning');
+            mostrarAlerta('Hay datos opcionales incorrectos. Revisa los campos marcados en rojo.', 'warning');
             return;
         }
 

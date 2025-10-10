@@ -98,26 +98,45 @@ function mostrarCasilleros(casilleros) {
     // Crear la cuadrícula de casilleros
     let html = '';
     casilleros.forEach(casillero => {
-        const claseEstado = casillero.estado === 'Ocupado' ? 'bg-danger' : 'bg-success';
-        const estaOcupado = casillero.estado === 'Ocupado';
+        // Asegurarse de que los valores sean del tipo correcto
+        const numCasillero = String(casillero.num_casillero || '');
+        const totalEmpleados = parseInt(casillero.total_empleados) || 0;
+        const estado = String(casillero.estado || 'Disponible');
+        const empleadoNombre = String(casillero.empleado_nombre || '');
         
-        // Mostrar nombre del empleado si está asignado
-        let infoEmpleado = '';
-        if (casillero.empleado_nombre && casillero.empleado_nombre.trim() !== '') {
-            // Acortar el nombre si es muy largo
-            let nombreMostrar = casillero.empleado_nombre;
-            if (nombreMostrar.length > 20) {
-                nombreMostrar = nombreMostrar.substring(0, 17) + '...';
+        // Determinar el color según el estado y número de empleados
+        let claseEstado = 'bg-success'; // Disponible
+        if (totalEmpleados > 0) {
+            claseEstado = 'bg-warning'; // Parcialmente ocupado (1 empleado)
+            if (totalEmpleados >= 2) {
+                claseEstado = 'bg-danger'; // Completamente ocupado (2 empleados)
             }
-            infoEmpleado = `<div class="casillero-empleado" title="${casillero.empleado_nombre}">${nombreMostrar}</div>`;
+        }
+        
+        // Mostrar solo los primeros nombres de empleados si están asignados
+        let infoEmpleado = '';
+        if (empleadoNombre && empleadoNombre.trim() !== '') {
+            // Si hay múltiples empleados, mostrar solo los primeros nombres separados por coma
+            if (totalEmpleados > 1) {
+                // Para múltiples empleados, mostrar solo los primeros nombres separados por coma
+                const nombres = empleadoNombre.split(', ').map(nombreCompleto => {
+                    // Extraer solo el primer nombre de cada empleado
+                    return nombreCompleto.split(' ')[0];
+                });
+                infoEmpleado = `<div class="casillero-empleado" title="${empleadoNombre}">${nombres.join(', ')}</div>`;
+            } else {
+                // Para un solo empleado, mostrar solo el primer nombre
+                let nombreMostrar = empleadoNombre.split(' ')[0];
+                infoEmpleado = `<div class="casillero-empleado" title="${empleadoNombre}">${nombreMostrar}</div>`;
+            }
         }
         
         html += `
         <div class="col-auto p-1">
             <div class="casillero-item ${claseEstado}" 
-                 onclick="manejarClicCasillero('${casillero.num_casillero.replace(/'/g, "\\'")}', ${estaOcupado})">
-                <div class="casillero-numero">${casillero.num_casillero}</div>
-                <div class="casillero-estado">${casillero.estado}</div>
+                 onclick="manejarClicCasillero('${numCasillero.replace(/'/g, "\\'")}', ${totalEmpleados > 0})">
+                <div class="casillero-numero">${numCasillero}</div>
+                <div class="casillero-estado">${estado} (${totalEmpleados}/2)</div>
                 ${infoEmpleado}
             </div>
         </div>`;
@@ -235,6 +254,28 @@ function manejarClicCasillero(numCasillero, estaOcupado) {
     document.getElementById('nuevo_numero').value = numCasillero;
     document.getElementById('casillero_id').value = numCasillero;
     
+    // Limpiar el campo de búsqueda de empleado o pre-llenarlo si estamos en modal de editar empleado
+    const buscarEmpleadoInput = document.getElementById('buscarEmpleado');
+    if (buscarEmpleadoInput) {
+        // Detectar si estamos en el modal de editar empleado
+        const modalEditarEmpleado = document.getElementById('modal_actualizar_empleado');
+        if (modalEditarEmpleado && modalEditarEmpleado.classList.contains('show')) {
+            // Estamos en el modal de editar empleado, obtener el nombre
+            const nombreEmpleado = document.getElementById('modal_nombre_empleado')?.value || '';
+            const apellidoPaterno = document.getElementById('modal_apellido_paterno')?.value || '';
+            const apellidoMaterno = document.getElementById('modal_apellido_materno')?.value || '';
+            
+            if (nombreEmpleado || apellidoPaterno) {
+                const nombreCompleto = `${nombreEmpleado} ${apellidoPaterno} ${apellidoMaterno}`.trim();
+                buscarEmpleadoInput.value = nombreCompleto;
+            } else {
+                buscarEmpleadoInput.value = '';
+            }
+        } else {
+            buscarEmpleadoInput.value = '';
+        }
+    }
+    
     // Mostrar información del empleado actual si existe
     if (estaOcupado) {
         cargarInfoEmpleadoAsignado(numCasillero);
@@ -257,8 +298,35 @@ function manejarClicCasillero(numCasillero, estaOcupado) {
         buscarEmpleado();
     };
     
+    // Configurar el botón de limpiar búsqueda
+    const btnLimpiarBusqueda = document.getElementById('btnLimpiarBusquedaEmpleado');
+    const inputBuscarEmpleado = document.getElementById('buscarEmpleado');
+    
+    if (btnLimpiarBusqueda && inputBuscarEmpleado) {
+        // Hacer que el botón de limpiar siempre sea visible
+        btnLimpiarBusqueda.style.display = 'block';
+        
+        // Función para manejar el clic en el botón de limpiar
+        function manejarClicLimpiar() {
+            inputBuscarEmpleado.value = '';
+            inputBuscarEmpleado.focus();
+            // Limpiar los resultados de búsqueda
+            const resultadosDiv = document.getElementById('resultadoBusqueda');
+            if (resultadosDiv) {
+                resultadosDiv.innerHTML = `
+                    <div class="text-center text-muted">
+                        <i class="bi bi-person-lines-fill fs-1"></i>
+                        <p class="mt-2">Busque un empleado para asignar al casillero</p>
+                    </div>`;
+            }
+        }
+        
+        // Configurar el clic del botón de limpiar
+        btnLimpiarBusqueda.onclick = manejarClicLimpiar;
+    }
+    
     // Permitir búsqueda con Enter
-    document.getElementById('buscarEmpleado').addEventListener('keypress', function(e) {
+    inputBuscarEmpleado.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             buscarEmpleado();
         }
@@ -268,6 +336,22 @@ function manejarClicCasillero(numCasillero, estaOcupado) {
     document.getElementById('asignar-tab').addEventListener('shown.bs.tab', function() {
         if (estaOcupado) {
             cargarInfoEmpleadoAsignado(numCasillero);
+        }
+        
+        // Pre-llenar el campo de búsqueda si estamos en modal de editar empleado
+        const buscarEmpleadoInput = document.getElementById('buscarEmpleado');
+        if (buscarEmpleadoInput) {
+            const modalEditarEmpleado = document.getElementById('modal_actualizar_empleado');
+            if (modalEditarEmpleado && modalEditarEmpleado.classList.contains('show')) {
+                const nombreEmpleado = document.getElementById('modal_nombre_empleado')?.value || '';
+                const apellidoPaterno = document.getElementById('modal_apellido_paterno')?.value || '';
+                const apellidoMaterno = document.getElementById('modal_apellido_materno')?.value || '';
+                
+                if (nombreEmpleado || apellidoPaterno) {
+                    const nombreCompleto = `${nombreEmpleado} ${apellidoPaterno} ${apellidoMaterno}`.trim();
+                    buscarEmpleadoInput.value = nombreCompleto;
+                }
+            }
         }
     });
     
@@ -363,21 +447,24 @@ function cargarInfoEmpleadoAsignado(numCasillero) {
         .then(data => {
             const infoContainer = document.getElementById('infoEmpleadoAsignado');
             
-            if (data.success && data.empleado) {
-                const empleado = data.empleado;
-                const infoHTML = `
-                    <div class="alert alert-info">
-                        <h6><i class="bi bi-person-badge"></i> Empleado Asignado:</h6>
-                        <p class="mb-1"><strong>Nombre:</strong> ${empleado.nombre} ${empleado.apellido_paterno} ${empleado.apellido_materno || ''}</p>
-                        <p class="mb-1"><strong>ID Empleado:</strong> ${empleado.id_empleado}</p>
-                        ${empleado.departamento ? `<p class="mb-1"><strong>Departamento:</strong> ${empleado.departamento}</p>` : ''}
-                        <p class="mb-0">
-                            <button class="btn btn-sm btn-danger" onclick="liberarCasillero('${numCasillero}')">
-                                <i class="bi bi-person-dash"></i> Liberar Casillero
-                            </button>
-                        </p>
-                    </div>`;
-                infoContainer.innerHTML = infoHTML;
+            if (data.success && data.empleados && data.empleados.length > 0) {
+                let empleadosHtml = '';
+                data.empleados.forEach(empleado => {
+                    empleadosHtml += `
+                        <div class="alert alert-info">
+                            <h6><i class="bi bi-person-badge"></i> Empleado Asignado:</h6>
+                            <p class="mb-1"><strong>Nombre:</strong> ${empleado.nombre} ${empleado.apellido_paterno} ${empleado.apellido_materno || ''}</p>
+                            <p class="mb-1"><strong>ID Empleado:</strong> ${empleado.id_empleado}</p>
+                            ${empleado.departamento ? `<p class="mb-1"><strong>Departamento:</strong> ${empleado.departamento}</p>` : ''}
+                            <p class="mb-0">
+                                <button class="btn btn-sm btn-danger" onclick="liberarCasillero('${numCasillero}', ${empleado.id_empleado})">
+                                    <i class="bi bi-person-dash"></i> Liberar Casillero
+                                </button>
+                            </p>
+                        </div>`;
+                });
+                
+                infoContainer.innerHTML = empleadosHtml;
             } else {
                 infoContainer.innerHTML = `
                     <div class="alert alert-warning">
@@ -429,8 +516,10 @@ function ejecutarAsignacion(numCasillero, idEmpleado, nombreEmpleado) {
             }, 1000);
         } else {
             // Verificar si el error es porque el casillero está ocupado
-            if (data.error && data.error.includes('ocupado')) {
-                mostrarNotificacion('warning', 'Casillero ocupado', data.error);
+            if (data.error && data.error.includes('máximo')) {
+                mostrarNotificacion('warning', 'Casillero lleno', data.error);
+            } else if (data.error && data.error.includes('ya tiene asignado')) {
+                mostrarNotificacion('warning', 'Empleado con casillero', data.error);
             } else {
                 throw new Error(data.error || 'Error al asignar el casillero');
             }
@@ -448,7 +537,7 @@ function eliminarCasillero(numCasillero) {
     fetch(`php/obtener_empleado_casillero.php?casillero=${encodeURIComponent(numCasillero)}`)
         .then(response => response.json())
         .then(data => {
-            if (data.success && data.empleado) {
+            if (data.success && data.empleados && data.empleados.length > 0) {
                 // El casillero está ocupado
                 mostrarNotificacion('warning', 'Casillero ocupado', 'No se puede eliminar un casillero ocupado. Libere el casillero primero.');
                 return;
@@ -490,33 +579,82 @@ function eliminarCasillero(numCasillero) {
         });
 }
 
+// Función para limpiar el campo de búsqueda
+function limpiarCampoBusqueda() {
+    const inputBuscarEmpleado = document.getElementById('buscarEmpleado');
+    const btnLimpiarBusqueda = document.getElementById('btnLimpiarBusquedaEmpleado');
+    
+    if (inputBuscarEmpleado) {
+        inputBuscarEmpleado.value = '';
+        inputBuscarEmpleado.focus();
+        // Mostrar el mensaje de búsqueda por defecto
+        const resultadosDiv = document.getElementById('resultadoBusqueda');
+        if (resultadosDiv) {
+            resultadosDiv.innerHTML = `
+                <div class="text-center text-muted">
+                    <i class="bi bi-person-lines-fill fs-1"></i>
+                    <p class="mt-2">Busque un empleado para asignar al casillero</p>
+                </div>`;
+        }
+    }
+    
+    // Mantener el botón de limpieza siempre visible
+    if (btnLimpiarBusqueda) {
+        btnLimpiarBusqueda.style.opacity = '0.6';
+        btnLimpiarBusqueda.style.visibility = 'visible';
+    }
+}
+
+// Función para actualizar la visibilidad del botón de limpieza
+function actualizarBotonLimpiar() {
+    const inputBuscarEmpleado = document.getElementById('buscarEmpleado');
+    const btnLimpiarBusqueda = document.getElementById('btnLimpiarBusquedaEmpleado');
+    
+    if (inputBuscarEmpleado && btnLimpiarBusqueda) {
+        if (inputBuscarEmpleado.value.trim() !== '') {
+            btnLimpiarBusqueda.style.opacity = '0.6';
+            btnLimpiarBusqueda.style.visibility = 'visible';
+        } else {
+            btnLimpiarBusqueda.style.opacity = '0';
+            btnLimpiarBusqueda.style.visibility = 'hidden';
+        }
+    }
+    
+    // Disparar el evento de búsqueda automáticamente al escribir
+    if (inputBuscarEmpleado && inputBuscarEmpleado.value.trim() !== '') {
+        buscarEmpleado();
+    }
+}
+
 // Función para liberar un casillero
-function liberarCasillero(numCasillero) {
+function liberarCasillero(numCasillero, idEmpleado) {
     // Confirmación estilizada
     return mostrarConfirmacionCasillero({
         titulo: 'Liberar casillero',
-        mensaje: `¿Está seguro de liberar el casillero <strong>${numCasillero}</strong>?`,
+        mensaje: `¿Está seguro de liberar el casillero <strong>${numCasillero}</strong> para este empleado?`,
         tipo: 'warning',
         textoConfirmar: 'Sí, liberar',
         textoCancelar: 'Cancelar',
-        onConfirm: () => ejecutarLiberacion(numCasillero)
+        onConfirm: () => ejecutarLiberacion(numCasillero, idEmpleado)
     });
 }
 
-function ejecutarLiberacion(numCasillero) {
+function ejecutarLiberacion(numCasillero, idEmpleado) {
     fetch('php/liberar_casillero.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: `num_casillero=${encodeURIComponent(numCasillero)}`
+        body: `num_casillero=${encodeURIComponent(numCasillero)}&id_empleado=${idEmpleado}`
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            mostrarNotificacion('success', 'Casillero liberado', `El casillero ${numCasillero} ha sido liberado correctamente`);
+            mostrarNotificacion('success', 'Casillero liberado', `El casillero ${numCasillero} ha sido liberado correctamente para este empleado`);
             cargarCasilleros(paginaActual, filtroActual, busquedaActual);
-            document.getElementById('infoEmpleadoAsignado').innerHTML = '';
+            cargarInfoEmpleadoAsignado(numCasillero); // Recargar la información
+            // Limpiar el campo de búsqueda
+            limpiarCampoBusqueda();
         } else {
             throw new Error(data.error || 'Error al liberar el casillero');
         }
@@ -645,41 +783,125 @@ function mostrarConfirmacionCasillero({ titulo, mensaje, tipo = 'warning', texto
     requestAnimationFrame(() => overlay.classList.add('show'));
 }
 
+// Función para inicializar los eventos de los botones de filtro
+function inicializarEventosCasillero() {
+    // Configurar eventos de los botones de filtro
+    document.getElementById('btnFiltroTodos')?.addEventListener('click', function() {
+        cargarCasilleros(1, 'todos', busquedaActual);
+    });
+    
+    document.getElementById('btnFiltroDisponibles')?.addEventListener('click', function() {
+        cargarCasilleros(1, 'disponibles', busquedaActual);
+    });
+    
+    document.getElementById('btnFiltroAsignados')?.addEventListener('click', function() {
+        cargarCasilleros(1, 'asignados', busquedaActual);
+    });
+    
+    // Configurar evento para la búsqueda
+    const inputBusqueda = document.getElementById('busquedaCasilleros');
+    const btnLimpiar = document.getElementById('btnLimpiarBusqueda');
+    
+    if (inputBusqueda) {
+        // Búsqueda en tiempo real con debounce
+        let timeoutBusqueda;
+        inputBusqueda.addEventListener('input', function() {
+            clearTimeout(timeoutBusqueda);
+            const busqueda = this.value.trim();
+            timeoutBusqueda = setTimeout(() => {
+                cargarCasilleros(1, filtroActual, busqueda);
+            }, 500); // Esperar 500ms después de dejar de escribir
+        });
+        
+        // Búsqueda al presionar Enter
+        inputBusqueda.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                cargarCasilleros(1, filtroActual, this.value.trim());
+            }
+        });
+    }
+    
+    if (btnLimpiar) {
+        btnLimpiar.addEventListener('click', function() {
+            if (inputBusqueda) {
+                inputBusqueda.value = '';
+                cargarCasilleros(1, filtroActual, '');
+            }
+        });
+    }
+}
+
 // Función para cargar el modal desde PHP
 function cargarModalCasillero() {
-    return fetch('views/modal_casillero.php')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Error al cargar el modal');
+    return new Promise((resolve, reject) => {
+        // Si el modal ya existe, eliminarlo para evitar duplicados
+        const modalExistente = document.getElementById('modalCasillero');
+        if (modalExistente) {
+            // Eliminar todos los eventos del modal existente
+            const modalInstance = bootstrap.Modal.getInstance(modalExistente);
+            if (modalInstance) {
+                modalInstance.dispose();
             }
-            return response.text();
-        })
-        .then(html => {
-            // Agregar el modal al final del body si no existe
-            if (!document.getElementById('modalCasillero')) {
+            modalExistente.remove();
+        }
+
+        fetch('views/modal_casillero.php')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al cargar el modal');
+                }
+                return response.text();
+            })
+            .then(html => {
+                // Agregar el modal al final del body
                 document.body.insertAdjacentHTML('beforeend', html);
                 
-                // Configurar el evento de guardar después de agregar el modal
-                document.getElementById('guardarCasillero')?.addEventListener('click', function() {
-                    // Aquí va la lógica para guardar los datos del casillero
-                    console.log('Guardando datos del casillero...');
-                });
+                const modalElement = document.getElementById('modalCasillero');
+                if (!modalElement) {
+                    throw new Error('No se pudo crear el modal');
+                }
+
+                // Configurar el evento de guardar
+                const btnGuardar = document.getElementById('guardarCasillero');
+                if (btnGuardar) {
+                    btnGuardar.addEventListener('click', function() {
+                        console.log('Guardando datos del casillero...');
+                    });
+                }
                 
                 // Configurar el botón de agregar casillero
-                document.getElementById('btnAgregarCasillero')?.addEventListener('click', function() {
-                    agregarCasillero();
+                const btnAgregar = document.getElementById('btnAgregarCasillero');
+                if (btnAgregar) {
+                    btnAgregar.addEventListener('click', function() {
+                        agregarCasillero();
+                    });
+                }
+                
+                // Inicializar eventos de los botones de filtro
+                inicializarEventosCasillero();
+                
+                // Configurar el evento para cuando el modal se cierre
+                modalElement.addEventListener('hidden.bs.modal', function() {
+                    // Limpiar el modal cuando se cierre
+                    const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                    if (modalInstance) {
+                        modalInstance.dispose();
+                    }
+                    // No eliminamos el modal aquí para evitar parpadeo al volver a abrirlo
                 });
                 
                 // Cargar los casilleros cuando se muestre el modal
-                const modalElement = document.getElementById('modalCasillero');
-                if (modalElement) {
-                    modalElement.addEventListener('shown.bs.modal', cargarCasilleros);
-                }
-            }
-        })
-        .catch(error => {
-            console.error('Error al cargar el modal:', error);
-        });
+                modalElement.addEventListener('shown.bs.modal', function() {
+                    cargarCasilleros(1, 'todos', '');
+                });
+                
+                resolve(true);
+            })
+            .catch(error => {
+                console.error('Error al cargar el modal:', error);
+                reject(error);
+            });
+    });
 }
 
 // Función para mostrar el modal de agregar casillero
@@ -776,64 +998,76 @@ function agregarCasillero() {
 
 // Inicializar cuando el documento esté listo
 document.addEventListener('DOMContentLoaded', function() {
-    // Cargar el modal cuando se haga clic en el botón
-    document.getElementById('btnCasillero')?.addEventListener('click', function() {
-        cargarModalCasillero().then(() => {
+    // Función para mostrar el modal de casillero
+    function mostrarModalCasillero() {
+        cargarModalCasillero()
+            .then((success) => {
+                if (success) {
+                    const modalElement = document.getElementById('modalCasillero');
+                    if (modalElement) {
+                        // Crear una nueva instancia del modal sin backdrop
+                        const modal = new bootstrap.Modal(modalElement, {
+                            backdrop: false, // Desactiva el fondo oscuro
+                            keyboard: true  // Permite cerrar con la tecla ESC
+                        });
+                        
+                        // Limpiar el modal cuando se cierre
+                        modalElement.addEventListener('hidden.bs.modal', function() {
+                            // Dar tiempo a que se complete la animación
+                            setTimeout(() => {
+                                const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                                if (modalInstance) {
+                                    modalInstance.dispose();
+                                }
+                                if (modalElement.parentNode) {
+                                    modalElement.remove();
+                                }
+                                
+                                // Eliminar el backdrop manualmente si existe
+                                const backdrops = document.querySelectorAll('.modal-backdrop');
+                                backdrops.forEach(backdrop => {
+                                    backdrop.remove();
+                                });
+                                
+                                // Eliminar la clase modal-open del body
+                                document.body.classList.remove('modal-open');
+                                document.body.style.overflow = '';
+                                document.body.style.paddingRight = '';
+                            }, 300);
+                        });
+                        
+                        // Mostrar el modal
+                        modal.show();
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error al mostrar el modal:', error);
+            });
+    }
+    
+    // Cargar el modal cuando se haga clic en el botón principal de casillero
+    document.getElementById('btnCasillero')?.addEventListener('click', mostrarModalCasillero);
+    
+    // Inicializar el botón de abrir casillero desde el formulario de edición
+    const btnAbrirCasillero = document.getElementById('btnAbrirCasillero');
+    if (btnAbrirCasillero) {
+        btnAbrirCasillero.addEventListener('click', function(e) {
+            e.preventDefault();
+            mostrarModalCasillero();
+        });
+    }
+    
+    // Manejar el evento de cierre del modal cuando se presiona la tecla ESC
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
             const modalElement = document.getElementById('modalCasillero');
             if (modalElement) {
-                // Agregar evento para cargar los casilleros cuando se muestre el modal
-                modalElement.addEventListener('shown.bs.modal', function() {
-                    cargarCasilleros(1, 'todos', ''); // Cargar siempre la primera página con filtro 'todos' y sin búsqueda
-                });
-                
-                // Agregar eventos a los botones de filtro
-                document.getElementById('btnFiltroTodos')?.addEventListener('click', function() {
-                    cargarCasilleros(1, 'todos', busquedaActual);
-                });
-                
-                document.getElementById('btnFiltroDisponibles')?.addEventListener('click', function() {
-                    cargarCasilleros(1, 'disponibles', busquedaActual);
-                });
-                
-                document.getElementById('btnFiltroAsignados')?.addEventListener('click', function() {
-                    cargarCasilleros(1, 'asignados', busquedaActual);
-                });
-                
-                // Agregar evento para la búsqueda
-                const inputBusqueda = document.getElementById('busquedaCasilleros');
-                const btnLimpiar = document.getElementById('btnLimpiarBusqueda');
-                
-                if (inputBusqueda) {
-                    // Búsqueda en tiempo real con debounce
-                    let timeoutBusqueda;
-                    inputBusqueda.addEventListener('input', function() {
-                        clearTimeout(timeoutBusqueda);
-                        const busqueda = this.value.trim();
-                        timeoutBusqueda = setTimeout(() => {
-                            cargarCasilleros(1, filtroActual, busqueda);
-                        }, 500); // Esperar 500ms después de dejar de escribir
-                    });
-                    
-                    // Búsqueda al presionar Enter
-                    inputBusqueda.addEventListener('keypress', function(e) {
-                        if (e.key === 'Enter') {
-                            cargarCasilleros(1, filtroActual, this.value.trim());
-                        }
-                    });
+                const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                if (modalInstance) {
+                    modalInstance.hide();
                 }
-                
-                if (btnLimpiar) {
-                    btnLimpiar.addEventListener('click', function() {
-                        if (inputBusqueda) {
-                            inputBusqueda.value = '';
-                            cargarCasilleros(1, filtroActual, '');
-                        }
-                    });
-                }
-                
-                const modal = new bootstrap.Modal(modalElement);
-                modal.show();
             }
-        });
+        }
     });
 });

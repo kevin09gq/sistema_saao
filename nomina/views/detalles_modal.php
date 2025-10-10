@@ -34,8 +34,8 @@
                         <span class="info-value" id="campo-nombre"></span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Neto a pagar:</span>
-                        <span class="info-value">$2,001.</span>
+                        <span class="info-label">Departamento:</span>
+                        <span class="info-value">PRODUCCION 40 LIBRAS</span>
                     </div>
                 </div>
             </div>

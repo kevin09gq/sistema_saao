@@ -23,6 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_empresa = $_POST['id_empresa'] ?? null;
     $id_area = $_POST['id_area'] ?? null;
     $id_puestoEspecial = $_POST['id_puestoEspecial'] ?? null;
+    $biometrico = $_POST['biometrico'] ?? null;
     
     // Campos de salario
     $salario_semanal = $_POST['salario_semanal'] ?? null;
@@ -35,6 +36,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $emergencia_parentesco = $_POST['parentesco'] ?? null;
     $emergencia_telefono = $_POST['telefono_contacto'] ?? null;
     $emergencia_domicilio = $_POST['domicilio_contacto'] ?? null;
+
+    // Capturar el valor del teléfono del empleado
+    $telefono_empleado = $_POST['telefono_empleado'] ?? null;
+    
+    // Asegurar que valores vacíos se conviertan a NULL
+    $telefono_empleado = (empty($telefono_empleado) || $telefono_empleado === "0") ? null : $telefono_empleado;
 
     // Convertir fecha si viene
     if ($fecha_ingreso) {
@@ -54,6 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_empresa = ($id_empresa === "0" || $id_empresa === 0 || empty($id_empresa)) ? null : (int)$id_empresa;
     $id_area = ($id_area === "0" || $id_area === 0 || empty($id_area)) ? null : (int)$id_area;
     $id_puestoEspecial = ($id_puestoEspecial === "0" || $id_puestoEspecial === 0 || empty($id_puestoEspecial)) ? null : (int)$id_puestoEspecial;
+    $biometrico = ($biometrico === "0" || $biometrico === 0 || empty($biometrico)) ? null : (int)$biometrico;
     
     // Convertir salarios a decimal o null
     $salario_semanal = !empty($salario_semanal) ? (float)$salario_semanal : null;
@@ -141,6 +149,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    // verificar si el biometrico ya existe para otro empleado
+    if (!empty($biometrico)) {
+        $sql_check_biometrico = $conexion->prepare("SELECT COUNT(*) FROM info_empleados WHERE biometrico = ? AND id_empleado != ?");
+        $sql_check_biometrico->bind_param("ii", $biometrico, $id_empleado);
+        $sql_check_biometrico->execute();
+        $sql_check_biometrico->bind_result($count_biometrico);
+        $sql_check_biometrico->fetch();
+        $sql_check_biometrico->close();
+
+        if ($count_biometrico > 0) {
+            $respuesta = array(
+                "title" => "ADVERTENCIA",
+                "text" => "El número biométrico ya está en uso por otro empleado.",
+                "type" => "info",
+                "icon" => $rutaRaiz . "plugins/toasts/icons/icon_info.png",
+                "timeout" => 3000,
+            );
+
+            header('Content-Type: application/json');
+            echo json_encode($respuesta);
+            exit;
+        }
+    }
+
+
+
     // Verificar si el ID departamento es 0
     if ($id_departamento === "0" || $id_departamento === 0) {
         // Consulta sin parámetro para id_departamento (usa NULL directo)
@@ -163,11 +197,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             id_puestoEspecial = ?,
             salario_semanal = ?,
             salario_mensual = ?,
+            biometrico = ?,
+            telefono_empleado = ?, -- Agregar el campo de teléfono
             id_departamento = NULL
         WHERE id_empleado = ?");
 
         $update_empleado->bind_param(
-            "sssssssssssssiiddi",
+            "sssssssssssssiiddisi",
             $clave_empleado,
             $nombre_empleado,
             $ap_paterno,
@@ -185,6 +221,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id_puestoEspecial,
             $salario_semanal,
             $salario_mensual,
+            $biometrico,
+            $telefono_empleado, // Pasar el teléfono del empleado
             $id_empleado
         );
     } else {
@@ -208,11 +246,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             id_puestoEspecial = ?,
             salario_semanal = ?,
             salario_mensual = ?,
+            biometrico = ?,
+            telefono_empleado = ?, -- Agregar el campo de teléfono
             id_departamento = ?
         WHERE id_empleado = ?");
 
         $update_empleado->bind_param(
-            "sssssssssssssiiiddi",
+            "sssssssssssssiiiddisi",
             $clave_empleado,
             $nombre_empleado,
             $ap_paterno,
@@ -230,6 +270,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id_puestoEspecial,
             $salario_semanal,
             $salario_mensual,
+            $biometrico,
+            $telefono_empleado, // Pasar el teléfono del empleado
             $id_departamento,
             $id_empleado
         );
@@ -239,80 +281,229 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $update_empleado->close();
 
 // Primero, obtener el casillero actual del empleado
-$sql_check_casillero_actual = $conexion->prepare("SELECT num_casillero FROM casilleros WHERE id_empleado = ?");
-$sql_check_casillero_actual->bind_param("i", $id_empleado);
-$sql_check_casillero_actual->execute();
-$resultado_casillero_actual = $sql_check_casillero_actual->get_result();
-$casillero_actual = $resultado_casillero_actual->fetch_assoc();
-$sql_check_casillero_actual->close();
+$sql_check_casilleros_actuales = $conexion->prepare("SELECT num_casillero FROM empleado_casillero WHERE id_empleado = ?");
+$sql_check_casilleros_actuales->bind_param("i", $id_empleado);
+$sql_check_casilleros_actuales->execute();
+$resultado_casilleros_actuales = $sql_check_casilleros_actuales->get_result();
 
-// Si se ingresó un número de casillero
+$casilleros_actuales = [];
+while ($row = $resultado_casilleros_actuales->fetch_assoc()) {
+    $casilleros_actuales[] = $row['num_casillero'];
+}
+$sql_check_casilleros_actuales->close();
+
+// Convertir el número de casillero a un array (puede ser un solo valor o múltiples separados por coma)
+$casilleros_nuevos = [];
 if (!empty($num_casillero)) {
-    // Verificar si existe
-    $sql_verificar_casillero = $conexion->prepare("SELECT num_casillero FROM casilleros WHERE num_casillero = ?");
-    $sql_verificar_casillero->bind_param("s", $num_casillero);
-    $sql_verificar_casillero->execute();
-    $resultado_verificar = $sql_verificar_casillero->get_result();
-    $existe_casillero = $resultado_verificar->num_rows > 0;
-    $sql_verificar_casillero->close();
+    // Separar por coma si hay múltiples casilleros
+    $casilleros_nuevos = array_map('trim', explode(',', $num_casillero));
+}
 
-    if (!$existe_casillero) {
-        $respuesta = array(
-            "title" => "ADVERTENCIA",
-            "text" => "El casillero $num_casillero no existe en el sistema.",
-            "type" => "warning",
-            "icon" => $rutaRaiz . "plugins/toasts/icons/icon_warning.png",
-            "timeout" => 5000,
-        );
-        header('Content-Type: application/json');
-        echo json_encode($respuesta);
-        exit();
-    }
+// Eliminar asignaciones actuales del empleado
+$sql_eliminar_asignaciones = $conexion->prepare("DELETE FROM empleado_casillero WHERE id_empleado = ?");
+$sql_eliminar_asignaciones->bind_param("i", $id_empleado);
+$sql_eliminar_asignaciones->execute();
+$sql_eliminar_asignaciones->close();
 
-    // Verificar si está ocupado por otro empleado
-    $sql_verificar_ocupado = $conexion->prepare("SELECT id_empleado FROM casilleros WHERE num_casillero = ? AND id_empleado IS NOT NULL AND id_empleado != ?");
-    $sql_verificar_ocupado->bind_param("si", $num_casillero, $id_empleado);
-    $sql_verificar_ocupado->execute();
-    $resultado_ocupado = $sql_verificar_ocupado->get_result();
-    $casillero_ocupado = $resultado_ocupado->num_rows > 0;
-    $sql_verificar_ocupado->close();
+// Asignar los nuevos casilleros si se proporcionaron
+if (!empty($casilleros_nuevos)) {
+    foreach ($casilleros_nuevos as $casillero_num) {
+        // Verificar si el casillero existe
+        $sql_verificar_casillero = $conexion->prepare("SELECT num_casillero FROM casilleros WHERE num_casillero = ?");
+        $sql_verificar_casillero->bind_param("s", $casillero_num);
+        $sql_verificar_casillero->execute();
+        $resultado_verificar = $sql_verificar_casillero->get_result();
+        $existe_casillero = $resultado_verificar->num_rows > 0;
+        $sql_verificar_casillero->close();
 
-    if ($casillero_ocupado) {
-        $respuesta = array(
-            "title" => "ADVERTENCIA",
-            "text" => "El casillero $num_casillero ya está ocupado por otro empleado.",
-            "type" => "warning",
-            "icon" => $rutaRaiz . "plugins/toasts/icons/icon_warning.png",
-            "timeout" => 5000,
-        );
-        header('Content-Type: application/json');
-        echo json_encode($respuesta);
-        exit();
-    }
+        if (!$existe_casillero) {
+            $respuesta = array(
+                "title" => "ADVERTENCIA",
+                "text" => "El casillero $casillero_num no existe en el sistema.",
+                "type" => "warning",
+                "icon" => $rutaRaiz . "plugins/toasts/icons/icon_warning.png",
+                "timeout" => 5000,
+            );
+            header('Content-Type: application/json');
+            echo json_encode($respuesta);
+            exit();
+        }
 
-    // Si tenía un casillero anterior diferente, liberarlo
-    if ($casillero_actual && $casillero_actual['num_casillero'] != $num_casillero) {
-        $sql_liberar_casillero = $conexion->prepare("UPDATE casilleros SET id_empleado = NULL WHERE num_casillero = ?");
-        $sql_liberar_casillero->bind_param("s", $casillero_actual['num_casillero']);
-        $sql_liberar_casillero->execute();
-        $sql_liberar_casillero->close();
-    }
+        // Verificar cuántos empleados ya están asignados a este casillero
+        $sql_contar_empleados = $conexion->prepare("SELECT COUNT(*) as total FROM empleado_casillero WHERE num_casillero = ?");
+        $sql_contar_empleados->bind_param("s", $casillero_num);
+        $sql_contar_empleados->execute();
+        $resultado_contar = $sql_contar_empleados->get_result();
+        $row_contar = $resultado_contar->fetch_assoc();
+        $total_empleados = $row_contar['total'];
+        $sql_contar_empleados->close();
 
-    // Asignar el nuevo casillero
-    $sql_asignar_casillero = $conexion->prepare("UPDATE casilleros SET id_empleado = ? WHERE num_casillero = ?");
-    $sql_asignar_casillero->bind_param("is", $id_empleado, $num_casillero);
-    $sql_asignar_casillero->execute();
-    $sql_asignar_casillero->close();
+        if ($total_empleados >= 2) {
+            $respuesta = array(
+                "title" => "ADVERTENCIA",
+                "text" => "El casillero $casillero_num ya tiene el máximo de 2 empleados asignados.",
+                "type" => "warning",
+                "icon" => $rutaRaiz . "plugins/toasts/icons/icon_warning.png",
+                "timeout" => 5000,
+            );
+            header('Content-Type: application/json');
+            echo json_encode($respuesta);
+            exit();
+        }
 
-} else {
-    // Si no se ingresó casillero y el empleado tenía uno, liberarlo
-    if ($casillero_actual) {
-        $sql_eliminar_casillero = $conexion->prepare("UPDATE casilleros SET id_empleado = NULL WHERE num_casillero = ?");
-        $sql_eliminar_casillero->bind_param("s", $casillero_actual['num_casillero']);
-        $sql_eliminar_casillero->execute();
-        $sql_eliminar_casillero->close();
+        // Asignar el casillero al empleado
+        $sql_asignar_casillero = $conexion->prepare("INSERT INTO empleado_casillero (id_empleado, num_casillero) VALUES (?, ?)");
+        $sql_asignar_casillero->bind_param("is", $id_empleado, $casillero_num);
+        $sql_asignar_casillero->execute();
+        $sql_asignar_casillero->close();
     }
 }
+
+// =============================
+// PROCESAR BENEFICIARIOS (MOVER AQUÍ ANTES DE LOS CONTACTOS)
+// =============================
+$beneficiarios = [];
+if (!empty($_POST['beneficiario_nombre'])) {
+    $ids = $_POST['beneficiario_id'] ?? [];
+    $nombres = $_POST['beneficiario_nombre'];
+    $ap_paternos = $_POST['beneficiario_ap_paterno'] ?? [];
+    $ap_maternos = $_POST['beneficiario_ap_materno'] ?? [];
+    $parentescos = $_POST['beneficiario_parentesco'] ?? [];
+    $porcentajes = $_POST['beneficiario_porcentaje'] ?? [];
+
+    for ($i = 0; $i < count($nombres); $i++) {
+        $id_beneficiario = trim($ids[$i] ?? '');
+        $nombre = trim($nombres[$i] ?? '');
+        $ap_paterno = trim($ap_paternos[$i] ?? '');
+        $ap_materno = trim($ap_maternos[$i] ?? '');
+        $parentesco = trim($parentescos[$i] ?? '');
+        $porcentaje = trim($porcentajes[$i] ?? '');
+
+        // Solo procesar si al menos el nombre tiene contenido
+        if (!empty($nombre)) {
+            $beneficiarios[] = [
+                'id_beneficiario' => $id_beneficiario,
+                'nombre' => $nombre,
+                'ap_paterno' => $ap_paterno,
+                'ap_materno' => $ap_materno,
+                'parentesco' => $parentesco,
+                'porcentaje' => $porcentaje
+            ];
+        }
+    }
+}
+
+// Verificar si todos los campos de beneficiarios están vacíos
+if (empty($beneficiarios)) {
+    // Si no hay beneficiarios en el formulario, eliminar todas las relaciones existentes
+    $sql_delete_all_beneficiarios = $conexion->prepare("DELETE FROM empleado_beneficiario WHERE id_empleado = ?");
+    $sql_delete_all_beneficiarios->bind_param("i", $id_empleado);
+    $sql_delete_all_beneficiarios->execute();
+    $sql_delete_all_beneficiarios->close();
+} else {
+    // Eliminar todas las relaciones actuales para reconstruir
+    $sql_delete_relaciones = $conexion->prepare("DELETE FROM empleado_beneficiario WHERE id_empleado = ?");
+    $sql_delete_relaciones->bind_param("i", $id_empleado);
+    $sql_delete_relaciones->execute();
+    $sql_delete_relaciones->close();
+
+    // Procesar cada beneficiario del formulario
+    foreach ($beneficiarios as $beneficiario) {
+        $id_beneficiario_existente = $beneficiario['id_beneficiario'];
+        $nombre = $beneficiario['nombre'];
+        $ap_paterno = $beneficiario['ap_paterno'];
+        $ap_materno = $beneficiario['ap_materno'];
+        $parentesco = $beneficiario['parentesco'];
+        $porcentaje = $beneficiario['porcentaje'];
+
+        // NUEVA LÓGICA: Si tiene ID existente, verificar si los datos cambiaron
+        if (!empty($id_beneficiario_existente)) {
+            // Verificar si los datos del beneficiario han cambiado
+            $sql_check_cambios = $conexion->prepare("SELECT nombre, ap_paterno, ap_materno FROM beneficiarios WHERE id_beneficiario = ?");
+            $sql_check_cambios->bind_param("i", $id_beneficiario_existente);
+            $sql_check_cambios->execute();
+            $resultado_cambios = $sql_check_cambios->get_result();
+            
+            if ($resultado_cambios->num_rows > 0) {
+                $datos_actuales = $resultado_cambios->fetch_assoc();
+                
+                // Si los datos han cambiado, verificar si otro beneficiario usa este ID
+                if ($datos_actuales['nombre'] !== $nombre || 
+                    $datos_actuales['ap_paterno'] !== $ap_paterno || 
+                    $datos_actuales['ap_materno'] !== $ap_materno) {
+                    
+                    // Verificar cuántos empleados usan este beneficiario
+                    $sql_count_usos = $conexion->prepare("SELECT COUNT(*) as total FROM empleado_beneficiario WHERE id_beneficiario = ?");
+                    $sql_count_usos->bind_param("i", $id_beneficiario_existente);
+                    $sql_count_usos->execute();
+                    $sql_count_usos->bind_result($total_usos);
+                    $sql_count_usos->fetch();
+                    $sql_count_usos->close();
+                    
+                    if ($total_usos > 1) {
+                        // Crear nuevo beneficiario si está siendo usado por otros empleados
+                        $sql_nuevo_beneficiario = $conexion->prepare("INSERT INTO beneficiarios (nombre, ap_paterno, ap_materno) VALUES (?, ?, ?)");
+                        $sql_nuevo_beneficiario->bind_param("sss", $nombre, $ap_paterno, $ap_materno);
+                        $sql_nuevo_beneficiario->execute();
+                        $id_beneficiario_usar = $conexion->insert_id;
+                        $sql_nuevo_beneficiario->close();
+                    } else {
+                        // Actualizar el beneficiario existente si solo lo usa este empleado
+                        $sql_update_beneficiario = $conexion->prepare("UPDATE beneficiarios SET nombre = ?, ap_paterno = ?, ap_materno = ? WHERE id_beneficiario = ?");
+                        $sql_update_beneficiario->bind_param("sssi", $nombre, $ap_paterno, $ap_materno, $id_beneficiario_existente);
+                        $sql_update_beneficiario->execute();
+                        $sql_update_beneficiario->close();
+                        $id_beneficiario_usar = $id_beneficiario_existente;
+                    }
+                } else {
+                    // Los datos no han cambiado, usar el ID existente
+                    $id_beneficiario_usar = $id_beneficiario_existente;
+                }
+            } else {
+                // El ID no existe más, crear nuevo beneficiario
+                $sql_nuevo_beneficiario = $conexion->prepare("INSERT INTO beneficiarios (nombre, ap_paterno, ap_materno) VALUES (?, ?, ?)");
+                $sql_nuevo_beneficiario->bind_param("sss", $nombre, $ap_paterno, $ap_materno);
+                $sql_nuevo_beneficiario->execute();
+                $id_beneficiario_usar = $conexion->insert_id;
+                $sql_nuevo_beneficiario->close();
+            }
+            $sql_check_cambios->close();
+        } else {
+            // No tiene ID existente, verificar si ya existe o crear nuevo
+            $sql_check_beneficiario = $conexion->prepare("SELECT id_beneficiario FROM beneficiarios WHERE nombre = ? AND ap_paterno = ? AND ap_materno = ?");
+            $sql_check_beneficiario->bind_param("sss", $nombre, $ap_paterno, $ap_materno);
+            $sql_check_beneficiario->execute();
+            $resultado_beneficiario = $sql_check_beneficiario->get_result();
+
+            if ($resultado_beneficiario->num_rows > 0) {
+                $row_beneficiario = $resultado_beneficiario->fetch_assoc();
+                $id_beneficiario_usar = $row_beneficiario['id_beneficiario'];
+            } else {
+                $sql_insert_beneficiario = $conexion->prepare("INSERT INTO beneficiarios (nombre, ap_paterno, ap_materno) VALUES (?, ?, ?)");
+                $sql_insert_beneficiario->bind_param("sss", $nombre, $ap_paterno, $ap_materno);
+                $sql_insert_beneficiario->execute();
+                $id_beneficiario_usar = $conexion->insert_id;
+                $sql_insert_beneficiario->close();
+            }
+            $sql_check_beneficiario->close();
+        }
+
+        // Crear la relación empleado-beneficiario con el ID correcto
+        $sql_insert_relacion = $conexion->prepare("INSERT INTO empleado_beneficiario (id_empleado, id_beneficiario, parentesco, porcentaje) VALUES (?, ?, ?, ?)");
+        $sql_insert_relacion->bind_param("iisd", $id_empleado, $id_beneficiario_usar, $parentesco, $porcentaje);
+        $sql_insert_relacion->execute();
+        $sql_insert_relacion->close();
+    }
+
+    // Limpiar beneficiarios huérfanos
+    $sql_limpiar_huerfanos = $conexion->prepare("DELETE FROM beneficiarios WHERE id_beneficiario NOT IN (SELECT DISTINCT id_beneficiario FROM empleado_beneficiario WHERE id_beneficiario IS NOT NULL)");
+    $sql_limpiar_huerfanos->execute();
+    $sql_limpiar_huerfanos->close();
+}
+
+// =============================
+// FIN DEL PROCESAMIENTO DE BENEFICIARIOS
+// =============================
 
     // Verificar si el contacto de emergencia ya está registrado
     $sql_check_contacto_emergencia = $conexion->prepare("SELECT COUNT(*) FROM contacto_emergencia WHERE nombre = ? AND ap_paterno = ? AND ap_materno = ?");
@@ -380,7 +571,7 @@ if (!empty($num_casillero)) {
                     "timeout" => 3000,
                 );
                 header('Content-Type: application/json');
-                echo json_encode($respuesta);
+echo json_encode($respuesta);
                 exit();
             }
         } else {
@@ -683,5 +874,16 @@ if (!empty($num_casillero)) {
             }
         }
     }
+
+    $respuesta = array(
+        "title" => "SUCCESS",
+        "text" => "Actualización exitosa.",
+        "type" => "success",
+        "icon" => $rutaRaiz . "plugins/toasts/icons/icon_success.png",
+        "timeout" => 3000,
+    );
+    header('Content-Type: application/json');
+    echo json_encode($respuesta);
+    exit();
 }
 ?>

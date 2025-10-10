@@ -34,7 +34,11 @@ function setBusqueda(texto) {
 function renderTablaEmpleados() {
     // Filtrar por departamento
     let filtrados = empleadosData;
-    if (filtroDepartamento !== "0") {
+    if (filtroDepartamento === "1000") {
+        // Filtrar empleados sin seguro (donde imss es null o vacío)
+        filtrados = empleadosData.filter(emp => !emp.imss || emp.imss === "" || emp.imss === null);
+    } else if (filtroDepartamento !== "0") {
+        // Filtrar por departamento específico
         filtrados = empleadosData.filter(emp => String(emp.id_departamento) === String(filtroDepartamento));
     }
     // Filtrar por estado
@@ -76,7 +80,8 @@ function renderTablaEmpleados() {
                 <td>${emp.clave_empleado}</td>
                 <td><span id="btn_status" data-id-empleado="${emp.id_empleado}" data-id-status="${emp.id_status}" class="status ${emp.id_status == 1 ? 'status-activo' : 'status-inactivo'}">${emp.nombre_status}</span></td>
                 <td class="text-end">
-                    <button class="btn btn-view btn-actualizar" data-id="${emp.id_empleado}" data-clave="${emp.clave_empleado}"> Actualizar </button>
+                    <button class="btn btn-view btn-actualizar" data-id="${emp.id_empleado}" data-clave="${emp.clave_empleado}" title="Actualizar"><i class="bi bi-pencil"></i></button>
+                    ${emp.nombre_status !== 'Activo' ? `<button class="btn btn-danger btn-eliminar" data-id="${emp.id_empleado}" data-nombre="${emp.nombre} ${emp.ap_paterno} ${emp.ap_materno}" title="Eliminar"><i class="bi bi-trash"></i></button>` : ''}
                 </td>
             </tr>
         `;
@@ -152,7 +157,9 @@ function renderPaginacion(totalFiltrados) {
 function cambiarPagina(nuevaPagina) {
     // Filtrar por departamento, estado y búsqueda para saber el total de páginas
     let filtrados = empleadosData;
-    if (filtroDepartamento !== "0") {
+    if (filtroDepartamento === "1000") {
+        filtrados = empleadosData.filter(emp => !emp.imss || emp.imss === "" || emp.imss === null);
+    } else if (filtroDepartamento !== "0") {
         filtrados = empleadosData.filter(emp => String(emp.id_departamento) === String(filtroDepartamento));
     }
     if (filtroEstado !== "Todos") {
@@ -178,7 +185,9 @@ function cambiarPagina(nuevaPagina) {
 function paginacionStatus(empleadosData) {
     // Verificar si la página actual sigue siendo válida
     let filtrados = empleadosData;
-    if (filtroDepartamento !== "0") {
+    if (filtroDepartamento === "1000") {
+        filtrados = empleadosData.filter(emp => !emp.imss || emp.imss === "" || emp.imss === null);
+    } else if (filtroDepartamento !== "0") {
         filtrados = empleadosData.filter(emp => String(emp.id_departamento) === String(filtroDepartamento));
     }
     if (filtroEstado !== "Todos") {

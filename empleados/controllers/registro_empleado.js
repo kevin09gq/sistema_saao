@@ -14,6 +14,22 @@ $(document).ready(function () {
     validarDatos("#ap_materno_emergencia", validarApellido);
     validarDatos("#parentesco_emergencia", validarParentesco);
     validarDatos("#telefono_emergencia", validarTelefono);
+    validarDatos("#telefono_empleado", validarTelefono);
+
+    // Validar campos de beneficiarios
+    $('input[name="beneficiario_nombre[]"]').each(function () {
+        validarDatos(this, validarNombre);
+    });
+    $('input[name="beneficiario_ap_paterno[]"]').each(function () {
+        validarDatos(this, validarApellido);
+    });
+    $('input[name="beneficiario_ap_materno[]"]').each(function () {
+        validarDatos(this, validarApellido);
+    });
+    $('input[name="beneficiario_parentesco[]"]').each(function () {
+        validarDatos(this, validarParentesco);
+    });
+ 
 
     // Formatear campos a mayúsculas mientras el usuario escribe
     formatearMayusculas("#nombre_trabajador");
@@ -26,6 +42,21 @@ $(document).ready(function () {
     formatearMayusculas("#nombre_emergencia");
     formatearMayusculas("#ap_paterno_emergencia");
     formatearMayusculas("#ap_materno_emergencia");
+    formatearMayusculas("#parentesco_emergencia");
+
+    // Formatear campos de beneficiarios a mayúsculas
+    $('input[name="beneficiario_nombre[]"]').each(function () {
+        formatearMayusculas(this);
+    });
+    $('input[name="beneficiario_ap_paterno[]"]').each(function () {
+        formatearMayusculas(this);
+    });
+    $('input[name="beneficiario_ap_materno[]"]').each(function () {
+        formatearMayusculas(this);
+    });
+    $('input[name="beneficiario_parentesco[]"]').each(function () {
+        formatearMayusculas(this);
+    });
 
     // Cargar departamentos al iniciar
     obtenerDepartamentos();
@@ -178,6 +209,8 @@ $(document).ready(function () {
         
         // Limpiar campos de salario
         $("#salario_semanal, #salario_mensual").val("");
+        $("#biometrico").val("");
+        $("#telefono_empleado").val("");
         
         // Limpiar campos de contacto de emergencia
         $("#nombre_emergencia, #ap_paterno_emergencia, #ap_materno_emergencia").val("");
@@ -218,13 +251,15 @@ $(document).ready(function () {
             const fecha_ingreso = $("#fecha_ingreso_trabajador").val();
             const id_departamento = $("#departamento_trabajador").val();
             const num_casillero = $("#num_casillero").val().trim();
+            const biometrico = $("#biometrico").val().trim();
 
             // Nuevos campos opcionales
             const id_area = $("#area_trabajador").val();
             const id_puestoEspecial = $("#puesto_trabajador").val(); // Cambiado de id_puesto a id_puestoEspecial
             const id_empresa = $("#empresa_trabajador").val();
             const fecha_nacimiento = $("#fecha_nacimiento").val();
-
+            const telefono_empleado = $("#telefono_empleado").val().trim();
+            
             // Campos de salario (opcionales)
             const salario_diario = $("#salario_semanal").val().trim();
             const salario_mensual = $("#salario_mensual").val().trim();
@@ -236,6 +271,27 @@ $(document).ready(function () {
             const emergencia_parentesco = $("#parentesco_emergencia").val().trim();
             const emergencia_telefono = $("#telefono_emergencia").val().trim();
             const emergencia_domicilio = $("#domicilio_emergencia").val().trim();
+
+            // Obtener datos de beneficiarios
+            let beneficiarios = [];
+            $('input[name="beneficiario_nombre[]"]').each(function (index) {
+                const nombre = $(this).val().trim();
+                const ap_paterno = $('input[name="beneficiario_ap_paterno[]"]').eq(index).val().trim();
+                const ap_materno = $('input[name="beneficiario_ap_materno[]"]').eq(index).val().trim();
+                const parentesco = $('input[name="beneficiario_parentesco[]"]').eq(index).val().trim();
+                const porcentaje = $('input[name="beneficiario_porcentaje[]"]').eq(index).val().trim();
+
+                // Solo agregar beneficiarios que tengan al menos un campo lleno
+                if (nombre || ap_paterno || ap_materno || parentesco || porcentaje) {
+                    beneficiarios.push({
+                        nombre: nombre || "",
+                        ap_paterno: ap_paterno || "",
+                        ap_materno: ap_materno || "",
+                        parentesco: parentesco || "",
+                        porcentaje: porcentaje || ""
+                    });
+                }
+            });
 
             // Validaciones obligatorias
             let obligatoriosValidos = (
@@ -251,6 +307,7 @@ $(document).ready(function () {
             if (imss && !validarNSS(imss)) opcionalesValidos = false;
             if (curp && !validarCURP(curp)) opcionalesValidos = false;
             if (grupo_sanguineo && !validarGrupoSanguineo(grupo_sanguineo)) opcionalesValidos = false;
+            if (telefono_empleado && !validarTelefono(telefono_empleado)) opcionalesValidos = false;
             if (emergencia_nombre && !validarNombre(emergencia_nombre)) opcionalesValidos = false;
             if (emergencia_ap_paterno && !validarApellido(emergencia_ap_paterno)) opcionalesValidos = false;
             if (emergencia_ap_materno && !validarApellido(emergencia_ap_materno)) opcionalesValidos = false;
@@ -295,12 +352,14 @@ $(document).ready(function () {
                 fecha_ingreso: fecha_ingreso || "",
                 id_departamento: id_departamento || "",
                 num_casillero: num_casillero || "",
+                biometrico: biometrico || "",
 
                 // Nuevos campos opcionales
                 fecha_nacimiento: fecha_nacimiento || "",
                 id_area: id_area || "",
                 id_puestoEspecial: id_puestoEspecial || "", // Cambiado de id_puesto a id_puestoEspecial
                 id_empresa: id_empresa || "",
+                telefono_empleado: telefono_empleado || "",
 
                 // Campos de salario
                 salario_diario: salario_diario || "",
@@ -311,11 +370,11 @@ $(document).ready(function () {
                 emergencia_ap_materno: emergencia_ap_materno || "",
                 emergencia_parentesco: emergencia_parentesco || "",
                 emergencia_telefono: emergencia_telefono || "",
-                emergencia_domicilio: emergencia_domicilio || ""
-            };
+                emergencia_domicilio: emergencia_domicilio || "",
 
-            console.log(datos); // Verifica los datos antes de enviarlos
-            
+                // Datos de beneficiarios
+                beneficiarios: beneficiarios
+            };
 
             $.ajax({
                 type: "POST",
@@ -348,7 +407,7 @@ $(document).ready(function () {
                             icon: rutaPlugins + 'plugins/toasts/icons/icon_error.png',
                             timeout: 3000
                         });
-                        console.error('Error parsing response:', e);
+                        
                     }
                 },
                 error: function (xhr, status, error) {

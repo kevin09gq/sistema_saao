@@ -41,8 +41,7 @@ $(document).ready(function () {
                 callback(clavesValidas);
             },
             error: function(xhr, status, error) {
-                console.error('Error al validar claves:', error);
-                // En caso de error, devolver array vacío
+               // En caso de error, devolver array vacío
                 callback([]);
             }
         });
@@ -74,7 +73,7 @@ $(document).ready(function () {
      */
     $('#btn_suma').on('click', function () {
         abrirModalSumas();
-        console.log(jsonGlobal)
+       
     });
 
     /**
@@ -153,7 +152,6 @@ $(document).ready(function () {
                 }
             });
 
-            console.log(`Empleados procesados (registrados en BD): ${empleadosProcesados}`);
             
             // Actualizar el modal con los totales calculados
             actualizarModalConTotales(totales);
@@ -238,7 +236,6 @@ $(document).ready(function () {
                 callback(clavesValidas);
             },
             error: function(xhr, status, error) {
-                console.error('Error al validar claves para dispersión:', error);
                 // En caso de error, devolver array vacío
                 callback([]);
             }
@@ -296,8 +293,7 @@ $(document).ready(function () {
                 });
             });
 
-            console.log(`Empleados procesados en dispersión (registrados en BD): ${empleadosProcesados}`);
-
+           
             // Actualizar el modal con los totales calculados
             actualizarModalDispersionConTotales(totalSueldoNeto, empleadosProcesados);
         });
