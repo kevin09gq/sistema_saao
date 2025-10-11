@@ -99,6 +99,10 @@
                     <i class="bi bi-search"></i>
                     <input type="text" class="campo-busqueda" placeholder="Buscar..." id="campo-busqueda-dispersion">
                 </div>
+                <div class="busqueda-container" id="busqueda-container-sin-seguro" hidden>
+                    <i class="bi bi-search"></i>
+                    <input type="text" class="campo-busqueda" placeholder="Buscar..." id="campo-busqueda-sin-seguro">
+                </div>
             </div>
 
             <button class="btn-agregar-todos" id="btn_mostrar_todos" hidden>
@@ -162,6 +166,38 @@
             <ul id="paginacion-nomina" class="pagination" style="margin: 20px 0 0 0; justify-content: center;"></ul>
         </div>
 
+        <!-- Tabla de empleados sin seguros -->
+        <div class="" id="tabla-sin-seguro-container" hidden>
+            <div class="table-responsive">
+                <table class="table-nomina" id="tabla-sin-seguro">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">#</th>
+                            <th rowspan="2">NOMBRE</th>
+                            <th rowspan="2">PUESTO</th>
+                            <th rowspan="2">SUELDO <br>NETO</th>
+                            <th rowspan="2">INCENTIVO</th>
+                            <th rowspan="2">EXTRA</th>
+                            <th rowspan="2">TARJETA</th>
+                            <th rowspan="2">PRÉSTAMO</th>
+                            <th rowspan="2">INASISTENCIAS</th>
+                            <th rowspan="2">UNIFORMES</th>
+                            <th rowspan="2">INFONAVIT</th>
+                            <th rowspan="2">ISR</th>
+                            <th rowspan="2">IMSS</th>
+                            <th rowspan="2">Checador</th>
+                            <th rowspan="2">F.A /<br>GAFET/<br>COFIA</th>
+                            <th rowspan="2">SUELDO A <br>COBRAR</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-sin-seguro-body">
+                        <!-- Los datos se cargarán aquí dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+            <ul id="paginacion-sin-seguro" class="pagination" style="margin: 20px 0 0 0; justify-content: center;"></ul>
+        </div>
+
         <!-- Tabla de dispersión de tarjeta -->
         <div class="" id="tabla-dispersion-tarjeta" hidden>
             <div class="table-responsive">
@@ -200,6 +236,11 @@
     <!-- Menú contextual para dispersión -->
     <div id="menu-contextual-dispersion" hidden style="position:absolute; z-index:9999; background:#fff; border:1px solid #ccc; padding:6px 12px; font-size:14px; cursor:pointer; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.15);">
         Actualizar Sueldo
+    </div>
+    
+    <!-- Menú contextual para empleados sin seguro -->
+    <div id="menu-contextual-sin-seguro" hidden style="position:absolute; z-index:9999; background:#fff; border:1px solid #ccc; padding:6px 12px; font-size:14px; cursor:pointer;">
+        Ver detalles
     </div>
 
     <!-- jQuery -->

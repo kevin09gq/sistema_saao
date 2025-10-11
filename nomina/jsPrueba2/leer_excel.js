@@ -518,7 +518,7 @@ function obtenerArchivos(params) {
                                 // Unir ambos JSON y mostrar el resultado
                                 const jsonUnido = unirJson(json1, json2);
                                 empleadosNoUnidos(json1, json2);
-                                enviarIdBiometricosNoUnidos(json1, json2);
+                                // MOVER enviarIdBiometricosNoUnidos DESPUÉS de asignar jsonGlobal
 
                                 verificarNominaExistente(jsonUnido.numero_semana, function (existe) {
                                     if (existe) {
@@ -537,6 +537,9 @@ function obtenerArchivos(params) {
                                                     actualizarCabeceraNomina(jsonGlobal);
                                                 }
 
+                                                // AHORA SÍ EJECUTAR enviarIdBiometricosNoUnidos CON jsonGlobal DISPONIBLE
+                                                enviarIdBiometricosNoUnidos(json1, json2);
+
                                                 $("#tabla-nomina-responsive").removeAttr("hidden");
                                                 $("#container-nomina").attr("hidden", true);
 
@@ -548,6 +551,8 @@ function obtenerArchivos(params) {
 
                                                 // Guardar datos en localStorage después de procesar
                                                 guardarDatosNomina();
+                                                console.log(jsonGlobal);
+                                                
                                             });
                                         });
                                         return;
@@ -557,6 +562,9 @@ function obtenerArchivos(params) {
                                         // ESTABLECER HORARIOS PARA NÓMINA NUEVA
                                         establecerHorariosSemanales(jsonGlobal.numero_semana, function () {
                                             actualizarCabeceraNomina(jsonUnido);
+
+                                            // AHORA SÍ EJECUTAR enviarIdBiometricosNoUnidos CON jsonGlobal DISPONIBLE
+                                            enviarIdBiometricosNoUnidos(json1, json2);
 
                                             $("#tabla-nomina-responsive").removeAttr("hidden");
                                             $("#container-nomina").attr("hidden", true);
@@ -569,6 +577,8 @@ function obtenerArchivos(params) {
 
                                             // Guardar datos en localStorage después de procesar
                                             guardarDatosNomina();
+                                            console.log(jsonGlobal);
+                                                
                                         });
                                     }
                                 });
@@ -1174,9 +1184,12 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
     function encontrarEmpleadoEnJsonGlobal(clave) {
         if (!jsonGlobal || !jsonGlobal.departamentos) return null;
         for (let depto of jsonGlobal.departamentos) {
-            if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS')) {
+            // Buscar en PRODUCCION 40 LIBRAS y SIN SEGURO
+            if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS') || 
+                (depto.nombre || '').toUpperCase().includes('SIN SEGURO')) {
                 for (let emp of depto.empleados || []) {
-                    if (emp.clave === clave) {
+                    // Buscar por clave o por id_biometrico para empleados no unidos
+                    if (emp.clave === clave || emp.id_biometrico === clave) {
                         return emp;
                     }
                 }
@@ -1417,7 +1430,9 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
     window.empleadosOriginales.forEach(empleado => {
         const registrosPorFecha = {};
         let totalMinutosSemana = 0;
-        const empleadoEnJson = encontrarEmpleadoEnJsonGlobal(empleado.clave);
+        // Para empleados no unidos, usar id_biometrico como clave
+        const claveBusqueda = empleado.no_unido ? empleado.id_biometrico : empleado.clave;
+        const empleadoEnJson = encontrarEmpleadoEnJsonGlobal(claveBusqueda);
         const registrosRedondeados = [];
 
         //    CONTADOR DE OLVIDOS DEL CHECADOR PARA DESCUENTO
@@ -2116,28 +2131,49 @@ function obtenerIdBiometricoEmpleadosNoUnidos(json1, json2) {
         json1.departamentos.forEach(depto => {
             if (depto.empleados) {
                 depto.empleados.forEach(emp1 => {
-                    nombresJson1.add(normalizar(emp1.nombre));
+                    if (emp1.nombre) {
+                        nombresJson1.add(normalizar(emp1.nombre));
+                    }
                 });
             }
         });
     }
 
-    // Buscar empleados de json2 que NO están en json1 y obtener sus id_biometrico
-    const idsBiometricosNoUnidos = [];
+    // Buscar empleados de json2 que NO están en json1 y obtener sus datos completos
+    const empleadosNoUnidos = [];
     if (json2 && json2.empleados) {
         json2.empleados.forEach(emp2 => {
-            const nombreOrdenado = ordenarNombre(emp2.nombre); // Reordenar el nombre
-            if (!nombresJson1.has(normalizar(nombreOrdenado)) && emp2.id_biometrico) {
-                idsBiometricosNoUnidos.push(emp2.id_biometrico);
+            if (!emp2) return;
+
+            const nombreOrdenado = emp2.nombre ? ordenarNombre(emp2.nombre) : '';
+            const nombreNormalizado = emp2.nombre ? normalizar(nombreOrdenado) : '';
+
+            // Verificar si el empleado no está en json1 por nombre
+            if (!nombresJson1.has(nombreNormalizado) && emp2.id_biometrico) {
+                // Agregar el empleado completo al array de no unidos
+                empleadosNoUnidos.push({
+                    id_biometrico: emp2.id_biometrico,
+                    nombre: emp2.nombre || '',
+                    ap_paterno: emp2.ap_paterno || '',
+                    ap_materno: emp2.ap_materno || '',
+                    // Agregar otros campos relevantes que necesites
+                    ...emp2 // Incluir todas las demás propiedades del empleado
+                });
             }
         });
     }
 
-    return idsBiometricosNoUnidos;
+    // Devolver tanto los IDs como los registros completos
+
+    return {
+        ids: empleadosNoUnidos.map(emp => emp.id_biometrico),
+        empleados: empleadosNoUnidos
+    };
 }
 
 function enviarIdBiometricosNoUnidos(json1, json2) {
-    const idsBiometricos = obtenerIdBiometricoEmpleadosNoUnidos(json1, json2);
+    const { ids: idsBiometricos, empleados: empleadosNoUnidos } = obtenerIdBiometricoEmpleadosNoUnidos(json1, json2);
+
 
     if (idsBiometricos.length > 0) {
         $.ajax({
@@ -2148,18 +2184,112 @@ function enviarIdBiometricosNoUnidos(json1, json2) {
             success: function (response) {
                 try {
                     const empleadosRegistrados = JSON.parse(response);
-                    console.log("Empleados registrados en la base de datos:", empleadosRegistrados);
+
+                    // Crear un nuevo departamento para empleados no unidos
+                    if (empleadosRegistrados.length > 0 && jsonGlobal) {
+                        // Verificar si ya existe el departamento de empleados no unidos
+                        let deptoNoUnidos = jsonGlobal.departamentos.find(depto =>
+                            depto.nombre && depto.nombre.includes("SIN SEGURO"));
+
+                        // Si no existe, crearlo con el nombre correcto
+                        if (!deptoNoUnidos) {
+                            deptoNoUnidos = {
+                                nombre: "SIN SEGURO",
+                                empleados: []
+                            };
+                            jsonGlobal.departamentos.push(deptoNoUnidos);
+                        } else {
+                            // Limpiar empleados sin id_biometrico y duplicados existentes
+                            const empleadosUnicos = [];
+                            const idsBiometricosVistos = new Set();
+
+                            deptoNoUnidos.empleados.forEach(emp => {
+                                // Solo mantener empleados que tengan id_biometrico válido
+                                if (emp.id_biometrico && emp.id_biometrico !== null && emp.id_biometrico !== undefined) {
+                                    if (!idsBiometricosVistos.has(emp.id_biometrico)) {
+                                        empleadosUnicos.push(emp);
+                                        idsBiometricosVistos.add(emp.id_biometrico);
+                                    } else {
+                                    }
+                                } else {
+                                }
+                            });
+
+                            deptoNoUnidos.empleados = empleadosUnicos;
+                        }
+
+
+                        const empleadosConvertidos = empleadosRegistrados.map(emp => {
+                            // Buscar el empleado correspondiente en empleadosNoUnidos para obtener registros y horas
+                            // Comparar tanto string como número para evitar problemas de tipo
+                            const empleadoNoUnido = empleadosNoUnidos.find(e =>
+                                String(e.id_biometrico) === String(emp.biometrico)
+                            );
+
+
+                            return {
+                                nombre: `${emp.ap_paterno} ${emp.ap_materno} ${emp.nombre}`,
+                                clave: emp.clave_empleado,
+                                id_biometrico: emp.biometrico,
+                                // Valores por defecto para campos requeridos
+                                incentivo: 0,
+                                bono_antiguedad: 0,
+                                actividades_especiales: 0,
+                                bono_puesto: 0,
+                                conceptos: [],
+                                conceptos_adicionales: [],
+                                sueldo_extra_final: 0,
+                                prestamo: 0,
+                                uniformes: 0,
+                                checador: 0,
+                                fa_gafet_cofia: 0,
+                                inasistencias_minutos: 0,
+                                inasistencias_descuento: 0,
+                                sueldo_a_cobrar: 0,
+                                // Asignar horas_totales y registros del empleado no unido
+                                horas_totales: empleadoNoUnido?.horas_totales || "0.00",
+                                registros: empleadoNoUnido?.registros || [],
+                                tiempo_total: empleadoNoUnido?.tiempo_total || "00:00",
+                                // Campos específicos para empleados no unidos
+                                no_unido: true
+                            };
+                        });
+
+                        // Agregar empleados al departamento (solo con id_biometrico válido)
+                        empleadosConvertidos.forEach(empConvertido => {
+                            // Solo procesar empleados que tengan id_biometrico válido
+                            if (empConvertido.id_biometrico && empConvertido.id_biometrico !== null && empConvertido.id_biometrico !== undefined) {
+                                // Verificar si el id_biometrico ya existe en el departamento
+                                const existeBiometrico = deptoNoUnidos.empleados.some(emp =>
+                                    emp.id_biometrico === empConvertido.id_biometrico
+                                );
+
+                                if (!existeBiometrico) {
+                                    deptoNoUnidos.empleados.push(empConvertido);
+                                    
+                                    // Agregar empleado no unido a empleadosOriginales para que pase por redondeo
+                                    window.empleadosOriginales.push(empConvertido);
+                                }
+                            }
+                        });
+                        
+                        // Ejecutar redondeo de registros para empleados no unidos
+                        if (empleadosConvertidos.length > 0) {
+                             redondearRegistrosEmpleados(false, false); // No forzar recálculo, no es nómina nueva
+                        }
+
+                    } else {
+
+                    }
+
                     // Aquí puedes manejar los datos recibidos, como mostrarlos en la interfaz
                 } catch (error) {
-                    console.error("Error al procesar la respuesta del servidor:", error);
                 }
             },
             error: function (xhr, status, error) {
-                console.error("Error al enviar los datos al servidor:", error);
             }
         });
     } else {
-        console.log("No hay IDs biométricos no unidos para enviar.");
     }
 }
 

@@ -279,12 +279,23 @@ function configCheckBox(incentivo, bonoAntiguedad) {
 
 // Función universal para actualizar cualquier propiedad del empleado en todas las estructuras JSON
 function actualizarPropiedadEmpleadoEnJsonGlobal(clave, propiedad, valor) {
+    // Verificar que tenemos un valor válido para actualizar
+
+    let empleadoEncontrado = false;
+
     // Actualizar en jsonGlobal
     if (window.jsonGlobal && window.jsonGlobal.departamentos) {
         window.jsonGlobal.departamentos.forEach(depto => {
             (depto.empleados || []).forEach(emp => {
                 if (String(emp.clave) === String(clave)) {
+                    // Asegurar que el valor anterior se mantenga si el nuevo es NaN
+                    if (typeof valor === 'number' && isNaN(valor)) {
+                       
+                        valor = emp[propiedad] || 0;
+                    }
+                    
                     emp[propiedad] = valor;
+                    empleadoEncontrado = true;
                 }
             });
         });
@@ -295,21 +306,22 @@ function actualizarPropiedadEmpleadoEnJsonGlobal(clave, propiedad, valor) {
         const empleadoOriginal = window.empleadosOriginales.find(emp => String(emp.clave) === String(clave));
         if (empleadoOriginal) {
             empleadoOriginal[propiedad] = valor;
+            empleadoEncontrado = true;
         }
     }
 
     // Actualizar en empleadosFiltrados
-    if (empleadosFiltrados) {
-        const empleadoFiltrado = empleadosFiltrados.find(emp => String(emp.clave) === String(clave));
+    if (window.empleadosFiltrados) {
+        const empleadoFiltrado = window.empleadosFiltrados.find(emp => String(emp.clave) === String(clave));
         if (empleadoFiltrado) {
             empleadoFiltrado[propiedad] = valor;
+            empleadoEncontrado = true;
         }
     }
+
+   
 }
 
-
-
-// Calcular total de sueldo extra sumando todos los componentes
 function calcularTotalExtra() {
     // Obtener valores de todos los campos que conforman el total extra
     const horasExtras = parseFloat($('#mod-horas-extras').val()) || 0;
@@ -333,10 +345,18 @@ function calcularTotalExtra() {
     // Actualizar en el JSON global también
     const clave = $('#campo-clave').text().trim();
     if (clave) {
+        // Actualizar cada componente individual también para asegurar que se sincronicen
+        actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'sueldo_extra', horasExtras);
+        actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'bono_antiguedad', bonoAntiguedad);
+        actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'actividades_especiales', actividadesEspeciales);
+        actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'bono_puesto', bonoPuesto);
+        
+        // Actualizar el total extra
         actualizarTotalExtraEnJsonGlobal(clave, totalExtra);
-        actualizarSueldoACobrarEnTiempoReal(clave); //   Actualizar sueldo a cobrar cuando cambie el total extra
+        actualizarSueldoACobrarEnTiempoReal(clave); // Actualizar sueldo a cobrar
     }
 }
+
 
 
 // Actualizar total extra final en el JSON global del empleado
@@ -960,37 +980,57 @@ function actualizarDeduccionEnJsonGlobal(clave, tipoDeduccion, valor) {
  */
 function guardarDetallesEmpleado() {
     const clave = $('#campo-clave').text().trim();
+    if (!clave) return;
 
+    // Capturar todos los valores actuales del formulario antes de guardar
+    const incentivo = parseFloat($('#mod-incentivo-monto').val()) || 0;
+    const bonoAntiguedad = parseFloat($('#mod-bono-antiguedad').val()) || 0;
+    const actividadesEspeciales = parseFloat($('#mod-actividades-especiales').val()) || 0;
+    const bonoPuesto = parseFloat($('#mod-bono-responsabilidad').val()) || 0;
+    const sueldoNeto = parseFloat($('#mod-sueldo-neto').val()) || 0;
+    const horasExtras = parseFloat($('#mod-horas-extras').val()) || 0;
+    const totalExtra = parseFloat($('#mod-total-extra').val()) || 0;
 
+    // Actualizar explícitamente cada valor en jsonGlobal para evitar pérdida de datos
+    actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'incentivo', incentivo);
+    actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'bono_antiguedad', bonoAntiguedad);
+    actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'actividades_especiales', actividadesEspeciales);
+    actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'bono_puesto', bonoPuesto);
+    actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'sueldo_base', sueldoNeto);
+    actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'sueldo_extra', horasExtras);
+    actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'sueldo_extra_final', totalExtra);
 
-    // 1. GUARDAR HORARIOS MODIFICADOS DE LA TABLA
+    // 1. Guardar horarios modificados de la tabla
     guardarHorariosModificadosEnJsonGlobal(clave);
 
-    // 2. Asegurar que el total extra esté calculado
-    calcularTotalExtra();
-
-    // 3. Calcular sueldo a cobrar automáticamente
+    // 2. Recalcular sueldo a cobrar automáticamente
     calcularSueldoACobrar(clave);
 
-    // 4. Obtener datos actualizados del empleado desde jsonGlobal
+    // 3. Obtener datos actualizados del empleado desde jsonGlobal
     const empleadoActualizado = obtenerEmpleadoActualizado(clave);
-
     if (!empleadoActualizado) {
-
-        return;
+       return;
     }
 
-    // 5. Actualizar la fila de la tabla
+    // 4. Actualizar la fila de la tabla
     actualizarFilaTabla(clave, empleadoActualizado);
 
-    // 6. LIMPIAR EVENTOS ANTES DE CERRAR
+    // 5. Guardar datos en localStorage
+    if (typeof guardarDatosNomina === 'function') {
+        guardarDatosNomina();
+      
+    }
+
+    // 6. Limpiar eventos antes de cerrar
     limpiarEventosModal();
 
     // 7. Cerrar el modal
     $('#modal-detalles').fadeOut();
 
-
+  
 }
+
+
 
 // FUNCIÓN PARA GUARDAR HORARIOS MODIFICADOS DE LA TABLA EN JSONGLOBAL
 function guardarHorariosModificadosEnJsonGlobal(clave) {

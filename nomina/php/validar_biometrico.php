@@ -13,7 +13,7 @@ $resultado = [];
 
 if (!empty($biometricos)) {
     $sql = $conexion->prepare(
-        "SELECT biometrico, nombre, ap_paterno, ap_materno 
+        "SELECT clave_empleado, biometrico, nombre, ap_paterno, ap_materno 
          FROM info_empleados 
          WHERE biometrico IN ($placeholders) 
            AND id_status = 1 
