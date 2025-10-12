@@ -552,7 +552,7 @@ function obtenerArchivos(params) {
                                                 // Guardar datos en localStorage después de procesar
                                                 guardarDatosNomina();
                                                 console.log(jsonGlobal);
-                                                
+
                                             });
                                         });
                                         return;
@@ -578,7 +578,7 @@ function obtenerArchivos(params) {
                                             // Guardar datos en localStorage después de procesar
                                             guardarDatosNomina();
                                             console.log(jsonGlobal);
-                                                
+
                                         });
                                     }
                                 });
@@ -2061,6 +2061,13 @@ function establecerHorariosPorDefecto(numeroSemana) {
  * 
  * ================================================================
  */
+/*
+ * ================================================================
+ * MÓDULO DE NOMINA PARA QUE NO TIENEN SEGUROS
+ * ================================================================
+ * 
+ * ================================================================
+ */
 
 function empleadosNoUnidos(json1, json2) {
     const normalizar = s => s
@@ -2170,10 +2177,8 @@ function obtenerIdBiometricoEmpleadosNoUnidos(json1, json2) {
         empleados: empleadosNoUnidos
     };
 }
-
 function enviarIdBiometricosNoUnidos(json1, json2) {
     const { ids: idsBiometricos, empleados: empleadosNoUnidos } = obtenerIdBiometricoEmpleadosNoUnidos(json1, json2);
-
 
     if (idsBiometricos.length > 0) {
         $.ajax({
@@ -2185,7 +2190,6 @@ function enviarIdBiometricosNoUnidos(json1, json2) {
                 try {
                     const empleadosRegistrados = JSON.parse(response);
 
-                    // Crear un nuevo departamento para empleados no unidos
                     if (empleadosRegistrados.length > 0 && jsonGlobal) {
                         // Verificar si ya existe el departamento de empleados no unidos
                         let deptoNoUnidos = jsonGlobal.departamentos.find(depto =>
@@ -2198,100 +2202,59 @@ function enviarIdBiometricosNoUnidos(json1, json2) {
                                 empleados: []
                             };
                             jsonGlobal.departamentos.push(deptoNoUnidos);
-                        } else {
-                            // Limpiar empleados sin id_biometrico y duplicados existentes
-                            const empleadosUnicos = [];
-                            const idsBiometricosVistos = new Set();
-
-                            deptoNoUnidos.empleados.forEach(emp => {
-                                // Solo mantener empleados que tengan id_biometrico válido
-                                if (emp.id_biometrico && emp.id_biometrico !== null && emp.id_biometrico !== undefined) {
-                                    if (!idsBiometricosVistos.has(emp.id_biometrico)) {
-                                        empleadosUnicos.push(emp);
-                                        idsBiometricosVistos.add(emp.id_biometrico);
-                                    } else {
-                                    }
-                                } else {
-                                }
-                            });
-
-                            deptoNoUnidos.empleados = empleadosUnicos;
                         }
 
-
                         const empleadosConvertidos = empleadosRegistrados.map(emp => {
-                            // Buscar el empleado correspondiente en empleadosNoUnidos para obtener registros y horas
-                            // Comparar tanto string como número para evitar problemas de tipo
                             const empleadoNoUnido = empleadosNoUnidos.find(e =>
                                 String(e.id_biometrico) === String(emp.biometrico)
                             );
 
-
+                            // CREAR EMPLEADO CON PROPIEDADES MÍNIMAS - establecerDatosEmpleados se encargará del resto
                             return {
                                 nombre: `${emp.ap_paterno} ${emp.ap_materno} ${emp.nombre}`,
                                 clave: emp.clave_empleado,
                                 id_biometrico: emp.biometrico,
-                                // Valores por defecto para campos requeridos
-                                incentivo: 0,
-                                bono_antiguedad: 0,
-                                actividades_especiales: 0,
-                                bono_puesto: 0,
-                                conceptos: [],
-                                conceptos_adicionales: [],
-                                sueldo_extra_final: 0,
-                                prestamo: 0,
-                                uniformes: 0,
-                                checador: 0,
-                                fa_gafet_cofia: 0,
-                                inasistencias_minutos: 0,
-                                inasistencias_descuento: 0,
-                                sueldo_a_cobrar: 0,
-                                // Asignar horas_totales y registros del empleado no unido
                                 horas_totales: empleadoNoUnido?.horas_totales || "0.00",
                                 registros: empleadoNoUnido?.registros || [],
                                 tiempo_total: empleadoNoUnido?.tiempo_total || "00:00",
-                                // Campos específicos para empleados no unidos
-                                no_unido: true
+                                // Marcar como sin seguro para que establecerDatosEmpleados lo procese correctamente
+                                sin_seguro: true
                             };
                         });
 
-                        // Agregar empleados al departamento (solo con id_biometrico válido)
+                        // Agregar empleados al departamento
                         empleadosConvertidos.forEach(empConvertido => {
-                            // Solo procesar empleados que tengan id_biometrico válido
-                            if (empConvertido.id_biometrico && empConvertido.id_biometrico !== null && empConvertido.id_biometrico !== undefined) {
-                                // Verificar si el id_biometrico ya existe en el departamento
+                            if (empConvertido.id_biometrico) {
                                 const existeBiometrico = deptoNoUnidos.empleados.some(emp =>
                                     emp.id_biometrico === empConvertido.id_biometrico
                                 );
 
                                 if (!existeBiometrico) {
                                     deptoNoUnidos.empleados.push(empConvertido);
-                                    
-                                    // Agregar empleado no unido a empleadosOriginales para que pase por redondeo
-                                    window.empleadosOriginales.push(empConvertido);
                                 }
                             }
                         });
-                        
-                        // Ejecutar redondeo de registros para empleados no unidos
+
+                        // *** CLAVE: VOLVER A EJECUTAR establecerDatosEmpleados DESPUÉS DE AGREGAR EMPLEADOS SIN SEGURO ***
+                        establecerDatosEmpleados();
+
+                        // Ejecutar redondeo DESPUÉS de que establecerDatosEmpleados haya inicializado todo
                         if (empleadosConvertidos.length > 0) {
-                             redondearRegistrosEmpleados(false, false); // No forzar recálculo, no es nómina nueva
+                            redondearRegistrosEmpleados(true, true); // Forzar recálculo para incluir nuevos empleados
                         }
 
-                    } else {
-
+                        console.log("Empleados sin seguro procesados y establecidos correctamente");
                     }
-
-                    // Aquí puedes manejar los datos recibidos, como mostrarlos en la interfaz
                 } catch (error) {
+                    console.error("Error al procesar empleados sin seguro:", error);
                 }
             },
             error: function (xhr, status, error) {
+                console.error("Error en la solicitud AJAX:", error);
             }
         });
     } else {
+        console.log("No hay IDs biométricos no unidos para enviar.");
     }
 }
-
-
 

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nómina</title>
-    <?php 
+    <?php
     include "../../config/config.php";
     ?>
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
@@ -86,9 +86,7 @@
         <!-- Controles de filtro y búsqueda -->
         <div class="controles-tabla">
             <div class="filtros-container">
-                <select class="filtro-seguro" id="filtro-seguro" hidden>
-                    <option value="con_seguro">Con seguro</option>
-                    <option value="sin_seguro">Sin seguro</option>
+                <select class="filtro-departamento" id="filtro-departamento" hidden>
                 </select>
 
                 <div class="busqueda-container" id="busqueda-container" hidden>
@@ -98,10 +96,6 @@
                 <div class="busqueda-container" id="busqueda-container-dispersion" hidden>
                     <i class="bi bi-search"></i>
                     <input type="text" class="campo-busqueda" placeholder="Buscar..." id="campo-busqueda-dispersion">
-                </div>
-                <div class="busqueda-container" id="busqueda-container-sin-seguro" hidden>
-                    <i class="bi bi-search"></i>
-                    <input type="text" class="campo-busqueda" placeholder="Buscar..." id="campo-busqueda-sin-seguro">
                 </div>
             </div>
 
@@ -237,7 +231,7 @@
     <div id="menu-contextual-dispersion" hidden style="position:absolute; z-index:9999; background:#fff; border:1px solid #ccc; padding:6px 12px; font-size:14px; cursor:pointer; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.15);">
         Actualizar Sueldo
     </div>
-    
+
     <!-- Menú contextual para empleados sin seguro -->
     <div id="menu-contextual-sin-seguro" hidden style="position:absolute; z-index:9999; background:#fff; border:1px solid #ccc; padding:6px 12px; font-size:14px; cursor:pointer;">
         Ver detalles
