@@ -26,10 +26,24 @@ include("../../config/config.php");
 
             <div class="d-flex align-items-center gap-2">
                 <select class="form-select me-2" id="filtroDepartamento" style="min-width:200px;">
-
+                    <!-- Opciones dinámicas -->
                 </select>
                 <input type="text" class="search-box me-2" placeholder="Buscar..." id="buscadorEmpleado">
-                <button class="btn btn-add" id="btnAgregarEmpleado"><a href="form_registro.php" style="text-decoration: none">+ Agregar Empleado</a></button>
+                <button class="btn btn-add" id="btnAgregarEmpleado">
+                    <a href="form_registro.php" style="text-decoration: none">+ Agregar Empleado</a>
+                </button>
+            </div>
+            <!-- Dropdown para ordenamiento -->
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownOrdenamiento" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-sort-alpha-down"></i>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownOrdenamiento">
+                    <li><button class="dropdown-item" id="ordenNombreAsc">Nombre Ascendente</button></li>
+                    <li><button class="dropdown-item" id="ordenNombreDesc">Nombre Descendente</button></li>
+                    <li><button class="dropdown-item" id="ordenClaveAsc">Clave Ascendente</button></li>
+                    <li><button class="dropdown-item" id="ordenClaveDesc">Clave Descendente</button></li>
+                </ul>
             </div>
         </div>
 
@@ -51,6 +65,7 @@ include("../../config/config.php");
                 <thead>
                     <tr>
                         <th>Nombre / Departamento</th>
+                        <th>NSS</th>
                         <th>Clave</th>
                         <th>Status</th>
                         <th class="text-end">Acción</th>
@@ -188,7 +203,7 @@ include("../../config/config.php");
                                         <label for="modal_fecha_ingreso" class="form-label">Fecha de Ingreso</label>
                                         <input type="date" class="form-control" id="modal_fecha_ingreso" name="fecha_ingreso">
                                     </div>
-                                   
+
                                 </div>
                                 <div class="row">
                                     <div class="col-md-4 mb-3">
@@ -275,7 +290,7 @@ include("../../config/config.php");
                                             </tr>
                                         </thead>
                                         <tbody id="tbody_historial_reingresos">
-                                          
+
                                         </tbody>
                                     </table>
                                     <button type="button" class="btn btn-outline-primary btn-sm mt-3" id="btn_nuevo_reingreso">
@@ -284,20 +299,23 @@ include("../../config/config.php");
                                 </div>
                             </div>
                             <!-- Beneficiarios -->
+
+
                             <div class="tab-pane fade" id="tab_beneficiarios" role="tabpanel" aria-labelledby="tab-beneficiarios">
                                 <div class="row">
                                     <div class="col-12">
-                                        <table class="table table-bordered">
+                                        <h6 class="mb-3">Beneficiarios</h6>
+                                        <table class="table table-bordered table-hover">
                                             <thead class="table-light">
                                                 <tr>
                                                     <th>Nombre</th>
                                                     <th>Apellido Paterno</th>
                                                     <th>Apellido Materno</th>
                                                     <th>Parentesco</th>
-                                                    <th>Porcentaje</th>
+                                                    <th>Porcentaje (%)</th>
                                                 </tr>
                                             </thead>
-                                            <tbody id ="tbody_beneficiarios">
+                                            <tbody id="tbody_beneficiarios">
                                                 <?php for ($i = 1; $i <= 5; $i++): ?>
                                                     <tr>
                                                         <td>
@@ -313,12 +331,20 @@ include("../../config/config.php");
                                                             <input type="text" class="form-control" name="beneficiario_parentesco[]" placeholder="Parentesco">
                                                         </td>
                                                         <td>
-                                                            <input type="number" class="form-control" name="beneficiario_porcentaje[]" placeholder="%" min="0" max="100" step="1">
+                                                            <input type="number" class="form-control porcentaje-beneficiario text-center" name="beneficiario_porcentaje[]" placeholder="%" min="0" max="100" step="1">
                                                         </td>
                                                     </tr>
                                                 <?php endfor; ?>
                                             </tbody>
                                         </table>
+                                    </div>
+                                </div>
+                                <div class="row mt-4">
+                                    <div class="col-md-4 offset-md-8">
+                                        <div class="input-group">
+                                            <span class="input-group-text">Total Porcentaje</span>
+                                            <input type="number" class="form-control text-center" id="total_porcentaje_beneficiarios" readonly>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -343,33 +369,58 @@ include("../../config/config.php");
     <script src="<?= $rutaRaiz ?>/plugins/toasts/vanillatoasts.js""></script>
 
     <!-- Modal estático para editar historial de reingreso -->
-    <div class="modal fade" id="modal_historial_reingreso" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-warning text-dark">
-                    <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Editar reingreso</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" id="modal_hist_id_historial" />
-                    <div class="mb-3">
-                        <label class="form-label">Fecha de reingreso</label>
-                        <input type="date" class="form-control" id="modal_hist_fecha_reingreso" />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Fecha de Baja (opcional)</label>
-                        <input type="date" class="form-control" id="modal_hist_fecha_salida" />
-                        <div class="form-text">Déjalo vacío si el período sigue activo.</div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-warning" id="btn_guardar_historial">Guardar</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div class=" modal fade" id="modal_historial_reingreso" tabindex="-1" aria-hidden="true">
+        < div class = "modal-dialog" >
+        <
+        div class = "modal-content" >
+        <
+        div class = "modal-header bg-warning text-dark" >
+        <
+        h5 class = "modal-title" > < i class = "bi bi-pencil me-2" > < /i>Editar reingreso</h5 >
+        <
+        button type = "button"
+        class = "btn-close"
+        data - bs - dismiss = "modal"
+        aria - label = "Cerrar" > < /button> < /
+        div > <
+            div class = "modal-body" >
+            <
+            input type = "hidden"
+        id = "modal_hist_id_historial" / >
+            <
+            div class = "mb-3" >
+            <
+            label class = "form-label" > Fecha de reingreso < /label> <
+        input type = "date"
+        class = "form-control"
+        id = "modal_hist_fecha_reingreso" / >
+            <
+            /div> <
+        div class = "mb-3" >
+        <
+        label class = "form-label" > Fecha de Baja(opcional) < /label> <
+        input type = "date"
+        class = "form-control"
+        id = "modal_hist_fecha_salida" / >
+            <
+            div class = "form-text" > Déjalo vacío si el período sigue activo. < /div> < /
+        div > <
+            /div> <
+        div class = "modal-footer" >
+        <
+        button type = "button"
+        class = "btn btn-secondary"
+        data - bs - dismiss = "modal" > Cancelar < /button> <
+        button type = "button"
+        class = "btn btn-warning"
+        id = "btn_guardar_historial" > Guardar < /button> < /
+        div > <
+            /div> < /
+        div > <
+            /div>
 
-</body>
+            <
+            /body>
 
-</html>
+            <
+            /html>

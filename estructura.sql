@@ -40,6 +40,7 @@ CREATE TABLE rol (
     nombre_rol VARCHAR(50) NOT NULL
 );
 
+
 -- =============================
 -- TABLAS DE EMPLEADOS
 -- =============================
@@ -87,6 +88,8 @@ CREATE TABLE info_empleados (
     id_empresa INT,
     biometrico INT,
     telefono_empleado VARCHAR(15),
+    status_nss TINYINT(1) DEFAULT 0,
+    estado_civil VARCHAR(100),
     FOREIGN KEY (id_rol) REFERENCES rol(id_rol),
     FOREIGN KEY (id_status) REFERENCES status(id_status),
     FOREIGN KEY (id_puestoEspecial) REFERENCES puestos_especiales(id_puestoEspecial),

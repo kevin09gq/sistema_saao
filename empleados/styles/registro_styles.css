@@ -331,6 +331,23 @@ form.bg-light .bi-file-earmark-excel-fill {
     }
 }
 
+/* Estilos para el switch de estatus NSS */
+.form-check-input:checked {
+    background-color: #22c55e;
+    border-color: #22c55e;
+}
+
+.form-check-input:disabled {
+    background-color: #e5e7eb;
+    border-color: #e5e7eb;
+}
+
+.form-check-label {
+    font-weight: 500;
+    color: #64748b;
+    margin-left: 0.5rem;
+}
+
 /* Mejoras adicionales para la experiencia del usuario */
 .tab-content {
     animation: fadeIn 0.3s ease-in-out;

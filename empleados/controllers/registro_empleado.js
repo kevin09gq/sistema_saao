@@ -29,7 +29,16 @@ $(document).ready(function () {
     $('input[name="beneficiario_parentesco[]"]').each(function () {
         validarDatos(this, validarParentesco);
     });
- 
+
+    // Funcionalidad para el switch de estatus NSS
+    $('#imss_trabajador').on('input', function() {
+        const imssValue = $(this).val().trim();
+        if (imssValue === '') {
+            $('#status_nss').prop('disabled', true).prop('checked', false);
+        } else {
+            $('#status_nss').prop('disabled', false);
+        }
+    });
 
     // Formatear campos a mayúsculas mientras el usuario escribe
     formatearMayusculas("#nombre_trabajador");
@@ -57,6 +66,41 @@ $(document).ready(function () {
     $('input[name="beneficiario_parentesco[]"]').each(function () {
         formatearMayusculas(this);
     });
+
+    // Función para actualizar el total de porcentajes de beneficiarios
+    function actualizarTotalPorcentaje() {
+        let total = 0;
+        $('.porcentaje-beneficiario').each(function() {
+            const valor = parseFloat($(this).val()) || 0;
+            total += valor;
+        });
+        
+        // Actualizar el campo de total
+        $('#total_porcentaje_beneficiarios').val(total.toFixed(2));
+        
+        // Resaltar en rojo si no es 100%
+        if (total > 0 && total !== 100) {
+            $('#total_porcentaje_beneficiarios').addClass('is-invalid');
+        } else {
+            $('#total_porcentaje_beneficiarios').removeClass('is-invalid');
+        }
+        
+        return total;
+    }
+
+    // Escuchar cambios en los inputs de porcentaje
+    $(document).on('input', '.porcentaje-beneficiario', function() {
+        // Asegurarse de que el valor esté entre 0 y 100
+        let valor = parseFloat($(this).val()) || 0;
+        if (valor < 0) valor = 0;
+        if (valor > 100) valor = 100;
+        $(this).val(valor);
+        
+        actualizarTotalPorcentaje();
+    });
+
+    // Inicializar el total al cargar la página
+    actualizarTotalPorcentaje();
 
     // Cargar departamentos al iniciar
     obtenerDepartamentos();
@@ -293,6 +337,31 @@ $(document).ready(function () {
                 }
             });
 
+            // Validar que el total de porcentajes de beneficiarios sea 100% si hay al menos un beneficiario con porcentaje > 0
+            let totalPorcentaje = 0;
+            let hayBeneficiarios = false;
+            $('.porcentaje-beneficiario').each(function() {
+                const valor = parseFloat($(this).val()) || 0;
+                if (valor > 0) {
+                    hayBeneficiarios = true;
+                    totalPorcentaje += valor;
+                }
+            });
+
+            if (hayBeneficiarios && totalPorcentaje !== 100) {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'Error en porcentajes',
+                        text: `El total de porcentajes de beneficiarios debe ser exactamente 100%. Actual: ${totalPorcentaje}%`,
+                        icon: 'error',
+                        confirmButtonText: 'Entendido'
+                    });
+                } else {
+                    alert(`El total de porcentajes de beneficiarios debe ser exactamente 100%. Actual: ${totalPorcentaje}%`);
+                }
+                return false;
+            }
+
             // Validaciones obligatorias
             let obligatoriosValidos = (
                 validarClave(clave_empleado) &&
@@ -360,6 +429,9 @@ $(document).ready(function () {
                 id_puestoEspecial: id_puestoEspecial || "", // Cambiado de id_puesto a id_puestoEspecial
                 id_empresa: id_empresa || "",
                 telefono_empleado: telefono_empleado || "",
+                
+                // Campo de estatus NSS
+                status_nss: $('#status_nss').is(':checked') ? 1 : 0,
 
                 // Campos de salario
                 salario_diario: salario_diario || "",
@@ -408,16 +480,18 @@ $(document).ready(function () {
                             timeout: 3000
                         });
                         
+                        
                     }
                 },
                 error: function (xhr, status, error) {
                     VanillaToasts.create({
                         title: 'ERROR',
-                        text: 'Error de conexión con el servidor.',
+                        text: 'Error de conexión con el servidor.' + error,
                         type: 'error',
                         icon: rutaPlugins + 'plugins/toasts/icons/icon_error.png',
                         timeout: 3000
                     });
+                    console.error("Error en la solicitud AJAX:", status, error);
                 }
             });
         })

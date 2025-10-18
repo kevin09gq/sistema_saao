@@ -73,11 +73,17 @@
                     <button class="mini-tab" type="button" id="btn_tabla_dispersión">
                         <i class="bi bi-table"></i>
                     </button>
+                    <button class="mini-tab" type="button" id="btn_tabla_sin_seguro">
+                        <i class="bi bi-table"></i>
+                    </button>
                 </div>
                 <button class="btn-suma" type="button" id="btn_suma">
                     <i class="bi bi-calculator"></i>
                 </button>
                 <button class="btn-suma" type="button" id="btn_suma_dispersion" hidden>
+                    <i class="bi bi-calculator"></i>
+                </button>
+                <button class="btn-suma" type="button" id="btn_suma_sin_seguro" hidden>
                     <i class="bi bi-calculator"></i>
                 </button>
             </div>
@@ -96,6 +102,10 @@
                 <div class="busqueda-container" id="busqueda-container-dispersion" hidden>
                     <i class="bi bi-search"></i>
                     <input type="text" class="campo-busqueda" placeholder="Buscar..." id="campo-busqueda-dispersion">
+                </div>
+                <div class="busqueda-container" id="busqueda-container-sin-seguro" hidden>
+                    <i class="bi bi-search"></i>
+                    <input type="text" class="campo-busqueda" placeholder="Buscar..." id="campo-busqueda-sin-seguro">
                 </div>
             </div>
 
@@ -122,7 +132,7 @@
                     <i class="bi bi-save"></i>
                     Guardar Nómina
                 </button>
-                <button class="btn-limpiar-datos" id="btn_limpiar_datos" title="Limpiar datos y volver al inicio">
+                <button class="btn-limpiar-datos" id="btn_limpiar_datos" >
                     <i class="bi bi-trash"></i>
                     Subir Nuevamente
                 </button>
@@ -221,6 +231,7 @@
     <?php include 'detalle_modal_dispersion.php'; ?>
     <?php include 'modal_sumas.php'; ?>
     <?php include 'modal_suma_dispersion.php'; ?>
+    <?php include 'modal_suma_sin_seguro.php'; ?>
 
     <!-- Menú contextual personalizado -->
     <div id="menu-contextual" hidden style="position:absolute; z-index:9999; background:#fff; border:1px solid #ccc; padding:6px 12px; font-size:14px; cursor:pointer;">

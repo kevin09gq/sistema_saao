@@ -913,10 +913,27 @@ function actualizarDeduccionEnJsonGlobal(clave, tipoDeduccion, valor) {
     }
 }
 function actualizarSueldoEnTabla(clave, sueldoACobrar) {
-    const $fila = $(`#tabla-nomina-body tr[data-clave="${clave}"]`);
+    // Detectar qué tabla está visible y actualizar la correcta
+    let $fila = null;
+    let tablaActual = null;
+    
+    // Verificar si la tabla de empleados sin seguro está visible
+    if (!$('#tabla-sin-seguro-container').attr('hidden')) {
+        $fila = $(`#tabla-sin-seguro-body tr[data-clave="${clave}"]`);
+        tablaActual = 'sin-seguro';
+    } 
+    // Verificar si la tabla de dispersión está visible
+    else if (!$('#tabla-dispersion-tarjeta').attr('hidden')) {
+        $fila = $(`#tabla-dispersion-body tr[data-clave="${clave}"]`);
+        tablaActual = 'dispersion';
+    }
+    // Por defecto, usar la tabla principal de nómina
+    else {
+        $fila = $(`#tabla-nomina-body tr[data-clave="${clave}"]`);
+        tablaActual = 'nomina';
+    }
 
     if ($fila.length === 0) {
-
         return;
     }
 
@@ -928,9 +945,16 @@ function actualizarSueldoEnTabla(clave, sueldoACobrar) {
         return valor;
     };
 
-    // Actualizar la columna del sueldo a cobrar (columna 16, índice 15)
+    // Actualizar la columna del sueldo a cobrar según el tipo de tabla
     const celdas = $fila.find('td');
-    $(celdas[15]).text(mostrarValor(sueldoACobrar.toFixed(2)));
+    
+    if (tablaActual === 'dispersion') {
+        // En la tabla de dispersión, actualizar la columna de Sueldo Neto (índice 3)
+        $(celdas[3]).text(mostrarValor(sueldoACobrar.toFixed(2)));
+    } else {
+        // En las tablas de nómina y sin seguro, actualizar la columna de Sueldo a Cobrar (índice 15)
+        $(celdas[15]).text(mostrarValor(sueldoACobrar.toFixed(2)));
+    }
 
     // Agregar efecto visual para indicar que se actualizó
     $fila.addClass('fila-actualizada');
@@ -1015,16 +1039,19 @@ function guardarDetallesEmpleado() {
     // 4. Actualizar la fila de la tabla
     actualizarFilaTabla(clave, empleadoActualizado);
 
-    // 5. Guardar datos en localStorage
+    // 5. Refrescar la tabla visible si es necesario
+    refrescarTablaVisible();
+
+    // 6. Guardar datos en localStorage
     if (typeof guardarDatosNomina === 'function') {
         guardarDatosNomina();
       
     }
 
-    // 6. Limpiar eventos antes de cerrar
+    // 7. Limpiar eventos antes de cerrar
     limpiarEventosModal();
 
-    // 7. Cerrar el modal
+    // 8. Cerrar el modal
     $('#modal-detalles').fadeOut();
 
   
@@ -1148,10 +1175,47 @@ function obtenerEmpleadoActualizado(clave) {
     return null;
 }
 
+// Función para refrescar la tabla visible después de actualizar datos
+function refrescarTablaVisible() {
+    // Verificar si la tabla de empleados sin seguro está visible
+    if (!$('#tabla-sin-seguro-container').attr('hidden')) {
+        // Refrescar la tabla de empleados sin seguro
+        if (typeof mostrarEmpleadosSinSeguro === 'function') {
+            mostrarEmpleadosSinSeguro();
+        }
+    } 
+    // Verificar si la tabla de dispersión está visible
+    else if (!$('#tabla-dispersion-tarjeta').attr('hidden')) {
+        // Refrescar la tabla de dispersión
+        if (typeof setEmpleadosDispersionPaginados === 'function' && window.empleadosOriginalesDispersion) {
+            setEmpleadosDispersionPaginados(window.empleadosOriginalesDispersion);
+        }
+    }
+    // Si la tabla principal está visible, no necesita refrescar porque ya se actualizó la fila
+}
+
 //FUNCIÓN PARA ACTUALIZAR FILA DE LA TABLA
 
 function actualizarFilaTabla(clave, empleado) {
-    const $fila = $(`#tabla-nomina-body tr[data-clave="${clave}"]`);
+    // Detectar qué tabla está visible y actualizar la correcta
+    let $fila = null;
+    let tablaActual = null;
+    
+    // Verificar si la tabla de empleados sin seguro está visible
+    if (!$('#tabla-sin-seguro-container').attr('hidden')) {
+        $fila = $(`#tabla-sin-seguro-body tr[data-clave="${clave}"]`);
+        tablaActual = 'sin-seguro';
+    } 
+    // Verificar si la tabla de dispersión está visible
+    else if (!$('#tabla-dispersion-tarjeta').attr('hidden')) {
+        $fila = $(`#tabla-dispersion-body tr[data-clave="${clave}"]`);
+        tablaActual = 'dispersion';
+    }
+    // Por defecto, usar la tabla principal de nómina
+    else {
+        $fila = $(`#tabla-nomina-body tr[data-clave="${clave}"]`);
+        tablaActual = 'nomina';
+    }
 
     if ($fila.length === 0) {
         return;
@@ -1178,31 +1242,52 @@ function actualizarFilaTabla(clave, empleado) {
         return isNaN(num) ? '' : num.toFixed(2);
     };
 
+    // Mostrar deducciones con prefijo "-"
+    const mostrarDeduccion = (valor) => {
+        if (valor === 0 || valor === '0' || valor === '' || valor === null || valor === undefined || isNaN(valor)) {
+            return '';
+        }
+        const num = parseFloat(valor);
+        return isNaN(num) ? '' : `-${num.toFixed(2)}`;
+    };
+
     // Solo mostrar el puesto original del empleado
     let puestoEmpleado = empleado.puesto || empleado.nombre_departamento || '';
 
     // Usar sueldo_extra_final si existe, sino usar sueldo_extra
     const sueldoExtra = empleado.sueldo_extra_final || empleado.sueldo_extra || 0;
 
-    // Actualizar las celdas de la fila
+    // Actualizar las celdas de la fila según el tipo de tabla
     const celdas = $fila.find('td');
 
-    // Actualizar cada celda (manteniendo el número de fila)
-    $(celdas[1]).text(empleado.nombre); // Nombre
-    $(celdas[2]).text(puestoEmpleado); // Puesto (mantener el original)
-    $(celdas[3]).text(mostrarValor(empleado.sueldo_base)); // Sueldo base
-    $(celdas[4]).text(mostrarValor(empleado.incentivo)); // Incentivo
-    $(celdas[5]).text(mostrarValor(sueldoExtra)); // Extra (ahora usa sueldo_extra_final)
-    $(celdas[6]).text(mostrarValor(empleado.neto_pagar)); // Neto a pagar
-    $(celdas[7]).text(mostrarValor(empleado.prestamo)); // Préstamo
-    $(celdas[8]).text(mostrarValor(empleado.inasistencias_descuento)); // Inasistencias
-    $(celdas[9]).text(mostrarValor(empleado.uniformes)); // Uniformes
-    $(celdas[10]).text(mostrarValor(infonavit)); // INFONAVIT
-    $(celdas[11]).text(mostrarValor(isr)); // ISR
-    $(celdas[12]).text(mostrarValor(imss)); // IMSS
-    $(celdas[13]).text(mostrarValor(empleado.checador)); // Checador
-    $(celdas[14]).text(mostrarValor(empleado.fa_gafet_cofia)); // F.A/GAFET/COFIA
-    $(celdas[15]).text(mostrarValor(empleado.sueldo_a_cobrar)); // SUELDO A COBRAR
+    if (tablaActual === 'dispersion') {
+        // Tabla de dispersión solo tiene 4 columnas: #, Clave, Nombre, Sueldo Neto
+        $(celdas[1]).text(empleado.clave); // Clave
+        $(celdas[2]).text(empleado.nombre); // Nombre
+        $(celdas[3]).text(mostrarValor(empleado.neto_pagar)); // Sueldo Neto
+    } else {
+        // Tablas de nómina y sin seguro tienen todas las columnas
+        // Actualizar cada celda (manteniendo el número de fila)
+        $(celdas[1]).text(empleado.nombre); // Nombre
+        $(celdas[2]).text(puestoEmpleado); // Puesto (mantener el original)
+        $(celdas[3]).text(mostrarValor(empleado.sueldo_base)); // Sueldo base
+        $(celdas[4]).text(mostrarValor(empleado.incentivo)); // Incentivo
+        $(celdas[5]).text(mostrarValor(sueldoExtra)); // Extra (ahora usa sueldo_extra_final)
+        $(celdas[6]).text(mostrarDeduccion(empleado.neto_pagar)); // Neto a pagar (deducción)
+        $(celdas[7]).text(mostrarDeduccion(empleado.prestamo)); // Préstamo (deducción)
+        $(celdas[8]).text(mostrarDeduccion(empleado.inasistencias_descuento)); // Inasistencias (deducción)
+        $(celdas[9]).text(mostrarDeduccion(empleado.uniformes)); // Uniformes (deducción)
+        $(celdas[10]).text(mostrarDeduccion(infonavit)); // INFONAVIT (deducción)
+        $(celdas[11]).text(mostrarDeduccion(isr)); // ISR (deducción)
+        $(celdas[12]).text(mostrarDeduccion(imss)); // IMSS (deducción)
+        $(celdas[13]).text(mostrarDeduccion(empleado.checador)); // Checador (deducción)
+        $(celdas[14]).text(mostrarDeduccion(empleado.fa_gafet_cofia)); // F.A/GAFET/COFIA (deducción)
+        $(celdas[15]).text(mostrarValor(empleado.sueldo_a_cobrar)); // SUELDO A COBRAR
+
+        // Aplicar clase de sueldo negativo si corresponde
+        const sueldo = parseFloat(empleado.sueldo_a_cobrar) || 0;
+        $(celdas[15]).removeClass('sueldo-negativo sueldo-final').addClass(sueldo < 0 ? 'sueldo-negativo' : 'sueldo-final');
+    }
 
     // Agregar efecto visual para indicar que se actualizó
     $fila.addClass('fila-actualizada');

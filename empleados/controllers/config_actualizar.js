@@ -7,6 +7,8 @@ $(document).ready(function () {
     departamentoSeleccionado();
     filtrosBusqueda();
     setValoresModal();
+    initOrdenamiento();
+      actualizarTotalPorcentaje(); 
 
     // Función para formatear texto a mayúsculas mientras se escribe
     function formatearMayusculas(selector) {
@@ -22,6 +24,39 @@ $(document).ready(function () {
         });
     };
 
+    // Función para actualizar el total de porcentajes de beneficiarios
+    function actualizarTotalPorcentaje() {
+        let total = 0;
+        $('.porcentaje-beneficiario').each(function() {
+            const valor = parseFloat($(this).val()) || 0;
+            total += valor;
+        });
+        
+        // Actualizar el campo de total
+        $('#total_porcentaje_beneficiarios').val(total.toFixed(2));
+        
+        // Resaltar en rojo si no es 100%
+        if (total > 0 && total !== 100) {
+            $('#total_porcentaje_beneficiarios').addClass('is-invalid');
+        } else {
+            $('#total_porcentaje_beneficiarios').removeClass('is-invalid');
+        }
+        
+        return total;
+    }
+    
+    // Escuchar cambios en los inputs de porcentaje
+    $(document).on('input', '.porcentaje-beneficiario', function() {
+        // Asegurarse de que el valor esté entre 0 y 100
+        let valor = parseFloat($(this).val()) || 0;
+        if (valor < 0) valor = 0;
+        if (valor > 100) valor = 100;
+        $(this).val(valor);
+        
+        actualizarTotalPorcentaje();
+    });
+    
+ 
     // Helper: Formatea 'YYYY-MM-DD' a 'DD/MM/YYYY'
     function formatToDMY(dateStr) {
         if (!dateStr) return '';
@@ -130,7 +165,50 @@ $(document).ready(function () {
             setBusqueda($(this).val());
         });
 
+       
+        // Manejar el cambio de estado con el switch de NSS
+        $(document).on("change", ".switch-nss", function () {
+            let idEmpleado = $(this).data("id-empleado");
+            let isChecked = $(this).is(":checked");
+            let statusNss = isChecked ? 1 : 0; // 1 = Activo, 0 = Inactivo
 
+            // Verificar si el switch está deshabilitado (por IMSS vacío)
+            if ($(this).is(':disabled')) {
+                return; // No hacer nada si está deshabilitado
+            }
+
+            // Evitar doble click y desactivar visualmente
+            const $el = $(this);
+            if ($el.data('processing')) return;
+            $el.data('processing', true).addClass('disabled').css('pointer-events', 'none').css('opacity', '0.6');
+
+            let datos = {
+                id_empleado: idEmpleado,
+                status_nss: statusNss
+            };
+
+            $.ajax({
+                type: "POST",
+                url: "../php/estatus_nss.php",
+                data: datos,
+                dataType: "json",
+                success: function (response) {
+                    if (response.success) {
+                        // Guardar el cambio en el objeto de cambios
+                        window.nssCambios[idEmpleado] = statusNss;
+                    } else {
+                        // Revertir el estado del switch si falla
+                        $el.prop('checked', !isChecked);
+                    }
+                    $el.data('processing', false).removeClass('disabled').css('pointer-events', '').css('opacity', '');
+                },
+                error: function () {
+                    // Revertir el estado del switch si hay error
+                    $el.prop('checked', !isChecked);
+                    $el.data('processing', false).removeClass('disabled').css('pointer-events', '').css('opacity', '');
+                }
+            });
+        });
 
         // Abrir modal de edición con datos de la fila
         $(document).on('click', '.btn-editar-historial', function () {
@@ -350,6 +428,8 @@ $(document).ready(function () {
                         // Traer biométrico
                         let biometrico = empleado.biometrico;
                         let telefonoEmpleado = empleado.telefono_empleado;
+                        // Traer status NSS
+                        let statusNss = empleado.status_nss;
 
                         // Campos de salario
                         let salarioSemanal = empleado.salario_semanal;
@@ -383,7 +463,7 @@ $(document).ready(function () {
                         $("#modal_num_casillero").val(numCasillero);
                         // Asignar biométrico
                         $("#modal_biometrico").val(biometrico);
-                         $("#modal_telefono_empleado").val(telefonoEmpleado);
+                        $("#modal_telefono_empleado").val(telefonoEmpleado);
 
                         // Asignar la última fecha de reingreso si existe
                         if (ultimaFechaReingreso) {
@@ -701,6 +781,27 @@ $(document).ready(function () {
             }
         });
 
+        // Validar que el total de porcentajes de beneficiarios sea 100% si hay al menos un beneficiario
+        let totalPorcentaje = 0;
+        let hayBeneficiarios = false;
+        $('.porcentaje-beneficiario').each(function() {
+            const valor = parseFloat($(this).val()) || 0;
+            if (valor > 0) {
+                hayBeneficiarios = true;
+                totalPorcentaje += valor;
+            }
+        });
+
+        if (hayBeneficiarios && totalPorcentaje !== 100) {
+            Swal.fire({
+                title: 'Error en porcentajes',
+                text: `El total de porcentajes de beneficiarios debe ser exactamente 100%. Actual: ${totalPorcentaje}%`,
+                icon: 'error',
+                confirmButtonText: 'Entendido'
+            });
+            return false;
+        }
+
         // Validaciones obligatorias
         let obligatoriosValidos = (
             validarClave(clave) &&
@@ -794,25 +895,43 @@ $(document).ready(function () {
 
 
 
+        // Guardar la página actual antes de actualizar
+        const paginaAnterior = paginaActual;
+        
         $.ajax({
             type: "POST",
             url: "../php/update_empleado.php",
             data: datos,
             success: function (response) {
-                //Actualizar la tabla de empleados
-                obtenerDatosEmpleados();
+                // Actualizar la tabla de empleados
+                $.ajax({
+                    type: "POST",
+                    url: "../php/obtenerEmpleados.php",
+                    data: { accion: "cargarEmpleados" },
+                    dataType: "json",
+                    success: function(empleados) {
+                        // Actualizar los datos sin resetear la paginación
+                        empleadosData = empleados;
+                        // Restaurar la página anterior
+                        paginaActual = paginaAnterior;
+                        // Renderizar la tabla con la página actual
+                        renderTablaEmpleados();
+                        
+                        // Cerrar el modal
+                        $("#modal_actualizar_empleado").modal("hide");
 
-                // Cerrar el modal
-                $("#modal_actualizar_empleado").modal("hide");
-
-                VanillaToasts.create({
-                    title: response.title,
-                    text: response.text,
-                    type: response.type, // 'success', 'info', 'warning', etc.
-                    icon: response.icon, // URL del icono
-                    timeout: response.timeout // Tiempo de duración en milisegundos
+                        VanillaToasts.create({
+                            title: response.title,
+                            text: response.text,
+                            type: response.type,
+                            icon: response.icon,
+                            timeout: response.timeout
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error al cargar empleados:", error);
+                    }
                 });
-
             }
         });
 
@@ -979,5 +1098,24 @@ $(document).ready(function () {
         }
     });
 
+    // Función para inicializar el ordenamiento
+    function initOrdenamiento() {
+        // Manejar los eventos de los botones de ordenamiento
+        $("#ordenNombreAsc").on("click", function () {
+            setOrden("nombre_asc");
+        });
+        
+        $("#ordenNombreDesc").on("click", function () {
+            setOrden("nombre_desc");
+        });
+        
+        $("#ordenClaveAsc").on("click", function () {
+            setOrden("clave_asc");
+        });
+        
+        $("#ordenClaveDesc").on("click", function () {
+            setOrden("clave_desc");
+        });
+    }
 
 });

@@ -105,6 +105,14 @@ function mostrarDatosTablaPaginada(empleadosPagina) {
     let numeroFila = ((paginaActualNomina - 1) * empleadosPorPagina) + 1;
     
     // Renderizar solo los empleados de la página actual
+    // Helper para mostrar deducciones con signo "-"
+    const mostrarDeduccion = (valor) => {
+        if (valor === 0 || valor === '0' || valor === '' || valor === null || valor === undefined || isNaN(valor)) {
+            return '';
+        }
+        const num = parseFloat(valor);
+        return isNaN(num) ? '' : `-${num.toFixed(2)}`;
+    };
     // Nota: empleadosPagina ya contiene solo empleados registrados
     empleadosPagina.forEach(emp => {
         // Recalcular sueldo a cobrar antes de mostrar
@@ -138,6 +146,7 @@ function mostrarDatosTablaPaginada(empleadosPagina) {
             return isNaN(num) ? '' : num.toFixed(2);
         };
 
+        const claseSueldo = (parseFloat(emp.sueldo_a_cobrar) || 0) < 0 ? 'sueldo-negativo' : 'sueldo-final';
         let fila = `
             <tr data-clave="${emp.clave}">
                 <td>${numeroFila++}</td>
@@ -146,16 +155,16 @@ function mostrarDatosTablaPaginada(empleadosPagina) {
                 <td>${mostrarValor(emp.sueldo_base)}</td>
                 <td>${mostrarValor(incentivo)}</td>
                 <td>${mostrarValor(emp.sueldo_extra_final)}</td>
-                <td>${mostrarValor(emp.neto_pagar)}</td>
-                <td>${mostrarValor(emp.prestamo)}</td>
-                <td>${mostrarValor(emp.inasistencias_descuento)}</td>
-                <td>${mostrarValor(emp.uniformes)}</td>
-                <td>${mostrarValor(infonavit)}</td>
-                <td>${mostrarValor(isr)}</td>
-                <td>${mostrarValor(imss)}</td>
-                <td>${mostrarValor(emp.checador)}</td>
-                <td>${mostrarValor(emp.fa_gafet_cofia)}</td>
-                <td>${mostrarValor(emp.sueldo_a_cobrar)}</td>
+                <td>${mostrarDeduccion(emp.neto_pagar)}</td>
+                <td>${mostrarDeduccion(emp.prestamo)}</td>
+                <td>${mostrarDeduccion(emp.inasistencias_descuento)}</td>
+                <td>${mostrarDeduccion(emp.uniformes)}</td>
+                <td>${mostrarDeduccion(infonavit)}</td>
+                <td>${mostrarDeduccion(isr)}</td>
+                <td>${mostrarDeduccion(imss)}</td>
+                <td>${mostrarDeduccion(emp.checador)}</td>
+                <td>${mostrarDeduccion(emp.fa_gafet_cofia)}</td>
+                <td class="${claseSueldo}">${mostrarValor(emp.sueldo_a_cobrar)}</td>
             </tr>
         `;
         $('#tabla-nomina-body').append(fila);
@@ -251,7 +260,7 @@ function mostrarDatosTabla() {
         renderTablaPaginada();
     } else {
         // Fallback: mostrar todos los datos sin paginación
-        console.warn('No hay datos paginados, mostrando todos los datos');
+     
         if (window.empleadosOriginales && window.empleadosOriginales.length > 0) {
             setEmpleadosPaginados(window.empleadosOriginales);
         }
@@ -401,3 +410,214 @@ function cambiarPaginaDispersion(nuevaPagina) {
     paginaActualDispersion = nuevaPagina;
     renderTablaDispersionPaginada();
 }
+
+// ========================================
+// PAGINACIÓN PARA TABLA DE EMPLEADOS SIN SEGURO
+// ========================================
+
+// Variables para paginación de empleados sin seguro
+let empleadosSinSeguroPaginados = [];
+let paginaActualSinSeguro = 1;
+const empleadosPorPaginaSinSeguro = 7;
+
+// Función para establecer empleados paginados para empleados sin seguro
+function setEmpleadosSinSeguroPaginados(array) {
+    // Recalcular sueldos antes de asignar
+    array.forEach(emp => {
+        if (typeof calcularSueldoACobraPorEmpleado === 'function') {
+            calcularSueldoACobraPorEmpleado(emp);
+        }
+    });
+    
+    empleadosSinSeguroPaginados = array;
+    paginaActualSinSeguro = 1;
+    renderTablaSinSeguroPaginada();
+}
+
+// Función para renderizar tabla de empleados sin seguro paginada
+function renderTablaSinSeguroPaginada() {
+    const inicio = (paginaActualSinSeguro - 1) * empleadosPorPaginaSinSeguro;
+    const fin = inicio + empleadosPorPaginaSinSeguro;
+    const empleadosPagina = empleadosSinSeguroPaginados.slice(inicio, fin);
+    
+    // Recalcular sueldos antes de renderizar
+    empleadosPagina.forEach(emp => {
+        if (typeof calcularSueldoACobraPorEmpleado === 'function') {
+            calcularSueldoACobraPorEmpleado(emp);
+        }
+    });
+    
+    // Renderiza la tabla con los empleados de la página actual
+    mostrarDatosTablaSinSeguroPaginada(empleadosPagina);
+    renderPaginacionSinSeguro();
+}
+
+// Función para mostrar datos de la tabla de empleados sin seguro con paginación
+function mostrarDatosTablaSinSeguroPaginada(empleadosPagina) {
+    // Limpiar la tabla
+    $('#tabla-sin-seguro-body').empty();
+    
+    // Calcular el número de fila inicial para la página actual
+    let numeroFila = ((paginaActualSinSeguro - 1) * empleadosPorPaginaSinSeguro) + 1;
+    
+    // Renderizar solo los empleados de la página actual
+    empleadosPagina.forEach(emp => {
+        // Recalcular sueldo a cobrar antes de mostrar
+        if (typeof calcularSueldoACobraPorEmpleado === 'function') {
+            calcularSueldoACobraPorEmpleado(emp);
+        }
+        
+        // Obtener conceptos
+        const conceptos = emp.conceptos || [];
+        const getConcepto = (codigo) => {
+            const c = conceptos.find(c => c.codigo === codigo);
+            return c ? parseFloat(c.resultado).toFixed(2) : '';
+        };
+        const infonavit = getConcepto('16');
+        const isr = getConcepto('45');
+        const imss = getConcepto('52');
+
+        // Usar el puesto original del empleado
+        let puestoEmpleado = emp.puesto || emp.nombre_departamento || '';
+
+        // Obtener el incentivo si existe y formatearlo correctamente
+        const incentivo = emp.incentivo ? parseFloat(emp.incentivo).toFixed(2) : '';
+
+        // Función para mostrar cadena vacía en lugar de 0, NaN o valores vacíos
+        const mostrarValor = (valor) => {
+            if (valor === 0 || valor === '0' || valor === '' || valor === null || valor === undefined || isNaN(valor)) {
+                return '';
+            }
+            // Formatear números con dos decimales
+            const num = parseFloat(valor);
+            return isNaN(num) ? '' : num.toFixed(2);
+        };
+
+        const claseSueldo = (parseFloat(emp.sueldo_a_cobrar) || 0) < 0 ? 'sueldo-negativo' : 'sueldo-final';
+        let fila = `
+            <tr data-clave="${emp.clave}">
+                <td>${numeroFila++}</td>
+                <td>${emp.nombre}</td>
+                <td>${puestoEmpleado}</td>
+                <td>${mostrarValor(emp.sueldo_base)}</td>
+                <td>${mostrarValor(incentivo)}</td>
+                <td>${mostrarValor(emp.sueldo_extra_final)}</td>
+                <td>${mostrarValor(emp.neto_pagar)}</td>
+                <td>${mostrarValor(emp.prestamo)}</td>
+                <td>${mostrarValor(emp.inasistencias_descuento)}</td>
+                <td>${mostrarValor(emp.uniformes)}</td>
+                <td>${mostrarValor(infonavit)}</td>
+                <td>${mostrarValor(isr)}</td>
+                <td>${mostrarValor(imss)}</td>
+                <td>${mostrarValor(emp.checador)}</td>
+                <td>${mostrarValor(emp.fa_gafet_cofia)}</td>
+                <td class="${claseSueldo}">${mostrarValor(emp.sueldo_a_cobrar)}</td>
+            </tr>
+        `;
+        $('#tabla-sin-seguro-body').append(fila);
+    });
+    
+    // Re-inicializar el menú contextual después de renderizar la tabla
+    inicializarMenuContextualSinSeguro();
+}
+
+// Función para renderizar paginación de empleados sin seguro
+function renderPaginacionSinSeguro() {
+    const totalPaginas = Math.ceil(empleadosSinSeguroPaginados.length / empleadosPorPaginaSinSeguro);
+    let html = '';
+    
+    if (totalPaginas > 1) {
+        // Botón anterior
+        html += `<li class="page-item${paginaActualSinSeguro === 1 ? ' disabled' : ''}">
+            <a class="page-link" href="#" onclick="cambiarPaginaSinSeguro(${paginaActualSinSeguro - 1}); return false;">&laquo;</a>
+        </li>`;
+        
+        // Determinar qué números de página mostrar
+        const paginasVisibles = 5; // Número de páginas a mostrar además de la primera y última
+        const paginas = [];
+        
+        // Siempre agregar la primera página
+        paginas.push(1);
+        
+        // Calcular el rango alrededor de la página actual
+        const inicio = Math.max(2, paginaActualSinSeguro - Math.floor(paginasVisibles/2));
+        const fin = Math.min(totalPaginas - 1, inicio + paginasVisibles - 1);
+        
+        // Agregar ellipsis después de la página 1 si es necesario
+        if (inicio > 2) {
+            paginas.push('...');
+        }
+        
+        // Agregar páginas del rango calculado
+        for (let i = inicio; i <= fin; i++) {
+            paginas.push(i);
+        }
+        
+        // Agregar ellipsis antes de la última página si es necesario
+        if (fin < totalPaginas - 1) {
+            paginas.push('...');
+        }
+        
+        // Siempre agregar la última página si hay más de una página
+        if (totalPaginas > 1) {
+            paginas.push(totalPaginas);
+        }
+        
+        // Generar HTML para cada número de página o ellipsis
+        paginas.forEach(pagina => {
+            if (pagina === '...') {
+                html += `<li class="page-item disabled"><a class="page-link" href="#">...</a></li>`;
+            } else {
+                html += `<li class="page-item${paginaActualSinSeguro === pagina ? ' active' : ''}">
+                    <a class="page-link" href="#" onclick="cambiarPaginaSinSeguro(${pagina}); return false;">${pagina}</a>
+                </li>`;
+            }
+        });
+        
+        // Botón siguiente
+        html += `<li class="page-item${paginaActualSinSeguro === totalPaginas ? ' disabled' : ''}">
+            <a class="page-link" href="#" onclick="cambiarPaginaSinSeguro(${paginaActualSinSeguro + 1}); return false;">&raquo;</a>
+        </li>`;
+    }
+    
+    $("#paginacion-sin-seguro").html(html);
+}
+
+// Función para cambiar página en empleados sin seguro
+function cambiarPaginaSinSeguro(nuevaPagina) {
+    const totalPaginas = Math.ceil(empleadosSinSeguroPaginados.length / empleadosPorPaginaSinSeguro);
+    if (nuevaPagina < 1 || nuevaPagina > totalPaginas) return;
+    paginaActualSinSeguro = nuevaPagina;
+    renderTablaSinSeguroPaginada();
+}
+
+// Función para obtener empleados del departamento "SIN SEGURO"
+function obtenerEmpleadosSinSeguro() {
+    let empleadosSinSeguro = [];
+    if (jsonGlobal && jsonGlobal.departamentos) {
+        jsonGlobal.departamentos.forEach(depto => {
+            if ((depto.nombre || '').toUpperCase().includes('SIN SEGURO')) {
+                let empleadosOrdenados = (depto.empleados || []).slice().sort(compararPorApellidos);
+                empleadosOrdenados.forEach(emp => {
+                    empleadosSinSeguro.push({
+                        ...emp,
+                        id_departamento: depto.nombre.split(' ')[0],
+                        nombre_departamento: depto.nombre.replace(/^\d+\s*/, ''),
+                        puesto: emp.puesto || emp.nombre_departamento || depto.nombre.replace(/^\d+\s*/, '')
+                    });
+                });
+            }
+        });
+    }
+    return empleadosSinSeguro;
+}
+
+// Función para mostrar empleados sin seguro
+function mostrarEmpleadosSinSeguro() {
+    const empleadosSinSeguro = obtenerEmpleadosSinSeguro();
+    setEmpleadosSinSeguroPaginados(empleadosSinSeguro);
+}
+
+// Hacer las funciones disponibles globalmente
+window.mostrarEmpleadosSinSeguro = mostrarEmpleadosSinSeguro;
+window.obtenerEmpleadosSinSeguro = obtenerEmpleadosSinSeguro;

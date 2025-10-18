@@ -17,6 +17,8 @@ include("../../config/config.php");
     <link rel="stylesheet" href="../../public/styles/main.css">
     <link rel="stylesheet" href="../styles/registro_styles.css">
     <link rel="stylesheet" href="<?= $rutaRaiz ?>/plugins/toasts/vanillatoasts.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
@@ -101,6 +103,13 @@ include("../../config/config.php");
                                             <input type="text" class="form-control" id="imss_trabajador" name="imss">
                                         </div>
                                         <div class="col-md-3 mb-3">
+                                            <label for="status_nss" class="form-label">Estatus NSS</label>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="status_nss" name="status_nss" disabled>
+                                                <label class="form-check-label" for="status_nss">Activo</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
                                             <label for="curp_trabajador" class="form-label">CURP</label>
                                             <input type="text" class="form-control" id="curp_trabajador" name="curp">
                                         </div>
@@ -108,6 +117,9 @@ include("../../config/config.php");
                                             <label for="grupo_sanguineo_trabajador" class="form-label">Grupo Sanguíneo</label>
                                             <input type="text" class="form-control" id="grupo_sanguineo_trabajador" name="grupo_sanguineo">
                                         </div>
+                                        
+                                    </div>
+                                    <div class="row">
                                         <div class="col-md-3 mb-3">
                                             <label for="num_casillero" class="form-label">Número de Casillero</label>
                                             <div class="input-group">
@@ -209,57 +221,51 @@ include("../../config/config.php");
                                 </div>
 
                                 <!-- Tab Beneficiarios -->
+
                                 <div class="tab-pane fade" id="tab_beneficiarios" role="tabpanel" aria-labelledby="tab-beneficiarios">
                                     <div class="row">
                                         <div class="col-12">
-                                            <table class="table table-bordered">
+                                            <h6 class="mb-3">Beneficiarios</h6>
+                                            <table class="table table-bordered table-hover">
                                                 <thead class="table-light">
                                                     <tr>
                                                         <th>Nombre</th>
                                                         <th>Apellido Paterno</th>
                                                         <th>Apellido Materno</th>
                                                         <th>Parentesco</th>
-                                                        <th>Porcentaje</th>
+                                                        <th>Porcentaje (%)</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody>
-                                                    <tr>
-                                                        <td><input type="text" class="form-control" name="beneficiario_nombre[]" placeholder="Nombre"></td>
-                                                        <td><input type="text" class="form-control" name="beneficiario_ap_paterno[]" placeholder="Apellido Paterno"></td>
-                                                        <td><input type="text" class="form-control" name="beneficiario_ap_materno[]" placeholder="Apellido Materno"></td>
-                                                        <td><input type="text" class="form-control" name="beneficiario_parentesco[]" placeholder="Parentesco"></td>
-                                                        <td><input type="number" class="form-control" name="beneficiario_porcentaje[]" placeholder="%" min="0" max="100" step="1"></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td><input type="text" class="form-control" name="beneficiario_nombre[]" placeholder="Nombre"></td>
-                                                        <td><input type="text" class="form-control" name="beneficiario_ap_paterno[]" placeholder="Apellido Paterno"></td>
-                                                        <td><input type="text" class="form-control" name="beneficiario_ap_materno[]" placeholder="Apellido Materno"></td>
-                                                        <td><input type="text" class="form-control" name="beneficiario_parentesco[]" placeholder="Parentesco"></td>
-                                                        <td><input type="number" class="form-control" name="beneficiario_porcentaje[]" placeholder="%" min="0" max="100" step="1"></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td><input type="text" class="form-control" name="beneficiario_nombre[]" placeholder="Nombre"></td>
-                                                        <td><input type="text" class="form-control" name="beneficiario_ap_paterno[]" placeholder="Apellido Paterno"></td>
-                                                        <td><input type="text" class="form-control" name="beneficiario_ap_materno[]" placeholder="Apellido Materno"></td>
-                                                        <td><input type="text" class="form-control" name="beneficiario_parentesco[]" placeholder="Parentesco"></td>
-                                                        <td><input type="number" class="form-control" name="beneficiario_porcentaje[]" placeholder="%" min="0" max="100" step="1"></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td><input type="text" class="form-control" name="beneficiario_nombre[]" placeholder="Nombre"></td>
-                                                        <td><input type="text" class="form-control" name="beneficiario_ap_paterno[]" placeholder="Apellido Paterno"></td>
-                                                        <td><input type="text" class="form-control" name="beneficiario_ap_materno[]" placeholder="Apellido Materno"></td>
-                                                        <td><input type="text" class="form-control" name="beneficiario_parentesco[]" placeholder="Parentesco"></td>
-                                                        <td><input type="number" class="form-control" name="beneficiario_porcentaje[]" placeholder="%" min="0" max="100" step="1"></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td><input type="text" class="form-control" name="beneficiario_nombre[]" placeholder="Nombre"></td>
-                                                        <td><input type="text" class="form-control" name="beneficiario_ap_paterno[]" placeholder="Apellido Paterno"></td>
-                                                        <td><input type="text" class="form-control" name="beneficiario_ap_materno[]" placeholder="Apellido Materno"></td>
-                                                        <td><input type="text" class="form-control" name="beneficiario_parentesco[]" placeholder="Parentesco"></td>
-                                                        <td><input type="number" class="form-control" name="beneficiario_porcentaje[]" placeholder="%" min="0" max="100" step="1"></td>
-                                                    </tr>
+                                                <tbody id="tbody_beneficiarios">
+                                                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                        <tr>
+                                                            <td>
+                                                                <input type="text" class="form-control" name="beneficiario_nombre[]" placeholder="Nombre">
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" class="form-control" name="beneficiario_ap_paterno[]" placeholder="Apellido Paterno">
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" class="form-control" name="beneficiario_ap_materno[]" placeholder="Apellido Materno">
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" class="form-control" name="beneficiario_parentesco[]" placeholder="Parentesco">
+                                                            </td>
+                                                            <td>
+                                                                <input type="number" class="form-control porcentaje-beneficiario text-center" name="beneficiario_porcentaje[]" placeholder="%" min="0" max="100" step="1">
+                                                            </td>
+                                                        </tr>
+                                                    <?php endfor; ?>
                                                 </tbody>
                                             </table>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-4">
+                                        <div class="col-md-4 offset-md-8">
+                                            <div class="input-group">
+                                                <span class="input-group-text">Total Porcentaje</span>
+                                                <input type="number" class="form-control text-center" id="total_porcentaje_beneficiarios" readonly>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

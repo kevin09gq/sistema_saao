@@ -4,6 +4,11 @@ $('#btn_export_excel').on('click', function () {
         return;
     }
 
+    // Verificar si hay sueldos negativos antes de exportar
+    if (verificarSueldosNegativos()) {
+        return; // Si hay sueldos negativos, no continuar con la exportación
+    }
+
     const tituloNomina = ($('#nombre_nomina').length ? $('#nombre_nomina').text() : '').trim();
     const numeroSemana = jsonGlobal.numero_semana;
     const fechaCierre = jsonGlobal.fecha_cierre;
@@ -78,6 +83,11 @@ $('#btn_export_pdf').on('click', function () {
     if (!jsonGlobal) {
         alert('No hay datos disponibles para exportar.');
         return;
+    }
+
+    // Verificar si hay sueldos negativos antes de exportar
+    if (verificarSueldosNegativos()) {
+        return; // Si hay sueldos negativos, no continuar con la exportación
     }
 
     const tituloNomina = ($('#nombre_nomina').length ? $('#nombre_nomina').text() : '').trim();
@@ -161,3 +171,37 @@ $('#btn_export_pdf').on('click', function () {
     });
 });
 
+// Función para verificar si hay sueldos negativos en la nómina
+function verificarSueldosNegativos() {
+    if (!jsonGlobal || !jsonGlobal.departamentos) {
+        return false;
+    }
+
+    let haySueldosNegativos = false;
+
+    // Recorrer todos los departamentos y empleados
+    jsonGlobal.departamentos.forEach(depto => {
+        if (depto.empleados) {
+            depto.empleados.forEach(emp => {
+                const sueldoACobrar = parseFloat(emp.sueldo_a_cobrar) || 0;
+                if (sueldoACobrar < 0) {
+                    haySueldosNegativos = true;
+                }
+            });
+        }
+    });
+
+    // Si hay sueldos negativos, mostrar alerta con SweetAlert2
+    if (haySueldosNegativos) {
+        Swal.fire({
+            icon: 'warning',
+            title: '⚠️ Advertencia',
+            text: 'Se detectaron sueldos negativos en "Sueldo a Cobrar". Por favor, revise y corrija estos valores antes de exportar.',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#10b981'
+        });
+        return true; // Indica que hay sueldos negativos
+    }
+
+    return false; // No hay sueldos negativos
+}

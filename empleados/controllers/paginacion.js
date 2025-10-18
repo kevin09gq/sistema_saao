@@ -6,6 +6,9 @@ let paginaActual = 1;
 let filtroDepartamento = "0"; // 0 = Todos
 let busquedaActual = "";
 let filtroEstado = "Todos"; // 'Todos', 'Activo', 'Baja'
+let ordenActual = "nombre_asc"; // Por defecto ordenar por nombre ascendente
+// Objeto para almacenar los cambios de NSS
+window.nssCambios = {}; // Hacerlo global para que sea accesible desde otros archivos
 
 function setEmpleadosData(data) {
     empleadosData = data;
@@ -29,6 +32,49 @@ function setBusqueda(texto) {
     busquedaActual = texto.toLowerCase();
     paginaActual = 1;
     renderTablaEmpleados();
+}
+
+function setOrden(orden) {
+    ordenActual = orden;
+    paginaActual = 1;
+    renderTablaEmpleados();
+}
+
+function ordenarEmpleados(empleados) {
+    // Crear una copia para no modificar el array original
+    let empleadosOrdenados = [...empleados];
+    
+    switch(ordenActual) {
+        case "nombre_asc":
+            empleadosOrdenados.sort((a, b) => {
+                const nombreA = (a.nombre + " " + a.ap_paterno + " " + a.ap_materno).toLowerCase();
+                const nombreB = (b.nombre + " " + b.ap_paterno + " " + b.ap_materno).toLowerCase();
+                return nombreA.localeCompare(nombreB);
+            });
+            break;
+        case "nombre_desc":
+            empleadosOrdenados.sort((a, b) => {
+                const nombreA = (a.nombre + " " + a.ap_paterno + " " + a.ap_materno).toLowerCase();
+                const nombreB = (b.nombre + " " + b.ap_paterno + " " + b.ap_materno).toLowerCase();
+                return nombreB.localeCompare(nombreA);
+            });
+            break;
+        case "clave_asc":
+            empleadosOrdenados.sort((a, b) => a.clave_empleado.localeCompare(b.clave_empleado));
+            break;
+        case "clave_desc":
+            empleadosOrdenados.sort((a, b) => b.clave_empleado.localeCompare(a.clave_empleado));
+            break;
+        default:
+            // Por defecto ordenar por nombre ascendente
+            empleadosOrdenados.sort((a, b) => {
+                const nombreA = (a.nombre + " " + a.ap_paterno + " " + a.ap_materno).toLowerCase();
+                const nombreB = (b.nombre + " " + b.ap_paterno + " " + b.ap_materno).toLowerCase();
+                return nombreA.localeCompare(nombreB);
+            });
+    }
+    
+    return empleadosOrdenados;
 }
 
 function renderTablaEmpleados() {
@@ -60,6 +106,9 @@ function renderTablaEmpleados() {
             return texto.includes(busquedaActual);
         });
     }
+    
+    // Ordenar los empleados filtrados
+    filtrados = ordenarEmpleados(filtrados);
 
     let inicio = (paginaActual - 1) * empleadosPorPagina;
     let fin = inicio + empleadosPorPagina;
@@ -67,6 +116,15 @@ function renderTablaEmpleados() {
 
     let datos = "";
     empleadosPagina.forEach(emp => {
+        // Verificar si hay cambios guardados para este empleado
+        let statusNss = emp.status_nss;
+        if (nssCambios.hasOwnProperty(emp.id_empleado)) {
+            statusNss = nssCambios[emp.id_empleado];
+        }
+        
+        // Verificar si el IMSS está vacío o es null para deshabilitar el switch
+        const imssVacio = !emp.imss || emp.imss === "" || emp.imss === null;
+        
         datos += `
             <tr>
                 <td>
@@ -75,6 +133,13 @@ function renderTablaEmpleados() {
                             <span class="name">${emp.nombre} ${emp.ap_paterno} ${emp.ap_materno}</span>
                             <span class="company">${emp.nombre_departamento}</span>
                         </div>
+                    </div>
+                </td>
+              
+                <td>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input switch-nss" type="checkbox" role="switch" data-id-empleado="${emp.id_empleado}" id="switch_nss_${emp.id_empleado}" ${statusNss == 1 ? 'checked' : ''} ${imssVacio ? 'disabled' : ''}>
+                        <label class="form-check-label" for="switch_nss_${emp.id_empleado}">NSS</label>
                     </div>
                 </td>
                 <td>${emp.clave_empleado}</td>

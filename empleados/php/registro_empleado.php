@@ -37,9 +37,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $biometrico = $_POST['biometrico'] ?? null;
         $telefono_empleado = $_POST['telefono_empleado'] ?? null;
         
+        // Campo de estatus NSS
+        $status_nss = isset($_POST['status_nss']) ? (int)$_POST['status_nss'] : 0;
 
         // Campos de salario
-        $salario_diario = $_POST['salario_diario'] ?? null;
+        $salario_semanal = $_POST['salario_diario'] ?? null;
         $salario_mensual = $_POST['salario_mensual'] ?? null;
 
         // Contacto de emergencia
@@ -197,7 +199,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $biometrico = !empty($biometrico) ? (int)$biometrico : null;
 
         // Convertir salarios a decimal o null
-        $salario_diario = !empty($salario_diario) ? (float)$salario_diario : null;
+        $salario_semanal = !empty($salario_semanal) ? (float)$salario_semanal : null;
         $salario_mensual = !empty($salario_mensual) ? (float)$salario_mensual : null;
 
         // =============================
@@ -208,8 +210,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 id_rol, id_status, nombre, ap_paterno, ap_materno, domicilio,
                 imss, curp, sexo, enfermedades_alergias, grupo_sanguineo,
                 fecha_ingreso, fecha_nacimiento, id_departamento, 
-                id_area, id_puestoEspecial, id_empresa, clave_empleado, salario_semanal, salario_mensual, biometrico, telefono_empleado
-            ) VALUES (2, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                id_area, id_puestoEspecial, id_empresa, clave_empleado, salario_semanal, salario_mensual, biometrico, telefono_empleado, status_nss
+            ) VALUES (2, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         );
 
         if (!$sql) {
@@ -217,7 +219,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $sql->bind_param(
-            "ssssssssssssiiisddis", // 19 parámetros
+            "ssssssssssssiiisddssi", // 20 parámetros
             $nombre,
             $ap_paterno,
             $ap_materno,
@@ -234,10 +236,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id_puestoEspecial,
             $id_empresa,
             $clave_empleado,
-            $salario_diario,
+            $salario_semanal,
             $salario_mensual,
             $biometrico,
-            $telefono_empleado
+            $telefono_empleado,
+            $status_nss
         );
 
         if (!$sql->execute()) {

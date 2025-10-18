@@ -7,6 +7,8 @@ let empleadosFiltrados = [];
 let timeoutBusqueda = null;
 let empleadosFiltradosDispersion = [];
 let timeoutBusquedaDispersion = null;
+let empleadosFiltradosSinSeguro = [];
+let timeoutBusquedaSinSeguro = null;
 
 // Función para mostrar las tablas correspondientes
 function configTablas() {
@@ -22,12 +24,14 @@ function configTablas() {
         e.preventDefault();
         $('#tabla-nomina-container').removeAttr("hidden");
         $('#tabla-dispersion-tarjeta').attr("hidden", true);
+        $('#tabla-sin-seguro-container').attr("hidden", true);
         $("#filtro-departamento").attr("hidden", true);
         $("#busqueda-container").removeAttr("hidden");
         $("#busqueda-container-dispersion").attr("hidden", true);
+        $("#busqueda-container-sin-seguro").attr("hidden", true);
         $("#btn_suma").removeAttr("hidden");
         $("#btn_suma_dispersion").attr("hidden", true);
-        $("#filtro-seguro").removeAttr("hidden");
+        $("#btn_suma_sin_seguro").attr("hidden", true);
 
         // Refrescar la tabla de nómina para asegurar que los cálculos estén actualizados
         if (typeof setEmpleadosPaginados === 'function' && window.empleadosOriginales) {
@@ -45,14 +49,17 @@ function configTablas() {
         e.preventDefault();
         $('#tabla-nomina-container').attr("hidden", true);
         $('#tabla-dispersion-tarjeta').removeAttr("hidden");
+        $('#tabla-sin-seguro-container').attr("hidden", true);
         $("#filtro-departamento").removeAttr("hidden");
         cargarDepartamentosFiltro();
         obtenerEmpleadosPorDepartamento();
         validarClaves();
         $("#busqueda-container-dispersion").removeAttr("hidden");
         $("#busqueda-container").attr("hidden", true);
+        $("#busqueda-container-sin-seguro").attr("hidden", true);
         $("#btn_suma_dispersion").removeAttr("hidden");
         $("#btn_suma").attr("hidden", true);
+        $("#btn_suma_sin_seguro").attr("hidden", true);
 
         // Refrescar la tabla de dispersión para asegurar que los datos estén actualizados
         if (typeof setEmpleadosDispersionPaginados === 'function' && window.empleadosOriginalesDispersion) {
@@ -63,6 +70,26 @@ function configTablas() {
                 }
             });
             setEmpleadosDispersionPaginados(window.empleadosOriginalesDispersion);
+        }
+    });
+
+    // Nueva funcionalidad para el tab de empleados sin seguro
+    $('#btn_tabla_sin_seguro').click(function (e) {
+        e.preventDefault();
+        $('#tabla-nomina-container').attr("hidden", true);
+        $('#tabla-dispersion-tarjeta').attr("hidden", true);
+        $('#tabla-sin-seguro-container').removeAttr("hidden");
+        $("#filtro-departamento").attr("hidden", true);
+        $("#busqueda-container").attr("hidden", true);
+        $("#busqueda-container-dispersion").attr("hidden", true);
+        $("#busqueda-container-sin-seguro").removeAttr("hidden");
+        $("#btn_suma").attr("hidden", true);
+        $("#btn_suma_dispersion").attr("hidden", true);
+        $("#btn_suma_sin_seguro").removeAttr("hidden");
+
+        // Refrescar la tabla de empleados sin seguro
+        if (typeof mostrarEmpleadosSinSeguro === 'function') {
+            mostrarEmpleadosSinSeguro();
         }
     });
 }
@@ -170,6 +197,20 @@ $(document).ready(function () {
                 // Limpiar tabla si existe
                 $('#tabla-nomina-body').empty();
                 $('#tabla-dispersion-body').empty();
+                $('#tabla-sin-seguro-body').empty();
+
+                // Mostrar la tabla principal (tabla-nomina) como vista inicial
+                $('#tabla-nomina-container').removeAttr("hidden");
+                $('#tabla-dispersion-tarjeta').attr("hidden", true);
+                $('#tabla-sin-seguro-container').attr("hidden", true);
+
+                // Resetear los mini-tabs
+                $('.mini-tab').removeClass('active'); // Remover la clase active de todos los tabs
+                $('#btn_tabla_nomina').addClass('active'); // Activar el tab de la tabla principal
+
+                $('#campo-busqueda').val('');
+                $('#campo-busqueda-dispersion').val('');
+                $('#campo-busqueda-sin-seguro').val('');
 
                 // Mostrar mensaje de éxito
                 Swal.fire({
@@ -183,13 +224,29 @@ $(document).ready(function () {
         });
     });
 
+
     // Escuchar cambios en la tabla de nómina para guardar automáticamente
     $(document).on('input', '#tabla-nomina-body td[contenteditable]', function () {
         const $celda = $(this);
         const $fila = $celda.closest('tr');
         const clave = $fila.data('clave');
         const columna = $celda.index();
-        const valor = $celda.text().trim();
+        let valor = $celda.text().trim();
+
+        // Asegurar que las columnas de deducción conserven el prefijo "-" visualmente
+        const columnasDeduccion = [6, 7, 8, 9, 10, 11, 12, 13, 14];
+        if (columnasDeduccion.includes(columna)) {
+            // Remover cualquier prefijo "-" duplicado para parsear
+            const limpio = valor.replace(/^-/, '').trim();
+            if (limpio === '' || limpio === '0' || isNaN(parseFloat(limpio))) {
+                valor = '';
+                $celda.text('');
+            } else {
+                const num = parseFloat(limpio);
+                $celda.text(`-${num.toFixed(2)}`);
+                valor = String(num);
+            }
+        }
 
 
         // Actualizar el empleado correspondiente
@@ -197,6 +254,20 @@ $(document).ready(function () {
 
         // Guardar cambios automáticamente
         guardarDatosNomina();
+    });
+
+    // Después de cualquier cambio que afecte sueldos, asegurar la clase de negativo/positivo
+    $(document).on('DOMSubtreeModified', '#tabla-nomina-body, #tabla-sin-seguro-body', function () {
+        // Recorre celdas de sueldo a cobrar (última columna)
+        $(this).find('tr').each(function () {
+            const $celdas = $(this).find('td');
+            if ($celdas.length >= 16) {
+                const $sueldo = $($celdas[15]);
+                const texto = $sueldo.text().replace(/[^0-9.-]/g, '');
+                const valor = parseFloat(texto) || 0;
+                $sueldo.removeClass('sueldo-negativo sueldo-final').addClass(valor < 0 ? 'sueldo-negativo' : 'sueldo-final');
+            }
+        });
     });
 
     // Cuando la página se carga completamente, asegurarse de que los sueldos estén actualizados
@@ -393,6 +464,9 @@ function restaurarVistaNominaDirecta() {
     $("#busqueda-container").removeAttr("hidden");
     $("#filtro-seguro").removeAttr("hidden");
 
+    // Inicializar menú contextual para empleados sin seguro
+    inicializarMenuContextualSinSeguro();
+
 
     // Formatear números en los empleados restaurados y recalcular sueldos
     if (window.empleadosOriginales && window.empleadosOriginales.length > 0) {
@@ -518,7 +592,20 @@ function obtenerArchivos(params) {
                                 // Unir ambos JSON y mostrar el resultado
                                 const jsonUnido = unirJson(json1, json2);
                                 empleadosNoUnidos(json1, json2);
+
                                 // MOVER enviarIdBiometricosNoUnidos DESPUÉS de asignar jsonGlobal
+                                $('#busqueda-container').removeAttr('hidden'); // Mostrar el contenedor de búsqueda principal
+                                $('#busqueda-container-dispersion').attr('hidden', true); // Ocultar el contenedor de búsqueda de dispersión
+                                $('#busqueda-container-sin-seguro').attr('hidden', true); // Ocultar el contenedor de búsqueda de sin seguro
+
+                                // Resetear los mini-tabs para que la tabla principal esté activa
+                                $('.mini-tab').removeClass('active'); // Remover la clase active de todos los tabs
+                                $('#btn_tabla_nomina').addClass('active'); // Activar el tab de la tabla principal
+
+                                // Mostrar la tabla principal y ocultar las demás
+                                $('#tabla-nomina-container').removeAttr('hidden');
+                                $('#tabla-dispersion-tarjeta').attr('hidden', true);
+                                $('#tabla-sin-seguro-container').attr('hidden', true);
 
                                 verificarNominaExistente(jsonUnido.numero_semana, function (existe) {
                                     if (existe) {
@@ -777,7 +864,8 @@ function establecerDatosEmpleados() {
     if (jsonGlobal && jsonGlobal.departamentos) {
         jsonGlobal.departamentos.forEach(depto => {
             // Solo procesar empleados del departamento "PRODUCCION 40 LIBRAS"
-            if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS')) {
+            if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS') ||
+                (depto.nombre || '').toUpperCase().includes('SIN SEGURO')) {
                 let empleadosOrdenados = (depto.empleados || []).slice().sort(compararPorApellidos);
                 empleadosOrdenados.forEach(emp => {
                     // Solo inicializar valores si no existen (para preservar modificaciones)
@@ -867,6 +955,9 @@ function establecerDatosEmpleados() {
     $("#busqueda-container").removeAttr("hidden");
     $("#filtro-seguro").removeAttr("hidden");
 
+    // Inicializar menú contextual para empleados sin seguro
+    inicializarMenuContextualSinSeguro();
+
     // Guardar datos después de establecer empleados
     guardarDatosNomina();
 }
@@ -877,7 +968,11 @@ function establecerDatosEmpleadosExistentes() {
     if (jsonGlobal && jsonGlobal.departamentos) {
         jsonGlobal.departamentos.forEach(depto => {
             // Solo procesar empleados del departamento "PRODUCCION 40 LIBRAS"
-            if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS')) {
+            if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS') ||
+                (depto.nombre || '').toUpperCase().includes('SIN SEGURO')) {
+
+                const esSinSeguro = (depto.nombre || '').toUpperCase().includes('SIN SEGURO');
+
                 let empleadosOrdenados = (depto.empleados || []).slice().sort(compararPorApellidos);
                 empleadosOrdenados.forEach(emp => {
                     // PRESERVAR TODOS LOS VALORES EXISTENTES - NO INICIALIZAR NADA
@@ -899,6 +994,8 @@ function establecerDatosEmpleadosExistentes() {
     $("#busqueda-container").removeAttr("hidden");
     $("#filtro-seguro").removeAttr("hidden");
 
+    // Inicializar menú contextual para empleados sin seguro
+    inicializarMenuContextualSinSeguro();
 
     // Guardar datos después de establecer empleados
     guardarDatosNomina();
@@ -909,7 +1006,8 @@ function actualizarJsonGlobalConEmpleadosOriginales() {
     if (!jsonGlobal || !jsonGlobal.departamentos || !window.empleadosOriginales) return;
     jsonGlobal.departamentos.forEach(depto => {
         // Solo actualizar departamento "PRODUCCION 40 LIBRAS" con empleados procesados
-        if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS')) {
+        if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS') ||
+            (depto.nombre || '').toUpperCase().includes('SIN SEGURO')) {
             // Filtra empleados que pertenecen a este departamento
             const empleadosDepto = window.empleadosOriginales.filter(emp =>
                 (emp.id_departamento === depto.nombre.split(' ')[0]) &&
@@ -931,7 +1029,8 @@ function sincronizarCambiosConJsonGlobal() {
 
     // Actualizar empleados en jsonGlobal con los valores actuales de empleadosOriginales
     jsonGlobal.departamentos.forEach(depto => {
-        if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS')) {
+        if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS') ||
+            (depto.nombre || '').toUpperCase().includes('SIN SEGURO')) {
             depto.empleados = depto.empleados.map(emp => {
                 // Buscar empleado actualizado en empleadosOriginales
                 const empActualizado = window.empleadosOriginales.find(e => e.clave === emp.clave);
@@ -1088,6 +1187,73 @@ function inicializarMenuContextual() {
     });
 }
 
+// Función para mostrar el menu contextual de empleados sin seguro
+function inicializarMenuContextualSinSeguro() {
+    // Limpiar eventos previos para evitar acumulación
+    $(document).off('contextmenu', '#tabla-sin-seguro-body tr');
+    $(document).off('click', '#menu-contextual-sin-seguro');
+
+    // Crear un mapa de empleados para búsqueda rápida
+    const empleadosMap = new Map();
+    if (jsonGlobal && jsonGlobal.departamentos) {
+        jsonGlobal.departamentos.forEach(depto => {
+            if ((depto.nombre || '').toUpperCase().includes('SIN SEGURO')) {
+                (depto.empleados || []).forEach(emp => {
+                    empleadosMap.set(String(emp.clave), {
+                        empleado: emp,
+                        esSinSeguro: true
+                    });
+                });
+            }
+        });
+    }
+
+    // Mostrar menú contextual solo para empleados sin seguro
+    $(document).on('contextmenu', '#tabla-sin-seguro-body tr', function (e) {
+        e.preventDefault();
+        const clave = $(this).data('clave');
+
+        // Búsqueda rápida usando Map
+        const empleadoInfo = empleadosMap.get(String(clave));
+
+        if (empleadoInfo && empleadoInfo.esSinSeguro) {
+            // Guardar la clave para usar en "Ver detalles" sin buscar de nuevo
+            $('#menu-contextual-sin-seguro').data('clave-actual', clave);
+            $('#menu-contextual-sin-seguro')
+                .css({ left: e.pageX, top: e.pageY })
+                .removeAttr('hidden');
+        } else {
+            $('#menu-contextual-sin-seguro').attr('hidden', true);
+        }
+    });
+
+    // Ocultar menú contextual al hacer clic fuera
+    $(document).on('click', function (e) {
+        if (!$(e.target).closest('#menu-contextual-sin-seguro').length) {
+            $('#menu-contextual-sin-seguro').attr('hidden', true);
+        }
+    });
+
+    // Mostrar modal de detalles al hacer clic en "Ver detalles"
+    $(document).on('click', '#menu-contextual-sin-seguro', function () {
+        $('#menu-contextual-sin-seguro').attr('hidden', true);
+
+        // Obtener la clave guardada y buscar datos
+        const clave = $(this).data('clave-actual');
+        if (clave) {
+            buscarDatos(clave);
+        }
+
+        $('#modal-detalles').fadeIn();
+
+        // Mostrar primer tab al abrir
+        $('#modalTabs .nav-link').removeClass('active');
+        $('#tab-info').addClass('active');
+        $('.tab-pane').removeClass('show active');
+        $('#tab_info').addClass('show active');
+    });
+}
+
 /*
  * ================================================================
  * MÓDULO DE BÚSQUEDA Y FILTRADO DE EMPLEADOS
@@ -1141,6 +1307,31 @@ function busquedaNomina() {
         }, 300);
     });
 
+    // Búsqueda para empleados sin seguro
+    $('#campo-busqueda-sin-seguro').on('input', function () {
+        const termino = $(this).val().trim().toLowerCase();
+
+        // Debounce: esperar 300ms después de que el usuario deje de escribir
+        if (timeoutBusquedaSinSeguro) clearTimeout(timeoutBusquedaSinSeguro);
+
+        timeoutBusquedaSinSeguro = setTimeout(function () {
+            // Obtener empleados sin seguro
+            const empleadosSinSeguro = obtenerEmpleadosSinSeguro();
+
+            // Filtrar empleados por nombre o clave
+            const empleadosFiltradosSinSeguro = termino ?
+                empleadosSinSeguro.filter(emp =>
+                    (emp.nombre || '').toLowerCase().includes(termino) ||
+                    (emp.clave || '').toString().includes(termino)
+                ) :
+                [...empleadosSinSeguro];
+
+            // Actualizar paginación con resultados filtrados
+            paginaActualSinSeguro = 1;
+            setEmpleadosSinSeguroPaginados(empleadosFiltradosSinSeguro);
+        }, 300);
+    });
+
 
 }
 
@@ -1185,7 +1376,7 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
         if (!jsonGlobal || !jsonGlobal.departamentos) return null;
         for (let depto of jsonGlobal.departamentos) {
             // Buscar en PRODUCCION 40 LIBRAS y SIN SEGURO
-            if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS') || 
+            if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS') ||
                 (depto.nombre || '').toUpperCase().includes('SIN SEGURO')) {
                 for (let emp of depto.empleados || []) {
                     // Buscar por clave o por id_biometrico para empleados no unidos
@@ -1963,6 +2154,8 @@ function obtenerNominaDeBaseDatos(numeroSemana, callback) {
         dataType: "json",
         success: function (response) {
             if (response.success && response.nomina) {
+                // 🆕 MARCAR QUE LOS DATOS VIENEN DE LA BASE DE DATOS
+                response.nomina.desde_base_datos = true;
                 callback(response.nomina);
             } else {
                 callback(null);
@@ -2061,6 +2254,7 @@ function establecerHorariosPorDefecto(numeroSemana) {
  * 
  * ================================================================
  */
+
 /*
  * ================================================================
  * MÓDULO DE NOMINA PARA QUE NO TIENEN SEGUROS
@@ -2177,6 +2371,7 @@ function obtenerIdBiometricoEmpleadosNoUnidos(json1, json2) {
         empleados: empleadosNoUnidos
     };
 }
+
 function enviarIdBiometricosNoUnidos(json1, json2) {
     const { ids: idsBiometricos, empleados: empleadosNoUnidos } = obtenerIdBiometricoEmpleadosNoUnidos(json1, json2);
 
@@ -2209,7 +2404,7 @@ function enviarIdBiometricosNoUnidos(json1, json2) {
                                 String(e.id_biometrico) === String(emp.biometrico)
                             );
 
-                            // CREAR EMPLEADO CON PROPIEDADES MÍNIMAS - establecerDatosEmpleados se encargará del resto
+                            // CREAR EMPLEADO CON PROPIEDADES MÍNIMAS
                             return {
                                 nombre: `${emp.ap_paterno} ${emp.ap_materno} ${emp.nombre}`,
                                 clave: emp.clave_empleado,
@@ -2217,7 +2412,6 @@ function enviarIdBiometricosNoUnidos(json1, json2) {
                                 horas_totales: empleadoNoUnido?.horas_totales || "0.00",
                                 registros: empleadoNoUnido?.registros || [],
                                 tiempo_total: empleadoNoUnido?.tiempo_total || "00:00",
-                                // Marcar como sin seguro para que establecerDatosEmpleados lo procese correctamente
                                 sin_seguro: true
                             };
                         });
@@ -2235,15 +2429,25 @@ function enviarIdBiometricosNoUnidos(json1, json2) {
                             }
                         });
 
-                        // *** CLAVE: VOLVER A EJECUTAR establecerDatosEmpleados DESPUÉS DE AGREGAR EMPLEADOS SIN SEGURO ***
-                        establecerDatosEmpleados();
+                        // 🆕 VERIFICAR SI LOS DATOS VIENEN DE LA BASE DE DATOS
+                        const datosVienenDeBD = jsonGlobal.desde_base_datos === true;
 
-                        // Ejecutar redondeo DESPUÉS de que establecerDatosEmpleados haya inicializado todo
-                        if (empleadosConvertidos.length > 0) {
-                            redondearRegistrosEmpleados(true, true); // Forzar recálculo para incluir nuevos empleados
+                        if (datosVienenDeBD) {
+                            // Si los datos vienen de BD, NO recalcular - solo establecer sin inicializar
+                            console.log("Datos vienen de BD - NO recalculando para preservar modificaciones");
+                            establecerDatosEmpleadosExistentes(); // Esta función no recalcula
+                        } else {
+                            // Si son datos nuevos, calcular normalmente
+                            console.log("Datos nuevos - calculando valores iniciales");
+                            establecerDatosEmpleados();
+
+                            // Solo ejecutar redondeo para datos nuevos
+                            if (empleadosConvertidos.length > 0) {
+                                redondearRegistrosEmpleados(true, true);
+                            }
                         }
 
-                        console.log("Empleados sin seguro procesados y establecidos correctamente");
+                        console.log("Empleados sin seguro procesados correctamente");
                     }
                 } catch (error) {
                     console.error("Error al procesar empleados sin seguro:", error);
@@ -2257,4 +2461,3 @@ function enviarIdBiometricosNoUnidos(json1, json2) {
         console.log("No hay IDs biométricos no unidos para enviar.");
     }
 }
-

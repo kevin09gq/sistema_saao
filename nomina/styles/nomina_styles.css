@@ -380,6 +380,20 @@ body {
     max-width: 140px;
 }
 
+/* Cambiar el color de las filas en las columnas especificadas */
+.table-nomina td:nth-child(7),
+.table-nomina td:nth-child(8),
+.table-nomina td:nth-child(9),
+.table-nomina td:nth-child(10),
+.table-nomina td:nth-child(11),
+.table-nomina td:nth-child(12),
+.table-nomina td:nth-child(13),
+.table-nomina td:nth-child(14),
+.table-nomina td:nth-child(15) {
+    color: #ef4444; /* Rojo */
+    font-weight: 600; /* Opcional: para resaltar el texto */
+}
+
 /* Celdas vacías con estilo sutil */
 .table-nomina td:empty {
     background: #f9fafb;
@@ -404,6 +418,15 @@ body {
 .sueldo-final {
     background: rgba(59, 130, 246, 0.1) !important;
     color: #1d4ed8 !important;
+    font-weight: 700 !important;
+    border-radius: 6px !important;
+    border: none !important;
+}
+
+/* Estado visual para sueldo a cobrar negativo */
+.sueldo-negativo {
+    background: rgba(239, 68, 68, 0.08) !important;
+    color: #b91c1c !important;
     font-weight: 700 !important;
     border-radius: 6px !important;
     border: none !important;

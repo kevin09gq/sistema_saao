@@ -2509,7 +2509,8 @@ $(document).ready(function () {
     }
 
     function validarClave(clave) {
-        var validar = /^\d+$/;
+        // Permitir claves que contengan letras, números y caracteres especiales como /
+        var validar = /^[a-zA-Z0-9\/]+$/;
         return validar.test(clave);
     }
 
