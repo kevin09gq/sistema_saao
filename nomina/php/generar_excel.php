@@ -246,8 +246,10 @@ try {
                             $put("O{$fila}", -1 * (float)$empleado['fa_gafet_cofia']);
                         }
 
-                        // P: Sueldo a cobrar (positivo)
-                        $put("P{$fila}", $empleado['sueldo_a_cobrar'] ?? null);
+                        // P: Sueldo a cobrar (fórmula que suma ingresos y resta deducciones)
+                        $formula = "=SUM(D{$fila}:F{$fila}) - ABS(SUM(G{$fila}:O{$fila}))";
+                        $sheet->setCellValueExplicit("P{$fila}", $formula, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_FORMULA);
+                        $sheet->getStyle("P{$fila}")->getNumberFormat()->setFormatCode('_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)');
 
                         $sheet->getRowDimension($fila)->setRowHeight(25);
 

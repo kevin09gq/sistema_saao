@@ -17,7 +17,7 @@ if (!empty($biometricos)) {
          FROM info_empleados 
          WHERE biometrico IN ($placeholders) 
            AND id_status = 1 
-           AND imss = '' 
+           AND (imss = '' OR status_nss = 0)
            AND id_departamento = 4"
     );
     $sql->bind_param($tipos, ...$biometricos);

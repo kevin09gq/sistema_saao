@@ -196,6 +196,17 @@ $(document).ready(function () {
                     if (response.success) {
                         // Guardar el cambio en el objeto de cambios
                         window.nssCambios[idEmpleado] = statusNss;
+                        
+                        // Actualizar el estado en los datos locales si existe
+                        const empleadoIndex = empleadosData.findIndex(emp => emp.id_empleado == idEmpleado);
+                        if (empleadoIndex !== -1) {
+                            empleadosData[empleadoIndex].status_nss = statusNss;
+                        }
+                        
+                        // Si estamos en la vista de "Sin Seguro", recargar la tabla
+                        if ($('#filtroDepartamento').val() === "1000") {
+                            renderTablaEmpleados();
+                        }
                     } else {
                         // Revertir el estado del switch si falla
                         $el.prop('checked', !isChecked);

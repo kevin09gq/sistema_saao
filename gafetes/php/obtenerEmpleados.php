@@ -58,6 +58,7 @@ while ($row = $query->fetch_object()) {
         // Campos adicionales para gafete
         'domicilio' => $row->domicilio ?? 'N/A',
         'imss' => $row->imss ?? 'N/A',
+        'status_nss' => $row->status_nss ?? 0,
         'curp' => $row->curp ?? 'N/A',
         'enfermedades_alergias' => $row->enfermedades_alergias ?? 'N/A',
         'grupo_sanguineo' => $row->grupo_sanguineo ?? 'N/A',

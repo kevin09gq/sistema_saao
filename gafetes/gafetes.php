@@ -169,9 +169,6 @@ include("../conexion/conexion.php");
                                 <button id="btnCasillero" class="btn btn-info btn-sm text-white" title="Casillero">
                                     <i class="bi bi-box-seam"></i> Casillero
                                 </button>
-                                <button id="resetearToggles" class="btn btn-outline-warning btn-sm" title="Resetear toggles IMSS a estado original" onclick="resetearTogglesIMSS()">
-                                    <i class="bi bi-arrow-clockwise"></i> Reset IMSS
-                                </button>
                             </div>
                         </div>
                     </div>

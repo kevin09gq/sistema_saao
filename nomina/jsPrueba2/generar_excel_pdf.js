@@ -4,10 +4,10 @@ $('#btn_export_excel').on('click', function () {
         return;
     }
 
-    // Verificar si hay sueldos negativos antes de exportar
+    /* Verificar si hay sueldos negativos antes de exportar
     if (verificarSueldosNegativos()) {
         return; // Si hay sueldos negativos, no continuar con la exportación
-    }
+    }*/
 
     const tituloNomina = ($('#nombre_nomina').length ? $('#nombre_nomina').text() : '').trim();
     const numeroSemana = jsonGlobal.numero_semana;

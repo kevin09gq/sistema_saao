@@ -74,42 +74,8 @@ $(document).ready(function () {
     // Objeto para almacenar las preferencias de orden de nombre por empleado
     window.ordenNombre = {};
     
-    // Objeto para almacenar el estado del toggle IMSS por empleado
-    window.imssToggleState = {};
-    
-    // Función para cargar el estado del toggle desde localStorage
-    function cargarEstadoToggleIMSS() {
-        const estadoGuardado = localStorage.getItem('imssToggleState');
-        if (estadoGuardado) {
-            try {
-                window.imssToggleState = JSON.parse(estadoGuardado);
-            } catch (e) {
-                console.warn('Error al cargar estado del toggle IMSS:', e);
-                window.imssToggleState = {};
-            }
-        }
-    }
-    
-    // Función para guardar el estado del toggle en localStorage
-    function guardarEstadoToggleIMSS() {
-        localStorage.setItem('imssToggleState', JSON.stringify(window.imssToggleState));
-    }
-    
-    // Función para resetear todos los toggles IMSS a su estado original
-    function resetearTogglesIMSS() {
-        if (confirm('¿Estás seguro de que quieres resetear todos los toggles IMSS a su estado original?')) {
-            localStorage.removeItem('imssToggleState');
-            window.imssToggleState = {};
-            // Recargar la tabla para mostrar los estados originales
-            actualizarTablaEmpleados();
-        }
-    }
-    
-    // Hacer la función accesible globalmente para uso en consola o botones
-    window.resetearTogglesIMSS = resetearTogglesIMSS;
-    
-    // Cargar el estado guardado al iniciar
-    cargarEstadoToggleIMSS();
+    // Ya no se necesita localStorage para el estado del toggle IMSS
+    // Ahora se usa directamente el campo status_nss de la base de datos
 
     // Evento para seleccionar todos los empleados
     $('#seleccionarTodos').click(function () {
@@ -126,10 +92,9 @@ $(document).ready(function () {
         empleadosSeleccionados.clear();
         window.empleadosSeleccionados = empleadosSeleccionados;
         
-        // Limpiar las preferencias de inclusión de fotos, orden de nombre y toggle IMSS
+        // Limpiar las preferencias de inclusión de fotos y orden de nombre
         window.fotoInclusion = {};
         window.ordenNombre = {};
-        // No limpiar window.imssToggleState para mantener las preferencias del usuario
         
         actualizarContadorSeleccionados();
     });
@@ -285,16 +250,52 @@ $(document).ready(function () {
     $(document).on('change', '.imss-toggle', function () {
         const idEmpleado = $(this).data('empleado-id');
         const isChecked = $(this).is(':checked');
+        const statusNss = isChecked ? 1 : 0;
         
-        // Guardar el estado del toggle
-        window.imssToggleState[idEmpleado] = isChecked;
+        // Verificar si el toggle está deshabilitado (por IMSS vacío)
+        if ($(this).is(':disabled')) {
+            return; // No hacer nada si está deshabilitado
+        }
         
-        // Guardar en localStorage para persistencia
-        guardarEstadoToggleIMSS();
+        // Evitar doble click
+        const $el = $(this);
+        if ($el.data('processing')) return;
+        $el.data('processing', true).addClass('disabled').css('pointer-events', 'none').css('opacity', '0.6');
         
-        // Actualizar el texto del label
-        const $label = $(this).siblings('label').find('.toggle-text');
-        $label.text(isChecked ? 'Con IMSS' : 'Sin IMSS');
+        // Actualizar status_nss en la base de datos
+        $.ajax({
+            type: 'POST',
+            url: '../empleados/php/estatus_nss.php',
+            data: {
+                id_empleado: idEmpleado,
+                status_nss: statusNss
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    // Actualizar el texto del label
+                    const $label = $el.siblings('label').find('.toggle-text');
+                    $label.text(isChecked ? 'Con IMSS' : 'Sin IMSS');
+                    
+                    // Actualizar el empleado en la cache local
+                    const empleado = todosLosEmpleados.find(e => e.id_empleado == idEmpleado);
+                    if (empleado) {
+                        empleado.status_nss = statusNss;
+                    }
+                } else {
+                    // Revertir el estado del switch si falla
+                    $el.prop('checked', !isChecked);
+                    alert('Error al actualizar el estado del NSS');
+                }
+                $el.data('processing', false).removeClass('disabled').css('pointer-events', '').css('opacity', '');
+            },
+            error: function() {
+                // Revertir el estado del switch si hay error
+                $el.prop('checked', !isChecked);
+                alert('Error al actualizar el estado del NSS');
+                $el.data('processing', false).removeClass('disabled').css('pointer-events', '').css('opacity', '');
+            }
+        });
     });
 
     // Evento para editar empleado
@@ -304,6 +305,17 @@ $(document).ready(function () {
         
         // Llamar a la función para abrir el modal de edición
         abrirModalEditarEmpleado(idEmpleado, claveEmpleado);
+    });
+    
+    // Evento para refrescar la tabla cuando se cierra el modal de actualizar empleado
+    $('#modal_actualizar_empleado').on('hidden.bs.modal', function () {
+        
+        // Recargar los empleados del departamento actual
+        const departamentoActual = $('#filtroDepartamento').val() || 'todos';
+        
+        // Recargar empleados con carga global para actualizar todosLosEmpleados
+        cargarEmpleadosPorDepartamento(departamentoActual, true);
+        
     });
 
     // Evento para imprimir gafetes
@@ -335,12 +347,12 @@ $(document).ready(function () {
     
     // Nueva función específica para generar gafetes para impresión
     function generarGafetesParaImpresion() {
+        
         // IMPORTANTE: Primero actualizar las fechas de vigencia
         actualizarFechasGafetes().then(function() {
             // Una vez actualizadas las fechas, obtener datos frescos de los empleados
             obtenerDatosFrescosParaImpresion();
         }).catch(function(error) {
-            console.error('Error al actualizar fechas, continuando con impresión:', error);
             // Aún con error, intentar generar los gafetes
             obtenerDatosFrescosParaImpresion();
         });
@@ -348,12 +360,14 @@ $(document).ready(function () {
     
     // Función auxiliar para obtener datos frescos para impresión
     function obtenerDatosFrescosParaImpresion() {
+        
         // Obtener datos frescos de los empleados antes de generar los gafetes
         $.ajax({
             url: 'php/obtenerEmpleados.php',
             type: 'GET',
             dataType: 'json',
             success: function(empleadosFrescos) {
+                
                 // Crear un mapa para acceso rápido a los datos frescos
                 const mapaEmpleadosFrescos = {};
                 empleadosFrescos.forEach(emp => {
@@ -362,6 +376,7 @@ $(document).ready(function () {
                 
                 // Actualizar la caché con los datos frescos
                 const idsUnicos = [...new Set(Array.from(empleadosSeleccionados))];
+                
                 idsUnicos.forEach(id => {
                     const empleadoCache = todosLosEmpleados.find(e => e && e.id_empleado == id);
                     const empleadoFresco = mapaEmpleadosFrescos[id];
@@ -384,7 +399,6 @@ $(document).ready(function () {
                 }, 500);
             },
             error: function(xhr, status, error) {
-                console.error('Error al obtener empleados:', error);
                 // En caso de error, continuar con los datos existentes
                 generarGafetesConDatosActualizados(true);
                 setTimeout(() => {
@@ -396,6 +410,7 @@ $(document).ready(function () {
     
     // Función para procesar la impresión
     function procesarImpresion() {
+        
         // Obtener solo el contenido de los gafetes
         const contenidoGafetes = $('#contenidoGafetes').html();
         
@@ -417,6 +432,7 @@ $(document).ready(function () {
             alert('No se pudo abrir la ventana de impresión. Verifique que no esté bloqueando ventanas emergentes.');
             return;
         }
+        
         
         // Crear el HTML completo para la ventana de impresión
         const htmlImpresion = `
@@ -909,19 +925,13 @@ $(document).ready(function () {
                 }
             }
             
-            // Determinar si el empleado tiene IMSS
+            // Determinar si el empleado tiene IMSS basado en status_nss de la base de datos
+            // status_nss: 1 = Activo (tiene IMSS), 0 = Inactivo (no tiene IMSS)
             const tieneIMSS = empleado.imss && empleado.imss !== 'N/A' && empleado.imss.trim() !== '';
+            const statusNss = empleado.status_nss !== undefined ? empleado.status_nss : (tieneIMSS ? 1 : 0);
             
-            // Inicializar el estado del toggle si no existe (basado en si tiene IMSS)
-            // Solo inicializar si no hay estado guardado previamente
-            if (window.imssToggleState[empleado.id_empleado] === undefined) {
-                window.imssToggleState[empleado.id_empleado] = tieneIMSS;
-                // Guardar el estado inicial
-                guardarEstadoToggleIMSS();
-            }
-            
-            // Obtener el estado actual del toggle
-            const toggleIMSS = window.imssToggleState[empleado.id_empleado];
+            // El toggle debe reflejar el status_nss de la base de datos
+            const toggleIMSS = statusNss == 1;
             
             // Obtener el orden de nombre seleccionado para este empleado (por defecto: nombre primero)
             const ordenSeleccionado = window.ordenNombre[empleado.id_empleado] || 'nombre-primero';
@@ -942,7 +952,8 @@ $(document).ready(function () {
                             <input class="form-check-input imss-toggle" type="checkbox" 
                                    id="imss_toggle_${empleado.id_empleado}" 
                                    data-empleado-id="${empleado.id_empleado}"
-                                   ${toggleIMSS ? 'checked' : ''}>
+                                   ${toggleIMSS ? 'checked' : ''}
+                                   ${!tieneIMSS ? 'disabled' : ''}>
                             <label class="form-check-label ms-2 small" for="imss_toggle_${empleado.id_empleado}">
                                 <span class="toggle-text">${toggleIMSS ? 'Con IMSS' : 'Sin IMSS'}</span>
                             </label>
@@ -1138,7 +1149,6 @@ $(document).ready(function () {
             // Una vez actualizadas las fechas, obtener datos frescos de los empleados
             obtenerDatosFrescosYGenerarGafetes(modoImpresion);
         }).catch(function(error) {
-            console.error('Error al actualizar fechas, continuando con generación:', error);
             // Aún con error, intentar generar los gafetes
             obtenerDatosFrescosYGenerarGafetes(modoImpresion);
         });
@@ -1232,13 +1242,16 @@ $(document).ready(function () {
         idsUnicos.forEach(idEmpleado => {
             const empleado = todosLosEmpleados.find(e => e.id_empleado == idEmpleado);
             if (empleado) {
-                // Usar el estado del toggle en lugar de verificar el campo IMSS
-                // Si no hay estado guardado, usar el valor del campo IMSS como predeterminado
-                const tieneIMSSToggle = window.imssToggleState[idEmpleado] !== undefined ? 
-                    window.imssToggleState[idEmpleado] : 
-                    (empleado.imss && empleado.imss !== 'N/A' && empleado.imss.trim() !== '');
+                // IMPORTANTE: Para generar gafete con IMSS, el empleado debe cumplir DOS condiciones:
+                // 1. Tener un número de IMSS válido en la base de datos
+                // 2. Tener status_nss = 1 (activo)
+                const tieneNumeroIMSS = empleado.imss && empleado.imss !== 'N/A' && empleado.imss.trim() !== '';
+                const statusNss = empleado.status_nss !== undefined ? empleado.status_nss : 0;
                 
-                if (tieneIMSSToggle) {
+                // Solo generar gafete con IMSS si AMBAS condiciones se cumplen
+                const tieneIMSSActivo = tieneNumeroIMSS && statusNss == 1;
+                
+                if (tieneIMSSActivo) {
                     empleadosConIMSS.push(idEmpleado);
                 } else {
                     empleadosSinIMSS.push(idEmpleado);
@@ -1474,10 +1487,11 @@ $(document).ready(function () {
                 const fechaInicio = new Date();
                 const fechaFin = new Date(fechaInicio);
                 
-                // Determinar si el empleado tiene IMSS válido usando el estado del toggle
-                const tieneIMSS = window.imssToggleState[empleado.id_empleado] !== undefined ? 
-                    window.imssToggleState[empleado.id_empleado] : 
-                    (empleado.imss && empleado.imss !== 'N/A' && empleado.imss.trim() !== '');
+                // Determinar si el empleado tiene IMSS válido
+                // Debe cumplir DOS condiciones: tener número de IMSS Y status_nss activo
+                const tieneNumeroIMSS = empleado.imss && empleado.imss !== 'N/A' && empleado.imss.trim() !== '';
+                const statusNss = empleado.status_nss !== undefined ? empleado.status_nss : 0;
+                const tieneIMSS = tieneNumeroIMSS && statusNss == 1;
                 
                 // Establecer la vigencia: 1 mes para empleados sin IMSS, 6 meses para empleados con IMSS
                 const mesesVigencia = tieneIMSS ? 6 : 1;
@@ -2026,10 +2040,10 @@ $(document).ready(function () {
                 );
                 
             // Crear contenedor columna con lógica condicional para IMSS
-            // Verificar el estado del toggle individual de este empleado
-            const tieneIMSSIndividual = window.imssToggleState[empleado.id_empleado] !== undefined ? 
-                window.imssToggleState[empleado.id_empleado] : 
-                (empleado.imss && empleado.imss !== 'N/A' && empleado.imss.trim() !== '');
+            // Verificar que el empleado tenga número de IMSS Y status_nss activo
+            const tieneNumeroIMSSValido = empleado.imss && empleado.imss !== 'N/A' && empleado.imss.trim() !== '';
+            const statusNssIndividual = empleado.status_nss !== undefined ? empleado.status_nss : 0;
+            const tieneIMSSIndividual = tieneNumeroIMSSValido && statusNssIndividual == 1;
             
             let $columna;
             
@@ -2291,15 +2305,15 @@ $(document).ready(function () {
         
         // Iterar sobre los empleados seleccionados y actualizar sus fechas
         empleadosSeleccionados.forEach(function(idEmpleado) {
-            // Obtener el estado del toggle IMSS para este empleado
+            // Obtener el empleado y su status_nss
             const empleado = todosLosEmpleados.find(e => e.id_empleado == idEmpleado);
             let imssToggle = null;
             
             if (empleado) {
-                // Usar el estado del toggle si existe, si no, usar el valor del campo IMSS
-                imssToggle = window.imssToggleState[idEmpleado] !== undefined ? 
-                    window.imssToggleState[idEmpleado] : 
-                    (empleado.imss && empleado.imss !== 'N/A' && empleado.imss.trim() !== '');
+                // Para actualizar fechas, verificar que tenga número de IMSS Y status_nss activo
+                const tieneNumeroIMSS = empleado.imss && empleado.imss !== 'N/A' && empleado.imss.trim() !== '';
+                const statusNss = empleado.status_nss !== undefined ? empleado.status_nss : 0;
+                imssToggle = tieneNumeroIMSS && statusNss == 1;
             }
             
             // Crear una promesa para cada actualización
@@ -2312,23 +2326,15 @@ $(document).ready(function () {
                 },
                 dataType: 'json'
             }).done(function(response) {
-                console.log('Respuesta del servidor para empleado ' + idEmpleado + ':', response);
                 if (response.success) {
                     // Actualizar las fechas en el objeto del empleado en cache
                     if (empleado) {
                         empleado.fecha_creacion = response.fecha_creacion;
                         empleado.fecha_vigencia = response.fecha_vigencia;
                     }
-                    console.log('✓ Fechas actualizadas para empleado ' + idEmpleado + ': Creación=' + response.fecha_creacion + ', Vigencia=' + response.fecha_vigencia + ', Filas afectadas=' + response.affected_rows);
-                } else {
-                    console.error('✗ Error en respuesta para empleado ' + idEmpleado + ':', response.message);
                 }
             }).fail(function(xhr, status, error) {
-                console.error('✗ Error AJAX al actualizar fechas para empleado ' + idEmpleado + ':', {
-                    status: status,
-                    error: error,
-                    responseText: xhr.responseText
-                });
+                
             });
             
             promesas.push(promesa);
@@ -2340,9 +2346,8 @@ $(document).ready(function () {
             if (typeof updateNotificationCount === 'function') {
                 updateNotificationCount();
             }
-            console.log('Todas las fechas han sido actualizadas correctamente');
         }).catch(function(error) {
-            console.error('Error al actualizar algunas fechas:', error);
+            
         });
     }
 

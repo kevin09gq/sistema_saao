@@ -59,6 +59,11 @@ include("../../config.php");
                             <i class="fas fa-table"></i> Tabulador
                         </a>
                     </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="exportar-importar-tab" data-bs-toggle="tab" href="#exportar-importar" role="tab">
+                            <i class="fas fa-database"></i> Exportar/Importar BD
+                        </a>
+                    </li>
                 </ul>
 
                 <!-- Contenido de las pestañas -->
@@ -308,6 +313,41 @@ include("../../config.php");
                             </div>
                         </div>
                     </div>
+
+                    <!-- EXPORTAR/IMPORTAR - Base de Datos  -->
+                    <div class="tab-pane fade" id="exportar-importar" role="tabpanel">
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="form-container">
+                                    <h5 class="mb-3"><i class="fas fa-download"></i> Exportar Base de Datos</h5>
+
+                                    <div class="form-actions">
+                                        <a href="../php/exportar_bd.php" class="btn btn-success" id="btn-exportar-bd">
+                                            <i class="fas fa-file-export"></i> Exportar
+                                        </a>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-container">
+                                    <h5 class="mb-3"><i class="fas fa-upload"></i> Importar Base de Datos</h5>
+                                    <form id="importarBDForm" action="../php/importar_bd.php" method="POST" enctype="multipart/form-data">
+                                        <div class="mb-3">
+                                            <label for="archivo_bd" class="form-label">Archivo SQL</label>
+                                            <input type="file" class="form-control" id="archivo_bd" name="archivo_bd" accept=".sql" required>
+                                            <small class="form-text text-muted">Seleccione un archivo .sql para importar.</small>
+                                        </div>
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn btn-success" id="btn-importar-bd">
+                                                <i class="fas fa-file-import"></i> Importar
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -364,6 +404,7 @@ include("../../config.php");
     <script src="../js/obtener_tabulador.js"></script>
     <script src="../js/config_tabulador.js"></script>
     <script src="../../../nomina/jsPrueba2/rangos_horas.js"></script>
+    <script src="../js/config_bd.js"></script>
 
 </body>
 

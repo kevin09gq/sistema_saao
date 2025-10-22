@@ -81,8 +81,12 @@ function renderTablaEmpleados() {
     // Filtrar por departamento
     let filtrados = empleadosData;
     if (filtroDepartamento === "1000") {
-        // Filtrar empleados sin seguro (donde imss es null o vacío)
-        filtrados = empleadosData.filter(emp => !emp.imss || emp.imss === "" || emp.imss === null);
+        // Filtrar empleados sin seguro (IMSS vacío o status_nss inactivo)
+        filtrados = empleadosData.filter(emp => {
+            const sinIMSS = !emp.imss || emp.imss === "" || emp.imss === null;
+            const nssInactivo = emp.status_nss === 0 || emp.status_nss === '0' || emp.status_nss === false;
+            return sinIMSS || nssInactivo;
+        });
     } else if (filtroDepartamento !== "0") {
         // Filtrar por departamento específico
         filtrados = empleadosData.filter(emp => String(emp.id_departamento) === String(filtroDepartamento));

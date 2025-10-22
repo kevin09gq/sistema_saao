@@ -1,6 +1,6 @@
 -- Crear Base de Datos
 CREATE DATABASE IF NOT EXISTS sistema_nomina;
-USE sistema_saao;
+USE sistema_nomina;
 
 -- =============================
 -- TABLAS BASE
