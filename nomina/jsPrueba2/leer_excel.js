@@ -1771,6 +1771,11 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
             empleado.Minutos_normales = empleadoEnJson.Minutos_normales;
             empleado.Minutos_extra = empleadoEnJson.Minutos_extra;
             empleado.sueldo_a_cobrar = empleadoEnJson.sueldo_a_cobrar;
+            
+            // Sincronizar registros_redondeados desde jsonGlobal a empleadosOriginales
+            if (empleadoEnJson.registros_redondeados) {
+                empleado.registros_redondeados = JSON.parse(JSON.stringify(empleadoEnJson.registros_redondeados));
+            }
 
             //    ASIGNAR DESCUENTO POR OLVIDOS AL jsonGlobal
             // Si existe el descuento calculado por olvidos, asignarlo al jsonGlobal

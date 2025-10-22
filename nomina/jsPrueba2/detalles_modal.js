@@ -1043,11 +1043,10 @@ function guardarDetallesEmpleado() {
     // 5. Refrescar la tabla visible si es necesario
     refrescarTablaVisible();
 
-    /* 6. Guardar datos en localStorage
+    // 6. Guardar datos en localStorage
     if (typeof guardarDatosNomina === 'function') {
         guardarDatosNomina();
-      
-    }*/
+    }
 
     // 7. Limpiar eventos antes de cerrar
     limpiarEventosModal();
@@ -1159,6 +1158,48 @@ function guardarHorariosModificadosEnJsonGlobal(clave) {
             const tiempoTotalTexto = $(celdasTotal[5]).text().trim();
             empleado.tiempo_total_redondeado = tiempoTotalTexto;
             empleado.total_minutos_redondeados = totalMinutosSemanales;
+        }
+    }
+
+    // Sincronizar registros_redondeados con empleadosOriginales
+    if (window.empleadosOriginales) {
+        const empleadoOriginal = window.empleadosOriginales.find(emp => String(emp.clave) === String(clave));
+        if (empleadoOriginal) {
+            empleadoOriginal.registros_redondeados = JSON.parse(JSON.stringify(empleado.registros_redondeados));
+            empleadoOriginal.Minutos_trabajados = empleado.Minutos_trabajados;
+            empleadoOriginal.Minutos_normales = empleado.Minutos_normales;
+            empleadoOriginal.Minutos_extra = empleado.Minutos_extra;
+            empleadoOriginal.tiempo_total_redondeado = empleado.tiempo_total_redondeado;
+            empleadoOriginal.total_minutos_redondeados = empleado.total_minutos_redondeados;
+            empleadoOriginal.sueldo_base = empleado.sueldo_base;
+            empleadoOriginal.sueldo_extra = empleado.sueldo_extra;
+            if (empleado.sueldo_base_manual) {
+                empleadoOriginal.sueldo_base_manual = empleado.sueldo_base_manual;
+            }
+            if (empleado.sueldo_extra_manual) {
+                empleadoOriginal.sueldo_extra_manual = empleado.sueldo_extra_manual;
+            }
+        }
+    }
+
+    // Sincronizar con empleadosFiltrados también
+    if (window.empleadosFiltrados) {
+        const empleadoFiltrado = window.empleadosFiltrados.find(emp => String(emp.clave) === String(clave));
+        if (empleadoFiltrado) {
+            empleadoFiltrado.registros_redondeados = JSON.parse(JSON.stringify(empleado.registros_redondeados));
+            empleadoFiltrado.Minutos_trabajados = empleado.Minutos_trabajados;
+            empleadoFiltrado.Minutos_normales = empleado.Minutos_normales;
+            empleadoFiltrado.Minutos_extra = empleado.Minutos_extra;
+            empleadoFiltrado.tiempo_total_redondeado = empleado.tiempo_total_redondeado;
+            empleadoFiltrado.total_minutos_redondeados = empleado.total_minutos_redondeados;
+            empleadoFiltrado.sueldo_base = empleado.sueldo_base;
+            empleadoFiltrado.sueldo_extra = empleado.sueldo_extra;
+            if (empleado.sueldo_base_manual) {
+                empleadoFiltrado.sueldo_base_manual = empleado.sueldo_base_manual;
+            }
+            if (empleado.sueldo_extra_manual) {
+                empleadoFiltrado.sueldo_extra_manual = empleado.sueldo_extra_manual;
+            }
         }
     }
 }
