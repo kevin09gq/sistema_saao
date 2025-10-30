@@ -1,10 +1,10 @@
 // Controlador para manejar la apertura del modal de casilleros desde el formulario de registro de empleados
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Variables globales para paginación
     let paginaActual = 1;
     let filtroActual = 'todos';
     let busquedaActual = '';
-    
+
     // Función para cargar y mostrar el modal de casilleros
     function mostrarModalCasillero() {
         // Verificar si el modal ya existe en el DOM
@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Si ya existe, simplemente mostrarlo
             const modal = new bootstrap.Modal(modalExistente);
             modal.show();
-            
+
             // Si el modal ya estaba cargado, inicializar la carga de casilleros
             if (window.casilleroJsLoaded) {
                 // Esperar un momento para que el modal se muestre completamente
@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             return;
         }
-        
+
         // Si no existe, cargarlo desde el servidor
         fetch('../../gafetes/views/modal_casillero.php')
             .then(response => {
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(html => {
                 // Agregar el modal al final del body
                 document.body.insertAdjacentHTML('beforeend', html);
-                
+
                 // Inicializar el modal
                 const modalElement = document.getElementById('modalCasillero');
                 if (modalElement) {
@@ -48,16 +48,16 @@ document.addEventListener('DOMContentLoaded', function() {
                         link.href = '../../gafetes/css/casillero.css';
                         document.head.appendChild(link);
                     }
-                    
+
                     // Cargar el JavaScript necesario para el modal si no está presente
                     if (!window.casilleroJsLoaded) {
                         const script = document.createElement('script');
                         script.src = '../../gafetes/js/casillero.js';
-                        script.onload = function() {
+                        script.onload = function () {
                             window.casilleroJsLoaded = true;
                             const modal = new bootstrap.Modal(modalElement);
                             modal.show();
-                            
+
                             // Inicializar la carga de casilleros después de que el JS se haya cargado
                             setTimeout(() => {
                                 // Llamar directamente al endpoint PHP con la ruta correcta
@@ -68,14 +68,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else {
                         const modal = new bootstrap.Modal(modalElement);
                         modal.show();
-                        
+
                         // Inicializar la carga de casilleros
                         setTimeout(() => {
                             // Llamar directamente al endpoint PHP con la ruta correcta
                             cargarCasillerosDesdePHP();
                         }, 300);
                     }
-                    
+
                     // Agregar botón para agregar nuevo casillero
                     setTimeout(() => {
                         agregarBotonAgregarCasillero();
@@ -83,21 +83,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .catch(error => {
-                console.error('Error al cargar el modal de casilleros:', error);
                 alert('Error al cargar el modal de casilleros. Por favor, inténtelo de nuevo.');
             });
     }
-    
+
     // Función para agregar el botón de agregar casillero
     function agregarBotonAgregarCasillero() {
         const btnAgregarCasillero = document.getElementById('btnAgregarCasillero');
         if (btnAgregarCasillero) {
-            btnAgregarCasillero.addEventListener('click', function() {
+            btnAgregarCasillero.addEventListener('click', function () {
                 mostrarModalAgregarCasillero();
             });
         }
     }
-    
+
     // Función para mostrar el modal de agregar casillero
     function mostrarModalAgregarCasillero() {
         // Verificar si el modal ya existe en el DOM
@@ -105,104 +104,102 @@ document.addEventListener('DOMContentLoaded', function() {
         if (modalExistente) {
             // Limpiar el formulario
             document.getElementById('numeroCasillero').value = '';
-            
+
             // Mostrar el modal
             const modal = new bootstrap.Modal(modalExistente);
             modal.show();
-            
+
             // Configurar eventos del modal
             configurarEventosModalAgregar();
             return;
         }
-        
+
         // Si no existe, cargarlo desde el archivo PHP
         fetch('../views/modal_agregar_casillero.php')
             .then(response => response.text())
             .then(html => {
                 // Agregar el modal al final del body
                 document.body.insertAdjacentHTML('beforeend', html);
-                
+
                 // Mostrar el modal
                 const modal = new bootstrap.Modal(document.getElementById('modalAgregarCasillero'));
                 modal.show();
-                
+
                 // Configurar eventos del modal
                 configurarEventosModalAgregar();
             })
             .catch(error => {
-                console.error('Error al cargar el modal de agregar casillero:', error);
                 alert('Error al cargar el modal de agregar casillero. Por favor, inténtelo de nuevo.');
             });
     }
-    
+
     // Función para configurar los eventos del modal de agregar casillero
     function configurarEventosModalAgregar() {
         // Botón de confirmar agregar
-        document.getElementById('btnConfirmarAgregar').onclick = function() {
+        document.getElementById('btnConfirmarAgregar').onclick = function () {
             // Obtener el número del casillero
             const numeroCasillero = document.getElementById('numeroCasillero').value.trim();
-            
+
             // Validar que el número no esté vacío
             if (!numeroCasillero) {
                 alert('Por favor, ingrese un número de casillero válido');
                 return;
             }
-            
+
             // Mostrar indicador de carga en el botón
             const btnConfirmar = document.getElementById('btnConfirmarAgregar');
             const btnOriginalHTML = btnConfirmar.innerHTML;
             btnConfirmar.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Agregando...';
             btnConfirmar.disabled = true;
-            
+
             // Preparar los datos para enviar
             const formData = new FormData();
             formData.append('num_casillero', numeroCasillero);
-            
+
             // Llamar al PHP de creación con la ruta correcta
             fetch('../../gafetes/php/crear_casillero.php', {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Mostrar mensaje de éxito
-                    alert('Casillero agregado correctamente');
-                    
-                    // Cerrar el modal
-                    bootstrap.Modal.getInstance(document.getElementById('modalAgregarCasillero')).hide();
-                    
-                    // Recargar la lista de casilleros
-                    setTimeout(() => {
-                        cargarCasillerosDesdePHP();
-                    }, 300);
-                } else {
-                    // Mostrar mensaje de error
-                    alert('Error al agregar el casillero: ' + (data.error || 'Error desconocido'));
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al agregar el casillero: ' + error.message);
-            })
-            .finally(() => {
-                // Restaurar el botón
-                btnConfirmar.innerHTML = btnOriginalHTML;
-                btnConfirmar.disabled = false;
-            });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Mostrar mensaje de éxito
+                        alert('Casillero agregado correctamente');
+
+                        // Cerrar el modal
+                        bootstrap.Modal.getInstance(document.getElementById('modalAgregarCasillero')).hide();
+
+                        // Recargar la lista de casilleros
+                        setTimeout(() => {
+                            cargarCasillerosDesdePHP();
+                        }, 300);
+                    } else {
+                        // Mostrar mensaje de error
+                        alert('Error al agregar el casillero: ' + (data.error || 'Error desconocido'));
+                    }
+                })
+                .catch(error => {
+                    alert('Error al agregar el casillero: ' + error.message);
+                })
+                .finally(() => {
+                    // Restaurar el botón
+                    btnConfirmar.innerHTML = btnOriginalHTML;
+                    btnConfirmar.disabled = false;
+                });
         };
     }
-    
+
     // Función para cargar los casilleros directamente llamando al PHP con la ruta correcta
-    window.cargarCasillerosDesdePHP = function(filtro = 'todos', pagina = 1, busqueda = '') {
+    window.cargarCasillerosDesdePHP = function (filtro = 'todos', pagina = 1, busqueda = '') {
         const contenedor = document.getElementById('contenedor-casilleros');
         if (!contenedor) return;
-        
+
         // Actualizar variables globales
         paginaActual = pagina;
         filtroActual = filtro;
         busquedaActual = busqueda;
-        
+
         // Mostrar indicador de carga
         contenedor.innerHTML = `
             <div class="col-12 text-center">
@@ -211,7 +208,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <p class="mt-2">Cargando casilleros...</p>
             </div>`;
-        
+
         // Llamar directamente al PHP con la ruta correcta
         // Construir URL con parámetros
         let url = `../../gafetes/php/obtener_casilleros.php?pagina=${pagina}&filtro=${filtro}`;
@@ -231,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
+
                 contenedor.innerHTML = `
                     <div class="col-12 text-center text-danger">
                         <i class="bi bi-exclamation-triangle-fill fs-1"></i>
@@ -242,23 +239,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>`;
             });
     };
-    
+
     // Función para mostrar los controles de paginación
     function mostrarControlesPaginacion(data) {
         const controlesPaginacion = document.getElementById('controles-paginacion');
         const infoPaginacion = document.getElementById('info-paginacion');
         const paginacionCasilleros = document.getElementById('paginacion-casilleros');
-        
+
         if (!controlesPaginacion || !infoPaginacion || !paginacionCasilleros) return;
-        
+
         // Mostrar información de paginación
         const inicio = ((data.pagina_actual - 1) * data.casilleros_por_pagina) + 1;
         const fin = Math.min(data.pagina_actual * data.casilleros_por_pagina, data.total_casilleros);
         infoPaginacion.textContent = `Mostrando ${inicio}-${fin} de ${data.total_casilleros} casilleros`;
-        
+
         // Generar botones de paginación
         let paginacionHTML = '';
-        
+
         // Botón anterior
         if (data.pagina_actual > 1) {
             paginacionHTML += `
@@ -273,16 +270,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span class="page-link"><i class="bi bi-chevron-left"></i></span>
                 </li>`;
         }
-        
+
         // Números de página
         const maxPaginas = 5;
         let inicio_pag = Math.max(1, data.pagina_actual - Math.floor(maxPaginas / 2));
         let fin_pag = Math.min(data.total_paginas, inicio_pag + maxPaginas - 1);
-        
+
         if (fin_pag - inicio_pag + 1 < maxPaginas) {
             inicio_pag = Math.max(1, fin_pag - maxPaginas + 1);
         }
-        
+
         // Primera página si no está visible
         if (inicio_pag > 1) {
             paginacionHTML += `
@@ -293,7 +290,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 paginacionHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
             }
         }
-        
+
         // Páginas numeradas
         for (let i = inicio_pag; i <= fin_pag; i++) {
             if (i === data.pagina_actual) {
@@ -308,7 +305,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </li>`;
             }
         }
-        
+
         // Última página si no está visible
         if (fin_pag < data.total_paginas) {
             if (fin_pag < data.total_paginas - 1) {
@@ -319,7 +316,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <a class="page-link" href="#" onclick="cargarCasillerosDesdePHP('${filtroActual}', ${data.total_paginas}, '${busquedaActual}')">${data.total_paginas}</a>
                 </li>`;
         }
-        
+
         // Botón siguiente
         if (data.pagina_actual < data.total_paginas) {
             paginacionHTML += `
@@ -334,9 +331,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span class="page-link"><i class="bi bi-chevron-right"></i></span>
                 </li>`;
         }
-        
+
         paginacionCasilleros.innerHTML = paginacionHTML;
-        
+
         // Mostrar controles de paginación solo si hay más de una página
         if (data.total_paginas > 1) {
             controlesPaginacion.style.display = 'block';
@@ -344,12 +341,12 @@ document.addEventListener('DOMContentLoaded', function() {
             controlesPaginacion.style.display = 'none';
         }
     }
-    
+
     // Función para mostrar los casilleros en el modal
     function mostrarCasillerosEnModal(casilleros, filtro = 'todos') {
         const contenedor = document.getElementById('contenedor-casilleros');
         if (!contenedor) return;
-        
+
         if (casilleros.length === 0) {
             contenedor.innerHTML = `
                 <div class="col-12 text-center">
@@ -359,13 +356,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>`;
             return;
         }
-        
+
         // Crear la cuadrícula de casilleros
         let html = '';
         casilleros.forEach(casillero => {
             const claseEstado = casillero.estado === 'Ocupado' ? 'bg-danger' : 'bg-success';
             const estaOcupado = casillero.estado === 'Ocupado';
-            
+
             // Mostrar nombre del empleado si está asignado
             let infoEmpleado = '';
             if (casillero.empleado_nombre && casillero.empleado_nombre.trim() !== '') {
@@ -376,7 +373,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 infoEmpleado = `<div class="casillero-empleado" title="${casillero.empleado_nombre}">${nombreMostrar}</div>`;
             }
-            
+
             // Agregar un atributo data para identificar el casillero
             html += `
             <div class="col-auto p-1">
@@ -389,28 +386,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </div>`;
         });
-        
+
         contenedor.innerHTML = html;
-        
+
         // Agregar botones de filtro
         configurarBotonesFiltro(filtro);
-        
+
         // Agregar evento de clic a los casilleros
         document.querySelectorAll('.casillero-item').forEach(item => {
-            item.addEventListener('click', function() {
+            item.addEventListener('click', function () {
                 const numeroCasillero = this.getAttribute('data-numero');
                 const estaOcupado = this.getAttribute('data-ocupado') === 'true';
                 manejarClicCasillero(numeroCasillero, estaOcupado);
             });
         });
     }
-    
+
     // Función para manejar el clic en un casillero
     function manejarClicCasillero(numeroCasillero, estaOcupado) {
         // Cargar y mostrar el modal de edición de casillero
         cargarYMostrarModalEdicion(numeroCasillero, estaOcupado);
     }
-    
+
     // Función para cargar y mostrar el modal de edición
     function cargarYMostrarModalEdicion(numeroCasillero, estaOcupado) {
         // Verificar si el modal de edición ya existe
@@ -420,29 +417,28 @@ document.addEventListener('DOMContentLoaded', function() {
             mostrarModalEdicion(numeroCasillero, estaOcupado);
             return;
         }
-        
+
         // Si no existe, cargarlo desde el archivo PHP
         fetch('../views/modal_editar_casillero.php')
             .then(response => response.text())
             .then(html => {
                 // Agregar el modal al final del body
                 document.body.insertAdjacentHTML('beforeend', html);
-                
+
                 // Mostrar el modal con los datos del casillero
                 mostrarModalEdicion(numeroCasillero, estaOcupado);
             })
             .catch(error => {
-                console.error('Error al cargar el modal de edición de casilleros:', error);
                 alert('Error al cargar el modal de edición de casilleros. Por favor, inténtelo de nuevo.');
             });
     }
-    
+
     // Función para mostrar el modal de edición con los datos del casillero
     function mostrarModalEdicion(numeroCasillero, estaOcupado) {
         // Establecer los valores en el modal
         document.getElementById('casillero_id').value = numeroCasillero;
         document.getElementById('nuevo_numero').value = numeroCasillero;
-        
+
         // Limpiar el campo de búsqueda de empleado y resultados
         const buscarEmpleadoInput = document.getElementById('buscarEmpleado');
         document.getElementById('resultadoBusqueda').innerHTML = `
@@ -450,7 +446,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <i class="bi bi-person-lines-fill fs-1"></i>
                 <p class="mt-2">Busque un empleado para asignar al casillero</p>
             </div>`;
-        
+
         // Restablecer las pestañas para asegurar que solo la primera esté activa
         const tabEditar = document.getElementById('editar-tab');
         const tabAsignar = document.getElementById('asignar-tab');
@@ -472,29 +468,29 @@ document.addEventListener('DOMContentLoaded', function() {
         // Mostrar el modal
         const modalEdicion = new bootstrap.Modal(document.getElementById('modalEditarCasillero'));
         modalEdicion.show();
-        
+
         // Configurar eventos del modal
         configurarEventosModalEdicion(numeroCasillero, estaOcupado);
-        
+
         // Si el casillero está ocupado, cargar la información del empleado
         if (estaOcupado) {
             cargarInfoEmpleadoAsignado(numeroCasillero);
         }
-        
+
         // Detectar si estamos en el formulario de registro de empleado
         const modalRegistroEmpleado = document.getElementById('form_registro_empleado');
         if (modalRegistroEmpleado) {
             // Estamos en el formulario de registro, ocultar completamente la pestaña de asignar empleado
             const tabAsignar = document.getElementById('asignar-tab');
             const tabAsignarContent = document.getElementById('asignar');
-            
+
             if (tabAsignar) {
                 tabAsignar.style.display = 'none';
             }
             if (tabAsignarContent) {
                 tabAsignarContent.style.display = 'none';
             }
-            
+
             // Asegurarse de que la pestaña de editar esté activa
             const tabEditar = document.getElementById('editar-tab');
             const tabEditarContent = document.getElementById('editar');
@@ -503,7 +499,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 tabEditarContent.classList.add('show', 'active');
             }
         }
-        
+
         // Agregar evento para limpiar el campo de búsqueda cuando se cierre el modal
         const modalElement = document.getElementById('modalEditarCasillero');
         modalElement.addEventListener('hidden.bs.modal', function () {
@@ -516,7 +512,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <i class="bi bi-person-lines-fill fs-1"></i>
                     <p class="mt-2">Busque un empleado para asignar al casillero</p>
                 </div>`;
-            
+
             // Restaurar la visibilidad de la pestaña de asignar empleado
             const tabAsignar = document.getElementById('asignar-tab');
             const tabAsignarContent = document.getElementById('asignar');
@@ -528,7 +524,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
+
     // Función para cargar la información del empleado asignado a un casillero
     function cargarInfoEmpleadoAsignado(numeroCasillero) {
         // Mostrar indicador de carga
@@ -540,7 +536,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <p class="mt-2">Cargando información del empleado...</p>
             </div>`;
-        
+
         // Llamar al PHP para obtener la información del empleado
         fetch(`../../gafetes/php/obtener_empleado_casillero.php?casillero=${encodeURIComponent(numeroCasillero)}`)
             .then(response => response.json())
@@ -569,7 +565,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .catch(error => {
-                console.error('Error al cargar información del empleado:', error);
                 infoContainer.innerHTML = `
                     <div class="alert alert-danger">
                         <h6><i class="bi bi-exclamation-triangle"></i> Error</h6>
@@ -577,20 +572,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>`;
             });
     }
-    
+
     // Función para configurar los eventos del modal de edición
     function configurarEventosModalEdicion(numeroCasillero, estaOcupado) {
         // Botón de guardar cambios
-        document.getElementById('btnGuardarCambios').onclick = function() {
+        document.getElementById('btnGuardarCambios').onclick = function () {
             // Obtener el nuevo número del casillero
             const nuevoNumero = document.getElementById('nuevo_numero').value;
-            
+
             // Validar que el nuevo número no esté vacío
             if (!nuevoNumero || nuevoNumero.trim() === '') {
                 alert('Por favor, ingrese un número de casillero válido');
                 return;
             }
-            
+
             // Si el número no cambia, solo cerrar el modal
             if (nuevoNumero === numeroCasillero) {
                 // Actualizar el campo del formulario de registro
@@ -598,142 +593,140 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (numCasilleroField) {
                     numCasilleroField.value = nuevoNumero;
                 }
-                
+
                 // Cerrar ambos modales
                 bootstrap.Modal.getInstance(document.getElementById('modalEditarCasillero')).hide();
                 bootstrap.Modal.getInstance(document.getElementById('modalCasillero')).hide();
                 return;
             }
-            
+
             // Mostrar indicador de carga en el botón
             const btnGuardar = document.getElementById('btnGuardarCambios');
             const btnOriginalHTML = btnGuardar.innerHTML;
             btnGuardar.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
             btnGuardar.disabled = true;
-            
+
             // Preparar los datos para enviar
             const formData = new FormData();
             formData.append('numero_anterior', numeroCasillero);
             formData.append('nuevo_numero', nuevoNumero);
-            
+
             // Llamar al PHP de actualización con la ruta correcta
             fetch('../../gafetes/php/actualizar_casillero.php', {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Actualizar el campo del formulario de registro
-                    const numCasilleroField = document.getElementById('num_casillero');
-                    if (numCasilleroField) {
-                        numCasilleroField.value = nuevoNumero;
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Actualizar el campo del formulario de registro
+                        const numCasilleroField = document.getElementById('num_casillero');
+                        if (numCasilleroField) {
+                            numCasilleroField.value = nuevoNumero;
+                        }
+
+                        // Mostrar mensaje de éxito
+                        alert('Casillero actualizado correctamente');
+
+                        // Cerrar ambos modales
+                        bootstrap.Modal.getInstance(document.getElementById('modalEditarCasillero')).hide();
+                        bootstrap.Modal.getInstance(document.getElementById('modalCasillero')).hide();
+
+                        // Recargar la lista de casilleros
+                        setTimeout(() => {
+                            cargarCasillerosDesdePHP();
+                        }, 300);
+                    } else {
+                        // Mostrar mensaje de error
+                        alert('Error al actualizar el casillero: ' + (data.error || 'Error desconocido'));
                     }
-                    
-                    // Mostrar mensaje de éxito
-                    alert('Casillero actualizado correctamente');
-                    
-                    // Cerrar ambos modales
-                    bootstrap.Modal.getInstance(document.getElementById('modalEditarCasillero')).hide();
-                    bootstrap.Modal.getInstance(document.getElementById('modalCasillero')).hide();
-                    
-                    // Recargar la lista de casilleros
-                    setTimeout(() => {
-                        cargarCasillerosDesdePHP();
-                    }, 300);
-                } else {
-                    // Mostrar mensaje de error
-                    alert('Error al actualizar el casillero: ' + (data.error || 'Error desconocido'));
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al actualizar el casillero: ' + error.message);
-            })
-            .finally(() => {
-                // Restaurar el botón
-                btnGuardar.innerHTML = btnOriginalHTML;
-                btnGuardar.disabled = false;
-            });
+                })
+                .catch(error => {
+                    alert('Error al actualizar el casillero: ' + error.message);
+                })
+                .finally(() => {
+                    // Restaurar el botón
+                    btnGuardar.innerHTML = btnOriginalHTML;
+                    btnGuardar.disabled = false;
+                });
         };
-        
+
         // Botón de eliminar
-        document.getElementById('btnEliminarCasillero').onclick = function() {
+        document.getElementById('btnEliminarCasillero').onclick = function () {
             // Confirmar la eliminación
             if (!confirm(`¿Está seguro de eliminar el casillero ${numeroCasillero}?`)) {
                 return;
             }
-            
+
             // Verificar si el casillero está ocupado antes de eliminar
             // (esto se verifica también en el servidor, pero podemos hacer una verificación básica aquí)
-            
+
             // Mostrar indicador de carga en el botón
             const btnEliminar = document.getElementById('btnEliminarCasillero');
             const btnOriginalHTML = btnEliminar.innerHTML;
             btnEliminar.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Eliminando...';
             btnEliminar.disabled = true;
-            
+
             // Preparar los datos para enviar
             const formData = new FormData();
             formData.append('num_casillero', numeroCasillero);
-            
+
             // Llamar al PHP de eliminación con la ruta correcta
             fetch('../../gafetes/php/eliminar_casillero.php', {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Mostrar mensaje de éxito
-                    alert('Casillero eliminado correctamente');
-                    
-                    // Cerrar ambos modales
-                    bootstrap.Modal.getInstance(document.getElementById('modalEditarCasillero')).hide();
-                    bootstrap.Modal.getInstance(document.getElementById('modalCasillero')).hide();
-                    
-                    // Recargar la lista de casilleros
-                    setTimeout(() => {
-                        cargarCasillerosDesdePHP();
-                    }, 300);
-                } else {
-                    // Mostrar mensaje de error
-                    alert('Error al eliminar el casillero: ' + (data.error || 'Error desconocido'));
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al eliminar el casillero: ' + error.message);
-            })
-            .finally(() => {
-                // Restaurar el botón
-                btnEliminar.innerHTML = btnOriginalHTML;
-                btnEliminar.disabled = false;
-            });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Mostrar mensaje de éxito
+                        alert('Casillero eliminado correctamente');
+
+                        // Cerrar ambos modales
+                        bootstrap.Modal.getInstance(document.getElementById('modalEditarCasillero')).hide();
+                        bootstrap.Modal.getInstance(document.getElementById('modalCasillero')).hide();
+
+                        // Recargar la lista de casilleros
+                        setTimeout(() => {
+                            cargarCasillerosDesdePHP();
+                        }, 300);
+                    } else {
+                        // Mostrar mensaje de error
+                        alert('Error al eliminar el casillero: ' + (data.error || 'Error desconocido'));
+                    }
+                })
+                .catch(error => {
+                    alert('Error al eliminar el casillero: ' + error.message);
+                })
+                .finally(() => {
+                    // Restaurar el botón
+                    btnEliminar.innerHTML = btnOriginalHTML;
+                    btnEliminar.disabled = false;
+                });
         };
-        
+
         // Configurar la funcionalidad de búsqueda de empleados en la pestaña de asignación
         const btnBuscarEmpleado = document.getElementById('btnBuscarEmpleado');
         if (btnBuscarEmpleado) {
-            btnBuscarEmpleado.addEventListener('click', function() {
+            btnBuscarEmpleado.addEventListener('click', function () {
                 buscarEmpleado();
             });
         }
-        
+
         // Permitir búsqueda con Enter
         const inputBuscarEmpleado = document.getElementById('buscarEmpleado');
         if (inputBuscarEmpleado) {
-            inputBuscarEmpleado.addEventListener('keypress', function(e) {
+            inputBuscarEmpleado.addEventListener('keypress', function (e) {
                 if (e.key === 'Enter') {
                     buscarEmpleado();
                 }
             });
         }
-        
+
         // Limpiar resultados cuando se cambia a la pestaña de asignar
         const tabAsignar = document.getElementById('asignar-tab');
         if (tabAsignar) {
-            tabAsignar.addEventListener('shown.bs.tab', function() {
+            tabAsignar.addEventListener('shown.bs.tab', function () {
                 // Limpiar el campo de búsqueda de empleado y resultados
                 document.getElementById('buscarEmpleado').value = '';
                 document.getElementById('resultadoBusqueda').innerHTML = `
@@ -741,7 +734,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <i class="bi bi-person-lines-fill fs-1"></i>
                         <p class="mt-2">Busque un empleado para asignar al casillero</p>
                     </div>`;
-                
+
                 // Pre-llenar el campo de búsqueda si estamos en formulario de registro de empleado
                 const modalRegistroEmpleado = document.getElementById('form_registro_empleado');
                 const buscarEmpleadoInput = document.getElementById('buscarEmpleado');
@@ -749,7 +742,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const nombreEmpleado = document.getElementById('nombre_trabajador')?.value || '';
                     const apellidoPaterno = document.getElementById('apellido_paterno')?.value || '';
                     const apellidoMaterno = document.getElementById('apellido_materno')?.value || '';
-                    
+
                     if (nombreEmpleado || apellidoPaterno) {
                         const nombreCompleto = `${nombreEmpleado} ${apellidoPaterno} ${apellidoMaterno}`.trim();
                         buscarEmpleadoInput.value = nombreCompleto;
@@ -758,12 +751,12 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     }
-    
+
     // Función para buscar empleados
     function buscarEmpleado() {
         const busqueda = document.getElementById('buscarEmpleado').value.trim();
         const resultadosDiv = document.getElementById('resultadoBusqueda');
-        
+
         if (!busqueda) {
             resultadosDiv.innerHTML = `
                 <div class="alert alert-warning">
@@ -772,7 +765,7 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             return;
         }
-        
+
         // Mostrar indicador de carga
         resultadosDiv.innerHTML = `
             <div class="text-center">
@@ -782,7 +775,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <p class="mt-2">Buscando empleados...</p>
             </div>
         `;
-        
+
         // Realizar la búsqueda
         fetch(`../../gafetes/php/buscar_empleados.php?q=${encodeURIComponent(busqueda)}`)
             .then(response => response.json())
@@ -817,7 +810,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .catch(error => {
-                console.error('Error en la búsqueda:', error);
                 resultadosDiv.innerHTML = `
                     <div class="alert alert-danger">
                         <i class="bi bi-exclamation-triangle"></i> Ocurrió un error al buscar empleados
@@ -825,123 +817,121 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
             });
     }
-    
+
     // Función global para asignar un empleado a un casillero
-    window.asignarEmpleado = function(numeroCasillero, idEmpleado, nombreEmpleado) {
+    window.asignarEmpleado = function (numeroCasillero, idEmpleado, nombreEmpleado) {
         // Mostrar confirmación
         if (!confirm(`¿Desea asignar el casillero ${numeroCasillero} a ${nombreEmpleado}?`)) {
             return;
         }
-        
+
         // Mostrar indicador de carga
         const btnAsignar = event.target;
         const btnOriginalHTML = btnAsignar.innerHTML;
         btnAsignar.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
         btnAsignar.disabled = true;
-        
+
         // Preparar los datos para enviar
         const formData = new FormData();
         formData.append('num_casillero', numeroCasillero);
         formData.append('id_empleado', idEmpleado);
-        
+
         // Llamar al PHP de asignación con la ruta correcta
         fetch('../../gafetes/php/asignar_casillero.php', {
             method: 'POST',
             body: formData
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Mostrar mensaje de éxito
-                alert('Empleado asignado correctamente al casillero');
-                
-                // Cerrar ambos modales
-                bootstrap.Modal.getInstance(document.getElementById('modalEditarCasillero')).hide();
-                bootstrap.Modal.getInstance(document.getElementById('modalCasillero')).hide();
-                
-                // Recargar la lista de casilleros
-                setTimeout(() => {
-                    cargarCasillerosDesdePHP();
-                }, 300);
-            } else {
-                // Mostrar mensaje de error
-                alert('Error al asignar el empleado: ' + (data.error || 'Error desconocido'));
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al asignar el empleado: ' + error.message);
-        })
-        .finally(() => {
-            // Restaurar el botón
-            btnAsignar.innerHTML = btnOriginalHTML;
-            btnAsignar.disabled = false;
-        });
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Mostrar mensaje de éxito
+                    alert('Empleado asignado correctamente al casillero');
+
+                    // Cerrar ambos modales
+                    bootstrap.Modal.getInstance(document.getElementById('modalEditarCasillero')).hide();
+                    bootstrap.Modal.getInstance(document.getElementById('modalCasillero')).hide();
+
+                    // Recargar la lista de casilleros
+                    setTimeout(() => {
+                        cargarCasillerosDesdePHP();
+                    }, 300);
+                } else {
+                    // Mostrar mensaje de error
+                    alert('Error al asignar el empleado: ' + (data.error || 'Error desconocido'));
+                }
+            })
+            .catch(error => {
+                alert('Error al asignar el empleado: ' + error.message);
+            })
+            .finally(() => {
+                // Restaurar el botón
+                btnAsignar.innerHTML = btnOriginalHTML;
+                btnAsignar.disabled = false;
+            });
     };
-    
+
     // Función global para liberar un casillero
-    window.liberarCasillero = function(numeroCasillero) {
+    window.liberarCasillero = function (numeroCasillero) {
         // Mostrar confirmación
         if (!confirm(`¿Está seguro de liberar el casillero ${numeroCasillero}?`)) {
             return;
         }
-        
+
         // Mostrar indicador de carga
         const btnLiberar = event.target;
         const btnOriginalHTML = btnLiberar.innerHTML;
         btnLiberar.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
         btnLiberar.disabled = true;
-        
+
         // Preparar los datos para enviar
         const formData = new FormData();
         formData.append('num_casillero', numeroCasillero);
-        
+
         // Llamar al PHP de liberación con la ruta correcta
         fetch('../../gafetes/php/liberar_casillero.php', {
             method: 'POST',
             body: formData
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Mostrar mensaje de éxito
-                alert('Casillero liberado correctamente');
-                
-                // Recargar la lista de casilleros
-                setTimeout(() => {
-                    cargarCasillerosDesdePHP();
-                    // Limpiar la información del empleado asignado
-                    document.getElementById('infoEmpleadoAsignado').innerHTML = '';
-                }, 300);
-            } else {
-                // Mostrar mensaje de error
-                alert('Error al liberar el casillero: ' + (data.error || 'Error desconocido'));
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al liberar el casillero: ' + error.message);
-        })
-        .finally(() => {
-            // Restaurar el botón
-            btnLiberar.innerHTML = btnOriginalHTML;
-            btnLiberar.disabled = false;
-        });
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Mostrar mensaje de éxito
+                    alert('Casillero liberado correctamente');
+
+                    // Recargar la lista de casilleros
+                    setTimeout(() => {
+                        cargarCasillerosDesdePHP();
+                        // Limpiar la información del empleado asignado
+                        document.getElementById('infoEmpleadoAsignado').innerHTML = '';
+                    }, 300);
+                } else {
+                    // Mostrar mensaje de error
+                    alert('Error al liberar el casillero: ' + (data.error || 'Error desconocido'));
+                }
+            })
+            .catch(error => {
+                alert('Error al liberar el casillero: ' + error.message);
+            })
+            .finally(() => {
+                // Restaurar el botón
+                btnLiberar.innerHTML = btnOriginalHTML;
+                btnLiberar.disabled = false;
+            });
     };
-    
+
     // Función para cargar el modal de edición de casilleros
     function cargarModalEdicionCasillero() {
         // Esta función puede ser usada para precargar el modal de edición
         // si se desea mejorar el rendimiento
     }
-    
+
     // Función para configurar los botones de filtro
     function configurarBotonesFiltro(filtroActual = 'todos') {
         // Remover clase active de todos los botones
         document.getElementById('btnFiltroTodos').classList.remove('active');
         document.getElementById('btnFiltroDisponibles').classList.remove('active');
         document.getElementById('btnFiltroAsignados').classList.remove('active');
-        
+
         // Agregar clase active al botón correspondiente
         switch (filtroActual) {
             case 'disponibles':
@@ -952,25 +942,25 @@ document.addEventListener('DOMContentLoaded', function() {
             default:
                 document.getElementById('btnFiltroTodos').classList.add('active');
         }
-        
+
         // Agregar eventos a los botones de filtro
-        document.getElementById('btnFiltroTodos').onclick = function() {
+        document.getElementById('btnFiltroTodos').onclick = function () {
             cargarCasillerosDesdePHP('todos', 1, busquedaActual);
         };
-        
-        document.getElementById('btnFiltroDisponibles').onclick = function() {
+
+        document.getElementById('btnFiltroDisponibles').onclick = function () {
             cargarCasillerosDesdePHP('disponibles', 1, busquedaActual);
         };
-        
-        document.getElementById('btnFiltroAsignados').onclick = function() {
+
+        document.getElementById('btnFiltroAsignados').onclick = function () {
             cargarCasillerosDesdePHP('asignados', 1, busquedaActual);
         };
     }
-    
+
     // Agregar evento al botón de abrir casillero en el formulario de registro
     const btnAbrirCasillero = document.getElementById('btnAbrirCasilleroRegistro');
     if (btnAbrirCasillero) {
-        btnAbrirCasillero.addEventListener('click', function(e) {
+        btnAbrirCasillero.addEventListener('click', function (e) {
             e.preventDefault();
             mostrarModalCasillero();
         });

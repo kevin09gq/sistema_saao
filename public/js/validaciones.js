@@ -51,4 +51,12 @@ function validarTelefono(telefono) {
     return regex.test(telefono);
 }
 
+function validarRFCfisica(rfc) {
+    var validar = /^[A-ZÑ&]{4}\d{6}[A-Z0-9]{3}$/i;
+    return validar.test(rfc);
+}
 
+function validarRFCmoral(rfc) {
+    var validar = /^[A-ZÑ&]{3}\d{6}[A-Z0-9]{3}$/i;
+    return validar.test(rfc);
+}

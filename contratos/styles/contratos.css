@@ -1,0 +1,597 @@
+/* contratos/styles/contratos.css */
+.preview-area {
+  min-height: 400px;
+  max-height: 70vh;
+  overflow: auto;
+}
+
+.page {
+  page-break-after: always;
+  /* PRESERVAR ESPACIOS MULTIPLES */
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.font-monospace {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+/* A4 visual container for preview */
+.a4-container {
+  /* Letter size: 8.5in x 11in */
+  width: 8.5in;
+  height: 11in;
+  margin: 0 auto;
+  background: #fff;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Letter size container with proper margins */
+.a4-container .page {
+  /* Margins: 2.5cm top/bottom, 3cm left/right */
+  /* 2.5cm = ~0.98in, 3cm = ~1.18in */
+  margin: 0.98in 1.18in;
+  padding: 0;
+  background: #fff;
+  border: none;
+}
+
+/* Print setup for Letter size */
+@page {
+  size: letter;
+  margin: 0.98in 1.18in; /* 2.5cm and 3cm converted to inches */
+  counter-increment: page;
+}
+
+@media print {
+  body { 
+    background: #fff; 
+    margin: 0;
+    padding: 0;
+    position: relative;
+  }
+  
+  /* Marca de agua para impresión */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 95%;
+    height: 95%;
+    background-image: url('/sistema_saao/contratos/img/agua.jpeg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.2;
+    z-index: -1;
+    pointer-events: none;
+    /* Forzar la carga de la imagen */
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  .no-print { display: none !important; }
+  .preview-area { overflow: visible !important; max-height: none !important; }
+  .a4-container { 
+    width: auto; 
+    height: auto;
+    margin: 0; 
+    box-shadow: none;
+  }
+  .a4-container .page { 
+    border: 0; 
+    margin: 0.98in 1.18in;
+    page-break-after: always;
+    position: relative;
+  }
+  
+  /* Numeración automática de páginas */
+  .a4-container .page::after {
+    content: "[" counter(page) "]";
+    position: absolute;
+    bottom: 0.5in;
+    right: 0;
+    font-size: 12pt;
+    font-weight: normal;
+    color: #000;
+  }
+  
+  /* Configurar el contador de páginas */
+  @page {
+    counter-increment: page;
+  }
+  
+  /* Resetear contador en cada documento */
+  .a4-container {
+    counter-reset: page;
+  }
+}
+
+/* Estilos para tablas con bordes visibles */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 10px 0;
+  border: 1px solid #000 !important;
+}
+
+table td, table th {
+  border: 1px solid #000 !important;
+  padding: 8px;
+  vertical-align: top;
+}
+
+table th {
+  font-weight: bold;
+  text-align: left;
+}
+
+/* Estilos de alineación para tablas */
+table.ql-align-left { margin-left: 0 !important; margin-right: auto !important; }
+table.ql-align-center { margin-left: auto !important; margin-right: auto !important; }
+table.ql-align-right { margin-left: auto !important; margin-right: 0 !important; }
+
+/* Estilos específicos para tablas en contratos */
+.tabla-contrato {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 10px 0;
+  border: 1px solid #000 !important;
+}
+
+.tabla-contrato td,
+.tabla-contrato th {
+  border: 1px solid #000 !important;
+  padding: 8px 12px;
+  vertical-align: top;
+}
+
+.tabla-contrato th {
+  font-weight: bold;
+  text-align: left;
+}
+
+/* Estilos para el editor de plantillas */
+#editorContainer {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  min-height: 520px;
+}
+
+.ql-container {
+  min-height: 400px;
+}
+
+.ql-editor {
+  min-height: 400px;
+}
+
+/* Estilos para tablas en el editor Quill */
+.ql-editor table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 10px 0;
+  border: 1px solid #000 !important;
+  display: table !important;
+}
+
+.ql-editor table td,
+.ql-editor table th {
+  border: 1px solid #000 !important;
+  padding: 8px 12px;
+  vertical-align: top;
+  display: table-cell !important;
+}
+
+.ql-editor table th {
+  font-weight: bold;
+  text-align: left;
+}
+
+.ql-editor table tr {
+  display: table-row !important;
+}
+
+.ql-editor .tabla-contrato {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 10px 0;
+  border: 1px solid #000 !important;
+}
+
+.ql-editor .tabla-contrato td,
+.ql-editor .tabla-contrato th {
+  border: 1px solid #000 !important;
+  padding: 8px 12px;
+  vertical-align: top;
+}
+
+.ql-editor .tabla-contrato th {
+  font-weight: bold;
+  text-align: left;
+}
+
+.plantilla-item {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.plantilla-item:hover {
+  background-color: #f8f9fa;
+}
+
+#editorStatusBadge {
+  font-weight: 500;
+}
+
+/* Estilos para el toolbar de Quill */
+.ql-toolbar {
+  border-radius: 4px 4px 0 0 !important;
+  border-color: #ddd !important;
+}
+
+.ql-container {
+  border-radius: 0 0 4px 4px !important;
+  border-color: #ddd !important;
+}
+
+/* Estilos para las clases de Quill.js */
+.ql-align-left {
+  text-align: left !important;
+}
+
+.ql-align-center {
+  text-align: center !important;
+}
+
+.ql-align-right {
+  text-align: right !important;
+}
+
+.ql-align-justify {
+  text-align: justify !important;
+}
+
+.ql-indent-1 {
+  margin-left: 3em !important;
+}
+
+.ql-indent-2 {
+  margin-left: 6em !important;
+}
+
+.ql-indent-3 {
+  margin-left: 9em !important;
+}
+
+.ql-indent-4 {
+  margin-left: 12em !important;
+}
+
+.ql-indent-5 {
+  margin-left: 15em !important;
+}
+
+/* Estilos para las fuentes de Quill.js - En el selector del toolbar */
+/* Mostrar solo el nombre de la fuente y ocultar el texto por defecto 'Sans Serif' */
+.ql-toolbar .ql-font .ql-picker-label,
+.ql-toolbar .ql-font .ql-picker-item {
+  font-size: 0 !important;
+}
+
+.ql-toolbar .ql-font .ql-picker-label::before,
+.ql-toolbar .ql-font .ql-picker-item::before {
+  content: attr(data-value) !important;
+  font-size: 13px !important;
+  line-height: 1.2;
+}
+
+/* Cuando no hay fuente seleccionada, mostrar un texto neutro */
+.ql-toolbar .ql-font .ql-picker-label:not([data-value])::before {
+  content: 'Fuente' !important;
+}
+.ql-toolbar .ql-font .ql-picker-item[data-value="Arial"]::before,
+.ql-toolbar .ql-font .ql-picker-label[data-value="Arial"]::before { content: 'Arial' !important; }
+
+.ql-toolbar .ql-font .ql-picker-item[data-value="Arial Black"]::before,
+.ql-toolbar .ql-font .ql-picker-label[data-value="Arial Black"]::before { content: 'Arial Black' !important; }
+
+.ql-toolbar .ql-font .ql-picker-item[data-value="Comic Sans MS"]::before,
+.ql-toolbar .ql-font .ql-picker-label[data-value="Comic Sans MS"]::before { content: 'Comic Sans MS' !important; }
+
+.ql-toolbar .ql-font .ql-picker-item[data-value="Courier New"]::before,
+.ql-toolbar .ql-font .ql-picker-label[data-value="Courier New"]::before { content: 'Courier New' !important; }
+
+.ql-toolbar .ql-font .ql-picker-item[data-value="Georgia"]::before,
+.ql-toolbar .ql-font .ql-picker-label[data-value="Georgia"]::before { content: 'Georgia' !important; }
+
+.ql-toolbar .ql-font .ql-picker-item[data-value="Helvetica"]::before,
+.ql-toolbar .ql-font .ql-picker-label[data-value="Helvetica"]::before { content: 'Helvetica' !important; }
+
+.ql-toolbar .ql-font .ql-picker-item[data-value="Impact"]::before,
+.ql-toolbar .ql-font .ql-picker-label[data-value="Impact"]::before { content: 'Impact' !important; }
+
+.ql-toolbar .ql-font .ql-picker-item[data-value="Lucida Console"]::before,
+.ql-toolbar .ql-font .ql-picker-label[data-value="Lucida Console"]::before { content: 'Lucida Console' !important; }
+
+.ql-toolbar .ql-font .ql-picker-item[data-value="Lucida Sans Unicode"]::before,
+.ql-toolbar .ql-font .ql-picker-label[data-value="Lucida Sans Unicode"]::before { content: 'Lucida Sans Unicode' !important; }
+
+.ql-toolbar .ql-font .ql-picker-item[data-value="Palatino Linotype"]::before,
+.ql-toolbar .ql-font .ql-picker-label[data-value="Palatino Linotype"]::before { content: 'Palatino Linotype' !important; }
+
+.ql-toolbar .ql-font .ql-picker-item[data-value="Tahoma"]::before,
+.ql-toolbar .ql-font .ql-picker-label[data-value="Tahoma"]::before { content: 'Tahoma' !important; }
+
+.ql-toolbar .ql-font .ql-picker-item[data-value="Times New Roman"]::before,
+.ql-toolbar .ql-font .ql-picker-label[data-value="Times New Roman"]::before { content: 'Times New Roman' !important; }
+
+.ql-toolbar .ql-font .ql-picker-item[data-value="Trebuchet MS"]::before,
+.ql-toolbar .ql-font .ql-picker-label[data-value="Trebuchet MS"]::before { content: 'Trebuchet MS' !important; }
+
+.ql-toolbar .ql-font .ql-picker-item[data-value="Verdana"]::before,
+.ql-toolbar .ql-font .ql-picker-label[data-value="Verdana"]::before { content: 'Verdana' !important; }
+.ql-toolbar .ql-font .ql-picker-item[data-value="Arial"],
+.ql-toolbar .ql-font .ql-picker-label[data-value="Arial"] {
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif !important;
+}
+
+.ql-toolbar .ql-font .ql-picker-item[data-value="Arial Black"],
+.ql-toolbar .ql-font .ql-picker-label[data-value="Arial Black"] {
+  font-family: "Arial Black", "Arial Bold", Gadget, sans-serif !important;
+}
+
+.ql-toolbar .ql-font .ql-picker-item[data-value="Comic Sans MS"],
+.ql-toolbar .ql-font .ql-picker-label[data-value="Comic Sans MS"] {
+  font-family: "Comic Sans MS", cursive, sans-serif !important;
+}
+
+.ql-toolbar .ql-font .ql-picker-item[data-value="Courier New"],
+.ql-toolbar .ql-font .ql-picker-label[data-value="Courier New"] {
+  font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace !important;
+}
+
+.ql-toolbar .ql-font .ql-picker-item[data-value="Georgia"],
+.ql-toolbar .ql-font .ql-picker-label[data-value="Georgia"] {
+  font-family: Georgia, Times, "Times New Roman", serif !important;
+}
+
+.ql-toolbar .ql-font .ql-picker-item[data-value="Helvetica"],
+.ql-toolbar .ql-font .ql-picker-label[data-value="Helvetica"] {
+  font-family: Helvetica, "Helvetica Neue", Arial, sans-serif !important;
+}
+
+.ql-toolbar .ql-font .ql-picker-item[data-value="Impact"],
+.ql-toolbar .ql-font .ql-picker-label[data-value="Impact"] {
+  font-family: Impact, Haettenschweiler, "Franklin Gothic Bold", Charcoal, "Helvetica Inserat", "Bitstream Vera Sans Bold", "Arial Black", sans-serif !important;
+}
+
+.ql-toolbar .ql-font .ql-picker-item[data-value="Lucida Console"],
+.ql-toolbar .ql-font .ql-picker-label[data-value="Lucida Console"] {
+  font-family: "Lucida Console", Monaco, monospace !important;
+}
+
+.ql-toolbar .ql-font .ql-picker-item[data-value="Lucida Sans Unicode"],
+.ql-toolbar .ql-font .ql-picker-label[data-value="Lucida Sans Unicode"] {
+  font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif !important;
+}
+
+.ql-toolbar .ql-font .ql-picker-item[data-value="Palatino Linotype"],
+.ql-toolbar .ql-font .ql-picker-label[data-value="Palatino Linotype"] {
+  font-family: "Palatino Linotype", Palatino, Palladio, "URW Palladio L", "Book Antiqua", Baskerville, "Bookman Old Style", "Bitstream Charter", "Nimbus Roman No9 L", Garamond, "Apple Garamond", "ITC Garamond Narrow", "New Century Schoolbook", "Century Schoolbook", "Century Schoolbook L", Georgia, serif !important;
+}
+
+.ql-toolbar .ql-font .ql-picker-item[data-value="Tahoma"],
+.ql-toolbar .ql-font .ql-picker-label[data-value="Tahoma"] {
+  font-family: Tahoma, Verdana, Segoe, sans-serif !important;
+}
+
+.ql-toolbar .ql-font .ql-picker-item[data-value="Times New Roman"],
+.ql-toolbar .ql-font .ql-picker-label[data-value="Times New Roman"] {
+  font-family: "Times New Roman", TimesNewRoman, Times, Baskerville, Georgia, serif !important;
+}
+
+.ql-toolbar .ql-font .ql-picker-item[data-value="Trebuchet MS"],
+.ql-toolbar .ql-font .ql-picker-label[data-value="Trebuchet MS"] {
+  font-family: "Trebuchet MS", "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Tahoma, sans-serif !important;
+}
+
+.ql-toolbar .ql-font .ql-picker-item[data-value="Verdana"],
+.ql-toolbar .ql-font .ql-picker-label[data-value="Verdana"] {
+  font-family: Verdana, Geneva, sans-serif !important;
+}
+
+/* Estilos para las fuentes de Quill.js - En el contenido del editor */
+/* Variantes con guiones (clases que Quill genera a partir de valores con espacios) */
+.ql-font-Arial, .ql-font-Arial-Black, .ql-font-Comic-Sans-MS, .ql-font-Courier-New,
+.ql-font-Georgia, .ql-font-Helvetica, .ql-font-Impact, .ql-font-Lucida-Console,
+.ql-font-Lucida-Sans-Unicode, .ql-font-Palatino-Linotype, .ql-font-Tahoma,
+.ql-font-Times-New-Roman, .ql-font-Trebuchet-MS, .ql-font-Verdana {
+  font-style: normal;
+}
+
+/* Variantes en minúsculas con guiones (posibles clases aplicadas por Quill) */
+.ql-font-arial, .ql-font-arial-black, .ql-font-comic-sans-ms, .ql-font-courier-new,
+.ql-font-georgia, .ql-font-helvetica, .ql-font-impact, .ql-font-lucida-console,
+.ql-font-lucida-sans-unicode, .ql-font-palatino-linotype, .ql-font-tahoma,
+.ql-font-times-new-roman, .ql-font-trebuchet-ms, .ql-font-verdana {
+  font-style: normal;
+}
+
+/* Signature line styles */
+.signature-line {
+  border-top: 1px solid #000;
+  display: inline-block;
+  min-width: 200px;
+  margin: 5px 0;
+  position: relative;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.signature-container {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px 0;
+  align-items: flex-start;
+}
+
+.signature-box {
+  display: inline-block;
+  text-align: center;
+  width: 48%;
+  vertical-align: top;
+}
+
+.signature-name {
+  margin-top: 0;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.ql-font-Arial, .ql-font-Arial_Black, .ql-font-arial { font-family: Arial, "Helvetica Neue", Helvetica, sans-serif !important; }
+.ql-font-Arial-Black, .ql-font-Arial_Black, .ql-font-arial-black { font-family: "Arial Black", "Arial Bold", Gadget, sans-serif !important; }
+.ql-font-Comic-Sans-MS, .ql-font-Comic_Sans_MS, .ql-font-comic-sans-ms { font-family: "Comic Sans MS", cursive, sans-serif !important; }
+.ql-font-Courier-New, .ql-font-Courier_New, .ql-font-courier-new { font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace !important; }
+.ql-font-Georgia, .ql-font-georgia { font-family: Georgia, Times, "Times New Roman", serif !important; }
+.ql-font-Helvetica, .ql-font-helvetica { font-family: Helvetica, "Helvetica Neue", Arial, sans-serif !important; }
+.ql-font-Impact, .ql-font-impact { font-family: Impact, Haettenschweiler, "Franklin Gothic Bold", Charcoal, "Helvetica Inserat", "Bitstream Vera Sans Bold", "Arial Black", sans-serif !important; }
+.ql-font-Lucida-Console, .ql-font-Lucida_Console, .ql-font-lucida-console { font-family: "Lucida Console", Monaco, monospace !important; }
+.ql-font-Lucida-Sans-Unicode, .ql-font-Lucida_Sans_Unicode, .ql-font-lucida-sans-unicode { font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif !important; }
+.ql-font-Palatino-Linotype, .ql-font-Palatino_Linotype, .ql-font-palatino-linotype { font-family: "Palatino Linotype", Palatino, Palladio, "URW Palladio L", "Book Antiqua", Baskerville, "Bookman Old Style", "Bitstream Charter", "Nimbus Roman No9 L", Garamond, "Apple Garamond", "ITC Garamond Narrow", "New Century Schoolbook", "Century Schoolbook", "Century Schoolbook L", Georgia, serif !important; }
+.ql-font-Tahoma, .ql-font-tahoma { font-family: Tahoma, Verdana, Segoe, sans-serif !important; }
+.ql-font-Times-New-Roman, .ql-font-Times_New_Roman, .ql-font-times-new-roman { font-family: "Times New Roman", TimesNewRoman, Times, Baskerville, Georgia, serif !important; }
+.ql-font-Trebuchet-MS, .ql-font-Trebuchet_MS, .ql-font-trebuchet-ms { font-family: "Trebuchet MS", "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Tahoma, sans-serif !important; }
+.ql-font-Verdana, .ql-font-verdana { font-family: Verdana, Geneva, sans-serif !important; }
+
+/* Asegurar que las etiquetas del selector de fuentes muestren el nombre correcto */
+.ql-toolbar .ql-font .ql-picker-item {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ========================================
+   ESTILOS PARA CONTRATOS.PHP (MÓDULO PRINCIPAL)
+   ======================================== */
+
+body {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  min-height: 100vh;
+}
+
+.page-header {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.page-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.page-header p {
+  margin: 0.5rem 0 0 0;
+  opacity: 0.95;
+  font-size: 1rem;
+}
+
+.module-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  height: 100%;
+}
+
+.module-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
+  border-color: #10b981;
+}
+
+.module-card-icon {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  padding: 2rem;
+  text-align: center;
+}
+
+.module-card-icon i {
+  font-size: 4rem;
+  color: white;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+.module-card-body {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.module-card-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 1rem;
+}
+
+.module-card-text {
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  flex: 1;
+}
+
+.module-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.module-btn:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+  color: white;
+}
+
+.module-btn i {
+  font-size: 1.2rem;
+}
+
+@media (max-width: 768px) {
+  .page-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .module-card-icon i {
+    font-size: 3rem;
+  }
+  
+  .module-card-title {
+    font-size: 1.25rem;
+  }
+}

@@ -65,6 +65,9 @@ if (isset($_GET['accion']) || isset($_POST['accion'])) {
         case 'obtenerImagenEmpresa':
             obtenerImagenEmpresa();
             break;
+        case 'obtenerInfoPuesto':
+            obtenerInfoPuesto();
+            break;
         default:
             echo "Acción no reconocida";
     }
@@ -229,7 +232,6 @@ function actualizarDepartamento()
     }
 }
 
-// Funciones para la gestión de puestos
 function registrarPuesto()
 {
     global $conexion;
@@ -237,6 +239,7 @@ function registrarPuesto()
     if (isset($_POST['nombre_puesto'])) {
         // Eliminar espacios en blanco al principio y al final
         $nombrePuesto = trim($_POST['nombre_puesto']);
+        $direccionPuesto = trim($_POST['direccion_puesto']);
 
         // Verificar que el nombre no esté vacío después de eliminar espacios
         if (empty($nombrePuesto)) {
@@ -246,6 +249,7 @@ function registrarPuesto()
 
         // Escapar caracteres especiales para prevenir SQL injection
         $nombrePuesto = mysqli_real_escape_string($conexion, $nombrePuesto);
+        $direccionPuesto = mysqli_real_escape_string($conexion, $direccionPuesto);
 
         // Verificar si el puesto ya existe
         $checkSql = "SELECT COUNT(*) as count FROM puestos_especiales WHERE nombre_puesto = '$nombrePuesto'";
@@ -258,14 +262,14 @@ function registrarPuesto()
         }
 
         // Preparar la consulta para insertar el nuevo puesto
-        $sql = $conexion->prepare("INSERT INTO puestos_especiales (nombre_puesto) VALUES (?)");
+        $sql = $conexion->prepare("INSERT INTO puestos_especiales (nombre_puesto, direccion_puesto) VALUES (?, ?)");
 
         if (!$sql) {
             echo "Error en la preparación: " . $conexion->error;
             return;
         }
 
-        $sql->bind_param("s", $nombrePuesto);
+        $sql->bind_param("ss", $nombrePuesto, $direccionPuesto);
 
         // Ejecutar la consulta y verificar si fue exitosa
         if ($sql->execute()) {
@@ -340,9 +344,10 @@ function actualizarPuesto()
 {
     global $conexion;
 
-    if (isset($_POST['id_puesto']) && isset($_POST['nombre_puesto'])) {
+    if (isset($_POST['id_puesto']) && isset($_POST['nombre_puesto']) && isset($_POST['direccion_puesto'])) {
         $idPuesto = (int)$_POST['id_puesto'];
         $nombrePuesto = trim($_POST['nombre_puesto']);
+        $direccionPuesto = trim($_POST['direccion_puesto']);
 
         // Verificar que el nombre no esté vacío
         if (empty($nombrePuesto)) {
@@ -352,6 +357,7 @@ function actualizarPuesto()
 
         // Escapar caracteres especiales para prevenir SQL injection
         $nombrePuesto = mysqli_real_escape_string($conexion, $nombrePuesto);
+        $direccionPuesto = mysqli_real_escape_string($conexion, $direccionPuesto);
 
         // Verificar si ya existe otro puesto con el mismo nombre (excepto el actual)
         $checkSql = "SELECT COUNT(*) as count FROM puestos_especiales WHERE nombre_puesto = '$nombrePuesto' AND id_puestoEspecial != $idPuesto";
@@ -364,14 +370,14 @@ function actualizarPuesto()
         }
 
         // Preparar la consulta para actualizar el puesto
-        $sql = $conexion->prepare("UPDATE puestos_especiales SET nombre_puesto = ? WHERE id_puestoEspecial = ?");
+        $sql = $conexion->prepare("UPDATE puestos_especiales SET nombre_puesto = ?, direccion_puesto = ? WHERE id_puestoEspecial = ?");
 
         if (!$sql) {
             echo "Error en la preparación: " . $conexion->error;
             return;
         }
 
-        $sql->bind_param("si", $nombrePuesto, $idPuesto);
+        $sql->bind_param("ssi", $nombrePuesto, $direccionPuesto, $idPuesto);
 
         // Ejecutar la consulta y verificar si fue exitosa
         if ($sql->execute()) {
@@ -763,11 +769,22 @@ function registrarEmpresa()
     global $conexion;
     if (isset($_POST['nombre_empresa'])) {
         $nombreEmpresa = trim($_POST['nombre_empresa']);
+        $rfcEmpresa = isset($_POST['rfc_empresa']) ? trim($_POST['rfc_empresa']) : null;
+        $domicilioFiscal = isset($_POST['domicilio_fiscal']) ? trim($_POST['domicilio_fiscal']) : null;
+        
         if (empty($nombreEmpresa)) {
             echo "0";
             return;
         }
         $nombreEmpresa = mysqli_real_escape_string($conexion, $nombreEmpresa);
+        
+        // Escapar los nuevos campos si tienen valor
+        if ($rfcEmpresa) {
+            $rfcEmpresa = mysqli_real_escape_string($conexion, $rfcEmpresa);
+        }
+        if ($domicilioFiscal) {
+            $domicilioFiscal = mysqli_real_escape_string($conexion, $domicilioFiscal);
+        }
 
         // Verificar si la empresa ya existe
         $checkSql = "SELECT COUNT(*) as count FROM empresa WHERE nombre_empresa = '$nombreEmpresa'";
@@ -805,11 +822,11 @@ function registrarEmpresa()
         }
 
         if ($logoEmpresa) {
-            $sql = $conexion->prepare("INSERT INTO empresa (nombre_empresa, logo_empresa) VALUES (?, ?)");
-            $sql->bind_param("ss", $nombreEmpresa, $logoEmpresa);
+            $sql = $conexion->prepare("INSERT INTO empresa (nombre_empresa, logo_empresa, rfc_empresa, domicilio_fiscal) VALUES (?, ?, ?, ?)");
+            $sql->bind_param("ssss", $nombreEmpresa, $logoEmpresa, $rfcEmpresa, $domicilioFiscal);
         } else {
-            $sql = $conexion->prepare("INSERT INTO empresa (nombre_empresa) VALUES (?)");
-            $sql->bind_param("s", $nombreEmpresa);
+            $sql = $conexion->prepare("INSERT INTO empresa (nombre_empresa, rfc_empresa, domicilio_fiscal) VALUES (?, ?, ?)");
+            $sql->bind_param("sss", $nombreEmpresa, $rfcEmpresa, $domicilioFiscal);
         }
         if (!$sql) {
             echo "Error en la preparación: " . $conexion->error;
@@ -833,11 +850,22 @@ function actualizarEmpresa()
     if (isset($_POST['empresa_id']) && isset($_POST['nombre_empresa'])) {
         $idEmpresa = (int)$_POST['empresa_id'];
         $nombreEmpresa = trim($_POST['nombre_empresa']);
+        $rfcEmpresa = isset($_POST['rfc_empresa']) ? trim($_POST['rfc_empresa']) : null;
+        $domicilioFiscal = isset($_POST['domicilio_fiscal']) ? trim($_POST['domicilio_fiscal']) : null;
+        
         if (empty($nombreEmpresa)) {
             echo "0";
             return;
         }
         $nombreEmpresa = mysqli_real_escape_string($conexion, $nombreEmpresa);
+        
+        // Escapar los nuevos campos si tienen valor
+        if ($rfcEmpresa) {
+            $rfcEmpresa = mysqli_real_escape_string($conexion, $rfcEmpresa);
+        }
+        if ($domicilioFiscal) {
+            $domicilioFiscal = mysqli_real_escape_string($conexion, $domicilioFiscal);
+        }
 
         // Verificar si ya existe otra empresa con el mismo nombre (excepto la actual)
         $checkSql = "SELECT COUNT(*) as count FROM empresa WHERE nombre_empresa = '$nombreEmpresa' AND id_empresa != $idEmpresa";
@@ -881,11 +909,11 @@ function actualizarEmpresa()
             if ($logoActual && file_exists($directorio . $logoActual)) {
                 unlink($directorio . $logoActual);
             }
-            $sql = $conexion->prepare("UPDATE empresa SET nombre_empresa = ?, logo_empresa = ? WHERE id_empresa = ?");
-            $sql->bind_param("ssi", $nombreEmpresa, $logoNuevo, $idEmpresa);
+            $sql = $conexion->prepare("UPDATE empresa SET nombre_empresa = ?, logo_empresa = ?, rfc_empresa = ?, domicilio_fiscal = ? WHERE id_empresa = ?");
+            $sql->bind_param("ssssi", $nombreEmpresa, $logoNuevo, $rfcEmpresa, $domicilioFiscal, $idEmpresa);
         } else {
-            $sql = $conexion->prepare("UPDATE empresa SET nombre_empresa = ? WHERE id_empresa = ?");
-            $sql->bind_param("si", $nombreEmpresa, $idEmpresa);
+            $sql = $conexion->prepare("UPDATE empresa SET nombre_empresa = ?, rfc_empresa = ?, domicilio_fiscal = ? WHERE id_empresa = ?");
+            $sql->bind_param("sssi", $nombreEmpresa, $rfcEmpresa, $domicilioFiscal, $idEmpresa);
         }
         if (!$sql) {
             echo "Error en la preparación: " . $conexion->error;
@@ -969,14 +997,13 @@ function eliminarEmpresa()
     }
 }
 
-
 // OBTENER INFO EMPRESA
 function obtenerInfoEmpresa()
 {
     global $conexion;
     if (isset($_POST['id_empresa'])) {
         $idEmpresa = (int)$_POST['id_empresa'];
-        $sql = "SELECT id_empresa, nombre_empresa, logo_empresa FROM empresa WHERE id_empresa = ?";
+        $sql = "SELECT id_empresa, nombre_empresa, logo_empresa, rfc_empresa, domicilio_fiscal FROM empresa WHERE id_empresa = ?";
         $stmt = $conexion->prepare($sql);
         if (!$stmt) {
             echo json_encode(['error' => true, 'message' => 'Error en la preparación: ' . $conexion->error]);
@@ -1044,25 +1071,58 @@ function eliminarLogoEmpresa()
 function obtenerImagenEmpresa()
 {
     global $conexion;
-    if (isset($_POST['id_empresa'])) {
-        $idEmpresa = (int)$_POST['id_empresa'];
-        $sql = "SELECT logo_empresa FROM empresa WHERE id_empresa = ?";
+    
+    if (isset($_GET['id_empresa'])) {
+        $idEmpresa = (int)$_GET['id_empresa'];
+        
+        $sql = "SELECT logo_empresa FROM empresas WHERE id_empresa = ?";
         $stmt = $conexion->prepare($sql);
-        if (!$stmt) {
-            echo json_encode(['error' => true, 'message' => 'Error en la preparación: ' . $conexion->error]);
-            return;
-        }
         $stmt->bind_param("i", $idEmpresa);
         $stmt->execute();
         $result = $stmt->get_result();
+        
         if ($result->num_rows > 0) {
             $row = $result->fetch_assoc();
-            echo json_encode(['logo_empresa' => $row['logo_empresa']]);
+            echo json_encode(['success' => true, 'logo_empresa' => $row['logo_empresa']]);
         } else {
-            echo json_encode(['error' => true, 'message' => 'Empresa no encontrada']);
+            echo json_encode(['success' => false, 'message' => 'Empresa no encontrada']);
         }
+        
         $stmt->close();
     } else {
-        echo json_encode(['error' => true, 'message' => 'No se recibió el ID de la empresa']);
+        echo json_encode(['success' => false, 'message' => 'ID de empresa no proporcionado']);
+    }
+}
+
+function obtenerInfoPuesto()
+{
+    global $conexion;
+    
+    if (isset($_GET['id_puesto'])) {
+        $idPuesto = (int)$_GET['id_puesto'];
+        
+        $sql = "SELECT id_puestoEspecial, nombre_puesto, direccion_puesto FROM puestos_especiales WHERE id_puestoEspecial = ?";
+        $stmt = $conexion->prepare($sql);
+        $stmt->bind_param("i", $idPuesto);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            echo json_encode([
+                'success' => true, 
+                'puesto' => [
+                    'id_puestoEspecial' => $row['id_puestoEspecial'],
+                    'nombre_puesto' => $row['nombre_puesto'],
+                    'direccion_puesto' => $row['direccion_puesto']
+                ]
+            ]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Puesto no encontrado']);
+        }
+        
+        $stmt->close();
+    } else {
+        echo json_encode(['success' => false, 'message' => 'ID de puesto no proporcionado']);
     }
 }

@@ -48,6 +48,7 @@ function agregarPuesto() {
         
         let idPuesto = $("#puesto_id").val().trim();
         let nombrePuesto = $("#nombre_puesto").val().trim();
+        let direccionPuesto = $("#direccion_puesto").val().trim();
         let accion = idPuesto ? "actualizarPuesto" : "registrarPuesto";
         
         if (nombrePuesto != "") {
@@ -57,7 +58,8 @@ function agregarPuesto() {
                 data: {
                     accion: accion,
                     id_puesto: idPuesto,
-                    nombre_puesto: nombrePuesto
+                    nombre_puesto: nombrePuesto,
+                    direccion_puesto: direccionPuesto
                 },
                 success: function (response) {
                     if (response.trim() == "1") {
@@ -107,6 +109,7 @@ $("#btn-cancelar-puesto").on("click", function () {
 function limpiarYResetearPuesto() {
     $("#puesto_id").val('');
     $("#nombre_puesto").val('');
+    $("#direccion_puesto").val('');
     $("#btn-guardar-puesto").html('<i class="fas fa-save"></i> Guardar');
 }
 
@@ -200,25 +203,43 @@ function eliminarPuesto() {
 }
 
 function editarPuesto() {
-    // Delegación de eventos para capturar clics en botones de edición
     $(document).on("click", ".btn-edit-puesto", function() {
-        // Obtener el ID del puesto desde el atributo data-id
         let idPuesto = $(this).data("id");
         
-        // Obtener el nombre del puesto (está en la celda anterior a la de los botones)
-        let nombrePuesto = $(this).closest("tr").find("td:eq(1)").text();
-        
-        // Llenar el formulario con los datos actuales
-        $("#puesto_id").val(idPuesto);
-        $("#nombre_puesto").val(nombrePuesto);
-        
-        // Cambiar el texto del botón de guardar para indicar que se está editando
-        $("#btn-guardar-puesto").html('<i class="fas fa-save"></i> Actualizar');
-        
-        // Hacer scroll al formulario para que el usuario pueda editar
-        $('html, body').animate({
-            scrollTop: $("#puestoForm").offset().top - 100
-        }, 500);
+        // Obtener información del puesto
+        $.ajax({
+            type: "GET",
+            url: "../php/configuration.php",
+            data: {
+                accion: "obtenerInfoPuesto",
+                id_puesto: idPuesto
+            },
+            dataType: "json",
+            success: function(response) {
+                if (response.success) {
+                    $("#puesto_id").val(response.puesto.id_puestoEspecial);
+                    $("#nombre_puesto").val(response.puesto.nombre_puesto);
+                    $("#direccion_puesto").val(response.puesto.direccion_puesto || '');
+                    $("#btn-guardar-puesto").html('<i class="fas fa-save"></i> Actualizar');
+                    $("#nombre_puesto").focus();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.message || 'No se pudo cargar la información del puesto',
+                        confirmButtonColor: '#ef4444'
+                    });
+                }
+            },
+            error: function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo conectar con el servidor',
+                    confirmButtonColor: '#ef4444'
+                });
+            }
+        });
     });
 }
 
@@ -226,5 +247,6 @@ function editarPuesto() {
 function resetearFormulario() {
     $("#puesto_id").val('');
     $("#nombre_puesto").val('');
+    $("#direccion_puesto").val('');
     $("#btn-guardar-puesto").html('<i class="fas fa-save"></i> Guardar');
 }

@@ -1,6 +1,6 @@
 $(document).ready(function () {
     const rutaRaiz = '/sistema_saao/';
-    const rutaPlugins = '/sistema_saao/';
+  
 
     getDepartamentos();
     obtenerDatosEmpleados();
@@ -8,7 +8,7 @@ $(document).ready(function () {
     filtrosBusqueda();
     setValoresModal();
     initOrdenamiento();
-      actualizarTotalPorcentaje(); 
+    actualizarTotalPorcentaje(); 
 
     // Función para formatear texto a mayúsculas mientras se escribe
     function formatearMayusculas(selector) {
@@ -141,8 +141,7 @@ $(document).ready(function () {
                 setEmpleadosData(empleados);
             },
             error: function (xhr, status, error) {
-                console.error("Error en la petición:", error);
-                console.log("Respuesta completa:", xhr.responseText);
+               
             }
         });
     }
@@ -245,15 +244,12 @@ $(document).ready(function () {
             const fechaSalida = $('#modal_hist_fecha_salida').val(); // puede ir vacío => NULL en backend
 
             if (!fechaReingreso) {
-                try {
-                    VanillaToasts.create({
-                        title: 'ADVERTENCIA',
-                        text: 'La fecha de reingreso es obligatoria.',
-                        type: 'warning',
-                        icon: rutaPlugins + 'plugins/toasts/icons/icon_warning.png',
-                        timeout: 2500
-                    });
-                } catch (e) { }
+                Swal.fire({
+                    title: 'ADVERTENCIA',
+                    text: 'La fecha de reingreso es obligatoria.',
+                    icon: 'warning',
+                    confirmButtonText: 'Entendido'
+                });
                 return;
             }
 
@@ -262,9 +258,12 @@ $(document).ready(function () {
                 const dReing = new Date(fechaReingreso);
                 const dSal = new Date(fechaSalida);
                 if (dSal < dReing) {
-                    try {
-
-                    } catch (e) { }
+                    Swal.fire({
+                        title: 'ERROR',
+                        text: 'La fecha de salida no puede ser anterior a la fecha de reingreso.',
+                        icon: 'error',
+                        confirmButtonText: 'Entendido'
+                    });
                     return;
                 }
             }
@@ -441,6 +440,9 @@ $(document).ready(function () {
                         let telefonoEmpleado = empleado.telefono_empleado;
                         // Traer status NSS
                         let statusNss = empleado.status_nss;
+                        // Nuevos campos RFC y estado civil
+                        let rfcEmpleado = empleado.rfc_empleado;
+                        let estadoCivil = empleado.estado_civil;
 
                         // Campos de salario
                         let salarioSemanal = empleado.salario_semanal;
@@ -475,6 +477,9 @@ $(document).ready(function () {
                         // Asignar biométrico
                         $("#modal_biometrico").val(biometrico);
                         $("#modal_telefono_empleado").val(telefonoEmpleado);
+                        // Asignar RFC y estado civil
+                        $("#modal_rfc").val(rfcEmpleado);
+                        $("#modal_estado_civil").val(estadoCivil);
 
                         // Asignar la última fecha de reingreso si existe
                         if (ultimaFechaReingreso) {
@@ -528,7 +533,7 @@ $(document).ready(function () {
                                 $tbodyReingresos.html(filas);
                             }
                         } catch (e) {
-                            console.error('Error al renderizar historial de reingresos:', e);
+                         
                            
                         }
 
@@ -667,7 +672,7 @@ $(document).ready(function () {
                                 });
                             }
                         } catch (e) {
-                            console.error('Error al renderizar beneficiarios:', e);
+                           
                         }
 
                         validarCampos($("#modal_clave_empleado"), validarClave);
@@ -678,6 +683,7 @@ $(document).ready(function () {
                         validarCampos($("#modal_curp"), validarCURP);
                         validarCampos($("#modal_grupo_sanguineo"), validarGrupoSanguineo);
                         validarCampos($("#modal_telefono_empleado"), validarTelefono);
+                        validarCampos($("#modal_rfc"), validarRFCfisica);
                         validarCampos($("#modal_emergencia_nombre"), validarNombre);
                         validarCampos($("#modal_emergencia_ap_paterno"), validarApellido);
                         validarCampos($("#modal_emergencia_ap_materno"), validarApellido);
@@ -692,6 +698,7 @@ $(document).ready(function () {
                         validarDatos($("#modal_curp"), validarCURP);
                         validarDatos($("#modal_grupo_sanguineo"), validarGrupoSanguineo);
                         validarDatos($("#modal_telefono_empleado"), validarTelefono);
+                        validarDatos($("#modal_rfc"), validarRFCfisica);
                         validarDatos($("#modal_emergencia_nombre"), validarNombre);
                         validarDatos($("#modal_emergencia_ap_paterno"), validarApellido);
                         validarDatos($("#modal_emergencia_ap_materno"), validarApellido);
@@ -704,6 +711,7 @@ $(document).ready(function () {
                         formatearMayusculas("#modal_apellido_paterno");
                         formatearMayusculas("#modal_apellido_materno");
                         formatearMayusculas("#modal_curp");
+                        formatearMayusculas("#modal_rfc");
 
                         // Formatear campos del contacto de emergencia a mayúsculas
                         formatearMayusculas("#modal_emergencia_nombre");
@@ -755,6 +763,8 @@ $(document).ready(function () {
         let idPuesto = $("#modal_puesto").val();
         let biometrico = $("#modal_biometrico").val();
         let telefonoEmpleado = $("#modal_telefono_empleado").val();
+        let rfcEmpleado = $("#modal_rfc").val();
+        let estadoCivil = $("#modal_estado_civil").val();
 
         // Campos de salario
         let salarioSemanal = $("#modal_salario_semanal").val();
@@ -827,6 +837,7 @@ $(document).ready(function () {
         if (curp && !validarCURP(curp)) opcionalesValidos = false;
         if (grupoSanguineo && !validarGrupoSanguineo(grupoSanguineo)) opcionalesValidos = false;
         if (telefonoEmpleado && !validarTelefono(telefonoEmpleado)) opcionalesValidos = false;
+        if (rfcEmpleado && !validarRFCfisica(rfcEmpleado)) opcionalesValidos = false;
         if (emergenciaNombre && !validarNombre(emergenciaNombre)) opcionalesValidos = false;
         if (emergenciaApPaterno && !validarApellido(emergenciaApPaterno)) opcionalesValidos = false;
         if (emergenciaApMaterno && !validarApellido(emergenciaApMaterno)) opcionalesValidos = false;
@@ -836,12 +847,11 @@ $(document).ready(function () {
 
         if (!obligatoriosValidos) {
 
-            VanillaToasts.create({
-                title: 'ADVERTENCIA!',
+            Swal.fire({
+                title: 'ADVERTENCIA',
                 text: 'Existen campos obligatorios vacíos o incorrectos.',
-                type: 'warning', //valores aceptados: success, warning, info, error
-                icon: rutaPlugins + 'plugins/toasts/icons/icon_warning.png',
-                timeout: 3000, // visible 3 segundos
+                icon: 'warning',
+                confirmButtonText: 'Entendido'
             });
 
             return;
@@ -849,12 +859,11 @@ $(document).ready(function () {
 
         if (!opcionalesValidos) {
 
-            VanillaToasts.create({
-                title: 'ADVERTENCIA!',
+            Swal.fire({
+                title: 'ADVERTENCIA',
                 text: 'Hay datos opcionales incorrectos.',
-                type: 'warning', //valores aceptados: success, warning, info, error
-                icon: rutaPlugins + 'plugins/toasts/icons/icon_warning.png',
-                timeout: 3000, // visible 3 segundos
+                icon: 'warning',
+                confirmButtonText: 'Entendido'
             });
 
             return;
@@ -883,6 +892,8 @@ $(document).ready(function () {
             id_puestoEspecial: idPuesto || "",
             biometrico: biometrico || "",
             telefono_empleado: telefonoEmpleado || "",
+            rfc_empleado: rfcEmpleado || "",
+            estado_civil: estadoCivil || "",
 
             // Campos de salario
             salario_semanal: salarioSemanal || "",
@@ -931,16 +942,15 @@ $(document).ready(function () {
                         // Cerrar el modal
                         $("#modal_actualizar_empleado").modal("hide");
 
-                        VanillaToasts.create({
-                            title: response.title,
-                            text: response.text,
-                            type: response.type,
-                            icon: response.icon,
-                            timeout: response.timeout
+                        Swal.fire({
+                            title: response.title || 'SUCCESS',
+                            text: response.text || 'Empleado actualizado correctamente.',
+                            icon: response.type || 'success',
+                            confirmButtonText: 'Entendido'
                         });
                     },
                     error: function(xhr, status, error) {
-                        console.error("Error al cargar empleados:", error);
+                       
                     }
                 });
             }
@@ -968,7 +978,7 @@ $(document).ready(function () {
             accion: "cambiarStatus"
         };
 
-        console.log(datos);
+       
 
         $.ajax({
             type: "POST",
@@ -1037,21 +1047,19 @@ $(document).ready(function () {
             dataType: 'json',
             success: function (response) {
                 obtenerDatosEmpleados();
-                VanillaToasts.create({
+                Swal.fire({
                     title: response.title || 'SUCCESS',
                     text: response.text || 'Empleado eliminado correctamente.',
-                    type: response.type || 'success',
-                    icon: (response.icon) ? response.icon : (rutaPlugins + 'plugins/toasts/icons/icon_success.png'),
-                    timeout: response.timeout || 3000
+                    icon: response.type || 'success',
+                    confirmButtonText: 'Entendido'
                 });
             },
             error: function (xhr) {
-                VanillaToasts.create({
+                Swal.fire({
                     title: 'ERROR',
                     text: xhr.responseText || 'No se pudo eliminar el empleado.',
-                    type: 'error',
-                    icon: rutaPlugins + 'plugins/toasts/icons/icon_error.png',
-                    timeout: 4000
+                    icon: 'error',
+                    confirmButtonText: 'Entendido'
                 });
             }
         });

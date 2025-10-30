@@ -10,13 +10,12 @@ include("../../config/config.php");
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administrar Empleados</title>
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Inter:400,600&display=swap" rel="stylesheet">
     <!-- Iconos Bootstrap -->
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <link rel="stylesheet" href="../styles/actualizar_empleado.css">
-    <link rel="stylesheet" href="<?= $rutaRaiz ?>/plugins/toasts/vanillatoasts.css">
+    
     <!-- SweetAlert2 CSS -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+     <script src="<?= SWEETALERT ?>"></script>
 </head>
 
 <body>
@@ -175,6 +174,24 @@ include("../../config/config.php");
                                     <div class="col-md-4 mb-3">
                                         <label for="modal_fecha_nacimiento" class="form-label">Fecha de Nacimiento</label>
                                         <input type="date" class="form-control" id="modal_fecha_nacimiento" name="fecha_nacimiento">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="modal_rfc" class="form-label">RFC</label>
+                                        <input type="text" class="form-control" id="modal_rfc" name="rfc" placeholder="Ej: ABCD123456E78">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="modal_estado_civil" class="form-label">Estado Civil</label>
+                                        <select class="form-select" id="modal_estado_civil" name="estado_civil">
+                                            <option value="">Selecciona</option>
+                                            <option value="SOLTERO">Soltero/a</option>
+                                            <option value="CASADO">Casado/a</option>
+                                            <option value="DIVORCIADO">Divorciado/a</option>
+                                            <option value="VIUDO">Viudo/a</option>
+                                            <option value="UNION_LIBRE">Unión Libre</option>
+                                            <option value="SEPARADO">Separado/a</option>
+                                        </select>
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label for="modal_num_casillero" class="form-label">Número de Casillero</label>
@@ -366,6 +383,5 @@ include("../../config/config.php");
     <script src="../controllers/config_actualizar.js"></script>
     <script src="../controllers/casillero_empleado.js"></script>
     <script src="../../public/js/validaciones.js"></script>
-    <script src="<?= $rutaRaiz ?>/plugins/toasts/vanillatoasts.js""></script>
 
-    
+

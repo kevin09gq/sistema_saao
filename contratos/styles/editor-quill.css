@@ -1,0 +1,365 @@
+/* Estilos extraídos de customCSS para el editor Quill en plantillas */
+.ql-font-Arial { font-family: Arial, "Helvetica Neue", Helvetica, sans-serif; }
+.ql-font-Arial_Black { font-family: "Arial Black", "Arial Bold", Gadget, sans-serif; }
+.ql-font-Comic_Sans_MS { font-family: "Comic Sans MS", cursive, sans-serif; }
+.ql-font-Courier_New { font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace; }
+.ql-font-Georgia { font-family: Georgia, Times, "Times New Roman", serif; }
+.ql-font-Helvetica { font-family: Helvetica, "Helvetica Neue", Arial, sans-serif; }
+.ql-font-Impact { font-family: Impact, Haettenschweiler, "Franklin Gothic Bold", Charcoal, "Helvetica Inserat", "Bitstream Vera Sans Bold", "Arial Black", sans-serif; }
+.ql-font-Lucida_Console { font-family: "Lucida Console", Monaco, monospace; }
+.ql-font-Lucida_Sans_Unicode { font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif; }
+.ql-font-Palatino_Linotype { font-family: "Palatino Linotype", Palatino, Palladio, "URW Palladio L", "Book Antiqua", Baskerville, "Bookman Old Style", "Bitstream Charter", "Nimbus Roman No9 L", Garamond, "Apple Garamond", "ITC Garamond Narrow", "New Century Schoolbook", "Century Schoolbook", "Century Schoolbook L", Georgia, serif; }
+.ql-font-Tahoma { font-family: Tahoma, Verdana, Segoe, sans-serif; }
+.ql-font-Times_New_Roman { font-family: "Times New Roman", TimesNewRoman, Times, Baskerville, Georgia, serif; }
+.ql-font-Trebuchet_MS { font-family: "Trebuchet MS", "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Tahoma, sans-serif; }
+.ql-font-Verdana { font-family: Verdana, Geneva, sans-serif; }
+
+/* PRESERVAR ESPACIOS MULTIPLES EN EL EDITOR */
+.ql-editor {
+  white-space: pre-wrap;
+}
+
+/* Estilos para el selector de tamaño (evitar duplicados) */
+.ql-toolbar .ql-size { width: 90px !important; }
+/* Ocultar el contenido por defecto del tema para evitar duplicados */
+.ql-snow .ql-picker.ql-size .ql-picker-label::before { content: none !important; }
+.ql-snow .ql-picker.ql-size .ql-picker-item::before { content: none !important; }
+
+/* Estilos para el selector de interlineado personalizado */
+.line-height-control { display: inline-block; margin: 0 5px; vertical-align: middle; }
+.line-height-control select {
+  height: 24px; font-size: 14px; padding: 0 4px; border-radius: 4px; border: 1px solid #ccc; background: white;
+}
+
+/* Estilos para el selector de interlineado de Quill */
+.ql-line-height .ql-picker-item[data-value="1.0"]::before { content: "1.0"; }
+.ql-line-height .ql-picker-item[data-value="1.15"]::before { content: "1.15"; }
+.ql-line-height .ql-picker-item[data-value="1.5"]::before { content: "1.5"; }
+.ql-line-height .ql-picker-item[data-value="2.0"]::before { content: "2.0"; }
+.ql-line-height .ql-picker-label::before { content: "Interlineado"; }
+
+/* Correcciones de layout para que la flecha no se superponga al texto */
+.ql-toolbar .ql-line-height { width: auto; }
+.ql-snow .ql-picker.ql-line-height .ql-picker-label { display: inline-flex; align-items: center; height: 28px; padding: 0 22px 0 8px; position: relative; }
+.ql-snow .ql-picker.ql-line-height .ql-picker-label::before { content: "Interlineado"; position: static; }
+.ql-snow .ql-picker.ql-line-height .ql-picker-label::after { right: 6px; top: 50%; transform: translateY(-50%); border-top-color: #555; }
+
+/* Estilos para tablas con bordes visibles y redimensionables */
+.ql-editor table { 
+  border-collapse: separate; 
+  border-spacing: 0; 
+  width: 100%; 
+  margin: 10px auto; 
+  border: 1px solid #000 !important; 
+  display: table !important; 
+  table-layout: fixed; 
+  position: relative; 
+  cursor: default; 
+}
+
+/* Estilos para tablas centradas */
+.ql-editor table.ql-align-center {
+  margin-left: auto !important;
+  margin-right: auto !important;
+  width: auto !important;
+  max-width: 100%;
+}
+
+/* Estilos para tablas alineadas a la derecha */
+.ql-editor table.ql-align-right {
+  margin-left: auto !important;
+  margin-right: 0 !important;
+  width: auto !important;
+  max-width: 100%;
+}
+
+/* Estilos para tablas alineadas a la izquierda */
+.ql-editor table.ql-align-left {
+  margin-left: 0 !important;
+  margin-right: auto !important;
+  width: auto !important;
+  max-width: 100%;
+}
+
+/* Zonas de redimensionamiento en bordes exteriores - más visibles */
+.ql-editor table::after { 
+  content: ''; 
+  position: absolute; 
+  right: -5px; 
+  top: 0; 
+  bottom: 0; 
+  width: 10px; 
+  background: transparent; 
+  cursor: col-resize; 
+  z-index: 20; 
+}
+
+/* Handle de redimensionamiento vertical (fila) - usar ::after en lugar de ::before para evitar conflicto */
+.ql-editor table .resize-handle-bottom {
+  content: ''; 
+  position: absolute; 
+  bottom: -5px; 
+  left: 0; 
+  right: 0; 
+  height: 10px; 
+  background: transparent; 
+  cursor: row-resize; 
+  z-index: 20; 
+}
+
+/* Efectos hover para bordes exteriores - más visibles */
+.ql-editor table:hover::after { 
+  background: #007bff; 
+  opacity: 0.5; 
+}
+
+.ql-editor table:hover::before { 
+  background: #007bff; 
+  opacity: 0.5; 
+}
+
+.ql-editor table td,
+.ql-editor table th { 
+  border: 1px solid #000 !important; 
+  padding: 8px 12px; 
+  vertical-align: top; 
+  display: table-cell !important; 
+  position: relative; 
+  min-width: 50px; 
+  min-height: 30px; 
+}
+
+.ql-editor table th { 
+  font-weight: bold; 
+  text-align: left; 
+}
+
+.ql-editor table tr { 
+  display: table-row !important; 
+}
+
+/* Indicadores de redimensionamiento en celdas - más visibles */
+.ql-editor table td::after,
+.ql-editor table th::after { 
+  content: ''; 
+  position: absolute; 
+  right: -3px; 
+  top: 0; 
+  bottom: 0; 
+  width: 6px; 
+  background: transparent; 
+  cursor: col-resize; 
+  z-index: 15; 
+}
+
+.ql-editor table td::before,
+.ql-editor table th::before { 
+  content: ''; 
+  position: absolute; 
+  bottom: -3px; 
+  left: 0; 
+  right: 0; 
+  height: 6px; 
+  background: transparent; 
+  cursor: row-resize; 
+  z-index: 15; 
+}
+
+/* Efectos hover para indicar redimensionamiento - más visibles */
+.ql-editor table td:hover::after,
+.ql-editor table th:hover::after { 
+  background: #007bff; 
+  opacity: 0.8; 
+}
+
+.ql-editor table td:hover::before,
+.ql-editor table th:hover::before { 
+  background: #007bff; 
+  opacity: 0.8; 
+}
+
+/* Cursor de redimensionamiento activo */
+.ql-editor table.resizing { user-select: none; }
+.ql-editor table.resizing * { pointer-events: none; }
+
+/* Línea guía durante el redimensionamiento */
+.resize-guide { position: absolute; background: #007bff; z-index: 1000; pointer-events: none; }
+.resize-guide.vertical { width: 2px; top: 0; bottom: 0; }
+.resize-guide.horizontal { height: 2px; left: 0; right: 0; }
+
+/* Estilos específicos para tablas de contrato */
+.ql-editor .tabla-contrato { border-collapse: collapse; width: 100%; margin: 10px 0; border: 1px solid #000 !important; }
+.ql-editor .tabla-contrato td,
+.ql-editor .tabla-contrato th { border: 1px solid #000 !important; padding: 8px 12px; vertical-align: top; }
+.ql-editor .tabla-contrato th { font-weight: bold; text-align: left; }
+
+/* Botón de inserción de tabla en la barra de herramientas */
+.ql-better-table .ql-picker-label { display: flex; align-items: center; justify-content: center; }
+.ql-better-table .ql-picker-label::before { content: "Tabla"; font-size: 14px; }
+
+/* Estilos para el menú contextual de tablas */
+.qlbt-operation-menu { background: #fff; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 5px 0; z-index: 1000; }
+.qlbt-operation-menu .qlbt-operation-menu-item { padding: 8px 15px; cursor: pointer; font-size: 14px; color: #333; }
+.qlbt-operation-menu .qlbt-operation-menu-item:hover { background-color: #f0f0f0; }
+
+/* Forzar la visualización de tablas en el editor */
+.ql-editor .ql-table { display: table !important; border-collapse: collapse !important; width: 100% !important; margin: 10px 0 !important; border: 1px solid #000 !important; }
+.ql-editor .ql-table-row { display: table-row !important; }
+.ql-editor .ql-table-cell { display: table-cell !important; border: 1px solid #000 !important; padding: 8px 12px !important; vertical-align: top !important; }
+.ql-editor .ql-table-header { background-color: #f0f0f0 !important; font-weight: bold !important; text-align: left !important; }
+
+/* Estilos para controles de tabla personalizados */
+.ql-toolbar .custom-table-controls { display: inline-block; margin: 0 5px; }
+.ql-toolbar .custom-table-controls button { background: #fff; border: 1px solid #ccc; border-radius: 3px; padding: 5px 8px; margin: 0 2px; cursor: pointer; font-size: 12px; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px; }
+.ql-toolbar .custom-table-controls button:hover { background: #f0f0f0; border-color: #999; }
+.ql-toolbar .custom-table-controls button:active { background: #e0e0e0; }
+.ql-toolbar .custom-table-controls button:disabled { background: #f5f5f5; color: #999; cursor: not-allowed; }
+
+/* Estilos específicos para botones de iconos solamente */
+.ql-toolbar .custom-table-controls button:not(:empty) { min-width: 30px; text-align: center; }
+.ql-toolbar .custom-table-controls button:empty::before { content: ' '; }
+
+/* Estilos para el modal de tabla */
+.modal-body .form-label { font-weight: 600; color: #333; }
+.modal-body .form-control:focus { border-color: #0d6efd; box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25); }
+.modal-body .alert-info { background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+
+/* Estilos para líneas horizontales */
+.ql-editor .horizontal-line {
+  margin: 20px 0;
+  text-align: center;
+  position: relative;
+}
+
+.ql-editor .horizontal-line hr {
+  border: none;
+  border-top: 2px solid #333;
+  margin: 0;
+  width: 100%;
+  height: 0;
+  background: none;
+}
+
+/* Estilos para diferentes tipos de líneas horizontales */
+.ql-editor .horizontal-line.thin hr {
+  border-top-width: 1px;
+  border-top-color: #666;
+}
+
+.ql-editor .horizontal-line.thick hr {
+  border-top-width: 3px;
+  border-top-color: #000;
+}
+
+.ql-editor .horizontal-line.dashed hr {
+  border-top-style: dashed;
+  border-top-color: #666;
+}
+
+.ql-editor .horizontal-line.dotted hr {
+  border-top-style: dotted;
+  border-top-color: #666;
+}
+
+/* Efecto hover para líneas horizontales */
+.ql-editor .horizontal-line:hover hr {
+  border-top-color: #007bff;
+  transition: border-top-color 0.2s ease;
+}
+
+
+
+/* Estilos para líneas de firma */
+.ql-editor .signature-lines {
+  margin: 30px 0;
+  padding: 20px 0;
+  text-align: left;
+}
+
+.ql-editor .signature-line {
+  margin: 25px 0;
+  position: relative;
+  min-height: 40px;
+}
+
+.ql-editor .signature-text {
+  font-size: 14px;
+  font-weight: normal;
+  color: #333;
+  margin-bottom: 5px;
+  min-height: 20px;
+  line-height: 1.4;
+}
+
+.ql-editor .signature-underline {
+  border-bottom: 1px solid #000 !important;
+  height: 1px !important;
+  margin-top: 5px !important;
+  position: relative !important;
+  display: block !important;
+}
+
+/* Estilos para diferentes anchos de líneas */
+.ql-editor .signature-line .signature-underline[style*="30%"] {
+  width: 30% !important;
+}
+
+.ql-editor .signature-line .signature-underline[style*="50%"] {
+  width: 50% !important;
+}
+
+.ql-editor .signature-line .signature-underline[style*="70%"] {
+  width: 70% !important;
+}
+
+.ql-editor .signature-line .signature-underline[style*="100%"] {
+  width: 100% !important;
+}
+
+/* Estilos para el botón de líneas de firma */
+#btnInsertarLineasFirma {
+  transition: all 0.2s ease;
+}
+
+#btnInsertarLineasFirma:hover {
+  background-color: #0dcaf0;
+  border-color: #0dcaf0;
+  color: white;
+}
+
+/* Estilos para el modal de líneas de firma */
+.modal-body .form-label { font-weight: 600; color: #333; }
+.modal-body .form-control:focus { border-color: #0d6efd; box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25); }
+.modal-body .form-text { color: #6c757d; font-size: 0.875em; }
+.modal-body .alert-info { background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+
+/* Estilos específicos para contratos - líneas de firma profesionales */
+.ql-editor .signature-lines.contract-signature {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin: 40px 0;
+  padding: 30px 0;
+}
+
+.ql-editor .signature-lines.contract-signature .signature-line {
+  flex: 1;
+  margin: 0 20px;
+  text-align: center;
+}
+
+.ql-editor .signature-lines.contract-signature .signature-text {
+  font-weight: bold;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.ql-editor .signature-lines.contract-signature .signature-underline {
+  width: 100% !important;
+  border-bottom: 2px solid #000;
+  margin: 0 auto;
+}
+
+

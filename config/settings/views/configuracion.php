@@ -153,6 +153,10 @@ include("../../config.php");
                                             <label for="nombre_puesto" class="form-label">Nombre del Puesto</label>
                                             <input type="text" class="form-control" id="nombre_puesto" name="nombre_puesto" required>
                                         </div>
+                                         <div class="mb-3">
+                                            <label for="direccion_puesto" class="form-label">Dirección del Puesto</label>
+                                            <input type="text" class="form-control" id="direccion_puesto" name="direccion_puesto">
+                                        </div>
 
                                         <div class="form-actions">
                                             <button type="submit" class="btn btn-success" id="btn-guardar-puesto"><i class="fas fa-save"></i> Guardar</button>
@@ -259,6 +263,14 @@ include("../../config.php");
                                         <div class="mb-3">
                                             <label for="nombre_empresa" class="form-label">Nombre de la Empresa</label>
                                             <input type="text" class="form-control" id="nombre_empresa" name="nombre_empresa" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="rfc_empresa" class="form-label">RFC de la Empresa</label>
+                                            <input type="text" class="form-control" id="rfc_empresa" name="rfc_empresa">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="domicilio_fiscal" class="form-label">Domicilio Fiscal</label>
+                                            <input type="text" class="form-control" id="domicilio_fiscal" name="domicilio_fiscal">
                                         </div>
                                         <div class="mb-3">
                                             <label for="logo_empresa" class="form-label">Logo de la Empresa</label>
@@ -403,8 +415,8 @@ include("../../config.php");
     <script src="../js/config_empresas.js"></script>
     <script src="../js/obtener_tabulador.js"></script>
     <script src="../js/config_tabulador.js"></script>
-    <script src="../../../nomina/jsPrueba2/rangos_horas.js"></script>
-    <script src="../js/config_bd.js"></script>
+    <script src="../../../nomina/js/rangos_horas.js"></script>
+    <script src="../../../public/js/validaciones.js"></script>
 
 </body>
 

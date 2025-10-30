@@ -36,7 +36,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id_empresa = $_POST['id_empresa'] ?? null;
         $biometrico = $_POST['biometrico'] ?? null;
         $telefono_empleado = $_POST['telefono_empleado'] ?? null;
-        
+        $rfc = $_POST['rfc'] ?? null;
+        $estado_civil = $_POST['estado_civil'] ?? null;
+
         // Campo de estatus NSS
         $status_nss = isset($_POST['status_nss']) ? (int)$_POST['status_nss'] : 0;
 
@@ -67,7 +69,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "title" => "ADVERTENCIA",
                 "text" => "Existen campos obligatorios vacíos.",
                 "type" => "warning",
-                "icon" => $rutaRaiz . "/plugins/toasts/icons/icon_warning.png",
                 "timeout" => 3000,
             );
             echo json_encode($respuesta);
@@ -88,18 +89,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!$sql) {
             throw new Exception("Error al preparar consulta de verificación: " . $conexion->error);
         }
-        
+
         $sql->bind_param("s", $clave_empleado);
         $sql->execute();
         $resultado = $sql->get_result();
-        
+
         if ($resultado->num_rows > 0) {
             $respuesta = array(
                 "success" => false,
                 "title" => "ADVERTENCIA",
                 "text" => "La clave de empleado ya existe.",
                 "type" => "warning",
-                "icon" => $rutaRaiz . "/plugins/toasts/icons/icon_warning.png",
                 "timeout" => 3000,
             );
             echo json_encode($respuesta);
@@ -115,26 +115,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$sqlBiometrico) {
                 throw new Exception("Error al preparar consulta de verificación biométrica: " . $conexion->error);
             }
-            
+
             $sqlBiometrico->bind_param("i", $biometrico);
             $sqlBiometrico->execute();
             $resultadoBiometrico = $sqlBiometrico->get_result();
-            
+
             if ($resultadoBiometrico->num_rows > 0) {
                 $respuesta = array(
                     "success" => false,
                     "title" => "ADVERTENCIA",
                     "text" => "El número biométrico ya está registrado a otro empleado.",
                     "type" => "warning",
-                    "icon" => $rutaRaiz . "/plugins/toasts/icons/icon_warning.png",
-                    "timeout" => 3000,
+                   "timeout" => 3000,
                 );
                 echo json_encode($respuesta);
                 exit();
             }
             $sqlBiometrico->close();
         }
-        
+
         // =============================
         // VALIDAR NÚMERO DE CASILLERO
         // =============================
@@ -144,11 +143,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$sqlCasillero) {
                 throw new Exception("Error al preparar consulta de casillero: " . $conexion->error);
             }
-            
+
             $sqlCasillero->bind_param("s", $num_casillero);
             $sqlCasillero->execute();
             $resultadoCasillero = $sqlCasillero->get_result();
-            
+
             if ($resultadoCasillero->num_rows === 0) {
                 // El casillero no existe
                 $respuesta = array(
@@ -156,20 +155,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     "title" => "ADVERTENCIA",
                     "text" => "El número de casillero '{$num_casillero}' no existe.",
                     "type" => "warning",
-                    "icon" => $rutaRaiz . "/plugins/toasts/icons/icon_warning.png",
                     "timeout" => 3000,
                 );
                 echo json_encode($respuesta);
                 exit();
             }
-            
+
             // Verificar cuántos empleados ya están asignados a este casillero
             $sqlContar = $conexion->prepare("SELECT COUNT(*) as total FROM empleado_casillero WHERE num_casillero = ?");
             $sqlContar->bind_param("s", $num_casillero);
             $sqlContar->execute();
             $resultadoContar = $sqlContar->get_result();
             $rowContar = $resultadoContar->fetch_assoc();
-            
+
             if ($rowContar['total'] >= 2) {
                 // El casillero ya tiene 2 empleados asignados
                 $respuesta = array(
@@ -177,13 +175,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     "title" => "ADVERTENCIA",
                     "text" => "El casillero '{$num_casillero}' ya tiene el máximo de 2 empleados asignados.",
                     "type" => "warning",
-                    "icon" => $rutaRaiz . "/plugins/toasts/icons/icon_warning.png",
                     "timeout" => 3000,
                 );
                 echo json_encode($respuesta);
                 exit();
             }
-            
+
             $sqlCasillero->close();
             $sqlContar->close();
         }
@@ -210,8 +207,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 id_rol, id_status, nombre, ap_paterno, ap_materno, domicilio,
                 imss, curp, sexo, enfermedades_alergias, grupo_sanguineo,
                 fecha_ingreso, fecha_nacimiento, id_departamento, 
-                id_area, id_puestoEspecial, id_empresa, clave_empleado, salario_semanal, salario_mensual, biometrico, telefono_empleado, status_nss
-            ) VALUES (2, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                id_area, id_puestoEspecial, id_empresa, clave_empleado, salario_semanal, salario_mensual, biometrico, telefono_empleado, status_nss, rfc_empleado, estado_civil
+            ) VALUES (2, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         );
 
         if (!$sql) {
@@ -219,7 +216,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $sql->bind_param(
-            "ssssssssssssiiisddssi", // 20 parámetros
+            "ssssssssssssiiisddssiss", // 20 parámetros
             $nombre,
             $ap_paterno,
             $ap_materno,
@@ -240,7 +237,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $salario_mensual,
             $biometrico,
             $telefono_empleado,
-            $status_nss
+            $status_nss,
+            $rfc,
+            $estado_civil
         );
 
         if (!$sql->execute()) {
@@ -258,7 +257,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$sqlAsignarCasillero) {
                 throw new Exception("Error al preparar consulta de asignación de casillero: " . $conexion->error);
             }
-            
+
             $sqlAsignarCasillero->bind_param("is", $id_empleado, $num_casillero);
             if (!$sqlAsignarCasillero->execute()) {
                 throw new Exception("Error al asignar casillero: " . $sqlAsignarCasillero->error);
@@ -278,7 +277,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sql->bind_param("sss", $emergencia_nombre, $emergencia_ap_paterno, $emergencia_ap_materno);
             $sql->execute();
             $resultado = $sql->get_result();
-            
+
             if ($resultado->num_rows > 0) {
                 $row = $resultado->fetch_assoc();
                 $id_contacto = $row['id_contacto'];
@@ -296,7 +295,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $emergencia_telefono,
                     $emergencia_domicilio
                 );
-                
+
                 if (!$sqlContacto->execute()) {
                     throw new Exception("Error al registrar contacto de emergencia: " . $sqlContacto->error);
                 }
@@ -311,7 +310,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "INSERT INTO empleado_contacto (id_empleado, id_contacto, parentesco) VALUES (?, ?, ?)"
             );
             $sqlRel->bind_param("iis", $id_empleado, $id_contacto, $parentesco);
-            
+
             if (!$sqlRel->execute()) {
                 throw new Exception("Error al registrar relación empleado-contacto: " . $sqlRel->error);
             }
@@ -390,12 +389,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "title" => "ÉXITO",
             "text" => $mensajeExito,
             "type" => "success",
-            "icon" => $rutaRaiz . "/plugins/toasts/icons/icon_success.png",
             "timeout" => 3000,
         );
-        
-        echo json_encode($respuesta);
 
+        echo json_encode($respuesta);
     } catch (Exception $e) {
         // =============================
         // MANEJO DE ERRORES
@@ -405,10 +402,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "title" => "ERROR",
             "text" => "Error en el servidor: " . $e->getMessage(),
             "type" => "error",
-            "icon" => $rutaRaiz . "/plugins/toasts/icons/icon_error.png",
             "timeout" => 5000,
         );
-        
+
         echo json_encode($respuesta);
     }
 } else {
@@ -420,10 +416,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         "title" => "ERROR",
         "text" => "Método no permitido.",
         "type" => "error",
-        "icon" => $rutaRaiz . "/plugins/toasts/icons/icon_error.png",
         "timeout" => 3000,
     );
-    
+
     echo json_encode($respuesta);
 }
-?>

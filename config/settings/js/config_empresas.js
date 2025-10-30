@@ -4,6 +4,12 @@ $(document).ready(function () {
     mostrarImagenEmpresa();
     editarEmpresa();
     buscarEmpresa();
+    
+    // Agregar validación para el campo RFC de empresa
+    validarDatos("#rfc_empresa", validarRFCmoral);
+    
+    // Formatear RFC de empresa a mayúsculas
+    formatearMayusculas("#rfc_empresa");
 });
 
 function getEmpresas() {
@@ -43,6 +49,8 @@ function getEmpresas() {
 function resetearFormularioEmpresa() {
     $("#empresa_id").val('');
     $("#nombre_empresa").val('');
+    $("#rfc_empresa").val('');
+    $("#domicilio_fiscal").val('');
     $("#logo_empresa").val('');
     $("#preview_logo_empresa").attr('src', '');
     $(".current-image-preview").hide();
@@ -60,10 +68,23 @@ function registrarEmpresa() {
         // Obtener los valores del formulario
         let idEmpresa = $("#empresa_id").val().trim();
         let nombreEmpresa = $("#nombre_empresa").val().trim();
+        let rfcEmpresa = $("#rfc_empresa").val().trim();
+        let domicilioFiscal = $("#domicilio_fiscal").val().trim();
         let accion = idEmpresa ? "actualizarEmpresa" : "registrarEmpresa";
 
         // Agregar la acción al FormData
         formData.append("accion", accion);
+
+        // Validar RFC si tiene valor
+        if (rfcEmpresa && !validarRFCmoral(rfcEmpresa)) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'RFC inválido',
+                text: 'El RFC de la empresa no tiene el formato correcto',
+                confirmButtonColor: '#eab308'
+            });
+            return;
+        }
 
         if (nombreEmpresa != "") {
             $.ajax({
@@ -132,6 +153,11 @@ function registrarEmpresa() {
         $("#logo_empresa").val('');
         $("#preview_logo_empresa").attr('src', '');
         $(".current-image-preview").hide();
+    });
+
+    // Funcionalidad del botón cancelar
+    $("#btn-cancelar-empresa").click(function () {
+        resetearFormularioEmpresa();
     });
 }
 
@@ -224,6 +250,8 @@ function editarEmpresa() {
                     }
                     $("#empresa_id").val(data.id_empresa);
                     $("#nombre_empresa").val(data.nombre_empresa);
+                    $("#rfc_empresa").val(data.rfc_empresa || '');
+                    $("#domicilio_fiscal").val(data.domicilio_fiscal || '');
 
                     if (data.logo_empresa && data.logo_empresa.trim() !== "") {
                         let rutaLogo = rutaRaiz + "gafetes/logos_empresa/" + data.logo_empresa;
@@ -256,75 +284,73 @@ function editarEmpresa() {
         });
     });
 
- $(document).on("click", "#btn-remove-empresa-image", function (e) {
-    e.preventDefault();       // evita comportamiento por defecto
-    e.stopPropagation();      // evita que el evento burbujee al input file
+    $(document).on("click", "#btn-remove-empresa-image", function (e) {
+        e.preventDefault();       // evita comportamiento por defecto
+        e.stopPropagation();      // evita que el evento burbujee al input file
 
-    let empresaId = $(this).data("empresa-id") || null;
+        let empresaId = $(this).data("empresa-id") || null;
 
-    Swal.fire({
-        icon: 'question',
-        title: '¿Eliminar logo?',
-        text: '¿Seguro que deseas eliminar el logo de esta empresa?',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar',
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#64748b'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            if (!empresaId) {
-                // Solo limpiar vista previa (cuando es un logo cargado localmente)
-                $("#logo_empresa").val('');
-                $("#preview_logo_empresa").attr('src', '');
-                $(".current-image-preview").hide();
-                return;
-            }
+        Swal.fire({
+            icon: 'question',
+            title: '¿Eliminar logo?',
+            text: '¿Seguro que deseas eliminar el logo de esta empresa?',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                if (!empresaId) {
+                    // Solo limpiar vista previa (cuando es un logo cargado localmente)
+                    $("#logo_empresa").val('');
+                    $("#preview_logo_empresa").attr('src', '');
+                    $(".current-image-preview").hide();
+                    return;
+                }
 
-            // Si sí tiene empresaId => borrar en el servidor
-            $.ajax({
-                type: "POST",
-                url: "../php/configuration.php",
-                data: {
-                    accion: "eliminarLogoEmpresa",
-                    id_empresa: empresaId
-                },
-                success: function (response) {
-                    let resultado = response.trim();
-                    if (resultado == "1") {
-                        $("#preview_logo_empresa").attr('src', '');
-                        $(".current-image-preview").hide();
-                        $(".remove-image[data-target='logo_empresa']").hide().data("empresa-id", "");
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Logo eliminado',
-                            text: 'El logo de la empresa ha sido eliminado correctamente',
-                            confirmButtonColor: '#22c55e'
-                        });
-                        getEmpresas();
-                    } else {
+                // Si sí tiene empresaId => borrar en el servidor
+                $.ajax({
+                    type: "POST",
+                    url: "../php/configuration.php",
+                    data: {
+                        accion: "eliminarLogoEmpresa",
+                        id_empresa: empresaId
+                    },
+                    success: function (response) {
+                        let resultado = response.trim();
+                        if (resultado == "1") {
+                            $("#preview_logo_empresa").attr('src', '');
+                            $(".current-image-preview").hide();
+                            $(".remove-image[data-target='logo_empresa']").hide().data("empresa-id", "");
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Logo eliminado',
+                                text: 'El logo de la empresa ha sido eliminado correctamente',
+                                confirmButtonColor: '#22c55e'
+                            });
+                            getEmpresas();
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'No se pudo eliminar el logo',
+                                confirmButtonColor: '#ef4444'
+                            });
+                        }
+                    },
+                    error: function () {
                         Swal.fire({
                             icon: 'error',
-                            title: 'Error',
-                            text: 'No se pudo eliminar el logo',
+                            title: 'Error de conexión',
+                            text: 'No se pudo conectar con el servidor',
                             confirmButtonColor: '#ef4444'
                         });
                     }
-                },
-                error: function () {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error de conexión',
-                        text: 'No se pudo conectar con el servidor',
-                        confirmButtonColor: '#ef4444'
-                    });
-                }
-            });
-        }
+                });
+            }
+        });
     });
-});
-
-
 }
 
 
@@ -335,5 +361,43 @@ function buscarEmpresa() {
             $(this).toggle($(this).find("td:eq(1)").text().toLowerCase().indexOf(valor) > -1);
         });
     });
+}
+
+// Función para validar datos en tiempo real
+function validarDatos(selector, validacion) {
+    $(selector).on('input', function () {
+        const valor = $(this).val();
+        
+        // Quita clases anteriores
+        $(this).removeClass('border-success border-danger');
+        
+        // Si está vacío, no aplica ninguna clase (campo opcional)
+        if (valor === "") return;
+        
+        // Aplica validación
+        const isValid = validacion(valor);
+        $(this).addClass(isValid ? 'border-success' : 'border-danger');
+    });
+}
+
+// Función para formatear texto a mayúsculas mientras se escribe
+function formatearMayusculas(selector) {
+    $(selector).on('input', function () {
+        // Obtener la posición actual del cursor
+        const cursorPosition = this.selectionStart;
+        // Convertir el valor a mayúsculas
+        const valorMayusculas = $(this).val().toUpperCase();
+        // Establecer el nuevo valor
+        $(this).val(valorMayusculas);
+        // Restaurar la posición del cursor
+        this.setSelectionRange(cursorPosition, cursorPosition);
+    });
+}
+
+// Función para validar el RFC moral
+function validarRFCmoral(rfc) {
+    // Expresión regular para validar el formato del RFC moral
+    const reRFCMoral = /^[A-Z]{3}\d{6}[A-Z0-9]{3}$/;
+    return reRFCMoral.test(rfc);
 }
 

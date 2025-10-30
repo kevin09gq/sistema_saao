@@ -9,7 +9,6 @@
     include "../../config/config.php";
     ?>
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Inter:400,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <link rel="stylesheet" href="../styles/nomina_styles.css">
     <link rel="stylesheet" href="../styles/seleccion_modal_styles.css">
@@ -18,7 +17,7 @@
     <link rel="stylesheet" href="../styles/detalle_modal_dispersion.css">
     <link rel="stylesheet" href="../styles/modal_sumas.css">
     <!-- SweetAlert2 CSS -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="<?= SWEETALERT ?>"></script>
 </head>
 
 <body>
@@ -128,11 +127,15 @@
                     <i class="bi bi-file-earmark-pdf"></i>
                     PDF
                 </button>
+                <button class="btn-export-pdf-reporte" id="btn_export_pdf_reporte" title="Exportar a PDF">
+                    <i class="bi bi-file-earmark-pdf"></i>
+                    Reporte
+                </button>
                 <button class="btn-guardar-nomina" id="btn_guardar_nomina" title="Guardar nómina">
                     <i class="bi bi-save"></i>
                     Guardar Nómina
                 </button>
-                <button class="btn-limpiar-datos" id="btn_limpiar_datos" >
+                <button class="btn-limpiar-datos" id="btn_limpiar_datos">
                     <i class="bi bi-trash"></i>
                     Subir Nuevamente
                 </button>
@@ -251,20 +254,20 @@
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
     <!-- Plugin Inputmask -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.7/jquery.inputmask.min.js"></script>
+    <script src="<?= JQUERY_INPUTMASK ?>"></script>
     <!-- Bootstrap JS -->
     <script src="<?= BOOTSTRAP_JS ?>"></script>
     <script src="../../config/settings/js/obtener_tabulador.js"></script>
-    <script src="../jsPrueba2/leer_excel.js"></script>
-    <script src="../jsPrueba2/config_tabla.js"></script>
-    <script src="../jsPrueba2/seleccion_empleados.js"></script>
-    <script src="../jsPrueba2/detalles_modal.js"></script>
-    <script src="../jsPrueba2/detalle_modal_dispersion.js"></script>
-    <script src="../jsPrueba2/rangos_horarios.js"></script>
-    <script src="../jsPrueba2/horarios_modal.js"></script>
-    <script src="../jsPrueba2/calcular_sumas.js"></script>
-    <script src="../jsPrueba2/guardar_nomina.js"></script>
-    <script src="../jsPrueba2/generar_excel_pdf.js"></script>
+    <script src="../js/leer_excel.js"></script>
+    <script src="../js/config_tabla.js"></script>
+    <script src="../js/seleccion_empleados.js"></script>
+    <script src="../js/detalles_modal.js"></script>
+    <script src="../js/detalle_modal_dispersion.js"></script>
+    <script src="../js/rangos_horarios.js"></script>
+    <script src="../js/horarios_modal.js"></script>
+    <script src="../js/calcular_sumas.js"></script>
+    <script src="../js/guardar_nomina.js"></script>
+    <script src="../js/generar_excel_pdf.js"></script>
 
 </body>
 

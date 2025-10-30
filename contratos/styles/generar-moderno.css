@@ -1,0 +1,337 @@
+/* Diseño moderno para generar.php - CON COLORES */
+
+/* Variables de colores - VERDE CLARO */
+:root {
+  --primary: #10b981;
+  --primary-dark: #059669;
+  --secondary: #34d399;
+  --success: #10b981;
+  --info: #06b6d4;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --light: #f8fafc;
+  --dark: #1e293b;
+  --border: #e2e8f0;
+}
+
+/* Header principal - MÁS COMPACTO CON VERDE */
+.page-header {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  padding: 18px 24px;
+  border-radius: 10px;
+  color: white;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.page-header h1 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.page-header p {
+  font-size: 13px;
+  opacity: 0.95;
+  margin: 0;
+}
+
+/* Tarjeta del formulario - MÁS COMPACTA */
+.form-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.form-card-header {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  padding: 14px 20px;
+  color: white;
+}
+
+.form-card-header h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-card-body {
+  padding: 20px;
+}
+
+/* Secciones del formulario - MÁS COMPACTAS */
+.form-section {
+  margin-bottom: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.form-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  border-left: 3px solid var(--primary);
+  border-radius: 6px;
+}
+
+.section-title .icon {
+  font-size: 20px;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+}
+
+.section-title h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--dark);
+  margin: 0;
+}
+
+/* Labels mejorados - MÁS PEQUEÑOS */
+.form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.form-label.required::after {
+  content: " *";
+  color: var(--danger);
+}
+
+/* Inputs y selects modernos - MÁS COMPACTOS */
+.form-control,
+.form-select {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  outline: none;
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  background: #f1f5f9;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.form-control-sm,
+.form-select-sm {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+/* Form text (ayuda) - MÁS PEQUEÑO */
+.form-text {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 4px;
+  display: block;
+}
+
+/* Botones modernos - MÁS COMPACTOS */
+.btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
+.btn-outline-primary {
+  background: white;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+}
+
+.btn-outline-primary:hover {
+  background: var(--primary);
+  color: white;
+}
+
+.btn-outline-secondary {
+  background: white;
+  color: #64748b;
+  border: 2px solid #cbd5e0;
+}
+
+.btn-outline-secondary:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+/* Separador visual - MÁS DELGADO */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--border), transparent);
+  margin: 16px 0;
+}
+
+/* Grid responsivo - MÁS COMPACTO */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -6px;
+}
+
+.row > [class*="col-"] {
+  padding: 0 6px;
+  margin-bottom: 12px;
+}
+
+/* Beneficiarios - MÁS COMPACTOS */
+.list-group-item {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: white;
+  transition: all 0.2s ease;
+  font-size: 13px;
+}
+
+.list-group-item:hover {
+  border-color: var(--primary);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
+  transform: translateY(-1px);
+}
+
+/* Badges informativos - MÁS PEQUEÑOS */
+.badge {
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.badge-info {
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  color: white;
+}
+
+.badge-success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+/* Responsive - MÁS COMPACTO EN MÓVILES */
+@media (max-width: 768px) {
+  .page-header {
+    padding: 14px 16px;
+  }
+  
+  .page-header h1 {
+    font-size: 18px;
+  }
+  
+  .page-header p {
+    font-size: 12px;
+  }
+  
+  .form-card-body {
+    padding: 16px;
+  }
+  
+  .section-title {
+    padding: 8px 10px;
+  }
+  
+  .section-title h3 {
+    font-size: 14px;
+  }
+  
+  .section-title .icon {
+    font-size: 18px;
+  }
+}
+
+/* Campos autocompletados - Color verde claro */
+.form-control.auto-filled,
+.form-select.auto-filled {
+  background: linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%);
+  border-color: #86efac;
+}
+
+.form-control.auto-filled:focus,
+.form-select.auto-filled:focus {
+  background: linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+/* Indicador de campo autocompletado */
+.auto-filled-indicator {
+  font-size: 11px;
+  color: #059669;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+}
+
+.auto-filled-indicator::before {
+  content: "✓";
+  font-weight: bold;
+}
+
+/* Animaciones sutiles */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.form-section {
+  animation: fadeIn 0.3s ease;
+}

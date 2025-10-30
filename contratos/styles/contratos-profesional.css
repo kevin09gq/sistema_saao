@@ -1,0 +1,344 @@
+/* Estilos profesionales y agradables para contratos.php */
+body {
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: #4a5568;
+  line-height: 1.6;
+  min-height: 100vh;
+  padding: 0;
+  margin: 0;
+}
+
+/* Ajuste para mover el navbar más arriba */
+.navbar-custom {
+  margin-top: -1px !important;
+}
+
+/* Personalización de colores del navbar para que sea verde */
+.navbar-custom {
+  background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%) !important;
+}
+
+.navbar-brand {
+  color: #4b5563 !important;
+}
+
+.navbar-brand:hover {
+  color: #16a34a !important;
+}
+
+.nav-link {
+  color: #6b7280 !important;
+}
+
+.nav-link:hover, .nav-link.hover {
+  color: #16a34a !important;
+  background: rgba(72, 187, 120, 0.1) !important;
+}
+
+.nav-link.active {
+  color: #16a34a !important;
+  background: rgba(72, 187, 120, 0.15) !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 4px rgba(72, 187, 120, 0.1) !important;
+}
+
+/* Botón de salir en rojo */
+.btn-salir {
+  background: rgba(239, 68, 68, 0.1) !important;
+  border: 1px solid rgba(239, 68, 68, 0.2) !important;
+  color: #ef4444 !important;
+}
+
+.btn-salir:hover, .btn-salir.hover {
+  background: rgba(239, 68, 68, 0.2) !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  color: #dc2626 !important;
+}
+
+.container {
+  max-width: 1200px;
+  padding: 20px;
+}
+
+/* Encabezado principal */
+h1.h3 {
+  color: #2d3748;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  position: relative;
+  padding-bottom: 1rem;
+  text-align: center;
+  font-size: 2rem;
+  margin-top: 10px; /* Reducir el margen superior para compensar el navbar más alto */
+}
+
+h1.h3::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, #48bb78, #38a169);
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(72, 187, 120, 0.2);
+}
+
+/* Tarjetas de módulo con diseño más agradable */
+.card {
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  height: 100%;
+  background: linear-gradient(145deg, #ffffff 0%, #fafafa 100%);
+  border: 1px solid rgba(0, 0, 0, 0.02);
+  overflow: hidden;
+  position: relative;
+  padding: 2rem;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, #48bb78, #38a169);
+  border-radius: 16px 16px 0 0;
+}
+
+.card-body {
+  padding: 0;
+  z-index: 1;
+  position: relative;
+}
+
+.card-title {
+  color: #2d3748;
+  font-weight: 700;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.card-title::before {
+  content: '';
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  background: #48bb78;
+  border-radius: 50%;
+  margin-right: 12px;
+}
+
+.card-text {
+  color: #718096;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+  padding-left: 24px;
+}
+
+/* Botones mejorados y más agradables */
+.btn {
+  font-weight: 600;
+  padding: 0.8rem 1.75rem;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-size: 0.9rem;
+  border: none;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  transition: all 0.5s;
+  z-index: -1;
+}
+
+.btn:hover::before {
+  width: 100%;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 7px 14px rgba(72, 187, 120, 0.3);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 7px 14px rgba(72, 187, 120, 0.3);
+}
+
+.btn:focus, .btn:active {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+  outline: none !important;
+  transform: translateY(-1px);
+}
+
+/* Diseño de filas y columnas */
+.row.g-4 {
+  gap: 2rem 0;
+  margin: 0 -15px;
+}
+
+.col-md-6 {
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 100%;
+  padding: 0 15px;
+}
+
+@media (min-width: 768px) {
+  .col-md-6 {
+    flex: 0 0 auto;
+    width: 50%;
+    max-width: 50%;
+  }
+}
+
+/* Footer o espacio inferior */
+.py-5 {
+  padding-top: 2rem !important;
+  padding-bottom: 3rem !important;
+}
+
+/* Animaciones y transiciones */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.card {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.card:nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+.card:hover {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Responsive design mejorado */
+@media (max-width: 767.98px) {
+  .container {
+    padding: 15px;
+  }
+  
+  h1.h3 {
+    font-size: 1.7rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .card {
+    padding: 1.5rem;
+  }
+  
+  .card-title {
+    font-size: 1.3rem;
+  }
+  
+  .btn {
+    width: 100%;
+    margin-top: 0.5rem;
+    padding: 0.9rem 1.5rem;
+  }
+  
+  .row.g-4 {
+    gap: 1.5rem 0;
+  }
+  
+  /* Ajuste para navbar en móviles */
+  .navbar-custom {
+    margin-top: -15px !important;
+  }
+}
+
+/* Efecto de brillo en hover */
+.card::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 20px;
+  height: 200%;
+  background: rgba(255, 255, 255, 0.15);
+  transform: rotate(25deg);
+  transition: all 0.6s;
+  opacity: 0;
+}
+
+.card:hover::after {
+  left: 120%;
+  opacity: 1;
+}
+
+/* Mejoras adicionales para una apariencia más agradable */
+.card {
+  backdrop-filter: blur(10px);
+  background-clip: border-box;
+}
+
+.card-title {
+  background: linear-gradient(90deg, #2d3748, #4a5568);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

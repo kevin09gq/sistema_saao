@@ -1,0 +1,6 @@
+# Ignorar todos los archivos Word generados
+*.docx
+*.doc
+
+# Mantener el directorio
+!.gitignore

@@ -9,7 +9,10 @@ USE sistema_nomina;
 CREATE TABLE empresa (
     id_empresa INT AUTO_INCREMENT PRIMARY KEY,
     nombre_empresa VARCHAR(150) NOT NULL,
-    logo_empresa VARCHAR(200) NULL
+    logo_empresa VARCHAR(200) NULL,
+    rfc_empresa VARCHAR(12) NULL,
+    domicilio_fiscal VARCHAR(200) NULL,
+    marca_empresa VARCHAR(2s00) NULL
 );
 
 
@@ -27,7 +30,8 @@ CREATE TABLE departamentos (
 
 CREATE TABLE puestos_especiales (
     id_puestoEspecial INT AUTO_INCREMENT PRIMARY KEY,
-    nombre_puesto VARCHAR(100) NOT NULL
+    nombre_puesto VARCHAR(100) NOT NULL,
+    direccion_puesto VARCHAR(200) NULL
 );
 
 CREATE TABLE status (
@@ -89,7 +93,8 @@ CREATE TABLE info_empleados (
     biometrico INT,
     telefono_empleado VARCHAR(15),
     status_nss TINYINT(1) DEFAULT 0,
-    estado_civil VARCHAR(100),
+    rfc_empleado VARCHAR(13),
+    estado_civil VARCHAR(50),
     FOREIGN KEY (id_rol) REFERENCES rol(id_rol),
     FOREIGN KEY (id_status) REFERENCES status(id_status),
     FOREIGN KEY (id_puestoEspecial) REFERENCES puestos_especiales(id_puestoEspecial),
@@ -148,7 +153,6 @@ CREATE TABLE empleado_casillero (
 CREATE TABLE info_admin (
     id_admin INT AUTO_INCREMENT PRIMARY KEY,
     id_rol INT NOT NULL,
-    username VARCHAR(50) NOT NULL,
     correo VARCHAR(100) NOT NULL,
     contrasena VARCHAR(255) NOT NULL,
     FOREIGN KEY (id_rol) REFERENCES rol(id_rol)
@@ -220,6 +224,14 @@ INSERT INTO departamentos (id_departamento, nombre_departamento) VALUES
 (7, 'Ranchos'),
 (8, 'Administracion Sucursal CdMx');
 
+-- Insertar estado civil
+INSERT INTO estado_civil (nombre_estado_civil) VALUES 
+('Soltero(a)'),
+('Casado(a)'),
+('Viudo(a)'),
+('Divorciado(a)'),
+('Unión Libre'),
+('Separado(a)');
 
 -- Procedimiento para crear casilleros del 1 al 300
 DELIMITER //

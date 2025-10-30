@@ -1,0 +1,592 @@
+/* Estilos profesionales y atractivos para plantillas.php */
+body {
+  background: linear-gradient(135deg, #f8fafc 0%, #eef7ff 100%);
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: #1f2937; /* Mejor contraste */
+  line-height: 1.6;
+  min-height: 100vh;
+  padding: 0;
+  margin: 0;
+}
+
+.container {
+  max-width: 1400px;
+  padding: 20px;
+}
+
+/* Encabezado principal más suave */
+h1.h3 {
+  color: #2d3748;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  position: relative;
+  padding-bottom: 0.8rem;
+  text-align: center;
+  font-size: 1.7rem;
+}
+
+h1.h3::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, #48bb78, #81e6d9);
+  border-radius: 2px;
+}
+
+/* Tarjetas más ligeras y atractivas */
+.card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(16, 24, 40, 0.06);
+  background: #ffffff;
+  border: 1px solid rgba(17, 24, 39, 0.06);
+  overflow: hidden;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(16, 24, 40, 0.10);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #10b981, #60a5fa);
+}
+
+.card-header {
+  background: linear-gradient(180deg, rgba(16,185,129,0.06), rgba(96,165,250,0.06));
+  border-bottom: 1px solid rgba(17, 24, 39, 0.06);
+  font-weight: 600;
+  color: #0f172a;
+  padding: 0.9rem 1.2rem;
+  font-size: 1.03rem;
+}
+
+.card-body {
+  padding: 1.2rem;
+}
+
+/* Formularios más suaves */
+.form-control, .form-select {
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  padding: 0.45rem 0.7rem;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.25);
+  outline: none;
+}
+
+.form-label {
+  font-weight: 500;
+  color: #4a5568;
+  margin-bottom: 0.25rem;
+  font-size: 0.85rem;
+}
+
+/* Botones más atractivos y menos robustos */
+.btn {
+  font-weight: 500;
+  padding: 0.45rem 0.9rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  font-size: 0.8rem;
+  border: none;
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.03);
+}
+
+.btn-sm {
+  padding: 0.35rem 0.7rem;
+  font-size: 0.75rem;
+}
+
+.btn-primary {
+  background: #48bb78;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #38a169;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(72, 187, 120, 0.2);
+}
+
+.btn-success {
+  background: #48bb78;
+  color: white;
+}
+
+.btn-success:hover {
+  background: #38a169;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(72, 187, 120, 0.2);
+}
+
+.btn-outline-danger {
+  border: 1px solid #feb2b2;
+  color: #e53e3e;
+  background: #fff5f5;
+}
+
+.btn-outline-danger:hover {
+  background: #fed7d7;
+  border-color: #fc8181;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(229, 62, 62, 0.1);
+}
+
+.btn-outline-secondary {
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  background: #ffffff;
+}
+
+.btn-outline-secondary:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(51, 65, 85, 0.12);
+}
+
+.btn-outline-primary {
+  border: 1px solid #90cdf4;
+  color: #1d4ed8;
+  background: #eef2ff;
+}
+
+.btn-outline-primary:hover {
+  background: #e0e7ff;
+  border-color: #60a5fa;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(29, 78, 216, 0.15);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Barra compacta de plantillas - ESTILOS LIGEROS */
+.plantillas-compact-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 15px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-toggle-plantillas {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #48bb78;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.btn-toggle-plantillas:hover {
+  background: #38a169;
+}
+
+.btn-toggle-plantillas .arrow {
+  font-size: 10px;
+}
+
+.separator {
+  width: 1px;
+  height: 24px;
+  background: #cbd5e0;
+}
+
+.input-nueva {
+  flex: 1;
+  min-width: 200px;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.input-nueva:focus {
+  outline: none;
+  border-color: #48bb78;
+}
+
+.btn-nueva {
+  padding: 8px 16px;
+  background: #48bb78;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.btn-nueva:hover {
+  background: #38a169;
+}
+
+/* Panel de plantillas colapsable - SIN ANIMACIONES PESADAS */
+.plantillas-panel {
+  margin-top: 10px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.plantillas-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.plantillas-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
+}
+
+.plantillas-list li:last-child {
+  border-bottom: none;
+}
+
+.plantillas-list li:hover {
+  background: #f8fafc;
+}
+
+.plantillas-list .plantilla-item {
+  font-weight: 500;
+  color: #2d3748;
+  font-size: 14px;
+}
+
+.plantillas-list .text-muted {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+/* Scrollbar ligero */
+.plantillas-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.plantillas-list::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.plantillas-list::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 3px;
+}
+
+.plantillas-list::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Lista de plantillas más suave */
+.list-group {
+  max-height: 300px;
+  overflow-y: auto;
+  border-radius: 6px;
+}
+
+.list-group-item {
+  border: 1px solid #edf2f7;
+  padding: 0.7rem 0.9rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.list-group-item:hover {
+  background: rgba(72, 187, 120, 0.05);
+}
+
+.list-group-item.active {
+  background: #48bb78;
+  border-color: #48bb78;
+  color: white;
+  font-weight: 500;
+}
+
+/* Editor de plantillas más suave */
+#editorContainer {
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 1rem;
+}
+
+.ql-toolbar {
+  border: none;
+  border-bottom: 1px solid #e5e7eb;
+  background: linear-gradient(180deg, #f8fafc, #f1f5f9);
+  border-radius: 6px 6px 0 0 !important;
+  padding: 0.5rem;
+}
+
+.ql-container {
+  border: none;
+  font-size: 0.95rem;
+  min-height: 400px;
+}
+
+.ql-editor {
+  min-height: 400px;
+  padding: 1.2rem;
+  font-size: 0.98rem;
+  line-height: 1.7;
+}
+
+/* Estilos para tablas en el editor Quill */
+.ql-editor table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 10px 0;
+  border: 1px solid #000 !important;
+  display: table !important;
+}
+
+.ql-editor table td,
+.ql-editor table th {
+  border: 1px solid #000 !important;
+  padding: 8px 12px;
+  vertical-align: top;
+  display: table-cell !important;
+}
+
+.ql-editor table th {
+  font-weight: bold;
+  text-align: left;
+}
+
+.ql-editor table tr {
+  display: table-row !important;
+}
+
+.ql-editor .tabla-contrato {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 10px 0;
+  border: 1px solid #000 !important;
+}
+
+.ql-editor .tabla-contrato td,
+.ql-editor .tabla-contrato th {
+  border: 1px solid #000 !important;
+  padding: 8px 12px;
+  vertical-align: top;
+}
+
+.ql-editor .tabla-contrato th {
+  font-weight: bold;
+  text-align: left;
+}
+
+/* Texto de ayuda más suave */
+.text-muted {
+  color: #64748b !important;
+  font-size: 0.84rem;
+}
+
+/* Quick insert buttons: estilo más moderno */
+.quick-insert {
+  border-radius: 10px;
+  border-color: #e5e7eb;
+  background: #ffffff;
+  color: #0f172a;
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.quick-insert:hover {
+  background: #ecfdf5;
+  border-color: #10b981;
+  color: #065f46;
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.15);
+  transform: translateY(-1px);
+}
+
+.quick-insert:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.12);
+}
+
+/* Espaciado y layout */
+.py-4 {
+  padding-top: 1.2rem !important;
+  padding-bottom: 1.2rem !important;
+}
+
+.g-3 {
+  --bs-gutter-x: 1.2rem;
+  --bs-gutter-y: 1.2rem;
+}
+
+/* Placeholder personalizado */
+#tituloEdicion {
+  font-weight: 500;
+  color: #2d3748;
+  font-size: 1rem;
+}
+
+/* Scrollbar personalizado más suave */
+.list-group::-webkit-scrollbar {
+  width: 5px;
+}
+
+.list-group::-webkit-scrollbar-track {
+  background: #f7fafc;
+  border-radius: 10px;
+}
+
+.list-group::-webkit-scrollbar-thumb {
+  background: #c5c5c5;
+  border-radius: 10px;
+}
+
+.list-group::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+/* Scroll independiente para la lista de placeholders */
+.placeholders-scroll {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.placeholders-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.placeholders-scroll::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 10px;
+}
+
+.placeholders-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.placeholders-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Responsive design más suave */
+@media (max-width: 992px) {
+  .container {
+    padding: 15px;
+  }
+  
+  h1.h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1.2rem;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+  
+  .g-3 {
+    --bs-gutter-x: 1rem;
+    --bs-gutter-y: 1rem;
+  }
+  
+  /* Ajuste para móviles: hacer que los placeholders estén en la parte superior */
+  .row.mb-4 {
+    order: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+  
+  h1.h3 {
+    font-size: 1.4rem;
+  }
+  
+  .card-header {
+    padding: 0.7rem 1rem;
+    font-size: 1rem;
+  }
+  
+  .btn {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.75rem;
+  }
+  
+  .mt-2 {
+    margin-top: 0.4rem !important;
+  }
+  
+  .d-grid {
+    display: block !important;
+  }
+  
+  .btn + .btn {
+    margin-top: 0.4rem;
+  }
+  
+  /* En móviles, mantener los placeholders arriba */
+  .row.mb-4 {
+    order: 1;
+  }
+}
+
+/* Animaciones suaves */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.card:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.card:nth-child(2) {
+  animation-delay: 0.1s;
+}

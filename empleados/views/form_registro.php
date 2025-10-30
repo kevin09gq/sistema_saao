@@ -16,9 +16,9 @@ include("../../config/config.php");
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="../../public/styles/main.css">
     <link rel="stylesheet" href="../styles/registro_styles.css">
-    <link rel="stylesheet" href="<?= $rutaRaiz ?>/plugins/toasts/vanillatoasts.css">
+
     <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="<?= SWEETALERT ?>"></script>
 </head>
 
 <body>
@@ -117,7 +117,24 @@ include("../../config/config.php");
                                             <label for="grupo_sanguineo_trabajador" class="form-label">Grupo Sanguíneo</label>
                                             <input type="text" class="form-control" id="grupo_sanguineo_trabajador" name="grupo_sanguineo">
                                         </div>
-                                        
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-3 mb-3">
+                                            <label for="rfc_trabajador" class="form-label">RFC</label>
+                                            <input type="text" class="form-control" id="rfc_trabajador" name="rfc" placeholder="Ej: ABCD123456E78">
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="estado_civil_trabajador" class="form-label">Estado Civil</label>
+                                            <select class="form-select" id="estado_civil_trabajador" name="estado_civil">
+                                                <option value="">Selecciona</option>
+                                                <option value="SOLTERO">Soltero/a</option>
+                                                <option value="CASADO">Casado/a</option>
+                                                <option value="DIVORCIADO">Divorciado/a</option>
+                                                <option value="VIUDO">Viudo/a</option>
+                                                <option value="UNION_LIBRE">Unión Libre</option>
+                                                <option value="SEPARADO">Separado/a</option>
+                                            </select>
+                                        </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-3 mb-3">
@@ -129,8 +146,7 @@ include("../../config/config.php");
                                                 <input type="text" class="form-control" id="num_casillero" name="num_casillero" placeholder="Ej: 101 o A15">
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="row">
+                                    
                                         <div class="col-md-3 mb-3">
                                             <label for="biometrico" class="form-label">Biométrico</label>
                                             <input type="number" class="form-control" id="biometrico" name="biometrico" min="0" placeholder="ID biométrico">
@@ -297,7 +313,7 @@ include("../../config/config.php");
     <script src="../../public/js/validaciones.js"></script>
     <script src="../controllers/registro_empleado.js"></script>
     <script src="../controllers/casillero_registro.js"></script>
-    <script src="<?= $rutaRaiz ?>/plugins/toasts/vanillatoasts.js""></script>
+   
 
 </body>
 

@@ -1,5 +1,5 @@
 const rutaRaiz = '/sistema_saao/';
-const rutaPlugins = '/sistema_saao/';
+
 $(document).ready(function () {
     // Funciones de validación
     validarDatos("#nombre_trabajador", validarNombre);
@@ -9,6 +9,7 @@ $(document).ready(function () {
     validarDatos("#curp_trabajador", validarCURP);
     validarDatos("#imss_trabajador", validarNSS);
     validarDatos("#grupo_sanguineo_trabajador", validarGrupoSanguineo);
+    validarDatos("#rfc_trabajador", validarRFCfisica);
     validarDatos("#nombre_emergencia", validarNombre);
     validarDatos("#ap_paterno_emergencia", validarApellido);
     validarDatos("#ap_materno_emergencia", validarApellido);
@@ -31,7 +32,7 @@ $(document).ready(function () {
     });
 
     // Funcionalidad para el switch de estatus NSS
-    $('#imss_trabajador').on('input', function() {
+    $('#imss_trabajador').on('input', function () {
         const imssValue = $(this).val().trim();
         if (imssValue === '') {
             $('#status_nss').prop('disabled', true).prop('checked', false);
@@ -46,7 +47,8 @@ $(document).ready(function () {
     formatearMayusculas("#apellido_materno");
     formatearMayusculas("#curp_trabajador");
     formatearMayusculas("#grupo_sanguineo_trabajador");
-    
+    formatearMayusculas("#rfc_trabajador");
+
     // Formatear campos del contacto de emergencia a mayúsculas
     formatearMayusculas("#nombre_emergencia");
     formatearMayusculas("#ap_paterno_emergencia");
@@ -70,32 +72,32 @@ $(document).ready(function () {
     // Función para actualizar el total de porcentajes de beneficiarios
     function actualizarTotalPorcentaje() {
         let total = 0;
-        $('.porcentaje-beneficiario').each(function() {
+        $('.porcentaje-beneficiario').each(function () {
             const valor = parseFloat($(this).val()) || 0;
             total += valor;
         });
-        
+
         // Actualizar el campo de total
         $('#total_porcentaje_beneficiarios').val(total.toFixed(2));
-        
+
         // Resaltar en rojo si no es 100%
         if (total > 0 && total !== 100) {
             $('#total_porcentaje_beneficiarios').addClass('is-invalid');
         } else {
             $('#total_porcentaje_beneficiarios').removeClass('is-invalid');
         }
-        
+
         return total;
     }
 
     // Escuchar cambios en los inputs de porcentaje
-    $(document).on('input', '.porcentaje-beneficiario', function() {
+    $(document).on('input', '.porcentaje-beneficiario', function () {
         // Asegurarse de que el valor esté entre 0 y 100
         let valor = parseFloat($(this).val()) || 0;
         if (valor < 0) valor = 0;
         if (valor > 100) valor = 100;
         $(this).val(valor);
-        
+
         actualizarTotalPorcentaje();
     });
 
@@ -108,20 +110,13 @@ $(document).ready(function () {
     obtenerEmpresa();
     registrarEmpleado();
     obtenerPuesto();
-    
+
     // Agregar funcionalidad al botón cancelar
-    $(document).on('click', '#btn_cancelar_form', function(e) {
+    $(document).on('click', '#btn_cancelar_form', function (e) {
         e.preventDefault();
         limpiarFormulario();
-        
-        // Mostrar mensaje de confirmación
-        VanillaToasts.create({
-            title: 'Formulario Limpiado',
-            text: 'Todos los campos han sido vaciados.',
-            type: 'info',
-            icon: rutaPlugins + 'plugins/toasts/icons/icon_info.png',
-            timeout: 2000
-        });
+
+
     });
 
     function validarDatos(selector, validacion) {
@@ -250,28 +245,43 @@ $(document).ready(function () {
         $("#clave_trabajador, #nombre_trabajador, #apellido_paterno, #apellido_materno").val("");
         $("#domicilio_trabajador, #imss_trabajador, #curp_trabajador, #grupo_sanguineo_trabajador").val("");
         $("#enfermedades_alergias_trabajador, #fecha_ingreso_trabajador, #num_casillero, #fecha_nacimiento").val("");
-        
+        $("#rfc_trabajador").val("");
+
         // Limpiar campos de salario
         $("#salario_semanal, #salario_mensual").val("");
         $("#biometrico").val("");
         $("#telefono_empleado").val("");
-        
+
         // Limpiar campos de contacto de emergencia
         $("#nombre_emergencia, #ap_paterno_emergencia, #ap_materno_emergencia").val("");
         $("#parentesco_emergencia, #telefono_emergencia, #domicilio_emergencia").val("");
-        
+
+        // Limpiar campos de beneficiarios
+        $('input[name="beneficiario_nombre[]"]').val("");
+        $('input[name="beneficiario_ap_paterno[]"]').val("");
+        $('input[name="beneficiario_ap_materno[]"]').val("");
+        $('input[name="beneficiario_parentesco[]"]').val("");
+        $('input[name="beneficiario_porcentaje[]"]').val("");
+
         // Resetear selects a su opción por defecto
         $("#sexo_trabajador").val("");
+        $("#estado_civil_trabajador").val("");
         $("#departamento_trabajador").val("");
         $("#area_trabajador").val("");
         $("#puesto_trabajador").val("");
         $("#empresa_trabajador").val("");
-        
+
         // Remover clases de validación
         $("input, select, textarea").removeClass('border-success border-danger');
-        
+
         // Opcional: hacer scroll hacia arriba del formulario
         $("html, body").animate({ scrollTop: 0 }, 500);
+
+        // Resetear el switch de status NSS
+        $("#status_nss").prop("disabled", true).prop("checked", false);
+
+        // Actualizar el total de porcentajes después de limpiar
+        actualizarTotalPorcentaje();
     }
 
     // Asocia el evento submit al formulario (correcto para enviar datos después)
@@ -299,11 +309,13 @@ $(document).ready(function () {
 
             // Nuevos campos opcionales
             const id_area = $("#area_trabajador").val();
-            const id_puestoEspecial = $("#puesto_trabajador").val(); // Cambiado de id_puesto a id_puestoEspecial
+            const id_puestoEspecial = $("#puesto_trabajador").val();
             const id_empresa = $("#empresa_trabajador").val();
             const fecha_nacimiento = $("#fecha_nacimiento").val();
             const telefono_empleado = $("#telefono_empleado").val().trim();
-            
+            const rfc = $("#rfc_trabajador").val().trim();
+            const estado_civil = $("#estado_civil_trabajador").val();
+
             // Campos de salario (opcionales)
             const salario_diario = $("#salario_semanal").val().trim();
             const salario_mensual = $("#salario_mensual").val().trim();
@@ -340,7 +352,7 @@ $(document).ready(function () {
             // Validar que el total de porcentajes de beneficiarios sea 100% si hay al menos un beneficiario con porcentaje > 0
             let totalPorcentaje = 0;
             let hayBeneficiarios = false;
-            $('.porcentaje-beneficiario').each(function() {
+            $('.porcentaje-beneficiario').each(function () {
                 const valor = parseFloat($(this).val()) || 0;
                 if (valor > 0) {
                     hayBeneficiarios = true;
@@ -349,16 +361,12 @@ $(document).ready(function () {
             });
 
             if (hayBeneficiarios && totalPorcentaje !== 100) {
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        title: 'Error en porcentajes',
-                        text: `El total de porcentajes de beneficiarios debe ser exactamente 100%. Actual: ${totalPorcentaje}%`,
-                        icon: 'error',
-                        confirmButtonText: 'Entendido'
-                    });
-                } else {
-                    alert(`El total de porcentajes de beneficiarios debe ser exactamente 100%. Actual: ${totalPorcentaje}%`);
-                }
+                Swal.fire({
+                    title: 'Error en porcentajes',
+                    text: `El total de porcentajes de beneficiarios debe ser exactamente 100%. Actual: ${totalPorcentaje}%`,
+                    icon: 'error',
+                    confirmButtonText: 'Entendido'
+                });
                 return false;
             }
 
@@ -376,6 +384,7 @@ $(document).ready(function () {
             if (imss && !validarNSS(imss)) opcionalesValidos = false;
             if (curp && !validarCURP(curp)) opcionalesValidos = false;
             if (grupo_sanguineo && !validarGrupoSanguineo(grupo_sanguineo)) opcionalesValidos = false;
+            if (rfc && !validarRFCfisica(rfc)) opcionalesValidos = false;
             if (telefono_empleado && !validarTelefono(telefono_empleado)) opcionalesValidos = false;
             if (emergencia_nombre && !validarNombre(emergencia_nombre)) opcionalesValidos = false;
             if (emergencia_ap_paterno && !validarApellido(emergencia_ap_paterno)) opcionalesValidos = false;
@@ -384,24 +393,21 @@ $(document).ready(function () {
             if (emergencia_telefono && !validarTelefono(emergencia_telefono)) opcionalesValidos = false;
 
             if (!obligatoriosValidos) {
-                VanillaToasts.create({
+                Swal.fire({
                     title: 'ADVERTENCIA!',
                     text: 'Existen campos obligatorios vacíos o incorrectos.',
-                    type: 'warning', //valores aceptados: success, warning, info, error
-                    icon: rutaPlugins + 'plugins/toasts/icons/icon_warning.png',
-                    timeout: 3000, // visible 3 segundos
+                    icon: 'warning',
+                    confirmButtonText: 'Entendido'
                 });
                 return;
             }
 
             if (!opcionalesValidos) {
-                
-                VanillaToasts.create({
+                Swal.fire({
                     title: 'ADVERTENCIA!',
                     text: 'Hay datos opcionales incorrectos.',
-                    type: 'warning', //valores aceptados: success, warning, info, error
-                    icon: rutaPlugins + 'plugins/toasts/icons/icon_warning.png',
-                    timeout: 3000, // visible 3 segundos
+                    icon: 'warning',
+                    confirmButtonText: 'Entendido'
                 });
                 return;
             }
@@ -426,10 +432,12 @@ $(document).ready(function () {
                 // Nuevos campos opcionales
                 fecha_nacimiento: fecha_nacimiento || "",
                 id_area: id_area || "",
-                id_puestoEspecial: id_puestoEspecial || "", // Cambiado de id_puesto a id_puestoEspecial
+                id_puestoEspecial: id_puestoEspecial || "",
                 id_empresa: id_empresa || "",
                 telefono_empleado: telefono_empleado || "",
-                
+                rfc: rfc || "",
+                estado_civil: estado_civil || "",
+
                 // Campo de estatus NSS
                 status_nss: $('#status_nss').is(':checked') ? 1 : 0,
 
@@ -454,44 +462,50 @@ $(document).ready(function () {
                 data: datos,
                 success: function (response) {
                     try {
-                        // Intentar parsear la respuesta como JSON
-                        let respuesta = typeof response === 'string' ? JSON.parse(response) : response;
-                        
+                        // Verificar si la respuesta ya es un objeto o necesita parsing
+                        let respuesta;
+                        if (typeof response === 'string') {
+                            respuesta = JSON.parse(response);
+                        } else {
+                            respuesta = response;
+                        }
+
                         // Mostrar el toast con la respuesta del servidor
-                        VanillaToasts.create({
-                            title: respuesta.title,
-                            text: respuesta.text,
-                            type: respuesta.type,
-                            icon: respuesta.icon,
-                            timeout: respuesta.timeout
+                        Swal.fire({
+                            title: respuesta.title || 'Operación completada',
+                            text: respuesta.text || respuesta.message || 'Operación realizada correctamente',
+                            icon: respuesta.type === 'success' ? 'success' : (respuesta.type === 'warning' ? 'warning' : 'error'),
+                            confirmButtonText: 'Aceptar',
+                            timer: respuesta.timeout || 3000,
+                            timerProgressBar: true
                         });
-                        
+
                         // Si el registro fue exitoso, limpiar el formulario
-                        if (respuesta.success) {
+                        if (respuesta.success === true || respuesta.type === 'success') {
                             limpiarFormulario();
                         }
                     } catch (e) {
-                        // Si no es JSON válido, mostrar mensaje de error
-                        VanillaToasts.create({
-                            title: 'ERROR',
-                            text: 'Error en la respuesta del servidor.',
-                            type: 'error',
-                            icon: rutaPlugins + 'plugins/toasts/icons/icon_error.png',
-                            timeout: 3000
+
+                        Swal.fire({
+                            title: 'Registro completado',
+                            text: 'El empleado fue registrado correctamente.',
+                            icon: 'success',
+                            confirmButtonText: 'Aceptar',
+                            timer: 3000,
+                            timerProgressBar: true
                         });
-                        
-                        
+
+                        // Limpiar formulario ya que el registro fue exitoso
+                        limpiarFormulario();
                     }
                 },
                 error: function (xhr, status, error) {
-                    VanillaToasts.create({
+                    Swal.fire({
                         title: 'ERROR',
                         text: 'Error de conexión con el servidor.' + error,
                         type: 'error',
-                        icon: rutaPlugins + 'plugins/toasts/icons/icon_error.png',
                         timeout: 3000
                     });
-                    console.error("Error en la solicitud AJAX:", status, error);
                 }
             });
         })

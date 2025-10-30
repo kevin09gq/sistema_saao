@@ -1,6 +1,7 @@
 <div class="modal-detalles" id="modal-detalles" style="display:none;">
     <div class="modal-detalles-content">
-        <span class="modal-detalles-close" id="cerrar-modal-detalles">&times;</span>
+        <span class="modal-detalles-close" id="cerrar-modal-detalles">&times;</span       
+>
         <ul class="nav nav-tabs mb-3" id="modalTabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="tab-info" data-bs-toggle="tab" data-bs-target="#tab_info" type="button" role="tab" aria-controls="tab_info" aria-selected="true">
@@ -112,9 +113,10 @@
                         <i class="bi bi-clock-history"></i> Eventos Especiales
                     </h5>
                     
+                    <!-- Primera fila: Entradas Tempranas y Salidas Tardías -->
                     <div class="row">
                         <!-- Entradas Tempranas -->
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-6 mb-3">
                             <div class="evento-card entrada-temprana">
                                 <div class="evento-header">
                                     <i class="bi bi-sunrise"></i>
@@ -130,7 +132,7 @@
                         </div>
 
                         <!-- Salidas Tardías -->
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-6 mb-3">
                             <div class="evento-card salida-tardia">
                                 <div class="evento-header">
                                     <i class="bi bi-sunset"></i>
@@ -144,9 +146,12 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
 
+                    <!-- Segunda fila: Olvidos del Checador y Retardos -->
+                    <div class="row">
                         <!-- Olvidos del Checador -->
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-6 mb-3">
                             <div class="evento-card olvido-checador">
                                 <div class="evento-header">
                                     <i class="bi bi-exclamation-triangle"></i>
@@ -157,6 +162,22 @@
                                 </div>
                                 <div class="evento-total">
                                     <strong>Total: <span id="total-olvidos-checador"></span></strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Retardos -->
+                        <div class="col-md-6 mb-3">
+                            <div class="evento-card retardo">
+                                <div class="evento-header">
+                                    <i class="bi bi-clock-fill"></i>
+                                    <span>Retardos</span>
+                                </div>
+                                <div class="evento-content" id="retardos-content">
+                                 
+                                </div>
+                                <div class="evento-total">
+                                    <strong>Total: <span id="total-retardos"></span></strong>
                                 </div>
                             </div>
                         </div>
@@ -387,9 +408,14 @@
             </div>
 
         </div>
-        <div class="modal-detalles-footer">
-            <button type="button" id="btn-cancelar-detalles" class="btn btn-secondary">Cancelar</button>
-            <button type="button" id="btn-guardar-detalles" class="btn btn-success">Guardar</button>
+        <div class="modal-detalles-footer d-flex justify-content-between align-items-center">
+            <div class="empleado-actual">
+                <span class="badge bg-verde-empleado" id="nombre-empleado-modal"></span>
+            </div>
+            <div>
+                <button type="button" id="btn-cancelar-detalles" class="btn btn-secondary">Cancelar</button>
+                <button type="button" id="btn-guardar-detalles" class="btn btn-success">Guardar</button>
+            </div>
         </div>
     </div>
 </div>

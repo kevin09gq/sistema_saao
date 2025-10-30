@@ -1,0 +1,177 @@
+/* Estilos para impresión de contratos */
+
+/* Igualar configuración de Word */
+@page { 
+  size: letter; 
+  margin: 2.5cm 3cm; 
+  @bottom-center {
+    content: "[" counter(page) "]";
+    font-size: 12pt;
+    color: #000;
+  }
+}
+
+body { 
+  margin: 0; 
+  padding: 0; 
+  font-family: Arial, sans-serif; 
+  background: white; 
+  line-height: 1.15; 
+  font-size: 12pt; 
+  counter-reset: page; 
+  position: relative;
+}
+
+/* Marca de agua */
+body::before {
+  content: '';
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 95%;
+  height: 95%;
+  background-image: var(--watermark-image, url('/sistema_saao/contratos/img/agua.jpeg'));
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.2;
+  z-index: -1;
+  pointer-events: none;
+  /* Forzar la carga de la imagen */
+  -webkit-print-color-adjust: exact;
+  color-adjust: exact;
+}
+
+p, div, li, h1, h2, h3, h4, h5, h6 { 
+  line-height: 1.15; 
+  mso-line-height-rule: exactly; 
+}
+
+/* Estilos de formato */
+strong, b { font-weight: bold; }
+em, i { font-style: italic; }
+u { text-decoration: underline; }
+s { text-decoration: line-through; }
+sub { vertical-align: sub; font-size: smaller; }
+sup { vertical-align: super; font-size: smaller; }
+blockquote { 
+  border-left: 4px solid #ccc; 
+  margin-bottom: 5px; 
+  margin-top: 5px; 
+  padding-left: 16px; 
+}
+
+ol, ul { padding-left: 1.5em; }
+ol { list-style-type: decimal; }
+ul { list-style-type: disc; }
+li { 
+  margin-bottom: 6pt; 
+  line-height: 1.15; 
+  mso-line-height-rule: exactly; 
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 10px 0;
+  border: 1px solid #000 !important;
+  -webkit-print-color-adjust: exact !important;
+  color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+table td, table th { 
+  border: 1px solid #000 !important; 
+  padding: 8px; 
+  vertical-align: top; 
+  -webkit-print-color-adjust: exact !important; 
+  color-adjust: exact !important; 
+  print-color-adjust: exact !important; 
+}
+
+table th { 
+  font-weight: bold; 
+  text-align: left; 
+}
+
+/* Estilos de alineación de texto (Quill Editor) */
+.ql-align-left { 
+  text-align: left !important; 
+}
+
+.ql-align-center { 
+  text-align: center !important; 
+}
+
+.ql-align-right { 
+  text-align: right !important; 
+}
+
+.ql-align-justify { 
+  text-align: justify !important; 
+  text-justify: inter-word !important;
+}
+
+/* Estilos de alineación para tablas */
+table.ql-align-left { margin-left: 0 !important; margin-right: auto !important; }
+table.ql-align-center { margin-left: auto !important; margin-right: auto !important; }
+table.ql-align-right { margin-left: auto !important; margin-right: 0 !important; }
+
+/* Estilos específicos para tablas de contrato */
+.tabla-contrato { 
+  border-collapse: collapse; 
+  width: 100%; 
+  margin: 10px 0; 
+  border: 1px solid #000 !important; 
+  -webkit-print-color-adjust: exact !important; 
+  color-adjust: exact !important; 
+  print-color-adjust: exact !important; 
+}
+
+.tabla-contrato td, .tabla-contrato th { 
+  border: 1px solid #000 !important; 
+  padding: 8px; 
+  vertical-align: top; 
+  -webkit-print-color-adjust: exact !important; 
+  color-adjust: exact !important; 
+  print-color-adjust: exact !important; 
+}
+
+.tabla-contrato th { 
+  font-weight: bold; 
+  text-align: left; 
+}
+
+/* Asegurar que los colores de fondo se muestren en la impresión */
+* { 
+  -webkit-print-color-adjust: exact !important; 
+  color-adjust: exact !important; 
+  print-color-adjust: exact !important; 
+}
+
+/* Forzar la carga de imágenes antes de imprimir */
+@page {
+  size: letter;
+  margin: 2.5cm 3cm;
+  @bottom-center {
+    content: "[" counter(page) "]";
+    font-size: 12pt;
+    color: #000;
+  }
+  /* Precargar recursos de impresión */
+  marks: none;
+}
+
+/* Numeración automática de páginas */
+.page { position: relative; }
+.page::after {
+  content: "[" counter(page) "]";
+  position: absolute;
+  bottom: 0.5in;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12pt;
+  font-weight: normal;
+  color: #000;
+}

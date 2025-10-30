@@ -953,6 +953,11 @@
 .modal-detalles-footer {
     margin-top: 24px;
     text-align: right;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px; /* Espacio entre elementos */
+    flex-wrap: wrap; /* Permitir envolver si es necesario */
 }
 
 .modal-detalles-footer .btn {
@@ -968,6 +973,37 @@
     background-color: #22c55e;
     border-color: #22c55e;
     color: white;
+}
+
+.empleado-actual {
+    background-color: transparent;
+    width: auto;
+    min-width: 200px;
+    max-width: 400px;
+    flex: 0 0 auto; /* No permitir que crezca o se encoja */
+    margin-left: 0; /* Asegurar que no tenga margen izquierdo */
+    padding-left: 0; /* Asegurar que no tenga padding izquierdo */
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Alinear al inicio (izquierda) */
+}
+
+/* Estilo para el badge del nombre del empleado en el modal */
+.bg-verde-empleado {
+    background-color: #22c55e !important;
+    font-size: 0.85rem;
+    padding: 0.4em 0.8em;
+    font-weight: 500;
+    color: white;
+    border-radius: 4px;
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: none;
+    max-width: none;
+    min-width: 200px;
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0; /* Quitar cualquier margen */
 }
 
 .btn-group .btn-check:checked + .btn-outline-primary {
