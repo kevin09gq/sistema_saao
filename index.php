@@ -51,7 +51,7 @@ include("config/config.php");
             <div class="col-md-4">
                 <div class="card h-100 text-center">
                     <div class="card-body">
-                        <img src="https://img.icons8.com/color/48/id-verified.png" alt="Gafetes">
+                        <i class="bi bi-person-badge text-success" style="font-size: 48px;"></i>
                         <h5 class="card-title mt-3">Gestión de Gafetes</h5>
                         <p class="card-text">Crea, imprime y administra gafetes personalizados para los empleados.</p>
                         <a href="gafetes/" class="btn btn-success">Ir a Gafetes</a>
@@ -61,7 +61,7 @@ include("config/config.php");
             <div class="col-md-4">
                 <div class="card h-100 text-center">
                     <div class="card-body">
-                        <img src="https://img.icons8.com/color/48/agreement.png" alt="Contratos">
+                        <i class="bi bi-file-earmark-text text-success" style="font-size: 48px;"></i>
                         <h5 class="card-title mt-3">Contratos Laborales</h5>
                         <p class="card-text">Genera y gestiona contratos de trabajo de manera sencilla y segura.</p>
                         <a href="#" class="btn btn-success">Ir a Contratos</a>
@@ -71,7 +71,7 @@ include("config/config.php");
             <div class="col-md-4">
                 <div class="card h-100 text-center">
                     <div class="card-body">
-                        <img src="https://img.icons8.com/color/48/payroll.png" alt="Nómina">
+                        <i class="bi bi-cash-coin text-success" style="font-size: 48px;"></i>
                         <h5 class="card-title mt-3">Cálculo de Nómina</h5>
                         <p class="card-text">Automatiza el cálculo y control de nóminas para todos los empleados.</p>
                         <a href="#" class="btn btn-success">Ir a Nómina</a>

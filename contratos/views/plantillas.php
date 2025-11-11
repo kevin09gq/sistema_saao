@@ -1,6 +1,7 @@
 <?php
 // contratos/views/plantillas.php
 include_once '../../config/config.php';
+verificarSesion();
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -8,7 +9,7 @@ include_once '../../config/config.php';
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Plantillas de Contratos</title>
-  <link rel="stylesheet" href="<?= $rutaRaiz ?>/public/libs/bootstrap/css/bootstrap.min.css">
+  <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
   <link rel="stylesheet" href="<?= $rutaRaiz ?>/contratos/styles/contratos.css">
   <link rel="stylesheet" href="<?= $rutaRaiz ?>/contratos/styles/plantillas-profesional.css">
   <link rel="stylesheet" href="<?= $rutaRaiz ?>/contratos/styles/editor-quill.css">
@@ -17,11 +18,13 @@ include_once '../../config/config.php';
   <!-- quill-better-table CSS -->
   <link href="https://unpkg.com/quill-better-table@1.2.10/dist/quill-better-table.css" rel="stylesheet">
   <!-- Bootstrap Icons -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
   <!-- Estilos para logos -->
   <link rel="stylesheet" href="<?= $rutaRaiz ?>/contratos/styles/logos-gafetes.css">
   <!-- jQuery -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="<?= JQUERY_JS ?>"></script>
+  <!-- SweetAlert2 -->
+  <script src="<?= SWEETALERT ?>"></script>
 </head>
 <body>
   <?php include '../../public/views/navbar.php'; ?>
@@ -59,7 +62,7 @@ include_once '../../config/config.php';
           <div class="separator"></div>
           
           <button id="actualizarLogos" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalActualizarLogos">
-            <i class="bi bi-images"></i> Actualizar Logos
+            <i class="bi bi-images"></i> Actualizar Marca de Agua
           </button>
         </div>
         
@@ -316,6 +319,9 @@ include_once '../../config/config.php';
                 <button id="btnInsertarTabla" class="btn btn-outline-primary btn-sm" type="button">
                   <i class="bi bi-table"></i> Insertar Tabla
                 </button>
+                <button id="btnVerDetalles" class="btn btn-outline-info btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#modalDetallesPlaceholders">
+                  <i class="bi bi-info-circle"></i> Detalles de Placeholders
+                </button>
               </div>
             </div>
             
@@ -347,14 +353,362 @@ include_once '../../config/config.php';
     </div>
   </div>
 
+  <!-- Modal para detalles de placeholders -->
+  <div class="modal fade" id="modalDetallesPlaceholders" tabindex="-1" aria-labelledby="modalDetallesPlaceholdersLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title" id="modalDetallesPlaceholdersLabel">
+            <i class="bi bi-info-circle me-2"></i>Detalles de Placeholders
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted">
+            A continuación se muestran todos los placeholders disponibles, su descripción y ejemplos de cómo aparecerán en el contrato.
+          </p>
+          
+          <div class="accordion" id="placeholdersAccordion">
+            <!-- Empleado -->
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEmpleado">
+                  <i class="bi bi-person me-2"></i>Empleado
+                </button>
+              </h2>
+              <div id="collapseEmpleado" class="accordion-collapse collapse show" data-bs-parent="#placeholdersAccordion">
+                <div class="accordion-body">
+                  <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                      <thead class="table-light">
+                        <tr>
+                          <th>Placeholder</th>
+                          <th>Descripción</th>
+                          <th>Ejemplo en contrato</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><code>{{empleado.nombre}}</code></td>
+                          <td>Nombre completo del empleado</td>
+                          <td>JUAN PEREZ GARCIA</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{puesto_trabajador}}</code></td>
+                          <td>Puesto del empleado</td>
+                          <td>GERENTE DE VENTAS</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{empleado.curp}}</code></td>
+                          <td>CURP del empleado</td>
+                          <td>PEGJ800101HDFRRR01</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{rfc_empleado}}</code></td>
+                          <td>RFC del empleado</td>
+                          <td>PEGJ800101AAA</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{domicilio_trabajador}}</code></td>
+                          <td>Domicilio del empleado</td>
+                          <td>AV. REFORMA 123, COL. CENTRO, CDMX</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{direccion_puesto}}</code></td>
+                          <td>Dirección donde laborará el empleado</td>
+                          <td>AV. INSURGENTES 456, COL. ROMA, CDMX</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{descripcion_puesto}}</code></td>
+                          <td>Descripción de las funciones del puesto</td>
+                          <td>RESPONSABLE DE LA GESTIÓN DE VENTAS Y EQUIPO DE TRABAJO</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{empleado.nss}}</code></td>
+                          <td>Número de Seguridad Social</td>
+                          <td>12345678901</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{empleado.fecha_ingreso}}</code></td>
+                          <td>Fecha de ingreso</td>
+                          <td>01/01/2020</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{empleado.fecha_nacimiento}}</code></td>
+                          <td>Fecha de nacimiento</td>
+                          <td>01/01/1980</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{edad}}</code></td>
+                          <td>Edad calculada del empleado</td>
+                          <td>43</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{estado_civil}}</code></td>
+                          <td>Estado civil del empleado (ajustado por género)</td>
+                          <td>CASADO / CASADA</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{empleado.departamento}}</code></td>
+                          <td>Departamento del empleado</td>
+                          <td>VENTAS</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{empleado.area}}</code></td>
+                          <td>Área del empleado</td>
+                          <td>COMERCIAL</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Contrato -->
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseContrato">
+                  <i class="bi bi-file-text me-2"></i>Contrato
+                </button>
+              </h2>
+              <div id="collapseContrato" class="accordion-collapse collapse" data-bs-parent="#placeholdersAccordion">
+                <div class="accordion-body">
+                  <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                      <thead class="table-light">
+                        <tr>
+                          <th>Placeholder</th>
+                          <th>Descripción</th>
+                          <th>Ejemplo en contrato</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><code>{{FECHA_INICIO}}</code></td>
+                          <td>Fecha de inicio de labores</td>
+                          <td>01/01/2024</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{sueldo}}</code></td>
+                          <td>Sueldo mensual con formato monetario</td>
+                          <td>$15,000.00</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{salario_diario}}</code></td>
+                          <td>Salario diario con formato monetario</td>
+                          <td>$500.00</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{periodicidad_pago}}</code></td>
+                          <td>Frecuencia de pago</td>
+                          <td>QUINCENAL</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{dia_pago}}</code></td>
+                          <td>Día específico de pago</td>
+                          <td>VIERNES</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Empresa -->
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEmpresa">
+                  <i class="bi bi-building me-2"></i>Empresa
+                </button>
+              </h2>
+              <div id="collapseEmpresa" class="accordion-collapse collapse" data-bs-parent="#placeholdersAccordion">
+                <div class="accordion-body">
+                  <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                      <thead class="table-light">
+                        <tr>
+                          <th>Placeholder</th>
+                          <th>Descripción</th>
+                          <th>Ejemplo en contrato</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><code>{{empresa}}</code></td>
+                          <td>Nombre de la empresa</td>
+                          <td>EMPRESA S.A. DE C.V.</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{rfc_empresa}}</code></td>
+                          <td>RFC de la empresa</td>
+                          <td>ESA900101AAA</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{tipo_recibo}}</code></td>
+                          <td>Tipo de recibo de nómina</td>
+                          <td>NÓMINA</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{fecha_recibo}}</code></td>
+                          <td>Fecha de emisión del recibo</td>
+                          <td><u>15</u> DE <u>ENERO</u> DEL <u>2024</u></td>
+                        </tr>
+                        <tr>
+                          <td><code>{{domicilio_fiscal}}</code></td>
+                          <td>Domicilio fiscal de la empresa</td>
+                          <td>AV. REFORMA 789, COL. JUAREZ, CDMX</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{articulo}}</code></td>
+                          <td>Artículo definido según género</td>
+                          <td>EL / LA</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{nacionalidad}}</code></td>
+                          <td>Nacionalidad según género</td>
+                          <td>MEXICANO / MEXICANA</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{SALARIO_SEMANAL}}</code></td>
+                          <td>Salario semanal con formato monetario</td>
+                          <td>$3,500.00</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Horarios y descanso -->
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHorarios">
+                  <i class="bi bi-clock me-2"></i>Horarios y Descanso
+                </button>
+              </h2>
+              <div id="collapseHorarios" class="accordion-collapse collapse" data-bs-parent="#placeholdersAccordion">
+                <div class="accordion-body">
+                  <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                      <thead class="table-light">
+                        <tr>
+                          <th>Placeholder</th>
+                          <th>Descripción</th>
+                          <th>Ejemplo en contrato</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><code>{{INICIO_LABORES}}</code></td>
+                          <td>Fecha de inicio de labores</td>
+                          <td>01/01/2024</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{HORARIO_LABORAL}}</code></td>
+                          <td>Horario de trabajo principal</td>
+                          <td>DE LAS 09:00 A LAS 18:00 HORAS</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{HORARIO_COMIDA}}</code></td>
+                          <td>Horario de descanso para comida</td>
+                          <td>DE LAS 13:00 A LAS 14:00</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{HORARIO_SABADO}}</code></td>
+                          <td>Horario específico para sábados</td>
+                          <td>09:00 A 14:00</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{HORARIO_PRESTACIONES}}</code></td>
+                          <td>Horario para prestaciones</td>
+                          <td>09:00 A 18:00</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{DIAS_DESCANSO}}</code></td>
+                          <td>Días de descanso del empleado</td>
+                          <td>domingo y lunes</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{HORAS_DESCANSO}}</code></td>
+                          <td>Horas de descanso en texto</td>
+                          <td>una hora</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{DURACION_JORNADA}}</code></td>
+                          <td>Duración total de la jornada laboral</td>
+                          <td>8</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{FECHA_CONTRATO}}</code></td>
+                          <td>Fecha del contrato en formato largo</td>
+                          <td><u>15</u> DÍAS DEL MES DE <u>ENERO</u> DEL AÑO 2024</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{PERIODO_PRUEBA}}</code></td>
+                          <td>Período de prueba del empleado</td>
+                          <td><u>01</u> de enero del 2024 al <u>30</u> de abril del 2024</td>
+                        </tr>
+                        <tr>
+                          <td><code>{{HORARIO_TURNO}}</code></td>
+                          <td>Horario de turnos (si aplica)</td>
+                          <td>DE LAS 08:00 A LAS 16:00</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Beneficiarios -->
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBeneficiarios">
+                  <i class="bi bi-people me-2"></i>Beneficiarios
+                </button>
+              </h2>
+              <div id="collapseBeneficiarios" class="accordion-collapse collapse" data-bs-parent="#placeholdersAccordion">
+                <div class="accordion-body">
+                  <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                      <thead class="table-light">
+                        <tr>
+                          <th>Placeholder</th>
+                          <th>Descripción</th>
+                          <th>Ejemplo en contrato</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><code>{{beneficiarios}}</code></td>
+                          <td>Lista completa de beneficiarios del empleado</td>
+                          <td><strong>ESPOSA:</strong> MARIA GONZALEZ PEREZ 50%</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Quill Editor JS -->
   <script src="https://cdn.quilljs.com/2.0.0-dev.3/quill.min.js"></script>
   <!-- Script para manejo de logos -->
   <script src="<?= $rutaRaiz ?>/contratos/js/actualizarLogos.js"></script>
   <!-- quill-better-table JS -->
   <script src="https://unpkg.com/quill-better-table@1.2.10/dist/quill-better-table.js"></script>
-  <script src="<?= $rutaRaiz ?>/public/libs/jquery/jquery.min.js"></script>
-  <script src="<?= $rutaRaiz ?>/public/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="<?= BOOTSTRAP_JS ?>"></script>
   <script src="<?= $rutaRaiz ?>/public/js/navbar.js"></script>
   <script src="<?= $rutaRaiz ?>/contratos/js/plantillas.js"></script>
 </body>

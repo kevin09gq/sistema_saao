@@ -49,6 +49,45 @@ echo <<<HTML
     <title>Contrato</title>
     <style>
         {$cssContent}
+        
+        /* Asegurar márgenes consistentes en todas las páginas */
+        @page { 
+            margin: 2.5cm 3cm !important; 
+            size: letter !important;
+            /* Pie de página centrado con formato [1] */
+            @bottom-center {
+                content: '[' counter(page) ']';
+                font-family: Arial, sans-serif;
+                font-size: 11pt;
+                color: #000;
+            }
+        }
+        @page :first { 
+            margin: 1.5cm 3cm 2.5cm 3cm !important; /* top right bottom left */
+            size: letter !important;
+            /* También mostrar pie de página en la primera página */
+            @bottom-center {
+                content: '[' counter(page) ']';
+                font-family: Arial, sans-serif;
+                font-size: 11pt;
+                color: #000;
+            }
+        }
+        body { 
+            margin: 0 !important; 
+            padding: 0 !important; 
+        }
+        .page { 
+            margin: 0 !important; 
+            padding: 0 !important; 
+            page-break-after: always !important;
+            position: relative !important;
+        }
+        .page > :first-child {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+        /* Permitir numeración de página en motores que soportan margin boxes */
     </style>
 </head>
 <body>
@@ -68,6 +107,8 @@ echo <<<HTML
                 console.log('No se pudo cargar la marca de agua, continuando con la impresión');
             };
         });
+        
+        // (Sin fallback JS) La numeración se muestra mediante @page @bottom-center
     </script>
 </body>
 </html>

@@ -755,6 +755,22 @@
     color: #991b1b;
 }
 
+/* Variante específica para faltas */
+.falta .evento-header {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+}
+
+.falta .evento-tiempo {
+    color: #ea580c;
+    background: #ffedd5;
+}
+
+.falta .evento-total {
+    background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+    border-top-color: #fed7aa;
+    color: #9a3412;
+}
+
 /* Resumen General - Simplificado */
 .resumen-eventos {
     margin-top: 20px;

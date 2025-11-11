@@ -897,11 +897,11 @@ function actualizarSueldoACobrarEnTiempoReal(clave) {
     // === CALCULAR SUELDO A COBRAR ===
     const sueldoACobrar = totalPercepciones - totalDeducciones;
 
-    // === ACTUALIZAR EN INTERFAZ ===
-    $("#mod-sueldo-a-cobrar").val(sueldoACobrar.toFixed(2));
-
-    // === ACTUALIZAR EN JSON GLOBAL ===
+    // Actualizar en JSON global
     actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'sueldo_a_cobrar', sueldoACobrar);
+
+    // Actualizar el campo visual del modal en tiempo real
+    $('#mod-sueldo-a-cobrar').val(sueldoACobrar.toFixed(2));
 
     return sueldoACobrar;
 }
@@ -1137,7 +1137,12 @@ function guardarHorariosModificadosEnJsonGlobal(clave) {
 
     // Actualizar totales del empleado
     empleado.Minutos_trabajados = totalMinutosSemanales;
-    empleado.Minutos_normales = Math.min(totalMinutosSemanales, 2880); // 48 horas en minutos
+    // Obtener el máximo de minutos normales del último rango que no sea de horas extra
+    const maxMinutosNormales = window.rangosHorasJson && window.rangosHorasJson.length > 0 
+        ? window.rangosHorasJson.filter(r => !r.tipo).reduce((max, r) => Math.max(max, r.minutos || 0), 0)
+        : 2880; // Valor por defecto si no se encuentra la configuración
+        
+    empleado.Minutos_normales = Math.min(totalMinutosSemanales, maxMinutosNormales);
 
     // Calcular sueldo base basado en los minutos trabajados solo si no fue modificado manualmente
     if (!empleado.sueldo_base_manual) {
@@ -1245,16 +1250,28 @@ function obtenerEmpleadoActualizado(clave) {
 function refrescarTablaVisible() {
     // Verificar si la tabla de empleados sin seguro está visible
     if (!$('#tabla-sin-seguro-container').attr('hidden')) {
-        // Refrescar la tabla de empleados sin seguro
+        // Refrescar la tabla de empleados sin seguro manteniendo la página actual
         if (typeof mostrarEmpleadosSinSeguro === 'function') {
-            mostrarEmpleadosSinSeguro();
+            mostrarEmpleadosSinSeguro(true); // Pasar true para mantener la página actual
         }
     } 
     // Verificar si la tabla de dispersión está visible
     else if (!$('#tabla-dispersion-tarjeta').attr('hidden')) {
         // Refrescar la tabla de dispersión
         if (typeof setEmpleadosDispersionPaginados === 'function' && window.empleadosOriginalesDispersion) {
+            // Guardar la página actual
+            const paginaActual = window.paginaActualDispersion || 1;
+            
+            // Actualizar la tabla
             setEmpleadosDispersionPaginados(window.empleadosOriginalesDispersion);
+            
+            // Restaurar la página actual
+            if (typeof window.paginaActualDispersion !== 'undefined') {
+                window.paginaActualDispersion = paginaActual;
+                if (typeof renderTablaDispersionPaginada === 'function') {
+                    renderTablaDispersionPaginada();
+                }
+            }
         }
     }
     // Si la tabla principal está visible, no necesita refrescar porque ya se actualizó la fila
@@ -1384,17 +1401,20 @@ function llenarTablaHorariosSemanales(empleado) {
     const salidasTardiasContainer = $('#salidas-tardias-content');
     const olvidosChecadorContainer = $('#olvidos-checador-content');
     const retardosContainer = $('#retardos-content');
+    const faltasContainer = $('#faltas-content');
 
     entradasTempranasContainer.empty();
     salidasTardiasContainer.empty();
     olvidosChecadorContainer.empty();
     retardosContainer.empty();
+    faltasContainer.empty();
 
     // Resetear totales de eventos especiales
     $('#total-entradas-tempranas').text('0 min');
     $('#total-salidas-tardias').text('0 min');
     $('#total-olvidos-checador').text('0 eventos');
     $('#total-retardos').text('0 eventos');
+    $('#total-faltas').text('0 días');
     $('#tiempo-extra-total').text('0 min');
 
     //   VERIFICAR SI EL EMPLEADO TIENE DATOS REDONDEADOS
@@ -1549,17 +1569,20 @@ function llenarEventosEspeciales(empleado) {
     const salidasTardiasContainer = $('#salidas-tardias-content');
     const olvidosChecadorContainer = $('#olvidos-checador-content');
     const retardosContainer = $('#retardos-content');
+    const faltasContainer = $('#faltas-content');
 
     //  LIMPIAR CONTENEDORES SIEMPRE
     entradasTempranasContainer.empty();
     salidasTardiasContainer.empty();
     olvidosChecadorContainer.empty();
     retardosContainer.empty();
+    faltasContainer.empty();
 
     let totalEntradaTempranaMinutos = 0;
     let totalSalidaTardiaMinutos = 0;
     let totalOlvidosChecador = 0;
     let totalRetardos = 0;
+    let totalFaltas = 0;
     let diasConEventos = 0;
 
     function minutosAHora(minutos) {
@@ -1640,11 +1663,53 @@ function llenarEventosEspeciales(empleado) {
         if (tieneEventos) diasConEventos++;
     });
 
+    // 🆕 DETECTAR FALTAS: Días con horario oficial pero sin registros del empleado
+    if (window.horariosSemanalesActualizados && window.horariosSemanalesActualizados.semana) {
+        const diasSemana = ['viernes', 'sabado', 'domingo', 'lunes', 'martes', 'miercoles', 'jueves'];
+        const diasEspañol = ['Viernes', 'Sábado', 'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves'];
+        
+        diasSemana.forEach((dia, index) => {
+            const horarioOficial = window.horariosSemanalesActualizados.semana[dia];
+            
+            // Verificar si el día tiene horario oficial (no es día de descanso)
+            const tieneHorarioOficial = horarioOficial && 
+                                       horarioOficial.entrada !== "00:00" && 
+                                       horarioOficial.salida !== "00:00" &&
+                                       horarioOficial.entrada !== "--" && 
+                                       horarioOficial.salida !== "--";
+            
+            if (tieneHorarioOficial) {
+                // Buscar si el empleado tiene registro para este día
+                const registroEmpleado = empleado.registros_redondeados.find(
+                    reg => reg.dia.toLowerCase() === dia
+                );
+                
+                // Si no hay registro O el registro está vacío (sin entrada ni salida)
+                const sinRegistro = !registroEmpleado || 
+                                   (registroEmpleado.entrada === "--" && registroEmpleado.salida === "--") ||
+                                   (registroEmpleado.entrada === "00:00" && registroEmpleado.salida === "00:00") ||
+                                   (!registroEmpleado.entrada && !registroEmpleado.salida);
+                
+                if (sinRegistro) {
+                    const eventoItem = `
+                        <div class="evento-item">
+                            <span class="evento-dia">${diasEspañol[index]}:</span>
+                            <span class="evento-tiempo">Falta</span>
+                        </div>
+                    `;
+                    faltasContainer.append(eventoItem);
+                    totalFaltas++;
+                }
+            }
+        });
+    }
+
     // Actualizar totales
     $('#total-entradas-tempranas').text(minutosAHora(totalEntradaTempranaMinutos));
     $('#total-salidas-tardias').text(minutosAHora(totalSalidaTardiaMinutos));
     $('#total-olvidos-checador').text(`${totalOlvidosChecador} ${totalOlvidosChecador === 1 ? 'evento' : 'eventos'}`);
     $('#total-retardos').text(`${totalRetardos} ${totalRetardos === 1 ? 'evento' : 'eventos'}`);
+    $('#total-faltas').text(`${totalFaltas} ${totalFaltas === 1 ? 'día' : 'días'}`);
     $('#tiempo-extra-total').text(minutosAHora(totalEntradaTempranaMinutos + totalSalidaTardiaMinutos));
 }
 
@@ -1678,16 +1743,19 @@ function recalcularEventosEspeciales(empleado) {
     const salidasTardiasContainer = $('#salidas-tardias-content');
     const olvidosChecadorContainer = $('#olvidos-checador-content');
     const retardosContainer = $('#retardos-content');
+    const faltasContainer = $('#faltas-content');
 
     entradasTempranasContainer.empty();
     salidasTardiasContainer.empty();
     olvidosChecadorContainer.empty();
     retardosContainer.empty();
+    faltasContainer.empty();
 
     let totalEntradaTempranaMinutos = 0;
     let totalSalidaTardiaMinutos = 0;
     let totalOlvidosChecador = 0;
     let totalRetardos = 0;
+    let totalFaltas = 0;
     let diasConEventos = 0;
 
     function minutosAHora(minutos) {
@@ -1768,11 +1836,50 @@ function recalcularEventosEspeciales(empleado) {
         if (tieneEventos) diasConEventos++;
     });
 
+    // 🆕 DETECTAR FALTAS en recalcularEventosEspeciales también
+    if (window.horariosSemanalesActualizados && window.horariosSemanalesActualizados.semana) {
+        const diasSemana = ['viernes', 'sabado', 'domingo', 'lunes', 'martes', 'miercoles', 'jueves'];
+        const diasEspañol = ['Viernes', 'Sábado', 'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves'];
+        
+        diasSemana.forEach((dia, index) => {
+            const horarioOficial = window.horariosSemanalesActualizados.semana[dia];
+            
+            const tieneHorarioOficial = horarioOficial && 
+                                       horarioOficial.entrada !== "00:00" && 
+                                       horarioOficial.salida !== "00:00" &&
+                                       horarioOficial.entrada !== "--" && 
+                                       horarioOficial.salida !== "--";
+            
+            if (tieneHorarioOficial) {
+                const registroEmpleado = empleado.registros_redondeados.find(
+                    reg => reg.dia.toLowerCase() === dia
+                );
+                
+                const sinRegistro = !registroEmpleado || 
+                                   (registroEmpleado.entrada === "--" && registroEmpleado.salida === "--") ||
+                                   (registroEmpleado.entrada === "00:00" && registroEmpleado.salida === "00:00") ||
+                                   (!registroEmpleado.entrada && !registroEmpleado.salida);
+                
+                if (sinRegistro) {
+                    const eventoItem = `
+                        <div class="evento-item">
+                            <span class="evento-dia">${diasEspañol[index]}:</span>
+                            <span class="evento-tiempo">Falta</span>
+                        </div>
+                    `;
+                    faltasContainer.append(eventoItem);
+                    totalFaltas++;
+                }
+            }
+        });
+    }
+
     // Actualizar totales
     $('#total-entradas-tempranas').text(minutosAHora(totalEntradaTempranaMinutos));
     $('#total-salidas-tardias').text(minutosAHora(totalSalidaTardiaMinutos));
     $('#total-olvidos-checador').text(`${totalOlvidosChecador} ${totalOlvidosChecador === 1 ? 'evento' : 'eventos'}`);
     $('#total-retardos').text(`${totalRetardos} ${totalRetardos === 1 ? 'evento' : 'eventos'}`);
+    $('#total-faltas').text(`${totalFaltas} ${totalFaltas === 1 ? 'día' : 'días'}`);
     $('#tiempo-extra-total').text(minutosAHora(totalEntradaTempranaMinutos + totalSalidaTardiaMinutos));
 }
 
@@ -1911,10 +2018,12 @@ function limpiarEventosModal() {
     $('#salidas-tardias-content').empty();
     $('#olvidos-checador-content').empty();
     $('#retardos-content').empty();
+    $('#faltas-content').empty();
     $('#total-entradas-tempranas').text('0 min');
     $('#total-salidas-tardias').text('0 min');
     $('#total-olvidos-checador').text('0 eventos');
     $('#total-retardos').text('0 eventos');
+    $('#total-faltas').text('0 días');
     $('#tiempo-extra-total').text('0 min');
 
     // RESETEAR ESTADO DE MINI-TABS AL LIMPIAR
@@ -2334,12 +2443,13 @@ function limpiarEventosModal() {
     $('#salidas-tardias-content').empty();
     $('#olvidos-checador-content').empty();
     $('#retardos-content').empty();
+    $('#faltas-content').empty();
     $('#total-entradas-tempranas').text('0 min');
     $('#total-salidas-tardias').text('0 min');
     $('#total-olvidos-checador').text('0 eventos');
     $('#total-retardos').text('0 eventos');
+    $('#total-faltas').text('0 días');
     $('#tiempo-extra-total').text('0 min');
-
 
 
     // RESETEAR ESTADO DE MINI-TABS AL LIMPIAR
@@ -2526,7 +2636,7 @@ function calcularHorasTotalesFila($fila) {
     }
     // SEGUNDA PRIORIDAD: Solo si la columna "Horas Comida" está vacía, calcular usando horarios específicos
     else if (salidaComida !== "00:00" && salidaComida !== "" && salidaComida !== "--" &&
-        entradaComida !== "00:00" && entradaComida !== "" && entradaComida !== "--") {
+            entradaComida !== "00:00" && entradaComida !== "" && entradaComida !== "--") {
 
         if (esHoraValidaTabla(salidaComida) && esHoraValidaTabla(entradaComida)) {
             const salidaComidaMinutos = convertirHoraAMinutosTabla(salidaComida);
@@ -2679,9 +2789,11 @@ function recalcularMinutosNormalesYExtras() {
     const totalMinutosTrabajados = parseInt(totalMinutosTrabajadosTexto) || 0;
 
 
-    // Obtener minutos normales de la semana (48 horas = 2880 minutos)
-    const minutosNormalesSemanales = 2880; // 48 horas * 60 minutos
-
+    // Obtener minutos normales de la semana desde rangosHorasJson
+    const minutosNormalesSemanales = window.rangosHorasJson && window.rangosHorasJson.length > 0 
+        ? Math.max(...window.rangosHorasJson.filter(r => !r.tipo).map(r => r.minutos || 0))
+        : 2880; // 48 horas * 60 minutos (valor por defecto)
+    
     // Calcular minutos normales y extras
     let minutosNormales = 0;
     let minutosExtras = 0;
@@ -2770,7 +2882,7 @@ function recalcularMinutosNormalesYExtras() {
             $celdaTotalMinutos.text("0");
             // 🔥 NO RECALCULAR TOTALES AQUÍ PARA EVITAR BUCLE INFINITO
             return;
-        } eliminarEventoEspecialDia
+        }
 
         // Validar formato
         if (!esHoraValidaTabla(entrada) || !esHoraValidaTabla(salida)) {

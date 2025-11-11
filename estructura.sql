@@ -154,7 +154,7 @@ CREATE TABLE info_admin (
     id_admin INT AUTO_INCREMENT PRIMARY KEY,
     id_rol INT NOT NULL,
     correo VARCHAR(100) NOT NULL,
-    contrasena VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
     FOREIGN KEY (id_rol) REFERENCES rol(id_rol)
 );
 
@@ -166,14 +166,14 @@ CREATE TABLE nomina (
   id_nomina_json INT  PRIMARY KEY,
   id_empresa INT NOT NULL,
   datos_nomina JSON NOT NULL,
-  FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
+  id_horario INT,
+  FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa),
+  FOREIGN KEY (id_horario) REFERENCES horarios_oficiales(id_horario)
 );
 
 CREATE TABLE horarios_oficiales (
   id_horario INT  PRIMARY KEY,
-  id_empresa INT NOT NULL,
-  horario_json JSON NOT NULL,
-  FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
+  horario_json JSON NOT NULL
 );
 
 CREATE TABLE tabulador (

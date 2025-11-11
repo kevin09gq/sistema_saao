@@ -42,7 +42,7 @@
     sel.appendChild(optDefault);
     plantillas.forEach(p => {
       const opt = document.createElement('option');
-      opt.value = p.nombre; opt.textContent = p.nombre;
+      opt.value = p.nombre; opt.textContent = p.nombre.replace('.html', '');
       sel.appendChild(opt);
     });
     return sel;

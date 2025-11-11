@@ -1,14 +1,15 @@
 /* Estilos para impresión de contratos */
 
-/* Igualar configuración de Word */
+/* Configuración de página para todas las páginas */
 @page { 
   size: letter; 
   margin: 2.5cm 3cm; 
-  @bottom-center {
-    content: "[" counter(page) "]";
-    font-size: 12pt;
-    color: #000;
-  }
+}
+
+/* Configuración específica para la primera página - margen superior reducido */
+@page :first { 
+  size: letter; 
+  margin: 1.5cm 3cm 2.5cm 3cm; /* top right bottom left - margen superior menor */
 }
 
 body { 
@@ -150,28 +151,52 @@ table.ql-align-right { margin-left: auto !important; margin-right: 0 !important;
   print-color-adjust: exact !important; 
 }
 
-/* Forzar la carga de imágenes antes de imprimir */
-@page {
-  size: letter;
-  margin: 2.5cm 3cm;
-  @bottom-center {
-    content: "[" counter(page) "]";
-    font-size: 12pt;
-    color: #000;
-  }
-  /* Precargar recursos de impresión */
-  marks: none;
+/* Precargar recursos de impresión */
+img {
+  max-width: 100%;
+  height: auto;
 }
 
-/* Numeración automática de páginas */
-.page { position: relative; }
-.page::after {
-  content: "[" counter(page) "]";
-  position: absolute;
-  bottom: 0.5in;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 12pt;
-  font-weight: normal;
-  color: #000;
+/* Eliminar cualquier numeración de página */
+.page { 
+  position: relative; 
+  /* Asegurar márgenes consistentes en todas las páginas */
+  margin: 0;
+  padding: 0;
+  page-break-after: always;
+}
+
+/* (removido) No forzar la eliminación de pseudo-elementos, permite footers si se usan */
+
+/* Forzar consistencia de márgenes en todas las páginas */
+/* (removido) No vaciar @bottom-center; lo usaremos para numeración */
+
+/* Eliminar cualquier margen predeterminado que pueda causar desalineación */
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Ajuste especial para la primera página */
+@page :first {
+  margin: 1.5cm 3cm 2.5cm 3cm; /* top right bottom left */
+}
+
+/* Pie de página usando margin boxes: numeración centrada [1] en Arial 11 */
+@page {
+  @bottom-center {
+    content: '[' counter(page) ']';
+    font-family: Arial, sans-serif;
+    font-size: 11pt;
+    color: #000;
+  }
+}
+
+@page :first {
+  @bottom-center {
+    content: '[' counter(page) ']';
+    font-family: Arial, sans-serif;
+    font-size: 11pt;
+    color: #000;
+  }
 }

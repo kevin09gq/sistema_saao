@@ -77,7 +77,7 @@ class ActualizadorLogos {
     async obtenerEmpresas() {
         return new Promise((resolve, reject) => {
             $.ajax({
-                url: '/sistema_saao/gafetes/php/obtenerEmpresa.php',
+                url: '/sistema_saao/contratos/php/obtener_empresas.php',
                 type: 'GET',
                 dataType: 'json',
                 success: (response) => {
@@ -129,9 +129,11 @@ class ActualizadorLogos {
         }
 
         this.empresas.forEach(empresa => {
-            // Usar marca_empresa en lugar de logo_empresa para empresas
-            const logoUrl = empresa.marca_empresa ? 
-                `/sistema_saao/contratos/logos_empresa/${empresa.marca_empresa}` : null;
+            // Usar URL pública proporcionada por el backend si existe
+            // Fallback a construirla con marca_empresa
+            const logoUrl = empresa.logo_url
+                ? empresa.logo_url
+                : (empresa.marca_empresa ? `/sistema_saao/contratos/logos_empresa/${empresa.marca_empresa}` : null);
             
             const empresaHtml = this.crearItemLogo(
                 'empresa',
@@ -240,14 +242,23 @@ class ActualizadorLogos {
             return;
         }
 
+        // Preparar FormData y endpoint según el tipo
         const formData = new FormData();
         formData.append('logo', file);
-        formData.append('tipo', tipo);
         formData.append('id', id);
+
+        const url = (tipo === 'empresa')
+            ? '/sistema_saao/contratos/php/actualizar_logo_empresa.php'
+            : '/sistema_saao/gafetes/php/actualizar_logo.php';
+
+        // Para áreas, el endpoint de Gafetes requiere 'tipo' además de 'id'
+        if (tipo !== 'empresa') {
+            formData.append('tipo', tipo);
+        }
 
         try {
             const response = await $.ajax({
-                url: '/sistema_saao/gafetes/php/actualizar_logo.php',
+                url,
                 type: 'POST',
                 data: formData,
                 processData: false,
@@ -269,10 +280,16 @@ class ActualizadorLogos {
 
     async eliminarLogo(tipo, id) {
         try {
+            const url = (tipo === 'empresa')
+                ? '/sistema_saao/contratos/php/eliminar_logo_empresa.php'
+                : '/sistema_saao/gafetes/php/eliminar_logo.php';
+
+            const data = (tipo === 'empresa') ? { id } : { tipo, id };
+
             const response = await $.ajax({
-                url: '/sistema_saao/gafetes/php/eliminar_logo.php',
+                url,
                 type: 'POST',
-                data: { tipo, id },
+                data,
                 dataType: 'json'
             });
 

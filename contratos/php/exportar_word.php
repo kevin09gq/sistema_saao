@@ -57,139 +57,22 @@ try {
     $phpWord->getSettings()->setHideSpellingErrors(true);
     $phpWord->getSettings()->setHideGrammaticalErrors(true);
     
-    // Configurar la sección con márgenes de página carta (igual que el PDF)
+    // Configurar la sección con márgenes de página carta estándar de Word
     $section = $phpWord->addSection([
-        'marginTop' => 1417,
-        'marginBottom' => 1417,
-        'marginLeft' => 1417,
-        'marginRight' => 1417,
-        'pageSizeW' => 12240,
-        'pageSizeH' => 15840,
+        'marginTop' => 1417,    // 2.5 cm en twips (1 cm = 567 twips)
+        'marginBottom' => 1417, // 2.5 cm en twips
+        'marginLeft' => 1701,   // 3 cm en twips
+        'marginRight' => 1701,  // 3 cm en twips
+        'pageSizeW' => 12240,   // Ancho A4 en twips
+        'pageSizeH' => 15840,   // Alto A4 en twips
+        // Asegurar márgenes consistentes en todas las páginas
+        'headerHeight' => 0,
+        'footerHeight' => 0,
+        'gutter' => 0,
+        'colsNum' => 1,
+        'colsSpace' => 0,
     ]);
     
-    // Agregar marca de agua dinámica según empresa del empleado
-    $idEmpresa = isset($_POST['id_empresa']) ? intval($_POST['id_empresa']) : 0;
-    $rutaMarcaAgua = null;
-    
-    if ($idEmpresa > 0) {
-        // Incluir conexión para obtener la marca de agua configurada en la empresa
-        include __DIR__ . '/../../conexion/conexion.php';
-        if ($conexion) {
-            $stmt = $conexion->prepare("SELECT marca_empresa FROM empresa WHERE id_empresa = ?");
-            $stmt->bind_param("i", $idEmpresa);
-            $stmt->execute();
-            $res = $stmt->get_result();
-            if ($row = $res->fetch_assoc()) {
-                $archivoLogo = $row['marca_empresa'] ?? null;
-                if (!empty($archivoLogo)) {
-                    $rutaLogo = __DIR__ . '/../logos_empresa/' . basename($archivoLogo);
-                    if (file_exists($rutaLogo)) {
-                        $rutaMarcaAgua = $rutaLogo;
-                    }
-                }
-            }
-            $stmt->close();
-        }
-    }
-    
-    // Si hay ruta de marca de agua, generar versión tenue en gris y aplicarla
-    if ($rutaMarcaAgua) {
-        $rutaTemporal = __DIR__ . '/../logos_empresa/_wm_' . uniqid() . '.png';
-    
-        // Crear imagen en escala de grises y tenue
-        $imagen = null;
-        $ext = strtolower(pathinfo($rutaMarcaAgua, PATHINFO_EXTENSION));
-        if (($ext === 'jpeg' || $ext === 'jpg') && function_exists('imagecreatefromjpeg')) {
-            $imagen = @imagecreatefromjpeg($rutaMarcaAgua);
-        } elseif ($ext === 'png' && function_exists('imagecreatefrompng')) {
-            $imagen = @imagecreatefrompng($rutaMarcaAgua);
-        } elseif ($ext === 'gif' && function_exists('imagecreatefromgif')) {
-            $imagen = @imagecreatefromgif($rutaMarcaAgua);
-        } elseif ($ext === 'webp' && function_exists('imagecreatefromwebp')) {
-            $imagen = @imagecreatefromwebp($rutaMarcaAgua);
-        }
-    
-        if ($imagen !== false && $imagen !== null) {
-            // Asegurar canal alfa para PNG y prepararlo para un efecto más tenue
-            if (function_exists('imagesavealpha')) {
-                @imagesavealpha($imagen, true);
-            }
-            if (function_exists('imagealphablending')) {
-                @imagealphablending($imagen, false);
-            }
-            // Desaturar y bajar la presencia visual
-            @imagefilter($imagen, IMG_FILTER_GRAYSCALE);
-            // Reducir contraste y aumentar brillo al máximo práctico
-            @imagefilter($imagen, IMG_FILTER_CONTRAST, 100);
-            @imagefilter($imagen, IMG_FILTER_BRIGHTNESS, 240);
-            // Lavado blanco máximo
-            @imagefilter($imagen, IMG_FILTER_COLORIZE, 255, 255, 255, 127);
-            // Triple desenfoque para suavizar bordes si está disponible
-            if (defined('IMG_FILTER_GAUSSIAN_BLUR')) {
-                @imagefilter($imagen, IMG_FILTER_GAUSSIAN_BLUR);
-                @imagefilter($imagen, IMG_FILTER_GAUSSIAN_BLUR);
-                @imagefilter($imagen, IMG_FILTER_GAUSSIAN_BLUR);
-            }
-
-            // Superponer uno o más rectángulos blancos para decolorar (como la opción de Word)
-            if (function_exists('imagealphablending') && function_exists('imagefilledrectangle') && function_exists('imagesx') && function_exists('imagesy')) {
-                @imagealphablending($imagen, true); // habilitar mezcla para el overlay
-                $w = @imagesx($imagen);
-                $h = @imagesy($imagen);
-                if ($w && $h) {
-                    // alpha: 0 = opaco (más blanco sobre la imagen), 127 = 100% transparente
-                    // Pasadas de overlays blancos para simular "decolorar" fuerte
-                    $overlay1 = @imagecolorallocatealpha($imagen, 255, 255, 255, 20);
-                    if ($overlay1 !== false) { @imagefilledrectangle($imagen, 0, 0, $w, $h, $overlay1); }
-                    $overlay2 = @imagecolorallocatealpha($imagen, 255, 255, 255, 40);
-                    if ($overlay2 !== false) { @imagefilledrectangle($imagen, 0, 0, $w, $h, $overlay2); }
-                    $overlay3 = @imagecolorallocatealpha($imagen, 255, 255, 255, 60);
-                    if ($overlay3 !== false) { @imagefilledrectangle($imagen, 0, 0, $w, $h, $overlay3); }
-                }
-                @imagealphablending($imagen, false); // deshabilitar antes de guardar
-            }
-
-            // Mezclar contra un lienzo blanco con baja opacidad global (5-10%)
-            if (function_exists('imagecreatetruecolor') && function_exists('imagecopymerge')) {
-                $w2 = @imagesx($imagen);
-                $h2 = @imagesy($imagen);
-                if ($w2 && $h2) {
-                    $canvas = @imagecreatetruecolor($w2, $h2);
-                    if ($canvas) {
-                        $white = @imagecolorallocate($canvas, 255, 255, 255);
-                        @imagefilledrectangle($canvas, 0, 0, $w2, $h2, $white);
-                        // Mezclar la imagen ya lavada con muy baja opacidad para dejarla casi imperceptible
-                        // pct: 0..100 (cuanto mayor, más visible la fuente). Usamos 8%.
-                        @imagecopymerge($canvas, $imagen, 0, 0, 0, 0, $w2, $h2, 8);
-                        // Reemplazar imagen base por el canvas mezclado
-                        @imagedestroy($imagen);
-                        $imagen = $canvas;
-                    }
-                }
-            }
-            @imagepng($imagen, $rutaTemporal);
-            @imagedestroy($imagen);
-            $rutaMarcaAgua = $rutaTemporal;
-            // Limpiar el temporal al finalizar
-            register_shutdown_function(function() use ($rutaTemporal) {
-                if (file_exists($rutaTemporal)) { @unlink($rutaTemporal); }
-            });
-        }
-    
-        // Insertar la marca de agua (detrás del contenido)
-        $header = $section->addHeader();
-        $header->addImage($rutaMarcaAgua, [
-            'positioning' => \PhpOffice\PhpWord\Style\Image::POSITION_ABSOLUTE,
-            'posHorizontal' => \PhpOffice\PhpWord\Style\Image::POSITION_HORIZONTAL_CENTER,
-            'posVertical' => \PhpOffice\PhpWord\Style\Image::POSITION_VERTICAL_CENTER,
-            'posHorizontalRel' => \PhpOffice\PhpWord\Style\Image::POSITION_RELATIVE_TO_PAGE,
-            'posVerticalRel' => \PhpOffice\PhpWord\Style\Image::POSITION_RELATIVE_TO_PAGE,
-            'width' => 450,
-            'height' => 600,
-            'wrappingStyle' => \PhpOffice\PhpWord\Style\Image::WRAPPING_STYLE_BEHIND
-        ]);
-    }
-
     // Agregar numeración de páginas centrada en el pie de página, estilo: [1]
     $footer = $section->addFooter();
     $footer->addPreserveText('[{PAGE}]', ['name' => 'Arial', 'size' => 12], ['alignment' => 'center']);
@@ -281,7 +164,20 @@ function procesarNodoRecursivo($section, $node, $estiloActual = []) {
             $texto = $child->nodeValue;
             // Solo agregar si no está vacío
             if (trim($texto) !== '') {
-                $section->addText($texto, $estiloActual);
+                // Verificar si el nodo padre tiene estilo de fondo
+                $bgColor = null;
+                if ($node->nodeType === XML_ELEMENT_NODE && $node->hasAttribute('style')) {
+                    $bgColor = detectarColorFondo($node);
+                }
+                
+                // Si hay color de fondo, aplicarlo al estilo
+                if ($bgColor !== null) {
+                    $estiloConFondo = $estiloActual;
+                    $estiloConFondo['bgColor'] = $bgColor;
+                    $section->addText($texto, $estiloConFondo);
+                } else {
+                    $section->addText($texto, $estiloActual);
+                }
             }
         } elseif ($child->nodeType === XML_ELEMENT_NODE) {
             $tagName = strtolower($child->nodeName);
@@ -741,6 +637,12 @@ function procesarTextoConFormato($textRun, $node, $estiloBase = []) {
                 $style = $child->getAttribute('style');
                 if (preg_match('/font-size:\s*(\d+(?:\.\d+)?)pt/i', $style, $matches)) {
                     $nuevoEstilo['size'] = intval(round(floatval($matches[1])));
+                }
+                
+                // Detectar color de fondo desde estilos inline
+                $bgColor = detectarColorFondo($child);
+                if ($bgColor !== null) {
+                    $nuevoEstilo['bgColor'] = $bgColor;
                 }
             }
             

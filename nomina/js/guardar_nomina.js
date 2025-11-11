@@ -95,8 +95,14 @@ $(document).ready(function() {
                     titulo = "¡Nómina Creada!";
                     mensaje = `Nueva nómina de la semana ${response.numero_semana} creada exitosamente`;
                     
-                    if (response.tabla_limpiada) {
-                        mensaje += `<br><br><strong>⚠️ INFORMACIÓN:</strong> La tabla fue limpiada automáticamente<br>Se eliminaron ${response.registros_anteriores} registros anteriores para optimizar el rendimiento`;
+                    // Mostrar información sobre eliminación de nómina antigua
+                    if (response.nomina_eliminada) {
+                        mensaje += `<br><br><strong>⚠️ INFORMACIÓN:</strong> Se alcanzó el límite de 6 nóminas<br>La nómina más antigua (semana ${response.semana_eliminada}) fue eliminada automáticamente`;
+                    }
+                    
+                    // Mostrar total de nóminas almacenadas
+                    if (response.total_nominas) {
+                        mensaje += `<br><br><strong>📊 Total de nóminas almacenadas:</strong> ${response.total_nominas}/6`;
                     }
                 }
 

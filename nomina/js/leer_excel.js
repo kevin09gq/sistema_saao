@@ -69,7 +69,17 @@ function configTablas() {
                     calcularSueldoACobraPorEmpleado(emp);
                 }
             });
-            setEmpleadosDispersionPaginados(window.empleadosOriginalesDispersion);
+            // Mantener la página actual al actualizar
+            const paginaActual = window.paginaActualDispersion || 1;
+            setEmpleadosDispersionPaginados(window.empleadosOriginalesDispersion, true);
+            
+            // Restaurar la página actual
+            if (typeof window.paginaActualDispersion !== 'undefined') {
+                window.paginaActualDispersion = paginaActual;
+                if (typeof renderTablaDispersionPaginada === 'function') {
+                    renderTablaDispersionPaginada();
+                }
+            }
         }
     });
 
@@ -638,7 +648,7 @@ function obtenerArchivos(params) {
 
                                                 // Guardar datos en localStorage después de procesar
                                                 guardarDatosNomina();
-                                                console.log(jsonGlobal);
+                                             
 
                                             });
                                         });
@@ -664,7 +674,7 @@ function obtenerArchivos(params) {
 
                                             // Guardar datos en localStorage después de procesar
                                             guardarDatosNomina();
-                                            console.log(jsonGlobal);
+                                            
 
                                         });
                                     }
@@ -1302,8 +1312,18 @@ function busquedaNomina() {
                 [...window.empleadosOriginalesDispersion];
 
             // Actualizar paginación con resultados filtrados
-            paginaActualDispersion = 1;
-            setEmpleadosDispersionPaginados(empleadosFiltradosDispersion);
+            const paginaActual = window.paginaActualDispersion || 1;
+            setEmpleadosDispersionPaginados(empleadosFiltradosDispersion, true);
+            
+            // Restaurar la página actual si es posible, de lo contrario ir a la página 1
+            if (paginaActual > 1) {
+                window.paginaActualDispersion = paginaActual;
+                if (typeof renderTablaDispersionPaginada === 'function') {
+                    renderTablaDispersionPaginada();
+                }
+            } else {
+                paginaActualDispersion = 1;
+            }
         }, 300);
     });
 
@@ -2045,8 +2065,7 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
                 // Si faltó algún día, desactivar el incentivo (ponerlo en 0)
                 empleadoEnJson.incentivo = 0;
                 empleado.incentivo = 0;
-                console.log(`Empleado ${empleado.nombre} (${empleado.clave}): Incentivo desactivado por ${diasConFalta} falta(s)`);
-            } else {
+               } else {
                 // Si no faltó ningún día, mantener el incentivo original (250)
                 if (empleadoEnJson.incentivo === undefined || empleadoEnJson.incentivo === 0) {
                     empleadoEnJson.incentivo = 250;
@@ -2327,13 +2346,30 @@ function obtenerEmpleadosPorDepartamento() {
 
 
             window.empleadosOriginalesDispersion = empleadosRegistrados;
-            setEmpleadosDispersionPaginados(empleadosRegistrados);
+            const paginaActual = window.paginaActualDispersion || 1;
+            setEmpleadosDispersionPaginados(empleadosRegistrados, true);
             empleadosFiltradosDispersion = [...empleadosRegistrados];
+            
+            // Restaurar la página actual
+            if (typeof window.paginaActualDispersion !== 'undefined') {
+                window.paginaActualDispersion = paginaActual;
+                if (typeof renderTablaDispersionPaginada === 'function') {
+                    renderTablaDispersionPaginada();
+                }
+            }
         } else {
             // Si no hay claves válidas cargadas, usar todos (fallback)
             window.empleadosOriginalesDispersion = empleadosPlanos;
-            setEmpleadosDispersionPaginados(empleadosPlanos);
+            setEmpleadosDispersionPaginados(empleadosPlanos, true);
             empleadosFiltradosDispersion = [...empleadosPlanos];
+            
+            // Restaurar la página actual
+            if (typeof window.paginaActualDispersion !== 'undefined') {
+                window.paginaActualDispersion = paginaActual;
+                if (typeof renderTablaDispersionPaginada === 'function') {
+                    renderTablaDispersionPaginada();
+                }
+            }
         }
     });
 }
@@ -2569,13 +2605,6 @@ function establecerHorariosPorDefecto(numeroSemana) {
  * ================================================================
  */
 
-/*
- * ================================================================
- * MÓDULO DE NOMINA PARA QUE NO TIENEN SEGUROS
- * ================================================================
- * 
- * ================================================================
- */
 
 function empleadosNoUnidos(json1, json2) {
     const normalizar = s => s
@@ -2611,8 +2640,7 @@ function empleadosNoUnidos(json1, json2) {
     }
 
     // validaEmpleadosEnServidor(noUnidos);
-    console.log(noUnidos);
-
+  
     return noUnidos;
 }
 function ordenarNombre(nombreCompleto) {
@@ -2748,11 +2776,9 @@ function enviarIdBiometricosNoUnidos(json1, json2) {
 
                         if (datosVienenDeBD) {
                             // Si los datos vienen de BD, NO recalcular - solo establecer sin inicializar
-                            console.log("Datos vienen de BD - NO recalculando para preservar modificaciones");
                             establecerDatosEmpleadosExistentes(); // Esta función no recalcula
                         } else {
                             // Si son datos nuevos, calcular normalmente
-                            console.log("Datos nuevos - calculando valores iniciales");
                             establecerDatosEmpleados();
 
                             // Solo ejecutar redondeo para datos nuevos
@@ -2761,17 +2787,17 @@ function enviarIdBiometricosNoUnidos(json1, json2) {
                             }
                         }
 
-                        console.log("Empleados sin seguro procesados correctamente");
+                        
                     }
                 } catch (error) {
-                    console.error("Error al procesar empleados sin seguro:", error);
+                   
                 }
             },
             error: function (xhr, status, error) {
-                console.error("Error en la solicitud AJAX:", error);
+               
             }
         });
     } else {
-        console.log("No hay IDs biométricos no unidos para enviar.");
+       
     }
 }

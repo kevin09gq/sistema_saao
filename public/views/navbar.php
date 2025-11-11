@@ -25,7 +25,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">
+                    <a class="nav-link" href="<?= $rutaRaiz ?>/contratos/contratos.php" data-page="contratos">
                         <i class="bi bi-file-text me-2"></i>
                         Contratos
                     </a>
@@ -51,7 +51,8 @@
                 
                 <li class="nav-item">
                     <a class="nav-link" href="<?= $rutaRaiz ?>/config/settings/views/configuracion.php" data-page="configuracion">
-                        <i class="fas fa-cogs"></i> Configuración
+                        <i class="bi bi-gear-fill me-2"></i>
+                        Configuración
                     </a>
                 </li>
                 

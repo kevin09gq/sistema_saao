@@ -28,6 +28,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return 'inicio';
         } else if (path.includes('/gafetes/')) {
             return 'gafetes';
+        } else if (path.includes('/contratos/contratos.php')) {
+            return 'contratos';
         } else if (path.includes('/nomina/')) {
             return 'nomina';
         } else if (path.includes('/empleados/views/form_registro.php')) {
@@ -87,6 +89,31 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Handle hover effects
     handleHoverEffects();
+    
+    // Handle logout button click
+    const btnSalir = document.querySelector('.btn-salir');
+    if (btnSalir) {
+        btnSalir.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Mostrar confirmación con SweetAlert2
+            Swal.fire({
+                title: '¿Cerrar sesión?',
+                text: '¿Estás seguro de que deseas salir del sistema?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#22c55e',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, salir',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Redirigir a logout.php
+                    window.location.href = '/sistema_saao/login/logout.php';
+                }
+            });
+        });
+    }
     
     // Reinitialize on window resize for responsive behavior
     window.addEventListener('resize', function() {

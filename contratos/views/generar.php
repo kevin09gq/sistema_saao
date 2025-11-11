@@ -1,6 +1,7 @@
 <?php
 // contratos/views/generar.php
 include_once '../../config/config.php';
+verificarSesion();
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -8,10 +9,12 @@ include_once '../../config/config.php';
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Generar Contrato</title>
- <link rel="stylesheet" href="<?= BOOTSTRAP_CSS ?>">
-  <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>"
+  <link rel="stylesheet" href="<?= BOOTSTRAP_CSS ?>">
+  <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
   <link rel="stylesheet" href="<?= $rutaRaiz ?>/contratos/styles/contratos.css">
   <link rel="stylesheet" href="<?= $rutaRaiz ?>/contratos/styles/generar-moderno.css">
+  <!-- SweetAlert2 CSS -->
+    <script src="<?= SWEETALERT ?>"></script>
 </head>
 <body>
   <?php include '../../public/views/navbar.php'; ?>
@@ -82,7 +85,14 @@ include_once '../../config/config.php';
               </div>
               <div class="col-12 col-md-6">
                 <label class="form-label">Estado Civil</label>
-                <input type="text" id="estadoCivil" name="estado_civil" class="form-control form-control-sm" placeholder="Ej: Soltero(a)" />
+                <select id="estadoCivil" name="estado_civil" class="form-select form-select-sm">
+                  <option value="">Seleccione una opción</option>
+                  <option value="Soltero(a)">Soltero(a)</option>
+                  <option value="Casado(a)">Casado(a)</option>
+                  <option value="Viudo(a)">Viudo(a)</option>
+                  <option value="Divorciado(a)">Divorciado(a)</option>
+                  <option value="Unión Libre">Unión Libre</option>
+                </select>
               </div>
               <div class="col-12 col-md-6">
                 <label class="form-label">CURP</label>
@@ -147,13 +157,6 @@ include_once '../../config/config.php';
                   <option value="">Seleccione</option>
                   <option value="Determinado">Tiempo Determinado</option>
                   <option value="Indeterminado">Tiempo Indeterminado</option>
-                </select>
-              </div>
-              <div class="col-12 col-md-6">
-                <label class="form-label">Formato de Fecha (Contrato)</label>
-                <select id="formatoFechaContrato" name="formato_fecha_contrato" class="form-select form-select-sm">
-                  <option value="clasico">Clásico: 20 DÍAS DEL MES DE ENERO DEL AÑO 2025</option>
-                  <option value="a_los">A LOS 20 DÍAS DEL MES DE ENERO DEL 2025</option>
                 </select>
               </div>
               <div class="col-12 col-md-3">
@@ -324,9 +327,18 @@ include_once '../../config/config.php';
               <h3>Beneficiarios del Empleado</h3>
             </div>
             <div class="row">
-              <div class="col-12">
-                <div id="beneficiariosLista" class="list-group"></div>
-                <div class="form-text mt-2">Se muestran automáticamente los beneficiarios registrados (máximo 5)</div>
+              <div class="col-12 col-md-6">
+                <label class="form-label">Nombre del Beneficiario</label>
+                <input type="text" id="beneficiarioNombre" class="form-control form-control-sm" placeholder="Nombre completo" />
+              </div>
+              <div class="col-12 col-md-3">
+                <label class="form-label">Parentesco</label>
+                <input type="text" id="beneficiarioParentesco" class="form-control form-control-sm" placeholder="Ej: Hijo(a)" />
+              </div>
+              <div class="col-12 col-md-3">
+                <label class="form-label">Porcentaje</label>
+                <input type="text" id="beneficiarioPorcentaje" class="form-control form-control-sm" placeholder="Ej: 50" />
+                <div class="form-text">Estos datos son solo para este documento; no se guardan en la base de datos.</div>
               </div>
             </div>
           </div>

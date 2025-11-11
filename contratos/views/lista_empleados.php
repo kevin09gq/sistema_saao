@@ -1,6 +1,7 @@
 <?php
 // contratos/views/lista_empleados.php
  include "../../config/config.php";
+ verificarSesion();
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -11,6 +12,8 @@
   <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
   <link rel="stylesheet" href="<?= $rutaRaiz ?>/contratos/styles/lista_empleados.css">
+  <!-- SweetAlert2 CSS -->
+    <script src="<?= SWEETALERT ?>"></script>
 </head>
 <body>
   <?php include '../../public/views/navbar.php'; ?>

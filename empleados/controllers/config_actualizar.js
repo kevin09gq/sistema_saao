@@ -55,6 +55,27 @@ $(document).ready(function () {
         
         actualizarTotalPorcentaje();
     });
+
+    // Manejar el botón de eliminar beneficiario
+    $(document).on('click', '.btn-eliminar-beneficiario', function() {
+        const $fila = $(this).closest('tr');
+        
+        // Limpiar todos los campos de la fila
+        $fila.find('input[name="beneficiario_nombre[]"]').val('');
+        $fila.find('input[name="beneficiario_ap_paterno[]"]').val('');
+        $fila.find('input[name="beneficiario_ap_materno[]"]').val('');
+        $fila.find('input[name="beneficiario_parentesco[]"]').val('');
+        $fila.find('input[name="beneficiario_porcentaje[]"]').val('');
+        
+        // Eliminar el campo oculto del ID si existe
+        $fila.find('input[name="beneficiario_id[]"]').remove();
+        
+        // Remover clases de validación
+        $fila.find('input').removeClass('border-success border-danger');
+        
+        // Actualizar el total de porcentajes
+        actualizarTotalPorcentaje();
+    });
     
  
     // Helper: Formatea 'YYYY-MM-DD' a 'DD/MM/YYYY'
@@ -943,7 +964,7 @@ $(document).ready(function () {
                         $("#modal_actualizar_empleado").modal("hide");
 
                         Swal.fire({
-                            title: response.title || 'SUCCESS',
+                            title: response.title || 'EXITO',
                             text: response.text || 'Empleado actualizado correctamente.',
                             icon: response.type || 'success',
                             confirmButtonText: 'Entendido'

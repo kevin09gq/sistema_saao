@@ -306,7 +306,7 @@ function actualizarHorariosSemanalesActualizados() {
         }
 
         $('#horarios_modal').modal('hide');
-        console.log(jsonGlobal);
+       
         
     });
 }

@@ -51,7 +51,7 @@ function filtrarEmpleadosRegistradosYPaginar(todosLosEmpleados) {
             renderTablaPaginada();
         },
         error: function(xhr, status, error) {
-            console.error('Error al validar claves:', error);
+          
             // En caso de error, usar todos los empleados
             empleadosPaginados = todosLosEmpleados;
             paginaActualNomina = 1;
@@ -277,7 +277,7 @@ let paginaActualDispersion = 1;
 const empleadosPorPaginaDispersion = 7;
 
 // Función para establecer empleados paginados para dispersión
-function setEmpleadosDispersionPaginados(array) {
+function setEmpleadosDispersionPaginados(array, mantenerPagina = false) {
     // Recalcular sueldos antes de asignar
     array.forEach(emp => {
         if (typeof calcularSueldoACobraPorEmpleado === 'function') {
@@ -286,7 +286,12 @@ function setEmpleadosDispersionPaginados(array) {
     });
     
     empleadosDispersionPaginados = array;
-    paginaActualDispersion = 1;
+    
+    // Solo reiniciar a la página 1 si no se debe mantener la página actual
+    if (!mantenerPagina) {
+        paginaActualDispersion = 1;
+    }
+    
     renderTablaDispersionPaginada();
 }
 
@@ -415,13 +420,12 @@ function cambiarPaginaDispersion(nuevaPagina) {
 // PAGINACIÓN PARA TABLA DE EMPLEADOS SIN SEGURO
 // ========================================
 
-// Variables para paginación de empleados sin seguro
 let empleadosSinSeguroPaginados = [];
 let paginaActualSinSeguro = 1;
 const empleadosPorPaginaSinSeguro = 7;
 
 // Función para establecer empleados paginados para empleados sin seguro
-function setEmpleadosSinSeguroPaginados(array) {
+function setEmpleadosSinSeguroPaginados(array, mantenerPagina = false) {
     // Recalcular sueldos antes de asignar
     array.forEach(emp => {
         if (typeof calcularSueldoACobraPorEmpleado === 'function') {
@@ -430,7 +434,12 @@ function setEmpleadosSinSeguroPaginados(array) {
     });
     
     empleadosSinSeguroPaginados = array;
-    paginaActualSinSeguro = 1;
+    
+    // Solo reiniciar a la página 1 si no se debe mantener la página actual
+    if (!mantenerPagina) {
+        paginaActualSinSeguro = 1;
+    }
+    
     renderTablaSinSeguroPaginada();
 }
 
@@ -613,9 +622,9 @@ function obtenerEmpleadosSinSeguro() {
 }
 
 // Función para mostrar empleados sin seguro
-function mostrarEmpleadosSinSeguro() {
+function mostrarEmpleadosSinSeguro(mantenerPagina = true) {
     const empleadosSinSeguro = obtenerEmpleadosSinSeguro();
-    setEmpleadosSinSeguroPaginados(empleadosSinSeguro);
+    setEmpleadosSinSeguroPaginados(empleadosSinSeguro, mantenerPagina);
 }
 
 // Hacer las funciones disponibles globalmente

@@ -1,6 +1,7 @@
 <?php
 $rutaRaiz = "/sistema_saao";
 include("../config/config.php");
+verificarSesion();
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -13,6 +14,8 @@ include("../config/config.php");
   <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
   <link rel="stylesheet" href="<?= $rutaRaiz ?>/public/styles/navbar_styles.css">
   <link rel="stylesheet" href="./styles/contratos.css">
+  <!-- SweetAlert2 CSS -->
+    <script src="<?= SWEETALERT ?>"></script>
 </head>
 <body>
   <?php include("../public/views/navbar.php"); ?>

@@ -28,9 +28,9 @@ function getAreas() {
                                     <td>${contador}</td>
                                     <td>${element.nombre_area}</td>
                                     <td>
-                                        <button class="btn btn-sm btn-edit btn-edit-area" id="btn-edit-area-${element.id_area}" data-id="${element.id_area}" title="Editar"><i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-sm btn-image btn-image-area" id="btn-image-area-${element.id_area}" data-id="${element.id_area}" title="Cambiar imagen"><i class="fas fa-image"></i></button>
-                                        <button class="btn btn-sm btn-delete btn-delete-area" id="btn-delete-area-${element.id_area}" data-id="${element.id_area}" title="Eliminar"><i class="fas fa-trash"></i></button>
+                                        <button class="btn btn-sm btn-edit btn-edit-area" id="btn-edit-area-${element.id_area}" data-id="${element.id_area}" title="Editar"><i class="bi bi-pencil"></i></button>
+                                        <button class="btn btn-sm btn-image btn-image-area" id="btn-image-area-${element.id_area}" data-id="${element.id_area}" title="Cambiar imagen"><i class="bi bi-image"></i></button>
+                                        <button class="btn btn-sm btn-delete btn-delete-area" id="btn-delete-area-${element.id_area}" data-id="${element.id_area}" title="Eliminar"><i class="bi bi-trash"></i></button>
                                     </td>
                                 </tr>   
                         `;

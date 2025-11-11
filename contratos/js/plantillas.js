@@ -76,6 +76,47 @@
     }
   }
 
+  // Función para actualizar las etiquetas del selector de interlineado
+  function updateLineHeightPickerLabel() {
+    // No actualizar si hay un input de texto con foco
+    const activeElement = document.activeElement;
+    if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+      return;
+    }
+    
+    const lineHeightPicker = document.querySelector('.ql-line-height');
+    if (!lineHeightPicker) return;
+
+    // Determinar interlineado actual por selección del editor (si existe quill)
+    if (typeof quill !== 'undefined' && quill) {
+      const fmt = quill.getFormat();
+      const val = fmt && fmt['line-height'] ? fmt['line-height'] : '1.15';
+      const label = lineHeightPicker.querySelector('.ql-picker-label');
+      if (label) {
+        label.textContent = val;
+        label.setAttribute('data-value', val);
+      }
+    }
+  }
+  
+  // Función para obtener el interlineado actual
+  function getCurrentLineHeight() {
+    if (!quill) return '1.15';
+    
+    const range = quill.getSelection();
+    if (range && range.length > 0) {
+      const format = quill.getFormat(range);
+      return format['line-height'] || '1.15';
+    } else if (range) {
+      // Para posición sin selección, obtener formato del cursor
+      const [line, offset] = quill.getLine(range.index);
+      if (line) {
+        const format = quill.getFormat(range.index, 0);
+        return format['line-height'] || '1.15';
+      }
+    }
+    return '1.15';
+  }
   
   // --- Utilidades de saneamiento de estilos ---
   function cleanInlineFonts(root) {
@@ -255,6 +296,47 @@
       // Actualizar los nombres de las fuentes en el selector
       updateFontPickerLabels();
       updateSizePickerLabel();
+      updateLineHeightPickerLabel();
+      
+      // Agregar event listener para el selector de interlineado
+      const lineHeightPicker = document.querySelector('.ql-line-height');
+      if (lineHeightPicker) {
+        // Configurar los valores del picker limpiando y reconfigurando correctamente
+        const items = lineHeightPicker.querySelectorAll('.ql-picker-item');
+        items.forEach((item, index) => {
+          // Obtener el valor correcto del atributo data-value
+          const val = item.getAttribute('data-value');
+          if (val) {
+            // Limpiar completamente el contenido del item
+            while (item.firstChild) {
+              item.removeChild(item.firstChild);
+            }
+            // Agregar solo el texto del valor
+            item.appendChild(document.createTextNode(val));
+          }
+        });
+        
+        // Agregar event listener para cambios
+        lineHeightPicker.addEventListener('click', function(e) {
+          const target = e.target.closest('.ql-picker-item');
+          if (target) {
+            const value = target.getAttribute('data-value') || '1.15';
+            applyLineHeight(value);
+            
+            // Actualizar el label
+            const label = lineHeightPicker.querySelector('.ql-picker-label');
+            if (label) {
+              // Limpiar completamente el contenido del label
+              while (label.firstChild) {
+                label.removeChild(label.firstChild);
+              }
+              // Agregar solo el texto del valor
+              label.appendChild(document.createTextNode(value));
+              label.setAttribute('data-value', value);
+            }
+          }
+        });
+      }
     }, 100);
     
     setStatusBadge('Editor visual activo', 'ok');
@@ -264,12 +346,24 @@
       // Solo actualizar si hay una selección activa (el editor tiene foco)
       if (range) {
         updateSizePickerLabel();
+        updateLineHeightPickerLabel();
       }
     });
     quill.on('text-change', () => {
       // Solo actualizar si el editor tiene foco
       if (quill.hasFocus()) {
         updateSizePickerLabel();
+        updateLineHeightPickerLabel();
+      }
+    });
+    
+    // Escuchar cambios en el editor para actualizar el selector de interlineado
+    quill.on('editor-change', function(eventName, ...args) {
+      if (eventName === 'selection-change') {
+        // Actualizar la selección del interlineado en el toolbar
+        setTimeout(() => {
+          updateLineHeightPickerLabel();
+        }, 0);
       }
     });
   }
@@ -353,7 +447,7 @@
             <div class="spinner-border text-primary" role="status" style="margin-bottom: 10px;">
               <span class="visually-hidden">Cargando...</span>
             </div>
-            <div>Cargando contenido...</div>
+            <Cargando contenido...</div>
           </div>
         `;
         editorContainer.style.position = 'relative';
@@ -489,7 +583,7 @@
               const li = document.createElement('li');
               li.className = 'list-group-item d-flex justify-content-between align-items-center';
               li.innerHTML = `
-                <span class="plantilla-item" data-nombre="${item.nombre}">${item.nombre}</span>
+                <span class="plantilla-item" data-nombre="${item.nombre}">${item.nombre.replace('.html', '')}</span>
                 <span class="text-muted small">${new Date(item.modificado*1000).toLocaleString()}</span>
               `;
               
@@ -529,7 +623,7 @@
     const cached = templateCache.get(nombre);
     if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
       // Show loading state immediately
-      tituloEdicion.textContent = 'Cargando: ' + nombre;
+      tituloEdicion.textContent = 'Cargando: ' + nombre.replace('.html', '');
       setEditorEnabled(false);
       
       // Use setTimeout to yield control back to browser
@@ -538,7 +632,7 @@
           actual = cached.data.nombre;
           setEditorContent(cached.data.contenido);
           setEditorEnabled(true);
-          tituloEdicion.textContent = 'Editando: ' + actual;
+          tituloEdicion.textContent = 'Editando: ' + actual.replace('.html', '');
           
           // Update font picker labels asynchronously
           setTimeout(() => {
@@ -546,7 +640,7 @@
           }, 50);
         } catch (e) {
           console.error('Error loading cached template:', e);
-          tituloEdicion.textContent = actual ? 'Editando: ' + actual : 'Sin plantilla seleccionada';
+          tituloEdicion.textContent = actual ? 'Editando: ' + actual.replace('.html', '') : 'Sin plantilla seleccionada';
           setEditorEnabled(!!actual);
         }
       }, 0);
@@ -554,7 +648,7 @@
     }
     
     // Show loading state immediately
-    tituloEdicion.textContent = 'Cargando: ' + nombre;
+    tituloEdicion.textContent = 'Cargando: ' + nombre.replace('.html', '');
     setEditorEnabled(false);
     
     fetch(API + '?accion=obtener&nombre=' + encodeURIComponent(nombre))
@@ -574,7 +668,7 @@
             actual = res.data.nombre;
             setEditorContent(res.data.contenido);
             setEditorEnabled(true);
-            tituloEdicion.textContent = 'Editando: ' + actual;
+            tituloEdicion.textContent = 'Editando: ' + actual.replace('.html', '');
             
             // Update font picker labels asynchronously
             setTimeout(() => {
@@ -582,22 +676,38 @@
             }, 50);
           } catch (e) {
             console.error('Error loading template:', e);
-            tituloEdicion.textContent = actual ? 'Editando: ' + actual : 'Sin plantilla seleccionada';
+            tituloEdicion.textContent = actual ? 'Editando: ' + actual.replace('.html', '') : 'Sin plantilla seleccionada';
             setEditorEnabled(!!actual);
           }
         }, 0);
       })
       .catch(err => {
-        alert(err.message);
+        Swal.fire({
+          title: 'Error',
+          text: err.message,
+          icon: 'error',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#10b981'
+        });
         // Reset to previous state on error
-        tituloEdicion.textContent = actual ? 'Editando: ' + actual : 'Sin plantilla seleccionada';
+        tituloEdicion.textContent = actual ? 'Editando: ' + actual.replace('.html', '') : 'Sin plantilla seleccionada';
         setEditorEnabled(!!actual);
       });
   }
 
   function nueva() {
     const name = (nuevoNombre.value || '').trim();
-    if (!name) return alert('Ingresa un nombre para la plantilla');
+    if (!name) {
+      // Mostrar alerta con SweetAlert2
+      Swal.fire({
+        title: 'Advertencia',
+        text: 'Ingresa un nombre para la plantilla',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#10b981'
+      });
+      return;
+    }
     // Crear vacía inmediatamente
     const fd = new FormData();
     fd.append('accion', 'guardar');
@@ -613,7 +723,15 @@
         listar();
         seleccionar(res.data.nombre);
       })
-      .catch(err => alert(err.message));
+      .catch(err => {
+        Swal.fire({
+          title: 'Error',
+          text: err.message,
+          icon: 'error',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#10b981'
+        });
+      });
   }
 
   function guardar() {
@@ -629,95 +747,178 @@
         // Clear cache for this template since it was updated
         templateCache.delete(actual);
         listar();
-        alert('Plantilla guardada');
+        Swal.fire({
+          title: 'Éxito',
+          text: 'Plantilla guardada correctamente',
+          icon: 'success',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#10b981'
+        });
       })
-      .catch(err => alert(err.message));
+      .catch(err => {
+        Swal.fire({
+          title: 'Error',
+          text: err.message,
+          icon: 'error',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#10b981'
+        });
+      });
   }
 
   function eliminar() {
     if (!actual) return;
-    if (!confirm('¿Eliminar la plantilla ' + actual + '?')) return;
-    const fd = new FormData();
-    fd.append('accion', 'eliminar');
-    fd.append('nombre', actual);
-    fetch(API, { method: 'POST', body: fd })
-      .then(r => r.json())
-      .then(res => {
-        if (!res.ok) throw new Error(res.error || 'No se pudo eliminar');
-        // Clear cache for this template and refresh list
-        templateCache.delete(actual);
-        templateCache.clear(); // Clear all cache to be safe
-        actual = null;
-        setEditorContent('');
-        setEditorEnabled(false);
-        tituloEdicion.textContent = 'Sin plantilla seleccionada';
-        listar();
-      })
-      .catch(err => alert(err.message));
+    
+    // Usar SweetAlert2 para confirmar la eliminación
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¿Eliminar la plantilla ' + actual + '? Esta acción no se puede deshacer.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#e53e3e',
+      cancelButtonColor: '#10b981'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const fd = new FormData();
+        fd.append('accion', 'eliminar');
+        fd.append('nombre', actual);
+        fetch(API, { method: 'POST', body: fd })
+          .then(r => r.json())
+          .then(res => {
+            if (!res.ok) throw new Error(res.error || 'No se pudo eliminar');
+            // Clear cache for this template and refresh list
+            templateCache.delete(actual);
+            templateCache.clear(); // Clear all cache to be safe
+            actual = null;
+            setEditorContent('');
+            setEditorEnabled(false);
+            tituloEdicion.textContent = 'Sin plantilla seleccionada';
+            listar();
+            
+            // Mostrar mensaje de éxito
+            Swal.fire({
+              title: 'Eliminada',
+              text: 'La plantilla ha sido eliminada correctamente.',
+              icon: 'success',
+              confirmButtonText: 'Entendido',
+              confirmButtonColor: '#10b981'
+            });
+          })
+          .catch(err => {
+            Swal.fire({
+              title: 'Error',
+              text: err.message,
+              icon: 'error',
+              confirmButtonText: 'Entendido',
+              confirmButtonColor: '#10b981'
+            });
+          });
+      }
+    });
   }
 
   // Función para renombrar una plantilla
   function renombrar() {
     if (!actual) return;
     
-    // Solicitar el nuevo nombre al usuario
-    const nuevoNombre = prompt('Ingresa el nuevo nombre para la plantilla:', actual.replace('.html', ''));
-    if (!nuevoNombre || nuevoNombre.trim() === '' || nuevoNombre.trim() === actual.replace('.html', '')) {
-      return; // Cancelado o nombre vacío o igual al actual
-    }
-    
-    // Preparar el nombre con la extensión .html
-    const nuevoNombreConExtension = nuevoNombre.trim() + '.html';
-    
-    // Verificar si ya existe una plantilla con ese nombre
-    fetch(API + '?accion=listar')
-      .then(r => r.json())
-      .then(res => {
-        if (!res.ok) throw new Error(res.error || 'Error al listar');
-        
-        // Verificar si ya existe una plantilla con el nuevo nombre
-        const existe = res.data.some(item => item.nombre === nuevoNombreConExtension);
-        if (existe) {
-          alert('Ya existe una plantilla con ese nombre. Por favor, elige otro nombre.');
-          return;
+    // Usar SweetAlert2 para solicitar el nuevo nombre
+    Swal.fire({
+      title: 'Renombrar Plantilla',
+      input: 'text',
+      inputLabel: 'Nuevo nombre para la plantilla:',
+      inputValue: actual.replace('.html', ''),
+      inputPlaceholder: 'Ingresa el nuevo nombre',
+      showCancelButton: true,
+      confirmButtonText: 'Renombrar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#6b7280',
+      inputValidator: (value) => {
+        if (!value || value.trim() === '') {
+          return 'Debes ingresar un nombre para la plantilla';
         }
-        
-        // Proceder con el renombrado
-        const fd = new FormData();
-        fd.append('accion', 'renombrar');
-        fd.append('nombre', actual);
-        fd.append('nuevoNombre', nuevoNombreConExtension);
-        return fetch(API, { method: 'POST', body: fd });
-      })
-      .then(r => {
-        if (!r) return; // Si no hay respuesta, es porque ya existe una plantilla con ese nombre
-        return r.json();
-      })
-      .then(res => {
-        if (!res || !res.ok) {
-          if (res && res.error) {
-            throw new Error(res.error);
-          } else {
-            throw new Error('No se pudo renombrar la plantilla');
-          }
+        if (value.trim() === actual.replace('.html', '')) {
+          return 'El nuevo nombre debe ser diferente al actual';
         }
+        return null;
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const nuevoNombre = result.value;
+        // Preparar el nombre con la extensión .html
+        const nuevoNombreConExtension = nuevoNombre.trim() + '.html';
         
-        // Clear cache for old and new template names
-        templateCache.delete(actual);
-        templateCache.delete(res.data.nuevoNombre);
-        templateCache.clear(); // Clear all cache to be safe
-        
-        // Actualizar el nombre actual
-        actual = res.data.nuevoNombre;
-        
-        // Actualizar la lista y la interfaz
-        listar();
-        tituloEdicion.textContent = 'Editando: ' + actual;
-        alert('Plantilla renombrada correctamente');
-      })
-      .catch(err => {
-        alert('Error: ' + err.message);
-      });
+        // Verificar si ya existe una plantilla con ese nombre
+        fetch(API + '?accion=listar')
+          .then(r => r.json())
+          .then(res => {
+            if (!res.ok) throw new Error(res.error || 'Error al listar');
+            
+            // Verificar si ya existe una plantilla con el nuevo nombre
+            const existe = res.data.some(item => item.nombre === nuevoNombreConExtension);
+            if (existe) {
+              Swal.fire({
+                title: 'Advertencia',
+                text: 'Ya existe una plantilla con ese nombre. Por favor, elige otro nombre.',
+                icon: 'warning',
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#10b981'
+              });
+              return;
+            }
+            
+            // Proceder con el renombrado
+            const fd = new FormData();
+            fd.append('accion', 'renombrar');
+            fd.append('nombre', actual);
+            fd.append('nuevoNombre', nuevoNombreConExtension);
+            return fetch(API, { method: 'POST', body: fd });
+          })
+          .then(r => {
+            if (!r) return; // Si no hay respuesta, es porque ya existe una plantilla con ese nombre
+            return r.json();
+          })
+          .then(res => {
+            if (!res || !res.ok) {
+              if (res && res.error) {
+                throw new Error(res.error);
+              } else {
+                throw new Error('No se pudo renombrar la plantilla');
+              }
+            }
+            
+            // Clear cache for old and new template names
+            templateCache.delete(actual);
+            templateCache.delete(res.data.nuevoNombre);
+            templateCache.clear(); // Clear all cache to be safe
+            
+            // Actualizar el nombre actual
+            actual = res.data.nuevoNombre;
+            
+            // Actualizar la lista y la interfaz
+            listar();
+            tituloEdicion.textContent = 'Editando: ' + actual;
+            Swal.fire({
+              title: 'Éxito',
+              text: 'Plantilla renombrada correctamente',
+              icon: 'success',
+              confirmButtonText: 'Entendido',
+              confirmButtonColor: '#10b981'
+            });
+          })
+          .catch(err => {
+            Swal.fire({
+              title: 'Error',
+              text: 'Error: ' + err.message,
+              icon: 'error',
+              confirmButtonText: 'Entendido',
+              confirmButtonColor: '#10b981'
+            });
+          });
+      }
+    });
   }
 
   // Función para mostrar modal de configuración de tabla
@@ -1368,17 +1569,83 @@ function registerLineHeightFormat() {
   if (typeof Quill === 'undefined') return;
   
   try {
-    const Parchment = Quill.import('parchment');
+    // Usar el enfoque correcto para Quill 2.x
+    const Inline = Quill.import('blots/inline');
     
-    // Crear un attributor de estilo para line-height
-    const LineHeightStyle = new Parchment.Attributor.Style('line-height', 'line-height', {
-      scope: Parchment.Scope.INLINE,
-      whitelist: ['1.0', '1.15', '1.5', '2.0']
-    });
+    class LineHeightBlot extends Inline {
+      static create(value) {
+        let node = super.create();
+        node.style.lineHeight = value;
+        return node;
+      }
+      
+      static formats(node) {
+        return node.style.lineHeight || '1.15';
+      }
+    }
     
-    // Registrar el attributor
-    Quill.register(LineHeightStyle, true);
+    LineHeightBlot.blotName = 'line-height';
+    LineHeightBlot.tagName = 'span';
+    LineHeightBlot.className = 'ql-line-height';
+    
+    Quill.register(LineHeightBlot);
   } catch (e) {
     console.warn('No se pudo registrar el formato de interlineado:', e);
   }
+}
+
+// Función para aplicar interlineado al texto seleccionado
+function applyLineHeight(value) {
+  if (!quill) return;
+  
+  const range = quill.getSelection();
+  if (range) {
+    quill.format('line-height', value, 'user');
+  }
+}
+
+// Función para obtener el interlineado actual
+function getCurrentLineHeight() {
+  if (!quill) return '1.15';
+  
+  const range = quill.getSelection();
+  if (range) {
+    const format = quill.getFormat(range);
+    return format['line-height'] || '1.15';
+  }
+  return '1.15';
+}
+
+// Función para mostrar alertas personalizadas sin CDN
+function mostrarAlertaPersonalizada(mensaje, tipo = 'info') {
+  // Crear el contenedor de la alerta
+  const alerta = document.createElement('div');
+  alerta.className = `alert alert-${tipo} alert-dismissible fade show position-fixed`;
+  alerta.style = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; max-width: 500px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+  alerta.setAttribute('role', 'alert');
+    
+  // Definir el ícono según el tipo
+  let icono = 'ℹ️';
+  if (tipo === 'success') icono = '✅';
+  else if (tipo === 'warning') icono = '⚠️';
+  else if (tipo === 'error') icono = '❌';
+    
+  // Contenido de la alerta
+  alerta.innerHTML = `
+    <div class="d-flex align-items-center">
+      <span class="me-2 fs-5">${icono}</span>
+      <div class="flex-grow-1">${mensaje}</div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  `;
+    
+  // Agregar al body
+  document.body.appendChild(alerta);
+    
+  // Eliminar automáticamente después de 5 segundos
+  setTimeout(() => {
+    if (alerta.parentNode) {
+      alerta.remove();
+    }
+  }, 5000);
 }

@@ -3,6 +3,7 @@
 
 <?php
 include("../../config/config.php");
+verificarSesion();
 ?>
 
 <head>
@@ -132,7 +133,7 @@ include("../../config/config.php");
                                                 <option value="DIVORCIADO">Divorciado/a</option>
                                                 <option value="VIUDO">Viudo/a</option>
                                                 <option value="UNION_LIBRE">Unión Libre</option>
-                                                <option value="SEPARADO">Separado/a</option>
+                                                
                                             </select>
                                         </div>
                                     </div>

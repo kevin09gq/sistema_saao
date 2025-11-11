@@ -51,33 +51,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             // Verificar el número de registros antes de proceder
             $totalRegistros = contarRegistros();
-            $tablaLimpiada = false;
+            $nominaEliminada = false;
+            $numeroSemanaEliminada = null;
 
             // Verificar si ya existe una nómina con ese número de semana
             $registroExistente = verificarNominaExistente($numeroSemana);
-
-            // Solo limpiar si hay registros Y NO es una actualización
-            if ($totalRegistros >= 1 && !$registroExistente) {
-                limpiarTabla();
-                limpiarTablaHorarios(); // También limpiar horarios
-                $tablaLimpiada = true;
-            }
 
             $idHorario = null;
             $horariosGuardados = false;
 
             if ($registroExistente) {
-                // Actualizar el registro existente (SIN LIMPIAR)
-                $sql = $conexion->prepare("UPDATE nomina SET datos_nomina = ? WHERE id_nomina_json = ?");
-                $sql->bind_param("si", $jsonData, $registroExistente['id_nomina_json']);
+                // ACTUALIZAR el registro existente
+                // Primero guardar/actualizar horarios
+                if ($decodedHorarios) {
+                    $idHorario = actualizarHorarios($numeroSemana, $horariosData);
+                    $horariosGuardados = ($idHorario !== false);
+                }
+
+                // Actualizar la nómina con el id_horario
+                $sql = $conexion->prepare("UPDATE nomina SET datos_nomina = ?, id_horario = ? WHERE id_nomina_json = ?");
+                $sql->bind_param("sii", $jsonData, $idHorario, $registroExistente['id_nomina_json']);
 
                 if ($sql->execute()) {
-                    // Actualizar horarios si existen
-                    if ($decodedHorarios) {
-                        $idHorario = actualizarHorarios($numeroSemana, $horariosData);
-                        $horariosGuardados = ($idHorario !== false);
-                    }
-
                     echo json_encode([
                         'success' => true,
                         'action' => 'updated',
@@ -90,22 +85,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } else {
                     throw new Exception('Error al actualizar la nómina existente: ' . $sql->error);
                 }
+                $sql->close();
             } else {
-                // Crear un nuevo registro (después de limpiar si había registros)
+                // CREAR un nuevo registro
+                // Verificar si ya hay 6 nóminas (límite máximo)
+                if ($totalRegistros >= 6) {
+                    // Eliminar la nómina más antigua
+                    $nominaEliminada = eliminarNominaMasAntigua();
+                    if ($nominaEliminada) {
+                        $numeroSemanaEliminada = $nominaEliminada['numero_semana'];
+                    }
+                }
+
+                // Guardar horarios primero si existen
+                if ($decodedHorarios) {
+                    $idHorario = guardarHorarios($horariosData);
+                    $horariosGuardados = ($idHorario !== false);
+                }
+
+                // Crear el nuevo registro con la relación FK
                 $idNomina = generarIdNomina();
-                $sql = $conexion->prepare("INSERT INTO nomina (id_nomina_json, id_empresa, datos_nomina) VALUES (?, 1, ?)");
-                $sql->bind_param("is", $idNomina, $jsonData);
+                $sql = $conexion->prepare("INSERT INTO nomina (id_nomina_json, id_empresa, datos_nomina, id_horario) VALUES (?, 1, ?, ?)");
+                $sql->bind_param("isi", $idNomina, $jsonData, $idHorario);
 
                 if ($sql->execute()) {
-                    // Guardar horarios si existen
-                    if ($decodedHorarios) {
-                        $idHorario = guardarHorarios($horariosData);
-                        $horariosGuardados = ($idHorario !== false);
-                    }
-
                     $mensaje = 'Nueva nómina de la semana ' . $numeroSemana . ' creada exitosamente';
-                    if ($tablaLimpiada) {
-                        $mensaje .= ' (Registros anteriores eliminados automáticamente)';
+                    if ($nominaEliminada) {
+                        $mensaje .= ' (Nómina más antigua de la semana ' . $numeroSemanaEliminada . ' eliminada automáticamente)';
                     }
 
                     echo json_encode([
@@ -113,8 +119,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'action' => 'created',
                         'id_nomina' => $idNomina,
                         'numero_semana' => $numeroSemana,
-                        'tabla_limpiada' => $tablaLimpiada,
-                        'registros_anteriores' => $totalRegistros,
+                        'nomina_eliminada' => $nominaEliminada !== false,
+                        'semana_eliminada' => $numeroSemanaEliminada,
+                        'total_nominas' => contarRegistros(),
                         'horarios_guardados' => $horariosGuardados,
                         'id_horario' => $idHorario,
                         'message' => $mensaje
@@ -122,9 +129,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } else {
                     throw new Exception('Error al crear la nueva nómina: ' . $sql->error);
                 }
+                $sql->close();
             }
-
-            $sql->close();
         } catch (Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
         }
@@ -159,6 +165,76 @@ function limpiarTabla()
     $sql = $conexion->prepare("ALTER TABLE nomina AUTO_INCREMENT = 1");
     $sql->execute();
     $sql->close();
+}
+
+// Nueva función para eliminar la nómina más antigua
+function eliminarNominaMasAntigua()
+{
+    global $conexion;
+    
+    try {
+        // Obtener la nómina más antigua (menor id_nomina_json)
+        $sql = $conexion->prepare("SELECT id_nomina_json, id_horario, datos_nomina FROM nomina ORDER BY id_nomina_json ASC LIMIT 1");
+        $sql->execute();
+        $resultado = $sql->get_result();
+        
+        if ($resultado->num_rows > 0) {
+            $row = $resultado->fetch_assoc();
+            $idNominaEliminar = $row['id_nomina_json'];
+            $idHorarioEliminar = $row['id_horario'];
+            
+            // Extraer numero_semana del JSON
+            $datosNomina = json_decode($row['datos_nomina'], true);
+            $numeroSemana = $datosNomina['numero_semana'] ?? 'desconocida';
+            
+            $sql->close();
+            
+            // Eliminar la nómina
+            $sql = $conexion->prepare("DELETE FROM nomina WHERE id_nomina_json = ?");
+            $sql->bind_param("i", $idNominaEliminar);
+            
+            if ($sql->execute()) {
+                $sql->close();
+                
+                // Eliminar el horario asociado si existe
+                if ($idHorarioEliminar) {
+                    eliminarHorario($idHorarioEliminar);
+                }
+                
+                return [
+                    'id_nomina' => $idNominaEliminar,
+                    'id_horario' => $idHorarioEliminar,
+                    'numero_semana' => $numeroSemana
+                ];
+            } else {
+                $sql->close();
+                return false;
+            }
+        }
+        
+        $sql->close();
+        return false;
+    } catch (Exception $e) {
+        error_log("Error en eliminarNominaMasAntigua: " . $e->getMessage());
+        return false;
+    }
+}
+
+// Nueva función para eliminar un horario específico
+function eliminarHorario($idHorario)
+{
+    global $conexion;
+    
+    try {
+        $sql = $conexion->prepare("DELETE FROM horarios_oficiales WHERE id_horario = ?");
+        $sql->bind_param("i", $idHorario);
+        $resultado = $sql->execute();
+        $sql->close();
+        return $resultado;
+    } catch (Exception $e) {
+        error_log("Error en eliminarHorario: " . $e->getMessage());
+        return false;
+    }
 }
 
 function verificarNominaExistente($numeroSemana)
@@ -244,7 +320,7 @@ function guardarHorarios($horariosData)
 
         // No existe, crear nuevo
         $idHorario = generarIdHorario();
-        $sql = $conexion->prepare("INSERT INTO horarios_oficiales (id_horario, id_empresa, horario_json) VALUES (?, 1, ?)");
+        $sql = $conexion->prepare("INSERT INTO horarios_oficiales (id_horario, horario_json) VALUES (?, ?)");
         $sql->bind_param("is", $idHorario, $horariosData);
 
         if ($sql->execute()) {
@@ -265,14 +341,14 @@ function actualizarHorarios($numeroSemana, $horariosData)
     global $conexion;
 
     try {
-        // Buscar horario que tenga el mismo numero_semana que la nómina
-        // Si el JSON de horarios no tiene numero_semana, buscar por empresa (asumiendo 1 horario por empresa activo)
-        $sql = $conexion->prepare("SELECT id_horario FROM horarios_oficiales WHERE id_empresa = 1 ORDER BY id_horario DESC LIMIT 1");
+        // Buscar horario que tenga el mismo numero_semana
+        $sql = $conexion->prepare("SELECT id_horario FROM horarios_oficiales WHERE JSON_EXTRACT(horario_json, '$.numero_semana') = ?");
+        $sql->bind_param("s", $numeroSemana);
         $sql->execute();
         $resultado = $sql->get_result();
 
         if ($resultado->num_rows > 0) {
-            // ACTUALIZAR el registro más reciente
+            // ACTUALIZAR el registro existente
             $row = $resultado->fetch_assoc();
             $idHorario = $row['id_horario'];
             $sql->close();

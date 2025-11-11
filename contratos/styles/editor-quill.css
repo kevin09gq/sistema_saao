@@ -32,17 +32,35 @@
 }
 
 /* Estilos para el selector de interlineado de Quill */
-.ql-line-height .ql-picker-item[data-value="1.0"]::before { content: "1.0"; }
-.ql-line-height .ql-picker-item[data-value="1.15"]::before { content: "1.15"; }
-.ql-line-height .ql-picker-item[data-value="1.5"]::before { content: "1.5"; }
-.ql-line-height .ql-picker-item[data-value="2.0"]::before { content: "2.0"; }
 .ql-line-height .ql-picker-label::before { content: "Interlineado"; }
+
+/* Correcciones para evitar concatenación de valores */
+.ql-line-height .ql-picker-item {
+  text-align: center;
+  padding: 0;
+  margin: 0;
+}
 
 /* Correcciones de layout para que la flecha no se superponga al texto */
 .ql-toolbar .ql-line-height { width: auto; }
-.ql-snow .ql-picker.ql-line-height .ql-picker-label { display: inline-flex; align-items: center; height: 28px; padding: 0 22px 0 8px; position: relative; }
-.ql-snow .ql-picker.ql-line-height .ql-picker-label::before { content: "Interlineado"; position: static; }
-.ql-snow .ql-picker.ql-line-height .ql-picker-label::after { right: 6px; top: 50%; transform: translateY(-50%); border-top-color: #555; }
+.ql-snow .ql-picker.ql-line-height .ql-picker-label { 
+  display: inline-flex; 
+  align-items: center; 
+  height: 28px; 
+  padding: 0 22px 0 8px; 
+  position: relative;
+  text-align: center;
+}
+.ql-snow .ql-picker.ql-line-height .ql-picker-label::before { 
+  content: "Interlineado"; 
+  position: static; 
+}
+.ql-snow .ql-picker.ql-line-height .ql-picker-label::after { 
+  right: 6px; 
+  top: 50%; 
+  transform: translateY(-50%); 
+  border-top-color: #555; 
+}
 
 /* Estilos para tablas con bordes visibles y redimensionables */
 .ql-editor table { 

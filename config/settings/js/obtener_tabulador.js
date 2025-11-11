@@ -20,10 +20,7 @@ function cargarTabulador() {
                  window.data = JSON.parse(response);
                 
                 // Aquí ya puedes asignarlo a tu window.rangosHorasJson si quieres
-                window.rangosHorasJson = window.data;
-                console.log("Rangos de horas cargados:", window.rangosHorasJson);
-                
-                
+                window.rangosHorasJson = window.data; 
                 
             } catch (e) {
                

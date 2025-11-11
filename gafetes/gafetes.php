@@ -1,5 +1,8 @@
 <?php
 include("../conexion/conexion.php");
+// Incluir la configuración para las rutas
+include "../config/config.php";
+verificarSesion();
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -8,15 +11,16 @@ include("../conexion/conexion.php");
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador de Gafetes</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
+    <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/casillero.css">
     <link rel="stylesheet" href="css/subir-fotos.css">
     <link rel="stylesheet" href="css/logos-gafetes.css">
     <link rel="stylesheet" href="css/confirmacion.css">
     <link rel="stylesheet" href="../public/styles/main.css">
+    <!-- SweetAlert2 CSS -->
+    <script src="<?= SWEETALERT ?>"></script>
     
     <!-- Estilos personalizados para validación de campos -->
     <style>
@@ -85,8 +89,6 @@ include("../conexion/conexion.php");
 
 <body>
     <?php
-    // Incluir la configuración para las rutas
-    include "../config/config.php";
     // Incluir el navbar
     include "../public/views/navbar.php";
     ?>
@@ -408,7 +410,7 @@ include("../conexion/conexion.php");
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <form id="form_modal_actualizar_empleado">
-                    <div class="modal-header bg-primary text-white">
+                    <div class="modal-header text-white" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);">
                         <h5 class="modal-title" id="modalActualizarEmpleadoLabel">
                             <i class="bi bi-pencil-square"></i> Actualizar Información del Empleado
                         </h5>
@@ -514,12 +516,29 @@ include("../conexion/conexion.php");
                                         </div>
                                     </div>
                                     <div class="col-md-4 mb-4">
+                                        <label for="modal_estado_civil" class="form-label">Estado Civil</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-heart"></i></span>
+                                            <select class="form-select" id="modal_estado_civil" name="estado_civil">
+                                                <option value="">Selecciona</option>
+                                                <option value="SOLTERO">Soltero/a</option>
+                                                <option value="CASADO">Casado/a</option>
+                                                <option value="DIVORCIADO">Divorciado/a</option>
+                                                <option value="VIUDO">Viudo/a</option>
+                                                <option value="UNION_LIBRE">Unión Libre</option>
+                                               
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-4">
                                         <label for="modal_fecha_nacimiento" class="form-label">Fecha de Nacimiento</label>
                                         <div class="input-group">
                                             <span class="input-group-text"><i class="bi bi-calendar"></i></span>
                                             <input type="date" class="form-control" id="modal_fecha_nacimiento" name="fecha_nacimiento">
                                         </div>
                                     </div>
+                                </div>
+                                <div class="row">
                                     <div class="col-md-4 mb-4">
                                         <label for="modal_num_casillero" class="form-label">Número de Casillero</label>
                                         <div class="input-group">
@@ -613,7 +632,7 @@ include("../conexion/conexion.php");
                                 <div class="row justify-content-center">
                                     <div class="col-md-8">
                                         <div class="card">
-                                            <div class="card-header bg-info text-white">
+                                            <div class="card-header text-white" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);">
                                                 <h6 class="card-title mb-0">
                                                     <i class="bi bi-camera-fill me-2"></i>Fotografía del Empleado
                                                 </h6>
@@ -727,7 +746,7 @@ include("../conexion/conexion.php");
                         <button type="button" id="btn_cancelar" class="btn btn-secondary" data-bs-dismiss="modal">
                             <i class="bi bi-x-circle"></i> Cancelar
                         </button>
-                        <button type="submit" id="btn_actualizar" class="btn btn-primary">
+                        <button type="submit" id="btn_actualizar" class="btn text-white" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);">
                             <i class="bi bi-check-circle"></i> Guardar Cambios
                         </button>
                     </div>
@@ -853,8 +872,8 @@ include("../conexion/conexion.php");
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="<?= JQUERY_JS ?>"></script>
+    <script src="<?= BOOTSTRAP_JS ?>"></script>
     <script src="js/actualizarLogos.js"></script>
     <script src="js/generarFotos.js?v=<?php echo filemtime(__DIR__ . '/js/generarFotos.js'); ?>"></script>
     <script src="js/funciones.js"></script>

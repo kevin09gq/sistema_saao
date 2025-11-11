@@ -1,7 +1,7 @@
 // contratos/js/generar.js
 (function(){
   const API_PLANTILLAS = '/sistema_saao/contratos/php/plantillas_fs.php';
-  const API_EMPLEADOS = '/sistema_saao/empleados/php/obtenerEmpleados.php';
+  const API_EMPLEADOS = '/sistema_saao/contratos/php/obtener_empleados.php';
   const API_GUARDAR = '/sistema_saao/contratos/php/guardar_html.php';
   const API_EXPORTAR_WORD = '/sistema_saao/contratos/php/exportar_word.php';
 
@@ -105,21 +105,15 @@
     return (letras ? letras : String(n)) + ' horas';
   }
 
-  // Formatos de contrato soportados:
-  // - clasico: "<u>20</u> DÍAS DEL MES DE <u>ENERO</u> DEL AÑO DOS MIL VEINTICINCO"
-  // - a_los:   "A LOS <u>20</u> DÍAS DEL MES DE <u>ENERO</u> DEL <u>2025</u>"
+  // Formato de fecha para contrato: "<u>20</u> DÍAS DEL MES DE <u>ENERO</u> DEL AÑO 2025"
   function formatFechaContrato(fechaStr, mode = 'clasico') {
     const p = parseYMD(fechaStr);
     if (!p) return '';
     const dia = p.d; // sin cero a la izquierda
     const mesNombre = (MESES_ES[p.m - 1] || '').toUpperCase();
-    const anioLetras = numeroALetrasEs(p.y).toUpperCase();
-    if (mode === 'a_los') {
-      // Año numérico subrayado
-      return `A LOS <u>${dia}</u> DÍAS DEL MES DE <u>${mesNombre}</u> DEL <u>${p.y}</u>`;
-    }
-    // Por defecto, formato clásico
-    return `<u>${dia}</u> DÍAS DEL MES DE <u>${mesNombre}</u> DEL AÑO ${anioLetras}`;
+    
+    // Siempre usar el año en formato numérico
+    return `<u>${dia}</u> DÍAS DEL MES DE <u>${mesNombre}</u> DEL AÑO ${p.y}`;
   }
 
   function formatFechaRecibo(fechaStr) {
@@ -309,6 +303,73 @@
     // También contemplar 'H' de HOMBRE directamente
     if (s.startsWith('H')) return 'MEXICANO';
     return 'MEXICANA';
+  }
+
+  // Calcula estado civil por sexo: ajusta género según el sexo del empleado
+  function obtenerEstadoCivilPorSexo(estadoCivil, sexoRaw) {
+    console.log('obtenerEstadoCivilPorSexo llamada con:', { estadoCivil, sexoRaw });
+    
+    if (!estadoCivil) return '';
+    
+    // Convertir a mayúsculas para comparación
+    const estado = estadoCivil.toString().toUpperCase().trim();
+    const sexo = sexoRaw ? sexoRaw.toString().trim().toUpperCase() : '';
+    
+    // Verificar si es mujer (FEMENINO/MUJER/F)
+    const esMujer = sexo === 'F' || sexo.startsWith('F') || sexo.includes('FEM') || sexo.includes('MUJ') || sexo.includes('WOM');
+    
+    console.log('Análisis de género:', { estado, sexo, esMujer });
+    
+    // Si no es mujer, devolver el valor tal cual
+    if (!esMujer) {
+      console.log('Devuelto estado civil masculino:', estado);
+      return estado;
+    }
+    
+    // Ajustar según el estado civil
+    let resultado = estado;
+    switch (estado) {
+      case 'SOLTERO(A)':
+        resultado = 'SOLTERA';
+        break;
+      case 'CASADO(A)':
+        resultado = 'CASADA';
+        break;
+      case 'VIUDO(A)':
+        resultado = 'VIUDA';
+        break;
+      case 'DIVORCIADO(A)':
+        resultado = 'DIVORCIADA';
+        break;
+      // Para 'UNIÓN LIBRE' no se cambia ya que es neutro
+      case 'UNIÓN LIBRE':
+        resultado = 'UNIÓN LIBRE';
+        break;
+      // También manejar versiones sin paréntesis
+      case 'SOLTERO':
+        resultado = 'SOLTERA';
+        break;
+      case 'CASADO':
+        resultado = 'CASADA';
+        break;
+      case 'VIUDO':
+        resultado = 'VIUDA';
+        break;
+      case 'DIVORCIADO':
+        resultado = 'DIVORCIADA';
+        break;
+      default:
+        // Si ya tiene la forma femenina, devolver tal cual
+        if (estado.includes('SOLTERA') || estado.includes('CASADA') || estado.includes('VIUDA') || 
+            estado.includes('DIVORCIADA') || estado.includes('SEPARADA')) {
+          resultado = estado;
+        }
+        // Para cualquier otro caso, devolver el valor original
+        break;
+    }
+    
+    console.log('Devuelto estado civil femenino:', resultado);
+    return resultado;
   }
 
   // Verificar si hay parámetros en la URL
@@ -513,7 +574,86 @@
     }
     
     llenarCampo('curp', datos.curp || '');
-    llenarCampo('estadoCivil', datos.estado_civil || '');
+    // Seleccionar estado civil y ajustar etiquetas del <select> según sexo
+    (function(){
+      const estadoCivilSelect = document.getElementById('estadoCivil');
+      if (!estadoCivilSelect) return;
+
+      // Ajustar etiquetas visibles quitando "(a)" según sexo
+      const sexoRaw = (datos.sexo || '').toString().trim().toUpperCase();
+      const esMujer = sexoRaw === 'F' || sexoRaw.startsWith('F') || sexoRaw.includes('FEM') || sexoRaw.includes('MUJ') || sexoRaw.includes('WOM');
+      const labelsHombre = {
+        'Soltero(a)': 'Soltero',
+        'Casado(a)': 'Casado',
+        'Viudo(a)': 'Viudo',
+        'Divorciado(a)': 'Divorciado',
+        'Unión Libre': 'Unión Libre',
+        'Separado(a)': 'Separado'
+      };
+      const labelsMujer = {
+        'Soltero(a)': 'Soltera',
+        'Casado(a)': 'Casada',
+        'Viudo(a)': 'Viuda',
+        'Divorciado(a)': 'Divorciada',
+        'Unión Libre': 'Unión Libre',
+        'Separado(a)': 'Separada'
+      };
+      const labels = esMujer ? labelsMujer : labelsHombre;
+      for (let i = 0; i < estadoCivilSelect.options.length; i++) {
+        const opt = estadoCivilSelect.options[i];
+        if (labels[opt.value]) {
+          opt.text = labels[opt.value];
+        }
+      }
+
+      // Selección automática con el valor que viene de BD
+      const raw = (datos.estado_civil || '').toString().trim();
+      if (!raw) return;
+
+      // Mapeo de variantes comunes (mayúsculas, sin acentos, femenino/masculino) a los valores del select
+      const mapa = {
+        'SOLTERO(A)': 'Soltero(a)',
+        'SOLTERO': 'Soltero(a)',
+        'SOLTERA': 'Soltero(a)',
+        'CASADO(A)': 'Casado(a)',
+        'CASADO': 'Casado(a)',
+        'CASADA': 'Casado(a)',
+        'VIUDO(A)': 'Viudo(a)',
+        'VIUDO': 'Viudo(a)',
+        'VIUDA': 'Viudo(a)',
+        'DIVORCIADO(A)': 'Divorciado(a)',
+        'DIVORCIADO': 'Divorciado(a)',
+        'DIVORCIADA': 'Divorciado(a)',
+        'UNION LIBRE': 'Unión Libre',
+        'UNION_LIBRE': 'Unión Libre',
+        'UNIÓN LIBRE': 'Unión Libre',
+        'SEPARADO(A)': 'Separado(a)',
+        'SEPARADO': 'Separado(a)',
+        'SEPARADA': 'Separado(a)'
+      };
+
+      // Normalizar: quitar acentos para comparar y pasar a mayúsculas
+      const upperNoAccent = raw.normalize('NFD').replace(/\p{Diacritic}/gu, '').toUpperCase();
+      let valorSeleccion = mapa[upperNoAccent] || raw;
+
+      // Buscar opción que coincida ignorando mayúsculas/acentos
+      let elegido = false;
+      for (let i = 0; i < estadoCivilSelect.options.length; i++) {
+        const optVal = estadoCivilSelect.options[i].value;
+        const optCmp = optVal.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+        const valCmp = valorSeleccion.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+        if (optCmp === valCmp) {
+          estadoCivilSelect.selectedIndex = i;
+          elegido = true;
+          break;
+        }
+      }
+      if (!elegido) {
+        // Si no coincide con ninguna opción, dejar en "Seleccione" (vacío)
+        estadoCivilSelect.value = '';
+      }
+      estadoCivilSelect.classList.add('auto-filled');
+    })();
     llenarCampo('rfcEmpleado', datos.rfc_empleado || '');
     llenarCampo('domicilioTrabajador', datos.domicilio_empleado || '');
     llenarCampo('puestoTrabajador', datos.nombre_puesto || '');
@@ -561,6 +701,17 @@
     if (selectBeneficiario && selectBeneficiario.options.length > 1) {
       selectBeneficiario.selectedIndex = 1; // primera opción real
       actualizarCamposBeneficiarioDesdeSelect();
+    } else if (!selectBeneficiario) {
+      // Si no hay select en la UI, rellenar directamente los inputs con el primer beneficiario
+      const b0 = lista[0];
+      if (b0) {
+        const nombre = nombreCompletoBeneficiario(b0);
+        const parentesco = b0.parentesco || '';
+        const porcentaje = (b0.porcentaje != null && b0.porcentaje !== '') ? String(b0.porcentaje) : '';
+        if (beneficiarioNombreInput) beneficiarioNombreInput.value = nombre;
+        if (beneficiarioParentescoInput) beneficiarioParentescoInput.value = parentesco;
+        if (beneficiarioPorcentajeInput) beneficiarioPorcentajeInput.value = porcentaje ? (porcentaje + '%') : '';
+      }
     }
 
     // Renderizar lista visual de beneficiarios (máx. 5)
@@ -737,7 +888,8 @@
       document.getElementById('sabadoEntrada').value,
       document.getElementById('sabadoSalida').value
     );
-    // Beneficiario seleccionado (si hay)
+    // Beneficiario seleccionado (si hay). Edición local, no persiste en BD
+    datos.beneficiario_id = selectBeneficiario ? (selectBeneficiario.value || '') : '';
     datos.beneficiario_nombre = beneficiarioNombreInput ? (beneficiarioNombreInput.value || '') : '';
     datos.beneficiario_parentesco = beneficiarioParentescoInput ? (beneficiarioParentescoInput.value || '') : '';
     datos.beneficiario_porcentaje = beneficiarioPorcentajeInput ? (beneficiarioPorcentajeInput.value || '').replace('%','').trim() : '';
@@ -759,6 +911,13 @@
     // Determinar nacionalidad por sexo (formulario o datos de empleado)
     const nacionalidad = obtenerNacionalidad(datos.sexo || (empleadoSeleccionado && empleadoSeleccionado.sexo) || '');
     
+    // Mostrar en consola los datos para depuración
+    console.log('Datos para generar vista previa:', {
+      estado_civil: datos.estado_civil,
+      sexo: datos.sexo,
+      sexoEmpleadoSeleccionado: empleadoSeleccionado && empleadoSeleccionado.sexo
+    });
+    
     // Reemplazar placeholders con los datos del formulario
     html = html.replace(/{{\s*empresa\s*}}/g, (datos.empresa || '').toUpperCase());
     html = html.replace(/{{\s*nombre_empresa\s*}}/g, (datos.empresa || '').toUpperCase());
@@ -768,7 +927,10 @@
     html = html.replace(/{{\s*sexo\s*}}/g, (datos.sexo || '').toUpperCase());
     html = html.replace(/{{\s*fecha_nacimiento\s*}}/g, formatFechaDMY(datos.fecha_nacimiento || ''));
     html = html.replace(/{{\s*edad\s*}}/g, (datos.edad || '').toUpperCase());
-    html = html.replace(/{{\s*estado_civil\s*}}/g, (datos.estado_civil || '').toUpperCase());
+    // Ajustar estado civil según el sexo del empleado
+    const sexoEmpleado = datos.sexo || (empleadoSeleccionado && empleadoSeleccionado.sexo) || '';
+    const estadoCivilAjustado = obtenerEstadoCivilPorSexo(datos.estado_civil, sexoEmpleado);
+    html = html.replace(/{{\s*estado_civil\s*}}/g, estadoCivilAjustado.toUpperCase());
     html = html.replace(/{{\s*curp\s*}}/g, (datos.curp || '').toUpperCase());
     html = html.replace(/{{\s*rfc_empleado\s*}}/g, (datos.rfc_empleado || '').toUpperCase());
     html = html.replace(/{{\s*domicilio_trabajador\s*}}/g, (datos.domicilio_trabajador || '').toUpperCase());
@@ -812,15 +974,18 @@
         
         if (hlList.length === 0) return '';
         
-        // Si solo hay un placeholder, mostrar todos los horarios separados por comas
-        if (totalMatches <= 1) {
-          return hlList.join(', ');
-        } 
-        // Si hay múltiples placeholders, mostrar uno por uno (secuencial)
-        else {
-          const val = hlList[Math.min(hlIndex, hlList.length - 1)];
-          hlIndex++;
-          return val;
+        // MODIFICACIÓN: Siempre mostrar todos los horarios con el formato solicitado
+        // Formato: "de las 09:00 a las 18:00 horas" para un solo horario
+        // Formato: "de las 09:00 a las 18:00 horas y de las 09:00 a las 18:00 horas" para múltiples horarios
+        if (hlList.length === 1) {
+          // Para un solo horario: "de las 09:00 a las 18:00 horas"
+          return 'de las ' + hlList[0].replace(' a ', ' a las ') + ' horas';
+        } else {
+          // Para múltiples horarios: "de las 09:00 a las 18:00 horas y de las 09:00 a las 18:00 horas"
+          return hlList.map((horario, index) => {
+            const formatted = horario.replace(' a ', ' a las ');
+            return 'de las ' + formatted + ' horas';
+          }).join(' y ');
         }
       });
     }
@@ -840,26 +1005,18 @@
         
         if (hcList.length === 0) return '';
         
-        // Si solo hay un placeholder, mostrar todos los horarios con el formato correcto
-        if (totalMatches <= 1) {
-          // Para múltiples horarios, añadir "de las" antes de cada uno excepto el primero
-          if (hcList.length > 1) {
-            return hcList.map((horario, index) => {
-              if (index === 0) {
-                return horario;
-              } else {
-                return "de las " + horario.replace(" a las ", " a ");
-              }
-            }).join(", ");
-          } else {
-            return hcList[0];
-          }
-        } 
-        // Si hay múltiples placeholders, mostrar uno por uno (secuencial)
-        else {
-          const val = hcList[Math.min(hcIndex, hcList.length - 1)];
-          hcIndex++;
-          return val;
+        // MODIFICACIÓN: Siempre mostrar todos los horarios con el formato solicitado
+        // Formato: "de las 09:00 a las 18:00" para un solo horario
+        // Formato: "de las 09:00 a las 18:00 y de las 09:00 a las 18:00" para múltiples horarios
+        if (hcList.length === 1) {
+          // Para un solo horario: "de las 09:00 a las 18:00"
+          return 'de las ' + hcList[0].replace(" a las ", " a ");
+        } else {
+          // Para múltiples horarios: "de las 09:00 a las 18:00 y de las 09:00 a las 18:00"
+          return hcList.map((horario, index) => {
+            const formatted = horario.replace(" a las ", " a ");
+            return 'de las ' + formatted;
+          }).join(' y ');
         }
       });
     }
@@ -877,20 +1034,18 @@
       // Si no hay horarios, retornar vacío
       if (turnoList.length === 0) return '';
       
-      // Contar cuántos placeholders hay en el HTML
-      const allMatches = html.match(/{{\s*HORARIO_TURNO\s*}}/g);
-      const totalMatches = allMatches ? allMatches.length : 0;
-      
-      // Si solo hay un placeholder, mostrar todos los horarios separados por comas
-      if (totalMatches <= 1) {
-        return turnoList.join(', ');
-      } 
-      // Si hay múltiples placeholders, mostrar uno por uno (secuencial)
-      else {
-        // Para compatibilidad con el comportamiento secuencial existente,
-        // necesitaríamos un índice, pero como es una nueva función, 
-        // simplemente retornamos todos los horarios
-        return turnoList.join(', ');
+      // MODIFICACIÓN: Siempre mostrar todos los horarios con el formato solicitado
+      // Formato: "de las 09:00 a las 18:00" para un solo horario
+      // Formato: "de las 09:00 a las 18:00 y de las 09:00 a las 18:00" para múltiples horarios
+      if (turnoList.length === 1) {
+        // Para un solo horario: "de las 09:00 a las 18:00"
+        return 'de las ' + turnoList[0].replace(' a ', ' a las ');
+      } else {
+        // Para múltiples horarios: "de las 09:00 a las 18:00 y de las 09:00 a las 18:00"
+        return turnoList.map((horario, index) => {
+          const formatted = horario.replace(' a ', ' a las ');
+          return 'de las ' + formatted;
+        }).join(' y ');
       }
     });
     html = html.replace(/{{\s*horario_turno\s*}}/g, datos.horario_turno || '');
@@ -907,18 +1062,28 @@
       let lista = [];
       if (empleadoSeleccionado && Array.isArray(empleadoSeleccionado.beneficiarios)) {
         lista = empleadoSeleccionado.beneficiarios.slice(0, 5).map(b => ({
+          id: b.id_beneficiario,
           nombre: nombreCompletoBeneficiario(b),
           parentesco: b.parentesco || '',
           porcentaje: (b.porcentaje != null && b.porcentaje !== '') ? String(b.porcentaje) : ''
         }));
       }
-      // Fallback: usar el beneficiario del formulario como único elemento
-      if (lista.length === 0 && (datos.beneficiario_nombre || datos.beneficiario_parentesco || datos.beneficiario_porcentaje)) {
-        lista = [{ 
-          nombre: datos.beneficiario_nombre || '', 
+
+      // Aplicar ediciones locales del formulario sobre la salida (sin tocar BD)
+      // Si el usuario edita los campos, mostramos SOLO ese beneficiario editado para evitar duplicados.
+      const hayEdicionLocal = (
+        (datos.beneficiario_nombre && datos.beneficiario_nombre.trim() !== '') ||
+        (datos.beneficiario_parentesco && datos.beneficiario_parentesco.trim() !== '') ||
+        (datos.beneficiario_porcentaje && String(datos.beneficiario_porcentaje).trim() !== '')
+      );
+      if (hayEdicionLocal) {
+        const nuevo = {
+          id: null,
+          nombre: datos.beneficiario_nombre || '',
           parentesco: datos.beneficiario_parentesco || '',
           porcentaje: datos.beneficiario_porcentaje || ''
-        }];
+        };
+        lista = [nuevo];
       }
 
       let idxNombre = 0;
@@ -1017,11 +1182,15 @@
 
   // Imprimir contrato
   function imprimirContrato() {
-    const contenido = previewContent.querySelector('.a4-container .page');
-    if (!contenido) {
-      alert('No hay contenido para imprimir');
-      return;
+    const contenido = previewContent.querySelector('.a4-container');
+    if (!contenido) { 
+      alert('No hay contenido para imprimir'); 
+      return; 
     }
+    
+    // Configurar nombre del archivo PDF
+    const nombreArchivo = obtenerNombreArchivo();
+    document.title = nombreArchivo; // El navegador usa el título para el nombre del PDF
 
     const htmlContent = contenido.innerHTML;
 
@@ -1074,30 +1243,70 @@
         const finalHtml = template.replace('{{CONTENIDO}}', `
           ${htmlForPrint}
           <script>
-            // Agregar numeración de páginas después de cargar
-            function addPageNumbers() {
-              const pages = document.querySelectorAll('.page');
-              pages.forEach((page, index) => {
-                const pageNumber = document.createElement('div');
-                pageNumber.style.position = 'absolute';
-                pageNumber.style.bottom = '0.5in';
-                pageNumber.style.left = '50%';
-                pageNumber.style.transform = 'translateX(-50%)';
-                pageNumber.style.fontSize = '12pt';
-                pageNumber.style.color = '#000';
-                pageNumber.style.fontWeight = 'normal';
-                pageNumber.textContent = '[' + (index + 1) + ']';
-                page.style.position = 'relative';
-                page.appendChild(pageNumber);
+            // Eliminar cualquier numeración de página existente
+            function removePageNumbers() {
+              // Eliminar elementos de numeración de página
+              const pageNumbers = document.querySelectorAll('.page-number, .page-counter, .correct-page-number, .page-number-container');
+              pageNumbers.forEach(el => {
+                if (el.parentNode) {
+                  el.parentNode.removeChild(el);
+                }
+              });
+              
+              // Eliminar estilos de numeración de página
+              const pageStyles = document.querySelectorAll('style');
+              pageStyles.forEach(style => {
+                if (style.textContent.includes('page-number') || style.textContent.includes('page-counter')) {
+                  style.remove();
+                }
               });
             }
             
             // Ejecutar cuando el documento esté listo
             if (document.readyState === 'loading') {
-              document.addEventListener('DOMContentLoaded', addPageNumbers);
+              document.addEventListener('DOMContentLoaded', removePageNumbers);
             } else {
-              addPageNumbers();
+              removePageNumbers();
             }
+            
+            // Forzar márgenes consistentes
+            document.addEventListener('DOMContentLoaded', function() {
+              const style = document.createElement('style');
+              style.textContent = \`
+                @page { 
+                  margin: 2.5cm 3cm !important; 
+                  size: letter !important;
+                }
+                @page :first { 
+                  margin: 1.5cm 3cm 2.5cm 3cm !important; /* top right bottom left */
+                  size: letter !important;
+                }
+                body { 
+                  margin: 0 !important; 
+                  padding: 0 !important; 
+                }
+                .page { 
+                  margin: 0 !important; 
+                  padding: 0 !important; 
+                  page-break-after: always !important;
+                  position: relative !important;
+                }
+                .page > :first-child {
+                  margin-top: 0 !important;
+                  padding-top: 0 !important;
+                }
+                /* Eliminar cualquier numeración de página */
+                .page::after {
+                  display: none !important;
+                  content: "" !important;
+                }
+                .page::before {
+                  display: none !important;
+                  content: "" !important;
+                }
+              \`;
+              document.head.appendChild(style);
+            });
           <\/script>
         `);
         
@@ -1201,6 +1410,33 @@
     }
   }
 
+  // Obtener nombre de archivo limpio para exportación
+  function obtenerNombreArchivo() {
+    const nombreArchivoInput = document.getElementById('nombreArchivo');
+    let nombreArchivo = '';
+    
+    if (nombreArchivoInput && nombreArchivoInput.value && nombreArchivoInput.value.trim() !== '') {
+      nombreArchivo = nombreArchivoInput.value.trim();
+    } else {
+      // Generar nombre por defecto: Contrato_NombreEmpleado_Fecha
+      let nombreEmpleado = 'Empleado';
+      if (empleadoSeleccionado && empleadoSeleccionado.nombre) {
+        nombreEmpleado = (empleadoSeleccionado.nombre + ' ' + (empleadoSeleccionado.apellido_paterno || '') + ' ' + (empleadoSeleccionado.apellido_materno || '')).trim();
+      }
+      const fecha = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+      nombreArchivo = `Contrato_${nombreEmpleado}_${fecha}`;
+    }
+    
+    // Limpiar el nombre del archivo: quitar acentos, espacios, caracteres especiales
+    nombreArchivo = nombreArchivo
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quitar acentos
+      .replace(/[^a-zA-Z0-9_-]/g, '_') // solo letras, números, guiones
+      .replace(/_+/g, '_') // evitar múltiples guiones bajos consecutivos
+      .replace(/^_|_$/g, ''); // quitar guiones al inicio/final
+    
+    return nombreArchivo || 'contrato';
+  }
+
   // Exportar contrato a Word
   function exportarWord() {
     const contenido = previewContent.querySelector('.a4-container .page');
@@ -1209,14 +1445,7 @@
       return; 
     }
     
-    // Obtener el nombre del archivo si se especificó
-    const nombreArchivoInput = document.getElementById('nombreArchivo');
-    let nombreArchivo = nombreArchivoInput && nombreArchivoInput.value 
-      ? nombreArchivoInput.value 
-      : 'contrato_' + new Date().getTime();
-    
-    // Limpiar el nombre del archivo
-    nombreArchivo = nombreArchivo.replace(/[^a-zA-Z0-9_-]/g, '_').trim();
+    const nombreArchivo = obtenerNombreArchivo();
     
     // Clonar el contenido para no modificar el original
     const clone = contenido.cloneNode(true);
@@ -1285,11 +1514,11 @@
         // Liberar el objeto URL
         window.URL.revokeObjectURL(url);
         
-        alert('✅ Documento Word generado exitosamente: ' + nombre);
+        // No mostrar ninguna alerta
       })
       .catch(err => {
         console.error('Error al exportar a Word:', err);
-        alert('❌ Error al exportar a Word: ' + err.message);
+        // No mostrar ninguna alerta, solo registrar el error en consola
       })
       .finally(() => {
         // Restaurar el botón

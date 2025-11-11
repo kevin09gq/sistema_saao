@@ -1856,7 +1856,7 @@ $(document).ready(function () {
                     
                     elementosAbsolutos = 
                         "<div style=\"position:absolute;top:" + topNombre + ";left:0.2cm;width:3cm;\">" +
-                            "<div style='position: absolute; top: 0cm;'><strong style='color:" + colorTextoDatos + ";font-size:8pt !important;text-align:left !important;'>Trabajador:</strong></div>" +
+                            "<div style='position: absolute; top: -0.2cm;'><strong style='color:" + colorTextoDatos + ";font-size:8pt !important;text-align:left !important;'>Trabajador:</strong></div>" +
                             "<div style='margin-top: 0.3cm;'><span class='nombre-gafete-frente' style='color:" + colorTextoDatos + ";text-align:left !important;font-size:9.5pt !important;font-weight:800;line-height:1.1;display:block;'>" + nombreEnLineas + "</span></div>" +
                         "</div>" +
                         vigenciaHtml +
@@ -2599,6 +2599,59 @@ $(document).ready(function () {
         $("#modal_curp").val(empleado.curp || '');
         $("#modal_sexo").val(empleado.sexo || '');
         $("#modal_grupo_sanguineo").val(empleado.grupo_sanguineo || '');
+        
+        // Seleccionar estado civil con mapeo adecuado
+        (function(){
+            const estadoCivilSelect = document.getElementById('modal_estado_civil');
+            if (!estadoCivilSelect) return;
+            
+            const raw = (empleado.estado_civil || '').toString().trim();
+            if (!raw) {
+                estadoCivilSelect.value = '';
+                return;
+            }
+            
+            // Mapeo de variantes comunes a los valores del select
+            const mapa = {
+                'SOLTERO(A)': 'SOLTERO',
+                'SOLTERO': 'SOLTERO',
+                'SOLTERA': 'SOLTERO',
+                'CASADO(A)': 'CASADO',
+                'CASADO': 'CASADO',
+                'CASADA': 'CASADO',
+                'VIUDO(A)': 'VIUDO',
+                'VIUDO': 'VIUDO',
+                'VIUDA': 'VIUDO',
+                'DIVORCIADO(A)': 'DIVORCIADO',
+                'DIVORCIADO': 'DIVORCIADO',
+                'DIVORCIADA': 'DIVORCIADO',
+                'UNION LIBRE': 'UNION_LIBRE',
+                'UNION_LIBRE': 'UNION_LIBRE',
+                'UNIÓN LIBRE': 'UNION_LIBRE',
+                'SEPARADO(A)': 'SEPARADO',
+                'SEPARADO': 'SEPARADO',
+                'SEPARADA': 'SEPARADO'
+            };
+            
+            // Normalizar: quitar acentos para comparar y pasar a mayúsculas
+            const upperNoAccent = raw.normalize('NFD').replace(/\p{Diacritic}/gu, '').toUpperCase();
+            let valorSeleccion = mapa[upperNoAccent] || raw;
+            
+            // Buscar opción que coincida
+            let elegido = false;
+            for (let i = 0; i < estadoCivilSelect.options.length; i++) {
+                if (estadoCivilSelect.options[i].value === valorSeleccion) {
+                    estadoCivilSelect.selectedIndex = i;
+                    elegido = true;
+                    break;
+                }
+            }
+            if (!elegido) {
+                // Si no coincide con ninguna opción, dejar en "Selecciona" (vacío)
+                estadoCivilSelect.value = '';
+            }
+        })();
+        
         $("#modal_enfermedades_alergias").val(empleado.enfermedades_alergias || '');
         $("#modal_fecha_ingreso").val(empleado.fecha_ingreso || '');
         $("#modal_fecha_reingreso").val(empleado.ultima_fecha_reingreso || '');
@@ -2819,6 +2872,7 @@ $(document).ready(function () {
             curp: $("#modal_curp").val() || "",
             sexo: $("#modal_sexo").val(),
             grupo_sanguineo: $("#modal_grupo_sanguineo").val() || "",
+            estado_civil: $("#modal_estado_civil").val() || "",
             enfermedades_alergias: $("#modal_enfermedades_alergias").val() || "",
             fecha_ingreso: $("#modal_fecha_ingreso").val() || "",
             fecha_reingreso: $("#modal_fecha_reingreso").val() || "",

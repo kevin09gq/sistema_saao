@@ -27,8 +27,8 @@ function getPuestos() {
                                     <td>${contador}</td>
                                     <td>${element.nombre_puesto}</td>
                                     <td>
-                                        <button class="btn btn-sm btn-edit btn-edit-puesto" id="btn-edit-puesto-${element.id_puestoEspecial}" data-id="${element.id_puestoEspecial}" title="Editar"><i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-sm btn-delete btn-delete-puesto" id="btn-delete-puesto-${element.id_puestoEspecial}" data-id="${element.id_puestoEspecial}" title="Eliminar"><i class="fas fa-trash"></i></button>
+                                        <button class="btn btn-sm btn-edit btn-edit-puesto" id="btn-edit-puesto-${element.id_puestoEspecial}" data-id="${element.id_puestoEspecial}" title="Editar"><i class="bi bi-pencil"></i></button>
+                                        <button class="btn btn-sm btn-delete btn-delete-puesto" id="btn-delete-puesto-${element.id_puestoEspecial}" data-id="${element.id_puestoEspecial}" title="Eliminar"><i class="bi bi-trash"></i></button>
                                     </td>
                                 </tr>   
                         `;

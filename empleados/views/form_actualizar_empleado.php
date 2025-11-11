@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <?php
 include("../../config/config.php");
+verificarSesion();
 ?>
 <html lang="es">
 
@@ -190,7 +191,7 @@ include("../../config/config.php");
                                             <option value="DIVORCIADO">Divorciado/a</option>
                                             <option value="VIUDO">Viudo/a</option>
                                             <option value="UNION_LIBRE">Unión Libre</option>
-                                            <option value="SEPARADO">Separado/a</option>
+                                            
                                         </select>
                                     </div>
                                     <div class="col-md-4 mb-3">
@@ -330,6 +331,7 @@ include("../../config/config.php");
                                                     <th>Apellido Materno</th>
                                                     <th>Parentesco</th>
                                                     <th>Porcentaje (%)</th>
+                                                    <th style="width: 80px;">Acciones</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="tbody_beneficiarios">
@@ -349,6 +351,11 @@ include("../../config/config.php");
                                                         </td>
                                                         <td>
                                                             <input type="number" class="form-control porcentaje-beneficiario text-center" name="beneficiario_porcentaje[]" placeholder="%" min="0" max="100" step="1">
+                                                        </td>
+                                                        <td class="text-center">
+                                                            <button type="button" class="btn btn-danger btn-sm btn-eliminar-beneficiario" title="Limpiar fila">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
                                                         </td>
                                                     </tr>
                                                 <?php endfor; ?>

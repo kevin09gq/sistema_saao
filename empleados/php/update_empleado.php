@@ -399,12 +399,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Verificar si todos los campos de beneficiarios están vacíos
     if (empty($beneficiarios)) {
+        // Obtener los IDs de beneficiarios antes de eliminar las relaciones
+        $beneficiarioIds_a_verificar = [];
+        $sql_get_beneficiarios = $conexion->prepare("SELECT id_beneficiario FROM empleado_beneficiario WHERE id_empleado = ?");
+        $sql_get_beneficiarios->bind_param("i", $id_empleado);
+        $sql_get_beneficiarios->execute();
+        $resultado_beneficiarios = $sql_get_beneficiarios->get_result();
+        while ($row = $resultado_beneficiarios->fetch_assoc()) {
+            $beneficiarioIds_a_verificar[] = intval($row['id_beneficiario']);
+        }
+        $sql_get_beneficiarios->close();
+
         // Si no hay beneficiarios en el formulario, eliminar todas las relaciones existentes
         $sql_delete_all_beneficiarios = $conexion->prepare("DELETE FROM empleado_beneficiario WHERE id_empleado = ?");
         $sql_delete_all_beneficiarios->bind_param("i", $id_empleado);
         $sql_delete_all_beneficiarios->execute();
         $sql_delete_all_beneficiarios->close();
+
+        // Limpiar beneficiarios huérfanos (sin relación con ningún empleado)
+        if (!empty($beneficiarioIds_a_verificar)) {
+            $sql_count_benef = $conexion->prepare("SELECT COUNT(*) AS c FROM empleado_beneficiario WHERE id_beneficiario = ?");
+            $sql_delete_benef = $conexion->prepare("DELETE FROM beneficiarios WHERE id_beneficiario = ?");
+            foreach ($beneficiarioIds_a_verificar as $bid) {
+                $sql_count_benef->bind_param("i", $bid);
+                $sql_count_benef->execute();
+                $count_res = $sql_count_benef->get_result();
+                $count_row = $count_res->fetch_assoc();
+                $num_refs = intval($count_row['c']);
+                // Si no hay referencias, eliminar el beneficiario
+                if ($num_refs === 0) {
+                    $sql_delete_benef->bind_param("i", $bid);
+                    $sql_delete_benef->execute();
+                }
+            }
+            $sql_count_benef->close();
+            $sql_delete_benef->close();
+        }
     } else {
+        // Obtener los IDs de beneficiarios antes de eliminar las relaciones
+        $beneficiarioIds_a_verificar = [];
+        $sql_get_beneficiarios = $conexion->prepare("SELECT id_beneficiario FROM empleado_beneficiario WHERE id_empleado = ?");
+        $sql_get_beneficiarios->bind_param("i", $id_empleado);
+        $sql_get_beneficiarios->execute();
+        $resultado_beneficiarios = $sql_get_beneficiarios->get_result();
+        while ($row = $resultado_beneficiarios->fetch_assoc()) {
+            $beneficiarioIds_a_verificar[] = intval($row['id_beneficiario']);
+        }
+        $sql_get_beneficiarios->close();
+
         // Eliminar todas las relaciones actuales para reconstruir
         $sql_delete_relaciones = $conexion->prepare("DELETE FROM empleado_beneficiario WHERE id_empleado = ?");
         $sql_delete_relaciones->bind_param("i", $id_empleado);
@@ -501,10 +543,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sql_insert_relacion->close();
         }
 
-        // Limpiar beneficiarios huérfanos
-        $sql_limpiar_huerfanos = $conexion->prepare("DELETE FROM beneficiarios WHERE id_beneficiario NOT IN (SELECT DISTINCT id_beneficiario FROM empleado_beneficiario WHERE id_beneficiario IS NOT NULL)");
-        $sql_limpiar_huerfanos->execute();
-        $sql_limpiar_huerfanos->close();
+        // Limpiar beneficiarios huérfanos que quedaron sin relación después de la actualización
+        if (!empty($beneficiarioIds_a_verificar)) {
+            $sql_count_benef = $conexion->prepare("SELECT COUNT(*) AS c FROM empleado_beneficiario WHERE id_beneficiario = ?");
+            $sql_delete_benef = $conexion->prepare("DELETE FROM beneficiarios WHERE id_beneficiario = ?");
+            foreach ($beneficiarioIds_a_verificar as $bid) {
+                $sql_count_benef->bind_param("i", $bid);
+                $sql_count_benef->execute();
+                $count_res = $sql_count_benef->get_result();
+                $count_row = $count_res->fetch_assoc();
+                $num_refs = intval($count_row['c']);
+                // Si no hay referencias, eliminar el beneficiario
+                if ($num_refs === 0) {
+                    $sql_delete_benef->bind_param("i", $bid);
+                    $sql_delete_benef->execute();
+                }
+            }
+            $sql_count_benef->close();
+            $sql_delete_benef->close();
+        }
     }
 
     // =============================
@@ -559,7 +616,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sql_update_contacto_emergencia->execute();
             if ($conexion->affected_rows > 0) {
                 $respuesta = array(
-                    "title" => "SUCCESS",
+                    "title" => "EXITO",
                     "text" => "Actualización exitosa.",
                     "type" => "success",
                     "timeout" => 3000,
@@ -569,7 +626,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit();
             } else {
                 $respuesta = array(
-                    "title" => "SUCCESS",
+                    "title" => "EXITO",
                     "text" => "Actualización exitosa.",
                     "type" => "success",
                     "timeout" => 3000,
@@ -586,7 +643,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sql_insert_contacto_empleado->execute();
             if ($conexion->affected_rows > 0) {
                 $respuesta = array(
-                    "title" => "SUCCESS",
+                    "title" => "EXITO",
                     "text" => "Actualización exitosa.",
                     "type" => "success",
                     "timeout" => 3000,
@@ -623,9 +680,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 empty($emergencia_parentesco) && empty($emergencia_telefono) && empty($emergencia_domicilio)
             ) {
                 $respuesta = array(
-                    "title" => "SUCCESS",
+                    "title" => "EXITO",
                     "text" => "Actualización exitosa.",
-                    "type" => "warning",
+                    "type" => "success",
                     "timeout" => 3000,
                 );
 
@@ -671,7 +728,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $sql_update_contacto_emergencia->execute();
                 if ($conexion->affected_rows > 0) {
                     $respuesta = array(
-                        "title" => "SUCCESS",
+                        "title" => "EXITO",
                         "text" => "Actualización exitosa.",
                         "type" => "success",
                         "timeout" => 3000,
@@ -696,7 +753,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $sql_insert_contacto_empleado->execute();
                 if ($conexion->affected_rows > 0) {
                     $respuesta = array(
-                        "title" => "SUCCESS",
+                        "title" => "EXITO",
                         "text" => "Actualización exitosa.",
                         "type" => "success",
                         "timeout" => 3000,
@@ -730,7 +787,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $sql_relacionar_contacto->execute();
                     if ($conexion->affected_rows > 0) {
                         $respuesta = array(
-                            "title" => "SUCCESS",
+                            "title" => "EXITO",
                             "text" => "Actualización exitosa.",
                             "type" => "success",
                             "timeout" => 3000,
@@ -766,7 +823,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $sql_update_contacto_emergencia->bind_param("si", $emergencia_parentesco, $id_empleado);
                     $sql_update_contacto_emergencia->execute();
                     $respuesta = array(
-                        "title" => "SUCCESS",
+                        "title" => "EXITO",
                         "text" => "Actualización exitosa.",
                         "type" => "success",
                         "timeout" => 3000,
@@ -816,7 +873,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sql_insert_contacto_empleado->execute();
             if ($conexion->affected_rows > 0) {
                 $respuesta = array(
-                    "title" => "SUCCESS",
+                    "title" => "EXITO",
                     "text" => "Actualización exitosa.",
                     "type" => "success",
                     "timeout" => 3000,
@@ -833,7 +890,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 empty($emergencia_parentesco) && empty($emergencia_telefono) && empty($emergencia_domicilio)
             ) {
                 $respuesta = array(
-                    "title" => "SUCCESS",
+                    "title" => "EXITO",
                     "text" => "Actualización exitosa.",
                     "type" => "warning",
                     "timeout" => 3000,
@@ -857,7 +914,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $sql_insert_contacto_empleado->execute();
                 if ($conexion->affected_rows > 0) {
                     $respuesta = array(
-                        "title" => "SUCCESS",
+                        "title" => "EXITO",
                         "text" => "Actualización exitosa.",
                         "type" => "success",
                         "timeout" => 3000,
@@ -871,7 +928,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $respuesta = array(
-        "title" => "SUCCESS",
+        "title" => "EXITO",
         "text" => "Actualización exitosa.",
         "type" => "success",
         "timeout" => 3000,

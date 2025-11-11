@@ -7,6 +7,7 @@
     <title>Nómina</title>
     <?php
     include "../../config/config.php";
+    verificarSesion(); // Proteger esta página
     ?>
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
@@ -36,13 +37,13 @@
             <form id="form_excel" enctype="multipart/form-data" class="form-nomina-inline">
                 <div>
                     <label for="archivo_excel">
-                        <i class="bi bi-file-earmark-excel-fill"></i> Nómina
+                        <i class="bi bi-file-earmark-excel-fill"></i> Lista de Raya
                     </label>
                     <input type="file" id="archivo_excel" name="archivo_excel" accept=".xls,.xlsx" required>
                 </div>
                 <div>
                     <label for="archivo_excel2">
-                        <i class="bi bi-file-earmark-excel-fill"></i> Horario
+                        <i class="bi bi-file-earmark-excel-fill"></i> Biometrico
                     </label>
                     <input type="file" id="archivo_excel2" name="archivo_excel2" accept=".xls,.xlsx" required>
                 </div>
@@ -67,13 +68,13 @@
                 </button>
                 <div class="mini-tabs">
                     <button class="mini-tab active" type="button" id="btn_tabla_nomina">
-                        <i class="bi bi-table"></i>
+                        <i class="bi bi-hospital"></i> <!-- Icono para IMSS -->
                     </button>
                     <button class="mini-tab" type="button" id="btn_tabla_dispersión">
-                        <i class="bi bi-table"></i>
+                        <i class="bi bi-credit-card"></i> <!-- Icono para tarjeta de dispersión -->
                     </button>
                     <button class="mini-tab" type="button" id="btn_tabla_sin_seguro">
-                        <i class="bi bi-table"></i>
+                        <i class="bi bi-person-dash"></i> <!-- Icono para sin IMSS -->
                     </button>
                 </div>
                 <button class="btn-suma" type="button" id="btn_suma">

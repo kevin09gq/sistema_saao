@@ -183,6 +183,25 @@
                         </div>
                     </div>
 
+                    <!-- Tercera fila: Faltas -->
+                    <div class="row">
+                        <!-- Faltas -->
+                        <div class="col-md-12 mb-3">
+                            <div class="evento-card falta">
+                                <div class="evento-header">
+                                    <i class="bi bi-x-circle"></i>
+                                    <span>Faltas (Días sin registro con horario oficial)</span>
+                                </div>
+                                <div class="evento-content" id="faltas-content">
+                                 
+                                </div>
+                                <div class="evento-total">
+                                    <strong>Total: <span id="total-faltas"></span></strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Resumen General -->
                     <div class="resumen-eventos">
                         <div class="resumen-card">
@@ -397,7 +416,7 @@
                                            id="mod-sueldo-a-cobrar" value="">
                                     <small class="sueldo-cobrar-descripcion">
                                         <i class="bi bi-info-circle"></i> 
-                                        Editable manualmente
+                                     
                                     </small>
                                 </div>
                             </div>

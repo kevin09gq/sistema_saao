@@ -136,7 +136,7 @@ class ActualizadorLogos {
             const empresaHtml = this.crearItemLogo(
                 'empresa',
                 empresa.id_empresa,
-                empresa.nombre_empresa,
+                `${empresa.nombre_empresa}<br>(derecha)`,
                 logoUrl
             );
             
@@ -167,7 +167,7 @@ class ActualizadorLogos {
             const areaHtml = this.crearItemLogo(
                 'area',
                 area.id_area,
-                area.nombre_area,
+                `${area.nombre_area}<br>(izquierda)`,
                 logoUrl
             );
             

@@ -3,6 +3,7 @@
 
 <?php
 include("../../config.php");
+verificarSesion(); // Proteger esta página
 ?>
 
 <head>
@@ -10,15 +11,12 @@ include("../../config.php");
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configuración del Sistema</title>
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Inter:400,600&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Iconos Bootstrap -->
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <!-- CSS personalizado -->
     <link rel="stylesheet" href="../styles/configuracion.css">
     <!-- SweetAlert2 CSS -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="<?= SWEETALERT ?>"></script>
 </head>
 
 <body>
@@ -27,7 +25,7 @@ include("../../config.php");
         <div class="card main-card">
             <div class="card-header">
                 <h4 class="form-section-title">
-                    <i class="fas fa-cogs section-icon"></i>
+                    <i class="bi bi-gear-fill section-icon"></i>
                     <span class="titulo-config">Configuración del Sistema</span>
                 </h4>
             </div>
@@ -36,32 +34,37 @@ include("../../config.php");
                 <ul class="nav nav-tabs" id="configTabs" role="tablist">
                     <li class="nav-item" role="presentation">
                         <a class="nav-link active" id="departamentos-tab" data-bs-toggle="tab" href="#departamentos" role="tab">
-                            <i class="fas fa-building"></i> Departamentos
+                            <i class="bi bi-building"></i> Departamentos
                         </a>
                     </li>
                     <li class="nav-item" role="presentation">
                         <a class="nav-link" id="puestos-tab" data-bs-toggle="tab" href="#puestos" role="tab">
-                            <i class="fas fa-briefcase"></i> Puestos
+                            <i class="bi bi-briefcase"></i> Puestos
                         </a>
                     </li>
                     <li class="nav-item" role="presentation">
                         <a class="nav-link" id="areas-tab" data-bs-toggle="tab" href="#areas" role="tab">
-                            <i class="fas fa-project-diagram"></i> Áreas
+                            <i class="bi bi-diagram-3"></i> Áreas
                         </a>
                     </li>
                     <li class="nav-item" role="presentation">
                         <a class="nav-link" id="empresas-tab" data-bs-toggle="tab" href="#empresas" role="tab">
-                            <i class="fas fa-industry"></i> Empresas
+                            <i class="bi bi-building-fill"></i> Empresas
                         </a>
                     </li>
                     <li class="nav-item" role="presentation">
                         <a class="nav-link" id="tabulador-tab" data-bs-toggle="tab" href="#tabulador" role="tab">
-                            <i class="fas fa-table"></i> Tabulador
+                            <i class="bi bi-table"></i> Tabulador
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="usuario-tab" data-bs-toggle="tab" href="#usuario" role="tab">
+                            <i class="bi bi-person-gear"></i> Usuario
                         </a>
                     </li>
                     <li class="nav-item" role="presentation">
                         <a class="nav-link" id="exportar-importar-tab" data-bs-toggle="tab" href="#exportar-importar" role="tab">
-                            <i class="fas fa-database"></i> Exportar/Importar BD
+                            <i class="bi bi-database"></i> Exportar/Importar BD
                         </a>
                     </li>
                 </ul>
@@ -74,7 +77,7 @@ include("../../config.php");
                             <div class="col-md-7" id="departamentos-list-container">
                                 <div class="table-container" id="departamentos-table-container">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h5><i class="fas fa-list"></i> Lista de Departamentos</h5>
+                                        <h5><i class="bi bi-list-ul"></i> Lista de Departamentos</h5>
                                         <div class="search-box-container">
                                             <input type="text" class="search-box" id="search-departamentos" placeholder="Buscar departamento...">
                                         </div>
@@ -98,7 +101,7 @@ include("../../config.php");
                             </div>
                             <div class="col-md-5">
                                 <div class="form-container">
-                                    <h5 class="mb-3"><i class="fas fa-plus-circle"></i> Agregar Departamento</h5>
+                                    <h5 class="mb-3"><i class="bi bi-plus-circle"></i> Agregar Departamento</h5>
                                     <form id="departamentoForm">
                                         <input type="hidden" id="departamento_id" name="departamento_id">
                                         <div class="mb-3">
@@ -106,8 +109,8 @@ include("../../config.php");
                                             <input type="text" class="form-control" id="nombre_departamento" name="nombre_departamento" required>
                                         </div>
                                         <div class="form-actions">
-                                            <button type="submit" class="btn btn-success" id="btn-guardar-departamento"><i class="fas fa-save"></i> Guardar</button>
-                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-departamento"><i class="fas fa-times"></i> Cancelar</button>
+                                            <button type="submit" class="btn btn-success" id="btn-guardar-departamento"><i class="bi bi-save"></i> Guardar</button>
+                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-departamento"><i class="bi bi-x-circle"></i> Cancelar</button>
                                         </div>
                                     </form>
                                 </div>
@@ -122,7 +125,7 @@ include("../../config.php");
                             <div class="col-md-7" id="puestos-list-container">
                                 <div class="table-container" id="puestos-table-container">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h5><i class="fas fa-list"></i> Lista de Puestos</h5>
+                                        <h5><i class="bi bi-list-ul"></i> Lista de Puestos</h5>
                                         <div class="search-box-container">
                                             <input type="text" class="search-box" id="search-puestos" placeholder="Buscar puesto...">
                                         </div>
@@ -146,21 +149,22 @@ include("../../config.php");
                             </div>
                             <div class="col-md-5">
                                 <div class="form-container">
-                                    <h5 class="mb-3"><i class="fas fa-plus-circle"></i> Agregar Puesto</h5>
+                                    <h5 class="mb-3"><i class="bi bi-plus-circle"></i> Agregar Puesto</h5>
                                     <form id="puestoForm">
                                         <input type="hidden" id="puesto_id" name="puesto_id">
                                         <div class="mb-3">
                                             <label for="nombre_puesto" class="form-label">Nombre del Puesto</label>
                                             <input type="text" class="form-control" id="nombre_puesto" name="nombre_puesto" required>
                                         </div>
-                                         <div class="mb-3">
+                                        <div class="mb-3">
                                             <label for="direccion_puesto" class="form-label">Dirección del Puesto</label>
                                             <input type="text" class="form-control" id="direccion_puesto" name="direccion_puesto">
                                         </div>
 
                                         <div class="form-actions">
-                                            <button type="submit" class="btn btn-success" id="btn-guardar-puesto"><i class="fas fa-save"></i> Guardar</button>
-                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-puesto"><i class="fas fa-times"></i> Cancelar</button>
+                                            <button type="submit" class="btn btn-success" id="btn-guardar-puesto"><i class="bi bi-save"></i> Guardar</button>
+                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-puesto"><i class="bi bi-x-circle"></i> Cancelar</button>
+
                                         </div>
                                     </form>
                                 </div>
@@ -176,7 +180,7 @@ include("../../config.php");
                             <div class="col-md-7" id="areas-list-container">
                                 <div class="table-container" id="areas-table-container">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h5><i class="fas fa-list"></i> Lista de Áreas</h5>
+                                        <h5><i class="bi bi-list-ul"></i> Lista de Áreas</h5>
                                         <div class="search-box-container">
                                             <input type="text" class="search-box" id="search-areas" placeholder="Buscar área...">
                                         </div>
@@ -200,7 +204,7 @@ include("../../config.php");
                             </div>
                             <div class="col-md-5">
                                 <div class="form-container">
-                                    <h5 class="mb-3"><i class="fas fa-plus-circle"></i> Agregar Área</h5>
+                                    <h5 class="mb-3"><i class="bi bi-plus-circle"></i> Agregar Área</h5>
                                     <form id="areaForm" enctype="multipart/form-data">
                                         <input type="hidden" id="area_id" name="area_id">
                                         <div class="mb-3">
@@ -212,15 +216,15 @@ include("../../config.php");
                                             <div class="image-upload-container" id="imagen-area-container">
                                                 <div class="current-image-preview mb-2" id="area-image-preview" style="display: none;">
                                                     <img id="preview_imagen_area" src="" alt="Vista previa" class="img-thumbnail" style="max-height: 150px;">
-                                                    <button type="button" class="btn btn-sm btn-danger remove-image" id="btn-remove-area-image" data-area-id="" data-target="imagen_area" style="display:inline-block;"><i class="fas fa-times"></i> Quitar</button>
+                                                    <button type="button" class="btn btn-sm btn-danger remove-image" id="btn-remove-area-image" data-area-id="" data-target="imagen_area" style="display:inline-block;"><i class="bi bi-x-circle"></i> Quitar</button>
                                                 </div>
                                                 <input type="file" class="form-control" id="imagen_area" name="imagen_area" accept="image/*">
                                                 <small class="form-text text-muted">Formatos permitidos: JPG, PNG. Tamaño máximo: 2MB</small>
                                             </div>
                                         </div>
                                         <div class="form-actions">
-                                            <button type="submit" class="btn btn-success" id="btn-guardar-area"><i class="fas fa-save"></i> Guardar</button>
-                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-area"><i class="fas fa-times"></i> Cancelar</button>
+                                            <button type="submit" class="btn btn-success" id="btn-guardar-area"><i class="bi bi-save"></i> Guardar</button>
+                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-area"><i class="bi bi-x-circle"></i> Cancelar</button>
                                         </div>
                                     </form>
                                 </div>
@@ -234,7 +238,7 @@ include("../../config.php");
                             <div class="col-md-7">
                                 <div class="table-container">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h5><i class="fas fa-list"></i> Lista de Empresas</h5>
+                                        <h5><i class="bi bi-list-ul"></i> Lista de Empresas</h5>
                                         <div class="search-box-container">
                                             <input type="text" class="search-box" id="search-empresas" placeholder="Buscar empresa...">
                                         </div>
@@ -257,7 +261,7 @@ include("../../config.php");
                             </div>
                             <div class="col-md-5">
                                 <div class="form-container">
-                                    <h5 class="mb-3"><i class="fas fa-plus-circle"></i> Agregar Empresa</h5>
+                                    <h5 class="mb-3"><i class="bi bi-plus-circle"></i> Agregar Empresa</h5>
                                     <form id="empresaForm" enctype="multipart/form-data">
                                         <input type="hidden" id="empresa_id" name="empresa_id">
                                         <div class="mb-3">
@@ -277,15 +281,15 @@ include("../../config.php");
                                             <div class="image-upload-container">
                                                 <div class="current-image-preview mb-2" style="display: none;">
                                                     <img id="preview_logo_empresa" src="" alt="Vista previa" class="img-thumbnail" style="max-height: 150px;">
-                                                    <button type="button" class="btn btn-sm btn-danger remove-image" id="btn-remove-empresa-image" data-target="logo_empresa"><i class="fas fa-times"></i> Quitar</button>
+                                                    <button type="button" class="btn btn-sm btn-danger remove-image" id="btn-remove-empresa-image" data-target="logo_empresa"><i class="bi bi-x-circle"></i> Quitar</button>
                                                 </div>
                                                 <input type="file" class="form-control" id="logo_empresa" name="logo_empresa" accept="image/*">
                                                 <small class="form-text text-muted">Formatos permitidos: JPG, PNG. Tamaño máximo: 2MB</small>
                                             </div>
                                         </div>
                                         <div class="form-actions">
-                                            <button type="submit" class="btn btn-success" id="btn-guardar-empresa"><i class="fas fa-save"></i> Guardar</button>
-                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-empresa"><i class="fas fa-times"></i> Cancelar</button>
+                                            <button type="submit" class="btn btn-success" id="btn-guardar-empresa"><i class="bi bi-save"></i> Guardar</button>
+                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-empresa"><i class="bi bi-x-circle"></i> Cancelar</button>
                                         </div>
                                     </form>
                                 </div>
@@ -299,9 +303,9 @@ include("../../config.php");
                             <div class="col-12">
                                 <div class="table-container">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h5 class="mb-0 text-center"><i class="fas fa-table"></i> Tabulador de Costos</h5>
+                                        <h5 class="mb-0 text-center"><i class="bi bi-table"></i> Tabulador de Costos</h5>
                                         <button type="button" class="btn btn-success" id="btn-actualizar-tabulador">
-                                            <i class="fas fa-sync-alt"></i> Actualizar
+                                            <i class="bi bi-arrow-repeat"></i> Actualizar
                                         </button>
                                     </div>
                                     <div class="table-responsive">
@@ -331,11 +335,11 @@ include("../../config.php");
                         <div class="row mt-4">
                             <div class="col-md-6">
                                 <div class="form-container">
-                                    <h5 class="mb-3"><i class="fas fa-download"></i> Exportar Base de Datos</h5>
+                                    <h5 class="mb-3"><i class="bi bi-download"></i> Exportar Base de Datos</h5>
 
                                     <div class="form-actions">
                                         <a href="../php/exportar_bd.php" class="btn btn-success" id="btn-exportar-bd">
-                                            <i class="fas fa-file-export"></i> Exportar
+                                            <i class="bi bi-file-earmark-arrow-down"></i> Exportar
                                         </a>
                                     </div>
 
@@ -343,7 +347,7 @@ include("../../config.php");
                             </div>
                             <div class="col-md-6">
                                 <div class="form-container">
-                                    <h5 class="mb-3"><i class="fas fa-upload"></i> Importar Base de Datos</h5>
+                                    <h5 class="mb-3"><i class="bi bi-upload"></i> Importar Base de Datos</h5>
                                     <form id="importarBDForm" action="../php/importar_bd.php" method="POST" enctype="multipart/form-data">
                                         <div class="mb-3">
                                             <label for="archivo_bd" class="form-label">Archivo SQL</label>
@@ -352,7 +356,54 @@ include("../../config.php");
                                         </div>
                                         <div class="form-actions">
                                             <button type="submit" class="btn btn-success" id="btn-importar-bd">
-                                                <i class="fas fa-file-import"></i> Importar
+                                                <i class="bi bi-file-earmark-arrow-up"></i> Importar
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- USUARIO -->
+                    <div class="tab-pane fade" id="usuario" role="tabpanel">
+                        <div class="d-flex justify-content-center align-items-center" style="min-height: 60vh;">
+                            <div class="card shadow-lg border-0" style="width: 100%; max-width: 500px;">
+                                <div class="card-header bg-success text-white text-center">
+                                    <h5 class="mb-0"><i class="bi bi-person-gear"></i> Editar Información de Usuario</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form id="formUsuario">
+                                        <div class="mb-4">
+                                            <label for="correo" class="form-label">Correo Electrónico</label>
+                                            <input type="email" class="form-control" id="correo" name="correo" placeholder="usuario@ejemplo.com" required>
+                                        </div>
+                                        <div class="mb-4">
+                                            <label for="password_actual" class="form-label">Contraseña Actual</label>
+                                            <div class="input-group">
+                                                <input type="password" class="form-control" id="password_actual" name="password_actual" placeholder="••••••••" required>
+                                                <button class="btn btn-outline-secondary" type="button" id="togglePasswordActual">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                            </div>
+                                            <small class="text-muted">Ingresa tu contraseña actual para confirmar los cambios.</small>
+                                        </div>
+                                        <div class="mb-4">
+                                            <label for="password_nueva" class="form-label">Nueva Contraseña</label>
+                                            <div class="input-group">
+                                                <input type="password" class="form-control" id="password_nueva" name="password_nueva" placeholder="••••••••">
+                                                <button class="btn btn-outline-secondary" type="button" id="togglePasswordNueva">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                            </div>
+                                            <small class="text-muted">Dejar en blanco si no deseas cambiarla.</small>
+                                        </div>
+                                        <div class="d-grid gap-2">
+                                            <button type="submit" class="btn btn-success">
+                                                <i class="bi bi-save"></i> Guardar Cambios
+                                            </button>
+                                            <button type="reset" class="btn btn-secondary">
+                                                <i class="bi bi-x-circle"></i> Cancelar
                                             </button>
                                         </div>
                                     </form>
@@ -415,6 +466,7 @@ include("../../config.php");
     <script src="../js/config_empresas.js"></script>
     <script src="../js/obtener_tabulador.js"></script>
     <script src="../js/config_tabulador.js"></script>
+    <script src="../js/edit_credenciales.js"></script>
     <script src="../../../nomina/js/rangos_horas.js"></script>
     <script src="../../../public/js/validaciones.js"></script>
 

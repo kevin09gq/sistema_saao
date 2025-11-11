@@ -30,8 +30,8 @@ function getEmpresas() {
                                     <td>${contador}</td>
                                     <td>${element.nombre_empresa}</td>
                                     <td>
-                                        <button class="btn btn-sm btn-edit btn-edit-empresa" id="btn-edit-empresa-${element.id_empresa}" data-id="${element.id_empresa}" title="Editar"><i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-sm btn-image btn-image-empresa" id="btn-image-empresa-${element.id_empresa}" data-id="${element.id_empresa}" title="Cambiar imagen"><i class="fas fa-image"></i></button>
+                                        <button class="btn btn-sm btn-edit btn-edit-empresa" id="btn-edit-empresa-${element.id_empresa}" data-id="${element.id_empresa}" title="Editar"><i class="bi bi-pencil"></i></button>
+                                        <button class="btn btn-sm btn-image btn-image-empresa" id="btn-image-empresa-${element.id_empresa}" data-id="${element.id_empresa}" title="Cambiar imagen"><i class="bi bi-image"></i></button>
                                     </td>
                                 </tr>   
                         `;
