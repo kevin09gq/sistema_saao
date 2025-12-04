@@ -4,6 +4,23 @@ $(document).ready(function () {
     buscarPuesto();
     eliminarPuesto();
     editarPuesto();
+
+    // Sincronizar selector de color y campo hex
+    $(document).on('input', '#color_picker', function(){
+        const val = $(this).val();
+        $('#color_hex').val(val);
+    });
+    $(document).on('input', '#color_hex', function(){
+        let v = $(this).val();
+        // Normalizar formato: iniciar con # y permitir solo 7 caracteres
+        if (v && v[0] !== '#') v = '#' + v.replace(/#/g,'');
+        v = v.substring(0,7);
+        $(this).val(v);
+        // Actualizar picker si formato válido
+        if (/^#[0-9A-Fa-f]{6}$/.test(v)) {
+            $('#color_picker').val(v);
+        }
+    });
 });
 
 
@@ -49,6 +66,7 @@ function agregarPuesto() {
         let idPuesto = $("#puesto_id").val().trim();
         let nombrePuesto = $("#nombre_puesto").val().trim();
         let direccionPuesto = $("#direccion_puesto").val().trim();
+        let colorHex = $("#color_hex").val().trim();
         let accion = idPuesto ? "actualizarPuesto" : "registrarPuesto";
         
         if (nombrePuesto != "") {
@@ -59,7 +77,8 @@ function agregarPuesto() {
                     accion: accion,
                     id_puesto: idPuesto,
                     nombre_puesto: nombrePuesto,
-                    direccion_puesto: direccionPuesto
+                    direccion_puesto: direccionPuesto,
+                    color_hex: colorHex
                 },
                 success: function (response) {
                     if (response.trim() == "1") {
@@ -110,6 +129,8 @@ function limpiarYResetearPuesto() {
     $("#puesto_id").val('');
     $("#nombre_puesto").val('');
     $("#direccion_puesto").val('');
+    $("#color_hex").val('');
+    $("#color_picker").val('#000000');
     $("#btn-guardar-puesto").html('<i class="fas fa-save"></i> Guardar');
 }
 
@@ -220,6 +241,9 @@ function editarPuesto() {
                     $("#puesto_id").val(response.puesto.id_puestoEspecial);
                     $("#nombre_puesto").val(response.puesto.nombre_puesto);
                     $("#direccion_puesto").val(response.puesto.direccion_puesto || '');
+                    const color = response.puesto.color_hex || '#000000';
+                    $("#color_hex").val(color);
+                    $("#color_picker").val(/^#[0-9A-Fa-f]{6}$/.test(color) ? color : '#000000');
                     $("#btn-guardar-puesto").html('<i class="fas fa-save"></i> Actualizar');
                     $("#nombre_puesto").focus();
                 } else {

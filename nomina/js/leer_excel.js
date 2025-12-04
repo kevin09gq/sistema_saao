@@ -27,8 +27,10 @@ function configTablas() {
         $('#tabla-sin-seguro-container').attr("hidden", true);
         $("#filtro-departamento").attr("hidden", true);
         $("#busqueda-container").removeAttr("hidden");
+        $("#departamentos-nomina").removeAttr("hidden");
         $("#busqueda-container-dispersion").attr("hidden", true);
         $("#busqueda-container-sin-seguro").attr("hidden", true);
+        $("#filtro-puesto").attr("hidden", true);
         $("#btn_suma").removeAttr("hidden");
         $("#btn_suma_dispersion").attr("hidden", true);
         $("#btn_suma_sin_seguro").attr("hidden", true);
@@ -51,12 +53,15 @@ function configTablas() {
         $('#tabla-dispersion-tarjeta').removeAttr("hidden");
         $('#tabla-sin-seguro-container').attr("hidden", true);
         $("#filtro-departamento").removeAttr("hidden");
-        cargarDepartamentosFiltro();
+        // Asegurar que el handler de cambio esté listo ANTES de poblar y disparar el cambio
         obtenerEmpleadosPorDepartamento();
+        cargarDepartamentosFiltro();
         validarClaves();
         $("#busqueda-container-dispersion").removeAttr("hidden");
         $("#busqueda-container").attr("hidden", true);
+        $("#departamentos-nomina").attr("hidden", true);
         $("#busqueda-container-sin-seguro").attr("hidden", true);
+        $("#filtro-puesto").attr("hidden", true);
         $("#btn_suma_dispersion").removeAttr("hidden");
         $("#btn_suma").attr("hidden", true);
         $("#btn_suma_sin_seguro").attr("hidden", true);
@@ -72,7 +77,7 @@ function configTablas() {
             // Mantener la página actual al actualizar
             const paginaActual = window.paginaActualDispersion || 1;
             setEmpleadosDispersionPaginados(window.empleadosOriginalesDispersion, true);
-            
+
             // Restaurar la página actual
             if (typeof window.paginaActualDispersion !== 'undefined') {
                 window.paginaActualDispersion = paginaActual;
@@ -91,15 +96,20 @@ function configTablas() {
         $('#tabla-sin-seguro-container').removeAttr("hidden");
         $("#filtro-departamento").attr("hidden", true);
         $("#busqueda-container").attr("hidden", true);
+        $("#departamentos-nomina").attr("hidden", true);
         $("#busqueda-container-dispersion").attr("hidden", true);
         $("#busqueda-container-sin-seguro").removeAttr("hidden");
+        $("#filtro-puesto").removeAttr("hidden");
         $("#btn_suma").attr("hidden", true);
         $("#btn_suma_dispersion").attr("hidden", true);
         $("#btn_suma_sin_seguro").removeAttr("hidden");
 
-        // Refrescar la tabla de empleados sin seguro
+        // Obtener el valor actual del filtro de puesto
+        const filtroPuesto = $("#filtro-puesto").val() || 'Produccion 40 Libras';
+
+        // Refrescar la tabla de empleados sin seguro con el filtro actual
         if (typeof mostrarEmpleadosSinSeguro === 'function') {
-            mostrarEmpleadosSinSeguro();
+            mostrarEmpleadosSinSeguro(true, filtroPuesto);
         }
     });
 }
@@ -109,7 +119,9 @@ $(document).ready(function () {
     verificarDatosGuardados();
     obtenerArchivos();
     configTablas();
+    inicializarBotonesLimpiarBusqueda();
 
+  
 
 
     $('#btn_horarios').click(function (e) {
@@ -153,6 +165,41 @@ $(document).ready(function () {
                 fila.append($("<td>").addClass("celda-total editable").attr("contenteditable", "true").text(diaInfo.totalHoras));
                 fila.append($("<td>").addClass("celda-comida editable").attr("contenteditable", "true").text(diaInfo.horasComida));
                 fila.append($("<td>").addClass("celda-minutos").text("0"));
+                // Checkbox Forzar oficial
+                var chk = $('<input type="checkbox" class="toggle-forzar-oficial">');
+                // Inicializar: priorizar flag en JSON por día; fallback al mapa existente
+                var inicialChecked = false;
+                try {
+                    if (data && data.semana && data.semana[claveDia] && typeof data.semana[claveDia].forzarOficial !== 'undefined') {
+                        inicialChecked = !!data.semana[claveDia].forzarOficial;
+                    } else if (window.horariosForzarOficialMapa && window.horariosForzarOficialMapa[claveDia]) {
+                        inicialChecked = true;
+                    }
+                } catch (e) { /* noop */ }
+                if (inicialChecked) { chk.prop('checked', true); }
+                chk.attr('data-dia-clave', claveDia);
+                // Guardar cambios inmediatamente cuando el usuario cambia el checkbox
+                chk.on('change', function () {
+                    var c = $(this).attr('data-dia-clave');
+                    var checked = $(this).is(':checked');
+                    if (!window.horariosForzarOficialMapa) window.horariosForzarOficialMapa = {};
+                    window.horariosForzarOficialMapa[c] = checked;
+                    try {
+                        if (window.horariosSemanalesActualizados && window.horariosSemanalesActualizados.semana && window.horariosSemanalesActualizados.semana[c]) {
+                            window.horariosSemanalesActualizados.semana[c].forzarOficial = checked;
+                        }
+                    } catch (e) { /* noop */ }
+                    if (typeof redondearRegistrosEmpleados === 'function') {
+                        redondearRegistrosEmpleados(true);
+                        if (typeof setEmpleadosPaginados === 'function' && window.empleadosOriginales) {
+                            setEmpleadosPaginados(window.empleadosOriginales);
+                        }
+                    }
+                    if (typeof guardarDatosNomina === 'function') {
+                        guardarDatosNomina();
+                    }
+                });
+                fila.append($('<td>').addClass('celda-forzar-oficial').append(chk));
 
                 tbody.append(fila);
             }
@@ -299,6 +346,23 @@ $(document).ready(function () {
         }
     }, 500);
 });
+
+function inicializarBotonesLimpiarBusqueda() {
+    const map = [
+        { btn: '#btn-clear-busqueda', input: '#campo-busqueda' },
+        { btn: '#btn-clear-busqueda-dispersion', input: '#campo-busqueda-dispersion' },
+        { btn: '#btn-clear-busqueda-sin-seguro', input: '#campo-busqueda-sin-seguro' }
+    ];
+    map.forEach(({ btn, input }) => {
+        $(document).off('click', btn).on('click', btn, function (e) {
+            e.preventDefault();
+            const $inp = $(input);
+            $inp.val('');
+            $inp.trigger('input');
+            $inp.focus();
+        });
+    });
+}
 /*
  * ================================================================
  * MÓDULO DE PERSISTENCIA DE DATOS DE NÓMINA
@@ -319,6 +383,7 @@ function guardarDatosNomina() {
             empleadosOriginales: JSON.parse(JSON.stringify(window.empleadosOriginales)),
             empleadosOriginalesDispersion: JSON.parse(JSON.stringify(window.empleadosOriginalesDispersion || [])),
             horariosSemanalesActualizados: window.horariosSemanalesActualizados ? JSON.parse(JSON.stringify(window.horariosSemanalesActualizados)) : null,
+            horariosForzarOficialMapa: window.horariosForzarOficialMapa ? JSON.parse(JSON.stringify(window.horariosForzarOficialMapa)) : {},
             timestamp: new Date().getTime()
         };
 
@@ -409,7 +474,7 @@ function verificarDatosGuardados() {
     const datosGuardados = recuperarDatosNomina();
 
     if (datosGuardados) {
-        // 🆕 VERIFICAR SI HAY DATOS VÁLIDOS ANTES DE RESTAURAR LA VISTA
+        //   VERIFICAR SI HAY DATOS VÁLIDOS ANTES DE RESTAURAR LA VISTA
         if (!datosGuardados.jsonGlobal || !datosGuardados.empleadosOriginales || datosGuardados.empleadosOriginales.length === 0) {
             // Si no hay datos válidos, limpiar y mostrar formulario
             limpiarDatosNomina();
@@ -425,6 +490,9 @@ function verificarDatosGuardados() {
 
         if (datosGuardados.horariosSemanalesActualizados) {
             window.horariosSemanalesActualizados = datosGuardados.horariosSemanalesActualizados;
+        }
+        if (datosGuardados.horariosForzarOficialMapa) {
+            window.horariosForzarOficialMapa = datosGuardados.horariosForzarOficialMapa;
         }
 
         // Recalcular sueldos a cobrar para todos los empleados restaurados
@@ -445,16 +513,16 @@ function verificarDatosGuardados() {
             });
         }
 
-        // 🆕 RESTAURAR LA VISTA DIRECTA SIN MOSTRAR PRIMERO EL FORMULARIO
+        //   RESTAURAR LA VISTA DIRECTA SIN MOSTRAR PRIMERO EL FORMULARIO
         restaurarVistaNominaDirecta();
     } else {
-        // 🆕 ASEGURAR QUE EL FORMULARIO ESTÉ VISIBLE SI NO HAY DATOS
+        //   ASEGURAR QUE EL FORMULARIO ESTÉ VISIBLE SI NO HAY DATOS
         $("#container-nomina").removeAttr("hidden");
         $("#tabla-nomina-responsive").attr("hidden", true);
     }
 }
 
-// 🆕 NUEVA FUNCIÓN PARA RESTAURAR VISTA DIRECTAMENTE
+//   NUEVA FUNCIÓN PARA RESTAURAR VISTA DIRECTAMENTE
 function restaurarVistaNominaDirecta() {
     // Cambiar de vista inmediatamente sin mostrar el formulario primero
     $("#container-nomina").attr("hidden", true);
@@ -472,6 +540,7 @@ function restaurarVistaNominaDirecta() {
 
     // Configurar controles de búsqueda
     $("#busqueda-container").removeAttr("hidden");
+    $("#departamentos-nomina").removeAttr("hidden");
     $("#filtro-seguro").removeAttr("hidden");
 
     // Inicializar menú contextual para empleados sin seguro
@@ -529,7 +598,7 @@ function restaurarVistaNominaDirecta() {
     }
 }
 
-// 🆕 MANTENER LA FUNCIÓN ORIGINAL PARA CUANDO SE USA DESDE OTROS LUGARES
+//   MANTENER LA FUNCIÓN ORIGINAL PARA CUANDO SE USA DESDE OTROS LUGARES
 function restaurarVistaNomina() {
     // Esta función se mantiene para compatibilidad con otras partes del código
     restaurarVistaNominaDirecta();
@@ -605,9 +674,10 @@ function obtenerArchivos(params) {
 
                                 // MOVER enviarIdBiometricosNoUnidos DESPUÉS de asignar jsonGlobal
                                 $('#busqueda-container').removeAttr('hidden'); // Mostrar el contenedor de búsqueda principal
+                                $('#departamentos-nomina').removeAttr('hidden'); // Mostrar el filtro de departamentos
                                 $('#busqueda-container-dispersion').attr('hidden', true); // Ocultar el contenedor de búsqueda de dispersión
                                 $('#busqueda-container-sin-seguro').attr('hidden', true); // Ocultar el contenedor de búsqueda de sin seguro
-
+                                $("#filtro-puesto").attr("hidden", true); // Ocultar el filtro de puesto
                                 // Resetear los mini-tabs para que la tabla principal esté activa
                                 $('.mini-tab').removeClass('active'); // Remover la clase active de todos los tabs
                                 $('#btn_tabla_nomina').addClass('active'); // Activar el tab de la tabla principal
@@ -623,6 +693,12 @@ function obtenerArchivos(params) {
                                         obtenerNominaDeBaseDatos(jsonUnido.numero_semana, function (jsonBaseDatos) {
                                             if (jsonBaseDatos) {
                                                 jsonGlobal = jsonBaseDatos; // Usar el JSON de la base de datos
+                                                // Reinyectar registros desde json2 (horarios) para 40/10 LIBRAS
+                                                try {
+                                                    if (json2 && json2.empleados && jsonGlobal && jsonGlobal.departamentos) {
+                                                        sobrescribirRegistrosDesdeHorarios(jsonGlobal, json2, json1);
+                                                    }
+                                                } catch (e) { /* noop */ }
                                             } else {
                                                 jsonGlobal = jsonUnido; // En caso de error, usar el JSON unido
                                             }
@@ -648,7 +724,7 @@ function obtenerArchivos(params) {
 
                                                 // Guardar datos en localStorage después de procesar
                                                 guardarDatosNomina();
-                                             
+
 
                                             });
                                         });
@@ -666,15 +742,15 @@ function obtenerArchivos(params) {
                                             $("#tabla-nomina-responsive").removeAttr("hidden");
                                             $("#container-nomina").attr("hidden", true);
 
-                                            // 🆕 PASAR PARÁMETRO INDICANDO QUE ES NÓMINA NUEVA
+                                            //   PASAR PARÁMETRO INDICANDO QUE ES NÓMINA NUEVA
                                             establecerDatosEmpleados(true);
                                             busquedaNomina();
-                                            // 🆕 RECALCULAR PARA NÓMINA NUEVA
+                                            //   RECALCULAR PARA NÓMINA NUEVA
                                             redondearRegistrosEmpleados(true, true);
 
                                             // Guardar datos en localStorage después de procesar
                                             guardarDatosNomina();
-                                            
+
 
                                         });
                                     }
@@ -719,8 +795,9 @@ function unirJson(json1, json2) {
     // Recorre departamentos y empleados
     if (json1 && json1.departamentos) {
         json1.departamentos.forEach(depto => {
-            //   SOLO AGREGAR REGISTROS PARA PRODUCCION 40 LIBRAS
+            //   SOLO AGREGAR REGISTROS PARA PRODUCCION 40 LIBRAS y 10 LIBRAS
             const esProduccion40 = (depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS');
+            const esProduccion10 = (depto.nombre || '').toUpperCase().includes('PRODUCCION 10 LIBRAS');
 
             if (depto.empleados) {
                 depto.empleados.forEach(emp1 => {
@@ -728,8 +805,8 @@ function unirJson(json1, json2) {
                     if (empleados2Map[nombreNormalizado]) {
                         const emp2 = empleados2Map[nombreNormalizado];
 
-                        // Solo agregar datos de horarios si es el departamento de Producción 40 Libras
-                        if (esProduccion40) {
+                        // Solo agregar datos de horarios si es el departamento de Producción 40 Libras o Producción 10 Libras
+                        if (esProduccion40 || esProduccion10) {
 
                             emp1.registros = emp2.registros;
                         }
@@ -742,6 +819,7 @@ function unirJson(json1, json2) {
 
     return json1;
 }
+
 
 /*
  * ================================================================
@@ -875,6 +953,7 @@ function establecerDatosEmpleados() {
         jsonGlobal.departamentos.forEach(depto => {
             // Solo procesar empleados del departamento "PRODUCCION 40 LIBRAS"
             if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS') ||
+                (depto.nombre || '').toUpperCase().includes('PRODUCCION 10 LIBRAS') ||
                 (depto.nombre || '').toUpperCase().includes('SIN SEGURO')) {
                 let empleadosOrdenados = (depto.empleados || []).slice().sort(compararPorApellidos);
                 empleadosOrdenados.forEach(emp => {
@@ -963,6 +1042,7 @@ function establecerDatosEmpleados() {
     actualizarJsonGlobalConEmpleadosOriginales();
 
     $("#busqueda-container").removeAttr("hidden");
+    $("#departamentos-nomina").removeAttr("hidden");
     $("#filtro-seguro").removeAttr("hidden");
 
     // Inicializar menú contextual para empleados sin seguro
@@ -979,7 +1059,9 @@ function establecerDatosEmpleadosExistentes() {
         jsonGlobal.departamentos.forEach(depto => {
             // Solo procesar empleados del departamento "PRODUCCION 40 LIBRAS"
             if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS') ||
-                (depto.nombre || '').toUpperCase().includes('SIN SEGURO')) {
+                (depto.nombre || '').toUpperCase().includes('SIN SEGURO') ||
+                (depto.nombre || '').toUpperCase().includes('PRODUCCION 10 LIBRAS')
+            ) {
 
                 const esSinSeguro = (depto.nombre || '').toUpperCase().includes('SIN SEGURO');
 
@@ -1002,6 +1084,7 @@ function establecerDatosEmpleadosExistentes() {
 
     // NO actualizar jsonGlobal porque ya viene correcto de la BD
     $("#busqueda-container").removeAttr("hidden");
+    $("#departamentos-nomina").removeAttr("hidden");
     $("#filtro-seguro").removeAttr("hidden");
 
     // Inicializar menú contextual para empleados sin seguro
@@ -1017,7 +1100,9 @@ function actualizarJsonGlobalConEmpleadosOriginales() {
     jsonGlobal.departamentos.forEach(depto => {
         // Solo actualizar departamento "PRODUCCION 40 LIBRAS" con empleados procesados
         if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS') ||
-            (depto.nombre || '').toUpperCase().includes('SIN SEGURO')) {
+            (depto.nombre || '').toUpperCase().includes('SIN SEGURO') ||
+            (depto.nombre || '').toUpperCase().includes('PRODUCCION 10 LIBRAS')
+        ) {
             // Filtra empleados que pertenecen a este departamento
             const empleadosDepto = window.empleadosOriginales.filter(emp =>
                 (emp.id_departamento === depto.nombre.split(' ')[0]) &&
@@ -1040,7 +1125,9 @@ function sincronizarCambiosConJsonGlobal() {
     // Actualizar empleados en jsonGlobal con los valores actuales de empleadosOriginales
     jsonGlobal.departamentos.forEach(depto => {
         if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS') ||
-            (depto.nombre || '').toUpperCase().includes('SIN SEGURO')) {
+            (depto.nombre || '').toUpperCase().includes('SIN SEGURO') ||
+            (depto.nombre || '').toUpperCase().includes('PRODUCCION 10 LIBRAS')
+        ) {
             depto.empleados = depto.empleados.map(emp => {
                 // Buscar empleado actualizado en empleadosOriginales
                 const empActualizado = window.empleadosOriginales.find(e => e.clave === emp.clave);
@@ -1131,7 +1218,8 @@ function inicializarMenuContextual() {
             (depto.empleados || []).forEach(emp => {
                 empleadosMap.set(String(emp.clave), {
                     empleado: emp,
-                    esProduccion40: (depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS')
+                    esProduccion40: (depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS'),
+                    esProduccion10: (depto.nombre || '').toUpperCase().includes('PRODUCCION 10 LIBRAS')
                 });
             });
         });
@@ -1145,7 +1233,7 @@ function inicializarMenuContextual() {
         // Búsqueda rápida usando Map
         const empleadoInfo = empleadosMap.get(String(clave));
 
-        if (empleadoInfo && empleadoInfo.esProduccion40) {
+        if (empleadoInfo && (empleadoInfo.esProduccion40 || empleadoInfo.esProduccion10)) {
             // Guardar la clave para usar en "Ver detalles" sin buscar de nuevo
             $('#menu-contextual').data('clave-actual', clave);
             $('#menu-contextual')
@@ -1314,7 +1402,7 @@ function busquedaNomina() {
             // Actualizar paginación con resultados filtrados
             const paginaActual = window.paginaActualDispersion || 1;
             setEmpleadosDispersionPaginados(empleadosFiltradosDispersion, true);
-            
+
             // Restaurar la página actual si es posible, de lo contrario ir a la página 1
             if (paginaActual > 1) {
                 window.paginaActualDispersion = paginaActual;
@@ -1335,8 +1423,13 @@ function busquedaNomina() {
         if (timeoutBusquedaSinSeguro) clearTimeout(timeoutBusquedaSinSeguro);
 
         timeoutBusquedaSinSeguro = setTimeout(function () {
-            // Obtener empleados sin seguro
-            const empleadosSinSeguro = obtenerEmpleadosSinSeguro();
+            // Respetar el filtro actual 40/10 del selector o variable global
+            const filtroActual = (typeof window.filtroPuestoSinSeguro !== 'undefined' && window.filtroPuestoSinSeguro)
+                ? window.filtroPuestoSinSeguro
+                : (($('#filtro-puesto').val() || 'Produccion 40 Libras'));
+
+            // Obtener empleados sin seguro según el filtro actual
+            const empleadosSinSeguro = obtenerEmpleadosSinSeguro(filtroActual);
 
             // Filtrar empleados por nombre o clave
             const empleadosFiltradosSinSeguro = termino ?
@@ -1395,8 +1488,9 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
     function encontrarEmpleadoEnJsonGlobal(clave) {
         if (!jsonGlobal || !jsonGlobal.departamentos) return null;
         for (let depto of jsonGlobal.departamentos) {
-            // Buscar en PRODUCCION 40 LIBRAS y SIN SEGURO
+            // Buscar en PRODUCCION 40 LIBRAS, PRODUCCION 10 LIBRAS y SIN SEGURO
             if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS') ||
+                (depto.nombre || '').toUpperCase().includes('PRODUCCION 10 LIBRAS') ||
                 (depto.nombre || '').toUpperCase().includes('SIN SEGURO')) {
                 for (let emp of depto.empleados || []) {
                     // Buscar por clave o por id_biometrico para empleados no unidos
@@ -1466,17 +1560,17 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
         // Orden de días: Viernes a Jueves (semana laboral)
         const diasSemana = ['viernes', 'sabado', 'domingo', 'lunes', 'martes', 'miercoles', 'jueves'];
         let diasConFalta = 0;
-        
+
         diasSemana.forEach(dia => {
             const horarioOficial = horariosSemanales.semana[dia];
-            
+
             // Solo verificar días que tienen horario oficial (no son días de descanso)
-            if (horarioOficial && 
+            if (horarioOficial &&
                 (horarioOficial.entrada !== "00:00" || horarioOficial.salida !== "00:00")) {
-                
+
                 // Buscar si el empleado tiene registros para este día
                 let tieneRegistroDia = false;
-                
+
                 // Primero buscar en registros_redondeados si están disponibles
                 if (registrosRedondeados && registrosRedondeados.length > 0) {
                     tieneRegistroDia = registrosRedondeados.some(registro => {
@@ -1489,14 +1583,14 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
                         return registro.dia && registro.dia.toLowerCase() === dia;
                     });
                 }
-                
+
                 // Si hay horario oficial pero no hay registro, es falta
                 if (!tieneRegistroDia) {
                     diasConFalta++;
                 }
             }
         });
-        
+
         return diasConFalta;
     }
     function detectarSalidaTardia(horaReal, horaOficial) {
@@ -1504,6 +1598,16 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
         const minutosOficial = horaAMinutos(horaOficial);
         if (minutosReal && minutosOficial && minutosReal > minutosOficial) {
             const diferencia = minutosReal - minutosOficial;
+            return (diferencia >= 50) ? diferencia : 0;
+        }
+        return 0;
+    }
+
+    function detectarSalidaTemprana(horaReal, horaOficial) {
+        const minutosReal = horaAMinutos(horaReal);
+        const minutosOficial = horaAMinutos(horaOficial);
+        if (minutosReal && minutosOficial && minutosReal < minutosOficial) {
+            const diferencia = minutosOficial - minutosReal;
             return (diferencia >= 50) ? diferencia : 0;
         }
         return 0;
@@ -1527,11 +1631,12 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
 
         switch (tipo) {
             case 'entrada':
-                // Redondear a la hora oficial de entrada si se marca hasta 40 minutos después
-                if (minutosReal >= minutosOficial && minutosReal <= minutosOficial + 40) {
+                // Llegadas tempranas: redondear hacia la hora oficial (no pagar antes)
+                if (minutosReal <= minutosOficial) {
                     return horaOficial;
                 }
-                return minutosReal <= minutosOficial ? horaOficial : horaReal;
+                // Llegadas tarde: conservar la hora real (no redondear a la oficial)
+                return horaReal;
             case 'salidaComer':
                 // Redondear a la hora oficial de salida a comer si está dentro de -30 a +30 minutos
                 if (minutosReal >= minutosOficial - 30 && minutosReal <= minutosOficial + 30) {
@@ -1602,21 +1707,24 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
             horarioOficial.salida !== "00:00";
 
         if (tieneHorarioCompleto) {
-            if (registrosDia.length < 2) {
-                olvidos.push("Faltan registros completos");
+            const r0 = registrosDia[0] || {};
+            const r1 = registrosDia[1] || {};
+            const e0 = r0.entrada && r0.entrada !== "00:00" && r0.entrada !== "--";
+            const s0 = r0.salida && r0.salida !== "00:00" && r0.salida !== "--";
+            const e1 = r1.entrada && r1.entrada !== "00:00" && r1.entrada !== "--";
+            const s1 = r1.salida && r1.salida !== "00:00" && r1.salida !== "--";
+            if (registrosDia.length === 0) {
+                olvidos.push("Entrada");
+                olvidos.push("Salir a comer");
+                olvidos.push("Regreso de comer");
+                olvidos.push("Salida final");
                 return olvidos;
             }
-            if (!registrosDia[0] || !registrosDia[0].entrada || registrosDia[0].entrada === "00:00") {
-                olvidos.push("Entrada");
-            }
-            if (!registrosDia[0] || !registrosDia[0].salida || registrosDia[0].salida === "00:00") {
-                olvidos.push("Salir a comer");
-            }
-            if (!registrosDia[1] || !registrosDia[1].entrada || registrosDia[1].entrada === "00:00") {
-                olvidos.push("Regreso de comer");
-            }
-            if (!registrosDia[1] || !registrosDia[1].salida || registrosDia[1].salida === "00:00") {
-                olvidos.push("Salida final");
+            if (!e0) olvidos.push("Entrada");
+            if (!s0) olvidos.push("Salir a comer");
+            if (registrosDia.length >= 2) {
+                if (!e1) olvidos.push("Regreso de comer");
+                if (!s1) olvidos.push("Salida final");
             }
         } else {
             const tieneEntradaSalida =
@@ -1648,7 +1756,7 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
 
         diasSemana.forEach(dia => {
             const horarioOficial = window.horariosSemanalesActualizados?.semana[dia];
-            
+
             // Solo analizar días con horario oficial
             if (!horarioOficial || (horarioOficial.entrada === "00:00" && horarioOficial.salida === "00:00")) {
                 return;
@@ -1658,16 +1766,16 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
             let empleadosSinRegistros = 0;
             let empleadosConRegistrosIncompletos = 0;
             const detallesIncompletos = [];
-            const tieneHorarioCompleto = horarioOficial.entrada !== "00:00" && 
-                                       horarioOficial.salidaComida !== "00:00" && 
-                                       horarioOficial.entradaComida !== "00:00" && 
-                                       horarioOficial.salida !== "00:00";
+            const tieneHorarioCompleto = horarioOficial.entrada !== "00:00" &&
+                horarioOficial.salidaComida !== "00:00" &&
+                horarioOficial.entradaComida !== "00:00" &&
+                horarioOficial.salida !== "00:00";
 
             empleados.forEach(empleado => {
                 // Buscar en jsonGlobal para usar registros_redondeados
                 const claveBusqueda = empleado.no_unido ? empleado.id_biometrico : empleado.clave;
                 const empleadoEnJson = encontrarEmpleadoEnJsonGlobal(claveBusqueda);
-                
+
                 if (!empleadoEnJson || !empleadoEnJson.registros_redondeados || empleadoEnJson.registros_redondeados.length === 0) {
                     empleadosSinRegistros++;
                     return;
@@ -1683,18 +1791,18 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
                     empleadosSinRegistros++;
                 } else {
                     empleadosConRegistros++;
-                    
+
                     // Verificar si los registros están completos
                     const registro = registrosDia[0];
                     const tieneEntrada = registro.entrada && registro.entrada !== '00:00' && registro.entrada !== '--';
                     const tieneSalida = registro.salida && registro.salida !== '00:00' && registro.salida !== '--';
-                    
+
                     // Verificar diferentes escenarios de registros incompletos
                     if (tieneHorarioCompleto) {
                         // Para horario completo, necesitamos 2 registros (entrada/salida comida y entrada/salida normal)
                         const tieneEntradaComida = registro.entradaComida && registro.entradaComida !== '00:00' && registro.entradaComida !== '--';
                         const tieneSalidaComida = registro.salidaComida && registro.salidaComida !== '00:00' && registro.salidaComida !== '--';
-                        
+
                         if (!tieneEntrada || !tieneSalida || !tieneEntradaComida || !tieneSalidaComida) {
                             empleadosConRegistrosIncompletos++;
                             detallesIncompletos.push({
@@ -1703,10 +1811,10 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
                                 tieneEntradaComida,
                                 tieneSalidaComida,
                                 fecha: registro.fecha,
-                                tipoIncompleto: !tieneEntrada ? 'FALTA_ENTRADA' : 
-                                             !tieneSalidaComida ? 'FALTA_SALIDA_COMIDA' :
-                                             !tieneEntradaComida ? 'FALTA_ENTRADA_COMIDA' :
-                                             'FALTA_SALIDA'
+                                tipoIncompleto: !tieneEntrada ? 'FALTA_ENTRADA' :
+                                    !tieneSalidaComida ? 'FALTA_SALIDA_COMIDA' :
+                                        !tieneEntradaComida ? 'FALTA_ENTRADA_COMIDA' :
+                                            'FALTA_SALIDA'
                             });
                         }
                     } else {
@@ -1734,8 +1842,8 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
             let escenario = 'NORMAL';
             if (porcentajeSinRegistros > 50) {
                 escenario = 'EXPORTACION_ANTICIPADA';
-            } else if (porcentajeIncompletos > 50 || 
-                      (porcentajeIncompletos > 30 && porcentajeSinRegistros > 20)) {
+            } else if (porcentajeIncompletos > 50 ||
+                (porcentajeIncompletos > 30 && porcentajeSinRegistros > 20)) {
                 escenario = 'EXPORTACION_DURANTE_DIA';
             }
 
@@ -1762,6 +1870,10 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
         const diasSemanaIndex = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
 
         diasSemana.forEach(dia => {
+            // Solo aplicar autocompletado si el usuario activó "Forzar oficial" para este día
+            if (!(window.horariosForzarOficialMapa && window.horariosForzarOficialMapa[dia])) {
+                return;
+            }
             const analisisDia = analisisGlobal[dia];
             if (!analisisDia) return;
 
@@ -1787,19 +1899,19 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
                 // Crear fecha para este día (el más reciente)
                 let fechaObjetivo = new Date();
                 const diaIndex = diasSemanaIndex.indexOf(dia);
-                
+
                 // Retroceder hasta encontrar el día correcto
                 while (fechaObjetivo.getDay() !== diaIndex) {
                     fechaObjetivo.setDate(fechaObjetivo.getDate() - 1);
                 }
-                
+
                 const fechaStr = `${fechaObjetivo.getDate().toString().padStart(2, '0')}/${(fechaObjetivo.getMonth() + 1).toString().padStart(2, '0')}/${fechaObjetivo.getFullYear()}`;
-                
+
                 // Crear registros completos basados en horario oficial
                 const tieneHorarioCompleto = horarioOficial.entrada !== "00:00" &&
-                                            horarioOficial.salidaComida !== "00:00" &&
-                                            horarioOficial.entradaComida !== "00:00" &&
-                                            horarioOficial.salida !== "00:00";
+                    horarioOficial.salidaComida !== "00:00" &&
+                    horarioOficial.entradaComida !== "00:00" &&
+                    horarioOficial.salida !== "00:00";
 
                 if (tieneHorarioCompleto) {
                     registrosPorFecha[fechaStr] = [
@@ -1825,7 +1937,7 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
                 if (analisisDia.tieneHorarioCompleto) {
                     // Para horario completo, verificar todos los casos posibles
                     const ultimoRegistro = registrosDia[registrosDia.length - 1];
-                    
+
                     // Caso 1: Solo tiene entrada (falta salida comida, entrada comida y salida)
                     if (tieneEntrada && !tieneSalida) {
                         // Si solo hay un registro, asumimos que es la entrada
@@ -1837,7 +1949,7 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
                                 entrada: horarioOficial.entradaComida,
                                 salida: horarioOficial.salida
                             });
-                        } 
+                        }
                         // Si hay dos registros, el segundo debería ser la salida
                         else if (registrosDia.length === 2) {
                             registrosDia[1].salida = horarioOficial.salida;
@@ -1855,7 +1967,7 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
                     else if (tieneEntrada && ultimoRegistro.entrada && !ultimoRegistro.salida) {
                         ultimoRegistro.salida = horarioOficial.salida;
                     }
-                } 
+                }
                 // Para horario simple
                 else if (tieneEntrada && !tieneSalida) {
                     // Solo tiene entrada, completar salida
@@ -1936,7 +2048,13 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
             empleado.registros.forEach(registro => {
                 if (registro.fecha && (registro.entrada || registro.salida)) {
                     if (!registrosPorFecha[registro.fecha]) registrosPorFecha[registro.fecha] = [];
-                    registrosPorFecha[registro.fecha].push(registro);
+                    // Empujar una copia para no mutar los registros originales del checador
+                    registrosPorFecha[registro.fecha].push({
+                        entrada: registro.entrada || "",
+                        salida: registro.salida || "",
+                        fecha: registro.fecha || "",
+                        trabajado: registro.trabajado || ""
+                    });
                 }
             });
         }
@@ -1948,7 +2066,7 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
             const diaSemana = obtenerDiaSemana(fecha);
             const horarioOficial = window.horariosSemanalesActualizados.semana[diaSemana];
             if (!horarioOficial) return;
-            const registrosDia = JSON.parse(JSON.stringify(registrosPorFecha[fecha]));
+            let registrosDia = JSON.parse(JSON.stringify(registrosPorFecha[fecha]));
             const tieneHorarioCompleto =
                 horarioOficial.entrada !== "00:00" &&
                 horarioOficial.salidaComida !== "00:00" &&
@@ -1960,6 +2078,25 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
                 horarioOficial.salida !== "00:00" &&
                 (horarioOficial.salidaComida === "00:00" || horarioOficial.entradaComida === "00:00");
 
+            // Si se forzó oficial para este día, ignorar checador y construir registros del día con el horario oficial
+            if (window.horariosForzarOficialMapa && window.horariosForzarOficialMapa[diaSemana]) {
+                if (tieneHorarioCompleto) {
+                    registrosDia = [
+                        { entrada: horarioOficial.entrada, salida: horarioOficial.salidaComida },
+                        { entrada: horarioOficial.entradaComida, salida: horarioOficial.salida }
+                    ];
+                } else if (
+                    horarioOficial.entrada !== "00:00" &&
+                    horarioOficial.salida !== "00:00"
+                ) {
+                    registrosDia = [
+                        { entrada: horarioOficial.entrada, salida: horarioOficial.salida }
+                    ];
+                } else {
+                    registrosDia = [];
+                }
+            }
+
             const olvidosChecador = detectarOlvidosChecador(registrosDia, horarioOficial);
 
             //    CONTAR OLVIDOS PARA EL DESCUENTO SEMANAL
@@ -1967,19 +2104,80 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
                 totalOlvidosChecadorSemana++;
             }
 
-            completarRegistrosFaltantes(registrosDia, horarioOficial);
+            // Autocompletado para registros_redondeados
+            // Caso A: Toggle activo -> forzar oficial completo
+            if (window.horariosForzarOficialMapa && window.horariosForzarOficialMapa[diaSemana]) {
+                completarRegistrosFaltantes(registrosDia, horarioOficial);
+                // Refuerzo final: si hay registros pero la salida final quedó 00:00 y existe salida oficial, completar
+                if (registrosDia && registrosDia.length > 0 && horarioOficial && horarioOficial.salida && horarioOficial.salida !== "00:00") {
+                    const ultimoIdx = registrosDia.length - 1;
+                    if (!registrosDia[ultimoIdx].salida || registrosDia[ultimoIdx].salida === "00:00" || registrosDia[ultimoIdx].salida === "--") {
+                        registrosDia[ultimoIdx].salida = horarioOficial.salida;
+                    }
+                    // Si es horario completo, asegurar también comida si quedaron en 00:00
+                    if (
+                        horarioOficial.salidaComida !== "00:00" &&
+                        horarioOficial.entradaComida !== "00:00" &&
+                        registrosDia.length >= 2
+                    ) {
+                        if (!registrosDia[0].salida || registrosDia[0].salida === "00:00" || registrosDia[0].salida === "--") {
+                            registrosDia[0].salida = horarioOficial.salidaComida;
+                        }
+                        if (!registrosDia[1].entrada || registrosDia[1].entrada === "00:00" || registrosDia[1].entrada === "--") {
+                            registrosDia[1].entrada = horarioOficial.entradaComida;
+                        }
+                    }
+                }
+            } else {
+                // Caso B: Toggle apagado -> solo autocompletar si hay al menos un registro (exportación durante el día) 
+                const hayAlgunaMarca = Array.isArray(registrosDia) && registrosDia.some(r => {
+                    const e = r.entrada && r.entrada !== "00:00" && r.entrada !== "--";
+                    const s = r.salida && r.salida !== "00:00" && r.salida !== "--";
+                    return e || s;
+                });
+                if (hayAlgunaMarca) {
+                    completarRegistrosFaltantes(registrosDia, horarioOficial);
+                    if (registrosDia && registrosDia.length > 0 && horarioOficial && horarioOficial.salida && horarioOficial.salida !== "00:00") {
+                        const ultimoIdx = registrosDia.length - 1;
+                        if (!registrosDia[ultimoIdx].salida || registrosDia[ultimoIdx].salida === "00:00" || registrosDia[ultimoIdx].salida === "--") {
+                            registrosDia[ultimoIdx].salida = horarioOficial.salida;
+                        }
+                        if (
+                            horarioOficial.salidaComida !== "00:00" &&
+                            horarioOficial.entradaComida !== "00:00" &&
+                            registrosDia.length >= 2
+                        ) {
+                            if (!registrosDia[0].salida || registrosDia[0].salida === "00:00" || registrosDia[0].salida === "--") {
+                                registrosDia[0].salida = horarioOficial.salidaComida;
+                            }
+                            if (!registrosDia[1].entrada || registrosDia[1].entrada === "00:00" || registrosDia[1].entrada === "--") {
+                                registrosDia[1].entrada = horarioOficial.entradaComida;
+                            }
+                        }
+                    }
+                }
+            }
             let entradaTemprana = 0;
             let salidaTardia = 0;
             let llegadaTardiaComer = 0;
             let retardo = false;
+            let retardoMinutos = 0;
 
             if (registrosDia.length >= 1 && horarioOficial.entrada !== "00:00") {
                 entradaTemprana = detectarEntradaTemprana(registrosDia[0].entrada, horarioOficial.entrada);
                 retardo = detectarRetardo(registrosDia[0].entrada, horarioOficial.entrada);
+                // Calcular minutos exactos de retardo ANTES del redondeo
+                const mr = horaAMinutos(registrosDia[0].entrada);
+                const mo = horaAMinutos(horarioOficial.entrada);
+                if (mr && mo && mr > mo) {
+                    retardoMinutos = mr - mo;
+                }
             }
             if (registrosDia.length >= 1 && horarioOficial.salida !== "00:00") {
                 const ultimo = registrosDia[registrosDia.length - 1];
                 salidaTardia = detectarSalidaTardia(ultimo.salida, horarioOficial.salida);
+                // Detectar salidas tempranas (early departures)
+                salidaTemprana = detectarSalidaTemprana(ultimo.salida, horarioOficial.salida);
             }
             if (tieneHorarioCompleto && registrosDia.length >= 2 && horarioOficial.entradaComida !== "00:00") {
                 llegadaTardiaComer = detectarLlegadaTardiaComer(registrosDia[1].entrada, horarioOficial.entradaComida);
@@ -2015,6 +2213,20 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
             totalMinutosSemana += minutosTrabajados;
 
             if (empleadoEnJson) {
+                // Salvaguarda final para registros_redondeados:
+                // - Toggle activo: ya se aplicó arriba
+                // - Toggle apagado: solo si hay alguna marca ese día
+                const hayAlgunaMarca = Array.isArray(registrosDia) && registrosDia.some(r => {
+                    const e = r.entrada && r.entrada !== "00:00" && r.entrada !== "--";
+                    const s = r.salida && r.salida !== "00:00" && r.salida !== "--";
+                    return e || s;
+                });
+                if (hayAlgunaMarca && horarioOficial && horarioOficial.salida && horarioOficial.salida !== "00:00") {
+                    const lastIdx = registrosDia.length - 1;
+                    if (!registrosDia[lastIdx].salida || registrosDia[lastIdx].salida === "" || registrosDia[lastIdx].salida === "00:00" || registrosDia[lastIdx].salida === "--") {
+                        registrosDia[lastIdx].salida = horarioOficial.salida;
+                    }
+                }
                 const registroRedondeado = {
                     fecha: fecha,
                     dia: diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1),
@@ -2027,7 +2239,9 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
                     olvido_checador: olvidosChecador.length > 0,
                     entrada_temprana: minutosAHora(entradaTemprana),
                     salida_tardia: minutosAHora(salidaTardia),
-                    retardo: retardo
+                    salida_temprana: minutosAHora(salidaTemprana),
+                    retardo: retardo,
+                    retardo_minutos: retardoMinutos
                 };
                 registrosRedondeados.push(registroRedondeado);
             }
@@ -2057,15 +2271,15 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
             // Asignar al empleadoEnJson para que se incluya en el cálculo del sueldo a cobrar
             empleadoEnJson.checador = descuentoPorOlvido;
 
-            // 🆕 DESACTIVAR INCENTIVO POR FALTAS
+            //   DESACTIVAR INCENTIVO POR FALTAS
             // Detectar si el empleado faltó algún día según horarios oficiales
             const diasConFalta = detectarFaltaSegunHorarioOficial(empleadoEnJson, window.horariosSemanalesActualizados, registrosRedondeados);
-            
+
             if (diasConFalta > 0) {
                 // Si faltó algún día, desactivar el incentivo (ponerlo en 0)
                 empleadoEnJson.incentivo = 0;
                 empleado.incentivo = 0;
-               } else {
+            } else {
                 // Si no faltó ningún día, mantener el incentivo original (250)
                 if (empleadoEnJson.incentivo === undefined || empleadoEnJson.incentivo === 0) {
                     empleadoEnJson.incentivo = 250;
@@ -2096,7 +2310,7 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
             empleado.Minutos_normales = empleadoEnJson.Minutos_normales;
             empleado.Minutos_extra = empleadoEnJson.Minutos_extra;
             empleado.sueldo_a_cobrar = empleadoEnJson.sueldo_a_cobrar;
-            
+
             // Sincronizar registros_redondeados desde jsonGlobal a empleadosOriginales
             if (empleadoEnJson.registros_redondeados) {
                 empleado.registros_redondeados = JSON.parse(JSON.stringify(empleadoEnJson.registros_redondeados));
@@ -2111,7 +2325,7 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
             // Sincronizar con empleado para la tabla
             empleado.checador = empleadoEnJson.checador;
 
-            // 🆕 SINCRONIZAR INCENTIVO DESACTIVADO POR FALTAS
+            //   SINCRONIZAR INCENTIVO DESACTIVADO POR FALTAS
             // Asegurar que el incentivo esté sincronizado entre jsonGlobal y empleadosOriginales
             empleado.incentivo = empleadoEnJson.incentivo;
         }
@@ -2245,8 +2459,14 @@ function calcularSueldoACobraPorEmpleado(emp) {
 
     const faGafetCofia = parseFloat(emp.fa_gafet_cofia) || 0;
 
-    // Total de deducciones incluye conceptos + otras deducciones
-    const totalDeducciones = tarjeta + prestamo + inasistencias + uniformes + checador + faGafetCofia + totalConceptos;
+    // Sumar deducciones adicionales personalizadas si existen
+    let totalDeduccionesAdicionales = 0;
+    if (emp.deducciones_adicionales && Array.isArray(emp.deducciones_adicionales)) {
+        totalDeduccionesAdicionales = emp.deducciones_adicionales.reduce((acc, d) => acc + (parseFloat(d.valor) || 0), 0);
+    }
+
+    // Total de deducciones incluye conceptos + otras deducciones + deducciones personalizadas
+    const totalDeducciones = tarjeta + prestamo + inasistencias + uniformes + checador + faGafetCofia + totalConceptos + totalDeduccionesAdicionales;
 
     // === CALCULAR SUELDO A COBRAR ===
     emp.sueldo_a_cobrar = parseFloat((totalPercepciones - totalDeducciones).toFixed(2));
@@ -2261,7 +2481,7 @@ window.calcularSueldoACobraPorEmpleado = calcularSueldoACobraPorEmpleado;
  * ================================================================
  *                         TABLA DISPERSCIÓN
  * ================================================================
- */
+  */
 
 
 // Función para cargar los departamentos en el filtro
@@ -2288,6 +2508,12 @@ function cargarDepartamentosFiltro() {
 
                 // Llena el select con las opciones
                 $("#filtro-departamento").html(opciones);
+
+                // Seleccionar "Todos" por defecto y disparar el cambio para renderizar en el primer click
+                // Usar setTimeout para asegurar que el listener de cambio ya esté registrado
+                setTimeout(function () {
+                    $("#filtro-departamento").val("0").trigger("change");
+                }, 0);
             }
         },
 
@@ -2300,6 +2526,8 @@ function cargarDepartamentosFiltro() {
 function obtenerEmpleadosPorDepartamento() {
     $('#filtro-departamento').change(function () {
         let idSeleccionado = $(this).val();
+        // Asegurar una referencia válida de la página actual para ambos caminos
+        const paginaActual = window.paginaActualDispersion || 1;
 
         let empleadosPlanos = [];
         if (idSeleccionado == "0") {
@@ -2319,26 +2547,66 @@ function obtenerEmpleadosPorDepartamento() {
         } else {
             // Solo empleados del departamento seleccionado
             if (jsonGlobal && jsonGlobal.departamentos) {
-                // Busca por id_departamento (que es un número o string)
+                // Normalizar id seleccionado
+                const idSel = String(idSeleccionado).trim();
+
+                // 1) Intentar encontrar el departamento por id_departamento exacto
                 let depto = jsonGlobal.departamentos.find(d =>
-                    (d.id_departamento && String(d.id_departamento) === String(idSeleccionado)) ||
-                    (d.nombre && d.nombre.split(' ')[0] === idSeleccionado)
+                    (typeof d.id_departamento !== 'undefined' && String(d.id_departamento) === idSel)
                 );
-                if (depto && depto.empleados) {
+
+                // 2) Si no se encontró, intentar por nombre_departamento o nombre completo
+                if (!depto) {
+                    depto = jsonGlobal.departamentos.find(d => {
+                        const nomDep = (d.nombre_departamento || d.nombre || '').toString();
+                        return nomDep && nomDep.toLowerCase() === (this.options[this.selectedIndex]?.text || '').toLowerCase();
+                    });
+                }
+
+                // 3) Si aún no, intentar por prefijo numérico en d.nombre (formato "<id> Nombre")
+                if (!depto) {
+                    depto = jsonGlobal.departamentos.find(d => {
+                        const prefijo = (d.nombre || '').split(' ')[0];
+                        return prefijo && prefijo === idSel;
+                    });
+                }
+
+                if (depto && Array.isArray(depto.empleados)) {
                     let empleadosOrdenados = (depto.empleados || []).slice().sort(compararPorApellidos);
                     empleadosOrdenados.forEach(emp => {
                         empleadosPlanos.push({
                             ...emp,
-                            id_departamento: depto.id_departamento || (depto.nombre ? depto.nombre.split(' ')[0] : ''),
+                            id_departamento: (typeof depto.id_departamento !== 'undefined') ? depto.id_departamento : ((depto.nombre ? depto.nombre.split(' ')[0] : '')),
                             nombre_departamento: depto.nombre_departamento || (depto.nombre ? depto.nombre.replace(/^\d+\s*/, '') : '')
                         });
                     });
+                } else {
+                    // 4) Fallback: recorrer todos los departamentos y tomar empleados con emp.id_departamento == idSel
+                    jsonGlobal.departamentos.forEach(d => {
+                        (d.empleados || []).forEach(emp => {
+                            if (typeof emp.id_departamento !== 'undefined' && String(emp.id_departamento) === idSel) {
+                                empleadosPlanos.push({
+                                    ...emp,
+                                    id_departamento: emp.id_departamento,
+                                    nombre_departamento: d.nombre_departamento || d.nombre || ''
+                                });
+                            }
+                        });
+                    });
+                    // Si aún vacío, no filtrar más para evitar tabla en blanco por desajustes
+                    if (empleadosPlanos.length === 0) {
+                        jsonGlobal.departamentos.forEach(d => {
+                            (d.empleados || []).forEach(emp => {
+                                empleadosPlanos.push({ ...emp, id_departamento: emp.id_departamento || '', nombre_departamento: d.nombre_departamento || d.nombre || '' });
+                            });
+                        });
+                    }
                 }
             }
         }
 
         //  FILTRAR SOLO EMPLEADOS REGISTRADOS EN BASE DE DATOS
-        if (clavesValidasGlobal.length > 0) {
+        if (Array.isArray(clavesValidasGlobal) && clavesValidasGlobal.length > 0) {
             const empleadosRegistrados = empleadosPlanos.filter(emp => {
                 return clavesValidasGlobal.includes(String(emp.clave)) ||
                     clavesValidasGlobal.includes(Number(emp.clave));
@@ -2346,10 +2614,9 @@ function obtenerEmpleadosPorDepartamento() {
 
 
             window.empleadosOriginalesDispersion = empleadosRegistrados;
-            const paginaActual = window.paginaActualDispersion || 1;
             setEmpleadosDispersionPaginados(empleadosRegistrados, true);
             empleadosFiltradosDispersion = [...empleadosRegistrados];
-            
+
             // Restaurar la página actual
             if (typeof window.paginaActualDispersion !== 'undefined') {
                 window.paginaActualDispersion = paginaActual;
@@ -2362,7 +2629,7 @@ function obtenerEmpleadosPorDepartamento() {
             window.empleadosOriginalesDispersion = empleadosPlanos;
             setEmpleadosDispersionPaginados(empleadosPlanos, true);
             empleadosFiltradosDispersion = [...empleadosPlanos];
-            
+
             // Restaurar la página actual
             if (typeof window.paginaActualDispersion !== 'undefined') {
                 window.paginaActualDispersion = paginaActual;
@@ -2504,7 +2771,7 @@ function obtenerNominaDeBaseDatos(numeroSemana, callback) {
         dataType: "json",
         success: function (response) {
             if (response.success && response.nomina) {
-                // 🆕 MARCAR QUE LOS DATOS VIENEN DE LA BASE DE DATOS
+                //   MARCAR QUE LOS DATOS VIENEN DE LA BASE DE DATOS
                 response.nomina.desde_base_datos = true;
                 callback(response.nomina);
             } else {
@@ -2640,7 +2907,7 @@ function empleadosNoUnidos(json1, json2) {
     }
 
     // validaEmpleadosEnServidor(noUnidos);
-  
+
     return noUnidos;
 }
 function ordenarNombre(nombreCompleto) {
@@ -2751,27 +3018,37 @@ function enviarIdBiometricosNoUnidos(json1, json2) {
                                 nombre: `${emp.ap_paterno} ${emp.ap_materno} ${emp.nombre}`,
                                 clave: emp.clave_empleado,
                                 id_biometrico: emp.biometrico,
+                                id_departamento: emp.id_departamento, // Agregar id_departamento
                                 horas_totales: empleadoNoUnido?.horas_totales || "0.00",
                                 registros: empleadoNoUnido?.registros || [],
                                 tiempo_total: empleadoNoUnido?.tiempo_total || "00:00",
-                                sin_seguro: true
+                                sin_seguro: true,
+                                puesto: emp.id_departamento == 4 ? 'Produccion 40 Libras' : 'Produccion 10 Libras' // Asignar el puesto según el departamento
                             };
                         });
 
                         // Agregar empleados al departamento
                         empleadosConvertidos.forEach(empConvertido => {
                             if (empConvertido.id_biometrico) {
-                                const existeBiometrico = deptoNoUnidos.empleados.some(emp =>
-                                    emp.id_biometrico === empConvertido.id_biometrico
+                                const idxExistente = (deptoNoUnidos.empleados || []).findIndex(emp =>
+                                    String(emp.id_biometrico) === String(empConvertido.id_biometrico)
                                 );
 
-                                if (!existeBiometrico) {
+                                if (idxExistente === -1) {
+                                    // Nuevo empleado SIN SEGURO
                                     deptoNoUnidos.empleados.push(empConvertido);
+                                } else {
+                                    // Ya existe: actualizar 'puesto' e id_departamento según el dato más reciente
+                                    const actual = deptoNoUnidos.empleados[idxExistente];
+                                    actual.puesto = empConvertido.puesto;
+                                    if (typeof empConvertido.id_departamento !== 'undefined') {
+                                        actual.id_departamento = empConvertido.id_departamento;
+                                    }
                                 }
                             }
                         });
 
-                        // 🆕 VERIFICAR SI LOS DATOS VIENEN DE LA BASE DE DATOS
+                        // VERIFICAR SI LOS DATOS VIENEN DE LA BASE DE DATOS
                         const datosVienenDeBD = jsonGlobal.desde_base_datos === true;
 
                         if (datosVienenDeBD) {
@@ -2787,17 +3064,17 @@ function enviarIdBiometricosNoUnidos(json1, json2) {
                             }
                         }
 
-                        
+
                     }
                 } catch (error) {
-                   
+
                 }
             },
             error: function (xhr, status, error) {
-               
+
             }
         });
     } else {
-       
+
     }
 }

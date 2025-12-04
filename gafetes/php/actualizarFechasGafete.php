@@ -44,20 +44,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $tieneIMSS = $row_imss['imss'] && $row_imss['imss'] !== 'N/A' && trim($row_imss['imss']) !== '';
                 }
                 
-                // Establecer la vigencia: 1 mes para empleados sin IMSS, 6 meses para empleados con IMSS
-                $mesesVigencia = $tieneIMSS ? 6 : 1;
-                
+                // Establecer la vigencia: 6 meses con IMSS; 45 días sin IMSS
                 // Calcular las fechas usando DateTime para mayor precisión
                 $fecha_actual = new DateTime();
                 $fecha_actual->setTime(0, 0, 0); // Establecer hora a 00:00:00
                 $fecha_creacion = $fecha_actual->format('Y-m-d');
                 
                 $fecha_vigencia_obj = clone $fecha_actual;
-                $fecha_vigencia_obj->modify('+' . $mesesVigencia . ' months');
+                if ($tieneIMSS) {
+                    $fecha_vigencia_obj->modify('+6 months');
+                } else {
+                    $fecha_vigencia_obj->modify('+45 days');
+                }
                 $fecha_vigencia = $fecha_vigencia_obj->format('Y-m-d');
                 
                 // Log para depuración
-                error_log("Calculando fechas - Tiene IMSS: " . ($tieneIMSS ? 'SI' : 'NO') . ", Meses: $mesesVigencia, Fecha creación: $fecha_creacion, Fecha vigencia: $fecha_vigencia");
+                $vigenciaTexto = $tieneIMSS ? '6 meses' : '45 dias';
+                error_log("Calculando fechas - Tiene IMSS: " . ($tieneIMSS ? 'SI' : 'NO') . ", Vigencia: $vigenciaTexto, Fecha creación: $fecha_creacion, Fecha vigencia: $fecha_vigencia");
                 
                 // Preparar la consulta SQL para actualizar las fechas
                 $sql = "UPDATE info_empleados SET fecha_creacion = ?, fecha_vigencia = ? WHERE id_empleado = ?";

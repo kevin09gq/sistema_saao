@@ -43,7 +43,9 @@
 
                 <button type="submit" class="login-button">Iniciar Sesión</button>
 
-              
+                <div class="form-footer">
+                    <a href="recuperar_password.php" class="forgot-password">¿Olvidaste tu contraseña?</a>
+                </div>
             </form>
         </div>
     </div>

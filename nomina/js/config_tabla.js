@@ -3,6 +3,55 @@ let empleadosPaginados = [];
 let paginaActualNomina = 1;
 const empleadosPorPagina = 7;
 
+// Cache de colores por clave de empleado para no repetir solicitudes
+window.colorPuestoCache = window.colorPuestoCache || {};
+
+function obtenerColorPuestoPorClave(clave, callback) {
+    if (!clave) return callback && callback(null);
+    const k = String(clave);
+    if (window.colorPuestoCache.hasOwnProperty(k)) {
+        return callback && callback(window.colorPuestoCache[k]);
+    }
+    $.ajax({
+        type: 'POST',
+        url: '../php/obtener_color_puesto.php',
+        data: JSON.stringify({ clave: k }),
+        contentType: 'application/json',
+        success: function (resp) {
+            try {
+                const data = (typeof resp === 'string') ? JSON.parse(resp) : resp;
+                const color = (data && data.success) ? (data.color_hex || null) : null;
+                window.colorPuestoCache[k] = color;
+                if (callback) callback(color);
+            } catch (e) {
+                window.colorPuestoCache[k] = null;
+                if (callback) callback(null);
+            }
+        },
+        error: function () {
+            window.colorPuestoCache[k] = null;
+            if (callback) callback(null);
+        }
+    });
+}
+
+function aplicarColoresPuestosEnTabla(tbodySelector) {
+    const $tbody = $(tbodySelector);
+    $tbody.find('tr').each(function () {
+        const $tr = $(this);
+        const clave = $tr.attr('data-clave');
+        const $tdNombre = $tr.find('td').eq(1);
+        if (!$tdNombre.length) return;
+        obtenerColorPuestoPorClave(clave, function (color) {
+            if (color && /^#[0-9A-Fa-f]{6}$/.test(color)) {
+                $tdNombre.css('color', color);
+            } else {
+                $tdNombre.css('color', ''); // negro por defecto via CSS
+            }
+        });
+    });
+}
+
 function setEmpleadosPaginados(array) {
     // Recalcular sueldos antes de filtrar
     array.forEach(emp => {
@@ -63,7 +112,11 @@ function filtrarEmpleadosRegistradosYPaginar(todosLosEmpleados) {
 function renderTablaPaginada() {
     const inicio = (paginaActualNomina - 1) * empleadosPorPagina;
     const fin = inicio + empleadosPorPagina;
-    const empleadosPagina = empleadosPaginados.slice(inicio, fin);
+    // Tomar la página actual y sincronizar con empleadosOriginales para valores más recientes
+    let empleadosPagina = empleadosPaginados.slice(inicio, fin).map(emp => {
+        const actualizado = (window.empleadosOriginales || []).find(e => String(e.clave) === String(emp.clave));
+        return actualizado ? actualizado : emp;
+    });
     
     // Recalcular sueldos antes de renderizar
     empleadosPagina.forEach(emp => {
@@ -79,11 +132,12 @@ function renderTablaPaginada() {
 
 // Función para obtener las claves de empleados del departamento "PRODUCCION 40 LIBRAS"
 function obtenerClavesEmpleados() {
-    // Obtiene solo las claves de empleados del departamento "PRODUCCION 40 LIBRAS"
     let claves = [];
+    const seleccionado = ($('#departamentos-nomina').val() || '').toUpperCase();
     if (jsonGlobal && jsonGlobal.departamentos) {
         jsonGlobal.departamentos.forEach(depto => {
-            if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS')) {
+            const nombreDepto = (depto.nombre || '').toUpperCase();
+            if (seleccionado && nombreDepto.includes(seleccionado)) {
                 (depto.empleados || []).forEach(emp => {
                     if (emp.clave) {
                         claves.push(emp.clave);
@@ -104,6 +158,12 @@ function mostrarDatosTablaPaginada(empleadosPagina) {
     // Calcular el número de fila inicial para la página actual
     let numeroFila = ((paginaActualNomina - 1) * empleadosPorPagina) + 1;
     
+    // Asegurar que la lista venga sincronizada con empleadosOriginales por si fue llamada directamente
+    empleadosPagina = empleadosPagina.map(emp => {
+        const actualizado = (window.empleadosOriginales || []).find(e => String(e.clave) === String(emp.clave));
+        return actualizado ? actualizado : emp;
+    });
+
     // Renderizar solo los empleados de la página actual
     // Helper para mostrar deducciones con signo "-"
     const mostrarDeduccion = (valor) => {
@@ -172,6 +232,8 @@ function mostrarDatosTablaPaginada(empleadosPagina) {
     
     // Re-inicializar el menú contextual después de renderizar la tabla
     inicializarMenuContextual();
+    // Aplicar colores de puestos
+    aplicarColoresPuestosEnTabla('#tabla-nomina-body');
 }
 
 // Función para actualizar empleados filtrados globales cuando se cambie el set paginado
@@ -528,6 +590,8 @@ function mostrarDatosTablaSinSeguroPaginada(empleadosPagina) {
     
     // Re-inicializar el menú contextual después de renderizar la tabla
     inicializarMenuContextualSinSeguro();
+    // Aplicar colores de puestos
+    aplicarColoresPuestosEnTabla('#tabla-sin-seguro-body');
 }
 
 // Función para renderizar paginación de empleados sin seguro
@@ -601,12 +665,21 @@ function cambiarPaginaSinSeguro(nuevaPagina) {
 }
 
 // Función para obtener empleados del departamento "SIN SEGURO"
-function obtenerEmpleadosSinSeguro() {
+function obtenerEmpleadosSinSeguro(filtroPuesto = 'Produccion 40 Libras') {
     let empleadosSinSeguro = [];
     if (jsonGlobal && jsonGlobal.departamentos) {
         jsonGlobal.departamentos.forEach(depto => {
             if ((depto.nombre || '').toUpperCase().includes('SIN SEGURO')) {
-                let empleadosOrdenados = (depto.empleados || []).slice().sort(compararPorApellidos);
+                let empleadosFiltrados = (depto.empleados || []).slice();
+                
+                // Aplicar filtro por categoría de peso
+                empleadosFiltrados = empleadosFiltrados.filter(emp => {
+                    return emp.puesto === filtroPuesto;
+                });
+                
+                // Ordenar por apellidos
+                let empleadosOrdenados = empleadosFiltrados.sort(compararPorApellidos);
+                
                 empleadosOrdenados.forEach(emp => {
                     empleadosSinSeguro.push({
                         ...emp,
@@ -622,11 +695,12 @@ function obtenerEmpleadosSinSeguro() {
 }
 
 // Función para mostrar empleados sin seguro
-function mostrarEmpleadosSinSeguro(mantenerPagina = true) {
-    const empleadosSinSeguro = obtenerEmpleadosSinSeguro();
+function mostrarEmpleadosSinSeguro(mantenerPagina = true, filtroPuesto = 'Produccion 40 Libras') {
+    const empleadosSinSeguro = obtenerEmpleadosSinSeguro(filtroPuesto);
     setEmpleadosSinSeguroPaginados(empleadosSinSeguro, mantenerPagina);
 }
 
 // Hacer las funciones disponibles globalmente
 window.mostrarEmpleadosSinSeguro = mostrarEmpleadosSinSeguro;
 window.obtenerEmpleadosSinSeguro = obtenerEmpleadosSinSeguro;
+

@@ -54,8 +54,10 @@ foreach ($rows as $row) {
                 'empleados' => []
             ];
             
-            //   Verificar si es el departamento de Producción 40 Libras
+            //   Verificar si es el departamento de Producción 40 Libras o Producción 10 Libras
             $esProduccion40 = stripos($nombreCompleto, 'PRODUCCION 40 LIBRAS') !== false;
+            $esProduccion10 = stripos($nombreCompleto, 'PRODUCCION 10 LIBRAS') !== false;
+
             
             $ultimoEmpleadoIdx = null;
             $procesandoEmpleados = false;
@@ -80,9 +82,11 @@ foreach ($rows as $row) {
                 'neto_pagar' => null
             ];
             
-            //   Solo agregar array de conceptos si es Producción 40 Libras
+            //   Solo agregar array de conceptos si es Producción 40 Libras o Producción 10 Libras
             $esProduccion40 = stripos($actualDepto['nombre'], 'PRODUCCION 40 LIBRAS') !== false;
-            if ($esProduccion40) {
+            $esProduccion10 = stripos($actualDepto['nombre'], 'PRODUCCION 10 LIBRAS') !== false;
+
+            if ($esProduccion40 || $esProduccion10) {
                 $empleado['conceptos'] = [];
             }
             
@@ -133,8 +137,9 @@ foreach ($rows as $row) {
         isset($row[5]) && isset($row[6]) && isset($row[8])
     ) {
         $esProduccion40 = stripos($actualDepto['nombre'], 'PRODUCCION 40 LIBRAS') !== false;
+        $esProduccion10 = stripos($actualDepto['nombre'], 'PRODUCCION 10 LIBRAS') !== false;
         
-        if ($esProduccion40) {
+        if ($esProduccion40 || $esProduccion10) {
             $codigoConcepto = trim($row[5]);
             $nombreConcepto = trim($row[6]);
             $resultadoConcepto = trim($row[8]);

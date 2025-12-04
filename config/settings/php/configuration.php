@@ -240,6 +240,7 @@ function registrarPuesto()
         // Eliminar espacios en blanco al principio y al final
         $nombrePuesto = trim($_POST['nombre_puesto']);
         $direccionPuesto = trim($_POST['direccion_puesto']);
+        $colorHex = isset($_POST['color_hex']) ? trim($_POST['color_hex']) : null;
 
         // Verificar que el nombre no esté vacío después de eliminar espacios
         if (empty($nombrePuesto)) {
@@ -250,6 +251,25 @@ function registrarPuesto()
         // Escapar caracteres especiales para prevenir SQL injection
         $nombrePuesto = mysqli_real_escape_string($conexion, $nombrePuesto);
         $direccionPuesto = mysqli_real_escape_string($conexion, $direccionPuesto);
+        if ($colorHex !== null && $colorHex !== '') {
+            if (!preg_match('/^#[0-9A-Fa-f]{6}$/', $colorHex)) {
+                echo "2"; // Formato inválido
+                return;
+            }
+            $colorHex = mysqli_real_escape_string($conexion, $colorHex);
+        } else {
+            $colorHex = null;
+        }
+        if ($colorHex !== null && $colorHex !== '') {
+            // Validar formato #RRGGBB
+            if (!preg_match('/^#[0-9A-Fa-f]{6}$/', $colorHex)) {
+                echo "2"; // Formato inválido
+                return;
+            }
+            $colorHex = mysqli_real_escape_string($conexion, $colorHex);
+        } else {
+            $colorHex = null;
+        }
 
         // Verificar si el puesto ya existe
         $checkSql = "SELECT COUNT(*) as count FROM puestos_especiales WHERE nombre_puesto = '$nombrePuesto'";
@@ -262,14 +282,14 @@ function registrarPuesto()
         }
 
         // Preparar la consulta para insertar el nuevo puesto
-        $sql = $conexion->prepare("INSERT INTO puestos_especiales (nombre_puesto, direccion_puesto) VALUES (?, ?)");
+        $sql = $conexion->prepare("INSERT INTO puestos_especiales (nombre_puesto, direccion_puesto, color_hex) VALUES (?, ?, ?)");
 
         if (!$sql) {
             echo "Error en la preparación: " . $conexion->error;
             return;
         }
 
-        $sql->bind_param("ss", $nombrePuesto, $direccionPuesto);
+        $sql->bind_param("sss", $nombrePuesto, $direccionPuesto, $colorHex);
 
         // Ejecutar la consulta y verificar si fue exitosa
         if ($sql->execute()) {
@@ -348,6 +368,7 @@ function actualizarPuesto()
         $idPuesto = (int)$_POST['id_puesto'];
         $nombrePuesto = trim($_POST['nombre_puesto']);
         $direccionPuesto = trim($_POST['direccion_puesto']);
+        $colorHex = isset($_POST['color_hex']) ? trim($_POST['color_hex']) : null;
 
         // Verificar que el nombre no esté vacío
         if (empty($nombrePuesto)) {
@@ -370,14 +391,14 @@ function actualizarPuesto()
         }
 
         // Preparar la consulta para actualizar el puesto
-        $sql = $conexion->prepare("UPDATE puestos_especiales SET nombre_puesto = ?, direccion_puesto = ? WHERE id_puestoEspecial = ?");
+        $sql = $conexion->prepare("UPDATE puestos_especiales SET nombre_puesto = ?, direccion_puesto = ?, color_hex = ? WHERE id_puestoEspecial = ?");
 
         if (!$sql) {
             echo "Error en la preparación: " . $conexion->error;
             return;
         }
 
-        $sql->bind_param("ssi", $nombrePuesto, $direccionPuesto, $idPuesto);
+        $sql->bind_param("sssi", $nombrePuesto, $direccionPuesto, $colorHex, $idPuesto);
 
         // Ejecutar la consulta y verificar si fue exitosa
         if ($sql->execute()) {
@@ -1101,7 +1122,7 @@ function obtenerInfoPuesto()
     if (isset($_GET['id_puesto'])) {
         $idPuesto = (int)$_GET['id_puesto'];
         
-        $sql = "SELECT id_puestoEspecial, nombre_puesto, direccion_puesto FROM puestos_especiales WHERE id_puestoEspecial = ?";
+        $sql = "SELECT id_puestoEspecial, nombre_puesto, direccion_puesto, color_hex FROM puestos_especiales WHERE id_puestoEspecial = ?";
         $stmt = $conexion->prepare($sql);
         $stmt->bind_param("i", $idPuesto);
         $stmt->execute();
@@ -1114,7 +1135,8 @@ function obtenerInfoPuesto()
                 'puesto' => [
                     'id_puestoEspecial' => $row['id_puestoEspecial'],
                     'nombre_puesto' => $row['nombre_puesto'],
-                    'direccion_puesto' => $row['direccion_puesto']
+                    'direccion_puesto' => $row['direccion_puesto'],
+                    'color_hex' => $row['color_hex']
                 ]
             ]);
         } else {

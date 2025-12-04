@@ -17,6 +17,13 @@ function setDataTableHorarios(data) {
         fila.append($("<td>").addClass("celda-total editable").attr("contenteditable", "true").text(diaInfo.totalHoras));
         fila.append($("<td>").addClass("celda-comida editable").attr("contenteditable", "true").text(diaInfo.horasComida));
         fila.append($("<td>").addClass("celda-minutos").text("0"));
+        // Checkbox para forzar horas oficiales en redondeo
+        var chk = $('<input type="checkbox" class="toggle-forzar-oficial">');
+        if (window.horariosForzarOficialMapa && window.horariosForzarOficialMapa[clave]) {
+            chk.prop('checked', true);
+        }
+        chk.attr('data-dia-clave', clave);
+        fila.append($('<td>').addClass('celda-forzar-oficial').append(chk));
 
         tbody.append(fila);
     });
@@ -292,6 +299,15 @@ function actualizarHorariosSemanalesActualizados() {
                 window.horariosSemanalesActualizados.semana[claveDia].salida = fila.find('.celda-hora.editable').eq(3).text();
                 window.horariosSemanalesActualizados.semana[claveDia].totalHoras = fila.find('.celda-total.editable').text();
                 window.horariosSemanalesActualizados.semana[claveDia].horasComida = fila.find('.celda-comida.editable').text();
+                // Guardar estado del forzado por día
+                if (!window.horariosForzarOficialMapa) window.horariosForzarOficialMapa = {};
+                var toggleForzar = fila.find('.toggle-forzar-oficial');
+                var isChecked = toggleForzar.is(':checked');
+                window.horariosForzarOficialMapa[claveDia] = isChecked;
+                // Persistir también en el JSON por día para que viaje a localStorage/BD
+                try {
+                    window.horariosSemanalesActualizados.semana[claveDia].forzarOficial = isChecked;
+                } catch (e) { /* noop */ }
             }
         });
 
@@ -306,7 +322,8 @@ function actualizarHorariosSemanalesActualizados() {
         }
 
         $('#horarios_modal').modal('hide');
-       
+    console.log(jsonGlobal);
+    
         
     });
 }
@@ -315,7 +332,8 @@ function encontrarEmpleadoEnJsonGlobal(clave) {
     if (!window.jsonGlobal || !window.jsonGlobal.departamentos) return null;
 
     for (let depto of window.jsonGlobal.departamentos) {
-        if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS')) {
+        if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS')
+         || (depto.nombre || '').toUpperCase().includes('PRODUCCION 10 LIBRAS')) {
             for (let emp of depto.empleados || []) {
                 if (emp.clave === clave) {
                     return emp;

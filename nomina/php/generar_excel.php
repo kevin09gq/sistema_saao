@@ -97,8 +97,6 @@ try {
         'alignment' => ['horizontal' => Alignment::HORIZONTAL_RIGHT, 'vertical' => Alignment::VERTICAL_CENTER]
     ]);
 
-
-
     // Alturas de filas
     $sheet->getRowDimension('1')->setRowHeight(50);
     $sheet->getRowDimension('2')->setRowHeight(20);
@@ -355,106 +353,139 @@ try {
         }
     }
 
-
     /***************
-     * TABLA NOMINA SIN SEGURO
+     * TABLA NOMINA 10 LIBRAS
      * ************** */
 
-    // ---- CREAR HOJA DE NÓMINA SIN SEGURO ----
-    $sheetSinSeguro = $spreadsheet->createSheet();
-    $sheetSinSeguro->setTitle('Nómina Sin Seguro');
+    // ---- CREAR HOJA DE NÓMINA 10 LIBRAS ----
+    $sheet10 = $spreadsheet->createSheet();
+    $sheet10->setTitle('Nómina 10 Libras');
 
     // Configurar página para impresión horizontal
-    $sheetSinSeguro->getPageSetup()
+    $sheet10->getPageSetup()
         ->setOrientation(PageSetup::ORIENTATION_LANDSCAPE)
         ->setPaperSize(PageSetup::PAPERSIZE_A4)
         ->setHorizontalCentered(true)
         ->setVerticalCentered(false);
 
-    // Configurar márgenes más pequeños para aprovechar mejor el espacio
-    $sheetSinSeguro->getPageMargins()->setTop(0.3)->setRight(0.3)->setLeft(0.3)->setBottom(0.3);
-    $sheetSinSeguro->getPageSetup()->setFitToWidth(1)->setFitToHeight(0);
+    // Márgenes
+    $sheet10->getPageMargins()->setTop(0.3)->setRight(0.3)->setLeft(0.3)->setBottom(0.3);
+    $sheet10->getPageSetup()->setFitToWidth(1)->setFitToHeight(0);
 
     // Logo
     if (file_exists('../../public/img/logo.jpg')) {
-        $logoSinSeguro = new Drawing();
-        $logoSinSeguro->setName('Logo');
-        $logoSinSeguro->setDescription('Logo CITRICOS SAAO');
-        $logoSinSeguro->setPath('../../public/img/logo.jpg');
-        $logoSinSeguro->setHeight(120);
-        $logoSinSeguro->setCoordinates('A1');
-        $logoSinSeguro->setOffsetX(10);
-        $logoSinSeguro->setOffsetY(5);
-        $logoSinSeguro->setWorksheet($sheetSinSeguro);
+        $logo10 = new Drawing();
+        $logo10->setName('Logo');
+        $logo10->setDescription('Logo CITRICOS SAAO');
+        $logo10->setPath('../../public/img/logo.jpg');
+        $logo10->setHeight(120);
+        $logo10->setCoordinates('A1');
+        $logo10->setOffsetX(10);
+        $logo10->setOffsetY(5);
+        $logo10->setWorksheet($sheet10);
     }
 
     // Título principal centrado
-    $sheetSinSeguro->mergeCells('B1:R1');
-    $sheetSinSeguro->setCellValue('B1', 'SIN SEGURO');
-    $sheetSinSeguro->getStyle('B1')->applyFromArray([
+    $sheet10->mergeCells('B1:R1');
+    $sheet10->setCellValue('B1', 'PRODUCCIÓN 10 LIBRAS');
+    $sheet10->getStyle('B1')->applyFromArray([
         'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => '008000']],
         'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
     ]);
 
-    // Título de la empresa centrado
-    $sheetSinSeguro->mergeCells('B2:R2');
-    $sheetSinSeguro->setCellValue('B2', 'CITRICOS SAAO S.A DE C.V');
-    $sheetSinSeguro->getStyle('B2')->applyFromArray([
+    // Título empresa
+    $sheet10->mergeCells('B2:R2');
+    $sheet10->setCellValue('B2', 'CITRICOS SAAO S.A DE C.V');
+    $sheet10->getStyle('B2')->applyFromArray([
         'font' => ['bold' => true, 'size' => 12, 'color' => ['rgb' => '008000']],
         'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
     ]);
 
     // Título de nómina
-    $sheetSinSeguro->mergeCells('B3:R3');
-    $sheetSinSeguro->setCellValue('B3', $tituloNomina);
-    $sheetSinSeguro->getStyle('B3')->applyFromArray([
+    $sheet10->mergeCells('B3:R3');
+    $sheet10->setCellValue('B3', $tituloNomina);
+    $sheet10->getStyle('B3')->applyFromArray([
         'font' => ['bold' => true, 'size' => 14],
         'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
     ]);
 
     // Información de semana
-    $sheetSinSeguro->mergeCells('B4:R4');
-    $sheetSinSeguro->setCellValue('B4', $tituloExcel);
-    $sheetSinSeguro->getStyle('B4')->applyFromArray([
+    $sheet10->mergeCells('B4:R4');
+    $sheet10->setCellValue('B4', $tituloExcel);
+    $sheet10->getStyle('B4')->applyFromArray([
         'font' => ['bold' => true, 'size' => 12],
         'alignment' => ['horizontal' => Alignment::HORIZONTAL_RIGHT, 'vertical' => Alignment::VERTICAL_CENTER]
     ]);
 
-    // Alturas de filas
-    $sheetSinSeguro->getRowDimension('1')->setRowHeight(50);
-    $sheetSinSeguro->getRowDimension('2')->setRowHeight(20);
-    $sheetSinSeguro->getRowDimension('3')->setRowHeight(25);
+    // Alturas y encabezados
+    $sheet10->getRowDimension('1')->setRowHeight(50);
+    $sheet10->getRowDimension('2')->setRowHeight(20);
+    $sheet10->getRowDimension('3')->setRowHeight(25);
+   
+    // Encabezados de la tabla
+    $headers10 = [
+        'A6' => '#',
+        'B6' => 'CLAVE',
+        'C6' => 'NOMBRE',
+        'D6' => 'PUESTO',
+        'E6' => "SUELDO\nNETO",
+        'F6' => 'INCENTIVO',
+        'G6' => 'EXTRA',
+        'H6' => 'TARJETA',
+        'I6' => 'PRÉSTAMO',
+        'J6' => 'INASISTENCIAS',
+        'K6' => 'UNIFORMES',
+        'L6' => 'INFONAVIT',
+        'M6' => 'ISR',
+        'N6' => 'IMSS',
+        'O6' => 'CHECADOR',
+        'P6' => "F.A /\nGAFET/\nCOFIA",
+        'Q6' => "SUELDO\nA\nCOBRAR",
+        'R6' => "FIRMA\nRECIBIDO"
+    ];
 
-    // Encabezados de la tabla (mismos que la hoja principal)
-    foreach ($headers as $cell => $header) {
-        $sheetSinSeguro->setCellValue($cell, $header);
-        $sheetSinSeguro->getStyle($cell)->applyFromArray($headerStyle);
+    $headerStyle10 = [
+        'font' => ['bold' => true, 'size' => 10, 'color' => ['rgb' => '000000']],
+        'alignment' => [
+            'horizontal' => Alignment::HORIZONTAL_CENTER,
+            'vertical' => Alignment::VERTICAL_CENTER,
+            'wrapText' => true
+        ],
+        'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'FFFB00']],
+        'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
+    ];
+
+    foreach ($headers10 as $cell => $header10) {
+        $sheet10->setCellValue($cell, $header10);
+        $sheet10->getStyle($cell)->applyFromArray($headerStyle10);
     }
 
-    $sheetSinSeguro->getRowDimension('6')->setRowHeight(50);
+    $sheet10->getRowDimension('6')->setRowHeight(50);
+    // Ajustar ancho de columnas
+    $sheet10->getColumnDimension('A')->setWidth(5);
+    $sheet10->getColumnDimension('B')->setWidth(12);
+    $sheet10->getColumnDimension('C')->setWidth(40);
+    $sheet10->getColumnDimension('D')->setWidth(15);
+    $sheet10->getColumnDimension('J')->setWidth(15);
 
-    // Ajustar ancho de columnas (mismo que la hoja principal)
-    $sheetSinSeguro->getColumnDimension('A')->setWidth(5);
-    $sheetSinSeguro->getColumnDimension('B')->setWidth(12);
-    $sheetSinSeguro->getColumnDimension('C')->setWidth(40);
-    $sheetSinSeguro->getColumnDimension('D')->setWidth(15);
-    $sheetSinSeguro->getColumnDimension('J')->setWidth(15);
-
+    $anchoUniforme10 = 12;
     foreach (['E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'O', 'P', 'Q'] as $col) {
-        $sheetSinSeguro->getColumnDimension($col)->setWidth($anchoUniforme);
+        $sheet10->getColumnDimension($col)->setWidth($anchoUniforme10);
     }
-    $sheetSinSeguro->getColumnDimension('R')->setWidth(15);
+    $sheet10->getColumnDimension('R')->setWidth(15);
 
-    // Variables para empleados sin seguro
-    $filaSinSeguro = 7;
-    $numeroSinSeguro = 1;
-    $totalEmpleadosSinSeguro = 0;
-    $empleadosNoEncontradosSinSeguro = [];
 
-    // Agregar los datos de empleados sin seguro
+
+    // Variables
+    $fila10 = 7;
+    $numero10 = 1;
+    $total10 = 0;
+    $empleadosNoEncontrados10 = [];
+
+    // Agregar datos de empleados del departamento 10 LIBRAS
     if (isset($jsonGlobal['departamentos'])) {
         foreach ($jsonGlobal['departamentos'] as $depto) {
-            if (stripos($depto['nombre'], 'SIN SEGURO') !== false) {
+            if (stripos($depto['nombre'], 'PRODUCCION 10 LIBRAS') !== false) {
                 foreach ($depto['empleados'] as $empleado) {
                     // Obtener la clave directamente
                     $claveEmpleado = $empleado['clave'] ?? null;
@@ -462,60 +493,60 @@ try {
                     // VALIDAR si existe en BD, pero usar datos del JSON
                     if ($claveEmpleado && validarEmpleadoExiste($claveEmpleado, $conexion)) {
                         // El empleado existe en BD - usar datos del JSON
-                        $sheetSinSeguro->setCellValue("A{$filaSinSeguro}", $numeroSinSeguro);
+                        $sheet10->setCellValue("A{$fila10}", $numero10);
 
                         // B: Clave del empleado
-                        $sheetSinSeguro->setCellValueExplicit("B{$filaSinSeguro}", $claveEmpleado, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+                        $sheet10->setCellValueExplicit("B{$fila10}", $claveEmpleado, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
 
                         // Usar nombre del JSON (limpiado)
                         $nombreLimpio = trim(str_replace(['|', '"', "'", "\n", "\r", "\t"], '', $empleado['nombre']));
-                        $sheetSinSeguro->setCellValue("C{$filaSinSeguro}", $nombreLimpio);
+                        $sheet10->setCellValue("C{$fila10}", $nombreLimpio);
 
-                        $sheetSinSeguro->setCellValue("D{$filaSinSeguro}", 'SIN SEGURO');
+                        $sheet10->setCellValue("D{$fila10}", '10 LIBRAS');
 
-                        // Helper para colocar valor solo si != 0 (reutilizar la función)
-                        $putSinSeguro = function (string $cell, $value) use ($sheetSinSeguro) {
+                        // Helper para colocar valor solo si != 0
+                        $put10 = function (string $cell, $value) use ($sheet10) {
                             if ($value !== null && $value !== '' && is_numeric($value)) {
                                 $num = (float)$value;
                                 if ($num != 0) {
-                                    $sheetSinSeguro->setCellValue($cell, $num);
+                                    $sheet10->setCellValue($cell, $num);
                                 }
                             }
                         };
 
                         // E: Sueldo base (positivo)
-                        $putSinSeguro("E{$filaSinSeguro}", $empleado['sueldo_base'] ?? null);
+                        $put10("E{$fila10}", $empleado['sueldo_base'] ?? null);
 
                         // F: Incentivo (positivo)
-                        $putSinSeguro("F{$filaSinSeguro}", $empleado['incentivo'] ?? null);
+                        $put10("F{$fila10}", $empleado['incentivo'] ?? null);
 
                         // G: Extra (positivo)
-                        $putSinSeguro("G{$filaSinSeguro}", $empleado['sueldo_extra_final'] ?? null);
+                        $put10("G{$fila10}", $empleado['sueldo_extra_final'] ?? null);
 
                         // H: Tarjeta (deducción negativa)
                         if (isset($empleado['neto_pagar']) && $empleado['neto_pagar'] != 0) {
-                            $putSinSeguro("H{$filaSinSeguro}", -1 * (float)$empleado['neto_pagar']);
+                            $put10("H{$fila10}", -1 * (float)$empleado['neto_pagar']);
                         }
 
                         // I: Préstamo (deducción)
                         if (isset($empleado['prestamo']) && $empleado['prestamo'] != 0) {
-                            $putSinSeguro("I{$filaSinSeguro}", -1 * (float)$empleado['prestamo']);
+                            $put10("I{$fila10}", -1 * (float)$empleado['prestamo']);
                         }
 
                         // J: Inasistencias (deducción)
                         if (isset($empleado['inasistencias_descuento']) && $empleado['inasistencias_descuento'] != 0) {
-                            $putSinSeguro("J{$filaSinSeguro}", -1 * (float)$empleado['inasistencias_descuento']);
+                            $put10("J{$fila10}", -1 * (float)$empleado['inasistencias_descuento']);
                         }
 
                         // K: Uniformes (deducción)
                         if (isset($empleado['uniformes']) && $empleado['uniformes'] != 0) {
-                            $putSinSeguro("K{$filaSinSeguro}", -1 * (float)$empleado['uniformes']);
+                            $put10("K{$fila10}", -1 * (float)$empleado['uniformes']);
                         }
 
-                        // Conceptos (reutilizar la función getConcepto)
-                        $conceptosSinSeguro = $empleado['conceptos'] ?? [];
-                        $getConceptoSinSeguro = function ($codigo) use ($conceptosSinSeguro) {
-                            foreach ($conceptosSinSeguro as $c) {
+                        // Conceptos
+                        $conceptos10 = $empleado['conceptos'] ?? [];
+                        $getConcepto10 = function ($codigo) use ($conceptos10) {
+                            foreach ($conceptos10 as $c) {
                                 if (isset($c['codigo']) && $c['codigo'] == $codigo) {
                                     return (float)($c['resultado'] ?? 0);
                                 }
@@ -523,34 +554,34 @@ try {
                             return 0;
                         };
 
-                        $infonavitSinSeguro = $getConceptoSinSeguro('16');
-                        if ($infonavitSinSeguro != 0) $putSinSeguro("L{$filaSinSeguro}", -1 * $infonavitSinSeguro);
+                        $infonavit10 = $getConcepto10('16');
+                        if ($infonavit10 != 0) $put10("L{$fila10}", -1 * $infonavit10);
 
-                        $isrSinSeguro = $getConceptoSinSeguro('45');
-                        if ($isrSinSeguro != 0) $putSinSeguro("M{$filaSinSeguro}", -1 * $isrSinSeguro);
+                        $isr10 = $getConcepto10('45');
+                        if ($isr10 != 0) $put10("M{$fila10}", -1 * $isr10);
 
-                        $imssSinSeguro = $getConceptoSinSeguro('52');
-                        if ($imssSinSeguro != 0) $putSinSeguro("N{$filaSinSeguro}", -1 * $imssSinSeguro);
+                        $imss10 = $getConcepto10('52');
+                        if ($imss10 != 0) $put10("N{$fila10}", -1 * $imss10);
 
                         // O: Checador (deducción)
                         if (isset($empleado['checador']) && $empleado['checador'] != 0) {
-                            $putSinSeguro("O{$filaSinSeguro}", -1 * (float)$empleado['checador']);
+                            $put10("O{$fila10}", -1 * (float)$empleado['checador']);
                         }
 
                         // P: F.A / GAFET / COFIA (deducción)
                         if (isset($empleado['fa_gafet_cofia']) && $empleado['fa_gafet_cofia'] != 0) {
-                            $putSinSeguro("P{$filaSinSeguro}", -1 * (float)$empleado['fa_gafet_cofia']);
+                            $put10("P{$fila10}", -1 * (float)$empleado['fa_gafet_cofia']);
                         }
 
                         // Q: Sueldo a cobrar (fórmula que suma ingresos y resta deducciones)
-                        $formulaSinSeguro = "=SUM(E{$filaSinSeguro}:G{$filaSinSeguro}) - ABS(SUM(H{$filaSinSeguro}:P{$filaSinSeguro}))";
-                        $sheetSinSeguro->setCellValueExplicit("Q{$filaSinSeguro}", $formulaSinSeguro, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_FORMULA);
-                        $sheetSinSeguro->getStyle("Q{$filaSinSeguro}")->getNumberFormat()->setFormatCode('_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)');
+                        $formula10 = "=SUM(E{$fila10}:G{$fila10}) - ABS(SUM(H{$fila10}:P{$fila10}))";
+                        $sheet10->setCellValueExplicit("Q{$fila10}", $formula10, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_FORMULA);
+                        $sheet10->getStyle("Q{$fila10}")->getNumberFormat()->setFormatCode('_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)');
 
-                        $sheetSinSeguro->getRowDimension($filaSinSeguro)->setRowHeight(25);
+                        $sheet10->getRowDimension($fila10)->setRowHeight(25);
 
                         // Aplicar estilos
-                        $sheetSinSeguro->getStyle("A{$filaSinSeguro}:R{$filaSinSeguro}")->applyFromArray([
+                        $sheet10->getStyle("A{$fila10}:R{$fila10}")->applyFromArray([
                             'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
                             'alignment' => [
                                 'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -558,19 +589,288 @@ try {
                             ]
                         ]);
 
-                        $sheetSinSeguro->getStyle("C{$filaSinSeguro}")->applyFromArray([
+                        $sheet10->getStyle("C{$fila10}")->applyFromArray([
                             'alignment' => [
                                 'horizontal' => Alignment::HORIZONTAL_LEFT,
                                 'vertical' => Alignment::VERTICAL_CENTER
                             ]
                         ]);
 
-                        $numeroSinSeguro++;
-                        $filaSinSeguro++;
-                        $totalEmpleadosSinSeguro++;
+                        $numero10++;
+                        $fila10++;
+                        $total10++;
                     } else {
                         // Empleado no encontrado en BD o sin clave
-                        $empleadosNoEncontradosSinSeguro[] = [
+                        $empleadosNoEncontrados10[] = [
+                            'clave' => $claveEmpleado ?? 'Sin clave',
+                            'nombre' => $empleado['nombre'] ?? 'Sin nombre'
+                        ];
+                    }
+                }
+            }
+        }
+    }
+    
+    // Log de empleados no encontrados (para debugging)
+    if (!empty($empleadosNoEncontrados10)) {
+        error_log("Empleados 10 LIBRAS no encontrados en BD: " . json_encode($empleadosNoEncontrados10));
+    }
+
+    // Configuración de página basada en el número de empleados
+    if ($total10 <= 40) {
+        $sheet10->getPageSetup()
+            ->setFitToPage(true)
+            ->setFitToWidth(1)
+            ->setFitToHeight(1);
+    } else {
+        $sheet10->getPageSetup()
+            ->setFitToPage(true)
+            ->setFitToWidth(1)
+            ->setFitToHeight(0);
+    }
+
+    // Colorear de rojo las columnas de deducciones: Tarjeta (H) a F.A / GAFET / COFIA (P)
+    if ($total10 > 0) {
+        $ultimaFilaEmpleados10 = $fila10 - 1;
+        $sheet10->getStyle("H7:P{$ultimaFilaEmpleados10}")->getFont()->getColor()->setRGB('FF0000');
+    }
+
+    // Fila total (después del último empleado)
+    $filaTotales10 = $fila10;
+    if ($total10 > 0) {
+        $sheet10->setCellValue("C{$filaTotales10}", 'TOTAL');
+
+        $columnasSumar10 = ['E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q'];
+        foreach ($columnasSumar10 as $col) {
+            // Fórmula que deja vacío si la suma es 0
+            $sheet10->setCellValue(
+                "{$col}{$filaTotales10}",
+                "=IF(SUM({$col}6:{$col}" . ($filaTotales10 - 1) . ")=0,\"\",SUM({$col}6:{$col}" . ($filaTotales10 - 1) . "))"
+            );
+        }
+
+        $sheet10->getStyle("C{$filaTotales10}:Q{$filaTotales10}")->applyFromArray([
+            'font' => ['bold' => true],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'D9EAD3']],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
+        ]);
+        $sheet10->getStyle("C{$filaTotales10}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        $sheet10->getRowDimension($filaTotales10)->setRowHeight(24);
+
+        // También poner en rojo las mismas columnas en la fila TOTAL
+        $sheet10->getStyle("H{$filaTotales10}:P{$filaTotales10}")->getFont()->getColor()->setRGB('FF0000');
+    }
+
+    // Formato moneda
+    if ($total10 > 0) {
+        foreach ($columnasSumar10 as $col) {
+            $sheet10->getStyle("{$col}6:{$col}{$filaTotales10}")
+                ->getNumberFormat()
+                ->setFormatCode($formatoMoneda);
+        }
+    }
+
+
+    
+
+    /***************
+     * TABLA NOMINA SIN SEGURO 40 LIBRAS
+     * ************** */
+
+    // ---- CREAR HOJA DE NÓMINA SIN SEGURO 40 LIBRAS ----
+    $sheetSinSeguro40 = $spreadsheet->createSheet();
+    $sheetSinSeguro40->setTitle('Sin Seguro 40 Libras');
+
+    // Configurar página para impresión horizontal
+    $sheetSinSeguro40->getPageSetup()
+        ->setOrientation(PageSetup::ORIENTATION_LANDSCAPE)
+        ->setPaperSize(PageSetup::PAPERSIZE_A4)
+        ->setHorizontalCentered(true)
+        ->setVerticalCentered(false);
+
+    $sheetSinSeguro40->getPageMargins()->setTop(0.3)->setRight(0.3)->setLeft(0.3)->setBottom(0.3);
+    $sheetSinSeguro40->getPageSetup()->setFitToWidth(1)->setFitToHeight(0);
+
+    // Logo
+    if (file_exists('../../public/img/logo.jpg')) {
+        $logoSinSeguro40 = new Drawing();
+        $logoSinSeguro40->setName('Logo');
+        $logoSinSeguro40->setDescription('Logo CITRICOS SAAO');
+        $logoSinSeguro40->setPath('../../public/img/logo.jpg');
+        $logoSinSeguro40->setHeight(120);
+        $logoSinSeguro40->setCoordinates('A1');
+        $logoSinSeguro40->setOffsetX(10);
+        $logoSinSeguro40->setOffsetY(5);
+        $logoSinSeguro40->setWorksheet($sheetSinSeguro40);
+    }
+
+    // Título principal centrado
+    $sheetSinSeguro40->mergeCells('B1:R1');
+    $sheetSinSeguro40->setCellValue('B1', 'SIN SEGURO 40 LIBRAS');
+    $sheetSinSeguro40->getStyle('B1')->applyFromArray([
+        'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => '008000']],
+        'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
+    ]);
+
+    // Título de la empresa centrado
+    $sheetSinSeguro40->mergeCells('B2:R2');
+    $sheetSinSeguro40->setCellValue('B2', 'CITRICOS SAAO S.A DE C.V');
+    $sheetSinSeguro40->getStyle('B2')->applyFromArray([
+        'font' => ['bold' => true, 'size' => 12, 'color' => ['rgb' => '008000']],
+        'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
+    ]);
+
+    // Título de nómina
+    $sheetSinSeguro40->mergeCells('B3:R3');
+    $sheetSinSeguro40->setCellValue('B3', $tituloNomina);
+    $sheetSinSeguro40->getStyle('B3')->applyFromArray([
+        'font' => ['bold' => true, 'size' => 14],
+        'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
+    ]);
+
+    // Información de semana
+    $sheetSinSeguro40->mergeCells('B4:R4');
+    $sheetSinSeguro40->setCellValue('B4', $tituloExcel);
+    $sheetSinSeguro40->getStyle('B4')->applyFromArray([
+        'font' => ['bold' => true, 'size' => 12],
+        'alignment' => ['horizontal' => Alignment::HORIZONTAL_RIGHT, 'vertical' => Alignment::VERTICAL_CENTER]
+    ]);
+
+    // Alturas de filas
+    $sheetSinSeguro40->getRowDimension('1')->setRowHeight(50);
+    $sheetSinSeguro40->getRowDimension('2')->setRowHeight(20);
+    $sheetSinSeguro40->getRowDimension('3')->setRowHeight(25);
+
+    // Encabezados de la tabla
+    foreach ($headers as $cell => $header) {
+        $sheetSinSeguro40->setCellValue($cell, $header);
+        $sheetSinSeguro40->getStyle($cell)->applyFromArray($headerStyle);
+    }
+
+    $sheetSinSeguro40->getRowDimension('6')->setRowHeight(50);
+
+    // Ajustar ancho de columnas
+    $sheetSinSeguro40->getColumnDimension('A')->setWidth(5);
+    $sheetSinSeguro40->getColumnDimension('B')->setWidth(12);
+    $sheetSinSeguro40->getColumnDimension('C')->setWidth(40);
+    $sheetSinSeguro40->getColumnDimension('D')->setWidth(15);
+    $sheetSinSeguro40->getColumnDimension('J')->setWidth(15);
+
+    foreach (['E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'O', 'P', 'Q'] as $col) {
+        $sheetSinSeguro40->getColumnDimension($col)->setWidth($anchoUniforme);
+    }
+    $sheetSinSeguro40->getColumnDimension('R')->setWidth(15);
+
+    // Variables para empleados sin seguro 40 libras
+    $filaSinSeguro40 = 7;
+    $numeroSinSeguro40 = 1;
+    $totalEmpleadosSinSeguro40 = 0;
+    $empleadosNoEncontradosSinSeguro40 = [];
+
+    // Agregar los datos de empleados sin seguro 40 LIBRAS
+    if (isset($jsonGlobal['departamentos'])) {
+        foreach ($jsonGlobal['departamentos'] as $depto) {
+            if (stripos($depto['nombre'], 'SIN SEGURO') !== false) {
+                foreach ($depto['empleados'] as $empleado) {
+                    $claveEmpleado = $empleado['clave'] ?? null;
+                    $puestoEmpleado = $empleado['puesto'] ?? '';
+
+                    // FILTRAR SOLO 40 LIBRAS
+                    if (stripos($puestoEmpleado, '40') === false) {
+                        continue; // Saltar si no es de 40 libras
+                    }
+
+                    if ($claveEmpleado && validarEmpleadoExiste($claveEmpleado, $conexion)) {
+                        $sheetSinSeguro40->setCellValue("A{$filaSinSeguro40}", $numeroSinSeguro40);
+                        $sheetSinSeguro40->setCellValueExplicit("B{$filaSinSeguro40}", $claveEmpleado, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+
+                        $nombreLimpio = trim(str_replace(['|', '"', "'", "\n", "\r", "\t"], '', $empleado['nombre']));
+                        $sheetSinSeguro40->setCellValue("C{$filaSinSeguro40}", $nombreLimpio);
+                        $sheetSinSeguro40->setCellValue("D{$filaSinSeguro40}", '40 LIBRAS');
+
+                        $putSinSeguro40 = function (string $cell, $value) use ($sheetSinSeguro40) {
+                            if ($value !== null && $value !== '' && is_numeric($value)) {
+                                $num = (float)$value;
+                                if ($num != 0) {
+                                    $sheetSinSeguro40->setCellValue($cell, $num);
+                                }
+                            }
+                        };
+
+                        $putSinSeguro40("E{$filaSinSeguro40}", $empleado['sueldo_base'] ?? null);
+                        $putSinSeguro40("F{$filaSinSeguro40}", $empleado['incentivo'] ?? null);
+                        $putSinSeguro40("G{$filaSinSeguro40}", $empleado['sueldo_extra_final'] ?? null);
+
+                        if (isset($empleado['neto_pagar']) && $empleado['neto_pagar'] != 0) {
+                            $putSinSeguro40("H{$filaSinSeguro40}", -1 * (float)$empleado['neto_pagar']);
+                        }
+
+                        if (isset($empleado['prestamo']) && $empleado['prestamo'] != 0) {
+                            $putSinSeguro40("I{$filaSinSeguro40}", -1 * (float)$empleado['prestamo']);
+                        }
+
+                        if (isset($empleado['inasistencias_descuento']) && $empleado['inasistencias_descuento'] != 0) {
+                            $putSinSeguro40("J{$filaSinSeguro40}", -1 * (float)$empleado['inasistencias_descuento']);
+                        }
+
+                        if (isset($empleado['uniformes']) && $empleado['uniformes'] != 0) {
+                            $putSinSeguro40("K{$filaSinSeguro40}", -1 * (float)$empleado['uniformes']);
+                        }
+
+                        $conceptosSinSeguro40 = $empleado['conceptos'] ?? [];
+                        $getConceptoSinSeguro40 = function ($codigo) use ($conceptosSinSeguro40) {
+                            foreach ($conceptosSinSeguro40 as $c) {
+                                if (isset($c['codigo']) && $c['codigo'] == $codigo) {
+                                    return (float)($c['resultado'] ?? 0);
+                                }
+                            }
+                            return 0;
+                        };
+
+                        $infonavitSinSeguro40 = $getConceptoSinSeguro40('16');
+                        if ($infonavitSinSeguro40 != 0) $putSinSeguro40("L{$filaSinSeguro40}", -1 * $infonavitSinSeguro40);
+
+                        $isrSinSeguro40 = $getConceptoSinSeguro40('45');
+                        if ($isrSinSeguro40 != 0) $putSinSeguro40("M{$filaSinSeguro40}", -1 * $isrSinSeguro40);
+
+                        $imssSinSeguro40 = $getConceptoSinSeguro40('52');
+                        if ($imssSinSeguro40 != 0) $putSinSeguro40("N{$filaSinSeguro40}", -1 * $imssSinSeguro40);
+
+                        if (isset($empleado['checador']) && $empleado['checador'] != 0) {
+                            $putSinSeguro40("O{$filaSinSeguro40}", -1 * (float)$empleado['checador']);
+                        }
+
+                        if (isset($empleado['fa_gafet_cofia']) && $empleado['fa_gafet_cofia'] != 0) {
+                            $putSinSeguro40("P{$filaSinSeguro40}", -1 * (float)$empleado['fa_gafet_cofia']);
+                        }
+
+                        $formulaSinSeguro40 = "=SUM(E{$filaSinSeguro40}:G{$filaSinSeguro40}) - ABS(SUM(H{$filaSinSeguro40}:P{$filaSinSeguro40}))";
+                        $sheetSinSeguro40->setCellValueExplicit("Q{$filaSinSeguro40}", $formulaSinSeguro40, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_FORMULA);
+                        $sheetSinSeguro40->getStyle("Q{$filaSinSeguro40}")->getNumberFormat()->setFormatCode('_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)');
+
+                        $sheetSinSeguro40->getRowDimension($filaSinSeguro40)->setRowHeight(25);
+
+                        $sheetSinSeguro40->getStyle("A{$filaSinSeguro40}:R{$filaSinSeguro40}")->applyFromArray([
+                            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+                            'alignment' => [
+                                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                                'vertical' => Alignment::VERTICAL_CENTER
+                            ]
+                        ]);
+
+                        $sheetSinSeguro40->getStyle("C{$filaSinSeguro40}")->applyFromArray([
+                            'alignment' => [
+                                'horizontal' => Alignment::HORIZONTAL_LEFT,
+                                'vertical' => Alignment::VERTICAL_CENTER
+                            ]
+                        ]);
+
+                        $numeroSinSeguro40++;
+                        $filaSinSeguro40++;
+                        $totalEmpleadosSinSeguro40++;
+                    } else {
+                        $empleadosNoEncontradosSinSeguro40[] = [
                             'clave' => $claveEmpleado ?? 'Sin clave',
                             'nombre' => $empleado['nombre'] ?? 'Sin nombre'
                         ];
@@ -580,60 +880,299 @@ try {
         }
     }
 
-    // Log de empleados no encontrados sin seguro
-    if (!empty($empleadosNoEncontradosSinSeguro)) {
-        error_log("Empleados sin seguro no encontrados en BD: " . json_encode($empleadosNoEncontradosSinSeguro));
+    if (!empty($empleadosNoEncontradosSinSeguro40)) {
+        error_log("Empleados sin seguro 40 libras no encontrados en BD: " . json_encode($empleadosNoEncontradosSinSeguro40));
     }
 
-    // Configuración de página basada en el número de empleados sin seguro
-    if ($totalEmpleadosSinSeguro <= 40) {
-        $sheetSinSeguro->getPageSetup()
-            ->setFitToPage(true)
-            ->setFitToWidth(1)
-            ->setFitToHeight(1);
+    if ($totalEmpleadosSinSeguro40 <= 40) {
+        $sheetSinSeguro40->getPageSetup()->setFitToPage(true)->setFitToWidth(1)->setFitToHeight(1);
     } else {
-        $sheetSinSeguro->getPageSetup()
-            ->setFitToPage(true)
-            ->setFitToWidth(1)
-            ->setFitToHeight(0);
+        $sheetSinSeguro40->getPageSetup()->setFitToPage(true)->setFitToWidth(1)->setFitToHeight(0);
     }
 
-    // Colorear de rojo las columnas de deducciones: Tarjeta (H) a F.A / GAFET / COFIA (P)
-    if ($totalEmpleadosSinSeguro > 0) {
-        $ultimaFilaEmpleadosSinSeguro = $filaSinSeguro - 1;
-        $sheetSinSeguro->getStyle("H7:P{$ultimaFilaEmpleadosSinSeguro}")->getFont()->getColor()->setRGB('FF0000');
+    if ($totalEmpleadosSinSeguro40 > 0) {
+        $ultimaFilaEmpleadosSinSeguro40 = $filaSinSeguro40 - 1;
+        $sheetSinSeguro40->getStyle("H7:P{$ultimaFilaEmpleadosSinSeguro40}")->getFont()->getColor()->setRGB('FF0000');
     }
 
-    // Fila total sin seguro
-    $filaTotalesSinSeguro = $filaSinSeguro;
-    if ($totalEmpleadosSinSeguro > 0) {
-        $sheetSinSeguro->setCellValue("C{$filaTotalesSinSeguro}", 'TOTAL');
+    $filaTotalesSinSeguro40 = $filaSinSeguro40;
+    if ($totalEmpleadosSinSeguro40 > 0) {
+        $sheetSinSeguro40->setCellValue("C{$filaTotalesSinSeguro40}", 'TOTAL');
 
         foreach ($columnasSumar as $col) {
-            // Fórmula que deja vacío si la suma es 0
-            $sheetSinSeguro->setCellValue(
-                "{$col}{$filaTotalesSinSeguro}",
-                "=IF(SUM({$col}6:{$col}" . ($filaTotalesSinSeguro - 1) . ")=0,\"\",SUM({$col}6:{$col}" . ($filaTotalesSinSeguro - 1) . "))"
+            $sheetSinSeguro40->setCellValue(
+                "{$col}{$filaTotalesSinSeguro40}",
+                "=IF(SUM({$col}6:{$col}" . ($filaTotalesSinSeguro40 - 1) . ")=0,\"\",SUM({$col}6:{$col}" . ($filaTotalesSinSeguro40 - 1) . "))"
             );
         }
 
-        $sheetSinSeguro->getStyle("C{$filaTotalesSinSeguro}:Q{$filaTotalesSinSeguro}")->applyFromArray([
+        $sheetSinSeguro40->getStyle("C{$filaTotalesSinSeguro40}:Q{$filaTotalesSinSeguro40}")->applyFromArray([
             'font' => ['bold' => true],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'D9EAD3']],
             'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
         ]);
-        $sheetSinSeguro->getStyle("C{$filaTotalesSinSeguro}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
-        $sheetSinSeguro->getRowDimension($filaTotalesSinSeguro)->setRowHeight(24);
+        $sheetSinSeguro40->getStyle("C{$filaTotalesSinSeguro40}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        $sheetSinSeguro40->getRowDimension($filaTotalesSinSeguro40)->setRowHeight(24);
 
-        // También poner en rojo las mismas columnas en la fila TOTAL
-        $sheetSinSeguro->getStyle("H{$filaTotalesSinSeguro}:P{$filaTotalesSinSeguro}")->getFont()->getColor()->setRGB('FF0000');
+        $sheetSinSeguro40->getStyle("H{$filaTotalesSinSeguro40}:P{$filaTotalesSinSeguro40}")->getFont()->getColor()->setRGB('FF0000');
     }
 
-    // Formato moneda para sin seguro
-    if ($totalEmpleadosSinSeguro > 0) {
+    if ($totalEmpleadosSinSeguro40 > 0) {
         foreach ($columnasSumar as $col) {
-            $sheetSinSeguro->getStyle("{$col}6:{$col}{$filaTotalesSinSeguro}")
+            $sheetSinSeguro40->getStyle("{$col}6:{$col}{$filaTotalesSinSeguro40}")
+                ->getNumberFormat()
+                ->setFormatCode($formatoMoneda);
+        }
+    }
+
+    /***************
+     * TABLA NOMINA SIN SEGURO 10 LIBRAS
+     * ************** */
+
+    // ---- CREAR HOJA DE NÓMINA SIN SEGURO 10 LIBRAS ----
+    $sheetSinSeguro10 = $spreadsheet->createSheet();
+    $sheetSinSeguro10->setTitle('Sin Seguro 10 Libras');
+
+    // Configurar página para impresión horizontal
+    $sheetSinSeguro10->getPageSetup()
+        ->setOrientation(PageSetup::ORIENTATION_LANDSCAPE)
+        ->setPaperSize(PageSetup::PAPERSIZE_A4)
+        ->setHorizontalCentered(true)
+        ->setVerticalCentered(false);
+
+    $sheetSinSeguro10->getPageMargins()->setTop(0.3)->setRight(0.3)->setLeft(0.3)->setBottom(0.3);
+    $sheetSinSeguro10->getPageSetup()->setFitToWidth(1)->setFitToHeight(0);
+
+    // Logo
+    if (file_exists('../../public/img/logo.jpg')) {
+        $logoSinSeguro10 = new Drawing();
+        $logoSinSeguro10->setName('Logo');
+        $logoSinSeguro10->setDescription('Logo CITRICOS SAAO');
+        $logoSinSeguro10->setPath('../../public/img/logo.jpg');
+        $logoSinSeguro10->setHeight(120);
+        $logoSinSeguro10->setCoordinates('A1');
+        $logoSinSeguro10->setOffsetX(10);
+        $logoSinSeguro10->setOffsetY(5);
+        $logoSinSeguro10->setWorksheet($sheetSinSeguro10);
+    }
+
+    // Título principal centrado
+    $sheetSinSeguro10->mergeCells('B1:R1');
+    $sheetSinSeguro10->setCellValue('B1', 'SIN SEGURO 10 LIBRAS');
+    $sheetSinSeguro10->getStyle('B1')->applyFromArray([
+        'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => '008000']],
+        'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
+    ]);
+
+    // Título de la empresa centrado
+    $sheetSinSeguro10->mergeCells('B2:R2');
+    $sheetSinSeguro10->setCellValue('B2', 'CITRICOS SAAO S.A DE C.V');
+    $sheetSinSeguro10->getStyle('B2')->applyFromArray([
+        'font' => ['bold' => true, 'size' => 12, 'color' => ['rgb' => '008000']],
+        'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
+    ]);
+
+    // Título de nómina
+    $sheetSinSeguro10->mergeCells('B3:R3');
+    $sheetSinSeguro10->setCellValue('B3', $tituloNomina);
+    $sheetSinSeguro10->getStyle('B3')->applyFromArray([
+        'font' => ['bold' => true, 'size' => 14],
+        'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
+    ]);
+
+    // Información de semana
+    $sheetSinSeguro10->mergeCells('B4:R4');
+    $sheetSinSeguro10->setCellValue('B4', $tituloExcel);
+    $sheetSinSeguro10->getStyle('B4')->applyFromArray([
+        'font' => ['bold' => true, 'size' => 12],
+        'alignment' => ['horizontal' => Alignment::HORIZONTAL_RIGHT, 'vertical' => Alignment::VERTICAL_CENTER]
+    ]);
+
+    // Alturas de filas
+    $sheetSinSeguro10->getRowDimension('1')->setRowHeight(50);
+    $sheetSinSeguro10->getRowDimension('2')->setRowHeight(20);
+    $sheetSinSeguro10->getRowDimension('3')->setRowHeight(25);
+
+    // Encabezados de la tabla
+    foreach ($headers as $cell => $header) {
+        $sheetSinSeguro10->setCellValue($cell, $header);
+        $sheetSinSeguro10->getStyle($cell)->applyFromArray($headerStyle);
+    }
+
+    $sheetSinSeguro10->getRowDimension('6')->setRowHeight(50);
+
+    // Ajustar ancho de columnas
+    $sheetSinSeguro10->getColumnDimension('A')->setWidth(5);
+    $sheetSinSeguro10->getColumnDimension('B')->setWidth(12);
+    $sheetSinSeguro10->getColumnDimension('C')->setWidth(40);
+    $sheetSinSeguro10->getColumnDimension('D')->setWidth(15);
+    $sheetSinSeguro10->getColumnDimension('J')->setWidth(15);
+
+    foreach (['E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'O', 'P', 'Q'] as $col) {
+        $sheetSinSeguro10->getColumnDimension($col)->setWidth($anchoUniforme);
+    }
+    $sheetSinSeguro10->getColumnDimension('R')->setWidth(15);
+
+    // Variables para empleados sin seguro 10 libras
+    $filaSinSeguro10 = 7;
+    $numeroSinSeguro10 = 1;
+    $totalEmpleadosSinSeguro10 = 0;
+    $empleadosNoEncontradosSinSeguro10 = [];
+
+    // Agregar los datos de empleados sin seguro 10 LIBRAS
+    if (isset($jsonGlobal['departamentos'])) {
+        foreach ($jsonGlobal['departamentos'] as $depto) {
+            if (stripos($depto['nombre'], 'SIN SEGURO') !== false) {
+                foreach ($depto['empleados'] as $empleado) {
+                    $claveEmpleado = $empleado['clave'] ?? null;
+                    $puestoEmpleado = $empleado['puesto'] ?? '';
+
+                    // FILTRAR SOLO 10 LIBRAS
+                    if (stripos($puestoEmpleado, '10') === false) {
+                        continue; // Saltar si no es de 10 libras
+                    }
+
+                    if ($claveEmpleado && validarEmpleadoExiste($claveEmpleado, $conexion)) {
+                        $sheetSinSeguro10->setCellValue("A{$filaSinSeguro10}", $numeroSinSeguro10);
+                        $sheetSinSeguro10->setCellValueExplicit("B{$filaSinSeguro10}", $claveEmpleado, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+
+                        $nombreLimpio = trim(str_replace(['|', '"', "'", "\n", "\r", "\t"], '', $empleado['nombre']));
+                        $sheetSinSeguro10->setCellValue("C{$filaSinSeguro10}", $nombreLimpio);
+                        $sheetSinSeguro10->setCellValue("D{$filaSinSeguro10}", '10 LIBRAS');
+
+                        $putSinSeguro10 = function (string $cell, $value) use ($sheetSinSeguro10) {
+                            if ($value !== null && $value !== '' && is_numeric($value)) {
+                                $num = (float)$value;
+                                if ($num != 0) {
+                                    $sheetSinSeguro10->setCellValue($cell, $num);
+                                }
+                            }
+                        };
+
+                        $putSinSeguro10("E{$filaSinSeguro10}", $empleado['sueldo_base'] ?? null);
+                        $putSinSeguro10("F{$filaSinSeguro10}", $empleado['incentivo'] ?? null);
+                        $putSinSeguro10("G{$filaSinSeguro10}", $empleado['sueldo_extra_final'] ?? null);
+
+                        if (isset($empleado['neto_pagar']) && $empleado['neto_pagar'] != 0) {
+                            $putSinSeguro10("H{$filaSinSeguro10}", -1 * (float)$empleado['neto_pagar']);
+                        }
+
+                        if (isset($empleado['prestamo']) && $empleado['prestamo'] != 0) {
+                            $putSinSeguro10("I{$filaSinSeguro10}", -1 * (float)$empleado['prestamo']);
+                        }
+
+                        if (isset($empleado['inasistencias_descuento']) && $empleado['inasistencias_descuento'] != 0) {
+                            $putSinSeguro10("J{$filaSinSeguro10}", -1 * (float)$empleado['inasistencias_descuento']);
+                        }
+
+                        if (isset($empleado['uniformes']) && $empleado['uniformes'] != 0) {
+                            $putSinSeguro10("K{$filaSinSeguro10}", -1 * (float)$empleado['uniformes']);
+                        }
+
+                        $conceptosSinSeguro10 = $empleado['conceptos'] ?? [];
+                        $getConceptoSinSeguro10 = function ($codigo) use ($conceptosSinSeguro10) {
+                            foreach ($conceptosSinSeguro10 as $c) {
+                                if (isset($c['codigo']) && $c['codigo'] == $codigo) {
+                                    return (float)($c['resultado'] ?? 0);
+                                }
+                            }
+                            return 0;
+                        };
+
+                        $infonavitSinSeguro10 = $getConceptoSinSeguro10('16');
+                        if ($infonavitSinSeguro10 != 0) $putSinSeguro10("L{$filaSinSeguro10}", -1 * $infonavitSinSeguro10);
+
+                        $isrSinSeguro10 = $getConceptoSinSeguro10('45');
+                        if ($isrSinSeguro10 != 0) $putSinSeguro10("M{$filaSinSeguro10}", -1 * $isrSinSeguro10);
+
+                        $imssSinSeguro10 = $getConceptoSinSeguro10('52');
+                        if ($imssSinSeguro10 != 0) $putSinSeguro10("N{$filaSinSeguro10}", -1 * $imssSinSeguro10);
+
+                        if (isset($empleado['checador']) && $empleado['checador'] != 0) {
+                            $putSinSeguro10("O{$filaSinSeguro10}", -1 * (float)$empleado['checador']);
+                        }
+
+                        if (isset($empleado['fa_gafet_cofia']) && $empleado['fa_gafet_cofia'] != 0) {
+                            $putSinSeguro10("P{$filaSinSeguro10}", -1 * (float)$empleado['fa_gafet_cofia']);
+                        }
+
+                        $formulaSinSeguro10 = "=SUM(E{$filaSinSeguro10}:G{$filaSinSeguro10}) - ABS(SUM(H{$filaSinSeguro10}:P{$filaSinSeguro10}))";
+                        $sheetSinSeguro10->setCellValueExplicit("Q{$filaSinSeguro10}", $formulaSinSeguro10, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_FORMULA);
+                        $sheetSinSeguro10->getStyle("Q{$filaSinSeguro10}")->getNumberFormat()->setFormatCode('_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)');
+
+                        $sheetSinSeguro10->getRowDimension($filaSinSeguro10)->setRowHeight(25);
+
+                        $sheetSinSeguro10->getStyle("A{$filaSinSeguro10}:R{$filaSinSeguro10}")->applyFromArray([
+                            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+                            'alignment' => [
+                                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                                'vertical' => Alignment::VERTICAL_CENTER
+                            ]
+                        ]);
+
+                        $sheetSinSeguro10->getStyle("C{$filaSinSeguro10}")->applyFromArray([
+                            'alignment' => [
+                                'horizontal' => Alignment::HORIZONTAL_LEFT,
+                                'vertical' => Alignment::VERTICAL_CENTER
+                            ]
+                        ]);
+
+                        $numeroSinSeguro10++;
+                        $filaSinSeguro10++;
+                        $totalEmpleadosSinSeguro10++;
+                    } else {
+                        $empleadosNoEncontradosSinSeguro10[] = [
+                            'clave' => $claveEmpleado ?? 'Sin clave',
+                            'nombre' => $empleado['nombre'] ?? 'Sin nombre'
+                        ];
+                    }
+                }
+            }
+        }
+    }
+
+    if (!empty($empleadosNoEncontradosSinSeguro10)) {
+        error_log("Empleados sin seguro 10 libras no encontrados en BD: " . json_encode($empleadosNoEncontradosSinSeguro10));
+    }
+
+    if ($totalEmpleadosSinSeguro10 <= 40) {
+        $sheetSinSeguro10->getPageSetup()->setFitToPage(true)->setFitToWidth(1)->setFitToHeight(1);
+    } else {
+        $sheetSinSeguro10->getPageSetup()->setFitToPage(true)->setFitToWidth(1)->setFitToHeight(0);
+    }
+
+    if ($totalEmpleadosSinSeguro10 > 0) {
+        $ultimaFilaEmpleadosSinSeguro10 = $filaSinSeguro10 - 1;
+        $sheetSinSeguro10->getStyle("H7:P{$ultimaFilaEmpleadosSinSeguro10}")->getFont()->getColor()->setRGB('FF0000');
+    }
+
+    $filaTotalesSinSeguro10 = $filaSinSeguro10;
+    if ($totalEmpleadosSinSeguro10 > 0) {
+        $sheetSinSeguro10->setCellValue("C{$filaTotalesSinSeguro10}", 'TOTAL');
+
+        foreach ($columnasSumar as $col) {
+            $sheetSinSeguro10->setCellValue(
+                "{$col}{$filaTotalesSinSeguro10}",
+                "=IF(SUM({$col}6:{$col}" . ($filaTotalesSinSeguro10 - 1) . ")=0,\"\",SUM({$col}6:{$col}" . ($filaTotalesSinSeguro10 - 1) . "))"
+            );
+        }
+
+        $sheetSinSeguro10->getStyle("C{$filaTotalesSinSeguro10}:Q{$filaTotalesSinSeguro10}")->applyFromArray([
+            'font' => ['bold' => true],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'D9EAD3']],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
+        ]);
+        $sheetSinSeguro10->getStyle("C{$filaTotalesSinSeguro10}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        $sheetSinSeguro10->getRowDimension($filaTotalesSinSeguro10)->setRowHeight(24);
+
+        $sheetSinSeguro10->getStyle("H{$filaTotalesSinSeguro10}:P{$filaTotalesSinSeguro10}")->getFont()->getColor()->setRGB('FF0000');
+    }
+
+    if ($totalEmpleadosSinSeguro10 > 0) {
+        foreach ($columnasSumar as $col) {
+            $sheetSinSeguro10->getStyle("{$col}6:{$col}{$filaTotalesSinSeguro10}")
                 ->getNumberFormat()
                 ->setFormatCode($formatoMoneda);
         }
@@ -645,7 +1184,6 @@ try {
 
 
     // ---- CREAR HOJA DE DISPERSIÓN DE TARJETA ----
-    // Crear una nueva hoja para la dispersión de tarjeta
     $sheetDispersion = $spreadsheet->createSheet();
     $sheetDispersion->setTitle('Dispersión de Tarjeta');
 

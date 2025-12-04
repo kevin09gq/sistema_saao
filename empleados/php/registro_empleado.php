@@ -250,7 +250,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sql->close();
 
         // =============================
-        // 🆕 ASIGNAR CASILLERO AL EMPLEADO
+        //   ASIGNAR CASILLERO AL EMPLEADO
         // =============================
         if (!empty($num_casillero)) {
             $sqlAsignarCasillero = $conexion->prepare("INSERT INTO empleado_casillero (id_empleado, num_casillero) VALUES (?, ?)");

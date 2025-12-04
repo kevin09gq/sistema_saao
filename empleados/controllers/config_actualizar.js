@@ -10,6 +10,16 @@ $(document).ready(function () {
     initOrdenamiento();
     actualizarTotalPorcentaje(); 
 
+    // Botón limpiar buscador de empleados
+    $(document).off('click', '#btn-clear-buscador-empleado').on('click', '#btn-clear-buscador-empleado', function(e){
+        e.preventDefault();
+        const $input = $('#buscadorEmpleado');
+        $input.val('');
+        // re-aplicar búsqueda usando la misma ruta que el input listener
+        setBusqueda('');
+        $input.focus();
+    });
+
     // Función para formatear texto a mayúsculas mientras se escribe
     function formatearMayusculas(selector) {
         $(selector).on('input', function () {

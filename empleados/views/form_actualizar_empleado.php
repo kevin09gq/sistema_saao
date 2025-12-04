@@ -14,6 +14,12 @@ verificarSesion();
     <!-- Iconos Bootstrap -->
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <link rel="stylesheet" href="../styles/actualizar_empleado.css">
+    <style>
+        .buscador-wrap { position: relative; display: inline-flex; align-items: center; }
+        .buscador-wrap .search-box { padding-right: 2.4rem; }
+        .btn-clear-search { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: none; background: transparent; color: #94a3b8; font-size: 18px; cursor: pointer; }
+        .btn-clear-search:hover { color: #ef4444; }
+    </style>
     
     <!-- SweetAlert2 CSS -->
      <script src="<?= SWEETALERT ?>"></script>
@@ -28,7 +34,12 @@ verificarSesion();
                 <select class="form-select me-2" id="filtroDepartamento" style="min-width:200px;">
                     <!-- Opciones dinámicas -->
                 </select>
-                <input type="text" class="search-box me-2" placeholder="Buscar..." id="buscadorEmpleado">
+                <div class="buscador-wrap me-2">
+                    <input type="text" class="search-box" placeholder="Buscar..." id="buscadorEmpleado">
+                    <button type="button" id="btn-clear-buscador-empleado" class="btn-clear-search" title="Limpiar">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                </div>
                 <button class="btn btn-add" id="btnAgregarEmpleado">
                     <a href="form_registro.php" style="text-decoration: none">+ Agregar Empleado</a>
                 </button>

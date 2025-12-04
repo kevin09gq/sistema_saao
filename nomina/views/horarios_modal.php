@@ -16,6 +16,7 @@
                                     <th class="encabezado-tiempo">Total Horas</th>
                                     <th class="encabezado-tiempo">Horas Comida</th>
                                     <th class="encabezado-tiempo">Minutos</th>
+                                    <th class="encabezado-tiempo">Forzar oficial</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -31,6 +32,7 @@
                                     <td class="celda-total-horas-semana">00:00</td>
                                     <td class="celda-total-comida-semana">00:00</td>
                                     <td class="celda-total-minutos-semana">0</td>
+                                    <td class="celda-total-general"></td>
                                 </tr>
                             </tfoot>
                         </table>

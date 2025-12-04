@@ -399,7 +399,14 @@ function calcularSueldoACobrar(clave) {
     const faGafetCofia = parseFloat(empleado.fa_gafet_cofia) || 0;
 
     // Total de deducciones incluye conceptos (INFONAVIT, ISR, IMSS) + otras deducciones
-    const totalDeducciones = tarjeta + prestamo + inasistencias + uniformes + checador + faGafetCofia + totalConceptos;
+    // Sumar deducciones adicionales personalizadas del empleado
+    let totalDeduccionesAdicionales = 0;
+    const deduccionesAdic = empleado.deducciones_adicionales || [];
+    deduccionesAdic.forEach(d => {
+        totalDeduccionesAdicionales += parseFloat(d.valor) || 0;
+    });
+
+    const totalDeducciones = tarjeta + prestamo + inasistencias + uniformes + checador + faGafetCofia + totalConceptos + totalDeduccionesAdicionales;
 
     // === CALCULAR SUELDO A COBRAR ===
     const sueldoACobrar = totalPercepciones - totalDeducciones;
@@ -434,6 +441,28 @@ $(document).ready(function () {
         e.preventDefault();
 
         guardarDetallesEmpleado();
+    });
+
+    // Botón: Agregar Deducción Personalizada
+    $(document).on('click', '#btn-agregar-deduccion', function (e) {
+        e.preventDefault();
+        agregarCampoDeduccionAdicional();
+    });
+
+    // Actualizar json al escribir manualmente el sueldo a cobrar en el input
+    $(document).on('input', '#mod-sueldo-a-cobrar', function () {
+        const clave = $('#campo-clave').text().trim();
+        const valor = parseFloat($(this).val());
+        if (!clave) return;
+        const numero = isNaN(valor) ? 0 : valor;
+        actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'sueldo_a_cobrar', numero);
+        if (typeof actualizarSueldoEnTabla === 'function') {
+            actualizarSueldoEnTabla(clave, numero);
+        }
+        // Persistir cambios si está disponible
+        if (typeof guardarDatosNomina === 'function') {
+            guardarDatosNomina();
+        }
     });
 
     // LIMPIAR EVENTOS AL CERRAR EL MODAL
@@ -754,6 +783,28 @@ function establecerDatosDeducciones(empleado) {
     $("#mod-inasistencias-minutos").val(empleado.inasistencias_minutos || 0);
     $("#mod-inasistencias-descuento").val(empleado.inasistencias_descuento || 0);
 
+    // Deshabilitar tarjeta para empleados del departamento SIN SEGURO
+    try {
+        const claveActual = $('#campo-clave').text().trim() || String(empleado.clave || '');
+        let esSinSeguro = false;
+        if (window.jsonGlobal && Array.isArray(window.jsonGlobal.departamentos)) {
+            for (const depto of window.jsonGlobal.departamentos) {
+                if (((depto.nombre || '') + '').toUpperCase().includes('SIN SEGURO')) {
+                    if ((depto.empleados || []).some(emp => String(emp.clave) === String(claveActual))) {
+                        esSinSeguro = true;
+                        break;
+                    }
+                }
+            }
+        }
+        $("#mod-tarjeta").prop('disabled', !!esSinSeguro);
+        if (esSinSeguro) {
+            $("#mod-tarjeta").attr('title', 'Deshabilitado para empleados SIN SEGURO');
+        } else {
+            $("#mod-tarjeta").removeAttr('title');
+        }
+    } catch (e) { /* noop */ }
+
     // Guardar el valor original de la tarjeta (solo la primera vez)
     if (typeof empleado.neto_pagar_original === 'undefined') {
         empleado.neto_pagar_original = parseFloat(empleado.neto_pagar) || 0;
@@ -780,6 +831,22 @@ function establecerDatosDeducciones(empleado) {
         
         actualizarDeduccionEnJsonGlobal(clave, 'neto_pagar', valorIngresado);
         actualizarSueldoACobrarEnTiempoReal(clave);
+    });
+
+    // Evento para el botón de aplicar tarjeta (restaurar valor original)
+    $("#btn-aplicar-tarjeta").off('click').on('click', function() {
+        const clave = $('#campo-clave').text().trim();
+        const empleado = obtenerEmpleadoActualizado(clave);
+        if (empleado && empleado.neto_pagar_original !== undefined) {
+            const valorOriginal = parseFloat(empleado.neto_pagar_original);
+            // Actualizar el campo de tarjeta con el valor original
+            $("#mod-tarjeta").val(valorOriginal.toFixed(2));
+            // Actualizar el último valor válido
+            $("#mod-tarjeta").data('last-valid', valorOriginal);
+            // Actualizar en el JSON global
+            actualizarDeduccionEnJsonGlobal(clave, 'neto_pagar', valorOriginal);
+            actualizarSueldoACobrarEnTiempoReal(clave);
+        }
     });
 
     $("#mod-prestamo").off('input').on('input', function () {
@@ -810,23 +877,81 @@ function establecerDatosDeducciones(empleado) {
         actualizarSueldoACobrarEnTiempoReal(clave);
     });
 
+    function obtenerCostoPorMinutoPredominante() {
+        const rangos = Array.isArray(window.rangosHorasJson) ? window.rangosHorasJson.slice() : [];
+        const rangosNormales = rangos
+            .filter(r => !r.tipo && (typeof r.minutos === 'number'))
+            .sort((a, b) => a.minutos - b.minutos);
+
+        // Si no hay rangos normales, intentar un fallback dinámico
+        if (rangosNormales.length === 0) {
+            const costosNormales = rangos.filter(r => !r.tipo && typeof r.costo_por_minuto === 'number').map(r => r.costo_por_minuto);
+            if (costosNormales.length > 0) {
+                // Promedio como fallback si existen costos normales pero sin 'minutos'
+                const sum = costosNormales.reduce((a, b) => a + b, 0);
+                return sum / costosNormales.length;
+            }
+            const rangoExtra = rangos.find(r => r.tipo === 'hora_extra' && typeof r.costo_por_minuto === 'number');
+            if (rangoExtra) {
+                return rangoExtra.costo_por_minuto; // aún es dinámico desde la config
+            }
+            return 0; // último recurso, sin valores en config
+        }
+
+        const counts = new Map();
+        rangosNormales.forEach((_, idx) => counts.set(idx, 0));
+
+        const empleados = (typeof empleadosFiltrados !== 'undefined' && Array.isArray(empleadosFiltrados) && empleadosFiltrados.length > 0)
+            ? empleadosFiltrados
+            : (window.jsonGlobal && Array.isArray(window.jsonGlobal.departamentos))
+                ? window.jsonGlobal.departamentos.flatMap(d => d.empleados || [])
+                : [];
+
+        empleados.forEach(emp => {
+            const minutosTotales = (
+                (parseInt(emp.Minutos_trabajados) || 0) ||
+                (parseInt(emp.total_minutos_redondeados) || 0) ||
+                (parseInt(emp.Minutos_normales) || 0) ||
+                0
+            );
+
+            let rangoIndex = rangosNormales.findIndex(r => minutosTotales <= r.minutos);
+            if (rangoIndex === -1) {
+                rangoIndex = rangosNormales.length - 1;
+            }
+            counts.set(rangoIndex, (counts.get(rangoIndex) || 0) + 1);
+        });
+
+        let maxIndex = 0;
+        let maxCount = -1;
+        counts.forEach((c, i) => { if (c > maxCount) { maxCount = c; maxIndex = i; } });
+
+        const costoPredominante = rangosNormales[maxIndex]?.costo_por_minuto;
+        if (typeof costoPredominante === 'number') return costoPredominante;
+
+        // Fallback dinámico si el costo no está definido en el predominante
+        const ultimoNormal = rangosNormales[rangosNormales.length - 1];
+        if (ultimoNormal && typeof ultimoNormal.costo_por_minuto === 'number') {
+            return ultimoNormal.costo_por_minuto;
+        }
+        const promedioNormales = rangosNormales
+            .map(r => r.costo_por_minuto)
+            .filter(c => typeof c === 'number');
+        if (promedioNormales.length > 0) {
+            const sum = promedioNormales.reduce((a, b) => a + b, 0);
+            return sum / promedioNormales.length;
+        }
+        const rangoExtra = rangos.find(r => r.tipo === 'hora_extra' && typeof r.costo_por_minuto === 'number');
+        return rangoExtra ? rangoExtra.costo_por_minuto : 0;
+    }
+
     // Evento para calcular descuento por inasistencias basado en minutos
     $("#mod-inasistencias-minutos").off('input').on('input', function () {
         const clave = $('#campo-clave').text().trim();
         const minutos = parseFloat($(this).val()) || 0;
 
-        // Obtener costo por minuto del archivo rangos_horas.js
-        let costoPorMinuto = 1.34; // Valor por defecto
+        let costoPorMinuto = obtenerCostoPorMinutoPredominante();
 
-        if (window.rangosHorasJson) {
-            // Buscar el rango de hora_extra que contiene el costo por minuto para penalizaciones
-            const rangoExtra = window.rangosHorasJson.find(rango => rango.tipo === "hora_extra");
-            if (rangoExtra && rangoExtra.costo_por_minuto) {
-                costoPorMinuto = rangoExtra.costo_por_minuto;
-            }
-        }
-
-        // Calcular el descuento: minutos * costo por minuto
         const descuento = minutos * costoPorMinuto;
 
         // Actualizar el campo de descuento
@@ -845,6 +970,107 @@ function establecerDatosDeducciones(empleado) {
         actualizarDeduccionEnJsonGlobal(clave, 'inasistencias_descuento', descuento);
         actualizarSueldoACobrarEnTiempoReal(clave);
     });
+
+    // Cargar deducciones adicionales existentes al abrir el modal
+    cargarDeduccionesAdicionalesExistentes(empleado);
+}
+
+/*
+ * ----------------------------------------------------------------
+ * SUBSECCIÓN: DEDUCCIONES ADICIONALES PERSONALIZADAS
+ * ----------------------------------------------------------------
+ */
+
+// Agregar nuevo campo de deducción adicional en el formulario
+function agregarCampoDeduccionAdicional(nombre = '', valor = 0) {
+    const itemIndex = Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+    const nuevo = `
+        <div class="col-md-6 mb-3 d-flex flex-column deduccion-adicional" data-deduccion-index="${itemIndex}">
+            <div class="d-flex align-items-center mb-1">
+                <label class="form-label fw-normal flex-grow-1">Deducción Personalizada</label>
+                <button type="button" class="btn btn-sm btn-outline-danger ms-2 btn-eliminar-deduccion">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+            <input type="text" class="form-control mb-2 deduccion-nombre" placeholder="Nombre de la deducción" value="${nombre}">
+            <input type="number" step="0.01" class="form-control mod-input-rosa deduccion-valor" placeholder="0.00" value="${valor}">
+        </div>
+    `;
+
+    const $contenedor = $('#contenedor-deducciones-adicionales');
+    $contenedor.append(nuevo);
+
+    configurarEventosDeduccionAdicional(itemIndex);
+}
+
+// Configurar eventos para un item de deducción adicional
+function configurarEventosDeduccionAdicional(itemIndex) {
+    const $item = $(`.deduccion-adicional[data-deduccion-index="${itemIndex}"]`);
+
+    // Eliminar
+    $item.find('.btn-eliminar-deduccion').on('click', function () {
+        const clave = $('#campo-clave').text().trim();
+        $item.remove();
+        setTimeout(() => {
+            actualizarDeduccionesAdicionalesEnJsonGlobal(clave);
+            actualizarSueldoACobrarEnTiempoReal(clave);
+        }, 50);
+    });
+
+    // Cambios en nombre/valor
+    $item.find('.deduccion-nombre, .deduccion-valor').on('input', function () {
+        const clave = $('#campo-clave').text().trim();
+        actualizarDeduccionesAdicionalesEnJsonGlobal(clave);
+        actualizarSueldoACobrarEnTiempoReal(clave);
+    });
+}
+
+// Recopilar y guardar todas las deducciones adicionales en jsonGlobal y estructuras espejo
+function actualizarDeduccionesAdicionalesEnJsonGlobal(clave) {
+    const deducciones = [];
+    $('.deduccion-adicional').each(function () {
+        const $d = $(this);
+        const nombre = $d.find('.deduccion-nombre').val().trim();
+        const valor = parseFloat($d.find('.deduccion-valor').val()) || 0;
+        if (nombre) {
+            deducciones.push({ nombre, valor });
+        }
+    });
+
+    // jsonGlobal
+    if (window.jsonGlobal && window.jsonGlobal.departamentos) {
+        window.jsonGlobal.departamentos.forEach(depto => {
+            (depto.empleados || []).forEach(emp => {
+                if (String(emp.clave) === String(clave)) {
+                    emp.deducciones_adicionales = deducciones;
+                }
+            });
+        });
+    }
+
+    // empleadosOriginales
+    if (window.empleadosOriginales) {
+        const eo = window.empleadosOriginales.find(emp => String(emp.clave) === String(clave));
+        if (eo) eo.deducciones_adicionales = deducciones;
+    }
+
+    // empleadosFiltrados
+    if (window.empleadosFiltrados) {
+        const ef = window.empleadosFiltrados.find(emp => String(emp.clave) === String(clave));
+        if (ef) ef.deducciones_adicionales = deducciones;
+    }
+}
+
+// Cargar deducciones adicionales desde el empleado al abrir el modal
+function cargarDeduccionesAdicionalesExistentes(empleado) {
+    // Limpiar items previos
+    $('.deduccion-adicional').remove();
+
+    if (empleado && Array.isArray(empleado.deducciones_adicionales)) {
+        empleado.deducciones_adicionales.forEach(d => {
+            agregarCampoDeduccionAdicional(d.nombre, d.valor);
+        });
+    }
 }
 
 
@@ -892,7 +1118,14 @@ function actualizarSueldoACobrarEnTiempoReal(clave) {
     const checador = parseFloat(empleado.checador) || 0;
     const faGafetCofia = parseFloat(empleado.fa_gafet_cofia) || 0;
 
-    const totalDeducciones = tarjeta + prestamo + inasistencias + uniformes + checador + faGafetCofia + totalConceptos;
+    // Sumar deducciones adicionales personalizadas del empleado
+    let totalDeduccionesAdicionales = 0;
+    const deduccionesAdic = empleado.deducciones_adicionales || [];
+    deduccionesAdic.forEach(d => {
+        totalDeduccionesAdicionales += parseFloat(d.valor) || 0;
+    });
+
+    const totalDeducciones = tarjeta + prestamo + inasistencias + uniformes + checador + faGafetCofia + totalConceptos + totalDeduccionesAdicionales;
 
     // === CALCULAR SUELDO A COBRAR ===
     const sueldoACobrar = totalPercepciones - totalDeducciones;
@@ -902,6 +1135,11 @@ function actualizarSueldoACobrarEnTiempoReal(clave) {
 
     // Actualizar el campo visual del modal en tiempo real
     $('#mod-sueldo-a-cobrar').val(sueldoACobrar.toFixed(2));
+
+    // Persistir cambios si está disponible
+    if (typeof guardarDatosNomina === 'function') {
+        guardarDatosNomina();
+    }
 
     return sueldoACobrar;
 }
@@ -1252,9 +1490,30 @@ function refrescarTablaVisible() {
     if (!$('#tabla-sin-seguro-container').attr('hidden')) {
         // Refrescar la tabla de empleados sin seguro manteniendo la página actual
         if (typeof mostrarEmpleadosSinSeguro === 'function') {
-            mostrarEmpleadosSinSeguro(true); // Pasar true para mantener la página actual
+            // Guardar el estado actual
+            const paginaActual = window.paginaActualSinSeguro || 1;
+            const filtroActual = window.filtroPuestoSinSeguro || 'Produccion 40 Libras';
+            
+            // Actualizar la tabla con el filtro actual
+            mostrarEmpleadosSinSeguro(true, filtroActual);
+            
+            // Restaurar el estado después de un pequeño retraso
+            setTimeout(() => {
+                // Asegurarse de que el filtro esté seleccionado en el select
+                if ($('#filtro-puesto').length) {
+                    $('#filtro-puesto').val(filtroActual);
+                }
+                
+                // Restaurar la página actual
+                if (typeof window.paginaActualSinSeguro !== 'undefined') {
+                    window.paginaActualSinSeguro = paginaActual;
+                    if (typeof renderTablaSinSeguroPaginada === 'function') {
+                        renderTablaSinSeguroPaginada();
+                    }
+                }
+            }, 100);
         }
-    } 
+    }
     // Verificar si la tabla de dispersión está visible
     else if (!$('#tabla-dispersion-tarjeta').attr('hidden')) {
         // Refrescar la tabla de dispersión
@@ -1454,7 +1713,7 @@ function llenarTablaHorariosSemanales(empleado) {
         datosPorDia[registro.dia.toLowerCase()] = registro;
     });
 
-    // 🔥 VARIABLES PARA RECALCULAR TOTALES CORRECTOS
+    //  VARIABLES PARA RECALCULAR TOTALES CORRECTOS
     let totalMinutosSemanaCalculados = 0;
     let totalMinutosComida = 0;
 
@@ -1472,10 +1731,10 @@ function llenarTablaHorariosSemanales(empleado) {
         let fila = '';
 
         if (datos && datos.trabajado !== "00:00" && datos.trabajado !== "--") {
-            // 🔥 RECALCULAR MINUTOS DEL DÍA CORRECTAMENTE
+            //  RECALCULAR MINUTOS DEL DÍA CORRECTAMENTE
             const minutosDelDia = horaAMinutos(datos.trabajado);
 
-            // 🔥 SUMAR AL TOTAL SEMANAL
+            //  SUMAR AL TOTAL SEMANAL
             totalMinutosSemanaCalculados += minutosDelDia;
 
             fila = `
@@ -1515,7 +1774,7 @@ function llenarTablaHorariosSemanales(empleado) {
         tbody.append(fila);
     });
 
-    // 🔥 USAR LOS TOTALES RECALCULADOS CORRECTAMENTE
+    //  USAR LOS TOTALES RECALCULADOS CORRECTAMENTE
     function minutosAHora(minutos) {
         const horas = Math.floor(minutos / 60);
         const mins = minutos % 60;
@@ -1527,7 +1786,7 @@ function llenarTablaHorariosSemanales(empleado) {
 
 
 
-    // 🔥 ACTUALIZAR LOS TOTALES EN EL EMPLEADO TAMBIÉN
+    //  ACTUALIZAR LOS TOTALES EN EL EMPLEADO TAMBIÉN
     const clave = $('#campo-clave').text().trim();
     if (clave) {
         actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'total_minutos_redondeados', totalMinutosSemanaCalculados);
@@ -1535,7 +1794,7 @@ function llenarTablaHorariosSemanales(empleado) {
         actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'Minutos_trabajados', totalMinutosSemanaCalculados);
     }
 
-    // 🔥 USAR LOS TOTALES RECALCULADOS EN LA FILA TOTAL
+    //  USAR LOS TOTALES RECALCULADOS EN LA FILA TOTAL
     const filaTotales = `
         <tr>
             <th>TOTAL</th>
@@ -1567,6 +1826,7 @@ function llenarEventosEspeciales(empleado) {
 
     const entradasTempranasContainer = $('#entradas-tempranas-content');
     const salidasTardiasContainer = $('#salidas-tardias-content');
+    const salidasTempranasContainer = $('#salidas-tempranas-content');
     const olvidosChecadorContainer = $('#olvidos-checador-content');
     const retardosContainer = $('#retardos-content');
     const faltasContainer = $('#faltas-content');
@@ -1574,12 +1834,14 @@ function llenarEventosEspeciales(empleado) {
     //  LIMPIAR CONTENEDORES SIEMPRE
     entradasTempranasContainer.empty();
     salidasTardiasContainer.empty();
+    salidasTempranasContainer.empty();
     olvidosChecadorContainer.empty();
     retardosContainer.empty();
     faltasContainer.empty();
 
     let totalEntradaTempranaMinutos = 0;
     let totalSalidaTardiaMinutos = 0;
+    let totalSalidaTempranaMinutos = 0;
     let totalOlvidosChecador = 0;
     let totalRetardos = 0;
     let totalFaltas = 0;
@@ -1603,6 +1865,7 @@ function llenarEventosEspeciales(empleado) {
     empleado.registros_redondeados.forEach(registro => {
         const entradaTemprana = horaAMinutos(registro.entrada_temprana || "00:00");
         const salidaTardia = horaAMinutos(registro.salida_tardia || "00:00");
+        const salidaTemprana = horaAMinutos(registro.salida_temprana || "00:00");
         const olvidoChecador = registro.olvido_checador || false;
         const retardo = registro.retardo || false;
 
@@ -1634,6 +1897,19 @@ function llenarEventosEspeciales(empleado) {
             tieneEventos = true;
         }
 
+        // Salida temprana
+        if (salidaTemprana > 0) {
+            const eventoItem = `
+                <div class="evento-item">
+                    <span class="evento-dia">${registro.dia}:</span>
+                    <span class="evento-tiempo">${minutosAHora(salidaTemprana)}</span>
+                </div>
+            `;
+            salidasTempranasContainer.append(eventoItem);
+            totalSalidaTempranaMinutos += salidaTemprana;
+            tieneEventos = true;
+        }
+
         // Olvido del checador
         if (olvidoChecador) {
             const eventoItem = `
@@ -1649,10 +1925,23 @@ function llenarEventosEspeciales(empleado) {
 
         // Retardo
         if (retardo) {
+            let minutosRetardo = registro.retardo_minutos || 0;
+            if (minutosRetardo === 0 && window.horariosSemanalesActualizados && window.horariosSemanalesActualizados.semana) {
+                const diaKey = (registro.dia || '').toLowerCase();
+                const horarioOficial = window.horariosSemanalesActualizados.semana[diaKey];
+                const entradaOficial = horarioOficial && horarioOficial.entrada && horarioOficial.entrada !== "00:00" && horarioOficial.entrada !== "--" ? horarioOficial.entrada : null;
+                if (entradaOficial && registro.entrada && registro.entrada !== "00:00" && registro.entrada !== "--") {
+                    const mr = horaAMinutos(registro.entrada);
+                    const mo = horaAMinutos(entradaOficial);
+                    if (mr && mo && mr > mo) {
+                        minutosRetardo = mr - mo;
+                    }
+                }
+            }
             const eventoItem = `
                 <div class="evento-item">
                     <span class="evento-dia">${registro.dia}:</span>
-                    <span class="evento-tiempo">Retardo</span>
+                    <span class="evento-tiempo">${minutosRetardo > 0 ? minutosAHora(minutosRetardo) : 'Retardo'}</span>
                 </div>
             `;
             retardosContainer.append(eventoItem);
@@ -1663,7 +1952,7 @@ function llenarEventosEspeciales(empleado) {
         if (tieneEventos) diasConEventos++;
     });
 
-    // 🆕 DETECTAR FALTAS: Días con horario oficial pero sin registros del empleado
+    //   DETECTAR FALTAS: Días con horario oficial pero sin registros del empleado
     if (window.horariosSemanalesActualizados && window.horariosSemanalesActualizados.semana) {
         const diasSemana = ['viernes', 'sabado', 'domingo', 'lunes', 'martes', 'miercoles', 'jueves'];
         const diasEspañol = ['Viernes', 'Sábado', 'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves'];
@@ -1707,6 +1996,7 @@ function llenarEventosEspeciales(empleado) {
     // Actualizar totales
     $('#total-entradas-tempranas').text(minutosAHora(totalEntradaTempranaMinutos));
     $('#total-salidas-tardias').text(minutosAHora(totalSalidaTardiaMinutos));
+    $('#total-salidas-tempranas').text(minutosAHora(totalSalidaTempranaMinutos));
     $('#total-olvidos-checador').text(`${totalOlvidosChecador} ${totalOlvidosChecador === 1 ? 'evento' : 'eventos'}`);
     $('#total-retardos').text(`${totalRetardos} ${totalRetardos === 1 ? 'evento' : 'eventos'}`);
     $('#total-faltas').text(`${totalFaltas} ${totalFaltas === 1 ? 'día' : 'días'}`);
@@ -1776,6 +2066,7 @@ function recalcularEventosEspeciales(empleado) {
     empleado.registros_redondeados.forEach(registro => {
         const entradaTemprana = horaAMinutos(registro.entrada_temprana || "00:00");
         const salidaTardia = horaAMinutos(registro.salida_tardia || "00:00");
+        const salidaTemprana = horaAMinutos(registro.salida_temprana || "00:00");
         const olvidoChecador = registro.olvido_checador || false;
         const retardo = registro.retardo || false;
 
@@ -1807,6 +2098,19 @@ function recalcularEventosEspeciales(empleado) {
             tieneEventos = true;
         }
 
+        // Salida temprana
+        if (salidaTemprana > 0) {
+            const eventoItem = `
+                <div class="evento-item">
+                    <span class="evento-dia">${registro.dia}:</span>
+                    <span class="evento-tiempo">${minutosAHora(salidaTemprana)}</span>
+                </div>
+            `;
+            salidasTempranasContainer.append(eventoItem);
+            totalSalidaTempranaMinutos += salidaTemprana;
+            tieneEventos = true;
+        }
+
         // Olvido del checador
         if (olvidoChecador) {
             const eventoItem = `
@@ -1822,10 +2126,23 @@ function recalcularEventosEspeciales(empleado) {
 
         // Retardo
         if (retardo) {
+            let minutosRetardo = 0;
+            if (window.horariosSemanalesActualizados && window.horariosSemanalesActualizados.semana) {
+                const diaKey = (registro.dia || '').toLowerCase();
+                const horarioOficial = window.horariosSemanalesActualizados.semana[diaKey];
+                const entradaOficial = horarioOficial && horarioOficial.entrada && horarioOficial.entrada !== "00:00" && horarioOficial.entrada !== "--" ? horarioOficial.entrada : null;
+                if (entradaOficial && registro.entrada && registro.entrada !== "00:00" && registro.entrada !== "--") {
+                    const mr = horaAMinutos(registro.entrada);
+                    const mo = horaAMinutos(entradaOficial);
+                    if (mr && mo && mr > mo) {
+                        minutosRetardo = mr - mo;
+                    }
+                }
+            }
             const eventoItem = `
                 <div class="evento-item">
                     <span class="evento-dia">${registro.dia}:</span>
-                    <span class="evento-tiempo">Retardo</span>
+                    <span class="evento-tiempo">${minutosRetardo > 0 ? minutosAHora(minutosRetardo) : 'Retardo'}</span>
                 </div>
             `;
             retardosContainer.append(eventoItem);
@@ -1836,7 +2153,7 @@ function recalcularEventosEspeciales(empleado) {
         if (tieneEventos) diasConEventos++;
     });
 
-    // 🆕 DETECTAR FALTAS en recalcularEventosEspeciales también
+    //   DETECTAR FALTAS en recalcularEventosEspeciales también
     if (window.horariosSemanalesActualizados && window.horariosSemanalesActualizados.semana) {
         const diasSemana = ['viernes', 'sabado', 'domingo', 'lunes', 'martes', 'miercoles', 'jueves'];
         const diasEspañol = ['Viernes', 'Sábado', 'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves'];
@@ -1877,6 +2194,7 @@ function recalcularEventosEspeciales(empleado) {
     // Actualizar totales
     $('#total-entradas-tempranas').text(minutosAHora(totalEntradaTempranaMinutos));
     $('#total-salidas-tardias').text(minutosAHora(totalSalidaTardiaMinutos));
+    $('#total-salidas-tempranas').text(minutosAHora(totalSalidaTempranaMinutos));
     $('#total-olvidos-checador').text(`${totalOlvidosChecador} ${totalOlvidosChecador === 1 ? 'evento' : 'eventos'}`);
     $('#total-retardos').text(`${totalRetardos} ${totalRetardos === 1 ? 'evento' : 'eventos'}`);
     $('#total-faltas').text(`${totalFaltas} ${totalFaltas === 1 ? 'día' : 'días'}`);
@@ -2293,7 +2611,7 @@ function aplicarFormatoHoraCamposEditables() {
             sel.removeAllRanges();
             sel.addRange(range);
 
-            // 🔥 DEBOUNCE: RECALCULAR DESPUÉS DE 200ms DE INACTIVIDAD (más rápido)
+            //  DEBOUNCE: RECALCULAR DESPUÉS DE 200ms DE INACTIVIDAD (más rápido)
             const $fila = $(this).closest('tr');
             const indiceCelda = $(this).index();
 
@@ -2308,19 +2626,19 @@ function aplicarFormatoHoraCamposEditables() {
                     if (indiceCelda >= 1 && indiceCelda <= 3) {
                         calcularHorasComidaFila($fila);
                         calcularHorasTotalesFila($fila);
-                        recalcularTotalesSemana(); // 🔥 Actualizar totales semanales inmediatamente
+                        recalcularTotalesSemana(); //  Actualizar totales semanales inmediatamente
                     }
 
                     // Si cambió entrada o salida → recalcular totales
                     if (indiceCelda === 1 || indiceCelda === 4) {
                         calcularHorasTotalesFila($fila);
-                        recalcularTotalesSemana(); // 🔥 Actualizar totales semanales inmediatamente
+                        recalcularTotalesSemana(); //  Actualizar totales semanales inmediatamente
                     }
 
                     // Si cambió hora de comida (columna 8, índice 7) → recalcular totales
                     if (indiceCelda === 7) {
                         calcularHorasTotalesFila($fila);
-                        recalcularTotalesSemana(); // 🔥 Actualizar totales semanales inmediatamente
+                        recalcularTotalesSemana(); //  Actualizar totales semanales inmediatamente
                     }
                 }
             }, 200);
@@ -2331,7 +2649,7 @@ function aplicarFormatoHoraCamposEditables() {
 
         // Evento blur - Completar formato al salir del campo
         $campo.off('blur.formato').on('blur.formato', function () {
-            // 🔥 CANCELAR CUALQUIER TIMEOUT PENDIENTE DEL INPUT
+            //  CANCELAR CUALQUIER TIMEOUT PENDIENTE DEL INPUT
             clearTimeout($(this).data('calcularTimeout'));
 
             let valor = $(this).text();
@@ -2439,13 +2757,16 @@ function limpiarEventosModal() {
     }).off('input.formato blur.formato focus.original');
 
     //  LIMPIAR COMPLETAMENTE EVENTOS ESPECIALES
+//  LIMPIAR COMPLETAMENTE EVENTOS ESPECIALES
     $('#entradas-tempranas-content').empty();
     $('#salidas-tardias-content').empty();
+    $('#salidas-tempranas-content').empty();
     $('#olvidos-checador-content').empty();
     $('#retardos-content').empty();
     $('#faltas-content').empty();
     $('#total-entradas-tempranas').text('0 min');
     $('#total-salidas-tardias').text('0 min');
+    $('#total-salidas-tempranas').text('0 min');
     $('#total-olvidos-checador').text('0 eventos');
     $('#total-retardos').text('0 eventos');
     $('#total-faltas').text('0 días');
@@ -2597,7 +2918,7 @@ function calcularHorasTotalesFila($fila) {
         salida === "00:00" || salida === "" || salida === "--") {
         $celdaTotalHoras.text("00:00");
         $celdaTotalMinutos.text("0");
-        // 🔥 NO RECALCULAR TOTALES AQUÍ PARA EVITAR BUCLE INFINITO
+        //  NO RECALCULAR TOTALES AQUÍ PARA EVITAR BUCLE INFINITO
         return;
     }
 
@@ -2672,14 +2993,14 @@ function calcularHorasTotalesFila($fila) {
     $celdaTotalHoras.text(horasTotales);
     $celdaTotalMinutos.text(totalMinutosTrabajados.toString());
 
-    // 🔥 NO LLAMAR recalcularTotalesSemana() aquí - se llama directamente desde aplicarFormatoHoraCamposEditables
+    //  NO LLAMAR recalcularTotalesSemana() aquí - se llama directamente desde aplicarFormatoHoraCamposEditables
     // Esto evita llamadas duplicadas y mejora el rendimiento
 }
 
 // Función para recalcular los totales de la semana (fila TOTAL)
 function recalcularTotalesSemana() {
 
-    // 🔥 VERIFICAR QUE SOLO ESTAMOS EN LA TABLA VISIBLE
+    //  VERIFICAR QUE SOLO ESTAMOS EN LA TABLA VISIBLE
     const $tablaVisible = $('#tabla-redondeados:visible .custom-table tbody tr');
 
     if ($tablaVisible.length === 0) {
@@ -2690,12 +3011,12 @@ function recalcularTotalesSemana() {
     let totalHorasSemanales = 0;
     let totalComidaSemanales = 0;
 
-    // 🔥 USAR SELECTOR MÁS ESPECÍFICO PARA EVITAR DUPLICADOS
+    //  USAR SELECTOR MÁS ESPECÍFICO PARA EVITAR DUPLICADOS
     $tablaVisible.each(function (index) {
         const $fila = $(this);
         const celdas = $fila.find('td');
 
-        // 🔥 VERIFICAR MÁS ESTRICTAMENTE QUE ES UNA FILA DE DATOS VÁLIDA
+        //  VERIFICAR MÁS ESTRICTAMENTE QUE ES UNA FILA DE DATOS VÁLIDA
         if (celdas.length >= 8) {
             const primeraCelda = $(celdas[0]).text().trim();
 
@@ -2708,20 +3029,20 @@ function recalcularTotalesSemana() {
                 return true; // Continuar con la siguiente fila
             }
 
-            // 🔥 VALIDAR QUE ES UN DÍA DE LA SEMANA VÁLIDO
+            //  VALIDAR QUE ES UN DÍA DE LA SEMANA VÁLIDO
             const diasValidos = ['viernes', 'sábado', 'domingo', 'lunes', 'martes', 'miércoles', 'jueves'];
             if (!diasValidos.includes(primeraCelda.toLowerCase())) {
 
                 return true;
             }
 
-            // 🔥 OBTENER VALORES DE MINUTOS DIRECTAMENTE (COLUMNA 6)
+            //  OBTENER VALORES DE MINUTOS DIRECTAMENTE (COLUMNA 6)
             const minutosTexto = $(celdas[6]).text().trim();
             const minutosHoras = parseInt(minutosTexto) || 0;
 
 
 
-            // 🔥 SOLO SUMAR SI ES UN NÚMERO VÁLIDO Y NO ES "--"
+            //  SOLO SUMAR SI ES UN NÚMERO VÁLIDO Y NO ES "--"
             if (minutosHoras > 0 && minutosTexto !== '--') {
                 totalHorasSemanales += minutosHoras;
 
@@ -2747,7 +3068,7 @@ function recalcularTotalesSemana() {
 
 
 
-    // 🔥 ACTUALIZAR SOLO LA FILA TOTAL DE LA TABLA VISIBLE
+    //  ACTUALIZAR SOLO LA FILA TOTAL DE LA TABLA VISIBLE
     const $filaTotalTfoot = $('#tabla-redondeados:visible .custom-table tfoot tr');
     if ($filaTotalTfoot.length > 0) {
         const celdasTotal = $filaTotalTfoot.find('th');
@@ -2771,7 +3092,7 @@ function recalcularTotalesSemana() {
 function recalcularMinutosNormalesYExtras() {
 
 
-    // 🔥 OBTENER EL TOTAL SOLO DE LA TABLA VISIBLE
+    //  OBTENER EL TOTAL SOLO DE LA TABLA VISIBLE
     const $filaTotalTfoot = $('#tabla-redondeados:visible .custom-table tfoot tr');
     if ($filaTotalTfoot.length === 0) {
 
@@ -2784,7 +3105,7 @@ function recalcularMinutosNormalesYExtras() {
         return;
     }
 
-    // 🔥 OBTENER DIRECTAMENTE EL VALOR DE LA CELDA DE TOTAL MINUTOS
+    //  OBTENER DIRECTAMENTE EL VALOR DE LA CELDA DE TOTAL MINUTOS
     const totalMinutosTrabajadosTexto = $(celdasTotal[6]).text().trim();
     const totalMinutosTrabajados = parseInt(totalMinutosTrabajadosTexto) || 0;
 
@@ -2865,7 +3186,7 @@ function recalcularMinutosNormalesYExtras() {
 
     }
 
-    // 🔥 MODIFICAR TAMBIÉN LA FUNCIÓN calcularHorasTotalesFila PARA EVITAR BUCLES
+    //  MODIFICAR TAMBIÉN LA FUNCIÓN calcularHorasTotalesFila PARA EVITAR BUCLES
     function calcularHorasTotalesFila($fila) {
         const celdas = $fila.find('td');
         const entrada = $(celdas[1]).text().trim();
@@ -2880,7 +3201,7 @@ function recalcularMinutosNormalesYExtras() {
             salida === "00:00" || salida === "" || salida === "--") {
             $celdaTotalHoras.text("00:00");
             $celdaTotalMinutos.text("0");
-            // 🔥 NO RECALCULAR TOTALES AQUÍ PARA EVITAR BUCLE INFINITO
+            //  NO RECALCULAR TOTALES AQUÍ PARA EVITAR BUCLE INFINITO
             return;
         }
 
@@ -2955,7 +3276,7 @@ function recalcularMinutosNormalesYExtras() {
         $celdaTotalHoras.text(horasTotales);
         $celdaTotalMinutos.text(totalMinutosTrabajados.toString());
 
-        // 🔥 USAR TIMEOUT PARA EVITAR MÚLTIPLES EJECUCIONES
+        //  USAR TIMEOUT PARA EVITAR MÚLTIPLES EJECUCIONES
         clearTimeout(window.recalcularTimeout);
         window.recalcularTimeout = setTimeout(() => {
             recalcularTotalesSemana();
@@ -2967,6 +3288,7 @@ function recalcularMinutosNormalesYExtras() {
 function recalcularTotalesEventos() {
     let totalEntradaTemprana = 0;
     let totalSalidaTardia = 0;
+    let totalSalidaTemprana = 0;
 
     // Función auxiliar para convertir tiempo en formato "Xh Ymin" o "Zmin" a minutos
     function convertirTiempoAMinutos(tiempo) {
@@ -2996,6 +3318,12 @@ function recalcularTotalesEventos() {
         totalSalidaTardia += convertirTiempoAMinutos(tiempo);
     });
 
+    // Sumar minutos de salidas tempranas
+    $('#salidas-tempranas-content .evento-tiempo').each(function () {
+        const tiempo = $(this).text().trim();
+        totalSalidaTemprana += convertirTiempoAMinutos(tiempo);
+    });
+
     // Función auxiliar para convertir minutos a formato "Xh Ymin" o "Zmin"
     function minutosAHora(minutos) {
         if (minutos === 0) return "0 min";
@@ -3009,5 +3337,7 @@ function recalcularTotalesEventos() {
     // Actualizar los totales en la interfaz
     $('#total-entradas-tempranas').text(minutosAHora(totalEntradaTemprana));
     $('#total-salidas-tardias').text(minutosAHora(totalSalidaTardia));
+    $('#total-salidas-tempranas').text(minutosAHora(totalSalidaTemprana));
     $('#tiempo-extra-total').text(minutosAHora(totalEntradaTemprana + totalSalidaTardia));
 }
+

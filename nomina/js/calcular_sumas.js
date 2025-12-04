@@ -15,12 +15,13 @@ $(document).ready(function () {
      * Función para obtener las claves de empleados registrados en BD
      * @param {Function} callback - Función callback que recibe las claves válidas
      */
-    function obtenerClavesRegistradas(callback) {
-        // Obtener todas las claves de empleados del departamento "PRODUCCION 40 LIBRAS"
+    function obtenerClavesRegistradas(callback, nombreDepto) {
+        // Obtener todas las claves de empleados del departamento seleccionado
         let claves = [];
+        const filtroDepto = (nombreDepto || '').toUpperCase();
         if (window.jsonGlobal && window.jsonGlobal.departamentos) {
             window.jsonGlobal.departamentos.forEach(depto => {
-                if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS')) {
+                if ((depto.nombre || '').toUpperCase().includes(filtroDepto)) {
                     (depto.empleados || []).forEach(emp => {
                         if (emp.clave) {
                             claves.push(emp.clave);
@@ -61,11 +62,24 @@ $(document).ready(function () {
      * Función para abrir el modal de sumas y calcular totales
      */
     function abrirModalSumas() {
-        // Calcular totales antes de mostrar el modal
-        calcularTotalesNomina();
+        // Tomar el departamento seleccionado del select principal
+        const nombreDepto = ($('#departamentos-nomina').val() || 'PRODUCCION 40 LIBRAS');
 
-        // Mostrar el modal
-        $('#modal_sumas').modal('show');
+        // Actualizar título si existe
+        if ($('#modal_suma_titulo').length) {
+            const titulo = nombreDepto.toUpperCase().includes('10') ? 'SUMA TOTAL DE 10 LIBRAS' : 'SUMA TOTAL DE 40 LIBRAS';
+            $('#modal_suma_titulo').text(titulo);
+        }
+
+        // Calcular totales antes de mostrar el modal
+        calcularTotalesNomina(nombreDepto);
+
+        // Mostrar el modal (compatibilidad con distintos IDs)
+        if ($('#modal_suma').length) {
+            $('#modal_suma').modal('show');
+        } else {
+            $('#modal_sumas').modal('show');
+        }
     }
 
     /**
@@ -81,7 +95,7 @@ $(document).ready(function () {
      * Recorre el jsonGlobal y suma todos los conceptos del departamento 40 LIBRAS
      * Solo incluye empleados registrados en la base de datos
      */
-    function calcularTotalesNomina() {
+    function calcularTotalesNomina(nombreDeptoSeleccionado) {
         // Inicializar totales
         let totales = {
             sueldo_neto: 0,
@@ -105,16 +119,16 @@ $(document).ready(function () {
             return;
         }
 
-        // Obtener claves registradas y luego calcular totales
+        const nombreDepto = (nombreDeptoSeleccionado || 'PRODUCCION 40 LIBRAS');
         obtenerClavesRegistradas(function(clavesRegistradas) {
             let empleadosProcesados = 0;
 
             // Recorrer departamentos
             window.jsonGlobal.departamentos.forEach(depto => {
-                // Solo procesar empleados del departamento "PRODUCCION 40 LIBRAS"
-                if ((depto.nombre || '').toUpperCase().includes('PRODUCCION 40 LIBRAS')) {
+                // Solo procesar empleados del departamento seleccionado
+                if ((depto.nombre || '').toUpperCase().includes(nombreDepto.toUpperCase())) {
 
-                    // Recorrer empleados del departamento 40 LIBRAS
+                    // Recorrer empleados del departamento seleccionado
                     (depto.empleados || []).forEach(empleado => {
                         // Verificar si el empleado está registrado en BD
                         if (empleadoEstaRegistrado(empleado.clave, clavesRegistradas)) {
@@ -152,10 +166,9 @@ $(document).ready(function () {
                 }
             });
 
-            
             // Actualizar el modal con los totales calculados
             actualizarModalConTotales(totales);
-        });
+        }, nombreDepto);
     }
 
     /**
@@ -293,7 +306,6 @@ $(document).ready(function () {
                 });
             });
 
-           
             // Actualizar el modal con los totales calculados
             actualizarModalDispersionConTotales(totalSueldoNeto, empleadosProcesados);
         });
@@ -377,6 +389,11 @@ $(document).ready(function () {
             return;
         }
 
+        // Detectar filtro actual (si existe): '40' o '10'
+        const filtroTexto = (($('#filtro-puesto').val() || '') + '').toLowerCase();
+        const exigir10 = filtroTexto.includes('10');
+        const exigir40 = filtroTexto.includes('40');
+
         // Recorrer departamentos
         window.jsonGlobal.departamentos.forEach(depto => {
             // Solo procesar empleados del departamento "SIN SEGURO"
@@ -384,6 +401,9 @@ $(document).ready(function () {
 
                 // Recorrer empleados del departamento SIN SEGURO
                 (depto.empleados || []).forEach(empleado => {
+                    const puestoEmp = ((empleado.puesto || '') + '').toLowerCase();
+                    if (exigir10 && !puestoEmp.includes('10')) return;
+                    if (exigir40 && !puestoEmp.includes('40')) return;
                     empleadosProcesados++;
 
                     // === PERCEPCIONES ===

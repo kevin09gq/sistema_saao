@@ -1,0 +1,4 @@
+leer_excel.js:
+    funcion: 
+            establecerDatosEmpleados, establecerDatosEmpleadosExistentes, 
+            actualizarJsonGlobalConEmpleadosOriginales, sincronizarCambiosConJsonGlobal, inicializarMenuContextual

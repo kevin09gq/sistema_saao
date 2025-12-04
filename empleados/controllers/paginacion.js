@@ -227,7 +227,12 @@ function cambiarPagina(nuevaPagina) {
     // Filtrar por departamento, estado y búsqueda para saber el total de páginas
     let filtrados = empleadosData;
     if (filtroDepartamento === "1000") {
-        filtrados = empleadosData.filter(emp => !emp.imss || emp.imss === "" || emp.imss === null);
+        // Misma lógica que en renderTablaEmpleados: Sin Seguro = IMSS vacío o NSS inactivo
+        filtrados = empleadosData.filter(emp => {
+            const sinIMSS = !emp.imss || emp.imss === "" || emp.imss === null;
+            const nssInactivo = emp.status_nss === 0 || emp.status_nss === '0' || emp.status_nss === false;
+            return sinIMSS || nssInactivo;
+        });
     } else if (filtroDepartamento !== "0") {
         filtrados = empleadosData.filter(emp => String(emp.id_departamento) === String(filtroDepartamento));
     }
@@ -255,7 +260,12 @@ function paginacionStatus(empleadosData) {
     // Verificar si la página actual sigue siendo válida
     let filtrados = empleadosData;
     if (filtroDepartamento === "1000") {
-        filtrados = empleadosData.filter(emp => !emp.imss || emp.imss === "" || emp.imss === null);
+        // Misma lógica que en renderTablaEmpleados/cambiarPagina: Sin Seguro = IMSS vacío o NSS inactivo
+        filtrados = empleadosData.filter(emp => {
+            const sinIMSS = !emp.imss || emp.imss === "" || emp.imss === null;
+            const nssInactivo = emp.status_nss === 0 || emp.status_nss === '0' || emp.status_nss === false;
+            return sinIMSS || nssInactivo;
+        });
     } else if (filtroDepartamento !== "0") {
         filtrados = empleadosData.filter(emp => String(emp.id_departamento) === String(filtroDepartamento));
     }

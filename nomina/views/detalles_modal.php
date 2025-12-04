@@ -1,7 +1,6 @@
 <div class="modal-detalles" id="modal-detalles" style="display:none;">
     <div class="modal-detalles-content">
-        <span class="modal-detalles-close" id="cerrar-modal-detalles">&times;</span       
->
+        <span class="modal-detalles-close" id="cerrar-modal-detalles">&times;</span>
         <ul class="nav nav-tabs mb-3" id="modalTabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="tab-info" data-bs-toggle="tab" data-bs-target="#tab_info" type="button" role="tab" aria-controls="tab_info" aria-selected="true">
@@ -73,7 +72,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                           
+
                         </tbody>
                         <tfoot>
                             <tr>
@@ -112,7 +111,7 @@
                     <h5 class="eventos-title">
                         <i class="bi bi-clock-history"></i> Eventos Especiales
                     </h5>
-                    
+
                     <!-- Primera fila: Entradas Tempranas y Salidas Tardías -->
                     <div class="row">
                         <!-- Entradas Tempranas -->
@@ -123,7 +122,7 @@
                                     <span>Entradas Tempranas</span>
                                 </div>
                                 <div class="evento-content" id="entradas-tempranas-content">
-                                  
+
                                 </div>
                                 <div class="evento-total">
                                     <strong>Total: <span id="total-entradas-tempranas"></span></strong>
@@ -139,7 +138,7 @@
                                     <span>Salidas Tardías</span>
                                 </div>
                                 <div class="evento-content" id="salidas-tardias-content">
-                                  
+
                                 </div>
                                 <div class="evento-total">
                                     <strong>Total: <span id="total-salidas-tardias"></span></strong>
@@ -148,8 +147,24 @@
                         </div>
                     </div>
 
-                    <!-- Segunda fila: Olvidos del Checador y Retardos -->
+                    <!-- Segunda fila: Salidas Tempranas y Olvidos del Checador -->
                     <div class="row">
+                        <!-- Salidas Tempranas -->
+                        <div class="col-md-6 mb-3">
+                            <div class="evento-card salida-temprana">
+                                <div class="evento-header">
+                                    <i class="bi bi-clock"></i>
+                                    <span>Salidas Tempranas</span>
+                                </div>
+                                <div class="evento-content" id="salidas-tempranas-content">
+
+                                </div>
+                                <div class="evento-total">
+                                    <strong>Total: <span id="total-salidas-tempranas"></span></strong>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Olvidos del Checador -->
                         <div class="col-md-6 mb-3">
                             <div class="evento-card olvido-checador">
@@ -158,14 +173,17 @@
                                     <span>Olvidos del Checador</span>
                                 </div>
                                 <div class="evento-content" id="olvidos-checador-content">
-                                 
+
                                 </div>
                                 <div class="evento-total">
                                     <strong>Total: <span id="total-olvidos-checador"></span></strong>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
+                    <!-- Tercera fila: Retardos y Faltas -->
+                    <div class="row">
                         <!-- Retardos -->
                         <div class="col-md-6 mb-3">
                             <div class="evento-card retardo">
@@ -174,26 +192,22 @@
                                     <span>Retardos</span>
                                 </div>
                                 <div class="evento-content" id="retardos-content">
-                                 
+
                                 </div>
                                 <div class="evento-total">
                                     <strong>Total: <span id="total-retardos"></span></strong>
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Tercera fila: Faltas -->
-                    <div class="row">
                         <!-- Faltas -->
-                        <div class="col-md-12 mb-3">
+                        <div class="col-md-6 mb-3">
                             <div class="evento-card falta">
                                 <div class="evento-header">
                                     <i class="bi bi-x-circle"></i>
                                     <span>Faltas (Días sin registro con horario oficial)</span>
                                 </div>
                                 <div class="evento-content" id="faltas-content">
-                                 
+
                                 </div>
                                 <div class="evento-total">
                                     <strong>Total: <span id="total-faltas"></span></strong>
@@ -210,7 +224,7 @@
                                 <span class="resumen-valor" id="tiempo-extra-total"></span>
                             </div>
                         </div>
-                        
+
                         <!-- Nueva sección de Minutos Trabajados -->
                         <div class="resumen-card tiempo-trabajado">
                             <h6 class="resumen-tiempo-title">
@@ -221,9 +235,9 @@
                                     <label class="minutos-label minutos-normales">
                                         <i class="bi bi-check-circle"></i> Minutos Normales
                                     </label>
-                                    <input type="number" class="minutos-input minutos-input-normales" 
-                                           id="minutos-normales-trabajados" 
-                                           readonly>
+                                    <input type="number" class="minutos-input minutos-input-normales"
+                                        id="minutos-normales-trabajados"
+                                        readonly>
                                     <small class="minutos-descripcion">
                                         Tiempo dentro del horario laboral
                                     </small>
@@ -232,9 +246,9 @@
                                     <label class="minutos-label minutos-extra">
                                         <i class="bi bi-plus-circle"></i> Minutos Extra
                                     </label>
-                                    <input type="number" class="minutos-input minutos-input-extra" 
-                                           id="minutos-extra-trabajados" 
-                                           readonly>
+                                    <input type="number" class="minutos-input minutos-input-extra"
+                                        id="minutos-extra-trabajados"
+                                        readonly>
                                     <small class="minutos-descripcion">
                                         Tiempo adicional trabajado
                                     </small>
@@ -369,7 +383,12 @@
                             <div class="row mb-3">
                                 <div class="col-md-3 mb-2">
                                     <label class="form-label fw-semibold">Tarjeta ($)</label>
-                                    <input type="number" step="0.01" class="form-control mod-input-rosa" id="mod-tarjeta" value="">
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" class="form-control mod-input-rosa" id="mod-tarjeta" value="">
+                                        <button type="button" class="btn btn-outline-secondary" id="btn-aplicar-tarjeta" title="Aplicar Nueva Tarjeta">
+                                            <i class="bi bi-credit-card"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="col-md-3 mb-2">
                                     <label class="form-label fw-semibold">Préstamo ($)</label>
@@ -398,6 +417,15 @@
                                     <input type="number" step="0.01" class="form-control mod-input-rosa" id="mod-inasistencias-descuento" value="">
                                 </div>
                             </div>
+                            <div class="row" id="contenedor-deducciones-adicionales">
+                            </div>
+                            <div class="row">
+                                <div class="col-12 text-center">
+                                    <button type="button" class="btn btn-outline-danger btn-sm" id="btn-agregar-deduccion">
+                                        <i class="bi bi-plus-circle"></i> Agregar Deducción Personalizada
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -412,17 +440,17 @@
                                     <label class="sueldo-cobrar-label">
                                         <i class="bi bi-cash-stack"></i> Total a Cobrar
                                     </label>
-                                    <input type="number" step="0.01" class="sueldo-cobrar-input" 
-                                           id="mod-sueldo-a-cobrar" value="">
+                                    <input type="number" step="0.01" class="sueldo-cobrar-input"
+                                        id="mod-sueldo-a-cobrar" value="">
                                     <small class="sueldo-cobrar-descripcion">
-                                        <i class="bi bi-info-circle"></i> 
-                                     
+                                        <i class="bi bi-info-circle"></i>
+
                                     </small>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
+
                 </form>
             </div>
 

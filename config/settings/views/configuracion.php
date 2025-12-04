@@ -160,6 +160,14 @@ verificarSesion(); // Proteger esta página
                                             <label for="direccion_puesto" class="form-label">Dirección del Puesto</label>
                                             <input type="text" class="form-control" id="direccion_puesto" name="direccion_puesto">
                                         </div>
+                                        <div class="mb-3">
+                                            <label for="color_hex" class="form-label">Color (Hexadecimal)</label>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <input type="color" class="form-control form-control-color" id="color_picker" value="#000000" title="Elige un color">
+                                                <input type="text" class="form-control" id="color_hex" name="color_hex" placeholder="#000000" maxlength="7">
+                                            </div>
+                                            <small class="text-muted">Formato #RRGGBB. Puedes elegir con el selector o escribir el valor.</small>
+                                        </div>
 
                                         <div class="form-actions">
                                             <button type="submit" class="btn btn-success" id="btn-guardar-puesto"><i class="bi bi-save"></i> Guardar</button>
@@ -304,9 +312,20 @@ verificarSesion(); // Proteger esta página
                                 <div class="table-container">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h5 class="mb-0 text-center"><i class="bi bi-table"></i> Tabulador de Costos</h5>
-                                        <button type="button" class="btn btn-success" id="btn-actualizar-tabulador">
-                                            <i class="bi bi-arrow-repeat"></i> Actualizar
-                                        </button>
+                                        <div>
+                                            <button type="button" class="btn btn-primary me-2" id="btn-agregar-fila">
+                                                <i class="bi bi-plus-circle"></i> Agregar Fila
+                                            </button>
+                                            <button type="button" class="btn btn-warning me-2" id="btn-agregar-extra">
+                                                <i class="bi bi-plus-circle-dotted"></i> Agregar Hora Extra
+                                            </button>
+                                            <button type="button" class="btn btn-danger me-2" id="btn-eliminar-fila">
+                                                <i class="bi bi-dash-circle"></i> Eliminar Fila
+                                            </button>
+                                            <button type="button" class="btn btn-success" id="btn-actualizar-tabulador">
+                                                <i class="bi bi-arrow-repeat"></i> Actualizar
+                                            </button>
+                                        </div>
                                     </div>
                                     <div class="table-responsive">
                                         <table class="table tabulador-table" style="min-width:700px;">

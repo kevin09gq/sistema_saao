@@ -31,7 +31,8 @@ CREATE TABLE departamentos (
 CREATE TABLE puestos_especiales (
     id_puestoEspecial INT AUTO_INCREMENT PRIMARY KEY,
     nombre_puesto VARCHAR(100) NOT NULL,
-    direccion_puesto VARCHAR(200) NULL
+    direccion_puesto VARCHAR(200) NULL,
+    color_hex VARCHAR(7) NULL
 );
 
 CREATE TABLE status (

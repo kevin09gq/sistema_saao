@@ -13,12 +13,12 @@ $resultado = [];
 
 if (!empty($biometricos)) {
     $sql = $conexion->prepare(
-        "SELECT clave_empleado, biometrico, nombre, ap_paterno, ap_materno 
+        "SELECT clave_empleado, id_departamento, biometrico, nombre, ap_paterno, ap_materno 
          FROM info_empleados 
          WHERE biometrico IN ($placeholders) 
            AND id_status = 1 
            AND (imss = '' OR status_nss = 0)
-           AND id_departamento = 4"
+           AND (id_departamento = 4 OR id_departamento = 5)"
     );
     $sql->bind_param($tipos, ...$biometricos);
     $sql->execute();

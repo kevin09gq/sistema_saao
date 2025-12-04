@@ -1,5 +1,6 @@
 <?php
 include("config/config.php");
+verificarSesion();
 ?>
 
 <!DOCTYPE html>
@@ -15,6 +16,8 @@ include("config/config.php");
     <link rel="stylesheet" href="public/styles/main.css">
     <!-- Iconos Bootstrap -->
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
+    <!-- SweetAlert2 CSS -->
+     <script src="<?= SWEETALERT ?>"></script>
 </head>
 
 <body>
@@ -54,7 +57,7 @@ include("config/config.php");
                         <i class="bi bi-person-badge text-success" style="font-size: 48px;"></i>
                         <h5 class="card-title mt-3">Gestión de Gafetes</h5>
                         <p class="card-text">Crea, imprime y administra gafetes personalizados para los empleados.</p>
-                        <a href="gafetes/" class="btn btn-success">Ir a Gafetes</a>
+                        <a href="gafetes/gafetes.php" class="btn btn-success">Ir a Gafetes</a>
                     </div>
                 </div>
             </div>
@@ -64,7 +67,7 @@ include("config/config.php");
                         <i class="bi bi-file-earmark-text text-success" style="font-size: 48px;"></i>
                         <h5 class="card-title mt-3">Contratos Laborales</h5>
                         <p class="card-text">Genera y gestiona contratos de trabajo de manera sencilla y segura.</p>
-                        <a href="#" class="btn btn-success">Ir a Contratos</a>
+                        <a href="contratos/contratos.php" class="btn btn-success">Ir a Contratos</a>
                     </div>
                 </div>
             </div>
@@ -74,7 +77,7 @@ include("config/config.php");
                         <i class="bi bi-cash-coin text-success" style="font-size: 48px;"></i>
                         <h5 class="card-title mt-3">Cálculo de Nómina</h5>
                         <p class="card-text">Automatiza el cálculo y control de nóminas para todos los empleados.</p>
-                        <a href="#" class="btn btn-success">Ir a Nómina</a>
+                        <a href="nomina/views/nomina.php" class="btn btn-success">Ir a Nómina</a>
                     </div>
                 </div>
             </div>

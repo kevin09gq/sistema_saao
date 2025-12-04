@@ -19,6 +19,7 @@ verificarSesion();
     <link rel="stylesheet" href="css/logos-gafetes.css">
     <link rel="stylesheet" href="css/confirmacion.css">
     <link rel="stylesheet" href="../public/styles/main.css">
+    <link rel="stylesheet" href="css/tabla-gafetes.css">
     <!-- SweetAlert2 CSS -->
     <script src="<?= SWEETALERT ?>"></script>
     
@@ -123,15 +124,27 @@ verificarSesion();
                                 <button class="btn btn-outline-light btn-sm d-flex align-items-center" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDepartamentos" aria-controls="offcanvasDepartamentos">
                                     <i class="bi bi-filter-right me-1"></i> Departamentos
                                 </button>
-                                <div class="input-group input-group-sm position-relative" style="width: 250px;">
+                                <div class="input-group input-group-sm filtro-estado">
+                                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-ui-checks"></i></span>
+                                    <select id="filtroEstadoGafete" class="form-select border-start-0">
+                                        <option value="todos">Todos</option>
+                                        <option value="vigente">Vigentes</option>
+                                        <option value="expirado">Expirados</option>
+                                        <option value="proximo">Próximo a vencer</option>
+                                        <option value="sin_fecha">Sin fecha</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-outline-light btn-sm d-flex align-items-center" type="button" id="limpiarFiltroEstadoBtn" title="Limpiar filtro">
+                                    <i class="bi bi-eraser-fill me-1"></i> Limpiar
+                                </button>
+                                <div class="input-group input-group-sm position-relative buscador-empleados">
                                     <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
-                                    <input type="text" id="buscadorEmpleados" class="form-control border-start-0 pe-5" placeholder="Buscar empleado..." style="padding-right: 2.5rem !important;">
+                                    <input type="text" id="buscadorEmpleados" class="form-control border-start-0 pe-5" placeholder="Buscar empleado...">
                                     <button class="btn btn-link text-secondary position-absolute end-0 top-50 translate-middle-y border-0 p-0 me-2" 
                                             type="button" 
                                             id="limpiarBuscador" 
-                                            style="display: none; z-index: 10; background: transparent;"
                                             title="Limpiar búsqueda">
-                                        <i class="bi bi-x-circle-fill" style="font-size: 1.1rem;"></i>
+                                        <i class="bi bi-x-circle-fill"></i>
                                     </button>
                                 </div>
                             </div>

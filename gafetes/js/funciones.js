@@ -10,6 +10,7 @@ $(document).ready(function () {
     const empleadosPorPagina = 10;
     let todosLosEmpleados = [];
     let ordenClave = 'asc'; // 'asc' o 'desc' para controlar el orden de la columna Clave
+    let filtroEstado = 'todos'; // todos | vigente | expirado | sin_fecha
 
     // Función para formatear texto a mayúsculas mientras se escribe
     function formatearMayusculas(selector) {
@@ -23,6 +24,55 @@ $(document).ready(function () {
             // Restaurar la posición del cursor
             this.setSelectionRange(cursorPosition, cursorPosition);
         });
+    }
+
+    // Función para obtener el estado del gafete de un empleado
+    function obtenerEstadoGafete(empleado) {
+        let estado = 'Sin fecha';
+        if (empleado.fecha_vigencia) {
+            const parts = String(empleado.fecha_vigencia).split(/[-T\/]/);
+            const fechaVigencia = (parts.length >= 3)
+                ? new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10))
+                : new Date(empleado.fecha_vigencia);
+            const hoy = new Date();
+            fechaVigencia.setHours(0, 0, 0, 0);
+            hoy.setHours(0, 0, 0, 0);
+            if (fechaVigencia < hoy) {
+                estado = 'Expirado';
+            } else {
+                const limite = new Date(hoy);
+                limite.setDate(limite.getDate() + 7);
+                estado = (fechaVigencia <= limite) ? 'Próximo a vencer' : 'Vigente';
+            }
+        }
+        return estado;
+    }
+
+    // Formatear fecha a dd/mm/aaaa
+    function formatearFecha(fechaStr) {
+        if (!fechaStr) return '';
+        const d = new Date(fechaStr);
+        if (isNaN(d)) return '';
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const yyyy = d.getFullYear();
+        return `${dd}/${mm}/${yyyy}`;
+    }
+
+    // Función para obtener la lista actual de empleados aplicando búsqueda y filtro de estado
+    function obtenerEmpleadosAMostrar() {
+        let base = ($('#buscadorEmpleados').val().trim() !== '') ? empleadosFiltrados : empleados;
+        if (filtroEstado !== 'todos') {
+            base = base.filter(e => {
+                const estado = obtenerEstadoGafete(e);
+                if (filtroEstado === 'vigente') return estado === 'Vigente';
+                if (filtroEstado === 'expirado') return estado === 'Expirado';
+                if (filtroEstado === 'proximo') return estado === 'Próximo a vencer';
+                if (filtroEstado === 'sin_fecha') return estado === 'Sin fecha';
+                return true;
+            });
+        }
+        return base;
     }
 
     // Función para obtener logos dinámicos según el empleado
@@ -136,13 +186,33 @@ $(document).ready(function () {
         if (accion === 'anteriorPagina' && paginaActual > 1) {
             paginaActual--;
             actualizarTablaEmpleados();
-        } else if (accion === 'siguientePagina' && paginaActual < Math.ceil(($('#buscadorEmpleados').val().trim() !== '' ? empleadosFiltrados.length : empleados.length) / empleadosPorPagina)) {
+        } else if (accion === 'siguientePagina' && paginaActual < Math.ceil((obtenerEmpleadosAMostrar().length) / empleadosPorPagina)) {
             paginaActual++;
             actualizarTablaEmpleados();
         } else if ($enlace.data('pagina')) {
             paginaActual = parseInt($enlace.data('pagina'));
             actualizarTablaEmpleados();
         }
+    });
+
+    // Evento para el filtro de estado de gafete
+    $('#filtroEstadoGafete').on('change', function () {
+        filtroEstado = $(this).val();
+        // Mostrar/ocultar botón limpiar
+        if (filtroEstado === 'todos') {
+            $('#limpiarFiltroEstadoBtn').hide();
+        } else {
+            $('#limpiarFiltroEstadoBtn').show();
+        }
+        paginaActual = 1;
+        actualizarTablaEmpleados();
+    });
+
+    // Botón para limpiar el filtro de estado
+    $('#limpiarFiltroEstadoBtn').on('click', function () {
+        filtroEstado = 'todos';
+        $('#filtroEstadoGafete').val('todos').trigger('change');
+        $(this).hide();
     });
 
     // Evento para el buscador
@@ -859,8 +929,8 @@ $(document).ready(function () {
 
     // Función para actualizar la tabla de empleados con paginación
     function actualizarTablaEmpleados() {
-        // Si hay un término de búsqueda, usar empleadosFiltrados, de lo contrario usar todos los empleados
-        const empleadosAMostrar = $('#buscadorEmpleados').val().trim() !== '' ? empleadosFiltrados : empleados;
+        // Obtener la lista a mostrar aplicando búsqueda y filtro de estado
+        const empleadosAMostrar = obtenerEmpleadosAMostrar();
         const totalEmpleados = empleadosAMostrar.length;
         const totalPaginas = Math.ceil(totalEmpleados / empleadosPorPagina);
 
@@ -910,20 +980,7 @@ $(document).ready(function () {
             const fotoSeleccionada = window.fotoInclusion[empleado.id_empleado] || false;
             
             // Determinar el estado del gafete
-            let estadoGafete = 'Sin fecha';
-            if (empleado.fecha_vigencia) {
-                const fechaVigencia = new Date(empleado.fecha_vigencia);
-                const hoy = new Date();
-                // Resetear horas para comparar solo fechas
-                fechaVigencia.setHours(0, 0, 0, 0);
-                hoy.setHours(0, 0, 0, 0);
-                
-                if (fechaVigencia >= hoy) {
-                    estadoGafete = 'Vigente';
-                } else {
-                    estadoGafete = 'Expirado';
-                }
-            }
+            const estadoGafete = obtenerEstadoGafete(empleado);
             
             // Determinar si el empleado tiene IMSS basado en status_nss de la base de datos
             // status_nss: 1 = Activo (tiene IMSS), 0 = Inactivo (no tiene IMSS)
@@ -943,9 +1000,17 @@ $(document).ready(function () {
                     <td>${obtenerNombreDepartamento(empleado.id_departamento)}</td>
                     <td>${empleado.nombre_area || 'Sin asignar'}</td>
                     <td class="text-center">
-                        <span class="badge ${estadoGafete === 'Vigente' ? 'bg-success' : estadoGafete === 'Expirado' ? 'bg-danger' : 'bg-secondary'}">
-                            ${estadoGafete}
-                        </span>
+                        <div class="d-flex justify-content-center" style="min-width: 120px;">
+                            <span 
+                                class="badge ${estadoGafete === 'Vigente' ? 'bg-success' : estadoGafete === 'Expirado' ? 'bg-danger' : estadoGafete === 'Próximo a vencer' ? 'bg-warning text-dark' : 'bg-secondary'}"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
+                                title="${
+                                    `${empleado.fecha_creacion ? 'Creado: ' + formatearFechaYMDaDMY(empleado.fecha_creacion) : ''}${(empleado.fecha_creacion && empleado.fecha_vigencia) ? ' | ' : ''}${empleado.fecha_vigencia ? 'Vigencia: ' + formatearFechaYMDaDMY(empleado.fecha_vigencia) : ''}`
+                                }">
+                                ${estadoGafete}
+                            </span>
+                        </div>
                     </td>
                     <td class="text-center">
                         <div class="form-check form-switch d-flex justify-content-center">
@@ -989,6 +1054,17 @@ $(document).ready(function () {
                     </td>
                 </tr>
             `);
+        }
+
+        // Inicializar tooltips de Bootstrap (limpiar anteriores y crear nuevos)
+        try {
+            document.querySelectorAll('.tooltip').forEach(el => el.remove());
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+                new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        } catch (e) {
+            // Silencioso: si Bootstrap no está cargado por alguna razón, no romper la tabla
         }
     }
 
@@ -1493,11 +1569,16 @@ $(document).ready(function () {
                 const statusNss = empleado.status_nss !== undefined ? empleado.status_nss : 0;
                 const tieneIMSS = tieneNumeroIMSS && statusNss == 1;
                 
-                // Establecer la vigencia: 1 mes para empleados sin IMSS, 6 meses para empleados con IMSS
-                const mesesVigencia = tieneIMSS ? 6 : 1;
-                fechaFin.setMonth(fechaFin.getMonth() + mesesVigencia);
-                if (fechaFin.getDate() !== fechaInicio.getDate()) {
-                    fechaFin.setDate(0);
+                // Establecer la vigencia: 6 meses con IMSS; 45 días sin IMSS
+                if (tieneIMSS) {
+                    // Sumar 6 meses y ajustar si cae en fin de mes
+                    fechaFin.setMonth(fechaFin.getMonth() + 6);
+                    if (fechaFin.getDate() !== fechaInicio.getDate()) {
+                        fechaFin.setDate(0);
+                    }
+                } else {
+                    // Sumar 45 días
+                    fechaFin.setDate(fechaFin.getDate() + 45);
                 }
                 const pad = n => n.toString().padStart(2, '0');
                 const formato = (f) => `${pad(f.getDate())}/${pad(f.getMonth() + 1)}/${f.getFullYear()}`;

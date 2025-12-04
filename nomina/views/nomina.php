@@ -95,17 +95,35 @@
                 <select class="filtro-departamento" id="filtro-departamento" hidden>
                 </select>
 
+                <select class="filtro-departamento" name="Departamentos" id="departamentos-nomina" hidden>
+                    <option value="PRODUCCION 40 LIBRAS">40 LIBRAS</option>
+                    <option value="PRODUCCION 10 LIBRAS">10 LIBRAS</option>
+                </select>
                 <div class="busqueda-container" id="busqueda-container" hidden>
                     <i class="bi bi-search"></i>
                     <input type="text" class="campo-busqueda" placeholder="Buscar..." id="campo-busqueda">
+                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="btn-clear-busqueda" title="Limpiar">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
                 </div>
                 <div class="busqueda-container" id="busqueda-container-dispersion" hidden>
                     <i class="bi bi-search"></i>
                     <input type="text" class="campo-busqueda" placeholder="Buscar..." id="campo-busqueda-dispersion">
+                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="btn-clear-busqueda-dispersion" title="Limpiar">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
                 </div>
+
+                <select id="filtro-puesto" class="filtro-departamento" hidden>
+                    <option value="Produccion 40 Libras" selected>40 LIBRAS</option>
+                    <option value="Produccion 10 Libras">10 LIBRAS</option>
+                </select>
                 <div class="busqueda-container" id="busqueda-container-sin-seguro" hidden>
                     <i class="bi bi-search"></i>
                     <input type="text" class="campo-busqueda" placeholder="Buscar..." id="campo-busqueda-sin-seguro">
+                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="btn-clear-busqueda-sin-seguro" title="Limpiar">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
                 </div>
             </div>
 
@@ -113,9 +131,13 @@
                 <i class="bi bi-plus"></i>
                 A Todos
             </button>
-            <button class="btn-agregar-todos" id="btn_mostrar_algunos">
+            <button class="btn-agregar-todos" id="btn_mostrar_algunos" hidden>
                 <i class="bi bi-plus"></i>
                 Seleccionar
+            </button>
+            <button class="btn-agregar-todos" id="btn_aplicar_tarjeta" >
+                <i class="bi bi-plus"></i>
+                Aplicar Tarjeta
             </button>
 
             <!-- Botones de exportación -->
@@ -176,6 +198,8 @@
 
         <!-- Tabla de empleados sin seguros -->
         <div class="" id="tabla-sin-seguro-container" hidden>
+
+
             <div class="table-responsive">
                 <table class="table-nomina" id="tabla-sin-seguro">
                     <thead>
@@ -269,6 +293,7 @@
     <script src="../js/calcular_sumas.js"></script>
     <script src="../js/guardar_nomina.js"></script>
     <script src="../js/generar_excel_pdf.js"></script>
+    <script src="../js/sobreescribir_data.js"></script>
 
 </body>
 

@@ -1,15 +1,15 @@
-$('#btn_export_excel').on('click', function () {
+$('#btn_export_excel').on('click',  async function () {
     if (!jsonGlobal) {
         alert('No hay datos disponibles para exportar.');
         return;
     }
 
-    //Verificar si hay sueldos negativos antes de exportar
-    if (verificarSueldosNegativos()) {
-      
+    // Verificar si hay sueldos negativos antes de exportar
+    const haySueldosNegativos = await verificarSueldosNegativos();
+    if (haySueldosNegativos) {
         return; // Si hay sueldos negativos, no continuar con la exportación
     }
-    
+
     const tituloNomina = ($('#nombre_nomina').length ? $('#nombre_nomina').text() : '').trim();
     const numeroSemana = jsonGlobal.numero_semana;
     const fechaCierre = jsonGlobal.fecha_cierre;
@@ -79,15 +79,16 @@ $('#btn_export_excel').on('click', function () {
     });
 });
 
-// Agregar event listener para el botón PDF
-$('#btn_export_pdf').on('click', function () {
+// Modificar el botón de exportar PDF
+$('#btn_export_pdf').on('click', async function () {
     if (!jsonGlobal) {
         alert('No hay datos disponibles para exportar.');
         return;
     }
 
     // Verificar si hay sueldos negativos antes de exportar
-    if (verificarSueldosNegativos()) {
+    const haySueldosNegativos = await verificarSueldosNegativos();
+    if (haySueldosNegativos) {
         return; // Si hay sueldos negativos, no continuar con la exportación
     }
 
@@ -172,15 +173,16 @@ $('#btn_export_pdf').on('click', function () {
     });
 });
 
-// Agregar event listener para el botón de reporte PDF
-$('#btn_export_pdf_reporte').on('click', function () {
+// Modificar el botón de exportar reporte PDF
+$('#btn_export_pdf_reporte').on('click', async function () {
     if (!jsonGlobal) {
         alert('No hay datos disponibles para exportar.');
         return;
     }
 
     // Verificar si hay sueldos negativos antes de exportar
-    if (verificarSueldosNegativos()) {
+    const haySueldosNegativos = await verificarSueldosNegativos();
+    if (haySueldosNegativos) {
         return; // Si hay sueldos negativos, no continuar con la exportación
     }
 
@@ -307,27 +309,184 @@ $('#btn_export_pdf_reporte').on('click', function () {
     });
 });
 
-// Función para verificar si hay sueldos negativos en la nómina
+// Función para verificar si hay sueldos negativos en la nómina (CON VALIDACIÓN DE CLAVES)
 function verificarSueldosNegativos() {
     if (!jsonGlobal || !jsonGlobal.departamentos) {
         return false;
     }
 
+
+    // 1️⃣ RECOPILAR TODAS LAS CLAVES de empleados en los departamentos relevantes
+    const clavesAValidar = [];
+    const empleadosPorClave = new Map();
+
+    jsonGlobal.departamentos.forEach((depto, indexDepto) => {
+        const nombreDepto = (depto.nombre || '').toLowerCase();
+
+        // Solo departamentos relevantes: 40 libras, 10 libras y sin seguro
+        const es40Libras = nombreDepto.includes('40 libras') || nombreDepto.includes('40libras');
+        const es10Libras = nombreDepto.includes('10 libras') || nombreDepto.includes('10libras');
+        const esSinSeguro = nombreDepto.includes('sin seguro');
+
+        if ((es40Libras || es10Libras || esSinSeguro) && depto.empleados) {
+            depto.empleados.forEach((empleado, indexEmp) => {
+                if (empleado.clave) {
+                    clavesAValidar.push(empleado.clave);
+
+                    // Guardar referencia al empleado con su departamento
+                    empleadosPorClave.set(String(empleado.clave), {
+                        empleado: empleado,
+                        departamento: depto.nombre,
+                        es40Libras: es40Libras,
+                        es10Libras: es10Libras,
+                        esSinSeguro: esSinSeguro
+                    });
+                }
+            });
+        }
+    });
+
+    if (clavesAValidar.length === 0) {
+        return false;
+    }
+
+
+    // 2️⃣ VALIDAR CLAVES CON EL SERVIDOR (verificar id_status = 1)
+    return new Promise((resolve) => {
+        $.ajax({
+            type: "POST",
+            url: "../php/validar_clave.php",
+            data: JSON.stringify({ claves: clavesAValidar }),
+            contentType: "application/json",
+            success: function (clavesValidasJSON) {
+                const clavesValidas = JSON.parse(clavesValidasJSON);
+
+                // 3️⃣ CREAR SET DE CLAVES VÁLIDAS
+                const clavesValidasSet = new Set(clavesValidas.map(c => String(c)));
+
+                // 4️⃣ VERIFICAR SUELDOS NEGATIVOS SOLO EN EMPLEADOS VÁLIDOS
+                let haySueldosNegativos = false;
+                let mensajeError = '<strong>Se encontraron sueldos negativos en:</strong><br><br>';
+                let empleadosConProblemas = [];
+
+                empleadosPorClave.forEach((data, claveStr) => {
+                    // ✅ SOLO verificar empleados con id_status = 1
+                    if (clavesValidasSet.has(claveStr)) {
+                        const empleado = data.empleado;
+                        const sueldoACobrar = parseFloat(empleado.sueldo_a_cobrar) || 0;
+
+                        if (sueldoACobrar < 0) {
+                            haySueldosNegativos = true;
+
+                            // Determinar el departamento para el mensaje
+                            let deptoDisplay = 'Desconocido';
+                            if (data.es40Libras) {
+                                deptoDisplay = '40 Libras';
+                            } else if (data.es10Libras) {
+                                deptoDisplay = '10 Libras';
+                            } else if (data.esSinSeguro) {
+                                // Para sin seguro, intentar determinar por puesto
+                                const puesto = (empleado.puesto || '').toLowerCase();
+                                if (puesto.includes('40')) {
+                                    deptoDisplay = 'Sin Seguro - 40 Libras';
+                                } else if (puesto.includes('10')) {
+                                    deptoDisplay = 'Sin Seguro - 10 Libras';
+                                } else {
+                                    deptoDisplay = 'Sin Seguro';
+                                }
+                            }
+
+                            const claveEmpleado = empleado.clave || empleado.clave_empleado || 'Sin clave';
+                            const nombreEmpleado = empleado.nombre || empleado.nombre_completo || 'Sin nombre';
+
+
+
+                            empleadosConProblemas.push({
+                                departamento: deptoDisplay,
+                                clave: claveEmpleado,
+                                nombre: nombreEmpleado,
+                                sueldo: sueldoACobrar
+                            });
+
+                            mensajeError += `<strong>Departamento:</strong> ${deptoDisplay}<br>`;
+                            mensajeError += `<strong>Clave:</strong> ${claveEmpleado}<br>`;
+                            mensajeError += `<strong>Empleado:</strong> ${nombreEmpleado}<br>`;
+                            mensajeError += `<strong>Sueldo a cobrar:</strong> <span style="color: #dc3545; font-weight: bold;">$${sueldoACobrar.toFixed(2)}</span><br><br>`;
+                        }
+                    } else {
+                        // Empleado NO válido (id_status ≠ 1)
+                    }
+                });
+
+
+
+                if (haySueldosNegativos) {
+
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Sueldos Negativos Detectados',
+                        html: mensajeError,
+                        confirmButtonText: 'Entendido',
+                        width: '700px',
+                        customClass: {
+                            htmlContainer: 'text-start'
+                        },
+                        footer: '<small>Por favor, corrige estos empleados antes de exportar la nómina</small>'
+                    });
+                    resolve(true);
+                } else {
+                    resolve(false);
+                }
+            },
+            error: function (xhr, status, error) {
+
+                // En caso de error, mostrar advertencia
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Error de Validación',
+                    text: 'No se pudieron validar las claves de empleados. ¿Desea continuar sin validación?',
+                    showCancelButton: true,
+                    confirmButtonText: 'Continuar sin validar',
+                    cancelButtonText: 'Cancelar exportación'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Verificar sin validar (método anterior)
+                        resolve(verificarSueldosNegativosSinValidacion());
+                    } else {
+                        resolve(true); // Cancelar exportación
+                    }
+                });
+            }
+        });
+    });
+}
+
+// Función auxiliar para verificar sin validación (fallback)
+function verificarSueldosNegativosSinValidacion() {
     let haySueldosNegativos = false;
     let mensajeError = '<strong>Se encontraron sueldos negativos en:</strong><br><br>';
 
     jsonGlobal.departamentos.forEach(depto => {
         const nombreDepto = (depto.nombre || '').toLowerCase();
-        
-        // Verificar solo departamentos que contengan "40 libras" o "sin seguro"
-        if ((nombreDepto.includes('40 libras') || nombreDepto.includes('sin seguro')) && depto.empleados) {
+
+        const es40Libras = nombreDepto.includes('40 libras') || nombreDepto.includes('40libras');
+        const es10Libras = nombreDepto.includes('10 libras') || nombreDepto.includes('10libras');
+        const esSinSeguro = nombreDepto.includes('sin seguro');
+
+        if ((es40Libras || es10Libras || esSinSeguro) && depto.empleados) {
             depto.empleados.forEach(empleado => {
-                // Convertir sueldo_a_cobrar a número y verificar si es negativo
                 const sueldoACobrar = parseFloat(empleado.sueldo_a_cobrar) || 0;
-                
+
                 if (sueldoACobrar < 0) {
                     haySueldosNegativos = true;
-                  
+
+                    let deptoDisplay = 'Desconocido';
+                    if (es40Libras) deptoDisplay = '40 Libras';
+                    else if (es10Libras) deptoDisplay = '10 Libras';
+                    else if (esSinSeguro) deptoDisplay = 'Sin Seguro';
+
+                    mensajeError += `<strong>Departamento:</strong> ${deptoDisplay}<br>`;
                     mensajeError += `<strong>Empleado:</strong> ${empleado.nombre || empleado.nombre_completo || 'Sin nombre'}<br>`;
                     mensajeError += `<strong>Sueldo a cobrar:</strong> $${sueldoACobrar.toFixed(2)}<br><br>`;
                 }
@@ -340,7 +499,8 @@ function verificarSueldosNegativos() {
             icon: 'error',
             title: 'Sueldos Negativos Detectados',
             html: mensajeError,
-            confirmButtonText: 'Entendido'
+            confirmButtonText: 'Entendido',
+            width: '600px'
         });
         return true;
     }
