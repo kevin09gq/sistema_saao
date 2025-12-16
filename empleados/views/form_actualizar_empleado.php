@@ -393,6 +393,31 @@ verificarSesion();
             </div>
         </div>
     </div>
+    <div class="modal fade" id="modal_historial_reingreso" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Reingreso</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="modal_hist_id_historial">
+                    <div class="mb-3">
+                        <label for="modal_hist_fecha_reingreso" class="form-label">Fecha de reingreso</label>
+                        <input type="date" class="form-control" id="modal_hist_fecha_reingreso">
+                    </div>
+                    <div class="mb-3">
+                        <label for="modal_hist_fecha_salida" class="form-label">Fecha de baja</label>
+                        <input type="date" class="form-control" id="modal_hist_fecha_salida">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btn_guardar_historial">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
     <!-- Bootstrap JS -->
