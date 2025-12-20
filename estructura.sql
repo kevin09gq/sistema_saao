@@ -184,6 +184,35 @@ CREATE TABLE tabulador (
   FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
 );
 
+-- =============================
+-- TABLAS DE TURNOS Y FESTIVIDADES BHL
+-- =============================
+
+CREATE TABLE turnos (
+  id_turno INT PRIMARY KEY AUTO_INCREMENT,
+  descripcion VARCHAR (30),
+  hora_inicio TIME,
+  hora_fin TIME,
+  estado TINYINT DEFAULT 1
+);
+
+CREATE TABLE festividades (
+  id_festividad INT PRIMARY KEY AUTO_INCREMENT,
+  nombre VARCHAR (100),
+  fecha DATE,
+  tipo ENUM('NACIONAL', 'LOCAL', 'INTERNO') DEFAULT 'NACIONAL',
+  observaciones VARCHAR(100) NULL
+);
+
+CREATE TABLE empleado_turno (
+  id_empleado_turno INT PRIMARY KEY AUTO_INCREMENT,
+  id_empleado INT,
+  id_turno_base INT NULL,
+  id_turno_sabado INT NULL,
+  FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado),
+  FOREIGN KEY (id_turno_base) REFERENCES turnos(id_turno),
+  FOREIGN KEY (id_turno_sabado) REFERENCES turnos(id_turno),
+);
 
 -- =============================
 -- ISERTAR DATOS

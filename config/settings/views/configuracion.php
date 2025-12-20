@@ -21,6 +21,7 @@ verificarSesion(); // Proteger esta página
 
 <body>
     <?php include("../../../public/views/navbar.php"); ?>
+
     <div class="container mt-4">
         <div class="card main-card">
             <div class="card-header">
@@ -47,6 +48,22 @@ verificarSesion(); // Proteger esta página
                             <i class="bi bi-diagram-3"></i> Áreas
                         </a>
                     </li>
+
+                    <!-- Se agrego esto para los turnos -->
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="turnos-tab" data-bs-toggle="tab" href="#turnos" role="tab">
+                            <i class="bi bi-clock-history"></i> Turnos
+                        </a>
+                    </li>
+
+                    <!-- Se agrego esto para los dias festivos -->
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="festividades-tab" data-bs-toggle="tab" href="#festividades" role="tab">
+                            <i class="bi bi-calendar-date"></i> Festividades
+                        </a>
+                    </li>
+
+
                     <li class="nav-item" role="presentation">
                         <a class="nav-link" id="empresas-tab" data-bs-toggle="tab" href="#empresas" role="tab">
                             <i class="bi bi-building-fill"></i> Empresas
@@ -118,7 +135,6 @@ verificarSesion(); // Proteger esta página
                         </div>
                     </div>
 
-
                     <!-- PUESTOS - Simplificado -->
                     <div class="tab-pane fade" id="puestos" role="tabpanel">
                         <div class="row mt-4">
@@ -180,8 +196,6 @@ verificarSesion(); // Proteger esta página
                         </div>
                     </div>
 
-
-
                     <!-- ÁREAS - Con gestión de imágenes -->
                     <div class="tab-pane fade" id="areas" role="tabpanel">
                         <div class="row mt-4">
@@ -233,6 +247,140 @@ verificarSesion(); // Proteger esta página
                                         <div class="form-actions">
                                             <button type="submit" class="btn btn-success" id="btn-guardar-area"><i class="bi bi-save"></i> Guardar</button>
                                             <button type="button" class="btn btn-secondary" id="btn-cancelar-area"><i class="bi bi-x-circle"></i> Cancelar</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TURNOS- Horas de entrada y salida -->
+                    <div class="tab-pane fade" id="turnos" role="tabpanel">
+                        <div class="row mt-4">
+                            <div class="col-md-7" id="turnos-list-container">
+                                <div class="table-container" id="turnos-table-container">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5><i class="bi bi-list-ul"></i> Lista de Turnos</h5>
+                                        <div class="search-box-container">
+                                            <input type="text" class="search-box" id="search-turnos" placeholder="Buscar Turno...">
+                                        </div>
+                                    </div>
+                                    <div class="table-responsive" id="turnos-table-responsive">
+                                        <table class="table table-hover" id="tabla-turnos">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Descripción</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="turnos-tbody">
+                                                <!-- Ejemplo de registros -->
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="form-container">
+                                    <h5 class="mb-3"><i class="bi bi-plus-circle"></i> Agregar Turno</h5>
+                                    <form id="turnoForm">
+                                        <input type="hidden" id="turno_id" name="turno_id">
+
+                                        <div class="mb-3">
+                                            <label for="descripcion" class="form-label">Turno</label>
+                                            <select class="form-select" name="descripcion" id="descripcion">
+                                                <option value="DIURNA" selected>DIURNA</option>
+                                                <option value="NOCTURNA">NOCTURNA</option>
+                                                <option value="MIXTA">MIXTA</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="hora_inicio" class="form-label">Hora de Inicio</label>
+                                            <input type="time" class="form-control" id="hora_inicio" name="hora_inicio" required>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="hora_fin" class="form-label">Hora Fin</label>
+                                            <input type="time" class="form-control" id="hora_fin" name="hora_fin" required>
+                                        </div>
+
+
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn btn-success" id="btn-guardar-turno"><i class="bi bi-save"></i> Guardar</button>
+                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-turno"><i class="bi bi-x-circle"></i> Cancelar</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FESTIVIDADES -->
+                    <div class="tab-pane fade" id="festividades" role="tabpanel">
+                        <div class="row mt-4">
+                            <div class="col-md-7" id="festividades-list-container">
+                                <div class="table-container" id="festividades-table-container">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5><i class="bi bi-list-ul"></i> Lista de festividades</h5>
+                                        <div class="search-box-container">
+                                            <input type="text" class="search-box" id="search-festividades" placeholder="Buscar Festividad...">
+                                        </div>
+                                    </div>
+                                    <div class="table-responsive" id="festividades-table-responsive">
+                                        <table class="table table-hover" id="tabla-festividades">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Festividad</th>
+                                                    <th>Fecha</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="festividades-tbody">
+                                                <!-- Ejemplo de registros -->
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="form-container">
+                                    <h5 class="mb-3"><i class="bi bi-plus-circle"></i> Agregar Festividad</h5>
+                                    <form id="festividadForm">
+                                        <input type="hidden" id="festividad_id" name="festividad_id">
+
+                                        <div class="mb-3">
+                                            <label for="nombre_festividad" class="form-label">Nombre festividad</label>
+                                            <input type="text" class="form-control" id="nombre_festividad" name="nombre_festividad" required>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="fecha_festividad" class="form-label">Fecha festividad</label>
+                                            <input type="date" class="form-control" id="fecha_festividad" name="fecha_festividad" required>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="tipo_festividad" class="form-label">Nivel</label>
+                                            <select class="form-select" name="tipo_festividad" id="tipo_festividad">
+                                                <option value="NACIONAL" selected>NACIONAL</option>
+                                                <option value="LOCAL">LOCAL</option>
+                                                <option value="INTERNO">INTERNO</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="observacion" class="form-label">Observación</label>
+                                            <input type="text" class="form-control" id="observacion" name="observacion" max="100">
+                                        </div>
+
+
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn btn-success" id="btn-guardar-festividad"><i class="bi bi-save"></i> Guardar</button>
+                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-festividad"><i class="bi bi-x-circle"></i> Cancelar</button>
                                         </div>
                                     </form>
                                 </div>
@@ -482,6 +630,11 @@ verificarSesion(); // Proteger esta página
     <script src="../js/config_departamentos.js"></script>
     <script src="../js/config_puestos.js"></script>
     <script src="../js/config_areas.js"></script>
+
+    <!-- Agregue este js para los turnos -->
+    <script src="../js/config_turnos.js"></script>
+    <script src="../js/config_festividades.js"></script>
+
     <script src="../js/config_empresas.js"></script>
     <script src="../js/obtener_tabulador.js"></script>
     <script src="../js/config_tabulador.js"></script>

@@ -133,7 +133,7 @@ verificarSesion();
                                                 <option value="DIVORCIADO">Divorciado/a</option>
                                                 <option value="VIUDO">Viudo/a</option>
                                                 <option value="UNION_LIBRE">Unión Libre</option>
-                                                
+
                                             </select>
                                         </div>
                                     </div>
@@ -147,7 +147,7 @@ verificarSesion();
                                                 <input type="text" class="form-control" id="num_casillero" name="num_casillero" placeholder="Ej: 101 o A15">
                                             </div>
                                         </div>
-                                    
+
                                         <div class="col-md-3 mb-3">
                                             <label for="biometrico" class="form-label">Biométrico</label>
                                             <input type="number" class="form-control" id="biometrico" name="biometrico" min="0" placeholder="ID biométrico">
@@ -203,6 +203,23 @@ verificarSesion();
                                             <input type="number" class="form-control" id="salario_mensual" name="salario_mensual" step="0.01" placeholder="0.00">
                                         </div>
                                     </div>
+                                    <div class="row">
+
+                                        <div class="col-md-6 mb-3">
+                                            <label for="turno_trabajador" class="form-label">Turno de Lunes a Viernes</label>
+                                            <select class="form-select" id="turno_trabajador" name="id_turno">
+                                                <option value="">Selecciona un turno</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label for="turno_trabajador_sabado" class="form-label">Turno Sabados</label>
+                                            <select class="form-select" id="turno_trabajador_sabado" name="id_turno_sabado">
+                                                <option value="">Selecciona un turno</option>
+                                            </select>
+                                        </div>
+
+                                    </div>
                                 </div>
 
                                 <!-- Tab Contacto de emergencia -->
@@ -238,7 +255,6 @@ verificarSesion();
                                 </div>
 
                                 <!-- Tab Beneficiarios -->
-
                                 <div class="tab-pane fade" id="tab_beneficiarios" role="tabpanel" aria-labelledby="tab-beneficiarios">
                                     <div class="row">
                                         <div class="col-12">
@@ -299,6 +315,7 @@ verificarSesion();
                                     Cancelar
                                 </button>
                             </div>
+
                         </form>
                     </div>
                 </div>
@@ -314,7 +331,7 @@ verificarSesion();
     <script src="../../public/js/validaciones.js"></script>
     <script src="../controllers/registro_empleado.js"></script>
     <script src="../controllers/casillero_registro.js"></script>
-   
+
 
 </body>
 

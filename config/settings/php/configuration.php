@@ -68,6 +68,30 @@ if (isset($_GET['accion']) || isset($_POST['accion'])) {
         case 'obtenerInfoPuesto':
             obtenerInfoPuesto();
             break;
+        case 'registrarTurno':
+            registrarTurno();
+            break;
+        case 'obtenerInfoTurno':
+            obtenerInfoTurno();
+            break;
+        case 'actualizarTurno':
+            actualizarTurno();
+            break;
+        case 'eliminarTurno':
+            eliminarTurno();
+            break;
+        case 'registrarFestividad':
+            registrarFestividad();
+            break;
+        case 'obtenerInfoFestividad':
+            obtenerInfoFestividad();
+            break;
+        case 'eliminarFestividad':
+            eliminarFestividad();
+            break;
+        case 'actualizarFestividad':
+            actualizarFestividad();
+            break;
         default:
             echo "Acción no reconocida";
     }
@@ -792,13 +816,13 @@ function registrarEmpresa()
         $nombreEmpresa = trim($_POST['nombre_empresa']);
         $rfcEmpresa = isset($_POST['rfc_empresa']) ? trim($_POST['rfc_empresa']) : null;
         $domicilioFiscal = isset($_POST['domicilio_fiscal']) ? trim($_POST['domicilio_fiscal']) : null;
-        
+
         if (empty($nombreEmpresa)) {
             echo "0";
             return;
         }
         $nombreEmpresa = mysqli_real_escape_string($conexion, $nombreEmpresa);
-        
+
         // Escapar los nuevos campos si tienen valor
         if ($rfcEmpresa) {
             $rfcEmpresa = mysqli_real_escape_string($conexion, $rfcEmpresa);
@@ -873,13 +897,13 @@ function actualizarEmpresa()
         $nombreEmpresa = trim($_POST['nombre_empresa']);
         $rfcEmpresa = isset($_POST['rfc_empresa']) ? trim($_POST['rfc_empresa']) : null;
         $domicilioFiscal = isset($_POST['domicilio_fiscal']) ? trim($_POST['domicilio_fiscal']) : null;
-        
+
         if (empty($nombreEmpresa)) {
             echo "0";
             return;
         }
         $nombreEmpresa = mysqli_real_escape_string($conexion, $nombreEmpresa);
-        
+
         // Escapar los nuevos campos si tienen valor
         if ($rfcEmpresa) {
             $rfcEmpresa = mysqli_real_escape_string($conexion, $rfcEmpresa);
@@ -1092,23 +1116,23 @@ function eliminarLogoEmpresa()
 function obtenerImagenEmpresa()
 {
     global $conexion;
-    
+
     if (isset($_GET['id_empresa'])) {
         $idEmpresa = (int)$_GET['id_empresa'];
-        
+
         $sql = "SELECT logo_empresa FROM empresas WHERE id_empresa = ?";
         $stmt = $conexion->prepare($sql);
         $stmt->bind_param("i", $idEmpresa);
         $stmt->execute();
         $result = $stmt->get_result();
-        
+
         if ($result->num_rows > 0) {
             $row = $result->fetch_assoc();
             echo json_encode(['success' => true, 'logo_empresa' => $row['logo_empresa']]);
         } else {
             echo json_encode(['success' => false, 'message' => 'Empresa no encontrada']);
         }
-        
+
         $stmt->close();
     } else {
         echo json_encode(['success' => false, 'message' => 'ID de empresa no proporcionado']);
@@ -1118,20 +1142,20 @@ function obtenerImagenEmpresa()
 function obtenerInfoPuesto()
 {
     global $conexion;
-    
+
     if (isset($_GET['id_puesto'])) {
         $idPuesto = (int)$_GET['id_puesto'];
-        
+
         $sql = "SELECT id_puestoEspecial, nombre_puesto, direccion_puesto, color_hex FROM puestos_especiales WHERE id_puestoEspecial = ?";
         $stmt = $conexion->prepare($sql);
         $stmt->bind_param("i", $idPuesto);
         $stmt->execute();
         $result = $stmt->get_result();
-        
+
         if ($result->num_rows > 0) {
             $row = $result->fetch_assoc();
             echo json_encode([
-                'success' => true, 
+                'success' => true,
                 'puesto' => [
                     'id_puestoEspecial' => $row['id_puestoEspecial'],
                     'nombre_puesto' => $row['nombre_puesto'],
@@ -1142,9 +1166,406 @@ function obtenerInfoPuesto()
         } else {
             echo json_encode(['success' => false, 'message' => 'Puesto no encontrado']);
         }
-        
+
         $stmt->close();
     } else {
         echo json_encode(['success' => false, 'message' => 'ID de puesto no proporcionado']);
+    }
+}
+
+/**
+ * Aqui empieza todas las funciones para los turnos
+ */
+function registrarTurno()
+{
+    global $conexion;
+
+    if (isset($_POST['descripcion']) and isset($_POST['hora_inicio']) and isset($_POST['hora_fin'])) {
+        // Eliminar espacios en blanco al principio y al final
+        $descripcion = trim($_POST['descripcion']);
+        $hora_inicio = trim($_POST['hora_inicio']);
+        $hora_fin = trim($_POST['hora_fin']);
+
+        // Verificar que el nombre no esté vacío después de eliminar espacios
+        if (empty($descripcion) or empty($hora_inicio) or empty($hora_fin)) {
+            echo "0"; // El nombre está vacío
+            return;
+        }
+
+        // Escapar caracteres especiales para prevenir SQL injection
+        $descripcion = mysqli_real_escape_string($conexion, $descripcion);
+        $hora_inicio = mysqli_real_escape_string($conexion, $hora_inicio);
+        $hora_fin    = mysqli_real_escape_string($conexion, $hora_fin);
+
+        // Verificar si el departamento ya existe
+        $checkSql = "SELECT COUNT(*) as count FROM turnos WHERE descripcion = '$descripcion' and hora_inicio = '$hora_inicio' and hora_fin = '$hora_fin' and estado = 1";
+        $result = mysqli_query($conexion, $checkSql);
+        $row = mysqli_fetch_assoc($result);
+
+        if ($row['count'] > 0) {
+            echo "3"; // Departamento ya existe
+            return;
+        }
+
+        // Preparar la consulta para insertar el nuevo departamento
+        $sql = $conexion->prepare("INSERT INTO turnos (descripcion, hora_inicio, hora_fin, estado) VALUES (?, ?, ?, 1)");
+
+        if (!$sql) {
+            echo "Error en la preparación: " . $conexion->error;
+            return;
+        }
+
+        $sql->bind_param("sss", $descripcion, $hora_inicio, $hora_fin);
+
+        // Ejecutar la consulta y verificar si fue exitosa
+        if ($sql->execute()) {
+            echo "1"; // Éxito
+        } else {
+            echo "2"; // Error al ejecutar
+        }
+
+        // Cerrar la declaración
+        $sql->close();
+    } else {
+        echo "2"; // No se recibió el turno, ni hora de inicio ni fin
+    }
+}
+
+function obtenerInfoTurno()
+{
+    global $conexion;
+
+    if (isset($_POST['id_turno'])) {
+        $idTurno = (int)$_POST['id_turno'];
+
+        // Preparar la consulta para obtener la información del área
+        $sql = "SELECT id_turno, descripcion, hora_inicio, hora_fin FROM turnos WHERE id_turno = ? and estado = 1";
+        $stmt = $conexion->prepare($sql);
+
+        if (!$stmt) {
+            echo json_encode(['error' => true, 'message' => 'Error en la preparación: ' . $conexion->error]);
+            return;
+        }
+
+        $stmt->bind_param("i", $idTurno);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            // Devolver los datos del turno
+            echo json_encode($result->fetch_assoc());
+        } else {
+            // Si no se encuentra el turno
+            echo json_encode(['error' => true, 'message' => 'Turno no encontrado']);
+        }
+
+        $stmt->close();
+    } else {
+        echo json_encode(['error' => true, 'message' => 'No se recibió el ID del turno']);
+    }
+}
+
+function actualizarTurno()
+{
+    global $conexion;
+
+    if (isset($_POST['turno_id']) && isset($_POST['descripcion']) && isset($_POST['hora_inicio']) && isset($_POST['hora_fin'])) {
+        $id_turno = (int)$_POST['turno_id'];
+        $descripcion = trim($_POST['descripcion']);
+        $hora_inicio = trim($_POST['hora_inicio']);
+        $hora_fin = trim($_POST['hora_fin']);
+
+        // Verificar que el nombre no esté vacío
+        if (empty($descripcion) or empty($hora_inicio) or empty($hora_fin)) {
+            echo "0"; // El nombre está vacío
+            return;
+        }
+
+        // Escapar caracteres especiales para prevenir SQL injection
+        $descripcion = mysqli_real_escape_string($conexion, $descripcion);
+        $hora_inicio = mysqli_real_escape_string($conexion, $hora_inicio);
+        $hora_fin    = mysqli_real_escape_string($conexion, $hora_fin);
+
+        // Verificar si ya existe otro turno con el mismo turno y horas
+        $checkSql = "SELECT COUNT(*) as count FROM turnos WHERE descripcion = '$descripcion' AND hora_inicio = '$hora_inicio' AND hora_fin = '$hora_fin' AND id_turno != $id_turno AND estado = 1";
+        $result = mysqli_query($conexion, $checkSql);
+        $row = mysqli_fetch_assoc($result);
+
+        if ($row['count'] > 0) {
+            echo "3"; // Ya existe un turno con ese dato
+            return;
+        }
+
+        // Preparar la consulta para actualizar el departamento
+        $sql = $conexion->prepare("UPDATE turnos SET descripcion = ?, hora_inicio = ?, hora_fin = ? WHERE id_turno = ?");
+
+        if (!$sql) {
+            echo "Error en la preparación: " . $conexion->error;
+            return;
+        }
+
+        $sql->bind_param("sssi", $descripcion, $hora_inicio, $hora_fin, $id_turno);
+
+        // Ejecutar la consulta y verificar si fue exitosa
+        if ($sql->execute()) {
+            echo "1"; // Éxito
+        } else {
+            echo "2"; // Error al ejecutar
+        }
+
+        // Cerrar la declaración
+        $sql->close();
+    } else {
+        echo "5"; // No se recibieron todos los datos necesarios
+    }
+}
+
+function eliminarTurno()
+{
+    global $conexion;
+
+    if (isset($_POST['id_turno'])) {
+        $id_turno = (int)$_POST['id_turno'];
+
+        // Iniciar transacción para asegurar que ambas operaciones se completen o ninguna
+        $conexion->begin_transaction();
+
+        try {
+            // Primero actualizamos la tabla info_empleados para establecer id_turno como NULL
+            // para los empleados que pertenecen al departamento que se va a eliminar
+            $updateSql = "UPDATE empleado_turno SET id_turno_base = NULL, id_turno_sabado = NULL WHERE id_turno_base = ? OR id_turno_sabado = ?";
+            $updateStmt = $conexion->prepare($updateSql);
+
+            if (!$updateStmt) {
+                throw new Exception("Error al preparar la actualización: " . $conexion->error);
+            }
+
+            $updateStmt->bind_param("ii", $id_turno, $id_turno);
+            $updateStmt->execute();
+            $updateStmt->close();
+
+            // Ahora eliminamos el departamento
+            $deleteSql = "UPDATE turnos SET estado = 0 WHERE id_turno = ?";
+            $deleteStmt = $conexion->prepare($deleteSql);
+
+            if (!$deleteStmt) {
+                throw new Exception("Error al preparar la eliminación: " . $conexion->error);
+            }
+
+            $deleteStmt->bind_param("i", $id_turno);
+            $deleteResult = $deleteStmt->execute();
+            $deleteStmt->close();
+
+            if ($deleteResult) {
+                // Confirmar la transacción
+                $conexion->commit();
+                echo "1"; // Éxito
+            } else {
+                // Revertir la transacción
+                $conexion->rollback();
+                echo "2"; // Error al eliminar
+            }
+        } catch (Exception $e) {
+            // Revertir la transacción en caso de error
+            $conexion->rollback();
+            echo "Error: " . $e->getMessage();
+        }
+    } else {
+        echo "2"; // No se recibió el ID del departamento
+    }
+}
+
+/**
+ * AQUI EMPIEZAN LAS FUNCIONES PARA LAS FESTIVIDADES
+ */
+
+function registrarFestividad()
+{
+    global $conexion;
+
+    if (isset($_POST['nombre_festividad']) and isset($_POST['fecha_festividad']) and isset($_POST['tipo_festividad'])) {
+
+        // Eliminar espacios en blanco al principio y al final
+        $nombre_festividad = trim($_POST['nombre_festividad']);
+        $fecha_festividad = trim($_POST['fecha_festividad']);
+        $tipo_festividad = trim($_POST['tipo_festividad']);
+        $observacion = trim($_POST['observacion']) ?? '';
+
+        // Verificar que el nombre no esté vacío después de eliminar espacios
+        if (empty($nombre_festividad) or empty($fecha_festividad) or empty($tipo_festividad)) {
+            echo "0"; // El nombre está vacío
+            return;
+        }
+
+        // Escapar caracteres especiales para prevenir SQL injection
+        $nombre_festividad = mysqli_real_escape_string($conexion, $nombre_festividad);
+        $fecha_festividad = mysqli_real_escape_string($conexion, $fecha_festividad);
+        $tipo_festividad    = mysqli_real_escape_string($conexion, $tipo_festividad);
+        $observacion    = mysqli_real_escape_string($conexion, $observacion);
+
+        // Verificar si el departamento ya existe
+        $checkSql = "SELECT COUNT(*) as count FROM festividades WHERE nombre = '$nombre_festividad' and fecha = '$fecha_festividad'";
+        $result = mysqli_query($conexion, $checkSql);
+        $row = mysqli_fetch_assoc($result);
+
+        if ($row['count'] > 0) {
+            echo "3"; // Festividad ya registrada
+            return;
+        }
+
+        // Preparar la consulta para insertar el nuevo departamento
+        $sql = $conexion->prepare("INSERT INTO festividades (nombre, fecha, tipo, observacion) VALUES (?, ?, ?, ?)");
+
+        if (!$sql) {
+            echo "Error en la preparación: " . $conexion->error;
+            return;
+        }
+
+        $sql->bind_param("ssss", $nombre_festividad, $fecha_festividad, $tipo_festividad, $observacion);
+
+        // Ejecutar la consulta y verificar si fue exitosa
+        if ($sql->execute()) {
+            echo "1"; // Éxito
+        } else {
+            echo "2"; // Error al ejecutar
+        }
+
+        // Cerrar la declaración
+        $sql->close();
+    } else {
+        echo "2"; // No se recibió el turno, ni hora de inicio ni fin
+    }
+}
+
+function obtenerInfoFestividad()
+{
+    global $conexion;
+
+    if (isset($_POST['id_festividad'])) {
+        $id = (int)$_POST['id_festividad'];
+
+        // Preparar la consulta para obtener la información del área
+        $sql = "SELECT * FROM festividades WHERE id_festividad = ?";
+        $stmt = $conexion->prepare($sql);
+
+        if (!$stmt) {
+            echo json_encode(['error' => true, 'message' => 'Error en la preparación: ' . $conexion->error]);
+            return;
+        }
+
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            // Devolver los datos del turno
+            echo json_encode($result->fetch_assoc());
+        } else {
+            // Si no se encuentra el turno
+            echo json_encode(['error' => true, 'message' => 'Turno no encontrado']);
+        }
+
+        $stmt->close();
+    } else {
+        echo json_encode(['error' => true, 'message' => 'No se recibió el ID del turno']);
+    }
+}
+
+function eliminarFestividad()
+{
+    global $conexion;
+
+    if (isset($_POST['id_festividad'])) {
+        $id = (int)$_POST['id_festividad'];
+
+        // Iniciar transacción para asegurar que ambas operaciones se completen o ninguna
+        $conexion->begin_transaction();
+
+        try {
+
+            // Ahora eliminamos el departamento
+            $deleteSql = "DELETE FROM festividades WHERE id_festividad = ?";
+            $deleteStmt = $conexion->prepare($deleteSql);
+
+            if (!$deleteStmt) {
+                throw new Exception("Error al preparar la eliminación: " . $conexion->error);
+            }
+
+            $deleteStmt->bind_param("i", $id);
+            $deleteResult = $deleteStmt->execute();
+            $deleteStmt->close();
+
+            if ($deleteResult) {
+                // Confirmar la transacción
+                $conexion->commit();
+                echo "1"; // Éxito
+            } else {
+                // Revertir la transacción
+                $conexion->rollback();
+                echo "2"; // Error al eliminar
+            }
+        } catch (Exception $e) {
+            // Revertir la transacción en caso de error
+            $conexion->rollback();
+            echo "Error: " . $e->getMessage();
+        }
+    } else {
+        echo "2"; // No se recibió el ID del departamento
+    }
+}
+
+function actualizarFestividad()
+{
+    global $conexion;
+
+    if (isset($_POST['festividad_id']) and isset($_POST['nombre_festividad']) and isset($_POST['fecha_festividad']) and isset($_POST['tipo_festividad'])) {
+        $id = (int)$_POST['festividad_id'];
+        $nombre_festividad = trim($_POST['nombre_festividad']);
+        $fecha_festividad = trim($_POST['fecha_festividad']);
+        $tipo_festividad = trim($_POST['tipo_festividad']);
+        $observacion = trim($_POST['observacion']) ?? '';
+
+        // Verificar que el nombre no esté vacío
+        if (empty($nombre_festividad) or empty($fecha_festividad) or empty($tipo_festividad)) {
+            echo "0"; // El nombre está vacío
+            return;
+        }
+
+        // Escapar caracteres especiales para prevenir SQL injection
+        $nombre_festividad = mysqli_real_escape_string($conexion, $nombre_festividad);
+        $fecha_festividad = mysqli_real_escape_string($conexion, $fecha_festividad);
+        $tipo_festividad    = mysqli_real_escape_string($conexion, $tipo_festividad);
+
+        // Verificar si ya existe otro turno con el mismo turno y horas
+        $checkSql = "SELECT COUNT(*) as count FROM festividades WHERE nombre = '$nombre_festividad' AND fecha = '$fecha_festividad' AND id_festividad != $id";
+        $result = mysqli_query($conexion, $checkSql);
+        $row = mysqli_fetch_assoc($result);
+
+        if ($row['count'] > 0) {
+            echo "3"; // Ya existe un turno con ese dato
+            return;
+        }
+
+        // Preparar la consulta para actualizar el departamento
+        $sql = $conexion->prepare("UPDATE festividades SET nombre = ?, fecha = ?, tipo = ?, observacion = ? WHERE id_festividad = ?");
+
+        if (!$sql) {
+            echo "Error en la preparación: " . $conexion->error;
+            return;
+        }
+
+        $sql->bind_param("ssssi", $nombre_festividad, $fecha_festividad, $tipo_festividad, $observacion, $id);
+
+        // Ejecutar la consulta y verificar si fue exitosa
+        if ($sql->execute()) {
+            echo "1"; // Éxito
+        } else {
+            echo "2"; // Error al ejecutar
+        }
+
+        // Cerrar la declaración
+        $sql->close();
+    } else {
+        echo "5"; // No se recibieron todos los datos necesarios
     }
 }

@@ -17,6 +17,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fecha_ingreso = $_POST['fecha_ingreso'] ?? null;
     $id_departamento = $_POST['id_departamento'] ?? null;
 
+    $id_turno = $_POST['id_turno']; // Agregue esto BHL
+    $id_turno_sabado = $_POST['id_turno_sabado']; // Agregue esto BHL
+
     // Nuevos campos agregados
     $fecha_nacimiento = $_POST['fecha_nacimiento'] ?? null;
     $num_casillero = $_POST['num_casillero'] ?? null;
@@ -65,12 +68,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_puestoEspecial = ($id_puestoEspecial === "0" || $id_puestoEspecial === 0 || empty($id_puestoEspecial)) ? null : (int)$id_puestoEspecial;
     $biometrico = ($biometrico === "0" || $biometrico === 0 || empty($biometrico)) ? null : (int)$biometrico;
 
+    // Convertir turnos a int o null
+    $id_turno = !empty($id_turno) ? (int)$id_turno : null;
+    $id_turno_sabado = !empty($id_turno_sabado) ? (int)$id_turno_sabado : null;
+
     // Convertir salarios a decimal o null
     $salario_semanal = !empty($salario_semanal) ? (float)$salario_semanal : null;
     $salario_mensual = !empty($salario_mensual) ? (float)$salario_mensual : null;
 
     // Verificar si no hay campos obligatorios vacíos
-    if (empty($clave_empleado) || empty($nombre_empleado) || empty($ap_paterno) || empty($ap_materno) || empty($sexo)) {
+    if (empty($clave_empleado) || empty($nombre_empleado) || empty($ap_paterno) || empty($ap_materno) || empty($sexo) || empty($id_turno)) {
         exit;
     }
 
@@ -285,6 +292,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $update_empleado->execute();
     $update_empleado->close();
+
+    // =============================
+    //   ACTUALIZAR TURNOS DEL EMPLEADO
+    // =============================
+    if (!empty($id_turno)) {
+        // Verificar si ya existe un registro en empleado_turno
+        $sql_check_turno = $conexion->prepare("SELECT COUNT(*) FROM empleado_turno WHERE id_empleado = ?");
+        $sql_check_turno->bind_param("i", $id_empleado);
+        $sql_check_turno->execute();
+        $sql_check_turno->bind_result($existe_turno);
+        $sql_check_turno->fetch();
+        $sql_check_turno->close();
+
+        if ($existe_turno > 0) {
+            // Si existe, actualizar
+            $sql_update_turno = $conexion->prepare("UPDATE empleado_turno SET id_turno_base = ?, id_turno_sabado = ? WHERE id_empleado = ?");
+            $sql_update_turno->bind_param("iii", $id_turno, $id_turno_sabado, $id_empleado);
+            $sql_update_turno->execute();
+            $sql_update_turno->close();
+        } else {
+            // Si no existe, insertar
+            $sql_insert_turno = $conexion->prepare("INSERT INTO empleado_turno (id_empleado, id_turno_base, id_turno_sabado) VALUES (?, ?, ?)");
+            $sql_insert_turno->bind_param("iii", $id_empleado, $id_turno, $id_turno_sabado);
+            $sql_insert_turno->execute();
+            $sql_insert_turno->close();
+        }
+    }
 
     // Primero, obtener el casillero actual del empleado
     $sql_check_casilleros_actuales = $conexion->prepare("SELECT num_casillero FROM empleado_casillero WHERE id_empleado = ?");

@@ -1,0 +1,279 @@
+/* Modal de Sumas - Estilos consistentes */
+#modal_sumas .modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+#modal_sumas .modal-header {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    border-radius: 12px 12px 0 0;
+    padding: 16px 20px;
+}
+
+#modal_sumas .modal-title {
+    color: #1f2937;
+    font-weight: 600;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#modal_sumas .modal-title i {
+    color: #10b981;
+    font-size: 18px;
+}
+
+#modal_sumas .modal-body {
+    padding: 20px;
+}
+
+.sumas-list {
+    background: #f9fafb;
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid #e5e7eb;
+}
+
+.suma-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 14px;
+}
+
+.suma-row:last-child {
+    border-bottom: none;
+}
+
+.suma-row.total {
+    margin-top: 8px;
+    padding-top: 12px;
+    border-top: 2px solid #10b981;
+    border-bottom: none;
+    font-weight: 600;
+}
+
+.suma-concepto {
+    color: #374151;
+    font-weight: 500;
+    font-size: 13px;
+}
+
+.suma-amount {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.suma-amount.positivo {
+    color: #10b981;
+}
+
+.suma-amount.negativo {
+    color: #ef4444;
+}
+
+.suma-amount.neutro {
+    color: #6b7280;
+}
+
+.suma-amount.final {
+    color: #1d4ed8;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+#modal_sumas .modal-footer {
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    border-radius: 0 0 12px 12px;
+    padding: 12px 20px;
+    justify-content: center;
+}
+
+#modal_sumas .btn {
+    border-radius: 6px;
+    font-weight: 500;
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+#modal_sumas .btn-secondary {
+    background: #6b7280;
+    border-color: #6b7280;
+}
+
+#modal_sumas .btn-secondary:hover {
+    background: #4b5563;
+    border-color: #4b5563;
+}
+
+/* Modal de Suma Dispersión - Estilos consistentes con el sistema */
+#modal_suma_dispersion .modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+#modal_suma_dispersion .modal-header {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    border-radius: 12px 12px 0 0;
+    padding: 16px 20px;
+}
+
+#modal_suma_dispersion .modal-title {
+    color: #1f2937;
+    font-weight: 600;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#modal_suma_dispersion .modal-title i {
+    color: #10b981;
+    font-size: 18px;
+}
+
+#modal_suma_dispersion .modal-body {
+    padding: 24px;
+    text-align: center;
+}
+
+.suma-dispersion-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.total-tarjeta {
+    background: #f9fafb;
+    border: 2px solid #10b981;
+    border-radius: 8px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.total-tarjeta::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #10b981, #059669);
+    border-radius: 8px 8px 0 0;
+}
+
+.total-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.total-valor {
+    font-size: 24px;
+    font-weight: 700;
+    color: #10b981;
+    margin: 0;
+}
+
+.info-empleados {
+    background: #f1f5f9;
+    border-radius: 6px;
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.empleados-label {
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.empleados-count {
+    font-size: 14px;
+    color: #1e293b;
+    font-weight: 600;
+}
+
+#modal_suma_dispersion .modal-footer {
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    border-radius: 0 0 12px 12px;
+    padding: 12px 20px;
+    justify-content: center;
+}
+
+#modal_suma_dispersion .btn {
+    border-radius: 6px;
+    font-weight: 500;
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+#modal_suma_dispersion .btn-secondary {
+    background: #6b7280;
+    border-color: #6b7280;
+}
+
+#modal_suma_dispersion .btn-secondary:hover {
+    background: #4b5563;
+    border-color: #4b5563;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .suma-row {
+        font-size: 12px;
+    }
+    
+    .suma-concepto {
+        font-size: 12px;
+    }
+    
+    .suma-amount {
+        font-size: 13px;
+    }
+    
+    .suma-amount.final {
+        font-size: 14px;
+    }
+    
+    .total-valor {
+        font-size: 28px;
+    }
+    
+    .total-tarjeta {
+        padding: 20px;
+    }
+}
+
+/* Responsive para modal dispersión */
+@media (max-width: 768px) {
+    .total-valor {
+        font-size: 20px;
+    }
+    
+    .total-tarjeta {
+        padding: 16px;
+    }
+    
+    .info-empleados {
+        flex-direction: column;
+        gap: 4px;
+    }
+}

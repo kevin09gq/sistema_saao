@@ -3,6 +3,7 @@ $(document).ready(function () {
   
 
     getDepartamentos();
+    obtenerTurnos(); // Agregue esto BHL
     obtenerDatosEmpleados();
     departamentoSeleccionado();
     filtrosBusqueda();
@@ -156,6 +157,31 @@ $(document).ready(function () {
 
                 }
 
+            }
+        });
+    }
+
+    // Obtener los turnos activos BHL
+    function obtenerTurnos() {
+        $.ajax({
+            type: "GET",
+            url: rutaRaiz + "public/php/obtenerTurnos.php",
+            success: function (response) {
+                let turnos = JSON.parse(response);
+                let opciones = `<option value="">Selecciona un turno</option>`;
+
+                turnos.forEach((element) => {
+                    opciones += `
+                        <option value="${element.id_turno}">${element.descripcion} (${element.inicio_hora}-${element.fin_hora})</option>
+                    `;
+                });
+
+                // Asegúrate de usar el ID correcto del select
+                $("#modal_turno_trabajador").html(opciones);
+                $("#modal_turno_trabajador_sabado").html(opciones);
+            },
+            error: function () {
+                alert("Parece que ocurrio un error, contacta a sistemas.")
             }
         });
     }
@@ -447,6 +473,10 @@ $(document).ready(function () {
                 data: data,
                 success: function (empleado) {
                     if (!empleado.error) {
+
+                        console.log(empleado);
+                        
+
                         // Extraemos todos los datos del empleado incluyendo los nuevos campos
                         let nombreEmpleado = empleado.nombre_empleado;
                         let apPaternoEmpleado = empleado.apellido_paterno_empleado;
@@ -459,6 +489,8 @@ $(document).ready(function () {
                         let enfermedades = empleado.enfermedades_alergias;
                         let fechaIngreso = empleado.fecha_ingreso;
                         let idDepartamentoEmpleado = empleado.id_departamento;
+                        let idTurno = empleado.id_turno_base; // agregue esto BHL
+                        let idTurnoSabado = empleado.id_turno_sabado; // agregue esto BHL
 
                         // Nuevos campos
                         let fechaNacimiento = empleado.fecha_nacimiento;
@@ -511,6 +543,9 @@ $(document).ready(function () {
                         // Asignar RFC y estado civil
                         $("#modal_rfc").val(rfcEmpleado);
                         $("#modal_estado_civil").val(estadoCivil);
+
+                        $("#modal_turno_trabajador").val(idTurno); // Agregue esto BHL
+                        $("#modal_turno_trabajador_sabado").val(idTurnoSabado); // Agregue esto BHL
 
                         // Asignar la última fecha de reingreso si existe
                         if (ultimaFechaReingreso) {
@@ -759,7 +794,7 @@ $(document).ready(function () {
             // Finalmente mostramos el modal
             $("#modal_actualizar_empleado").modal("show");
         });
-    }
+    } // Aqui agregue cosas BHL
 
 
     // Evento para enviar el formulario de actualización
@@ -785,6 +820,9 @@ $(document).ready(function () {
         let enfermedades = $("#modal_enfermedades_alergias").val();
         let fechaIngreso = $("#modal_fecha_ingreso").val();
         let idDepartamento = $("#modal_departamento").val();
+
+        let idTurno = $("#modal_turno_trabajador").val(); // Yo agregue esto BHL
+        let idTurnoSabado = $("#modal_turno_trabajador_sabado").val(); // Yo agregue esto BHL
 
         // Nuevos campos agregados
         let fechaNacimiento = $("#modal_fecha_nacimiento").val();
@@ -860,7 +898,9 @@ $(document).ready(function () {
             validarNombre(nombre) &&
             validarApellido(apellidoPaterno) &&
             validarApellido(apellidoMaterno) &&
-            sexo
+            sexo,
+            idTurno,
+            idTurnoSabado
         );
 
         let opcionalesValidos = true;
@@ -943,7 +983,10 @@ $(document).ready(function () {
             beneficiario_ap_paterno: beneficiarios.map(b => b.ap_paterno),
             beneficiario_ap_materno: beneficiarios.map(b => b.ap_materno),
             beneficiario_parentesco: beneficiarios.map(b => b.parentesco),
-            beneficiario_porcentaje: beneficiarios.map(b => b.porcentaje)
+            beneficiario_porcentaje: beneficiarios.map(b => b.porcentaje),
+
+            id_turno : idTurno,
+            id_turno_sabado : idTurnoSabado
         };
 
 

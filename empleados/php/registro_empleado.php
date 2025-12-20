@@ -20,6 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $ap_paterno = $_POST['ap_paterno'] ?? null;
         $ap_materno = $_POST['ap_materno'] ?? null;
         $sexo = $_POST['sexo'] ?? null;
+        $id_turno = $_POST['turno']; // Ahregue esto BHL: este es el turno base
+        $id_turno_sabado = $_POST['turno_sabado']; // Ahregue esto BHL: este es el turno sabados
         $domicilio = $_POST['domicilio'] ?? null;
         $imss = $_POST['imss'] ?? null;
         $curp = $_POST['curp'] ?? null;
@@ -63,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // =============================
         // VALIDAR CAMPOS OBLIGATORIOS
         // =============================
-        if (empty($clave_empleado) || empty($nombre) || empty($ap_paterno) || empty($sexo)) {
+        if (empty($clave_empleado) || empty($nombre) || empty($ap_paterno) || empty($sexo) || empty($id_turno)) {
             $respuesta = array(
                 "success" => false,
                 "title" => "ADVERTENCIA",
@@ -195,6 +197,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id_empresa = !empty($id_empresa) ? (int)$id_empresa : null;
         $biometrico = !empty($biometrico) ? (int)$biometrico : null;
 
+        $id_turno = !empty($id_turno) ? (int)$id_turno : null;
+        $id_turno_sabado = !empty($id_turno_sabado) ? (int)$id_turno_sabado : null;
+
         // Convertir salarios a decimal o null
         $salario_semanal = !empty($salario_semanal) ? (float)$salario_semanal : null;
         $salario_mensual = !empty($salario_mensual) ? (float)$salario_mensual : null;
@@ -249,8 +254,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id_empleado = $conexion->insert_id;
         $sql->close();
 
+        /**
+         * Aqui vas a empezar con los turnos we
+         */
+
         // =============================
-        //   ASIGNAR CASILLERO AL EMPLEADO
+        //   REGISTRAR TURNOS DEL EMPLEADO
+        // =============================
+        if (!empty($id_turno)) {
+            $sqlTurno = $conexion->prepare("INSERT INTO empleado_turno (id_empleado, id_turno_base, id_turno_sabado) VALUES (?, ?, ?)");
+            if (!$sqlTurno) {
+                throw new Exception("Error al preparar consulta de registro de turnos: " . $conexion->error);
+            }
+
+            $sqlTurno->bind_param("iii", $id_empleado, $id_turno, $id_turno_sabado);
+            if (!$sqlTurno->execute()) {
+                throw new Exception("Error al registrar turnos del empleado: " . $sqlTurno->error);
+            }
+            $sqlTurno->close();
+        }
+
+        /**
+         * Y aqui vas a temrinar no agregaues nada en otra aparte
+         * limitate a quedarte aqui dentro de estos comentarios
+         */
+
+        // =============================
+        //   ASIGNAR CASILLERO AL EMPLEADOD
         // =============================
         if (!empty($num_casillero)) {
             $sqlAsignarCasillero = $conexion->prepare("INSERT INTO empleado_casillero (id_empleado, num_casillero) VALUES (?, ?)");

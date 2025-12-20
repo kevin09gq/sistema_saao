@@ -15,14 +15,40 @@ verificarSesion();
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <link rel="stylesheet" href="../styles/actualizar_empleado.css">
     <style>
-        .buscador-wrap { position: relative; display: inline-flex; align-items: center; }
-        .buscador-wrap .search-box { padding-right: 2.4rem; }
-        .btn-clear-search { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: none; background: transparent; color: #94a3b8; font-size: 18px; cursor: pointer; }
-        .btn-clear-search:hover { color: #ef4444; }
+        .buscador-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .buscador-wrap .search-box {
+            padding-right: 2.4rem;
+        }
+
+        .btn-clear-search {
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .btn-clear-search:hover {
+            color: #ef4444;
+        }
     </style>
-    
+
     <!-- SweetAlert2 CSS -->
-     <script src="<?= SWEETALERT ?>"></script>
+    <script src="<?= SWEETALERT ?>"></script>
 </head>
 
 <body>
@@ -132,6 +158,7 @@ verificarSesion();
                         </ul>
                         <!-- Tab panes -->
                         <div class="tab-content">
+
                             <!-- Trabajador -->
                             <div class="tab-pane fade show active" id="tab_trabajador" role="tabpanel" aria-labelledby="tab-trabajador">
                                 <input type="hidden" id="modal_id_empleado" name="id_empleado">
@@ -202,7 +229,7 @@ verificarSesion();
                                             <option value="DIVORCIADO">Divorciado/a</option>
                                             <option value="VIUDO">Viudo/a</option>
                                             <option value="UNION_LIBRE">Unión Libre</option>
-                                            
+
                                         </select>
                                     </div>
                                     <div class="col-md-4 mb-3">
@@ -270,6 +297,21 @@ verificarSesion();
                                         <input type="number" step="0.01" class="form-control" id="modal_salario_mensual" name="salario_mensual" placeholder="0.00">
                                     </div>
                                 </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="turno_trabajador" class="form-label">Turno de Lunes a Viernes</label>
+                                        <select class="form-select" id="modal_turno_trabajador" name="id_turno">
+                                            <option value="">Selecciona un turno</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="turno_trabajador" class="form-label">Turno Sabados</label>
+                                        <select class="form-select" id="modal_turno_trabajador_sabado" name="id_turno_sabado">
+                                            <option value="">Selecciona un turno</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
                             </div>
                             <!-- Contacto de emergencia -->
                             <div class="tab-pane fade" id="tab_emergencia" role="tabpanel" aria-labelledby="tab-emergencia">
@@ -329,7 +371,6 @@ verificarSesion();
                             </div>
                             <!-- Beneficiarios -->
 
-
                             <div class="tab-pane fade" id="tab_beneficiarios" role="tabpanel" aria-labelledby="tab-beneficiarios">
                                 <div class="row">
                                     <div class="col-12">
@@ -383,6 +424,7 @@ verificarSesion();
                                     </div>
                                 </div>
                             </div>
+
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -426,5 +468,3 @@ verificarSesion();
     <script src="../controllers/config_actualizar.js"></script>
     <script src="../controllers/casillero_empleado.js"></script>
     <script src="../../public/js/validaciones.js"></script>
-
-

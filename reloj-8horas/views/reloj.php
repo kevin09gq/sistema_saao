@@ -14,15 +14,27 @@
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="../css/nomina_10lbs.css">
+
+    <link rel="stylesheet" href="../css/nomina_styles.css">
+    <link rel="stylesheet" href="../css/seleccion_modal_styles.css">
+    <link rel="stylesheet" href="../css/detalles_modal.css">
+    <link rel="stylesheet" href="../css/horario_modal.css">
+    <link rel="stylesheet" href="../css/detalle_modal_dispersion.css">
+    <link rel="stylesheet" href="../css/modal_sumas.css">
 </head>
 
 <body>
+
+    <?php
+    // Incluir el navbar (config.php ya fue incluido en el head)
+    include "../../public/views/navbar.php"
+    ?>
 
     <!-- Contenedor principal centrado -->
     <div class="container-nomina" id="container-nomina">
         <!-- Contenedor tipo navbar para formulario y filtros -->
         <div class="navbar-nomina">
-            <div class="titulo-nomina">Procesamiento de Nómina de Confianza</div>
+            <div class="titulo-nomina">Procesamiento de Reloj 8 Hrs</div>
             <div class="subtitulo-nomina">Selecciona los archivos Excel para procesar la información</div>
 
             <form id="form_excel" enctype="multipart/form-data" class="form-nomina-inline">
@@ -47,37 +59,24 @@
         </div>
     </div>
 
+    <!-- Tabla -->
     <div class="container-tabla-nomina" id="tabla-nomina-responsive" hidden>
+
         <div class="header-tabla">
-            <h3 id=nombre_nomina></h3>
+            <h3 id=nombre_nomina>Este es un nombre temporal largo</h3>
             <div class="header-controls">
                 <span class="sem-info" id="num_semana"></span>
-                <button class="btn-horarios" type="button" id="btn_horarios" data-bs-toggle="modal" data-bs-target="#horarios_modal">
-                    <i class="bi bi-clock"></i>
-                    Horarios
-                </button>
-                <div class="mini-tabs">
-                    <button class="mini-tab active" type="button" id="btn_tabla_nomina">
-                        <i class="bi bi-hospital"></i> <!-- Icono para IMSS -->
-                    </button>
-
-                    <button class="mini-tab" type="button" id="btn_tabla_sin_seguro">
-                        <i class="bi bi-person-dash"></i> <!-- Icono para sin IMSS -->
-                    </button>
-                </div>
-                <button class="btn-suma" type="button" id="btn_suma">
-                    <i class="bi bi-calculator"></i>
-                </button>
-
             </div>
         </div>
 
         <!-- Controles de filtro y búsqueda -->
         <div class="controles-tabla">
             <div class="filtros-container">
-                <select class="filtro-departamento" id="filtro-departamento">
-                </select>
 
+                <select class="filtro-departamento" name="Departamentos" id="departamentos-nomina">
+                    <option value="PRODUCCION 40 LIBRAS">40 LIBRAS</option>
+                    <option value="PRODUCCION 10 LIBRAS">10 LIBRAS</option>
+                </select>
                 <div class="busqueda-container" id="busqueda-container">
                     <i class="bi bi-search"></i>
                     <input type="text" class="campo-busqueda" placeholder="Buscar..." id="campo-busqueda">
@@ -85,9 +84,8 @@
                         <i class="bi bi-x-circle"></i>
                     </button>
                 </div>
-
+                
             </div>
-
 
             <!-- Botones de exportación -->
             <div class="export-buttons">
@@ -121,61 +119,40 @@
                         <tr>
                             <th rowspan="2">#</th>
                             <th rowspan="2">NOMBRE</th>
-                            <th rowspan="2">SUELDO <br> SEMANAL</th>
-                            <th rowspan="2">VACACIONES</th>
-                            <th rowspan="2">EXTRAS</th>
-                            <th rowspan="2">RETARDOS</th>
+                            <th rowspan="2">PUESTO</th>
+                            <th rowspan="2">SUELDO <br>NETO</th>
+                            <th rowspan="2">INCENTIVO</th>
+                            <th rowspan="2">EXTRA</th>
                             <th rowspan="2">TARJETA</th>
-                            <th rowspan="2">ISR</th>
-                            <th rowspan="2">IMSS</th>
-                            <th rowspan="2">AJUSTES <br> AL SUB</th>
-                            <th rowspan="2">INFONAVIT</th>
                             <th rowspan="2">PRÉSTAMO</th>
-                            <th rowspan="2">PERMISO</th>
                             <th rowspan="2">INASISTENCIAS</th>
                             <th rowspan="2">UNIFORMES</th>
-                            <th rowspan="2">CHECADOR</th>
-                            <th rowspan="2">TOTAL</th>
+                            <th rowspan="2">INFONAVIT</th>
+                            <th rowspan="2">ISR</th>
+                            <th rowspan="2">IMSS</th>
+                            <th rowspan="2">Checador</th>
+                            <th rowspan="2">F.A /<br>GAFET/<br>COFIA</th>
+                            <th rowspan="2">SUELDO A <br>COBRAR</th>
                         </tr>
                     </thead>
                     <tbody id="tabla-nomina-body">
-                        <tr>
-                            <td>1</td>
-                            <td>BAUTISTA MORALES VICTOR MANUEL</td>
-                            <td>$2,800.00</td>
-                            <td>$0.00</td>
-                            <td>$350.00</td>
-                            <td>$0.00</td>
-                            <td>$0.00</td>
-                            <td>$220.00</td>
-                            <td>$180.00</td>
-                            <td>$0.00</td>
-                            <td>$300.00</td>
-                            <td>$0.00</td>
-                            <td>$0.00</td>
-                            <td>$0.00</td>
-                            <td>$0.00</td>
-                            <td>$0.00</td>
-                            <td><strong>$2,450.00</strong></td>
-                        </tr>
-
-
+                        <!-- Los datos se cargarán aquí dinámicamente -->
                     </tbody>
-
                 </table>
             </div>
             <ul id="paginacion-nomina" class="pagination" style="margin: 20px 0 0 0; justify-content: center;"></ul>
         </div>
+
     </div>
 
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
     <!-- Bootstrap JS -->
     <script src="<?= BOOTSTRAP_JS ?>"></script>
-   
+
+    <script src="<?= SWEETALERT ?>"></script>
     <!-- Script personalizado -->
     <script src="../js/process_excel.js"></script>
-    <script src="../js/showDataTable.js"></script>
 </body>
 
 </html>

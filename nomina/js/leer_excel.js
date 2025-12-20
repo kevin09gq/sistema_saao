@@ -2074,7 +2074,8 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
                 horarioOficial.salida !== "00:00" &&
                 (horarioOficial.salidaComida === "00:00" || horarioOficial.entradaComida === "00:00");
 
-            // Detectar JORNADA CORTA: un solo bloque con salida real ANTES de la salida a comer (se fue antes de comer)
+            // Detectar JORNADA CORTA: un solo bloque completo que termina antes de la salida a comer
+            // Ajuste: si existe algún bloque/entrada vespertino (después de la salida a comer), NO considerar jornada corta
             let esJornadaCorta = false;
             // Detectar TURNO SOLO TARDE: primer registro inicia después de salida a comer y no hay bloque matutino
             let esTurnoSoloTarde = false;
@@ -2084,14 +2085,37 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
                 );
                 if (bloquesCompletos.length === 1) {
                     const minSalidaReal = horaAMinutos(bloquesCompletos[0].salida);
-                    const minSalidaComida = horaAMinutos(horarioOficial.salidaComida || "00:00");
-                    if (minSalidaComida && minSalidaReal && minSalidaReal < minSalidaComida) {
+                    const minEntradaComida = horaAMinutos(horarioOficial.entradaComida || "00:00");
+                    // Verificar si existe algún registro con entrada en vespertino (>= entradaComida)
+                    const hayBloqueTarde = registrosDia.some(b => {
+                        const e = b && b.entrada && b.entrada !== "00:00" && b.entrada !== "--";
+                        const me = e ? horaAMinutos(b.entrada) : null;
+                        return me !== null && minEntradaComida && me >= minEntradaComida;
+                    });
+                    // Jornada corta si el único bloque termina antes de la hora oficial de regreso de comida y no hay bloque vespertino
+                    if (minEntradaComida && minSalidaReal && minSalidaReal < minEntradaComida && !hayBloqueTarde) {
                         esJornadaCorta = true;
                     }
-                    // Turno solo tarde: entrada del único bloque ocurre después de la salida a comer
+                    // Turno solo tarde: entrada del único bloque ocurre después de la hora de salida a comer (o del regreso)
+                    const minSalidaComida = horaAMinutos(horarioOficial.salidaComida || "00:00");
                     const minEntradaBloque = horaAMinutos(bloquesCompletos[0].entrada);
-                    if (minSalidaComida && minEntradaBloque && minEntradaBloque >= minSalidaComida) {
+                    if ((minSalidaComida && minEntradaBloque && minEntradaBloque >= minSalidaComida) ||
+                        (minEntradaComida && minEntradaBloque && minEntradaBloque >= minEntradaComida)) {
                         esTurnoSoloTarde = true;
+                    }
+                    // Nuevo criterio: si existe cualquier marca matutina (entrada o salida antes de salida a comer),
+                    // NO considerar como turno solo tarde. Esto cubre casos donde falta la entrada pero existe una salida matutina.
+                    if (minSalidaComida) {
+                        const hayMarcaMatutina = registrosDia.some(b => {
+                            const tieneEntrada = b && b.entrada && b.entrada !== "00:00" && b.entrada !== "--";
+                            const tieneSalida = b && b.salida && b.salida !== "00:00" && b.salida !== "--";
+                            const me = tieneEntrada ? horaAMinutos(b.entrada) : null;
+                            const ms = tieneSalida ? horaAMinutos(b.salida) : null;
+                            return (me !== null && me < minSalidaComida) || (ms !== null && ms < minSalidaComida);
+                        });
+                        if (hayMarcaMatutina) {
+                            esTurnoSoloTarde = false;
+                        }
                     }
                 }
             }
@@ -2115,7 +2139,8 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
                 }
             }
 
-            const olvidosChecador = (esJornadaCorta || esTurnoSoloTarde) ? [] : detectarOlvidosChecador(registrosDia, horarioOficial);
+            // Ajuste: contabilizar olvidos aunque sea jornada corta o turno de tarde
+            const olvidosChecador = detectarOlvidosChecador(registrosDia, horarioOficial);
 
             //    CONTAR OLVIDOS PARA EL DESCUENTO SEMANAL
             if (olvidosChecador.length > 0) {
@@ -2253,14 +2278,16 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
                         registrosDia[lastIdx].salida = horarioOficial.salida;
                     }
                 }
+                // Determinar si debemos mostrar columnas de comida en el registro final
+                const mostrarComida = usarHorarioCompleto && !(esJornadaCorta || esTurnoSoloTarde);
                 const registroRedondeado = {
                     fecha: fecha,
                     dia: diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1),
                     entrada: registrosDia[0]?.entrada || "00:00",
-                    salida_comer: usarHorarioCompleto ? (registrosDia[0]?.salida || "00:00") : "00:00",
-                    entrada_comer: usarHorarioCompleto ? (registrosDia[1]?.entrada || "00:00") : "00:00",
+                    salida_comer: mostrarComida ? (registrosDia[0]?.salida || "00:00") : "00:00",
+                    entrada_comer: mostrarComida ? (registrosDia[1]?.entrada || "00:00") : "00:00",
                     salida: registrosDia[registrosDia.length - 1]?.salida || "00:00",
-                    hora_comida: usarHorarioCompleto ? (horarioOficial.horasComida || "00:00") : "00:00",
+                    hora_comida: mostrarComida ? (horarioOficial.horasComida || "00:00") : "00:00",
                     trabajado: horasTrabajadas,
                     olvido_checador: olvidosChecador.length > 0,
                     entrada_temprana: minutosAHora(entradaTemprana),

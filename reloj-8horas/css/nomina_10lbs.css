@@ -1,0 +1,243 @@
+/* Estilos generales */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f5f7fa;
+}
+
+/* Container principal centrado */
+.container-nomina {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 70vh;
+    padding: 40px 20px;
+}
+
+/* Navbar de nómina */
+.navbar-nomina {
+    background: #ffffff;
+    border: 1px solid #e1e8ed;
+    border-radius: 12px;
+    padding: 40px;
+    max-width: 800px;
+    width: 100%;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+    margin: 0 auto;
+}
+
+.form-nomina-inline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+    width: 100%;
+    max-width: 350px;
+    margin: 0 auto;
+}
+
+.form-nomina-inline > div {
+    width: 100%;
+    max-width: 450px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.form-nomina-inline label {
+    color: #374151;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.form-nomina-inline label:hover {
+    color: #1f2937;
+}
+
+.form-nomina-inline label i {
+    font-size: 16px;
+    color: #10b981;
+}
+
+.form-nomina-inline input[type="file"] {
+    padding: 12px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #374151;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    width: 100%;
+    min-width: 320px;
+    margin-bottom: 0;
+}
+
+.form-nomina-inline input[type="file"]:hover {
+    border-color: #d1d5db;
+    background: #f9fafb;
+}
+
+.form-nomina-inline input[type="file"]:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Estilo personalizado para el botón del input file */
+.form-nomina-inline input[type="file"]::-webkit-file-upload-button {
+    background: #10b981;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    margin-right: 12px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.form-nomina-inline input[type="file"]::-webkit-file-upload-button:hover {
+    background: #059669;
+}
+
+/* Botón de procesar */
+#btn_procesar_archivos {
+    background: #10b981;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 14px 28px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    width: 100%;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(16, 185, 129, 0.2);
+}
+
+#btn_procesar_archivos:hover {
+    background: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+#btn_procesar_archivos:active {
+    transform: translateY(0);
+}
+
+#btn_procesar_archivos:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Animación de carga para el botón */
+#btn_procesar_archivos.loading {
+    position: relative;
+    color: transparent;
+}
+
+#btn_procesar_archivos.loading::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .container-nomina {
+        padding: 20px 10px;
+        min-height: auto;
+    }
+    
+    .navbar-nomina {
+        padding: 30px 20px;
+        margin: 10px;
+    }
+    
+    .form-nomina-inline {
+        flex-direction: column;
+        gap: 20px;
+        align-items: center;
+    }
+    
+    .form-nomina-inline > div {
+        width: 100%;
+        max-width: 450px;
+    }
+    
+    .form-nomina-inline input[type="file"] {
+        min-width: 280px;
+    }
+    
+  
+}
+
+@media (max-width: 480px) {
+    .navbar-nomina {
+        padding: 25px 15px;
+    }
+    
+    .form-nomina-inline label {
+        font-size: 13px;
+    }
+    
+    .form-nomina-inline input[type="file"] {
+        font-size: 13px;
+        padding: 10px 14px;
+        min-width: 250px;
+    }
+    
+    #btn_procesar_archivos {
+        padding: 12px 24px;
+        font-size: 13px;
+    }
+    
+   
+}
+
+/* Título de sección (opcional) */
+.titulo-nomina {
+    text-align: center;
+    color: #065f46;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.subtitulo-nomina {
+    text-align: center;
+    color: #047857;
+    font-size: 16px;
+    margin-bottom: 30px;
+}

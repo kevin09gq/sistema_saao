@@ -212,6 +212,9 @@ function registrarArea() {
 
 // Función para resetear el formulario a su estado inicial
 function resetearFormulario() {
+
+    alert("Hola desde areas")
+
     $("#area_id").val('');
     $("#nombre_area").val('');
     $("#imagen_area").val('');
@@ -420,4 +423,3 @@ function cancelarArea() {
         resetearFormulario();
     });
 }
-

@@ -1,0 +1,1268 @@
+/* Estilos generales */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f5f7fa;
+}
+
+/* Container principal centrado */
+.container-nomina {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 70vh;
+    padding: 40px 20px;
+}
+
+/* Navbar de nómina */
+.navbar-nomina {
+    background: #ffffff;
+    border: 1px solid #e1e8ed;
+    border-radius: 12px;
+    padding: 40px;
+    max-width: 800px;
+    width: 100%;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+    margin: 0 auto;
+}
+
+.form-nomina-inline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+    width: 100%;
+    max-width: 350px;
+    margin: 0 auto;
+}
+
+.form-nomina-inline > div {
+    width: 100%;
+    max-width: 450px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.form-nomina-inline label {
+    color: #374151;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.form-nomina-inline label:hover {
+    color: #1f2937;
+}
+
+.form-nomina-inline label i {
+    font-size: 16px;
+    color: #10b981;
+}
+
+.form-nomina-inline input[type="file"] {
+    padding: 12px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #374151;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    width: 100%;
+    min-width: 320px;
+    margin-bottom: 0;
+}
+
+.form-nomina-inline input[type="file"]:hover {
+    border-color: #d1d5db;
+    background: #f9fafb;
+}
+
+.form-nomina-inline input[type="file"]:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Estilo personalizado para el botón del input file */
+.form-nomina-inline input[type="file"]::-webkit-file-upload-button {
+    background: #10b981;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    margin-right: 12px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.form-nomina-inline input[type="file"]::-webkit-file-upload-button:hover {
+    background: #059669;
+}
+
+/* Botón de procesar */
+#btn_procesar_ambos {
+    background: #10b981;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 14px 28px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    width: 100%;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(16, 185, 129, 0.2);
+}
+
+#btn_procesar_ambos:hover {
+    background: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+#btn_procesar_ambos:active {
+    transform: translateY(0);
+}
+
+#btn_procesar_ambos:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Animación de carga para el botón */
+#btn_procesar_ambos.loading {
+    position: relative;
+    color: transparent;
+}
+
+#btn_procesar_ambos.loading::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Estilos para la tabla de nómina - Diseño limpio como la imagen */
+.container-tabla-nomina {
+    margin: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    overflow: hidden;
+    border: none;
+}
+
+.header-tabla {
+    background: white;
+    padding: 20px 24px;
+    border-bottom: 1px solid #f1f3f4;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.mini-tabs {
+    display: flex;
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 4px;
+    border: 1px solid #e2e8f0;
+}
+
+.mini-tab {
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.mini-tab:hover {
+    background: #e2e8f0;
+    color: #374151;
+}
+
+.mini-tab.active {
+    background: #10b981;
+    color: white;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+.mini-tab i {
+    font-size: 16px;
+}
+
+/* Estilos para el botón de suma */
+.btn-suma {
+    background: #10b981;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+    width: 40px;
+    height: 40px;
+}
+
+.btn-suma:hover {
+    background: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+.btn-suma:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+.btn-suma i {
+    font-size: 16px;
+}
+
+.header-tabla h3 {
+    margin: 0;
+    color: #1f2937;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.sem-info {
+    background: #10b981;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    max-width: 100%;
+    background: white;
+}
+
+.table-nomina {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 11px;
+    min-width: 1400px;
+    background: white;
+}
+
+.table-nomina th {
+    background: white;
+    color: #9ca3af;
+    font-weight: 500;
+    padding: 16px 12px;
+    text-align: center;
+    border: none;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 10px;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.table-nomina td {
+    padding: 16px 12px;
+    border: none;
+    border-bottom: 1px solid #f9fafb;
+    text-align: center;
+    font-size: 10px;
+    line-height: 1.3;
+    background: white;
+    vertical-align: middle;
+}
+
+.table-nomina tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.table-nomina tbody tr:nth-child(even) {
+    background-color: #fafbfc;
+}
+
+.table-nomina tbody tr:hover {
+    background-color: #f0f9f4;
+}
+
+/* Columnas específicas con el estilo de la imagen */
+.table-nomina td:nth-child(1) {
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.table-nomina td:nth-child(2) {
+    text-align: left;
+    font-weight: 600;
+    min-width: 150px;
+    color: #1f2937;
+}
+
+.table-nomina td:nth-child(3) {
+    text-align: center;
+    font-size: 9px;
+    color: #10b981;
+    font-weight: 500;
+}
+
+.table-nomina td:nth-child(4),
+.table-nomina td:nth-child(5),
+.table-nomina td:nth-child(6) {
+    color: #10b981;
+    font-weight: 600;
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.table-nomina td:nth-child(16) {
+    background: rgba(59, 130, 246, 0.1);
+    color: #1d4ed8;
+    font-weight: 700;
+    border-radius: 6px;
+    margin: 2px;
+}
+
+/* Quitar fondo verde de la columna SUELDO NETO en ambas tablas */
+.table-nomina td:nth-child(4),
+#tabla-dispersion td:nth-child(4) {
+    color: #10b981;
+    font-weight: 700;
+    background: transparent !important;
+    min-width: 100px;
+    max-width: 140px;
+}
+
+/* Cambiar el color de las filas en las columnas especificadas */
+.table-nomina td:nth-child(7),
+.table-nomina td:nth-child(8),
+.table-nomina td:nth-child(9),
+.table-nomina td:nth-child(10),
+.table-nomina td:nth-child(11),
+.table-nomina td:nth-child(12),
+.table-nomina td:nth-child(13),
+.table-nomina td:nth-child(14),
+.table-nomina td:nth-child(15) {
+    color: #ef4444; /* Rojo */
+    font-weight: 600; /* Opcional: para resaltar el texto */
+}
+
+/* Celdas vacías con estilo sutil */
+.table-nomina td:empty {
+    background: #f9fafb;
+    position: relative;
+}
+
+.table-nomina td:empty::after {
+    content: '—';
+    color: #d1d5db;
+    font-weight: 300;
+}
+
+.tarjeta-dots {
+    color: #ef4444 !important;
+    font-weight: 600;
+    background: rgba(239, 68, 68, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+}
+
+.sueldo-final {
+    background: rgba(59, 130, 246, 0.1) !important;
+    color: #1d4ed8 !important;
+    font-weight: 700 !important;
+    border-radius: 6px !important;
+    border: none !important;
+}
+
+/* Estado visual para sueldo a cobrar negativo */
+.sueldo-negativo {
+    background: rgba(239, 68, 68, 0.08) !important;
+    color: #b91c1c !important;
+    font-weight: 700 !important;
+    border-radius: 6px !important;
+    border: none !important;
+}
+
+/* Controles de filtro y búsqueda - Estilos mejorados */
+.controles-tabla {
+    padding: 10px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+}
+
+
+
+.filtros-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex: 1;
+    position: relative;
+    z-index: 1;
+}
+
+/* Filtro de departamento mejorado */
+.filtro-departamento {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 12px;
+    color: #334155;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2310b981' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 12px center;
+    background-repeat: no-repeat;
+    background-size: 18px;
+    min-width: 180px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    font-weight: 500;
+    max-width: 200px;;
+}
+
+.filtro-departamento:hover {
+    border-color: #10b981;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+    background: linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%);
+}
+
+.filtro-departamento:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1), 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+/* Contenedor de búsqueda mejorado */
+.busqueda-container {
+    position: relative;
+    flex: 1;
+    max-width: 250px;
+}
+
+.busqueda-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border-radius: 10px;
+    z-index: -1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.busqueda-container i {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+     color: #10b981;
+    font-size: 16px;
+    z-index: 2;
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+.campo-busqueda {
+    width: 100%;
+    background: transparent;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 56px 12px 48px; /* más espacio para el botón X más grande a la derecha */
+    font-size: 14px;
+    color: #334155;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    position: relative;
+    z-index: 1;
+}
+
+.campo-busqueda::placeholder {
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+.campo-busqueda:hover {
+    border-color: #10b981;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+.campo-busqueda:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1), 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+.campo-busqueda:focus ~ i {
+    color: #059669;
+    transform: translateY(-50%) scale(1.1);
+}
+
+/* Botón X dentro de los campos de búsqueda */
+#btn-clear-busqueda,
+#btn-clear-busqueda-dispersion,
+#btn-clear-busqueda-sin-seguro {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    padding: 0;
+    width: 32px; /* mayor área táctil */
+    height: 32px; /* mayor área táctil */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    font-size: 18px; /* icono más grande */
+    cursor: pointer;
+    z-index: 3; /* por encima del input */
+}
+
+#btn-clear-busqueda:hover,
+#btn-clear-busqueda-dispersion:hover,
+#btn-clear-busqueda-sin-seguro:hover {
+    color: #ef4444;
+}
+
+/* Botón agregar empleado mejorado */
+    .btn-agregar-todos {
+       background-color: #28a745;
+        color: white;
+        padding: 6px 16px;
+        font-size: 14px;
+        border: 1px solid #28a745;
+        border-radius: 6px;
+        font-weight: 600;
+        transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+
+
+/* Efecto visual para filas actualizadas */
+.fila-actualizada {
+    background-color: #d1fae5 !important;
+    border: 2px solid #10b981 !important;
+    animation: filaActualizadaFlash 2s ease-out;
+}
+
+/*  Efecto visual para filas actualizadas en dispersión */
+.fila-actualizada {
+    background-color: #dcfce7 !important;
+    transform: scale(1.01);
+    transition: all 0.5s ease;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+}
+
+.fila-actualizada td {
+    color: #166534 !important;
+    font-weight: 600 !important;
+}
+
+@keyframes filaActualizadaFlash {
+    0% {
+        background-color: #22c55e;
+        box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+    }
+    100% {
+        background-color: #d1fae5;
+        box-shadow: none;
+    }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .container-nomina {
+        padding: 20px 10px;
+        min-height: auto;
+    }
+    
+    .navbar-nomina {
+        padding: 30px 20px;
+        margin: 10px;
+    }
+    
+    .form-nomina-inline {
+        flex-direction: column;
+        gap: 20px;
+        align-items: center;
+    }
+    
+    .form-nomina-inline > div {
+        width: 100%;
+        max-width: 450px;
+    }
+    
+    .form-nomina-inline input[type="file"] {
+        min-width: 280px;
+    }
+    
+    #btn_procesar_ambos {
+        width: 100%;
+        justify-content: center;
+        margin-top: 20px;
+    }
+    
+    .container-tabla-nomina {
+        margin: 10px;
+    }
+    
+    .header-tabla {
+        padding: 10px 15px;
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .header-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    .btn-suma {
+        font-size: 11px;
+        padding: 6px 12px;
+    }
+    
+    .header-tabla h3 {
+        font-size: 14px;
+    }
+    
+    .table-nomina {
+        font-size: 9px;
+    }
+    
+    .table-nomina th,
+    .table-nomina td {
+        padding: 4px 3px;
+        font-size: 8px;
+    }
+    
+    .controles-tabla {
+        padding: 16px 20px;
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+    }
+    
+    .filtros-container {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .filtro-departamento {
+        min-width: auto;
+        width: 100%;
+        padding: 10px 36px 10px 14px;
+    }
+    
+    .busqueda-container {
+        max-width: none;
+    }
+    
+    .campo-busqueda {
+        padding: 10px 14px 10px 44px;
+    }
+ 
+}
+
+@media (max-width: 480px) {
+    .navbar-nomina {
+        padding: 25px 15px;
+    }
+    
+    .form-nomina-inline label {
+        font-size: 13px;
+    }
+    
+    .form-nomina-inline input[type="file"] {
+        font-size: 13px;
+        padding: 10px 14px;
+        min-width: 250px;
+    }
+    
+    #btn_procesar_ambos {
+        padding: 12px 24px;
+        font-size: 13px;
+    }
+    
+    .controles-tabla {
+        padding: 12px 16px;
+    }
+    
+    .filtro-departamento,
+    .campo-busqueda {
+        font-size: 13px;
+        border-radius: 8px;
+    }
+    
+    .filtro-departamento {
+        padding: 8px 32px 8px 12px;
+    }
+    
+    .campo-busqueda {
+        padding: 8px 12px 8px 40px;
+    }
+    
+    .btn-agregar-empleado {
+        font-size: 13px;
+        padding: 8px 16px;
+        border-radius: 8px;
+    }
+    
+    .busqueda-container i {
+        left: 14px;
+        font-size: 14px;
+    }
+    
+    .btn-agregar-empleado i {
+        font-size: 16px;
+    }
+}
+
+/* Título de sección (opcional) */
+.titulo-nomina {
+    text-align: center;
+    color: #065f46;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.subtitulo-nomina {
+    text-align: center;
+    color: #047857;
+    font-size: 16px;
+    margin-bottom: 30px;
+}
+
+/* Estilo para mensajes de estado */
+.mensaje-estado {
+    margin: 0 0 20px 0;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: slideDown 0.3s ease-out;
+    position: relative;
+    z-index: 10;
+}
+
+.mensaje-estado::before {
+    content: '';
+    font-family: 'Bootstrap Icons';
+    font-size: 16px;
+}
+
+.mensaje-exito {
+    background-color: #d1fae5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+}
+
+.mensaje-exito::before {
+    content: '\F26A'; /* check-circle-fill */
+    color: #10b981;
+}
+
+.mensaje-error {
+    background-color: #fee2e2;
+    border: 1px solid #fca5a5;
+    color: #991b1b;
+}
+
+.mensaje-error::before {
+    content: '\F62E'; /* exclamation-circle-fill */
+    color: #ef4444;
+}
+
+.mensaje-advertencia {
+    background-color: #fef3c7;
+    border: 1px solid #fde68a;
+    color: #92400e;
+}
+
+.mensaje-advertencia::before {
+    content: '\F633'; /* exclamation-triangle-fill */
+    color: #f59e0b;
+}
+
+/* Tabla vacía */
+.tabla-vacia {
+    text-align: center;
+    padding: 40px;
+    color: #9ca3af;
+}
+
+.tabla-vacia i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    color: #d1d5db;
+}
+
+.tabla-vacia h4 {
+    margin-bottom: 8px;
+    color: #6b7280;
+}
+
+.tabla-vacia p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Estilos para botones de exportación */
+.export-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn-export-excel,
+.btn-export-pdf,
+.btn-export-pdf-reporte {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: white;
+}
+
+.btn-export-excel {
+    background: linear-gradient(135deg, #217346 0%, #1e6b3d 100%);
+    box-shadow: 0 2px 4px rgba(33, 115, 70, 0.2);
+}
+
+.btn-export-excel:hover {
+    background: linear-gradient(135deg, #1e6b3d 0%, #185a32 100%);
+    box-shadow: 0 4px 8px rgba(33, 115, 70, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-export-pdf {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
+}
+
+.btn-export-pdf:hover {
+    background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-export-pdf-reporte {
+    background: linear-gradient(135deg, #e11d48 0%, #be185d 100%);
+    box-shadow: 0 2px 4px rgba(225, 29, 72, 0.2);
+}
+
+.btn-export-pdf-reporte:hover {
+    background: linear-gradient(135deg, #be185d 0%, #9f1239 100%);
+    box-shadow: 0 4px 8px rgba(225, 29, 72, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-export-excel:active,
+.btn-export-pdf:active,
+.btn-export-pdf-reporte:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-export-excel i,
+.btn-export-pdf i,
+.btn-export-pdf-reporte i {
+    font-size: 16px;
+}
+
+/* Responsive para botones de exportación */
+@media (max-width: 768px) {
+    .export-buttons {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+    
+    .btn-export-excel,
+    .btn-export-pdf,
+    .btn-export-pdf-reporte {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .btn-export-excel,
+    .btn-export-pdf,
+    .btn-export-pdf-reporte {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+    
+    .btn-export-excel i,
+    .btn-export-pdf i,
+    .btn-export-pdf-reporte i {
+        font-size: 14px;
+    }
+}
+
+/* Ajuste de columnas para tabla de dispersión */
+#tabla-dispersion {
+    table-layout: fixed;
+    width: 100%;
+    min-width: 600px;
+}
+
+#tabla-dispersion th,
+#tabla-dispersion td {
+    text-align: center;
+    vertical-align: middle;
+    padding: 12px 8px;
+    font-size: 13px;
+    border: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#tabla-dispersion th:nth-child(1),
+#tabla-dispersion td:nth-child(1) {
+    width: 40px;
+    min-width: 40px;
+    max-width: 50px;
+}
+
+#tabla-dispersion th:nth-child(2),
+#tabla-dispersion td:nth-child(2) {
+    width: 80px;
+    min-width: 70px;
+    max-width: 90px;
+    text-align: center;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+#tabla-dispersion th:nth-child(3),
+#tabla-dispersion td:nth-child(3) {
+    width: 220px;
+    min-width: 180px;
+    max-width: 260px;
+    text-align: left;
+    font-weight: 600;
+    color: #065f46;
+    padding-left: 16px;
+}
+
+#tabla-dispersion th:nth-child(4),
+#tabla-dispersion td:nth-child(4) {
+    width: 120px;
+    min-width: 100px;
+    max-width: 140px;
+    color: #10b981;
+    font-weight: 700;
+    background: rgba(16, 185, 129, 0.07);
+}
+
+/* Mejorar separación de columnas y evitar que se encimen */
+#tabla-dispersion th,
+#tabla-dispersion td {
+    border-bottom: 1px solid #f3f4f6;
+}
+
+/* Responsive para tabla de dispersión */
+@media (max-width: 900px) {
+    #tabla-dispersion {
+        min-width: 500px;
+    }
+    #tabla-dispersion th,
+    #tabla-dispersion td {
+        font-size: 9px;
+        padding: 8px 4px;
+    }
+    #tabla-dispersion td:nth-child(3) {
+        min-width: 100px;
+        max-width: 140px;
+    }
+    #tabla-dispersion td:nth-child(4) {
+        min-width: 70px;
+        max-width: 100px;
+    }
+}
+
+/* Estilos para la tabla de dispersión igual que la tabla de nómina */
+#tabla-dispersion {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 11px;
+    min-width: 600px;
+    background: white;
+    table-layout: fixed;
+}
+
+#tabla-dispersion th {
+    background: white;
+    color: #9ca3af;
+    font-weight: 500;
+    padding: 16px 12px;
+    text-align: center;
+    border: none;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 10px;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+#tabla-dispersion td {
+    padding: 16px 12px;
+    border: none;
+    border-bottom: 1px solid #f9fafb;
+    text-align: center;
+    font-size: 10px;
+    line-height: 1.3;
+    background: white;
+    vertical-align: middle;
+}
+
+#tabla-dispersion tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+#tabla-dispersion tbody tr:nth-child(even) {
+    background-color: #fafbfc;
+}
+
+#tabla-dispersion tbody tr:hover {
+    background-color: #f0f9f4;
+}
+
+/* Columnas específicas igual que la tabla-nomina */
+#tabla-dispersion td:nth-child(1) {
+    color: #6b7280;
+    font-weight: 500;
+    width: 40px;
+    min-width: 40px;
+    max-width: 50px;
+}
+
+#tabla-dispersion td:nth-child(2) {
+    text-align: center;
+    font-weight: 600;
+    min-width: 70px;
+    max-width: 90px;
+    color: #1f2937;
+}
+
+#tabla-dispersion td:nth-child(3) {
+    text-align: left;
+    font-weight: 600;
+    min-width: 150px;
+    color: #1f2937;
+}
+
+#tabla-dispersion td:nth-child(4) {
+    color: #10b981;
+    font-weight: 700;
+    background: transparent; /* Quita el fondo */
+    min-width: 100px;
+    max-width: 140px;
+}
+
+/* Celdas vacías con estilo sutil */
+#tabla-dispersion td:empty {
+    background: #f9fafb;
+    position: relative;
+}
+
+#tabla-dispersion td:empty::after {
+    content: '—';
+    color: #d1d5db;
+    font-weight: 300;
+}
+
+/* Responsive para tabla de dispersión */
+@media (max-width: 900px) {
+    #tabla-dispersion {
+        min-width: 500px;
+    }
+    #tabla-dispersion th,
+    #tabla-dispersion td {
+        font-size: 9px;
+        padding: 8px 4px;
+    }
+    #tabla-dispersion td:nth-child(3) {
+        min-width: 100px;
+        max-width: 140px;
+    }
+    #tabla-dispersion td:nth-child(4) {
+        min-width: 70px;
+        max-width: 100px;
+    }
+}
+
+/* Estilos para botones de guardar nómina y limpiar datos */
+.btn-guardar-nomina,
+.btn-limpiar-datos {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-guardar-nomina {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+.btn-guardar-nomina:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-limpiar-datos {
+    background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+    box-shadow: 0 2px 4px rgba(52, 211, 153, 0.2);
+}
+
+.btn-limpiar-datos:hover {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 4px 8px rgba(52, 211, 153, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-guardar-nomina:active,
+.btn-limpiar-datos:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-guardar-nomina:disabled,
+.btn-limpiar-datos:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.btn-guardar-nomina i,
+.btn-limpiar-datos i {
+    font-size: 16px;
+}
+
+/* Responsive para botones de guardar y limpiar */
+@media (max-width: 768px) {
+    .btn-guardar-nomina,
+    .btn-limpiar-datos {
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .btn-guardar-nomina,
+    .btn-limpiar-datos {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+    
+    .btn-guardar-nomina i,
+    .btn-limpiar-datos i {
+        font-size: 14px;
+    }
+}
+
+/* Contenedor de búsqueda sin seguro - horizontal */
+#busqueda-container-sin-seguro {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+    max-width: 100%;
+}
+
+#busqueda-container-sin-seguro .filtro-departamento {
+    flex-shrink: 0;
+}
+
+#busqueda-container-sin-seguro .campo-busqueda {
+    flex: 1;
+}

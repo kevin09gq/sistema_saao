@@ -152,7 +152,9 @@ function dataEmpleado($idEmpleado, $idClave)
             WHERE hr.id_empleado = e.id_empleado
             ORDER BY hr.fecha_reingreso DESC
             LIMIT 1
-        ) AS ultima_fecha_reingreso
+        ) AS ultima_fecha_reingreso,
+        et.id_turno_base,
+        et.id_turno_sabado
     FROM 
         info_empleados e
     LEFT JOIN 
@@ -166,7 +168,9 @@ function dataEmpleado($idEmpleado, $idClave)
     LEFT JOIN 
         empleado_contacto ec ON e.id_empleado = ec.id_empleado
     LEFT JOIN 
-        contacto_emergencia cont ON ec.id_contacto = cont.id_contacto 
+        contacto_emergencia cont ON ec.id_contacto = cont.id_contacto
+    LEFT JOIN
+        empleado_turno et ON et.id_empleado = e.id_empleado
     WHERE e.id_empleado = ? AND e.clave_empleado = ?");
 
     $sql->bind_param("is", $idEmpleado, $idClave);
@@ -210,7 +214,9 @@ function dataEmpleado($idEmpleado, $idClave)
             'telefono_contacto' => $row['telefono_contacto'],
             'domicilio_contacto' => $row['domicilio_contacto'],
             'parentesco' => $row['parentesco'],
-            'ultima_fecha_reingreso' => $row['ultima_fecha_reingreso']
+            'ultima_fecha_reingreso' => $row['ultima_fecha_reingreso'],
+            'id_turno_base' => $row['id_turno_base'],
+            'id_turno_sabado' => $row['id_turno_sabado'],
         );
 
         // Agregar historial completo de reingresos/salidas del empleado

@@ -96,6 +96,12 @@ try {
         $sqlDeleteBenef->close();
     }
 
+    // Eliminar turnos del empleado
+    $sqlDelTurno = $conexion->prepare("DELETE FROM empleado_turno WHERE id_empleado = ?");
+    $sqlDelTurno->bind_param("i", $id_empleado);
+    if (!$sqlDelTurno->execute()) { throw new Exception('No se pudo eliminar los turnos del empleado.'); }
+    $sqlDelTurno->close();
+
     // =============================
     // ELIMINAR EMPLEADO
     // =============================

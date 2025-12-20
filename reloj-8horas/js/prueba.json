@@ -1,0 +1,182 @@
+[
+    {
+        "nombre": "Carlos Sanchez Romez",
+        "id_biometrico": "139",
+        "registros": [
+            {
+                "fecha": "28/11/2025",
+                "entrada": "",
+                "salida": "",
+                "trabajado": ""
+            },
+            {
+                "fecha": "29/11/2025",
+                "entrada": "",
+                "salida": "",
+                "trabajado": ""
+            },
+            {
+                "fecha": "30/11/2025",
+                "entrada": "",
+                "salida": "",
+                "trabajado": ""
+            },
+            {
+                "fecha": "01/12/2025",
+                "entrada": "",
+                "salida": "",
+                "trabajado": ""
+            },
+            {
+                "fecha": "02/12/2025",
+                "entrada": "",
+                "salida": "",
+                "trabajado": ""
+            },
+            {
+                "fecha": "03/12/2025",
+                "entrada": "",
+                "salida": "",
+                "trabajado": ""
+            },
+            {
+                "fecha": "04/12/2025",
+                "entrada": "",
+                "salida": "",
+                "trabajado": ""
+            }
+        ],
+        "horas_totales": "0.00",
+        "tiempo_total": "0:00"
+    },
+    {
+        "nombre": "Brandon Hernandez Lopez",
+        "id_biometrico": "144",
+        "registros": [
+            {
+                "fecha": "28/11/2025",
+                "entrada": "08:43",
+                "salida": "13:00",
+                "trabajado": "04:17"
+            },
+            {
+                "fecha": "28/11/2025",
+                "entrada": "13:47",
+                "salida": "18:56",
+                "trabajado": "05:09"
+            },
+            {
+                "fecha": "29/11/2025",
+                "entrada": "07:44",
+                "salida": "13:03",
+                "trabajado": "05:19"
+            },
+            {
+                "fecha": "30/11/2025",
+                "entrada": "",
+                "salida": "",
+                "trabajado": ""
+            },
+            {
+                "fecha": "01/12/2025",
+                "entrada": "07:27",
+                "salida": "13:00",
+                "trabajado": "05:33"
+            },
+            {
+                "fecha": "01/12/2025",
+                "entrada": "13:45",
+                "salida": "18:41",
+                "trabajado": "04:56"
+            },
+            {
+                "fecha": "02/12/2025",
+                "entrada": "08:42",
+                "salida": "12:02",
+                "trabajado": "03:20"
+            },
+            {
+                "fecha": "02/12/2025",
+                "entrada": "12:45",
+                "salida": "19:02",
+                "trabajado": "06:17"
+            },
+            {
+                "fecha": "03/12/2025",
+                "entrada": "07:47",
+                "salida": "12:59",
+                "trabajado": "05:12"
+            },
+            {
+                "fecha": "03/12/2025",
+                "entrada": "13:43",
+                "salida": "19:07",
+                "trabajado": "05:24"
+            },
+            {
+                "fecha": "04/12/2025",
+                "entrada": "12:58",
+                "salida": "13:43",
+                "trabajado": "00:45"
+            },
+            {
+                "fecha": "04/12/2025",
+                "entrada": "18:58",
+                "salida": "",
+                "trabajado": ""
+            }
+        ],
+        "horas_totales": "46.20",
+        "tiempo_total": "46:12"
+    },
+    {
+        "nombre": "Alan Guevara Quiroz",
+        "id_biometrico": "161",
+        "registros": [
+            {
+                "fecha": "28/11/2025",
+                "entrada": "",
+                "salida": "",
+                "trabajado": ""
+            },
+            {
+                "fecha": "29/11/2025",
+                "entrada": "",
+                "salida": "",
+                "trabajado": ""
+            },
+            {
+                "fecha": "30/11/2025",
+                "entrada": "",
+                "salida": "",
+                "trabajado": ""
+            },
+            {
+                "fecha": "01/12/2025",
+                "entrada": "",
+                "salida": "",
+                "trabajado": ""
+            },
+            {
+                "fecha": "02/12/2025",
+                "entrada": "",
+                "salida": "",
+                "trabajado": ""
+            },
+            {
+                "fecha": "03/12/2025",
+                "entrada": "",
+                "salida": "",
+                "trabajado": ""
+            },
+            {
+                "fecha": "04/12/2025",
+                "entrada": "",
+                "salida": "",
+                "trabajado": ""
+            }
+        ],
+        "horas_totales": "0.00",
+        "tiempo_total": "0:00"
+    }
+]

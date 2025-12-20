@@ -1,5 +1,6 @@
 <?php
 require '../../vendor/autoload.php';
+
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 if (!isset($_FILES['archivo_excel'])) {
@@ -7,7 +8,7 @@ if (!isset($_FILES['archivo_excel'])) {
     exit;
 }
 
-$tmpFile = $_FILES['archivo_excel']['tmp_name'];
+$tmpFile = $_FILES['archivo_excel']['tmp_name']; // archivo de compact
 $spreadsheet = IOFactory::load($tmpFile);
 $sheet = $spreadsheet->getActiveSheet();
 $rows = $sheet->toArray();
@@ -21,14 +22,6 @@ $procesandoEmpleados = false;
 $numeroSemana = null;
 $fechaInicio = null;
 $fechaCierre = null;
-
-// Departamentos permitidos
-$departamentosPermitidos = [
-    'Administracion',
-    'Produccion',
-    'Seguridad Vigilancia e Intendencia',
-    'Administracion Sucursal CdMx'
-];
 
 // Buscar datos generales en las primeras filas
 foreach ($rows as $row) {
@@ -55,28 +48,13 @@ foreach ($rows as $row) {
                 $actualDepto['empleados'] = array_values(array_filter($actualDepto['empleados']));
                 $departamentos[] = $actualDepto;
             }
-            
+
             $nombreCompleto = trim($match[1] . ' ' . $match[2]);
-            
-            // Verificar si el departamento está en la lista permitida
-            $departamentoPermitido = false;
-            foreach ($departamentosPermitidos as $deptoPermitido) {
-                if (stripos($nombreCompleto, $deptoPermitido) !== false) {
-                    $departamentoPermitido = true;
-                    break;
-                }
-            }
-            
-            // Solo procesar si está permitido
-            if ($departamentoPermitido) {
-                $actualDepto = [
-                    'nombre' => $nombreCompleto,
-                    'empleados' => []
-                ];
-            } else {
-                $actualDepto = null;
-            }
-            
+            $actualDepto = [
+                'nombre' => $nombreCompleto,
+                'empleados' => []
+            ];
+
             $ultimoEmpleadoIdx = null;
             $procesandoEmpleados = false;
             continue;
@@ -84,23 +62,22 @@ foreach ($rows as $row) {
     }
 
     // Detectar empleado
-    if (
-        $actualDepto &&
-        isset($row[0]) && is_numeric($row[0]) &&
-        isset($row[1]) && is_string($row[1]) && trim($row[1]) !== ''
-    ) {
+    if ($actualDepto && isset($row[0]) && is_numeric($row[0]) && isset($row[1]) && is_string($row[1]) && trim($row[1]) !== '') {
+
         $nombreEmpleado = trim($row[1]);
         if (preg_match('/^[A-ZÁÉÍÓÚÑ]+\s+[A-ZÁÉÍÓÚÑ]+/u', $nombreEmpleado)) {
             // Formatear la clave para que tenga 3 dígitos con ceros a la izquierda
             $claveFormateada = str_pad((string)$row[0], 3, '0', STR_PAD_LEFT);
-            
+
             $empleado = [
                 'clave' => $claveFormateada,
-               
-                'tarjeta' => null,
-                'conceptos' => []
+                'nombre' => $nombreEmpleado,
+                'dias_trabajados' => null,
+                'vacaciones' => false,
+                'incapacidades' => false,
+                'ausencias' => false
             ];
-            
+
             $actualDepto['empleados'][] = $empleado;
             $ultimoEmpleadoIdx = count($actualDepto['empleados']) - 1;
             $procesandoEmpleados = true;
@@ -108,26 +85,53 @@ foreach ($rows as $row) {
         }
     }
 
-    // Detectar "Neto a pagar"
+    // Detectar "Días pagados"
     if ($actualDepto) {
-        $esNeto = false;
-        $colNeto = null;
+        $esDiasPagados = false;
+        $colDiasPagados = null;
+
         foreach ($row as $idx => $cell) {
-            if (is_string($cell) && preg_match('/neto\\s*a\\s*pagar/i', $cell)) {
-                $esNeto = true;
-                $colNeto = $idx;
-                break;
+            if (is_string($cell) && preg_match('/d[ií]as\s+pagados:?/iu', trim($cell))) { // Busca la palabra "Días pagados:"
+                /**
+                 * Si la encuentra la bandera se marca como true
+                 * Se guarda el index de la columna
+                 */
+                $esDiasPagados = true;
+                $colDiasPagados = $idx;
+                break; // se rompe el foreach
             }
         }
-        if ($esNeto && $colNeto !== null) {
-            for ($i = $colNeto + 1; $i < count($row); $i++) {
-                if (is_numeric($row[$i])) {
-                    $neto = floatval($row[$i]);
-                    if ($neto > 0 && $actualDepto && !empty($actualDepto['empleados'])) {
-                        // Asignar SIEMPRE al último empleado detectado
-                        $actualDepto['empleados'][count($actualDepto['empleados']) - 1]['tarjeta'] = $neto;
+
+        if ($esDiasPagados && $colDiasPagados !== null) {
+            $siguienteCol = $colDiasPagados + 1;
+            if (isset($row[$siguienteCol])) {
+
+                $valor = trim($row[$siguienteCol]);
+
+                if (is_numeric($valor)) {
+                    $dias = (float)$valor;
+                    if ($dias > 0 && $actualDepto && !empty($actualDepto['empleados'])) {
+                        $actualDepto['empleados'][count($actualDepto['empleados']) - 1]['dias_trabajados'] = $dias;
                     }
-                    break;
+                }
+            }
+        }
+
+        $nextRowIdx = array_search($row, $rows, true) + 1;
+        if (isset($rows[$nextRowIdx])) {
+            $nextRow = $rows[$nextRowIdx];
+            foreach ($nextRow as $cell) {
+                if (is_string($cell)) {
+                    $texto = trim($cell);
+                    if (preg_match('/vacaciones/i', $texto)) {
+                        $actualDepto['empleados'][count($actualDepto['empleados']) - 1]['vacaciones'] = true;
+                    }
+                    if (preg_match('/incapacidades/i', $texto)) {
+                        $actualDepto['empleados'][count($actualDepto['empleados']) - 1]['incapacidades'] = true;
+                    }
+                    if (preg_match('/ausencias/i', $texto)) {
+                        $actualDepto['empleados'][count($actualDepto['empleados']) - 1]['ausencias'] = true;
+                    }
                 }
             }
         }
@@ -140,23 +144,6 @@ foreach ($rows as $row) {
     ) {
         $procesandoEmpleados = false;
         $ultimoEmpleadoIdx = null;
-    }
-
-    // Guardar conceptos (para todos los departamentos)
-    if (
-        $procesandoEmpleados && $actualDepto && $ultimoEmpleadoIdx !== null &&
-        isset($row[5]) && isset($row[6]) && isset($row[8])
-    ) {
-        $codigoConcepto = trim($row[5]);
-        $nombreConcepto = trim($row[6]);
-        $resultadoConcepto = trim($row[8]);
-        if (in_array($codigoConcepto, ['45', '52', '16'])) {
-            $actualDepto['empleados'][$ultimoEmpleadoIdx]['conceptos'][] = [
-                'codigo' => $codigoConcepto,
-                'nombre' => $nombreConcepto,
-                'resultado' => $resultadoConcepto
-            ];
-        }
     }
 }
 
