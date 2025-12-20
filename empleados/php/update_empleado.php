@@ -17,8 +17,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fecha_ingreso = $_POST['fecha_ingreso'] ?? null;
     $id_departamento = $_POST['id_departamento'] ?? null;
 
-    $id_turno = $_POST['id_turno']; // Agregue esto BHL
-    $id_turno_sabado = $_POST['id_turno_sabado']; // Agregue esto BHL
+    $id_turno = $_POST['id_turno'] ?? null; // Agregue esto BHL
+    $id_turno_sabado = $_POST['id_turno_sabado'] ?? null; // Agregue esto BHL
 
     // Nuevos campos agregados
     $fecha_nacimiento = $_POST['fecha_nacimiento'] ?? null;
@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Campos de salario
     $salario_semanal = $_POST['salario_semanal'] ?? null;
-    $salario_mensual = $_POST['salario_mensual'] ?? null;
+    $salario_diario = $_POST['salario_diario'] ?? null;
 
     // Contacto de emergencia
     $emergencia_nombre = $_POST['nombre_contacto'] ?? null;
@@ -74,10 +74,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Convertir salarios a decimal o null
     $salario_semanal = !empty($salario_semanal) ? (float)$salario_semanal : null;
-    $salario_mensual = !empty($salario_mensual) ? (float)$salario_mensual : null;
+    $salario_diario = !empty($salario_diario) ? (float)$salario_diario : null;
 
     // Verificar si no hay campos obligatorios vacíos
-    if (empty($clave_empleado) || empty($nombre_empleado) || empty($ap_paterno) || empty($ap_materno) || empty($sexo) || empty($id_turno)) {
+    if (empty($clave_empleado) || empty($nombre_empleado) || empty($ap_paterno) || empty($ap_materno) || empty($sexo)) {
         exit;
     }
 
@@ -201,7 +201,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             id_area = ?,
             id_puestoEspecial = ?,
             salario_semanal = ?,
-            salario_mensual = ?,
+            salario_diario = ?,
             biometrico = ?,
             telefono_empleado = ?,
             rfc_empleado = ?,
@@ -227,7 +227,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id_area,
             $id_puestoEspecial,
             $salario_semanal,
-            $salario_mensual,
+            $salario_diario,
             $biometrico,
             $telefono_empleado, 
             $rfc_empleado,
@@ -254,7 +254,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             id_area = ?,
             id_puestoEspecial = ?,
             salario_semanal = ?,
-            salario_mensual = ?,
+            salario_diario = ?,
             biometrico = ?,
             telefono_empleado = ?,
             rfc_empleado = ?,
@@ -280,7 +280,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id_area,
             $id_puestoEspecial,
             $salario_semanal,
-            $salario_mensual,
+            $salario_diario,
             $biometrico,
             $telefono_empleado, // Pasar el teléfono del empleado
             $rfc_empleado,

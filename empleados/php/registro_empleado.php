@@ -20,8 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $ap_paterno = $_POST['ap_paterno'] ?? null;
         $ap_materno = $_POST['ap_materno'] ?? null;
         $sexo = $_POST['sexo'] ?? null;
-        $id_turno = $_POST['turno']; // Ahregue esto BHL: este es el turno base
-        $id_turno_sabado = $_POST['turno_sabado']; // Ahregue esto BHL: este es el turno sabados
+        $id_turno = $_POST['turno'] ?? null; // Ahregue esto BHL: este es el turno base
+        $id_turno_sabado = $_POST['turno_sabado'] ?? null; // Ahregue esto BHL: este es el turno sabados
         $domicilio = $_POST['domicilio'] ?? null;
         $imss = $_POST['imss'] ?? null;
         $curp = $_POST['curp'] ?? null;
@@ -45,8 +45,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $status_nss = isset($_POST['status_nss']) ? (int)$_POST['status_nss'] : 0;
 
         // Campos de salario
-        $salario_semanal = $_POST['salario_diario'] ?? null;
-        $salario_mensual = $_POST['salario_mensual'] ?? null;
+        $salario_semanal = $_POST['salario_semanal'] ?? null;
+        $salario_diario = $_POST['salario_diario'] ?? null;
 
         // Contacto de emergencia
         $emergencia_nombre = $_POST['emergencia_nombre'] ?? null;
@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // =============================
         // VALIDAR CAMPOS OBLIGATORIOS
         // =============================
-        if (empty($clave_empleado) || empty($nombre) || empty($ap_paterno) || empty($sexo) || empty($id_turno)) {
+        if (empty($clave_empleado) || empty($nombre) || empty($ap_paterno) || empty($sexo)) {
             $respuesta = array(
                 "success" => false,
                 "title" => "ADVERTENCIA",
@@ -202,7 +202,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Convertir salarios a decimal o null
         $salario_semanal = !empty($salario_semanal) ? (float)$salario_semanal : null;
-        $salario_mensual = !empty($salario_mensual) ? (float)$salario_mensual : null;
+        $salario_diario = !empty($salario_diario) ? (float)$salario_diario : null;
 
         // =============================
         // INSERTAR EMPLEADO
@@ -212,7 +212,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 id_rol, id_status, nombre, ap_paterno, ap_materno, domicilio,
                 imss, curp, sexo, enfermedades_alergias, grupo_sanguineo,
                 fecha_ingreso, fecha_nacimiento, id_departamento, 
-                id_area, id_puestoEspecial, id_empresa, clave_empleado, salario_semanal, salario_mensual, biometrico, telefono_empleado, status_nss, rfc_empleado, estado_civil
+                id_area, id_puestoEspecial, id_empresa, clave_empleado, salario_semanal, salario_diario, biometrico, telefono_empleado, status_nss, rfc_empleado, estado_civil
             ) VALUES (2, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         );
 
@@ -239,7 +239,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id_empresa,
             $clave_empleado,
             $salario_semanal,
-            $salario_mensual,
+            $salario_diario,
             $biometrico,
             $telefono_empleado,
             $status_nss,

@@ -1,6 +1,6 @@
 $(document).ready(function () {
     const rutaRaiz = '/sistema_saao/';
-  
+
 
     getDepartamentos();
     obtenerTurnos(); // Agregue esto BHL
@@ -9,10 +9,10 @@ $(document).ready(function () {
     filtrosBusqueda();
     setValoresModal();
     initOrdenamiento();
-    actualizarTotalPorcentaje(); 
+    actualizarTotalPorcentaje();
 
     // Botón limpiar buscador de empleados
-    $(document).off('click', '#btn-clear-buscador-empleado').on('click', '#btn-clear-buscador-empleado', function(e){
+    $(document).off('click', '#btn-clear-buscador-empleado').on('click', '#btn-clear-buscador-empleado', function (e) {
         e.preventDefault();
         const $input = $('#buscadorEmpleado');
         $input.val('');
@@ -21,6 +21,16 @@ $(document).ready(function () {
         $input.focus();
     });
 
+    // Calcular salario diario a partir del semanal en el modal
+    $(document).on('input', '#modal_salario_semanal', function () {
+        const val = parseFloat($(this).val());
+        if (isNaN(val)) {
+            $('#modal_salario_diario').val('');
+        } else {
+            const diario = val / 7;
+            $('#modal_salario_diario').val(diario.toFixed(2));
+        }
+    });
     // Función para formatear texto a mayúsculas mientras se escribe
     function formatearMayusculas(selector) {
         $(selector).on('input', function () {
@@ -38,57 +48,57 @@ $(document).ready(function () {
     // Función para actualizar el total de porcentajes de beneficiarios
     function actualizarTotalPorcentaje() {
         let total = 0;
-        $('.porcentaje-beneficiario').each(function() {
+        $('.porcentaje-beneficiario').each(function () {
             const valor = parseFloat($(this).val()) || 0;
             total += valor;
         });
-        
+
         // Actualizar el campo de total
         $('#total_porcentaje_beneficiarios').val(total.toFixed(2));
-        
+
         // Resaltar en rojo si no es 100%
         if (total > 0 && total !== 100) {
             $('#total_porcentaje_beneficiarios').addClass('is-invalid');
         } else {
             $('#total_porcentaje_beneficiarios').removeClass('is-invalid');
         }
-        
+
         return total;
     }
-    
+
     // Escuchar cambios en los inputs de porcentaje
-    $(document).on('input', '.porcentaje-beneficiario', function() {
+    $(document).on('input', '.porcentaje-beneficiario', function () {
         // Asegurarse de que el valor esté entre 0 y 100
         let valor = parseFloat($(this).val()) || 0;
         if (valor < 0) valor = 0;
         if (valor > 100) valor = 100;
         $(this).val(valor);
-        
+
         actualizarTotalPorcentaje();
     });
 
     // Manejar el botón de eliminar beneficiario
-    $(document).on('click', '.btn-eliminar-beneficiario', function() {
+    $(document).on('click', '.btn-eliminar-beneficiario', function () {
         const $fila = $(this).closest('tr');
-        
+
         // Limpiar todos los campos de la fila
         $fila.find('input[name="beneficiario_nombre[]"]').val('');
         $fila.find('input[name="beneficiario_ap_paterno[]"]').val('');
         $fila.find('input[name="beneficiario_ap_materno[]"]').val('');
         $fila.find('input[name="beneficiario_parentesco[]"]').val('');
         $fila.find('input[name="beneficiario_porcentaje[]"]').val('');
-        
+
         // Eliminar el campo oculto del ID si existe
         $fila.find('input[name="beneficiario_id[]"]').remove();
-        
+
         // Remover clases de validación
         $fila.find('input').removeClass('border-success border-danger');
-        
+
         // Actualizar el total de porcentajes
         actualizarTotalPorcentaje();
     });
-    
- 
+
+
     // Helper: Formatea 'YYYY-MM-DD' a 'DD/MM/YYYY'
     function formatToDMY(dateStr) {
         if (!dateStr) return '';
@@ -198,7 +208,7 @@ $(document).ready(function () {
                 setEmpleadosData(empleados);
             },
             error: function (xhr, status, error) {
-               
+
             }
         });
     }
@@ -221,7 +231,7 @@ $(document).ready(function () {
             setBusqueda($(this).val());
         });
 
-       
+
         // Manejar el cambio de estado con el switch de NSS
         $(document).on("change", ".switch-nss", function () {
             let idEmpleado = $(this).data("id-empleado");
@@ -252,13 +262,13 @@ $(document).ready(function () {
                     if (response.success) {
                         // Guardar el cambio en el objeto de cambios
                         window.nssCambios[idEmpleado] = statusNss;
-                        
+
                         // Actualizar el estado en los datos locales si existe
                         const empleadoIndex = empleadosData.findIndex(emp => emp.id_empleado == idEmpleado);
                         if (empleadoIndex !== -1) {
                             empleadosData[empleadoIndex].status_nss = statusNss;
                         }
-                        
+
                         // Si estamos en la vista de "Sin Seguro", recargar la tabla
                         if ($('#filtroDepartamento').val() === "1000") {
                             renderTablaEmpleados();
@@ -475,7 +485,7 @@ $(document).ready(function () {
                     if (!empleado.error) {
 
                         console.log(empleado);
-                        
+
 
                         // Extraemos todos los datos del empleado incluyendo los nuevos campos
                         let nombreEmpleado = empleado.nombre_empleado;
@@ -509,7 +519,7 @@ $(document).ready(function () {
 
                         // Campos de salario
                         let salarioSemanal = empleado.salario_semanal;
-                        let salarioMensual = empleado.salario_mensual;
+                        let salarioDiario = empleado.salario_diario;
 
                         // Obtener la última fecha de reingreso
                         let ultimaFechaReingreso = empleado.ultima_fecha_reingreso;
@@ -556,7 +566,7 @@ $(document).ready(function () {
 
                         // Campos de salario
                         $("#modal_salario_semanal").val(salarioSemanal);
-                        $("#modal_salario_mensual").val(salarioMensual);
+                        $("#modal_salario_diario").val(salarioDiario);
 
                         $("#modal_emergencia_nombre").val(nombreContacto);
                         $("#modal_emergencia_ap_paterno").val(apPaternoContacto);
@@ -599,8 +609,8 @@ $(document).ready(function () {
                                 $tbodyReingresos.html(filas);
                             }
                         } catch (e) {
-                         
-                           
+
+
                         }
 
                         // Cargar departamentos con la ruta correcta
@@ -738,7 +748,7 @@ $(document).ready(function () {
                                 });
                             }
                         } catch (e) {
-                           
+
                         }
 
                         validarCampos($("#modal_clave_empleado"), validarClave);
@@ -837,7 +847,7 @@ $(document).ready(function () {
 
         // Campos de salario
         let salarioSemanal = $("#modal_salario_semanal").val();
-        let salarioMensual = $("#modal_salario_mensual").val();
+        let salarioDiario = $("#modal_salario_diario").val();
 
         // Datos de emergencia
         let emergenciaNombre = $("#modal_emergencia_nombre").val();
@@ -874,7 +884,7 @@ $(document).ready(function () {
         // Validar que el total de porcentajes de beneficiarios sea 100% si hay al menos un beneficiario
         let totalPorcentaje = 0;
         let hayBeneficiarios = false;
-        $('.porcentaje-beneficiario').each(function() {
+        $('.porcentaje-beneficiario').each(function () {
             const valor = parseFloat($(this).val()) || 0;
             if (valor > 0) {
                 hayBeneficiarios = true;
@@ -892,15 +902,13 @@ $(document).ready(function () {
             return false;
         }
 
-        // Validaciones obligatorias
+        // Validaciones obligatorias (turnos opcionales)
         let obligatoriosValidos = (
             validarClave(clave) &&
             validarNombre(nombre) &&
             validarApellido(apellidoPaterno) &&
             validarApellido(apellidoMaterno) &&
-            sexo,
-            idTurno,
-            idTurnoSabado
+            sexo
         );
 
         let opcionalesValidos = true;
@@ -968,7 +976,7 @@ $(document).ready(function () {
 
             // Campos de salario
             salario_semanal: salarioSemanal || "",
-            salario_mensual: salarioMensual || "",
+            salario_diario: salarioDiario || "",
 
             nombre_contacto: emergenciaNombre || "",
             apellido_paterno_contacto: emergenciaApPaterno || "",
@@ -985,15 +993,15 @@ $(document).ready(function () {
             beneficiario_parentesco: beneficiarios.map(b => b.parentesco),
             beneficiario_porcentaje: beneficiarios.map(b => b.porcentaje),
 
-            id_turno : idTurno,
-            id_turno_sabado : idTurnoSabado
+            id_turno: idTurno,
+            id_turno_sabado: idTurnoSabado
         };
 
 
 
         // Guardar la página actual antes de actualizar
         const paginaAnterior = paginaActual;
-        
+
         $.ajax({
             type: "POST",
             url: "../php/update_empleado.php",
@@ -1005,14 +1013,14 @@ $(document).ready(function () {
                     url: "../php/obtenerEmpleados.php",
                     data: { accion: "cargarEmpleados" },
                     dataType: "json",
-                    success: function(empleados) {
+                    success: function (empleados) {
                         // Actualizar los datos sin resetear la paginación
                         empleadosData = empleados;
                         // Restaurar la página anterior
                         paginaActual = paginaAnterior;
                         // Renderizar la tabla con la página actual
                         renderTablaEmpleados();
-                        
+
                         // Cerrar el modal
                         $("#modal_actualizar_empleado").modal("hide");
 
@@ -1023,8 +1031,8 @@ $(document).ready(function () {
                             confirmButtonText: 'Entendido'
                         });
                     },
-                    error: function(xhr, status, error) {
-                       
+                    error: function (xhr, status, error) {
+
                     }
                 });
             }
@@ -1052,7 +1060,7 @@ $(document).ready(function () {
             accion: "cambiarStatus"
         };
 
-       
+
 
         $.ajax({
             type: "POST",
@@ -1197,15 +1205,15 @@ $(document).ready(function () {
         $("#ordenNombreAsc").on("click", function () {
             setOrden("nombre_asc");
         });
-        
+
         $("#ordenNombreDesc").on("click", function () {
             setOrden("nombre_desc");
         });
-        
+
         $("#ordenClaveAsc").on("click", function () {
             setOrden("clave_asc");
         });
-        
+
         $("#ordenClaveDesc").on("click", function () {
             setOrden("clave_desc");
         });

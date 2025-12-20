@@ -24,9 +24,10 @@ function mostrarDatosTabla(jsonNominaConfianza, pagina = 1) {
     empleadosPagina.forEach((empleado, index) => {
         const numeroFila = inicio + index + 1;
         
-        // Función para buscar concepto por código
+        // Función para buscar concepto por código (segura si no existe 'conceptos')
         const buscarConcepto = (codigo) => {
-            const concepto = empleado.conceptos.find(c => c.codigo === codigo);
+            if (!Array.isArray(empleado.conceptos)) return '0.00';
+            const concepto = empleado.conceptos.find(c => String(c.codigo) === String(codigo));
             if (concepto) {
                 const valor = parseFloat(concepto.resultado) || 0;
                 return valor.toFixed(2);

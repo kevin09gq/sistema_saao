@@ -122,6 +122,16 @@ $(document).ready(function () {
 
     });
 
+    $(document).on('input', '#salario_semanal', function () {
+        const val = parseFloat($(this).val());
+        if (isNaN(val)) {
+            $('#salario_diario').val('');
+        } else {
+            const diario = val / 7;
+            $('#salario_diario').val(diario.toFixed(2));
+        }
+    });
+
     function validarDatos(selector, validacion) {
         $(selector).on('input', function () {
             const isValid = validacion($(this).val());
@@ -276,7 +286,7 @@ $(document).ready(function () {
         $("#rfc_trabajador").val("");
 
         // Limpiar campos de salario
-        $("#salario_semanal, #salario_mensual").val("");
+        $("#salario_semanal, #salario_diario").val("");
         $("#biometrico").val("");
         $("#telefono_empleado").val("");
 
@@ -298,6 +308,8 @@ $(document).ready(function () {
         $("#area_trabajador").val("");
         $("#puesto_trabajador").val("");
         $("#empresa_trabajador").val("");
+        $("#turno_trabajador").val("");
+        $("#turno_trabajador_sabado").val("");
 
         // Remover clases de validación
         $("input, select, textarea").removeClass('border-success border-danger');
@@ -348,8 +360,8 @@ $(document).ready(function () {
             const estado_civil = $("#estado_civil_trabajador").val();
 
             // Campos de salario (opcionales)
-            const salario_diario = $("#salario_semanal").val().trim();
-            const salario_mensual = $("#salario_mensual").val().trim();
+            const salario_semanal = $("#salario_semanal").val().trim();
+            const salario_diario = $("#salario_diario").val().trim();
 
             // Datos de emergencia (opcionales)
             const emergencia_nombre = $("#nombre_emergencia").val().trim();
@@ -407,9 +419,7 @@ $(document).ready(function () {
                 validarNombre(nombre) &&
                 validarApellido(ap_paterno) &&
                 validarApellido(ap_materno) &&
-                sexo &&
-                turno &&
-                turno_sabado
+                sexo
             ); // aqui agregue el turno BHL
 
             // Validaciones opcionales (solo si tienen valor)
@@ -477,8 +487,8 @@ $(document).ready(function () {
                 status_nss: $('#status_nss').is(':checked') ? 1 : 0,
 
                 // Campos de salario
+                salario_semanal: salario_semanal || "",
                 salario_diario: salario_diario || "",
-                salario_mensual: salario_mensual || "",
 
                 emergencia_nombre: emergencia_nombre || "",
                 emergencia_ap_paterno: emergencia_ap_paterno || "",

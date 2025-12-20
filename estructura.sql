@@ -86,7 +86,7 @@ CREATE TABLE info_empleados (
     fecha_creacion DATE,
     fecha_vigencia DATE,
     salario_semanal DECIMAL(10,2) DEFAULT 0,
-    salario_mensual DECIMAL(10,2) DEFAULT 0,
+    salario_diario DECIMAL(10,2) DEFAULT 0,
     id_puestoEspecial INT,
     id_departamento INT,
     id_area INT,

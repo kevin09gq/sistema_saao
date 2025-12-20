@@ -63,15 +63,18 @@ function processExcelData(params) {
                                 //Unir los dos JSON
                                 jsonNominaConfianza = unirJson(JsonListaRaya, JsonBiometrico);
 
-                                // Asignar propiedades a cada empleado
-                                asignarPropiedadesEmpleado(jsonNominaConfianza);
+                                // Obtener empleados que no se unieron
+                                const empleadosNoUnidos = obtenerEmpleadosNoUnidos(JsonListaRaya, JsonBiometrico);
+
+                                // Validar empleados sin IMSS
+                                validarExistenciaTrabajadorSinImms(empleadosNoUnidos);
 
                                 // Mostrar la tabla de nómina
-                                //setInitialVisibility();
+                                setInitialVisibility();
 
-                                //mostrarDatosTabla(jsonNominaConfianza);
-                                console.log(jsonNominaConfianza);
-                                
+                                mostrarDatosTabla(jsonNominaConfianza);
+
+
 
                             } catch (e) {
 
@@ -91,7 +94,7 @@ function processExcelData(params) {
     });
 }
 
-// PASO 2: Función para validar la existencia de trabajadores en la base de datos 
+// PASO 2: Función para validar la existencia de trabajadores en la base de datos
 function validarExistenciaTrabajador(JsonListaRaya) {
     // Extraer todas las claves de todos los empleados de todos los departamentos
     const claves = [];
@@ -105,7 +108,7 @@ function validarExistenciaTrabajador(JsonListaRaya) {
 
     //Enviar claves al servidor para validar
     $.ajax({
-        url: '../php/validar_trabajadores.php',
+        url: '../php/trabajadores_imss.php',
         type: 'POST',
         data: JSON.stringify({ claves: claves }),
         processData: false,
@@ -140,7 +143,7 @@ function validarExistenciaTrabajador(JsonListaRaya) {
                 });
             });
 
-            console.log('Empleados filtrados y ordenados:', JsonListaRaya);
+
         },
         error: function (xhr, status, error) {
             console.error('Error validando trabajadores:', error);
@@ -191,10 +194,105 @@ function unirJson(json1, json2) {
     return json1;
 }
 
+// PASO 4: Función para obtener empleados no unidos entre dos JSON
+function obtenerEmpleadosNoUnidos(JsonListaRaya, JsonBiometrico) {
+    // Normalizar nombres para comparación
+    const normalizar = s => s
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .toUpperCase()
+        .split(" ")
+        .sort()
+        .join(" ");
 
+    // Crear un conjunto de nombres normalizados de JsonListaRaya
+    const nombresListaRaya = new Set();
+    JsonListaRaya.departamentos.forEach(depto => {
+        depto.empleados.forEach(emp => {
+            nombresListaRaya.add(normalizar(emp.nombre));
+        });
+    });
 
+    // Filtrar empleados de JsonBiometrico que no están en JsonListaRaya
+    const empleadosNoUnidos = JsonBiometrico.empleados.filter(emp => {
+        return !nombresListaRaya.has(normalizar(emp.nombre));
+    });
 
-// Función para asignar propiedades iniciales a cada empleado
+    console.log("Empleados no unidos:", empleadosNoUnidos);
+    return empleadosNoUnidos;
+}
+
+// PASO 5: Función para validar la existencia de trabajadores sin IMSS en la base de datos
+function validarExistenciaTrabajadorSinImms(empleadosNoUnidos) {
+    // Extraer los id_biometrico de los empleados no unidos
+    const biometricos = empleadosNoUnidos.map(emp => emp.id_biometrico);
+
+    // Enviar al servidor para validar
+    $.ajax({
+        url: '../php/trabajadores_sin_imss.php',
+        type: 'POST',
+        data: JSON.stringify({ biometricos: biometricos }),
+        contentType: 'application/json; charset=UTF-8',
+        dataType: 'json',
+        success: function (response) {
+            // response solo contiene empleados que SÍ existen y cumplen las condiciones
+            // Crear un array solo con los biometricos válidos del servidor
+            const biometricosValidos = response.map(r => String(r.biometrico));
+
+            // Filtrar empleadosNoUnidos: solo dejar los que el servidor validó
+            const empleadosValidados = empleadosNoUnidos.filter(emp => {
+                return biometricosValidos.includes(String(emp.id_biometrico));
+            });
+
+            // Agregar la clave a cada empleado validado
+            empleadosValidados.forEach(emp => {
+                const resultado = response.find(r => String(r.biometrico) === String(emp.id_biometrico));
+                if (resultado) {
+                    // Actualizar clave
+                    emp.clave = resultado.clave_empleado;
+                    // Actualizar nombre con los campos que vienen de la base de datos
+                    const partes = [resultado.nombre, resultado.ap_paterno, resultado.ap_materno].filter(Boolean);
+                    if (partes.length) {
+                        emp.nombre = partes.join(' ').trim();
+                    }
+                }
+            });
+
+           
+            
+            // Integrar empleados validados al JSON principal
+            integrarNuevaInformacion(empleadosValidados);
+        },
+        error: function (xhr, status, error) {
+           
+        }
+    });
+}
+
+// PASO 6: Función para integrar nueva información al JSON principal
+function integrarNuevaInformacion(empleadosValidados) {
+    // Crear el departamento "sin seguro"
+    const departamentoSinSeguro = {
+        nombre: "sin seguro",
+        empleados: empleadosValidados
+    };
+    
+    // Agregar el departamento al JSON principal
+    if (!jsonNominaConfianza.departamentos) {
+        jsonNominaConfianza.departamentos = [];
+    }
+    
+    jsonNominaConfianza.departamentos.push(departamentoSinSeguro);
+    
+    // Asignar propiedades a todos los empleados (incluyendo el nuevo departamento)
+    asignarPropiedadesEmpleado(jsonNominaConfianza);
+    
+    console.log("Departamento 'sin seguro' agregado:", departamentoSinSeguro);
+    console.log("JSON completo:", jsonNominaConfianza);
+}
+
+// PASO 7: Función para asignar propiedades iniciales a cada empleado
 function asignarPropiedadesEmpleado(jsonNominaConfianza) {
     // Recorrer todos los departamentos
     jsonNominaConfianza.departamentos.forEach(departamento => {

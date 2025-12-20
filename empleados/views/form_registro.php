@@ -199,8 +199,8 @@ verificarSesion();
                                             <input type="number" class="form-control" id="salario_semanal" name="salario_semanal" step="0.01" placeholder="0.00">
                                         </div>
                                         <div class="col-md-6 mb-3">
-                                            <label for="salario_mensual" class="form-label">Salario Mensual</label>
-                                            <input type="number" class="form-control" id="salario_mensual" name="salario_mensual" step="0.01" placeholder="0.00">
+                                            <label for="salario_diario" class="form-label">Salario Diario</label>
+                                            <input type="number" class="form-control" id="salario_diario" name="salario_diario" step="0.01" placeholder="0.00">
                                         </div>
                                     </div>
                                     <div class="row">
