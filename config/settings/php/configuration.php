@@ -1173,63 +1173,69 @@ function obtenerInfoPuesto()
     }
 }
 
-/**
- * Aqui empieza todas las funciones para los turnos
- */
+// ==========================
+// FUNCIONES PARA LOS TURNOS
+// ==========================
+
 function registrarTurno()
 {
     global $conexion;
 
-    if (isset($_POST['descripcion']) and isset($_POST['hora_inicio']) and isset($_POST['hora_fin'])) {
-        // Eliminar espacios en blanco al principio y al final
+    if (isset($_POST['descripcion']) && isset($_POST['max'])) {
+        
         $descripcion = trim($_POST['descripcion']);
-        $hora_inicio = trim($_POST['hora_inicio']);
-        $hora_fin = trim($_POST['hora_fin']);
+        $hora_inicio = isset($_POST['hora_inicio']) && $_POST['hora_inicio'] !== '' ? trim($_POST['hora_inicio']) : null;
+        $hora_fin    = isset($_POST['hora_fin']) && $_POST['hora_fin'] !== '' ? trim($_POST['hora_fin']) : null;
+        $max         = trim($_POST['max']);
 
-        // Verificar que el nombre no esté vacío después de eliminar espacios
-        if (empty($descripcion) or empty($hora_inicio) or empty($hora_fin)) {
-            echo "0"; // El nombre está vacío
+        if (empty($descripcion) || empty($max)) {
+            echo "0"; // Falta descripción o máximo
             return;
         }
 
-        // Escapar caracteres especiales para prevenir SQL injection
         $descripcion = mysqli_real_escape_string($conexion, $descripcion);
-        $hora_inicio = mysqli_real_escape_string($conexion, $hora_inicio);
-        $hora_fin    = mysqli_real_escape_string($conexion, $hora_fin);
 
-        // Verificar si el departamento ya existe
-        $checkSql = "SELECT COUNT(*) as count FROM turnos WHERE descripcion = '$descripcion' and hora_inicio = '$hora_inicio' and hora_fin = '$hora_fin' and estado = 1";
+        $checkSql = "SELECT COUNT(*) as count FROM turnos WHERE descripcion = '$descripcion'";
         $result = mysqli_query($conexion, $checkSql);
         $row = mysqli_fetch_assoc($result);
 
         if ($row['count'] > 0) {
-            echo "3"; // Departamento ya existe
+            echo "3"; // Ya existe
             return;
         }
 
-        // Preparar la consulta para insertar el nuevo departamento
-        $sql = $conexion->prepare("INSERT INTO turnos (descripcion, hora_inicio, hora_fin, estado) VALUES (?, ?, ?, 1)");
+        $sql = $conexion->prepare("INSERT INTO turnos (descripcion, hora_inicio, hora_fin, max) VALUES (?, ?, ?, ?)");
 
         if (!$sql) {
             echo "Error en la preparación: " . $conexion->error;
             return;
         }
 
-        $sql->bind_param("sss", $descripcion, $hora_inicio, $hora_fin);
+        // bind_param no maneja bien null directamente, así que usamos variables y setamos NULL con bind_param
+        $sql->bind_param("ssss", $descripcion, $hora_inicio, $hora_fin, $max);
 
-        // Ejecutar la consulta y verificar si fue exitosa
+        // Si hora_inicio o hora_fin son null, ajustamos con bind_param usando send_null
+        if ($hora_inicio === null) {
+            $sql->bind_param("ssss", $descripcion, $hora_inicio, $hora_fin, $max);
+            $sql->send_long_data(1, null); // posición 1 = hora_inicio
+        }
+        if ($hora_fin === null) {
+            $sql->bind_param("ssss", $descripcion, $hora_inicio, $hora_fin, $max);
+            $sql->send_long_data(2, null); // posición 2 = hora_fin
+        }
+
         if ($sql->execute()) {
             echo "1"; // Éxito
         } else {
             echo "2"; // Error al ejecutar
         }
 
-        // Cerrar la declaración
         $sql->close();
     } else {
-        echo "2"; // No se recibió el turno, ni hora de inicio ni fin
+        echo "2"; // No se recibió descripción o max
     }
 }
+
 
 function obtenerInfoTurno()
 {
@@ -1239,7 +1245,7 @@ function obtenerInfoTurno()
         $idTurno = (int)$_POST['id_turno'];
 
         // Preparar la consulta para obtener la información del área
-        $sql = "SELECT id_turno, descripcion, hora_inicio, hora_fin FROM turnos WHERE id_turno = ? and estado = 1";
+        $sql = "SELECT * FROM turnos WHERE id_turno = ?";
         $stmt = $conexion->prepare($sql);
 
         if (!$stmt) {
@@ -1269,14 +1275,15 @@ function actualizarTurno()
 {
     global $conexion;
 
-    if (isset($_POST['turno_id']) && isset($_POST['descripcion']) && isset($_POST['hora_inicio']) && isset($_POST['hora_fin'])) {
+    if ( isset($_POST['turno_id']) && isset($_POST['descripcion']) && isset($_POST['max']) ) {
         $id_turno = (int)$_POST['turno_id'];
         $descripcion = trim($_POST['descripcion']);
-        $hora_inicio = trim($_POST['hora_inicio']);
-        $hora_fin = trim($_POST['hora_fin']);
+        $hora_inicio = trim($_POST['hora_inicio']) ?? null;
+        $hora_fin = trim($_POST['hora_fin']) ?? null;
+        $max = trim($_POST['max']);
 
         // Verificar que el nombre no esté vacío
-        if (empty($descripcion) or empty($hora_inicio) or empty($hora_fin)) {
+        if (empty($descripcion) or empty($max)) {
             echo "0"; // El nombre está vacío
             return;
         }
@@ -1287,7 +1294,7 @@ function actualizarTurno()
         $hora_fin    = mysqli_real_escape_string($conexion, $hora_fin);
 
         // Verificar si ya existe otro turno con el mismo turno y horas
-        $checkSql = "SELECT COUNT(*) as count FROM turnos WHERE descripcion = '$descripcion' AND hora_inicio = '$hora_inicio' AND hora_fin = '$hora_fin' AND id_turno != $id_turno AND estado = 1";
+        $checkSql = "SELECT COUNT(*) as count FROM turnos WHERE descripcion = '$descripcion' AND hora_inicio = '$hora_inicio' AND hora_fin = '$hora_fin' AND id_turno != $id_turno";
         $result = mysqli_query($conexion, $checkSql);
         $row = mysqli_fetch_assoc($result);
 
@@ -1331,21 +1338,8 @@ function eliminarTurno()
         $conexion->begin_transaction();
 
         try {
-            // Primero actualizamos la tabla info_empleados para establecer id_turno como NULL
-            // para los empleados que pertenecen al departamento que se va a eliminar
-            $updateSql = "UPDATE empleado_turno SET id_turno_base = NULL, id_turno_sabado = NULL WHERE id_turno_base = ? OR id_turno_sabado = ?";
-            $updateStmt = $conexion->prepare($updateSql);
-
-            if (!$updateStmt) {
-                throw new Exception("Error al preparar la actualización: " . $conexion->error);
-            }
-
-            $updateStmt->bind_param("ii", $id_turno, $id_turno);
-            $updateStmt->execute();
-            $updateStmt->close();
-
             // Ahora eliminamos el departamento
-            $deleteSql = "UPDATE turnos SET estado = 0 WHERE id_turno = ?";
+            $deleteSql = "DELETE FROM turnos WHERE id_turno = ?";
             $deleteStmt = $conexion->prepare($deleteSql);
 
             if (!$deleteStmt) {
@@ -1375,9 +1369,9 @@ function eliminarTurno()
     }
 }
 
-/**
- * AQUI EMPIEZAN LAS FUNCIONES PARA LAS FESTIVIDADES
- */
+// ================================
+// Funciones para las festividades
+// ================================
 
 function registrarFestividad()
 {

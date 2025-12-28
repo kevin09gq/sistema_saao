@@ -20,8 +20,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $ap_paterno = $_POST['ap_paterno'] ?? null;
         $ap_materno = $_POST['ap_materno'] ?? null;
         $sexo = $_POST['sexo'] ?? null;
-        $id_turno = $_POST['turno'] ?? null; // Ahregue esto BHL: este es el turno base
-        $id_turno_sabado = $_POST['turno_sabado'] ?? null; // Ahregue esto BHL: este es el turno sabados
         $domicilio = $_POST['domicilio'] ?? null;
         $imss = $_POST['imss'] ?? null;
         $curp = $_POST['curp'] ?? null;
@@ -128,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     "title" => "ADVERTENCIA",
                     "text" => "El número biométrico ya está registrado a otro empleado.",
                     "type" => "warning",
-                   "timeout" => 3000,
+                    "timeout" => 3000,
                 );
                 echo json_encode($respuesta);
                 exit();
@@ -197,9 +195,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id_empresa = !empty($id_empresa) ? (int)$id_empresa : null;
         $biometrico = !empty($biometrico) ? (int)$biometrico : null;
 
-        $id_turno = !empty($id_turno) ? (int)$id_turno : null;
-        $id_turno_sabado = !empty($id_turno_sabado) ? (int)$id_turno_sabado : null;
-
         // Convertir salarios a decimal o null
         $salario_semanal = !empty($salario_semanal) ? (float)$salario_semanal : null;
         $salario_diario = !empty($salario_diario) ? (float)$salario_diario : null;
@@ -253,31 +248,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $id_empleado = $conexion->insert_id;
         $sql->close();
-
-        /**
-         * Aqui vas a empezar con los turnos we
-         */
-
-        // =============================
-        //   REGISTRAR TURNOS DEL EMPLEADO
-        // =============================
-        if (!empty($id_turno)) {
-            $sqlTurno = $conexion->prepare("INSERT INTO empleado_turno (id_empleado, id_turno_base, id_turno_sabado) VALUES (?, ?, ?)");
-            if (!$sqlTurno) {
-                throw new Exception("Error al preparar consulta de registro de turnos: " . $conexion->error);
-            }
-
-            $sqlTurno->bind_param("iii", $id_empleado, $id_turno, $id_turno_sabado);
-            if (!$sqlTurno->execute()) {
-                throw new Exception("Error al registrar turnos del empleado: " . $sqlTurno->error);
-            }
-            $sqlTurno->close();
-        }
-
-        /**
-         * Y aqui vas a temrinar no agregaues nada en otra aparte
-         * limitate a quedarte aqui dentro de estos comentarios
-         */
 
         // =============================
         //   ASIGNAR CASILLERO AL EMPLEADOD
@@ -404,6 +374,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 $sqlEmpleadoBeneficiario->close();
             }
+        }
+
+        // =============================
+        // PROCESAR HORARIOS
+        // =============================
+        if (!empty($_POST['horarios'])) {
+            $horarioJSON = json_encode($_POST['horarios'], JSON_UNESCAPED_UNICODE);
+            $sqlAsignarHorario = $conexion->prepare("INSERT INTO empleado_horario_reloj (id_empleado, horario) VALUES (?, ?)");
+            if (!$sqlAsignarHorario) {
+                throw new Exception("Error al preparar consulta de asignación de horario: " . $conexion->error);
+            }
+            
+            // id_empleado es entero, horario es string (JSON)
+            $sqlAsignarHorario->bind_param("is", $id_empleado, $horarioJSON);
+            if (!$sqlAsignarHorario->execute()) {
+                throw new Exception("Error al asignar horario: " . $sqlAsignarHorario->error);
+            }
+            $sqlAsignarHorario->close();
         }
 
         // =============================

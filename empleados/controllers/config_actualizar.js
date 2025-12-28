@@ -1,9 +1,7 @@
 $(document).ready(function () {
     const rutaRaiz = '/sistema_saao/';
 
-
     getDepartamentos();
-    obtenerTurnos(); // Agregue esto BHL
     obtenerDatosEmpleados();
     departamentoSeleccionado();
     filtrosBusqueda();
@@ -31,6 +29,12 @@ $(document).ready(function () {
             $('#modal_salario_diario').val(diario.toFixed(2));
         }
     });
+
+    // Formatear campos del dia de horario
+    $('input[name="horario_dia[]"]').each(function () {
+        formatearMayusculas(this);
+    });
+
     // Función para formatear texto a mayúsculas mientras se escribe
     function formatearMayusculas(selector) {
         $(selector).on('input', function () {
@@ -98,6 +102,21 @@ $(document).ready(function () {
         actualizarTotalPorcentaje();
     });
 
+    // Manejar el botón de eliminar horario BHL
+    $(document).on('click', '.btn-eliminar-horario', function () {
+        const $fila = $(this).closest('tr');
+
+        // Limpiar todos los campos de la fila
+        $fila.find('input[name="horario_dia[]"]').val('');
+        $fila.find('input[name="horario_entrada[]"]').val('');
+        $fila.find('input[name="horario_salida_comida[]"]').val('');
+        $fila.find('input[name="horario_entrada_comida[]"]').val('');
+        $fila.find('input[name="horario_salida[]"]').val('');
+
+        // Remover clases de validación
+        $fila.find('input').removeClass('border-success border-danger');
+    });
+
 
     // Helper: Formatea 'YYYY-MM-DD' a 'DD/MM/YYYY'
     function formatToDMY(dateStr) {
@@ -148,7 +167,6 @@ $(document).ready(function () {
         return trimmed;
     }
 
-
     // Se Obtienen los departamentos
     function getDepartamentos() {
         $.ajax({
@@ -167,31 +185,6 @@ $(document).ready(function () {
 
                 }
 
-            }
-        });
-    }
-
-    // Obtener los turnos activos BHL
-    function obtenerTurnos() {
-        $.ajax({
-            type: "GET",
-            url: rutaRaiz + "public/php/obtenerTurnos.php",
-            success: function (response) {
-                let turnos = JSON.parse(response);
-                let opciones = `<option value="">Selecciona un turno</option>`;
-
-                turnos.forEach((element) => {
-                    opciones += `
-                        <option value="${element.id_turno}">${element.descripcion} (${element.inicio_hora}-${element.fin_hora})</option>
-                    `;
-                });
-
-                // Asegúrate de usar el ID correcto del select
-                $("#modal_turno_trabajador").html(opciones);
-                $("#modal_turno_trabajador_sabado").html(opciones);
-            },
-            error: function () {
-                alert("Parece que ocurrio un error, contacta a sistemas.")
             }
         });
     }
@@ -486,7 +479,6 @@ $(document).ready(function () {
 
                         console.log(empleado);
 
-
                         // Extraemos todos los datos del empleado incluyendo los nuevos campos
                         let nombreEmpleado = empleado.nombre_empleado;
                         let apPaternoEmpleado = empleado.apellido_paterno_empleado;
@@ -499,8 +491,6 @@ $(document).ready(function () {
                         let enfermedades = empleado.enfermedades_alergias;
                         let fechaIngreso = empleado.fecha_ingreso;
                         let idDepartamentoEmpleado = empleado.id_departamento;
-                        let idTurno = empleado.id_turno_base; // agregue esto BHL
-                        let idTurnoSabado = empleado.id_turno_sabado; // agregue esto BHL
 
                         // Nuevos campos
                         let fechaNacimiento = empleado.fecha_nacimiento;
@@ -553,9 +543,6 @@ $(document).ready(function () {
                         // Asignar RFC y estado civil
                         $("#modal_rfc").val(rfcEmpleado);
                         $("#modal_estado_civil").val(estadoCivil);
-
-                        $("#modal_turno_trabajador").val(idTurno); // Agregue esto BHL
-                        $("#modal_turno_trabajador_sabado").val(idTurnoSabado); // Agregue esto BHL
 
                         // Asignar la última fecha de reingreso si existe
                         if (ultimaFechaReingreso) {
@@ -751,6 +738,34 @@ $(document).ready(function () {
 
                         }
 
+                        // Poblar la tabla de los horarios de reloj BHL
+                        try {
+                            const horarios = Array.isArray(empleado.horario_reloj) ? empleado.horario_reloj : [];
+                            const $tbodyHorarios = $('#tbody_horarios');
+
+                            if ($tbodyHorarios.length) {
+                                // Limpiar todas las filas primero
+                                $tbodyHorarios.find('input').val('');
+
+                                // Llenar con los datos de horarios
+                                horarios.forEach((horario, index) => {
+                                    if (index < 7) { // Solo llenar las primeras 7 filas
+                                        const $fila = $tbodyHorarios.find('tr').eq(index);
+                                        $fila.find('input[name="horario_dia[]"]').val(horario.dia || '');
+                                        $fila.find('input[name="horario_entrada[]"]').val(horario.entrada || '');
+                                        $fila.find('input[name="horario_salida_comida[]"]').val(horario.salida_comida || '');
+                                        $fila.find('input[name="horario_entrada_comida[]"]').val(horario.entrada_comida || '');
+                                        $fila.find('input[name="horario_salida[]"]').val(horario.salida || '');
+                                    }
+                                });
+
+
+                            }
+                        } catch (e) {
+                            console.error("Error al cargar horarios:", e);
+                        }
+
+
                         validarCampos($("#modal_clave_empleado"), validarClave);
                         validarCampos($("#modal_nombre_empleado"), validarNombre);
                         validarCampos($("#modal_apellido_paterno"), validarApellido);
@@ -812,7 +827,6 @@ $(document).ready(function () {
     // Si hay algún error, se muestra un mensaje de advertencia
     // Si todo es correcto, se envían los datos al servidor para actualizar el empleado
     // y se actualiza la tabla de empleados
-
     $("#form_modal_actualizar_empleado").submit(function (e) {
         e.preventDefault();
 
@@ -830,9 +844,6 @@ $(document).ready(function () {
         let enfermedades = $("#modal_enfermedades_alergias").val();
         let fechaIngreso = $("#modal_fecha_ingreso").val();
         let idDepartamento = $("#modal_departamento").val();
-
-        let idTurno = $("#modal_turno_trabajador").val(); // Yo agregue esto BHL
-        let idTurnoSabado = $("#modal_turno_trabajador_sabado").val(); // Yo agregue esto BHL
 
         // Nuevos campos agregados
         let fechaNacimiento = $("#modal_fecha_nacimiento").val();
@@ -901,6 +912,27 @@ $(document).ready(function () {
             });
             return false;
         }
+
+        // Recoger los datos del horario
+        let horarios = [];
+        $('input[name="horario_dia[]"]').each(function (index) {
+            const dia = $(this).val().trim();
+            const entrada = $('input[name="horario_entrada[]"]').eq(index).val().trim();
+            const salida_comida = $('input[name="horario_salida_comida[]"]').eq(index).val().trim();
+            const entrada_comida = $('input[name="horario_entrada_comida[]"]').eq(index).val().trim();
+            const salida = $('input[name="horario_salida[]"]').eq(index).val().trim();
+
+            // Solo agregar si al menos un campo tiene valor
+            if (dia || entrada || salida_comida || entrada_comida || salida) {
+                horarios.push({
+                    dia: dia || "",
+                    entrada: entrada || "",
+                    salida_comida: salida_comida || "",
+                    entrada_comida: entrada_comida || "",
+                    salida: salida || ""
+                });
+            }
+        });
 
         // Validaciones obligatorias (turnos opcionales)
         let obligatoriosValidos = (
@@ -993,20 +1025,25 @@ $(document).ready(function () {
             beneficiario_parentesco: beneficiarios.map(b => b.parentesco),
             beneficiario_porcentaje: beneficiarios.map(b => b.porcentaje),
 
-            id_turno: idTurno,
-            id_turno_sabado: idTurnoSabado
+            // Datos de horarios BHL
+            horarios: horarios,
         };
-
-
 
         // Guardar la página actual antes de actualizar
         const paginaAnterior = paginaActual;
+
+        console.log("Antes de actualizar: ", datos);
+
 
         $.ajax({
             type: "POST",
             url: "../php/update_empleado.php",
             data: datos,
             success: function (response) {
+
+                console.log(response);
+
+
                 // Actualizar la tabla de empleados
                 $.ajax({
                     type: "POST",
@@ -1218,5 +1255,25 @@ $(document).ready(function () {
             setOrden("clave_desc");
         });
     }
+
+
+    $(document).on('click', '#btnCopiarHorarios', function () {
+        // Obtener valores del formulario de referencia
+        const entrada = $('#ref_entrada').val();
+        const salidaComida = $('#ref_salida_comida').val();
+        const entradaComida = $('#ref_entrada_comida').val();
+        const salida = $('#ref_salida').val();
+
+        // Copiar a las primeras 6 filas
+        $('#tbody_horarios tr').each(function (index) {
+            if (index < 6) { // solo las primeras 6 filas
+                $(this).find('input[name="horario_entrada[]"]').val(entrada);
+                $(this).find('input[name="horario_salida_comida[]"]').val(salidaComida);
+                $(this).find('input[name="horario_entrada_comida[]"]').val(entradaComida);
+                $(this).find('input[name="horario_salida[]"]').val(salida);
+            }
+        });
+    });
+
 
 });

@@ -46,78 +46,6 @@ function getTurnos() {
     });
 }
 
-// Función para mostrar la imagen del área en un modal Bootstrap
-function mostrarImagenArea() {
-    $(document).on("click", ".btn-image-area", function () {
-        let idArea = $(this).data("id");
-        let nombreArea = $(this).closest("tr").find("td:eq(1)").text();
-
-        $.ajax({
-            type: "POST",
-            url: "../php/configuration.php",
-            data: {
-                accion: "obtenerImagenArea",
-                id_area: idArea
-            },
-            success: function (response) {
-                try {
-                    let data = JSON.parse(response);
-
-                    if (data.error) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: data.message || 'No se pudo obtener la información del área',
-                            confirmButtonColor: '#ef4444'
-                        });
-                        return;
-                    }
-
-                    let logoArea = data.logo_area;
-                    if (!logoArea || logoArea.trim() === '') {
-                        // Solo mostrar el modal con mensaje y NO mostrar ni buscar imagen
-                        $("#modalAreaTitle").text("Imagen del Área: " + nombreArea);
-                        $("#modalAreaImage").hide();
-                        $("#modalAreaFooter").text("No hay imagen registrada para esta área");
-                        $("#modalAreaImagen").modal("show");
-                        return; // Detener aquí, no buscar imagen
-                    }
-
-                    // Si hay imagen, mostrarla normalmente
-                    let rutaImagen = rutaRaiz + "gafetes/logos_area/" + logoArea;
-                    $("#modalAreaTitle").text("Imagen del Área: " + nombreArea);
-                    $("#modalAreaImage").attr("src", rutaImagen).show();
-                    $("#modalAreaImage").attr("alt", "Imagen del área " + nombreArea);
-                    $("#modalAreaFooter").text("");
-                    $("#modalAreaImagen").modal("show");
-
-                    // Manejar error si la imagen no se puede cargar
-                    $("#modalAreaImage").off("error").on("error", function () {
-                        $(this).hide();
-                        $("#modalAreaFooter").text("No se encontró imagen para esta área");
-                    });
-
-                } catch (e) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Error al procesar la información del área',
-                        confirmButtonColor: '#ef4444'
-                    });
-                }
-            },
-            error: function () {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error de conexión',
-                    text: 'No se pudo conectar con el servidor',
-                    confirmButtonColor: '#ef4444'
-                });
-            }
-        });
-    });
-}
-
 // Función para registrar un área nueva
 function registrarTurno() {
     $("#turnoForm").submit(function (e) {
@@ -131,13 +59,14 @@ function registrarTurno() {
         let descripcion = $("#descripcion").val().trim();
         let hora_inicio = $("#hora_inicio").val().trim();
         let hora_fin    = $("#hora_fin").val().trim();
+        let max        = $("#max").val().trim();
 
         let accion = idTurno ? "actualizarTurno" : "registrarTurno";
 
         // Agregar la acción al FormData
         formData.append("accion", accion);
 
-        if (descripcion != "" && hora_inicio != "" && hora_fin != "") {
+        if (descripcion != "" && max != "") {
             $.ajax({
                 type: "POST",
                 url: "../php/configuration.php",
@@ -201,6 +130,7 @@ function resetearFormulario() {
     $("#descripcion").val('DIURNA');
     $("#hora_inicio").val('');
     $("#hora_fin").val('');
+    $("#max").val('');
     $("#btn-guardar-turno").html('<i class="bi bi-save"></i> Guardar');
 }
 
@@ -279,6 +209,7 @@ function editarTurno() {
                 id_turno: idTurno
             },
             success: function (response) {
+                
                 try {
                     let data = JSON.parse(response);
                     if (data.error) {
@@ -295,6 +226,7 @@ function editarTurno() {
                     $("#descripcion").val(data.descripcion);
                     $("#hora_inicio").val(data.hora_inicio);
                     $("#hora_fin").val(data.hora_fin);
+                    $("#max").val(data.max);
 
                     $("#btn-guardar-turno").html('<i class="fas fa-save"></i> Actualizar');
                 } catch (e) {

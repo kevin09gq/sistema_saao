@@ -3,10 +3,37 @@ jsonNominaConfianza = null;
 
 
 $(document).ready(function () {
+    incializarComponentes();
+    restoreNomina();
     // Inicializar el procesamiento del Excel
     processExcelData();
+    console.log(jsonNominaConfianza);
 
+    // Habilitar menú contextual y enlace al modal (si las funciones existen)
+    try { if (typeof mostrarContextMenu === 'function') mostrarContextMenu(); } catch (e) { }
+    try { if (typeof bindContextMenuToModal === 'function') bindContextMenuToModal(); } catch (e) { }
+    nuevosConceptosPercepcciones();
+    cerrarModalDetalles();
+    guardarCambiosEmpleado();
+    activarActualizacionTotalExtra();
 });
+
+
+
+function incializarComponentes() {
+    // Si ya hay una nómina guardada, no mostrar el formulario de carga
+    try {
+        if (typeof loadNomina === 'function' && loadNomina() !== null) {
+            // Hay datos guardados: dejar la vista que restaure `storage.js`
+            return;
+        }
+    } catch (err) {
+        // Si algo falla, seguir mostrando el formulario
+    }
+
+    $("#container-nomina").removeAttr("hidden");
+}
+
 
 // PASO 1: Función para procesar los archivos Excel subidos por el usuario y unir los datos 
 function processExcelData(params) {
@@ -63,6 +90,9 @@ function processExcelData(params) {
                                 //Unir los dos JSON
                                 jsonNominaConfianza = unirJson(JsonListaRaya, JsonBiometrico);
 
+                                // Asegurar que todos los empleados ya existentes tengan las propiedades necesarias
+                                asignarPropiedadesEmpleado(jsonNominaConfianza);
+
                                 // Obtener empleados que no se unieron
                                 const empleadosNoUnidos = obtenerEmpleadosNoUnidos(JsonListaRaya, JsonBiometrico);
 
@@ -71,8 +101,12 @@ function processExcelData(params) {
 
                                 // Mostrar la tabla de nómina
                                 setInitialVisibility();
+                                obtenerDepartamentosPermitidos();
 
                                 mostrarDatosTabla(jsonNominaConfianza);
+                                // Guardado inicial (se volverá a guardar si la validación asíncrona añade empleados)
+                                saveNomina(jsonNominaConfianza);
+
 
 
 
@@ -118,10 +152,13 @@ function validarExistenciaTrabajador(JsonListaRaya) {
             // response es un array de objetos [{clave: "003", nombre: "Juan Perez Lopez"}, ...]
             const empleadosValidos = Array.isArray(response) ? response : [];
 
-            // Crear un mapa de claves válidas para búsqueda rápida
+            // Crear un mapa de claves válidas para búsqueda rápida (guardamos nombre y salario)
             const mapaEmpleados = {};
             empleadosValidos.forEach(emp => {
-                mapaEmpleados[emp.clave] = emp.nombre;
+                mapaEmpleados[emp.clave] = {
+                    nombre: emp.nombre,
+                    salario: parseFloat(emp.salario_semanal) || 0
+                };
             });
 
             // Filtrar y actualizar empleados
@@ -130,8 +167,9 @@ function validarExistenciaTrabajador(JsonListaRaya) {
                 departamento.empleados = departamento.empleados.filter(empleado => {
                     const clave = String(empleado.clave).trim();
                     if (mapaEmpleados[clave]) {
-                        // Actualizar el nombre con el de la base de datos
-                        empleado.nombre = mapaEmpleados[clave];
+                        // Actualizar el nombre y sueldo semanal con los datos de la base
+                        empleado.nombre = mapaEmpleados[clave].nombre;
+                        empleado.sueldo_semanal = mapaEmpleados[clave].salario;
                         return true;
                     }
                     return false;
@@ -146,7 +184,7 @@ function validarExistenciaTrabajador(JsonListaRaya) {
 
         },
         error: function (xhr, status, error) {
-            console.error('Error validando trabajadores:', error);
+
         }
     });
 }
@@ -219,7 +257,7 @@ function obtenerEmpleadosNoUnidos(JsonListaRaya, JsonBiometrico) {
         return !nombresListaRaya.has(normalizar(emp.nombre));
     });
 
-    console.log("Empleados no unidos:", empleadosNoUnidos);
+
     return empleadosNoUnidos;
 }
 
@@ -245,27 +283,36 @@ function validarExistenciaTrabajadorSinImms(empleadosNoUnidos) {
                 return biometricosValidos.includes(String(emp.id_biometrico));
             });
 
-            // Agregar la clave a cada empleado validado
+            // Agregar la clave a cada empleado validado y actualizar su nombre según la BD
             empleadosValidados.forEach(emp => {
                 const resultado = response.find(r => String(r.biometrico) === String(emp.id_biometrico));
                 if (resultado) {
-                    // Actualizar clave
                     emp.clave = resultado.clave_empleado;
-                    // Actualizar nombre con los campos que vienen de la base de datos
                     const partes = [resultado.nombre, resultado.ap_paterno, resultado.ap_materno].filter(Boolean);
                     if (partes.length) {
                         emp.nombre = partes.join(' ').trim();
                     }
+                    // Asignar sueldo semanal desde la BD si viene
+                    if (resultado.salario_semanal !== undefined) {
+                        emp.sueldo_semanal = parseFloat(resultado.salario_semanal) || 0;
+                    }
+                    // Asignar id_departamento desde la BD si viene
+                    if (resultado.id_departamento !== undefined) {
+                        emp.id_departamento = Number(resultado.id_departamento) || emp.id_departamento || 0;
+                    }
                 }
             });
 
-           
-            
+            // Ordenar alfabéticamente A-Z por nombre antes de integrar
+            empleadosValidados.sort((a, b) => {
+                return String(a.nombre || '').localeCompare(String(b.nombre || ''), 'es', { sensitivity: 'base' });
+            });
+
             // Integrar empleados validados al JSON principal
             integrarNuevaInformacion(empleadosValidados);
         },
         error: function (xhr, status, error) {
-           
+
         }
     });
 }
@@ -277,39 +324,74 @@ function integrarNuevaInformacion(empleadosValidados) {
         nombre: "sin seguro",
         empleados: empleadosValidados
     };
-    
+
     // Agregar el departamento al JSON principal
     if (!jsonNominaConfianza.departamentos) {
         jsonNominaConfianza.departamentos = [];
     }
-    
+
     jsonNominaConfianza.departamentos.push(departamentoSinSeguro);
-    
+
     // Asignar propiedades a todos los empleados (incluyendo el nuevo departamento)
     asignarPropiedadesEmpleado(jsonNominaConfianza);
-    
-    console.log("Departamento 'sin seguro' agregado:", departamentoSinSeguro);
-    console.log("JSON completo:", jsonNominaConfianza);
+
+    // Guardar después de integrar nueva información asíncrona
+    try {
+        saveNomina(jsonNominaConfianza);
+    } catch (err) {
+
+    }
+
+
 }
 
 // PASO 7: Función para asignar propiedades iniciales a cada empleado
 function asignarPropiedadesEmpleado(jsonNominaConfianza) {
+    if (!jsonNominaConfianza || !Array.isArray(jsonNominaConfianza.departamentos)) return;
+
     // Recorrer todos los departamentos
     jsonNominaConfianza.departamentos.forEach(departamento => {
+        if (!Array.isArray(departamento.empleados)) return;
+
+        // Mapear nombre de departamento a id (si corresponde)
+        const nombreDeptRaw = String(departamento.nombre || '').trim();
+        // Quitar número al inicio si existe: "1 Administracion" -> "Administracion"
+        const nombreDept = nombreDeptRaw.replace(/^\s*\d+\s+/, '').trim();
+        const nombreLower = nombreDept.toLowerCase();
+        let mappedId = null;
+        if (nombreLower === 'administracion') mappedId = 1;
+        else if (nombreLower === 'produccion') mappedId = 2;
+        else if (nombreLower === 'seguridad vigilancia e intendencia') mappedId = 3;
+        else if (nombreLower === 'administracion sucursal cdmx') mappedId = 8;
+
         // Recorrer todos los empleados de cada departamento
         departamento.empleados.forEach(empleado => {
-            // Agregar las propiedades necesarias
-            empleado.sueldo_semanal = 0;
-            empleado.vacaciones = 0;
-            empleado.sueldo_extra_total = 0;
-            empleado.retardos = 0;
-            empleado.ajuste_sub = 0;
-            empleado.prestamo = 0;
-            empleado.permiso = 0;
-            empleado.inacistencia = 0;
-            empleado.uniformes = 0;
-            empleado.checador = 0;
-            empleado.total_cobrar = 0;
+            // Agregar o mantener las propiedades necesarias (no sobrescribir si ya vienen de la BD)
+            empleado.sueldo_semanal = empleado.sueldo_semanal ?? 0;
+            empleado.vacaciones = empleado.vacaciones ?? 0;
+            empleado.sueldo_extra_total = empleado.sueldo_extra_total ?? 0;
+            empleado.retardos = empleado.retardos ?? 0;
+            empleado.ajuste_sub = empleado.ajuste_sub ?? 0;
+            empleado.prestamo = empleado.prestamo ?? 0;
+            empleado.permiso = empleado.permiso ?? 0;
+            empleado.inasistencia = empleado.inasistencia ?? 0;
+            empleado.uniformes = empleado.uniformes ?? 0;
+            empleado.checador = empleado.checador ?? 0;
+            empleado.total_cobrar = empleado.total_cobrar ?? 0;
+
+            // Crear array de conceptos si no existe
+            if (!empleado.conceptos || !Array.isArray(empleado.conceptos)) {
+                empleado.conceptos = [
+                    { codigo: "45", resultado: '' },  // ISR
+                    { codigo: "52", resultado: '' },  // IMSS
+                    { codigo: "16", resultado: '' }   // Infonavit
+                ];
+            }
+
+            // Si no tiene id_departamento, asignarlo desde el departamento actual (si mapeamos uno)
+            if ((empleado.id_departamento === undefined || empleado.id_departamento === null) && mappedId !== null) {
+                empleado.id_departamento = mappedId;
+            }
         });
     });
 }

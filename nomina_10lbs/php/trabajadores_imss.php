@@ -24,7 +24,8 @@ if (count($claves) === 0) {
 
 // Preparar consulta dinámica con placeholders
 $placeholders = implode(',', array_fill(0, count($claves), '?'));
-$sql = "SELECT clave_empleado, CONCAT(nombre, ' ', ap_paterno, ' ', ap_materno) as nombre_completo 
+// Añadimos salario_semanal para que el cliente pueda asignarlo
+$sql = "SELECT clave_empleado, CONCAT(nombre, ' ', ap_paterno, ' ', ap_materno) as nombre_completo, salario_semanal 
         FROM info_empleados 
         WHERE id_status = 1 AND clave_empleado IN ($placeholders)
         ORDER BY nombre, ap_paterno, ap_materno";
@@ -55,7 +56,8 @@ if ($result) {
     while ($row = mysqli_fetch_assoc($result)) {
         $empleados[] = [
             'clave' => (string)$row['clave_empleado'],
-            'nombre' => $row['nombre_completo']
+            'nombre' => $row['nombre_completo'],
+            'salario_semanal' => $row['salario_semanal'] !== null ? (string)$row['salario_semanal'] : '0.00'
         ];
     }
 }

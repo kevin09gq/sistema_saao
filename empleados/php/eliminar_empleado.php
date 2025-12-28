@@ -35,28 +35,38 @@ try {
     // Eliminar asignaciones de casilleros del empleado
     $sqlLiberar = $conexion->prepare("DELETE FROM empleado_casillero WHERE id_empleado = ?");
     $sqlLiberar->bind_param("i", $id_empleado);
-    if (!$sqlLiberar->execute()) { throw new Exception('No se pudo liberar los casilleros asignados.'); }
+    if (!$sqlLiberar->execute()) {
+        throw new Exception('No se pudo liberar los casilleros asignados.');
+    }
     $sqlLiberar->close();
 
     // Eliminar historial de reingresos del empleado
     $sqlDelHist = $conexion->prepare("DELETE FROM historial_reingresos WHERE id_empleado = ?");
     $sqlDelHist->bind_param("i", $id_empleado);
-    if (!$sqlDelHist->execute()) { throw new Exception('No se pudo eliminar el historial de reingresos.'); }
+    if (!$sqlDelHist->execute()) {
+        throw new Exception('No se pudo eliminar el historial de reingresos.');
+    }
     $sqlDelHist->close();
 
     // Obtener contactos relacionados a este empleado
     $contactIds = [];
     $sqlSelectContact = $conexion->prepare("SELECT id_contacto FROM empleado_contacto WHERE id_empleado = ?");
     $sqlSelectContact->bind_param("i", $id_empleado);
-    if (!$sqlSelectContact->execute()) { throw new Exception('No se pudo obtener contactos.'); }
+    if (!$sqlSelectContact->execute()) {
+        throw new Exception('No se pudo obtener contactos.');
+    }
     $res = $sqlSelectContact->get_result();
-    while ($row = $res->fetch_assoc()) { $contactIds[] = intval($row['id_contacto']); }
+    while ($row = $res->fetch_assoc()) {
+        $contactIds[] = intval($row['id_contacto']);
+    }
     $sqlSelectContact->close();
 
     // Eliminar relaciones del empleado
     $sqlDelRel = $conexion->prepare("DELETE FROM empleado_contacto WHERE id_empleado = ?");
     $sqlDelRel->bind_param("i", $id_empleado);
-    if (!$sqlDelRel->execute()) { throw new Exception('No se pudo eliminar relaciones de contacto.'); }
+    if (!$sqlDelRel->execute()) {
+        throw new Exception('No se pudo eliminar relaciones de contacto.');
+    }
     $sqlDelRel->close();
 
     // =============================
@@ -66,15 +76,21 @@ try {
     $beneficiarioIds = [];
     $sqlSelectBenef = $conexion->prepare("SELECT id_beneficiario FROM empleado_beneficiario WHERE id_empleado = ?");
     $sqlSelectBenef->bind_param("i", $id_empleado);
-    if (!$sqlSelectBenef->execute()) { throw new Exception('No se pudo obtener beneficiarios.'); }
+    if (!$sqlSelectBenef->execute()) {
+        throw new Exception('No se pudo obtener beneficiarios.');
+    }
     $resBenef = $sqlSelectBenef->get_result();
-    while ($row = $resBenef->fetch_assoc()) { $beneficiarioIds[] = intval($row['id_beneficiario']); }
+    while ($row = $resBenef->fetch_assoc()) {
+        $beneficiarioIds[] = intval($row['id_beneficiario']);
+    }
     $sqlSelectBenef->close();
 
     // Eliminar relaciones en empleado_beneficiario
     $sqlDelBenefRel = $conexion->prepare("DELETE FROM empleado_beneficiario WHERE id_empleado = ?");
     $sqlDelBenefRel->bind_param("i", $id_empleado);
-    if (!$sqlDelBenefRel->execute()) { throw new Exception('No se pudo eliminar relaciones de beneficiarios.'); }
+    if (!$sqlDelBenefRel->execute()) {
+        throw new Exception('No se pudo eliminar relaciones de beneficiarios.');
+    }
     $sqlDelBenefRel->close();
 
     // Limpiar beneficiarios huérfanos (sin relación con ningún empleado)
@@ -83,31 +99,38 @@ try {
         $sqlDeleteBenef = $conexion->prepare("DELETE FROM beneficiarios WHERE id_beneficiario = ?");
         foreach ($beneficiarioIds as $bid) {
             $sqlCountBenef->bind_param("i", $bid);
-            if (!$sqlCountBenef->execute()) { throw new Exception('No se pudo verificar referencias de beneficiarios.'); }
+            if (!$sqlCountBenef->execute()) {
+                throw new Exception('No se pudo verificar referencias de beneficiarios.');
+            }
             $countRes = $sqlCountBenef->get_result();
             $countRow = $countRes->fetch_assoc();
             $numRefs = intval($countRow['c']);
             if ($numRefs === 0) {
                 $sqlDeleteBenef->bind_param("i", $bid);
-                if (!$sqlDeleteBenef->execute()) { throw new Exception('No se pudo eliminar un beneficiario huérfano.'); }
+                if (!$sqlDeleteBenef->execute()) {
+                    throw new Exception('No se pudo eliminar un beneficiario huérfano.');
+                }
             }
         }
         $sqlCountBenef->close();
         $sqlDeleteBenef->close();
     }
 
-    // Eliminar turnos del empleado
-    $sqlDelTurno = $conexion->prepare("DELETE FROM empleado_turno WHERE id_empleado = ?");
-    $sqlDelTurno->bind_param("i", $id_empleado);
-    if (!$sqlDelTurno->execute()) { throw new Exception('No se pudo eliminar los turnos del empleado.'); }
-    $sqlDelTurno->close();
+    // Eliminar horarios asignados al empleado
+    $sqlLiberarHorario = $conexion->prepare("DELETE FROM empleado_horario_reloj WHERE id_empleado = ?");
+    $sqlLiberarHorario->bind_param("i", $id_empleado);
+    $sqlLiberarHorario->execute();
+    $sqlLiberarHorario->close();
+
 
     // =============================
     // ELIMINAR EMPLEADO
     // =============================
     $sqlDelEmp = $conexion->prepare("DELETE FROM info_empleados WHERE id_empleado = ?");
     $sqlDelEmp->bind_param("i", $id_empleado);
-    if (!$sqlDelEmp->execute()) { throw new Exception('No se pudo eliminar al empleado.'); }
+    if (!$sqlDelEmp->execute()) {
+        throw new Exception('No se pudo eliminar al empleado.');
+    }
     $sqlDelEmp->close();
 
     // Limpiar contactos huérfanos (sin relación)
@@ -116,13 +139,17 @@ try {
         $sqlDeleteContacto = $conexion->prepare("DELETE FROM contacto_emergencia WHERE id_contacto = ?");
         foreach ($contactIds as $cid) {
             $sqlCount->bind_param("i", $cid);
-            if (!$sqlCount->execute()) { throw new Exception('No se pudo verificar referencias de contactos.'); }
+            if (!$sqlCount->execute()) {
+                throw new Exception('No se pudo verificar referencias de contactos.');
+            }
             $countRes = $sqlCount->get_result();
             $countRow = $countRes->fetch_assoc();
             $numRefs = intval($countRow['c']);
             if ($numRefs === 0) {
                 $sqlDeleteContacto->bind_param("i", $cid);
-                if (!$sqlDeleteContacto->execute()) { throw new Exception('No se pudo eliminar un contacto de emergencia.'); }
+                if (!$sqlDeleteContacto->execute()) {
+                    throw new Exception('No se pudo eliminar un contacto de emergencia.');
+                }
             }
         }
         $sqlCount->close();
@@ -149,5 +176,3 @@ try {
         'timeout' => 4000
     ]);
 }
-
-?>

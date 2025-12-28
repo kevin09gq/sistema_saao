@@ -1,8 +1,12 @@
 <?php
+
+header('Content-Type: application/json; charset=utf-8');
+
 include("../../config/config.php");
 include("../../conexion/conexion.php");
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
     $id_empleado = $_POST['id_empleado'];
     $clave_empleado = $_POST['clave_empleado'];
     $nombre_empleado = $_POST['nombre_empleado'];
@@ -16,9 +20,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $enfermedades_alergias = $_POST['enfermedades_alergias'] ?? null;
     $fecha_ingreso = $_POST['fecha_ingreso'] ?? null;
     $id_departamento = $_POST['id_departamento'] ?? null;
-
-    $id_turno = $_POST['id_turno'] ?? null; // Agregue esto BHL
-    $id_turno_sabado = $_POST['id_turno_sabado'] ?? null; // Agregue esto BHL
 
     // Nuevos campos agregados
     $fecha_nacimiento = $_POST['fecha_nacimiento'] ?? null;
@@ -67,10 +68,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_area = ($id_area === "0" || $id_area === 0 || empty($id_area)) ? null : (int)$id_area;
     $id_puestoEspecial = ($id_puestoEspecial === "0" || $id_puestoEspecial === 0 || empty($id_puestoEspecial)) ? null : (int)$id_puestoEspecial;
     $biometrico = ($biometrico === "0" || $biometrico === 0 || empty($biometrico)) ? null : (int)$biometrico;
-
-    // Convertir turnos a int o null
-    $id_turno = !empty($id_turno) ? (int)$id_turno : null;
-    $id_turno_sabado = !empty($id_turno_sabado) ? (int)$id_turno_sabado : null;
 
     // Convertir salarios a decimal o null
     $salario_semanal = !empty($salario_semanal) ? (float)$salario_semanal : null;
@@ -178,8 +175,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-
-
     // Verificar si el ID departamento es 0
     if ($id_departamento === "0" || $id_departamento === 0) {
         // Consulta sin parámetro para id_departamento (usa NULL directo)
@@ -229,7 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $salario_semanal,
             $salario_diario,
             $biometrico,
-            $telefono_empleado, 
+            $telefono_empleado,
             $rfc_empleado,
             $estado_civil,
             $id_empleado
@@ -292,33 +287,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $update_empleado->execute();
     $update_empleado->close();
-
-    // =============================
-    //   ACTUALIZAR TURNOS DEL EMPLEADO
-    // =============================
-    if (!empty($id_turno)) {
-        // Verificar si ya existe un registro en empleado_turno
-        $sql_check_turno = $conexion->prepare("SELECT COUNT(*) FROM empleado_turno WHERE id_empleado = ?");
-        $sql_check_turno->bind_param("i", $id_empleado);
-        $sql_check_turno->execute();
-        $sql_check_turno->bind_result($existe_turno);
-        $sql_check_turno->fetch();
-        $sql_check_turno->close();
-
-        if ($existe_turno > 0) {
-            // Si existe, actualizar
-            $sql_update_turno = $conexion->prepare("UPDATE empleado_turno SET id_turno_base = ?, id_turno_sabado = ? WHERE id_empleado = ?");
-            $sql_update_turno->bind_param("iii", $id_turno, $id_turno_sabado, $id_empleado);
-            $sql_update_turno->execute();
-            $sql_update_turno->close();
-        } else {
-            // Si no existe, insertar
-            $sql_insert_turno = $conexion->prepare("INSERT INTO empleado_turno (id_empleado, id_turno_base, id_turno_sabado) VALUES (?, ?, ?)");
-            $sql_insert_turno->bind_param("iii", $id_empleado, $id_turno, $id_turno_sabado);
-            $sql_insert_turno->execute();
-            $sql_insert_turno->close();
-        }
-    }
 
     // Primero, obtener el casillero actual del empleado
     $sql_check_casilleros_actuales = $conexion->prepare("SELECT num_casillero FROM empleado_casillero WHERE id_empleado = ?");
@@ -602,7 +570,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // FIN DEL PROCESAMIENTO DE BENEFICIARIOS
     // =============================
 
-    // Verificar si el contacto de emergencia ya está registrado
+
+    // =============================
+    // PROCESAR HORARIOS
+    // =============================
+    if (!empty($_POST['horarios'])) {
+        $horarioJSON = json_encode($_POST['horarios'], JSON_UNESCAPED_UNICODE);
+
+        // Verificar si ya existe un registro para el empleado
+        $sqlVerificar = $conexion->prepare("SELECT COUNT(*) FROM empleado_horario_reloj WHERE id_empleado = ?");
+        $sqlVerificar->bind_param("i", $id_empleado);
+        $sqlVerificar->execute();
+        $sqlVerificar->bind_result($existe);
+        $sqlVerificar->fetch();
+        $sqlVerificar->close();
+
+        if ($existe > 0) {
+            // Actualizar el registro existente
+            $sqlActualizar = $conexion->prepare("UPDATE empleado_horario_reloj SET horario = ? WHERE id_empleado = ?");
+            $sqlActualizar->bind_param("si", $horarioJSON, $id_empleado);
+            $sqlActualizar->execute();
+            $sqlActualizar->close();
+        } else {
+            // Insertar un nuevo registro en caso de que no exista
+            $sqlInsertar = $conexion->prepare("INSERT INTO empleado_horario_reloj (id_empleado, horario) VALUES (?, ?)");
+            $sqlInsertar->bind_param("is", $id_empleado, $horarioJSON);
+            $sqlInsertar->execute();
+            $sqlInsertar->close();
+        }
+    }
+
+    // =============================
+    // PROCESAR contactos de emergencia
+    // =============================
     $sql_check_contacto_emergencia = $conexion->prepare("SELECT COUNT(*) FROM contacto_emergencia WHERE nombre = ? AND ap_paterno = ? AND ap_materno = ?");
     $sql_check_contacto_emergencia->bind_param("sss", $emergencia_nombre, $emergencia_ap_paterno, $emergencia_ap_materno);
     $sql_check_contacto_emergencia->execute();
@@ -963,11 +963,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $respuesta = array(
         "title" => "EXITO",
-        "text" => "Actualización exitosa.",
+        "text" => "Actualización exitosa. " . $mensaje,
         "type" => "success",
         "timeout" => 3000,
     );
-    header('Content-Type: application/json');
+
+    // header('Content-Type: application/json');
     echo json_encode($respuesta);
     exit();
 }

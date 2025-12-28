@@ -1,0 +1,44 @@
+[
+    {
+        "dia": "LUNES",
+        "entrada": "08:00",
+        "salida_comida": "13:00",
+        "entrada_comida": "14:00",
+        "salida": "17:00"
+    },
+    {
+        "dia": "MARTES",
+        "entrada": "08:00",
+        "salida_comida": "13:00",
+        "entrada_comida": "14:00",
+        "salida": "17:00"
+    },
+    {
+        "dia": "MIERCOLES",
+        "entrada": "08:00",
+        "salida_comida": "13:00",
+        "entrada_comida": "14:00",
+        "salida": "17:00"
+    },
+    {
+        "dia": "JUEVES",
+        "entrada": "08:00",
+        "salida_comida": "13:00",
+        "entrada_comida": "14:00",
+        "salida": "17:00"
+    },
+    {
+        "dia": "VIERNES",
+        "entrada": "08:00",
+        "salida_comida": "13:00",
+        "entrada_comida": "14:00",
+        "salida": "17:00"
+    },
+    {
+        "dia": "SABADO",
+        "entrada": "09:00",
+        "salida_comida": "13:00",
+        "entrada_comida": "14:00",
+        "salida": "18:00"
+    }
+]

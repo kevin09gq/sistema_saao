@@ -14,12 +14,18 @@
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="../css/nomina_10lbs.css">
+    <link rel="stylesheet" href="../css/conceptsModal.css">
+
+    <style>
+      
+    </style>
+
 </head>
 
 <body>
 
     <!-- Contenedor principal centrado -->
-    <div class="container-nomina" id="container-nomina">
+    <div class="container-nomina" id="container-nomina" hidden>
         <!-- Contenedor tipo navbar para formulario y filtros -->
         <div class="navbar-nomina">
             <div class="titulo-nomina">Procesamiento de Nómina de Confianza</div>
@@ -80,7 +86,7 @@
 
                 <div class="busqueda-container" id="busqueda-container">
                     <i class="bi bi-search"></i>
-                    <input type="text" class="campo-busqueda" placeholder="Buscar..." id="campo-busqueda">
+                    <input type="text" class="campo-busqueda" placeholder="Buscar..." id="busqueda-nomina-confianza">
                     <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="btn-clear-busqueda" title="Limpiar">
                         <i class="bi bi-x-circle"></i>
                     </button>
@@ -122,42 +128,25 @@
                             <th rowspan="2">#</th>
                             <th rowspan="2">NOMBRE</th>
                             <th rowspan="2">SUELDO <br> SEMANAL</th>
-                            <th rowspan="2">VACACIONES</th>
                             <th rowspan="2">EXTRAS</th>
+                            <th rowspan="2">Total Percepciones</th>
                             <th rowspan="2">RETARDOS</th>
-                            <th rowspan="2">TARJETA</th>
                             <th rowspan="2">ISR</th>
                             <th rowspan="2">IMSS</th>
                             <th rowspan="2">AJUSTES <br> AL SUB</th>
                             <th rowspan="2">INFONAVIT</th>
-                            <th rowspan="2">PRÉSTAMO</th>
                             <th rowspan="2">PERMISO</th>
                             <th rowspan="2">INASISTENCIAS</th>
                             <th rowspan="2">UNIFORMES</th>
                             <th rowspan="2">CHECADOR</th>
-                            <th rowspan="2">TOTAL</th>
+                            <th rowspan="2">TOTAL DE <br> DEDUCCIONES</th>
+                            <th rowspan="2">PRÉSTAMO</th>
+                            <th rowspan="2">DISPERSION DE TARJETA</th>
+                            <th rowspan="2">NETO A RECIBIR</th>
                         </tr>
                     </thead>
                     <tbody id="tabla-nomina-body">
-                        <tr>
-                            <td>1</td>
-                            <td>BAUTISTA MORALES VICTOR MANUEL</td>
-                            <td>$2,800.00</td>
-                            <td>$0.00</td>
-                            <td>$350.00</td>
-                            <td>$0.00</td>
-                            <td>$0.00</td>
-                            <td>$220.00</td>
-                            <td>$180.00</td>
-                            <td>$0.00</td>
-                            <td>$300.00</td>
-                            <td>$0.00</td>
-                            <td>$0.00</td>
-                            <td>$0.00</td>
-                            <td>$0.00</td>
-                            <td>$0.00</td>
-                            <td><strong>$2,450.00</strong></td>
-                        </tr>
+
 
 
                     </tbody>
@@ -168,14 +157,28 @@
         </div>
     </div>
 
+    <!-- Menú contextual simple para la tabla -->
+    <div id="context-menu" style="position:absolute;z-index:10000;display:none;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);padding:4px;">
+        <div class="cm-item" data-action="ver" style="padding:6px 12px;cursor:pointer;">Ver detalles</div>
+    </div>
+
+    <!-- Modal de detalles (incluir plantilla) -->
+    <?php include 'conceptsModal.php'; ?>
+
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
     <!-- Bootstrap JS -->
     <script src="<?= BOOTSTRAP_JS ?>"></script>
-   
+
     <!-- Script personalizado -->
+    <script src="../js/storage.js"></script>
     <script src="../js/process_excel.js"></script>
     <script src="../js/showDataTable.js"></script>
+    <script src="../js/filtrado.js"></script>
+    <script src="../js/config_modal_concepts.js"></script>
+    <script src="../js/establecer_data.js"></script>
+    <script src="../js/newConcepts.js"></script>
+    <script src="../js/editarConcepts.js"></script>
 </body>
 
 </html>

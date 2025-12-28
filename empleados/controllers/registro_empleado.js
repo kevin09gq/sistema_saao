@@ -69,6 +69,11 @@ $(document).ready(function () {
         formatearMayusculas(this);
     });
 
+    // Formatear campos del dia de horario
+    $('input[name="horario_dia[]"]').each(function () {
+        formatearMayusculas(this);
+    });
+
     // Función para actualizar el total de porcentajes de beneficiarios
     function actualizarTotalPorcentaje() {
         let total = 0;
@@ -277,7 +282,7 @@ $(document).ready(function () {
     }
 
 
-    // Función para limpiar el formulario después de un registro exitoso
+    // Función para limpiar el formulario después de un registro exitoso BHL
     function limpiarFormulario() {
         // Limpiar campos de texto
         $("#clave_trabajador, #nombre_trabajador, #apellido_paterno, #apellido_materno").val("");
@@ -320,12 +325,20 @@ $(document).ready(function () {
         // Resetear el switch de status NSS
         $("#status_nss").prop("disabled", true).prop("checked", false);
 
+        // Limpiar campos de horarios
+        $('input[name="horario_dia[]"]').val("");
+        $('input[name="horario_entrada[]"]').val("");
+        $('input[name="horario_salida_comida[]"]').val("");
+        $('input[name="horario_entrada_comida[]"]').val("");
+        $('input[name="horario_salida[]"]').val("");
+
+
         // Actualizar el total de porcentajes después de limpiar
         actualizarTotalPorcentaje();
     }
 
-    // Asocia el evento submit al formulario (correcto para enviar datos después)
-    function registrarEmpleado() {
+    // Asocia el evento submit al formulario (correcto para enviar datos después) BHL
+    function registrarEmpleado() { 
         $("#form_registro_empleado").on("submit", function (e) {
             e.preventDefault();
 
@@ -335,9 +348,6 @@ $(document).ready(function () {
             const ap_paterno = $("#apellido_paterno").val().trim();
             const ap_materno = $("#apellido_materno").val().trim();
             const sexo = $("#sexo_trabajador").val();
-
-            const turno = $("#turno_trabajador").val(); // agregue este BHL
-            const turno_sabado = $("#turno_trabajador_sabado").val(); // agregue este BHL
 
             // Campos opcionales
             const domicilio = $("#domicilio_trabajador").val().trim();
@@ -413,6 +423,29 @@ $(document).ready(function () {
                 return false;
             }
 
+
+            // Recoger los datos del horario
+            let horarios = [];
+            $('input[name="horario_dia[]"]').each(function (index) {
+                const dia = $(this).val().trim();
+                const entrada = $('input[name="horario_entrada[]"]').eq(index).val().trim();
+                const salida_comida = $('input[name="horario_salida_comida[]"]').eq(index).val().trim();
+                const entrada_comida = $('input[name="horario_entrada_comida[]"]').eq(index).val().trim();
+                const salida = $('input[name="horario_salida[]"]').eq(index).val().trim();
+
+                // Solo agregar si al menos un campo tiene valor
+                if (dia || entrada || salida_comida || entrada_comida || salida) {
+                    horarios.push({
+                        dia: dia || "",
+                        entrada: entrada || "",
+                        salida_comida: salida_comida || "",
+                        entrada_comida: entrada_comida || "",
+                        salida: salida || ""
+                    });
+                }
+            });
+
+
             // Validaciones obligatorias
             let obligatoriosValidos = (
                 validarClave(clave_empleado) &&
@@ -420,7 +453,7 @@ $(document).ready(function () {
                 validarApellido(ap_paterno) &&
                 validarApellido(ap_materno) &&
                 sexo
-            ); // aqui agregue el turno BHL
+            );
 
             // Validaciones opcionales (solo si tienen valor)
             let opcionalesValidos = true;
@@ -462,8 +495,6 @@ $(document).ready(function () {
                 ap_paterno,
                 ap_materno,
                 sexo,
-                turno,
-                turno_sabado,
                 domicilio: domicilio || "",
                 imss: imss || "",
                 curp: curp || "",
@@ -498,7 +529,10 @@ $(document).ready(function () {
                 emergencia_domicilio: emergencia_domicilio || "",
 
                 // Datos de beneficiarios
-                beneficiarios: beneficiarios
+                beneficiarios: beneficiarios,
+
+                // Datos de horarios
+                horarios: horarios
             }; // Aqui agregue el turno BHL 
 
             $.ajax({
@@ -555,18 +589,5 @@ $(document).ready(function () {
             });
         })
     }
-
-    /**
-     * Evento para detectar cambio turno
-     * Por defecto, el turno del sabado
-     * sera el mismo que de lunes a viernes
-     * aunque el usuario podra cambiarlo si quiere
-     * BHL
-     */
-    $(document).on('change', '#turno_trabajador', function (e) {
-        e.preventDefault();
-        let valor = $(this).val();
-        $('#turno_trabajador_sabado').val(valor);
-    });
 
 });

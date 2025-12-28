@@ -56,10 +56,17 @@ verificarSesion();
                                         <i class="bi bi-people-fill me-2"></i>Beneficiarios
                                     </button>
                                 </li>
+
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="tab-horarios" data-bs-toggle="tab" data-bs-target="#tab_horarios" type="button" role="tab" aria-controls="tab_horarios" aria-selected="false">
+                                        <i class="bi bi-people-fill me-2"></i>Horarios      
+                                    </button>
+                                </li>
                             </ul>
 
                             <!-- Tab content -->
                             <div class="tab-content" id="registroTabsContent">
+
                                 <!-- Tab Información del trabajador -->
                                 <div class="tab-pane fade show active" id="tab_trabajador" role="tabpanel" aria-labelledby="tab-trabajador">
                                     <div class="row">
@@ -203,23 +210,7 @@ verificarSesion();
                                             <input type="number" class="form-control" id="salario_diario" name="salario_diario" step="0.01" placeholder="0.00">
                                         </div>
                                     </div>
-                                    <div class="row">
 
-                                        <div class="col-md-6 mb-3">
-                                            <label for="turno_trabajador" class="form-label">Turno de Lunes a Viernes</label>
-                                            <select class="form-select" id="turno_trabajador" name="id_turno">
-                                                <option value="">Selecciona un turno</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="col-md-6 mb-3">
-                                            <label for="turno_trabajador_sabado" class="form-label">Turno Sabados</label>
-                                            <select class="form-select" id="turno_trabajador_sabado" name="id_turno_sabado">
-                                                <option value="">Selecciona un turno</option>
-                                            </select>
-                                        </div>
-
-                                    </div>
                                 </div>
 
                                 <!-- Tab Contacto de emergencia -->
@@ -299,6 +290,47 @@ verificarSesion();
                                                 <span class="input-group-text">Total Porcentaje</span>
                                                 <input type="number" class="form-control text-center" id="total_porcentaje_beneficiarios" readonly>
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tab Horarios -->
+                                <div class="tab-pane fade" id="tab_horarios" role="tabpanel" aria-labelledby="tab-horarios">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <h6 class="mb-3">Horarios Reloj Checador</h6>
+                                            <table class="table table-bordered table-hover">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Día</th>
+                                                        <th>Entrada</th>
+                                                        <th>Salida Comida</th>
+                                                        <th>Entrada Comida</th>
+                                                        <th>Salida</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="tbody_horarios">
+                                                    <?php for ($i = 1; $i <= 7; $i++): ?>
+                                                        <tr>
+                                                            <td>
+                                                                <input type="text" class="form-control" name="horario_dia[]" placeholder="Día">
+                                                            </td>
+                                                            <td>
+                                                                <input type="time" class="form-control" name="horario_entrada[]" placeholder="Entrada">
+                                                            </td>
+                                                            <td>
+                                                                <input type="time" class="form-control" name="horario_salida_comida[]" placeholder="Salida Comida">
+                                                            </td>
+                                                            <td>
+                                                                <input type="time" class="form-control" name="horario_entrada_comida[]" placeholder="Entrada Comida">
+                                                            </td>
+                                                            <td>
+                                                                <input type="time" class="form-control" name="horario_salida[]" placeholder="Salida">
+                                                            </td>
+                                                        </tr>
+                                                    <?php endfor; ?>
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
                                 </div>

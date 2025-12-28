@@ -190,10 +190,10 @@ CREATE TABLE tabulador (
 
 CREATE TABLE turnos (
   id_turno INT PRIMARY KEY AUTO_INCREMENT,
-  descripcion VARCHAR (30),
+  descripcion VARCHAR (30) NOT NULL,
   hora_inicio TIME,
   hora_fin TIME,
-  estado TINYINT DEFAULT 1
+  max DECIMAL(10,2) NOT NULL
 );
 
 CREATE TABLE festividades (
@@ -204,14 +204,60 @@ CREATE TABLE festividades (
   observaciones VARCHAR(100) NULL
 );
 
-CREATE TABLE empleado_turno (
-  id_empleado_turno INT PRIMARY KEY AUTO_INCREMENT,
-  id_empleado INT,
-  id_turno_base INT NULL,
-  id_turno_sabado INT NULL,
-  FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado),
-  FOREIGN KEY (id_turno_base) REFERENCES turnos(id_turno),
-  FOREIGN KEY (id_turno_sabado) REFERENCES turnos(id_turno),
+
+-- =============================
+-- TABLAS DE PRÉSTAMOS
+-- =============================
+
+CREATE TABLE prestamos (
+    id_prestamo INT AUTO_INCREMENT PRIMARY KEY,
+    id_empleado INT NOT NULL,
+    monto_total DECIMAL(10,2) NOT NULL,
+    monto_semanal DECIMAL(10,2) NOT NULL,
+    semanas_totales INT NOT NULL,
+    semanas_pagadas INT DEFAULT 0,
+    saldo_restante DECIMAL(10,2) NOT NULL,
+    estado ENUM('pendiente', 'activo', 'pagado', 'cancelado') DEFAULT 'pendiente',
+    notas TEXT NULL,
+    fecha_inicio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_empleado)
+        REFERENCES info_empleados(id_empleado)
+        ON DELETE RESTRICT
+);
+
+CREATE TABLE prestamos_conceptos (
+    id_concepto INT AUTO_INCREMENT PRIMARY KEY,
+    id_prestamo INT NOT NULL,
+    concepto VARCHAR(150) NOT NULL,
+    monto DECIMAL(10,2) NOT NULL,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_prestamo)
+        REFERENCES prestamos(id_prestamo)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE pagos_prestamos (
+    id_pago INT AUTO_INCREMENT PRIMARY KEY,
+    id_prestamo INT NOT NULL,
+    monto_pagado DECIMAL(10,2) NOT NULL,
+    numero_semana INT NOT NULL,
+    fecha_pago DATE NOT NULL,
+    FOREIGN KEY (id_prestamo)
+        REFERENCES prestamos(id_prestamo)
+        ON DELETE CASCADE
+);
+
+
+-- =============================
+-- TABLA DE HORARIOS RELOJ 8 HRS
+-- =============================
+
+CREATE TABLE empleado_horario_reloj (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_empleado INT NOT NULL,
+    horario LONGTEXT NOT NULL,
+    FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado)  
 );
 
 -- =============================
@@ -254,14 +300,7 @@ INSERT INTO departamentos (id_departamento, nombre_departamento) VALUES
 (7, 'Ranchos'),
 (8, 'Administracion Sucursal CdMx');
 
--- Insertar estado civil
-INSERT INTO estado_civil (nombre_estado_civil) VALUES 
-('Soltero(a)'),
-('Casado(a)'),
-('Viudo(a)'),
-('Divorciado(a)'),
-('Unión Libre'),
-('Separado(a)');
+
 
 -- Procedimiento para crear casilleros del 1 al 300
 DELIMITER //
@@ -278,6 +317,8 @@ DELIMITER ;
 
 -- Ejecutar el procedimiento
 CALL crear_casilleros();
+
+
 
 INSERT INTO tabulador (id_tabulador,id_empresa, info_tabulador) 
 VALUES (

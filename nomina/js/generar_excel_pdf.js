@@ -205,7 +205,9 @@ $('#btn_export_pdf_reporte').on('click', async function () {
         datos: jsonGlobal,
         tituloNomina: tituloNomina,
         numeroSemana: numeroSemana,
-        fechaCierre: fechaCierre
+        fechaCierre: fechaCierre,
+        // Incluir horarios semanales para el reporte
+        horarios: (typeof window !== 'undefined' && window.horariosSemanalesActualizados) ? window.horariosSemanalesActualizados : null
     };
 
     $.ajax({

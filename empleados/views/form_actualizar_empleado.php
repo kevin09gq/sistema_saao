@@ -123,7 +123,7 @@ verificarSesion();
 
     <!-- Modal Actualizar Empleado con Tabs -->
     <div class="modal fade" id="modal_actualizar_empleado" tabindex="-1" aria-labelledby="modalActualizarEmpleadoLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <form id="form_modal_actualizar_empleado">
                     <div class="modal-header bg-primary text-white">
@@ -153,6 +153,12 @@ verificarSesion();
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="tab-beneficiarios" data-bs-toggle="tab" data-bs-target="#tab_beneficiarios" type="button" role="tab" aria-controls="tab_beneficiarios" aria-selected="false">
                                     Beneficiarios
+                                </button>
+                            </li>
+
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-horarios" data-bs-toggle="tab" data-bs-target="#tab_horarios" type="button" role="tab" aria-controls="tab_horarios" aria-selected="false">
+                                    Horarios
                                 </button>
                             </li>
                         </ul>
@@ -297,21 +303,7 @@ verificarSesion();
                                         <input type="number" step="0.01" class="form-control" id="modal_salario_diario" name="salario_diario" placeholder="0.00">
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="turno_trabajador" class="form-label">Turno de Lunes a Viernes</label>
-                                        <select class="form-select" id="modal_turno_trabajador" name="id_turno">
-                                            <option value="">Selecciona un turno</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="turno_trabajador" class="form-label">Turno Sabados</label>
-                                        <select class="form-select" id="modal_turno_trabajador_sabado" name="id_turno_sabado">
-                                            <option value="">Selecciona un turno</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                
+
                             </div>
                             <!-- Contacto de emergencia -->
                             <div class="tab-pane fade" id="tab_emergencia" role="tabpanel" aria-labelledby="tab-emergencia">
@@ -369,8 +361,8 @@ verificarSesion();
                                     </button>
                                 </div>
                             </div>
-                            <!-- Beneficiarios -->
 
+                            <!-- Beneficiarios -->
                             <div class="tab-pane fade" id="tab_beneficiarios" role="tabpanel" aria-labelledby="tab-beneficiarios">
                                 <div class="row">
                                     <div class="col-12">
@@ -420,6 +412,81 @@ verificarSesion();
                                         <div class="input-group">
                                             <span class="input-group-text">Total Porcentaje</span>
                                             <input type="number" class="form-control text-center" id="total_porcentaje_beneficiarios" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Horarios -->
+                            <div class="tab-pane fade" id="tab_horarios" role="tabpanel" aria-labelledby="tab-horarios">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <h6 class="mb-3">Horarios de reloj checador</h6>
+
+                                        <!-- Formulario de referencia -->
+                                        <div class="mb-4">
+                                            <div class="row g-2">
+                                                <div class="col">
+                                                    <label class="form-label" for="ref_entrada">Entrada</label>
+                                                    <input type="time" id="ref_entrada" class="form-control" placeholder="Entrada">
+                                                </div>
+                                                <div class="col">
+                                                    <label class="form-label" for="ref_salida_comida">Salida Comida</label>
+                                                    <input type="time" id="ref_salida_comida" class="form-control" placeholder="Salida Comida">
+                                                </div>
+                                                <div class="col">
+                                                    <label class="form-label" for="ref_entrada_comida">Entrada Comida</label>
+                                                    <input type="time" id="ref_entrada_comida" class="form-control" placeholder="Entrada Comida">
+                                                </div>
+                                                <div class="col">
+                                                    <label class="form-label" for="ref_salida">Salida</label>
+                                                    <input type="time" id="ref_salida" class="form-control" placeholder="Salida">
+                                                </div>
+                                                <div class="col-auto">
+                                                    <button type="button" id="btnCopiarHorarios" class="btn btn-primary my-auto">Copiar</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered table-hover">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Día</th>
+                                                        <th>Entrada</th>
+                                                        <th>Salida Comida</th>
+                                                        <th>Entrada Comida</th>
+                                                        <th>Salida</th>
+                                                        <th style="width: 80px;">Acciones</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="tbody_horarios">
+                                                    <?php for ($i = 1; $i <= 7; $i++): ?>
+                                                        <tr>
+                                                            <td>
+                                                                <input type="text" class="form-control" name="horario_dia[]" placeholder="Día">
+                                                            </td>
+                                                            <td>
+                                                                <input type="time" class="form-control" name="horario_entrada[]" placeholder="Entrada">
+                                                            </td>
+                                                            <td>
+                                                                <input type="time" class="form-control" name="horario_salida_comida[]" placeholder="Salida Comida">
+                                                            </td>
+                                                            <td>
+                                                                <input type="time" class="form-control" name="horario_entrada_comida[]" placeholder="Entrada Comida">
+                                                            </td>
+                                                            <td>
+                                                                <input type="time" class="form-control" name="horario_salida[]" placeholder="Salida">
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <button type="button" class="btn btn-danger btn-sm btn-eliminar-horario" title="Limpiar fila">
+                                                                    <i class="bi bi-trash"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    <?php endfor; ?>
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
                                 </div>

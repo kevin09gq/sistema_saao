@@ -58,10 +58,12 @@ foreach ($rows as $row) {
             
             $nombreCompleto = trim($match[1] . ' ' . $match[2]);
             
-            // Verificar si el departamento está en la lista permitida
+            // Verificar si el departamento está exactamente en la lista permitida
+            // Usamos el nombre sin el número (match[2]) para una comparación exacta
             $departamentoPermitido = false;
+            $nombreDeptoSolo = trim($match[2]);
             foreach ($departamentosPermitidos as $deptoPermitido) {
-                if (stripos($nombreCompleto, $deptoPermitido) !== false) {
+                if (strcasecmp($nombreDeptoSolo, $deptoPermitido) === 0) {
                     $departamentoPermitido = true;
                     break;
                 }

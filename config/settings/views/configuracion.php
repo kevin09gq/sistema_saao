@@ -49,7 +49,7 @@ verificarSesion(); // Proteger esta página
                         </a>
                     </li>
 
-                    <!-- Se agrego esto para los turnos -->
+                    <!-- Se agrego esto para los tunos -->
                     <li class="nav-item" role="presentation">
                         <a class="nav-link" id="turnos-tab" data-bs-toggle="tab" href="#turnos" role="tab">
                             <i class="bi bi-clock-history"></i> Turnos
@@ -299,12 +299,18 @@ verificarSesion(); // Proteger esta página
 
                                         <div class="mb-3">
                                             <label for="hora_inicio" class="form-label">Hora de Inicio</label>
-                                            <input type="time" class="form-control" id="hora_inicio" name="hora_inicio" required>
+                                            <input type="time" class="form-control" id="hora_inicio" name="hora_inicio">
                                         </div>
 
                                         <div class="mb-3">
                                             <label for="hora_fin" class="form-label">Hora Fin</label>
-                                            <input type="time" class="form-control" id="hora_fin" name="hora_fin" required>
+                                            <input type="time" class="form-control" id="hora_fin" name="hora_fin">
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="max" class="form-label">Horas máximas</label>
+                                            <input type="number" class="form-control" id="max" name="max"
+                                                placeholder="Horas máximas" required step="any" min="0">
                                         </div>
 
 
