@@ -153,7 +153,9 @@ function dataEmpleado($idEmpleado, $idClave)
             ORDER BY hr.fecha_reingreso DESC
             LIMIT 1
         ) AS ultima_fecha_reingreso,
-        ehr.horario
+        ehr.horario,
+        ho.horario_oficial,
+        e.horario_fijo
     FROM 
         info_empleados e
     LEFT JOIN 
@@ -170,6 +172,8 @@ function dataEmpleado($idEmpleado, $idClave)
         contacto_emergencia cont ON ec.id_contacto = cont.id_contacto
     LEFT JOIN 
         empleado_horario_reloj ehr ON ehr.id_empleado = e.id_empleado
+    LEFT JOIN
+        horarios_oficiales ho ON ho.id_empleado = e.id_empleado
     WHERE e.id_empleado = ? AND e.clave_empleado = ?");
 
     $sql->bind_param("is", $idEmpleado, $idClave);
@@ -214,7 +218,10 @@ function dataEmpleado($idEmpleado, $idClave)
             'domicilio_contacto' => $row['domicilio_contacto'],
             'parentesco' => $row['parentesco'],
             'ultima_fecha_reingreso' => $row['ultima_fecha_reingreso'],
-            'horario_reloj' => json_decode($row['horario'], true) ?? []
+            'horario_reloj' => json_decode($row['horario'], true) ?? [],
+            'horario_oficial' => $row['horario_oficial'],
+            'horarios_oficiales' => ($row['horario_oficial'] !== null && $row['horario_oficial'] !== '') ? (json_decode($row['horario_oficial'], true) ?? []) : [],
+            'horario_fijo' => (int)$row['horario_fijo']
         );
 
         // Agregar historial completo de reingresos/salidas del empleado

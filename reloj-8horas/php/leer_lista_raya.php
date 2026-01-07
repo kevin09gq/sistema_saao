@@ -14,6 +14,7 @@ $sheet = $spreadsheet->getActiveSheet();
 $rows = $sheet->toArray();
 
 $departamentos = [];
+$puestos = [];
 $actualDepto = null;
 $ultimoEmpleadoIdx = null;
 $procesandoEmpleados = false;
@@ -39,7 +40,12 @@ foreach ($rows as $row) {
 }
 
 foreach ($rows as $row) {
-    // Detectar nuevo departamento
+    
+    /**
+     * =======================
+     *  Detectar departamento
+     * =======================
+     */
     if (isset($row[0]) && is_string($row[0])) {
         $cell = ltrim($row[0], "'");
         $cell = preg_replace('/(Reg\.? Pat\.? IMSS.*)$/i', '', $cell);
@@ -65,17 +71,42 @@ foreach ($rows as $row) {
     if ($actualDepto && isset($row[0]) && is_numeric($row[0]) && isset($row[1]) && is_string($row[1]) && trim($row[1]) !== '') {
 
         $nombreEmpleado = trim($row[1]);
+        $puestoEmpleado = '';
+
         if (preg_match('/^[A-ZÁÉÍÓÚÑ]+\s+[A-ZÁÉÍÓÚÑ]+/u', $nombreEmpleado)) {
             // Formatear la clave para que tenga 3 dígitos con ceros a la izquierda
             $claveFormateada = str_pad((string)$row[0], 3, '0', STR_PAD_LEFT);
 
+            // Obtener el puesto de la fila siguiente
+            $currentRowIdx = array_search($row, $rows, true);
+            if ($currentRowIdx !== false && isset($rows[$currentRowIdx + 1])) {
+                $siguienteFila = $rows[$currentRowIdx + 1];
+                if (isset($siguienteFila[1]) && is_string($siguienteFila[1]) && trim($siguienteFila[1]) !== '') {
+                    $puestoEmpleado = trim($siguienteFila[1]);
+                    
+                    // Agregar al arreglo de puestos si no existe
+                    if (!in_array($puestoEmpleado, $puestos)) {
+                        $puestos[] = $puestoEmpleado;
+                    }
+                }
+            }
+
+            /**
+             * Estos datos se obtendran posteriormente
+             * datos generales del empleado sacos
+             * del archivo excel
+             */
             $empleado = [
                 'clave' => $claveFormateada,
                 'nombre' => $nombreEmpleado,
-                'dias_trabajados' => null,
+                'puesto' => $puestoEmpleado,
+                'dias_trabajados' => 0,
                 'vacaciones' => false,
+                'dias_vacaciones' => 0,
                 'incapacidades' => false,
-                'ausencias' => false
+                'dias_incapacidades' => 0,
+                'ausencias' => false,
+                'dias_ausencias' => 0
             ];
 
             $actualDepto['empleados'][] = $empleado;
@@ -91,51 +122,92 @@ foreach ($rows as $row) {
         $colDiasPagados = null;
 
         foreach ($row as $idx => $cell) {
-            if (is_string($cell) && preg_match('/d[ií]as\s+pagados:?/iu', trim($cell))) { // Busca la palabra "Días pagados:"
-                /**
-                 * Si la encuentra la bandera se marca como true
-                 * Se guarda el index de la columna
-                 */
+            if (is_string($cell) && preg_match('/d[ií]as\s+pagados:?/iu', trim($cell))) {
                 $esDiasPagados = true;
                 $colDiasPagados = $idx;
                 break; // se rompe el foreach
             }
         }
 
-        if ($esDiasPagados && $colDiasPagados !== null) {
-            $siguienteCol = $colDiasPagados + 1;
-            if (isset($row[$siguienteCol])) {
+        // Ya no usamos "Días pagados" porque incluye el domingo
+        // Los días reales trabajados se obtienen de "Sueldo"
 
-                $valor = trim($row[$siguienteCol]);
+        /**
+         * Estos son eventos que pueden o no
+         * encontrarse en el archivo,
+         * nota: justo al lado de Vacaciones hay un número
+         * este número indica la cantidad de días que tuvo de vacaciones
+         * lo mismo para incapacidades y ausencias
+         */
+        $nextRowIdx = array_search($row, $rows, true) + 1;
+        if (isset($rows[$nextRowIdx])) {
+            $nextRow = $rows[$nextRowIdx];
+            foreach ($nextRow as $idx => $cell) {
+                if (is_string($cell)) {
+                    $texto = trim($cell);
+                    $ultimoIdx = count($actualDepto['empleados']) - 1;
 
-                if (is_numeric($valor)) {
-                    $dias = (float)$valor;
-                    if ($dias > 0 && $actualDepto && !empty($actualDepto['empleados'])) {
-                        $actualDepto['empleados'][count($actualDepto['empleados']) - 1]['dias_trabajados'] = $dias;
+                    if (preg_match('/vacaciones/i', $texto)) {
+                        $actualDepto['empleados'][$ultimoIdx]['vacaciones'] = true;
+                        // Buscar el número de días en la siguiente celda
+                        if (isset($nextRow[$idx + 1]) && is_numeric($nextRow[$idx + 1])) {
+                            $actualDepto['empleados'][$ultimoIdx]['dias_vacaciones'] = (int)$nextRow[$idx + 1];
+                        }
+                    }
+                    if (preg_match('/incapacidades/i', $texto)) {
+                        $actualDepto['empleados'][$ultimoIdx]['incapacidades'] = true;
+                        // Buscar el número de días en la siguiente celda
+                        if (isset($nextRow[$idx + 1]) && is_numeric($nextRow[$idx + 1])) {
+                            $actualDepto['empleados'][$ultimoIdx]['dias_incapacidades'] = (int)$nextRow[$idx + 1];
+                        }
+                    }
+                    if (preg_match('/ausencias/i', $texto)) {
+                        $actualDepto['empleados'][$ultimoIdx]['ausencias'] = true;
+                        // Buscar el número de días en la siguiente celda
+                        if (isset($nextRow[$idx + 1]) && is_numeric($nextRow[$idx + 1])) {
+                            $actualDepto['empleados'][$ultimoIdx]['dias_ausencias'] = (int)$nextRow[$idx + 1];
+                        }
                     }
                 }
             }
         }
 
-        $nextRowIdx = array_search($row, $rows, true) + 1;
-        if (isset($rows[$nextRowIdx])) {
-            $nextRow = $rows[$nextRowIdx];
-            foreach ($nextRow as $cell) {
-                if (is_string($cell)) {
-                    $texto = trim($cell);
-                    if (preg_match('/vacaciones/i', $texto)) {
-                        $actualDepto['empleados'][count($actualDepto['empleados']) - 1]['vacaciones'] = true;
-                    }
-                    if (preg_match('/incapacidades/i', $texto)) {
-                        $actualDepto['empleados'][count($actualDepto['empleados']) - 1]['incapacidades'] = true;
-                    }
-                    if (preg_match('/ausencias/i', $texto)) {
-                        $actualDepto['empleados'][count($actualDepto['empleados']) - 1]['ausencias'] = true;
+        if ($esDiasPagados && $actualDepto && !empty($actualDepto['empleados'])) {
+            $ultimoIdx = count($actualDepto['empleados']) - 1;
+            $foundSueldo = false;
+            $startScan = $nextRowIdx;
+            $endScan = $nextRowIdx + 10;
+
+            for ($i = $startScan; $i <= $endScan; $i++) {
+                if (!isset($rows[$i])) {
+                    break;
+                }
+
+                foreach ($rows[$i] as $idx => $cell) {
+                    if (is_string($cell) && preg_match('/\bsueldo\b/iu', trim($cell))) {
+                        $colSueldo = $idx;
+                        $colValor = $colSueldo + 1;
+                        if (isset($rows[$i][$colValor])) {
+                            $valorSueldo = trim((string)$rows[$i][$colValor]);
+                            if (is_numeric($valorSueldo)) {
+                                $diasSueldo = (float)$valorSueldo;
+                                if ($diasSueldo > 0) {
+                                    /**
+                                     * Este es el verdadero días trabajados
+                                     * que se encuentra en la fila de Días pagados
+                                     */
+                                    $actualDepto['empleados'][$ultimoIdx]['dias_trabajados'] = $diasSueldo;
+                                }
+                                $foundSueldo = true;
+                                break 2;
+                            }
+                        }
                     }
                 }
             }
         }
     }
+
 
     // Detectar totales (sin continue)
     if (
@@ -156,9 +228,10 @@ if ($actualDepto !== null) {
 // Salida con identificadores
 $output = [
     'numero_semana' => $numeroSemana,
-    'fecha_inicio' => $fechaInicio,
-    'fecha_cierre' => $fechaCierre,
-    'departamentos' => $departamentos
+    'fecha_inicio'  => $fechaInicio,
+    'fecha_cierre'  => $fechaCierre,
+    'departamentos' => $departamentos,
+    'puestos'       => $puestos
 ];
 
 echo json_encode($output);

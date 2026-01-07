@@ -44,22 +44,54 @@
             <div class="tab-pane fade" id="tab_registros" role="tabpanel" aria-labelledby="tab-registros">
                 <h4 class="tab-title">Registros de Entrada y Salida</h4>
 
+                <!-- Botones para cambiar vista como mini-tabs -->
+                <div class="d-flex justify-content-center mb-3">
+                    <div class="btn-group" role="group" aria-label="Vista de registros">
+                        <button type="button" class="btn btn-outline-success mini-tab-registros active" id="btn-biometrico">
+                            <i class="bi bi-check-circle"></i> biometrico
+                        </button>
+                        <button type="button" class="btn btn-outline-primary mini-tab-registros" id="btn-horarios-oficiales">
+                            <i class="bi bi-clock-history"></i> horarios-oficiales
+                        </button>
+                    </div>
+                </div>
 
-
-                <!-- Tabla de Registros del Checador (inicialmente oculta) -->
+                <!-- Tabla de Registros del Checador -->
                 <div class="table-container" id="tabla-checador">
                     <table class=" custom-table">
-                    <thead>
-                        <tr>
-                            <th>Día</th>
-                            <th>Fecha</th>
-                            <th>Entrada</th>
-                            <th>Salida</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Los datos se llenarán con JavaScript -->
-                    </tbody>
+                        <thead>
+                            <tr>
+                                <th>Día</th>
+                                <th>Fecha</th>
+                                <th>Entrada</th>
+                                <th>Salida</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Los datos se llenarán con JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+
+                <!-- Tabla de Registros BD -->
+                <div class="table-container" id="tabla-horarios-oficiales" hidden>
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Día</th>
+                                <th>Entrada</th>
+                                <th>Salida Comida</th>
+                                <th>Entrada Comida</th>
+                                <th>Salida</th>
+                                
+                            </tr>
+                        </thead>
+                        <tbody id="horarios-oficiales-body">
+                            <!-- Los datos se llenarán con JavaScript -->
+
+                        </tbody>
+                       
                     </table>
                 </div>
 
@@ -76,7 +108,7 @@
 
                         <!-- Olvidos del Checador -->
                         <div class="col-md-6 mb-3">
-                            <div class="evento-card olvido-checador">
+                            <div class="evento-card olvido-checador" id="olvidos-checador-card">
                                 <div class="evento-header">
                                     <i class="bi bi-exclamation-triangle"></i>
                                     <span>Olvidos del Checador</span>
@@ -95,7 +127,7 @@
                     <div class="row">
                         <!-- Retardos -->
                         <div class="col-md-6 mb-3">
-                            <div class="evento-card retardo">
+                            <div class="evento-card retardo" id="retardos-card">
                                 <div class="evento-header">
                                     <i class="bi bi-clock-fill"></i>
                                     <span>Retardos</span>
@@ -110,7 +142,7 @@
                         </div>
                         <!-- Faltas -->
                         <div class="col-md-6 mb-3">
-                            <div class="evento-card falta">
+                            <div class="evento-card falta" id="faltas-card">
                                 <div class="evento-header">
                                     <i class="bi bi-x-circle"></i>
                                     <span>Faltas (Días sin registro con horario oficial)</span>
@@ -214,12 +246,12 @@
                                 </div>
                             </div>
 
-                             <div class="row mb-3">
+                            <div class="row mb-3">
                                 <div class="col-md-4 mb-2">
                                     <label class="form-label fw-semibold">AJUSTES AL SUB ($)</label>
                                     <input type="number" step="0.01" class="form-control mod-input-amarillo" id="mod-ajustes-sub" value="" placeholder="0.00">
                                 </div>
-                               
+
                             </div>
                         </div>
                     </div>
@@ -240,7 +272,12 @@
                                 </div>
                                 <div class="col-md-3 mb-2">
                                     <label class="form-label fw-semibold">Préstamo ($)</label>
-                                    <input type="number" step="0.01" class="form-control mod-input-rosa" id="mod-prestamo" value="" placeholder="0.00">
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" class="form-control mod-input-rosa" id="mod-prestamo" value="" placeholder="0.00">
+                                        <button type="button" class="btn btn-outline-primary" id="btn-ver-prestamos" title="Ver Préstamos">
+                                            <i class="bi bi-cash-stack"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="col-md-3 mb-2">
                                     <label class="form-label fw-semibold">Uniformes ($)</label>
@@ -251,12 +288,39 @@
                                     <input type="number" step="0.01" class="form-control mod-input-rosa" id="mod-checador" value="" placeholder="0.00">
                                 </div>
                             </div>
+                            <!-- Sección de Retardos -->
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <h6 class="fw-semibold text-danger">
+                                        <i class="bi bi-clock-fill"></i> Retardos
+                                    </h6>
+                                </div>
+                            </div>
                             <div class="row mb-3">
                                 <div class="col-md-4 mb-2">
-                                    <label class="form-label fw-semibold">Retardos ($)</label>
+                                    <label class="form-label fw-semibold">Total Retardos ($)</label>
                                     <input type="number" step="0.01" class="form-control mod-input-rosa" id="mod-retardos" value="" placeholder="0.00">
                                 </div>
-                            
+                            </div>
+
+                            <!-- Historial Detallado de Retardos -->
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <h6 class="fw-semibold text-info">
+                                        <i class="bi bi-calendar-check"></i> Historial de Retardos por Día 
+                                    </h6>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <div id="contenedor-historial-retardos" class="historial-retardos-container">
+                                        <!-- El historial se cargará dinámicamente aquí -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Otras Deducciones -->
+                            <div class="row mb-3">
                                 <div class="col-md-4 mb-2">
                                     <label class="form-label fw-semibold">Inasistencias($)</label>
                                     <input type="number" step="0.01" class="form-control mod-input-rosa" id="mod-inasistencias" value="" placeholder="0.00">
@@ -267,7 +331,7 @@
                                 </div>
                             </div>
 
-                          
+
                             <div class="row" id="contenedor-deducciones-adicionales">
                             </div>
                             <div class="row">

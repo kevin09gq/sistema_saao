@@ -1,0 +1,1257 @@
+{
+    "numero_semana": "49",
+    "fecha_inicio": "29/Nov/2025",
+    "fecha_cierre": "05/Dic/2025",
+    "departamentos": [
+        {
+            "nombre": "1 Administracion",
+            "empleados": [
+                {
+                    "clave": "003",
+                    "nombre": "ALVAREZ SOSA LETICIA",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "009",
+                    "nombre": "GUTIERREZ MELENDEZ GUADALUPE",
+                    "dias_trabajados": 0,
+                    "vacaciones": true,
+                    "dias_vacaciones": 6,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "015",
+                    "nombre": "GARCIA CELIS DORA GUILLERMINA",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "017",
+                    "nombre": "ROCHA GARCIA ESMERALDA",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "019",
+                    "nombre": "SAAVEDRA BONILLA MANUEL ANTONIO",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "040",
+                    "nombre": "PADILLA VILLEGAS GAMALIEL",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "088",
+                    "nombre": "LARA BARRIOS EVA MARIA",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "093",
+                    "nombre": "MELO HERNANDEZ JOAN",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "099",
+                    "nombre": "BRINGAS MEJIA IVETTE",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "166",
+                    "nombre": "BARRIENTOS GOMEZ ZAIDE ABIGAHIL",
+                    "dias_trabajados": 0,
+                    "vacaciones": true,
+                    "dias_vacaciones": 6,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "178",
+                    "nombre": "LORENZO BARTOLOME ESMERALDA",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "179",
+                    "nombre": "GARCIA OCHOA IVAN",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "240",
+                    "nombre": "RODRIGUEZ ARROYO RAMON ARTURO",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "272",
+                    "nombre": "ROMAN MENDEZ ERICK ADRIAN",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                }
+            ]
+        },
+        {
+            "nombre": "2 Personal de Confianza Produccion",
+            "empleados": [
+                {
+                    "clave": "002",
+                    "nombre": "ABURTO JIMENEZ FIDENCIO",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "007",
+                    "nombre": "FLORES ROJAS OMAR URIEL",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "016",
+                    "nombre": "RIVERA HERNANDEZ ROBERTO",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "036",
+                    "nombre": "JUAREZ SANTANA GERMAN",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "041",
+                    "nombre": "PEÑA RAMIREZ RENATO",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "116",
+                    "nombre": "PREZA JUAREZ EDMAR",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "155",
+                    "nombre": "ANDRADE GARCIA JULISSA",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "222",
+                    "nombre": "QUINTERO ALBA FELIPE DE JESUS",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "260",
+                    "nombre": "NAVA GONZALEZ MARCOS RAFAEL",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "282",
+                    "nombre": "AGUILERA SALAZAR RAUL",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "295",
+                    "nombre": "GARCIA ALBA JOVANY",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                }
+            ]
+        },
+        {
+            "nombre": "3 Seguridad Vigilancia e Intendencia",
+            "empleados": [
+                {
+                    "clave": "012",
+                    "nombre": "OREA DE JESUS JESUS GERARDO",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "180",
+                    "nombre": "RAMIREZ DOMINGUEZ XYUNELIT CITLALI",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "320",
+                    "nombre": "RUIZ ROBLES GLORIA",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                }
+            ]
+        },
+        {
+            "nombre": "4 Produccion 40 Libras",
+            "empleados": [
+                {
+                    "clave": "001",
+                    "nombre": "ABUNDIO SANTOS ALICIA",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "004",
+                    "nombre": "COSSIO MENDEZ LUCIA",
+                    "dias_trabajados": 1,
+                    "vacaciones": true,
+                    "dias_vacaciones": 5,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "006",
+                    "nombre": "ENCARNACION FLORES GUADALUPE",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "018",
+                    "nombre": "RODRIGUEZ ORTIZ JOSE",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "024",
+                    "nombre": "VILLEGAS GUEVARA PATRICIA",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "026",
+                    "nombre": "ZARATE ANTONIO PAULINA",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "071",
+                    "nombre": "RODRIGUEZ ESPINOSA JOSE LUIS",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "102",
+                    "nombre": "DOMINGUEZ HERNANDEZ GUADALUPE",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "110",
+                    "nombre": "GIL VAZQUEZ SIXTO",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "124",
+                    "nombre": "RODRIGUEZ HERNANDEZ ELIZABETH",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "197",
+                    "nombre": "POLO JUAREZ TERESA",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "200",
+                    "nombre": "BAUTISTA MORALES VICTOR MANUEL",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "214",
+                    "nombre": "RIVERA ARCOS SUGEYDI",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "220",
+                    "nombre": "HERNANDEZ HERNANDEZ FLOR DE ROCIO",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "225",
+                    "nombre": "CAMACHO HERRERA LUIS ALBERTO",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "235",
+                    "nombre": "MARTINEZ JUAREZ RUTH",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "236",
+                    "nombre": "MORGADO HERRERA HERIBERTO",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "253",
+                    "nombre": "LOPEZ JUAN GRISELDA",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "254",
+                    "nombre": "RUIZ FILOBELLO LUCIA",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "255",
+                    "nombre": "JUAREZ GOMEZ SERGIO",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "257",
+                    "nombre": "GUZMAN ALARCON CONSUELO YANELI",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "273",
+                    "nombre": "LANZAGORTA TOSCANO SUSILY ZULEMA",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "274",
+                    "nombre": "ALBA HERNANDEZ KARINA",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "275",
+                    "nombre": "COSSIO MENDEZ YAMILETH",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "290",
+                    "nombre": "RIVERA LANDERO OSCAR",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "294",
+                    "nombre": "JUAREZ VENTURA MARIA DEL SOL",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "303",
+                    "nombre": "LUNA SOLIS DIEGO JAIR",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "307",
+                    "nombre": "PINO RUIZ RICARDO ALFONSO",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "311",
+                    "nombre": "LARA RIVERA PAMELA",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "324",
+                    "nombre": "GARCIA ALBA JONNY BRANDON",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "336",
+                    "nombre": "PERDOMO PREZA VICTOR HUGO",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "338",
+                    "nombre": "MIRANDA ABAD LEANDRO",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "340",
+                    "nombre": "HERNANDEZ GARCIA ALFONSO",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "341",
+                    "nombre": "LERDO POSADAS JOSUE DANIEL",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "354",
+                    "nombre": "CRUZ MORALES DAVID",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "355",
+                    "nombre": "OLMEDO PITEROS VICTOR JOSUE",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "356",
+                    "nombre": "BONILLA FERRAL JOSE",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "357",
+                    "nombre": "PEÑA GONZALEZ ANALLELY",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "358",
+                    "nombre": "SALINAS CRUZ ELY ANASTACIA",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "359",
+                    "nombre": "GOMEZ VAZQUEZ ELOIR",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "361",
+                    "nombre": "GOMEZ ALVARADO YAMILETH",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "362",
+                    "nombre": "HERNANDEZ GARCIA RENE",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "364",
+                    "nombre": "PEREZ CACIANO ANA JOSELIN",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "365",
+                    "nombre": "PREZA LOPEZ VICTORIA",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "366",
+                    "nombre": "VERA CARREON ALEJANDRO",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "367",
+                    "nombre": "LEAL GUZMAN AXEL NOE",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "368",
+                    "nombre": "VAZQUEZ LOPEZ HEIDI",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                }
+            ]
+        },
+        {
+            "nombre": "5 Produccion 10 Libras",
+            "empleados": [
+                {
+                    "clave": "081",
+                    "nombre": "LUNA HERNANDEZ MARIA GUADALUPE",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "097",
+                    "nombre": "PREZA ORTIZ ESTHER",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "100",
+                    "nombre": "LANDERO LOZANO JUANA",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "139",
+                    "nombre": "SANCHEZ DE JESUS GUADALUPE IVON",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "140",
+                    "nombre": "SANCHEZ DE JESUS MARIA DEL CARMEN",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "163",
+                    "nombre": "CAMPOS ESTEBAN NOELIA",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "171",
+                    "nombre": "JUAREZ PREZA FATIMA MICHEL",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "186",
+                    "nombre": "DIAZ SANCHEZ MARIA DE LOS ANGELES",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "209",
+                    "nombre": "LOPEZ MARTINEZ LIZETH",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "215",
+                    "nombre": "JUAREZ PILAR ROSALBA",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "221",
+                    "nombre": "SANTIAGO SALAZAR ALMA IDALIA",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "227",
+                    "nombre": "PARRA SOLANO SULLY IRANY",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "286",
+                    "nombre": "VAZQUEZ RUIZ MARIELY",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                }
+            ]
+        },
+        {
+            "nombre": "6 RANCHO RELICARIO",
+            "empleados": [
+                {
+                    "clave": "242",
+                    "nombre": "MARQUEZ DAMIAN JERONIMO",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "304",
+                    "nombre": "REYES MURRIETA SALVADOR",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "329",
+                    "nombre": "MARTINEZ ROMERO VICTOR HUGO",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "330",
+                    "nombre": "MARTINEZ ROMERO LUIS EDUARDO",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "333",
+                    "nombre": "LOZANO ALARCON ISMAEL",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "342",
+                    "nombre": "DE LA CRUZ GALICIA FELIX",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "343",
+                    "nombre": "LOPEZ BELLO ALEJANDRO",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "344",
+                    "nombre": "MORALES UBALDO CESAR",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "345",
+                    "nombre": "ROSAS PARRALES FERNANDO",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "346",
+                    "nombre": "VAZQUEZ RAMIRO GUADALUPE",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "347",
+                    "nombre": "HERNANDEZ RAMIREZ JESUS ALBERTO",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "349",
+                    "nombre": "RAMIRO LUCIANO MARIA",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "353",
+                    "nombre": "ALBINO CALDERON VICTOR EMILIO",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                }
+            ]
+        },
+        {
+            "nombre": "7 Ranchos",
+            "empleados": [
+                {
+                    "clave": "027",
+                    "nombre": "AARON CADENA JOSE",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "194",
+                    "nombre": "GARCIA MARTINEZ AMADA",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "196",
+                    "nombre": "LOPEZ LERDO BEATRIZ",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "208",
+                    "nombre": "VELAZCO ASCENCION MAGALY",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "292",
+                    "nombre": "RODRIGUEZ CRUZ VICTOR MANUEL",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "334",
+                    "nombre": "LUGO DE FERMIN LIZBETH",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                }
+            ]
+        },
+        {
+            "nombre": "8 Administracion Sucursal CdMx",
+            "empleados": [
+                {
+                    "clave": "206",
+                    "nombre": "SALINAS CASTELLANOS IRMA DEL CARMEN",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "337",
+                    "nombre": "ESPINOSA DIAZ LEAL PABLO AXEL",
+                    "dias_trabajados": 6,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": false,
+                    "dias_incapacidades": 0,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                },
+                {
+                    "clave": "360",
+                    "nombre": "NUÑEZ MEZA ANDREA MARISOL",
+                    "dias_trabajados": 0,
+                    "vacaciones": false,
+                    "dias_vacaciones": 0,
+                    "incapacidades": true,
+                    "dias_incapacidades": 7,
+                    "ausencias": false,
+                    "dias_ausencias": 0
+                }
+            ]
+        }
+    ]
+}

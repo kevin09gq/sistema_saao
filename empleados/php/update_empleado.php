@@ -21,6 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fecha_ingreso = $_POST['fecha_ingreso'] ?? null;
     $id_departamento = $_POST['id_departamento'] ?? null;
 
+    $horario_fijo = $_POST['horario_fijo']; // Agregue esto BHL
+
     // Nuevos campos agregados
     $fecha_nacimiento = $_POST['fecha_nacimiento'] ?? null;
     $num_casillero = $_POST['num_casillero'] ?? null;
@@ -55,6 +57,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $fecha_ingreso = null;
     }
+
+    
 
     // Convertir fecha de nacimiento si viene
     if ($fecha_nacimiento) {
@@ -129,11 +133,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sql_delete_contacto->execute();
             $sql_delete_contacto->close();
         }
+
     }
 
-    // Verificar si la clave de empleado ya existe para otro empleado
-    $sql_check = $conexion->prepare("SELECT COUNT(*) FROM info_empleados WHERE clave_empleado = ? AND id_empleado != ?");
-    $sql_check->bind_param("si", $clave_empleado, $id_empleado);
+    // Verificar si la clave de empleado ya existe para otro empleado en la misma empresa
+    $sql_check = $conexion->prepare("SELECT COUNT(*) FROM info_empleados WHERE clave_empleado = ? AND id_empleado != ? AND id_empresa = ?");
+    $sql_check->bind_param("sii", $clave_empleado, $id_empleado, $id_empresa);
     $sql_check->execute();
     $sql_check->bind_result($count);
     $sql_check->fetch();
@@ -142,7 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($count > 0) {
         $respuesta = array(
             "title" => "ADVERTENCIA",
-            "text" => "Clave de empleado ya está en uso.",
+            "text" => "Clave de empleado ya está en uso en esta empresa.",
             "type" => "info",
             "timeout" => 3000,
         );
@@ -175,6 +180,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+
+    /**
+     * =====================================
+     *  Actualizar información del empleado
+     * =====================================
+     */
+
     // Verificar si el ID departamento es 0
     if ($id_departamento === "0" || $id_departamento === 0) {
         // Consulta sin parámetro para id_departamento (usa NULL directo)
@@ -201,11 +213,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             telefono_empleado = ?,
             rfc_empleado = ?,
             estado_civil = ?,
-            id_departamento = NULL
+            id_departamento = NULL,
+            horario_fijo = ?
         WHERE id_empleado = ?");
 
         $update_empleado->bind_param(
-            "sssssssssssssiiddisssi",
+            "sssssssssssssiiddisssii",
             $clave_empleado,
             $nombre_empleado,
             $ap_paterno,
@@ -227,6 +240,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $telefono_empleado,
             $rfc_empleado,
             $estado_civil,
+            $horario_fijo,
             $id_empleado
         );
     } else {
@@ -254,11 +268,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             telefono_empleado = ?,
             rfc_empleado = ?,
             estado_civil = ?,
-            id_departamento = ?
+            id_departamento = ?,
+            horario_fijo = ?
         WHERE id_empleado = ?");
 
         $update_empleado->bind_param(
-            "sssssssssssssiiiddisssi",
+            "sssssssssssssiiiddisssii",
             $clave_empleado,
             $nombre_empleado,
             $ap_paterno,
@@ -281,12 +296,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $rfc_empleado,
             $estado_civil,
             $id_departamento,
+            $horario_fijo, // Agregar esto BHL
             $id_empleado
         );
     }
 
     $update_empleado->execute();
     $update_empleado->close();
+
+
+
+    /**
+     * =====================================
+     *  Procesar casilleros asignados
+     * =====================================
+     */
 
     // Primero, obtener el casillero actual del empleado
     $sql_check_casilleros_actuales = $conexion->prepare("SELECT num_casillero FROM empleado_casillero WHERE id_empleado = ?");
@@ -571,10 +595,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // =============================
 
 
-    // =============================
-    // PROCESAR HORARIOS
-    // =============================
+    // ==================================
+    // PROCESAR HORARIOS DE LOS EMPLEADOS
+    // ==================================
+
     if (!empty($_POST['horarios'])) {
+        // Recupera y codifica el horario en formato JSON
         $horarioJSON = json_encode($_POST['horarios'], JSON_UNESCAPED_UNICODE);
 
         // Verificar si ya existe un registro para el empleado
@@ -597,6 +623,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sqlInsertar->bind_param("is", $id_empleado, $horarioJSON);
             $sqlInsertar->execute();
             $sqlInsertar->close();
+        }
+    }
+
+    // =======================================
+    // PROCESAR HORARIOS OFICIALES (IDÉNTICA LÓGICA)
+    // =======================================
+
+    if (!empty($_POST['horarios_oficiales'])) {
+        // Recupera y codifica el horario oficial en formato JSON
+        $horarioOficialJSON = json_encode($_POST['horarios_oficiales'], JSON_UNESCAPED_UNICODE);
+
+        // Verificar si ya existe un registro para el empleado
+        $sqlVerificarOf = $conexion->prepare("SELECT COUNT(*) FROM horarios_oficiales WHERE id_empleado = ?");
+        $sqlVerificarOf->bind_param("i", $id_empleado);
+        $sqlVerificarOf->execute();
+        $sqlVerificarOf->bind_result($existeOf);
+        $sqlVerificarOf->fetch();
+        $sqlVerificarOf->close();
+
+        if ($existeOf > 0) {
+            // Actualizar el registro existente
+            $sqlActualizarOf = $conexion->prepare("UPDATE horarios_oficiales SET horario_oficial = ? WHERE id_empleado = ?");
+            $sqlActualizarOf->bind_param("si", $horarioOficialJSON, $id_empleado);
+            $sqlActualizarOf->execute();
+            $sqlActualizarOf->close();
+        } else {
+            // Insertar un nuevo registro en caso de que no exista
+            $sqlInsertarOf = $conexion->prepare("INSERT INTO horarios_oficiales (id_empleado, horario_oficial) VALUES (?, ?)");
+            $sqlInsertarOf->bind_param("is", $id_empleado, $horarioOficialJSON);
+            $sqlInsertarOf->execute();
+            $sqlInsertarOf->close();
+        }
+    }
+
+    // ================================================================
+    // ELIMINAR HORARIOS NORMALES SI horario_fijo = 0
+    // (Los horarios oficiales son independientes y NO se eliminan)
+    // ================================================================
+    if ($horario_fijo == 0) {
+        /**
+         * Si un empleado cambia de horario fijo a horario variable,
+         * se eliminan solo los horarios normales (empleado_horario_reloj).
+         * Los horarios oficiales son independientes y no se ven afectados.
+         */
+        
+        $sql_check_horario = $conexion->prepare("SELECT COUNT(*) FROM empleado_horario_reloj WHERE id_empleado = ?");
+        $sql_check_horario->bind_param("i", $id_empleado);
+        $sql_check_horario->execute();
+        $sql_check_horario->bind_result($existe_horario);
+        $sql_check_horario->fetch();
+        $sql_check_horario->close();
+
+        if ($existe_horario > 0) {
+            $sql_delete_horario = $conexion->prepare("DELETE FROM empleado_horario_reloj WHERE id_empleado = ?");
+            $sql_delete_horario->bind_param("i", $id_empleado);
+            $sql_delete_horario->execute();
+            $sql_delete_horario->close();
         }
     }
 

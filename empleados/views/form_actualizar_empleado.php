@@ -161,7 +161,13 @@ verificarSesion();
                                     Horarios
                                 </button>
                             </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-horarios-oficiales" data-bs-toggle="tab" data-bs-target="#tab_horarios_oficiales" type="button" role="tab" aria-controls="tab_horarios_oficiales" aria-selected="false">
+                                    Horarios Oficiales
+                                </button>
+                            </li>
                         </ul>
+                        
                         <!-- Tab panes -->
                         <div class="tab-content">
 
@@ -304,7 +310,15 @@ verificarSesion();
                                     </div>
                                 </div>
 
+                                <div class="row px-3">
+                                    <div class="col-md-6 form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" role="switch" id="modal_switchCheckHorarioFijo" checked>
+                                        <label class="form-check-label" for="modal_switchCheckHorarioFijo">Horario fijo</label>
+                                    </div>
+                                </div>
+
                             </div>
+
                             <!-- Contacto de emergencia -->
                             <div class="tab-pane fade" id="tab_emergencia" role="tabpanel" aria-labelledby="tab-emergencia">
                                 <div class="row">
@@ -338,6 +352,7 @@ verificarSesion();
                                     </div>
                                 </div>
                             </div>
+
                             <!-- Reingresos -->
                             <div class="tab-pane fade" id="tab_reingresos" role="tabpanel" aria-labelledby="tab-reingresos">
                                 <div class="mb-3">
@@ -480,6 +495,77 @@ verificarSesion();
                                                             </td>
                                                             <td class="text-center">
                                                                 <button type="button" class="btn btn-danger btn-sm btn-eliminar-horario" title="Limpiar fila">
+                                                                    <i class="bi bi-trash"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    <?php endfor; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="tab_horarios_oficiales" role="tabpanel" aria-labelledby="tab-horarios-oficiales">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <h6 class="mb-3">Horarios Oficiales</h6>
+                                        <div class="mb-4">
+                                            <div class="row g-2">
+                                                <div class="col">
+                                                    <label class="form-label" for="ref_of_entrada">Entrada</label>
+                                                    <input type="time" id="ref_of_entrada" class="form-control" placeholder="Entrada">
+                                                </div>
+                                                <div class="col">
+                                                    <label class="form-label" for="ref_of_salida_comida">Salida Comida</label>
+                                                    <input type="time" id="ref_of_salida_comida" class="form-control" placeholder="Salida Comida">
+                                                </div>
+                                                <div class="col">
+                                                    <label class="form-label" for="ref_of_entrada_comida">Entrada Comida</label>
+                                                    <input type="time" id="ref_of_entrada_comida" class="form-control" placeholder="Entrada Comida">
+                                                </div>
+                                                <div class="col">
+                                                    <label class="form-label" for="ref_of_salida">Salida</label>
+                                                    <input type="time" id="ref_of_salida" class="form-control" placeholder="Salida">
+                                                </div>
+                                                <div class="col-auto">
+                                                    <button type="button" id="btnCopiarHorariosOficiales" class="btn btn-primary my-auto">Copiar</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered table-hover">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Día</th>
+                                                        <th>Entrada</th>
+                                                        <th>Salida Comida</th>
+                                                        <th>Entrada Comida</th>
+                                                        <th>Salida</th>
+                                                        <th style="width: 80px;">Acciones</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="tbody_horarios_oficiales">
+                                                    <?php for ($i = 1; $i <= 7; $i++): ?>
+                                                        <tr>
+                                                            <td>
+                                                                <input type="text" class="form-control" name="horario_oficial_dia[]" placeholder="Día">
+                                                            </td>
+                                                            <td>
+                                                                <input type="time" class="form-control" name="horario_oficial_entrada[]" placeholder="Entrada">
+                                                            </td>
+                                                            <td>
+                                                                <input type="time" class="form-control" name="horario_oficial_salida_comida[]" placeholder="Salida Comida">
+                                                            </td>
+                                                            <td>
+                                                                <input type="time" class="form-control" name="horario_oficial_entrada_comida[]" placeholder="Entrada Comida">
+                                                            </td>
+                                                            <td>
+                                                                <input type="time" class="form-control" name="horario_oficial_salida[]" placeholder="Salida">
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <button type="button" class="btn btn-danger btn-sm btn-eliminar-horario-oficial" title="Limpiar fila">
                                                                     <i class="bi bi-trash"></i>
                                                                 </button>
                                                             </td>

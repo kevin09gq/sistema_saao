@@ -16,6 +16,7 @@ $(document).ready(function () {
     cerrarModalDetalles();
     guardarCambiosEmpleado();
     activarActualizacionTotalExtra();
+
 });
 
 
@@ -93,6 +94,11 @@ function processExcelData(params) {
                                 // Asegurar que todos los empleados ya existentes tengan las propiedades necesarias
                                 asignarPropiedadesEmpleado(jsonNominaConfianza);
 
+                                // Ejecutar detección automática de eventos para todos los empleados
+                                if (typeof detectarEventosAutomaticos === 'function') {
+                                    detectarEventosAutomaticos(jsonNominaConfianza);
+                                }
+
                                 // Obtener empleados que no se unieron
                                 const empleadosNoUnidos = obtenerEmpleadosNoUnidos(JsonListaRaya, JsonBiometrico);
 
@@ -152,12 +158,28 @@ function validarExistenciaTrabajador(JsonListaRaya) {
             // response es un array de objetos [{clave: "003", nombre: "Juan Perez Lopez"}, ...]
             const empleadosValidos = Array.isArray(response) ? response : [];
 
-            // Crear un mapa de claves válidas para búsqueda rápida (guardamos nombre y salario)
+            // Crear un mapa de claves válidas para búsqueda rápida (guardamos nombre, salario, id_empleado y horario)
             const mapaEmpleados = {};
             empleadosValidos.forEach(emp => {
+                // Parsear horario_oficial si viene como string JSON
+                let horarioParsed = null;
+                if (emp.horario_oficial) {
+                    try {
+                        horarioParsed = typeof emp.horario_oficial === 'string' 
+                            ? JSON.parse(emp.horario_oficial) 
+                            : emp.horario_oficial;
+                    } catch (e) {
+                        
+                        horarioParsed = null;
+                    }
+                }
+                
                 mapaEmpleados[emp.clave] = {
+                    id_empleado: emp.id_empleado,
                     nombre: emp.nombre,
-                    salario: parseFloat(emp.salario_semanal) || 0
+                    salario: parseFloat(emp.salario_semanal) || 0,
+                    salario_diario: parseFloat(emp.salario_diario) || 0,
+                    horario_oficial: horarioParsed
                 };
             });
 
@@ -167,9 +189,13 @@ function validarExistenciaTrabajador(JsonListaRaya) {
                 departamento.empleados = departamento.empleados.filter(empleado => {
                     const clave = String(empleado.clave).trim();
                     if (mapaEmpleados[clave]) {
-                        // Actualizar el nombre y sueldo semanal con los datos de la base
+                        // Actualizar el nombre, sueldo semanal, id_empleado y horario con los datos de la base
+                        empleado.id_empleado = mapaEmpleados[clave].id_empleado;
                         empleado.nombre = mapaEmpleados[clave].nombre;
                         empleado.sueldo_semanal = mapaEmpleados[clave].salario;
+                        empleado.sueldo_diario = mapaEmpleados[clave].salario_diario;
+                        empleado.horario_oficial = mapaEmpleados[clave].horario_oficial;
+                        
                         return true;
                     }
                     return false;
@@ -296,6 +322,10 @@ function validarExistenciaTrabajadorSinImms(empleadosNoUnidos) {
                     if (resultado.salario_semanal !== undefined) {
                         emp.sueldo_semanal = parseFloat(resultado.salario_semanal) || 0;
                     }
+                    // Asignar sueldo diario desde la BD si viene
+                    if (resultado.salario_diario !== undefined) {
+                        emp.sueldo_diario = parseFloat(resultado.salario_diario) || 0;
+                    }
                     // Asignar id_departamento desde la BD si viene
                     if (resultado.id_departamento !== undefined) {
                         emp.id_departamento = Number(resultado.id_departamento) || emp.id_departamento || 0;
@@ -334,6 +364,11 @@ function integrarNuevaInformacion(empleadosValidados) {
 
     // Asignar propiedades a todos los empleados (incluyendo el nuevo departamento)
     asignarPropiedadesEmpleado(jsonNominaConfianza);
+
+    // Ejecutar detección automática de eventos para todos los empleados
+    if (typeof detectarEventosAutomaticos === 'function') {
+        detectarEventosAutomaticos(jsonNominaConfianza);
+    }
 
     // Guardar después de integrar nueva información asíncrona
     try {
@@ -378,6 +413,11 @@ function asignarPropiedadesEmpleado(jsonNominaConfianza) {
             empleado.uniformes = empleado.uniformes ?? 0;
             empleado.checador = empleado.checador ?? 0;
             empleado.total_cobrar = empleado.total_cobrar ?? 0;
+            
+            // Inicializar historial de retardos
+            if (!empleado.historial_retardos || !Array.isArray(empleado.historial_retardos)) {
+                empleado.historial_retardos = [];
+            }
 
             // Crear array de conceptos si no existe
             if (!empleado.conceptos || !Array.isArray(empleado.conceptos)) {

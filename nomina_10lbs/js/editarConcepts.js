@@ -46,6 +46,34 @@ function actualizarEmpleado(jsonNominaConfianza, claveEmpleado) {
     empleadoEncontrado.inasistencia = parseFloat($('#mod-inasistencias').val()) || 0;
     empleadoEncontrado.permiso = parseFloat($('#mod-permiso').val()) || 0;
 
+    // Actualizar historial de retardos desde el DOM
+    if (!empleadoEncontrado.historial_retardos) {
+        empleadoEncontrado.historial_retardos = [];
+    }
+    
+    const nuevosHistorial = [];
+    $('#contenedor-historial-retardos .historial-retardo-item').each(function() {
+        const $item = $(this);
+        const index = parseInt($item.data('index'));
+        
+        const historialItem = {
+            fecha: $item.find('.historial-fecha').val(),
+            dia: $item.find('.historial-dia').val(),
+            minutos_retardo: parseFloat($item.find('.historial-minutos').val()) || 0,
+            tolerancia: parseFloat($item.find('.historial-tolerancia').val()) || 0,
+            descuento_por_minuto: parseFloat($item.find('.historial-descuento-min').val()) || 0,
+            total_descontado: parseFloat($item.find('.historial-total').val()) || 0
+        };
+        
+        nuevosHistorial.push(historialItem);
+    });
+    
+    // Actualizar el array completo solo si hay elementos en el DOM
+    if (nuevosHistorial.length > 0) {
+        empleadoEncontrado.historial_retardos = nuevosHistorial;
+    }
+
+
     // Guardar conceptos personalizados en extras_adicionales
     if (!empleadoEncontrado.extras_adicionales) {
         empleadoEncontrado.extras_adicionales = [];
@@ -100,7 +128,25 @@ function actualizarEmpleado(jsonNominaConfianza, claveEmpleado) {
 function guardarCambiosEmpleado() {
     $('#btn-guardar-conceptos').on('click', function () {
         const claveEmpleado = $('#campo-clave').text().trim();
-        actualizarEmpleado(jsonNominaConfianza, claveEmpleado);
+        
+        // Actualizar datos del empleado
+        actualizarEmpleado(jsonNominaConfianza, claveEmpleado);        
+        // Actualizar horario oficial si fue modificado
+        actualizarHorarioOficial(claveEmpleado);
+        // Detectar retardos usando la función en config_modal_concepts.js
+        if (typeof detectarRetardos === 'function') {
+            detectarRetardos(claveEmpleado);
+        }
+        if (typeof detectarInasistencias === 'function') {
+            detectarInasistencias(claveEmpleado);
+        }
+        if (typeof detectarOlvidosChecador === 'function') {
+            detectarOlvidosChecador(claveEmpleado);
+        }
+        if (typeof detectarPermisos === 'function') {
+            detectarPermisos(claveEmpleado);
+        }
+       
         // Cerrar el modal después de guardar
         $('#modal-detalles').hide();
         limpiarModalDetalles();
@@ -109,21 +155,6 @@ function guardarCambiosEmpleado() {
     });
 }
 
-// Función simple para actualizar automáticamente el Total Extra
-function actualizarTotalExtra() {
-    let total = 0;
-    
-    // Sumar vacaciones
-    total += parseFloat($('#mod-vacaciones').val()) || 0;
-    
-    // Sumar todos los conceptos personalizados (solo los valores numéricos)
-    $('#contenedor-conceptos-adicionales .concepto-personalizado input[type="number"]').each(function() {
-        total += parseFloat($(this).val()) || 0;
-    });
-    
-    // Actualizar el campo total con 2 decimales
-    $('#mod-total-extra').val(total.toFixed(2));
-}
 
 // Activar la actualización automática cuando cambien los valores
 function activarActualizacionTotalExtra() {
@@ -134,7 +165,50 @@ function activarActualizacionTotalExtra() {
     $('#contenedor-conceptos-adicionales').on('input', '.concepto-personalizado input[type="number"]', actualizarTotalExtra);
 }
 
-
+// ========================================
+// ACTUALIZAR HORARIO OFICIAL DEL EMPLEADO
+// ========================================
+function actualizarHorarioOficial(claveEmpleado) {
+    // Buscar el empleado por clave
+    let empleadoEncontrado = null;
+    
+    jsonNominaConfianza.departamentos.forEach(departamento => {
+        departamento.empleados.forEach(empleado => {
+            if (String(empleado.clave).trim() === String(claveEmpleado).trim()) {
+                empleadoEncontrado = empleado;
+            }
+        });
+    });
+    
+    if (!empleadoEncontrado) {
+        alert('Error: Empleado no encontrado');
+        return;
+    }
+    
+    // Leer todas las filas de la tabla de horarios oficiales
+    const nuevoHorario = [];
+    $('#horarios-oficiales-body tr').each(function() {
+        const $fila = $(this);
+        const dia = $fila.find('td').eq(0).text().trim();
+        const entrada = $fila.find('td').eq(1).text().trim();
+        const salidaComida = $fila.find('td').eq(2).text().trim();
+        const entradaComida = $fila.find('td').eq(3).text().trim();
+        const salida = $fila.find('td').eq(4).text().trim();
+        
+        nuevoHorario.push({
+            dia: dia,
+            entrada: entrada !== '-' ? entrada : '',
+            salida_comida: salidaComida !== '-' ? salidaComida : '',
+            entrada_comida: entradaComida !== '-' ? entradaComida : '',
+            salida: salida !== '-' ? salida : ''
+        });
+    });
+    
+    // Actualizar la propiedad horario_oficial del empleado
+    empleadoEncontrado.horario_oficial = nuevoHorario;
+    
+    console.log('Horario actualizado:', empleadoEncontrado.horario_oficial);
+}
 
 function configPaginacionSelect() {    
         // Reaplicar el filtro actual manualmente para NO resetear la página

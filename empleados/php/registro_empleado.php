@@ -29,6 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id_departamento = $_POST['id_departamento'] ?? null;
         $num_casillero = $_POST['num_casillero'] ?? null;
 
+        $horario_fijo = $_POST['horario_fijo']; // BHL
+
         // Nuevos campos opcionales
         $fecha_nacimiento = $_POST['fecha_nacimiento'] ?? null;
         $id_area = $_POST['id_area'] ?? null;
@@ -83,14 +85,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // =============================
-        // VERIFICAR CLAVE EXISTENTE
+        // VERIFICAR CLAVE EXISTENTE POR EMPRESA
         // =============================
-        $sql = $conexion->prepare("SELECT id_empleado FROM info_empleados WHERE clave_empleado = ?");
+        $sql = $conexion->prepare("SELECT id_empleado FROM info_empleados WHERE clave_empleado = ? AND id_empresa = ?");
         if (!$sql) {
             throw new Exception("Error al preparar consulta de verificación: " . $conexion->error);
         }
 
-        $sql->bind_param("s", $clave_empleado);
+        $sql->bind_param("si", $clave_empleado, $id_empresa);
         $sql->execute();
         $resultado = $sql->get_result();
 
@@ -98,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $respuesta = array(
                 "success" => false,
                 "title" => "ADVERTENCIA",
-                "text" => "La clave de empleado ya existe.",
+                "text" => "La clave de empleado ya existe en esta empresa.",
                 "type" => "warning",
                 "timeout" => 3000,
             );
@@ -207,8 +209,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 id_rol, id_status, nombre, ap_paterno, ap_materno, domicilio,
                 imss, curp, sexo, enfermedades_alergias, grupo_sanguineo,
                 fecha_ingreso, fecha_nacimiento, id_departamento, 
-                id_area, id_puestoEspecial, id_empresa, clave_empleado, salario_semanal, salario_diario, biometrico, telefono_empleado, status_nss, rfc_empleado, estado_civil
-            ) VALUES (2, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                id_area, id_puestoEspecial, id_empresa, clave_empleado, salario_semanal, salario_diario, biometrico, telefono_empleado, status_nss, rfc_empleado, estado_civil, horario_fijo
+            ) VALUES (2, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         );
 
         if (!$sql) {
@@ -216,7 +218,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $sql->bind_param(
-            "ssssssssssssiiisddssiss", // 20 parámetros
+            "ssssssssssssiiisddssissi", // 20 parámetros
             $nombre,
             $ap_paterno,
             $ap_materno,
@@ -239,7 +241,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $telefono_empleado,
             $status_nss,
             $rfc,
-            $estado_civil
+            $estado_civil,
+            $horario_fijo
         );
 
         if (!$sql->execute()) {
@@ -392,6 +395,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception("Error al asignar horario: " . $sqlAsignarHorario->error);
             }
             $sqlAsignarHorario->close();
+        }
+
+        // =============================
+        // PROCESAR HORARIOS OFICIALES
+        // =============================
+        if (!empty($_POST['horarios_oficiales'])) {
+            $horarioOfJSON = json_encode($_POST['horarios_oficiales'], JSON_UNESCAPED_UNICODE);
+            $sqlAsignarHorarioOf = $conexion->prepare("INSERT INTO horarios_oficiales (id_empleado, horario_oficial) VALUES (?, ?)");
+            if (!$sqlAsignarHorarioOf) {
+                throw new Exception("Error al preparar consulta de asignación de horario oficial: " . $conexion->error);
+            }
+
+            $sqlAsignarHorarioOf->bind_param("is", $id_empleado, $horarioOfJSON);
+            if (!$sqlAsignarHorarioOf->execute()) {
+                throw new Exception("Error al asignar horario oficial: " . $sqlAsignarHorarioOf->error);
+            }
+            $sqlAsignarHorarioOf->close();
         }
 
         // =============================

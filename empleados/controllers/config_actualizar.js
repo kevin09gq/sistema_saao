@@ -1,6 +1,10 @@
 $(document).ready(function () {
     const rutaRaiz = '/sistema_saao/';
 
+    // Agregue esto BHL
+    const $switch = $("#modal_switchCheckHorarioFijo");
+    const $tab = $("#tab-horarios");
+
     getDepartamentos();
     obtenerDatosEmpleados();
     departamentoSeleccionado();
@@ -32,6 +36,10 @@ $(document).ready(function () {
 
     // Formatear campos del dia de horario
     $('input[name="horario_dia[]"]').each(function () {
+        formatearMayusculas(this);
+    });
+    // Formatear campos del dia de horario oficial
+    $('input[name="horario_oficial_dia[]"]').each(function () {
         formatearMayusculas(this);
     });
 
@@ -117,6 +125,20 @@ $(document).ready(function () {
         $fila.find('input').removeClass('border-success border-danger');
     });
 
+    // Manejar el botón de eliminar horario oficial
+    $(document).on('click', '.btn-eliminar-horario-oficial', function () {
+        const $fila = $(this).closest('tr');
+
+        $fila.find('input[name="horario_oficial_dia[]"]').val('');
+        $fila.find('input[name="horario_oficial_entrada[]"]').val('');
+        $fila.find('input[name="horario_oficial_salida_comida[]"]').val('');
+        $fila.find('input[name="horario_oficial_entrada_comida[]"]').val('');
+        $fila.find('input[name="horario_oficial_salida[]"]').val('');
+
+        // Remover clases de validación
+        $fila.find('input').removeClass('border-success border-danger');
+    });
+
 
     // Helper: Formatea 'YYYY-MM-DD' a 'DD/MM/YYYY'
     function formatToDMY(dateStr) {
@@ -185,6 +207,26 @@ $(document).ready(function () {
 
                 }
 
+            }
+        });
+
+        // Recoger horarios oficiales
+        let horarios_oficiales = [];
+        $('input[name="horario_oficial_dia[]"]').each(function (index) {
+            const dia = $(this).val().trim();
+            const entrada = $('input[name="horario_oficial_entrada[]"]').eq(index).val().trim();
+            const salida_comida = $('input[name="horario_oficial_salida_comida[]"]').eq(index).val().trim();
+            const entrada_comida = $('input[name="horario_oficial_entrada_comida[]"]').eq(index).val().trim();
+            const salida = $('input[name="horario_oficial_salida[]"]').eq(index).val().trim();
+
+            if (dia || entrada || salida_comida || entrada_comida || salida) {
+                horarios_oficiales.push({
+                    dia: dia || "",
+                    entrada: entrada || "",
+                    salida_comida: salida_comida || "",
+                    entrada_comida: entrada_comida || "",
+                    salida: salida || ""
+                });
             }
         });
     }
@@ -521,6 +563,17 @@ $(document).ready(function () {
                         let domicilioContacto = empleado.domicilio_contacto;
                         let parentescoContacto = empleado.parentesco;
 
+                        // Obtener el valor del switch de horario fijo
+                        let horarioFijo = empleado.horario_fijo;
+                        // Inicializar el estado del switch según horarioFijo
+                        if (horarioFijo == 1) {
+                            $switch.prop("checked", true);
+                            $tab.prop("disabled", false); // habilita el tab 
+                        } else {
+                            $switch.prop("checked", false);
+                            $tab.prop("disabled", true); // deshabilita el tab 
+                        }
+
                         // Asignamos los valores a los inputs del modal
                         $("#empleado_id").val(idEmpleado);
                         $("#modal_clave_empleado").val(claveEmpleado);
@@ -765,6 +818,33 @@ $(document).ready(function () {
                             console.error("Error al cargar horarios:", e);
                         }
 
+                        // Poblar la tabla de los horarios oficiales
+                        try {
+                            let horariosOf = [];
+                            if (Array.isArray(empleado.horarios_oficiales)) {
+                                horariosOf = empleado.horarios_oficiales;
+                            } else if (empleado.horario_oficial) {
+                                try { horariosOf = JSON.parse(empleado.horario_oficial); } catch (_) { horariosOf = []; }
+                            }
+
+                            const $tbodyHorariosOf = $('#tbody_horarios_oficiales');
+                            if ($tbodyHorariosOf.length) {
+                                $tbodyHorariosOf.find('input').val('');
+                                horariosOf.forEach((h, index) => {
+                                    if (index < 7) {
+                                        const $fila = $tbodyHorariosOf.find('tr').eq(index);
+                                        $fila.find('input[name="horario_oficial_dia[]"]').val(h.dia || '');
+                                        $fila.find('input[name="horario_oficial_entrada[]"]').val(h.entrada || '');
+                                        $fila.find('input[name="horario_oficial_salida_comida[]"]').val(h.salida_comida || '');
+                                        $fila.find('input[name="horario_oficial_entrada_comida[]"]').val(h.entrada_comida || '');
+                                        $fila.find('input[name="horario_oficial_salida[]"]').val(h.salida || '');
+                                    }
+                                });
+                            }
+                        } catch (e) {
+                            // no-op
+                        }
+
 
                         validarCampos($("#modal_clave_empleado"), validarClave);
                         validarCampos($("#modal_nombre_empleado"), validarNombre);
@@ -913,7 +993,7 @@ $(document).ready(function () {
             return false;
         }
 
-        // Recoger los datos del horario
+        // Recoger los datos del horario BHL
         let horarios = [];
         $('input[name="horario_dia[]"]').each(function (index) {
             const dia = $(this).val().trim();
@@ -933,6 +1013,34 @@ $(document).ready(function () {
                 });
             }
         });
+
+        // Recoger horarios oficiales
+        let horarios_oficiales = [];
+        $('input[name="horario_oficial_dia[]"]').each(function (index) {
+            const dia = $(this).val().trim();
+            const entrada = $('input[name="horario_oficial_entrada[]"]').eq(index).val().trim();
+            const salida_comida = $('input[name="horario_oficial_salida_comida[]"]').eq(index).val().trim();
+            const entrada_comida = $('input[name="horario_oficial_entrada_comida[]"]').eq(index).val().trim();
+            const salida = $('input[name="horario_oficial_salida[]"]').eq(index).val().trim();
+
+            if (dia || entrada || salida_comida || entrada_comida || salida) {
+                horarios_oficiales.push({
+                    dia: dia || "",
+                    entrada: entrada || "",
+                    salida_comida: salida_comida || "",
+                    entrada_comida: entrada_comida || "",
+                    salida: salida || ""
+                });
+            }
+        });
+
+        // Validar si el horario es fijo o variable BHL
+        let horario_fijo = $("#modal_switchCheckHorarioFijo").is(":checked") ? 1 : 0;
+
+        if (horario_fijo == 0) {
+            horarios = []; // Si es variable, no enviar horarios predefinidos
+            // horarios_oficiales NO se toca: es independiente del horario fijo
+        }
 
         // Validaciones obligatorias (turnos opcionales)
         let obligatoriosValidos = (
@@ -1027,13 +1135,12 @@ $(document).ready(function () {
 
             // Datos de horarios BHL
             horarios: horarios,
+            horario_fijo: horario_fijo,
+            horarios_oficiales: horarios_oficiales,
         };
 
         // Guardar la página actual antes de actualizar
         const paginaAnterior = paginaActual;
-
-        console.log("Antes de actualizar: ", datos);
-
 
         $.ajax({
             type: "POST",
@@ -1076,7 +1183,6 @@ $(document).ready(function () {
         });
 
     });
-
 
     // Cambiar el Status del Empleado
     $(document).on("click", "#btn_status", function () {
@@ -1273,6 +1379,32 @@ $(document).ready(function () {
                 $(this).find('input[name="horario_salida[]"]').val(salida);
             }
         });
+    });
+
+    $(document).on('click', '#btnCopiarHorariosOficiales', function () {
+        // Obtener valores del formulario de referencia de horarios oficiales
+        const entrada = $('#ref_of_entrada').val();
+        const salidaComida = $('#ref_of_salida_comida').val();
+        const entradaComida = $('#ref_of_entrada_comida').val();
+        const salida = $('#ref_of_salida').val();
+
+        // Copiar a las primeras 6 filas de horarios oficiales
+        $('#tbody_horarios_oficiales tr').each(function (index) {
+            if (index < 6) { // solo las primeras 6 filas
+                $(this).find('input[name="horario_oficial_entrada[]"]').val(entrada);
+                $(this).find('input[name="horario_oficial_salida_comida[]"]').val(salidaComida);
+                $(this).find('input[name="horario_oficial_entrada_comida[]"]').val(entradaComida);
+                $(this).find('input[name="horario_oficial_salida[]"]').val(salida);
+            }
+        });
+    });
+
+    $switch.on("change", function () {
+        if ($(this).is(":checked")) {
+            $tab.prop("disabled", false); // habilita el tab
+        } else {
+            $tab.prop("disabled", true); // deshabilita el tab 
+        }
     });
 
 

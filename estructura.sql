@@ -96,6 +96,7 @@ CREATE TABLE info_empleados (
     status_nss TINYINT(1) DEFAULT 0,
     rfc_empleado VARCHAR(13),
     estado_civil VARCHAR(50),
+    
     FOREIGN KEY (id_rol) REFERENCES rol(id_rol),
     FOREIGN KEY (id_status) REFERENCES status(id_status),
     FOREIGN KEY (id_puestoEspecial) REFERENCES puestos_especiales(id_puestoEspecial),
@@ -160,7 +161,7 @@ CREATE TABLE info_admin (
 );
 
 -- =============================
--- TABLAS DE NÓMINA
+-- TABLAS DE NÓMINA 40 LBS
 -- =============================
 
 CREATE TABLE nomina (
@@ -185,6 +186,18 @@ CREATE TABLE tabulador (
 );
 
 -- =============================
+-- TABLAS DE NÓMINA CONFIANZA
+-- =============================
+
+CREATE TABLE horarios_oficiales (
+    id_horario INT AUTO_INCREMENT PRIMARY KEY,
+    id_empleado INT NOT NULL,
+    horario_oficial LONGTEXT NOT NULL,
+    FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado)  
+);
+
+
+-- =============================
 -- TABLAS DE TURNOS Y FESTIVIDADES BHL
 -- =============================
 
@@ -201,52 +214,13 @@ CREATE TABLE festividades (
   nombre VARCHAR (100),
   fecha DATE,
   tipo ENUM('NACIONAL', 'LOCAL', 'INTERNO') DEFAULT 'NACIONAL',
-  observaciones VARCHAR(100) NULL
+  observacion VARCHAR(100) NULL
 );
 
 
 -- =============================
 -- TABLAS DE PRÉSTAMOS
 -- =============================
-
-CREATE TABLE prestamos (
-    id_prestamo INT AUTO_INCREMENT PRIMARY KEY,
-    id_empleado INT NOT NULL,
-    monto_total DECIMAL(10,2) NOT NULL,
-    monto_semanal DECIMAL(10,2) NOT NULL,
-    semanas_totales INT NOT NULL,
-    semanas_pagadas INT DEFAULT 0,
-    saldo_restante DECIMAL(10,2) NOT NULL,
-    estado ENUM('pendiente', 'activo', 'pagado', 'cancelado') DEFAULT 'pendiente',
-    notas TEXT NULL,
-    fecha_inicio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_empleado)
-        REFERENCES info_empleados(id_empleado)
-        ON DELETE RESTRICT
-);
-
-CREATE TABLE prestamos_conceptos (
-    id_concepto INT AUTO_INCREMENT PRIMARY KEY,
-    id_prestamo INT NOT NULL,
-    concepto VARCHAR(150) NOT NULL,
-    monto DECIMAL(10,2) NOT NULL,
-    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_prestamo)
-        REFERENCES prestamos(id_prestamo)
-        ON DELETE CASCADE
-);
-
-CREATE TABLE pagos_prestamos (
-    id_pago INT AUTO_INCREMENT PRIMARY KEY,
-    id_prestamo INT NOT NULL,
-    monto_pagado DECIMAL(10,2) NOT NULL,
-    numero_semana INT NOT NULL,
-    fecha_pago DATE NOT NULL,
-    FOREIGN KEY (id_prestamo)
-        REFERENCES prestamos(id_prestamo)
-        ON DELETE CASCADE
-);
 
 
 -- =============================
@@ -259,6 +233,20 @@ CREATE TABLE empleado_horario_reloj (
     horario LONGTEXT NOT NULL,
     FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado)  
 );
+
+CREATE TABLE historial_incidencias_semanal (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    semana VARCHAR(10) NOT NULL,
+    anio INT NOT NULL,
+    empleado_id INT NOT NULL,
+    vacaciones INT DEFAULT 0,
+    ausencias INT DEFAULT 0,
+    incapacidades INT DEFAULT 0,
+    dias_pagados INT DEFAULT 0,
+    FOREIGN KEY (empleado_id) REFERENCES info_empleados(id_empleado)
+)
+
+
 
 -- =============================
 -- ISERTAR DATOS

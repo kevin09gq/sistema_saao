@@ -15,9 +15,10 @@
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="../css/nomina_10lbs.css">
     <link rel="stylesheet" href="../css/conceptsModal.css">
+    <link rel="stylesheet" href="../css/prestamosModal.css">
 
     <style>
-      
+
     </style>
 
 </head>
@@ -164,6 +165,7 @@
 
     <!-- Modal de detalles (incluir plantilla) -->
     <?php include 'conceptsModal.php'; ?>
+    <?php include 'modalPrestamos.php'; ?>
 
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
@@ -179,6 +181,8 @@
     <script src="../js/establecer_data.js"></script>
     <script src="../js/newConcepts.js"></script>
     <script src="../js/editarConcepts.js"></script>
+    <script src="../js/eventos.js"></script>
+  
 </body>
 
 </html>

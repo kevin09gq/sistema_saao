@@ -771,6 +771,22 @@
     color: #9a3412;
 }
 
+/* Variante específica para retardos */
+.retardo .evento-header {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+}
+
+.retardo .evento-tiempo {
+    color: #22c55e;
+    background: #dcfce7;
+}
+
+.retardo .evento-total {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border-top-color: #bbf7d0;
+    color: #166534;
+}
+
 /* Resumen General - Simplificado */
 .resumen-eventos {
     margin-top: 20px;
@@ -1113,6 +1129,16 @@
 
 .mini-tab-registros:hover {
     transform: translateY(-1px);
+}
+
+/* Estilo para cuando no hay eventos */
+.sin-eventos {
+    text-align: center;
+    color: #9ca3af;
+    font-style: italic;
+    padding: 40px 0;
+    margin: 0;
+}
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 

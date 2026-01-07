@@ -6,6 +6,7 @@ function setInitialVisibility() {
     $("#tabla-nomina-responsive").removeAttr("hidden");
 }
 
+
 function mostrarDatosTabla(jsonNominaConfianza, pagina = 1) {
     const empleadosPorPagina = 7;
 
@@ -48,13 +49,19 @@ function mostrarDatosTabla(jsonNominaConfianza, pagina = 1) {
             return num === 0 ? '<span class="valor-vacio">—</span>' : num.toFixed(2);
         };
 
+        // Calcular Total Percepciones
+        const totalPercepciones = calcularTotalPercepciones(empleado);
+
+        // Calcular Total Deducciones
+        const totalDeducciones = calcularTotalDeducciones(empleado);
+
         const fila = `
             <tr data-clave="${empleado.clave || 'N/A'}">
                 <td>${numeroFila}</td>
                 <td>${empleado.nombre}</td>
                 <td>${formatearValor(empleado.sueldo_semanal || 0)}</td>
                 <td>${formatearValor(empleado.sueldo_extra_total || 0)}</td>
-                <td></td>
+                <td>${formatearValor(totalPercepciones)}</td>
                 <td>${formatearValor(empleado.retardos || 0)}</td>
                 <td>${formatearValor(buscarConcepto('45'))}</td>
                 <td>${formatearValor(buscarConcepto('52'))}</td>
@@ -64,7 +71,7 @@ function mostrarDatosTabla(jsonNominaConfianza, pagina = 1) {
                 <td>${formatearValor(empleado.inasistencia || 0)}</td>
                 <td>${formatearValor(empleado.uniformes || 0)}</td>
                 <td>${formatearValor(empleado.checador || 0)}</td>
-                <td></td>
+                <td>${formatearValor(totalDeducciones)}</td>
                 <td>${formatearValor(empleado.prestamo || 0)}</td>
                 <td>${formatearValor(empleado.tarjeta || 0)}</td>
                 <td><strong>${formatearValor(empleado.total_cobrar || 0)}</strong></td>
@@ -75,6 +82,13 @@ function mostrarDatosTabla(jsonNominaConfianza, pagina = 1) {
 
     // Crear la paginación
     paginarTabla(jsonNominaConfianza, todosEmpleados.length, pagina, empleadosPorPagina);
+}
+
+// Función para calcular Total Percepciones
+function calcularTotalPercepciones(empleado) {
+    const sueldo = parseFloat(empleado.sueldo_semanal) || 0;
+    const extras = parseFloat(empleado.sueldo_extra_total) || 0;
+    return (sueldo + extras).toFixed(2);
 }
 
 function paginarTabla(jsonNominaConfianza, totalEmpleados, paginaActual, empleadosPorPagina) {

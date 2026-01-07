@@ -1,4 +1,6 @@
+// Cargar los datos del empleado en el modal
 function cargarData(jsonNominaConfianza, clave) {
+    alternarTablas();
     // Buscar el empleado por clave en todos los departamentos
     let empleadoEncontrado = null;
     
@@ -47,6 +49,18 @@ function cargarData(jsonNominaConfianza, clave) {
 
         // Mostrar registros en la tabla
         mostrarRegistrosChecador(empleadoEncontrado);
+        
+        // Mostrar horarios oficiales en la tabla
+        mostrarRegistrosBD(empleadoEncontrado);
+
+        // Hacer horas editables a la tabla de horarios oficiales
+        hacerHorasEditables();
+
+        // Mostrar eventos especiales
+        if (typeof mostrarOlvidosChecador === 'function') mostrarOlvidosChecador(empleadoEncontrado);
+        if (typeof mostrarRetardos === 'function') mostrarRetardos(empleadoEncontrado);
+        if (typeof mostrarInasistencias === 'function') mostrarInasistencias(empleadoEncontrado);
+        if (typeof mostrarHistorialRetardos === 'function') mostrarHistorialRetardos(empleadoEncontrado);
 
         // Mostrar conceptos personalizados en extras_adicionales
         const $contenedorExtras = $('#contenedor-conceptos-adicionales');
@@ -100,6 +114,7 @@ function cargarData(jsonNominaConfianza, clave) {
     }
 }
 
+// Función para mostrar registros en la tabla de checador
 function mostrarRegistrosChecador(empleado) {
     const $tbody = $('#tabla-checador tbody');
     $tbody.empty(); // Limpiar la tabla
@@ -127,6 +142,33 @@ function mostrarRegistrosChecador(empleado) {
     });
 }
 
+// Función para mostrar registros desde la base de datos
+function mostrarRegistrosBD(empleado) {
+    const $tbody = $('#horarios-oficiales-body');
+    $tbody.empty(); // Limpiar la tabla
+    
+    // Verificar si tiene horario oficial
+    if (!empleado.horario_oficial || !Array.isArray(empleado.horario_oficial) || empleado.horario_oficial.length === 0) {
+        $tbody.append('<tr><td colspan="5" class="text-center">No hay horario oficial registrado</td></tr>');
+        return;
+    }
+    
+    // Recorrer los días del horario oficial
+    empleado.horario_oficial.forEach(dia => {
+        const fila = `
+            <tr>
+                <td>${dia.dia || '-'}</td>
+                <td>${dia.entrada || '-'}</td>
+                <td>${dia.salida_comida || '-'}</td>
+                <td>${dia.entrada_comida || '-'}</td>
+                <td>${dia.salida || '-'}</td>
+            </tr>
+        `;
+        $tbody.append(fila);
+    });
+}
+
+ 
 // Función simple para obtener el nombre del día de la semana
 function obtenerNombreDia(fecha) {
     if (!fecha) return '-';
@@ -150,3 +192,4 @@ function obtenerNombreDia(fecha) {
     
     return dias[fechaParseada.getDay()];
 }
+

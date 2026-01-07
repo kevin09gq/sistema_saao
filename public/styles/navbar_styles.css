@@ -129,12 +129,14 @@
     opacity: 1 !important;
 }
 
-/* Botón de salir especial */
+/* Botón de salir especial - pegar a la derecha */
 .btn-salir {
     background: rgba(239, 68, 68, 0.1) !important;
     border: 1px solid rgba(239, 68, 68, 0.2) !important;
-    margin-left: 0.5rem !important;
+    margin-left: auto !important;
+    margin-right: 0 !important;
     color: #ef4444 !important;
+    flex-shrink: 0 !important;
 }
 
 .btn-salir:hover, .btn-salir.hover {
@@ -286,4 +288,121 @@
 .nav-link {
     z-index: 1 !important;
     position: relative !important;
+}
+
+/* Centrar el menú principal horizontalmente dentro de la barra */
+.navbar-custom .container {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 2rem !important;
+}
+
+.navbar-menu {
+    list-style: none !important;
+    display: flex !important;
+    gap: 1.2rem !important;
+    align-items: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    white-space: nowrap !important;
+    flex: 0 1 auto !important;
+    justify-content: center !important;
+}
+
+/* Ajustes para los items del menú */
+.menu-item > .menu-link,
+.menu-item > .nav-link {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+}
+
+/* Submenus: estilo visual y posiciones */
+.submenu.dropdown-menu {
+    min-width: 220px !important;
+    border-radius: 8px !important;
+    padding: 0.35rem 0 !important;
+    box-shadow: 0 6px 18px rgba(20, 30, 40, 0.08) !important;
+    border: 1px solid rgba(148,163,184,0.08) !important;
+}
+
+.dropdown-item {
+    color: #334155 !important;
+    padding: 8px 14px !important;
+    font-weight: 600 !important;
+}
+
+.dropdown-item:hover {
+    background: rgba(34,197,94,0.06) !important;
+    color: #065f46 !important;
+}
+
+/* Submenu anidado hacia la derecha */
+.dropdown-submenu {
+    position: relative !important;
+}
+.dropdown-submenu > .dropdown-menu {
+    top: 0 !important;
+    left: 100% !important;
+    margin-left: 0.2rem !important;
+}
+
+/* Mostrar dropdowns al hacer hover en escritorio para mejor usabilidad */
+@media (min-width: 992px) {
+    .dropdown:hover > .dropdown-menu {
+        display: block !important;
+    }
+    .dropdown-submenu:hover > .dropdown-menu {
+        display: block !important;
+    }
+}
+
+/* Responsive: devolver comportamiento normal en pantallas pequeñas */
+@media (max-width: 991.98px) {
+    .navbar-custom .container {
+        display: flex !important;
+        justify-content: space-between !important;
+        gap: 1rem !important;
+    }
+
+    .navbar-menu {
+        position: static !important;
+        transform: none !important;
+        display: block !important;
+        width: 100% !important;
+        padding-left: 0 !important;
+        justify-content: flex-start !important;
+        gap: 0 !important;
+    }
+
+    .navbar-nav {
+        display: block !important;
+    }
+
+    .submenu.dropdown-menu {
+        position: static !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding-left: 0.5rem !important;
+        display: none !important;
+    }
+
+    /* Bootstrap agrega la clase .show cuando el dropdown está abierto */
+    .submenu.dropdown-menu.show {
+        display: block !important;
+    }
+
+    /* Submenus anidados en móvil: ligera sangría */
+    .dropdown-submenu > .dropdown-menu {
+        padding-left: 1rem !important;
+    }
+
+    .btn-salir {
+        margin-left: 0 !important;
+        margin-top: 0.5rem !important;
+        border-radius: 6px !important;
+        border-bottom: none !important;
+    }
 }

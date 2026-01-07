@@ -59,7 +59,12 @@ verificarSesion();
 
                                 <li class="nav-item" role="presentation">
                                     <button class="nav-link" id="tab-horarios" data-bs-toggle="tab" data-bs-target="#tab_horarios" type="button" role="tab" aria-controls="tab_horarios" aria-selected="false">
-                                        <i class="bi bi-people-fill me-2"></i>Horarios      
+                                        <i class="bi bi-people-fill me-2"></i>Horarios
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="tab-horarios-oficiales" data-bs-toggle="tab" data-bs-target="#tab_horarios_oficiales" type="button" role="tab" aria-controls="tab_horarios_oficiales" aria-selected="false">
+                                        <i class="bi bi-calendar-check me-2"></i>Horarios Oficiales
                                     </button>
                                 </li>
                             </ul>
@@ -210,6 +215,12 @@ verificarSesion();
                                             <input type="number" class="form-control" id="salario_diario" name="salario_diario" step="0.01" placeholder="0.00">
                                         </div>
                                     </div>
+                                    <div class="row px-3">
+                                        <div class="col-md-6 form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch" id="switchCheckHorarioFijo" checked>
+                                            <label class="form-check-label" for="switchCheckHorarioFijo">Horario fijo</label>
+                                        </div>
+                                    </div>
 
                                 </div>
 
@@ -326,6 +337,46 @@ verificarSesion();
                                                             </td>
                                                             <td>
                                                                 <input type="time" class="form-control" name="horario_salida[]" placeholder="Salida">
+                                                            </td>
+                                                        </tr>
+                                                    <?php endfor; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="tab-pane fade" id="tab_horarios_oficiales" role="tabpanel" aria-labelledby="tab-horarios-oficiales">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <h6 class="mb-3">Horarios Oficiales</h6>
+                                            <table class="table table-bordered table-hover">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Día</th>
+                                                        <th>Entrada</th>
+                                                        <th>Salida Comida</th>
+                                                        <th>Entrada Comida</th>
+                                                        <th>Salida</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="tbody_horarios_oficiales">
+                                                    <?php for ($i = 1; $i <= 7; $i++): ?>
+                                                        <tr>
+                                                            <td>
+                                                                <input type="text" class="form-control" name="horario_oficial_dia[]" placeholder="Día">
+                                                            </td>
+                                                            <td>
+                                                                <input type="time" class="form-control" name="horario_oficial_entrada[]" placeholder="Entrada">
+                                                            </td>
+                                                            <td>
+                                                                <input type="time" class="form-control" name="horario_oficial_salida_comida[]" placeholder="Salida Comida">
+                                                            </td>
+                                                            <td>
+                                                                <input type="time" class="form-control" name="horario_oficial_entrada_comida[]" placeholder="Entrada Comida">
+                                                            </td>
+                                                            <td>
+                                                                <input type="time" class="form-control" name="horario_oficial_salida[]" placeholder="Salida">
                                                             </td>
                                                         </tr>
                                                     <?php endfor; ?>

@@ -81,6 +81,19 @@ verificarSesion();
                     </div>
                 </div>
             </div>
+
+            <!-- Tarjeta para ir al reloj de 8 horas -->
+            <div class="col-md-4">
+                <div class="card h-100 text-center">
+                    <div class="card-body">
+                        <i class="bi bi-stopwatch text-success" style="font-size: 48px;"></i>
+                        <h5 class="card-title mt-3">Reloj a 8 Horas</h5>
+                        <p class="card-text">Automatiza el cálculo y control de nóminas para todos los empleados.</p>
+                        <a href="reloj-8horas/views/reloj.php" class="btn btn-success">Ir a Reloj</a>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 

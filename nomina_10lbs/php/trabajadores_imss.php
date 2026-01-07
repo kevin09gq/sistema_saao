@@ -24,11 +24,13 @@ if (count($claves) === 0) {
 
 // Preparar consulta dinámica con placeholders
 $placeholders = implode(',', array_fill(0, count($claves), '?'));
-// Añadimos salario_semanal para que el cliente pueda asignarlo
-$sql = "SELECT clave_empleado, CONCAT(nombre, ' ', ap_paterno, ' ', ap_materno) as nombre_completo, salario_semanal 
-        FROM info_empleados 
-        WHERE id_status = 1 AND clave_empleado IN ($placeholders)
-        ORDER BY nombre, ap_paterno, ap_materno";
+// Añadimos salario_semanal y horario_oficial
+$sql = "SELECT e.id_empleado, e.clave_empleado, CONCAT(e.nombre, ' ', e.ap_paterno, ' ', e.ap_materno) as nombre_completo, 
+               e.salario_semanal,e.salario_diario, h.horario_oficial
+        FROM info_empleados e
+        LEFT JOIN horarios_oficiales h ON e.id_empleado = h.id_empleado
+        WHERE e.id_status = 1 AND e.clave_empleado IN ($placeholders)
+        ORDER BY e.nombre, e.ap_paterno, e.ap_materno";
 
 if (!$stmt = mysqli_prepare($conexion, $sql)) {
     echo json_encode([]);
@@ -55,9 +57,12 @@ $empleados = [];
 if ($result) {
     while ($row = mysqli_fetch_assoc($result)) {
         $empleados[] = [
+            'id_empleado' => (int)$row['id_empleado'],
             'clave' => (string)$row['clave_empleado'],
             'nombre' => $row['nombre_completo'],
-            'salario_semanal' => $row['salario_semanal'] !== null ? (string)$row['salario_semanal'] : '0.00'
+            'salario_semanal' => $row['salario_semanal'] !== null ? (string)$row['salario_semanal'] : '0.00',
+            'salario_diario' => $row['salario_diario'] !== null ? (string)$row['salario_diario'] : '0.00',
+            'horario_oficial' => $row['horario_oficial'] !== null ? $row['horario_oficial'] : null
         ];
     }
 }

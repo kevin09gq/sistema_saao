@@ -11,51 +11,59 @@
         </button>
         
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="<?= $rutaRaiz ?>/index.php" data-page="inicio">
+            <!-- Estructura de menú adaptada: conserva clases e IDs para JS -->
+            <ul class="navbar-menu navbar-nav ms-auto">
+                <li class="menu-item nav-item">
+                    <a href="<?= $rutaRaiz ?>/index.php" class="menu-link nav-link" data-page="inicio">
                         <i class="bi bi-house-fill me-2"></i>
-                        Inicio
+                        <span class="link-text">Inicio</span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<?= $rutaRaiz ?>/gafetes/gafetes.php" data-page="gafetes">
-                        <i class="bi bi-credit-card me-2"></i>
-                        Gafetes
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<?= $rutaRaiz ?>/contratos/contratos.php" data-page="contratos">
-                        <i class="bi bi-file-text me-2"></i>
-                        Contratos
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<?= $rutaRaiz ?>/nomina/views/nomina.php" data-page="nomina">
-                        <i class="bi bi-calculator me-2"></i>
-                        Nómina
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<?= $rutaRaiz ?>/empleados/views/form_actualizar_empleado.php" data-page="empleados">
+
+                <li class="menu-item nav-item has-submenu dropdown">
+                    <a href="#" class="menu-link nav-link dropdown-toggle" id="empleadosDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-page="empleados">
                         <i class="bi bi-people me-2"></i>
-                        ActualizarEmpleados
+                        <span class="link-text">Empleados</span>
+                    </a>
+                    <ul class="submenu dropdown-menu" aria-labelledby="empleadosDropdown">
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/empleados/views/form_actualizar_empleado.php">Actualizar Empleado</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/empleados/views/form_registro.php">Registrar Empleado</a></li>
+                    </ul>
+                </li>
+
+                <li class="menu-item nav-item has-submenu dropdown">
+                    <a href="#" class="menu-link nav-link dropdown-toggle" id="documentosDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-page="documentos">
+                        <i class="bi bi-folder2-open me-2"></i>
+                        <span class="link-text">Documentos</span>
+                    </a>
+                    <ul class="submenu dropdown-menu" aria-labelledby="documentosDropdown">
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/gafetes/gafetes.php">Gafetes</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/contratos/contratos.php">Contratos</a></li>
+                        <li class="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle" href="#">Reloj 8 Horas</a>
+                            <ul class="submenu dropdown-menu">
+                                <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/reloj-8horas/views/reloj.php">Subir Excel</a></li>
+                                <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/reloj-8horas/views/historial.php">Historial</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="menu-item nav-item">
+                    <a href="<?= $rutaRaiz ?>/nomina/views/nomina.php" class="menu-link nav-link" data-page="nominas">
+                        <i class="bi bi-calculator me-2"></i>
+                        <span class="link-text">Nóminas</span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<?= $rutaRaiz ?>/empleados/views/form_registro.php" data-page="empleados_registro">
-                        <i class="bi bi-person-plus me-2"></i>
-                        Registrar
-                    </a>
-                </li>
-                
-                <li class="nav-item">
-                    <a class="nav-link" href="<?= $rutaRaiz ?>/config/settings/views/configuracion.php" data-page="configuracion">
+
+                <li class="menu-item nav-item">
+                    <a href="<?= $rutaRaiz ?>/config/settings/views/configuracion.php" class="menu-link nav-link" data-page="configuracion">
                         <i class="bi bi-gear-fill me-2"></i>
-                        Configuración
+                        <span class="link-text">Configuración</span>
                     </a>
                 </li>
-                
+
+                <!-- Mantener la clase original "btn-salir" para conservar comportamiento JS -->
                 <li class="nav-item">
                     <a class="nav-link btn-salir" href="#">
                         <i class="bi bi-box-arrow-right me-2"></i>

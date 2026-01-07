@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 // Actualizar la nómina con el id_horario
-                $sql = $conexion->prepare("UPDATE nomina SET datos_nomina = ?, id_horario = ? WHERE id_nomina_json = ?");
+                $sql = $conexion->prepare("UPDATE nomina_40lbs SET datos_nomina = ?, id_horario = ? WHERE id_nomina_json = ?");
                 $sql->bind_param("sii", $jsonData, $idHorario, $registroExistente['id_nomina_json']);
 
                 if ($sql->execute()) {
@@ -105,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 // Crear el nuevo registro con la relación FK
                 $idNomina = generarIdNomina();
-                $sql = $conexion->prepare("INSERT INTO nomina (id_nomina_json, id_empresa, datos_nomina, id_horario) VALUES (?, 1, ?, ?)");
+                $sql = $conexion->prepare("INSERT INTO nomina_40lbs (id_nomina_json, id_empresa, datos_nomina, id_horario) VALUES (?, 1, ?, ?)");
                 $sql->bind_param("isi", $idNomina, $jsonData, $idHorario);
 
                 if ($sql->execute()) {
@@ -145,7 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 function contarRegistros()
 {
     global $conexion;
-    $sql = $conexion->prepare("SELECT COUNT(*) as total FROM nomina");
+    $sql = $conexion->prepare("SELECT COUNT(*) as total FROM nomina_40lbs");
     $sql->execute();
     $resultado = $sql->get_result();
     $row = $resultado->fetch_assoc();
@@ -156,13 +156,13 @@ function contarRegistros()
 function limpiarTabla()
 {
     global $conexion;
-    $sql = $conexion->prepare("DELETE FROM nomina");
+    $sql = $conexion->prepare("DELETE FROM nomina_40lbs");
     if (!$sql->execute()) {
         throw new Exception('Error al limpiar la tabla: ' . $sql->error);
     }
     $sql->close();
 
-    $sql = $conexion->prepare("ALTER TABLE nomina AUTO_INCREMENT = 1");
+    $sql = $conexion->prepare("ALTER TABLE nomina_40lbs AUTO_INCREMENT = 1");
     $sql->execute();
     $sql->close();
 }
@@ -174,7 +174,7 @@ function eliminarNominaMasAntigua()
     
     try {
         // Obtener la nómina más antigua (menor id_nomina_json)
-        $sql = $conexion->prepare("SELECT id_nomina_json, id_horario, datos_nomina FROM nomina ORDER BY id_nomina_json ASC LIMIT 1");
+        $sql = $conexion->prepare("SELECT id_nomina_json, id_horario, datos_nomina FROM nomina_40lbs ORDER BY id_nomina_json ASC LIMIT 1");
         $sql->execute();
         $resultado = $sql->get_result();
         
@@ -190,7 +190,7 @@ function eliminarNominaMasAntigua()
             $sql->close();
             
             // Eliminar la nómina
-            $sql = $conexion->prepare("DELETE FROM nomina WHERE id_nomina_json = ?");
+            $sql = $conexion->prepare("DELETE FROM nomina_40lbs WHERE id_nomina_json = ?");
             $sql->bind_param("i", $idNominaEliminar);
             
             if ($sql->execute()) {
@@ -226,7 +226,7 @@ function eliminarHorario($idHorario)
     global $conexion;
     
     try {
-        $sql = $conexion->prepare("DELETE FROM horarios_oficiales WHERE id_horario = ?");
+        $sql = $conexion->prepare("DELETE FROM horarios_40lbs WHERE id_horario = ?");
         $sql->bind_param("i", $idHorario);
         $resultado = $sql->execute();
         $sql->close();
@@ -240,7 +240,7 @@ function eliminarHorario($idHorario)
 function verificarNominaExistente($numeroSemana)
 {
     global $conexion;
-    $sql = $conexion->prepare("SELECT id_nomina_json FROM nomina WHERE JSON_EXTRACT(datos_nomina, '$.numero_semana') = ?");
+    $sql = $conexion->prepare("SELECT id_nomina_json FROM nomina_40lbs WHERE JSON_EXTRACT(datos_nomina, '$.numero_semana') = ?");
     $sql->bind_param("s", $numeroSemana);
     $sql->execute();
     $resultado = $sql->get_result();
@@ -258,7 +258,7 @@ function verificarNominaExistente($numeroSemana)
 function generarIdNomina()
 {
     global $conexion;
-    $sql = $conexion->prepare("SELECT MAX(id_nomina_json) as max_id FROM nomina");
+    $sql = $conexion->prepare("SELECT MAX(id_nomina_json) as max_id FROM nomina_40lbs");
     $sql->execute();
     $resultado = $sql->get_result();
     $row = $resultado->fetch_assoc();
@@ -271,13 +271,13 @@ function generarIdNomina()
 function limpiarTablaHorarios()
 {
     global $conexion;
-    $sql = $conexion->prepare("DELETE FROM horarios_oficiales");
+    $sql = $conexion->prepare("DELETE FROM horarios_40lbs");
     if (!$sql->execute()) {
         throw new Exception('Error al limpiar la tabla de horarios: ' . $sql->error);
     }
     $sql->close();
 
-    $sql = $conexion->prepare("ALTER TABLE horarios_oficiales AUTO_INCREMENT = 1");
+    $sql = $conexion->prepare("ALTER TABLE horarios_40lbs AUTO_INCREMENT = 1");
     $sql->execute();
     $sql->close();
 }
@@ -294,7 +294,7 @@ function guardarHorarios($horariosData)
             $numeroSemana = $decodedHorarios['numero_semana'];
 
             // Verificar si ya existe un horario con esta semana
-            $sql = $conexion->prepare("SELECT id_horario FROM horarios_oficiales WHERE JSON_EXTRACT(horario_json, '$.numero_semana') = ?");
+            $sql = $conexion->prepare("SELECT id_horario FROM horarios_40lbs WHERE JSON_EXTRACT(horario_json, '$.numero_semana') = ?");
             $sql->bind_param("s", $numeroSemana);
             $sql->execute();
             $resultado = $sql->get_result();
@@ -305,7 +305,7 @@ function guardarHorarios($horariosData)
                 $idHorario = $row['id_horario'];
                 $sql->close();
 
-                $sql = $conexion->prepare("UPDATE horarios_oficiales SET horario_json = ? WHERE id_horario = ?");
+                $sql = $conexion->prepare("UPDATE horarios_40lbs SET horario_json = ? WHERE id_horario = ?");
                 $sql->bind_param("si", $horariosData, $idHorario);
 
                 if ($sql->execute()) {
@@ -320,7 +320,7 @@ function guardarHorarios($horariosData)
 
         // No existe, crear nuevo
         $idHorario = generarIdHorario();
-        $sql = $conexion->prepare("INSERT INTO horarios_oficiales (id_horario, horario_json) VALUES (?, ?)");
+        $sql = $conexion->prepare("INSERT INTO horarios_40lbs (id_horario, horario_json) VALUES (?, ?)");
         $sql->bind_param("is", $idHorario, $horariosData);
 
         if ($sql->execute()) {
@@ -342,7 +342,7 @@ function actualizarHorarios($numeroSemana, $horariosData)
 
     try {
         // Buscar horario que tenga el mismo numero_semana
-        $sql = $conexion->prepare("SELECT id_horario FROM horarios_oficiales WHERE JSON_EXTRACT(horario_json, '$.numero_semana') = ?");
+        $sql = $conexion->prepare("SELECT id_horario FROM horarios_40lbs WHERE JSON_EXTRACT(horario_json, '$.numero_semana') = ?");
         $sql->bind_param("s", $numeroSemana);
         $sql->execute();
         $resultado = $sql->get_result();
@@ -353,7 +353,7 @@ function actualizarHorarios($numeroSemana, $horariosData)
             $idHorario = $row['id_horario'];
             $sql->close();
 
-            $sql = $conexion->prepare("UPDATE horarios_oficiales SET horario_json = ? WHERE id_horario = ?");
+            $sql = $conexion->prepare("UPDATE horarios_40lbs SET horario_json = ? WHERE id_horario = ?");
             $sql->bind_param("si", $horariosData, $idHorario);
 
             if ($sql->execute()) {
@@ -376,7 +376,7 @@ function actualizarHorarios($numeroSemana, $horariosData)
 function generarIdHorario()
 {
     global $conexion;
-    $sql = $conexion->prepare("SELECT MAX(id_horario) as max_id FROM horarios_oficiales");
+    $sql = $conexion->prepare("SELECT MAX(id_horario) as max_id FROM horarios_40lbs");
     $sql->execute();
     $resultado = $sql->get_result();
     $row = $resultado->fetch_assoc();

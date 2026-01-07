@@ -19,7 +19,7 @@ verificarSesion();
     <link rel="stylesheet" href="css/logos-gafetes.css">
     <link rel="stylesheet" href="css/confirmacion.css">
     <link rel="stylesheet" href="../public/styles/main.css">
-    <link rel="stylesheet" href="css/tabla-gafetes.css">
+    
     <!-- SweetAlert2 CSS -->
     <script src="<?= SWEETALERT ?>"></script>
     

@@ -1,0 +1,45 @@
+/* Modal de eventos - debe aparecer sobre el modal de detalles */
+#eventosModal {
+    z-index: 10500 !important;
+}
+
+#eventosModal .modal-dialog {
+    z-index: 10501;
+}
+
+#eventosModal .modal-content {
+    z-index: 10502;
+}
+
+/* Oscurecer el modal de detalles cuando eventosModal está abierto */
+#eventosModal.show ~ .modal-backdrop {
+    z-index: 10400 !important;
+}
+
+/* Cuando eventosModal está abierto, oscurecer el modal-detalles */
+body.modal-open #modal-detalles.eventos-modal-abierto {
+    filter: brightness(0.5);
+    pointer-events: none;
+}
+
+/* Modal de horarios - z-index normal de Bootstrap */
+#horariosModal {
+    z-index: 1055;
+}
+
+#horariosModal .modal-dialog {
+    z-index: 1056;
+}
+
+#horariosModal .modal-content {
+    z-index: 1057;
+}
+
+/* SweetAlert2 debe aparecer sobre todos los modales */
+.swal2-container {
+    z-index: 11000 !important;
+}
+
+.swal2-popup {
+    z-index: 11001 !important;
+}

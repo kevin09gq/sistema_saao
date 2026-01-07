@@ -1,5 +1,9 @@
 const rutaRaiz = '/sistema_saao/';
 
+// Manejar los horarios fijos o variables
+const $switch = $("#switchCheckHorarioFijo");
+const $tab = $("#tab-horarios");
+
 $(document).ready(function () {
     // Funciones de validación
     validarDatos("#nombre_trabajador", validarNombre);
@@ -338,7 +342,7 @@ $(document).ready(function () {
     }
 
     // Asocia el evento submit al formulario (correcto para enviar datos después) BHL
-    function registrarEmpleado() { 
+    function registrarEmpleado() {
         $("#form_registro_empleado").on("submit", function (e) {
             e.preventDefault();
 
@@ -445,6 +449,12 @@ $(document).ready(function () {
                 }
             });
 
+            // Validar si el horario es fijo o variable
+            let horario_fijo = $("#switchCheckHorarioFijo").is(":checked") ? 1 : 0;
+
+            if (horario_fijo == 0) {
+                horarios = []; // Si es variable, no enviar horarios predefinidos
+            }
 
             // Validaciones obligatorias
             let obligatoriosValidos = (
@@ -531,8 +541,9 @@ $(document).ready(function () {
                 // Datos de beneficiarios
                 beneficiarios: beneficiarios,
 
-                // Datos de horarios
-                horarios: horarios
+                // Datos de horarios y saber si es fijo o variable
+                horarios: horarios,
+                horario_fijo: horario_fijo
             }; // Aqui agregue el turno BHL 
 
             $.ajax({
@@ -590,4 +601,12 @@ $(document).ready(function () {
         })
     }
 
+    $switch.on("change", function () {
+        if ($(this).is(":checked")) {
+            $tab.prop("disabled", false); // habilita el tab
+        } else {
+            $tab.prop("disabled", true);
+            // deshabilita el tab
+        }
+    });
 });
