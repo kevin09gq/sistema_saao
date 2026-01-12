@@ -799,24 +799,27 @@ $(document).ready(function () {
                             if ($tbodyHorarios.length) {
                                 // Limpiar todas las filas primero
                                 $tbodyHorarios.find('input').val('');
+                                $tbodyHorarios.find('select').prop('selectedIndex', 0); // resetear selects
 
                                 // Llenar con los datos de horarios
                                 horarios.forEach((horario, index) => {
                                     if (index < 7) { // Solo llenar las primeras 7 filas
                                         const $fila = $tbodyHorarios.find('tr').eq(index);
-                                        $fila.find('input[name="horario_dia[]"]').val(horario.dia || '');
+
+                                        // Ahora horario_dia es un select
+                                        $fila.find('select[name="horario_dia[]"]').val(horario.dia || '');
+
                                         $fila.find('input[name="horario_entrada[]"]').val(horario.entrada || '');
                                         $fila.find('input[name="horario_salida_comida[]"]').val(horario.salida_comida || '');
                                         $fila.find('input[name="horario_entrada_comida[]"]').val(horario.entrada_comida || '');
                                         $fila.find('input[name="horario_salida[]"]').val(horario.salida || '');
                                     }
                                 });
-
-
                             }
                         } catch (e) {
                             console.error("Error al cargar horarios:", e);
                         }
+
 
                         // Poblar la tabla de los horarios oficiales
                         try {
@@ -995,7 +998,7 @@ $(document).ready(function () {
 
         // Recoger los datos del horario BHL
         let horarios = [];
-        $('input[name="horario_dia[]"]').each(function (index) {
+        $('select[name="horario_dia[]"]').each(function (index) {
             const dia = $(this).val().trim();
             const entrada = $('input[name="horario_entrada[]"]').eq(index).val().trim();
             const salida_comida = $('input[name="horario_salida_comida[]"]').eq(index).val().trim();
@@ -1013,6 +1016,10 @@ $(document).ready(function () {
                 });
             }
         });
+
+        console.log(horarios);
+
+
 
         // Recoger horarios oficiales
         let horarios_oficiales = [];

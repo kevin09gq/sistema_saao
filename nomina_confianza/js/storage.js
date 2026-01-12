@@ -69,6 +69,9 @@ function restoreNomina() {
         if (typeof mostrarDatosTabla === 'function') {
             mostrarDatosTabla(jsonNominaConfianza);
         }
+        if (typeof actualizarCabeceraNomina === 'function') {
+            actualizarCabeceraNomina(jsonNominaConfianza);
+        }
 
         return true;
     } catch (err) {

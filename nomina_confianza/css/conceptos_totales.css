@@ -1,0 +1,156 @@
+/* Estilos específicos para el modal "Totales por Concepto" */
+#modalConceptosTotales .card {
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  box-shadow: none;
+}
+
+#modalConceptosTotales .card .card-title {
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-bottom: 0.25rem;
+}
+
+#modalConceptosTotales .card h4 {
+  font-size: 1.6rem;
+  margin: 0;
+  font-weight: 700;
+}
+
+#modalConceptosTotales .text-success { color: #198754; }
+#modalConceptosTotales .text-danger  { color: #dc3545; }
+#modalConceptosTotales .text-primary { color: #0d6efd; }
+
+/* Accordion */
+#modalConceptosTotales .accordion .accordion-item { border: none; }
+#modalConceptosTotales .accordion-item + .accordion-item { border-top: 1px solid #e9ecef; }
+#modalConceptosTotales .accordion-button {
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/* Título ocupa el espacio restante */
+#modalConceptosTotales .concept-title {
+  flex: 1 1 auto;
+  text-align: left;
+  padding-right: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Grupo de badges alineado a la derecha */
+#modalConceptosTotales .badge-group {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Badges consistentes en tamaño y alineación */
+#modalConceptosTotales .badge-group .badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  line-height: 1;
+  border-radius: 999px;
+  padding: 0 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Colores claros para contraste */
+#modalConceptosTotales .badge.bg-primary { background: #0d6efd; color: #fff; }
+#modalConceptosTotales .badge.bg-secondary { background: #6c757d; color: #fff; }
+
+#modalConceptosTotales .accordion-button .badge.bg-primary {
+  background: #0d6efd;
+}
+
+#modalConceptosTotales .accordion-button .badge.bg-secondary {
+  background: #6c757d;
+}
+
+#modalConceptosTotales .accordion-body {
+  padding: 0.75rem 1rem 1rem 1rem;
+}
+
+#modalConceptosTotales .table {
+  margin-bottom: 0;
+  background: transparent;
+}
+
+#modalConceptosTotales .table th,
+#modalConceptosTotales .table td { vertical-align: middle; }
+
+#modalConceptosTotales .table td.text-end { font-weight: 600; }
+
+#modalConceptosTotales .modal-footer .btn-secondary { background: #6c757d; border: none; }
+
+/* Ajustes responsivos */
+@media (max-width: 767px) {
+  #modalConceptosTotales .card h4 { font-size: 1.25rem; }
+  #modalConceptosTotales .accordion-button { font-size: 0.95rem; }
+}
+
+
+/* AQUI AGREGO LOS CONCEPTOS DEL MODAL DEL SELECCION DE EMPLEADO  */
+.departamento-grupo {
+    margin-bottom: 20px;
+}
+
+.departamento-titulo {
+    font-weight: bold;
+    font-size: 16px;
+    color: #0d6efd;
+    padding: 8px 10px;
+    background: #e7f3ff;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.empleado-item {
+    padding: 8px 10px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.2s;
+}
+
+.empleado-item:hover {
+    background: #f8f9fa;
+}
+
+.empleado-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.empleado-item label {
+    flex: 1;
+    cursor: pointer;
+    margin: 0;
+    font-size: 14px;
+}
+
+.empleado-clave {
+    color: #6c757d;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.sin-resultados {
+    text-align: center;
+    padding: 30px;
+    color: #999;
+    font-style: italic;
+}

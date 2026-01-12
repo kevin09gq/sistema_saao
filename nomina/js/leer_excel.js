@@ -121,6 +121,7 @@ $(document).ready(function () {
     configTablas();
     inicializarBotonesLimpiarBusqueda();
 
+  console.log(jsonGlobal);
   
 
 
@@ -1650,13 +1651,17 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
                 }
                 return horaReal;
             case 'salida':
-                // Antes de la salida oficial: si está hasta 40 min antes, redondear a oficial; si es >40 min, conservar real
-                if (minutosReal < minutosOficial) {
-                    const diferencia = minutosOficial - minutosReal;
-                    return (diferencia <= 40) ? horaOficial : horaReal;
+
+                if (minutosReal >= minutosOficial && minutosReal <= minutosOficial + 50) {
+                    return horaOficial;
                 }
-                // Después (o igual) de la salida oficial: siempre redondear a la oficial
-                return horaOficial;
+                if (minutosReal > minutosOficial + 50) {
+                    return horaOficial;
+                }
+                if (minutosReal >= minutosOficial - 30 && minutosReal < minutosOficial) {
+                    return horaOficial;
+                }
+                return horaReal;
             default:
                 return horaReal;
         }
@@ -2074,52 +2079,6 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
                 horarioOficial.salida !== "00:00" &&
                 (horarioOficial.salidaComida === "00:00" || horarioOficial.entradaComida === "00:00");
 
-            // Detectar JORNADA CORTA: un solo bloque completo que termina antes de la salida a comer
-            // Ajuste: si existe algún bloque/entrada vespertino (después de la salida a comer), NO considerar jornada corta
-            let esJornadaCorta = false;
-            // Detectar TURNO SOLO TARDE: primer registro inicia después de salida a comer y no hay bloque matutino
-            let esTurnoSoloTarde = false;
-            if (Array.isArray(registrosDia)) {
-                const bloquesCompletos = registrosDia.filter(r =>
-                    r && r.entrada && r.entrada !== "00:00" && r.salida && r.salida !== "00:00"
-                );
-                if (bloquesCompletos.length === 1) {
-                    const minSalidaReal = horaAMinutos(bloquesCompletos[0].salida);
-                    const minEntradaComida = horaAMinutos(horarioOficial.entradaComida || "00:00");
-                    // Verificar si existe algún registro con entrada en vespertino (>= entradaComida)
-                    const hayBloqueTarde = registrosDia.some(b => {
-                        const e = b && b.entrada && b.entrada !== "00:00" && b.entrada !== "--";
-                        const me = e ? horaAMinutos(b.entrada) : null;
-                        return me !== null && minEntradaComida && me >= minEntradaComida;
-                    });
-                    // Jornada corta si el único bloque termina antes de la hora oficial de regreso de comida y no hay bloque vespertino
-                    if (minEntradaComida && minSalidaReal && minSalidaReal < minEntradaComida && !hayBloqueTarde) {
-                        esJornadaCorta = true;
-                    }
-                    // Turno solo tarde: entrada del único bloque ocurre después de la hora de salida a comer (o del regreso)
-                    const minSalidaComida = horaAMinutos(horarioOficial.salidaComida || "00:00");
-                    const minEntradaBloque = horaAMinutos(bloquesCompletos[0].entrada);
-                    if ((minSalidaComida && minEntradaBloque && minEntradaBloque >= minSalidaComida) ||
-                        (minEntradaComida && minEntradaBloque && minEntradaBloque >= minEntradaComida)) {
-                        esTurnoSoloTarde = true;
-                    }
-                    // Nuevo criterio: si existe cualquier marca matutina (entrada o salida antes de salida a comer),
-                    // NO considerar como turno solo tarde. Esto cubre casos donde falta la entrada pero existe una salida matutina.
-                    if (minSalidaComida) {
-                        const hayMarcaMatutina = registrosDia.some(b => {
-                            const tieneEntrada = b && b.entrada && b.entrada !== "00:00" && b.entrada !== "--";
-                            const tieneSalida = b && b.salida && b.salida !== "00:00" && b.salida !== "--";
-                            const me = tieneEntrada ? horaAMinutos(b.entrada) : null;
-                            const ms = tieneSalida ? horaAMinutos(b.salida) : null;
-                            return (me !== null && me < minSalidaComida) || (ms !== null && ms < minSalidaComida);
-                        });
-                        if (hayMarcaMatutina) {
-                            esTurnoSoloTarde = false;
-                        }
-                    }
-                }
-            }
-
             // Si se forzó oficial para este día, ignorar checador y construir registros del día con el horario oficial
             if (window.horariosForzarOficialMapa && window.horariosForzarOficialMapa[diaSemana]) {
                 if (tieneHorarioCompleto) {
@@ -2139,7 +2098,6 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
                 }
             }
 
-            // Ajuste: contabilizar olvidos aunque sea jornada corta o turno de tarde
             const olvidosChecador = detectarOlvidosChecador(registrosDia, horarioOficial);
 
             //    CONTAR OLVIDOS PARA EL DESCUENTO SEMANAL
@@ -2149,7 +2107,7 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
 
             // Autocompletado para registros_redondeados
             // Caso A: Toggle activo -> forzar oficial completo
-            if (!(esJornadaCorta || esTurnoSoloTarde) && window.horariosForzarOficialMapa && window.horariosForzarOficialMapa[diaSemana]) {
+            if (window.horariosForzarOficialMapa && window.horariosForzarOficialMapa[diaSemana]) {
                 completarRegistrosFaltantes(registrosDia, horarioOficial);
                 // Refuerzo final: si hay registros pero la salida final quedó 00:00 y existe salida oficial, completar
                 if (registrosDia && registrosDia.length > 0 && horarioOficial && horarioOficial.salida && horarioOficial.salida !== "00:00") {
@@ -2178,7 +2136,7 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
                     const s = r.salida && r.salida !== "00:00" && r.salida !== "--";
                     return e || s;
                 });
-                if (!(esJornadaCorta || esTurnoSoloTarde) && hayAlgunaMarca) {
+                if (hayAlgunaMarca) {
                     completarRegistrosFaltantes(registrosDia, horarioOficial);
                     if (registrosDia && registrosDia.length > 0 && horarioOficial && horarioOficial.salida && horarioOficial.salida !== "00:00") {
                         const ultimoIdx = registrosDia.length - 1;
@@ -2226,8 +2184,7 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
                 llegadaTardiaComer = detectarLlegadaTardiaComer(registrosDia[1].entrada, horarioOficial.entradaComida);
             }
 
-            const usarHorarioCompleto = (esJornadaCorta || esTurnoSoloTarde) ? false : tieneHorarioCompleto;
-            if (usarHorarioCompleto && registrosDia.length >= 2) {
+            if (tieneHorarioCompleto && registrosDia.length >= 2) {
                 registrosDia[0].entrada = redondearHora(registrosDia[0].entrada, horarioOficial.entrada, 'entrada');
                 registrosDia[0].salida = redondearHora(registrosDia[0].salida, horarioOficial.salidaComida, 'salidaComer');
                 registrosDia[1].entrada = redondearHora(registrosDia[1].entrada, horarioOficial.entradaComida, 'entradaComer');
@@ -2236,22 +2193,15 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
                     registrosDia[i].entrada = "00:00";
                     registrosDia[i].salida = "00:00";
                 }
-            } else if (tieneEntradaSalida || esJornadaCorta || esTurnoSoloTarde) {
+            } else if (tieneEntradaSalida) {
                 registrosDia.forEach((registro, index) => {
                     if (index === 0) {
                         registro.entrada = redondearHora(registro.entrada, horarioOficial.entrada, 'entrada');
-                        // En jornada corta con un solo bloque, conservar salida real (temprana)
-                        if ((esJornadaCorta || esTurnoSoloTarde) && registrosDia.length === 1) {
-                            registro.salida = registro.salida || "00:00";
-                        } else {
-                            registro.salida = (registrosDia.length > 1) ? "00:00" :
-                                redondearHora(registro.salida, horarioOficial.salida, 'salida');
-                        }
+                        registro.salida = (registrosDia.length > 1) ? "00:00" :
+                            redondearHora(registro.salida, horarioOficial.salida, 'salida');
                     } else if (index === registrosDia.length - 1) {
                         registro.entrada = "00:00";
-                        // Para jornadas con múltiples bloques, solo redondear si no es jornada corta
-                        registro.salida = (esJornadaCorta || esTurnoSoloTarde) ? (registro.salida || "00:00") :
-                            redondearHora(registro.salida, horarioOficial.salida, 'salida');
+                        registro.salida = redondearHora(registro.salida, horarioOficial.salida, 'salida');
                     } else {
                         registro.entrada = "00:00";
                         registro.salida = "00:00";
@@ -2272,22 +2222,20 @@ function redondearRegistrosEmpleados(forzarRecalculo = false, esNominaNueva = tr
                     const s = r.salida && r.salida !== "00:00" && r.salida !== "--";
                     return e || s;
                 });
-                if (!(esJornadaCorta || esTurnoSoloTarde) && hayAlgunaMarca && horarioOficial && horarioOficial.salida && horarioOficial.salida !== "00:00") {
+                if (hayAlgunaMarca && horarioOficial && horarioOficial.salida && horarioOficial.salida !== "00:00") {
                     const lastIdx = registrosDia.length - 1;
                     if (!registrosDia[lastIdx].salida || registrosDia[lastIdx].salida === "" || registrosDia[lastIdx].salida === "00:00" || registrosDia[lastIdx].salida === "--") {
                         registrosDia[lastIdx].salida = horarioOficial.salida;
                     }
                 }
-                // Determinar si debemos mostrar columnas de comida en el registro final
-                const mostrarComida = usarHorarioCompleto && !(esJornadaCorta || esTurnoSoloTarde);
                 const registroRedondeado = {
                     fecha: fecha,
                     dia: diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1),
                     entrada: registrosDia[0]?.entrada || "00:00",
-                    salida_comer: mostrarComida ? (registrosDia[0]?.salida || "00:00") : "00:00",
-                    entrada_comer: mostrarComida ? (registrosDia[1]?.entrada || "00:00") : "00:00",
+                    salida_comer: tieneHorarioCompleto ? (registrosDia[0]?.salida || "00:00") : "00:00",
+                    entrada_comer: tieneHorarioCompleto ? (registrosDia[1]?.entrada || "00:00") : "00:00",
                     salida: registrosDia[registrosDia.length - 1]?.salida || "00:00",
-                    hora_comida: mostrarComida ? (horarioOficial.horasComida || "00:00") : "00:00",
+                    hora_comida: horarioOficial.horasComida || "00:00",
                     trabajado: horasTrabajadas,
                     olvido_checador: olvidosChecador.length > 0,
                     entrada_temprana: minutosAHora(entradaTemprana),

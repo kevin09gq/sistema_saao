@@ -23,15 +23,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to determine current page
     function getCurrentPage() {
         const path = window.location.pathname;
-        
+
         if (path.includes('/index.php') || path === '/' || path === '/sistema_saao/' || path === '/sistema_saao') {
             return 'inicio';
         } else if (path.includes('/gafetes/')) {
             return 'gafetes';
         } else if (path.includes('/contratos/contratos.php')) {
             return 'contratos';
-        } else if (path.includes('/nomina/')) {
-            return 'nomina';
+        } else if (path.includes('/nomina/views/nomina.php')) {
+            return 'nominas'; // Highlight 'Nóminas' for 40 lbs
+        } else if (path.includes('/nomina_10lbs/views/nomina_confianza.php')) {
+            return 'nominas'; // Highlight 'Nóminas' for Confianza
         } else if (path.includes('/empleados/views/form_registro.php')) {
             return 'empleados_registro';
         } else if (path.includes('/empleados/')) {
@@ -39,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (path.includes('/config/settings/views/configuracion.php')) {
             return 'configuracion';
         }
-        
+
         return 'inicio'; // default
     }
     

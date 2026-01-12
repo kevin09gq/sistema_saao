@@ -167,7 +167,7 @@ verificarSesion();
                                 </button>
                             </li>
                         </ul>
-                        
+
                         <!-- Tab panes -->
                         <div class="tab-content">
 
@@ -479,7 +479,16 @@ verificarSesion();
                                                     <?php for ($i = 1; $i <= 7; $i++): ?>
                                                         <tr>
                                                             <td>
-                                                                <input type="text" class="form-control" name="horario_dia[]" placeholder="Día">
+                                                                <!-- <input type="text" class="form-control" name="horario_dia[]" placeholder="Día"> -->
+                                                                <select class="form-select" name="horario_dia[]">
+                                                                    <option selected value="">Seleccionar...</option>
+
+                                                                    <?php foreach (DIAS_SEMANA as $dia): ?>
+                                                                        <option value="<?php echo $dia; ?>"><?php echo $dia; ?></option>
+                                                                    <?php endforeach; ?>
+
+                                                                </select>
+
                                                             </td>
                                                             <td>
                                                                 <input type="time" class="form-control" name="horario_entrada[]" placeholder="Entrada">

@@ -196,6 +196,14 @@ CREATE TABLE horarios_oficiales (
     FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado)  
 );
 
+CREATE TABLE nomina_confianza (
+    id_nomina_confianza INT AUTO_INCREMENT PRIMARY KEY,
+    id_empresa INT NOT NULL,
+    numero_semana INT NOT NULL,
+    nomina LONGTEXT NOT NULL,
+    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
+);
+
 
 -- =============================
 -- TABLAS DE TURNOS Y FESTIVIDADES BHL

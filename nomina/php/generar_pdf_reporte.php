@@ -74,7 +74,6 @@ try {
     $tituloNomina = $data['tituloNomina'] ?? 'Reporte de Nómina';
     $numeroSemana = $data['numeroSemana'] ?? 'N/A';
     $fechaCierre = $data['fechaCierre'] ?? date('d/m/Y');
-    $horariosSemanales = $data['horarios'] ?? null;
 
     // Crear nuevo documento PDF
     $pdf = new PDFReporte('P', 'mm', 'A4', true, 'UTF-8', false);
@@ -100,24 +99,6 @@ try {
     {
         if ($monto == 0) return '$0.00';
         return '$' . number_format((float)$monto, 2, '.', ',');
-    }
-
-    // Helper: convertir "HH:MM" a minutos
-    function hhmm_a_minutos($hhmm)
-    {
-        if (!is_string($hhmm) || strpos($hhmm, ':') === false) return 0;
-        list($h, $m) = array_map('intval', explode(':', $hhmm));
-        return ($h * 60) + $m;
-    }
-
-    // Helper: sumar un arreglo de tiempos "HH:MM" y regresar "HH:MM"
-    function sumar_tiempos($lista)
-    {
-        $min = 0;
-        foreach ($lista as $t) { $min += hhmm_a_minutos($t); }
-        $h = floor($min / 60);
-        $m = $min % 60;
-        return sprintf('%02d:%02d', $h, $m);
     }
 
     // Función para validar si el empleado existe y está activo en BD
@@ -872,73 +853,6 @@ try {
 
         // Información adicional - DejaVu Sans 10pt (texto general)
         $pdf->SetFont('dejavusans', '', 10);
-      }
-
-      // ===== PÁGINA FINAL: HORARIOS SEMANALES =====
-      if ($horariosSemanales && isset($horariosSemanales['semana']) && is_array($horariosSemanales['semana'])) {
-        $pdf->AddPage();
-
-        // Título
-        $pdf->SetFont('helvetica', 'B', 14);
-        $pdf->Cell(0, 10, 'HORARIOS SEMANALES ', 0, 1, 'C');
-        $pdf->Ln(2);
-
-        // Encabezado de la tabla (más compacto)
-        $pdf->SetFont('helvetica', 'B', 9);
-        $pdf->SetFillColor(215, 243, 222); // verde claro similar
-        $pdf->Cell(28, 7, 'DIA', 0, 0, 'C', true);
-        $pdf->Cell(22, 7, 'ENTRADA', 0, 0, 'C', true);
-        // Usar MultiCell con salto de línea para evitar apilamiento
-        $pdf->MultiCell(28, 7, "SALIDA\nCOMIDA", 0, 'C', true, 0);
-        $pdf->MultiCell(28, 7, "ENTRADA\nCOMIDA", 0, 'C', true, 0);
-        $pdf->Cell(22, 7, 'SALIDA', 0, 0, 'C', true);
-        $pdf->MultiCell(22, 7, "TOTAL\nHORAS", 0, 'C', true, 0);
-        $pdf->MultiCell(22, 7, "HORAS\nCOMIDA", 0, 'C', true, 0);
-        $pdf->Cell(18, 7, 'MINUTOS', 0, 1, 'C', true);
-
-        // Orden de días: desde viernes a jueves
-        $ordenDias = ['viernes','sabado','domingo','lunes','martes','miercoles','jueves'];
-
-        $totalesHoras = [];
-        $totalesComida = [];
-        $totalMinutos = 0;
-
-        foreach ($ordenDias as $claveDia) {
-            if (!isset($horariosSemanales['semana'][$claveDia])) continue;
-            $diaInfo = $horariosSemanales['semana'][$claveDia];
-
-            $diaNombre     = isset($diaInfo['dia']) ? $diaInfo['dia'] : ucfirst($claveDia);
-            $entrada       = $diaInfo['entrada']        ?? '00:00';
-            $salidaComida  = $diaInfo['salidaComida']   ?? '00:00';
-            $entradaComida = $diaInfo['entradaComida']  ?? '00:00';
-            $salida        = $diaInfo['salida']         ?? '00:00';
-            $totalHoras    = $diaInfo['totalHoras']     ?? '00:00';
-            $horasComida   = $diaInfo['horasComida']    ?? '00:00';
-
-            $minutos = hhmm_a_minutos($totalHoras);
-            $totalMinutos += $minutos;
-            $totalesHoras[] = $totalHoras;
-            $totalesComida[] = $horasComida;
-
-            $pdf->SetFont('dejavusans','',10);
-            $pdf->SetFillColor(255,255,255);
-            $pdf->Cell(28, 7, $diaNombre, 0, 0, 'L');
-            $pdf->Cell(22, 7, $entrada, 0, 0, 'C');
-            $pdf->Cell(28, 7, $salidaComida, 0, 0, 'C');
-            $pdf->Cell(28, 7, $entradaComida, 0, 0, 'C');
-            $pdf->Cell(22, 7, $salida, 0, 0, 'C');
-            $pdf->Cell(22, 7, $totalHoras, 0, 0, 'C');
-            $pdf->Cell(22, 7, $horasComida, 0, 0, 'C');
-            $pdf->Cell(18, 7, (string)$minutos, 0, 1, 'C');
-        }
-
-        // Fila de totales (compacta)
-        $pdf->SetFont('helvetica','B',9);
-        $pdf->SetFillColor(215, 243, 222);
-        $pdf->Cell(128, 7, 'TOTAL', 0, 0, 'L', true); // suma de las primeras 6 columnas hasta antes de totales
-        $pdf->Cell(22, 7, sumar_tiempos($totalesHoras), 0, 0, 'C', true);
-        $pdf->Cell(22, 7, sumar_tiempos($totalesComida), 0, 0, 'C', true);
-        $pdf->Cell(18, 7, (string)$totalMinutos, 0, 1, 'C', true);
       }
 
     // Generar el PDF

@@ -26,7 +26,7 @@ if (count($claves) === 0) {
 $placeholders = implode(',', array_fill(0, count($claves), '?'));
 // Añadimos salario_semanal y horario_oficial
 $sql = "SELECT e.id_empleado, e.clave_empleado, CONCAT(e.nombre, ' ', e.ap_paterno, ' ', e.ap_materno) as nombre_completo, 
-               e.salario_semanal,e.salario_diario, h.horario_oficial
+               e.salario_semanal, e.salario_diario, e.id_empresa, h.horario_oficial
         FROM info_empleados e
         LEFT JOIN horarios_oficiales h ON e.id_empleado = h.id_empleado
         WHERE e.id_status = 1 AND e.clave_empleado IN ($placeholders)
@@ -62,6 +62,7 @@ if ($result) {
             'nombre' => $row['nombre_completo'],
             'salario_semanal' => $row['salario_semanal'] !== null ? (string)$row['salario_semanal'] : '0.00',
             'salario_diario' => $row['salario_diario'] !== null ? (string)$row['salario_diario'] : '0.00',
+            'id_empresa' => $row['id_empresa'] !== null ? (int)$row['id_empresa'] : null,
             'horario_oficial' => $row['horario_oficial'] !== null ? $row['horario_oficial'] : null
         ];
     }

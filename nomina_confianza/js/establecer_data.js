@@ -1,6 +1,7 @@
 // Cargar los datos del empleado en el modal
 function cargarData(jsonNominaConfianza, clave) {
     alternarTablas();
+   
     // Buscar el empleado por clave en todos los departamentos
     let empleadoEncontrado = null;
     
@@ -47,6 +48,9 @@ function cargarData(jsonNominaConfianza, clave) {
         $('#mod-inasistencias').val(empleadoEncontrado.inasistencia || '');
         $('#mod-permiso').val(empleadoEncontrado.permiso || '');
 
+        //Total a cobrar
+        $('#mod-sueldo-a-cobrar').val(empleadoEncontrado.total_cobrar || '');
+
         // Mostrar registros en la tabla
         mostrarRegistrosChecador(empleadoEncontrado);
         
@@ -56,11 +60,26 @@ function cargarData(jsonNominaConfianza, clave) {
         // Hacer horas editables a la tabla de horarios oficiales
         hacerHorasEditables();
 
+        // Detectar eventos antes de mostrarlos (para generar historiales si es necesario)
+        if (typeof detectarRetardos === 'function') detectarRetardos(empleadoEncontrado.clave);
+        if (typeof detectarInasistencias === 'function') detectarInasistencias(empleadoEncontrado.clave);
+        if (typeof detectarOlvidosChecador === 'function') detectarOlvidosChecador(empleadoEncontrado.clave);
+        if (typeof detectarEntradasTempranas === 'function') detectarEntradasTempranas(empleadoEncontrado.clave);
+        if (typeof detectarSalidasTardias === 'function') detectarSalidasTardias(empleadoEncontrado.clave);
+        if (typeof detectarSalidasTempranas === 'function') detectarSalidasTempranas(empleadoEncontrado.clave);
+
         // Mostrar eventos especiales
+        if (typeof mostrarEntradasTempranas === 'function') mostrarEntradasTempranas(empleadoEncontrado);
+        if (typeof mostrarSalidasTardias === 'function') mostrarSalidasTardias(empleadoEncontrado);
+        if (typeof mostrarSalidasTempranas === 'function') mostrarSalidasTempranas(empleadoEncontrado);
         if (typeof mostrarOlvidosChecador === 'function') mostrarOlvidosChecador(empleadoEncontrado);
         if (typeof mostrarRetardos === 'function') mostrarRetardos(empleadoEncontrado);
         if (typeof mostrarInasistencias === 'function') mostrarInasistencias(empleadoEncontrado);
         if (typeof mostrarHistorialRetardos === 'function') mostrarHistorialRetardos(empleadoEncontrado);
+        if (typeof mostrarHistorialInasistencias === 'function') mostrarHistorialInasistencias(empleadoEncontrado);
+        if (typeof mostrarHistorialOlvidos === 'function') mostrarHistorialOlvidos(empleadoEncontrado);
+        if (typeof mostrarHistorialUniformes === 'function') mostrarHistorialUniformes(empleadoEncontrado);
+        if (typeof mostrarHistorialPermisos === 'function') mostrarHistorialPermisos(empleadoEncontrado);
 
         // Mostrar conceptos personalizados en extras_adicionales
         const $contenedorExtras = $('#contenedor-conceptos-adicionales');
@@ -109,6 +128,11 @@ function cargarData(jsonNominaConfianza, clave) {
                 $contenedorDeducciones.append(deduccionHTML);
             });
         }
+
+        // Calcular y mostrar el sueldo a cobrar inicial con los valores del modal
+        if (typeof calcularYMostrarSueldoACobrar === 'function') {
+            calcularYMostrarSueldoACobrar();
+        }
     } else {
        
     }
@@ -147,25 +171,59 @@ function mostrarRegistrosBD(empleado) {
     const $tbody = $('#horarios-oficiales-body');
     $tbody.empty(); // Limpiar la tabla
     
-    // Verificar si tiene horario oficial
-    if (!empleado.horario_oficial || !Array.isArray(empleado.horario_oficial) || empleado.horario_oficial.length === 0) {
-        $tbody.append('<tr><td colspan="5" class="text-center">No hay horario oficial registrado</td></tr>');
-        return;
-    }
+    // Lista de días de la semana
+    const diasSemana = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
     
-    // Recorrer los días del horario oficial
-    empleado.horario_oficial.forEach(dia => {
-        const fila = `
-            <tr>
-                <td>${dia.dia || '-'}</td>
-                <td>${dia.entrada || '-'}</td>
-                <td>${dia.salida_comida || '-'}</td>
-                <td>${dia.entrada_comida || '-'}</td>
-                <td>${dia.salida || '-'}</td>
-            </tr>
-        `;
-        $tbody.append(fila);
-    });
+    // Si tiene horario oficial, usar esos datos
+    if (empleado.horario_oficial && Array.isArray(empleado.horario_oficial) && empleado.horario_oficial.length > 0) {
+        empleado.horario_oficial.forEach(dia => {
+            // Crear opciones del select
+            let opcionesSelect = `<option value="">- Seleccionar día -</option>`;
+            opcionesSelect += diasSemana.map(nombreDia => {
+                const seleccionado = dia.dia === nombreDia ? 'selected' : '';
+                return `<option value="${nombreDia}" ${seleccionado}>${nombreDia}</option>`;
+            }).join('');
+            
+            // Crear fila con select en la primera columna
+            const fila = `
+                <tr>
+                    <td>
+                        <select class="form-control form-control-sm select-dia">
+                            ${opcionesSelect}
+                        </select>
+                    </td>
+                    <td>${dia.entrada || '-'}</td>
+                    <td>${dia.salida_comida || '-'}</td>
+                    <td>${dia.entrada_comida || '-'}</td>
+                    <td>${dia.salida || '-'}</td>
+                </tr>
+            `;
+            $tbody.append(fila);
+        });
+    } else {
+        // Si NO hay horario oficial, mostrar tabla vacía con los 7 días
+        diasSemana.forEach(nombreDia => {
+            let opcionesSelect = '<option value="">- Seleccionar día -</option>';
+            opcionesSelect += diasSemana.map(dia => {
+                return `<option value="${dia}">${dia}</option>`;
+            }).join('');
+            
+            const fila = `
+                <tr>
+                    <td>
+                        <select class="form-control form-control-sm select-dia">
+                            ${opcionesSelect}
+                        </select>
+                    </td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                </tr>
+            `;
+            $tbody.append(fila);
+        });
+    }
 }
 
  

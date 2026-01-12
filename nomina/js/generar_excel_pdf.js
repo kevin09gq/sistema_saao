@@ -205,9 +205,7 @@ $('#btn_export_pdf_reporte').on('click', async function () {
         datos: jsonGlobal,
         tituloNomina: tituloNomina,
         numeroSemana: numeroSemana,
-        fechaCierre: fechaCierre,
-        // Incluir horarios semanales para el reporte
-        horarios: (typeof window !== 'undefined' && window.horariosSemanalesActualizados) ? window.horariosSemanalesActualizados : null
+        fechaCierre: fechaCierre
     };
 
     $.ajax({
@@ -371,7 +369,6 @@ function verificarSueldosNegativos() {
                 let mensajeError = '<strong>Se encontraron sueldos negativos en:</strong><br><br>';
                 let empleadosConProblemas = [];
 
-                let hayNegativosSoloEnDiez = true; // asumimos que si hay negativos son solo de 10, hasta probar lo contrario
                 empleadosPorClave.forEach((data, claveStr) => {
                     // ✅ SOLO verificar empleados con id_status = 1
                     if (clavesValidasSet.has(claveStr)) {
@@ -399,13 +396,6 @@ function verificarSueldosNegativos() {
                                 }
                             }
 
-                            // Determinar si este negativo pertenece a 10 Libras (incl. Sin Seguro 10)
-                            const puestoLower = (empleado.puesto || '').toLowerCase();
-                            const esNegativoDiez = data.es10Libras || (data.esSinSeguro && puestoLower.includes('10'));
-                            if (!esNegativoDiez) {
-                                hayNegativosSoloEnDiez = false;
-                            }
-
                             const claveEmpleado = empleado.clave || empleado.clave_empleado || 'Sin clave';
                             const nombreEmpleado = empleado.nombre || empleado.nombre_completo || 'Sin nombre';
 
@@ -429,39 +419,22 @@ function verificarSueldosNegativos() {
                 });
 
 
+
                 if (haySueldosNegativos) {
-                    if (hayNegativosSoloEnDiez) {
-                        // Ofrecer continuar de todas formas cuando TODOS los negativos son de 10 Libras
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Sueldos negativos en 10 Libras',
-                            html: mensajeError + '<hr><div style="text-align:left">Se detectaron sueldos negativos exclusivamente en <b>10 Libras</b> (incluye Sin Seguro 10). ¿Desea continuar con la exportación de todos modos?</div>',
-                            showCancelButton: true,
-                            confirmButtonText: 'Continuar de todas formas',
-                            cancelButtonText: 'Corregir antes',
-                            width: '700px',
-                            customClass: { htmlContainer: 'text-start' }
-                        }).then((res) => {
-                            if (res.isConfirmed) {
-                                resolve(false); // permitir continuar con la exportación
-                            } else {
-                                resolve(true); // bloquear exportación
-                            }
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Sueldos Negativos Detectados',
-                            html: mensajeError,
-                            confirmButtonText: 'Entendido',
-                            width: '700px',
-                            customClass: {
-                                htmlContainer: 'text-start'
-                            },
-                            footer: '<small>Por favor, corrige estos empleados antes de exportar la nómina</small>'
-                        });
-                        resolve(true);
-                    }
+
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Sueldos Negativos Detectados',
+                        html: mensajeError,
+                        confirmButtonText: 'Entendido',
+                        width: '700px',
+                        customClass: {
+                            htmlContainer: 'text-start'
+                        },
+                        footer: '<small>Por favor, corrige estos empleados antes de exportar la nómina</small>'
+                    });
+                    resolve(true);
                 } else {
                     resolve(false);
                 }

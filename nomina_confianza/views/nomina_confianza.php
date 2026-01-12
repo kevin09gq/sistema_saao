@@ -4,18 +4,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Nomina Confianza</title>
     <?php
     include "../../config/config.php";
+    verificarSesion(); // Proteger esta página
     ?>
 
     <!-- Estilos de Bootstrap y Bootstrap Icons -->
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <!-- Estilos personalizados -->
-    <link rel="stylesheet" href="../css/nomina_10lbs.css">
+    <link rel="stylesheet" href="../css/nomina_confianza.css">
     <link rel="stylesheet" href="../css/conceptsModal.css">
     <link rel="stylesheet" href="../css/prestamosModal.css">
+    <link rel="stylesheet" href="../css/conceptos_totales.css">
+    <!-- SweetAlert2 CSS -->
+    <script src="<?= SWEETALERT ?>"></script>
 
     <style>
 
@@ -24,6 +28,10 @@
 </head>
 
 <body>
+      <?php
+    // Incluir el navbar (config.php ya fue incluido en el head)
+    include "../../public/views/navbar.php"
+    ?>
 
     <!-- Contenedor principal centrado -->
     <div class="container-nomina" id="container-nomina" hidden>
@@ -41,9 +49,9 @@
                 </div>
                 <div>
                     <label for="archivo_excel2">
-                        <i class="bi bi-file-earmark-excel-fill"></i> Biometrico
+                        <i class="bi bi-file-earmark-excel-fill"></i> Biometrico <span class="text-muted">(Opcional)</span>
                     </label>
-                    <input type="file" id="archivo_biometrico" name="archivo_excel2" accept=".xls,.xlsx" required>
+                    <input type="file" id="archivo_biometrico" name="archivo_excel2" accept=".xls,.xlsx">
                 </div>
                 <div>
                     <button type="button" id="btn_procesar_archivos" class="btn btn-primary">
@@ -59,20 +67,16 @@
             <h3 id=nombre_nomina></h3>
             <div class="header-controls">
                 <span class="sem-info" id="num_semana"></span>
-                <button class="btn-horarios" type="button" id="btn_horarios" data-bs-toggle="modal" data-bs-target="#horarios_modal">
+                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_actualizar_horarios" title="Actualizar horarios" aria-label="Actualizar horarios">
                     <i class="bi bi-clock"></i>
-                    Horarios
                 </button>
-                <div class="mini-tabs">
-                    <button class="mini-tab active" type="button" id="btn_tabla_nomina">
-                        <i class="bi bi-hospital"></i> <!-- Icono para IMSS -->
-                    </button>
-
-                    <button class="mini-tab" type="button" id="btn_tabla_sin_seguro">
-                        <i class="bi bi-person-dash"></i> <!-- Icono para sin IMSS -->
-                    </button>
-                </div>
-                <button class="btn-suma" type="button" id="btn_suma">
+                <button class="btn btn-outline-primary" id="btn-seleccionar-empleados" title="Seleccionar empleados">
+                    <i class="bi bi-people"></i>
+                </button>
+                <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global" title="Aplicar copias a todos">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+                <button class="btn btn-outline-primary btn-suma" type="button" id="btn_conceptos_totales" title="Totales por concepto" aria-label="Totales por concepto">
                     <i class="bi bi-calculator"></i>
                 </button>
 
@@ -84,6 +88,10 @@
             <div class="filtros-container">
                 <select class="filtro-departamento" id="filtro-departamento">
                 </select>
+
+                <select class="filtro-departamento" id="filtro-empresa">               
+                </select>
+
 
                 <div class="busqueda-container" id="busqueda-container">
                     <i class="bi bi-search"></i>
@@ -110,7 +118,7 @@
                     <i class="bi bi-file-earmark-pdf"></i>
                     Reporte
                 </button>
-                <button class="btn-guardar-nomina" id="btn_guardar_nomina" title="Guardar nómina">
+                <button class="btn-guardar-nomina" id="btn_guardar_nomina_confianza" title="Guardar nómina">
                     <i class="bi bi-save"></i>
                     Guardar Nómina
                 </button>
@@ -118,6 +126,8 @@
                     <i class="bi bi-trash"></i>
                     Subir Nuevamente
                 </button>
+
+
             </div>
         </div>
 
@@ -166,6 +176,8 @@
     <!-- Modal de detalles (incluir plantilla) -->
     <?php include 'conceptsModal.php'; ?>
     <?php include 'modalPrestamos.php'; ?>
+    <?php include 'modalSeleccionarEmpleados.php'; ?>
+    <?php include 'modalConceptosTotales.php'; ?>
 
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
@@ -182,7 +194,12 @@
     <script src="../js/newConcepts.js"></script>
     <script src="../js/editarConcepts.js"></script>
     <script src="../js/eventos.js"></script>
-  
+    <script src="../js/uniformes.js"></script>
+    <script src="../js/permisos.js"></script>
+    <script src="../js/saveNominaConfianza.js"></script>
+    <script src="../js/seleccionar_empleados.js"></script>
+    <script src="../js/conceptos_totales.js"></script>
+
 </body>
 
 </html>

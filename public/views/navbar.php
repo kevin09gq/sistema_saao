@@ -49,11 +49,15 @@
                     </ul>
                 </li>
 
-                <li class="menu-item nav-item">
-                    <a href="<?= $rutaRaiz ?>/nomina/views/nomina.php" class="menu-link nav-link" data-page="nominas">
+                <li class="menu-item nav-item has-submenu dropdown">
+                    <a href="#" class="menu-link nav-link dropdown-toggle" id="nominasDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-page="nominas">
                         <i class="bi bi-calculator me-2"></i>
                         <span class="link-text">Nóminas</span>
                     </a>
+                    <ul class="submenu dropdown-menu" aria-labelledby="nominasDropdown">
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina/views/nomina.php">40 lbs</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_confianza /views/nomina_confianza.php">Confianza</a></li>
+                    </ul>
                 </li>
 
                 <li class="menu-item nav-item">

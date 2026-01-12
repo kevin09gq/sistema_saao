@@ -1,0 +1,2721 @@
+.modal-detalles {
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: auto;
+    background: rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-detalles-content {
+    background: #fff;
+    padding: 32px 40px; /* más espacio */
+    border-radius: 8px;
+    min-width: 700px;   /* antes 900px */
+    max-width: 850px;  /* antes 1000px */
+    box-shadow: 0 2px 16px rgba(0,0,0,0.15);
+    position: relative;
+}
+
+.modal-detalles-close {
+    position: absolute;
+    right: 16px;
+    top: 12px;
+    font-size: 22px;
+    cursor: pointer;
+    color: #888;
+}
+
+.tabla-detalles {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 18px;
+    font-size: 15px;
+}
+
+.tabla-detalles th, .tabla-detalles td {
+    border: 1px solid #e0e0e0;
+    padding: 7px 12px;
+    text-align: center;
+}
+
+.tabla-detalles th {
+    background: #f5f5f5;
+    font-weight: 600;
+}
+
+.nav-tabs {
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 10px;
+}
+.nav-tabs .nav-link {
+    color: #555;
+    font-weight: 500;
+    border: none;
+    background: none;
+    padding: 8px 22px;
+    transition: color 0.2s;
+}
+.nav-tabs .nav-link.active {
+    color: #22c55e;
+    border-bottom: 2px solid #22c55e;
+    background: none;
+}
+.info-trabajador {
+    margin-bottom: 18px;
+    font-size: 16px;
+}
+.info-trabajador div {
+    margin-bottom: 6px;
+}
+.conceptos-cards {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+    margin-bottom: 10px;
+}
+.concepto-card {
+    background: #f5f5f5;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(34,197,94,0.07);
+    padding: 18px 28px;
+    min-width: 180px;
+    flex: 1 1 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+.concepto-codigo {
+    font-size: 18px;
+    font-weight: 700;
+    color: #22c55e;
+    margin-bottom: 6px;
+}
+.concepto-nombre {
+    font-size: 15px;
+    color: #333;
+    margin-bottom: 8px;
+}
+.concepto-resultado {
+    font-size: 17px;
+    font-weight: 600;
+    color: #222;
+    background: #e7fbe7;
+    padding: 4px 12px;
+    border-radius: 6px;
+    border: 1px solid #b6e6b6;
+    width: 100px;
+    margin-top: 2px;
+    outline: none;
+    text-align: right;
+}
+.modal-detalles-footer .btn {
+    min-width: 110px;
+    font-size: 16px;
+    padding: 7px 18px;
+    border-radius: 6px;
+}
+.modal-detalles-footer .btn-success {
+    background: #22c55e;
+    border: none;
+}
+.modal-detalles-footer .btn-secondary {
+    background: #e5e7eb;
+    color: #222;
+    border: none;
+}
+.modal-detalles-footer .btn:hover {
+    opacity: 0.92;
+}
+.registros-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+    margin-top: 18px;
+}
+.registro-card {
+    background: #f8fafc;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(34,197,94,0.07);
+    padding: 10px 16px;
+    min-width: 0;
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+}
+.registro-fecha {
+    font-size: 15px;
+    font-weight: 700;
+    color: #22c55e;
+    margin-bottom: 4px;
+}
+.registro-datos {
+    display: flex;
+    flex-direction: column;
+    gap: 0px;
+    min-width: 500px;
+}
+.registro-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 4px;
+}
+.registro-label {
+    font-size: 12px;
+    color: #555;
+    font-weight: 500;
+    margin-right: 4px;
+}
+.registro-valor {
+    font-size: 15px;
+    color: #222;
+    font-weight: 600;
+    margin-right: 10px;
+}
+.registro-datos label.registro-label {
+    min-width: 70px;
+    margin-right: 6px;
+    font-size: 13px;
+    color: #555;
+    font-weight: 500;
+    display: inline-block;
+}
+.registro-input {
+    width: 90px; /* antes 60px */
+    font-size: 16px; /* antes 14px */
+    padding: 4px 12px; /* antes 2px 6px */
+    margin-right: 16px; /* antes 8px */
+    margin-bottom: 4px; /* antes 2px */
+    font-weight: 600;
+    color: #222;
+    background: #e7fbe7;
+    border: 1px solid #b6e6b6;
+    border-radius: 6px;
+    outline: none;
+    text-align: center;
+    display: inline-block;
+}
+.registros-totales {
+    margin-top: 18px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #22c55e;
+    text-align: right;
+}
+.registros-timeline {
+    list-style: none;
+    padding: 0;
+    margin: 18px auto 0 auto;
+    max-width: 800px; /* antes 600px */
+    min-width: 600px;
+    width: 100%;
+    max-height: 350px;
+    overflow-y: auto;
+}
+.registros-timeline li {
+    position: relative;
+    padding-left: 60px; /* antes 48px */
+    margin-bottom: 18px;
+}
+.registros-timeline li:before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 8px;
+    width: 8px;
+    height: 8px;
+    background: #22c55e;
+    border-radius: 50%;
+}
+.registros-timeline li:not(:last-child):after {
+    content: '';
+    position: absolute;
+    left: 13px;
+    top: 22px;
+    width: 2px;
+    height: calc(100% - 22px);
+    background: #e0e0e0;
+}
+
+/* Estilos para la interfaz de detalles del empleado */
+
+/* Información básica del empleado */
+.empleado-info {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+}
+
+.info-value {
+    font-weight: 700;
+    color: #212529;
+    font-size: 14px;
+}
+
+/* Secciones de cálculos */
+.seccion-calculos {
+    margin-bottom: 25px;
+}
+
+.seccion-calculos h5 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.seccion-calculos h5 i {
+    margin-right: 8px;
+}
+
+/* Items de cálculo */
+.calculo-item {
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+.calculo-item:hover {
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transform: translateY(-1px);
+}
+
+.calculo-item.total {
+    background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
+    border-color: #28a745;
+}
+
+.calculo-item.neto-final {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border-color: #ffc107;
+    border-width: 2px;
+}
+
+.calculo-item.incentivo {
+    background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
+    border-color: #28a745;
+}
+
+.calculo-item.incentivo .calculo-formula {
+    color: #28a745;
+    background: #d4edda;
+}
+
+.calculo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.calculo-titulo {
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+}
+
+.calculo-formula {
+    font-weight: 700;
+    color: #007bff;
+    font-size: 14px;
+    background: #e3f2fd;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.calculo-item.total .calculo-formula {
+    color: #28a745;
+    background: #d4edda;
+}
+
+.calculo-item.neto-final .calculo-formula {
+    color: #856404;
+    background: #fff3cd;
+}
+
+.calculo-conversion {
+    padding: 12px 16px;
+    background: #ffffff;
+}
+
+.conversion-texto {
+    display: block;
+    color: #6c757d;
+    font-size: 13px;
+    margin-bottom: 4px;
+    font-family: 'Courier New', monospace;
+}
+
+.conversion-resultado {
+    display: block;
+    color: #28a745;
+    font-weight: 600;
+    font-size: 13px;
+    font-family: 'Courier New', monospace;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .info-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    
+    .calculo-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .calculo-formula {
+        align-self: flex-end;
+    }
+    
+    .valor-principal {
+        font-size: 1.5rem;
+    }
+}
+
+/* Animaciones */
+.calculo-item {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Estilos adicionales para mejor legibilidad */
+.tab-pane {
+    padding: 20px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.tab-pane::-webkit-scrollbar {
+    width: 6px;
+}
+
+.tab-pane::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.tab-pane::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.tab-pane::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Modificar Detalles - Diseño Profesional Mejorado */
+.mod-detalles-title {
+    color: #2563eb !important;
+    font-weight: 700 !important;
+    font-size: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+    padding-bottom: 0.75rem;
+    border-bottom: 3px solid #2563eb;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.mod-detalles-title i {
+    font-size: 1.75rem;
+    color: #3b82f6;
+}
+
+.mod-card {
+    border-radius: 16px !important;
+    border: none !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    margin-bottom: 1.5rem !important;
+}
+
+.mod-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+    transform: translateY(-2px);
+}
+
+.mod-card-header-azul {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+    color: #ffffff !important;
+    font-weight: 600;
+    font-size: 1.1rem;
+    border-radius: 16px 16px 0 0 !important;
+    padding: 1rem 1.5rem !important;
+    border: none !important;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+.mod-card-header-azul i {
+    font-size: 1.25rem;
+}
+
+.mod-card-header-rosa {
+    background: linear-gradient(135deg, #f87171 0%, #ef4444 100%) !important;
+    color: #ffffff !important;
+    font-weight: 600;
+    font-size: 1.1rem;
+    border-radius: 16px 16px 0 0 !important;
+    padding: 1rem 1.5rem !important;
+    border: none !important;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+}
+
+.mod-card-header-rosa i {
+    font-size: 1.25rem;
+}
+
+.mod-card-header-amarillo {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) !important;
+    color: #ffffff !important;
+    font-weight: 600;
+    font-size: 1.1rem;
+    border-radius: 16px 16px 0 0 !important;
+    padding: 1rem 1.5rem !important;
+    border: none !important;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
+}
+
+.mod-card-header-amarillo i {
+    font-size: 1.25rem;
+}
+
+.mod-card-body-azul {
+    background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%) !important;
+    padding: 1.5rem !important;
+}
+
+.mod-card-body-rosa {
+    background: linear-gradient(to bottom, #ffffff 0%, #fff8f8 100%) !important;
+    padding: 1.5rem !important;
+}
+
+.mod-card-body-amarillo {
+    background: linear-gradient(to bottom, #ffffff 0%, #fffef6 100%) !important;
+    padding: 1.5rem !important;
+}
+
+.mod-input-azul {
+    border: 2px solid #bfdbfe !important;
+    background: #ffffff !important;
+    border-radius: 10px !important;
+    padding: 0.625rem 1rem !important;
+    font-size: 0.95rem !important;
+    transition: all 0.3s ease !important;
+    color: #1e40af !important;
+    font-weight: 500;
+}
+
+.mod-input-azul:focus {
+    border-color: #3b82f6 !important;
+    background: #eff6ff !important;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1) !important;
+    outline: none !important;
+}
+
+.mod-input-azul:hover:not(:disabled) {
+    border-color: #93c5fd !important;
+    background: #f8fafc !important;
+}
+
+.mod-input-cyan {
+    border: 2px solid #a5f3fc !important;
+    background: #ffffff !important;
+    border-radius: 10px !important;
+    padding: 0.625rem 1rem !important;
+    font-size: 0.95rem !important;
+    transition: all 0.3s ease !important;
+    color: #0e7490 !important;
+    font-weight: 500;
+}
+
+.mod-input-cyan:focus {
+    border-color: #06b6d4 !important;
+    background: #ecfeff !important;
+    box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.1) !important;
+    outline: none !important;
+}
+
+.mod-input-cyan:hover:not(:disabled) {
+    border-color: #67e8f9 !important;
+    background: #f0fdfa !important;
+}
+
+.mod-input-amarillo {
+    border: 2px solid #fde68a !important;
+    background: #ffffff !important;
+    border-radius: 10px !important;
+    padding: 0.625rem 1rem !important;
+    font-size: 0.95rem !important;
+    transition: all 0.3s ease !important;
+    color: #92400e !important;
+    font-weight: 500;
+}
+
+.mod-input-amarillo:focus {
+    border-color: #fbbf24 !important;
+    background: #fffbeb !important;
+    box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.1) !important;
+    outline: none !important;
+}
+
+.mod-input-amarillo:hover:not(:disabled) {
+    border-color: #fcd34d !important;
+    background: #fffef6 !important;
+}
+
+.mod-input-rosa {
+    border: 2px solid #fecdd3 !important;
+    background: #ffffff !important;
+    border-radius: 10px !important;
+    padding: 0.625rem 1rem !important;
+    font-size: 0.95rem !important;
+    transition: all 0.3s ease !important;
+    color: #991b1b !important;
+    font-weight: 500;
+}
+
+.mod-input-rosa:focus {
+    border-color: #f87171 !important;
+    background: #fff1f2 !important;
+    box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.1) !important;
+    outline: none !important;
+}
+
+.mod-input-rosa:hover:not(:disabled) {
+    border-color: #fda4af !important;
+    background: #fffafa !important;
+}
+
+.mod-card-header-verde {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
+    color: #ffffff !important;
+    font-weight: 600;
+    font-size: 1.1rem;
+    border-radius: 16px 16px 0 0 !important;
+    padding: 1rem 1.5rem !important;
+    border: none !important;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: 0 2px 4px rgba(34, 197, 94, 0.2);
+}
+
+.mod-card-header-verde i {
+    font-size: 1.25rem;
+}
+
+.mod-card-body-verde {
+    background: linear-gradient(to bottom, #ffffff 0%, #f9fefb 100%) !important;
+    padding: 1.5rem !important;
+}
+
+.mod-input-verde {
+    border: 2px solid #86efac !important;
+    background: #ffffff !important;
+    color: #166534 !important;
+    border-radius: 10px !important;
+    padding: 0.625rem 1rem !important;
+    font-size: 0.95rem !important;
+    transition: all 0.3s ease !important;
+    font-weight: 500;
+}
+
+.mod-input-verde:focus {
+    border-color: #22c55e !important;
+    background: #f0fdf4 !important;
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.15) !important;
+    outline: none !important;
+}
+
+.mod-input-verde:hover:not(:disabled) {
+    border-color: #4ade80 !important;
+    background: #f9fefb !important;
+}
+
+/* Estilos mejorados para labels dentro de Modificar Detalles */
+#tab_modificar_detalles .form-label {
+    font-weight: 600 !important;
+    color: #374151 !important;
+    margin-bottom: 0.5rem !important;
+    font-size: 0.9rem !important;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+#tab_modificar_detalles .form-label.fw-semibold {
+    font-weight: 700 !important;
+    color: #1f2937 !important;
+    font-size: 0.95rem !important;
+}
+
+#tab_modificar_detalles .form-label.fw-normal {
+    font-weight: 500 !important;
+    color: #4b5563 !important;
+}
+
+/* Estilos mejorados para botones dentro de Modificar Detalles */
+#tab_modificar_detalles .btn {
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+    padding: 0.5rem 1.25rem !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border-width: 2px !important;
+    font-size: 0.875rem !important;
+}
+
+#tab_modificar_detalles .btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+}
+
+#tab_modificar_detalles .btn:active {
+    transform: translateY(0) !important;
+}
+
+#tab_modificar_detalles .btn-outline-primary {
+    border-color: #3b82f6 !important;
+    color: #3b82f6 !important;
+    background: transparent !important;
+}
+
+#tab_modificar_detalles .btn-outline-primary:hover {
+    background: #3b82f6 !important;
+    color: #ffffff !important;
+    border-color: #2563eb !important;
+}
+
+#tab_modificar_detalles .btn-outline-danger {
+    border-color: #ef4444 !important;
+    color: #ef4444 !important;
+    background: transparent !important;
+}
+
+#tab_modificar_detalles .btn-outline-danger:hover {
+    background: #ef4444 !important;
+    color: #ffffff !important;
+    border-color: #dc2626 !important;
+}
+
+#tab_modificar_detalles .btn-outline-secondary {
+    border-color: #6b7280 !important;
+    color: #6b7280 !important;
+    background: transparent !important;
+}
+
+#tab_modificar_detalles .btn-outline-secondary:hover {
+    background: #6b7280 !important;
+    color: #ffffff !important;
+    border-color: #4b5563 !important;
+}
+
+#tab_modificar_detalles .input-group .btn {
+    border-left: none !important;
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+}
+
+#tab_modificar_detalles .input-group .form-control {
+    border-right: none !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+}
+
+#tab_modificar_detalles .input-group .form-control:focus {
+    border-right: none !important;
+}
+
+#tab_modificar_detalles .input-group .form-control:focus + .btn {
+    border-color: inherit !important;
+}
+
+/* Estilos para secciones de títulos dentro de Modificar Detalles */
+#tab_modificar_detalles h6.fw-semibold {
+    font-weight: 700 !important;
+    font-size: 1rem !important;
+    margin-bottom: 1rem !important;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#tab_modificar_detalles h6.fw-semibold.text-danger {
+    color: #dc2626 !important;
+    border-bottom-color: #fecaca !important;
+}
+
+#tab_modificar_detalles h6.fw-semibold.text-info {
+    color: #0284c7 !important;
+    border-bottom-color: #bae6fd !important;
+}
+
+#tab_modificar_detalles h6.fw-semibold i {
+    font-size: 1.1rem;
+}
+
+/* Mejoras en el contenedor del historial de retardos */
+#tab_modificar_detalles .historial-retardos-container {
+    background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
+    border-radius: 12px;
+    padding: 1rem;
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    margin-top: 1rem;
+}
+
+/* Header de la tabla del historial */
+.historial-retardos-header {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    border-radius: 10px 10px 0 0;
+    margin: -1rem -1rem 0.75rem -1rem;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+.historial-retardos-header .historial-header-cell {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* Items del historial de retardos */
+.historial-retardo-item {
+    background: #ffffff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.5rem;
+    align-items: end;
+}
+
+.historial-retardo-item:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    transform: translateY(-2px);
+}
+
+.historial-retardo-item:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* Labels del historial */
+.historial-retardo-item .form-label {
+    font-weight: 500 !important;
+    color: #374151 !important;
+    font-size: 0.65rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 0.35rem !important;
+    text-align: center;
+}
+
+/* Inputs del historial - Campos readonly */
+.historial-retardo-item .historial-dia,
+.historial-retardo-item .historial-fecha {
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%) !important;
+    border: 1.5px solid #d1d5db !important;
+    border-radius: 6px !important;
+    padding: 0.4rem 0.5rem !important;
+    font-weight: 500 !important;
+    color: #4b5563 !important;
+    text-align: center !important;
+    cursor: default !important;
+    font-size: 0.75rem !important;
+}
+
+/* Inputs del historial - Campos editables */
+.historial-retardo-item .historial-minutos,
+.historial-retardo-item .historial-tolerancia,
+.historial-retardo-item .historial-descuento-min {
+    background: #ffffff !important;
+    border: 1.5px solid #bfdbfe !important;
+    border-radius: 6px !important;
+    padding: 0.4rem 0.5rem !important;
+    font-weight: 500 !important;
+    color: #1e40af !important;
+    text-align: center !important;
+    font-size: 0.75rem !important;
+    transition: all 0.3s ease !important;
+}
+
+.historial-retardo-item .historial-minutos:focus,
+.historial-retardo-item .historial-tolerancia:focus,
+.historial-retardo-item .historial-descuento-min:focus {
+    border-color: #3b82f6 !important;
+    background: #eff6ff !important;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1) !important;
+    outline: none !important;
+    transform: scale(1.02);
+}
+
+.historial-retardo-item .historial-minutos:hover:not(:disabled),
+.historial-retardo-item .historial-tolerancia:hover:not(:disabled),
+.historial-retardo-item .historial-descuento-min:hover:not(:disabled) {
+    border-color: #93c5fd !important;
+    background: #f8fafc !important;
+}
+
+/* Input del total descontado (readonly destacado) */
+.historial-retardo-item .historial-total {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%) !important;
+    border: 1.5px solid #f87171 !important;
+    border-radius: 6px !important;
+    padding: 0.4rem 0.5rem !important;
+    font-weight: 600 !important;
+    color: #991b1b !important;
+    text-align: center !important;
+    font-size: 0.8rem !important;
+    cursor: default !important;
+    box-shadow: 0 2px 4px rgba(248, 113, 113, 0.2);
+}
+
+/* Estado vacío del historial */
+.historial-retardos-container:has(> p.text-muted),
+.historial-retardos-container:has(> div[style*="text-align: center"]) {
+    text-align: center;
+    padding: 2rem 1rem !important;
+}
+
+.historial-retardos-container p.text-muted,
+.historial-retardos-container div[style*="text-align: center"] p {
+    color: #6b7280 !important;
+    font-size: 0.85rem !important;
+    font-style: italic;
+    margin: 0 !important;
+}
+
+.historial-retardos-container p.text-muted i,
+.historial-retardos-container div[style*="text-align: center"] i {
+    font-size: 1.25rem !important;
+    color: #9ca3af;
+    margin-right: 0.5rem;
+}
+
+/* Animaciones para los items del historial */
+.historial-retardo-item {
+    animation: fadeInUp 0.4s ease-out;
+    animation-fill-mode: both;
+}
+
+.historial-retardo-item:nth-child(1) { animation-delay: 0.05s; }
+
+/* ===============================================
+   ESTILOS PARA HISTORIAL DE INASISTENCIAS
+   =============================================== */
+
+/* Mejoras en el contenedor del historial de inasistencias */
+#tab_modificar_detalles .historial-inasistencias-container {
+    background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
+    border-radius: 12px;
+    padding: 1rem;
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    margin-top: 1rem;
+}
+
+/* Header de la tabla del historial */
+.historial-inasistencias-header {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    border-radius: 10px 10px 0 0;
+    margin: -1rem -1rem 0.75rem -1rem;
+    box-shadow: 0 2px 4px rgba(185, 28, 28, 0.2);
+}
+
+.historial-inasistencias-header .historial-header-cell {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* Items del historial de inasistencias */
+.historial-inasistencia-item {
+    background: #ffffff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    align-items: end;
+}
+
+.historial-inasistencia-item:hover {
+    border-color: #dc2626;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+    transform: translateY(-2px);
+}
+
+.historial-inasistencia-item:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* Labels del historial */
+.historial-inasistencia-item .form-label {
+    font-weight: 500 !important;
+    color: #374151 !important;
+    font-size: 0.65rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 0.35rem !important;
+    text-align: center;
+}
+
+/* Inputs del historial - Campo día readonly */
+.historial-inasistencia-item .historial-inasistencia-dia {
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%) !important;
+    border: 1.5px solid #d1d5db !important;
+    border-radius: 6px !important;
+    padding: 0.4rem 0.5rem !important;
+    font-weight: 500 !important;
+    color: #4b5563 !important;
+    text-align: center !important;
+    cursor: default !important;
+    font-size: 0.75rem !important;
+}
+
+/* Input del descuento (editable) */
+.historial-inasistencia-item .historial-inasistencia-descuento {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%) !important;
+    border: 1.5px solid #f87171 !important;
+    border-radius: 6px !important;
+    padding: 0.4rem 0.5rem !important;
+    font-weight: 600 !important;
+    color: #991b1b !important;
+    text-align: center !important;
+    font-size: 0.8rem !important;
+    transition: all 0.3s ease !important;
+}
+
+.historial-inasistencia-item .historial-inasistencia-descuento:focus {
+    border-color: #dc2626 !important;
+    background: #fef2f2 !important;
+    box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1) !important;
+    outline: none !important;
+    transform: scale(1.02);
+}
+
+.historial-inasistencia-item .historial-inasistencia-descuento:hover:not(:disabled) {
+    border-color: #f87171 !important;
+    background: #fee2e2 !important;
+}
+
+/* Estado vacío del historial */
+.historial-inasistencias-container:has(> p.text-muted),
+.historial-inasistencias-container:has(> div[style*="text-align: center"]) {
+    text-align: center;
+    padding: 2rem 1rem !important;
+}
+
+.historial-inasistencias-container p.text-muted,
+.historial-inasistencias-container div[style*="text-align: center"] p {
+    color: #6b7280 !important;
+    font-size: 0.85rem !important;
+    font-style: italic;
+    margin: 0 !important;
+}
+
+.historial-inasistencias-container p.text-muted i,
+.historial-inasistencias-container div[style*="text-align: center"] i {
+    font-size: 1.25rem !important;
+    color: #9ca3af;
+    margin-right: 0.5rem;
+}
+
+/* Animaciones para los items del historial de inasistencias */
+.historial-inasistencia-item {
+    animation: fadeInUp 0.4s ease-out;
+    animation-fill-mode: both;
+}
+
+.historial-inasistencia-item:nth-child(1) { animation-delay: 0.05s; }
+
+/* ===============================================
+   ESTILOS PARA HISTORIAL DE OLVIDOS
+   =============================================== */
+
+/* Mejoras en el contenedor del historial de olvidos */
+#tab_modificar_detalles .historial-olvidos-container {
+    background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
+    border-radius: 12px;
+    padding: 1rem;
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    margin-top: 1rem;
+}
+
+/* Header de la tabla del historial */
+.historial-olvidos-header {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    border-radius: 10px 10px 0 0;
+    margin: -1rem -1rem 0.75rem -1rem;
+    box-shadow: 0 2px 4px rgba(217, 119, 6, 0.2);
+}
+
+.historial-olvidos-header .historial-header-cell {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* Items del historial de olvidos */
+.historial-olvido-item {
+    background: #ffffff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    align-items: end;
+}
+
+.historial-olvido-item:hover {
+    border-color: #f59e0b;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+    transform: translateY(-2px);
+}
+
+.historial-olvido-item:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* Labels del historial */
+.historial-olvido-item .form-label {
+    font-weight: 500 !important;
+    color: #374151 !important;
+    font-size: 0.65rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 0.35rem !important;
+    text-align: center;
+}
+
+/* Inputs del historial - Campos readonly */
+.historial-olvido-item .historial-olvido-dia,
+.historial-olvido-item .historial-olvido-fecha {
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%) !important;
+    border: 1.5px solid #d1d5db !important;
+    border-radius: 6px !important;
+    padding: 0.4rem 0.5rem !important;
+    font-weight: 500 !important;
+    color: #4b5563 !important;
+    text-align: center !important;
+    cursor: default !important;
+    font-size: 0.75rem !important;
+}
+
+/* Input del descuento (editable) */
+.historial-olvido-item .historial-olvido-descuento {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important;
+    border: 1.5px solid #fbbf24 !important;
+    border-radius: 6px !important;
+    padding: 0.4rem 0.5rem !important;
+    font-weight: 600 !important;
+    color: #92400e !important;
+    text-align: center !important;
+    font-size: 0.8rem !important;
+    transition: all 0.3s ease !important;
+}
+
+.historial-olvido-item .historial-olvido-descuento:focus {
+    border-color: #f59e0b !important;
+    background: #fffbeb !important;
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1) !important;
+    outline: none !important;
+    transform: scale(1.02);
+}
+
+.historial-olvido-item .historial-olvido-descuento:hover:not(:disabled) {
+    border-color: #fbbf24 !important;
+    background: #fef3c7 !important;
+}
+
+/* Estado vacío del historial */
+.historial-olvidos-container:has(> p.text-muted),
+.historial-olvidos-container:has(> div[style*="text-align: center"]) {
+    text-align: center;
+    padding: 2rem 1rem !important;
+}
+
+.historial-olvidos-container p.text-muted,
+.historial-olvidos-container div[style*="text-align: center"] p {
+    color: #6b7280 !important;
+    font-size: 0.85rem !important;
+    font-style: italic;
+    margin: 0 !important;
+}
+
+.historial-olvidos-container p.text-muted i,
+.historial-olvidos-container div[style*="text-align: center"] i {
+    font-size: 1.25rem !important;
+    color: #9ca3af;
+    margin-right: 0.5rem;
+}
+
+/* Animaciones para los items del historial de olvidos */
+.historial-olvido-item {
+    animation: fadeInUp 0.4s ease-out;
+    animation-fill-mode: both;
+}
+
+.historial-olvido-item:nth-child(1) { animation-delay: 0.05s; }
+.historial-olvido-item:nth-child(2) { animation-delay: 0.1s; }
+.historial-olvido-item:nth-child(3) { animation-delay: 0.15s; }
+.historial-olvido-item:nth-child(4) { animation-delay: 0.2s; }
+.historial-olvido-item:nth-child(5) { animation-delay: 0.25s; }
+.historial-olvido-item:nth-child(n+6) { animation-delay: 0.3s; }
+
+/* Efecto de resaltado cuando se edita un campo */
+.historial-olvido-item.editing {
+    border-color: #f59e0b !important;
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1) !important;
+    background: #fffbeb !important;
+}
+
+/* Efecto de pulso en el descuento cuando cambia */
+.historial-olvido-descuento.updated {
+    animation: pulse 0.5s ease-out;
+}
+
+/* Responsive para el historial de olvidos */
+@media (max-width: 768px) {
+    .historial-olvidos-header,
+    .historial-olvido-item {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .historial-olvidos-header {
+        display: none; /* Ocultar header en móvil */
+    }
+    
+    .historial-olvido-item .form-label {
+        text-align: left;
+    }
+    
+    .historial-olvidos-container {
+        padding: 1rem !important;
+    }
+}
+
+.historial-retardo-item:nth-child(2) { animation-delay: 0.1s; }
+.historial-retardo-item:nth-child(3) { animation-delay: 0.15s; }
+.historial-retardo-item:nth-child(4) { animation-delay: 0.2s; }
+.historial-retardo-item:nth-child(5) { animation-delay: 0.25s; }
+.historial-retardo-item:nth-child(n+6) { animation-delay: 0.3s; }
+
+/* ========================================
+   HISTORIAL DE UNIFORMES
+   ======================================== */
+
+/* Contenedor principal del historial de uniformes */
+.historial-uniformes-container {
+    background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
+    border-radius: 12px;
+    padding: 1rem;
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    max-height: 400px;
+    overflow-y: auto;
+    margin-top: 1rem;
+}
+
+/* Header de la tabla de uniformes */
+.historial-uniformes-header {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    border-radius: 10px 10px 0 0;
+    margin: -1rem -1rem 0.75rem -1rem;
+    box-shadow: 0 2px 4px rgba(13, 110, 253, 0.2);
+}
+
+.historial-uniformes-header .historial-header-cell {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    text-align: center;
+}
+
+/* Ítem individual del historial */
+.historial-uniforme-item {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: #ffffff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    margin-bottom: 0.5rem !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    animation: fadeInUp 0.4s ease-out;
+    animation-fill-mode: both;
+    align-items: center;
+}
+
+.historial-uniforme-item:hover {
+    border-color: #0d6efd;
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.15);
+    transform: translateY(-2px);
+}
+
+.historial-uniforme-item:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* Inputs dentro del historial */
+.historial-uniforme-item input {
+    width: 100%;
+    text-align: center;
+    border-radius: 6px !important;
+    transition: all 0.3s ease !important;
+    font-size: 0.75rem !important;
+    padding: 0.4rem 0.5rem !important;
+}
+
+/* Input de folio (readonly) */
+.historial-uniforme-folio {
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%) !important;
+    border: 1.5px solid #d1d5db !important;
+    font-weight: 500 !important;
+    color: #4b5563 !important;
+    cursor: default !important;
+}
+
+/* Input de cantidad (editable) */
+.historial-uniforme-cantidad {
+    background: #ffffff !important;
+    border: 1.5px solid #bfdbfe !important;
+    font-weight: 500 !important;
+    color: #1e40af !important;
+}
+
+.historial-uniforme-cantidad:hover:not([readonly]) {
+    border-color: #93c5fd !important;
+    background: #f8fafc !important;
+}
+
+.historial-uniforme-cantidad:focus {
+    border-color: #0d6efd !important;
+    background: #eff6ff !important;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1) !important;
+    outline: none !important;
+    transform: scale(1.02);
+}
+
+/* Botón eliminar */
+.btn-eliminar-uniforme {
+    width: 100%;
+    height: auto;
+    padding: 0.4rem 0.5rem !important;
+    font-size: 0.75rem !important;
+    border-radius: 6px !important;
+    transition: all 0.3s ease !important;
+    border-width: 1.5px !important;
+    font-weight: 600 !important;
+}
+
+.btn-eliminar-uniforme:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3) !important;
+}
+
+.btn-eliminar-uniforme i {
+    font-size: 0.875rem;
+}
+
+/* Estado vacío */
+.historial-uniformes-container:has(> p.text-muted),
+.historial-uniformes-container:has(> div[style*="text-align: center"]) {
+    text-align: center;
+    padding: 2rem 1rem !important;
+}
+
+.historial-uniformes-container p.text-muted,
+.historial-uniformes-container div[style*="text-align: center"] p {
+    color: #6b7280 !important;
+    font-size: 0.85rem !important;
+    font-style: italic;
+    margin: 0 !important;
+}
+
+.historial-uniformes-container p.text-muted i,
+.historial-uniformes-container div[style*="text-align: center"] i {
+    font-size: 1.25rem !important;
+    color: #9ca3af;
+    margin-right: 0.5rem;
+}
+
+/* Efecto de resaltado cuando se edita un campo */
+.historial-uniforme-item.editing {
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1) !important;
+    background: #f8fafc !important;
+}
+
+/* Efecto de pulso en la cantidad cuando cambia */
+.historial-uniforme-cantidad.updated {
+    animation: pulse 0.5s ease-out;
+}
+
+/* Animaciones escalonadas para items */
+.historial-uniforme-item:nth-child(1) { animation-delay: 0.05s; }
+.historial-uniforme-item:nth-child(2) { animation-delay: 0.1s; }
+.historial-uniforme-item:nth-child(3) { animation-delay: 0.15s; }
+.historial-uniforme-item:nth-child(4) { animation-delay: 0.2s; }
+.historial-uniforme-item:nth-child(5) { animation-delay: 0.25s; }
+.historial-uniforme-item:nth-child(n+6) { animation-delay: 0.3s; }
+
+
+/* ========================================
+   ESTILOS PARA HISTORIAL DE PERMISOS
+   ======================================== */
+
+/* Contenedor principal del historial de permisos */
+.historial-permisos-container {
+    background: #fefefe;
+    border: 2px solid #fbbf24;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    max-height: 400px;
+    overflow-y: auto;
+    margin-top: 1rem;
+}
+
+/* Header de la tabla de permisos */
+.historial-permisos-header {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1.5fr 1fr;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    border-radius: 10px 10px 0 0;
+    margin: -1rem -1rem 0.75rem -1rem;
+    box-shadow: 0 2px 4px rgba(251, 191, 36, 0.2);
+}
+
+.historial-permisos-header .historial-header-cell {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    text-align: center;
+}
+
+/* Ítem individual del historial de permisos */
+.historial-permiso-item {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1.5fr 1fr;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: #ffffff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    margin-bottom: 0.5rem !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    animation: fadeInUp 0.4s ease-out;
+    animation-fill-mode: both;
+    align-items: center;
+}
+
+.historial-permiso-item:hover {
+    border-color: #fbbf24;
+    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.15);
+    transform: translateY(-2px);
+}
+
+.historial-permiso-item:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* Inputs dentro del historial de permisos */
+.historial-permiso-item input {
+    width: 100%;
+    text-align: center;
+    border-radius: 6px !important;
+    transition: all 0.3s ease !important;
+    font-size: 0.75rem !important;
+    padding: 0.4rem 0.5rem !important;
+}
+
+/* Input de descripción (editable) */
+.historial-permiso-descripcion {
+    background: #ffffff !important;
+    border: 1.5px solid #fde68a !important;
+    font-weight: 500 !important;
+    color: #92400e !important;
+}
+
+.historial-permiso-descripcion:hover {
+    border-color: #fbbf24 !important;
+    background: #fffbeb !important;
+}
+
+.historial-permiso-descripcion:focus {
+    border-color: #f59e0b !important;
+    background: #fef3c7 !important;
+    box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.1) !important;
+    outline: none !important;
+}
+
+/* Input de horas/minutos (editable) */
+.historial-permiso-horas {
+    background: #ffffff !important;
+    border: 1.5px solid #fde68a !important;
+    font-weight: 500 !important;
+    color: #92400e !important;
+}
+
+.historial-permiso-horas:hover {
+    border-color: #fbbf24 !important;
+    background: #fffbeb !important;
+}
+
+.historial-permiso-horas:focus {
+    border-color: #f59e0b !important;
+    background: #fef3c7 !important;
+    box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.1) !important;
+    outline: none !important;
+}
+
+/* Input de cantidad (editable) */
+.historial-permiso-cantidad {
+    background: #ffffff !important;
+    border: 1.5px solid #fde68a !important;
+    font-weight: 600 !important;
+    color: #92400e !important;
+}
+
+.historial-permiso-cantidad:hover {
+    border-color: #fbbf24 !important;
+    background: #fffbeb !important;
+}
+
+.historial-permiso-cantidad:focus {
+    border-color: #f59e0b !important;
+    background: #fef3c7 !important;
+    box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.1) !important;
+    outline: none !important;
+    transform: scale(1.02);
+}
+
+/* Botón eliminar permiso */
+.btn-eliminar-permiso {
+    width: 100%;
+    height: auto;
+    padding: 0.4rem 0.5rem !important;
+    font-size: 0.75rem !important;
+    border-radius: 6px !important;
+    transition: all 0.3s ease !important;
+    border-width: 1.5px !important;
+    font-weight: 600 !important;
+}
+
+.btn-eliminar-permiso:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3) !important;
+}
+
+.btn-eliminar-permiso i {
+    font-size: 0.875rem;
+}
+
+/* Efecto de resaltado cuando se edita un campo de permiso */
+.historial-permiso-item.editing {
+    border-color: #fbbf24 !important;
+    box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.1) !important;
+    background: #fffbeb !important;
+}
+
+.historial-permiso-cantidad.updated {
+    animation: pulseWarning 0.5s ease;
+}
+
+@keyframes pulseWarning {
+    0%, 100% {
+        background: #fef3c7;
+        border-color: #fbbf24;
+    }
+    50% {
+        background: #fde68a;
+        border-color: #f59e0b;
+        transform: scale(1.05);
+    }
+}
+
+/* Animaciones escalonadas para items de permisos */
+.historial-permiso-item:nth-child(1) { animation-delay: 0.05s; }
+.historial-permiso-item:nth-child(2) { animation-delay: 0.1s; }
+.historial-permiso-item:nth-child(3) { animation-delay: 0.15s; }
+.historial-permiso-item:nth-child(4) { animation-delay: 0.2s; }
+.historial-permiso-item:nth-child(5) { animation-delay: 0.25s; }
+.historial-permiso-item:nth-child(n+6) { animation-delay: 0.3s; }
+
+
+/* Responsive para el historial de uniformes */
+@media (max-width: 768px) {
+    .historial-uniformes-header,
+    .historial-uniforme-item {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .historial-uniformes-header {
+        display: none; /* Ocultar header en móvil */
+    }
+    
+    .historial-uniformes-container {
+        padding: 1rem !important;
+    }
+    
+    .btn-eliminar-uniforme {
+        width: 100%;
+    }
+    
+    /* Responsive para permisos */
+    .historial-permisos-header,
+    .historial-permiso-item {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .historial-permisos-header {
+        display: none; /* Ocultar header en móvil */
+    }
+    
+    .historial-permisos-container {
+        padding: 1rem !important;
+    }
+    
+    .btn-eliminar-permiso {
+        width: 100%;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Efecto de resaltado cuando se edita un campo */
+.historial-retardo-item.editing {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1) !important;
+    background: #f8fafc !important;
+}
+
+
+/* Estilos para números en el historial */
+.historial-retardo-item input[type="number"] {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Efecto de pulso en el total cuando cambia */
+.historial-total.updated {
+    animation: pulse 0.5s ease-out;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Responsive para el historial */
+@media (max-width: 992px) {
+    .historial-retardos-header,
+    .historial-retardo-item {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .historial-retardos-header,
+    .historial-retardo-item {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .historial-retardos-header {
+        display: none; /* Ocultar header en móvil */
+    }
+    
+    .historial-retardo-item .form-label {
+        text-align: left;
+    }
+    
+    .historial-retardos-container {
+        padding: 1rem !important;
+    }
+}
+
+/* Estilos para inputs deshabilitados */
+.mod-input-cyan:disabled,
+.mod-input-azul:disabled,
+.mod-input-amarillo:disabled,
+.mod-input-rosa:disabled {
+    opacity: 0.6 !important;
+    background: #f3f4f6 !important;
+    color: #6b7280 !important;
+    cursor: not-allowed !important;
+    border-color: #d1d5db !important;
+    font-style: italic;
+}
+
+/* Efecto hover para inputs deshabilitados */
+.mod-input-cyan:disabled:hover,
+.mod-input-azul:disabled:hover,
+.mod-input-amarillo:disabled:hover,
+.mod-input-rosa:disabled:hover {
+    opacity: 0.6 !important;
+    background: #f3f4f6 !important;
+    transform: none !important;
+}
+
+/* Estilos específicos para el input del incentivo */
+#mod-incentivo-monto:disabled {
+    background-color: #f8f9fa !important;
+    color: #6c757d !important;
+    border-color: #dee2e6 !important;
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+}
+
+#mod-incentivo-monto:disabled::placeholder {
+    color: #adb5bd !important;
+}
+
+/* Animación suave para la transición */
+#mod-incentivo-monto {
+    transition: all 0.3s ease;
+}
+
+#mod-incentivo-monto:not(:disabled) {
+    background-color: #f6ffff !important;
+    border-color: #b6e2e2 !important;
+}
+
+/* Estilos específicos para el input del bono de antigüedad */
+#mod-bono-antiguedad:disabled {
+    background-color: #f8f9fa !important;
+    color: #6c757d !important;
+    border-color: #dee2e6 !important;
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+}
+
+#mod-bono-antiguedad:disabled::placeholder {
+    color: #adb5bd !important;
+}
+
+/* Animación suave para la transición del bono */
+#mod-bono-antiguedad {
+    transition: all 0.3s ease;
+}
+
+#mod-bono-antiguedad:not(:disabled) {
+    background-color: #f4faff !important;
+    border-color: #b6d0e2 !important;
+}
+
+/* Contenedor */
+.table-container {
+    margin: 20px;
+    overflow-x: auto;
+}
+
+/* Tabla */
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    background-color: #fff;
+    color: #4b5563; /* gris neutro */
+    border-radius: 8px; /* bordes redondeados */
+    overflow: hidden;   /* respeta bordes redondeados */
+}
+
+/* Encabezado */
+.custom-table thead {
+    background-color: #22c55e; /* verde */
+    color: #fff;
+}
+
+.custom-table thead th {
+    padding: 12px;
+    text-align: center;
+    font-weight: 600;
+}
+
+/* Filas alternadas */
+.custom-table tbody tr:nth-child(even) {
+    background-color: #f9fafb;
+}
+
+.custom-table tbody tr:hover {
+    background-color: #f0fdf4; /* verde muy tenue en hover */
+}
+
+.custom-table td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+/* Footer */
+.custom-table tfoot {
+    background-color: #dcfce7; /* verde pálido */
+    font-weight: bold;
+}
+
+.custom-table tfoot th {
+    padding: 12px;
+    text-align: center;
+}
+
+/* Columna de días */
+.day-cell {
+    color: #22c55e;         /* texto verde */
+    background-color: #f3f4f6; /* gris suave */
+    font-weight: 600;
+}
+
+/* Horas (todas las columnas excepto la primera) */
+.custom-table td:not(:first-child),
+.custom-table tfoot th:not(:first-child) {
+    color: #374151; /* gris más fuerte/llamativo */
+    font-weight: 500;
+}
+
+/* Estilos para Eventos Especiales - Diseño Profesional Mejorado */
+.eventos-especiales-container {
+    margin-top: 20px;
+    padding: 16px;
+    background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.eventos-title {
+    color: #2563eb !important;
+    margin-bottom: 20px !important;
+    border-bottom: 2px solid #2563eb !important;
+    padding-bottom: 8px !important;
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.eventos-title i {
+    font-size: 1.1rem;
+    color: #3b82f6;
+}
+
+.evento-card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 2px solid #e5e7eb;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.evento-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    border-color: transparent;
+}
+
+.evento-header {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: #ffffff;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    box-shadow: 0 2px 4px rgba(22, 163, 74, 0.2);
+}
+
+.evento-header i {
+    font-size: 1rem;
+    opacity: 0.95;
+}
+
+.evento-content {
+    padding: 12px 14px;
+    min-height: 100px;
+    max-height: 280px;
+    overflow-y: auto;
+    background: linear-gradient(to bottom, #ffffff 0%, #fafafa 100%);
+    flex-grow: 1;
+}
+
+.evento-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.evento-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.evento-content::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.evento-content::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.evento-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    background: #ffffff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.evento-item:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+    transform: translateX(4px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.evento-item:last-child {
+    margin-bottom: 0;
+}
+
+.evento-item-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
+}
+
+.evento-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+}
+
+.evento-dia {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.evento-dia i {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.evento-fecha {
+    font-weight: 500;
+    color: #6b7280;
+    font-size: 0.7rem;
+    margin-left: 0.4rem;
+}
+
+.evento-detalle {
+    font-size: 0.7rem;
+    color: #4b5563;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-weight: 500;
+}
+
+.evento-detalle i {
+    font-size: 0.75rem;
+    opacity: 0.7;
+}
+
+.evento-tiempo {
+    font-weight: 700;
+    color: #22c55e;
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    border: 1.5px solid #86efac;
+    box-shadow: 0 2px 4px rgba(34, 197, 94, 0.2);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.evento-total {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    padding: 10px 14px;
+    border-top: 2px solid #bbf7d0;
+    color: #166534;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-align: center;
+    box-shadow: 0 -2px 4px rgba(34, 197, 94, 0.1);
+}
+
+/* Variante específica para olvidos del checador */
+.olvido-checador .evento-header {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2) !important;
+}
+
+.olvido-checador .evento-tiempo {
+    color: #dc2626 !important;
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%) !important;
+    border-color: #fca5a5 !important;
+    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2) !important;
+}
+
+.olvido-checador .evento-detalle {
+    color: #dc2626 !important;
+}
+
+.olvido-checador .evento-total {
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%) !important;
+    border-top-color: #fecaca !important;
+    color: #991b1b !important;
+    box-shadow: 0 -2px 4px rgba(220, 38, 38, 0.1) !important;
+}
+
+.olvido-checador .evento-item {
+    border-left: 3px solid #ef4444;
+}
+
+.olvido-checador .evento-item:hover {
+    border-left-color: #dc2626;
+    background: #fef2f2;
+}
+
+/* Variante específica para faltas */
+.falta .evento-header {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+    box-shadow: 0 2px 4px rgba(234, 88, 12, 0.2) !important;
+}
+
+.falta .evento-tiempo {
+    color: #ea580c !important;
+    background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%) !important;
+    border-color: #fdba74 !important;
+    box-shadow: 0 2px 4px rgba(234, 88, 12, 0.2) !important;
+}
+
+.falta .evento-detalle {
+    color: #ea580c !important;
+}
+
+.falta .evento-total {
+    background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%) !important;
+    border-top-color: #fed7aa !important;
+    color: #9a3412 !important;
+    box-shadow: 0 -2px 4px rgba(234, 88, 12, 0.1) !important;
+}
+
+.falta .evento-item {
+    border-left: 3px solid #f97316;
+}
+
+.falta .evento-item:hover {
+    border-left-color: #ea580c;
+    background: #fff7ed;
+}
+
+/* Variante específica para retardos */
+.retardo .evento-header {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
+    box-shadow: 0 2px 4px rgba(22, 163, 74, 0.2) !important;
+}
+
+.retardo .evento-tiempo {
+    color: #16a34a !important;
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%) !important;
+    border-color: #86efac !important;
+    box-shadow: 0 2px 4px rgba(22, 163, 74, 0.2) !important;
+}
+
+.retardo .evento-detalle {
+    color: #16a34a !important;
+}
+
+.retardo .evento-total {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%) !important;
+    border-top-color: #bbf7d0 !important;
+    color: #166534 !important;
+    box-shadow: 0 -2px 4px rgba(22, 163, 74, 0.1) !important;
+}
+
+.retardo .evento-item {
+    border-left: 3px solid #22c55e;
+}
+
+.retardo .evento-item:hover {
+    border-left-color: #16a34a;
+    background: #f0fdf4;
+}
+
+/* Resumen General - Simplificado */
+.resumen-eventos {
+    margin-top: 20px;
+}
+
+.resumen-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafb 100%);
+    border: 2px solid #22c55e;
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.1);
+}
+
+.resumen-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 8px 0;
+}
+
+.resumen-label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 14px;
+    margin-right: 12px;
+}
+
+.resumen-valor {
+    font-weight: 700;
+    color: #22c55e;
+    font-size: 16px;
+    background: #dcfce7;
+    padding: 6px 12px;
+    border-radius: 8px;
+}
+
+/* Estado vacío */
+.evento-content:empty::after {
+    content: "No hay eventos registrados";
+    display: block;
+    text-align: center;
+    color: #9ca3af;
+    font-style: italic;
+    padding: 40px 0;
+}
+
+
+/* Variante específica para entradas tempranas */
+.entrada-temprana .evento-header {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2) !important;
+}
+
+.entrada-temprana .evento-tiempo {
+    color: #059669 !important;
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%) !important;
+    border-color: #6ee7b7 !important;
+    box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2) !important;
+}
+
+.entrada-temprana .evento-detalle {
+    color: #059669 !important;
+}
+
+.entrada-temprana .evento-total {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important;
+    border-top-color: #a7f3d0 !important;
+    color: #065f46 !important;
+    box-shadow: 0 -2px 4px rgba(5, 150, 105, 0.1) !important;
+}
+
+.entrada-temprana .evento-item {
+    border-left: 3px solid #10b981;
+}
+
+.entrada-temprana .evento-item:hover {
+    border-left-color: #059669;
+    background: #ecfdf5;
+}
+
+/* Variante específica para salidas tardías */
+.salida-tardia .evento-header {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%) !important;
+    box-shadow: 0 2px 4px rgba(124, 58, 237, 0.2) !important;
+}
+
+.salida-tardia .evento-tiempo {
+    color: #7c3aed !important;
+    background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%) !important;
+    border-color: #c4b5fd !important;
+    box-shadow: 0 2px 4px rgba(124, 58, 237, 0.2) !important;
+}
+
+.salida-tardia .evento-detalle {
+    color: #7c3aed !important;
+}
+
+.salida-tardia .evento-total {
+    background: linear-gradient(135deg, #faf5ff 0%, #ede9fe 100%) !important;
+    border-top-color: #ddd6fe !important;
+    color: #5b21b6 !important;
+    box-shadow: 0 -2px 4px rgba(124, 58, 237, 0.1) !important;
+}
+
+.salida-tardia .evento-item {
+    border-left: 3px solid #8b5cf6;
+}
+
+.salida-tardia .evento-item:hover {
+    border-left-color: #7c3aed;
+    background: #faf5ff;
+}
+
+/* Variante específica para salidas tempranas */
+.salida-temprana .evento-header {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2) !important;
+}
+
+.salida-temprana .evento-tiempo {
+    color: #2563eb !important;
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important;
+    border-color: #93c5fd !important;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2) !important;
+}
+
+.salida-temprana .evento-detalle {
+    color: #2563eb !important;
+}
+
+.salida-temprana .evento-total {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important;
+    border-top-color: #bfdbfe !important;
+    color: #1e40af !important;
+    box-shadow: 0 -2px 4px rgba(37, 99, 235, 0.1) !important;
+}
+
+.salida-temprana .evento-item {
+    border-left: 3px solid #3b82f6;
+}
+
+.salida-temprana .evento-item:hover {
+    border-left-color: #2563eb;
+    background: #eff6ff;
+}
+
+/* Estado vacío mejorado */
+.evento-content:empty::after {
+    content: "No hay eventos registrados";
+    display: block;
+    text-align: center;
+    color: #9ca3af;
+    font-style: italic;
+    padding: 30px 0;
+    font-size: 0.8rem;
+}
+
+.sin-eventos {
+    text-align: center;
+    color: #9ca3af;
+    font-style: italic;
+    padding: 30px 0;
+    margin: 0;
+    font-size: 0.8rem;
+}
+
+/* Animaciones para los items de eventos */
+.evento-item {
+    animation: fadeInUp 0.4s ease-out;
+    animation-fill-mode: both;
+}
+
+.evento-item:nth-child(1) { animation-delay: 0.05s; }
+.evento-item:nth-child(2) { animation-delay: 0.1s; }
+.evento-item:nth-child(3) { animation-delay: 0.15s; }
+.evento-item:nth-child(4) { animation-delay: 0.2s; }
+.evento-item:nth-child(5) { animation-delay: 0.25s; }
+.evento-item:nth-child(n+6) { animation-delay: 0.3s; }
+
+/* Responsive para eventos especiales */
+@media (max-width: 768px) {
+    .eventos-especiales-container {
+        padding: 16px !important;
+    }
+    
+    .evento-card {
+        margin-bottom: 1rem !important;
+    }
+    
+    .evento-content {
+        min-height: 100px;
+        max-height: 250px;
+    }
+    
+    .evento-item-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .evento-tiempo {
+        align-self: flex-end;
+    }
+}
+
+/* Estilos específicos para las pestañas del modal */
+.tab-title {
+    margin-bottom: 20px;
+}
+
+/* Estilos para la sección de eventos especiales */
+.eventos-title {
+    color: #22c55e;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #22c55e;
+    padding-bottom: 8px;
+}
+
+/* Estilos para el separador visual en percepciones */
+.mod-separador {
+    margin: 1.5rem 0 !important;
+    border: none !important;
+    border-top: 2px dashed #cbd5e1 !important;
+    opacity: 0.6;
+}
+
+/* Estilos para los componentes del sueldo extra */
+.componentes-title {
+    font-weight: 700 !important;
+    color: #2563eb !important;
+    margin-bottom: 0.5rem !important;
+    font-size: 1.05rem !important;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.componentes-title i {
+    color: #3b82f6;
+    font-size: 1.15rem;
+}
+
+.componentes-subtitle {
+    color: #64748b !important;
+    font-size: 0.875rem !important;
+    font-style: italic;
+    margin-top: 0.25rem;
+}
+
+/* Estilos para inputs readonly */
+.mod-input-readonly {
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%) !important;
+    font-weight: 700 !important;
+    color: #475569 !important;
+    border: 2px solid #cbd5e1 !important;
+    cursor: default !important;
+}
+
+/* Estilos para la nueva sección de minutos trabajados */
+.resumen-card.tiempo-trabajado {
+    margin-top: 1rem;
+}
+
+.resumen-tiempo-title {
+    font-weight: 600;
+    color: #007bff;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.minutos-label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.minutos-label.minutos-normales {
+    color: #22c55e;
+}
+
+.minutos-label.minutos-extra {
+    color: #f59e0b;
+}
+
+.minutos-input {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+    border-radius: 12px; /* Bordes redondeados */
+}
+
+.minutos-input-normales {
+    background-color: #f0fff4;
+    border: 2px solid #22c55e;
+    color: #166534;
+    border-radius: 12px; /* Bordes redondeados */
+}
+
+.minutos-input-extra {
+    background-color: #fffbeb;
+    border: 2px solid #f59e0b;
+    color: #92400e;
+    border-radius: 12px; /* Bordes redondeados */
+}
+
+.minutos-descripcion {
+    color: #6c757d;
+    text-align: center;
+    display: block;
+    margin-top: 0.25rem;
+}
+
+/* Estilos para el sueldo a cobrar */
+.sueldo-cobrar-label {
+    font-weight: 700 !important;
+    color: #16a34a !important;
+    margin-bottom: 1rem !important;
+    font-size: 1.125rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sueldo-cobrar-label i {
+    font-size: 1.25rem;
+    color: #22c55e;
+}
+
+.sueldo-cobrar-input {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%) !important;
+    border: 3px solid #22c55e !important;
+    text-align: center !important;
+    width: 100% !important;
+    padding: 1rem 1.5rem !important;
+    border-radius: 12px !important;
+    margin-bottom: 0.75rem !important;
+    color: #166534 !important;
+    box-shadow: 0 4px 6px -1px rgba(34, 197, 94, 0.2), 0 2px 4px -1px rgba(34, 197, 94, 0.1) !important;
+    transition: all 0.3s ease !important;
+}
+
+.sueldo-cobrar-input:focus {
+    border-color: #16a34a !important;
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2), 0 10px 15px -3px rgba(34, 197, 94, 0.3) !important;
+    outline: none !important;
+    transform: scale(1.02);
+}
+
+.sueldo-cobrar-descripcion {
+    color: #64748b !important;
+    margin-top: 0.5rem !important;
+    display: block !important;
+    font-size: 0.875rem !important;
+    text-align: center;
+    font-style: italic;
+}
+
+/* Estilos para el footer del modal */
+.modal-detalles-footer {
+    margin-top: 24px;
+    text-align: right;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px; /* Espacio entre elementos */
+    flex-wrap: wrap; /* Permitir envolver si es necesario */
+}
+
+.modal-detalles-footer .btn {
+    margin-right: 10px;
+}
+
+.modal-detalles-footer .btn:last-child {
+    margin-right: 0;
+}
+
+/* Estilos para los botones de vista de registros */
+.btn-group .btn-check:checked + .btn-outline-success {
+    background-color: #22c55e;
+    border-color: #22c55e;
+    color: white;
+}
+
+.empleado-actual {
+    background-color: transparent;
+    width: auto;
+    min-width: 200px;
+    max-width: 400px;
+    flex: 0 0 auto; /* No permitir que crezca o se encoja */
+    margin-left: 0; /* Asegurar que no tenga margen izquierdo */
+    padding-left: 0; /* Asegurar que no tenga padding izquierdo */
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Alinear al inicio (izquierda) */
+}
+
+/* Estilo para el badge del nombre del empleado en el modal */
+.bg-verde-empleado {
+    background-color: #22c55e !important;
+    font-size: 0.85rem;
+    padding: 0.4em 0.8em;
+    font-weight: 500;
+    color: white;
+    border-radius: 4px;
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: none;
+    max-width: none;
+    min-width: 200px;
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0; /* Quitar cualquier margen */
+}
+
+.btn-group .btn-check:checked + .btn-outline-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+}
+
+.btn-group .btn {
+    transition: all 0.3s ease;
+}
+
+.btn-group .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Estilos específicos para la tabla del checador */
+#tabla-checador .custom-table tbody tr.registro-completo {
+    background-color: #f0fdf4; /* Verde muy suave para registros completos */
+}
+
+#tabla-checador .custom-table tbody tr.registro-incompleto {
+    background-color: #fef2f2; /* Rojo muy suave para registros incompletos */
+}
+
+#tabla-checador .custom-table tbody tr.registro-vacio {
+    background-color: #fefce8; /* Amarillo muy suave para registros vacíos */
+}
+
+/* Estilos para la columna de día */
+#tabla-checador .custom-table tbody td:first-child {
+    font-weight: 600;
+    color: #374151;
+    background-color: rgba(249, 250, 251, 0.5);
+    border-right: 2px solid #e5e7eb;
+}
+
+/* Destacar viernes como inicio de semana */
+#tabla-checador .custom-table tbody tr:has(td:first-child:contains("Viernes")) {
+    border-top: 3px solid #10b981;
+}
+
+#tabla-checador .estado-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.estado-completo {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.estado-incompleto {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.estado-faltante {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+/* Animación para el cambio de tablas */
+.table-container {
+    transition: opacity 0.3s ease-in-out;
+}
+
+.table-container.fade-out {
+    opacity: 0;
+}
+
+.table-container.fade-in {
+    opacity: 1;
+}
+
+/* Estilos para mini-tabs de registros */
+.mini-tab-registros {
+    transition: all 0.3s ease;
+    border-radius: 6px !important;
+    margin: 0 2px;
+}
+
+.mini-tab-registros.active {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.mini-tab-registros:hover {
+    transform: translateY(-1px);
+}
+
+/* Estilo para cuando no hay eventos */
+.sin-eventos {
+    text-align: center;
+    color: #9ca3af;
+    font-style: italic;
+    padding: 40px 0;
+    margin: 0;
+}
+  
+/* Estilos específicos para cada tipo de mini-tab */
+.mini-tab-registros.btn-outline-success.active {
+    background-color: #22c55e !important;
+    border-color: #22c55e !important;
+    color: white !important;
+}
+
+.mini-tab-registros.btn-outline-primary.active {
+    background-color: #007bff !important;
+    border-color: #007bff !important;
+    color: white !important;
+}

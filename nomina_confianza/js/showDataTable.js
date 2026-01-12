@@ -13,7 +13,9 @@ function mostrarDatosTabla(jsonNominaConfianza, pagina = 1) {
     // Obtener todos los empleados de todos los departamentos
     let todosEmpleados = [];
     jsonNominaConfianza.departamentos.forEach(departamento => {
-        todosEmpleados = todosEmpleados.concat(departamento.empleados);
+        // Filtrar solo empleados con mostrar=true
+        const empleadosFiltrados = departamento.empleados.filter(emp => emp.mostrar !== false);
+        todosEmpleados = todosEmpleados.concat(empleadosFiltrados);
     });
     // Ordenar todos los empleados A→Z por nombre (sin modificar el JSON original)
     todosEmpleados.sort((a, b) => {
@@ -55,6 +57,9 @@ function mostrarDatosTabla(jsonNominaConfianza, pagina = 1) {
         // Calcular Total Deducciones
         const totalDeducciones = calcularTotalDeducciones(empleado);
 
+        // Calcular Total a Cobrar
+        const totalCobrar = calcularTotalCobrar(empleado);
+
         const fila = `
             <tr data-clave="${empleado.clave || 'N/A'}">
                 <td>${numeroFila}</td>
@@ -74,7 +79,7 @@ function mostrarDatosTabla(jsonNominaConfianza, pagina = 1) {
                 <td>${formatearValor(totalDeducciones)}</td>
                 <td>${formatearValor(empleado.prestamo || 0)}</td>
                 <td>${formatearValor(empleado.tarjeta || 0)}</td>
-                <td><strong>${formatearValor(empleado.total_cobrar || 0)}</strong></td>
+                <td class="${totalCobrar < 0 ? 'sueldo-negativo' : ''}"><strong>${formatearValor(totalCobrar)}</strong></td>
             </tr>
         `;
         $('#tabla-nomina-body').append(fila);
@@ -91,6 +96,42 @@ function calcularTotalPercepciones(empleado) {
     return (sueldo + extras).toFixed(2);
 }
 
+// Función para calcular Total Deducciones
+function calcularTotalDeducciones(empleado) {
+    // Función auxiliar para buscar concepto
+    const buscarConcepto = (codigo) => {
+        if (!Array.isArray(empleado.conceptos)) return 0;
+        const concepto = empleado.conceptos.find(c => String(c.codigo) === String(codigo));
+        return concepto ? (parseFloat(concepto.resultado) || 0) : 0;
+    };
+
+    const retardos = parseFloat(empleado.retardos) || 0;
+    const isr = buscarConcepto('45');
+    const imss = buscarConcepto('52');
+    const ajusteSub = parseFloat(empleado.ajuste_sub) || 0;
+    const infonavit = buscarConcepto('16');
+    const permiso = parseFloat(empleado.permiso) || 0;
+    const inasistencias = parseFloat(empleado.inasistencia) || 0;
+    const uniformes = parseFloat(empleado.uniformes) || 0;
+    const checador = parseFloat(empleado.checador) || 0;
+
+    const total = retardos + isr + imss + ajusteSub + infonavit + permiso + inasistencias + uniformes + checador;
+    return total.toFixed(2);
+}
+
+// Función para calcular Total a Cobrar (Neto a Recibir)
+function calcularTotalCobrar(empleado) {
+    const percepciones = parseFloat(calcularTotalPercepciones(empleado)) || 0;
+    const deducciones = parseFloat(calcularTotalDeducciones(empleado)) || 0;
+    const prestamo = parseFloat(empleado.prestamo) || 0;
+    const tarjeta = parseFloat(empleado.tarjeta) || 0;
+
+    const totalCobrar = percepciones - deducciones - prestamo - tarjeta;
+    empleado.total_cobrar =totalCobrar.toFixed(2); // Guardar en el empleado objeto
+
+    return totalCobrar.toFixed(2);
+}
+
 function paginarTabla(jsonNominaConfianza, totalEmpleados, paginaActual, empleadosPorPagina) {
     // Calcular total de páginas
     const totalPaginas = Math.ceil(totalEmpleados / empleadosPorPagina);
@@ -102,7 +143,7 @@ function paginarTabla(jsonNominaConfianza, totalEmpleados, paginaActual, emplead
     if (paginaActual > 1) {
         $('#paginacion-nomina').append(`
             <li class="page-item">
-                <a class="page-link" href="#" data-pagina="${paginaActual - 1}">Anterior</a>
+                <a class="page-link" href="#" data-pagina="${paginaActual - 1}">&laquo;</a>
             </li>
         `);
     }
@@ -121,7 +162,7 @@ function paginarTabla(jsonNominaConfianza, totalEmpleados, paginaActual, emplead
     if (paginaActual < totalPaginas) {
         $('#paginacion-nomina').append(`
             <li class="page-item">
-                <a class="page-link" href="#" data-pagina="${paginaActual + 1}">Siguiente</a>
+                <a class="page-link" href="#" data-pagina="${paginaActual + 1}">&raquo;</a>
             </li>
         `);
     }

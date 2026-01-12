@@ -1,7 +1,7 @@
 <?php
 include("../../conexion/conexion.php");
 
-$sql = "SELECT * FROM departamentos WHERE id_departamento =1 OR id_departamento =2 OR id_departamento =3 OR id_departamento =8 ORDER BY nombre_departamento";
+$sql = "SELECT * FROM departamentos WHERE id_departamento =1 OR id_departamento =2 OR id_departamento =3 OR id_departamento =9 ORDER BY nombre_departamento";
 $query = $conexion->query($sql);
 
 if (!$query) {

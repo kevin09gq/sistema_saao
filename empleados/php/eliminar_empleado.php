@@ -119,8 +119,26 @@ try {
     // Eliminar horarios asignados al empleado
     $sqlLiberarHorario = $conexion->prepare("DELETE FROM empleado_horario_reloj WHERE id_empleado = ?");
     $sqlLiberarHorario->bind_param("i", $id_empleado);
-    $sqlLiberarHorario->execute();
+    if (!$sqlLiberarHorario->execute()) {
+        throw new Exception('No se pudo eliminar horarios de reloj del empleado.');
+    }
     $sqlLiberarHorario->close();
+
+    // Eliminar horarios oficiales del empleado
+    $sqlLiberarHorarioOficial = $conexion->prepare("DELETE FROM horarios_oficiales WHERE id_empleado = ?");
+    $sqlLiberarHorarioOficial->bind_param("i", $id_empleado);
+    if (!$sqlLiberarHorarioOficial->execute()) {
+        throw new Exception('No se pudo eliminar horarios oficiales del empleado.');
+    }
+    $sqlLiberarHorarioOficial->close();
+
+    // Eliminar historial de incidencias semanales del empleado
+    $sqlDelIncidencias = $conexion->prepare("DELETE FROM historial_incidencias_semanal WHERE empleado_id = ?");
+    $sqlDelIncidencias->bind_param("i", $id_empleado);
+    if (!$sqlDelIncidencias->execute()) {
+        throw new Exception('No se pudo eliminar historial de incidencias semanales.');
+    }
+    $sqlDelIncidencias->close();
 
 
     // =============================
@@ -160,7 +178,7 @@ try {
 
     echo json_encode([
         'title' => 'SUCCESS',
-        'text' => 'Empleado, beneficiarios y contactos eliminados correctamente.',
+        'text' => 'Empleado y todos sus datos relacionados eliminados correctamente.',
         'type' => 'success',
         'icon' => $rutaRaiz . 'plugins/toasts/icons/icon_success.png',
         'timeout' => 3000

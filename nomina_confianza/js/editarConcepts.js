@@ -46,6 +46,8 @@ function actualizarEmpleado(jsonNominaConfianza, claveEmpleado) {
     empleadoEncontrado.inasistencia = parseFloat($('#mod-inasistencias').val()) || 0;
     empleadoEncontrado.permiso = parseFloat($('#mod-permiso').val()) || 0;
 
+    // HISTORIAS DE DEDUCCIONES 
+    
     // Actualizar historial de retardos desde el DOM
     if (!empleadoEncontrado.historial_retardos) {
         empleadoEncontrado.historial_retardos = [];
@@ -71,6 +73,101 @@ function actualizarEmpleado(jsonNominaConfianza, claveEmpleado) {
     // Actualizar el array completo solo si hay elementos en el DOM
     if (nuevosHistorial.length > 0) {
         empleadoEncontrado.historial_retardos = nuevosHistorial;
+    }
+
+    // Actualizar historial de inasistencias desde el DOM
+    if (!empleadoEncontrado.historial_inasistencias) {
+        empleadoEncontrado.historial_inasistencias = [];
+    }
+    
+    const nuevosHistorialInasistencias = [];
+    $('#contenedor-historial-inasistencias .historial-inasistencia-item').each(function() {
+        const $item = $(this);
+        const index = parseInt($item.data('index'));
+        
+        const historialItem = {
+            dia: $item.find('.historial-inasistencia-dia').val(),
+            fecha: '',
+            descuento_inasistencia: parseFloat($item.find('.historial-inasistencia-descuento').val()) || 0
+        };
+        
+        nuevosHistorialInasistencias.push(historialItem);
+    });
+    
+    // Actualizar el array completo solo si hay elementos en el DOM
+    if (nuevosHistorialInasistencias.length > 0) {
+        empleadoEncontrado.historial_inasistencias = nuevosHistorialInasistencias;
+    }
+
+    // Actualizar historial de olvidos desde el DOM
+    if (!empleadoEncontrado.historial_olvidos) {
+        empleadoEncontrado.historial_olvidos = [];
+    }
+    
+    const nuevosHistorialOlvidos = [];
+    $('#contenedor-historial-olvidos .historial-olvido-item').each(function() {
+        const $item = $(this);
+        const index = parseInt($item.data('index'));
+        
+        const historialItem = {
+            dia: $item.find('.historial-olvido-dia').val(),
+            fecha: $item.find('.historial-olvido-fecha').val(),
+            descuento_olvido: parseFloat($item.find('.historial-olvido-descuento').val()) || 0
+        };
+        
+        nuevosHistorialOlvidos.push(historialItem);
+    });
+    
+    // Actualizar el array completo solo si hay elementos en el DOM
+    if (nuevosHistorialOlvidos.length > 0) {
+        empleadoEncontrado.historial_olvidos = nuevosHistorialOlvidos;
+    }
+
+    // Actualizar historial de uniformes desde el DOM
+    if (!empleadoEncontrado.historial_uniformes) {
+        empleadoEncontrado.historial_uniformes = [];
+    }
+    
+    const nuevosHistorialUniformes = [];
+    $('#contenedor-historial-uniformes .historial-uniforme-item').each(function() {
+        const $item = $(this);
+        const index = parseInt($item.data('index'));
+        
+        const historialItem = {
+            folio: $item.find('.historial-uniforme-folio').val(),
+            cantidad: parseFloat($item.find('.historial-uniforme-cantidad').val()) || 0
+        };
+        
+        nuevosHistorialUniformes.push(historialItem);
+    });
+    
+    // Actualizar el array completo solo si hay elementos en el DOM
+    if (nuevosHistorialUniformes.length > 0) {
+        empleadoEncontrado.historial_uniformes = nuevosHistorialUniformes;
+    }
+
+    // Actualizar historial de permisos desde el DOM
+    if (!empleadoEncontrado.historial_permisos) {
+        empleadoEncontrado.historial_permisos = [];
+    }
+    
+    const nuevosHistorialPermisos = [];
+    $('#contenedor-historial-permisos .historial-permiso-item').each(function() {
+        const $item = $(this);
+        const index = parseInt($item.data('index'));
+        
+        const historialItem = {
+            descripcion: $item.find('.historial-permiso-descripcion').val(),
+            horas_minutos: $item.find('.historial-permiso-horas').val(),
+            cantidad: parseFloat($item.find('.historial-permiso-cantidad').val()) || 0
+        };
+        
+        nuevosHistorialPermisos.push(historialItem);
+    });
+    
+    // Actualizar el array completo solo si hay elementos en el DOM
+    if (nuevosHistorialPermisos.length > 0) {
+        empleadoEncontrado.historial_permisos = nuevosHistorialPermisos;
     }
 
 
@@ -143,9 +240,7 @@ function guardarCambiosEmpleado() {
         if (typeof detectarOlvidosChecador === 'function') {
             detectarOlvidosChecador(claveEmpleado);
         }
-        if (typeof detectarPermisos === 'function') {
-            detectarPermisos(claveEmpleado);
-        }
+       
        
         // Cerrar el modal después de guardar
         $('#modal-detalles').hide();
@@ -189,7 +284,11 @@ function actualizarHorarioOficial(claveEmpleado) {
     const nuevoHorario = [];
     $('#horarios-oficiales-body tr').each(function() {
         const $fila = $(this);
-        const dia = $fila.find('td').eq(0).text().trim();
+        
+        // Leer el valor del SELECT (no el texto)
+        const dia = $fila.find('select.select-dia').val() || '';
+        
+        // Leer el resto de campos como antes
         const entrada = $fila.find('td').eq(1).text().trim();
         const salidaComida = $fila.find('td').eq(2).text().trim();
         const entradaComida = $fila.find('td').eq(3).text().trim();
@@ -207,7 +306,22 @@ function actualizarHorarioOficial(claveEmpleado) {
     // Actualizar la propiedad horario_oficial del empleado
     empleadoEncontrado.horario_oficial = nuevoHorario;
     
-    console.log('Horario actualizado:', empleadoEncontrado.horario_oficial);
+    // Preservar los descuentos editados manualmente antes de limpiar
+    const descuentosPrevios = {};
+    if (Array.isArray(empleadoEncontrado.historial_inasistencias)) {
+        empleadoEncontrado.historial_inasistencias.forEach(inasistencia => {
+            if (inasistencia && inasistencia.dia) {
+                descuentosPrevios[inasistencia.dia.toUpperCase()] = parseFloat(inasistencia.descuento_inasistencia) || 0;
+            }
+        });
+    }
+    
+    // Guardar los descuentos previos para que detectarInasistencias los use
+    empleadoEncontrado._descuentos_inasistencias_previos = descuentosPrevios;
+    
+    // Limpiar historial de inasistencias para que se regenere con el nuevo horario
+    empleadoEncontrado.historial_inasistencias = [];
+    
 }
 
 function configPaginacionSelect() {    

@@ -84,14 +84,14 @@
                                 <th>Salida Comida</th>
                                 <th>Entrada Comida</th>
                                 <th>Salida</th>
-                                
+
                             </tr>
                         </thead>
                         <tbody id="horarios-oficiales-body">
                             <!-- Los datos se llenarán con JavaScript -->
 
                         </tbody>
-                       
+
                     </table>
                 </div>
 
@@ -101,10 +101,59 @@
                         <i class="bi bi-clock-history"></i> Eventos Especiales
                     </h5>
 
-                    <!-- Primera fila: Entradas Tempranas y Salidas Tardías Eliminado temporal-->
+                   
+                    <!-- Primera fila: Entradas Tempranas y Salidas Tardías -->
+                    <div class="row">
+                        <!-- Entradas Tempranas -->
+                        <div class="col-md-6 mb-3">
+                            <div class="evento-card entrada-temprana">
+                                <div class="evento-header">
+                                    <i class="bi bi-sunrise"></i>
+                                    <span>Entradas Tempranas</span>
+                                </div>
+                                <div class="evento-content" id="entradas-tempranas-content">
+
+                                </div>
+                                <div class="evento-total">
+                                    <strong>Total: <span id="total-entradas-tempranas"></span></strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Salidas Tardías -->
+                        <div class="col-md-6 mb-3">
+                            <div class="evento-card salida-tardia">
+                                <div class="evento-header">
+                                    <i class="bi bi-sunset"></i>
+                                    <span>Salidas Tardías</span>
+                                </div>
+                                <div class="evento-content" id="salidas-tardias-content">
+
+                                </div>
+                                <div class="evento-total">
+                                    <strong>Total: <span id="total-salidas-tardias"></span></strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Segunda fila: Salidas Tempranas y Olvidos del Checador -->
                     <div class="row">
+                         <!-- Salidas Tempranas -->
+                        <div class="col-md-6 mb-3">
+                            <div class="evento-card salida-temprana">
+                                <div class="evento-header">
+                                    <i class="bi bi-clock"></i>
+                                    <span>Salidas Tempranas</span>
+                                </div>
+                                <div class="evento-content" id="salidas-tempranas-content">
+
+                                </div>
+                                <div class="evento-total">
+                                    <strong>Total: <span id="total-salidas-tempranas"></span></strong>
+                                </div>
+                            </div>
+                        </div>
 
                         <!-- Olvidos del Checador -->
                         <div class="col-md-6 mb-3">
@@ -234,15 +283,30 @@
                             <div class="row mb-3">
                                 <div class="col-md-4 mb-2">
                                     <label class="form-label fw-semibold">ISR ($)</label>
-                                    <input type="number" step="0.01" class="form-control mod-input-amarillo" id="mod-isr" value="" placeholder="0.00">
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" class="form-control mod-input-amarillo" id="mod-isr" value="" placeholder="0.00">
+                                        <button type="button" class="btn btn-outline-secondary" id="btn-aplicar-isr" title="Aplicar Nuevo ISR">
+                                            <i class="bi bi-calculator"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="col-md-4 mb-2">
                                     <label class="form-label fw-semibold">IMSS ($)</label>
-                                    <input type="number" step="0.01" class="form-control mod-input-amarillo" id="mod-imss" value="" placeholder="0.00">
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" class="form-control mod-input-amarillo" id="mod-imss" value="" placeholder="0.00">
+                                        <button type="button" class="btn btn-outline-secondary" id="btn-aplicar-imss" title="Aplicar Nuevo IMSS">
+                                            <i class="bi bi-calculator"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="col-md-4 mb-2">
                                     <label class="form-label fw-semibold">INFONAVIT ($)</label>
-                                    <input type="number" step="0.01" class="form-control mod-input-amarillo" id="mod-infonavit" value="" placeholder="0.00">
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" class="form-control mod-input-amarillo" id="mod-infonavit" value="" placeholder="0.00">
+                                        <button type="button" class="btn btn-outline-secondary" id="btn-aplicar-infonavit" title="Aplicar Nuevo INFONAVIT">
+                                            <i class="bi bi-calculator"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -260,8 +324,9 @@
                             <i class="bi bi-dash-circle"></i> Deducciones
                         </div>
                         <div class="card-body mod-card-body-rosa">
+                            <!-- Primera fila: Tarjeta, Préstamo -->
                             <div class="row mb-3">
-                                <div class="col-md-3 mb-2">
+                                <div class="col-md-6 mb-2">
                                     <label class="form-label fw-semibold">Tarjeta ($)</label>
                                     <div class="input-group">
                                         <input type="number" step="0.01" class="form-control mod-input-rosa" id="mod-tarjeta" value="" placeholder="0.00">
@@ -270,7 +335,7 @@
                                         </button>
                                     </div>
                                 </div>
-                                <div class="col-md-3 mb-2">
+                                <div class="col-md-6 mb-2">
                                     <label class="form-label fw-semibold">Préstamo ($)</label>
                                     <div class="input-group">
                                         <input type="number" step="0.01" class="form-control mod-input-rosa" id="mod-prestamo" value="" placeholder="0.00">
@@ -279,19 +344,50 @@
                                         </button>
                                     </div>
                                 </div>
-                                <div class="col-md-3 mb-2">
-                                    <label class="form-label fw-semibold">Uniformes ($)</label>
-                                    <input type="number" step="0.01" class="form-control mod-input-rosa" id="mod-uniformes" value="" placeholder="0.00">
-                                </div>
-                                <div class="col-md-3 mb-2">
-                                    <label class="form-label fw-semibold">Checador ($)</label>
-                                    <input type="number" step="0.01" class="form-control mod-input-rosa" id="mod-checador" value="" placeholder="0.00">
+                            </div>
+
+                            <!-- Separador visual -->
+                            <hr class="mod-separador">
+
+                            <!-- Sección de Checador -->
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <h6 class="fw-semibold text-warning mb-3">
+                                        <i class="bi bi-exclamation-triangle"></i> Checador
+                                    </h6>
                                 </div>
                             </div>
+                            <div class="row mb-3">
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label fw-semibold">Checador ($)</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" class="form-control mod-input-rosa" id="mod-checador" value="" placeholder="0.00">
+                                        <button type="button" class="btn btn-outline-secondary" id="btn-calcular-checador" title="Calcular desde historial">
+                                            <i class="bi bi-calculator"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Historial Detallado de Olvidos -->
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <h6 class="fw-semibold text-warning mb-3">
+                                        <i class="bi bi-exclamation-triangle-fill"></i> Historial de Olvidos por Día
+                                    </h6>
+                                    <div id="contenedor-historial-olvidos" class="historial-olvidos-container">
+                                        <!-- Se llenará con JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Separador visual -->
+                            <hr class="mod-separador">
+
                             <!-- Sección de Retardos -->
                             <div class="row mb-3">
                                 <div class="col-12">
-                                    <h6 class="fw-semibold text-danger">
+                                    <h6 class="fw-semibold text-danger mb-3">
                                         <i class="bi bi-clock-fill"></i> Retardos
                                     </h6>
                                 </div>
@@ -299,35 +395,166 @@
                             <div class="row mb-3">
                                 <div class="col-md-4 mb-2">
                                     <label class="form-label fw-semibold">Total Retardos ($)</label>
-                                    <input type="number" step="0.01" class="form-control mod-input-rosa" id="mod-retardos" value="" placeholder="0.00">
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" class="form-control mod-input-rosa" id="mod-retardos" value="" placeholder="0.00">
+                                        <button type="button" class="btn btn-outline-secondary" id="btn-calcular-retardos" title="Calcular desde historial">
+                                            <i class="bi bi-calculator"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- Historial Detallado de Retardos -->
                             <div class="row mb-3">
                                 <div class="col-12">
-                                    <h6 class="fw-semibold text-info">
-                                        <i class="bi bi-calendar-check"></i> Historial de Retardos por Día 
+                                    <h6 class="fw-semibold text-info mb-3">
+                                        <i class="bi bi-calendar-check"></i> Historial de Retardos por Día
                                     </h6>
-                                </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-12">
                                     <div id="contenedor-historial-retardos" class="historial-retardos-container">
                                         <!-- El historial se cargará dinámicamente aquí -->
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Otras Deducciones -->
+                            <!-- Separador visual -->
+                            <hr class="mod-separador">
+
+                            <!-- Sección de Uniformes -->
+                            <div class="row mb-3">
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label fw-semibold">Uniformes ($)</label>
+                                    <input type="number" step="0.01" class="form-control mod-input-rosa" id="mod-uniformes" value="" placeholder="0.00">
+                                </div>
+                            </div>
+
+                            <!-- Historial Detallado de Uniformes -->
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <h6 class="fw-semibold text-primary mb-3">
+                                        <i class="bi bi-tags-fill"></i> Historial de Uniformes
+                                    </h6>
+
+                                    <!-- Formulario para agregar folio -->
+                                    <div class="card bg-light mb-3">
+                                        <div class="card-body">
+                                            <div class="row g-2 align-items-end">
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-semibold small">Folio</label>
+                                                    <input type="text" class="form-control form-control-sm" id="input-folio-uniforme" placeholder="Ej: UNI-001" maxlength="50">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-semibold small">Cantidad ($)</label>
+                                                    <input type="number" step="0.01" class="form-control form-control-sm" id="input-cantidad-uniforme" placeholder="0.00" min="0">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <button type="button" class="btn btn-success btn-sm w-100" id="btn-agregar-folio-uniforme">
+                                                        <i class="bi bi-plus-circle"></i> Agregar Folio
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Contenedor del historial -->
+                                    <div id="contenedor-historial-uniformes" class="historial-uniformes-container">
+                                        <!-- Se llenará con JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Separador visual -->
+                            <hr class="mod-separador">
+
+                            <!-- Sección de Permisos -->
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <h6 class="fw-semibold text-warning mb-3">
+                                        <i class="bi bi-clock-fill"></i> Permisos
+                                    </h6>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label fw-semibold">Permisos ($)</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" class="form-control mod-input-rosa" id="mod-permiso" value="" placeholder="0.00" readonly>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Historial Detallado de Permisos -->
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <h6 class="fw-semibold text-warning mb-3">
+                                        <i class="bi bi-clock-history"></i> Historial de Permisos
+                                    </h6>
+
+                                    <!-- Formulario para agregar permiso -->
+                                    <div class="card bg-light mb-3">
+                                        <div class="card-body">
+                                            <div class="row g-2 align-items-end">
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-semibold small">Descripción</label>
+                                                    <input type="text" class="form-control form-control-sm" id="input-descripcion-permiso" placeholder="Ej: Permiso médico" maxlength="100">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label fw-semibold small">Horas/Minutos</label>
+                                                    <input type="text" class="form-control form-control-sm" id="input-horas-permiso" placeholder="Ej: 2h 30min" maxlength="20">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label fw-semibold small">Cantidad ($)</label>
+                                                    <input type="number" step="0.01" class="form-control form-control-sm" id="input-cantidad-permiso" placeholder="0.00" min="0">
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <button type="button" class="btn btn-warning btn-sm w-100" id="btn-agregar-permiso">
+                                                        <i class="bi bi-plus-circle"></i> Agregar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Contenedor del historial -->
+                                    <div id="contenedor-historial-permisos" class="historial-permisos-container">
+                                        <!-- Se llenará con JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Separador visual -->
+                            <hr class="mod-separador">
+
+                            <!-- Sección de Inasistencias -->
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <h6 class="fw-semibold text-info mb-3">
+                                        <i class="bi bi-calendar-x"></i> Inasistencias
+                                    </h6>
+                                </div>
+                            </div>
                             <div class="row mb-3">
                                 <div class="col-md-4 mb-2">
                                     <label class="form-label fw-semibold">Inasistencias($)</label>
-                                    <input type="number" step="0.01" class="form-control mod-input-rosa" id="mod-inasistencias" value="" placeholder="0.00">
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" class="form-control mod-input-rosa" id="mod-inasistencias" value="" placeholder="0.00">
+                                        <button type="button" class="btn btn-outline-secondary" id="btn-calcular-inasistencias" title="Calcular desde historial">
+                                            <i class="bi bi-calculator"></i>
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="col-md-4 mb-2">
-                                    <label class="form-label fw-semibold">Permisos ($)</label>
-                                    <input type="number" step="0.01" class="form-control mod-input-rosa" id="mod-permiso" value="" placeholder="0.00">
+                                
+                            </div>
+
+                            <!-- Historial Detallado de Inasistencias -->
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <h6 class="fw-semibold text-info mb-3">
+                                        <i class="bi bi-calendar-x"></i> Historial de Inasistencias por Día
+                                    </h6>
+                                    <div id="contenedor-historial-inasistencias" class="historial-inasistencias-container">
+                                        <!-- El historial se cargará dinámicamente aquí -->
+                                    </div>
                                 </div>
                             </div>
 
@@ -356,7 +583,7 @@
                                         <i class="bi bi-cash-stack"></i> Total a Cobrar
                                     </label>
                                     <input type="number" step="0.01" class="sueldo-cobrar-input"
-                                        id="mod-sueldo-a-cobrar" value="">
+                                        id="mod-sueldo-a-cobrar" value="8">
                                     <small class="sueldo-cobrar-descripcion">
                                         <i class="bi bi-info-circle"></i>
 

@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             try {
                 // Verificar si ya existe una nómina con ese número de semana
-                $sql = $conexion->prepare("SELECT id_nomina_json FROM nomina WHERE JSON_EXTRACT(datos_nomina, '$.numero_semana') = ?");
+                $sql = $conexion->prepare("SELECT id_nomina_json FROM nomina_40lbs WHERE JSON_EXTRACT(datos_nomina, '$.numero_semana') = ?");
                 $sql->bind_param("s", $numeroSemana);
                 $sql->execute();
                 $resultado = $sql->get_result();
@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             try {
                 // Obtener la nómina con ese número de semana
-                $sql = $conexion->prepare("SELECT datos_nomina FROM nomina WHERE JSON_EXTRACT(datos_nomina, '$.numero_semana') = ?");
+                $sql = $conexion->prepare("SELECT datos_nomina FROM nomina_40lbs WHERE JSON_EXTRACT(datos_nomina, '$.numero_semana') = ?");
                 $sql->bind_param("s", $numeroSemana);
                 $sql->execute();
                 $resultado = $sql->get_result();
@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             try {
                 // Verificar si ya existen horarios con ese número de semana
-                $sql = $conexion->prepare("SELECT id_horario FROM horarios_oficiales WHERE JSON_EXTRACT(horario_json, '$.numero_semana') = ?");
+                $sql = $conexion->prepare("SELECT id_horario FROM horarios_40lbs WHERE JSON_EXTRACT(horario_json, '$.numero_semana') = ?");
                 $sql->bind_param("s", $numeroSemana);
                 $sql->execute();
                 $resultado = $sql->get_result();
@@ -90,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             try {
                 // Obtener los horarios con ese número de semana
-                $sql = $conexion->prepare("SELECT horario_json FROM horarios_oficiales WHERE JSON_EXTRACT(horario_json, '$.numero_semana') = ?");
+                $sql = $conexion->prepare("SELECT horario_json FROM horarios_40lbs WHERE JSON_EXTRACT(horario_json, '$.numero_semana') = ?");
                 $sql->bind_param("s", $numeroSemana);
                 $sql->execute();
                 $resultado = $sql->get_result();

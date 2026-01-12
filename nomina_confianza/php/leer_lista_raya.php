@@ -27,7 +27,7 @@ $departamentosPermitidos = [
     'Administracion',
     'Produccion',
     'Seguridad Vigilancia e Intendencia',
-    'Administracion Sucursal CdMx'
+    'Sucursal CdMx administrativos'
 ];
 
 // Buscar datos generales en las primeras filas

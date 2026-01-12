@@ -14,6 +14,9 @@ define('JQUERY_JS', $rutaRaiz . '/public/plugins/jquery.min.js');
 define('SWEETALERT', $rutaRaiz . '/public/plugins/sweetalert2011.js');
 define('JQUERY_INPUTMASK', $rutaRaiz . '/public/plugins/jquery.inputmask.min.js');
 
+
+define('DIAS_SEMANA', ['SABADO', 'DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES']);
+
 // Función para verificar si el usuario está autenticado
 function verificarSesion() {
     if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
