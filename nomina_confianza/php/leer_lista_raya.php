@@ -27,7 +27,7 @@ $departamentosPermitidos = [
     'Administracion',
     'Produccion',
     'Seguridad Vigilancia e Intendencia',
-    'Sucursal CdMx administrativos'
+    'Administracion Sucursal CdMx'
 ];
 
 // Buscar datos generales en las primeras filas
@@ -152,7 +152,7 @@ foreach ($rows as $row) {
         $codigoConcepto = trim($row[5]);
         $nombreConcepto = trim($row[6]);
         $resultadoConcepto = trim($row[8]);
-        if (in_array($codigoConcepto, ['45', '52', '16'])) {
+        if (in_array($codigoConcepto, ['45', '52', '16', '107'])) {
             $actualDepto['empleados'][$ultimoEmpleadoIdx]['conceptos'][] = [
                 'codigo' => $codigoConcepto,
                 'nombre' => $nombreConcepto,

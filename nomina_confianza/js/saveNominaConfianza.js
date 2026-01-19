@@ -35,14 +35,34 @@ function guardarNominaConfianza() {
     const jsonData = jsonNominaConfianza;
     const numeroSemana = jsonData.numero_semana;
     
-    // Extraer año de fecha_inicio (formato: "13/Dic/2025" o "13/12/2025")
+    // IMPORTANTE: Usar fecha_cierre para determinar el año (NO fecha_inicio)
+    // Esto es crítico para semanas que cruzan el cambio de año
+    // Ejemplo: Semana 1 del 2026 que va del 27/Dic/2025 al 02/Ene/2026
     let anio = null;
-    if (jsonData.fecha_inicio) {
+    if (jsonData.fecha_cierre) {
+        const partes = jsonData.fecha_cierre.split('/');
+        anio = parseInt(partes[2]);
+        if (!anio || isNaN(anio)) {
+            anio = new Date().getFullYear();
+        }
+    } else if (jsonData.fecha_inicio) {
+        // Fallback solo si no existe fecha_cierre
         const partes = jsonData.fecha_inicio.split('/');
-        anio = parseInt(partes[2]) || new Date().getFullYear();
+        anio = parseInt(partes[2]);
+        if (!anio || isNaN(anio)) {
+            anio = new Date().getFullYear();
+        }
     } else {
         anio = new Date().getFullYear();
     }
+    
+    // Log para debugging
+    console.log('=== GUARDANDO NÓMINA ===');
+    console.log('Semana:', numeroSemana);
+    console.log('Año extraído:', anio);
+    console.log('Fecha inicio:', jsonData.fecha_inicio);
+    console.log('Fecha cierre:', jsonData.fecha_cierre);
+    console.log('=========================')
 
     $.ajax({
         url: '../php/saveNominaConfianza.php',
@@ -234,7 +254,7 @@ function procesarActualizacionBiometrico(archivoBiometrico) {
                 });
                 
             } catch (e) {
-                console.error('Error procesando biométrico:', e);
+              
                 Swal.fire({
                     title: 'Error',
                     text: 'Error al procesar el archivo biométrico.',
@@ -243,7 +263,7 @@ function procesarActualizacionBiometrico(archivoBiometrico) {
             }
         },
         error: function (xhr, status, error) {
-            console.error('Error en AJAX:', error);
+        
             Swal.fire({
                 title: 'Error',
                 text: 'Error al leer el archivo biométrico: ' + error,
@@ -290,18 +310,15 @@ function unirRegistrosBiometricos(nominaExistente, JsonBiometrico) {
                         const empBiometrico = empleadosBiometricoMap[nombreNormalizado];
                         empleado.registros = empBiometrico.registros || [];
                         
-                        console.log(`Registros actualizados para: ${empleado.nombre} (${empleado.registros.length} registros)`);
                         return true; // Mantener empleado
                     } else {
                         // Si NO está en el biométrico
                         if (esDepartamentoSinSeguro) {
                             // Solo eliminar empleados del departamento "sin seguro"
-                            console.warn(`Eliminado (sin seguro) - no se encontró en biométrico: ${empleado.nombre}`);
                             return false; // Eliminar empleado
                         } else {
                             // Para otros departamentos, mantener empleado pero sin registros nuevos
-                            console.log(`Mantenido sin registros (${departamento.nombre}): ${empleado.nombre}`);
-                            // No modificar registros existentes
+                             // No modificar registros existentes
                             return true; // Mantener empleado
                         }
                     }
@@ -350,10 +367,8 @@ function limpiarEventosEspeciales(nominaExistente) {
                 empleado.historial_salidas_tempranas = [];
                 
                 
-                console.log(`Eventos limpiados para: ${empleado.nombre}`);
             });
         }
     });
-    
-    console.log('✓ Todos los eventos especiales han sido reiniciados');
+   
 }

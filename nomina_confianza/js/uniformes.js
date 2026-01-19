@@ -76,6 +76,9 @@ function mostrarHistorialUniformes(empleado) {
             empleado.historial_uniformes[index].cantidad = cantidad;
         }
         
+        // IMPORTANTE: Limpiar la bandera de edición manual para que el historial sobrescriba
+        empleado._uniformes_editado_manual = false;
+        
         // Recalcular total
         recalcularTotalUniformes(empleado);
     });
@@ -101,13 +104,11 @@ function mostrarHistorialUniformes(empleado) {
 function eliminarFolioUniforme(empleado, index) {
     // Validar que el empleado existe y tiene historial
     if (!empleado || !Array.isArray(empleado.historial_uniformes)) {
-        console.error('Error: Empleado no válido o sin historial de uniformes');
         return;
     }
     
     // Validar que el índice es válido
     if (index < 0 || index >= empleado.historial_uniformes.length) {
-        console.error('Error: Índice de folio no válido');
         return;
     }
     
@@ -131,12 +132,11 @@ function eliminarFolioUniforme(empleado, index) {
     // Recalcular el total de uniformes
     recalcularTotalUniformes(empleado);
     
-    // Mensaje opcional de éxito (puedes comentarlo si no lo deseas)
-    console.log(`Folio "${folioAEliminar.folio}" eliminado correctamente`);
+   
 }
 
 // Función para recalcular el total de uniformes basado en el historial
-function recalcularTotalUniformes(empleado) {
+function recalcularTotalUniformes(empleado, force = false) {
     if (!Array.isArray(empleado.historial_uniformes)) {
         empleado.historial_uniformes = [];
     }
@@ -146,8 +146,16 @@ function recalcularTotalUniformes(empleado) {
         totalUniformes += parseFloat(uniforme.cantidad) || 0;
     });
     
-    $('#mod-uniformes').val(totalUniformes.toFixed(2));
-    empleado.uniformes = totalUniformes;
+    // Solo actualizar si NO fue editado manualmente o si force=true
+    if (!empleado._uniformes_editado_manual || force) {
+        $('#mod-uniformes').val(totalUniformes.toFixed(2));
+        empleado.uniformes = totalUniformes;
+        
+        // Actualizar sueldo a cobrar en tiempo real
+        if (typeof calcularYMostrarSueldoACobrar === 'function') {
+            calcularYMostrarSueldoACobrar();
+        }
+    }
 }
 
 // Función para agregar un nuevo folio de uniforme

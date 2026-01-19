@@ -26,18 +26,29 @@ function mostrarHistorialPermisos(empleado) {
         </div>
     `;
     
-    // Agregar filas de datos
+    // Agregar filas de datos (ahora: descripción, minutos, costo_por_minuto, descuento)
     empleado.historial_permisos.forEach((permiso, index) => {
+        // Asegurar campos numéricos
+        const minutos = parseFloat(permiso.horas_minutos) || 0;
+        const costo = parseFloat(permiso.cantidad) || 0; // 'cantidad' ahora se usa como costo_por_minuto
+        const descuento = parseFloat(((minutos * costo) || 0).toFixed(2));
+
+        // Guardar descuento en el objeto para consistencia
+        permiso.descuento = descuento;
+
         html += `
             <div class="historial-permiso-item" data-index="${index}">
                 <div>
                     <input type="text" class="form-control form-control-sm historial-permiso-descripcion" value="${permiso.descripcion}" data-field="descripcion">
                 </div>
                 <div>
-                    <input type="text" class="form-control form-control-sm historial-permiso-horas" value="${permiso.horas_minutos}" data-field="horas_minutos">
+                    <input type="number" min="0" step="1" class="form-control form-control-sm historial-permiso-minutos" value="${minutos}" data-field="horas_minutos" title="Minutos">
                 </div>
                 <div>
-                    <input type="number" step="0.01" class="form-control form-control-sm historial-permiso-cantidad" value="${permiso.cantidad.toFixed(2)}" data-field="cantidad">
+                    <input type="number" min="0" step="0.01" class="form-control form-control-sm historial-permiso-costo" value="${costo.toFixed(2)}" data-field="cantidad" title="Costo por minuto">
+                </div>
+                <div>
+                    <input type="number" step="0.01" class="form-control form-control-sm historial-permiso-descuento" value="${descuento.toFixed(2)}" readonly title="Descuento (minutos * costo_por_minuto)">
                 </div>
                 <div class="text-center">
                     <button type="button" class="btn btn-danger btn-sm btn-eliminar-permiso" data-index="${index}" title="Eliminar">
@@ -66,48 +77,58 @@ function mostrarHistorialPermisos(empleado) {
         }
     });
 
-    $contenedor.on('input', '.historial-permiso-horas', function() {
+    $contenedor.on('input', '.historial-permiso-minutos', function() {
         const $item = $(this).closest('.historial-permiso-item');
         const index = parseInt($item.data('index'));
-        const horasMinutos = $(this).val();
-        
-        // Actualizar el valor en el array
+        const minutos = parseFloat($(this).val()) || 0;
+
         if (empleado.historial_permisos[index]) {
-            empleado.historial_permisos[index].horas_minutos = horasMinutos;
+            empleado.historial_permisos[index].horas_minutos = minutos;
+            const costo = parseFloat(empleado.historial_permisos[index].cantidad) || 0;
+            empleado.historial_permisos[index].descuento = parseFloat((minutos * costo).toFixed(2));
+            $item.find('.historial-permiso-descuento').val(empleado.historial_permisos[index].descuento.toFixed(2));
         }
+
+        // IMPORTANTE: Limpiar las banderas de edición manual para que el historial sobrescriba
+        empleado._permiso_editado_manual = false;
+        empleado._prestamo_editado_manual = false;
+
+        recalcularTotalPermisos(empleado);
     });
 
-    $contenedor.on('input', '.historial-permiso-cantidad', function() {
+    $contenedor.on('input', '.historial-permiso-costo', function() {
         const $item = $(this).closest('.historial-permiso-item');
         const index = parseInt($item.data('index'));
-        const cantidad = parseFloat($(this).val()) || 0;
-        
-        const $cantidadInput = $(this);
-        const valorAnterior = parseFloat($cantidadInput.val()) || 0;
-        const valorNuevo = parseFloat(cantidad);
-        
-        // Efecto visual cuando cambia la cantidad
+        const costo = parseFloat($(this).val()) || 0;
+        const $costoInput = $(this);
+
+        const valorAnterior = parseFloat($costoInput.data('prev')) || 0;
+        const valorNuevo = parseFloat(costo);
+
         if (valorAnterior !== valorNuevo) {
-            $cantidadInput.addClass('updated');
-            setTimeout(() => {
-                $cantidadInput.removeClass('updated');
-            }, 500);
+            $costoInput.addClass('updated');
+            setTimeout(() => $costoInput.removeClass('updated'), 500);
+            $costoInput.data('prev', valorNuevo);
         }
-        
-        // Marcar el item como editando
+
         $item.addClass('editing');
-        
-        // Actualizar el valor en el array
+
         if (empleado.historial_permisos[index]) {
-            empleado.historial_permisos[index].cantidad = cantidad;
+            empleado.historial_permisos[index].cantidad = costo; // costo_por_minuto
+            const minutos = parseFloat(empleado.historial_permisos[index].horas_minutos) || 0;
+            empleado.historial_permisos[index].descuento = parseFloat((minutos * costo).toFixed(2));
+            $item.find('.historial-permiso-descuento').val(empleado.historial_permisos[index].descuento.toFixed(2));
         }
-        
-        // Recalcular total
+
+        // IMPORTANTE: Limpiar las banderas de edición manual para que el historial sobrescriba
+        empleado._permiso_editado_manual = false;
+        empleado._prestamo_editado_manual = false;
+
         recalcularTotalPermisos(empleado);
     });
     
     // Remover clase de edición cuando se pierde el foco
-    $contenedor.on('blur', '.historial-permiso-cantidad', function() {
+    $contenedor.on('blur', '.historial-permiso-costo, .historial-permiso-minutos', function() {
         const $item = $(this).closest('.historial-permiso-item');
         setTimeout(() => {
             if (!$item.find('input:focus').length) {
@@ -127,13 +148,11 @@ function mostrarHistorialPermisos(empleado) {
 function eliminarPermiso(empleado, index) {
     // Validar que el empleado existe y tiene historial
     if (!empleado || !Array.isArray(empleado.historial_permisos)) {
-        console.error('Error: Empleado no válido o sin historial de permisos');
-        return;
+       return;
     }
     
     // Validar que el índice es válido
     if (index < 0 || index >= empleado.historial_permisos.length) {
-        console.error('Error: Índice de permiso no válido');
         return;
     }
     
@@ -157,24 +176,40 @@ function eliminarPermiso(empleado, index) {
     
     // Recalcular el total de permisos
     recalcularTotalPermisos(empleado);
-    
-    // Mensaje opcional de éxito
-    console.log(`Permiso "${permisoAEliminar.descripcion}" eliminado correctamente`);
+
 }
 
 // Función para recalcular el total de permisos basado en el historial
-function recalcularTotalPermisos(empleado) {
+function recalcularTotalPermisos(empleado, force = false) {
     if (!Array.isArray(empleado.historial_permisos)) {
         empleado.historial_permisos = [];
     }
     
-    let totalPermisos = 0;
+    // Ahora sumamos el campo 'descuento' (minutos * costo_por_minuto)
+    let totalDescuento = 0;
     empleado.historial_permisos.forEach(permiso => {
-        totalPermisos += parseFloat(permiso.cantidad) || 0;
+        // Asegurar que exista descuento calculado
+        let descuento = parseFloat(permiso.descuento);
+        if (isNaN(descuento)) {
+            const minutos = parseFloat(permiso.horas_minutos) || 0;
+            const costo = parseFloat(permiso.cantidad) || 0; // costo_por_minuto
+            descuento = parseFloat((minutos * costo).toFixed(2)) || 0;
+            permiso.descuento = descuento;
+        }
+        totalDescuento += descuento;
     });
+
+    // Actualizar mod-permiso solo si NO fue editado manualmente o si force=true
+    if (!empleado._permiso_editado_manual || force) {
+        $('#mod-permiso').val(totalDescuento.toFixed(2));
+        empleado.permiso = totalDescuento;
+    }
     
-    $('#mod-permiso').val(totalPermisos.toFixed(2));
-    empleado.permiso = totalPermisos;
+    // Actualizar mod-prestamo solo si NO fue editado manualmente o si force=true
+    if (!empleado._prestamo_editado_manual || force) {
+        $('#mod-prestamo').val(totalDescuento.toFixed(2));
+        // empleado.prestamo se actualiza cuando se edita manualmente o desde el historial
+    }
     
     // Actualizar sueldo a cobrar en tiempo real
     if (typeof calcularYMostrarSueldoACobrar === 'function') {
@@ -186,19 +221,14 @@ function recalcularTotalPermisos(empleado) {
 function agregarPermiso() {
     $('#btn-agregar-permiso').on('click', function() {
         const descripcion = $('#input-descripcion-permiso').val().trim();
-        const horasMinutos = $('#input-horas-permiso').val().trim();
+        const horasMinutos = $('#input-minutos-permiso').val().trim();
         const cantidad = parseFloat($('#input-cantidad-permiso').val()) || 0;
         
-        // Validaciones
-        if (!descripcion) {
-            alert('⚠️ Debes ingresar una descripción del permiso');
-            $('#input-descripcion-permiso').focus();
-            return;
-        }
+        // La descripción ya no es obligatoria
         
         if (!horasMinutos) {
             alert('⚠️ Debes ingresar las horas o minutos');
-            $('#input-horas-permiso').focus();
+            $('#input-minutos-permiso').focus();
             return;
         }
         
@@ -230,15 +260,20 @@ function agregarPermiso() {
             empleadoEncontrado.historial_permisos = [];
         }
         
+        // Calcular descuento (minutos * costo_por_minuto)
+        const minutosNum = parseFloat(horasMinutos) || 0;
+        const descuentoCalc = parseFloat((minutosNum * cantidad).toFixed(2)) || 0;
+
         empleadoEncontrado.historial_permisos.push({
             descripcion: descripcion,
             horas_minutos: horasMinutos,
-            cantidad: cantidad
+            cantidad: cantidad, // costo_por_minuto
+            descuento: descuentoCalc
         });
         
         // Limpiar inputs
         $('#input-descripcion-permiso').val('');
-        $('#input-horas-permiso').val('');
+        $('#input-minutos-permiso').val('');
         $('#input-cantidad-permiso').val('');
         
         // Actualizar visualización

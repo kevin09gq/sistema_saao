@@ -9,7 +9,7 @@ $(document).ready(function () {
     processExcelData();
 
     console.log(jsonNominaConfianza);
-    
+
 
     // Habilitar menú contextual y enlace al modal (si las funciones existen)
     try { if (typeof mostrarContextMenu === 'function') mostrarContextMenu(); } catch (e) { }
@@ -18,7 +18,7 @@ $(document).ready(function () {
     cerrarModalDetalles();
     guardarCambiosEmpleado();
     activarActualizacionTotalExtra();
-    
+
     // Activar funciones de uniformes
     try { if (typeof agregarFolioUniforme === 'function') agregarFolioUniforme(); } catch (e) { }
     try { if (typeof gestionarBotonUniformes === 'function') gestionarBotonUniformes(); } catch (e) { }
@@ -35,7 +35,9 @@ $(document).ready(function () {
     activarInputsValidadores();
     calcularSueldoACobrar();
 
-  aplicarActualizarRegistrosBiometricos();
+    aplicarActualizarRegistrosBiometricos();
+
+    abrirModal();
 });
 
 // Función para actualizar la cabecera de la nómina
@@ -152,41 +154,56 @@ function processExcelData(params) {
                 try {
 
                     const JsonListaRaya = JSON.parse(res1);
-                    
+
                     // 2. Verificar si se subió el archivo biométrico (opcional)
                     const hayBiometrico = form.archivo_excel2 && form.archivo_excel2.files.length > 0;
 
                     // Antes de continuar, consultar si la nómina ya está guardada en BD para esta semana
                     const numeroSemana = JsonListaRaya.numero_semana;
-                    
-                    // Extraer año de fecha_inicio (formato: "13/Dic/2025" o "13/12/2025")
+
+                    // IMPORTANTE: Usar fecha_cierre para determinar el año (NO fecha_inicio)
+                    // Esto es crítico para semanas que cruzan el cambio de año
+                    // Ejemplo: Semana 1 del 2026 que va del 27/Dic/2025 al 02/Ene/2026
                     let anio = new Date().getFullYear();
-                    if (JsonListaRaya.fecha_inicio) {
+                    if (JsonListaRaya.fecha_cierre) {
+                        const partes = JsonListaRaya.fecha_cierre.split('/');
+                        anio = parseInt(partes[2]);
+                        if (!anio || isNaN(anio)) {
+                            anio = new Date().getFullYear();
+                        }
+                    } else if (JsonListaRaya.fecha_inicio) {
+                        // Fallback solo si no existe fecha_cierre
                         const partes = JsonListaRaya.fecha_inicio.split('/');
-                        anio = parseInt(partes[2]) || new Date().getFullYear();
+                        anio = parseInt(partes[2]);
+                        if (!anio || isNaN(anio)) {
+                            anio = new Date().getFullYear();
+                        }
                     }
-                    
+
+                    console.log(`Buscando nómina guardada: Semana ${numeroSemana}, Año ${anio}`);
+                    console.log(`Fechas: ${JsonListaRaya.fecha_inicio} - ${JsonListaRaya.fecha_cierre}`);
+
                     obtenerNominaConfianzaPorSemana(
                         numeroSemana,
-                        anio, 
+                        anio,
                         // onEncontrada: Nómina existe
                         (nominaGuardada) => {
                             // Existe en BD: usar esa nómina y validar empleados
                             jsonNominaConfianza = nominaGuardada;
-                            
+
                             // Actualizar fechas con las del nuevo archivo
                             jsonNominaConfianza.fecha_inicio = JsonListaRaya.fecha_inicio;
                             jsonNominaConfianza.fecha_cierre = JsonListaRaya.fecha_cierre;
                             jsonNominaConfianza.numero_semana = JsonListaRaya.numero_semana;
-                            
+
                             // Validar empleados existentes y detectar nuevos
                             validarEmpleadosGuardados(JsonListaRaya, () => {
                                 setInitialVisibility();
                                 obtenerDepartamentosPermitidos();
                                 mostrarDatosTabla(jsonNominaConfianza);
-                                console.log(jsonNominaConfianza);
+
                                 actualizarCabeceraNomina(jsonNominaConfianza);
-                                
+
                                 $('#btn_procesar_archivos').removeClass('loading').prop('disabled', false);
                             });
                         },
@@ -217,8 +234,7 @@ function processExcelData(params) {
                         },
                         // onError: Error en la consulta
                         (errorMsg) => {
-                            console.error('Error al obtener nómina:', errorMsg);
-                            
+
                         }
                     );
 
@@ -325,15 +341,15 @@ function validarExistenciaTrabajador(JsonListaRaya, callback) {
                 let horarioParsed = null;
                 if (emp.horario_oficial) {
                     try {
-                        horarioParsed = typeof emp.horario_oficial === 'string' 
-                            ? JSON.parse(emp.horario_oficial) 
+                        horarioParsed = typeof emp.horario_oficial === 'string'
+                            ? JSON.parse(emp.horario_oficial)
                             : emp.horario_oficial;
                     } catch (e) {
-                        
+
                         horarioParsed = null;
                     }
                 }
-                
+
                 mapaEmpleados[emp.clave] = {
                     id_empleado: emp.id_empleado,
                     nombre: emp.nombre,
@@ -361,7 +377,7 @@ function validarExistenciaTrabajador(JsonListaRaya, callback) {
                         empleado.sueldo_diario = mapaEmpleados[clave].salario_diario;
                         empleado.id_empresa = mapaEmpleados[clave].id_empresa;
                         empleado.horario_oficial = mapaEmpleados[clave].horario_oficial;
-                        
+
                         return true;
                     }
                     return false;
@@ -394,7 +410,7 @@ function unirJson(json1, json2) {
         inicializarRegistrosVacios(json1);
         return json1;
     }
-    
+
     // Mejor normalización: quita tildes, dobles espacios, mayúsculas y ordena palabras
     const normalizar = s => s
         .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
@@ -445,7 +461,7 @@ function obtenerEmpleadosNoUnidos(JsonListaRaya, JsonBiometrico) {
     if (!JsonBiometrico || !JsonBiometrico.empleados || JsonBiometrico.empleados.length === 0) {
         return [];
     }
-    
+
     // Normalizar nombres para comparación
     const normalizar = s => s
         .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
@@ -473,8 +489,6 @@ function obtenerEmpleadosNoUnidos(JsonListaRaya, JsonBiometrico) {
         return !nombresListaRaya.has(normalizar(emp.nombre));
     });
 
-console.log(empleadosNoUnidos);
-
     return empleadosNoUnidos;
 }
 
@@ -483,7 +497,7 @@ console.log(empleadosNoUnidos);
 function obtenerEmpleadosSinImssDesdeBD(JsonListaRayaValidado, callback) {
     // Extraer todas las claves de los empleados que ya están en la lista de raya
     const clavesExcluidas = [];
-    
+
     if (JsonListaRayaValidado && JsonListaRayaValidado.departamentos) {
         JsonListaRayaValidado.departamentos.forEach(departamento => {
             if (departamento.empleados) {
@@ -495,15 +509,15 @@ function obtenerEmpleadosSinImssDesdeBD(JsonListaRayaValidado, callback) {
             }
         });
     }
-    
+
     // Enviar al servidor para obtener todos los empleados sin IMSS
     // excluyendo los que ya están en la lista de raya
     $.ajax({
         url: '../php/trabajadores_sin_imss.php',
         type: 'POST',
-        data: JSON.stringify({ 
+        data: JSON.stringify({
             biometricos: [], // Array vacío para indicar que queremos todos
-            claves_excluidas: clavesExcluidas 
+            claves_excluidas: clavesExcluidas
         }),
         contentType: 'application/json; charset=UTF-8',
         dataType: 'json',
@@ -516,12 +530,12 @@ function obtenerEmpleadosSinImssDesdeBD(JsonListaRayaValidado, callback) {
                 }
                 return;
             }
-            
+
             // Convertir los empleados de la BD al formato esperado
             const empleadosFormateados = response.map(emp => {
                 const partes = [emp.nombre, emp.ap_paterno, emp.ap_materno].filter(Boolean);
                 const nombreCompleto = partes.length ? partes.join(' ').trim() : '';
-                
+
                 return {
                     clave: emp.clave_empleado,
                     nombre: nombreCompleto,
@@ -533,15 +547,15 @@ function obtenerEmpleadosSinImssDesdeBD(JsonListaRayaValidado, callback) {
                     id_empresa: emp.id_empresa || null
                 };
             });
-            
+
             // Ordenar alfabéticamente A-Z por nombre
             empleadosFormateados.sort((a, b) => {
                 return String(a.nombre || '').localeCompare(String(b.nombre || ''), 'es', { sensitivity: 'base' });
             });
-            
+
             // Integrar empleados sin IMSS al JSON principal
             integrarNuevaInformacion(empleadosFormateados);
-            
+
             // Ejecutar callback cuando termine
             if (typeof callback === 'function') {
                 callback();
@@ -626,7 +640,7 @@ function integrarNuevaInformacion(empleadosValidados) {
     if (!empleadosValidados || empleadosValidados.length === 0) {
         return;
     }
-    
+
     // Agregar el departamento al JSON principal
     if (!jsonNominaConfianza.departamentos) {
         jsonNominaConfianza.departamentos = [];
@@ -643,7 +657,7 @@ function integrarNuevaInformacion(empleadosValidados) {
             departamentoSinSeguro.empleados = [];
         }
         departamentoSinSeguro.empleados = departamentoSinSeguro.empleados.concat(empleadosValidados);
-        
+
         // Eliminar duplicados por clave
         const clavesVistas = new Set();
         departamentoSinSeguro.empleados = departamentoSinSeguro.empleados.filter(emp => {
@@ -682,10 +696,10 @@ function integrarNuevaInformacion(empleadosValidados) {
 // PASO 6B: Inicializar registros vacíos para todos los empleados (cuando NO hay biométrico)
 function inicializarRegistrosVacios(jsonNominaConfianza) {
     if (!jsonNominaConfianza || !Array.isArray(jsonNominaConfianza.departamentos)) return;
-    
+
     jsonNominaConfianza.departamentos.forEach(departamento => {
         if (!Array.isArray(departamento.empleados)) return;
-        
+
         departamento.empleados.forEach(empleado => {
             // Inicializar registros como array vacío si no existen
             if (!empleado.registros || !Array.isArray(empleado.registros)) {
@@ -712,7 +726,7 @@ function asignarPropiedadesEmpleado(jsonNominaConfianza) {
         if (nombreLower === 'administracion') mappedId = 1;
         else if (nombreLower === 'produccion') mappedId = 2;
         else if (nombreLower === 'seguridad vigilancia e intendencia') mappedId = 3;
-        else if (nombreLower === 'sucursal cdmx administrativos') mappedId = 9;
+        else if (nombreLower === 'administracion sucursal cdmx') mappedId = 9;
 
         // Recorrer todos los empleados de cada departamento
         departamento.empleados.forEach(empleado => {
@@ -720,13 +734,12 @@ function asignarPropiedadesEmpleado(jsonNominaConfianza) {
             if (!empleado.registros || !Array.isArray(empleado.registros)) {
                 empleado.registros = [];
             }
-            
+
             // Agregar o mantener las propiedades necesarias (no sobrescribir si ya vienen de la BD)
             empleado.sueldo_semanal = empleado.sueldo_semanal ?? 0;
             empleado.vacaciones = empleado.vacaciones ?? 0;
             empleado.sueldo_extra_total = empleado.sueldo_extra_total ?? 0;
             empleado.retardos = empleado.retardos ?? 0;
-            empleado.ajuste_sub = empleado.ajuste_sub ?? 0;
             empleado.prestamo = empleado.prestamo ?? 0;
             empleado.permiso = empleado.permiso ?? 0;
             empleado.inasistencia = empleado.inasistencia ?? 0;
@@ -734,7 +747,7 @@ function asignarPropiedadesEmpleado(jsonNominaConfianza) {
             empleado.checador = empleado.checador ?? 0;
             empleado.total_cobrar = empleado.total_cobrar ?? 0;
             empleado.id_empresa = empleado.id_empresa ?? null;
-            
+
             // Inicializar historial de retardos
             if (!empleado.historial_retardos || !Array.isArray(empleado.historial_retardos)) {
                 empleado.historial_retardos = [];
@@ -763,12 +776,12 @@ function asignarPropiedadesEmpleado(jsonNominaConfianza) {
             // Crear array de conceptos si no existe
             if (!empleado.conceptos || !Array.isArray(empleado.conceptos)) {
                 empleado.conceptos = [
-                    { codigo: "45", resultado: '' },  // ISR
-                    { codigo: "52", resultado: '' },  // IMSS
-                    { codigo: "16", resultado: '' }   // Infonavit
+                    { codigo: "45", resultado: '' },   // ISR
+                    { codigo: "52", resultado: '' },   // IMSS
+                    { codigo: "16", resultado: '' },   // Infonavit
+                    { codigo: "107", resultado: '' }   // Ajuste al Sub
                 ];
             }
-
             // Agregar propiedad mostrar (para filtrar en tabla)
             if (empleado.mostrar === undefined) {
                 empleado.mostrar = true;
@@ -821,9 +834,9 @@ function validarEmpleadosGuardados(JsonListaRaya, callback) {
     $.ajax({
         url: '../php/validar_empleados.php',
         type: 'POST',
-        data: JSON.stringify({ 
+        data: JSON.stringify({
             funcion: 'validarEmpleadosExistentes',
-            claves: clavesActuales 
+            claves: clavesActuales
         }),
         processData: false,
         contentType: 'application/json; charset=UTF-8',
@@ -837,13 +850,13 @@ function validarEmpleadosGuardados(JsonListaRaya, callback) {
                 if (departamento.empleados) {
                     departamento.empleados.forEach(empleado => {
                         const clave = String(empleado.clave || '').trim();
-                        
+
                         // Buscar el empleado en la nueva lista de raya
                         let empleadoNuevo = null;
                         if (JsonListaRaya && JsonListaRaya.departamentos) {
                             JsonListaRaya.departamentos.forEach(deptoLista => {
                                 if (deptoLista.empleados) {
-                                    const encontrado = deptoLista.empleados.find(emp => 
+                                    const encontrado = deptoLista.empleados.find(emp =>
                                         String(emp.clave || '').trim() === clave
                                     );
                                     if (encontrado) {
@@ -852,21 +865,21 @@ function validarEmpleadosGuardados(JsonListaRaya, callback) {
                                 }
                             });
                         }
-                        
+
                         // Si se encontró en la nueva lista de raya, actualizar solo las propiedades _copia
                         if (empleadoNuevo) {
                             // Actualizar tarjeta_copia con el NUEVO valor del archivo
                             if (empleadoNuevo.tarjeta !== undefined && empleadoNuevo.tarjeta !== null) {
                                 empleado.tarjeta_copia = empleadoNuevo.tarjeta;
                             }
-                            
+
                             // Actualizar conceptos_copia con los NUEVOS valores del archivo
                             if (empleadoNuevo.conceptos && Array.isArray(empleadoNuevo.conceptos)) {
                                 empleado.conceptos_copia = JSON.parse(JSON.stringify(empleadoNuevo.conceptos));
                             }
                         }
                     });
-                    
+
                     // Filtrar empleados: solo dejar los que siguen siendo válidos
                     departamento.empleados = departamento.empleados.filter(empleado => {
                         const clave = String(empleado.clave || '').trim();
@@ -898,13 +911,13 @@ function validarEmpleadosGuardados(JsonListaRaya, callback) {
                 // 3. Validar nuevos empleados contra la BD
                 if (nuevosEmpleados.length > 0) {
                     const clavesNuevas = nuevosEmpleados.map(emp => String(emp.clave).trim());
-                    
+
                     $.ajax({
                         url: '../php/validar_empleados.php',
                         type: 'POST',
-                        data: JSON.stringify({ 
+                        data: JSON.stringify({
                             funcion: 'obtenerInfoEmpleados',
-                            claves: clavesNuevas 
+                            claves: clavesNuevas
                         }),
                         processData: false,
                         contentType: 'application/json; charset=UTF-8',
@@ -919,14 +932,14 @@ function validarEmpleadosGuardados(JsonListaRaya, callback) {
                                 let horarioParsed = null;
                                 if (emp.horario_oficial) {
                                     try {
-                                        horarioParsed = typeof emp.horario_oficial === 'string' 
-                                            ? JSON.parse(emp.horario_oficial) 
+                                        horarioParsed = typeof emp.horario_oficial === 'string'
+                                            ? JSON.parse(emp.horario_oficial)
                                             : emp.horario_oficial;
                                     } catch (e) {
                                         horarioParsed = null;
                                     }
                                 }
-                                
+
                                 mapaEmpleados[emp.clave] = {
                                     id_empleado: emp.id_empleado,
                                     nombre: emp.nombre,
@@ -955,7 +968,7 @@ function validarEmpleadosGuardados(JsonListaRaya, callback) {
                             if (nuevosValidos.length > 0) {
                                 // Agregar al primer departamento existente o crear uno por defecto
                                 let deptoDestino = jsonNominaConfianza.departamentos[0];
-                                
+
                                 if (!deptoDestino) {
                                     // Si no hay departamentos, crear uno por defecto
                                     deptoDestino = {
@@ -981,7 +994,7 @@ function validarEmpleadosGuardados(JsonListaRaya, callback) {
                             try {
                                 saveNomina(jsonNominaConfianza);
                             } catch (err) {
-                                console.error('Error al guardar nómina actualizada:', err);
+
                             }
 
                             // Después de agregar nuevos empleados de la lista de raya,

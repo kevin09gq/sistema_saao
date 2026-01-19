@@ -35,7 +35,7 @@
                     </div>
                     <div class="info-row">
                         <span class="info-label">Departamento:</span>
-                        <span class="info-value">PRODUCCION 40 LIBRAS</span>
+                        <span class="info-value" id="campo-departamento"></span>
                     </div>
                 </div>
             </div>
@@ -206,6 +206,25 @@
                         </div>
                     </div>
 
+                    <!-- Cuarta fila: Análisis de Permisos y Comidas -->
+                    <div class="row">
+                        <!-- Análisis de Permisos y Comidas -->
+                        <div class="col-md-12 mb-3">
+                            <div class="evento-card analisis-permisos" style="border-color: #9b59b6;">
+                                <div class="evento-header" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);">
+                                    <i class="bi bi-diagram-3"></i>
+                                    <span>Análisis de Permisos y Comidas</span>
+                                </div>
+                                <div class="evento-content" id="analisis-permisos-comida-content" style="max-height: 400px; overflow-y: auto;">
+
+                                </div>
+                                <div class="evento-total">
+                                    <strong>Total: <span id="total-analisis-permisos-comida"></span></strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
 
                 </div>
 
@@ -313,7 +332,12 @@
                             <div class="row mb-3">
                                 <div class="col-md-4 mb-2">
                                     <label class="form-label fw-semibold">AJUSTES AL SUB ($)</label>
-                                    <input type="number" step="0.01" class="form-control mod-input-amarillo" id="mod-ajustes-sub" value="" placeholder="0.00">
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" class="form-control mod-input-amarillo" id="mod-ajustes-sub" value="" placeholder="0.00">
+                                        <button type="button" class="btn btn-outline-secondary" id="btn-aplicar-ajuste-sub" title="Aplicar Nuevo Ajuste al Sub">
+                                            <i class="bi bi-calculator"></i>
+                                        </button>
+                                    </div>
                                 </div>
 
                             </div>
@@ -423,7 +447,7 @@
                             <div class="row mb-3">
                                 <div class="col-md-4 mb-2">
                                     <label class="form-label fw-semibold">Uniformes ($)</label>
-                                    <input type="number" step="0.01" class="form-control mod-input-rosa" id="mod-uniformes" value="" placeholder="0.00">
+                                    <input type="number" step="0.01" class="form-control mod-input-rosa" id="mod-uniformes" value="" placeholder="0.00" readonly>
                                 </div>
                             </div>
 
@@ -499,11 +523,11 @@
                                                     <input type="text" class="form-control form-control-sm" id="input-descripcion-permiso" placeholder="Ej: Permiso médico" maxlength="100">
                                                 </div>
                                                 <div class="col-md-3">
-                                                    <label class="form-label fw-semibold small">Horas/Minutos</label>
-                                                    <input type="text" class="form-control form-control-sm" id="input-horas-permiso" placeholder="Ej: 2h 30min" maxlength="20">
+                                                    <label class="form-label fw-semibold small">Minutos</label>
+                                                    <input type="text" class="form-control form-control-sm" id="input-minutos-permiso" placeholder="Ej: 150" maxlength="20">
                                                 </div>
                                                 <div class="col-md-3">
-                                                    <label class="form-label fw-semibold small">Cantidad ($)</label>
+                                                    <label class="form-label fw-semibold small">Costo x Min ($)</label>
                                                     <input type="number" step="0.01" class="form-control form-control-sm" id="input-cantidad-permiso" placeholder="0.00" min="0">
                                                 </div>
                                                 <div class="col-md-2">

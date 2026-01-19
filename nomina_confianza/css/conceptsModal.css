@@ -2719,3 +2719,85 @@
     border-color: #007bff !important;
     color: white !important;
 }
+
+/* ============================================ */
+/* ESTILOS PARA EVENTOS ESPECIALES EN LA TABLA */
+/* ============================================ */
+
+/* Badge para indicar múltiples eventos en un día */
+.badge-eventos {
+    display: inline-block;
+    background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    min-width: 20px;
+    border-radius: 10px;
+    margin-left: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    cursor: help;
+    vertical-align: super;
+    white-space: nowrap;
+    line-height: 1.3;
+}
+
+/* RETARDOS - VERDE */
+#tabla-checador .custom-table tbody tr.evento-retardo {
+    background-color: #d1fae5 !important; /* Verde suave */
+    border-left: 4px solid #10b981; /* Borde verde intenso */
+}
+
+#tabla-checador .custom-table tbody tr.evento-retardo:hover {
+    background-color: #a7f3d0 !important;
+}
+
+/* OLVIDOS DEL CHECADOR - ROJO */
+#tabla-checador .custom-table tbody tr.evento-olvido {
+    background-color: #fee2e2 !important; /* Rojo suave */
+    border-left: 4px solid #dc2626; /* Borde rojo intenso */
+}
+
+#tabla-checador .custom-table tbody tr.evento-olvido:hover {
+    background-color: #fecaca !important;
+}
+
+/* INASISTENCIAS - NARANJA */
+#tabla-checador .custom-table tbody tr.evento-inasistencia {
+    background-color: #fed7aa !important; /* Naranja suave */
+    border-left: 4px solid #ea580c; /* Borde naranja intenso */
+}
+
+#tabla-checador .custom-table tbody tr.evento-inasistencia:hover {
+    background-color: #fdba74 !important;
+}
+
+/* SALIDAS TEMPRANAS - AZUL */
+#tabla-checador .custom-table tbody tr.evento-salida-temprana {
+    background-color: #dbeafe !important; /* Azul suave */
+    border-left: 4px solid #3b82f6; /* Borde azul intenso */
+}
+
+#tabla-checador .custom-table tbody tr.evento-salida-temprana:hover {
+    background-color: #bfdbfe !important;
+}
+
+/* ENTRADAS TEMPRANAS - VERDE */
+#tabla-checador .custom-table tbody tr.evento-entrada-temprana {
+    background-color: #d1fae5 !important; /* Verde claro suave */
+    border-left: 4px solid #10b981; /* Borde verde claro intenso */
+}
+
+#tabla-checador .custom-table tbody tr.evento-entrada-temprana:hover {
+    background-color: #a7f3d0 !important;
+}
+
+/* SALIDAS TARDÍAS - MORADO */
+#tabla-checador .custom-table tbody tr.evento-salida-tardia {
+    background-color: #e9d5ff !important; /* Morado suave */
+    border-left: 4px solid #9333ea; /* Borde morado intenso */
+}
+
+#tabla-checador .custom-table tbody tr.evento-salida-tardia:hover {
+    background-color: #d8b4fe !important;
+}

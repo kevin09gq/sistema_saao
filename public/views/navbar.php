@@ -56,7 +56,7 @@
                     </a>
                     <ul class="submenu dropdown-menu" aria-labelledby="nominasDropdown">
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina/views/nomina.php">40 lbs</a></li>
-                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_confianza /views/nomina_confianza.php">Confianza</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_confianza/views/nomina_confianza.php">Confianza</a></li>
                     </ul>
                 </li>
 

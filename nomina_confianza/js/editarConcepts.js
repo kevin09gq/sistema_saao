@@ -36,6 +36,7 @@ function actualizarEmpleado(jsonNominaConfianza, claveEmpleado) {
     actualizarConcepto("45", parseFloat($('#mod-isr').val()) || 0); // ISR
     actualizarConcepto("52", parseFloat($('#mod-imss').val()) || 0); // IMSS
     actualizarConcepto("16", parseFloat($('#mod-infonavit').val()) || 0); // Infonavit
+    actualizarConcepto("107", parseFloat($('#mod-ajustes-sub').val()) || 0); // Ajuste al Sub
 
     // Deducciones
     empleadoEncontrado.tarjeta = parseFloat($('#mod-tarjeta').val()) || 0;
@@ -156,10 +157,16 @@ function actualizarEmpleado(jsonNominaConfianza, claveEmpleado) {
         const $item = $(this);
         const index = parseInt($item.data('index'));
         
+        // Leer los campos actualizados: minutos, costo, descuento
+        const minutos = parseFloat($item.find('.historial-permiso-minutos').val()) || 0;
+        const costo = parseFloat($item.find('.historial-permiso-costo').val()) || 0;
+        const descuento = parseFloat($item.find('.historial-permiso-descuento').val()) || 0;
+        
         const historialItem = {
             descripcion: $item.find('.historial-permiso-descripcion').val(),
-            horas_minutos: $item.find('.historial-permiso-horas').val(),
-            cantidad: parseFloat($item.find('.historial-permiso-cantidad').val()) || 0
+            horas_minutos: minutos,
+            cantidad: costo, // costo_por_minuto
+            descuento: descuento
         };
         
         nuevosHistorialPermisos.push(historialItem);
@@ -219,7 +226,7 @@ function actualizarEmpleado(jsonNominaConfianza, claveEmpleado) {
         }
     });
 
-    console.log('Empleado actualizado:', empleadoEncontrado);
+  
 }
 
 function guardarCambiosEmpleado() {
@@ -324,26 +331,47 @@ function actualizarHorarioOficial(claveEmpleado) {
     
 }
 
-function configPaginacionSelect() {    
-        // Reaplicar el filtro actual manualmente para NO resetear la página
-        var filtro = $('#filtro-departamento').length ? String($('#filtro-departamento').val()) : '0';
-        if (filtro === '0') {
-            if (typeof mostrarDatosTabla === 'function') mostrarDatosTabla(jsonNominaConfianza, paginaActualNomina);
-        } else if (filtro === 'sin_seguro') {
-            const deptoSinSeguro = jsonNominaConfianza.departamentos.find(d => String(d.nombre || '').toLowerCase().trim() === 'sin seguro');
-            const empleadosFiltrados = Array.isArray(deptoSinSeguro && deptoSinSeguro.empleados) ? deptoSinSeguro.empleados.slice() : [];
-            if (typeof mostrarDatosTabla === 'function') mostrarDatosTabla({ departamentos: [{ nombre: 'sin seguro', empleados: empleadosFiltrados }] }, paginaActualNomina);
-        } else {
-            const idSeleccionado = Number(filtro);
-            const empleadosFiltrados = [];
-            jsonNominaConfianza.departamentos.forEach(depto => {
-                if (!Array.isArray(depto.empleados)) return;
-                depto.empleados.forEach(emp => {
-                    if (Number(emp.id_departamento) === idSeleccionado) empleadosFiltrados.push(emp);
-                });
+function configPaginacionSelect() {
+    // Reaplicar el filtro actual manualmente para NO resetear la página
+    const valorDepartamento = String($('#filtro-departamento').val() || '0');
+    const valorEmpresa = String($('#filtro-empresa').val() || '0');
+
+    // Si ambos están en "Todos", mostrar la tabla completa en la página actual
+    if (valorDepartamento === '0' && valorEmpresa === '0') {
+        if (typeof mostrarDatosTabla === 'function') mostrarDatosTabla(jsonNominaConfianza, paginaActualNomina);
+        return;
+    }
+
+    let empleadosFiltrados = [];
+
+    // Paso 1: Filtrar por departamento
+    if (valorDepartamento === '0') {
+        // Todos los departamentos
+        jsonNominaConfianza.departamentos.forEach(depto => {
+            if (Array.isArray(depto.empleados)) empleadosFiltrados = empleadosFiltrados.concat(depto.empleados);
+        });
+    } else if (valorDepartamento === 'sin_seguro') {
+        const deptoSinSeguro = jsonNominaConfianza.departamentos.find(
+            d => String(d.nombre || '').toLowerCase().trim() === 'sin seguro'
+        );
+        if (deptoSinSeguro && Array.isArray(deptoSinSeguro.empleados)) empleadosFiltrados = deptoSinSeguro.empleados.slice();
+    } else {
+        const idDepartamento = Number(valorDepartamento);
+        jsonNominaConfianza.departamentos.forEach(depto => {
+            if (!Array.isArray(depto.empleados)) return;
+            depto.empleados.forEach(emp => {
+                if (Number(emp.id_departamento) === idDepartamento) empleadosFiltrados.push(emp);
             });
-            if (typeof mostrarDatosTabla === 'function') mostrarDatosTabla({ departamentos: [{ nombre: 'Filtro', empleados: empleadosFiltrados }] }, paginaActualNomina);
-        }
+        });
+    }
+
+    // Paso 2: Filtrar por empresa (si aplica)
+    if (valorEmpresa !== '0') {
+        const idEmpresa = Number(valorEmpresa);
+        empleadosFiltrados = empleadosFiltrados.filter(emp => Number(emp.id_empresa) === idEmpresa);
+    }
+
+    if (typeof mostrarDatosTabla === 'function') mostrarDatosTabla({ departamentos: [{ nombre: 'Filtro', empleados: empleadosFiltrados }] }, paginaActualNomina);
 }
 
 function configPaginacionSearch(){

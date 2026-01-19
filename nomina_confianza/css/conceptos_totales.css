@@ -24,133 +24,80 @@
 /* Accordion */
 #modalConceptosTotales .accordion .accordion-item { border: none; }
 #modalConceptosTotales .accordion-item + .accordion-item { border-top: 1px solid #e9ecef; }
+
 #modalConceptosTotales .accordion-button {
   padding: 0.75rem 1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  font-size: 0.95rem;
 }
 
-/* Título ocupa el espacio restante */
 #modalConceptosTotales .concept-title {
-  flex: 1 1 auto;
+  flex: 1;
   text-align: left;
-  padding-right: 0.75rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-/* Grupo de badges alineado a la derecha */
-#modalConceptosTotales .badge-group {
-  flex: 0 0 auto;
+#modalConceptosTotales .badge {
+  flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-}
-
-/* Badges consistentes en tamaño y alineación */
-#modalConceptosTotales .badge-group .badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   height: 28px;
-  line-height: 1;
-  border-radius: 999px;
-  padding: 0 8px;
+  padding: 0 10px;
   font-size: 0.85rem;
   font-weight: 600;
 }
 
-/* Colores claros para contraste */
-#modalConceptosTotales .badge.bg-primary { background: #0d6efd; color: #fff; }
-#modalConceptosTotales .badge.bg-secondary { background: #6c757d; color: #fff; }
-
-#modalConceptosTotales .accordion-button .badge.bg-primary {
-  background: #0d6efd;
-}
-
-#modalConceptosTotales .accordion-button .badge.bg-secondary {
-  background: #6c757d;
-}
-
 #modalConceptosTotales .accordion-body {
-  padding: 0.75rem 1rem 1rem 1rem;
+  padding: 0.75rem 1rem;
 }
 
 #modalConceptosTotales .table {
   margin-bottom: 0;
   background: transparent;
+  font-size: 0.9rem;
 }
 
 #modalConceptosTotales .table th,
-#modalConceptosTotales .table td { vertical-align: middle; }
+#modalConceptosTotales .table td { 
+  vertical-align: middle;
+  padding: 0.5rem;
+}
 
-#modalConceptosTotales .table td.text-end { font-weight: 600; }
+#modalConceptosTotales .table th {
+  background: #f8f9fa;
+  font-weight: 600;
+  border-bottom: 2px solid #e9ecef;
+}
 
-#modalConceptosTotales .modal-footer .btn-secondary { background: #6c757d; border: none; }
+#modalConceptosTotales .table td.text-end { 
+  font-weight: 600;
+  color: #495057;
+}
+
+#modalConceptosTotales .text-muted {
+  color: #6c757d !important;
+}
+
+/* Separadores de secciones */
+#modalConceptosTotales h6 {
+  border-bottom: 2px solid #e9ecef;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+#modalConceptosTotales h6.text-success {
+  border-bottom-color: #198754;
+}
+
+#modalConceptosTotales h6.text-danger {
+  border-bottom-color: #dc3545;
+}
 
 /* Ajustes responsivos */
 @media (max-width: 767px) {
   #modalConceptosTotales .card h4 { font-size: 1.25rem; }
-  #modalConceptosTotales .accordion-button { font-size: 0.95rem; }
-}
-
-
-/* AQUI AGREGO LOS CONCEPTOS DEL MODAL DEL SELECCION DE EMPLEADO  */
-.departamento-grupo {
-    margin-bottom: 20px;
-}
-
-.departamento-titulo {
-    font-weight: bold;
-    font-size: 16px;
-    color: #0d6efd;
-    padding: 8px 10px;
-    background: #e7f3ff;
-    border-radius: 4px;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.empleado-item {
-    padding: 8px 10px;
-    border-bottom: 1px solid #f0f0f0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: background 0.2s;
-}
-
-.empleado-item:hover {
-    background: #f8f9fa;
-}
-
-.empleado-item input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-}
-
-.empleado-item label {
-    flex: 1;
-    cursor: pointer;
-    margin: 0;
-    font-size: 14px;
-}
-
-.empleado-clave {
-    color: #6c757d;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-.sin-resultados {
-    text-align: center;
-    padding: 30px;
-    color: #999;
-    font-style: italic;
+  #modalConceptosTotales .accordion-button { font-size: 0.9rem; }
+  #modalConceptosTotales .badge { font-size: 0.75rem; }
 }

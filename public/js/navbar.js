@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return 'contratos';
         } else if (path.includes('/nomina/views/nomina.php')) {
             return 'nominas'; // Highlight 'Nóminas' for 40 lbs
-        } else if (path.includes('/nomina_10lbs/views/nomina_confianza.php')) {
+        } else if (path.includes('/nomina_confianza/views/nomina_confianza.php')) {
             return 'nominas'; // Highlight 'Nóminas' for Confianza
         } else if (path.includes('/empleados/views/form_registro.php')) {
             return 'empleados_registro';

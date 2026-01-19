@@ -310,7 +310,6 @@ function detectarOlvidosChecador(claveEmpleado) {
         recalcularTotalOlvidos(empleado);
     }
 
-    console.log(`Total olvidos de checador: ${empleado.olvidos_checador}`);
 }
 
 function detectarEntradasTempranas(claveEmpleado) {
@@ -923,6 +922,9 @@ function mostrarHistorialRetardos(empleado) {
             empleado.historial_retardos[index].total_descontado = parseFloat(totalDescontado);
         }
         
+        // IMPORTANTE: Limpiar la bandera de edición manual para que el historial sobrescriba
+        empleado._retardos_editado_manual = false;
+        
         // Recalcular total general de retardos
         recalcularTotalRetardos(empleado);
     });
@@ -947,9 +949,15 @@ function recalcularTotalRetardos(empleado, force = false) {
         totalDescontado += parseFloat(retardo.total_descontado) || 0;
     });
     
-    if (force || empleado.retardos === 0 || empleado.retardos === totalDescontado) {
+    // Solo actualizar si NO fue editado manualmente o si force=true
+    if (!empleado._retardos_editado_manual || force) {
         $('#mod-retardos').val(totalDescontado.toFixed(2));
         empleado.retardos = totalDescontado;
+        
+        // Actualizar sueldo a cobrar en tiempo real
+        if (typeof calcularYMostrarSueldoACobrar === 'function') {
+            calcularYMostrarSueldoACobrar();
+        }
     }
 }
 
@@ -1004,6 +1012,9 @@ function mostrarHistorialInasistencias(empleado) {
             empleado.historial_inasistencias[index].descuento_inasistencia = descuento;
         }
         
+        // IMPORTANTE: Limpiar la bandera de edición manual para que el historial sobrescriba
+        empleado._inasistencias_editado_manual = false;
+        
         // Recalcular total general de inasistencias
         recalcularTotalInasistencias(empleado);
     });
@@ -1018,9 +1029,15 @@ function recalcularTotalInasistencias(empleado, force = false) {
         totalDescontado += parseFloat(inasistencia.descuento_inasistencia) || 0;
     });
     
-    if (force || empleado.inasistencia === 0 || empleado.inasistencia === totalDescontado) {
+    // Solo actualizar si NO fue editado manualmente o si force=true
+    if (!empleado._inasistencias_editado_manual || force) {
         $('#mod-inasistencias').val(totalDescontado.toFixed(2));
         empleado.inasistencia = totalDescontado;
+        
+        // Actualizar sueldo a cobrar en tiempo real
+        if (typeof calcularYMostrarSueldoACobrar === 'function') {
+            calcularYMostrarSueldoACobrar();
+        }
     }
 }
 
@@ -1095,6 +1112,9 @@ function mostrarHistorialOlvidos(empleado) {
             empleado.historial_olvidos[index].descuento_olvido = descuento;
         }
         
+        // IMPORTANTE: Limpiar la bandera de edición manual para que el historial sobrescriba
+        empleado._checador_editado_manual = false;
+        
         // Recalcular total general de olvidos
         recalcularTotalOlvidos(empleado);
     });
@@ -1119,9 +1139,15 @@ function recalcularTotalOlvidos(empleado, force = false) {
         totalDescontado += parseFloat(olvido.descuento_olvido) || 0;
     });
     
-    if (force || empleado.checador === 0 || empleado.checador === totalDescontado) {
+    // Solo actualizar si NO fue editado manualmente o si force=true
+    if (!empleado._checador_editado_manual || force) {
         $('#mod-checador').val(totalDescontado.toFixed(2));
         empleado.checador = totalDescontado;
+        
+        // Actualizar sueldo a cobrar en tiempo real
+        if (typeof calcularYMostrarSueldoACobrar === 'function') {
+            calcularYMostrarSueldoACobrar();
+        }
     }
 }
 
@@ -1441,4 +1467,465 @@ function mostrarInasistencias(empleado) {
         $content.html(html);
         $('#total-faltas').html(`Total: ${inasistenciasEncontradas.length} días`);
     }
+}
+
+
+// ========================================
+// DETECTAR PERMISOS Y COMIDAS AUTOMÁTICAMENTE
+// ========================================
+
+/**
+ * Función principal que detecta y diferencia automáticamente entre comida y permisos
+ * basándose en el horario oficial y los registros del biométrico
+ */
+function detectarPermisosYComida(claveEmpleado) {
+    if (!jsonNominaConfianza || !Array.isArray(jsonNominaConfianza.departamentos)) return;
+
+    // Buscar el empleado por clave
+    let empleado = null;
+    jsonNominaConfianza.departamentos.forEach(departamento => {
+        (departamento.empleados || []).forEach(e => {
+            if (String(e.clave).trim() === String(claveEmpleado).trim()) empleado = e;
+        });
+    });
+
+    if (!empleado || !Array.isArray(empleado.registros) || !Array.isArray(empleado.horario_oficial)) return;
+
+    // No guardar el análisis, solo se calcula para mostrar
+    const nuevoAnalisis = [];
+    const dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
+    const diasNormales = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+    // Agrupar registros por fecha
+    const registrosPorFecha = {};
+    empleado.registros.forEach(reg => {
+        if (!reg.fecha) return;
+        if (!registrosPorFecha[reg.fecha]) {
+            registrosPorFecha[reg.fecha] = [];
+        }
+        registrosPorFecha[reg.fecha].push(reg);
+    });
+
+    // Procesar cada día con registros
+    Object.keys(registrosPorFecha).forEach(fecha => {
+        const registrosDia = registrosPorFecha[fecha];
+        
+        // Obtener día de la semana
+        const [dia, mes, anio] = fecha.split('/');
+        const fechaObj = new Date(anio, mes - 1, dia);
+        const diaSemana = dias[fechaObj.getDay()];
+        const diaNormal = diasNormales[fechaObj.getDay()];
+
+        // Buscar horario oficial para este día
+        const horarioOficial = empleado.horario_oficial.find(x =>
+            String(x.dia || '').toUpperCase().trim() === diaSemana
+        );
+
+        if (!horarioOficial) return;
+
+        // Analizar los registros del día
+        const analisisDia = analizarRegistrosDia(
+            registrosDia,
+            horarioOficial,
+            fecha,
+            diaNormal
+        );
+
+        if (analisisDia) {
+            nuevoAnalisis.push(analisisDia);
+        }
+    });
+
+    // No guardar el análisis en el empleado, solo retornar para mostrar
+    return nuevoAnalisis;
+}
+
+/**
+ * Analiza los registros de un día específico y determina qué es comida y qué es permiso
+ */
+function analizarRegistrosDia(registros, horarioOficial, fecha, diaNormal) {
+    // Convertir horarios oficiales a minutos para facilitar comparaciones
+    const horaOficial = {
+        entrada: convertirHoraAMinutos(horarioOficial.entrada),
+        salidaComida: convertirHoraAMinutos(horarioOficial.salida_comida),
+        entradaComida: convertirHoraAMinutos(horarioOficial.entrada_comida),
+        salida: convertirHoraAMinutos(horarioOficial.salida)
+    };
+
+    // Calcular duración oficial de la comida
+    const duracionOficialComida = horaOficial.entradaComida - horaOficial.salidaComida;
+
+    // Convertir todos los registros del día a un array de eventos
+    const eventos = [];
+    registros.forEach(reg => {
+        if (reg.entrada && reg.entrada !== '-') {
+            eventos.push({
+                tipo: 'entrada',
+                hora: reg.entrada,
+                minutos: convertirHoraAMinutos(reg.entrada)
+            });
+        }
+        if (reg.salida && reg.salida !== '-') {
+            eventos.push({
+                tipo: 'salida',
+                hora: reg.salida,
+                minutos: convertirHoraAMinutos(reg.salida)
+            });
+        }
+    });
+
+    // Ordenar eventos por hora
+    eventos.sort((a, b) => a.minutos - b.minutos);
+
+    // Analizar la secuencia de eventos
+    const analisis = {
+        fecha: fecha,
+        dia: diaNormal,
+        eventos: eventos,
+        interpretacion: [],
+        permisos: [],
+        comida: null,
+        escenario: ''
+    };
+
+    // Identificar el escenario y clasificar los eventos
+    clasificarEventos(eventos, horaOficial, duracionOficialComida, analisis);
+
+    return analisis;
+}
+
+/**
+ * Clasifica los eventos como entrada, salida, comida o permiso
+ */
+function clasificarEventos(eventos, horaOficial, duracionOficialComida, analisis) {
+    if (eventos.length === 0) return;
+
+    // Variables para rastrear el estado
+    let dentroJornada = false;
+    let enComida = false;
+    let enPermiso = false;
+    let inicioPermiso = null;
+    let inicioComida = null;
+
+    // Tolerancia de 30 minutos para considerar que un rango es "hora de comida"
+    const TOLERANCIA_COMIDA = 30;
+
+    for (let i = 0; i < eventos.length; i++) {
+        const evento = eventos[i];
+        const siguienteEvento = i < eventos.length - 1 ? eventos[i + 1] : null;
+
+        if (evento.tipo === 'entrada') {
+            // Primera entrada del día
+            if (!dentroJornada) {
+                analisis.interpretacion.push({
+                    hora: evento.hora,
+                    tipo: 'E',
+                    descripcion: 'Entrada a la jornada laboral'
+                });
+                dentroJornada = true;
+            } else {
+                // Regreso de algo (comida o permiso)
+                if (inicioComida) {
+                    // Regreso de comida
+                    const duracionComida = evento.minutos - inicioComida.minutos;
+                    analisis.interpretacion.push({
+                        hora: evento.hora,
+                        tipo: 'RC',
+                        descripcion: 'Regreso de comida',
+                        duracion: `${Math.round(duracionComida)} minutos`
+                    });
+                    
+                    analisis.comida = {
+                        salida: inicioComida.hora,
+                        entrada: evento.hora,
+                        duracion: duracionComida,
+                        duracionOficial: duracionOficialComida,
+                        excede: duracionComida > (duracionOficialComida + TOLERANCIA_COMIDA)
+                    };
+                    
+                    inicioComida = null;
+                    enComida = false;
+                } else if (inicioPermiso) {
+                    // Regreso de permiso
+                    let duracionPermiso = evento.minutos - inicioPermiso.minutos;
+                    
+                    // Si el permiso cruza la hora de comida oficial, restar la duración de la comida
+                    // Verificar si el permiso incluye el rango de comida oficial
+                    const inicioPermisoMin = inicioPermiso.minutos;
+                    const finPermisoMin = evento.minutos;
+                    const inicioComidaOficial = horaOficial.salidaComida;
+                    const finComidaOficial = horaOficial.entradaComida;
+                    
+                    // Si el permiso abarca completamente el horario de comida, restar la duración oficial
+                    if (inicioPermisoMin <= inicioComidaOficial && finPermisoMin >= finComidaOficial) {
+                        duracionPermiso = duracionPermiso - duracionOficialComida;
+                    }
+                    
+                    analisis.interpretacion.push({
+                        hora: evento.hora,
+                        tipo: 'RP',
+                        descripcion: 'Regreso de permiso',
+                        duracion: `${Math.round(duracionPermiso)} minutos`
+                    });
+                    
+                    analisis.permisos.push({
+                        salida: inicioPermiso.hora,
+                        entrada: evento.hora,
+                        duracion: duracionPermiso,
+                        duracionReal: evento.minutos - inicioPermiso.minutos,
+                        duracionComidaRestada: (inicioPermisoMin <= inicioComidaOficial && finPermisoMin >= finComidaOficial) ? duracionOficialComida : 0
+                    });
+                    
+                    inicioPermiso = null;
+                    enPermiso = false;
+                }
+            }
+        } else if (evento.tipo === 'salida') {
+            // Determinar si es salida a comida, permiso o salida final
+            if (siguienteEvento && siguienteEvento.tipo === 'entrada') {
+                // Hay un regreso después, puede ser comida o permiso
+                const duracionAusencia = siguienteEvento.minutos - evento.minutos;
+                const horaCentro = evento.minutos + (duracionAusencia / 2);
+                
+                // ¿Está cerca del horario de comida oficial?
+                const centroComidaOficial = horaOficial.salidaComida + (duracionOficialComida / 2);
+                const distanciaAlCentroComida = Math.abs(horaCentro - centroComidaOficial);
+                
+                // ¿La duración es similar a la duración oficial de comida?
+                const diferenciasDuracion = Math.abs(duracionAusencia - duracionOficialComida);
+                
+                // Si está cerca del horario de comida Y la duración es similar, es comida
+                if (distanciaAlCentroComida < 90 && diferenciasDuracion < (duracionOficialComida + TOLERANCIA_COMIDA)) {
+                    analisis.interpretacion.push({
+                        hora: evento.hora,
+                        tipo: 'SC',
+                        descripcion: 'Salida a comida'
+                    });
+                    inicioComida = evento;
+                    enComida = true;
+                } else {
+                    // Es un permiso
+                    analisis.interpretacion.push({
+                        hora: evento.hora,
+                        tipo: 'SP',
+                        descripcion: 'Salida por permiso'
+                    });
+                    inicioPermiso = evento;
+                    enPermiso = true;
+                }
+            } else {
+                // No hay regreso registrado
+                // Determinar si salió a comida, permiso o es salida final
+                const horaSalida = evento.minutos;
+                
+                // ¿Está cerca de la hora de salida oficial? (30 minutos antes o CUALQUIER tiempo después)
+                const diferenciaSalida = horaSalida - horaOficial.salida;
+                
+                if (Math.abs(horaSalida - horaOficial.salida) < 30 || diferenciaSalida > 0) {
+                    // Es salida final si está dentro de 30 min antes O cualquier tiempo después de la hora oficial
+                    analisis.interpretacion.push({
+                        hora: evento.hora,
+                        tipo: 'SF',
+                        descripcion: diferenciaSalida > 60 ? 'Salida final (tardía)' : 'Salida final'
+                    });
+                } else if (Math.abs(horaSalida - horaOficial.salidaComida) < 30) {
+                    analisis.interpretacion.push({
+                        hora: evento.hora,
+                        tipo: 'SC',
+                        descripcion: 'Salida a comida (sin regreso registrado)'
+                    });
+                    
+                    analisis.comida = {
+                        salida: evento.hora,
+                        entrada: null,
+                        duracion: null,
+                        sinRegreso: true
+                    };
+                } else {
+                    analisis.interpretacion.push({
+                        hora: evento.hora,
+                        tipo: 'SP',
+                        descripcion: 'Salida por permiso (sin regreso registrado)'
+                    });
+                    
+                    analisis.permisos.push({
+                        salida: evento.hora,
+                        entrada: null,
+                        duracion: null,
+                        sinRegreso: true
+                    });
+                }
+            }
+        }
+    }
+
+    // Identificar el escenario
+    identificarEscenario(analisis);
+}
+
+/**
+ * Identifica cuál de los 10 escenarios se presenta en el análisis
+ */
+function identificarEscenario(analisis) {
+    const secuencia = analisis.interpretacion.map(e => e.tipo).join(' → ');
+    
+    // Escenarios definidos
+    const escenarios = {
+        'E → SP → RP → SC → RC → SF': '1. Permiso antes de la comida',
+        'E → SC → RC → SP → RP → SF': '2. Permiso después de la comida',
+        'E → SP → RP → SF': '3. Permiso que cruza la comida (o sin comida)',
+        'E → SP → SC → RC → RP → SF': '4. Permiso antes y comida dentro del permiso',
+        'E → SP': '6. Sale a permiso y ya no regresa',
+        'E → SC → RC → SP': '7. Sale a permiso después de la comida y no regresa',
+        'E → SC': '8. Sale a comer y no regresa',
+        'E → SC → RC → SP → RP': '9. Regresa del permiso pero no checa salida',
+        'E → SP → RP → SC': '10. Permiso antes de comida y no regresa después'
+    };
+
+    // Buscar coincidencia exacta
+    if (escenarios[secuencia]) {
+        analisis.escenario = escenarios[secuencia];
+    } else {
+        // Si no hay coincidencia exacta, analizar patrones
+        if (secuencia.includes('E') && secuencia.includes('SC') && secuencia.includes('RC') && secuencia.includes('SF')) {
+            if (secuencia.indexOf('SP') === -1) {
+                analisis.escenario = 'Jornada normal con comida completa';
+            }
+        } else if (secuencia === 'E → SF') {
+            analisis.escenario = 'Jornada corrida sin comida';
+        } else {
+            analisis.escenario = 'Otro patrón: ' + secuencia;
+        }
+    }
+}
+
+/**
+ * Convierte una hora en formato HH:MM a minutos desde medianoche
+ */
+function convertirHoraAMinutos(hora) {
+    if (!hora || hora === '-') return 0;
+    const partes = hora.split(':');
+    return parseInt(partes[0]) * 60 + parseInt(partes[1]);
+}
+
+/**
+ * Convierte minutos a formato HH:MM
+ */
+function convertirMinutosAHora(minutos) {
+    const horas = Math.floor(minutos / 60);
+    const mins = minutos % 60;
+    return `${String(horas).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+}
+
+/**
+ * Muestra el análisis de permisos y comidas en el modal
+ */
+function mostrarAnalisisPermisosComida(empleado) {
+    const $content = $('#analisis-permisos-comida-content');
+    if (!$content.length) return;
+
+    // Calcular el análisis en tiempo real (no guardado)
+    const analisisCalculado = detectarPermisosYComida(empleado.clave) || [];
+
+    if (!Array.isArray(analisisCalculado) || analisisCalculado.length === 0) {
+        $content.html('<p class="sin-eventos">No hay análisis de permisos y comidas disponible</p>');
+        $('#total-analisis-permisos-comida').text('Total: 0 eventos');
+        return;
+    }
+
+    let html = '';
+    analisisCalculado.forEach(dia => {
+        html += `
+            <div class="analisis-dia mb-3" style="border: 1px solid #e0e0e0; padding: 12px; border-radius: 6px; background: #f9f9f9;">
+                <div style="font-weight: 600; color: #2c3e50; margin-bottom: 8px;">
+                    ${dia.dia} - ${dia.fecha}
+                </div>
+                <div style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 8px; font-style: italic;">
+                    ${dia.escenario}
+                </div>
+                <div style="margin-left: 12px;">
+        `;
+
+        dia.interpretacion.forEach(evento => {
+            let icono = '';
+            let color = '';
+            
+            switch(evento.tipo) {
+                case 'E': 
+                    icono = '🟢'; 
+                    color = '#27ae60';
+                    break;
+                case 'SC': 
+                    icono = '🍽️'; 
+                    color = '#3498db';
+                    break;
+                case 'RC': 
+                    icono = '🍽️'; 
+                    color = '#3498db';
+                    break;
+                case 'SP': 
+                    icono = '⏸️'; 
+                    color = '#f39c12';
+                    break;
+                case 'RP': 
+                    icono = '▶️'; 
+                    color = '#f39c12';
+                    break;
+                case 'SF': 
+                    icono = '🔴'; 
+                    color = '#e74c3c';
+                    break;
+            }
+
+            html += `
+                <div style="display: flex; align-items: center; margin-bottom: 4px; padding: 4px 0;">
+                    <span style="margin-right: 8px;">${icono}</span>
+                    <span style="font-weight: 500; color: ${color}; min-width: 60px;">${evento.hora}</span>
+                    <span style="color: #34495e; margin-left: 8px;">${evento.descripcion}</span>
+                    ${evento.duracion ? `<span style="color: #95a5a6; margin-left: 8px; font-size: 0.85rem;">(${evento.duracion})</span>` : ''}
+                </div>
+            `;
+        });
+
+        // Mostrar resumen de comida si existe
+        if (dia.comida) {
+            html += `<hr style="margin: 8px 0; border-color: #e0e0e0;">`;
+            html += `<div style="font-size: 0.85rem; color: #2980b9; margin-top: 8px;">`;
+            html += `<strong>Comida:</strong> `;
+            if (dia.comida.sinRegreso) {
+                html += `Salida a ${dia.comida.salida} (sin regreso registrado)`;
+            } else {
+                html += `${dia.comida.salida} - ${dia.comida.entrada} `;
+                html += `(${Math.round(dia.comida.duracion)} min)`;
+                if (dia.comida.excede) {
+                    html += ` <span style="color: #e74c3c;">⚠️ Excede tiempo oficial</span>`;
+                }
+            }
+            html += `</div>`;
+        }
+
+        // Mostrar resumen de permisos si existen
+        if (dia.permisos && dia.permisos.length > 0) {
+            html += `<div style="font-size: 0.85rem; color: #f39c12; margin-top: 8px;">`;
+            html += `<strong>Permisos (${dia.permisos.length}):</strong> `;
+            dia.permisos.forEach((permiso, idx) => {
+                if (permiso.sinRegreso) {
+                    html += `Salida a ${permiso.salida} (sin regreso)`;
+                } else {
+                    html += `${permiso.salida} - ${permiso.entrada} (${Math.round(permiso.duracion)} min)`;
+                    // Si se restó tiempo de comida, mostrar nota explicativa
+                    if (permiso.duracionComidaRestada && permiso.duracionComidaRestada > 0) {
+                        html += ` <span style="color: #7f8c8d; font-size: 0.8rem;">[Real: ${Math.round(permiso.duracionReal)} min - ${Math.round(permiso.duracionComidaRestada)} min comida]</span>`;
+                    }
+                }
+                if (idx < dia.permisos.length - 1) html += '; ';
+            });
+            html += `</div>`;
+        }
+
+        html += `</div></div>`;
+    });
+
+    $content.html(html);
+    $('#total-analisis-permisos-comida').text(`Total: ${analisisCalculado.length} días analizados`);
 }

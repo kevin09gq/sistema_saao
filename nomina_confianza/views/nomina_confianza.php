@@ -67,18 +67,23 @@
             <h3 id=nombre_nomina></h3>
             <div class="header-controls">
                 <span class="sem-info" id="num_semana"></span>
-                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_actualizar_horarios" title="Actualizar horarios" aria-label="Actualizar horarios">
+                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_actualizar_horarios" title="Actualizar horarios" aria-label="Actualizar Biometrico">
                     <i class="bi bi-clock"></i>
                 </button>
                 <button class="btn btn-outline-primary" id="btn-seleccionar-empleados" title="Seleccionar empleados">
                     <i class="bi bi-people"></i>
                 </button>
-                <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global" title="Aplicar copias a todos">
+                <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global" title="Aplicar Tarjeta">
                     <i class="bi bi-arrow-clockwise"></i>
                 </button>
                 <button class="btn btn-outline-primary btn-suma" type="button" id="btn_conceptos_totales" title="Totales por concepto" aria-label="Totales por concepto">
                     <i class="bi bi-calculator"></i>
                 </button>
+                <button class="btn-ticket-zebra" id="btn_ticket_pdf" title="Ticket Zebra">
+                    <i class="bi bi-printer"></i>
+                    Ticket Zebra
+                </button>
+
 
             </div>
         </div>
@@ -106,25 +111,18 @@
 
             <!-- Botones de exportación -->
             <div class="export-buttons">
-                <button class="btn-export-excel" id="btn_export_excel" title="Exportar a Excel">
-                    <i class="bi bi-file-earmark-excel"></i>
-                    Excel
+                <button class="btn btn-outline-success me-2" id="btn_export_excel" title="Exportar a Excel">
+                    <i class="bi bi-file-earmark-excel"></i> Excel
                 </button>
-                <button class="btn-export-pdf" id="btn_export_pdf" title="Exportar a PDF">
-                    <i class="bi bi-file-earmark-pdf"></i>
-                    PDF
+             
+                <button class="btn btn-outline-danger me-2" id="btn_export_pdf_reporte" title="Exportar a PDF">
+                    <i class="bi bi-file-earmark-pdf"></i> Reporte
                 </button>
-                <button class="btn-export-pdf-reporte" id="btn_export_pdf_reporte" title="Exportar a PDF">
-                    <i class="bi bi-file-earmark-pdf"></i>
-                    Reporte
+                <button class="btn btn-outline-primary me-2" id="btn_guardar_nomina_confianza" title="Guardar nómina">
+                    <i class="bi bi-save"></i> Guardar Nómina
                 </button>
-                <button class="btn-guardar-nomina" id="btn_guardar_nomina_confianza" title="Guardar nómina">
-                    <i class="bi bi-save"></i>
-                    Guardar Nómina
-                </button>
-                <button class="btn-limpiar-datos" id="btn_limpiar_datos">
-                    <i class="bi bi-trash"></i>
-                    Subir Nuevamente
+                <button class="btn btn-outline-warning" id="btn_limpiar_datos" title="Subir Nuevamente">
+                    <i class="bi bi-trash"></i> Subir Nuevamente
                 </button>
 
 
@@ -178,6 +176,7 @@
     <?php include 'modalPrestamos.php'; ?>
     <?php include 'modalSeleccionarEmpleados.php'; ?>
     <?php include 'modalConceptosTotales.php'; ?>
+    <?php include 'modalExportExcel.php'; ?>
 
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
@@ -197,8 +196,11 @@
     <script src="../js/uniformes.js"></script>
     <script src="../js/permisos.js"></script>
     <script src="../js/saveNominaConfianza.js"></script>
+    <script src="../js/export_nomina_excel.js"></script>
     <script src="../js/seleccionar_empleados.js"></script>
     <script src="../js/conceptos_totales.js"></script>
+    <script src="../js/export_encabezado_pdf.js"></script>
+    <script src="../js/ticket_pdf.js"></script>
 
 </body>
 

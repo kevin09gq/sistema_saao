@@ -62,11 +62,11 @@ function obtenerEmpresasPermitidas() {
                 // Inicializar el listener
                 aplicarFiltroEmpresa();
             } catch (e) {
-                console.error('Error al cargar empresas:', e);
+                
             }
         },
         error: function (err) {
-            console.error('Error al obtener empresas:', err);
+            
         }
     });
 }

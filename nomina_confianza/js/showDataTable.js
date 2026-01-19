@@ -70,7 +70,7 @@ function mostrarDatosTabla(jsonNominaConfianza, pagina = 1) {
                 <td>${formatearValor(empleado.retardos || 0)}</td>
                 <td>${formatearValor(buscarConcepto('45'))}</td>
                 <td>${formatearValor(buscarConcepto('52'))}</td>
-                <td>${formatearValor(empleado.ajuste_sub || 0)}</td>
+                <td>${formatearValor(buscarConcepto('107'))}</td>
                 <td>${formatearValor(buscarConcepto('16'))}</td>
                 <td>${formatearValor(empleado.permiso || 0)}</td>
                 <td>${formatearValor(empleado.inasistencia || 0)}</td>
@@ -93,7 +93,16 @@ function mostrarDatosTabla(jsonNominaConfianza, pagina = 1) {
 function calcularTotalPercepciones(empleado) {
     const sueldo = parseFloat(empleado.sueldo_semanal) || 0;
     const extras = parseFloat(empleado.sueldo_extra_total) || 0;
-    return (sueldo + extras).toFixed(2);
+    
+    // Sumar extras_adicionales (conceptos personalizados de percepciones)
+    let extrasAdicionales = 0;
+    if (Array.isArray(empleado.extras_adicionales)) {
+        empleado.extras_adicionales.forEach(extra => {
+            extrasAdicionales += parseFloat(extra.resultado) || 0;
+        });
+    }
+    
+    return (sueldo + extras + extrasAdicionales).toFixed(2);
 }
 
 // Función para calcular Total Deducciones
@@ -108,14 +117,22 @@ function calcularTotalDeducciones(empleado) {
     const retardos = parseFloat(empleado.retardos) || 0;
     const isr = buscarConcepto('45');
     const imss = buscarConcepto('52');
-    const ajusteSub = parseFloat(empleado.ajuste_sub) || 0;
+    const ajusteSub = buscarConcepto('107');
     const infonavit = buscarConcepto('16');
     const permiso = parseFloat(empleado.permiso) || 0;
     const inasistencias = parseFloat(empleado.inasistencia) || 0;
     const uniformes = parseFloat(empleado.uniformes) || 0;
     const checador = parseFloat(empleado.checador) || 0;
+    
+    // Sumar deducciones_adicionales (deducciones personalizadas)
+    let deduccionesAdicionales = 0;
+    if (Array.isArray(empleado.deducciones_adicionales)) {
+        empleado.deducciones_adicionales.forEach(deduccion => {
+            deduccionesAdicionales += parseFloat(deduccion.resultado) || parseFloat(deduccion.valor) || parseFloat(deduccion.monto) || 0;
+        });
+    }
 
-    const total = retardos + isr + imss + ajusteSub + infonavit + permiso + inasistencias + uniformes + checador;
+    const total = retardos + isr + imss + ajusteSub + infonavit + permiso + inasistencias + uniformes + checador + deduccionesAdicionales;
     return total.toFixed(2);
 }
 

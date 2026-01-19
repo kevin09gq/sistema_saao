@@ -23,6 +23,26 @@ function cargarData(jsonNominaConfianza, clave) {
         $('#campo-clave').text(empleadoEncontrado.clave);
         $("#nombre-empleado-modal").text(empleadoEncontrado.nombre);
 
+        // Asignar el nombre del departamento al campo correspondiente
+        let nombreDepartamento = '';
+        switch (empleadoEncontrado.id_departamento) {
+            case 1:
+                nombreDepartamento = 'Administración';
+                break;
+            case 2:
+                nombreDepartamento = 'Producción';
+                break;
+            case 3:
+                nombreDepartamento = 'Seguridad, Vigilancia e Intendencia';
+                break;
+            case 9:
+                nombreDepartamento = 'Administración Sucursal CDMX';
+                break;
+            default:
+                nombreDepartamento = 'Desconocido';
+        }
+        $('#campo-departamento').text(nombreDepartamento);
+
         // Percepciones
         $('#mod-sueldo-semanal').val(empleadoEncontrado.sueldo_semanal || '');
         $('#mod-vacaciones').val(empleadoEncontrado.vacaciones || '');
@@ -33,10 +53,12 @@ function cargarData(jsonNominaConfianza, clave) {
         const conceptoISR = conceptos.find(c => c.codigo === "45");
         const conceptoIMSS = conceptos.find(c => c.codigo === "52");
         const conceptoInfonavit = conceptos.find(c => c.codigo === "16");
+        const conceptoAjusteSub = conceptos.find(c => c.codigo === "107");
 
         $('#mod-isr').val(conceptoISR ? conceptoISR.resultado : '');
         $('#mod-imss').val(conceptoIMSS ? conceptoIMSS.resultado : '');
         $('#mod-infonavit').val(conceptoInfonavit ? conceptoInfonavit.resultado : '');
+        $('#mod-ajustes-sub').val(conceptoAjusteSub ? conceptoAjusteSub.resultado : '');
 
 
         // Deducciones
@@ -51,7 +73,16 @@ function cargarData(jsonNominaConfianza, clave) {
         //Total a cobrar
         $('#mod-sueldo-a-cobrar').val(empleadoEncontrado.total_cobrar || '');
 
-        // Mostrar registros en la tabla
+        // Detectar eventos ANTES de mostrar las tablas (para generar historiales necesarios)
+        if (typeof detectarRetardos === 'function') detectarRetardos(empleadoEncontrado.clave);
+        if (typeof detectarInasistencias === 'function') detectarInasistencias(empleadoEncontrado.clave);
+        if (typeof detectarOlvidosChecador === 'function') detectarOlvidosChecador(empleadoEncontrado.clave);
+        if (typeof detectarEntradasTempranas === 'function') detectarEntradasTempranas(empleadoEncontrado.clave);
+        if (typeof detectarSalidasTardias === 'function') detectarSalidasTardias(empleadoEncontrado.clave);
+        if (typeof detectarSalidasTempranas === 'function') detectarSalidasTempranas(empleadoEncontrado.clave);
+        if (typeof detectarPermisosYComida === 'function') detectarPermisosYComida(empleadoEncontrado.clave);
+
+        // Mostrar registros en la tabla (ahora con los historiales ya generados)
         mostrarRegistrosChecador(empleadoEncontrado);
         
         // Mostrar horarios oficiales en la tabla
@@ -59,14 +90,6 @@ function cargarData(jsonNominaConfianza, clave) {
 
         // Hacer horas editables a la tabla de horarios oficiales
         hacerHorasEditables();
-
-        // Detectar eventos antes de mostrarlos (para generar historiales si es necesario)
-        if (typeof detectarRetardos === 'function') detectarRetardos(empleadoEncontrado.clave);
-        if (typeof detectarInasistencias === 'function') detectarInasistencias(empleadoEncontrado.clave);
-        if (typeof detectarOlvidosChecador === 'function') detectarOlvidosChecador(empleadoEncontrado.clave);
-        if (typeof detectarEntradasTempranas === 'function') detectarEntradasTempranas(empleadoEncontrado.clave);
-        if (typeof detectarSalidasTardias === 'function') detectarSalidasTardias(empleadoEncontrado.clave);
-        if (typeof detectarSalidasTempranas === 'function') detectarSalidasTempranas(empleadoEncontrado.clave);
 
         // Mostrar eventos especiales
         if (typeof mostrarEntradasTempranas === 'function') mostrarEntradasTempranas(empleadoEncontrado);
@@ -80,6 +103,7 @@ function cargarData(jsonNominaConfianza, clave) {
         if (typeof mostrarHistorialOlvidos === 'function') mostrarHistorialOlvidos(empleadoEncontrado);
         if (typeof mostrarHistorialUniformes === 'function') mostrarHistorialUniformes(empleadoEncontrado);
         if (typeof mostrarHistorialPermisos === 'function') mostrarHistorialPermisos(empleadoEncontrado);
+        if (typeof mostrarAnalisisPermisosComida === 'function') mostrarAnalisisPermisosComida(empleadoEncontrado);
 
         // Mostrar conceptos personalizados en extras_adicionales
         const $contenedorExtras = $('#contenedor-conceptos-adicionales');
@@ -133,6 +157,11 @@ function cargarData(jsonNominaConfianza, clave) {
         if (typeof calcularYMostrarSueldoACobrar === 'function') {
             calcularYMostrarSueldoACobrar();
         }
+
+        // Configurar inputs según el departamento (deshabilitar para "sin seguro")
+        if (typeof configurarInputsSinSeguro === 'function') {
+            configurarInputsSinSeguro(empleadoEncontrado.clave);
+        }
     } else {
        
     }
@@ -150,13 +179,112 @@ function mostrarRegistrosChecador(empleado) {
     }
     
     // Recorrer los registros y agregarlos a la tabla
-    empleado.registros.forEach(registro => {
+    empleado.registros.forEach((registro, indexRegistro) => {
         // Obtener el nombre del día a partir de la fecha
         const nombreDia = obtenerNombreDia(registro.fecha);
         
+        // Agrupar registros por fecha para identificar primer/último del día
+        const registrosMismaFecha = empleado.registros.filter(r => r.fecha === registro.fecha);
+        const registrosConEntrada = registrosMismaFecha.filter(r => r.entrada && r.entrada !== '-');
+        const registrosConSalida = registrosMismaFecha.filter(r => r.salida && r.salida !== '-');
+        
+        // Determinar si es el primer registro con entrada del día
+        const esPrimeraEntrada = registrosConEntrada.length > 0 && 
+            registrosConEntrada[0].entrada === registro.entrada;
+        
+        // Determinar si es el último registro con salida del día
+        const esUltimaSalida = registrosConSalida.length > 0 && 
+            registrosConSalida[registrosConSalida.length - 1].salida === registro.salida;
+        
+        // Detectar eventos específicos de ESTE REGISTRO
+        const eventosDelRegistro = [];
+        let claseEvento = '';
+        
+        // 1. RETARDOS (VERDE) - solo en la PRIMERA entrada del día
+        if (esPrimeraEntrada && empleado.historial_retardos && empleado.historial_retardos.length > 0) {
+            const retardo = empleado.historial_retardos.find(r => r.fecha === registro.fecha);
+            if (retardo) {
+                eventosDelRegistro.push({ tipo: 'retardo', nombre: 'Retardo', prioridad: 1 });
+            }
+        }
+        
+        // 2. OLVIDOS DEL CHECADOR (ROJO) - si ESTE registro tiene entrada o salida vacía
+        const faltaEntrada = !registro.entrada || registro.entrada === '' || registro.entrada === '-';
+        const faltaSalida = !registro.salida || registro.salida === '' || registro.salida === '-';
+        
+        if (faltaEntrada || faltaSalida) {
+            if (empleado.historial_olvidos && empleado.historial_olvidos.length > 0) {
+                const olvido = empleado.historial_olvidos.find(o => o.fecha === registro.fecha);
+                if (olvido) {
+                    eventosDelRegistro.push({ tipo: 'olvido', nombre: 'Olvido de checador', prioridad: 2 });
+                }
+            }
+        }
+        
+        // 3. INASISTENCIAS (NARANJA) - solo si NO tiene entrada ni salida
+        const esRegistroVacio = faltaEntrada && faltaSalida;
+        if (esRegistroVacio && empleado.historial_inasistencias && empleado.historial_inasistencias.length > 0) {
+            const inasistencia = empleado.historial_inasistencias.find(i => i.fecha === registro.fecha);
+            if (inasistencia) {
+                eventosDelRegistro.push({ tipo: 'inasistencia', nombre: 'Inasistencia', prioridad: 3 });
+            }
+        }
+        
+        // 4. SALIDAS TEMPRANAS (AZUL) - solo en la ÚLTIMA salida del día
+        if (esUltimaSalida && empleado.historial_salidas_tempranas && empleado.historial_salidas_tempranas.length > 0) {
+            const salidaTemprana = empleado.historial_salidas_tempranas.find(s => s.fecha === registro.fecha);
+            if (salidaTemprana) {
+                eventosDelRegistro.push({ tipo: 'salida-temprana', nombre: 'Salida temprana', prioridad: 4 });
+            }
+        }
+        
+        // 5. ENTRADAS TEMPRANAS (VERDE) - solo en la PRIMERA entrada del día
+        if (esPrimeraEntrada && empleado.historial_entradas_tempranas && empleado.historial_entradas_tempranas.length > 0) {
+            const entradaTemprana = empleado.historial_entradas_tempranas.find(e => e.fecha === registro.fecha);
+            if (entradaTemprana) {
+                eventosDelRegistro.push({ tipo: 'entrada-temprana', nombre: 'Entrada temprana', prioridad: 5 });
+            }
+        }
+        
+        // 6. SALIDAS TARDÍAS (MORADO) - solo en la ÚLTIMA salida del día
+        if (esUltimaSalida && empleado.historial_salidas_tardias && empleado.historial_salidas_tardias.length > 0) {
+            const salidaTardia = empleado.historial_salidas_tardias.find(s => s.fecha === registro.fecha);
+            if (salidaTardia) {
+                eventosDelRegistro.push({ tipo: 'salida-tardia', nombre: 'Salida tardía', prioridad: 6 });
+            }
+        }
+        
+        // Determinar clase CSS (mayor prioridad = número menor)
+        let badgeMultiple = '';
+        
+        if (eventosDelRegistro.length > 0) {
+            eventosDelRegistro.sort((a, b) => a.prioridad - b.prioridad);
+            claseEvento = `evento-${eventosDelRegistro[0].tipo}`;
+            
+            // Si hay múltiples eventos, mostrar iniciales
+            if (eventosDelRegistro.length > 1) {
+                const iniciales = {
+                    'retardo': 'R',
+                    'olvido': 'O',
+                    'inasistencia': 'I',
+                    'salida-temprana': 'ST',
+                    'entrada-temprana': 'ET',
+                    'salida-tardia': 'SL'
+                };
+                
+                const textoInicial = eventosDelRegistro.map(e => iniciales[e.tipo] || '?').join('·');
+                badgeMultiple = `<span class="badge-eventos" title="Este registro tiene ${eventosDelRegistro.length} eventos">${textoInicial}</span>`;
+            }
+        }
+        
+        // Crear tooltip con TODOS los eventos del registro
+        const tituloEvento = eventosDelRegistro.length > 0 
+            ? eventosDelRegistro.map(e => `• ${e.nombre}`).join('\n')
+            : '';
+        
         const fila = `
-            <tr>
-                <td>${nombreDia}</td>
+            <tr class="${claseEvento}" title="${tituloEvento}">
+                <td>${nombreDia} ${badgeMultiple}</td>
                 <td>${registro.fecha || '-'}</td>
                 <td>${registro.entrada || '-'}</td>
                 <td>${registro.salida || '-'}</td>

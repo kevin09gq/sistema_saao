@@ -37,8 +37,17 @@
                     </div>
                 </div>
 
-                <!-- Accordion para conceptos -->
-                <div class="accordion" id="accordionConceptos"></div>
+                <!-- Percepciones -->
+                <h6 class="text-success fw-bold mb-3">
+                    <i class="bi bi-arrow-up-circle"></i> PERCEPCIONES
+                </h6>
+                <div class="accordion mb-4" id="percepciones-accordion"></div>
+
+                <!-- Deducciones -->
+                <h6 class="text-danger fw-bold mb-3">
+                    <i class="bi bi-arrow-down-circle"></i> DEDUCCIONES
+                </h6>
+                <div class="accordion" id="deducciones-accordion"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>

@@ -11,7 +11,6 @@ function saveNomina(jsonNominaConfianza) {
         localStorage.setItem('jsonNominaConfianza', str);
         return true;
     } catch (err) {
-        console.error('Error guardando en localStorage:', err);
         return false;
     }
 }
@@ -22,7 +21,6 @@ function loadNomina() {
         if (!str) return null;
         return JSON.parse(str);
     } catch (err) {
-        console.error('Error leyendo de localStorage:', err);
         return null;
     }
 }
@@ -32,7 +30,6 @@ function clearNomina() {
         localStorage.removeItem('jsonNominaConfianza');
         return true;
     } catch (err) {
-        console.error('Error borrando de localStorage:', err);
         return false;
     }
 }

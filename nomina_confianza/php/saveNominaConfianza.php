@@ -20,7 +20,7 @@ if (!$anio) {
 // Log para debugging
 error_log("saveNominaConfianza - Datos recibidos: id_empresa=" . $id_empresa . ", numero_semana=" . $numero_semana . ", anio=" . $anio . ", actualizar=" . ($actualizar ? 'true' : 'false'));
 
-if (!$id_empresa || !$numero_semana || !$anio || !$anio || !$nomina) {
+if (!$id_empresa || !$numero_semana || !$anio || !$nomina) {
     echo json_encode([
         'success' => false,
         'message' => 'Datos incompletos. id_empresa=' . var_export($id_empresa, true) . ', numero_semana=' . var_export($numero_semana, true) . ', anio=' . var_export($anio, true) . ', nomina=' . (strlen($nomina) > 0 ? 'OK' : 'VACÍO')

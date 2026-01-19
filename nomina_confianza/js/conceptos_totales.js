@@ -1,7 +1,24 @@
-// Funcionalidad para el modal de totales por concepto
+// Definición de conceptos por tipo
+const PERCEPCIONES = [
+    { nombre: 'Sueldo Semanal', propiedad: 'sueldo_semanal' },
+    { nombre: 'Extras', propiedad: 'sueldo_extra_total' }
+];
+
+const DEDUCCIONES = [
+    { nombre: 'Retardos', propiedad: 'retardos' },
+    { nombre: 'ISR', codigo: '45' },
+    { nombre: 'IMSS', codigo: '52' },
+    { nombre: 'Ajuste al Sub', codigo: '107' },
+    { nombre: 'Infonavit', codigo: '16' },
+    { nombre: 'Permiso', propiedad: 'permiso' },
+    { nombre: 'Inasistencias', propiedad: 'inasistencia' },
+    { nombre: 'Uniformes', propiedad: 'uniformes' },
+    { nombre: 'Checador', propiedad: 'checador' },
+    { nombre: 'Préstamo', propiedad: 'prestamo' },
+    { nombre: 'Tarjeta', propiedad: 'tarjeta' }
+];
 
 $(document).ready(function() {
-    // Abrir modal al hacer clic en el botón
     $('#btn_conceptos_totales').on('click', function() {
         calcularYMostrarTotales();
         $('#modalConceptosTotales').modal('show');
@@ -14,182 +31,113 @@ function calcularYMostrarTotales() {
         return;
     }
 
-    // Obtener solo empleados con mostrar=true
     const empleadosVisibles = [];
     jsonNominaConfianza.departamentos.forEach(departamento => {
         const empleadosFiltrados = departamento.empleados.filter(emp => emp.mostrar !== false);
         empleadosVisibles.push(...empleadosFiltrados);
     });
 
-    // Estructura para almacenar totales por concepto
-    const conceptos = {
-        'Sueldo Semanal': { total: 0, empleados: [] },
-        'Extras': { total: 0, empleados: [] },
-        'Retardos': { total: 0, empleados: [] },
-        'ISR': { total: 0, empleados: [] },
-        'IMSS': { total: 0, empleados: [] },
-        'Ajuste al Sub': { total: 0, empleados: [] },
-        'Infonavit': { total: 0, empleados: [] },
-        'Permiso': { total: 0, empleados: [] },
-        'Inasistencias': { total: 0, empleados: [] },
-        'Uniformes': { total: 0, empleados: [] },
-        'Checador': { total: 0, empleados: [] },
-        'Préstamo': { total: 0, empleados: [] },
-        'Tarjeta': { total: 0, empleados: [] }
-    };
-
-    // Totales generales
+    // Inicializar estructuras de datos
+    const percepciones = {};
+    const deducciones = {};
     let totalPercepcionesGeneral = 0;
     let totalDeduccionesGeneral = 0;
-    let totalNetoGeneral = 0;
 
-    // Recorrer empleados y sumar conceptos
+    // Inicializar todos los conceptos con cero
+    PERCEPCIONES.forEach(p => percepciones[p.nombre] = { total: 0, empleados: [] });
+    DEDUCCIONES.forEach(d => deducciones[d.nombre] = { total: 0, empleados: [] });
+
+    // Calcular totales
     empleadosVisibles.forEach(empleado => {
-        // Función auxiliar para buscar concepto
-        const buscarConcepto = (codigo) => {
-            if (!Array.isArray(empleado.conceptos)) return 0;
-            const concepto = empleado.conceptos.find(c => String(c.codigo) === String(codigo));
-            return concepto ? (parseFloat(concepto.resultado) || 0) : 0;
-        };
+        // Procesar percepciones
+        PERCEPCIONES.forEach(perc => {
+            const valor = parseFloat(empleado[perc.propiedad]) || 0;
+            percepciones[perc.nombre].total += valor;
+            if (valor > 0) {
+                percepciones[perc.nombre].empleados.push({ nombre: empleado.nombre, monto: valor });
+            }
+            totalPercepcionesGeneral += valor;
+        });
 
-        // Sueldo Semanal
-        const sueldo = parseFloat(empleado.sueldo_semanal) || 0;
-        if (sueldo > 0) {
-            conceptos['Sueldo Semanal'].total += sueldo;
-            conceptos['Sueldo Semanal'].empleados.push({ nombre: empleado.nombre, monto: sueldo });
+        // Procesar deducciones fijas
+        DEDUCCIONES.forEach(dedu => {
+            let valor = 0;
+            if (dedu.propiedad) {
+                valor = parseFloat(empleado[dedu.propiedad]) || 0;
+            } else if (dedu.codigo) {
+                const concepto = (empleado.conceptos || []).find(c => String(c.codigo) === String(dedu.codigo));
+                valor = concepto ? (parseFloat(concepto.resultado) || 0) : 0;
+            }
+            deducciones[dedu.nombre].total += valor;
+            if (valor > 0) {
+                deducciones[dedu.nombre].empleados.push({ nombre: empleado.nombre, monto: valor });
+            }
+            totalDeduccionesGeneral += valor;
+        });
+
+        // Procesar deducciones adicionales (propiedad 'deducciones_adicionales')
+        if (Array.isArray(empleado.deducciones_adicionales) && empleado.deducciones_adicionales.length > 0) {
+            // Sumar todas las deducciones adicionales por empleado y agruparlas como 'Otras Deducciones'
+            let totalExtrasEmpleado = 0;
+            empleado.deducciones_adicionales.forEach(extra => {
+                const valorExtra = parseFloat(extra.resultado ?? extra.valor ?? extra.monto) || 0;
+                if (valorExtra > 0) totalExtrasEmpleado += valorExtra;
+            });
+            if (totalExtrasEmpleado > 0) {
+                const clave = 'Otras Deducciones';
+                if (!deducciones[clave]) {
+                    deducciones[clave] = { total: 0, empleados: [] };
+                }
+                deducciones[clave].total += totalExtrasEmpleado;
+                deducciones[clave].empleados.push({ nombre: empleado.nombre, monto: totalExtrasEmpleado });
+                totalDeduccionesGeneral += totalExtrasEmpleado;
+            }
         }
-
-        // Extras
-        const extras = parseFloat(empleado.sueldo_extra_total) || 0;
-        if (extras > 0) {
-            conceptos['Extras'].total += extras;
-            conceptos['Extras'].empleados.push({ nombre: empleado.nombre, monto: extras });
-        }
-
-        // Retardos
-        const retardos = parseFloat(empleado.retardos) || 0;
-        if (retardos > 0) {
-            conceptos['Retardos'].total += retardos;
-            conceptos['Retardos'].empleados.push({ nombre: empleado.nombre, monto: retardos });
-        }
-
-        // ISR
-        const isr = buscarConcepto('45');
-        if (isr > 0) {
-            conceptos['ISR'].total += isr;
-            conceptos['ISR'].empleados.push({ nombre: empleado.nombre, monto: isr });
-        }
-
-        // IMSS
-        const imss = buscarConcepto('52');
-        if (imss > 0) {
-            conceptos['IMSS'].total += imss;
-            conceptos['IMSS'].empleados.push({ nombre: empleado.nombre, monto: imss });
-        }
-
-        // Ajuste al Sub
-        const ajusteSub = parseFloat(empleado.ajuste_sub) || 0;
-        if (ajusteSub > 0) {
-            conceptos['Ajuste al Sub'].total += ajusteSub;
-            conceptos['Ajuste al Sub'].empleados.push({ nombre: empleado.nombre, monto: ajusteSub });
-        }
-
-        // Infonavit
-        const infonavit = buscarConcepto('16');
-        if (infonavit > 0) {
-            conceptos['Infonavit'].total += infonavit;
-            conceptos['Infonavit'].empleados.push({ nombre: empleado.nombre, monto: infonavit });
-        }
-
-        // Permiso
-        const permiso = parseFloat(empleado.permiso) || 0;
-        if (permiso > 0) {
-            conceptos['Permiso'].total += permiso;
-            conceptos['Permiso'].empleados.push({ nombre: empleado.nombre, monto: permiso });
-        }
-
-        // Inasistencias
-        const inasistencias = parseFloat(empleado.inasistencia) || 0;
-        if (inasistencias > 0) {
-            conceptos['Inasistencias'].total += inasistencias;
-            conceptos['Inasistencias'].empleados.push({ nombre: empleado.nombre, monto: inasistencias });
-        }
-
-        // Uniformes
-        const uniformes = parseFloat(empleado.uniformes) || 0;
-        if (uniformes > 0) {
-            conceptos['Uniformes'].total += uniformes;
-            conceptos['Uniformes'].empleados.push({ nombre: empleado.nombre, monto: uniformes });
-        }
-
-        // Checador
-        const checador = parseFloat(empleado.checador) || 0;
-        if (checador > 0) {
-            conceptos['Checador'].total += checador;
-            conceptos['Checador'].empleados.push({ nombre: empleado.nombre, monto: checador });
-        }
-
-        // Préstamo
-        const prestamo = parseFloat(empleado.prestamo) || 0;
-        if (prestamo > 0) {
-            conceptos['Préstamo'].total += prestamo;
-            conceptos['Préstamo'].empleados.push({ nombre: empleado.nombre, monto: prestamo });
-        }
-
-        // Tarjeta
-        const tarjeta = parseFloat(empleado.tarjeta) || 0;
-        if (tarjeta > 0) {
-            conceptos['Tarjeta'].total += tarjeta;
-            conceptos['Tarjeta'].empleados.push({ nombre: empleado.nombre, monto: tarjeta });
-        }
-
-        // Calcular totales generales
-        const percepciones = sueldo + extras;
-        const deducciones = retardos + isr + imss + ajusteSub + infonavit + permiso + inasistencias + uniformes + checador;
-        const neto = percepciones - deducciones - prestamo - tarjeta;
-
-        totalPercepcionesGeneral += percepciones;
-        totalDeduccionesGeneral += deducciones;
-        totalNetoGeneral += neto;
     });
+
+    const totalNetoGeneral = totalPercepcionesGeneral - totalDeduccionesGeneral;
 
     // Mostrar totales generales
     $('#total-percepciones-general').text('$' + totalPercepcionesGeneral.toFixed(2));
     $('#total-deducciones-general').text('$' + totalDeduccionesGeneral.toFixed(2));
     $('#total-neto-general').text('$' + totalNetoGeneral.toFixed(2));
 
-    // Renderizar accordion de conceptos
-    renderizarAccordion(conceptos);
+    // Renderizar datos
+    renderizarConceptos('percepciones-accordion', percepciones);
+    renderizarConceptos('deducciones-accordion', deducciones);
 }
 
-function renderizarAccordion(conceptos) {
-    const accordion = $('#accordionConceptos');
-    accordion.empty();
+function renderizarConceptos(contenedorId, conceptos) {
+    const contenedor = $(`#${contenedorId}`);
+    contenedor.empty();
 
     let index = 0;
-    for (const [nombreConcepto, datos] of Object.entries(conceptos)) {
-        // Solo mostrar conceptos que tengan empleados
-        if (datos.empleados.length === 0) continue;
+    for (const [nombre, datos] of Object.entries(conceptos)) {
+        const collapseId = `collapse-${contenedorId}-${index}`;
+        const headingId = `heading-${contenedorId}-${index}`;
+        const empleadosHtml = datos.empleados.length > 0 
+            ? datos.empleados.map((emp, idx) => `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td>${emp.nombre}</td>
+                    <td class="text-end">$${emp.monto.toFixed(2)}</td>
+                </tr>
+            `).join('')
+            : '<tr><td colspan="3" class="text-center text-muted">Sin movimientos</td></tr>';
 
-        const collapseId = 'collapse' + index;
-        const headingId = 'heading' + index;
         const item = `
             <div class="accordion-item">
                 <h2 class="accordion-header" id="${headingId}">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
                             data-bs-target="#${collapseId}" aria-expanded="false" aria-controls="${collapseId}">
-                        <span class="concept-title"><strong>${nombreConcepto}</strong></span>
-                        <div class="badge-group">
-                            <span class="badge bg-primary">Total: $${datos.total.toFixed(2)}</span>
-                            <span class="badge bg-secondary">${datos.empleados.length} empleado(s)</span>
-                        </div>
+                        <span class="concept-title"><strong>${nombre}</strong></span>
+                        <span class="badge bg-primary">$${datos.total.toFixed(2)}</span>
+                        <span class="badge bg-secondary">${datos.empleados.length} persona(s)</span>
                     </button>
                 </h2>
-                <div id="${collapseId}" class="accordion-collapse collapse" aria-labelledby="${headingId}" 
-                     data-bs-parent="#accordionConceptos">
-                    <div class="accordion-body">
-                        <div class="table-responsive">
-                        <table class="table table-sm table-hover mb-0">
+                <div id="${collapseId}" class="accordion-collapse collapse" aria-labelledby="${headingId}">
+                    <div class="accordion-body p-2">
+                        <table class="table table-sm mb-0">
                             <thead>
                                 <tr>
                                     <th style="width:40px">#</th>
@@ -198,22 +146,14 @@ function renderizarAccordion(conceptos) {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${datos.empleados.map((emp, idx) => `
-                                    <tr>
-                                        <td>${idx + 1}</td>
-                                        <td>${emp.nombre}</td>
-                                        <td class="text-end">$${emp.monto.toFixed(2)}</td>
-                                    </tr>
-                                `).join('')}
+                                ${empleadosHtml}
                             </tbody>
                         </table>
-                        </div>
                     </div>
                 </div>
             </div>
         `;
-
-        accordion.append(item);
+        contenedor.append(item);
         index++;
     }
 }

@@ -20,17 +20,107 @@ function calcularTotalDeducciones(empleado) {
     const retardos = parseFloat(empleado.retardos) || 0;
     const isr = buscarConcepto('45');
     const imss = buscarConcepto('52');
-    const ajusteSub = parseFloat(empleado.ajuste_sub) || 0;
+    const ajusteSub = buscarConcepto('107');
     const infonavit = buscarConcepto('16');
     const permiso = parseFloat(empleado.permiso) || 0;
     const inasistencia = parseFloat(empleado.inasistencia) || 0;
     const uniformes = parseFloat(empleado.uniformes) || 0;
     const checador = parseFloat(empleado.checador) || 0;
+    
+    // Sumar deducciones_adicionales (deducciones personalizadas)
+    let deduccionesAdicionales = 0;
+    if (Array.isArray(empleado.deducciones_adicionales)) {
+        empleado.deducciones_adicionales.forEach(deduccion => {
+            deduccionesAdicionales += parseFloat(deduccion.resultado) || parseFloat(deduccion.valor) || parseFloat(deduccion.monto) || 0;
+        });
+    }
 
-    const total = retardos + isr + imss + ajusteSub + infonavit + permiso + inasistencia + uniformes + checador;
+    const total = retardos + isr + imss + ajusteSub + infonavit + permiso + inasistencia + uniformes + checador + deduccionesAdicionales;
     return total.toFixed(2);
 }
 
+
+
+// ========================================
+// DESHABILITAR INPUTS PARA EMPLEADOS SIN SEGURO
+// ========================================
+// - Los empleados del departamento "sin seguro" no tienen ISR, IMSS, INFONAVIT, Ajuste al Sub ni Tarjeta
+// - Esta función deshabilita esos inputs y los pone en 0
+
+function configurarInputsSinSeguro(clave) {
+    if (!jsonNominaConfianza || !clave) return;
+
+    // Buscar el empleado y su departamento
+    let empleado = null;
+    let nombreDepartamento = '';
+    
+    jsonNominaConfianza.departamentos.forEach(dept => {
+        (dept.empleados || []).forEach(emp => {
+            if (emp.clave == clave) {
+                empleado = emp;
+                nombreDepartamento = (dept.nombre || '').toLowerCase().trim();
+            }
+        });
+    });
+
+    if (!empleado) return;
+
+    // IDs de los inputs que se deshabilitan para empleados sin seguro
+    const inputsConceptos = [
+        '#mod-isr',
+        '#mod-imss',
+        '#mod-infonavit',
+        '#mod-ajustes-sub',
+        '#mod-tarjeta'
+    ];
+
+    // IDs de los botones de aplicar conceptos
+    const botonesAplicar = [
+        '#btn-aplicar-isr',
+        '#btn-aplicar-imss',
+        '#btn-aplicar-infonavit',
+        '#btn-aplicar-ajuste-sub',
+        '#btn-aplicar-tarjeta'
+    ];
+
+    // Verificar si el empleado está en el departamento "sin seguro"
+    const esSinSeguro = nombreDepartamento === 'sin seguro';
+
+    if (esSinSeguro) {
+        // Deshabilitar inputs y ponerlos en 0
+        inputsConceptos.forEach(selector => {
+            $(selector).val('0.00').prop('disabled', true).addClass('input-disabled');
+        });
+
+        // Deshabilitar botones de aplicar
+        botonesAplicar.forEach(selector => {
+            $(selector).prop('disabled', true).addClass('btn-disabled');
+        });
+
+        // Asegurar que los valores en el empleado también sean 0
+        if (Array.isArray(empleado.conceptos)) {
+            empleado.conceptos.forEach(concepto => {
+                const codigo = String(concepto.codigo);
+                if (codigo === '45' || codigo === '52' || codigo === '16' || codigo === '107') {
+                    concepto.resultado = 0;
+                }
+            });
+        }
+
+        empleado.tarjeta = 0;
+
+    } else {
+        // Habilitar inputs normalmente
+        inputsConceptos.forEach(selector => {
+            $(selector).prop('disabled', false).removeClass('input-disabled');
+        });
+
+        // Habilitar botones de aplicar
+        botonesAplicar.forEach(selector => {
+            $(selector).prop('disabled', false).removeClass('btn-disabled');
+        });
+    }
+}
 
 
 // ========================================
@@ -53,6 +143,7 @@ function calcularYMostrarSueldoACobrar() {
     // Deducciones principales
     const isr = parseFloat($('#mod-isr').val()) || 0;
     const imss = parseFloat($('#mod-imss').val()) || 0;
+    const ajusteSub = parseFloat($('#mod-ajustes-sub').val()) || 0;
     const infonavit = parseFloat($('#mod-infonavit').val()) || 0;
     const retardos = parseFloat($('#mod-retardos').val()) || 0;
     const permiso = parseFloat($('#mod-permiso').val()) || 0;
@@ -67,7 +158,7 @@ function calcularYMostrarSueldoACobrar() {
         adicionales += parseFloat($(this).val()) || 0;
     });
 
-    const deducciones = isr + imss + infonavit + retardos + permiso + inasistencia + uniformes + checador + tarjeta + adicionales;
+    const deducciones = isr + imss + ajusteSub + infonavit + retardos + permiso + inasistencia + uniformes + checador + tarjeta + adicionales;
 
     const total = percepciones - deducciones;
     $('#mod-sueldo-a-cobrar').val(total.toFixed(2));
@@ -171,6 +262,11 @@ function cerrarModalDetalles() {
         $('#modal-detalles').hide();
         limpiarModalDetalles();
     });
+    $("#btn-cancelar-conceptos").click(function (e) { 
+        e.preventDefault();
+         $('#modal-detalles').hide();
+        limpiarModalDetalles();
+    });
 }
 
 // Función para limpiar los campos del modal
@@ -188,6 +284,7 @@ function limpiarModalDetalles() {
     $('#mod-isr').val('');
     $('#mod-imss').val('');
     $('#mod-infonavit').val('');
+    $('#mod-ajustes-sub').val('');
 
     // Limpiar campos de deducciones
     $('#mod-tarjeta').val('');
@@ -214,11 +311,13 @@ function limpiarModalDetalles() {
     $('#olvidos-checador-content').html('<p class="sin-eventos">No hay olvidos registrados</p>');
     $('#retardos-content').html('<p class="sin-eventos">No hay retardos registrados</p>');
     $('#faltas-content').html('<p class="sin-eventos">No hay inasistencias registradas</p>');
+    $('#analisis-permisos-comida-content').html('<p class="sin-eventos">No hay análisis de permisos y comidas disponible</p>');
 
     // Limpiar totales de eventos especiales
     $('#total-olvidos-checador').text('Total: 0 eventos');
     $('#total-retardos').text('Total: 0 eventos');
     $('#total-faltas').text('Total: 0 días');
+    $('#total-analisis-permisos-comida').text('Total: 0 eventos');
 
     // Limpiar historial de retardos
     $('#contenedor-historial-retardos').empty();
@@ -237,7 +336,7 @@ function limpiarModalDetalles() {
     // Limpiar historial de permisos
     $('#contenedor-historial-permisos').empty();
     $('#input-descripcion-permiso').val('');
-    $('#input-horas-permiso').val('');
+    $('#input-minutos-permiso').val('');
     $('#input-cantidad-permiso').val('');
 
     // Limpiar campo de sueldo a cobrar
@@ -488,6 +587,35 @@ function activarBotonesRecalculo() {
         $('#mod-infonavit').val(copia.resultado);
     });
 
+    // Aplica AJUSTE AL SUB (código 107) desde conceptos_copia
+    $(document).on('click', '#btn-aplicar-ajuste-sub', function () {
+        const clave = $('#campo-clave').text().trim();
+        let empleado = null;
+        jsonNominaConfianza.departamentos.forEach(dept => {
+            dept.empleados.forEach(emp => {
+                if (emp.clave == clave) empleado = emp;
+            });
+        });
+        if (!empleado) return;
+
+        const copia = Array.isArray(empleado.conceptos_copia) ? empleado.conceptos_copia.find(c => String(c.codigo) === '107') : null;
+        if (!copia) {
+            alert('No hay valor de Ajuste al Sub en conceptos_copia para este empleado');
+            return;
+        }
+
+        if (!Array.isArray(empleado.conceptos)) empleado.conceptos = [];
+        let actual = empleado.conceptos.find(c => String(c.codigo) === '107');
+        if (actual) {
+            actual.resultado = copia.resultado;
+            actual.nombre = actual.nombre || copia.nombre;
+        } else {
+            empleado.conceptos.push({ codigo: copia.codigo, nombre: copia.nombre, resultado: copia.resultado });
+        }
+
+        $('#mod-ajustes-sub').val(copia.resultado);
+    });
+
     // Aplica TARJETA desde tarjeta_copia (actualiza la propiedad tarjeta y el input)
     $(document).on('click', '#btn-aplicar-tarjeta', function () {
         const clave = $('#campo-clave').text().trim();
@@ -612,6 +740,87 @@ function activarInputsValidadores() {
     validarConceptoMax('#mod-isr', '45');
     validarConceptoMax('#mod-imss', '52');
     validarConceptoMax('#mod-infonavit', '16');
+    validarConceptoMax('#mod-ajustes-sub', '107');
+
+    // DETECTAR EDICIONES MANUALES: marcar banderas cuando el usuario edita directamente los inputs
+    // Esto permite que el valor manual se respete aunque el historial cambie
+    $(document).on('input', '#mod-checador', function () {
+        const clave = $('#campo-clave').text().trim();
+        if (!clave) return;
+        let empleado = null;
+        jsonNominaConfianza.departamentos.forEach(dept => {
+            (dept.empleados || []).forEach(emp => { if (emp.clave == clave) empleado = emp; });
+        });
+        if (empleado) {
+            empleado._checador_editado_manual = true;
+            empleado.checador = parseFloat($(this).val()) || 0;
+        }
+    });
+
+    $(document).on('input', '#mod-retardos', function () {
+        const clave = $('#campo-clave').text().trim();
+        if (!clave) return;
+        let empleado = null;
+        jsonNominaConfianza.departamentos.forEach(dept => {
+            (dept.empleados || []).forEach(emp => { if (emp.clave == clave) empleado = emp; });
+        });
+        if (empleado) {
+            empleado._retardos_editado_manual = true;
+            empleado.retardos = parseFloat($(this).val()) || 0;
+        }
+    });
+
+    $(document).on('input', '#mod-inasistencias', function () {
+        const clave = $('#campo-clave').text().trim();
+        if (!clave) return;
+        let empleado = null;
+        jsonNominaConfianza.departamentos.forEach(dept => {
+            (dept.empleados || []).forEach(emp => { if (emp.clave == clave) empleado = emp; });
+        });
+        if (empleado) {
+            empleado._inasistencias_editado_manual = true;
+            empleado.inasistencia = parseFloat($(this).val()) || 0;
+        }
+    });
+
+    $(document).on('input', '#mod-uniformes', function () {
+        const clave = $('#campo-clave').text().trim();
+        if (!clave) return;
+        let empleado = null;
+        jsonNominaConfianza.departamentos.forEach(dept => {
+            (dept.empleados || []).forEach(emp => { if (emp.clave == clave) empleado = emp; });
+        });
+        if (empleado) {
+            empleado._uniformes_editado_manual = true;
+            empleado.uniformes = parseFloat($(this).val()) || 0;
+        }
+    });
+
+    $(document).on('input', '#mod-permiso', function () {
+        const clave = $('#campo-clave').text().trim();
+        if (!clave) return;
+        let empleado = null;
+        jsonNominaConfianza.departamentos.forEach(dept => {
+            (dept.empleados || []).forEach(emp => { if (emp.clave == clave) empleado = emp; });
+        });
+        if (empleado) {
+            empleado._permiso_editado_manual = true;
+            empleado.permiso = parseFloat($(this).val()) || 0;
+        }
+    });
+
+    $(document).on('input', '#mod-prestamo', function () {
+        const clave = $('#campo-clave').text().trim();
+        if (!clave) return;
+        let empleado = null;
+        jsonNominaConfianza.departamentos.forEach(dept => {
+            (dept.empleados || []).forEach(emp => { if (emp.clave == clave) empleado = emp; });
+        });
+        if (empleado) {
+            empleado._prestamo_editado_manual = true;
+            empleado.prestamo = parseFloat($(this).val()) || 0;
+        }
+    });
 
     // Para conceptos adicionales dinámicos: si cada input lleva data-codigo y existe en conceptos_copia,
     // se valida de la misma forma. Escuchamos cambios en el contenedor y aplicamos validación a los inputs nuevos.
@@ -638,6 +847,36 @@ function activarInputsValidadores() {
     });
 
 }
+
+// ========================================
+// LIMPIAR BÚSQUEDA
+// ========================================
+function limpiarBusqueda() {
+    // Limpiar el campo de búsqueda
+    $('#busqueda-nomina-confianza').val('');
+    
+    // Verificar si hay filtros activos de departamento o empresa
+    const valorDepartamento = String($('#filtro-departamento').val() || '0');
+    const valorEmpresa = String($('#filtro-empresa').val() || '0');
+    
+    // Si hay filtros activos, aplicarlos; si no, mostrar todos los empleados
+    if (valorDepartamento !== '0' || valorEmpresa !== '0') {
+        // Hay filtros activos, aplicar solo esos filtros
+        if (typeof configPaginacionSelect === 'function') {
+            configPaginacionSelect();
+        }
+    } else {
+        // No hay filtros, mostrar todos los empleados
+        if (typeof mostrarDatosTabla === 'function' && jsonNominaConfianza) {
+            mostrarDatosTabla(jsonNominaConfianza, 1);
+        }
+    }
+}
+
+// Evento para el botón de limpiar búsqueda
+$(document).on('click', '#btn-clear-busqueda', function() {
+    limpiarBusqueda();
+});
 
 
 
