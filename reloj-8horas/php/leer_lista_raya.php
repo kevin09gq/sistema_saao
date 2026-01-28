@@ -24,6 +24,10 @@ $numeroSemana = null;
 $fechaInicio = null;
 $fechaCierre = null;
 
+// Identificar empresa
+$rfc_empresa_1 = "0105";
+$rfc_empresa_2 = "0105";
+
 // Buscar datos generales en las primeras filas
 foreach ($rows as $row) {
     // Buscar número de semana
@@ -231,7 +235,8 @@ $output = [
     'fecha_inicio'  => $fechaInicio,
     'fecha_cierre'  => $fechaCierre,
     'departamentos' => $departamentos,
-    'puestos'       => $puestos
+    'puestos'       => $puestos,
+    'id_empresa' => 1
 ];
 
 echo json_encode($output);

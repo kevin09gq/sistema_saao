@@ -516,6 +516,8 @@ verificarSesion();
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Horarios Oficiales -->
                             <div class="tab-pane fade" id="tab_horarios_oficiales" role="tabpanel" aria-labelledby="tab-horarios-oficiales">
                                 <div class="row">
                                     <div class="col-12">
@@ -559,7 +561,15 @@ verificarSesion();
                                                     <?php for ($i = 1; $i <= 7; $i++): ?>
                                                         <tr>
                                                             <td>
-                                                                <input type="text" class="form-control" name="horario_oficial_dia[]" placeholder="Día">
+                                                                <!-- <input type="text" class="form-control" name="horario_oficial_dia[]" placeholder="Día"> -->
+                                                                <select class="form-select" name="horario_oficial_dia[]">
+                                                                    <option selected value="">Seleccionar...</option>
+
+                                                                    <?php foreach (DIAS_SEMANA as $dia): ?>
+                                                                        <option value="<?php echo $dia; ?>"><?php echo $dia; ?></option>
+                                                                    <?php endforeach; ?>
+
+                                                                </select>
                                                             </td>
                                                             <td>
                                                                 <input type="time" class="form-control" name="horario_oficial_entrada[]" placeholder="Entrada">
@@ -590,6 +600,8 @@ verificarSesion();
                         </div>
                     </div>
                     <div class="modal-footer">
+                        <span class="badge fs-6 bg-success me-auto" id="label-nombre-empleado"></span>
+
                         <button type="button" id="btn_cancelar" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                         <button type="submit" id="btn_actualizar" class="btn btn-primary">Guardar Cambios</button>
                     </div>

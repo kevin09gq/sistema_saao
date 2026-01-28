@@ -121,8 +121,8 @@ $(document).ready(function () {
     configTablas();
     inicializarBotonesLimpiarBusqueda();
 
-  console.log(jsonGlobal);
   
+console.log(jsonGlobal);
 
 
     $('#btn_horarios').click(function (e) {
@@ -1011,6 +1011,15 @@ function establecerDatosEmpleados() {
                     //   INICIALIZAR SUELDO A COBRAR si no existe
                     if (emp.sueldo_a_cobrar === undefined) {
                         emp.sueldo_a_cobrar = 0;
+                    }
+
+                    //   INICIALIZAR REDONDEO si no existe (flag para aplicar redondeo en modal)
+                    if (emp.redondeo === undefined) {
+                        emp.redondeo = false;
+                    }
+                    //   INICIALIZAR REDONDEO_CANTIDAD si no existe (almacena la diferencia del redondeo)
+                    if (emp.redondeo_cantidad === undefined) {
+                        emp.redondeo_cantidad = 0;
                     }
 
                     // Asegurarse de que todos los valores numéricos tengan formato correcto
@@ -2470,7 +2479,18 @@ function calcularSueldoACobraPorEmpleado(emp) {
     const totalDeducciones = tarjeta + prestamo + inasistencias + uniformes + checador + faGafetCofia + totalConceptos + totalDeduccionesAdicionales;
 
     // === CALCULAR SUELDO A COBRAR ===
-    emp.sueldo_a_cobrar = parseFloat((totalPercepciones - totalDeducciones).toFixed(2));
+    const sueldoCalculado = totalPercepciones - totalDeducciones;
+    if (emp && emp.redondeo) {
+        // Redondear al entero más cercano (10.50 -> 11, 10.49 -> 10)
+        const sueldoRedondeado = Math.round(sueldoCalculado);
+        emp.sueldo_a_cobrar = sueldoRedondeado;
+        // Guardar la diferencia de redondeo (positiva o negativa)
+        emp.redondeo_cantidad = parseFloat((sueldoRedondeado - sueldoCalculado).toFixed(2));
+    } else {
+        emp.sueldo_a_cobrar = parseFloat(sueldoCalculado.toFixed(2));
+        // Limpiar la propiedad si no hay redondeo
+        emp.redondeo_cantidad = 0;
+    }
 
     return emp.sueldo_a_cobrar;
 }

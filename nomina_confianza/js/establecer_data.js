@@ -1,16 +1,23 @@
 // Cargar los datos del empleado en el modal
-function cargarData(jsonNominaConfianza, clave) {
+function cargarData(jsonNominaConfianza, clave, idEmpresa = null) {
     alternarTablas();
+    
+    // Configurar funcionalidad de copiar horarios
+    configurarCopiarHorarios();
    
-    // Buscar el empleado por clave en todos los departamentos
+    // Buscar el empleado por clave e id_empresa en todos los departamentos
     let empleadoEncontrado = null;
     
+  console.log(idEmpresa);
   
     
     jsonNominaConfianza.departamentos.forEach(departamento => {
         departamento.empleados.forEach(empleado => {
-            // Comparar convirtiendo ambos a string y eliminando espacios
-            if (String(empleado.clave).trim() === String(clave).trim()) {
+            // Comparar clave Y id_empresa para identificar correctamente al empleado
+            const claveCoincide = String(empleado.clave).trim() === String(clave).trim();
+            const empresaCoincide = idEmpresa === null || Number(empleado.id_empresa || 1) === Number(idEmpresa);
+            
+            if (claveCoincide && empresaCoincide) {
                 empleadoEncontrado = empleado;
                
             }
@@ -21,6 +28,7 @@ function cargarData(jsonNominaConfianza, clave) {
     if (empleadoEncontrado) {
         $('#campo-nombre').text(empleadoEncontrado.nombre);
         $('#campo-clave').text(empleadoEncontrado.clave);
+        $('#campo-id-empresa').val(empleadoEncontrado.id_empresa || '');
         $("#nombre-empleado-modal").text(empleadoEncontrado.nombre);
 
         // Asignar el nombre del departamento al campo correspondiente
@@ -69,18 +77,23 @@ function cargarData(jsonNominaConfianza, clave) {
         $('#mod-retardos').val(empleadoEncontrado.retardos || '');
         $('#mod-inasistencias').val(empleadoEncontrado.inasistencia || '');
         $('#mod-permiso').val(empleadoEncontrado.permiso || '');
+        $('#mod-fa-gafet-cofia').val(empleadoEncontrado.fa_gafet_cofia || '0.00');
 
         //Total a cobrar
         $('#mod-sueldo-a-cobrar').val(empleadoEncontrado.total_cobrar || '');
 
+        // Cargar preferencias de redondeo
+        const redondeoActivo = empleadoEncontrado.redondeo_activo || false;
+        $('#mod-redondear-sueldo').prop('checked', redondeoActivo);
+
         // Detectar eventos ANTES de mostrar las tablas (para generar historiales necesarios)
-        if (typeof detectarRetardos === 'function') detectarRetardos(empleadoEncontrado.clave);
-        if (typeof detectarInasistencias === 'function') detectarInasistencias(empleadoEncontrado.clave);
-        if (typeof detectarOlvidosChecador === 'function') detectarOlvidosChecador(empleadoEncontrado.clave);
-        if (typeof detectarEntradasTempranas === 'function') detectarEntradasTempranas(empleadoEncontrado.clave);
-        if (typeof detectarSalidasTardias === 'function') detectarSalidasTardias(empleadoEncontrado.clave);
-        if (typeof detectarSalidasTempranas === 'function') detectarSalidasTempranas(empleadoEncontrado.clave);
-        if (typeof detectarPermisosYComida === 'function') detectarPermisosYComida(empleadoEncontrado.clave);
+        if (typeof detectarRetardos === 'function') detectarRetardos(empleadoEncontrado.clave, empleadoEncontrado.id_empresa);
+        if (typeof detectarInasistencias === 'function') detectarInasistencias(empleadoEncontrado.clave, empleadoEncontrado.id_empresa);
+        if (typeof detectarOlvidosChecador === 'function') detectarOlvidosChecador(empleadoEncontrado.clave, empleadoEncontrado.id_empresa);
+        if (typeof detectarEntradasTempranas === 'function') detectarEntradasTempranas(empleadoEncontrado.clave, empleadoEncontrado.id_empresa);
+        if (typeof detectarSalidasTardias === 'function') detectarSalidasTardias(empleadoEncontrado.clave, empleadoEncontrado.id_empresa);
+        if (typeof detectarSalidasTempranas === 'function') detectarSalidasTempranas(empleadoEncontrado.clave, empleadoEncontrado.id_empresa);
+        if (typeof detectarPermisosYComida === 'function') detectarPermisosYComida(empleadoEncontrado.clave, empleadoEncontrado.id_empresa);
 
         // Mostrar registros en la tabla (ahora con los historiales ya generados)
         mostrarRegistrosChecador(empleadoEncontrado);
@@ -160,7 +173,12 @@ function cargarData(jsonNominaConfianza, clave) {
 
         // Configurar inputs según el departamento (deshabilitar para "sin seguro")
         if (typeof configurarInputsSinSeguro === 'function') {
-            configurarInputsSinSeguro(empleadoEncontrado.clave);
+            configurarInputsSinSeguro(empleadoEncontrado.clave, empleadoEncontrado.id_empresa);
+        }
+
+        // Activar funcionalidad de inasistencias manuales
+        if (typeof activarFuncionalidadInasistencias === 'function') {
+            activarFuncionalidadInasistencias();
         }
     } else {
        
@@ -302,56 +320,48 @@ function mostrarRegistrosBD(empleado) {
     // Lista de días de la semana
     const diasSemana = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
     
-    // Si tiene horario oficial, usar esos datos
-    if (empleado.horario_oficial && Array.isArray(empleado.horario_oficial) && empleado.horario_oficial.length > 0) {
+    // Crear un mapa de registros por día para búsqueda rápida
+    const registrosPorDia = {};
+    if (empleado.horario_oficial && Array.isArray(empleado.horario_oficial)) {
         empleado.horario_oficial.forEach(dia => {
-            // Crear opciones del select
-            let opcionesSelect = `<option value="">- Seleccionar día -</option>`;
-            opcionesSelect += diasSemana.map(nombreDia => {
-                const seleccionado = dia.dia === nombreDia ? 'selected' : '';
-                return `<option value="${nombreDia}" ${seleccionado}>${nombreDia}</option>`;
-            }).join('');
-            
-            // Crear fila con select en la primera columna
-            const fila = `
-                <tr>
-                    <td>
-                        <select class="form-control form-control-sm select-dia">
-                            ${opcionesSelect}
-                        </select>
-                    </td>
-                    <td>${dia.entrada || '-'}</td>
-                    <td>${dia.salida_comida || '-'}</td>
-                    <td>${dia.entrada_comida || '-'}</td>
-                    <td>${dia.salida || '-'}</td>
-                </tr>
-            `;
-            $tbody.append(fila);
-        });
-    } else {
-        // Si NO hay horario oficial, mostrar tabla vacía con los 7 días
-        diasSemana.forEach(nombreDia => {
-            let opcionesSelect = '<option value="">- Seleccionar día -</option>';
-            opcionesSelect += diasSemana.map(dia => {
-                return `<option value="${dia}">${dia}</option>`;
-            }).join('');
-            
-            const fila = `
-                <tr>
-                    <td>
-                        <select class="form-control form-control-sm select-dia">
-                            ${opcionesSelect}
-                        </select>
-                    </td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                </tr>
-            `;
-            $tbody.append(fila);
+            registrosPorDia[dia.dia] = dia;
         });
     }
+    
+    // Iterar sobre los 7 días de la semana (SIEMPRE mostrar 7 filas)
+    diasSemana.forEach(nombreDia => {
+        // Buscar si existe un registro para este día
+        const diaRegistro = registrosPorDia[nombreDia];
+        
+        // Crear opciones del select
+        let opcionesSelect = `<option value="">- Seleccionar día -</option>`;
+        opcionesSelect += diasSemana.map(dia => {
+            const seleccionado = nombreDia === dia ? 'selected' : '';
+            return `<option value="${dia}" ${seleccionado}>${dia}</option>`;
+        }).join('');
+        
+        // Asignar datos del registro si existe, sino mostrar "-"
+        const entrada = diaRegistro ? (diaRegistro.entrada || '-') : '-';
+        const salidaComida = diaRegistro ? (diaRegistro.salida_comida || '-') : '-';
+        const entradaComida = diaRegistro ? (diaRegistro.entrada_comida || '-') : '-';
+        const salida = diaRegistro ? (diaRegistro.salida || '-') : '-';
+        
+        // Crear fila
+        const fila = `
+            <tr>
+                <td>
+                    <select class="form-control form-control-sm select-dia">
+                        ${opcionesSelect}
+                    </select>
+                </td>
+                <td>${entrada}</td>
+                <td>${salidaComida}</td>
+                <td>${entradaComida}</td>
+                <td>${salida}</td>
+            </tr>
+        `;
+        $tbody.append(fila);
+    });
 }
 
  
@@ -377,5 +387,65 @@ function obtenerNombreDia(fecha) {
     }
     
     return dias[fechaParseada.getDay()];
+}
+
+// ========================================
+// COPIAR HORARIOS A TODOS LOS DÍAS
+// ========================================
+function configurarCopiarHorarios() {
+    $(document).on('click', '#btn-copiar-horarios', function() {
+        // Obtener los valores de los campos de entrada
+        const entrada = $('#input-entrada-copiar').val().trim();
+        const salidaComida = $('#input-salida-comida-copiar').val().trim();
+        const entradaComida = $('#input-entrada-comida-copiar').val().trim();
+        const salida = $('#input-salida-copiar').val().trim();
+        
+        // Validar que al menos un campo tenga valor (se hace más abajo con mensaje no bloqueante)
+        
+        // No mostrar mensajes al copiar (operación silenciosa)
+
+        
+        if (!entrada && !salidaComida && !entradaComida && !salida) {
+            return; // Sin acción si no hay valores
+        }
+        
+        // Aplicar los valores a las primeras 6 filas (LUNES a SÁBADO). DOMINGO se conserva sin cambios.
+        $('#horarios-oficiales-body tr').slice(0, 6).each(function() {
+            const $fila = $(this);
+
+            // helper para actualizar celda (si hay input, cambiar su valor; sino, texto)
+            const setCellValue = (idx, val) => {
+                const $celda = $fila.find('td').eq(idx);
+                const $input = $celda.find('input');
+                if ($input.length > 0) {
+                    $input.val(val).trigger('change');
+                } else {
+                    $celda.text(val);
+                }
+            };
+
+            if (entrada) {
+                setCellValue(1, entrada); // Columna Entrada
+            }
+            if (salidaComida) {
+                setCellValue(2, salidaComida); // Columna Salida Comida
+            }
+            if (entradaComida) {
+                setCellValue(3, entradaComida); // Columna Entrada Comida
+            }
+            if (salida) {
+                setCellValue(4, salida); // Columna Salida
+            }
+        });
+        
+        // Limpiar los campos de entrada después de copiar
+        $('#input-entrada-copiar').val('');
+        $('#input-salida-comida-copiar').val('');
+        $('#input-entrada-comida-copiar').val('');
+        $('#input-salida-copiar').val('');
+        
+        // Copiado completado (silencioso)
+
+    });
 }
 

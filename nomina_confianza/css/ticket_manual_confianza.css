@@ -1,0 +1,69 @@
+/* Estilos idénticos a la nómina normal */
+.empleado-card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.empleado-card:hover {
+    border-color: #0d6efd;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.empleado-card.selected {
+    border-color: #0d6efd;
+    background-color: #e7f3ff;
+}
+
+.empleado-card .form-check-input {
+    pointer-events: none;
+}
+
+.departamento-badge {
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.departamento-40 {
+    background-color: #dc3545;
+    color: white;
+}
+
+.departamento-10 {
+    background-color: #198754;
+    color: white;
+}
+
+.departamento-sin-seguro {
+    background-color: #fd7e14;
+    color: white;
+}
+
+.departamento-administracion {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.departamento-produccion {
+    background-color: #ffc107;
+    color: black;
+}
+
+.departamento-seguridad {
+    background-color: #6f42c1;
+    color: white;
+}
+
+.empleado-nombre {
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.empleado-clave {
+    font-size: 0.9rem;
+    color: #6c757d;
+}

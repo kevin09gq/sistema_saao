@@ -22,9 +22,13 @@ $numeroSemana = null;
 $fechaInicio = null;
 $fechaCierre = null;
 
+// Obtener id_empresa del POST (opcional, por defecto 1)
+$idEmpresa = isset($_POST['id_empresa']) ? intval($_POST['id_empresa']) : 1;
+
 // Departamentos permitidos
 $departamentosPermitidos = [
     'Administracion',
+    'Administrativos',
     'Produccion',
     'Seguridad Vigilancia e Intendencia',
     'Administracion Sucursal CdMx'
@@ -98,7 +102,7 @@ foreach ($rows as $row) {
             
             $empleado = [
                 'clave' => $claveFormateada,
-               
+                'id_empresa' => $idEmpresa,
                 'tarjeta' => null,
                 'conceptos' => []
             ];

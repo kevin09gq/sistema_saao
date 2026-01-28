@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="../styles/horario_modal.css">
     <link rel="stylesheet" href="../styles/detalle_modal_dispersion.css">
     <link rel="stylesheet" href="../styles/modal_sumas.css">
+    <link rel="stylesheet" href="../styles/ticket_manual.css">
     <!-- SweetAlert2 CSS -->
     <script src="<?= SWEETALERT ?>"></script>
 </head>
@@ -65,6 +66,10 @@
                 <button class="btn-horarios" type="button" id="btn_horarios" data-bs-toggle="modal" data-bs-target="#horarios_modal">
                     <i class="bi bi-clock"></i>
                     Horarios
+                </button>
+                <button class="btn-horarios" type="button" id="btn_ticket_manual" title="Seleccionar Empleados">
+                    <i class="bi bi-person-check"></i>
+                    Ticket Manual
                 </button>
                 <div class="mini-tabs">
                     <button class="mini-tab active" type="button" id="btn_tabla_nomina">
@@ -149,6 +154,10 @@
                 <button class="btn-export-pdf" id="btn_export_pdf" title="Exportar a PDF">
                     <i class="bi bi-file-earmark-pdf"></i>
                     PDF
+                </button>
+                <button class="btn-export-pdf" id="btn_ticket_pdf" title="Tickets Zebra (PDF)">
+                    <i class="bi bi-receipt"></i>
+                    Ticket Zebra
                 </button>
                 <button class="btn-export-pdf-reporte" id="btn_export_pdf_reporte" title="Exportar a PDF">
                     <i class="bi bi-file-earmark-pdf"></i>
@@ -260,6 +269,8 @@
     <?php include 'modal_sumas.php'; ?>
     <?php include 'modal_suma_dispersion.php'; ?>
     <?php include 'modal_suma_sin_seguro.php'; ?>
+    <?php include 'modal_ticket_manual.php'; ?>
+    <?php include 'modal_seleccion_tickets.php'; ?>
 
     <!-- Menú contextual personalizado -->
     <div id="menu-contextual" hidden style="position:absolute; z-index:9999; background:#fff; border:1px solid #ccc; padding:6px 12px; font-size:14px; cursor:pointer;">
@@ -294,6 +305,9 @@
     <script src="../js/guardar_nomina.js"></script>
     <script src="../js/generar_excel_pdf.js"></script>
     <script src="../js/sobreescribir_data.js"></script>
+    <script src="../js/ticket_pdf.js"></script>
+    <script src="../js/ticket_manual.js"></script>
+    <script src="../js/ticket_seleccion.js"></script>
 
 </body>
 

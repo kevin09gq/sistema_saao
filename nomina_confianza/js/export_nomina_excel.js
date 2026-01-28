@@ -87,11 +87,15 @@ $(document).on('click', '#btn_generar_excel_modal', function () {
     })
     .then(async (res) => {
         if (!res.ok) throw new Error('Error al generar el Excel');
+        const dispo = res.headers.get('Content-Disposition') || '';
+        let suggested = 'nomina_confianza.xlsx';
+        const m = /filename="?([^";]+)"?/i.exec(dispo);
+        if (m && m[1]) suggested = m[1];
         const blob = await res.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'nomina_confianza.xlsx';
+        a.download = suggested;
         document.body.appendChild(a);
         a.click();
         a.remove();

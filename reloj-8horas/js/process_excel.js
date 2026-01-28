@@ -13,6 +13,7 @@ $(document).ready(function () {
     const datosGuardados = cargarDatosDeSesion();
 
     if (datosGuardados) {
+
         // Ocultar formulario y mostrar tabla si es necesario
         $("#container-reloj").prop("hidden", true);
         $("#tabla-reloj-responsive").prop("hidden", false);
@@ -125,7 +126,7 @@ $(document).on('click', '#btn_limpiar_datos', function (e) {
 
     Swal.fire({
         title: "¿Limpiar información?",
-        text: "Vas a perder la información",
+        text: "Recuerda guardar en el historial si deseas conservar los datos actuales.",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#3085d6",
@@ -156,7 +157,7 @@ function procesarTodosRegistros(json, festivosSet = new Set()) {
         const esDeptoEspecial = nombreDepto === DEPA_CDMX || nombreDepto === DEPA_COMPRA;
         // Verificar si es vigilancia
         const esVigilancia = nombreDepto === DEPA_VIGILANCIA;
-        
+
         // Comienza el recorrido por cada empleado del departamento
         (depto.empleados || []).forEach(empleado => {
             // Guardar registros editados manualmente antes de reprocesar
@@ -168,7 +169,7 @@ function procesarTodosRegistros(json, festivosSet = new Set()) {
                     }
                 });
             }
-            
+
             // Procesar registros normalmente
             empleado.registros_procesados = procesarRegistrosEmpleado(
                 empleado,
@@ -177,7 +178,7 @@ function procesarTodosRegistros(json, festivosSet = new Set()) {
                 esVigilancia,
                 festivosSet
             );
-            
+
             // Restaurar registros editados manualmente (no sobrescribir)
             empleado.registros_procesados = empleado.registros_procesados.map(reg => {
                 if (registrosEditadosMap[reg.fecha]) {
@@ -238,7 +239,7 @@ function obtenerDiasSemana(fechaInicio, fechaFin) {
 function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false, esVigilancia = false, festivosSet = new Set()) {
     // Por cada día laboral, debe haber mínimo cuatro registros (E, S, E, S)
     // Estructura de cada registro_procesado: fecha, tipo, registros: [ {tipo: 'entrada'|'salida', hora: 'HH:MM', observacion} ...], observacion_dia, tipo_turno, max_horas
-    
+
     // Agrupar todos los registros por fecha (puede haber múltiples por día)
     const registrosMap = {};
     (empleado.registros || []).forEach(r => {
@@ -247,14 +248,14 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
         }
         registrosMap[r.fecha].push(r);
     });
-    
+
     // Ordenar los registros de cada día por hora de entrada
     Object.keys(registrosMap).forEach(fecha => {
         registrosMap[fecha].sort((a, b) => (a.entrada || '').localeCompare(b.entrada || ''));
     });
-    
+
     const horario = empleado.horario || [];
-    
+
     // Si no tiene horario, retornar registros vacíos (sin turno)
     if (!Array.isArray(horario) || horario.length === 0) {
         return diasSemana.map(dia => ({
@@ -269,41 +270,63 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
             max_horas: 0
         }));
     }
-    
+
     // Función para obtener el turno según el día de la semana
     const obtenerTurnoPorDia = (fecha) => {
         const diasSemanaES = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
         const [dia, mes, anio] = fecha.split('/');
         const fechaObj = new Date(parseInt(anio), parseInt(mes) - 1, parseInt(dia));
         const nombreDia = diasSemanaES[fechaObj.getDay()];
-        
+
         if (Array.isArray(horario) && horario.length > 0) {
             const turnoDelDia = horario.find(h => h.dia.toUpperCase() === nombreDia);
             if (turnoDelDia) {
+                // Si el horario tiene entrada y salida vacías o null, es día de descanso
+                const entrada = turnoDelDia.entrada && turnoDelDia.entrada.trim() !== '' ? turnoDelDia.entrada : null;
+                const salida = turnoDelDia.salida && turnoDelDia.salida.trim() !== '' ? turnoDelDia.salida : null;
+
+                // Si ambas están vacías, es día de descanso (retornar null)
+                if (!entrada || !salida) {
+                    return {
+                        hora_inicio: null,
+                        hora_fin: null,
+                        salida_comida: null,
+                        entrada_comida: null,
+                        tiene_comida: false
+                    };
+                }
+
+                // Verificar si el horario tiene comida definida
+                const salidaComida = turnoDelDia.salida_comida && turnoDelDia.salida_comida.trim() !== '' ? turnoDelDia.salida_comida : null;
+                const entradaComida = turnoDelDia.entrada_comida && turnoDelDia.entrada_comida.trim() !== '' ? turnoDelDia.entrada_comida : null;
+                const tieneComida = salidaComida !== null && entradaComida !== null;
+
                 return {
-                    hora_inicio: turnoDelDia.entrada || '09:00',
-                    hora_fin: turnoDelDia.salida || '18:00',
-                    salida_comida: turnoDelDia.salida_comida || '13:00',
-                    entrada_comida: turnoDelDia.entrada_comida || '14:00'
+                    hora_inicio: entrada,
+                    hora_fin: salida,
+                    salida_comida: salidaComida,
+                    entrada_comida: entradaComida,
+                    tiene_comida: tieneComida
                 };
             }
         }
-        // Valores por defecto si no hay horario
+        // Valores por defecto si no hay horario definido para este día
         return {
             hora_inicio: null,
             hora_fin: null,
-            salida_comida: '13:00',
-            entrada_comida: '14:00'
+            salida_comida: null,
+            entrada_comida: null,
+            tiene_comida: false
         };
     };
 
     // Función para determinar tipo de turno basado en horas específicas del día
     const determinarTipoTurnoDia = (horaInicio, horaFin) => {
         if (!horaInicio || !horaFin) return { tipo_turno: "N/A", max_horas: 0 };
-        
+
         // Obtener turnos de la ley (usar cache global si existe)
         const turnosLey = window._turnosCache || [];
-        
+
         const horaAMinutos = (hora) => {
             const [h, m] = hora.split(':').map(Number);
             return h * 60 + m;
@@ -389,12 +412,33 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
     }
 
     // ============ RANGOS DE TOLERANCIA PARA CADA TIPO DE MARCA ============
-    // Estos rangos definen cuándo una hora real se considera "cercana" al horario
+    // REGLA DE ORO: Lo que le CONVIENE a la empresa → CONSERVAR
+    //               Lo que NO le conviene → REDONDEAR al horario
+    // 
+    // ENTRADA TRABAJO:
+    //   - Llega TARDE → CONSERVAR (no paga esos minutos) ✓ CONVIENE
+    //   - Llega a tiempo (rango -15 a 0 min) → CONSERVAR ✓ OK
+    //   - Llega MUY TEMPRANO → REDONDEAR (no pagar tiempo extra) ✗ NO CONVIENE
+    //
+    // SALIDA A COMIDA:
+    //   - Sale ANTES de su hora → CONSERVAR (trabajó menos) ✓ CONVIENE
+    //   - Sale a tiempo o poco después (0 a +15 min) → CONSERVAR ✓ OK
+    //   - Sale MUY TARDE → REDONDEAR (está trabajando de más sin pago) ✗ NO CONVIENE
+    //
+    // ENTRADA DE COMIDA (regreso):
+    //   - Regresa TARDE → CONSERVAR (no paga esos minutos) ✓ CONVIENE
+    //   - Regresa a tiempo (rango -5 a +10 min) → CONSERVAR ✓ OK
+    //   - Regresa MUY TEMPRANO → REDONDEAR (está trabajando de más) ✗ NO CONVIENE
+    //
+    // SALIDA A CASA:
+    //   - Sale ANTES o a tiempo → CONSERVAR ✓ OK/CONVIENE
+    //   - Sale MUY TARDE → REDONDEAR (no pagar horas extra) ✗ NO CONVIENE
+    //
     const RANGOS_TOLERANCIA = {
-        entrada: { min: -5, max: 15 },           // Entrada: 5 min antes hasta 15 min después (ej: 8:00 → 7:55-8:15)
-        salida_comida: { min: -10, max: 5 },     // Salida comida: 10 min antes hasta 5 después (ej: 13:00 → 12:50-13:05)
-        entrada_comida: { min: -5, max: 15 },    // Entrada comida: 5 min antes hasta 15 después (ej: 14:00 → 13:55-14:15)
-        salida: { min: -15, max: 5 }             // Salida final: 15 min antes hasta 5 después (ej: 18:00 → 17:45-18:05)
+        entrada: { min: -15, max: 0 },           // Entrada: 15 min antes hasta hora exacta
+        salida_comida: { min: 0, max: 15 },      // Salida comida: hora exacta hasta 15 min después
+        entrada_comida: { min: -5, max: 10 },    // Entrada comida: 5 min antes hasta 10 después
+        salida: { min: -30, max: 0 }             // Salida final: 30 min antes hasta hora exacta
     };
 
     // Función para verificar si una hora está dentro del rango de tolerancia
@@ -409,18 +453,32 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
     function construirRegistrosDia(turno, fecha, observacion) {
         const inicio = normalizarHora(turno.hora_inicio);
         const fin = normalizarHora(turno.hora_fin);
-        const comidaSalidaBase = normalizarHora(turno.salida_comida || '13:00');
-        const comidaEntradaBase = normalizarHora(turno.entrada_comida || '14:00');
 
-        // Rangos ajustados según lo solicitado:
-        // Entrada: -5 a +5 minutos (llegar 5 min antes hasta 5 min después)
-        const e1 = jitterHora(inicio, -5, 5, `${empleado.id_empleado || empleado.clave || empleado.nombre}|${fecha}|E1`);
-        // Salida a comida: -10 a +5 minutos (salir 10 min antes hasta 5 después)
+        // Verificar si el turno tiene comida
+        const tieneComida = turno.tiene_comida === true;
+
+        // Rangos de variación para datos generados (más realistas):
+        // Entrada: -10 a +3 minutos (puede llegar 10 min antes hasta 3 después)
+        const e1 = jitterHora(inicio, -10, 3, `${empleado.id_empleado || empleado.clave || empleado.nombre}|${fecha}|E1`);
+        // Salida final: -10 a 0 minutos (ej: 5:50 - 6:00 si sale a 6:00) - NUNCA DESPUÉS
+        const s2 = jitterHora(fin, -10, 0, `${empleado.id_empleado || empleado.clave || empleado.nombre}|${fecha}|S2`);
+
+        // Si NO tiene comida, solo devolver entrada y salida (2 registros)
+        if (!tieneComida) {
+            return [
+                { tipo: 'entrada', hora: e1, observacion },
+                { tipo: 'salida', hora: s2, observacion }
+            ];
+        }
+
+        // Si tiene comida, devolver los 4 registros
+        const comidaSalidaBase = normalizarHora(turno.salida_comida);
+        const comidaEntradaBase = normalizarHora(turno.entrada_comida);
+
+        // Salida a comida: -10 a +5 minutos (ej: 12:50 - 1:05 si comida es a 1:00)
         const s1 = jitterHora(comidaSalidaBase, -10, 5, `${empleado.id_empleado || empleado.clave || empleado.nombre}|${fecha}|S1`);
-        // Entrada después de comida: -5 a +15 minutos (regresar 5 min antes hasta 15 después)
-        const e2 = jitterHora(comidaEntradaBase, -5, 15, `${empleado.id_empleado || empleado.clave || empleado.nombre}|${fecha}|E2`);
-        // Salida final: -15 a +5 minutos (salir 15 min antes hasta 5 después)
-        const s2 = jitterHora(fin, -15, 5, `${empleado.id_empleado || empleado.clave || empleado.nombre}|${fecha}|S2`);
+        // Entrada después de comida: -5 a +10 minutos (puede regresar 5 antes hasta 10 después)
+        const e2 = jitterHora(comidaEntradaBase, -5, 10, `${empleado.id_empleado || empleado.clave || empleado.nombre}|${fecha}|E2`);
 
         return [
             { tipo: 'entrada', hora: e1, observacion },
@@ -430,8 +488,10 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
         ];
     }
 
-    function calcularTrabajoDesdeRegistros(registros) {
+    function calcularTrabajoDesdeRegistros(registros, maxHorasTurno = 8) {
         let minutosTrabajados = 0;
+        const maxMinutos = maxHorasTurno * 60; // Convertir máximo de horas a minutos
+
         for (let i = 0; i < registros.length; i++) {
             if (registros[i].tipo === 'entrada' && i + 1 < registros.length && registros[i + 1].tipo === 'salida') {
                 const e = horaAMinutos(registros[i].hora);
@@ -444,6 +504,12 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                 i++;
             }
         }
+
+        // Limitar al máximo de horas del turno (no puede exceder)
+        if (minutosTrabajados > maxMinutos) {
+            minutosTrabajados = maxMinutos;
+        }
+
         return {
             minutos: minutosTrabajados,
             hhmm: minutosAHora(minutosTrabajados),
@@ -451,12 +517,126 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
         };
     }
 
+    // ============================================================
+    // FUNCIÓN PARA AJUSTAR REGISTROS SI EXCEDEN MÁXIMO DE HORAS
+    // Si el tiempo trabajado excede max_horas + 15 minutos,
+    // ajusta la salida final para que quede dentro del límite
+    // ============================================================
+    function ajustarRegistrosSiExcedenMaximo(registros, maxHorasTurno, seedKey) {
+        if (!registros || registros.length === 0) return registros;
+        
+        const TOLERANCIA_MINUTOS = 15; // 15 minutos de tolerancia sobre el máximo
+        const maxMinutosPermitidos = (maxHorasTurno * 60) + TOLERANCIA_MINUTOS;
+        
+        // Calcular tiempo trabajado actual
+        let minutosTrabajados = 0;
+        const pares = []; // Guardar pares entrada/salida con sus índices
+        
+        for (let i = 0; i < registros.length; i++) {
+            if (registros[i].tipo === 'entrada' && i + 1 < registros.length && registros[i + 1].tipo === 'salida') {
+                const e = horaAMinutos(registros[i].hora);
+                const s = horaAMinutos(registros[i + 1].hora);
+                let duracion = s >= e ? (s - e) : ((24 * 60) - e + s);
+                minutosTrabajados += duracion;
+                pares.push({ 
+                    idxEntrada: i, 
+                    idxSalida: i + 1, 
+                    minEntrada: e, 
+                    minSalida: s, 
+                    duracion: duracion 
+                });
+                i++;
+            }
+        }
+        
+        // Si no excede el máximo permitido, no hacer nada
+        if (minutosTrabajados <= maxMinutosPermitidos) {
+            return registros;
+        }
+        
+        // Calcular cuántos minutos hay que recortar
+        const exceso = minutosTrabajados - maxMinutosPermitidos;
+        
+        // Encontrar el último par (salida final) para ajustar
+        if (pares.length === 0) return registros;
+        
+        const ultimoPar = pares[pares.length - 1];
+        const idxSalidaFinal = ultimoPar.idxSalida;
+        
+        // Calcular nueva hora de salida (restar el exceso + variación aleatoria de -25 a -10 min)
+        // Esto hace que la salida quede entre 10-25 minutos antes del límite máximo
+        const variacion = 10 + (hashString(seedKey + '|AJUSTE') % 16); // Variación de 10 a 25 min
+        const nuevaSalidaMinutos = ultimoPar.minSalida - exceso - variacion;
+        const nuevaSalidaHora = minutosAHora(nuevaSalidaMinutos);
+        
+        // Actualizar el registro de salida
+        registros[idxSalidaFinal] = {
+            tipo: 'salida',
+            hora: nuevaSalidaHora,
+            observacion: 'AJUSTADO (EXCEDE MÁXIMO TURNO)'
+        };
+        
+        return registros;
+    }
+
     // Variables de control
     const resultados = [];
     const diasTrabajadosRestantes = empleado.dias_trabajados || 0;
     let diasProcesados = 0;
 
+    // ============================================================
+    // CONTADORES PARA EVENTOS (vacaciones, incapacidades, ausencias)
+    // Se usan para asignar días cuando ya se completaron dias_trabajados
+    // ============================================================
+    const diasVacacionesRestantes = empleado.dias_vacaciones || 0;
+    const diasIncapacidadesRestantes = empleado.dias_incapacidades || 0;
+    const diasAusenciasRestantes = empleado.dias_ausencias || 0;
+    let vacacionesProcesadas = 0;
+    let incapacidadesProcesadas = 0;
+    let ausenciasProcesadas = 0;
+
+    // ============================================================
+    // VERIFICAR SI EL EMPLEADO TIENE REGISTROS BIOMÉTRICOS
+    // Si registros está vacío, el empleado no está dado de alta en el reloj
+    // ============================================================
+    const tieneRegistrosBiometricos = (empleado.registros || []).length > 0 &&
+        (empleado.registros || []).some(r => r.entrada || r.salida);
+
+    // ============================================================
+    // PRE-PROCESAMIENTO: Buscar el turno de un día laborable válido
+    // Prioridad: VIERNES > JUEVES > MIERCOLES > MARTES > LUNES
+    // Esto sirve para rellenar sábado/domingo que no tienen horario
+    // ============================================================
+    let ultimoTurnoValido = { tipo_turno: "N/A", max_horas: 0 };
+
+    const diasPrioridad = ['VIERNES', 'JUEVES', 'MIERCOLES', 'MARTES', 'LUNES', 'SABADO', 'DOMINGO'];
+
+    for (const nombreDia of diasPrioridad) {
+        if (Array.isArray(horario) && horario.length > 0) {
+            const turnoDelDia = horario.find(h => h.dia && h.dia.toUpperCase() === nombreDia);
+            if (turnoDelDia) {
+                const entrada = turnoDelDia.entrada && turnoDelDia.entrada.trim() !== '' ? turnoDelDia.entrada : null;
+                const salida = turnoDelDia.salida && turnoDelDia.salida.trim() !== '' ? turnoDelDia.salida : null;
+
+                // Si tiene entrada y salida válidas, usar este turno como referencia
+                if (entrada && salida) {
+                    ultimoTurnoValido = determinarTipoTurnoDia(entrada, salida);
+                    break; // Ya encontramos un turno válido, salir del bucle
+                }
+            }
+        }
+    }
+
     diasSemana.forEach(dia => {
+        // Obtener turno del día ANTES de las reglas para poder actualizar ultimoTurnoValido
+        const turno = obtenerTurnoPorDia(dia.fecha);
+        const esLaborable = turno.hora_inicio && turno.hora_fin;
+
+        // Si este día tiene horario válido, actualizar como último turno válido
+        if (esLaborable) {
+            ultimoTurnoValido = determinarTipoTurnoDia(turno.hora_inicio, turno.hora_fin);
+        }
+
         // REGLA 1: DOMINGOS son SIEMPRE descanso para TODOS (sin excepciones)
         if (dia.esDomingo) {
             resultados.push({
@@ -467,89 +647,65 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                 trabajado_hhmm: '00:00',
                 trabajado_decimal: 0,
                 observacion_dia: "DOMINGO (DESCANSO)",
-                tipo_turno: "N/A",
-                max_horas: 0
+                tipo_turno: ultimoTurnoValido.tipo_turno, // Usar el turno del último día laborable
+                max_horas: ultimoTurnoValido.max_horas
             });
             return;
         }
 
-        // Obtener turno del día
-        const turno = obtenerTurnoPorDia(dia.fecha);
-        const esLaborable = turno.hora_inicio && turno.hora_fin;
-        
-        // Calcular tipo de turno para este día específico
-        const infoTurnoDia = determinarTipoTurnoDia(turno.hora_inicio, turno.hora_fin);
-        
+        // REGLA 1.5: DÍAS FESTIVOS → marcar como dia_festivo
+        // Verificar si la fecha está en el set de festividades
+        if (festivosSet.has(dia.fecha)) {
+            resultados.push({
+                fecha: dia.fecha,
+                tipo: "dia_festivo",
+                registros: [],
+                trabajado_minutos: 0,
+                trabajado_hhmm: '00:00',
+                trabajado_decimal: 0,
+                observacion_dia: "DÍA FESTIVO",
+                tipo_turno: ultimoTurnoValido.tipo_turno,
+                max_horas: ultimoTurnoValido.max_horas
+            });
+            return;
+        }
+
+        // Calcular tipo de turno para este día específico (o usar el último válido si no hay horario)
+        const infoTurnoDia = esLaborable ? determinarTipoTurnoDia(turno.hora_inicio, turno.hora_fin) : ultimoTurnoValido;
+
         // Verificar si tiene registro biométrico REAL (ahora es un array de registros del día)
         const registrosDelDia = registrosMap[dia.fecha] || [];
-        const tieneRegistroBiometrico = registrosDelDia.length > 0 && 
+        const tieneRegistroBiometrico = registrosDelDia.length > 0 &&
             registrosDelDia.some(r => r.entrada || r.salida);
 
-        // REGLA 2: Días NO laborables según horario → descanso
+        // REGLA 2: Días NO laborables según horario → no_laboro (no es descanso ni ausencia)
+        // Solo el DOMINGO es "descanso" oficial, los demás días sin horario son "no_laboro"
         if (!esLaborable) {
             resultados.push({
                 fecha: dia.fecha,
-                tipo: "descanso",
+                tipo: "no_laboro",
                 registros: [],
                 trabajado_minutos: 0,
                 trabajado_hhmm: '00:00',
                 trabajado_decimal: 0,
-                observacion_dia: "DÍA DE DESCANSO",
-                tipo_turno: "N/A",
-                max_horas: 0
+                observacion_dia: "NO LABORA ESTE DÍA",
+                tipo_turno: ultimoTurnoValido.tipo_turno, // Usar el turno del último día laborable
+                max_horas: ultimoTurnoValido.max_horas
             });
             return;
         }
 
-        // REGLA 3: Vacaciones/incapacidad/ausencia (no cuentan como días trabajados)
-        if (empleado.vacaciones) {
-            resultados.push({
-                fecha: dia.fecha,
-                tipo: "vacaciones",
-                registros: [],
-                trabajado_minutos: 0,
-                trabajado_hhmm: '00:00',
-                trabajado_decimal: 0,
-                observacion_dia: "VACACIONES",
-                tipo_turno: infoTurnoDia.tipo_turno,
-                max_horas: infoTurnoDia.max_horas
-            });
-            return;
-        }
-        if (empleado.incapacidades) {
-            resultados.push({
-                fecha: dia.fecha,
-                tipo: "incapacidad",
-                registros: [],
-                trabajado_minutos: 0,
-                trabajado_hhmm: '00:00',
-                trabajado_decimal: 0,
-                observacion_dia: "INCAPACIDAD",
-                tipo_turno: infoTurnoDia.tipo_turno,
-                max_horas: infoTurnoDia.max_horas
-            });
-            return;
-        }
-        if (empleado.ausencias) {
-            resultados.push({
-                fecha: dia.fecha,
-                tipo: "ausencia",
-                registros: [],
-                trabajado_minutos: 0,
-                trabajado_hhmm: '00:00',
-                trabajado_decimal: 0,
-                observacion_dia: "AUSENCIA",
-                tipo_turno: infoTurnoDia.tipo_turno,
-                max_horas: infoTurnoDia.max_horas
-            });
-            return;
-        }
+        // NOTA: Las propiedades globales (empleado.vacaciones, empleado.incapacidades, empleado.ausencias)
+        // NO se usan aquí para asignar automáticamente a todos los días.
+        // Los eventos por día (vacaciones, incapacidad, ausencia) se asignan manualmente
+        // y se preservan con la bandera 'editado_manualmente' en cada registro_procesado.
+        // Las propiedades globales solo son indicadores calculados DESPUÉS de los registros.
 
-        // REGLA 4: Departamentos especiales (CDMX, Compra) → auto-generan si hay espacio
+        // REGLA 3: Departamentos especiales (CDMX, Compra) → auto-generan si hay espacio
         if (esDeptoEspecial && diasProcesados < diasTrabajadosRestantes) {
             diasProcesados++;
             const registrosDia = construirRegistrosDia(turno, dia.fecha, 'REGISTRO AUTOMÁTICO');
-            const trabajo = calcularTrabajoDesdeRegistros(registrosDia);
+            const trabajo = calcularTrabajoDesdeRegistros(registrosDia, infoTurnoDia.max_horas);
             resultados.push({
                 fecha: dia.fecha,
                 tipo: "asistencia",
@@ -564,170 +720,544 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
             return;
         }
 
-        // REGLA 5: SOLO trabajó si tiene registro biométrico Y hay espacio en dias_trabajados
+        // ================================================================
+        // REGLA 3.5: Empleado SIN registros biométricos (no dado de alta en reloj)
+        // pero SÍ tiene horario definido → auto-generar según dias_trabajados
+        // ================================================================
+        if (!tieneRegistrosBiometricos && diasProcesados < diasTrabajadosRestantes) {
+            diasProcesados++;
+            const registrosDia = construirRegistrosDia(turno, dia.fecha, 'SIN BIOMÉTRICO');
+            const trabajo = calcularTrabajoDesdeRegistros(registrosDia, infoTurnoDia.max_horas);
+            resultados.push({
+                fecha: dia.fecha,
+                tipo: "asistencia",
+                registros: registrosDia,
+                trabajado_minutos: trabajo.minutos,
+                trabajado_hhmm: trabajo.hhmm,
+                trabajado_decimal: trabajo.decimal,
+                observacion_dia: "SIN REGISTRO EN RELOJ",
+                tipo_turno: infoTurnoDia.tipo_turno,
+                max_horas: infoTurnoDia.max_horas
+            });
+            return;
+        }
+
+        // Si no tiene registros biométricos y ya se completaron dias_trabajados
+        // → Asignar vacaciones, incapacidades, ausencias o descanso según corresponda
+        if (!tieneRegistrosBiometricos) {
+            // Prioridad: vacaciones > incapacidades > ausencias > descanso
+            if (vacacionesProcesadas < diasVacacionesRestantes) {
+                vacacionesProcesadas++;
+                resultados.push({
+                    fecha: dia.fecha,
+                    tipo: "vacaciones",
+                    registros: [],
+                    trabajado_minutos: 0,
+                    trabajado_hhmm: '00:00',
+                    trabajado_decimal: 0,
+                    observacion_dia: "VACACIONES",
+                    tipo_turno: infoTurnoDia.tipo_turno,
+                    max_horas: infoTurnoDia.max_horas
+                });
+                return;
+            }
+
+            if (incapacidadesProcesadas < diasIncapacidadesRestantes) {
+                incapacidadesProcesadas++;
+                resultados.push({
+                    fecha: dia.fecha,
+                    tipo: "incapacidad",
+                    registros: [],
+                    trabajado_minutos: 0,
+                    trabajado_hhmm: '00:00',
+                    trabajado_decimal: 0,
+                    observacion_dia: "INCAPACIDAD",
+                    tipo_turno: infoTurnoDia.tipo_turno,
+                    max_horas: infoTurnoDia.max_horas
+                });
+                return;
+            }
+
+            if (ausenciasProcesadas < diasAusenciasRestantes) {
+                ausenciasProcesadas++;
+                resultados.push({
+                    fecha: dia.fecha,
+                    tipo: "ausencia",
+                    registros: [],
+                    trabajado_minutos: 0,
+                    trabajado_hhmm: '00:00',
+                    trabajado_decimal: 0,
+                    observacion_dia: "AUSENCIA",
+                    tipo_turno: infoTurnoDia.tipo_turno,
+                    max_horas: infoTurnoDia.max_horas
+                });
+                return;
+            }
+
+            // Si no hay más eventos, es descanso
+            resultados.push({
+                fecha: dia.fecha,
+                tipo: "descanso",
+                registros: [],
+                trabajado_minutos: 0,
+                trabajado_hhmm: '00:00',
+                trabajado_decimal: 0,
+                observacion_dia: "DÍA DE DESCANSO",
+                tipo_turno: infoTurnoDia.tipo_turno,
+                max_horas: infoTurnoDia.max_horas
+            });
+            return;
+        }
+
+        // REGLA 4: SOLO trabajó si tiene registro biométrico Y hay espacio en dias_trabajados
         if (tieneRegistroBiometrico && diasProcesados < diasTrabajadosRestantes) {
             diasProcesados++;
-            
+
             // registrosDelDia es un array de registros (cada uno con entrada/salida)
-            // Ya está ordenado por hora de entrada
             const inicio = normalizarHora(turno.hora_inicio);
             const fin = normalizarHora(turno.hora_fin);
-            const comidaSalida = normalizarHora(turno.salida_comida || '13:00');
-            const comidaEntrada = normalizarHora(turno.entrada_comida || '14:00');
-            
+
+            // Verificar si el turno tiene comida definida
+            const tieneComida = turno.tiene_comida === true;
+            const comidaSalida = tieneComida ? normalizarHora(turno.salida_comida) : null;
+            const comidaEntrada = tieneComida ? normalizarHora(turno.entrada_comida) : null;
+
             // Iniciar con registros base (RELLENO según horario)
             const base = construirRegistrosDia(turno, dia.fecha, 'RELLENO');
-            
-            // Filtrar registros válidos: solo los que tienen sentido dentro del horario laboral
-            // Un registro es válido si su entrada O salida están dentro de un rango amplio del horario
+
+            // ================================================================
+            // RECOLECTAR TODAS LAS MARCAS DEL DÍA (entradas y salidas separadas)
+            // ================================================================
+            const todasLasMarcasRaw = [];
             const minInicio = horaAMinutos(inicio);
             const minFin = horaAMinutos(fin);
-            const margenAmplio = 120; // 2 horas de margen para considerar un registro
-            
-            const registrosValidos = registrosDelDia.filter(r => {
-                const entradaMin = r.entrada ? horaAMinutos(normalizarHora(r.entrada)) : null;
-                const salidaMin = r.salida ? horaAMinutos(normalizarHora(r.salida)) : null;
-                
-                // Validar que al menos una hora esté dentro del rango laboral amplio
-                const entradaValida = entradaMin !== null && entradaMin >= (minInicio - margenAmplio) && entradaMin <= (minFin + margenAmplio);
-                const salidaValida = salidaMin !== null && salidaMin >= (minInicio - margenAmplio) && salidaMin <= (minFin + margenAmplio);
-                
-                return entradaValida || salidaValida;
-            });
-            
-            // Clasificar registros en mañana (antes de comida) y tarde (después de comida)
-            const minComidaInicio = horaAMinutos(comidaSalida);
-            const minComidaFin = horaAMinutos(comidaEntrada);
-            
-            const registrosManana = [];
-            const registrosTarde = [];
-            
-            registrosValidos.forEach(r => {
-                const entradaMin = r.entrada ? horaAMinutos(normalizarHora(r.entrada)) : null;
-                
-                if (entradaMin !== null) {
-                    // Si la entrada es antes de la hora de comida → mañana
-                    if (entradaMin < minComidaFin) {
-                        registrosManana.push(r);
-                    } else {
-                        // Si la entrada es después del regreso de comida → tarde
-                        registrosTarde.push(r);
+            const margenAmplio = 180; // 3 horas de margen
+
+            registrosDelDia.forEach(r => {
+                // Agregar entrada si existe y es válida
+                if (r.entrada) {
+                    const horaEntrada = normalizarHora(r.entrada);
+                    const minEntrada = horaAMinutos(horaEntrada);
+                    if (minEntrada >= (minInicio - margenAmplio) && minEntrada <= (minFin + margenAmplio)) {
+                        todasLasMarcasRaw.push({ hora: horaEntrada, minutos: minEntrada, origen: 'entrada' });
+                    }
+                }
+                // Agregar salida si existe y es válida
+                if (r.salida) {
+                    const horaSalida = normalizarHora(r.salida);
+                    const minSalida = horaAMinutos(horaSalida);
+                    if (minSalida >= (minInicio - margenAmplio) && minSalida <= (minFin + margenAmplio)) {
+                        todasLasMarcasRaw.push({ hora: horaSalida, minutos: minSalida, origen: 'salida' });
                     }
                 }
             });
-            
-            // Procesar registro de la MAÑANA (entrada inicial y salida a comida)
-            if (registrosManana.length > 0) {
-                const regManana = registrosManana[0];
-                
-                // ENTRADA INICIAL
-                if (regManana.entrada) {
-                    const entradaOriginal = normalizarHora(regManana.entrada);
-                    
-                    if (estaDentroDeRango(entradaOriginal, inicio, 'entrada')) {
-                        // Está dentro del rango aceptable → ajustar al horario
-                        base[0] = {
-                            tipo: 'entrada',
-                            hora: jitterHora(inicio, -5, 5, `${empleado.id_empleado || empleado.clave || empleado.nombre}|${dia.fecha}|E1_ADJ`),
-                            observacion: 'AJUSTADO'
-                        };
-                    } else {
-                        const minEntrada = horaAMinutos(entradaOriginal);
-                        if (minEntrada > horaAMinutos(inicio) + RANGOS_TOLERANCIA.entrada.max) {
-                            // Llegó tarde (fuera del rango) → marcar como RETARDO
-                            base[0] = { tipo: 'entrada', hora: entradaOriginal, observacion: 'RETARDO' };
-                        } else {
-                            // Llegó muy temprano → ajustar
-                            base[0] = {
-                                tipo: 'entrada',
-                                hora: jitterHora(inicio, -5, 5, `${empleado.id_empleado || empleado.clave || empleado.nombre}|${dia.fecha}|E1_ADJ`),
-                                observacion: 'AJUSTADO'
-                            };
-                        }
+
+            // Ordenar todas las marcas por hora
+            todasLasMarcasRaw.sort((a, b) => a.minutos - b.minutos);
+
+            // ================================================================
+            // DEDUPLICACIÓN: Filtrar marcas duplicadas/muy cercanas
+            // Si hay dos marcas a menos de 15 minutos de diferencia, conservar solo la primera
+            // Esto evita que marcaciones accidentales dobles generen pares entrada/salida falsos
+            // Ejemplo: empleado marca a 8:45 y vuelve a marcar a 8:55 → solo se conserva 8:45
+            // ================================================================
+            const MINUTOS_MINIMOS_ENTRE_MARCAS = 15; // Mínimo 15 minutos entre marcas válidas
+            const todasLasMarcas = [];
+
+            for (let i = 0; i < todasLasMarcasRaw.length; i++) {
+                const marcaActual = todasLasMarcasRaw[i];
+
+                // Si es la primera marca o está suficientemente lejos de la última aceptada
+                if (todasLasMarcas.length === 0) {
+                    todasLasMarcas.push(marcaActual);
+                } else {
+                    const ultimaMarcaAceptada = todasLasMarcas[todasLasMarcas.length - 1];
+                    const diferencia = marcaActual.minutos - ultimaMarcaAceptada.minutos;
+
+                    if (diferencia >= MINUTOS_MINIMOS_ENTRE_MARCAS) {
+                        // Marca válida, está suficientemente lejos
+                        todasLasMarcas.push(marcaActual);
                     }
-                }
-                
-                // SALIDA A COMIDA
-                if (regManana.salida) {
-                    const salidaOriginal = normalizarHora(regManana.salida);
-                    
-                    if (estaDentroDeRango(salidaOriginal, comidaSalida, 'salida_comida')) {
-                        // Está dentro del rango → ajustar al horario
-                        base[1] = {
-                            tipo: 'salida',
-                            hora: jitterHora(comidaSalida, -10, 5, `${empleado.id_empleado || empleado.clave || empleado.nombre}|${dia.fecha}|S1_ADJ`),
-                            observacion: 'AJUSTADO'
-                        };
-                    }
-                    // Si está fuera del rango, se mantiene el RELLENO (horario normal)
+                    // Si diferencia < 15 min → se ignora (marca duplicada/accidental)
                 }
             }
-            
-            // Procesar registro de la TARDE (entrada después de comida y salida final)
-            if (registrosTarde.length > 0) {
-                const regTarde = registrosTarde[0];
-                
-                // ENTRADA DESPUÉS DE COMIDA
-                if (regTarde.entrada) {
-                    const entradaOriginal = normalizarHora(regTarde.entrada);
+
+            // ================================================================
+            // CLASIFICAR MARCAS SEGÚN HORARIO DEL EMPLEADO
+            // Considerar si el turno tiene comida o no
+            // ================================================================
+            const minComidaSalida = tieneComida ? horaAMinutos(comidaSalida) : null;
+            const minComidaEntrada = tieneComida ? horaAMinutos(comidaEntrada) : null;
+
+            // Definir rangos para cada tipo de marca
+            const rangos = {
+                entrada: { min: minInicio - 60, max: minInicio + 90 },           // 1hr antes hasta 1.5hr después
+                salida: { min: minFin - 120, max: minFin + 120 }                 // 2 horas antes/después
+            };
+
+            // Solo agregar rangos de comida si el turno tiene comida
+            if (tieneComida) {
+                rangos.salidaComida = { min: minComidaSalida - 30, max: minComidaSalida + 30 };  // 30 min antes/después
+                rangos.entradaComida = { min: minComidaEntrada - 30, max: minComidaEntrada + 60 }; // 30 min antes, 1hr después
+            }
+
+            // Variables para guardar las marcas clasificadas
+            let marcaEntrada = null;
+            let marcaSalidaComida = null;
+            let marcaEntradaComida = null;
+            let marcaSalida = null;
+
+            // ================================================================
+            // TURNO SIN COMIDA: Solo espera 2 marcas (entrada y salida)
+            // ================================================================
+            if (!tieneComida) {
+                if (todasLasMarcas.length === 1) {
+                    const marca = todasLasMarcas[0];
+                    // Calcular distancias a entrada y salida
+                    const distEntrada = Math.abs(marca.minutos - minInicio);
+                    const distSalida = Math.abs(marca.minutos - minFin);
+
+                    if (distEntrada <= distSalida && marca.minutos >= rangos.entrada.min && marca.minutos <= rangos.entrada.max) {
+                        marcaEntrada = marca;
+                    } else if (marca.minutos >= rangos.salida.min && marca.minutos <= rangos.salida.max) {
+                        marcaSalida = marca;
+                    } else if (marca.minutos <= (minInicio + minFin) / 2) {
+                        // Antes del punto medio → entrada
+                        marcaEntrada = marca;
+                    } else {
+                        // Después del punto medio → salida
+                        marcaSalida = marca;
+                    }
+                } else if (todasLasMarcas.length >= 2) {
+                    // Primera = entrada, última = salida
+                    marcaEntrada = todasLasMarcas[0];
+                    marcaSalida = todasLasMarcas[todasLasMarcas.length - 1];
+                }
+            }
+            // ================================================================
+            // TURNO CON COMIDA: Espera hasta 4 marcas
+            // ================================================================
+            else {
+                // CASO ESPECIAL: Solo hay 1 marca
+                if (todasLasMarcas.length === 1) {
+                    const marca = todasLasMarcas[0];
+
+                    // Calcular distancias a cada tipo de marca esperada
+                    const distEntrada = Math.abs(marca.minutos - minInicio);
+                    const distSalidaComida = Math.abs(marca.minutos - minComidaSalida);
+                    const distEntradaComida = Math.abs(marca.minutos - minComidaEntrada);
+                    const distSalida = Math.abs(marca.minutos - minFin);
+
+                    // Encontrar la distancia mínima para clasificar la marca
+                    const minDist = Math.min(distEntrada, distSalidaComida, distEntradaComida, distSalida);
+
+                    if (minDist === distEntrada && marca.minutos >= rangos.entrada.min && marca.minutos <= rangos.entrada.max) {
+                        marcaEntrada = marca;
+                    }
+                    else if (minDist === distEntradaComida && marca.minutos >= rangos.entradaComida.min && marca.minutos <= rangos.entradaComida.max) {
+                        marcaEntradaComida = marca;
+                    }
+                    else if (minDist === distSalidaComida && marca.minutos >= rangos.salidaComida.min && marca.minutos <= rangos.salidaComida.max) {
+                        marcaSalidaComida = marca;
+                    }
+                    else if (minDist === distSalida && marca.minutos >= rangos.salida.min && marca.minutos <= rangos.salida.max) {
+                        marcaSalida = marca;
+                    }
+                    else if (marca.minutos <= minComidaSalida) {
+                        marcaEntrada = marca;
+                    }
+                    else if (marca.minutos >= minComidaEntrada && marca.minutos < minFin - 60) {
+                        marcaEntradaComida = marca;
+                    }
+                    else {
+                        marcaSalida = marca;
+                    }
+                }
+
+                // CASO: 2 marcas en turno con comida
+                // Analizar a qué tipo de marca se acerca cada una
+                // Ejemplo: Horario 9-13-15-19, marcas 08:26 y 15:05
+                // → 08:26 cerca de entrada (9:00), 15:05 cerca de entrada comida (15:00)
+                else if (todasLasMarcas.length === 2) {
+                    const primera = todasLasMarcas[0];
+                    const segunda = todasLasMarcas[1];
+
+                    // Calcular distancias de la primera marca a cada tipo
+                    const dist1Entrada = Math.abs(primera.minutos - minInicio);
+                    const dist1SalidaComida = Math.abs(primera.minutos - minComidaSalida);
+                    const dist1EntradaComida = Math.abs(primera.minutos - minComidaEntrada);
+                    const dist1Salida = Math.abs(primera.minutos - minFin);
+
+                    // Calcular distancias de la segunda marca a cada tipo
+                    const dist2Entrada = Math.abs(segunda.minutos - minInicio);
+                    const dist2SalidaComida = Math.abs(segunda.minutos - minComidaSalida);
+                    const dist2EntradaComida = Math.abs(segunda.minutos - minComidaEntrada);
+                    const dist2Salida = Math.abs(segunda.minutos - minFin);
+
+                    // Determinar el mejor tipo para la primera marca
+                    const minDist1 = Math.min(dist1Entrada, dist1SalidaComida, dist1EntradaComida, dist1Salida);
+
+                    // Determinar el mejor tipo para la segunda marca
+                    const minDist2 = Math.min(dist2Entrada, dist2SalidaComida, dist2EntradaComida, dist2Salida);
+
+                    // Asignar primera marca
+                    if (minDist1 === dist1Entrada) {
+                        marcaEntrada = primera;
+                    } else if (minDist1 === dist1SalidaComida) {
+                        marcaSalidaComida = primera;
+                    } else if (minDist1 === dist1EntradaComida) {
+                        marcaEntradaComida = primera;
+                    } else {
+                        marcaSalida = primera;
+                    }
+
+                    // Asignar segunda marca (evitando asignar al mismo tipo que la primera)
+                    if (minDist2 === dist2Salida && !marcaSalida) {
+                        marcaSalida = segunda;
+                    } else if (minDist2 === dist2EntradaComida && !marcaEntradaComida) {
+                        marcaEntradaComida = segunda;
+                    } else if (minDist2 === dist2SalidaComida && !marcaSalidaComida) {
+                        marcaSalidaComida = segunda;
+                    } else if (minDist2 === dist2Entrada && !marcaEntrada) {
+                        marcaEntrada = segunda;
+                    } else {
+                        // Fallback: si ya está ocupado el tipo más cercano, usar el segundo más cercano
+                        const distancias2 = [
+                            { tipo: 'salida', dist: dist2Salida, ocupado: !!marcaSalida },
+                            { tipo: 'entradaComida', dist: dist2EntradaComida, ocupado: !!marcaEntradaComida },
+                            { tipo: 'salidaComida', dist: dist2SalidaComida, ocupado: !!marcaSalidaComida },
+                            { tipo: 'entrada', dist: dist2Entrada, ocupado: !!marcaEntrada }
+                        ].filter(d => !d.ocupado).sort((a, b) => a.dist - b.dist);
+
+                        if (distancias2.length > 0) {
+                            const mejorTipo = distancias2[0].tipo;
+                            if (mejorTipo === 'salida') marcaSalida = segunda;
+                            else if (mejorTipo === 'entradaComida') marcaEntradaComida = segunda;
+                            else if (mejorTipo === 'salidaComida') marcaSalidaComida = segunda;
+                            else if (mejorTipo === 'entrada') marcaEntrada = segunda;
+                        }
+                    }
+                }
+                // CASO: 3 marcas
+                else if (todasLasMarcas.length === 3) {
+                    const m1 = todasLasMarcas[0];
+                    const m2 = todasLasMarcas[1];
+                    const m3 = todasLasMarcas[2];
                     
-                    if (estaDentroDeRango(entradaOriginal, comidaEntrada, 'entrada_comida')) {
-                        // Está dentro del rango → ajustar
+                    // Punto medio entre salida e entrada de comida
+                    const puntoMedioComida = Math.floor((minComidaSalida + minComidaEntrada) / 2);
+
+                    // Primera marca es entrada si está antes de la hora de salida a comida
+                    if (m1.minutos <= minComidaSalida - 30) {
+                        marcaEntrada = m1;
+                        
+                        // Segunda marca: ¿salida comida o entrada comida?
+                        if (m2.minutos <= puntoMedioComida) {
+                            // m2 está antes del punto medio → es salida comida
+                            marcaSalidaComida = m2;
+                            // m3 puede ser entrada comida o salida final
+                            if (m3.minutos > puntoMedioComida && m3.minutos < minFin - 60) {
+                                marcaEntradaComida = m3;
+                            } else {
+                                marcaSalida = m3;
+                            }
+                        } else {
+                            // m2 está después del punto medio → es entrada comida
+                            marcaEntradaComida = m2;
+                            marcaSalida = m3;
+                        }
+                    } else {
+                        // Primera marca NO es entrada temprana
+                        if (m1.minutos <= puntoMedioComida) {
+                            // m1 es salida comida
+                            marcaSalidaComida = m1;
+                            marcaEntradaComida = m2;
+                            marcaSalida = m3;
+                        } else {
+                            // m1 podría ser entrada tardía
+                            marcaEntrada = m1;
+                            if (m3.minutos >= rangos.salida.min) {
+                                marcaSalida = m3;
+                            }
+                        }
+                    }
+                }
+                // CASO: 4 o más marcas
+                else if (todasLasMarcas.length >= 4) {
+                    marcaEntrada = todasLasMarcas[0];
+                    marcaSalida = todasLasMarcas[todasLasMarcas.length - 1];
+
+                    let mejorSalidaComida = null;
+                    let mejorDistSalidaComida = Infinity;
+                    let mejorEntradaComida = null;
+                    let mejorDistEntradaComida = Infinity;
+
+                    // Punto medio entre salida e entrada de comida para separar mejor las marcas
+                    // Ejemplo: si salida comida es 13:00 y entrada comida es 14:00, punto medio es 13:30
+                    const puntoMedioComida = Math.floor((minComidaSalida + minComidaEntrada) / 2);
+
+                    for (let i = 1; i < todasLasMarcas.length - 1; i++) {
+                        const marca = todasLasMarcas[i];
+
+                        // SALIDA COMIDA: marca debe estar ANTES del punto medio (más cerca de salida)
+                        const distSalidaComida = Math.abs(marca.minutos - minComidaSalida);
+                        if (distSalidaComida < mejorDistSalidaComida && marca.minutos <= puntoMedioComida) {
+                            mejorDistSalidaComida = distSalidaComida;
+                            mejorSalidaComida = marca;
+                        }
+
+                        // ENTRADA COMIDA: marca debe estar DESPUÉS del punto medio (más cerca de entrada)
+                        // Esto asegura que 14:44 se clasifique como entrada de comida y no 13:14
+                        const distEntradaComida = Math.abs(marca.minutos - minComidaEntrada);
+                        if (distEntradaComida < mejorDistEntradaComida && marca.minutos > puntoMedioComida) {
+                            mejorDistEntradaComida = distEntradaComida;
+                            mejorEntradaComida = marca;
+                        }
+                    }
+
+                    if (mejorSalidaComida) marcaSalidaComida = mejorSalidaComida;
+                    if (mejorEntradaComida) marcaEntradaComida = mejorEntradaComida;
+                }
+            }
+
+            // ================================================================
+            // APLICAR MARCAS ENCONTRADAS AL REGISTRO BASE
+            // REGLA DE ORO: Lo que CONVIENE a la empresa → CONSERVAR
+            //               Lo que NO conviene → REDONDEAR al horario
+            // ================================================================
+
+            // ============================================================
+            // ENTRADA AL TRABAJO (siempre índice 0)
+            // - TARDE → CONSERVAR (conviene: no paga esos minutos)
+            // - A TIEMPO (rango) → CONSERVAR
+            // - MUY TEMPRANO → REDONDEAR (no conviene: pagaría tiempo extra)
+            // ============================================================
+            if (marcaEntrada) {
+                const minMarcaEntrada = marcaEntrada.minutos;
+
+                if (minMarcaEntrada > minInicio) {
+                    // Llegó TARDE (después de su hora, ej: 9:30 para entrada 9:00)
+                    // → CONSERVAR: Le conviene a la empresa (no paga esos minutos)
+                    base[0] = { tipo: 'entrada', hora: marcaEntrada.hora, observacion: 'RETARDO' };
+                } else if (minMarcaEntrada >= (minInicio + RANGOS_TOLERANCIA.entrada.min)) {
+                    // Llegó dentro del rango permitido (ej: 8:45-9:00 para entrada 9:00)
+                    // → CONSERVAR: Está OK
+                    base[0] = { tipo: 'entrada', hora: marcaEntrada.hora, observacion: 'BIOMÉTRICO' };
+                } else {
+                    // Llegó MUY TEMPRANO (antes del rango, ej: 8:20 para entrada 9:00)
+                    // → REDONDEAR: No conviene a la empresa (pagaría tiempo extra)
+                    base[0] = {
+                        tipo: 'entrada',
+                        hora: jitterHora(inicio, -12, -3, `${empleado.id_empleado || empleado.clave || empleado.nombre}|${dia.fecha}|E1_ADJ`),
+                        observacion: 'AJUSTADO (MUY TEMPRANO)'
+                    };
+                }
+            }
+
+            // Determinar índice de salida final según si tiene comida
+            // Con comida: [entrada(0), salidaComida(1), entradaComida(2), salida(3)]
+            // Sin comida: [entrada(0), salida(1)]
+            const indiceSalidaFinal = tieneComida ? 3 : 1;
+
+            // ============================================================
+            // SALIDA A COMIDA y ENTRADA DE COMIDA - Solo si tiene comida
+            // ============================================================
+            if (tieneComida) {
+                const minSalidaComidaEsperada = horaAMinutos(comidaSalida);
+                const minEntradaComidaEsperada = horaAMinutos(comidaEntrada);
+                
+                // ============================================================
+                // SALIDA A COMIDA
+                // - ANTES de su hora → CONSERVAR (conviene: trabajó menos)
+                // - A TIEMPO o poco después (0 a +15 min) → CONSERVAR
+                // - MUY TARDE (+15 min) → REDONDEAR (no conviene: trabajó de más sin pago)
+                // ============================================================
+                if (marcaSalidaComida) {
+                    const minMarcaSalidaComida = marcaSalidaComida.minutos;
+                    
+                    if (minMarcaSalidaComida < minSalidaComidaEsperada) {
+                        // Salió ANTES de su hora (ej: 12:55 para comida 13:00)
+                        // → CONSERVAR: Le conviene a la empresa (trabajó menos)
+                        base[1] = { tipo: 'salida', hora: marcaSalidaComida.hora, observacion: 'SALIÓ TEMPRANO' };
+                    } else if (minMarcaSalidaComida <= (minSalidaComidaEsperada + RANGOS_TOLERANCIA.salida_comida.max)) {
+                        // Salió dentro del rango permitido (ej: 13:00-13:15)
+                        // → CONSERVAR: Está OK
+                        base[1] = { tipo: 'salida', hora: marcaSalidaComida.hora, observacion: 'BIOMÉTRICO' };
+                    } else {
+                        // Salió MUY TARDE (ej: 13:30+ para comida 13:00)
+                        // → REDONDEAR: No conviene (está trabajando de más sin pago)
+                        base[1] = {
+                            tipo: 'salida',
+                            hora: jitterHora(comidaSalida, 5, 12, `${empleado.id_empleado || empleado.clave || empleado.nombre}|${dia.fecha}|S1_ADJ`),
+                            observacion: 'AJUSTADO (MUY TARDE)'
+                        };
+                    }
+                }
+
+                // ============================================================
+                // ENTRADA DE COMIDA (regreso)
+                // - TARDE → CONSERVAR (conviene: no paga esos minutos de descanso extra)
+                // - A TIEMPO → CONSERVAR
+                // - TEMPRANO → CONSERVAR (conviene: trabaja más sin pago extra)
+                // - MUY TEMPRANO (>30 min antes) → REDONDEAR (probable error de marcación)
+                // ============================================================
+                if (marcaEntradaComida) {
+                    const minMarcaEntradaComida = marcaEntradaComida.minutos;
+                    const MARGEN_ERROR_TEMPRANO = 30; // Más de 30 min antes = probable error
+                    
+                    if (minMarcaEntradaComida > minEntradaComidaEsperada) {
+                        // Regresó TARDE (ej: 14:10, 14:44 para entrada comida 14:00)
+                        // → CONSERVAR: Le conviene a la empresa (no paga esos minutos)
+                        const minutosTarde = minMarcaEntradaComida - minEntradaComidaEsperada;
+                        base[2] = { 
+                            tipo: 'entrada', 
+                            hora: marcaEntradaComida.hora, 
+                            observacion: `RETARDO COMIDA (+${minutosTarde} min)` 
+                        };
+                    } else if (minMarcaEntradaComida >= (minEntradaComidaEsperada - MARGEN_ERROR_TEMPRANO)) {
+                        // Regresó A TIEMPO o TEMPRANO (hasta 30 min antes)
+                        // → CONSERVAR: Le conviene (trabaja más sin pago extra)
+                        base[2] = { tipo: 'entrada', hora: marcaEntradaComida.hora, observacion: 'BIOMÉTRICO' };
+                    } else {
+                        // Regresó MUY TEMPRANO (más de 30 min antes, ej: 13:20 para 14:00)
+                        // → REDONDEAR: Probable error de marcación
                         base[2] = {
                             tipo: 'entrada',
-                            hora: jitterHora(comidaEntrada, -5, 15, `${empleado.id_empleado || empleado.clave || empleado.nombre}|${dia.fecha}|E2_ADJ`),
-                            observacion: 'AJUSTADO'
+                            hora: jitterHora(comidaEntrada, -3, 2, `${empleado.id_empleado || empleado.clave || empleado.nombre}|${dia.fecha}|E2_ADJ`),
+                            observacion: 'AJUSTADO (POSIBLE ERROR)'
                         };
-                    }
-                    // Si está fuera del rango, se mantiene el RELLENO
-                }
-                
-                // SALIDA FINAL (usar el último registro válido de la tarde si existe)
-                const ultimoRegTarde = registrosTarde[registrosTarde.length - 1];
-                if (ultimoRegTarde && ultimoRegTarde.salida) {
-                    const salidaOriginal = normalizarHora(ultimoRegTarde.salida);
-                    
-                    if (estaDentroDeRango(salidaOriginal, fin, 'salida')) {
-                        // Está dentro del rango → ajustar
-                        base[3] = {
-                            tipo: 'salida',
-                            hora: jitterHora(fin, -15, 5, `${empleado.id_empleado || empleado.clave || empleado.nombre}|${dia.fecha}|S2_ADJ`),
-                            observacion: 'AJUSTADO'
-                        };
-                    } else {
-                        // Salió fuera del horario normal
-                        const minSalida = horaAMinutos(salidaOriginal);
-                        if (minSalida > horaAMinutos(fin) + RANGOS_TOLERANCIA.salida.max) {
-                            // Salió después del horario → hora extra, usar real pero limitado
-                            base[3] = { tipo: 'salida', hora: salidaOriginal, observacion: 'HORA EXTRA' };
-                        }
-                        // Si salió muy temprano, se mantiene el RELLENO
-                    }
-                }
-            } else if (registrosManana.length > 0) {
-                // Si solo hay registro de mañana pero no de tarde, verificar si el registro de mañana
-                // tiene una salida que podría ser la salida final (no salió a comida)
-                const regManana = registrosManana[0];
-                if (regManana.salida) {
-                    const salidaOriginal = normalizarHora(regManana.salida);
-                    const minSalida = horaAMinutos(salidaOriginal);
-                    
-                    // Si la salida está cerca de la hora final (no de la comida)
-                    if (minSalida > horaAMinutos(comidaEntrada)) {
-                        if (estaDentroDeRango(salidaOriginal, fin, 'salida')) {
-                            base[3] = {
-                                tipo: 'salida',
-                                hora: jitterHora(fin, -15, 5, `${empleado.id_empleado || empleado.clave || empleado.nombre}|${dia.fecha}|S2_ADJ`),
-                                observacion: 'AJUSTADO'
-                            };
-                        } else if (minSalida > horaAMinutos(fin) + RANGOS_TOLERANCIA.salida.max) {
-                            base[3] = { tipo: 'salida', hora: salidaOriginal, observacion: 'HORA EXTRA' };
-                        }
                     }
                 }
             }
 
-            const trabajo = calcularTrabajoDesdeRegistros(base);
+            // ============================================================
+            // SALIDA A CASA (SALIDA FINAL)
+            // - ANTES o a tiempo → CONSERVAR
+            // - MUY TARDE → REDONDEAR (no conviene: pagaría horas extra)
+            // ============================================================
+            if (marcaSalida) {
+                const minMarcaSalida = marcaSalida.minutos;
+
+                if (minMarcaSalida <= minFin) {
+                    // Salió antes o a la hora exacta
+                    // → CONSERVAR: Está OK / Conviene
+                    base[indiceSalidaFinal] = { tipo: 'salida', hora: marcaSalida.hora, observacion: 'BIOMÉTRICO' };
+                } else {
+                    // Salió DESPUÉS de su hora oficial (ej: 17:30 para salida 17:00)
+                    // → REDONDEAR: No conviene (no se pagan horas extra)
+                    base[indiceSalidaFinal] = { tipo: 'salida', hora: fin, observacion: 'AJUSTADO (HORA EXTRA)' };
+                }
+            }
+
+            // ============================================================
+            // VALIDACIÓN FINAL: Ajustar si excede máximo de horas del turno
+            // Si el tiempo trabajado excede max_horas + 15 min, ajustar salida
+            // Ejemplo: DIURNA max 8 hrs → si excede 8:15, ajustar salida
+            // ============================================================
+            const seedKeyAjuste = `${empleado.id_empleado || empleado.clave || empleado.nombre}|${dia.fecha}`;
+            ajustarRegistrosSiExcedenMaximo(base, infoTurnoDia.max_horas, seedKeyAjuste);
+
+            const trabajo = calcularTrabajoDesdeRegistros(base, infoTurnoDia.max_horas);
             resultados.push({
                 fecha: dia.fecha,
                 tipo: "asistencia",
@@ -742,7 +1272,7 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
             return;
         }
 
-        // REGLA 6: Si NO tiene registro biométrico → inasistencia
+        // REGLA 5: Si NO tiene registro biométrico → inasistencia
         if (!tieneRegistroBiometrico) {
             resultados.push({
                 fecha: dia.fecha,
@@ -758,7 +1288,58 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
             return;
         }
 
-        // REGLA 7: Tiene registro pero ya se completaron dias_trabajados → descanso
+        // REGLA 6: Tiene registro biométrico pero ya se completaron dias_trabajados
+        // → Asignar vacaciones, incapacidades, ausencias o descanso según corresponda
+        // Prioridad: vacaciones > incapacidades > ausencias > descanso
+        if (vacacionesProcesadas < diasVacacionesRestantes) {
+            vacacionesProcesadas++;
+            resultados.push({
+                fecha: dia.fecha,
+                tipo: "vacaciones",
+                registros: [],
+                trabajado_minutos: 0,
+                trabajado_hhmm: '00:00',
+                trabajado_decimal: 0,
+                observacion_dia: "VACACIONES",
+                tipo_turno: infoTurnoDia.tipo_turno,
+                max_horas: infoTurnoDia.max_horas
+            });
+            return;
+        }
+
+        if (incapacidadesProcesadas < diasIncapacidadesRestantes) {
+            incapacidadesProcesadas++;
+            resultados.push({
+                fecha: dia.fecha,
+                tipo: "incapacidad",
+                registros: [],
+                trabajado_minutos: 0,
+                trabajado_hhmm: '00:00',
+                trabajado_decimal: 0,
+                observacion_dia: "INCAPACIDAD",
+                tipo_turno: infoTurnoDia.tipo_turno,
+                max_horas: infoTurnoDia.max_horas
+            });
+            return;
+        }
+
+        if (ausenciasProcesadas < diasAusenciasRestantes) {
+            ausenciasProcesadas++;
+            resultados.push({
+                fecha: dia.fecha,
+                tipo: "ausencia",
+                registros: [],
+                trabajado_minutos: 0,
+                trabajado_hhmm: '00:00',
+                trabajado_decimal: 0,
+                observacion_dia: "AUSENCIA",
+                tipo_turno: infoTurnoDia.tipo_turno,
+                max_horas: infoTurnoDia.max_horas
+            });
+            return;
+        }
+
+        // Si no hay más eventos, es descanso
         resultados.push({
             fecha: dia.fecha,
             tipo: "descanso",
@@ -962,7 +1543,7 @@ function processExcelData() {
                 contentType: false
             });
 
-            console.log("Biometrico Central", JsonBiometricoCentral);
+            // console.log("Biometrico Central", JsonBiometricoCentral);
 
             // =====================================================
             // 3. Procesar Biométricos de Ranchos (OPCIONALES)
@@ -976,7 +1557,7 @@ function processExcelData() {
                     const nombreRancho = input.dataset.rancho || input.name;
                     const fieldName = input.name;
 
-                    console.log(`Procesando biométrico de rancho: ${nombreRancho}`);
+                    // console.log(`Procesando biométrico de rancho: ${nombreRancho}`);
 
                     const formDataRancho = new FormData();
                     formDataRancho.append(fieldName, input.files[0]);
@@ -997,7 +1578,7 @@ function processExcelData() {
                                 nombre: nombreRancho,
                                 datos: jsonRancho
                             });
-                            console.log(`Biométrico ${nombreRancho} procesado:`, jsonRancho);
+                            // console.log(`Biométrico ${nombreRancho} procesado:`, jsonRancho);
                         } else if (jsonRancho.error) {
                             console.warn(`Error en biométrico ${nombreRancho}:`, jsonRancho.error);
                         }
@@ -1008,14 +1589,14 @@ function processExcelData() {
                 }
             }
 
-            console.log(`Total de biométricos de ranchos procesados: ${biometricosRanchos.length}`);
+            // console.log(`Total de biométricos de ranchos procesados: ${biometricosRanchos.length}`);
 
             // =====================================================
             // 4. Unir todos los JSONs
             // =====================================================
             const JsonUnido = await unirJson(JsonListaRaya, JsonBiometricoCentral, biometricosRanchos);
 
-            console.log("JSON Unido:", JsonUnido);
+            // console.log("JSON Unido:", JsonUnido);
 
             // =====================================================
             // 5. Procesar registros y guardar
@@ -1071,11 +1652,14 @@ function obtenerDatosEmpleados() {
                     const ap_paterno = (empleado.ap_paterno || '').trim();
                     const ap_materno = (empleado.ap_materno || '').trim();
                     const nombre = (empleado.nombre || '').trim();
-                    
+
                     const nombreCompleto = `${ap_paterno} ${ap_materno} ${nombre}`.replace(/\s+/g, ' ').trim();
 
                     // Normalizar nombre para búsqueda
                     const nombreNormalizado = normalizar(nombreCompleto);
+
+                    // console.log("Nombres normalizados: ", nombreNormalizado);
+
 
                     // Parsear el horario JSON si existe
                     let horario = [];
@@ -1096,7 +1680,7 @@ function obtenerDatosEmpleados() {
                         horario_fijo: empleado.horario_fijo,
                         horario: horario
                     });
-                    
+
                     // Debug: Log para verificar nombres
                     // console.log(`BD: "${nombreCompleto}" -> Normalizado: "${nombreNormalizado}"`);
                 });
@@ -1137,22 +1721,85 @@ function normalizar(s) {
 }
 
 /**
+ * Calcula la distancia de Levenshtein entre dos cadenas
+ * Útil para detectar errores de ortografía (ESPINOSA vs ESPINOZA)
+ */
+function distanciaLevenshtein(a, b) {
+    if (a.length === 0) return b.length;
+    if (b.length === 0) return a.length;
+
+    const matrix = [];
+
+    for (let i = 0; i <= b.length; i++) {
+        matrix[i] = [i];
+    }
+    for (let j = 0; j <= a.length; j++) {
+        matrix[0][j] = j;
+    }
+
+    for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+            if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                matrix[i][j] = matrix[i - 1][j - 1];
+            } else {
+                matrix[i][j] = Math.min(
+                    matrix[i - 1][j - 1] + 1, // sustitución
+                    matrix[i][j - 1] + 1,     // inserción
+                    matrix[i - 1][j] + 1      // eliminación
+                );
+            }
+        }
+    }
+
+    return matrix[b.length][a.length];
+}
+
+/**
+ * Verifica si dos palabras son similares (tolerando errores de ortografía)
+ * Ejemplo: ESPINOSA ≈ ESPINOZA, MORALES ≈ MORALEZ
+ */
+function palabrasSimilares(p1, p2) {
+    // Coincidencia exacta
+    if (p1 === p2) return true;
+
+    // Una contiene a la otra
+    if (p1.includes(p2) || p2.includes(p1)) return true;
+
+    // Calcular distancia de Levenshtein
+    const distancia = distanciaLevenshtein(p1, p2);
+    const maxLen = Math.max(p1.length, p2.length);
+
+    // Permitir hasta 2 caracteres de diferencia para palabras largas (>5 chars)
+    // o 1 caracter para palabras cortas
+    const tolerancia = maxLen > 5 ? 2 : 1;
+
+    return distancia <= tolerancia;
+}
+
+/**
  * Calcula similitud entre dos nombres normalizados (0-1)
- * Usa coincidencia de palabras individuales
+ * Usa coincidencia de palabras individuales con tolerancia a errores ortográficos
  */
 function calcularSimilitudNombres(nombre1, nombre2) {
     const palabras1 = normalizar(nombre1).split(" ").filter(p => p.length > 2); // Ignorar palabras muy cortas como "DE"
     const palabras2 = normalizar(nombre2).split(" ").filter(p => p.length > 2);
-    
+
     if (palabras1.length === 0 || palabras2.length === 0) return 0;
-    
+
     let coincidencias = 0;
+    const usadas = new Set(); // Para no contar la misma palabra dos veces
+
     palabras1.forEach(p1 => {
-        if (palabras2.some(p2 => p2 === p1 || p2.includes(p1) || p1.includes(p2))) {
-            coincidencias++;
+        for (let i = 0; i < palabras2.length; i++) {
+            if (usadas.has(i)) continue;
+            if (palabrasSimilares(p1, palabras2[i])) {
+                coincidencias++;
+                usadas.add(i);
+                break;
+            }
         }
     });
-    
+
     return coincidencias / Math.max(palabras1.length, palabras2.length);
 }
 
@@ -1208,10 +1855,7 @@ async function unirJson(jsonListaRaya, jsonBiometricoCentral, biometricosRanchos
             datos: mapaRancho,
             nombre: rancho.nombre
         });
-        console.log(`Fuente biométrica agregada: ${rancho.nombre} con ${Object.keys(mapaRancho).length} empleados`);
     });
-
-    console.log(`Total de fuentes biométricas: ${fuentesBiometricas.length}`);
 
     /**
      * =========================================================
@@ -1251,12 +1895,12 @@ async function unirJson(jsonListaRaya, jsonBiometricoCentral, biometricosRanchos
                     fuentesBiometricas.forEach(fuente => {
                         // Primero intentar búsqueda exacta
                         let empleadoBiometrico = fuente.datos[nombreNormalizado];
-                        
+
                         // Si no hay coincidencia exacta, buscar por similitud
                         if (!empleadoBiometrico) {
                             let mejorSimilitud = 0;
                             let mejorCandidato = null;
-                            
+
                             Object.keys(fuente.datos).forEach(nombreBio => {
                                 const similitud = calcularSimilitudNombres(empRaya.nombre, nombreBio);
                                 if (similitud > mejorSimilitud && similitud >= 0.7) { // 70% de similitud mínima
@@ -1264,13 +1908,13 @@ async function unirJson(jsonListaRaya, jsonBiometricoCentral, biometricosRanchos
                                     mejorCandidato = nombreBio;
                                 }
                             });
-                            
+
                             if (mejorCandidato) {
                                 // console.log(`Coincidencia por similitud (${Math.round(mejorSimilitud * 100)}%): "${empRaya.nombre}" ≈ "${mejorCandidato}"`);
                                 empleadoBiometrico = fuente.datos[mejorCandidato];
                             }
                         }
-                        
+
                         if (empleadoBiometrico && empleadoBiometrico.registros && empleadoBiometrico.registros.length > 0) {
                             // Si aún no se han asignado datos biométricos, asignarlos
                             if (!datosEncontrados) {
@@ -1282,9 +1926,9 @@ async function unirJson(jsonListaRaya, jsonBiometricoCentral, biometricosRanchos
                             // Agregar solo los registros que no estén ya en el arreglo
                             // Comparar por fecha + entrada para evitar duplicados
                             empleadoBiometrico.registros.forEach(registro => {
-                                if (!empRaya.registros.some(r => 
-                                    r.fecha === registro.fecha && 
-                                    r.entrada === registro.entrada && 
+                                if (!empRaya.registros.some(r =>
+                                    r.fecha === registro.fecha &&
+                                    r.entrada === registro.entrada &&
                                     r.salida === registro.salida
                                 )) {
                                     empRaya.registros.push(registro);
@@ -1311,7 +1955,30 @@ async function unirJson(jsonListaRaya, jsonBiometricoCentral, biometricosRanchos
                     }
 
                     // Agregar información del empleado desde la base de datos si está disponible
-                    const empleadoInfo = empleadosMap.get(nombreNormalizado);
+                    // Primero buscar coincidencia exacta
+                    let empleadoInfo = empleadosMap.get(nombreNormalizado);
+
+                    // Si no hay coincidencia exacta, buscar por similitud (para errores de ortografía)
+                    if (!empleadoInfo) {
+                        let mejorSimilitud = 0;
+                        let mejorCandidato = null;
+                        let nombreCandidato = '';
+
+                        empleadosMap.forEach((info, nombreBD) => {
+                            const similitud = calcularSimilitudNombres(empRaya.nombre, nombreBD);
+                            if (similitud > mejorSimilitud && similitud >= 0.75) { // 75% de similitud mínima
+                                mejorSimilitud = similitud;
+                                mejorCandidato = info;
+                                nombreCandidato = nombreBD;
+                            }
+                        });
+
+                        if (mejorCandidato) {
+                            // console.log(`✓ Coincidencia por similitud (${Math.round(mejorSimilitud * 100)}%): "${empRaya.nombre}" ≈ "${mejorCandidato.nombre_completo}"`);
+                            empleadoInfo = mejorCandidato;
+                        }
+                    }
+
                     if (empleadoInfo) {
                         //console.log(`✓ Empleado encontrado: ${empRaya.nombre} -> ${empleadoInfo.nombre_completo}`);
                         empRaya.id_empleado = empleadoInfo.id_empleado;
@@ -1333,7 +2000,7 @@ async function unirJson(jsonListaRaya, jsonBiometricoCentral, biometricosRanchos
                          * =============================================
                          */
                         empRaya.aplicar_horario_variable = (empRaya.horario_fijo === 1) ? false : true;
-                        
+
                         // Si no tiene id_biometrico (no se encontró en biométricos), usar clave_empleado
                         if (!empRaya.id_biometrico) {
                             empRaya.id_biometrico = empleadoInfo.clave_empleado;
@@ -1350,6 +2017,23 @@ async function unirJson(jsonListaRaya, jsonBiometricoCentral, biometricosRanchos
                         empRaya.clave_empleado = null;
                         empRaya.horario = [];
                         empRaya.tiene_nomina = false; // Marcar como que no tiene nómina si no está en la lista
+
+                        const Toast = Swal.mixin({
+                            toast: true,
+                            position: "top-end",
+                            showConfirmButton: false,
+                            timer: 5000,
+                            timerProgressBar: true,
+                            didOpen: (toast) => {
+                                toast.onmouseenter = Swal.stopTimer;
+                                toast.onmouseleave = Swal.resumeTimer;
+                            }
+                        });
+                        Toast.fire({
+                            icon: "warning",
+                            title: `Empleado no encontrado en la base de datos: ${empRaya.nombre}`
+                        });
+
                     }
                 });
             }

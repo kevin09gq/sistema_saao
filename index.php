@@ -17,12 +17,13 @@ verificarSesion();
     <!-- Iconos Bootstrap -->
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <!-- SweetAlert2 CSS -->
-     <script src="<?= SWEETALERT ?>"></script>
+    <script src="<?= SWEETALERT ?>"></script>
 </head>
 
 <body>
-    <?php include("public/views/navbar.php"); ?>
     
+    <?php include("public/views/navbar.php"); ?>
+
     <!-- Botón de notificación -->
     <button class="notification-btn" id="notificationButton">
         <i class="bi bi-bell-fill" style="font-size: 22px;"></i>
@@ -51,7 +52,8 @@ verificarSesion();
     <!-- Tarjetas de funcionalidades principales del sistema -->
     <div class="container my-5">
         <div class="row g-4">
-            <div class="col-md-4">
+
+            <div class="col-md-3">
                 <div class="card h-100 text-center">
                     <div class="card-body">
                         <i class="bi bi-person-badge text-success" style="font-size: 48px;"></i>
@@ -61,7 +63,8 @@ verificarSesion();
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+
+            <div class="col-md-3">
                 <div class="card h-100 text-center">
                     <div class="card-body">
                         <i class="bi bi-file-earmark-text text-success" style="font-size: 48px;"></i>
@@ -71,7 +74,8 @@ verificarSesion();
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+
+            <div class="col-md-3">
                 <div class="card h-100 text-center">
                     <div class="card-body">
                         <i class="bi bi-cash-coin text-success" style="font-size: 48px;"></i>
@@ -83,13 +87,25 @@ verificarSesion();
             </div>
 
             <!-- Tarjeta para ir al reloj de 8 horas -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card h-100 text-center">
                     <div class="card-body">
                         <i class="bi bi-stopwatch text-success" style="font-size: 48px;"></i>
-                        <h5 class="card-title mt-3">Reloj a 8 Horas</h5>
+                        <h5 class="card-title mt-3">Biometricos</h5>
                         <p class="card-text">Automatiza el cálculo y control de nóminas para todos los empleados.</p>
                         <a href="reloj-8horas/views/reloj.php" class="btn btn-success">Ir a Reloj</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta para ir a prestamos -->
+            <div class="col-md-3">
+                <div class="card h-100 text-center">
+                    <div class="card-body">
+                        <i class="bi bi-cash-stack text-success" style="font-size: 48px;"></i>
+                        <h5 class="card-title mt-3">Prestamos</h5>
+                        <p class="card-text">Registrar prestamos y abonos de los empleados</p>
+                        <a href="prestamos/views/" class="btn btn-success">Ir a Prestamos</a>
                     </div>
                 </div>
             </div>
@@ -99,7 +115,7 @@ verificarSesion();
 
     <!-- Pie de página simple -->
     <footer class="bg-success text-white text-center py-3">
-        <small>&copy; 2024 Empacadora de Limón. Todos los derechos reservados.</small>
+        <small>&copy; <?= date('Y') ?> Empacadora de Limón. Todos los derechos reservados.</small>
     </footer>
 
     <!-- jQuery -->

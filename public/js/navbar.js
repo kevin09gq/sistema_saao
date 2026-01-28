@@ -30,6 +30,10 @@ document.addEventListener('DOMContentLoaded', function() {
             return 'gafetes';
         } else if (path.includes('/contratos/contratos.php')) {
             return 'contratos';
+        } else if (path.includes('/prestamos/views/index.php')) {
+            return 'documentos';
+        } else if (path.includes('/public/views/generacion_tickets_manuales.php')) {
+            return 'documentos';
         } else if (path.includes('/nomina/views/nomina.php')) {
             return 'nominas'; // Highlight 'Nóminas' for 40 lbs
         } else if (path.includes('/nomina_confianza/views/nomina_confianza.php')) {

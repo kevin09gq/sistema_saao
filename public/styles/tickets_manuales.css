@@ -1,0 +1,116 @@
+/* Estilos para la página de generación de tickets manuales */
+
+.ticket-selection-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+}
+
+.back-button-top {
+    text-align: right;
+    margin-bottom: 1rem;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.page-header h1 {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.page-header p {
+    color: #6c757d;
+    font-size: 1.1rem;
+}
+
+.ticket-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.ticket-option-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    cursor: pointer;
+    min-height: 350px;
+}
+
+.ticket-option-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+    border-color: #28a745;
+}
+
+.ticket-option-card h3 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.ticket-option-card p {
+    color: #6c757d;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+    font-size: 0.95rem;
+}
+
+.option-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    color: #28a745;
+}
+
+.btn-select-ticket {
+    background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+    border: none;
+    color: white;
+    padding: 0.6rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.btn-select-ticket:hover {
+    background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+    transform: scale(1.05);
+    color: white;
+}
+
+.back-button {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.feature-list {
+    text-align: left;
+    margin: 0.75rem 0;
+}
+
+.feature-list li {
+    margin: 0.3rem 0;
+    color: #495057;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .ticket-selection-container {
+        padding: 1rem;
+        margin: 1rem auto;
+    }
+    
+    .ticket-options {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,9 +1,10 @@
-function actualizarEmpleado(jsonNominaConfianza, claveEmpleado) {
+function actualizarEmpleado(jsonNominaConfianza, claveEmpleado, idEmpresa) {
     // Buscar el empleado por clave
     let empleadoEncontrado = null;
     jsonNominaConfianza.departamentos.forEach(departamento => {
         departamento.empleados.forEach(empleado => {
-            if (String(empleado.clave).trim() === String(claveEmpleado).trim()) {
+            if (String(empleado.clave).trim() === String(claveEmpleado).trim() && 
+                String(empleado.id_empresa).trim() === String(idEmpresa).trim()) {
                 empleadoEncontrado = empleado;
             }
         });
@@ -46,6 +47,10 @@ function actualizarEmpleado(jsonNominaConfianza, claveEmpleado) {
     empleadoEncontrado.retardos = parseFloat($('#mod-retardos').val()) || 0;
     empleadoEncontrado.inasistencia = parseFloat($('#mod-inasistencias').val()) || 0;
     empleadoEncontrado.permiso = parseFloat($('#mod-permiso').val()) || 0;
+    empleadoEncontrado.fa_gafet_cofia = parseFloat($('#mod-fa-gafet-cofia').val()) || 0;
+
+    // Guardar preferencias de redondeo
+    empleadoEncontrado.redondeo_activo = $('#mod-redondear-sueldo').is(':checked');
 
     // HISTORIAS DE DEDUCCIONES 
     
@@ -76,11 +81,17 @@ function actualizarEmpleado(jsonNominaConfianza, claveEmpleado) {
         empleadoEncontrado.historial_retardos = nuevosHistorial;
     }
 
-    // Actualizar historial de inasistencias desde el DOM
+    // Actualizar historial de inasistencias desde el DOM - PRESERVAR INASISTENCIAS MANUALES
     if (!empleadoEncontrado.historial_inasistencias) {
         empleadoEncontrado.historial_inasistencias = [];
     }
     
+    // PRESERVAR las inasistencias manuales existentes
+    const inasistenciasManuales = empleadoEncontrado.historial_inasistencias.filter(
+        inasistencia => inasistencia && inasistencia.tipo === 'manual'
+    );
+    
+    // Solo leer las inasistencias automáticas desde el DOM
     const nuevosHistorialInasistencias = [];
     $('#contenedor-historial-inasistencias .historial-inasistencia-item').each(function() {
         const $item = $(this);
@@ -89,16 +100,18 @@ function actualizarEmpleado(jsonNominaConfianza, claveEmpleado) {
         const historialItem = {
             dia: $item.find('.historial-inasistencia-dia').val(),
             fecha: '',
-            descuento_inasistencia: parseFloat($item.find('.historial-inasistencia-descuento').val()) || 0
+            descuento_inasistencia: parseFloat($item.find('.historial-inasistencia-descuento').val()) || 0,
+            tipo: 'automatico' // Marcar como automático para distinguir
         };
         
         nuevosHistorialInasistencias.push(historialItem);
     });
     
-    // Actualizar el array completo solo si hay elementos en el DOM
-    if (nuevosHistorialInasistencias.length > 0) {
-        empleadoEncontrado.historial_inasistencias = nuevosHistorialInasistencias;
-    }
+    // Combinar inasistencias manuales con las nuevas automáticas
+    empleadoEncontrado.historial_inasistencias = [
+        ...inasistenciasManuales,  // Mantener las manuales
+        ...nuevosHistorialInasistencias  // Agregar las nuevas automáticas
+    ];
 
     // Actualizar historial de olvidos desde el DOM
     if (!empleadoEncontrado.historial_olvidos) {
@@ -232,22 +245,27 @@ function actualizarEmpleado(jsonNominaConfianza, claveEmpleado) {
 function guardarCambiosEmpleado() {
     $('#btn-guardar-conceptos').on('click', function () {
         const claveEmpleado = $('#campo-clave').text().trim();
+        const idEmpresa = $('#campo-id-empresa').val().trim();
         
         // Actualizar datos del empleado
-        actualizarEmpleado(jsonNominaConfianza, claveEmpleado);        
+        actualizarEmpleado(jsonNominaConfianza, claveEmpleado, idEmpresa);        
         // Actualizar horario oficial si fue modificado
-        actualizarHorarioOficial(claveEmpleado);
+        actualizarHorarioOficial(claveEmpleado, idEmpresa);
         // Detectar retardos usando la función en config_modal_concepts.js
         if (typeof detectarRetardos === 'function') {
-            detectarRetardos(claveEmpleado);
+            detectarRetardos(claveEmpleado, idEmpresa);
         }
         if (typeof detectarInasistencias === 'function') {
-            detectarInasistencias(claveEmpleado);
+            detectarInasistencias(claveEmpleado, idEmpresa);
         }
         if (typeof detectarOlvidosChecador === 'function') {
-            detectarOlvidosChecador(claveEmpleado);
+            detectarOlvidosChecador(claveEmpleado, idEmpresa);
         }
        
+        // Guardar en localStorage para que otros módulos tengan datos actualizados
+        if (typeof saveNomina === 'function') {
+            saveNomina(jsonNominaConfianza);
+        }
        
         // Cerrar el modal después de guardar
         $('#modal-detalles').hide();
@@ -270,13 +288,14 @@ function activarActualizacionTotalExtra() {
 // ========================================
 // ACTUALIZAR HORARIO OFICIAL DEL EMPLEADO
 // ========================================
-function actualizarHorarioOficial(claveEmpleado) {
+function actualizarHorarioOficial(claveEmpleado, idEmpresa) {
     // Buscar el empleado por clave
     let empleadoEncontrado = null;
     
     jsonNominaConfianza.departamentos.forEach(departamento => {
         departamento.empleados.forEach(empleado => {
-            if (String(empleado.clave).trim() === String(claveEmpleado).trim()) {
+            if (String(empleado.clave).trim() === String(claveEmpleado).trim() && 
+                String(empleado.id_empresa).trim() === String(idEmpresa).trim()) {
                 empleadoEncontrado = empleado;
             }
         });
@@ -313,21 +332,27 @@ function actualizarHorarioOficial(claveEmpleado) {
     // Actualizar la propiedad horario_oficial del empleado
     empleadoEncontrado.horario_oficial = nuevoHorario;
     
-    // Preservar los descuentos editados manualmente antes de limpiar
-    const descuentosPrevios = {};
+    // PRESERVAR INASISTENCIAS MANUALES antes de limpiar
+    let inasistenciasManuales = [];
     if (Array.isArray(empleadoEncontrado.historial_inasistencias)) {
+        inasistenciasManuales = empleadoEncontrado.historial_inasistencias.filter(
+            inasistencia => inasistencia && inasistencia.tipo === 'manual'
+        );
+        
+        // Preservar los descuentos editados manualmente
+        const descuentosPrevios = {};
         empleadoEncontrado.historial_inasistencias.forEach(inasistencia => {
             if (inasistencia && inasistencia.dia) {
                 descuentosPrevios[inasistencia.dia.toUpperCase()] = parseFloat(inasistencia.descuento_inasistencia) || 0;
             }
         });
+        
+        // Guardar los descuentos previos para que detectarInasistencias los use
+        empleadoEncontrado._descuentos_inasistencias_previos = descuentosPrevios;
     }
     
-    // Guardar los descuentos previos para que detectarInasistencias los use
-    empleadoEncontrado._descuentos_inasistencias_previos = descuentosPrevios;
-    
-    // Limpiar historial de inasistencias para que se regenere con el nuevo horario
-    empleadoEncontrado.historial_inasistencias = [];
+    // Limpiar historial de inasistencias pero mantener las manuales
+    empleadoEncontrado.historial_inasistencias = [...inasistenciasManuales];
     
 }
 

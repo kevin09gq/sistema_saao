@@ -115,7 +115,7 @@ $(document).ready(function () {
         const $fila = $(this).closest('tr');
 
         // Limpiar todos los campos de la fila
-        $fila.find('input[name="horario_dia[]"]').val('');
+        $fila.find('select[name="horario_dia[]"]').val('');
         $fila.find('input[name="horario_entrada[]"]').val('');
         $fila.find('input[name="horario_salida_comida[]"]').val('');
         $fila.find('input[name="horario_entrada_comida[]"]').val('');
@@ -129,7 +129,7 @@ $(document).ready(function () {
     $(document).on('click', '.btn-eliminar-horario-oficial', function () {
         const $fila = $(this).closest('tr');
 
-        $fila.find('input[name="horario_oficial_dia[]"]').val('');
+        $fila.find('select[name="horario_oficial_dia[]"]').val('');
         $fila.find('input[name="horario_oficial_entrada[]"]').val('');
         $fila.find('input[name="horario_oficial_salida_comida[]"]').val('');
         $fila.find('input[name="horario_oficial_entrada_comida[]"]').val('');
@@ -500,6 +500,12 @@ $(document).ready(function () {
 
     }
 
+    /**
+     * ================================================
+     * Función para abrir el modal de actualización
+     * y poblar los campso con los valores del empleado
+     * ================================================
+     */
     function setValoresModal(params) {
         $(document).on("click", ".btn-actualizar", function () {
             let idEmpleado = $(this).data("id");
@@ -573,6 +579,8 @@ $(document).ready(function () {
                             $switch.prop("checked", false);
                             $tab.prop("disabled", true); // deshabilita el tab 
                         }
+
+                        $("#label-nombre-empleado").text(nombreEmpleado + " " + apPaternoEmpleado + " " + apMaternoEmpleado);
 
                         // Asignamos los valores a los inputs del modal
                         $("#empleado_id").val(idEmpleado);
@@ -836,7 +844,9 @@ $(document).ready(function () {
                                 horariosOf.forEach((h, index) => {
                                     if (index < 7) {
                                         const $fila = $tbodyHorariosOf.find('tr').eq(index);
-                                        $fila.find('input[name="horario_oficial_dia[]"]').val(h.dia || '');
+
+                                        // Se cambio por un select
+                                        $fila.find('select[name="horario_oficial_dia[]"]').val(h.dia || '');
                                         $fila.find('input[name="horario_oficial_entrada[]"]').val(h.entrada || '');
                                         $fila.find('input[name="horario_oficial_salida_comida[]"]').val(h.salida_comida || '');
                                         $fila.find('input[name="horario_oficial_entrada_comida[]"]').val(h.entrada_comida || '');
@@ -1017,13 +1027,10 @@ $(document).ready(function () {
             }
         });
 
-        console.log(horarios);
-
-
-
         // Recoger horarios oficiales
         let horarios_oficiales = [];
-        $('input[name="horario_oficial_dia[]"]').each(function (index) {
+        $('select[name="horario_oficial_dia[]"]').each(function (index) {
+            // El input del dia se cambio por un select
             const dia = $(this).val().trim();
             const entrada = $('input[name="horario_oficial_entrada[]"]').eq(index).val().trim();
             const salida_comida = $('input[name="horario_oficial_salida_comida[]"]').eq(index).val().trim();

@@ -128,6 +128,26 @@ function establecerDatosPercepciones(empleado) {
         $("#mod-sueldo-a-cobrar").val(empleado.sueldo_a_cobrar.toFixed(2));
     }
 
+    // Establecer estado del checkbox de redondeo según la propiedad del empleado
+    if (typeof empleado.redondeo !== 'undefined') {
+        $("#mod-redondeo-check").prop('checked', !!empleado.redondeo);
+    } else {
+        $("#mod-redondeo-check").prop('checked', false);
+    }
+
+    // Manejar cambio del checkbox de redondeo
+    $("#mod-redondeo-check").off('change').on('change', function () {
+        const clave = $('#campo-clave').text().trim();
+        const isChecked = $(this).is(':checked');
+        actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'redondeo', isChecked);
+        // Recalcular y mostrar sueldo a cobrar según el nuevo estado
+        actualizarSueldoACobrarEnTiempoReal(clave);
+        // Persistir inmediatamente en localStorage si la función está disponible
+        if (typeof guardarDatosNomina === 'function') {
+            guardarDatosNomina();
+        }
+    });
+
     // Agregar eventos para actualizar sueldos en tiempo real (solo jsonGlobal, no tabla)
     $("#mod-sueldo-neto").off('input').on('input', function () {
         const clave = $('#campo-clave').text().trim();
@@ -411,11 +431,23 @@ function calcularSueldoACobrar(clave) {
     // === CALCULAR SUELDO A COBRAR ===
     const sueldoACobrar = totalPercepciones - totalDeducciones;
 
+    // Aplicar redondeo si corresponde
+    let sueldoParaGuardar = sueldoACobrar;
+    let redondeoCantidad = 0;
+    if (empleado && empleado.redondeo) {
+        sueldoParaGuardar = Math.round(sueldoACobrar);
+        // Guardar la diferencia de redondeo (positiva o negativa)
+        redondeoCantidad = parseFloat((sueldoParaGuardar - sueldoACobrar).toFixed(2));
+        actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'redondeo_cantidad', redondeoCantidad);
+    } else {
+        // Limpiar la propiedad si no hay redondeo
+        actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'redondeo_cantidad', 0);
+    }
+
     // Actualizar en JSON global
-    actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'sueldo_a_cobrar', sueldoACobrar);
+    actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'sueldo_a_cobrar', sueldoParaGuardar);
 
-
-    return sueldoACobrar;
+    return sueldoParaGuardar;
 }
 
 
@@ -1130,11 +1162,25 @@ function actualizarSueldoACobrarEnTiempoReal(clave) {
     // === CALCULAR SUELDO A COBRAR ===
     const sueldoACobrar = totalPercepciones - totalDeducciones;
 
-    // Actualizar en JSON global
-    actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'sueldo_a_cobrar', sueldoACobrar);
+    // Aplicar redondeo si el empleado tiene la bandera activa
+    let sueldoParaGuardar = sueldoACobrar;
+    let redondeoCantidad = 0;
+    if (empleado && empleado.redondeo) {
+        sueldoParaGuardar = Math.round(sueldoACobrar);
+        // Guardar la diferencia de redondeo (positiva o negativa)
+        redondeoCantidad = parseFloat((sueldoParaGuardar - sueldoACobrar).toFixed(2));
+        actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'redondeo_cantidad', redondeoCantidad);
+    } else {
+        // Limpiar la propiedad si no hay redondeo
+        actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'redondeo_cantidad', 0);
+    }
+
+    // Actualizar en JSON global (guardar valor redondeado o exacto según flag)
+    actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'sueldo_a_cobrar', sueldoParaGuardar);
 
     // Actualizar el campo visual del modal en tiempo real
-    $('#mod-sueldo-a-cobrar').val(sueldoACobrar.toFixed(2));
+    // Mostrar siempre con dos decimales
+    $('#mod-sueldo-a-cobrar').val((typeof sueldoParaGuardar === 'number' ? sueldoParaGuardar : sueldoACobrar).toFixed(2));
 
     // Persistir cambios si está disponible
     if (typeof guardarDatosNomina === 'function') {
@@ -1275,6 +1321,19 @@ function guardarDetallesEmpleado() {
     const sueldoNeto = parseFloat($('#mod-sueldo-neto').val()) || 0;
     const horasExtras = parseFloat($('#mod-horas-extras').val()) || 0;
     const totalExtra = parseFloat($('#mod-total-extra').val()) || 0;
+
+    // Leer estado del checkbox de redondeo y actualizar propiedad
+    const aplicarRedondeo = $('#mod-redondeo-check').is(':checked');
+    actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'redondeo', aplicarRedondeo);
+    
+    // Inicializar redondeo_cantidad
+    if (aplicarRedondeo) {
+        // Se calculará durante el recálculo
+        actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'redondeo_cantidad', 0);
+    } else {
+        // Limpiar si se desactiva
+        actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'redondeo_cantidad', 0);
+    }
 
     // Actualizar explícitamente cada valor en jsonGlobal para evitar pérdida de datos
     actualizarPropiedadEmpleadoEnJsonGlobal(clave, 'incentivo', incentivo);

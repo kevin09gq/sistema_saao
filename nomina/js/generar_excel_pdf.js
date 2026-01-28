@@ -4,7 +4,7 @@ $('#btn_export_excel').on('click',  async function () {
         return;
     }
 
-    // Verificar si hay sueldos negativos antes de exportar
+    //Verificar si hay sueldos negativos antes de exportar
     const haySueldosNegativos = await verificarSueldosNegativos();
     if (haySueldosNegativos) {
         return; // Si hay sueldos negativos, no continuar con la exportación

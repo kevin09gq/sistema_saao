@@ -35,11 +35,19 @@
             <button id="btn_modo_persona" style="padding:8px 12px; border:1px solid #ccc; background:#fff; border-radius:8px; font-weight:600;">Por persona</button>
         </div>
 
-        <div id="filtros_semana_bar" style="display:flex; gap:1rem; align-items:center; margin-bottom:1.5rem;">
+        <div id="filtros_semana_bar" style="display:flex; gap:1rem; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap;">
+            <label for="filtro_empresa" style="font-weight:500;">Empresa:</label>
+            <select id="filtro_empresa" style="padding:0.4rem 0.7rem; border-radius:4px; border:1px solid #ccc; min-width:160px;">
+                <option value="">Todas</option>
+            </select>
             <label for="filtro_anio" style="font-weight:500;">Año:</label>
-            <select id="filtro_anio" style="padding:0.4rem 0.7rem; border-radius:4px; border:1px solid #ccc; min-width:100px;"></select>
+            <select id="filtro_anio" style="padding:0.4rem 0.7rem; border-radius:4px; border:1px solid #ccc; min-width:100px;" disabled>
+                <option value="">Selecciona año</option>
+            </select>
             <label for="filtro_semana" style="font-weight:500;">Semana:</label>
-            <select id="filtro_semana" style="padding:0.4rem 0.7rem; border-radius:4px; border:1px solid #ccc; min-width:100px;"></select>
+            <select id="filtro_semana" style="padding:0.4rem 0.7rem; border-radius:4px; border:1px solid #ccc; min-width:100px;" disabled>
+                <option value="">Selecciona semana</option>
+            </select>
             <label for="filtro_departamento" style="font-weight:500;">Departamento:</label>
             <select id="filtro_departamento" style="padding:0.4rem 0.7rem; border-radius:4px; border:1px solid #ccc; min-width:160px;">
                 <option value="">Todos</option>
@@ -72,10 +80,18 @@
 
         <div id="contenedor_persona" style="display:none;">
             <div style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap; margin-bottom:0.5rem;">
+                <label for="persona_empresa" style="font-weight:500;">Empresa:</label>
+                <select id="persona_empresa" style="padding:0.4rem 0.7rem; border-radius:4px; border:1px solid #ccc; min-width:160px;">
+                    <option value="">Todas</option>
+                </select>
                 <label for="persona_anio" style="font-weight:500;">Año:</label>
-                <select id="persona_anio" style="padding:0.4rem 0.7rem; border-radius:4px; border:1px solid #ccc; min-width:100px;"></select>
+                <select id="persona_anio" style="padding:0.4rem 0.7rem; border-radius:4px; border:1px solid #ccc; min-width:100px;" disabled>
+                    <option value="">Selecciona año</option>
+                </select>
                 <label for="persona_semana" style="font-weight:500;">Semana:</label>
-                <select id="persona_semana" style="padding:0.4rem 0.7rem; border-radius:4px; border:1px solid #ccc; min-width:100px;"></select>
+                <select id="persona_semana" style="padding:0.4rem 0.7rem; border-radius:4px; border:1px solid #ccc; min-width:100px;" disabled>
+                    <option value="">Selecciona semana</option>
+                </select>
                 <label for="persona_departamento" style="font-weight:500;">Departamento:</label>
                 <select id="persona_departamento" style="padding:0.4rem 0.7rem; border-radius:4px; border:1px solid #ccc; min-width:160px;">
                     <option value="">Todos</option>
@@ -121,11 +137,11 @@
         </div>
 
         <!-- Modal para detalle de semana -->
-        <div id="modal_detalle_semana" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; overflow:auto;">
-            <div style="background:white; margin:50px auto; max-width:900px; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.1);">
-                <div style="padding:20px; border-bottom:1px solid #e5e7eb; display:flex; justify-content:space-between; align-items:center;">
-                    <h2 id="modal_titulo_semana" style="margin:0;">Detalle de Semana</h2>
-                    <button onclick="cerrarModalDetalle()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#666;">&times;</button>
+        <div id="modal_detalle_semana" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; overflow:auto; padding-top:20px;">
+            <div style="background:white; margin:80px auto; max-width:900px; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+                <div style="padding:20px; border-bottom:2px solid #e5e7eb; display:flex; justify-content:space-between; align-items:center; background:#f9fafb;">
+                    <h2 id="modal_titulo_semana" style="margin:0; font-size:1.5rem; color:#1f2937;">Detalle de Semana</h2>
+                    <button onclick="cerrarModalDetalle()" style="background:none; border:none; font-size:28px; cursor:pointer; color:#666; transition:color 0.2s;">&times;</button>
                 </div>
                 <div style="padding:20px;">
                     <div style="margin-bottom:1rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">

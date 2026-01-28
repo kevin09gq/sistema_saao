@@ -64,10 +64,11 @@ function cargarListaEmpleados() {
             const empleadoHTML = `
                 <div class="empleado-item">
                     <input type="checkbox" 
-                           id="emp-${empleado.clave}" 
+                           id="emp-${empleado.clave}-${empleado.id_empresa}" 
                            data-clave="${empleado.clave}"
+                           data-id-empresa="${empleado.id_empresa}"
                            ${checked}>
-                    <label for="emp-${empleado.clave}">
+                    <label for="emp-${empleado.clave}-${empleado.id_empresa}">
                         <span class="empleado-clave">[${empleado.clave}]</span>
                         ${empleado.nombre}
                     </label>
@@ -109,13 +110,14 @@ function aplicarSeleccion() {
     // Recorrer todos los checkboxes y actualizar la propiedad 'mostrar'
     $('#contenedor-lista-empleados input[type="checkbox"]').each(function() {
         const clave = $(this).data('clave');
+        const idEmpresa = $(this).data('id-empresa');
         const marcado = $(this).is(':checked');
 
         // Buscar el empleado en jsonNominaConfianza y actualizar su propiedad
         jsonNominaConfianza.departamentos.forEach(depto => {
             if (depto.empleados) {
                 depto.empleados.forEach(emp => {
-                    if (emp.clave == clave) {
+                    if (emp.clave == clave && emp.id_empresa == idEmpresa) {
                         emp.mostrar = marcado;
                     }
                 });
@@ -162,7 +164,7 @@ function actualizarContador() {
 }
 
 // Filtrar empleados por búsqueda
-function filtrarEmpleados(textoBusqueda) {
+function filtrarEmpleadosModal(textoBusqueda) {
     const texto = textoBusqueda.toLowerCase().trim();
 
     if (texto === '') {
@@ -228,6 +230,6 @@ $(document).ready(function() {
     // Buscar empleados
     $(document).on('input', '#buscar-empleado-modal', function() {
         const texto = $(this).val();
-        filtrarEmpleados(texto);
+        filtrarEmpleadosModal(texto);
     });
 });

@@ -660,13 +660,43 @@ try {
         $pdf->Cell(60, 10, formatoMoneda($sueldoNeto), 0, 1, 'R', true);
         $pdf->SetTextColor(0, 0, 0);
 
+        // ===== REDONDEO DISPLAY =====
+        // Obtener cantidad de redondeo del empleado
+        $redondeoCantidad = isset($empleado['redondeo_cantidad']) ? (float)$empleado['redondeo_cantidad'] : 0;
+        
+        // Calcular sueldo final redondeado (usado para acumular totales)
+        $sueldoRedondeado = $sueldoNeto + $redondeoCantidad;
+        
+        // Solo mostrar si hay redondeo
+        if ($redondeoCantidad != 0) {
+            $pdf->Ln(2);
+            
+            // Línea separadora delgada
+            $pdf->SetLineWidth(0.1);
+            $pdf->Line(10, $pdf->GetY(), 200, $pdf->GetY());
+            $pdf->Ln(3);
+            
+            // Mostrar redondeo aplicado
+            $pdf->SetFont('dejavusans', 'I', 9);
+            $pdf->Cell(130, 8, 'Redondeo aplicado:', 0, 0, 'R');
+            $pdf->SetFont('dejavusansmono', 'I', 9);
+            $pdf->Cell(60, 8, formatoMoneda($redondeoCantidad), 0, 1, 'R');
+            
+            // Mostrar sueldo final redondeado
+            $pdf->SetFont('helvetica', 'B', 11);
+            $pdf->Cell(130, 10, 'Sueldo final redondeado', 0, 0, 'R');
+            $pdf->SetFont('dejavusansmono', 'B', 11);
+            $pdf->Cell(60, 10, formatoMoneda($sueldoRedondeado), 0, 1, 'R');
+        }
+
         // Línea inferior del neto a pagar más delgada
         $pdf->SetLineWidth(0.2);
         $pdf->Line(10, $pdf->GetY() + 1, 200, $pdf->GetY() + 1);
         $pdf->Ln(3); // Acumular totales generales
         $totalGeneralPercepciones += $totalPercepcionesEmpleado;
         $totalGeneralDeducciones += $totalDeduccionesEmpleado;
-        $totalGeneralNeto += $sueldoNeto;
+        // Usar sueldo redondeado para el total general (financieramente consistente)
+        $totalGeneralNeto += $sueldoRedondeado;
 
         // ==== Acumular por departamento para el desglose final ====
         $puestoU = strtoupper($empleado['puesto'] ?? '');
@@ -710,8 +740,8 @@ try {
             $grupos[$keyGrupo]['isr'] += $isr;
             $grupos[$keyGrupo]['imss'] += $imss;
 
-            // Neto
-            $grupos[$keyGrupo]['neto'] += $sueldoNeto;
+            // Neto - Usar sueldo redondeado para mantener consistencia financiera
+            $grupos[$keyGrupo]['neto'] += $sueldoRedondeado;
         }
 
         // Información adicional solo si hay espacio - Actualizada con datos reales

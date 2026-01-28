@@ -347,10 +347,24 @@ function limpiarEventosEspeciales(nominaExistente) {
                 empleado.historial_retardos = [];
                 empleado.retardos = 0;
                 
-                // Limpiar historial de inasistencias
-                empleado.historial_inasistencias = [];
-                empleado.inasistencia = 0;
-                empleado.inasistencias_contadas = 0;
+                // PRESERVAR INASISTENCIAS MANUALES - solo limpiar las automáticas
+                if (Array.isArray(empleado.historial_inasistencias)) {
+                    empleado.historial_inasistencias = empleado.historial_inasistencias.filter(
+                        inasistencia => inasistencia && inasistencia.tipo === 'manual'
+                    );
+                } else {
+                    empleado.historial_inasistencias = [];
+                }
+                
+                // Recalcular total de inasistencias manteniendo solo las manuales
+                let totalInasistenciasManual = 0;
+                if (Array.isArray(empleado.historial_inasistencias)) {
+                    empleado.historial_inasistencias.forEach(inasistencia => {
+                        totalInasistenciasManual += parseFloat(inasistencia.descuento_inasistencia) || 0;
+                    });
+                }
+                empleado.inasistencia = totalInasistenciasManual;
+                empleado.inasistencias_contadas = empleado.historial_inasistencias.length;
                 
                 // Limpiar historial de olvidos
                 empleado.historial_olvidos = [];

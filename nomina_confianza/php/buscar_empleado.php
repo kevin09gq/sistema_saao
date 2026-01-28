@@ -24,15 +24,17 @@ try {
                     e.salario_semanal,
                     e.salario_diario,
                     d.nombre_departamento,
-                    p.nombre_puesto
+                    p.nombre_puesto,
+                    emp.nombre_empresa
                 FROM info_empleados e
                 LEFT JOIN departamentos d ON e.id_departamento = d.id_departamento
                 LEFT JOIN puestos_especiales p ON e.id_puestoEspecial = p.id_puestoEspecial
+                LEFT JOIN empresa emp ON e.id_empresa = emp.id_empresa
                 WHERE e.clave_empleado = ?
                 AND e.id_status = 1
-                AND d.nombre_departamento NOT LIKE '%40%' AND d.nombre_departamento NOT LIKE '%10%'
-                LIMIT 1";
-        
+                AND d.nombre_departamento NOT LIKE '%40%'
+                AND d.nombre_departamento NOT LIKE '%10%'
+                LIMIT 10";
         $stmt = $conexion->prepare($sql);
         $stmt->bind_param("s", $query);
     } else {
@@ -48,12 +50,13 @@ try {
                     e.salario_semanal,
                     e.salario_diario,
                     d.nombre_departamento,
-                    p.nombre_puesto
+                    p.nombre_puesto,
+                    emp.nombre_empresa
                 FROM info_empleados e
                 LEFT JOIN departamentos d ON e.id_departamento = d.id_departamento
                 LEFT JOIN puestos_especiales p ON e.id_puestoEspecial = p.id_puestoEspecial
+                LEFT JOIN empresa emp ON e.id_empresa = emp.id_empresa
                 WHERE e.id_status = 1
-                AND (d.nombre_departamento NOT LIKE '%40%' AND d.nombre_departamento NOT LIKE '%10%')
                 AND (
                     e.nombre LIKE ? 
                     OR e.ap_paterno LIKE ? 
@@ -64,7 +67,6 @@ try {
                 )
                 ORDER BY e.nombre, e.ap_paterno, e.ap_materno
                 LIMIT 50";
-        
         $stmt = $conexion->prepare($sql);
         $stmt->bind_param("ssssss", $queryLike, $queryLike, $queryLike, $queryLike, $queryLike, $queryLike);
     }
@@ -84,7 +86,8 @@ try {
             'salario_semanal' => $row['salario_semanal'] ?? 0,
             'salario_diario' => $row['salario_diario'] ?? 0,
             'departamento' => $row['nombre_departamento'] ?? '',
-            'puesto' => $row['nombre_puesto'] ?? ''
+            'puesto' => $row['nombre_puesto'] ?? '',
+            'empresa' => $row['nombre_empresa'] ?? ''
         ];
     }
     

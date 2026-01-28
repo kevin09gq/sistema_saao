@@ -38,6 +38,7 @@ $(document).ready(function () {
     aplicarActualizarRegistrosBiometricos();
 
     abrirModal();
+    eliminarTarjetaDeEmpleados();
 });
 
 // Función para actualizar la cabecera de la nómina
@@ -155,7 +156,10 @@ function processExcelData(params) {
 
                     const JsonListaRaya = JSON.parse(res1);
 
-                    // 2. Verificar si se subió el archivo biométrico (opcional)
+                    // 2. Verificar si se subió el segundo archivo de lista de raya (Administrativos)
+                    const hayListaRaya2 = form.archivo_excel3 && form.archivo_excel3.files.length > 0;
+                    
+                    // 3. Verificar si se subió el archivo biométrico (opcional)
                     const hayBiometrico = form.archivo_excel2 && form.archivo_excel2.files.length > 0;
 
                     // Antes de continuar, consultar si la nómina ya está guardada en BD para esta semana
@@ -180,9 +184,7 @@ function processExcelData(params) {
                         }
                     }
 
-                    console.log(`Buscando nómina guardada: Semana ${numeroSemana}, Año ${anio}`);
-                    console.log(`Fechas: ${JsonListaRaya.fecha_inicio} - ${JsonListaRaya.fecha_cierre}`);
-
+                
                     obtenerNominaConfianzaPorSemana(
                         numeroSemana,
                         anio,
@@ -196,41 +198,146 @@ function processExcelData(params) {
                             jsonNominaConfianza.fecha_cierre = JsonListaRaya.fecha_cierre;
                             jsonNominaConfianza.numero_semana = JsonListaRaya.numero_semana;
 
-                            // Validar empleados existentes y detectar nuevos
-                            validarEmpleadosGuardados(JsonListaRaya, () => {
-                                setInitialVisibility();
-                                obtenerDepartamentosPermitidos();
-                                mostrarDatosTabla(jsonNominaConfianza);
-
-                                actualizarCabeceraNomina(jsonNominaConfianza);
-
-                                $('#btn_procesar_archivos').removeClass('loading').prop('disabled', false);
-                            });
+                            // Si hay segunda lista de raya, procesarla primero y unirla
+                            if (hayListaRaya2) {
+                                var formData3 = new FormData();
+                                formData3.append('archivo_excel', form.archivo_excel3.files[0]);
+                                formData3.append('id_empresa', '2');
+                                
+                                $.ajax({
+                                    url: '../php/leer_lista_raya.php',
+                                    type: 'POST',
+                                    data: formData3,
+                                    processData: false,
+                                    contentType: false,
+                                    success: function(res3) {
+                                        try {
+                                            const JsonListaRaya2 = JSON.parse(res3);
+                                            // Fusionar empleados de "Administrativos" con "Administracion"
+                                            if (JsonListaRaya2.departamentos) {
+                                                JsonListaRaya2.departamentos.forEach(depto => {
+                                                    // Buscar departamento "Administracion" en la primera lista
+                                                    const deptoAdministracion = JsonListaRaya.departamentos.find(
+                                                        d => d.nombre && (d.nombre.toLowerCase().includes('administracion') || d.nombre.toLowerCase().includes('administración'))
+                                                    );
+                                                    
+                                                    if (deptoAdministracion && depto.empleados) {
+                                                        // Agregar empleados al departamento Administracion
+                                                        deptoAdministracion.empleados.push(...depto.empleados);
+                                                        // Ordenar alfabéticamente por nombre
+                                                        deptoAdministracion.empleados.sort((a, b) => {
+                                                            const nombreA = (a.nombre || '').toUpperCase();
+                                                            const nombreB = (b.nombre || '').toUpperCase();
+                                                            return nombreA.localeCompare(nombreB);
+                                                        });
+                                                    }
+                                                });
+                                            }
+                                            // Ahora validar con ambas listas unidas
+                                            validarEmpleadosGuardados(JsonListaRaya, () => {
+                                                setInitialVisibility();
+                                                obtenerDepartamentosPermitidos();
+                                                mostrarDatosTabla(jsonNominaConfianza);
+                                                actualizarCabeceraNomina(jsonNominaConfianza);
+                                                $('#btn_procesar_archivos').removeClass('loading').prop('disabled', false);
+                                            });
+                                        } catch(e) {
+                                            console.error('Error procesando segunda lista:', e);
+                                            // Si hay error, validar solo con primera lista
+                                            validarEmpleadosGuardados(JsonListaRaya, () => {
+                                                setInitialVisibility();
+                                                obtenerDepartamentosPermitidos();
+                                                mostrarDatosTabla(jsonNominaConfianza);
+                                                actualizarCabeceraNomina(jsonNominaConfianza);
+                                                $('#btn_procesar_archivos').removeClass('loading').prop('disabled', false);
+                                            });
+                                        }
+                                    },
+                                    error: function() {
+                                        // Si hay error, validar solo con primera lista
+                                        validarEmpleadosGuardados(JsonListaRaya, () => {
+                                            setInitialVisibility();
+                                            obtenerDepartamentosPermitidos();
+                                            mostrarDatosTabla(jsonNominaConfianza);
+                                            actualizarCabeceraNomina(jsonNominaConfianza);
+                                            $('#btn_procesar_archivos').removeClass('loading').prop('disabled', false);
+                                        });
+                                    }
+                                });
+                            } else {
+                                // Solo primera lista
+                                validarEmpleadosGuardados(JsonListaRaya, () => {
+                                    setInitialVisibility();
+                                    obtenerDepartamentosPermitidos();
+                                    mostrarDatosTabla(jsonNominaConfianza);
+                                    actualizarCabeceraNomina(jsonNominaConfianza);
+                                    $('#btn_procesar_archivos').removeClass('loading').prop('disabled', false);
+                                });
+                            }
                         },
                         // onNoEncontrada: No existe nómina
                         () => {
                             // No existe en BD: continuar flujo normal
+                            // Primero validar empleados de la primera lista (id_empresa = 1)
                             validarExistenciaTrabajador(JsonListaRaya, (JsonListaRayaValidado) => {
-                                if (!hayBiometrico) {
-                                    // No se subió archivo biométrico: continuar sin registros
-                                    jsonNominaConfianza = JsonListaRayaValidado;
-                                    inicializarRegistrosVacios(jsonNominaConfianza);
-                                    asignarPropiedadesEmpleado(jsonNominaConfianza);
-                                    obtenerEmpleadosSinImssDesdeBD(JsonListaRayaValidado, () => {
-                                        if (typeof detectarEventosAutomaticos === 'function') {
-                                            detectarEventosAutomaticos(jsonNominaConfianza);
+                                
+                                // Si hay segunda lista de raya, procesarla
+                                if (hayListaRaya2) {
+                                    var formData3 = new FormData();
+                                    formData3.append('archivo_excel', form.archivo_excel3.files[0]);
+                                    formData3.append('id_empresa', '2'); // Marcar como empresa 2
+                                    
+                                    $.ajax({
+                                        url: '../php/leer_lista_raya.php',
+                                        type: 'POST',
+                                        data: formData3,
+                                        processData: false,
+                                        contentType: false,
+                                        success: function(res3) {
+                                            try {
+                                                const JsonListaRaya2 = JSON.parse(res3);
+                                                
+                                                // Validar empleados de segunda lista con id_empresa = 2
+                                                validarExistenciaTrabajador(JsonListaRaya2, (JsonListaRaya2Validado) => {
+                                                    // Fusionar empleados de "Administrativos" con "Administracion"
+                                                    if (JsonListaRaya2Validado.departamentos) {
+                                                        JsonListaRaya2Validado.departamentos.forEach(depto => {
+                                                            // Buscar departamento "Administracion" en la primera lista
+                                                            const deptoAdministracion = JsonListaRayaValidado.departamentos.find(
+                                                                d => d.nombre && (d.nombre.toLowerCase().includes('administracion') || d.nombre.toLowerCase().includes('administración'))
+                                                            );
+                                                            
+                                                            if (deptoAdministracion && depto.empleados) {
+                                                                // Agregar empleados al departamento Administracion
+                                                                deptoAdministracion.empleados.push(...depto.empleados);
+                                                                // Ordenar alfabéticamente por nombre
+                                                                deptoAdministracion.empleados.sort((a, b) => {
+                                                                    const nombreA = (a.nombre || '').toUpperCase();
+                                                                    const nombreB = (b.nombre || '').toUpperCase();
+                                                                    return nombreA.localeCompare(nombreB);
+                                                                });
+                                                            }
+                                                        });
+                                                    }
+                                                    
+                                                    // Continuar con el flujo (biométrico o sin registros)
+                                                    continuarConFlujo(JsonListaRayaValidado, hayBiometrico, form);
+                                                }, 2); // id_empresa = 2
+                                            } catch(e) {
+                                                console.error('Error al procesar segunda lista de raya:', e);
+                                                continuarConFlujo(JsonListaRayaValidado, hayBiometrico, form);
+                                            }
+                                        },
+                                        error: function() {
+                                            console.error('Error al leer segunda lista de raya');
+                                            continuarConFlujo(JsonListaRayaValidado, hayBiometrico, form);
                                         }
-                                        setInitialVisibility();
-                                        obtenerDepartamentosPermitidos();
-                                        mostrarDatosTabla(jsonNominaConfianza);
-                                        saveNomina(jsonNominaConfianza);
-                                        actualizarCabeceraNomina(jsonNominaConfianza);
-                                        $('#btn_procesar_archivos').removeClass('loading').prop('disabled', false);
                                     });
                                 } else {
-                                    procesarBiometrico(JsonListaRayaValidado, form);
+                                    // Solo hay primera lista
+                                    continuarConFlujo(JsonListaRayaValidado, hayBiometrico, form);
                                 }
-                            });
+                            }, 1); // id_empresa = 1
                         },
                         // onError: Error en la consulta
                         (errorMsg) => {
@@ -245,6 +352,30 @@ function processExcelData(params) {
 
         });
     });
+}
+
+
+// Función auxiliar para continuar con el flujo después de procesar ambas listas de raya
+function continuarConFlujo(JsonListaRayaValidado, hayBiometrico, form) {
+    if (!hayBiometrico) {
+        // No se subió archivo biométrico: continuar sin registros
+        jsonNominaConfianza = JsonListaRayaValidado;
+        inicializarRegistrosVacios(jsonNominaConfianza);
+        asignarPropiedadesEmpleado(jsonNominaConfianza);
+        obtenerEmpleadosSinImssDesdeBD(JsonListaRayaValidado, () => {
+            if (typeof detectarEventosAutomaticos === 'function') {
+                detectarEventosAutomaticos(jsonNominaConfianza);
+            }
+            setInitialVisibility();
+            obtenerDepartamentosPermitidos();
+            mostrarDatosTabla(jsonNominaConfianza);
+            saveNomina(jsonNominaConfianza);
+            actualizarCabeceraNomina(jsonNominaConfianza);
+            $('#btn_procesar_archivos').removeClass('loading').prop('disabled', false);
+        });
+    } else {
+        procesarBiometrico(JsonListaRayaValidado, form);
+    }
 }
 
 
@@ -290,6 +421,7 @@ function procesarBiometrico(JsonListaRayaValidado, form) {
                 mostrarDatosTabla(jsonNominaConfianza);
                 // Guardado inicial (se volverá a guardar si la validación asíncrona añade empleados)
                 saveNomina(jsonNominaConfianza);
+                actualizarCabeceraNomina(jsonNominaConfianza);
 
             } catch (e) {
 
@@ -304,7 +436,7 @@ function procesarBiometrico(JsonListaRayaValidado, form) {
 
 // PASO 2: Función para validar la existencia de trabajadores en la base de datos
 // Ahora acepta un callback que se ejecuta cuando termina la validación
-function validarExistenciaTrabajador(JsonListaRaya, callback) {
+function validarExistenciaTrabajador(JsonListaRaya, callback, idEmpresa = 1) {
     // Extraer todas las claves de todos los empleados de todos los departamentos
     const claves = [];
 
@@ -326,7 +458,7 @@ function validarExistenciaTrabajador(JsonListaRaya, callback) {
     $.ajax({
         url: '../php/trabajadores_imss.php',
         type: 'POST',
-        data: JSON.stringify({ claves: claves }),
+        data: JSON.stringify({ claves: claves, id_empresa: idEmpresa }),
         processData: false,
         contentType: 'application/json; charset=UTF-8',
         dataType: 'json',
@@ -357,7 +489,9 @@ function validarExistenciaTrabajador(JsonListaRaya, callback) {
                     salario_diario: parseFloat(emp.salario_diario) || 0,
                     id_empresa: emp.id_empresa || null,
                     horario_oficial: horarioParsed
+                                       
                 };
+              
             });
 
             // Filtrar y actualizar empleados
@@ -495,7 +629,7 @@ function obtenerEmpleadosNoUnidos(JsonListaRaya, JsonBiometrico) {
 // PASO 4B: Obtener empleados sin IMSS directamente de la BD cuando NO se sube biométrico
 // (solo cuando se procesa únicamente Lista de Raya)
 function obtenerEmpleadosSinImssDesdeBD(JsonListaRayaValidado, callback) {
-    // Extraer todas las claves de los empleados que ya están en la lista de raya
+    // Extraer todas las claves compuestas "clave|id_empresa" de los empleados que ya están en la lista de raya
     const clavesExcluidas = [];
 
     if (JsonListaRayaValidado && JsonListaRayaValidado.departamentos) {
@@ -503,7 +637,8 @@ function obtenerEmpleadosSinImssDesdeBD(JsonListaRayaValidado, callback) {
             if (departamento.empleados) {
                 departamento.empleados.forEach(empleado => {
                     if (empleado.clave) {
-                        clavesExcluidas.push(String(empleado.clave).trim());
+                        const idEmpresa = empleado.id_empresa || 1;
+                        clavesExcluidas.push(`${String(empleado.clave).trim()}|${idEmpresa}`);
                     }
                 });
             }
@@ -511,7 +646,7 @@ function obtenerEmpleadosSinImssDesdeBD(JsonListaRayaValidado, callback) {
     }
 
     // Enviar al servidor para obtener todos los empleados sin IMSS
-    // excluyendo los que ya están en la lista de raya
+    // excluyendo los que ya están en la lista de raya (por clave compuesta)
     $.ajax({
         url: '../php/trabajadores_sin_imss.php',
         type: 'POST',
@@ -658,12 +793,14 @@ function integrarNuevaInformacion(empleadosValidados) {
         }
         departamentoSinSeguro.empleados = departamentoSinSeguro.empleados.concat(empleadosValidados);
 
-        // Eliminar duplicados por clave
-        const clavesVistas = new Set();
+        // Eliminar duplicados por clave compuesta (clave|id_empresa)
+        const clavesCompuestasVistas = new Set();
         departamentoSinSeguro.empleados = departamentoSinSeguro.empleados.filter(emp => {
             const clave = String(emp.clave || '').trim();
-            if (clave && !clavesVistas.has(clave)) {
-                clavesVistas.add(clave);
+            const idEmpresa = emp.id_empresa || 1;
+            const claveCompuesta = `${clave}|${idEmpresa}`;
+            if (clave && !clavesCompuestasVistas.has(claveCompuesta)) {
+                clavesCompuestasVistas.add(claveCompuesta);
                 return true;
             }
             return false;
@@ -745,8 +882,11 @@ function asignarPropiedadesEmpleado(jsonNominaConfianza) {
             empleado.inasistencia = empleado.inasistencia ?? 0;
             empleado.uniformes = empleado.uniformes ?? 0;
             empleado.checador = empleado.checador ?? 0;
+            empleado.fa_gafet_cofia = empleado.fa_gafet_cofia ?? 0;
             empleado.total_cobrar = empleado.total_cobrar ?? 0;
             empleado.id_empresa = empleado.id_empresa ?? null;
+            empleado.redondeo = empleado.redondeo ?? 0;
+            empleado.redondeo_activo = empleado.redondeo_activo ?? false;
 
             // Inicializar historial de retardos
             if (!empleado.historial_retardos || !Array.isArray(empleado.historial_retardos)) {
@@ -813,211 +953,223 @@ function validarEmpleadosGuardados(JsonListaRaya, callback) {
         return;
     }
 
-    // Extraer todas las claves de todos los empleados actuales
-    const clavesActuales = [];
+    // Agrupar claves por id_empresa
+    const clavesPorEmpresa = {};
     jsonNominaConfianza.departamentos.forEach(departamento => {
         if (departamento.empleados) {
             departamento.empleados.forEach(empleado => {
-                if (empleado.clave) {
-                    clavesActuales.push(String(empleado.clave).trim());
-                }
+                const clave = String(empleado.clave || '').trim();
+                if (!clave) return;
+                const idEmp = empleado.id_empresa != null ? Number(empleado.id_empresa) : 1;
+                clavesPorEmpresa[idEmp] = clavesPorEmpresa[idEmp] || new Set();
+                clavesPorEmpresa[idEmp].add(clave);
             });
         }
     });
 
-    if (clavesActuales.length === 0) {
+    if (Object.keys(clavesPorEmpresa).length === 0) {
         if (typeof callback === 'function') callback();
         return;
     }
 
-    // Enviar claves al servidor para validar
-    $.ajax({
-        url: '../php/validar_empleados.php',
-        type: 'POST',
-        data: JSON.stringify({
-            funcion: 'validarEmpleadosExistentes',
-            claves: clavesActuales
-        }),
-        processData: false,
-        contentType: 'application/json; charset=UTF-8',
-        dataType: 'json',
-        success: function (response) {
-            const clavesValidas = Array.isArray(response) ? response : [];
-            const clavesValidasSet = new Set(clavesValidas);
+    // Crear peticiones por empresa
+    const peticiones = Object.keys(clavesPorEmpresa).map(idEmp => {
+        return $.ajax({
+            url: '../php/validar_empleados.php',
+            type: 'POST',
+            data: JSON.stringify({
+                funcion: 'validarEmpleadosExistentes',
+                claves: Array.from(clavesPorEmpresa[idEmp]),
+                id_empresa: Number(idEmp)
+            }),
+            processData: false,
+            contentType: 'application/json; charset=UTF-8',
+            dataType: 'json'
+        }).then(res => ({ idEmpresa: Number(idEmp), data: Array.isArray(res) ? res : [] }))
+          .catch(() => ({ idEmpresa: Number(idEmp), data: [] }));
+    });
 
-            // 1. ACTUALIZAR tarjeta_copia con los NUEVOS valores de la lista de raya (sin modificar tarjeta original)
+    // Esperar todas las peticiones
+    Promise.all(peticiones).then(results => {
+        // Construir mapa de claves válidas por empresa
+        const clavesValidasPorEmpresa = {};
+        results.forEach(r => {
+            clavesValidasPorEmpresa[r.idEmpresa] = new Set(r.data.map(String));
+        });
+
+        // 1. ACTUALIZAR tarjeta_copia con los NUEVOS valores de la lista de raya (sin modificar tarjeta original)
+        jsonNominaConfianza.departamentos.forEach(departamento => {
+            if (departamento.empleados) {
+                departamento.empleados.forEach(empleado => {
+                    const clave = String(empleado.clave || '').trim();
+                    const idEmp = empleado.id_empresa != null ? Number(empleado.id_empresa) : 1;
+
+                    // Buscar el empleado en la nueva lista de raya, verificando clave + empresa
+                    let empleadoNuevo = null;
+                    if (JsonListaRaya && JsonListaRaya.departamentos) {
+                        JsonListaRaya.departamentos.forEach(deptoLista => {
+                            if (deptoLista.empleados) {
+                                const encontrado = deptoLista.empleados.find(emp => {
+                                    const claveMatch = String(emp.clave || '').trim() === clave;
+                                    if (!claveMatch) return false;
+                                    if (emp.id_empresa !== undefined && emp.id_empresa !== null) {
+                                        return Number(emp.id_empresa) === idEmp;
+                                    }
+                                    return true;
+                                });
+                                if (encontrado) empleadoNuevo = encontrado;
+                            }
+                        });
+                    }
+
+                    // Si se encontró en la nueva lista de raya, actualizar solo las propiedades _copia
+                    if (empleadoNuevo) {
+                        if (empleadoNuevo.tarjeta !== undefined && empleadoNuevo.tarjeta !== null) {
+                            empleado.tarjeta_copia = empleadoNuevo.tarjeta;
+                        }
+                        if (empleadoNuevo.conceptos && Array.isArray(empleadoNuevo.conceptos)) {
+                            empleado.conceptos_copia = JSON.parse(JSON.stringify(empleadoNuevo.conceptos));
+                        }
+                    }
+                });
+
+                // Filtrar empleados: solo dejar los que siguen siendo válidos (por empresa)
+                departamento.empleados = departamento.empleados.filter(empleado => {
+                    const clave = String(empleado.clave || '').trim();
+                    if (clave === '') return true;
+                    const idEmp = empleado.id_empresa != null ? Number(empleado.id_empresa) : 1;
+                    return clavesValidasPorEmpresa[idEmp] && clavesValidasPorEmpresa[idEmp].has(clave);
+                });
+            }
+        });
+
+        // 2. Detectar nuevos empleados de la lista de raya usando clave compuesta
+        if (JsonListaRaya && JsonListaRaya.departamentos) {
+            // Construir Set con clave compuesta (clave|id_empresa)
+            const clavesExistentesCompuestas = new Set();
             jsonNominaConfianza.departamentos.forEach(departamento => {
                 if (departamento.empleados) {
                     departamento.empleados.forEach(empleado => {
                         const clave = String(empleado.clave || '').trim();
-
-                        // Buscar el empleado en la nueva lista de raya
-                        let empleadoNuevo = null;
-                        if (JsonListaRaya && JsonListaRaya.departamentos) {
-                            JsonListaRaya.departamentos.forEach(deptoLista => {
-                                if (deptoLista.empleados) {
-                                    const encontrado = deptoLista.empleados.find(emp =>
-                                        String(emp.clave || '').trim() === clave
-                                    );
-                                    if (encontrado) {
-                                        empleadoNuevo = encontrado;
-                                    }
-                                }
-                            });
-                        }
-
-                        // Si se encontró en la nueva lista de raya, actualizar solo las propiedades _copia
-                        if (empleadoNuevo) {
-                            // Actualizar tarjeta_copia con el NUEVO valor del archivo
-                            if (empleadoNuevo.tarjeta !== undefined && empleadoNuevo.tarjeta !== null) {
-                                empleado.tarjeta_copia = empleadoNuevo.tarjeta;
-                            }
-
-                            // Actualizar conceptos_copia con los NUEVOS valores del archivo
-                            if (empleadoNuevo.conceptos && Array.isArray(empleadoNuevo.conceptos)) {
-                                empleado.conceptos_copia = JSON.parse(JSON.stringify(empleadoNuevo.conceptos));
-                            }
+                        const idEmp = empleado.id_empresa != null ? Number(empleado.id_empresa) : 1;
+                        if (clave) {
+                            clavesExistentesCompuestas.add(clave + '|' + idEmp);
                         }
                     });
+                }
+            });
+            
+            const nuevosEmpleados = [];
 
-                    // Filtrar empleados: solo dejar los que siguen siendo válidos
-                    departamento.empleados = departamento.empleados.filter(empleado => {
-                        const clave = String(empleado.clave || '').trim();
-                        return clave === '' || clavesValidasSet.has(clave);
+            JsonListaRaya.departamentos.forEach(deptoLista => {
+                if (deptoLista.empleados) {
+                    deptoLista.empleados.forEach(empLista => {
+                        const clave = String(empLista.clave || '').trim();
+                        const idEmp = empLista.id_empresa != null ? Number(empLista.id_empresa) : 1;
+                        const claveCompuesta = clave + '|' + idEmp;
+                        
+                        // Si no está en el JSON actual (verificando clave + empresa), es un nuevo empleado
+                        if (clave && !clavesExistentesCompuestas.has(claveCompuesta)) {
+                            nuevosEmpleados.push({
+                                ...empLista,
+                                id_empresa: idEmp,
+                                registros: [] // Sin registros inicialmente
+                            });
+                        }
                     });
                 }
             });
 
-            // 2. Detectar nuevos empleados de la lista de raya
-            if (JsonListaRaya && JsonListaRaya.departamentos) {
-                const clavesExistentes = new Set(clavesActuales);
-                const nuevosEmpleados = [];
-
-                JsonListaRaya.departamentos.forEach(deptoLista => {
-                    if (deptoLista.empleados) {
-                        deptoLista.empleados.forEach(empLista => {
-                            const clave = String(empLista.clave || '').trim();
-                            // Si no está en el JSON actual, es un nuevo empleado
-                            if (clave && !clavesExistentes.has(clave)) {
-                                nuevosEmpleados.push({
-                                    ...empLista,
-                                    registros: [] // Sin registros inicialmente
-                                });
-                            }
-                        });
-                    }
+            // 3. Validar nuevos empleados contra la BD agrupando por empresa
+            if (nuevosEmpleados.length > 0) {
+                // Agrupar nuevos por empresa
+                const grupos = {};
+                nuevosEmpleados.forEach(emp => {
+                    const idEmp = emp.id_empresa != null ? Number(emp.id_empresa) : 1;
+                    grupos[idEmp] = grupos[idEmp] || [];
+                    grupos[idEmp].push(String(emp.clave || '').trim());
                 });
-
-                // 3. Validar nuevos empleados contra la BD
-                if (nuevosEmpleados.length > 0) {
-                    const clavesNuevas = nuevosEmpleados.map(emp => String(emp.clave).trim());
-
-                    $.ajax({
+                
+                // Crear peticiones por empresa
+                const llamadas = Object.keys(grupos).map(idEmp => {
+                    return $.ajax({
                         url: '../php/validar_empleados.php',
                         type: 'POST',
                         data: JSON.stringify({
                             funcion: 'obtenerInfoEmpleados',
-                            claves: clavesNuevas
+                            claves: grupos[idEmp],
+                            id_empresa: Number(idEmp)
                         }),
                         processData: false,
                         contentType: 'application/json; charset=UTF-8',
-                        dataType: 'json',
-                        success: function (responseNuevos) {
-                            const empleadosInfo = Array.isArray(responseNuevos) ? responseNuevos : [];
-                            const mapaEmpleados = {};
+                        dataType: 'json'
+                    }).then(res => Array.isArray(res) ? res : []).catch(() => []);
+                });
+                
+                Promise.all(llamadas).then(results => {
+                    const empleadosInfo = results.reduce((acc, r) => acc.concat(r), []);
+                    const mapaEmpleados = {};
 
-                            // Crear mapa de empleados para búsqueda rápida
-                            empleadosInfo.forEach(emp => {
-                                // Parsear horario_oficial si viene como string JSON
-                                let horarioParsed = null;
-                                if (emp.horario_oficial) {
-                                    try {
-                                        horarioParsed = typeof emp.horario_oficial === 'string'
-                                            ? JSON.parse(emp.horario_oficial)
-                                            : emp.horario_oficial;
-                                    } catch (e) {
-                                        horarioParsed = null;
-                                    }
-                                }
-
-                                mapaEmpleados[emp.clave] = {
-                                    id_empleado: emp.id_empleado,
-                                    nombre: emp.nombre,
-                                    sueldo_semanal: parseFloat(emp.salario_semanal) || 0,
-                                    sueldo_diario: parseFloat(emp.salario_diario) || 0,
-                                    horario_oficial: horarioParsed
-                                };
-                            });
-
-                            // Filtrar y actualizar nuevos empleados con la información completa
-                            const nuevosValidos = nuevosEmpleados.filter(emp => {
-                                const clave = String(emp.clave || '').trim();
-                                if (mapaEmpleados[clave]) {
-                                    // Actualizar el empleado con la información de la BD
-                                    emp.id_empleado = mapaEmpleados[clave].id_empleado;
-                                    emp.nombre = mapaEmpleados[clave].nombre;
-                                    emp.sueldo_semanal = mapaEmpleados[clave].sueldo_semanal;
-                                    emp.sueldo_diario = mapaEmpleados[clave].sueldo_diario;
-                                    emp.horario_oficial = mapaEmpleados[clave].horario_oficial;
-                                    return true;
-                                }
-                                return false;
-                            });
-
-                            // Agregar nuevos empleados válidos al JSON
-                            if (nuevosValidos.length > 0) {
-                                // Agregar al primer departamento existente o crear uno por defecto
-                                let deptoDestino = jsonNominaConfianza.departamentos[0];
-
-                                if (!deptoDestino) {
-                                    // Si no hay departamentos, crear uno por defecto
-                                    deptoDestino = {
-                                        nombre: "general",
-                                        empleados: []
-                                    };
-                                    jsonNominaConfianza.departamentos.push(deptoDestino);
-                                }
-
-                                if (!deptoDestino.empleados) {
-                                    deptoDestino.empleados = [];
-                                }
-
-                                nuevosValidos.forEach(nuevoEmp => {
-                                    deptoDestino.empleados.push(nuevoEmp);
-                                });
-
-                                // Asignar propiedades a los nuevos empleados
-                                asignarPropiedadesEmpleado(jsonNominaConfianza);
-                            }
-
-                            // Guardar los cambios después de filtrar y agregar
+                    // Crear mapa de empleados por clave compuesta
+                    empleadosInfo.forEach(emp => {
+                        let horarioParsed = null;
+                        if (emp.horario_oficial) {
                             try {
-                                saveNomina(jsonNominaConfianza);
-                            } catch (err) {
-
-                            }
-
-                            // Después de agregar nuevos empleados de la lista de raya,
-                            // buscar también nuevos empleados sin IMSS
-                            obtenerEmpleadosSinImssDesdeBD(jsonNominaConfianza, callback);
-                        },
-                        error: function () {
-                            // Aunque haya error, buscar empleados sin IMSS
-                            obtenerEmpleadosSinImssDesdeBD(jsonNominaConfianza, callback);
+                                horarioParsed = typeof emp.horario_oficial === 'string' ? JSON.parse(emp.horario_oficial) : emp.horario_oficial;
+                            } catch (e) { horarioParsed = null; }
                         }
+                        const key = emp.clave + '|' + (emp.id_empresa || '');
+                        mapaEmpleados[key] = {
+                            id_empleado: emp.id_empleado,
+                            nombre: emp.nombre,
+                            sueldo_semanal: parseFloat(emp.salario_semanal) || 0,
+                            sueldo_diario: parseFloat(emp.salario_diario) || 0,
+                            horario_oficial: horarioParsed,
+                            id_empresa: emp.id_empresa || null
+                        };
                     });
-                } else {
-                    // No hay nuevos empleados de la lista de raya,
-                    // pero buscar empleados sin IMSS de todas formas
+
+                    // Filtrar solo los empleados que existen en la BD
+                    const nuevosValidos = nuevosEmpleados.filter(emp => {
+                        const clave = String(emp.clave || '').trim();
+                        const idEmp = emp.id_empresa != null ? Number(emp.id_empresa) : 1;
+                        const key = clave + '|' + idEmp;
+                        const info = mapaEmpleados[key];
+                        if (info) {
+                            emp.id_empleado = info.id_empleado;
+                            emp.nombre = info.nombre;
+                            emp.sueldo_semanal = info.sueldo_semanal;
+                            emp.sueldo_diario = info.sueldo_diario;
+                            emp.horario_oficial = info.horario_oficial;
+                            emp.id_empresa = info.id_empresa || emp.id_empresa || null;
+                            return true;
+                        }
+                        return false;
+                    });
+
+                    if (nuevosValidos.length > 0) {
+                        let deptoDestino = jsonNominaConfianza.departamentos[0];
+                        if (!deptoDestino) {
+                            deptoDestino = { nombre: "general", empleados: [] };
+                            jsonNominaConfianza.departamentos.push(deptoDestino);
+                        }
+                        if (!deptoDestino.empleados) deptoDestino.empleados = [];
+                        nuevosValidos.forEach(n => deptoDestino.empleados.push(n));
+                        asignarPropiedadesEmpleado(jsonNominaConfianza);
+                    }
+
+                    try { saveNomina(jsonNominaConfianza); } catch (err) {}
                     obtenerEmpleadosSinImssDesdeBD(jsonNominaConfianza, callback);
-                }
+                }).catch(() => {
+                    obtenerEmpleadosSinImssDesdeBD(jsonNominaConfianza, callback);
+                });
             } else {
-                // No hay JsonListaRaya, buscar empleados sin IMSS
                 obtenerEmpleadosSinImssDesdeBD(jsonNominaConfianza, callback);
             }
-        },
-        error: function () {
-            if (typeof callback === 'function') callback();
+        } else {
+            obtenerEmpleadosSinImssDesdeBD(jsonNominaConfianza, callback);
         }
+    }).catch(() => {
+        if (typeof callback === 'function') callback();
     });
 }

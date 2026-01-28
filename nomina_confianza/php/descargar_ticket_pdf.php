@@ -15,6 +15,11 @@ function money($n) {
     return number_format((float)$n, 2, '.', ',');
 }
 
+// Función para redondear matemáticamente (0.5 o más redondea hacia arriba)
+function redondear($numero) {
+    return round((float)$numero, 0, PHP_ROUND_HALF_UP);
+}
+
 function safeText($s) {
     $s = (string)$s;
     $s = str_replace(["\r", "\n", "\t"], ' ', $s);
@@ -91,6 +96,9 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
     if ($neto === null || $neto === 0.0) {
         $neto = $totalPercepciones - $totalDeducciones;
     }
+    
+    // REDONDEAR el sueldo neto según regla matemática estándar
+    $neto = redondear($neto);
 
     $semana = safeText($meta['numero_semana'] ?? '');
 
@@ -103,6 +111,8 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
         $mm = $dot($dotH);
         return max(4.0, $mm / 0.352777);
     };
+
+    // No se necesita función separada, usar lógica inline como en nomina
 
     $text = function ($xDot, $yDot, $fontPt, $value) use ($pdf, $dot) {
         $pdf->SetFont('helvetica', '', $fontPt);
@@ -272,8 +282,8 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
     if ($maxConceptos <= 9) {
         $numRowsPrimeraHoja = $maxConceptos;
         $alturaContenidoPrimeraHoja = $numRowsPrimeraHoja * $lh; // solo hasta el final de conceptos
-        $f16 = $pt(12); // tamaño adecuado para conceptos
-        $f18 = $pt(11); // tamaño para totales
+        $f16 = $pt(16); // tamaño consistente para conceptos
+        $f18 = $pt(18); // tamaño para totales
         $f20 = $pt(12);
         $f22 = $pt(13);
     } else {
@@ -282,13 +292,14 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
         $f16 = $pt(16);
         $f18 = $pt(18);
         $f20 = $pt(20);
+        $f20 = $pt(20);
         $f22 = $pt(22);
     }
     
     // Dibujar líneas verticales para la primera hoja
-    $pdf->SetLineWidth($dot(1));
-    $pdf->Line($dot(232), $dot($tableTopPrimeraHoja), $dot(232), $dot($tableTopPrimeraHoja + $alturaContenidoPrimeraHoja));
-    $pdf->Line($dot(638), $dot($tableTopPrimeraHoja), $dot(638), $dot($tableTopPrimeraHoja + $alturaContenidoPrimeraHoja));
+     $pdf->SetLineWidth($dot(1));
+    $pdf->Line($dot(305), $dot($tableTopPrimeraHoja), $dot(305), $dot($tableTopPrimeraHoja + $alturaContenidoPrimeraHoja));
+    $pdf->Line($dot(700), $dot($tableTopPrimeraHoja), $dot(700), $dot($tableTopPrimeraHoja + $alturaContenidoPrimeraHoja));
     $pdf->SetLineWidth($dot(2));
     $pdf->Line($dot(415), $dot(106), $dot(415), $dot($tableTopPrimeraHoja + $alturaContenidoPrimeraHoja));
     
@@ -304,16 +315,75 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
             $yCellTop = ($tableTop + ($row * $lh)) + 16;
             if (isset($percepciones[$i])) {
                 $concepto = $percepciones[$i];
-                $cellText(16, $yCellTop, 170, $lh, $f16, $concepto['label'], 'L');
-                $cellText(186, $yCellTop, 229, $lh, $f16, '$ ' . money($concepto['monto']), 'C');
-            }
+                $lenConcepto = strlen($concepto['label']);
+                $esEnMayusculas = strtoupper($concepto['label']) === $concepto['label'];
+                
+                 if ($esEnMayusculas) {
+                    // Lógica específica para conceptos en mayúsculas
+                    if ($lenConcepto >= 32) {
+                        $fontConcepto = $pt(1);
+                    } elseif ($lenConcepto >= 25) {
+                        $fontConcepto = $pt(11);
+                    } else {
+                        $fontConcepto = $f16;
+                    }
+                } else {
+                    // Lógica específica para conceptos en minúsculas
+                    if ($lenConcepto >= 50) {
+                        $fontConcepto = $pt(10);
+                    } elseif ($lenConcepto >= 45) {
+                        $fontConcepto = $pt(11);
+                    } elseif ($lenConcepto >= 40) {
+                        $fontConcepto = $pt(12);
+                    } elseif ($lenConcepto >= 35) {
+                        $fontConcepto = $pt(13);
+                    } elseif ($lenConcepto >= 30) {
+                        $fontConcepto = $pt(14);
+                    } else {
+                        $fontConcepto = $f16;
+                    }
+                }
+                  $cellText(9, $yCellTop, 170, $lh, $fontConcepto, $concepto['label'], 'L');
+                 $cellText(240, $yCellTop, 229, $lh, $f16, '$ ' . money($concepto['monto']), 'C');
+             }
+
             $yLine = ($tableTop + (($row + 1) * $lh));
             $pdf->Line($dot(10), $dot($yLine), $dot(415), $dot($yLine));
             if (isset($deducciones[$i])) {
                 $ded = $deducciones[$i];
-                $cellText(420, $yCellTop, 218, $lh, $f16, $ded['label'], 'L');
-                $cellText(640, $yCellTop, 182, $lh, $f16, '-$ ' . money($ded['monto']), 'C');
+                $lenDeduccion = strlen($ded['label']);
+                $esEnMayusculas = strtoupper($ded['label']) === $ded['label'];
+                
+                // Condiciones separadas para mayúsculas y minúsculas
+                if ($esEnMayusculas) {
+                    // Lógica específica para deducciones en mayúsculas
+                    if ($lenDeduccion >= 32) {
+                        $fontDeduccion = $pt(2);
+                    } elseif ($lenDeduccion >= 15) {
+                        $fontDeduccion = $pt(14);
+                    } else {
+                        $fontDeduccion = $f16;
+                    }
+                } else {
+                    // Lógica específica para deducciones en minúsculas
+                    if ($lenDeduccion >= 50) {
+                        $fontDeduccion = $pt(10);
+                    } elseif ($lenDeduccion >= 45) {
+                        $fontDeduccion = $pt(11);
+                    } elseif ($lenDeduccion >= 40) {
+                        $fontDeduccion = $pt(12);
+                    } elseif ($lenDeduccion >= 35) {
+                        $fontDeduccion = $pt(13);
+                    } elseif ($lenDeduccion >= 30) {
+                        $fontDeduccion = $pt(14);
+                    } else {
+                        $fontDeduccion = $f16;
+                    }
+                }
+                $cellText(410, $yCellTop, 218, $lh, $fontDeduccion, $ded['label'], 'L');
+                $cellText(660, $yCellTop, 182, $lh, $f16, '-$ ' . money($ded['monto']), 'C');
             }
+
             $pdf->Line($dot(415), $dot($yLine), $dot(822), $dot($yLine));
             $currentY += $lh;
             $row++;
@@ -327,13 +397,13 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
                 $pdf->AddPage();
                 $pdf->SetLineWidth($dot(2));
                 $pdf->Rect($dot(10), $dot(10), $dot(812), $dot(386));
-                $textB(18, 22, $pt(20), $clave . ' ' . $nombre . ' - Continuación');
+                $textB(18, 22, $pt(20), $clave . ' ' . $nombre);
                 $text(700, 22, $f18, 'SEM ' . $semana);
                 $pdf->SetLineWidth($dot(1));
                 $pdf->Line($dot(10), $dot(50), $dot(10 + 812), $dot(50));
                 $pdf->SetLineWidth($dot(1));
-                $pdf->Line($dot(232), $dot($tableTop), $dot(232), $dot($tableTop + $alturaContenido));
-                $pdf->Line($dot(638), $dot($tableTop), $dot(638), $dot($tableTop + $alturaContenido));
+                $pdf->Line($dot(286), $dot($tableTop), $dot(286), $dot($tableTop + $alturaContenido));
+                $pdf->Line($dot(700), $dot($tableTop), $dot(700), $dot($tableTop + $alturaContenido));
                 $pdf->SetLineWidth($dot(2));
                 $pdf->Line($dot(415), $dot($tableTop), $dot(415), $dot($tableTop + $alturaContenido));
                 $currentY = $tableTop + $textYOffset;
@@ -345,13 +415,13 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
                 $pdf->AddPage();
                 $pdf->SetLineWidth($dot(2));
                 $pdf->Rect($dot(10), $dot(10), $dot(812), $dot(386));
-                $textB(18, 22, $pt(20), $clave . ' ' . $nombre . ' - Continuación');
+                $textB(18, 22, $pt(20), $clave . ' ' . $nombre);
                 $text(700, 22, $f18, 'SEM ' . $semana);
                 $pdf->SetLineWidth($dot(1));
                 $pdf->Line($dot(10), $dot(50), $dot(10 + 812), $dot(50));
                 $pdf->SetLineWidth($dot(1));
-                $pdf->Line($dot(232), $dot($tableTop), $dot(232), $dot($tableTop + $alturaContenido));
-                $pdf->Line($dot(638), $dot($tableTop), $dot(638), $dot($tableTop + $alturaContenido));
+                $pdf->Line($dot(250), $dot($tableTop), $dot(250), $dot($tableTop + $alturaContenido));
+                $pdf->Line($dot(640), $dot($tableTop), $dot(640), $dot($tableTop + $alturaContenido));
                 $pdf->SetLineWidth($dot(2));
                 $pdf->Line($dot(415), $dot($tableTop), $dot(415), $dot($tableTop + $alturaContenido));
                 $currentY = $tableTop + $textYOffset;
@@ -360,15 +430,74 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
             $yCellTop = ($tableTop + ($row * $lh)) + 16;
             if (isset($percepciones[$i])) {
                 $concepto = $percepciones[$i];
-                $cellText(12, $yCellTop, 220, $lh, $f16, $concepto['label'], 'L');
-                $cellText(232, $yCellTop, 183, $lh, $f16, '$ ' . money($concepto['monto']), 'C');
+                $lenConcepto = strlen($concepto['label']);
+                $esEnMayusculas = strtoupper($concepto['label']) === $concepto['label'];
+                
+                // Condiciones separadas para mayúsculas y minúsculas
+                if ($esEnMayusculas) {
+                    // Lógica específica para conceptos en mayúsculas
+                    if ($lenConcepto >= 32) {
+                        $fontConcepto = $pt(1);
+                    } elseif ($lenConcepto >= 25) {
+                        $fontConcepto = $pt(11);
+                    } else {
+                        $fontConcepto = $f16;
+                    }
+                } else {
+                    // Lógica específica para conceptos en minúsculas
+                    if ($lenConcepto >= 50) {
+                        $fontConcepto = $pt(10);
+                    } elseif ($lenConcepto >= 45) {
+                        $fontConcepto = $pt(11);
+                    } elseif ($lenConcepto >= 40) {
+                        $fontConcepto = $pt(12);
+                    } elseif ($lenConcepto >= 35) {
+                        $fontConcepto = $pt(13);
+                    } elseif ($lenConcepto >= 30) {
+                        $fontConcepto = $pt(14);
+                    } else {
+                        $fontConcepto = $f16;
+                    }
+                }
+                $cellText(9, $yCellTop, 170, $lh, $fontConcepto, $concepto['label'], 'L');
+                $cellText(240, $yCellTop, 229, $lh, $f16, '$ ' . money($concepto['monto']), 'C');
             }
+
             $yLine = ($tableTop + (($row + 1) * $lh));
             $pdf->Line($dot(10), $dot($yLine), $dot(415), $dot($yLine));
             if (isset($deducciones[$i])) {
                 $ded = $deducciones[$i];
-                $cellText(418, $yCellTop, 220, $lh, $f16, $ded['label'], 'L');
-                $cellText(638, $yCellTop, 184, $lh, $f16, '-$ ' . money($ded['monto']), 'C');
+                $lenDeduccion = strlen($ded['label']);
+                $esEnMayusculas = strtoupper($ded['label']) === $ded['label'];
+                
+                // Condiciones separadas para mayúsculas y minúsculas
+                if ($esEnMayusculas) {
+                    // Lógica específica para deducciones en mayúsculas
+                    if ($lenDeduccion >= 32) {
+                        $fontDeduccion = $pt(2);
+                    } elseif ($lenDeduccion >= 15) {
+                        $fontDeduccion = $pt(14);
+                    } else {
+                        $fontDeduccion = $f16;
+                    }
+                } else {
+                    // Lógica específica para deducciones en minúsculas
+                    if ($lenDeduccion >= 50) {
+                        $fontDeduccion = $pt(10);
+                    } elseif ($lenDeduccion >= 45) {
+                        $fontDeduccion = $pt(11);
+                    } elseif ($lenDeduccion >= 40) {
+                        $fontDeduccion = $pt(12);
+                    } elseif ($lenDeduccion >= 35) {
+                        $fontDeduccion = $pt(13);
+                    } elseif ($lenDeduccion >= 30) {
+                        $fontDeduccion = $pt(14);
+                    } else {
+                        $fontDeduccion = $f16;
+                    }
+                }
+                 $cellText(410, $yCellTop, 218, $lh, $fontDeduccion, $ded['label'], 'L');
+                $cellText(660, $yCellTop, 182, $lh, $f16, '-$ ' . money($ded['monto']), 'C');
             }
             $pdf->Line($dot(415), $dot($yLine), $dot(822), $dot($yLine));
             $currentY += $lh;
@@ -403,7 +532,7 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
             $offsetNeto = 31;
         }
         $text(18, $yTotales + $offsetTexto, $fontTotales, 'Total Percepciones');
-        $text(280, $yTotales + $offsetTexto, $fontTotales, '$' . money($totalPercepciones));
+        $text(310, $yTotales + $offsetTexto, $fontTotales, '$' . money($totalPercepciones));
         $text(430, $yTotales + $offsetTexto, $fontTotales, 'Total Deducciones');
         $text(690, $yTotales + $offsetTexto, $fontTotales, '-$');
         $text(710, $yTotales + $offsetTexto, $fontTotales, money($totalDeducciones));
@@ -428,10 +557,9 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
         $pdf->SetLineWidth($dot(1));
         $pdf->SetFont('helvetica', '', $fontTotales);
         $pdf->Text($dot(18), $dot($yTotales + 9), 'Total Percepciones');
-        $pdf->Text($dot(210), $dot($yTotales + 9), '$' . money($totalPercepciones));
+        $pdf->Text($dot(305), $dot($yTotales + 9), '$' . money($totalPercepciones));
         $pdf->Text($dot(430), $dot($yTotales + 9), 'Total Deducciones');
-        $pdf->Text($dot(680), $dot($yTotales + 9), '-$');
-        $pdf->Text($dot(720), $dot($yTotales + 9), money($totalDeducciones));
+        $pdf->Text($dot(710), $dot($yTotales + 9), '-$' . money($totalDeducciones));
         $pdf->Line($dot(415), $dot($yTotales), $dot(415), $dot($yTotales + 28));
         $pdf->Line($dot(10), $dot($yTotales + 28), $dot(10 + 812), $dot($yTotales + 28));
         $pdf->SetFont('helvetica', 'B', $fontNeto);
@@ -459,8 +587,7 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
         $text(18, $yTotales + 10, $f18, 'Total Percepciones');
         $text(210, $yTotales + 10, $f18, '$' . money($totalPercepciones));
         $text(430, $yTotales + 10, $f18, 'Total Deducciones');
-        $text(680, $yTotales + 10, $f18, '-$');
-        $text(720, $yTotales + 10, $f18, money($totalDeducciones));
+        $text(700, $yTotales + 10, $f18, '-$'. money($totalDeducciones));
         $pdf->Line($dot(415), $dot($yTotales), $dot(415), $dot($yTotales + 42));
         $pdf->Line($dot(10), $dot($yTotales + 42), $dot(10 + 812), $dot($yTotales + 42));
         $textB(18, $yTotales + 59, $f22, 'Neto a pagar');
@@ -470,7 +597,110 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
 }
 
 $raw = file_get_contents('php://input');
-$data = json_decode($raw, true);
+$postData = $_POST;
+
+// Verificar si se están enviando empleados seleccionados
+if (isset($postData['empleados_seleccionados']) && isset($postData['datos_json'])) {
+    // Modo de selección manual de empleados
+    $datosCompletos = json_decode($postData['datos_json'], true);
+    
+    if (!$datosCompletos || !isset($datosCompletos['empleados_seleccionados'])) {
+        http_response_code(400);
+        header('Content-Type: text/plain; charset=UTF-8');
+        echo 'Datos de empleados seleccionados no válidos.';
+        exit;
+    }
+    
+    $data = [
+        'nomina' => [
+            'numero_semana' => $datosCompletos['metadatos']['numero_semana'] ?? '',
+            'departamentos' => []
+        ]
+    ];
+    
+    // Procesar empleados seleccionados
+    $empleadosSeleccionados = $datosCompletos['empleados_seleccionados'];
+    if (is_array($empleadosSeleccionados) && count($empleadosSeleccionados) > 0) {
+        // Agrupar empleados por departamento real
+        $empleadosPorDepartamento = [];
+        
+        foreach ($empleadosSeleccionados as $empleado) {
+            $deptoNombre = $empleado['departamento'] ?? 'Sin Departamento';
+            if (!isset($empleadosPorDepartamento[$deptoNombre])) {
+                $empleadosPorDepartamento[$deptoNombre] = [];
+            }
+            $empleadosPorDepartamento[$deptoNombre][] = $empleado;
+        }
+        
+        // Crear un departamento por cada grupo real
+        foreach ($empleadosPorDepartamento as $nombreDepto => $empleadosDepto) {
+            $data['nomina']['departamentos'][] = [
+                'nombre' => $nombreDepto,
+                'empleados' => $empleadosDepto
+            ];
+        }
+    }
+} else {
+    // Modo normal - procesar con posibles filtros
+    $data = json_decode($raw, true);
+    
+    // Verificar si se enviaron filtros
+    $filtroDepartamento = $data['filtro_departamento'] ?? null;
+    $filtroEmpresa = $data['filtro_empresa'] ?? null;
+    
+    // Si hay filtros, procesarlos
+    if (($filtroDepartamento !== null && $filtroDepartamento !== '0') || 
+        ($filtroEmpresa !== null && $filtroEmpresa !== '0')) {
+        
+        // Filtrar empleados según los criterios
+        $empleadosFiltrados = [];
+        
+        foreach (($data['nomina']['departamentos'] ?? []) as $depto) {
+            $empleadosDept = $depto['empleados'] ?? [];
+            
+            foreach ($empleadosDept as $emp) {
+                $cumpleFiltros = true;
+                
+                // Filtrar por departamento
+                if ($filtroDepartamento !== null && $filtroDepartamento !== '0') {
+                    if ($filtroDepartamento === 'sin_seguro') {
+                        // Verificar si es departamento "sin seguro"
+                        $nombreDepto = strtolower(trim($depto['nombre'] ?? ''));
+                        if ($nombreDepto !== 'sin seguro') {
+                            $cumpleFiltros = false;
+                        }
+                    } else {
+                        // Filtrar por ID de departamento
+                        $idDeptoEmp = $emp['id_departamento'] ?? null;
+                        if ($idDeptoEmp != $filtroDepartamento) {
+                            $cumpleFiltros = false;
+                        }
+                    }
+                }
+                
+                // Filtrar por empresa
+                if ($cumpleFiltros && $filtroEmpresa !== null && $filtroEmpresa !== '0') {
+                    $idEmpresaEmp = $emp['id_empresa'] ?? null;
+                    if ($idEmpresaEmp != $filtroEmpresa) {
+                        $cumpleFiltros = false;
+                    }
+                }
+                
+                if ($cumpleFiltros) {
+                    $empleadosFiltrados[] = $emp;
+                }
+            }
+        }
+        
+        // Reemplazar los empleados con los filtrados
+        $data['nomina']['departamentos'] = [
+            [
+                'nombre' => 'Filtrados',
+                'empleados' => $empleadosFiltrados
+            ]
+        ];
+    }
+}
 
 if (!is_array($data) || !isset($data['nomina']) || !is_array($data['nomina'])) {
     http_response_code(400);
@@ -485,15 +715,40 @@ $meta = [
 ];
 
 $empleados = [];
+
+// Función para obtener nombre de departamento por ID desde la base de datos
+function obtenerNombreDepartamento($id_departamento, $conexion) {
+    static $cacheDepartamentos = null;
+    
+    // Cargar departamentos en caché si no están cargados
+    if ($cacheDepartamentos === null) {
+        $cacheDepartamentos = [];
+        $sql = "SELECT id_departamento, nombre_departamento FROM departamentos";
+        $result = mysqli_query($conexion, $sql);
+        
+        if ($result) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $cacheDepartamentos[$row['id_departamento']] = $row['nombre_departamento'];
+            }
+        }
+    }
+    
+    return $cacheDepartamentos[$id_departamento] ?? 'Sin Departamento';
+}
+
 foreach (($nomina['departamentos'] ?? []) as $depto) {
     $nombreDepto = $depto['nombre'] ?? '';
     foreach (($depto['empleados'] ?? []) as $emp) {
-        if (!is_array($emp)) continue;
-        // Incluir solo empleados marcados con mostrar=true
-        $mostrarFlag = filter_var($emp['mostrar'] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-        if ($mostrarFlag !== true) continue;
-        $emp['departamento'] = $nombreDepto;
-        $empleados[] = $emp;
+        if (is_array($emp)) {
+            // Para empleados "sin seguro", usar el departamento real almacenado en id_departamento
+            if (strtolower(trim($nombreDepto)) === 'sin seguro' && isset($emp['id_departamento'])) {
+                $emp['departamento'] = obtenerNombreDepartamento($emp['id_departamento'], $conexion);
+            } else {
+                // Para empleados normales, usar el nombre del departamento del que vienen
+                $emp['departamento'] = $nombreDepto;
+            }
+            $empleados[] = $emp;
+        }
     }
 }
 

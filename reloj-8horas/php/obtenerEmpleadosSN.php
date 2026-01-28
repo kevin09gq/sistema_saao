@@ -15,7 +15,7 @@ $sql = "SELECT
             ehr.horario as horario_json
         FROM info_empleados e
         LEFT JOIN empleado_horario_reloj ehr ON ehr.id_empleado = e.id_empleado
-        WHERE e.id_status = 1 AND e.status_nss = 1
+        
         ORDER BY e.ap_paterno ASC";
 
 // Ejecutar la consulta

@@ -62,7 +62,6 @@ El sistema identifica automáticamente:
 18:00 - Salida final
 ```
 *Nota: El permiso cubre la hora de comida*
-
 ### 4. Permiso antes y comida dentro del permiso
 **Secuencia**: E → SP → SC → RC → RP → SF
 

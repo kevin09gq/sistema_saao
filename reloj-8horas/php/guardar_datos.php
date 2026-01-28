@@ -62,6 +62,23 @@ try {
                     $total_incapacidades += $incapacidades;
                     $total_dias_trabajados += $dias_trabajados;
 
+                    // Obtener id_empresa del empleado
+                    $sql_empresa = "SELECT id_empresa FROM info_empleados WHERE id_empleado = ?";
+                    $stmt_empresa = $conn->prepare($sql_empresa);
+                    $stmt_empresa->bind_param("i", $empleado_id);
+                    $stmt_empresa->execute();
+                    $result_empresa = $stmt_empresa->get_result();
+                    $id_empresa = null;
+                    if ($result_empresa->num_rows > 0) {
+                        $row_empresa = $result_empresa->fetch_assoc();
+                        $id_empresa = $row_empresa['id_empresa'];
+                    }
+                    $stmt_empresa->close();
+
+                    if (!$id_empresa) {
+                        continue; // Si no tiene empresa asignada, saltar este empleado
+                    }
+
                     // Verificar si ya existe registro para ese empleado, semana y año
                     $sql_check = "SELECT id FROM historial_incidencias_semanal WHERE semana = ? AND anio = ? AND empleado_id = ?";
                     $stmt_check = $conn->prepare($sql_check);
@@ -77,16 +94,17 @@ try {
                                     ausencias = ?, 
                                     incapacidades = ?, 
                                     dias_trabajados = ?,
-                                    anio = ?
+                                    anio = ?,
+                                    id_empresa = ?
                                 WHERE id = ?";
                         $stmt = $conn->prepare($sql);
-                        $stmt->bind_param("iiiiii", $vacaciones, $ausencias, $incapacidades, $dias_trabajados, $anio, $row['id']);
+                        $stmt->bind_param("iiiiiii", $vacaciones, $ausencias, $incapacidades, $dias_trabajados, $anio, $id_empresa, $row['id']);
                     } else {
                         // Insertar
-                        $sql = "INSERT INTO historial_incidencias_semanal (semana, anio, empleado_id, vacaciones, ausencias, incapacidades, dias_trabajados) 
-                                VALUES (?, ?, ?, ?, ?, ?, ?)";
+                        $sql = "INSERT INTO historial_incidencias_semanal (semana, anio, empleado_id, id_empresa, vacaciones, ausencias, incapacidades, dias_trabajados) 
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
                         $stmt = $conn->prepare($sql);
-                        $stmt->bind_param("siiiiii", $datos['numero_semana'], $anio, $empleado_id, $vacaciones, $ausencias, $incapacidades, $dias_trabajados);
+                        $stmt->bind_param("siiiiiii", $datos['numero_semana'], $anio, $empleado_id, $id_empresa, $vacaciones, $ausencias, $incapacidades, $dias_trabajados);
                     }
                     $stmt->execute();
                     $stmt->close();

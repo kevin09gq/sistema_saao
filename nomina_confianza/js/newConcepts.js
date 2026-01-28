@@ -63,18 +63,22 @@ function eliminarConceptoPersonalizado($elemento) {
     var valor = parseFloat($elemento.find('input[type="number"]').val()) || 0;
     $elemento.remove();
     if (typeof actualizarTotalExtra === 'function') actualizarTotalExtra();
+    
+    // Recalcular el sueldo a cobrar después de eliminar
+    if (typeof calcularYMostrarSueldoACobrar === 'function') calcularYMostrarSueldoACobrar();
 
     // Borrar del jsonNominaConfianza del empleado que está en el modal
     try {
         var clave = String($('#campo-clave').text() || '').trim();
-        if (!clave || typeof jsonNominaConfianza === 'undefined' || !jsonNominaConfianza) return;
+        var idEmpresa = String($('#campo-id-empresa').val() || '').trim();
+        if (!clave || !idEmpresa || typeof jsonNominaConfianza === 'undefined' || !jsonNominaConfianza) return;
         var deps = jsonNominaConfianza.departamentos || [];
         for (var i = 0; i < deps.length; i++) {
             var dept = deps[i];
             var emps = dept.empleados || [];
             for (var j = 0; j < emps.length; j++) {
                 var emp = emps[j];
-                if (String(emp.clave).trim() === clave) {
+                if (String(emp.clave).trim() === clave && String(emp.id_empresa).trim() === idEmpresa) {
                     emp.extras_adicionales = (emp.extras_adicionales || []).filter(function(item) {
                         return !(String(item.nombre || '').trim() === nombre && (parseFloat(item.resultado) || 0) === valor);
                     });
@@ -94,16 +98,21 @@ function eliminarDeduccionPersonalizada($elemento) {
     var nombre = String($elemento.find('input[type="text"]').val() || '').trim();
     var valor = parseFloat($elemento.find('input[type="number"]').val()) || 0;
     $elemento.remove();
+    
+    // Recalcular el sueldo a cobrar después de eliminar
+    if (typeof calcularYMostrarSueldoACobrar === 'function') calcularYMostrarSueldoACobrar();
+    
     try {
         var clave = String($('#campo-clave').text() || '').trim();
-        if (!clave || typeof jsonNominaConfianza === 'undefined' || !jsonNominaConfianza) return;
+        var idEmpresa = String($('#campo-id-empresa').val() || '').trim();
+        if (!clave || !idEmpresa || typeof jsonNominaConfianza === 'undefined' || !jsonNominaConfianza) return;
         var deps = jsonNominaConfianza.departamentos || [];
         for (var i = 0; i < deps.length; i++) {
             var dept = deps[i];
             var emps = dept.empleados || [];
             for (var j = 0; j < emps.length; j++) {
                 var emp = emps[j];
-                if (String(emp.clave).trim() === clave) {
+                if (String(emp.clave).trim() === clave && String(emp.id_empresa).trim() === idEmpresa) {
                     emp.deducciones_adicionales = (emp.deducciones_adicionales || []).filter(function(item) {
                         return !(String(item.nombre || '').trim() === nombre && (parseFloat(item.resultado) || 0) === valor);
                     });

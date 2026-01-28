@@ -1,17 +1,18 @@
-
 // ========================================
 // EVENTOS ESPECIALES POR EMPLEADO
 // ========================================
 
 
-function detectarRetardos(claveEmpleado) {
+function detectarRetardos(claveEmpleado, idEmpresa = null) {
     if (!jsonNominaConfianza || !Array.isArray(jsonNominaConfianza.departamentos)) return;
 
-    // Buscar el empleado por clave
+    // Buscar el empleado por clave e id_empresa
     let empleado = null;
     jsonNominaConfianza.departamentos.forEach(departamento => {
         (departamento.empleados || []).forEach(e => {
-            if (String(e.clave).trim() === String(claveEmpleado).trim()) empleado = e;
+            const claveCoincide = String(e.clave).trim() === String(claveEmpleado).trim();
+            const empresaCoincide = idEmpresa === null || String(e.id_empresa).trim() === String(idEmpresa).trim();
+            if (claveCoincide && empresaCoincide) empleado = e;
         });
     });
 
@@ -120,14 +121,16 @@ function detectarRetardos(claveEmpleado) {
     }
 }
 
-function detectarInasistencias(claveEmpleado) {
+function detectarInasistencias(claveEmpleado, idEmpresa = null) {
     if (!jsonNominaConfianza || !Array.isArray(jsonNominaConfianza.departamentos)) return;
 
-    // Buscar el empleado por clave
+    // Buscar el empleado por clave e id_empresa
     let empleado = null;
     jsonNominaConfianza.departamentos.forEach(departamento => {
         (departamento.empleados || []).forEach(e => {
-            if (String(e.clave).trim() === String(claveEmpleado).trim()) empleado = e;
+            const claveCoincide = String(e.clave).trim() === String(claveEmpleado).trim();
+            const empresaCoincide = idEmpresa === null || String(e.id_empresa).trim() === String(idEmpresa).trim();
+            if (claveCoincide && empresaCoincide) empleado = e;
         });
     });
 
@@ -135,6 +138,15 @@ function detectarInasistencias(claveEmpleado) {
 
     // Preservar descuentos editados manualmente
     const descuentosPrevios = empleado._descuentos_inasistencias_previos || {};
+
+    // PRESERVAR INASISTENCIAS MANUALES
+    // Guardar inasistencias agregadas manualmente para que no se pierdan al subir biometrico
+    let inasistenciasManuales = [];
+    if (Array.isArray(empleado.historial_inasistencias)) {
+        inasistenciasManuales = empleado.historial_inasistencias.filter(inasistencia => 
+            inasistencia && inasistencia.tipo === 'manual'
+        );
+    }
 
     // Si hay descuentos previos guardados desde actualizarHorarioOficial, usarlos
     // Si no, verificar si ya existe un historial editado manualmente
@@ -156,8 +168,8 @@ function detectarInasistencias(claveEmpleado) {
         return;
     }
 
-    // Inicializar historial de inasistencias
-    empleado.historial_inasistencias = [];
+    // Inicializar historial de inasistencias manteniendo las manuales
+    empleado.historial_inasistencias = [...inasistenciasManuales];
 
     // Contador de inasistencias
     let inasistencias = 0;
@@ -214,7 +226,8 @@ function detectarInasistencias(claveEmpleado) {
                 empleado.historial_inasistencias.push({
                     dia: diaCapitalizado, // Capitalizar
                     fecha: '', // No tenemos fecha específica porque no hay registro
-                    descuento_inasistencia: descuentoPorInasistencia
+                    descuento_inasistencia: descuentoPorInasistencia,
+                    tipo: 'automatico' // Marcar como detectado automáticamente
                 });
 
             }
@@ -235,14 +248,16 @@ function detectarInasistencias(claveEmpleado) {
 
 }
 
-function detectarOlvidosChecador(claveEmpleado) {
+function detectarOlvidosChecador(claveEmpleado, idEmpresa = null) {
     if (!jsonNominaConfianza || !Array.isArray(jsonNominaConfianza.departamentos)) return;
 
-    // Buscar el empleado por clave
+    // Buscar el empleado por clave e id_empresa
     let empleado = null;
     jsonNominaConfianza.departamentos.forEach(departamento => {
         (departamento.empleados || []).forEach(e => {
-            if (String(e.clave).trim() === String(claveEmpleado).trim()) empleado = e;
+            const claveCoincide = String(e.clave).trim() === String(claveEmpleado).trim();
+            const empresaCoincide = idEmpresa === null || String(e.id_empresa).trim() === String(idEmpresa).trim();
+            if (claveCoincide && empresaCoincide) empleado = e;
         });
     });
 
@@ -310,18 +325,19 @@ function detectarOlvidosChecador(claveEmpleado) {
         recalcularTotalOlvidos(empleado);
     }
 
+    console.log(`Total olvidos de checador: ${empleado.olvidos_checador}`);
 }
 
-function detectarEntradasTempranas(claveEmpleado) {
+function detectarEntradasTempranas(claveEmpleado, idEmpresa = null) {
     if (!jsonNominaConfianza || !Array.isArray(jsonNominaConfianza.departamentos)) return;
 
-    // Buscar el empleado por clave
+    // Buscar el empleado por clave e id_empresa
     let empleado = null;
     jsonNominaConfianza.departamentos.forEach(departamento => {
-        departamento.empleados.forEach(emp => {
-            if (String(emp.clave).trim() === String(claveEmpleado).trim()) {
-                empleado = emp;
-            }
+        (departamento.empleados || []).forEach(e => {
+            const claveCoincide = String(e.clave).trim() === String(claveEmpleado).trim();
+            const empresaCoincide = idEmpresa === null || String(e.id_empresa).trim() === String(idEmpresa).trim();
+            if (claveCoincide && empresaCoincide) empleado = e;
         });
     });
 
@@ -396,21 +412,21 @@ function detectarEntradasTempranas(claveEmpleado) {
             });
         }
     });
-
-    // Reemplazar historial
+     // Reemplazar historial
     empleado.historial_entradas_tempranas = nuevoHistorial;
+
 }
 
-function detectarSalidasTardias(claveEmpleado) {
+function detectarSalidasTardias(claveEmpleado, idEmpresa = null) {
     if (!jsonNominaConfianza || !Array.isArray(jsonNominaConfianza.departamentos)) return;
 
-    // Buscar el empleado por clave
+    // Buscar el empleado por clave e id_empresa
     let empleado = null;
     jsonNominaConfianza.departamentos.forEach(departamento => {
-        departamento.empleados.forEach(emp => {
-            if (String(emp.clave).trim() === String(claveEmpleado).trim()) {
-                empleado = emp;
-            }
+        (departamento.empleados || []).forEach(e => {
+            const claveCoincide = String(e.clave).trim() === String(claveEmpleado).trim();
+            const empresaCoincide = idEmpresa === null || String(e.id_empresa).trim() === String(idEmpresa).trim();
+            if (claveCoincide && empresaCoincide) empleado = e;
         });
     });
 
@@ -490,16 +506,16 @@ function detectarSalidasTardias(claveEmpleado) {
     empleado.historial_salidas_tardias = nuevoHistorial;
 }
 
-function detectarSalidasTempranas(claveEmpleado) {
+function detectarSalidasTempranas(claveEmpleado, idEmpresa = null) {
     if (!jsonNominaConfianza || !Array.isArray(jsonNominaConfianza.departamentos)) return;
 
-    // Buscar el empleado por clave
+    // Buscar el empleado por clave e id_empresa
     let empleado = null;
     jsonNominaConfianza.departamentos.forEach(departamento => {
-        departamento.empleados.forEach(emp => {
-            if (String(emp.clave).trim() === String(claveEmpleado).trim()) {
-                empleado = emp;
-            }
+        (departamento.empleados || []).forEach(e => {
+            const claveCoincide = String(e.clave).trim() === String(claveEmpleado).trim();
+            const empresaCoincide = idEmpresa === null || String(e.id_empresa).trim() === String(idEmpresa).trim();
+            if (claveCoincide && empresaCoincide) empleado = e;
         });
     });
 
@@ -615,7 +631,7 @@ function detectarEventosAutomaticos(jsonNomina) {
         if (!Array.isArray(departamento.empleados)) return;
 
         departamento.empleados.forEach(empleado => {
-            if (!empleado.clave) return;
+            if (!empleado.clave || !empleado.id_empresa) return;
 
             totalEmpleados++;
 
@@ -733,10 +749,16 @@ function detectarRetardosAutomatico(empleado) {
 function detectarInasistenciasAutomatico(empleado) {
     if (!empleado || !Array.isArray(empleado.registros) || !Array.isArray(empleado.horario_oficial)) return 0;
 
-    // Inicializar historial de inasistencias
-    if (!Array.isArray(empleado.historial_inasistencias)) {
-        empleado.historial_inasistencias = [];
+    // PRESERVAR INASISTENCIAS MANUALES EN DETECCIÓN AUTOMÁTICA
+    let inasistenciasManuales = [];
+    if (Array.isArray(empleado.historial_inasistencias)) {
+        inasistenciasManuales = empleado.historial_inasistencias.filter(inasistencia => 
+            inasistencia && inasistencia.tipo === 'manual'
+        );
     }
+
+    // Inicializar historial de inasistencias manteniendo las manuales
+    empleado.historial_inasistencias = [...inasistenciasManuales];
 
     let inasistencias = 0;
     const dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
@@ -769,7 +791,8 @@ function detectarInasistenciasAutomatico(empleado) {
                 empleado.historial_inasistencias.push({
                     dia: diaSemana.charAt(0) + diaSemana.slice(1).toLowerCase(),
                     fecha: '',
-                    descuento_inasistencia: descuentoPorInasistencia
+                    descuento_inasistencia: descuentoPorInasistencia,
+                    tipo: 'automatico' // Marcar como detectado automáticamente
                 });
             }
         }
@@ -979,21 +1002,33 @@ function mostrarHistorialInasistencias(empleado) {
     let html = `
         <div class="historial-inasistencias-header">
             <div class="historial-header-cell">Día</div>
-            <div class="historial-header-cell">Descuento</div>
+            <div class="historial-header-cell">Descuento ($)</div>
+            <div class="historial-header-cell">Acciones</div>
         </div>
     `;
     
     // Agregar filas de datos
     empleado.historial_inasistencias.forEach((inasistencia, index) => {
+        const esManual = inasistencia.tipo === 'manual';
+        
+        const deleteButton = esManual 
+            ? `<button type="button" class="btn btn-outline-danger btn-sm btn-eliminar-inasistencia" data-index="${index}" title="Eliminar inasistencia">
+                   <i class="bi bi-trash"></i>
+               </button>`
+            : `<button type="button" class="btn btn-outline-secondary btn-sm" disabled>
+                   <i class="bi bi-lock"></i>
+               </button>`;
+        
         html += `
             <div class="historial-inasistencia-item" data-index="${index}">
                 <div>
-                    <label class="form-label fw-normal small">Día</label>
                     <input type="text" class="form-control form-control-sm historial-inasistencia-dia" value="${inasistencia.dia}" readonly>
                 </div>
                 <div>
-                    <label class="form-label fw-normal small">Descuento ($)</label>
                     <input type="number" step="0.01" class="form-control form-control-sm historial-inasistencia-descuento" value="${inasistencia.descuento_inasistencia.toFixed(2)}" data-field="descuento_inasistencia">
+                </div>
+                <div>
+                    ${deleteButton}
                 </div>
             </div>
         `;
@@ -1016,6 +1051,22 @@ function mostrarHistorialInasistencias(empleado) {
         empleado._inasistencias_editado_manual = false;
         
         // Recalcular total general de inasistencias
+        recalcularTotalInasistencias(empleado);
+    });
+    
+    // Evento para eliminar inasistencia
+    $contenedor.on('click', '.btn-eliminar-inasistencia', function() {
+        const index = parseInt($(this).data('index'));
+        
+        // Eliminar del array
+        if (Array.isArray(empleado.historial_inasistencias)) {
+            empleado.historial_inasistencias.splice(index, 1);
+        }
+        
+        // Volver a mostrar el historial
+        mostrarHistorialInasistencias(empleado);
+        
+        // Recalcular total
         recalcularTotalInasistencias(empleado);
     });
 }
@@ -1152,6 +1203,55 @@ function recalcularTotalOlvidos(empleado, force = false) {
 }
 
 // ========================================
+// FUNCIONES PARA AGREGAR INASISTENCIAS MANUALES
+// ========================================
+
+function agregarInasistenciaManual() {
+    $('#btn-agregar-inasistencia').on('click', function() {
+        const dia = $('#select-dia-inasistencia').val();
+        const descuento = parseFloat($('#input-descuento-inasistencia').val()) || 0;
+        
+        if (!dia) {
+            return;
+        }
+        
+        if (descuento <= 0) {
+            return;
+        }
+        
+        // Obtener empleado actual
+        const clave = $('#campo-clave').text().trim();
+        const idEmpresa = $('#campo-id-empresa').val().trim();
+        const empleado = buscarEmpleadoPorClaveYEmpresa(clave, idEmpresa);
+        
+        if (!empleado) {
+            return;
+        }
+        
+        // Inicializar historial si no existe
+        if (!Array.isArray(empleado.historial_inasistencias)) {
+            empleado.historial_inasistencias = [];
+        }
+        
+        // Agregar al historial
+        empleado.historial_inasistencias.push({
+            dia: dia,
+            fecha: '',
+            descuento_inasistencia: descuento,
+            tipo: 'manual'
+        });
+        
+        // Limpiar campos
+        $('#select-dia-inasistencia').val('');
+        $('#input-descuento-inasistencia').val('');
+        
+        // Actualizar visualización
+        mostrarHistorialInasistencias(empleado);
+        recalcularTotalInasistencias(empleado);
+    });
+}
+
+// ========================================
 // MOSTRAR EVENTOS ESPECIALES EN EL MODAL DE REGISTROS
 // ========================================
 
@@ -1166,7 +1266,7 @@ function mostrarEntradasTempranas(empleado) {
 
     if (!Array.isArray(empleado.historial_entradas_tempranas) || empleado.historial_entradas_tempranas.length === 0) {
         $content.html('<p class="sin-eventos">No hay entradas tempranas registradas</p>');
-        $('#total-entradas-tempranas').text('Total: 0 eventos');
+        $('#total-entradas-tempranas').html('Total: 0 eventos · 0 min (00:00)');
         return;
     }
 
@@ -1200,7 +1300,9 @@ function mostrarEntradasTempranas(empleado) {
     }).join('');
     
     $content.html(html);
-    $('#total-entradas-tempranas').html(`Total: ${empleado.historial_entradas_tempranas.length} eventos`);
+    const totalEntradasMin = empleado.historial_entradas_tempranas.reduce((acc, e) => acc + (parseInt(e.minutos_temprano) || 0), 0);
+    const totalEntradasHH = convertirMinutosAHora(totalEntradasMin);
+    $('#total-entradas-tempranas').html( `${totalEntradasMin} min (${totalEntradasHH})`);
 }
 
 // Función para mostrar salidas tardías
@@ -1213,7 +1315,7 @@ function mostrarSalidasTardias(empleado) {
 
     if (!Array.isArray(empleado.historial_salidas_tardias) || empleado.historial_salidas_tardias.length === 0) {
         $content.html('<p class="sin-eventos">No hay salidas tardías registradas</p>');
-        $('#total-salidas-tardias').text('Total: 0 eventos');
+        $('#total-salidas-tardias').html('Total: 0 eventos · 0 min (00:00)');
         return;
     }
 
@@ -1247,7 +1349,9 @@ function mostrarSalidasTardias(empleado) {
     }).join('');
     
     $content.html(html);
-    $('#total-salidas-tardias').html(`Total: ${empleado.historial_salidas_tardias.length} eventos`);
+    const totalSalidasTardiasMin = empleado.historial_salidas_tardias.reduce((acc, e) => acc + (parseInt(e.minutos_tarde) || 0), 0);
+    const totalSalidasTardiasHH = convertirMinutosAHora(totalSalidasTardiasMin);
+    $('#total-salidas-tardias').html(`${totalSalidasTardiasMin} min (${totalSalidasTardiasHH})`);
 }
 
 // Función para mostrar salidas tempranas
@@ -1260,7 +1364,7 @@ function mostrarSalidasTempranas(empleado) {
 
     if (!Array.isArray(empleado.historial_salidas_tempranas) || empleado.historial_salidas_tempranas.length === 0) {
         $content.html('<p class="sin-eventos">No hay salidas tempranas registradas</p>');
-        $('#total-salidas-tempranas').text('Total: 0 eventos');
+        $('#total-salidas-tempranas').html('Total: 0 eventos · 0 min (00:00)');
         return;
     }
 
@@ -1294,7 +1398,9 @@ function mostrarSalidasTempranas(empleado) {
     }).join('');
     
     $content.html(html);
-    $('#total-salidas-tempranas').html(`Total: ${empleado.historial_salidas_tempranas.length} eventos`);
+    const totalSalidasTempranasMin = empleado.historial_salidas_tempranas.reduce((acc, e) => acc + (parseInt(e.minutos_temprano) || 0), 0);
+    const totalSalidasTempranasHH = convertirMinutosAHora(totalSalidasTempranasMin);
+    $('#total-salidas-tempranas').html(` ${totalSalidasTempranasMin} min (${totalSalidasTempranasHH})`);
 }
 
 // Función para mostrar olvidos de checador
@@ -1401,14 +1507,16 @@ function mostrarRetardos(empleado) {
 
     if (retardosEncontrados.length === 0) {
         $content.html('<p class="sin-eventos">No hay retardos registrados</p>');
-        $('#total-retardos').text('Total: 0 eventos');
+        $('#total-retardos').html('Total: 0 eventos · 0 min (00:00)');
     } else {
         let html = retardosEncontrados.map(r => {
             const nombreDia = obtenerNombreDiaEvento(r.fecha);
             return `<div class="evento-item"><span class="evento-dia">📅 ${nombreDia} ${r.fecha}</span><span class="evento-tiempo">${r.minutos} min</span></div>`;
         }).join('');
         $content.html(html);
-        $('#total-retardos').html(`Total: ${retardosEncontrados.length} días`);
+        const totalRetardosMin = retardosEncontrados.reduce((acc, r) => acc + (parseInt(r.minutos) || 0), 0);
+        const totalRetardosHH = convertirMinutosAHora(totalRetardosMin);
+        $('#total-retardos').html(`Total: ${retardosEncontrados.length} días · ${totalRetardosMin} min (${totalRetardosHH})`);
     }
 }
 
@@ -1478,14 +1586,16 @@ function mostrarInasistencias(empleado) {
  * Función principal que detecta y diferencia automáticamente entre comida y permisos
  * basándose en el horario oficial y los registros del biométrico
  */
-function detectarPermisosYComida(claveEmpleado) {
+function detectarPermisosYComida(claveEmpleado, idEmpresa = null) {
     if (!jsonNominaConfianza || !Array.isArray(jsonNominaConfianza.departamentos)) return;
 
-    // Buscar el empleado por clave
+    // Buscar el empleado por clave e id_empresa
     let empleado = null;
     jsonNominaConfianza.departamentos.forEach(departamento => {
         (departamento.empleados || []).forEach(e => {
-            if (String(e.clave).trim() === String(claveEmpleado).trim()) empleado = e;
+            const claveCoincide = String(e.clave).trim() === String(claveEmpleado).trim();
+            const empresaCoincide = idEmpresa === null || String(e.id_empresa).trim() === String(idEmpresa).trim();
+            if (claveCoincide && empresaCoincide) empleado = e;
         });
     });
 
@@ -1825,7 +1935,7 @@ function mostrarAnalisisPermisosComida(empleado) {
     if (!$content.length) return;
 
     // Calcular el análisis en tiempo real (no guardado)
-    const analisisCalculado = detectarPermisosYComida(empleado.clave) || [];
+    const analisisCalculado = detectarPermisosYComida(empleado.clave, empleado.id_empresa) || [];
 
     if (!Array.isArray(analisisCalculado) || analisisCalculado.length === 0) {
         $content.html('<p class="sin-eventos">No hay análisis de permisos y comidas disponible</p>');

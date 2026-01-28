@@ -348,7 +348,7 @@ $(document).ready(function () {
     });
 
     // Event listener para guardar horarios individuales del empleado
-    $(document).on('click', '#btn-guardar-horarios', function () {
+    $(document).on('click', '#btn-guardar-horarios', async function () {
         const empleadoActual = $('#btn-guardar-registros').data('empleadoActual');
 
         if (!empleadoActual) {
@@ -431,7 +431,7 @@ $(document).ready(function () {
 
         // Re-procesar los registros del empleado
         if (horariosNuevos.length > 0) {
-            reprocesarRegistrosEmpleadoIndividual(empleadoEncontrado, jsonUnido, departamentoEncontrado.nombre);
+            await reprocesarRegistrosEmpleadoIndividual(empleadoEncontrado, jsonUnido, departamentoEncontrado.nombre);
         }
 
         // Guardar en sessionStorage
@@ -469,9 +469,19 @@ $(document).ready(function () {
     /**
      * Re-procesa los registros de un empleado individual
      */
-    function reprocesarRegistrosEmpleadoIndividual(empleado, jsonUnido, nombreDepto) {
+    async function reprocesarRegistrosEmpleadoIndividual(empleado, jsonUnido, nombreDepto) {
         // Obtener días de la semana
         const diasSemana = obtenerDiasSemanaLocal(jsonUnido.fecha_inicio, jsonUnido.fecha_cierre);
+
+        // Obtener festividades
+        let festivosSet = new Set();
+        if (typeof obtenerFestividadesSet === 'function') {
+            try {
+                festivosSet = await obtenerFestividadesSet();
+            } catch (e) {
+                console.warn('No se pudieron obtener festividades:', e);
+            }
+        }
 
         // Constantes de departamentos especiales
         const DEPA_CDMX = "Sucursal CdMx administrativos";
@@ -497,7 +507,8 @@ $(document).ready(function () {
             empleado,
             diasSemana,
             esDeptoEspecial,
-            esVigilancia
+            esVigilancia,
+            festivosSet
         );
 
         // Restaurar registros editados manualmente
@@ -558,7 +569,7 @@ $(document).ready(function () {
     /**
      * Procesa los registros de un empleado (versión local)
      */
-    function procesarRegistrosEmpleadoLocal(empleado, diasSemana, esDeptoEspecial, esVigilancia) {
+    function procesarRegistrosEmpleadoLocal(empleado, diasSemana, esDeptoEspecial, esVigilancia, festivosSet = new Set()) {
         const registrosMap = {};
         (empleado.registros || []).forEach(r => {
             if (!registrosMap[r.fecha]) {
@@ -596,14 +607,28 @@ $(document).ready(function () {
 
             const turnoDelDia = horario.find(h => h.dia.toUpperCase() === nombreDia);
             if (turnoDelDia) {
+                const entrada = turnoDelDia.entrada && turnoDelDia.entrada.trim() !== '' ? turnoDelDia.entrada : null;
+                const salida = turnoDelDia.salida && turnoDelDia.salida.trim() !== '' ? turnoDelDia.salida : null;
+                
+                // Si no tiene entrada/salida, es día de descanso
+                if (!entrada || !salida) {
+                    return { hora_inicio: null, hora_fin: null, salida_comida: null, entrada_comida: null, tiene_comida: false };
+                }
+                
+                // Verificar si tiene comida definida
+                const salidaComida = turnoDelDia.salida_comida && turnoDelDia.salida_comida.trim() !== '' ? turnoDelDia.salida_comida : null;
+                const entradaComida = turnoDelDia.entrada_comida && turnoDelDia.entrada_comida.trim() !== '' ? turnoDelDia.entrada_comida : null;
+                const tieneComida = salidaComida !== null && entradaComida !== null;
+                
                 return {
-                    hora_inicio: turnoDelDia.entrada || '09:00',
-                    hora_fin: turnoDelDia.salida || '18:00',
-                    salida_comida: turnoDelDia.salida_comida || '13:00',
-                    entrada_comida: turnoDelDia.entrada_comida || '14:00'
+                    hora_inicio: entrada,
+                    hora_fin: salida,
+                    salida_comida: salidaComida,
+                    entrada_comida: entradaComida,
+                    tiene_comida: tieneComida
                 };
             }
-            return { hora_inicio: null, hora_fin: null, salida_comida: '13:00', entrada_comida: '14:00' };
+            return { hora_inicio: null, hora_fin: null, salida_comida: null, entrada_comida: null, tiene_comida: false };
         };
 
         function normalizarHoraLocal(hora) {
@@ -648,13 +673,32 @@ $(document).ready(function () {
         function construirRegistrosDia(turno, fecha, observacion) {
             const inicio = normalizarHoraLocal(turno.hora_inicio);
             const fin = normalizarHoraLocal(turno.hora_fin);
-            const comidaSalidaBase = normalizarHoraLocal(turno.salida_comida || '13:00');
-            const comidaEntradaBase = normalizarHoraLocal(turno.entrada_comida || '14:00');
+            
+            // Verificar si el turno tiene comida
+            const tieneComida = turno.tiene_comida === true;
 
-            const e1 = jitterHora(inicio, -5, 5, `${empleado.id_empleado || empleado.clave}|${fecha}|E1`);
+            // Entrada: -10 a +3 minutos
+            const e1 = jitterHora(inicio, -10, 3, `${empleado.id_empleado || empleado.clave}|${fecha}|E1`);
+            // Salida final: -10 a 0 minutos
+            const s2 = jitterHora(fin, -10, 0, `${empleado.id_empleado || empleado.clave}|${fecha}|S2`);
+
+            // Si NO tiene comida, solo devolver entrada y salida
+            if (!tieneComida) {
+                return [
+                    { tipo: 'entrada', hora: e1, observacion },
+                    { tipo: 'salida', hora: s2, observacion }
+                ];
+            }
+            
+            // Si tiene comida, devolver los 4 registros
+            const comidaSalidaBase = normalizarHoraLocal(turno.salida_comida);
+            const comidaEntradaBase = normalizarHoraLocal(turno.entrada_comida);
+            
+            // Salida a comida: -10 a +5 minutos
             const s1 = jitterHora(comidaSalidaBase, -10, 5, `${empleado.id_empleado || empleado.clave}|${fecha}|S1`);
-            const e2 = jitterHora(comidaEntradaBase, -5, 15, `${empleado.id_empleado || empleado.clave}|${fecha}|E2`);
-            const s2 = jitterHora(fin, -15, 5, `${empleado.id_empleado || empleado.clave}|${fecha}|S2`);
+            // Entrada después de comida: -5 a +10 minutos
+            // NOTA: Los registros procesados detectarán retardos mayores a 15 minutos
+            const e2 = jitterHora(comidaEntradaBase, -5, 10, `${empleado.id_empleado || empleado.clave}|${fecha}|E2`);
 
             return [
                 { tipo: 'entrada', hora: e1, observacion },
@@ -664,8 +708,10 @@ $(document).ready(function () {
             ];
         }
 
-        function calcularTrabajoDesdeRegistros(registros) {
+        function calcularTrabajoDesdeRegistros(registros, maxHorasTurno = 8) {
             let minutosTrabajados = 0;
+            const maxMinutos = maxHorasTurno * 60;
+            
             for (let i = 0; i < registros.length; i++) {
                 if (registros[i].tipo === 'entrada' && i + 1 < registros.length && registros[i + 1].tipo === 'salida') {
                     const e = horaAMinutosLocal(registros[i].hora);
@@ -678,6 +724,12 @@ $(document).ready(function () {
                     i++;
                 }
             }
+            
+            // Limitar al máximo de horas del turno
+            if (minutosTrabajados > maxMinutos) {
+                minutosTrabajados = maxMinutos;
+            }
+            
             return {
                 minutos: minutosTrabajados,
                 hhmm: minutosAHoraFn(minutosTrabajados),
@@ -685,9 +737,59 @@ $(document).ready(function () {
             };
         }
 
+        // Función para ajustar registros si exceden máximo de horas del turno
+        function ajustarRegistrosSiExcedenMaximo(registros, maxHorasTurno, seedKey) {
+            if (!registros || registros.length === 0) return registros;
+            
+            const TOLERANCIA_MINUTOS = 15;
+            const maxMinutosPermitidos = (maxHorasTurno * 60) + TOLERANCIA_MINUTOS;
+            
+            let minutosTrabajados = 0;
+            const pares = [];
+            
+            for (let i = 0; i < registros.length; i++) {
+                if (registros[i].tipo === 'entrada' && i + 1 < registros.length && registros[i + 1].tipo === 'salida') {
+                    const e = horaAMinutosLocal(registros[i].hora);
+                    const s = horaAMinutosLocal(registros[i + 1].hora);
+                    let duracion = s >= e ? (s - e) : ((24 * 60) - e + s);
+                    minutosTrabajados += duracion;
+                    pares.push({ idxSalida: i + 1, minSalida: s });
+                    i++;
+                }
+            }
+            
+            if (minutosTrabajados <= maxMinutosPermitidos || pares.length === 0) {
+                return registros;
+            }
+            
+            const exceso = minutosTrabajados - maxMinutosPermitidos;
+            const ultimoPar = pares[pares.length - 1];
+            const variacion = 10 + (hashString(seedKey + '|AJUSTE') % 16);
+            const nuevaSalidaMinutos = ultimoPar.minSalida - exceso - variacion;
+            
+            registros[ultimoPar.idxSalida] = {
+                tipo: 'salida',
+                hora: minutosAHoraFn(nuevaSalidaMinutos),
+                observacion: 'AJUSTADO (EXCEDE MÁXIMO TURNO)'
+            };
+            
+            return registros;
+        }
+
         const resultados = [];
         const diasTrabajadosRestantes = empleado.dias_trabajados || 0;
         let diasProcesados = 0;
+        
+        // ============================================================
+        // CONTADORES PARA EVENTOS (vacaciones, incapacidades, ausencias)
+        // Se usan para asignar días cuando ya se completaron dias_trabajados
+        // ============================================================
+        const diasVacacionesRestantes = empleado.dias_vacaciones || 0;
+        const diasIncapacidadesRestantes = empleado.dias_incapacidades || 0;
+        const diasAusenciasRestantes = empleado.dias_ausencias || 0;
+        let vacacionesProcesadas = 0;
+        let incapacidadesProcesadas = 0;
+        let ausenciasProcesadas = 0;
 
         diasSemana.forEach(dia => {
             // Domingos siempre descanso
@@ -705,6 +807,22 @@ $(document).ready(function () {
                 });
                 return;
             }
+            
+            // DÍAS FESTIVOS → marcar como dia_festivo
+            if (festivosSet.has(dia.fecha)) {
+                resultados.push({
+                    fecha: dia.fecha,
+                    tipo: "dia_festivo",
+                    registros: [],
+                    trabajado_minutos: 0,
+                    trabajado_hhmm: '00:00',
+                    trabajado_decimal: 0,
+                    observacion_dia: "DÍA FESTIVO",
+                    tipo_turno: "N/A",
+                    max_horas: 0
+                });
+                return;
+            }
 
             const turno = obtenerTurnoPorDia(dia.fecha);
             const esLaborable = turno.hora_inicio && turno.hora_fin;
@@ -716,47 +834,19 @@ $(document).ready(function () {
             const tieneRegistroBiometrico = registrosDelDia.length > 0 &&
                 registrosDelDia.some(r => r.entrada || r.salida);
 
+            // Días NO laborables según horario → no_laboro (no es descanso ni ausencia)
+            // Solo el DOMINGO es "descanso" oficial
             if (!esLaborable) {
                 resultados.push({
                     fecha: dia.fecha,
-                    tipo: "descanso",
+                    tipo: "no_laboro",
                     registros: [],
                     trabajado_minutos: 0,
                     trabajado_hhmm: '00:00',
                     trabajado_decimal: 0,
-                    observacion_dia: "DÍA DE DESCANSO",
+                    observacion_dia: "NO LABORA ESTE DÍA",
                     tipo_turno: "N/A",
                     max_horas: 0
-                });
-                return;
-            }
-
-            if (empleado.vacaciones) {
-                resultados.push({
-                    fecha: dia.fecha,
-                    tipo: "vacaciones",
-                    registros: [],
-                    trabajado_minutos: 0,
-                    trabajado_hhmm: '00:00',
-                    trabajado_decimal: 0,
-                    observacion_dia: "VACACIONES",
-                    tipo_turno: tipoTurno,
-                    max_horas: maxHoras
-                });
-                return;
-            }
-
-            if (empleado.incapacidades) {
-                resultados.push({
-                    fecha: dia.fecha,
-                    tipo: "incapacidad",
-                    registros: [],
-                    trabajado_minutos: 0,
-                    trabajado_hhmm: '00:00',
-                    trabajado_decimal: 0,
-                    observacion_dia: "INCAPACIDAD",
-                    tipo_turno: tipoTurno,
-                    max_horas: maxHoras
                 });
                 return;
             }
@@ -765,7 +855,10 @@ $(document).ready(function () {
             if (esDeptoEspecial && diasProcesados < diasTrabajadosRestantes) {
                 diasProcesados++;
                 const registrosDia = construirRegistrosDia(turno, dia.fecha, 'REGISTRO AUTOMÁTICO');
-                const trabajo = calcularTrabajoDesdeRegistros(registrosDia);
+                // Ajustar si excede máximo de horas
+                const seedKey = `${empleado.id_empleado || empleado.clave}|${dia.fecha}`;
+                ajustarRegistrosSiExcedenMaximo(registrosDia, maxHoras, seedKey);
+                const trabajo = calcularTrabajoDesdeRegistros(registrosDia, maxHoras);
                 resultados.push({
                     fecha: dia.fecha,
                     tipo: "asistencia",
@@ -784,7 +877,10 @@ $(document).ready(function () {
             if (tieneRegistroBiometrico && diasProcesados < diasTrabajadosRestantes) {
                 diasProcesados++;
                 const base = construirRegistrosDia(turno, dia.fecha, 'RELLENO');
-                const trabajo = calcularTrabajoDesdeRegistros(base);
+                // Ajustar si excede máximo de horas
+                const seedKey = `${empleado.id_empleado || empleado.clave}|${dia.fecha}`;
+                ajustarRegistrosSiExcedenMaximo(base, maxHoras, seedKey);
+                const trabajo = calcularTrabajoDesdeRegistros(base, maxHoras);
                 resultados.push({
                     fecha: dia.fecha,
                     tipo: "asistencia",
@@ -815,7 +911,56 @@ $(document).ready(function () {
                 return;
             }
 
-            // Días restantes
+            // Días restantes → Asignar vacaciones, incapacidades, ausencias o descanso
+            // Prioridad: vacaciones > incapacidades > ausencias > descanso
+            if (vacacionesProcesadas < diasVacacionesRestantes) {
+                vacacionesProcesadas++;
+                resultados.push({
+                    fecha: dia.fecha,
+                    tipo: "vacaciones",
+                    registros: [],
+                    trabajado_minutos: 0,
+                    trabajado_hhmm: '00:00',
+                    trabajado_decimal: 0,
+                    observacion_dia: "VACACIONES",
+                    tipo_turno: tipoTurno,
+                    max_horas: maxHoras
+                });
+                return;
+            }
+            
+            if (incapacidadesProcesadas < diasIncapacidadesRestantes) {
+                incapacidadesProcesadas++;
+                resultados.push({
+                    fecha: dia.fecha,
+                    tipo: "incapacidad",
+                    registros: [],
+                    trabajado_minutos: 0,
+                    trabajado_hhmm: '00:00',
+                    trabajado_decimal: 0,
+                    observacion_dia: "INCAPACIDAD",
+                    tipo_turno: tipoTurno,
+                    max_horas: maxHoras
+                });
+                return;
+            }
+            
+            if (ausenciasProcesadas < diasAusenciasRestantes) {
+                ausenciasProcesadas++;
+                resultados.push({
+                    fecha: dia.fecha,
+                    tipo: "ausencia",
+                    registros: [],
+                    trabajado_minutos: 0,
+                    trabajado_hhmm: '00:00',
+                    trabajado_decimal: 0,
+                    observacion_dia: "AUSENCIA",
+                    tipo_turno: tipoTurno,
+                    max_horas: maxHoras
+                });
+                return;
+            }
+            
             resultados.push({
                 fecha: dia.fecha,
                 tipo: "descanso",
@@ -1203,6 +1348,9 @@ $(document).ready(function () {
 
             // Actualizar el tipo
             registroProcesado.tipo = tipoSeleccionado;
+            
+            // IMPORTANTE: Marcar como editado manualmente para que no se sobreescriba al recargar
+            registroProcesado.editado_manualmente = true;
 
             // Si el tipo NO es asistencia, vaciar registros y poner horas en 0
             if (tipoSeleccionado !== 'asistencia') {

@@ -52,6 +52,14 @@ function sobrescribirRegistrosDesdeHorarios(jsonDestino, jsonHorarios, jsonNomin
                 if (netoMap.hasOwnProperty(key)) {
                     emp.neto_pagar_original = netoMap[key];
                 }
+                        // Asegurar propiedad redondeo por defecto
+                        if (emp.redondeo === undefined) {
+                            emp.redondeo = false;
+                        }
+                        // Asegurar propiedad redondeo_cantidad por defecto
+                        if (emp.redondeo_cantidad === undefined) {
+                            emp.redondeo_cantidad = 0;
+                        }
             });
         }
     });
@@ -120,6 +128,10 @@ function sobrescribirRegistrosDesdeHorarios(jsonDestino, jsonHorarios, jsonNomin
                         if (typeof nuevoEmp.inasistencias_minutos === 'undefined') nuevoEmp.inasistencias_minutos = 0;
                         if (typeof nuevoEmp.inasistencias_descuento === 'undefined') nuevoEmp.inasistencias_descuento = 0;
                         if (typeof nuevoEmp.sueldo_a_cobrar === 'undefined') nuevoEmp.sueldo_a_cobrar = 0;
+                        // Inicializar flag de redondeo
+                        if (typeof nuevoEmp.redondeo === 'undefined') nuevoEmp.redondeo = false;
+                        // Inicializar propiedad redondeo_cantidad
+                        if (typeof nuevoEmp.redondeo_cantidad === 'undefined') nuevoEmp.redondeo_cantidad = 0;
                         if (!Array.isArray(nuevoEmp.conceptos_adicionales)) nuevoEmp.conceptos_adicionales = [];
                         if (typeof nuevoEmp.bono_antiguedad === 'undefined') nuevoEmp.bono_antiguedad = 0;
                         if (typeof nuevoEmp.actividades_especiales === 'undefined') nuevoEmp.actividades_especiales = 0;
@@ -148,6 +160,10 @@ function sobrescribirRegistrosDesdeHorarios(jsonDestino, jsonHorarios, jsonNomin
                             const empExistente = deptoActual.empleados[indexActual];
                             if (registros) empExistente.registros = registros;
                             if (typeof netoOriginal !== 'undefined') empExistente.neto_pagar_original = netoOriginal;
+                            // Asegurar propiedad redondeo si no existía
+                            if (empExistente.redondeo === undefined) empExistente.redondeo = false;
+                            // Asegurar propiedad redondeo_cantidad si no existía
+                            if (empExistente.redondeo_cantidad === undefined) empExistente.redondeo_cantidad = 0;
                             // Para SIN SEGURO dentro del mismo depto, también refrescar 'puesto' si viene
                             if (esDeptoSinSeguroDestino && typeof empNom.puesto === 'string' && empNom.puesto.trim() !== '') {
                                 empExistente.puesto = empNom.puesto.trim();

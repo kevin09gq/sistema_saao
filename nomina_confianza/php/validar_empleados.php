@@ -8,16 +8,17 @@ $data = json_decode(file_get_contents("php://input"), true);
 
 $funcion = $data["funcion"] ?? "";
 $claves = $data["claves"] ?? [];
+$idEmpresa = isset($data['id_empresa']) ? intval($data['id_empresa']) : null;
 
 $resultado = [];
 
 switch ($funcion) {
     case "validarEmpleadosExistentes":
-        $resultado = validarEmpleadosExistentes($claves);
+        $resultado = validarEmpleadosExistentes($claves, $idEmpresa);
         break;
     
     case "obtenerInfoEmpleados":
-        $resultado = obtenerInfoEmpleados($claves);
+        $resultado = obtenerInfoEmpleados($claves, $idEmpresa);
         break;
     
     default:
@@ -29,7 +30,7 @@ echo json_encode($resultado, JSON_UNESCAPED_UNICODE);
 $conexion->close();
 
 // Función para validar empleados existentes
-function validarEmpleadosExistentes($claves) {
+function validarEmpleadosExistentes($claves, $idEmpresa = null) {
     global $conexion;
     
     if (empty($claves)) {
@@ -39,16 +40,20 @@ function validarEmpleadosExistentes($claves) {
     // Crear placeholders para la consulta
     $placeholders = implode(',', array_fill(0, count($claves), '?'));
     $tipos = str_repeat('s', count($claves));
+    $params = $claves;
     
-    $sql = $conexion->prepare(
-        "SELECT clave_empleado 
-         FROM info_empleados 
-         WHERE clave_empleado IN ($placeholders) 
-           AND id_status = 1
-         ORDER BY clave_empleado"
-    );
+    $sqlStr = "SELECT clave_empleado FROM info_empleados WHERE clave_empleado IN ($placeholders) AND id_status = 1";
+    if ($idEmpresa !== null) {
+        $sqlStr .= " AND id_empresa = ?";
+        $tipos .= 'i';
+        $params[] = $idEmpresa;
+    }
+    $sqlStr .= " ORDER BY clave_empleado";
     
-    $sql->bind_param($tipos, ...$claves);
+    $sql = $conexion->prepare($sqlStr);
+    if (!$sql) return [];
+    
+    $sql->bind_param($tipos, ...$params);
     $sql->execute();
     $res = $sql->get_result();
     
@@ -63,7 +68,7 @@ function validarEmpleadosExistentes($claves) {
 }
 
 // Función para obtener información completa de empleados
-function obtenerInfoEmpleados($claves) {
+function obtenerInfoEmpleados($claves, $idEmpresa = null) {
     global $conexion;
     
     if (empty($claves)) {
@@ -82,17 +87,26 @@ function obtenerInfoEmpleados($claves) {
     // Crear placeholders para la consulta
     $placeholders = implode(',', array_fill(0, count($claves), '?'));
     $tipos = str_repeat('s', count($claves));
+    $params = $claves;
     
-    $sql = $conexion->prepare(
-        "SELECT e.id_empleado, e.clave_empleado, CONCAT(e.nombre, ' ', e.ap_paterno, ' ', e.ap_materno) as nombre_completo, 
+    $sqlStr = "SELECT e.id_empleado, e.clave_empleado, CONCAT(e.nombre, ' ', e.ap_paterno, ' ', e.ap_materno) as nombre_completo, 
                    e.salario_semanal, e.salario_diario, e.id_empresa, h.horario_oficial
             FROM info_empleados e
             LEFT JOIN horarios_oficiales h ON e.id_empleado = h.id_empleado
-            WHERE e.id_status = 1 AND e.clave_empleado IN ($placeholders)
-            ORDER BY e.nombre, e.ap_paterno, e.ap_materno"
-    );
+            WHERE e.id_status = 1 AND e.clave_empleado IN ($placeholders)";
     
-    $sql->bind_param($tipos, ...$claves);
+    if ($idEmpresa !== null) {
+        $sqlStr .= " AND e.id_empresa = ?";
+        $tipos .= 'i';
+        $params[] = $idEmpresa;
+    }
+    
+    $sqlStr .= " ORDER BY e.nombre, e.ap_paterno, e.ap_materno";
+    
+    $sql = $conexion->prepare($sqlStr);
+    if (!$sql) return [];
+    
+    $sql->bind_param($tipos, ...$params);
     $sql->execute();
     $res = $sql->get_result();
     

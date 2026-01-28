@@ -3,11 +3,74 @@ let modalColumnaActual = null; // 'vacaciones' | 'ausencias' | 'incapacidades' |
 let modoHistorial = 'semana';
 let historialPersonaDatos = [];
 let departamentosLista = [];
-let personaState = { anio: null, semana: null, departamento: '', buscar: '', ordenPor: 'vacaciones' };
+let empresasLista = [];
+let personaState = { anio: null, semana: null, departamento: '', empresa: '', buscar: '', ordenPor: 'vacaciones' };
+// Control de peticiones AJAX
+let ajaxAniosRequest = null;
+let ajaxSemanasRequest = null;
+let ajaxHistorialRequest = null;
 
 $(document).ready(function() {
-        // Listener para búsqueda en persona
-        $(document).on('input', '#persona_buscar', function() {
+    // Cargar empresas al iniciar
+    cargarEmpresas().then(() => {
+        poblarEmpresasSelect('#filtro_empresa');
+    });
+    
+    // Listener para cambio de empresa
+    $('#filtro_empresa').on('change', function() {
+        window.semanaPaginaActual = 1;
+        const idEmpresa = $(this).val();
+        
+        // Limpiar selects dependientes
+        $('#filtro_anio').empty().append('<option value="">Selecciona año</option>').prop('disabled', true);
+        $('#filtro_semana').empty().append('<option value="">Selecciona semana</option>').prop('disabled', true);
+        
+        if (idEmpresa && idEmpresa !== '') {
+            poblarAñosPorEmpresa(idEmpresa);
+        } else {
+            $('#tbody_historial').html('<tr><td colspan="5">Selecciona empresa</td></tr>');
+        }
+    });
+    
+    // Listener para cambio de año
+    $('#filtro_anio').on('change', function() {
+        window.semanaPaginaActual = 1;
+        const idEmpresa = $('#filtro_empresa').val();
+        const anio = $(this).val();
+        
+        // Limpiar select de semana
+        $('#filtro_semana').empty().append('<option value="">Selecciona semana</option>').prop('disabled', true);
+        
+        if (idEmpresa && idEmpresa !== '' && anio && anio !== '') {
+            poblarSemanasPorEmpresaYAnio(idEmpresa, anio);
+        } else {
+            $('#tbody_historial').html('<tr><td colspan="5">Selecciona año</td></tr>');
+        }
+    });
+    
+    // Listener para cambio de semana
+    $('#filtro_semana').on('change', function() {
+        window.semanaPaginaActual = 1;
+        const idEmpresa = $('#filtro_empresa').val();
+        const semana = $(this).val();
+        if (idEmpresa && idEmpresa !== '' && semana && semana !== '') {
+            cargarHistorialFiltrado(idEmpresa, semana);
+        } else {
+            $('#tbody_historial').html('<tr><td colspan="5">Selecciona semana</td></tr>');
+        }
+    });
+    
+    // Listener para cambio de departamento (opcional)
+    $('#filtro_departamento').on('change', function() {
+        const idEmpresa = $('#filtro_empresa').val();
+        const semana = $('#filtro_semana').val();
+        if (idEmpresa && idEmpresa !== '' && semana && semana !== '') {
+            cargarHistorialFiltrado(idEmpresa, semana);
+        }
+    });
+    
+    // Listener para búsqueda en persona
+    $(document).on('input', '#persona_buscar', function() {
             $('#btn_limpiar_persona_buscar').toggle($(this).val().length > 0);
         });
 
@@ -70,44 +133,22 @@ $(document).ready(function() {
         $('#filtros_semana_bar').hide();
         $('#btn_modo_persona').css({ background: '#f9fafb' });
         $('#btn_modo_semana').css({ background: '#fff' });
-        poblarPersonaAnios();
-        // Restaurar selección de año si existe en el estado
-        if (personaState.anio) {
-            const $anio = $('#persona_anio');
-            if ($anio.find(`option[value="${personaState.anio}"]`).length) {
-                $anio.val(personaState.anio);
-                poblarPersonaSemanas();
-            }
-        } else {
-            poblarPersonaSemanas();
-        }
-        // Restaurar semana si existe
-        if (personaState.semana && personaState.anio) {
-            const $sem = $('#persona_semana');
-            if ($sem.find(`option[value="${personaState.semana}"]`).length) {
-                $sem.val(personaState.semana);
-            }
-        }
-        // Restaurar departamento y búsqueda
-        if (typeof personaState.departamento === 'string') {
-            const $dep = $('#persona_departamento');
-            if (!$dep.length || !$dep.find(`option[value="${personaState.departamento}"]`).length) {
-                // si no existe esa opción, dejamos "Todos"
-            } else {
-                $dep.val(personaState.departamento);
-            }
-        }
-        // Restaurar orden y mostrar
+        
+        // Cargar empresas para el filtro de persona
+        cargarEmpresas().then(() => {
+            poblarEmpresasSelect('#persona_empresa');
+        });
+        
+        // Limpiar filtros y tabla
+        $('#persona_empresa').val('');
+        $('#persona_anio').empty().append('<option value="">Selecciona año</option>').prop('disabled', true);
+        $('#persona_semana').empty().append('<option value="">Selecciona semana</option>').prop('disabled', true);
+        $('#persona_tbody').html('<tr><td colspan="5">Selecciona empresa para comenzar</td></tr>');
+        
+        // Restaurar otros valores del estado
+        $('#persona_departamento').val(personaState.departamento || '');
         $('#persona_mostrar').val(personaState.mostrar || 'todos');
         $('#persona_buscar').val(personaState.buscar || '');
-        // Recargar detalle si hay valores actuales en los selects
-        const anioSel = $('#persona_anio').val();
-        const semanaSel = $('#persona_semana').val();
-        if (anioSel && semanaSel) {
-            cargarPersonaDetalle();
-        } else {
-            limpiarPersonaTabla();
-        }
     });
 
     $(document).on('contextmenu', '#tbody_historial tr[data-semana] .badge', function(e) {
@@ -141,7 +182,8 @@ $(document).ready(function() {
         return false;
     });
 
-    $('#persona_anio').on('change', function() {
+    // Listeners desactivados - pertenecen al sistema antiguo
+    /*$('#persona_anio').on('change', function() {
         personaState.anio = $(this).val();
         window.personaPaginaActual = 1;
         poblarPersonaSemanas();
@@ -151,7 +193,7 @@ $(document).ready(function() {
         personaState.semana = $(this).val();
         window.personaPaginaActual = 1;
         cargarPersonaDetalle();
-    });
+    });*/
     $('#persona_buscar').on('input', function() {
         personaState.buscar = $(this).val();
         window.personaPaginaActual = 1;
@@ -166,18 +208,59 @@ $(document).ready(function() {
         window.personaPaginaActual = 1;
         renderPersonaTabla(historialPersonaDatos || []);
     });
-    $('#filtro_departamento').on('change', function() {
+    // Este listener ya está manejado arriba, lo eliminamos para evitar duplicados
+    /*$('#filtro_departamento').on('change', function() {
         window.semanaPaginaActual = 1;
-        cargarHistorial();
+        const idEmpresa = $('#filtro_empresa').val();
+        const semana = $('#filtro_semana').val();
+        if (idEmpresa && semana) {
+            cargarHistorialFiltrado(idEmpresa, semana);
+        }
+    });*/
+    // Listeners para filtros en cascada de persona
+    $('#persona_empresa').on('change', function() {
+        window.personaPaginaActual = 1;
+        const idEmpresa = $(this).val();
+        
+        // Limpiar selects dependientes
+        $('#persona_anio').empty().append('<option value="">Selecciona año</option>').prop('disabled', true);
+        $('#persona_semana').empty().append('<option value="">Selecciona semana</option>').prop('disabled', true);
+        
+        if (idEmpresa && idEmpresa !== '') {
+            poblarAniosPorEmpresaPersona(idEmpresa);
+        } else {
+            $('#persona_tbody').html('<tr><td colspan="5">Selecciona empresa</td></tr>');
+        }
     });
+    
+    $('#persona_anio').on('change', function() {
+        window.personaPaginaActual = 1;
+        const idEmpresa = $('#persona_empresa').val();
+        const anio = $(this).val();
+        
+        // Limpiar select de semana
+        $('#persona_semana').empty().append('<option value="">Selecciona semana</option>').prop('disabled', true);
+        
+        if (idEmpresa && idEmpresa !== '' && anio && anio !== '') {
+            poblarSemanasPorEmpresaAnioPersona(idEmpresa, anio);
+        } else {
+            $('#persona_tbody').html('<tr><td colspan="5">Selecciona año</td></tr>');
+        }
+    });
+    
+    $('#persona_semana').on('change', function() {
+        window.personaPaginaActual = 1;
+        cargarPersonaDetalle();
+    });
+    
     $('#persona_departamento').on('change', function() {
         personaState.departamento = $(this).val();
         window.personaPaginaActual = 1;
         cargarPersonaDetalle();
     });
 
-    // Listeners para los filtros de año y semana
-    $('#filtro_anio').on('change', function() {
+    // Listeners para los filtros de año y semana - desactivados en el nuevo sistema de cascada
+    /*$('#filtro_anio').on('change', function() {
         window.semanaPaginaActual = 1;
         poblarFiltroSemana();
         filtrarHistorial();
@@ -185,33 +268,155 @@ $(document).ready(function() {
     $('#filtro_semana').on('change', function() {
         window.semanaPaginaActual = 1;
         filtrarHistorial();
-    });
+    });*/
 });
 
-function cargarHistorial() {
+// Cargar empresas y poblar el select
+function cargarEmpresas() {
+    $.ajax({
+        url: '../php/obtener_empresas.php',
+        type: 'GET',
+        dataType: 'json',
+        cache: false,
+        success: function(response) {
+            if (response.success && response.data) {
+                const select = $('#filtro_empresa');
+                select.empty();
+                select.append('<option value="">Todas</option>');
+                response.data.forEach(emp => {
+                    select.append(`<option value="${emp.id_empresa}">${emp.nombre_empresa}</option>`);
+                });
+            }
+        },
+        error: function() {
+            console.error('Error al cargar empresas');
+        }
+    });
+}
+
+// Obtener años de una empresa específica
+function poblarAñosPorEmpresa(idEmpresa) {
+    // Abortar petición anterior si existe
+    if (ajaxAniosRequest) {
+        ajaxAniosRequest.abort();
+    }
+    
+    ajaxAniosRequest = $.ajax({
+        url: '../php/obtener_anios_por_empresa.php',
+        type: 'GET',
+        data: { id_empresa: idEmpresa },
+        dataType: 'json',
+        cache: false,
+        success: function(response) {
+            if (response.success && response.data) {
+                const select = $('#filtro_anio');
+                select.empty();
+                select.append('<option value="">Selecciona año</option>');
+                response.data.forEach(anio => {
+                    select.append(`<option value="${anio}">${anio}</option>`);
+                });
+                // Habilitar el select de año
+                select.prop('disabled', false);
+            }
+        },
+        error: function() {
+            console.error('Error al cargar años');
+        },
+        complete: function() {
+            ajaxAniosRequest = null;
+        }
+    });
+}
+
+// Obtener semanas de una empresa y año específicos
+function poblarSemanasPorEmpresaYAnio(idEmpresa, anio) {
+    // Abortar petición anterior si existe
+    if (ajaxSemanasRequest) {
+        ajaxSemanasRequest.abort();
+    }
+    
+    ajaxSemanasRequest = $.ajax({
+        url: '../php/obtener_semanas_por_empresa_anio.php',
+        type: 'GET',
+        data: { id_empresa: idEmpresa, anio: anio },
+        dataType: 'json',
+        cache: false,
+        success: function(response) {
+            if (response.success && response.data) {
+                const select = $('#filtro_semana');
+                select.empty();
+                select.append('<option value="">Selecciona semana</option>');
+                if (response.data.length === 0) {
+                    select.append('<option value="" disabled>No hay semanas registradas</option>');
+                } else {
+                    response.data.forEach(sem => {
+                        select.append(`<option value="${sem}">Semana ${sem}</option>`);
+                    });
+                }
+                // Habilitar el select de semana
+                select.prop('disabled', false);
+            }
+        },
+        error: function() {
+            console.error('Error al cargar semanas');
+        },
+        complete: function() {
+            ajaxSemanasRequest = null;
+        }
+    });
+}
+
+// Cargar historial filtrado por empresa y semana
+function cargarHistorialFiltrado(idEmpresa, semana) {
     const idDepto = ($('#filtro_departamento').val() || '').trim();
-    // Guardar valores actuales de año y semana
-    const anioActual = $('#filtro_anio').val();
-    const semanaActual = $('#filtro_semana').val();
+    const anio = $('#filtro_anio').val();
+    
+    // Abortar petición anterior si existe
+    if (ajaxHistorialRequest) {
+        ajaxHistorialRequest.abort();
+    }
+    
+    let params = { id_empresa: idEmpresa };
+    if (idDepto) params.id_departamento = idDepto;
+    
+    ajaxHistorialRequest = $.ajax({
+        url: '../php/obtener_historial.php',
+        type: 'GET',
+        data: params,
+        dataType: 'json',
+        cache: false,
+        success: function(response) {
+            if (response.success && response.data) {
+                const datosFiltrados = response.data.filter(r => r.semana == semana && r.anio == anio);
+                mostrarHistorial(datosFiltrados);
+            } else {
+                mostrarSinDatos();
+            }
+        },
+        error: function(xhr, status, error) {
+            if (status !== 'abort') {
+                mostrarSinDatos();
+            }
+        },
+        complete: function() {
+            ajaxHistorialRequest = null;
+        }
+    });
+}
+
+function cargarHistorial() {
+    // En el nuevo sistema de filtros en cascada, cargarHistorial solo se usa para inicializar
+    // Los filtros se manejan por los listeners específicos
     $.ajax({
         url: '../php/obtener_historial.php',
         type: 'GET',
-        data: idDepto ? { id_departamento: idDepto } : {},
         dataType: 'json',
+        cache: false,
         success: function(response) {
             if (response.success && response.data) {
                 historialDatos = response.data;
-                poblarFiltroAnio();
-                // Restaurar año si existe
-                if (anioActual && $('#filtro_anio option[value="' + anioActual + '"]').length) {
-                    $('#filtro_anio').val(anioActual);
-                }
-                poblarFiltroSemana();
-                // Restaurar semana si existe
-                if (semanaActual && $('#filtro_semana option[value="' + semanaActual + '"]').length) {
-                    $('#filtro_semana').val(semanaActual);
-                }
-                filtrarHistorial();
+                // No poblar filtros aquí, se hace en los listeners de cambio
+                $('#tbody_historial').html('<tr><td colspan="5">Selecciona empresa para comenzar</td></tr>');
             } else {
                 mostrarSinDatos();
             }
@@ -228,7 +433,8 @@ function cargarHistorial() {
     });
 }
 
-function poblarFiltroAnio() {
+// Función desactivada - pertenece al sistema antiguo de filtros
+/*function poblarFiltroAnio() {
     const select = $('#filtro_anio');
     select.empty();
     select.append(`<option value="">Selecciona año</option>`);
@@ -236,9 +442,10 @@ function poblarFiltroAnio() {
     anios.forEach(anio => {
         select.append(`<option value="${anio}">${anio}</option>`);
     });
-}
+}*/
 
-function poblarFiltroSemana() {
+// Función desactivada - pertenece al sistema antiguo de filtros
+/*function poblarFiltroSemana() {
     const select = $('#filtro_semana');
     select.empty();
     select.append(`<option value="">Selecciona semana</option>`);
@@ -250,7 +457,7 @@ function poblarFiltroSemana() {
     semanasUnicas.forEach(sem => {
         select.append(`<option value="${sem}">Semana ${sem}</option>`);
     });
-}
+}*/
 
 function filtrarHistorial() {
     const anio = $('#filtro_anio').val();
@@ -272,7 +479,8 @@ function filtrarHistorial() {
     mostrarHistorial(datosFiltrados);
 }
 
-function poblarPersonaAnios() {
+// Función desactivada - pertenece al sistema antiguo
+/*function poblarPersonaAnios() {
     const select = $('#persona_anio');
     if (!select.length) return;
     const anios = [...new Set(historialDatos.map(r => r.anio))].sort((a, b) => b - a);
@@ -281,9 +489,10 @@ function poblarPersonaAnios() {
     anios.forEach(anio => {
         select.append(`<option value="${anio}">${anio}</option>`);
     });
-}
+}*/
 
-function poblarPersonaSemanas() {
+// Función desactivada - pertenece al sistema antiguo
+/*function poblarPersonaSemanas() {
     const select = $('#persona_semana');
     if (!select.length) return;
     const anio = $('#persona_anio').val();
@@ -295,22 +504,31 @@ function poblarPersonaSemanas() {
     semanasUnicas.forEach(sem => {
         select.append(`<option value="${sem}">Semana ${sem}</option>`);
     });
-}
+}*/
 
 function cargarPersonaDetalle() {
     const semana = $('#persona_semana').val();
     const anio = $('#persona_anio').val();
     const idDepto = ($('#persona_departamento').val() || '').trim();
+    const idEmpresa = ($('#persona_empresa').val() || '').trim();
+    
     if (!semana || !anio) {
         limpiarPersonaTabla();
         return;
     }
+    
     $('#persona_tbody').html('<tr><td colspan="5">Cargando...</td></tr>');
+    
+    let params = { semana: semana, anio: anio };
+    if (idEmpresa && idEmpresa !== '') params.id_empresa = idEmpresa;
+    if (idDepto && idDepto !== '') params.id_departamento = idDepto;
+    
     $.ajax({
         url: '../php/obtener_detalle_semana.php',
         type: 'GET',
-        data: idDepto ? { semana: semana, anio: anio, id_departamento: idDepto } : { semana: semana, anio: anio },
+        data: params,
         dataType: 'json',
+        cache: false,
         success: function(response) {
             if (response.success && response.data) {
                 historialPersonaDatos = response.data;
@@ -336,13 +554,28 @@ function renderPersonaTabla(datos) {
     const filtro = ($('#persona_buscar').val() || '').toLowerCase();
     const campoOrden = ($('#persona_orden_por').val() || 'vacaciones');
     const mostrar = ($('#persona_mostrar').val() || 'todos');
+    const idDeptoSeleccionado = ($('#persona_departamento').val() || '').trim();
     const table = tbody.closest('table');
     const thead = table.find('thead');
-    const base = (datos || []).filter(emp => {
-        const nombre = (emp.nombre_completo || '').toLowerCase();
-        const clave = (emp.clave_empleado || '').toLowerCase();
-        return nombre.includes(filtro) || clave.includes(filtro);
-    });
+    
+    // Aplicar filtro de departamento si está seleccionado
+    let datosFiltrados = datos;
+    if (idDeptoSeleccionado && idDeptoSeleccionado !== '') {
+        datosFiltrados = datos.filter(emp => {
+            // Filtrar por departamento y búsqueda
+            const deptoCoincide = String(emp.id_departamento) === String(idDeptoSeleccionado);
+            const nombre = (emp.nombre_completo || '').toLowerCase();
+            const clave = (emp.clave_empleado || '').toLowerCase();
+            const busquedaCoincide = nombre.includes(filtro) || clave.includes(filtro);
+            return deptoCoincide && busquedaCoincide;
+        });
+    } else {
+        datosFiltrados = (datos || []).filter(emp => {
+            const nombre = (emp.nombre_completo || '').toLowerCase();
+            const clave = (emp.clave_empleado || '').toLowerCase();
+            return nombre.includes(filtro) || clave.includes(filtro);
+        });
+    }
     // Mostrar todos los empleados, no solo los que tienen valores > 0
     // Soporte para orden ascendente/descendente al hacer clic en el encabezado
     if (!window.personaOrdenDir) window.personaOrdenDir = {};
@@ -359,9 +592,9 @@ function renderPersonaTabla(datos) {
     }
     let ordenados = [];
     if (campoMostrar === 'todos') {
-        ordenados = base.slice().sort((a, b) => parseInt(b['vacaciones'] || 0) - parseInt(a['vacaciones'] || 0));
+        ordenados = datosFiltrados.slice().sort((a, b) => parseInt(b['vacaciones'] || 0) - parseInt(a['vacaciones'] || 0));
     } else {
-        ordenados = base.filter(emp => parseInt(emp[campoMostrar] || 0) > 0)
+        ordenados = datosFiltrados.filter(emp => parseInt(emp[campoMostrar] || 0) > 0)
             .sort((a, b) => ordenMostrar === 'asc' ? parseInt(a[campoMostrar] || 0) - parseInt(b[campoMostrar] || 0) : parseInt(b[campoMostrar] || 0) - parseInt(a[campoMostrar] || 0));
     }
 
@@ -478,6 +711,7 @@ function cargarDepartamentos() {
             url: '../../public/php/obtenerDepartamentos.php',
             type: 'GET',
             dataType: 'json',
+            cache: false,
             success: function(rows) {
                 departamentosLista = rows || [];
                 resolve();
@@ -520,6 +754,7 @@ function cargarModalDetalleSemana(semana, anio, columna = null, idDepartamento =
         type: 'GET',
         data: idDepartamento ? { semana: semana, anio: anio, id_departamento: idDepartamento } : { semana: semana, anio: anio },
         dataType: 'json',
+        cache: false,
         success: function(response) {
             if (response.success && response.data) {
                 mostrarModalDetalleSemana(response.data);
@@ -748,4 +983,201 @@ function obtenerEspecificacionColumna(col) {
 function formatearNombreColumna(col) {
     const spec = obtenerEspecificacionColumna(col);
     return spec.header;
+}
+
+// Funciones para filtros en cascada de persona
+function poblarAniosPorEmpresaPersona(idEmpresa) {
+    $.ajax({
+        url: '../php/obtener_anios_por_empresa.php',
+        type: 'GET',
+        data: { id_empresa: idEmpresa },
+        dataType: 'json',
+        cache: false,
+        success: function(response) {
+            if (response.success && response.data) {
+                const select = $('#persona_anio');
+                select.empty();
+                select.append('<option value="">Selecciona año</option>');
+                response.data.forEach(anio => {
+                    select.append(`<option value="${anio}">${anio}</option>`);
+                });
+                // Habilitar el select de año
+                select.prop('disabled', false);
+            }
+        },
+        error: function() {
+            console.error('Error al cargar años para persona');
+        }
+    });
+}
+
+function poblarSemanasPorEmpresaAnioPersona(idEmpresa, anio) {
+    $.ajax({
+        url: '../php/obtener_semanas_por_empresa_anio.php',
+        type: 'GET',
+        data: { id_empresa: idEmpresa, anio: anio },
+        dataType: 'json',
+        cache: false,
+        success: function(response) {
+            if (response.success && response.data) {
+                const select = $('#persona_semana');
+                select.empty();
+                select.append('<option value="">Selecciona semana</option>');
+                if (response.data.length === 0) {
+                    select.append('<option value="" disabled>No hay semanas registradas</option>');
+                } else {
+                    response.data.forEach(sem => {
+                        select.append(`<option value="${sem}">Semana ${sem}</option>`);
+                    });
+                }
+                // Habilitar el select de semana
+                select.prop('disabled', false);
+            }
+        },
+        error: function() {
+            console.error('Error al cargar semanas para persona');
+        }
+    });
+}
+
+// Funciones para manejar empresas
+function cargarEmpresas() {
+    return new Promise((resolve) => {
+        $.ajax({
+            url: '../../public/php/obtenerEmpresas.php',
+            type: 'GET',
+            dataType: 'json',
+            success: function(rows) {
+                empresasLista = rows || [];
+                resolve();
+            },
+            error: function() {
+                empresasLista = [];
+                resolve();
+            }
+        });
+    });
+}
+
+function poblarEmpresasSelect(selector) {
+    const sel = $(selector);
+    if (!sel.length) return;
+    const current = sel.val();
+    sel.empty();
+    sel.append(`<option value="">Todas</option>`);
+    empresasLista.forEach(e => {
+        sel.append(`<option value="${e.id_empresa}">${e.nombre_empresa}</option>`);
+    });
+    if (current) sel.val(current);
+}
+
+// Obtener años de una empresa específica
+function poblarAñosPorEmpresa(idEmpresa) {
+    // Abortar petición anterior si existe
+    if (ajaxAniosRequest) {
+        ajaxAniosRequest.abort();
+    }
+    
+    ajaxAniosRequest = $.ajax({
+        url: '../php/obtener_anios_por_empresa.php',
+        type: 'GET',
+        data: { id_empresa: idEmpresa },
+        dataType: 'json',
+        cache: false,
+        success: function(response) {
+            if (response.success && response.data) {
+                const select = $('#filtro_anio');
+                select.empty();
+                select.append('<option value="">Selecciona año</option>');
+                response.data.forEach(anio => {
+                    select.append(`<option value="${anio}">${anio}</option>`);
+                });
+                // Habilitar el select de año
+                select.prop('disabled', false);
+            }
+        },
+        error: function() {
+            console.error('Error al cargar años');
+        },
+        complete: function() {
+            ajaxAniosRequest = null;
+        }
+    });
+}
+
+// Obtener semanas de una empresa y año específicos
+function poblarSemanasPorEmpresaYAnio(idEmpresa, anio) {
+    // Abortar petición anterior si existe
+    if (ajaxSemanasRequest) {
+        ajaxSemanasRequest.abort();
+    }
+    
+    ajaxSemanasRequest = $.ajax({
+        url: '../php/obtener_semanas_por_empresa_anio.php',
+        type: 'GET',
+        data: { id_empresa: idEmpresa, anio: anio },
+        dataType: 'json',
+        cache: false,
+        success: function(response) {
+            if (response.success && response.data) {
+                const select = $('#filtro_semana');
+                select.empty();
+                select.append('<option value="">Selecciona semana</option>');
+                if (response.data.length === 0) {
+                    select.append('<option value="" disabled>No hay semanas registradas</option>');
+                } else {
+                    response.data.forEach(sem => {
+                        select.append(`<option value="${sem}">Semana ${sem}</option>`);
+                    });
+                }
+                // Habilitar el select de semana
+                select.prop('disabled', false);
+            }
+        },
+        error: function() {
+            console.error('Error al cargar semanas');
+        },
+        complete: function() {
+            ajaxSemanasRequest = null;
+        }
+    });
+}
+
+// Cargar historial filtrado por empresa y semana
+function cargarHistorialFiltrado(idEmpresa, semana) {
+    const idDepto = ($('#filtro_departamento').val() || '').trim();
+    const anio = $('#filtro_anio').val();
+    
+    // Abortar petición anterior si existe
+    if (ajaxHistorialRequest) {
+        ajaxHistorialRequest.abort();
+    }
+    
+    let params = { id_empresa: idEmpresa };
+    if (idDepto && idDepto !== '') params.id_departamento = idDepto;
+    
+    ajaxHistorialRequest = $.ajax({
+        url: '../php/obtener_historial.php',
+        type: 'GET',
+        data: params,
+        dataType: 'json',
+        cache: false,
+        success: function(response) {
+            if (response.success && response.data) {
+                const datosFiltrados = response.data.filter(r => r.semana == semana && r.anio == anio);
+                mostrarHistorial(datosFiltrados);
+            } else {
+                mostrarSinDatos();
+            }
+        },
+        error: function(xhr, status, error) {
+            if (status !== 'abort') {
+                console.error('Error al cargar historial filtrado:', error);
+                mostrarSinDatos();
+            }
+        },
+        complete: function() {
+            ajaxHistorialRequest = null;
+        }
+    });
 }

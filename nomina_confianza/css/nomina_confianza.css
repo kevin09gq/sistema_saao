@@ -346,7 +346,7 @@ body {
     font-variant-numeric: tabular-nums;
 }
 
-.table-nomina td:nth-child(18) {
+.table-nomina td:nth-child(23) {
     background: rgba(59, 130, 246, 0.1);
     color: #1d4ed8;
     font-weight: 700;
@@ -355,9 +355,21 @@ body {
     font-variant-numeric: tabular-nums;
 }
 
+.table-nomina td:nth-child(17),
+.table-nomina td:nth-child(19),
+.table-nomina td:nth-child(21),
+.table-nomina td:nth-child(22) {
+   
+    color: #000000;
+    font-weight: 700;
+    border-radius: 6px;
+    margin: 2px;
+    font-variant-numeric: tabular-nums;
+}
 
 
-/* Cambiar el color de las filas en las columnas especificadas */
+
+/* Cambiar el color de las filas en las columnas de DEDUCCIONES (ajustado) */
 .table-nomina td:nth-child(6),
 .table-nomina td:nth-child(7),
 .table-nomina td:nth-child(8),
@@ -369,7 +381,8 @@ body {
 .table-nomina td:nth-child(14),
 .table-nomina td:nth-child(15),
 .table-nomina td:nth-child(16),
-.table-nomina td:nth-child(17) {
+.table-nomina td:nth-child(18),
+.table-nomina td:nth-child(20){
     color: #ef4444;
     /* Rojo */
     font-weight: 600;
@@ -421,6 +434,16 @@ body {
     font-weight: 700 !important;
     border-radius: 6px !important;
     border: none !important;
+}
+
+/* REDONDEO: negativo en rojo, positivo en negro */
+.table-nomina td.redondeo-negativo {
+    color: #ef4444;
+    font-weight: 700;
+}
+.table-nomina td.redondeo-positivo {
+    color: #000000;
+    font-weight: 700;
 }
 
 /* Controles de filtro y búsqueda - Estilos mejorados */

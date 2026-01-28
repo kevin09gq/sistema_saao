@@ -100,8 +100,12 @@ $(document).ready(function () {
         if (t === 'incapacidad') return '#3D7BFF';
         if (t === 'vacaciones') return '#027d00ff';
         if (t === 'descanso') return '#FCFF00';
+        if (t === 'dia_festivo') return '#00FFFF';
         
         if (t === 'sin_horario') return '#ffb300ff';
+        
+        // no_laboro = día sin horario asignado (no es descanso ni ausencia)
+        if (t === 'no_laboro') return '';
 
         /**
          * Si llega aquí significa asistencia
@@ -122,7 +126,9 @@ $(document).ready(function () {
         if (t === 'incapacidad') return '🏥 Día de incapacidad';
         if (t === 'vacaciones') return '🌴 Día de vacaciones';
         if (t === 'descanso') return '😴 Día de descanso';
+        if (t === 'dia_festivo') return '🎉 Día festivo';
         if (t === 'sin_horario') return '📋 Sin horario asignado';
+        if (t === 'no_laboro') return ''; // Sin tooltip para días que no labora
         return '';
     }
 
@@ -461,6 +467,7 @@ $(document).ready(function () {
         if (!options || !options.preservePage) {
             STATE.page = 1;
         }
+        
         render();
     });
 

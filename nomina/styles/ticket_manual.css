@@ -1,0 +1,411 @@
+/* Estilos para tarjetas de empleados en selección de tickets */
+.empleado-card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.empleado-card:hover {
+    border-color: #0d6efd;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.empleado-card.selected {
+    border-color: #0d6efd;
+    background-color: #e7f3ff;
+}
+
+.empleado-card .form-check-input {
+    pointer-events: none;
+}
+
+.departamento-badge {
+    font-size: 0.75rem;
+    padding: 2px 6px;
+}
+
+.departamento-40 {
+    background-color: #dc3545;
+    color: white;
+}
+
+.departamento-10 {
+    background-color: #198754;
+    color: white;
+}
+
+.departamento-sin-seguro {
+    background-color: #fd7e14;
+    color: white;
+}
+
+.empleado-nombre {
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.empleado-clave {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+/* Estilos para el modal de ticket manual */
+#modalTicketManual .col-md-2,
+#modalTicketManual .col-md-4 {
+    position: relative;
+}
+
+/* Paleta/acentos del modal */
+#modalTicketManual {
+    --tm-primary: #16a34a;
+    --tm-primary-2: #22c55e;
+    --tm-success: #16a34a;
+    --tm-danger: #dc2626;
+    --tm-ink: #0b1220;
+    --tm-muted: rgba(11, 18, 32, 0.84);
+    --tm-border: rgba(15, 23, 42, 0.10);
+    --tm-bg-soft: #f6fbf7;
+}
+
+/* Apariencia general del modal (más ligero) */
+#modalTicketManual .modal-content {
+    border: 0;
+    border-radius: 14px;
+    box-shadow: 0 18px 50px rgba(17, 24, 39, 0.18);
+    overflow: hidden;
+    color: var(--tm-ink);
+}
+
+#modalTicketManual .modal-header {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.14) 0%, rgba(255, 255, 255, 0.96) 45%, #ffffff 100%);
+    border-bottom: 1px solid var(--tm-border);
+    padding: 14px 18px;
+}
+
+#modalTicketManual .modal-title {
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    color: var(--tm-ink);
+}
+
+#modalTicketManual .modal-title i {
+    margin-right: 8px;
+    color: var(--tm-primary);
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(22, 163, 74, 0.22);
+    border-radius: 10px;
+    padding: 6px 8px;
+}
+
+#modalTicketManual .modal-body {
+    padding: 18px;
+    background: linear-gradient(180deg, rgba(34, 197, 94, 0.05) 0%, #ffffff 42%);
+    color: var(--tm-ink);
+    font-size: 0.95rem;
+    line-height: 1.25;
+}
+
+#modalTicketManual .modal-footer {
+    background: #ffffff;
+    border-top: 1px solid var(--tm-border);
+    padding: 12px 18px;
+}
+
+/* Encabezados de secciones */
+#modalTicketManual h6 {
+    font-weight: 700;
+    color: var(--tm-ink);
+    letter-spacing: 0.2px;
+}
+
+#modalTicketManual hr {
+    border: 0;
+    height: 1px;
+    background: var(--tm-border);
+    margin: 18px 0;
+}
+
+/* Labels e inputs más limpios */
+#modalTicketManual .form-label {
+    font-size: 0.86rem;
+    color: var(--tm-muted);
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+#modalTicketManual .form-control {
+    border-radius: 10px;
+    border: 1px solid rgba(15, 23, 42, 0.14);
+    background: #ffffff;
+    padding: 10px 12px;
+    color: var(--tm-ink);
+}
+
+#modalTicketManual .form-control::placeholder {
+    color: rgba(11, 18, 32, 0.48);
+}
+
+#modalTicketManual .form-control:focus {
+    border-color: rgba(22, 163, 74, 0.55);
+    box-shadow: 0 0 0 0.20rem rgba(34, 197, 94, 0.14);
+}
+
+/* Iconos en títulos de Percepciones/Deducciones */
+#modalTicketManual h6 i {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    border: 1px solid var(--tm-border);
+}
+
+#modalTicketManual h6 .bi-plus-circle {
+    color: var(--tm-success) !important;
+    background: rgba(22, 163, 74, 0.10);
+    border-color: rgba(22, 163, 74, 0.20);
+}
+
+#modalTicketManual h6 .bi-dash-circle {
+    color: var(--tm-danger) !important;
+    background: rgba(220, 38, 38, 0.10);
+    border-color: rgba(220, 38, 38, 0.20);
+}
+
+/* Sugerencias de autocompletado */
+#suggestions_clave,
+#suggestions_nombre {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 10px 22px rgba(17, 24, 39, 0.12);
+    margin-top: 2px;
+    z-index: 1050;
+}
+
+#suggestions_clave .list-group-item,
+#suggestions_nombre .list-group-item {
+    cursor: pointer;
+    border-left: none;
+    border-right: none;
+    padding: 10px 12px;
+    transition: background-color 0.2s;
+}
+
+#suggestions_clave .list-group-item:first-child,
+#suggestions_nombre .list-group-item:first-child {
+    border-top: none;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+#suggestions_clave .list-group-item:last-child,
+#suggestions_nombre .list-group-item:last-child {
+    border-bottom: none;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+#suggestions_clave .list-group-item:hover,
+#suggestions_nombre .list-group-item:hover {
+    background-color: #f8f9fa;
+}
+
+#suggestions_nombre {
+    width: calc(100% - 15px);
+}
+
+/* Estilo para campos readonly */
+#modalTicketManual input[readonly] {
+    background-color: #e9ecef !important;
+    cursor: not-allowed;
+}
+
+/* Mejorar el aspecto de los botones de agregar */
+#modalTicketManual .btn-success,
+#modalTicketManual .btn-danger,
+#modalTicketManual .btn-primary,
+#modalTicketManual .btn-secondary {
+    border-radius: 10px;
+    padding: 9px 12px;
+}
+
+#modalTicketManual .btn-success,
+#modalTicketManual .btn-danger {
+    padding: 7px 10px;
+    font-weight: 600;
+}
+
+#modalTicketManual .btn-primary {
+    font-weight: 700;
+}
+
+/* Botones con más color (sin “pesadez”) */
+#modalTicketManual .btn-primary {
+    background: linear-gradient(180deg, var(--tm-primary-2) 0%, var(--tm-primary) 100%);
+    border-color: rgba(22, 163, 74, 0.45);
+}
+
+#modalTicketManual .btn-primary:hover {
+    filter: brightness(0.98);
+}
+
+#modalTicketManual .btn-success {
+    background: linear-gradient(180deg, #22c55e 0%, var(--tm-success) 100%);
+    border-color: rgba(22, 163, 74, 0.45);
+}
+
+#modalTicketManual .btn-danger {
+    background: linear-gradient(180deg, #ef4444 0%, var(--tm-danger) 100%);
+    border-color: rgba(220, 38, 38, 0.45);
+}
+
+#modalTicketManual .btn-success:hover,
+#modalTicketManual .btn-danger:hover {
+    filter: brightness(0.98);
+}
+
+#modalTicketManual .btn-secondary {
+    background: #f1f5f9;
+    border-color: rgba(15, 23, 42, 0.14);
+    color: var(--tm-ink);
+}
+
+/* Tarjetitas visuales por columna (percepciones/deducciones) */
+#modalTicketManual .col-md-6 > h6 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#modalTicketManual .col-md-6 {
+    padding: 12px;
+    border-radius: 12px;
+    background: linear-gradient(180deg, var(--tm-bg-soft) 0%, #ffffff 100%);
+    border: 1px solid var(--tm-border);
+}
+
+/* Separación un poco más cómoda entre filas dentro del modal */
+#modalTicketManual .row.g-3 {
+    row-gap: 14px;
+}
+
+/* Espaciado mejorado */
+#percepciones-list .percepcion-item,
+#deducciones-list .deduccion-item {
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Botones de limpieza DENTRO del campo - Diseño sencillo y bonito */
+.btn-clear-inside {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    z-index: 10;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-clear-inside:hover {
+    background: #fee2e2;
+    color: #dc2626;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.btn-clear-inside:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
+}
+
+.btn-clear-inside i {
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+/* Inputs con espacio para el botón */
+.input-with-clear {
+    padding-right: 45px !important;
+}
+
+/* Efecto de aparición suave */
+.btn-clear-inside {
+    opacity: 0.7;
+}
+
+.btn-clear-inside:hover {
+    opacity: 1;
+}
+
+/* Cuando el input tiene contenido, mostrar el botón */
+.input-with-clear:not(:placeholder-shown) + .btn-clear-inside,
+.input-with-clear:focus + .btn-clear-inside {
+    opacity: 1;
+}
+
+/* Transición suave para el botón */
+.btn-clear-inside {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* X para limpiar input en modal tickets */
+.input-clearable-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.input-clearable-wrapper input.form-control {
+    padding-right: 2.2em;
+}
+.btn-clear-x {
+    position: absolute;
+    right: 0.7em;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: #fff;
+    color: #888;
+    width: 1.6em;
+    height: 1.6em;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1em;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+    transition: background 0.2s, color 0.2s;
+    z-index: 2;
+}
+.btn-clear-x:hover {
+    background: #e9ecef;
+    color: #dc3545;
+}

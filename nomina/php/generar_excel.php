@@ -66,7 +66,7 @@ try {
     }
 
     // Título principal centrado
-    $sheet->mergeCells('B1:R1');
+    $sheet->mergeCells('B1:U1');
     $sheet->setCellValue('B1', 'PRODUCCION 40 LIBRAS');
     $sheet->getStyle('B1')->applyFromArray([
         'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => '008000']],
@@ -74,7 +74,7 @@ try {
     ]);
 
     // Título de la empresa centrado
-    $sheet->mergeCells('B2:R2');
+    $sheet->mergeCells('B2:U2');
     $sheet->setCellValue('B2', 'CITRICOS SAAO S.A DE C.V');
     $sheet->getStyle('B2')->applyFromArray([
         'font' => ['bold' => true, 'size' => 12, 'color' => ['rgb' => '008000']],
@@ -82,7 +82,7 @@ try {
     ]);
 
     // Título de nómina
-    $sheet->mergeCells('B3:R3');
+    $sheet->mergeCells('B3:U3');
     $sheet->setCellValue('B3',  $tituloNomina);
     $sheet->getStyle('B3')->applyFromArray([
         'font' => ['bold' => true, 'size' => 14],
@@ -90,7 +90,7 @@ try {
     ]);
 
     // Información de semana
-    $sheet->mergeCells('B4:R4');
+    $sheet->mergeCells('B4:U4');
     $sheet->setCellValue('B4', $tituloExcel);
     $sheet->getStyle('B4')->applyFromArray([
         'font' => ['bold' => true, 'size' => 12],
@@ -102,7 +102,7 @@ try {
     $sheet->getRowDimension('2')->setRowHeight(20);
     $sheet->getRowDimension('3')->setRowHeight(25);
 
-    // Encabezados de la tabla
+    // Encabezados de la tabla (nuevo formato solicitado)
     $headers = [
         'A6' => '#',
         'B6' => 'CLAVE',
@@ -111,17 +111,21 @@ try {
         'E6' => "SUELDO\nNETO",
         'F6' => 'INCENTIVO',
         'G6' => 'EXTRA',
-        'H6' => 'TARJETA',
-        'I6' => 'PRÉSTAMO',
-        'J6' => 'INASISTENCIAS',
-        'K6' => 'UNIFORMES',
-        'L6' => 'INFONAVIT',
-        'M6' => 'ISR',
-        'N6' => 'IMSS',
-        'O6' => 'CHECADOR',
-        'P6' => "F.A /\nGAFET/\nCOFIA",
-        'Q6' => "SUELDO\nA\nCOBRAR",
-        'R6' => "FIRMA\nRECIBIDO"
+        'H6' => 'ISR',
+        'I6' => 'IMSS',
+        'J6' => 'INFONAVIT',
+        'K6' => 'INASISTENCIAS',
+        'L6' => 'UNIFORMES',
+        'M6' => 'CHECADOR',
+        'N6' => "F.A /\nGAFET/\nCOFIA",
+        'O6' => 'NETO A RECIBIR',
+        'P6' => 'TARJETA',
+        'Q6' => 'IMPORTE EN EFECTIVO',
+        'R6' => 'PRÉSTAMO',
+        'S6' => 'TOTAL A RECIBIR',
+        'T6' => 'REDONDEO',
+        'U6' => "TOTAL EFECTIVO\nREDONDEADO",
+        'V6' => "FIRMA\nRECIBIDO"
     ];
 
     $headerStyle = [
@@ -150,10 +154,11 @@ try {
     $sheet->getColumnDimension('J')->setWidth(15);
 
     $anchoUniforme = 12;
-    foreach (['E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'O', 'P', 'Q'] as $col) {
+    foreach (['E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V'] as $col) {
         $sheet->getColumnDimension($col)->setWidth($anchoUniforme);
     }
-    $sheet->getColumnDimension('R')->setWidth(15);
+    $sheet->getColumnDimension('U')->setWidth(15);
+    $sheet->getColumnDimension('V')->setWidth(15);
 
 
 
@@ -203,27 +208,8 @@ try {
                         // G: Extra (positivo)
                         $put("G{$fila}", $empleado['sueldo_extra_final'] ?? null);
 
-                        // H: Tarjeta (deducción negativa)
-                        if (isset($empleado['neto_pagar']) && $empleado['neto_pagar'] != 0) {
-                            $put("H{$fila}", -1 * (float)$empleado['neto_pagar']);
-                        }
-
-                        // I: Préstamo (deducción)
-                        if (isset($empleado['prestamo']) && $empleado['prestamo'] != 0) {
-                            $put("I{$fila}", -1 * (float)$empleado['prestamo']);
-                        }
-
-                        // J: Inasistencias (deducción)
-                        if (isset($empleado['inasistencias_descuento']) && $empleado['inasistencias_descuento'] != 0) {
-                            $put("J{$fila}", -1 * (float)$empleado['inasistencias_descuento']);
-                        }
-
-                        // K: Uniformes (deducción)
-                        if (isset($empleado['uniformes']) && $empleado['uniformes'] != 0) {
-                            $put("K{$fila}", -1 * (float)$empleado['uniformes']);
-                        }
-
-                        // Conceptos
+                        // Conceptos e imputación a nuevas columnas según nuevo formato
+                        // Conceptos extraídos
                         $conceptos = $empleado['conceptos'] ?? [];
                         $getConcepto = function ($codigo) use ($conceptos) {
                             foreach ($conceptos as $c) {
@@ -234,34 +220,88 @@ try {
                             return 0;
                         };
 
-                        $infonavit = $getConcepto('16');
-                        if ($infonavit != 0) $put("L{$fila}", -1 * $infonavit);
-
+                        // H: ISR (deducción desde conceptos)
                         $isr = $getConcepto('45');
-                        if ($isr != 0) $put("M{$fila}", -1 * $isr);
+                        if ($isr != 0) $put("H{$fila}", -1 * $isr);
 
+                        // I: IMSS
                         $imss = $getConcepto('52');
-                        if ($imss != 0) $put("N{$fila}", -1 * $imss);
+                        if ($imss != 0) $put("I{$fila}", -1 * $imss);
 
-                        // O: Checador (deducción)
+                        // J: INFONAVIT
+                        $infonavit = $getConcepto('16');
+                        if ($infonavit != 0) $put("J{$fila}", -1 * $infonavit);
+
+                        // K: Inasistencias (deducción)
+                        if (isset($empleado['inasistencias_descuento']) && $empleado['inasistencias_descuento'] != 0) {
+                            $put("K{$fila}", -1 * (float)$empleado['inasistencias_descuento']);
+                        }
+
+                        // L: Uniformes (deducción)
+                        if (isset($empleado['uniformes']) && $empleado['uniformes'] != 0) {
+                            $put("L{$fila}", -1 * (float)$empleado['uniformes']);
+                        }
+
+                        // M: Checador (deducción)
                         if (isset($empleado['checador']) && $empleado['checador'] != 0) {
-                            $put("O{$fila}", -1 * (float)$empleado['checador']);
+                            $put("M{$fila}", -1 * (float)$empleado['checador']);
                         }
 
-                        // P: F.A / GAFET / COFIA (deducción)
+                        // N: F.A / GAFET / COFIA (deducción)
                         if (isset($empleado['fa_gafet_cofia']) && $empleado['fa_gafet_cofia'] != 0) {
-                            $put("P{$fila}", -1 * (float)$empleado['fa_gafet_cofia']);
+                            $put("N{$fila}", -1 * (float)$empleado['fa_gafet_cofia']);
                         }
 
-                        // Q: Sueldo a cobrar (fórmula que suma ingresos y resta deducciones)
-                        $formula = "=SUM(E{$fila}:G{$fila}) - ABS(SUM(H{$fila}:P{$fila}))";
-                        $sheet->setCellValueExplicit("Q{$fila}", $formula, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_FORMULA);
+                        // O: NETO A RECIBIR (autosuma de E:G menos deducciones H:N)
+                        $formulaNeto = "=SUM(E{$fila}:G{$fila}) - ABS(SUM(H{$fila}:N{$fila}))";
+                        $sheet->setCellValueExplicit("O{$fila}", $formulaNeto, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_FORMULA);
+                        $sheet->getStyle("O{$fila}")->getNumberFormat()->setFormatCode('_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)');
+
+                        // P: Tarjeta (deducción negativa)
+                        if (isset($empleado['neto_pagar']) && $empleado['neto_pagar'] != 0) {
+                            $put("P{$fila}", -1 * (float)$empleado['neto_pagar']);
+                        }
+
+                        // Q: IMPORTE EN EFECTIVO = NETO A RECIBIR - TARJETA (usar autosuma)
+                        $formulaImporte = "=SUM(O{$fila}, -ABS(P{$fila}))";
+                        $sheet->setCellValueExplicit("Q{$fila}", $formulaImporte, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_FORMULA);
                         $sheet->getStyle("Q{$fila}")->getNumberFormat()->setFormatCode('_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)');
+
+                        // R: Préstamo (deducción)
+                        if (isset($empleado['prestamo']) && $empleado['prestamo'] != 0) {
+                            $put("R{$fila}", -1 * (float)$empleado['prestamo']);
+                        }
+
+                        // S: TOTAL A RECIBIR = IMPORTE EN EFECTIVO - PRÉSTAMO
+                        $formulaTotalRecibir = "=SUM(Q{$fila}, -ABS(R{$fila}))";
+                        $sheet->setCellValueExplicit("S{$fila}", $formulaTotalRecibir, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_FORMULA);
+                        $sheet->getStyle("S{$fila}")->getNumberFormat()->setFormatCode('_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)');
+
+                        // T: REDONDEO (cantidad de redondeo desde JSON)
+                        $redondeoCantidad = isset($empleado['redondeo_cantidad']) ? (float)$empleado['redondeo_cantidad'] : 0;
+                        if ($redondeoCantidad != 0) {
+                            $sheet->setCellValue("T{$fila}", $redondeoCantidad);
+                            $sheet->getStyle("T{$fila}")->getNumberFormat()->setFormatCode('"$"#,##0.00;"$"-#,##0.00');
+                            // Color rojo para cantidades negativas
+                            if ($redondeoCantidad < 0) {
+                                $sheet->getStyle("T{$fila}")->getFont()->getColor()->setRGB('FF0000');
+                            }
+                        } else {
+                            $sheet->setCellValue("T{$fila}", '');
+                        }
+
+                        // U: TOTAL EFECTIVO REDONDEADO (TOTAL A RECIBIR + REDONDEO)
+                        $formulaTotalRedondeado = "=ROUND(S{$fila} + IF(T{$fila}<>\"\", T{$fila}, 0), 2)";
+                        $sheet->setCellValueExplicit("U{$fila}", $formulaTotalRedondeado, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_FORMULA);
+                        $sheet->getStyle("U{$fila}")->getNumberFormat()->setFormatCode('_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)');
+
+                        // V: Firma recibido (vacío)
+                        $sheet->setCellValue("V{$fila}", '');
 
                         $sheet->getRowDimension($fila)->setRowHeight(25);
 
                         // Aplicar estilos
-                        $sheet->getStyle("A{$fila}:R{$fila}")->applyFromArray([
+                        $sheet->getStyle("A{$fila}:V{$fila}")->applyFromArray([
                             'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
                             'alignment' => [
                                 'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -275,6 +315,17 @@ try {
                                 'vertical' => Alignment::VERTICAL_CENTER
                             ]
                         ]);
+
+                        // Asegurar borde específico para la columna FIRMA RECIBIDO (V)
+                        $sheet->getStyle("V{$fila}")->applyFromArray([
+                            'borders' => [
+                                'top' => ['borderStyle' => Border::BORDER_THIN],
+                                'right' => ['borderStyle' => Border::BORDER_THIN],
+                                'bottom' => ['borderStyle' => Border::BORDER_THIN],
+                                'left' => ['borderStyle' => Border::BORDER_THIN]
+                            ]
+                        ]);
+
 
                         $numero++;
                         $fila++;
@@ -310,10 +361,12 @@ try {
             ->setFitToHeight(0);
     }
 
-    // Colorear de rojo las columnas de deducciones: Tarjeta (H) a F.A / GAFET / COFIA (P)
+    // Colorear de rojo las columnas de deducciones: deducciones principales (H:N) y tarjeta/préstamo (P:R)
     if ($totalEmpleados > 0) {
         $ultimaFilaEmpleados = $fila - 1;
-        $sheet->getStyle("H7:P{$ultimaFilaEmpleados}")->getFont()->getColor()->setRGB('FF0000');
+        $sheet->getStyle("H7:N{$ultimaFilaEmpleados}")->getFont()->getColor()->setRGB('FF0000');
+        $sheet->getStyle("P7:P{$ultimaFilaEmpleados}")->getFont()->getColor()->setRGB('FF0000');
+        $sheet->getStyle("R7:R{$ultimaFilaEmpleados}")->getFont()->getColor()->setRGB('FF0000');
     }
 
     // Fila total (después del último empleado)
@@ -321,7 +374,7 @@ try {
     if ($totalEmpleados > 0) {
         $sheet->setCellValue("C{$filaTotales}", 'TOTAL');
 
-        $columnasSumar = ['E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q'];
+        $columnasSumar = ['E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U'];
         foreach ($columnasSumar as $col) {
             // Fórmula que deja vacío si la suma es 0
             $sheet->setCellValue(
@@ -330,17 +383,30 @@ try {
             );
         }
 
-        $sheet->getStyle("C{$filaTotales}:Q{$filaTotales}")->applyFromArray([
+        $sheet->getStyle("C{$filaTotales}:U{$filaTotales}")->applyFromArray([
             'font' => ['bold' => true],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'D9EAD3']],
             'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
         ]);
         $sheet->getStyle("C{$filaTotales}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        
+        // Asegurar borde específico para la columna TOTAL EFECTIVO REDONDEADO (U) en totales
+        $sheet->getStyle("U{$filaTotales}")->applyFromArray([
+            'borders' => [
+                'top' => ['borderStyle' => Border::BORDER_THIN],
+                'right' => ['borderStyle' => Border::BORDER_THIN],
+                'bottom' => ['borderStyle' => Border::BORDER_THIN],
+                'left' => ['borderStyle' => Border::BORDER_THIN]
+            ]
+        ]);
+
         $sheet->getRowDimension($filaTotales)->setRowHeight(24);
 
         // También poner en rojo las mismas columnas en la fila TOTAL
-        $sheet->getStyle("H{$filaTotales}:P{$filaTotales}")->getFont()->getColor()->setRGB('FF0000');
+        $sheet->getStyle("H{$filaTotales}:N{$filaTotales}")->getFont()->getColor()->setRGB('FF0000');
+        $sheet->getStyle("P{$filaTotales}:P{$filaTotales}")->getFont()->getColor()->setRGB('FF0000');
+        $sheet->getStyle("R{$filaTotales}:R{$filaTotales}")->getFont()->getColor()->setRGB('FF0000');
     }
 
     // Formato moneda
@@ -386,7 +452,7 @@ try {
     }
 
     // Título principal centrado
-    $sheet10->mergeCells('B1:R1');
+    $sheet10->mergeCells('B1:T1');
     $sheet10->setCellValue('B1', 'PRODUCCIÓN 10 LIBRAS');
     $sheet10->getStyle('B1')->applyFromArray([
         'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => '008000']],
@@ -394,7 +460,7 @@ try {
     ]);
 
     // Título empresa
-    $sheet10->mergeCells('B2:R2');
+    $sheet10->mergeCells('B2:T2');
     $sheet10->setCellValue('B2', 'CITRICOS SAAO S.A DE C.V');
     $sheet10->getStyle('B2')->applyFromArray([
         'font' => ['bold' => true, 'size' => 12, 'color' => ['rgb' => '008000']],
@@ -402,7 +468,7 @@ try {
     ]);
 
     // Título de nómina
-    $sheet10->mergeCells('B3:R3');
+    $sheet10->mergeCells('B3:T3');
     $sheet10->setCellValue('B3', $tituloNomina);
     $sheet10->getStyle('B3')->applyFromArray([
         'font' => ['bold' => true, 'size' => 14],
@@ -410,7 +476,7 @@ try {
     ]);
 
     // Información de semana
-    $sheet10->mergeCells('B4:R4');
+    $sheet10->mergeCells('B4:T4');
     $sheet10->setCellValue('B4', $tituloExcel);
     $sheet10->getStyle('B4')->applyFromArray([
         'font' => ['bold' => true, 'size' => 12],
@@ -422,7 +488,7 @@ try {
     $sheet10->getRowDimension('2')->setRowHeight(20);
     $sheet10->getRowDimension('3')->setRowHeight(25);
    
-    // Encabezados de la tabla
+    // Encabezados de la tabla (nuevo formato solicitado)
     $headers10 = [
         'A6' => '#',
         'B6' => 'CLAVE',
@@ -431,17 +497,21 @@ try {
         'E6' => "SUELDO\nNETO",
         'F6' => 'INCENTIVO',
         'G6' => 'EXTRA',
-        'H6' => 'TARJETA',
-        'I6' => 'PRÉSTAMO',
-        'J6' => 'INASISTENCIAS',
-        'K6' => 'UNIFORMES',
-        'L6' => 'INFONAVIT',
-        'M6' => 'ISR',
-        'N6' => 'IMSS',
-        'O6' => 'CHECADOR',
-        'P6' => "F.A /\nGAFET/\nCOFIA",
-        'Q6' => "SUELDO\nA\nCOBRAR",
-        'R6' => "FIRMA\nRECIBIDO"
+        'H6' => 'ISR',
+        'I6' => 'IMSS',
+        'J6' => 'INFONAVIT',
+        'K6' => 'INASISTENCIAS',
+        'L6' => 'UNIFORMES',
+        'M6' => 'CHECADOR',
+        'N6' => "F.A /\nGAFET/\nCOFIA",
+        'O6' => 'NETO A RECIBIR',
+        'P6' => 'TARJETA',
+        'Q6' => 'IMPORTE EN EFECTIVO',
+        'R6' => 'PRÉSTAMO',
+        'S6' => 'TOTAL A RECIBIR',
+        'T6' => 'REDONDEO',
+        'U6' => "TOTAL EFECTIVO\nREDONDEADO",
+        'V6' => "FIRMA\nRECIBIDO"
     ];
 
     $headerStyle10 = [
@@ -469,10 +539,11 @@ try {
     $sheet10->getColumnDimension('J')->setWidth(15);
 
     $anchoUniforme10 = 12;
-    foreach (['E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'O', 'P', 'Q'] as $col) {
+    foreach (['E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V'] as $col) {
         $sheet10->getColumnDimension($col)->setWidth($anchoUniforme10);
     }
-    $sheet10->getColumnDimension('R')->setWidth(15);
+    $sheet10->getColumnDimension('U')->setWidth(15);
+    $sheet10->getColumnDimension('V')->setWidth(15);
 
 
 
@@ -523,27 +594,7 @@ try {
                         // G: Extra (positivo)
                         $put10("G{$fila10}", $empleado['sueldo_extra_final'] ?? null);
 
-                        // H: Tarjeta (deducción negativa)
-                        if (isset($empleado['neto_pagar']) && $empleado['neto_pagar'] != 0) {
-                            $put10("H{$fila10}", -1 * (float)$empleado['neto_pagar']);
-                        }
-
-                        // I: Préstamo (deducción)
-                        if (isset($empleado['prestamo']) && $empleado['prestamo'] != 0) {
-                            $put10("I{$fila10}", -1 * (float)$empleado['prestamo']);
-                        }
-
-                        // J: Inasistencias (deducción)
-                        if (isset($empleado['inasistencias_descuento']) && $empleado['inasistencias_descuento'] != 0) {
-                            $put10("J{$fila10}", -1 * (float)$empleado['inasistencias_descuento']);
-                        }
-
-                        // K: Uniformes (deducción)
-                        if (isset($empleado['uniformes']) && $empleado['uniformes'] != 0) {
-                            $put10("K{$fila10}", -1 * (float)$empleado['uniformes']);
-                        }
-
-                        // Conceptos
+                        // Conceptos e imputación a nuevas columnas según nuevo formato
                         $conceptos10 = $empleado['conceptos'] ?? [];
                         $getConcepto10 = function ($codigo) use ($conceptos10) {
                             foreach ($conceptos10 as $c) {
@@ -554,34 +605,88 @@ try {
                             return 0;
                         };
 
-                        $infonavit10 = $getConcepto10('16');
-                        if ($infonavit10 != 0) $put10("L{$fila10}", -1 * $infonavit10);
-
+                        // H: ISR
                         $isr10 = $getConcepto10('45');
-                        if ($isr10 != 0) $put10("M{$fila10}", -1 * $isr10);
+                        if ($isr10 != 0) $put10("H{$fila10}", -1 * $isr10);
 
+                        // I: IMSS
                         $imss10 = $getConcepto10('52');
-                        if ($imss10 != 0) $put10("N{$fila10}", -1 * $imss10);
+                        if ($imss10 != 0) $put10("I{$fila10}", -1 * $imss10);
 
-                        // O: Checador (deducción)
+                        // J: INFONAVIT
+                        $infonavit10 = $getConcepto10('16');
+                        if ($infonavit10 != 0) $put10("J{$fila10}", -1 * $infonavit10);
+
+                        // K: Inasistencias
+                        if (isset($empleado['inasistencias_descuento']) && $empleado['inasistencias_descuento'] != 0) {
+                            $put10("K{$fila10}", -1 * (float)$empleado['inasistencias_descuento']);
+                        }
+
+                        // L: Uniformes
+                        if (isset($empleado['uniformes']) && $empleado['uniformes'] != 0) {
+                            $put10("L{$fila10}", -1 * (float)$empleado['uniformes']);
+                        }
+
+                        // M: Checador
                         if (isset($empleado['checador']) && $empleado['checador'] != 0) {
-                            $put10("O{$fila10}", -1 * (float)$empleado['checador']);
+                            $put10("M{$fila10}", -1 * (float)$empleado['checador']);
                         }
 
-                        // P: F.A / GAFET / COFIA (deducción)
+                        // N: F.A / GAFET / COFIA
                         if (isset($empleado['fa_gafet_cofia']) && $empleado['fa_gafet_cofia'] != 0) {
-                            $put10("P{$fila10}", -1 * (float)$empleado['fa_gafet_cofia']);
+                            $put10("N{$fila10}", -1 * (float)$empleado['fa_gafet_cofia']);
                         }
 
-                        // Q: Sueldo a cobrar (fórmula que suma ingresos y resta deducciones)
-                        $formula10 = "=SUM(E{$fila10}:G{$fila10}) - ABS(SUM(H{$fila10}:P{$fila10}))";
-                        $sheet10->setCellValueExplicit("Q{$fila10}", $formula10, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_FORMULA);
+                        // O: NETO A RECIBIR (autosuma de E:G menos deducciones H:N)
+                        $formulaNeto10 = "=SUM(E{$fila10}:G{$fila10}) - ABS(SUM(H{$fila10}:N{$fila10}))";
+                        $sheet10->setCellValueExplicit("O{$fila10}", $formulaNeto10, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_FORMULA);
+                        $sheet10->getStyle("O{$fila10}")->getNumberFormat()->setFormatCode('_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)');
+
+                        // P: Tarjeta (neto_pagar)
+                        if (isset($empleado['neto_pagar']) && $empleado['neto_pagar'] != 0) {
+                            $put10("P{$fila10}", -1 * (float)$empleado['neto_pagar']);
+                        }
+
+                        // Q: IMPORTE EN EFECTIVO = NETO A RECIBIR - TARJETA (usar autosuma)
+                        $formulaImporte10 = "=SUM(O{$fila10}, -ABS(P{$fila10}))";
+                        $sheet10->setCellValueExplicit("Q{$fila10}", $formulaImporte10, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_FORMULA);
                         $sheet10->getStyle("Q{$fila10}")->getNumberFormat()->setFormatCode('_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)');
+
+                        // R: Préstamo
+                        if (isset($empleado['prestamo']) && $empleado['prestamo'] != 0) {
+                            $put10("R{$fila10}", -1 * (float)$empleado['prestamo']);
+                        }
+
+                        // S: TOTAL A RECIBIR = IMPORTE EN EFECTIVO - PRÉSTAMO
+                        $formulaTotalRecibir10 = "=SUM(Q{$fila10}, -ABS(R{$fila10}))";
+                        $sheet10->setCellValueExplicit("S{$fila10}", $formulaTotalRecibir10, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_FORMULA);
+                        $sheet10->getStyle("S{$fila10}")->getNumberFormat()->setFormatCode('_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)');
+
+                        // T: REDONDEO (cantidad de redondeo desde JSON)
+                        $redondeoCantidad10 = isset($empleado['redondeo_cantidad']) ? (float)$empleado['redondeo_cantidad'] : 0;
+                        if ($redondeoCantidad10 != 0) {
+                            $sheet10->setCellValue("T{$fila10}", $redondeoCantidad10);
+                            $sheet10->getStyle("T{$fila10}")->getNumberFormat()->setFormatCode('"$"#,##0.00;"$"-#,##0.00');
+                            // Color rojo para cantidades negativas
+                            if ($redondeoCantidad10 < 0) {
+                                $sheet10->getStyle("T{$fila10}")->getFont()->getColor()->setRGB('FF0000');
+                            }
+                        } else {
+                            $sheet10->setCellValue("T{$fila10}", '');
+                        }
+
+                        // U: TOTAL EFECTIVO REDONDEADO (TOTAL A RECIBIR + REDONDEO)
+                        $formulaTotalRedondeado10 = "=ROUND(S{$fila10} + IF(T{$fila10}<>\"\", T{$fila10}, 0), 2)";
+                        $sheet10->setCellValueExplicit("U{$fila10}", $formulaTotalRedondeado10, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_FORMULA);
+                        $sheet10->getStyle("U{$fila10}")->getNumberFormat()->setFormatCode('_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)');
+
+                        // V: Firma recibido (vacío)
+                        $sheet10->setCellValue("V{$fila10}", '');
 
                         $sheet10->getRowDimension($fila10)->setRowHeight(25);
 
                         // Aplicar estilos
-                        $sheet10->getStyle("A{$fila10}:R{$fila10}")->applyFromArray([
+                        $sheet10->getStyle("A{$fila10}:V{$fila10}")->applyFromArray([
                             'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
                             'alignment' => [
                                 'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -595,6 +700,17 @@ try {
                                 'vertical' => Alignment::VERTICAL_CENTER
                             ]
                         ]);
+
+                        // Asegurar borde específico para la columna FIRMA RECIBIDO (V)
+                        $sheet10->getStyle("V{$fila10}")->applyFromArray([
+                            'borders' => [
+                                'top' => ['borderStyle' => Border::BORDER_THIN],
+                                'right' => ['borderStyle' => Border::BORDER_THIN],
+                                'bottom' => ['borderStyle' => Border::BORDER_THIN],
+                                'left' => ['borderStyle' => Border::BORDER_THIN]
+                            ]
+                        ]);
+
 
                         $numero10++;
                         $fila10++;
@@ -629,10 +745,12 @@ try {
             ->setFitToHeight(0);
     }
 
-    // Colorear de rojo las columnas de deducciones: Tarjeta (H) a F.A / GAFET / COFIA (P)
+    // Colorear de rojo las columnas de deducciones: deducciones principales (H:N) y tarjeta/préstamo (P:R)
     if ($total10 > 0) {
         $ultimaFilaEmpleados10 = $fila10 - 1;
-        $sheet10->getStyle("H7:P{$ultimaFilaEmpleados10}")->getFont()->getColor()->setRGB('FF0000');
+        $sheet10->getStyle("H7:N{$ultimaFilaEmpleados10}")->getFont()->getColor()->setRGB('FF0000');
+        $sheet10->getStyle("P7:P{$ultimaFilaEmpleados10}")->getFont()->getColor()->setRGB('FF0000');
+        $sheet10->getStyle("R7:R{$ultimaFilaEmpleados10}")->getFont()->getColor()->setRGB('FF0000');
     }
 
     // Fila total (después del último empleado)
@@ -640,7 +758,7 @@ try {
     if ($total10 > 0) {
         $sheet10->setCellValue("C{$filaTotales10}", 'TOTAL');
 
-        $columnasSumar10 = ['E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q'];
+        $columnasSumar10 = ['E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U'];
         foreach ($columnasSumar10 as $col) {
             // Fórmula que deja vacío si la suma es 0
             $sheet10->setCellValue(
@@ -649,17 +767,30 @@ try {
             );
         }
 
-        $sheet10->getStyle("C{$filaTotales10}:Q{$filaTotales10}")->applyFromArray([
+        $sheet10->getStyle("C{$filaTotales10}:U{$filaTotales10}")->applyFromArray([
             'font' => ['bold' => true],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'D9EAD3']],
             'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
         ]);
         $sheet10->getStyle("C{$filaTotales10}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        
+        // Asegurar borde específico para la columna TOTAL EFECTIVO REDONDEADO (U) en totales
+        $sheet10->getStyle("U{$filaTotales10}")->applyFromArray([
+            'borders' => [
+                'top' => ['borderStyle' => Border::BORDER_THIN],
+                'right' => ['borderStyle' => Border::BORDER_THIN],
+                'bottom' => ['borderStyle' => Border::BORDER_THIN],
+                'left' => ['borderStyle' => Border::BORDER_THIN]
+            ]
+        ]);
+
         $sheet10->getRowDimension($filaTotales10)->setRowHeight(24);
 
         // También poner en rojo las mismas columnas en la fila TOTAL
-        $sheet10->getStyle("H{$filaTotales10}:P{$filaTotales10}")->getFont()->getColor()->setRGB('FF0000');
+        $sheet10->getStyle("H{$filaTotales10}:N{$filaTotales10}")->getFont()->getColor()->setRGB('FF0000');
+        $sheet10->getStyle("P{$filaTotales10}:P{$filaTotales10}")->getFont()->getColor()->setRGB('FF0000');
+        $sheet10->getStyle("R{$filaTotales10}:R{$filaTotales10}")->getFont()->getColor()->setRGB('FF0000');
     }
 
     // Formato moneda
@@ -706,7 +837,7 @@ try {
     }
 
     // Título principal centrado
-    $sheetSinSeguro40->mergeCells('B1:R1');
+    $sheetSinSeguro40->mergeCells('B1:V1');
     $sheetSinSeguro40->setCellValue('B1', 'SIN SEGURO 40 LIBRAS');
     $sheetSinSeguro40->getStyle('B1')->applyFromArray([
         'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => '008000']],
@@ -714,7 +845,7 @@ try {
     ]);
 
     // Título de la empresa centrado
-    $sheetSinSeguro40->mergeCells('B2:R2');
+    $sheetSinSeguro40->mergeCells('B2:V2');
     $sheetSinSeguro40->setCellValue('B2', 'CITRICOS SAAO S.A DE C.V');
     $sheetSinSeguro40->getStyle('B2')->applyFromArray([
         'font' => ['bold' => true, 'size' => 12, 'color' => ['rgb' => '008000']],
@@ -722,7 +853,7 @@ try {
     ]);
 
     // Título de nómina
-    $sheetSinSeguro40->mergeCells('B3:R3');
+    $sheetSinSeguro40->mergeCells('B3:V3');
     $sheetSinSeguro40->setCellValue('B3', $tituloNomina);
     $sheetSinSeguro40->getStyle('B3')->applyFromArray([
         'font' => ['bold' => true, 'size' => 14],
@@ -730,7 +861,7 @@ try {
     ]);
 
     // Información de semana
-    $sheetSinSeguro40->mergeCells('B4:R4');
+    $sheetSinSeguro40->mergeCells('B4:V4');
     $sheetSinSeguro40->setCellValue('B4', $tituloExcel);
     $sheetSinSeguro40->getStyle('B4')->applyFromArray([
         'font' => ['bold' => true, 'size' => 12],
@@ -757,10 +888,14 @@ try {
     $sheetSinSeguro40->getColumnDimension('D')->setWidth(15);
     $sheetSinSeguro40->getColumnDimension('J')->setWidth(15);
 
-    foreach (['E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'O', 'P', 'Q'] as $col) {
+    foreach (['E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U'] as $col) {
         $sheetSinSeguro40->getColumnDimension($col)->setWidth($anchoUniforme);
     }
     $sheetSinSeguro40->getColumnDimension('R')->setWidth(15);
+    $sheetSinSeguro40->getColumnDimension('S')->setWidth($anchoUniforme);
+    $sheetSinSeguro40->getColumnDimension('T')->setWidth($anchoUniforme);
+    $sheetSinSeguro40->getColumnDimension('U')->setWidth(15);
+    $sheetSinSeguro40->getColumnDimension('V')->setWidth(15);
 
     // Variables para empleados sin seguro 40 libras
     $filaSinSeguro40 = 7;
@@ -802,22 +937,7 @@ try {
                         $putSinSeguro40("F{$filaSinSeguro40}", $empleado['incentivo'] ?? null);
                         $putSinSeguro40("G{$filaSinSeguro40}", $empleado['sueldo_extra_final'] ?? null);
 
-                        if (isset($empleado['neto_pagar']) && $empleado['neto_pagar'] != 0) {
-                            $putSinSeguro40("H{$filaSinSeguro40}", -1 * (float)$empleado['neto_pagar']);
-                        }
-
-                        if (isset($empleado['prestamo']) && $empleado['prestamo'] != 0) {
-                            $putSinSeguro40("I{$filaSinSeguro40}", -1 * (float)$empleado['prestamo']);
-                        }
-
-                        if (isset($empleado['inasistencias_descuento']) && $empleado['inasistencias_descuento'] != 0) {
-                            $putSinSeguro40("J{$filaSinSeguro40}", -1 * (float)$empleado['inasistencias_descuento']);
-                        }
-
-                        if (isset($empleado['uniformes']) && $empleado['uniformes'] != 0) {
-                            $putSinSeguro40("K{$filaSinSeguro40}", -1 * (float)$empleado['uniformes']);
-                        }
-
+                        // Conceptos e imputación a nuevas columnas según nuevo formato
                         $conceptosSinSeguro40 = $empleado['conceptos'] ?? [];
                         $getConceptoSinSeguro40 = function ($codigo) use ($conceptosSinSeguro40) {
                             foreach ($conceptosSinSeguro40 as $c) {
@@ -828,30 +948,87 @@ try {
                             return 0;
                         };
 
-                        $infonavitSinSeguro40 = $getConceptoSinSeguro40('16');
-                        if ($infonavitSinSeguro40 != 0) $putSinSeguro40("L{$filaSinSeguro40}", -1 * $infonavitSinSeguro40);
-
+                        // H: ISR
                         $isrSinSeguro40 = $getConceptoSinSeguro40('45');
-                        if ($isrSinSeguro40 != 0) $putSinSeguro40("M{$filaSinSeguro40}", -1 * $isrSinSeguro40);
+                        if ($isrSinSeguro40 != 0) $putSinSeguro40("H{$filaSinSeguro40}", -1 * $isrSinSeguro40);
 
+                        // I: IMSS
                         $imssSinSeguro40 = $getConceptoSinSeguro40('52');
-                        if ($imssSinSeguro40 != 0) $putSinSeguro40("N{$filaSinSeguro40}", -1 * $imssSinSeguro40);
+                        if ($imssSinSeguro40 != 0) $putSinSeguro40("I{$filaSinSeguro40}", -1 * $imssSinSeguro40);
 
+                        // J: INFONAVIT
+                        $infonavitSinSeguro40 = $getConceptoSinSeguro40('16');
+                        if ($infonavitSinSeguro40 != 0) $putSinSeguro40("J{$filaSinSeguro40}", -1 * $infonavitSinSeguro40);
+
+                        // K: Inasistencias
+                        if (isset($empleado['inasistencias_descuento']) && $empleado['inasistencias_descuento'] != 0) {
+                            $putSinSeguro40("K{$filaSinSeguro40}", -1 * (float)$empleado['inasistencias_descuento']);
+                        }
+
+                        // L: Uniformes
+                        if (isset($empleado['uniformes']) && $empleado['uniformes'] != 0) {
+                            $putSinSeguro40("L{$filaSinSeguro40}", -1 * (float)$empleado['uniformes']);
+                        }
+
+                        // M: Checador
                         if (isset($empleado['checador']) && $empleado['checador'] != 0) {
-                            $putSinSeguro40("O{$filaSinSeguro40}", -1 * (float)$empleado['checador']);
+                            $putSinSeguro40("M{$filaSinSeguro40}", -1 * (float)$empleado['checador']);
                         }
 
+                        // N: F.A / GAFET / COFIA
                         if (isset($empleado['fa_gafet_cofia']) && $empleado['fa_gafet_cofia'] != 0) {
-                            $putSinSeguro40("P{$filaSinSeguro40}", -1 * (float)$empleado['fa_gafet_cofia']);
+                            $putSinSeguro40("N{$filaSinSeguro40}", -1 * (float)$empleado['fa_gafet_cofia']);
                         }
 
-                        $formulaSinSeguro40 = "=SUM(E{$filaSinSeguro40}:G{$filaSinSeguro40}) - ABS(SUM(H{$filaSinSeguro40}:P{$filaSinSeguro40}))";
-                        $sheetSinSeguro40->setCellValueExplicit("Q{$filaSinSeguro40}", $formulaSinSeguro40, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_FORMULA);
+                        // O: NETO A RECIBIR (autosuma de E:G menos deducciones H:N)
+                        $formulaNetoSin40 = "=SUM(E{$filaSinSeguro40}:G{$filaSinSeguro40}) - ABS(SUM(H{$filaSinSeguro40}:N{$filaSinSeguro40}))";
+                        $sheetSinSeguro40->setCellValueExplicit("O{$filaSinSeguro40}", $formulaNetoSin40, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_FORMULA);
+                        $sheetSinSeguro40->getStyle("O{$filaSinSeguro40}")->getNumberFormat()->setFormatCode('_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)');
+
+                        // P: Tarjeta (neto_pagar)
+                        if (isset($empleado['neto_pagar']) && $empleado['neto_pagar'] != 0) {
+                            $putSinSeguro40("P{$filaSinSeguro40}", -1 * (float)$empleado['neto_pagar']);
+                        }
+
+                        // Q: IMPORTE EN EFECTIVO = NETO A RECIBIR - TARJETA (usar autosuma)
+                        $formulaImporteSin40 = "=SUM(O{$filaSinSeguro40}, -ABS(P{$filaSinSeguro40}))";
+                        $sheetSinSeguro40->setCellValueExplicit("Q{$filaSinSeguro40}", $formulaImporteSin40, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_FORMULA);
                         $sheetSinSeguro40->getStyle("Q{$filaSinSeguro40}")->getNumberFormat()->setFormatCode('_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)');
+
+                        // R: Préstamo
+                        if (isset($empleado['prestamo']) && $empleado['prestamo'] != 0) {
+                            $putSinSeguro40("R{$filaSinSeguro40}", -1 * (float)$empleado['prestamo']);
+                        }
+
+                        // S: TOTAL A RECIBIR = IMPORTE EN EFECTIVO - PRÉSTAMO
+                        $formulaTotalRecibirSin40 = "=SUM(Q{$filaSinSeguro40}, -ABS(R{$filaSinSeguro40}))";
+                        $sheetSinSeguro40->setCellValueExplicit("S{$filaSinSeguro40}", $formulaTotalRecibirSin40, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_FORMULA);
+                        $sheetSinSeguro40->getStyle("S{$filaSinSeguro40}")->getNumberFormat()->setFormatCode('_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)');
+
+                        // T: REDONDEO (cantidad de redondeo desde JSON)
+                        $redondeoCantidadSin40 = isset($empleado['redondeo_cantidad']) ? (float)$empleado['redondeo_cantidad'] : 0;
+                        if ($redondeoCantidadSin40 != 0) {
+                            $sheetSinSeguro40->setCellValue("T{$filaSinSeguro40}", $redondeoCantidadSin40);
+                            $sheetSinSeguro40->getStyle("T{$filaSinSeguro40}")->getNumberFormat()->setFormatCode('"$"#,##0.00;"$"-#,##0.00');
+                            // Color rojo para cantidades negativas
+                            if ($redondeoCantidadSin40 < 0) {
+                                $sheetSinSeguro40->getStyle("T{$filaSinSeguro40}")->getFont()->getColor()->setRGB('FF0000');
+                            }
+                        } else {
+                            $sheetSinSeguro40->setCellValue("T{$filaSinSeguro40}", '');
+                        }
+
+                        // U: TOTAL EFECTIVO REDONDEADO (TOTAL A RECIBIR + REDONDEO)
+                        $formulaTotalRedondeadoSin40 = "=ROUND(S{$filaSinSeguro40} + IF(T{$filaSinSeguro40}<>\"\", T{$filaSinSeguro40}, 0), 2)";
+                        $sheetSinSeguro40->setCellValueExplicit("U{$filaSinSeguro40}", $formulaTotalRedondeadoSin40, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_FORMULA);
+                        $sheetSinSeguro40->getStyle("U{$filaSinSeguro40}")->getNumberFormat()->setFormatCode('_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)');
+
+                        // V: (firma)
+                        $sheetSinSeguro40->setCellValue("V{$filaSinSeguro40}", '');
 
                         $sheetSinSeguro40->getRowDimension($filaSinSeguro40)->setRowHeight(25);
 
-                        $sheetSinSeguro40->getStyle("A{$filaSinSeguro40}:R{$filaSinSeguro40}")->applyFromArray([
+                        $sheetSinSeguro40->getStyle("A{$filaSinSeguro40}:V{$filaSinSeguro40}")->applyFromArray([
                             'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
                             'alignment' => [
                                 'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -865,6 +1042,17 @@ try {
                                 'vertical' => Alignment::VERTICAL_CENTER
                             ]
                         ]);
+
+                        // Asegurar borde específico para la columna FIRMA RECIBIDO (V)
+                        $sheetSinSeguro40->getStyle("V{$filaSinSeguro40}")->applyFromArray([
+                            'borders' => [
+                                'top' => ['borderStyle' => Border::BORDER_THIN],
+                                'right' => ['borderStyle' => Border::BORDER_THIN],
+                                'bottom' => ['borderStyle' => Border::BORDER_THIN],
+                                'left' => ['borderStyle' => Border::BORDER_THIN]
+                            ]
+                        ]);
+
 
                         $numeroSinSeguro40++;
                         $filaSinSeguro40++;
@@ -892,7 +1080,9 @@ try {
 
     if ($totalEmpleadosSinSeguro40 > 0) {
         $ultimaFilaEmpleadosSinSeguro40 = $filaSinSeguro40 - 1;
-        $sheetSinSeguro40->getStyle("H7:P{$ultimaFilaEmpleadosSinSeguro40}")->getFont()->getColor()->setRGB('FF0000');
+        $sheetSinSeguro40->getStyle("H7:N{$ultimaFilaEmpleadosSinSeguro40}")->getFont()->getColor()->setRGB('FF0000');
+        $sheetSinSeguro40->getStyle("P7:P{$ultimaFilaEmpleadosSinSeguro40}")->getFont()->getColor()->setRGB('FF0000');
+        $sheetSinSeguro40->getStyle("R7:R{$ultimaFilaEmpleadosSinSeguro40}")->getFont()->getColor()->setRGB('FF0000');
     }
 
     $filaTotalesSinSeguro40 = $filaSinSeguro40;
@@ -906,16 +1096,29 @@ try {
             );
         }
 
-        $sheetSinSeguro40->getStyle("C{$filaTotalesSinSeguro40}:Q{$filaTotalesSinSeguro40}")->applyFromArray([
+        $sheetSinSeguro40->getStyle("C{$filaTotalesSinSeguro40}:U{$filaTotalesSinSeguro40}")->applyFromArray([
             'font' => ['bold' => true],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'D9EAD3']],
             'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
         ]);
         $sheetSinSeguro40->getStyle("C{$filaTotalesSinSeguro40}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        
+        // Asegurar borde específico para la columna TOTAL EFECTIVO REDONDEADO (U) en totales
+        $sheetSinSeguro40->getStyle("U{$filaTotalesSinSeguro40}")->applyFromArray([
+            'borders' => [
+                'top' => ['borderStyle' => Border::BORDER_THIN],
+                'right' => ['borderStyle' => Border::BORDER_THIN],
+                'bottom' => ['borderStyle' => Border::BORDER_THIN],
+                'left' => ['borderStyle' => Border::BORDER_THIN]
+            ]
+        ]);
+
         $sheetSinSeguro40->getRowDimension($filaTotalesSinSeguro40)->setRowHeight(24);
 
-        $sheetSinSeguro40->getStyle("H{$filaTotalesSinSeguro40}:P{$filaTotalesSinSeguro40}")->getFont()->getColor()->setRGB('FF0000');
+        $sheetSinSeguro40->getStyle("H{$filaTotalesSinSeguro40}:N{$filaTotalesSinSeguro40}")->getFont()->getColor()->setRGB('FF0000');
+        $sheetSinSeguro40->getStyle("P{$filaTotalesSinSeguro40}:P{$filaTotalesSinSeguro40}")->getFont()->getColor()->setRGB('FF0000');
+        $sheetSinSeguro40->getStyle("R{$filaTotalesSinSeguro40}:R{$filaTotalesSinSeguro40}")->getFont()->getColor()->setRGB('FF0000');
     }
 
     if ($totalEmpleadosSinSeguro40 > 0) {
@@ -958,7 +1161,7 @@ try {
     }
 
     // Título principal centrado
-    $sheetSinSeguro10->mergeCells('B1:R1');
+    $sheetSinSeguro10->mergeCells('B1:V1');
     $sheetSinSeguro10->setCellValue('B1', 'SIN SEGURO 10 LIBRAS');
     $sheetSinSeguro10->getStyle('B1')->applyFromArray([
         'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => '008000']],
@@ -966,7 +1169,7 @@ try {
     ]);
 
     // Título de la empresa centrado
-    $sheetSinSeguro10->mergeCells('B2:R2');
+    $sheetSinSeguro10->mergeCells('B2:V2');
     $sheetSinSeguro10->setCellValue('B2', 'CITRICOS SAAO S.A DE C.V');
     $sheetSinSeguro10->getStyle('B2')->applyFromArray([
         'font' => ['bold' => true, 'size' => 12, 'color' => ['rgb' => '008000']],
@@ -974,7 +1177,7 @@ try {
     ]);
 
     // Título de nómina
-    $sheetSinSeguro10->mergeCells('B3:R3');
+    $sheetSinSeguro10->mergeCells('B3:V3');
     $sheetSinSeguro10->setCellValue('B3', $tituloNomina);
     $sheetSinSeguro10->getStyle('B3')->applyFromArray([
         'font' => ['bold' => true, 'size' => 14],
@@ -982,7 +1185,7 @@ try {
     ]);
 
     // Información de semana
-    $sheetSinSeguro10->mergeCells('B4:R4');
+    $sheetSinSeguro10->mergeCells('B4:V4');
     $sheetSinSeguro10->setCellValue('B4', $tituloExcel);
     $sheetSinSeguro10->getStyle('B4')->applyFromArray([
         'font' => ['bold' => true, 'size' => 12],
@@ -1009,10 +1212,10 @@ try {
     $sheetSinSeguro10->getColumnDimension('D')->setWidth(15);
     $sheetSinSeguro10->getColumnDimension('J')->setWidth(15);
 
-    foreach (['E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'O', 'P', 'Q'] as $col) {
+    foreach (['E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U'] as $col) {
         $sheetSinSeguro10->getColumnDimension($col)->setWidth($anchoUniforme);
     }
-    $sheetSinSeguro10->getColumnDimension('R')->setWidth(15);
+    $sheetSinSeguro10->getColumnDimension('V')->setWidth(15);
 
     // Variables para empleados sin seguro 10 libras
     $filaSinSeguro10 = 7;
@@ -1054,22 +1257,7 @@ try {
                         $putSinSeguro10("F{$filaSinSeguro10}", $empleado['incentivo'] ?? null);
                         $putSinSeguro10("G{$filaSinSeguro10}", $empleado['sueldo_extra_final'] ?? null);
 
-                        if (isset($empleado['neto_pagar']) && $empleado['neto_pagar'] != 0) {
-                            $putSinSeguro10("H{$filaSinSeguro10}", -1 * (float)$empleado['neto_pagar']);
-                        }
-
-                        if (isset($empleado['prestamo']) && $empleado['prestamo'] != 0) {
-                            $putSinSeguro10("I{$filaSinSeguro10}", -1 * (float)$empleado['prestamo']);
-                        }
-
-                        if (isset($empleado['inasistencias_descuento']) && $empleado['inasistencias_descuento'] != 0) {
-                            $putSinSeguro10("J{$filaSinSeguro10}", -1 * (float)$empleado['inasistencias_descuento']);
-                        }
-
-                        if (isset($empleado['uniformes']) && $empleado['uniformes'] != 0) {
-                            $putSinSeguro10("K{$filaSinSeguro10}", -1 * (float)$empleado['uniformes']);
-                        }
-
+                        // Conceptos e imputación a nuevas columnas según nuevo formato
                         $conceptosSinSeguro10 = $empleado['conceptos'] ?? [];
                         $getConceptoSinSeguro10 = function ($codigo) use ($conceptosSinSeguro10) {
                             foreach ($conceptosSinSeguro10 as $c) {
@@ -1080,30 +1268,87 @@ try {
                             return 0;
                         };
 
-                        $infonavitSinSeguro10 = $getConceptoSinSeguro10('16');
-                        if ($infonavitSinSeguro10 != 0) $putSinSeguro10("L{$filaSinSeguro10}", -1 * $infonavitSinSeguro10);
-
+                        // H: ISR
                         $isrSinSeguro10 = $getConceptoSinSeguro10('45');
-                        if ($isrSinSeguro10 != 0) $putSinSeguro10("M{$filaSinSeguro10}", -1 * $isrSinSeguro10);
+                        if ($isrSinSeguro10 != 0) $putSinSeguro10("H{$filaSinSeguro10}", -1 * $isrSinSeguro10);
 
+                        // I: IMSS
                         $imssSinSeguro10 = $getConceptoSinSeguro10('52');
-                        if ($imssSinSeguro10 != 0) $putSinSeguro10("N{$filaSinSeguro10}", -1 * $imssSinSeguro10);
+                        if ($imssSinSeguro10 != 0) $putSinSeguro10("I{$filaSinSeguro10}", -1 * $imssSinSeguro10);
 
+                        // J: INFONAVIT
+                        $infonavitSinSeguro10 = $getConceptoSinSeguro10('16');
+                        if ($infonavitSinSeguro10 != 0) $putSinSeguro10("J{$filaSinSeguro10}", -1 * $infonavitSinSeguro10);
+
+                        // K: Inasistencias
+                        if (isset($empleado['inasistencias_descuento']) && $empleado['inasistencias_descuento'] != 0) {
+                            $putSinSeguro10("K{$filaSinSeguro10}", -1 * (float)$empleado['inasistencias_descuento']);
+                        }
+
+                        // L: Uniformes
+                        if (isset($empleado['uniformes']) && $empleado['uniformes'] != 0) {
+                            $putSinSeguro10("L{$filaSinSeguro10}", -1 * (float)$empleado['uniformes']);
+                        }
+
+                        // M: Checador
                         if (isset($empleado['checador']) && $empleado['checador'] != 0) {
-                            $putSinSeguro10("O{$filaSinSeguro10}", -1 * (float)$empleado['checador']);
+                            $putSinSeguro10("M{$filaSinSeguro10}", -1 * (float)$empleado['checador']);
                         }
 
+                        // N: F.A / GAFET / COFIA
                         if (isset($empleado['fa_gafet_cofia']) && $empleado['fa_gafet_cofia'] != 0) {
-                            $putSinSeguro10("P{$filaSinSeguro10}", -1 * (float)$empleado['fa_gafet_cofia']);
+                            $putSinSeguro10("N{$filaSinSeguro10}", -1 * (float)$empleado['fa_gafet_cofia']);
                         }
 
-                        $formulaSinSeguro10 = "=SUM(E{$filaSinSeguro10}:G{$filaSinSeguro10}) - ABS(SUM(H{$filaSinSeguro10}:P{$filaSinSeguro10}))";
-                        $sheetSinSeguro10->setCellValueExplicit("Q{$filaSinSeguro10}", $formulaSinSeguro10, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_FORMULA);
+                        // O: NETO A RECIBIR (autosuma de E:G menos deducciones H:N)
+                        $formulaNetoSin10 = "=SUM(E{$filaSinSeguro10}:G{$filaSinSeguro10}) - ABS(SUM(H{$filaSinSeguro10}:N{$filaSinSeguro10}))";
+                        $sheetSinSeguro10->setCellValueExplicit("O{$filaSinSeguro10}", $formulaNetoSin10, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_FORMULA);
+                        $sheetSinSeguro10->getStyle("O{$filaSinSeguro10}")->getNumberFormat()->setFormatCode('_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)');
+
+                        // P: Tarjeta (neto_pagar)
+                        if (isset($empleado['neto_pagar']) && $empleado['neto_pagar'] != 0) {
+                            $putSinSeguro10("P{$filaSinSeguro10}", -1 * (float)$empleado['neto_pagar']);
+                        }
+
+                        // Q: IMPORTE EN EFECTIVO = NETO A RECIBIR - TARJETA (usar autosuma)
+                        $formulaImporteSin10 = "=SUM(O{$filaSinSeguro10}, -ABS(P{$filaSinSeguro10}))";
+                        $sheetSinSeguro10->setCellValueExplicit("Q{$filaSinSeguro10}", $formulaImporteSin10, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_FORMULA);
                         $sheetSinSeguro10->getStyle("Q{$filaSinSeguro10}")->getNumberFormat()->setFormatCode('_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)');
+
+                        // R: Préstamo
+                        if (isset($empleado['prestamo']) && $empleado['prestamo'] != 0) {
+                            $putSinSeguro10("R{$filaSinSeguro10}", -1 * (float)$empleado['prestamo']);
+                        }
+
+                        // S: TOTAL A RECIBIR = IMPORTE EN EFECTIVO - PRÉSTAMO
+                        $formulaTotalRecibirSin10 = "=SUM(Q{$filaSinSeguro10}, -ABS(R{$filaSinSeguro10}))";
+                        $sheetSinSeguro10->setCellValueExplicit("S{$filaSinSeguro10}", $formulaTotalRecibirSin10, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_FORMULA);
+                        $sheetSinSeguro10->getStyle("S{$filaSinSeguro10}")->getNumberFormat()->setFormatCode('_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)');
+
+                        // T: REDONDEO (cantidad de redondeo desde JSON)
+                        $redondeoCantidadSin10 = isset($empleado['redondeo_cantidad']) ? (float)$empleado['redondeo_cantidad'] : 0;
+                        if ($redondeoCantidadSin10 != 0) {
+                            $sheetSinSeguro10->setCellValue("T{$filaSinSeguro10}", $redondeoCantidadSin10);
+                            $sheetSinSeguro10->getStyle("T{$filaSinSeguro10}")->getNumberFormat()->setFormatCode('"$"#,##0.00;"$"-#,##0.00');
+                            // Color rojo para cantidades negativas
+                            if ($redondeoCantidadSin10 < 0) {
+                                $sheetSinSeguro10->getStyle("T{$filaSinSeguro10}")->getFont()->getColor()->setRGB('FF0000');
+                            }
+                        } else {
+                            $sheetSinSeguro10->setCellValue("T{$filaSinSeguro10}", '');
+                        }
+
+                        // U: TOTAL EFECTIVO REDONDEADO (TOTAL A RECIBIR + REDONDEO)
+                        $formulaTotalRedondeadoSin10 = "=ROUND(S{$filaSinSeguro10} + IF(T{$filaSinSeguro10}<>\"\", T{$filaSinSeguro10}, 0), 2)";
+                        $sheetSinSeguro10->setCellValueExplicit("U{$filaSinSeguro10}", $formulaTotalRedondeadoSin10, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_FORMULA);
+                        $sheetSinSeguro10->getStyle("U{$filaSinSeguro10}")->getNumberFormat()->setFormatCode('_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)');
+
+                        // V: Firma
+                        $sheetSinSeguro10->setCellValue("V{$filaSinSeguro10}", '');
 
                         $sheetSinSeguro10->getRowDimension($filaSinSeguro10)->setRowHeight(25);
 
-                        $sheetSinSeguro10->getStyle("A{$filaSinSeguro10}:R{$filaSinSeguro10}")->applyFromArray([
+                        $sheetSinSeguro10->getStyle("A{$filaSinSeguro10}:V{$filaSinSeguro10}")->applyFromArray([
                             'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
                             'alignment' => [
                                 'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -1117,6 +1362,17 @@ try {
                                 'vertical' => Alignment::VERTICAL_CENTER
                             ]
                         ]);
+
+                        // Asegurar borde específico para la columna FIRMA RECIBIDO (V)
+                        $sheetSinSeguro10->getStyle("V{$filaSinSeguro10}")->applyFromArray([
+                            'borders' => [
+                                'top' => ['borderStyle' => Border::BORDER_THIN],
+                                'right' => ['borderStyle' => Border::BORDER_THIN],
+                                'bottom' => ['borderStyle' => Border::BORDER_THIN],
+                                'left' => ['borderStyle' => Border::BORDER_THIN]
+                            ]
+                        ]);
+
 
                         $numeroSinSeguro10++;
                         $filaSinSeguro10++;
@@ -1144,7 +1400,9 @@ try {
 
     if ($totalEmpleadosSinSeguro10 > 0) {
         $ultimaFilaEmpleadosSinSeguro10 = $filaSinSeguro10 - 1;
-        $sheetSinSeguro10->getStyle("H7:P{$ultimaFilaEmpleadosSinSeguro10}")->getFont()->getColor()->setRGB('FF0000');
+        $sheetSinSeguro10->getStyle("H7:N{$ultimaFilaEmpleadosSinSeguro10}")->getFont()->getColor()->setRGB('FF0000');
+        $sheetSinSeguro10->getStyle("P7:P{$ultimaFilaEmpleadosSinSeguro10}")->getFont()->getColor()->setRGB('FF0000');
+        $sheetSinSeguro10->getStyle("R7:R{$ultimaFilaEmpleadosSinSeguro10}")->getFont()->getColor()->setRGB('FF0000');
     }
 
     $filaTotalesSinSeguro10 = $filaSinSeguro10;
@@ -1158,16 +1416,29 @@ try {
             );
         }
 
-        $sheetSinSeguro10->getStyle("C{$filaTotalesSinSeguro10}:Q{$filaTotalesSinSeguro10}")->applyFromArray([
+        $sheetSinSeguro10->getStyle("C{$filaTotalesSinSeguro10}:U{$filaTotalesSinSeguro10}")->applyFromArray([
             'font' => ['bold' => true],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'D9EAD3']],
             'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
         ]);
         $sheetSinSeguro10->getStyle("C{$filaTotalesSinSeguro10}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        
+        // Asegurar borde específico para la columna TOTAL EFECTIVO REDONDEADO (U) en totales
+        $sheetSinSeguro10->getStyle("U{$filaTotalesSinSeguro10}")->applyFromArray([
+            'borders' => [
+                'top' => ['borderStyle' => Border::BORDER_THIN],
+                'right' => ['borderStyle' => Border::BORDER_THIN],
+                'bottom' => ['borderStyle' => Border::BORDER_THIN],
+                'left' => ['borderStyle' => Border::BORDER_THIN]
+            ]
+        ]);
+
         $sheetSinSeguro10->getRowDimension($filaTotalesSinSeguro10)->setRowHeight(24);
 
-        $sheetSinSeguro10->getStyle("H{$filaTotalesSinSeguro10}:P{$filaTotalesSinSeguro10}")->getFont()->getColor()->setRGB('FF0000');
+        $sheetSinSeguro10->getStyle("H{$filaTotalesSinSeguro10}:N{$filaTotalesSinSeguro10}")->getFont()->getColor()->setRGB('FF0000');
+        $sheetSinSeguro10->getStyle("P{$filaTotalesSinSeguro10}:P{$filaTotalesSinSeguro10}")->getFont()->getColor()->setRGB('FF0000');
+        $sheetSinSeguro10->getStyle("R{$filaTotalesSinSeguro10}:R{$filaTotalesSinSeguro10}")->getFont()->getColor()->setRGB('FF0000');
     }
 
     if ($totalEmpleadosSinSeguro10 > 0) {

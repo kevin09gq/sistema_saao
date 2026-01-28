@@ -5,8 +5,39 @@ $conn = $conexion;
 header('Content-Type: application/json; charset=utf-8');
 
 try {
+    $id_empresa = isset($_GET['id_empresa']) ? intval($_GET['id_empresa']) : 0;
     $id_departamento = isset($_GET['id_departamento']) ? intval($_GET['id_departamento']) : 0;
-    if ($id_departamento > 0) {
+    
+    if ($id_empresa > 0 && $id_departamento > 0) {
+        $sql = "SELECT h.semana, h.anio,
+                   SUM(h.vacaciones) AS vacaciones,
+                   SUM(h.ausencias) AS ausencias,
+                   SUM(h.incapacidades) AS incapacidades,
+                   SUM(h.dias_trabajados) AS dias_trabajados
+            FROM historial_incidencias_semanal h
+            JOIN info_empleados e ON h.empleado_id = e.id_empleado
+            WHERE h.id_empresa = ? AND e.id_departamento = ?
+            GROUP BY h.semana, h.anio
+            ORDER BY h.anio DESC, h.semana DESC";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("ii", $id_empresa, $id_departamento);
+        $stmt->execute();
+        $result = $stmt->get_result();
+    } else if ($id_empresa > 0) {
+        $sql = "SELECT h.semana, h.anio,
+                   SUM(h.vacaciones) AS vacaciones,
+                   SUM(h.ausencias) AS ausencias,
+                   SUM(h.incapacidades) AS incapacidades,
+                   SUM(h.dias_trabajados) AS dias_trabajados
+            FROM historial_incidencias_semanal h
+            WHERE h.id_empresa = ?
+            GROUP BY h.semana, h.anio
+            ORDER BY h.anio DESC, h.semana DESC";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $id_empresa);
+        $stmt->execute();
+        $result = $stmt->get_result();
+    } else if ($id_departamento > 0) {
         $sql = "SELECT h.semana, h.anio,
                    SUM(h.vacaciones) AS vacaciones,
                    SUM(h.ausencias) AS ausencias,
@@ -22,14 +53,14 @@ try {
         $stmt->execute();
         $result = $stmt->get_result();
     } else {
-        $sql = "SELECT semana, anio,
-                   SUM(vacaciones) AS vacaciones,
-                   SUM(ausencias) AS ausencias,
-                   SUM(incapacidades) AS incapacidades,
-                   SUM(dias_trabajados) AS dias_trabajados
-            FROM historial_incidencias_semanal
-            GROUP BY semana, anio
-            ORDER BY anio DESC, semana DESC";
+        $sql = "SELECT h.semana, h.anio,
+                   SUM(h.vacaciones) AS vacaciones,
+                   SUM(h.ausencias) AS ausencias,
+                   SUM(h.incapacidades) AS incapacidades,
+                   SUM(h.dias_trabajados) AS dias_trabajados
+            FROM historial_incidencias_semanal h
+            GROUP BY h.semana, h.anio
+            ORDER BY h.anio DESC, h.semana DESC";
         $result = $conn->query($sql);
     }
     

@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="../css/conceptsModal.css">
     <link rel="stylesheet" href="../css/prestamosModal.css">
     <link rel="stylesheet" href="../css/conceptos_totales.css">
+    <link rel="stylesheet" href="../css/ticket_manual_confianza.css">
     <!-- SweetAlert2 CSS -->
     <script src="<?= SWEETALERT ?>"></script>
 
@@ -28,7 +29,7 @@
 </head>
 
 <body>
-      <?php
+    <?php
     // Incluir el navbar (config.php ya fue incluido en el head)
     include "../../public/views/navbar.php"
     ?>
@@ -43,9 +44,15 @@
             <form id="form_excel" enctype="multipart/form-data" class="form-nomina-inline">
                 <div>
                     <label for="archivo_excel">
-                        <i class="bi bi-file-earmark-excel-fill"></i> Lista de Raya
+                        <i class="bi bi-file-earmark-excel-fill"></i> Lista de Raya Citricos SAAO
                     </label>
                     <input type="file" id="file_lista_raya" name="archivo_excel" accept=".xls,.xlsx" required>
+                </div>
+                <div>
+                    <label for="archivo_excel3">
+                        <i class="bi bi-file-earmark-excel-fill"></i> Lista de Raya SB Group <span class="text-muted"></span>
+                    </label>
+                    <input type="file" id="file_lista_raya2" name="archivo_excel3" accept=".xls,.xlsx">
                 </div>
                 <div>
                     <label for="archivo_excel2">
@@ -79,9 +86,14 @@
                 <button class="btn btn-outline-primary btn-suma" type="button" id="btn_conceptos_totales" title="Totales por concepto" aria-label="Totales por concepto">
                     <i class="bi bi-calculator"></i>
                 </button>
-                <button class="btn-ticket-zebra" id="btn_ticket_pdf" title="Ticket Zebra">
-                    <i class="bi bi-printer"></i>
-                    Ticket Zebra
+                <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf" title="Descargar Ticket">
+                    <i class="bi bi-ticket-perforated"></i>
+                </button>
+                <button class="btn btn-outline-secondary btn-ticket-zebra" id="btn_ticket_manual" title="Descargar Ticket Manual">
+                    <i class="bi bi-ticket-perforated"></i>
+                </button>
+                <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta" aria-label="Quitar tarjeta">
+                    <i class="bi bi-credit-card-2-back"></i>
                 </button>
 
 
@@ -94,7 +106,7 @@
                 <select class="filtro-departamento" id="filtro-departamento">
                 </select>
 
-                <select class="filtro-departamento" id="filtro-empresa">               
+                <select class="filtro-departamento" id="filtro-empresa">
                 </select>
 
 
@@ -114,7 +126,7 @@
                 <button class="btn btn-outline-success me-2" id="btn_export_excel" title="Exportar a Excel">
                     <i class="bi bi-file-earmark-excel"></i> Excel
                 </button>
-             
+
                 <button class="btn btn-outline-danger me-2" id="btn_export_pdf_reporte" title="Exportar a PDF">
                     <i class="bi bi-file-earmark-pdf"></i> Reporte
                 </button>
@@ -123,6 +135,9 @@
                 </button>
                 <button class="btn btn-outline-warning" id="btn_limpiar_datos" title="Subir Nuevamente">
                     <i class="bi bi-trash"></i> Subir Nuevamente
+                </button>
+                <button class="btn btn-outline-info" id="btnReasignarDepartamento" title="Reasignar Departamentos">
+                    <i class="bi bi-arrow-left-right"></i> Reasignar
                 </button>
 
 
@@ -139,19 +154,25 @@
                             <th rowspan="2">SUELDO <br> SEMANAL</th>
                             <th rowspan="2">EXTRAS</th>
                             <th rowspan="2">Total Percepciones</th>
-                            <th rowspan="2">RETARDOS</th>
                             <th rowspan="2">ISR</th>
                             <th rowspan="2">IMSS</th>
-                            <th rowspan="2">AJUSTES <br> AL SUB</th>
                             <th rowspan="2">INFONAVIT</th>
+                            <th rowspan="2">AJUSTES <br> AL SUB</th>
+                            <th rowspan="2">AUSENTISMO</th>
                             <th rowspan="2">PERMISO</th>
-                            <th rowspan="2">INASISTENCIAS</th>
+                            <th rowspan="2">RETARDOS</th>
                             <th rowspan="2">UNIFORMES</th>
                             <th rowspan="2">CHECADOR</th>
+                            <th rowspan="2">F.A/GAFET/COFIA</th>
                             <th rowspan="2">TOTAL DE <br> DEDUCCIONES</th>
-                            <th rowspan="2">PRÉSTAMO</th>
-                            <th rowspan="2">DISPERSION DE TARJETA</th>
                             <th rowspan="2">NETO A RECIBIR</th>
+                            <th rowspan="2">DISPERSION DE <br> TARJETA</th>
+                            <th rowspan="2">IMPORTE EN EFECTIVO</th>
+                            <th rowspan="2">PRÉSTAMO</th>
+                            <th rowspan="2">TOTAL A <br>RECIBIR</th>
+                            <th rowspan="2">REDONDEADO</th>
+                            <th rowspan="2">TOTAL EFECTIVO <br> REDONDEADO</th>
+
                         </tr>
                     </thead>
                     <tbody id="tabla-nomina-body">
@@ -177,6 +198,8 @@
     <?php include 'modalSeleccionarEmpleados.php'; ?>
     <?php include 'modalConceptosTotales.php'; ?>
     <?php include 'modalExportExcel.php'; ?>
+    <?php include 'modal_seleccion_tickets_confianza.php'; ?>
+    <?php include 'modalReasignarDepartamento.php'; ?>
 
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
@@ -184,6 +207,7 @@
     <script src="<?= BOOTSTRAP_JS ?>"></script>
 
     <!-- Script personalizado -->
+
     <script src="../js/storage.js"></script>
     <script src="../js/process_excel.js"></script>
     <script src="../js/showDataTable.js"></script>
@@ -193,14 +217,17 @@
     <script src="../js/newConcepts.js"></script>
     <script src="../js/editarConcepts.js"></script>
     <script src="../js/eventos.js"></script>
-    <script src="../js/uniformes.js"></script>
-    <script src="../js/permisos.js"></script>
+    <script src="../js/permisosUniformes.js"></script>
     <script src="../js/saveNominaConfianza.js"></script>
     <script src="../js/export_nomina_excel.js"></script>
     <script src="../js/seleccionar_empleados.js"></script>
     <script src="../js/conceptos_totales.js"></script>
     <script src="../js/export_encabezado_pdf.js"></script>
     <script src="../js/ticket_pdf.js"></script>
+    <!-- Eliminar tarjeta: asigna 0 a la propiedad tarjeta de todos los empleados -->
+    <script src="../js/eliminarTarjeta.js"></script>
+<script src="../js/ticket_seleccion_confianza.js"></script>
+<script src="../js/reasignarDepartamento.js"></script>
 
 </body>
 

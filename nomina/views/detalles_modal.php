@@ -446,6 +446,10 @@
                                         <i class="bi bi-info-circle"></i>
 
                                     </small>
+                                    <div class="form-check form-switch mt-3 d-flex justify-content-center">
+                                        <input class="form-check-input" type="checkbox" id="mod-redondeo-check">
+                                        <label class="form-check-label ms-2" for="mod-redondeo-check">Aplicar redondeo</label>
+                                    </div>
                                 </div>
                             </div>
                         </div>

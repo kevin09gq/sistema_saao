@@ -472,12 +472,12 @@ try {
             $pdf->Ln(2);
         }
 
-        // Mostrar Otras Deducciones si existen (mostrar total y desglose de las deducciones que lo componen)
+        // Mostrar F.A/GAFET/COFIA si existen (mostrar total y desglose de las deducciones que lo componen)
         if (!empty($deduccionesAdicionales) && $totalDeduccionesAdicionales > 0) {
             $pdf->Ln(1);
             $pdf->SetX(110);
             $pdf->SetFont('helvetica', 'B', 9);
-            $pdf->Cell(60, 6, 'Otras Deducciones', 0, 0, 'L');
+            $pdf->Cell(60, 6, 'F.A/GAFET/COFIA', 0, 0, 'L');
             $pdf->SetFont('dejavusansmono', 'B', 9);
             $pdf->Cell(30, 6, formatoMoneda($totalDeduccionesAdicionales), 0, 1, 'R');
             $pdf->SetX(110);
@@ -512,44 +512,91 @@ try {
         $alturaMaxima = max($alturaColumnaIzquierda, $alturaColumnaDerecha);
         $pdf->SetY($inicioY + $alturaMaxima + 8);
 
-        // Calcular sueldo neto y mostrar "Sueldo a pagar"
+        // Calcular sueldo neto y aplicar redondeo
         $sueldoNeto = $totalPercepcionesEmpleado - $totalDeduccionesEmpleado;
-
+        
+        // Obtener el redondeo (si existe)
+        $redondeo = isset($empleado['redondeo']) ? floatval($empleado['redondeo']) : 0;
+        
+        // Aplicar redondeo al sueldo a pagar si está activo
+        $sueldoRedondeado = $sueldoNeto;
+        $diferenciaRedondeo = 0;
+        
+        if ($redondeo != 0) {
+            $sueldoRedondeado = round($sueldoNeto);
+            $diferenciaRedondeo = $sueldoRedondeado - $sueldoNeto;
+        }
+        
         // Línea superior del neto a pagar más delgada
         $pdf->SetLineWidth(0.1);
         $pdf->Line(10, $pdf->GetY(), 200, $pdf->GetY());
         $pdf->Ln(2);
 
-        // Color según el resultado
-        if ($sueldoNeto >= 0) {
-            $pdf->SetTextColor(0, 100, 0);
-        } else {
-            $pdf->SetTextColor(200, 0, 0);
-        }
+        // Solo mostrar desglose detallado si hay redondeo aplicado
+        if ($redondeo != 0 && $sueldoNeto != $sueldoRedondeado) {
+            // Mostrar cálculo completo del sueldo
+            $pdf->SetTextColor(0, 0, 0);
+            $pdf->SetFont('dejavusans', '', 10);
+            $pdf->Cell(130, 7, 'Sueldo antes de redondeo:', 0, 0, 'R');
+            $pdf->SetFont('dejavusansmono', '', 10);
+            $pdf->Cell(60, 7, formatoMoneda($sueldoNeto), 0, 1, 'R');
+            
+            // Mostrar redondeo aplicado
+            $pdf->SetFont('dejavusans', '', 10);
+            $pdf->Cell(130, 7, 'Redondeo aplicado:', 0, 0, 'R');
+            $pdf->SetFont('dejavusansmono', '', 10);
+            $pdf->Cell(60, 7, formatoMoneda($diferenciaRedondeo), 0, 1, 'R');
+            
+            // Línea separadora
+            $pdf->Ln(1);
+            $pdf->SetLineWidth(0.3);
+            $pdf->Line(100, $pdf->GetY(), 200, $pdf->GetY());
+            $pdf->Ln(2);
+            
+            // Mostrar sueldo final redondeado
+            if ($sueldoRedondeado >= 0) {
+                $pdf->SetTextColor(0, 100, 0);
+            } else {
+                $pdf->SetTextColor(200, 0, 0);
+            }
 
-        $pdf->SetFillColor(250, 250, 250);
-        // Texto en Helvetica Bold 11pt, monto en DejaVu Sans Mono Bold 11pt
-        $pdf->SetFont('helvetica', 'B', 11);
-        $pdf->Cell(130, 10, 'Sueldo a pagar', 0, 0, 'R', true);
-        $pdf->SetFont('dejavusansmono', 'B', 11);
-        $pdf->Cell(60, 10, formatoMoneda($sueldoNeto), 0, 1, 'R', true);
-        $pdf->SetTextColor(0, 0, 0);
+            $pdf->SetFillColor(250, 250, 250);
+            $pdf->SetFont('helvetica', 'B', 12);
+            $pdf->Cell(130, 12, 'SUELDO FINAL', 0, 0, 'R', true);
+            $pdf->SetFont('dejavusansmono', 'B', 12);
+            $pdf->Cell(60, 12, formatoMoneda($sueldoRedondeado), 0, 1, 'R', true);
+            $pdf->SetTextColor(0, 0, 0);
+        } else {
+            // Mostrar solo el sueldo final sin desglose
+            if ($sueldoRedondeado >= 0) {
+                $pdf->SetTextColor(0, 100, 0);
+            } else {
+                $pdf->SetTextColor(200, 0, 0);
+            }
+
+            $pdf->SetFillColor(250, 250, 250);
+            $pdf->SetFont('helvetica', 'B', 11);
+            $pdf->Cell(130, 10, 'Sueldo a pagar', 0, 0, 'R', true);
+            $pdf->SetFont('dejavusansmono', 'B', 11);
+            $pdf->Cell(60, 10, formatoMoneda($sueldoRedondeado), 0, 1, 'R', true);
+            $pdf->SetTextColor(0, 0, 0);
+        }
 
         // Línea inferior del neto a pagar más delgada
         $pdf->SetLineWidth(0.2);
         $pdf->Line(10, $pdf->GetY() + 1, 200, $pdf->GetY() + 1);
         $pdf->Ln(3);
 
-        // Acumular totales generales
+        // Acumular totales generales usando el sueldo REDONDEADO
         $totalGeneralPercepciones += $totalPercepcionesEmpleado;
         $totalGeneralDeducciones += $totalDeduccionesEmpleado;
-        $totalGeneralNeto += $sueldoNeto;
+        $totalGeneralNeto += $sueldoRedondeado;  // <-- USAR SUELDO REDONDEADO
 
         // Acumular totales por departamento y por concepto
         if (isset($deptTotals[$idDepto])) {
             $deptTotals[$idDepto]['percepciones'] += $totalPercepcionesEmpleado;
             $deptTotals[$idDepto]['deducciones'] += $totalDeduccionesEmpleado;
-            $deptTotals[$idDepto]['neto'] += $sueldoNeto;
+            $deptTotals[$idDepto]['neto'] += $sueldoRedondeado;  // <-- USAR SUELDO REDONDEADO
             $deptTotals[$idDepto]['count'] += 1;
 
             // Percepciones por concepto
@@ -566,8 +613,8 @@ try {
                 }
             }
             if (!empty($deduccionesAdicionales) && is_array($deduccionesAdicionales)) {
-                // Agregar todas las deducciones adicionales como UNA entrada: "Otras Deducciones"
-                $deptTotals[$idDepto]['deducciones_by_concept']['Otras Deducciones'] = ($deptTotals[$idDepto]['deducciones_by_concept']['Otras Deducciones'] ?? 0) + floatval($totalDeduccionesAdicionales);
+                // Agregar todas las deducciones adicionales como UNA entrada: "F.A/GAFET/COFIA"
+                $deptTotals[$idDepto]['deducciones_by_concept']['F.A/GAFET/COFIA'] = ($deptTotals[$idDepto]['deducciones_by_concept']['F.A/GAFET/COFIA'] ?? 0) + floatval($totalDeduccionesAdicionales);
             }
         }
     }
@@ -578,7 +625,7 @@ try {
 
         // Título del resumen
         $pdf->SetFont('helvetica', 'B', 16);
-        $pdf->Cell(0, 12, 'RESUMEN GENERAL - ADMINISTRACION Y PRODUCCION', 0, 1, 'C');
+        $pdf->Cell(0, 12, 'RESUMEN GENERAL', 0, 1, 'C');
         $pdf->Ln(10);
 
         // Encabezados de tabla

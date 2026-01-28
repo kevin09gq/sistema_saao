@@ -1,7 +1,25 @@
 // Variable global para guardar la fila seleccionada
 var filaSeleccionada = null;
 
-// Función para calcular Total Percepciones
+// Función helper para buscar empleado por clave y id_empresa
+function buscarEmpleadoPorClaveYEmpresa(clave, idEmpresa = null) {
+    if (!clave) return null;
+    
+    let empleado = null;
+    jsonNominaConfianza.departamentos.forEach(dept => {
+        (dept.empleados || []).forEach(emp => { 
+            const claveCoincide = String(emp.clave).trim() === String(clave).trim();
+            const empresaCoincide = idEmpresa === null || String(emp.id_empresa).trim() === String(idEmpresa).trim();
+            
+            if (claveCoincide && empresaCoincide) {
+                empleado = emp;
+            }
+        });
+    });
+    return empleado;
+}
+
+/* Función para calcular Total Percepciones
 function calcularTotalPercepciones(empleado) {
     const sueldo = parseFloat(empleado.sueldo_semanal) || 0;
     const extras = parseFloat(empleado.sueldo_extra_total) || 0;
@@ -26,7 +44,8 @@ function calcularTotalDeducciones(empleado) {
     const inasistencia = parseFloat(empleado.inasistencia) || 0;
     const uniformes = parseFloat(empleado.uniformes) || 0;
     const checador = parseFloat(empleado.checador) || 0;
-    
+    const faGafetCofia = parseFloat(empleado.fa_gafet_cofia) || 0;
+
     // Sumar deducciones_adicionales (deducciones personalizadas)
     let deduccionesAdicionales = 0;
     if (Array.isArray(empleado.deducciones_adicionales)) {
@@ -35,10 +54,10 @@ function calcularTotalDeducciones(empleado) {
         });
     }
 
-    const total = retardos + isr + imss + ajusteSub + infonavit + permiso + inasistencia + uniformes + checador + deduccionesAdicionales;
+    const total = retardos + isr + imss + ajusteSub + infonavit + permiso + inasistencia + uniformes + checador + faGafetCofia + deduccionesAdicionales;
     return total.toFixed(2);
 }
-
+*/
 
 
 // ========================================
@@ -47,21 +66,23 @@ function calcularTotalDeducciones(empleado) {
 // - Los empleados del departamento "sin seguro" no tienen ISR, IMSS, INFONAVIT, Ajuste al Sub ni Tarjeta
 // - Esta función deshabilita esos inputs y los pone en 0
 
-function configurarInputsSinSeguro(clave) {
+function configurarInputsSinSeguro(clave, idEmpresa = null) {
     if (!jsonNominaConfianza || !clave) return;
 
     // Buscar el empleado y su departamento
-    let empleado = null;
+    const empleado = buscarEmpleadoPorClaveYEmpresa(clave, idEmpresa);
     let nombreDepartamento = '';
-    
-    jsonNominaConfianza.departamentos.forEach(dept => {
-        (dept.empleados || []).forEach(emp => {
-            if (emp.clave == clave) {
-                empleado = emp;
-                nombreDepartamento = (dept.nombre || '').toLowerCase().trim();
-            }
+
+    if (empleado) {
+        // Encontrar el nombre del departamento
+        jsonNominaConfianza.departamentos.forEach(dept => {
+            (dept.empleados || []).forEach(emp => {
+                if (emp.clave == clave && String(emp.id_empresa).trim() === String(idEmpresa).trim()) {
+                    nombreDepartamento = (dept.nombre || '').toLowerCase().trim();
+                }
+            });
         });
-    });
+    }
 
     if (!empleado) return;
 
@@ -132,7 +153,8 @@ function configurarInputsSinSeguro(clave) {
 // Calcula y pinta el sueldo a cobrar basado EN LOS INPUTS DEL MODAL (tiempo real)
 function calcularYMostrarSueldoACobrar() {
     const clave = $('#campo-clave').text().trim();
-    if (!clave) return;
+    const idEmpresa = $('#campo-id-empresa').val().trim();
+    if (!clave || !idEmpresa) return;
 
     // Percepciones desde inputs
     const sueldoSemanal = parseFloat($('#mod-sueldo-semanal').val()) || 0;
@@ -150,7 +172,9 @@ function calcularYMostrarSueldoACobrar() {
     const inasistencia = parseFloat($('#mod-inasistencias').val()) || 0;
     const uniformes = parseFloat($('#mod-uniformes').val()) || 0;
     const checador = parseFloat($('#mod-checador').val()) || 0;
+    const faGafetCofia = parseFloat($('#mod-fa-gafet-cofia').val()) || 0;
     const tarjeta = parseFloat($('#mod-tarjeta').val()) || 0;
+    const prestamo = parseFloat($('#mod-prestamo').val()) || 0;
 
     // Deducciones adicionales dinámicas
     let adicionales = 0;
@@ -158,46 +182,58 @@ function calcularYMostrarSueldoACobrar() {
         adicionales += parseFloat($(this).val()) || 0;
     });
 
-    const deducciones = isr + imss + ajusteSub + infonavit + retardos + permiso + inasistencia + uniformes + checador + tarjeta + adicionales;
+    // Actualizar F.A/GAFET/COFIA con el total de deducciones adicionales
+    $('#mod-fa-gafet-cofia').val(adicionales.toFixed(2));
 
-    const total = percepciones - deducciones;
+    const deducciones = isr + imss + ajusteSub + infonavit + retardos + permiso + inasistencia + uniformes + checador  + tarjeta + prestamo + adicionales;
+
+    let total = percepciones - deducciones;
+    const totalOriginal = total;
+    
+    // Aplicar redondeo al entero más cercano si el checkbox está activo
+    const redondeoActivo = $('#mod-redondear-sueldo').is(':checked');
+    if (redondeoActivo) {
+        total = Math.round(total);
+    }
+    
+    // Calcular la cantidad redondeada (diferencia entre el valor redondeado y el original)
+    const cantidadRedondeada = redondeoActivo ? (total - totalOriginal) : 0;
+    
     $('#mod-sueldo-a-cobrar').val(total.toFixed(2));
 
     // Reflejar en el empleado
     if (jsonNominaConfianza && Array.isArray(jsonNominaConfianza.departamentos)) {
-        let empleado = null;
-        jsonNominaConfianza.departamentos.forEach(dept => {
-            (dept.empleados || []).forEach(emp => { if (emp.clave == clave) empleado = emp; });
-        });
+        const empleado = buscarEmpleadoPorClaveYEmpresa(clave, idEmpresa);
         if (empleado) {
             empleado.total_cobrar = total;
+            empleado.fa_gafet_cofia = adicionales;
+            empleado.redondeo_activo = redondeoActivo;
+            empleado.redondeo = cantidadRedondeada;
         }
     }
 }
 function calcularSueldoACobrar() {
 
     // Escucha cambios en los campos relevantes del modal para recalcular automáticamente
-$(document).on('input change', '#modal-detalles input, #modal-detalles select, #contenedor-conceptos-adicionales input[type="number"], #contenedor-deducciones-adicionales input[type="number"]', function () {
-    // Evitar bucle cuando el disparador es el propio input de sueldo a cobrar (lo maneja su listener dedicado)
-    if ($(this).attr('id') === 'mod-sueldo-a-cobrar') return;
-    calcularYMostrarSueldoACobrar();
-});
-
-// Si el usuario escribe manualmente el sueldo a cobrar, actualizar la propiedad en el empleado
-$(document).on('input', '#mod-sueldo-a-cobrar', function () {
-    const $input = $(this);
-    const clave = $('#campo-clave').text().trim();
-    if (!clave) return;
-
-    let empleado = null;
-    jsonNominaConfianza.departamentos.forEach(dept => {
-        (dept.empleados || []).forEach(emp => { if (emp.clave == clave) empleado = emp; });
+    $(document).on('input change', '#modal-detalles input, #modal-detalles select, #contenedor-conceptos-adicionales input[type="number"], #contenedor-deducciones-adicionales input[type="number"]', function () {
+        // Evitar bucle cuando el disparador es el propio input de sueldo a cobrar (lo maneja su listener dedicado)
+        if ($(this).attr('id') === 'mod-sueldo-a-cobrar') return;
+        calcularYMostrarSueldoACobrar();
     });
-    if (!empleado) return;
 
-    const valor = parseFloat($input.val()) || 0;
-    empleado.total_cobrar = valor;
-});
+    // Si el usuario escribe manualmente el sueldo a cobrar, actualizar la propiedad en el empleado
+    $(document).on('input', '#mod-sueldo-a-cobrar', function () {
+        const $input = $(this);
+        const clave = $('#campo-clave').text().trim();
+        const idEmpresa = $('#campo-id-empresa').val().trim();
+        if (!clave || !idEmpresa) return;
+
+        const empleado = buscarEmpleadoPorClaveYEmpresa(clave, idEmpresa);
+        if (!empleado) return;
+
+        const valor = parseFloat($input.val()) || 0;
+        empleado.total_cobrar = valor;
+    });
 
 }
 
@@ -233,13 +269,14 @@ function bindContextMenuToModal() {
     $menu.on('click', '.cm-item', function (e) {
         e.preventDefault();
 
-        // Obtener la clave de la fila seleccionada
+        // Obtener la clave Y id_empresa de la fila seleccionada
         if (filaSeleccionada && filaSeleccionada.length > 0) {
             var clave = filaSeleccionada.data('clave');
+            var idEmpresa = filaSeleccionada.data('id-empresa');
 
-            // Cargar los datos del empleado en el modal
+            // Cargar los datos del empleado en el modal (con clave e id_empresa)
             if (typeof cargarData === 'function' && jsonNominaConfianza) {
-                cargarData(jsonNominaConfianza, clave);
+                cargarData(jsonNominaConfianza, clave, idEmpresa);
             }
         } else {
 
@@ -262,9 +299,9 @@ function cerrarModalDetalles() {
         $('#modal-detalles').hide();
         limpiarModalDetalles();
     });
-    $("#btn-cancelar-conceptos").click(function (e) { 
+    $("#btn-cancelar-conceptos").click(function (e) {
         e.preventDefault();
-         $('#modal-detalles').hide();
+        $('#modal-detalles').hide();
         limpiarModalDetalles();
     });
 }
@@ -341,6 +378,9 @@ function limpiarModalDetalles() {
 
     // Limpiar campo de sueldo a cobrar
     $('#mod-sueldo-a-cobrar').val('');
+
+    // Limpiar campo id_empresa
+    $('#campo-id-empresa').val('');
 }
 
 // ========================================
@@ -460,12 +500,9 @@ function activarBotonesRecalculo() {
     // Evento para el botón de calcular retardos
     $(document).on('click', '#btn-calcular-retardos', function () {
         const clave = $('#campo-clave').text().trim();
-        let empleado = null;
-        jsonNominaConfianza.departamentos.forEach(dept => {
-            dept.empleados.forEach(emp => {
-                if (emp.clave == clave) empleado = emp;
-            });
-        });
+        const idEmpresa = $('#campo-id-empresa').val().trim();
+        const empleado = buscarEmpleadoPorClaveYEmpresa(clave, idEmpresa);
+        
         if (empleado && typeof recalcularTotalRetardos === 'function') {
             recalcularTotalRetardos(empleado, true);
         }
@@ -474,12 +511,9 @@ function activarBotonesRecalculo() {
     // Evento para el botón de calcular checador
     $(document).on('click', '#btn-calcular-checador', function () {
         const clave = $('#campo-clave').text().trim();
-        let empleado = null;
-        jsonNominaConfianza.departamentos.forEach(dept => {
-            dept.empleados.forEach(emp => {
-                if (emp.clave == clave) empleado = emp;
-            });
-        });
+        const idEmpresa = $('#campo-id-empresa').val().trim();
+        const empleado = buscarEmpleadoPorClaveYEmpresa(clave, idEmpresa);
+        
         if (empleado && typeof recalcularTotalOlvidos === 'function') {
             recalcularTotalOlvidos(empleado, true);
         }
@@ -488,12 +522,9 @@ function activarBotonesRecalculo() {
     // Evento para el botón de calcular inasistencias
     $(document).on('click', '#btn-calcular-inasistencias', function () {
         const clave = $('#campo-clave').text().trim();
-        let empleado = null;
-        jsonNominaConfianza.departamentos.forEach(dept => {
-            dept.empleados.forEach(emp => {
-                if (emp.clave == clave) empleado = emp;
-            });
-        });
+        const idEmpresa = $('#campo-id-empresa').val().trim();
+        const empleado = buscarEmpleadoPorClaveYEmpresa(clave, idEmpresa);
+        
         if (empleado && typeof recalcularTotalInasistencias === 'function') {
             recalcularTotalInasistencias(empleado, true);
         }
@@ -503,12 +534,8 @@ function activarBotonesRecalculo() {
     // Aplica ISR (código 45) desde conceptos_copia al empleado actual y actualiza el input
     $(document).on('click', '#btn-aplicar-isr', function () {
         const clave = $('#campo-clave').text().trim();
-        let empleado = null;
-        jsonNominaConfianza.departamentos.forEach(dept => {
-            dept.empleados.forEach(emp => {
-                if (emp.clave == clave) empleado = emp;
-            });
-        });
+        const idEmpresa = $('#campo-id-empresa').val().trim();
+        const empleado = buscarEmpleadoPorClaveYEmpresa(clave, idEmpresa);
         if (!empleado) return;
 
         const copia = Array.isArray(empleado.conceptos_copia) ? empleado.conceptos_copia.find(c => String(c.codigo) === '45') : null;
@@ -532,12 +559,8 @@ function activarBotonesRecalculo() {
     // Aplica IMSS (código 52) desde conceptos_copia
     $(document).on('click', '#btn-aplicar-imss', function () {
         const clave = $('#campo-clave').text().trim();
-        let empleado = null;
-        jsonNominaConfianza.departamentos.forEach(dept => {
-            dept.empleados.forEach(emp => {
-                if (emp.clave == clave) empleado = emp;
-            });
-        });
+        const idEmpresa = $('#campo-id-empresa').val().trim();
+        const empleado = buscarEmpleadoPorClaveYEmpresa(clave, idEmpresa);
         if (!empleado) return;
 
         const copia = Array.isArray(empleado.conceptos_copia) ? empleado.conceptos_copia.find(c => String(c.codigo) === '52') : null;
@@ -561,12 +584,8 @@ function activarBotonesRecalculo() {
     // Aplica INFONAVIT (código 16) desde conceptos_copia
     $(document).on('click', '#btn-aplicar-infonavit', function () {
         const clave = $('#campo-clave').text().trim();
-        let empleado = null;
-        jsonNominaConfianza.departamentos.forEach(dept => {
-            dept.empleados.forEach(emp => {
-                if (emp.clave == clave) empleado = emp;
-            });
-        });
+        const idEmpresa = $('#campo-id-empresa').val().trim();
+        const empleado = buscarEmpleadoPorClaveYEmpresa(clave, idEmpresa);
         if (!empleado) return;
 
         const copia = Array.isArray(empleado.conceptos_copia) ? empleado.conceptos_copia.find(c => String(c.codigo) === '16') : null;
@@ -590,12 +609,8 @@ function activarBotonesRecalculo() {
     // Aplica AJUSTE AL SUB (código 107) desde conceptos_copia
     $(document).on('click', '#btn-aplicar-ajuste-sub', function () {
         const clave = $('#campo-clave').text().trim();
-        let empleado = null;
-        jsonNominaConfianza.departamentos.forEach(dept => {
-            dept.empleados.forEach(emp => {
-                if (emp.clave == clave) empleado = emp;
-            });
-        });
+        const idEmpresa = $('#campo-id-empresa').val().trim();
+        const empleado = buscarEmpleadoPorClaveYEmpresa(clave, idEmpresa);
         if (!empleado) return;
 
         const copia = Array.isArray(empleado.conceptos_copia) ? empleado.conceptos_copia.find(c => String(c.codigo) === '107') : null;
@@ -619,12 +634,8 @@ function activarBotonesRecalculo() {
     // Aplica TARJETA desde tarjeta_copia (actualiza la propiedad tarjeta y el input)
     $(document).on('click', '#btn-aplicar-tarjeta', function () {
         const clave = $('#campo-clave').text().trim();
-        let empleado = null;
-        jsonNominaConfianza.departamentos.forEach(dept => {
-            dept.empleados.forEach(emp => {
-                if (emp.clave == clave) empleado = emp;
-            });
-        });
+        const idEmpresa = $('#campo-id-empresa').val().trim();
+        const empleado = buscarEmpleadoPorClaveYEmpresa(clave, idEmpresa);
         if (!empleado) return;
 
         const copiaTarjeta = (empleado.tarjeta_copia !== undefined && empleado.tarjeta_copia !== null) ? empleado.tarjeta_copia : null;
@@ -641,6 +652,13 @@ function activarBotonesRecalculo() {
 
 }
 
+function activarFuncionalidadInasistencias() {
+    // Activar función para agregar inasistencias manuales
+    if (typeof agregarInasistenciaManual === 'function') {
+        agregarInasistenciaManual();
+    }
+}
+
 function activarInputsValidadores() {
 
     // VALIDADORES: impedir escribir valores mayores a los de copia
@@ -648,11 +666,10 @@ function activarInputsValidadores() {
     // y corrigen el valor automáticamente si excede el máximo permitido.
     $(document).on('input', '#mod-tarjeta', function () {
         const clave = $('#campo-clave').text().trim();
-        if (!clave) return;
-        let empleado = null;
-        jsonNominaConfianza.departamentos.forEach(dept => {
-            (dept.empleados || []).forEach(emp => { if (emp.clave == clave) empleado = emp; });
-        });
+        const idEmpresa = $('#campo-id-empresa').val().trim();
+        if (!clave || !idEmpresa) return;
+        
+        const empleado = buscarEmpleadoPorClaveYEmpresa(clave, idEmpresa);
         if (!empleado) return;
 
         const maxVal = (empleado.tarjeta_copia !== undefined && empleado.tarjeta_copia !== null) ? parseFloat(empleado.tarjeta_copia) : null;
@@ -662,7 +679,6 @@ function activarInputsValidadores() {
         let val = parseFloat($this.val()) || 0;
         if (val > maxVal) {
             $this.val(maxVal);
-
         }
     });
 
@@ -718,11 +734,10 @@ function activarInputsValidadores() {
     function validarConceptoMax(inputSelector, codigo) {
         $(document).on('input', inputSelector, function () {
             const clave = $('#campo-clave').text().trim();
-            if (!clave) return;
-            let empleado = null;
-            jsonNominaConfianza.departamentos.forEach(dept => {
-                (dept.empleados || []).forEach(emp => { if (emp.clave == clave) empleado = emp; });
-            });
+            const idEmpresa = $('#campo-id-empresa').val().trim();
+            if (!clave || !idEmpresa) return;
+            
+            const empleado = buscarEmpleadoPorClaveYEmpresa(clave, idEmpresa);
             if (!empleado) return;
 
             const copia = Array.isArray(empleado.conceptos_copia) ? empleado.conceptos_copia.find(c => String(c.codigo) === String(codigo)) : null;
@@ -746,11 +761,10 @@ function activarInputsValidadores() {
     // Esto permite que el valor manual se respete aunque el historial cambie
     $(document).on('input', '#mod-checador', function () {
         const clave = $('#campo-clave').text().trim();
-        if (!clave) return;
-        let empleado = null;
-        jsonNominaConfianza.departamentos.forEach(dept => {
-            (dept.empleados || []).forEach(emp => { if (emp.clave == clave) empleado = emp; });
-        });
+        const idEmpresa = $('#campo-id-empresa').val().trim();
+        if (!clave || !idEmpresa) return;
+        
+        const empleado = buscarEmpleadoPorClaveYEmpresa(clave, idEmpresa);
         if (empleado) {
             empleado._checador_editado_manual = true;
             empleado.checador = parseFloat($(this).val()) || 0;
@@ -759,11 +773,10 @@ function activarInputsValidadores() {
 
     $(document).on('input', '#mod-retardos', function () {
         const clave = $('#campo-clave').text().trim();
-        if (!clave) return;
-        let empleado = null;
-        jsonNominaConfianza.departamentos.forEach(dept => {
-            (dept.empleados || []).forEach(emp => { if (emp.clave == clave) empleado = emp; });
-        });
+        const idEmpresa = $('#campo-id-empresa').val().trim();
+        if (!clave || !idEmpresa) return;
+        
+        const empleado = buscarEmpleadoPorClaveYEmpresa(clave, idEmpresa);
         if (empleado) {
             empleado._retardos_editado_manual = true;
             empleado.retardos = parseFloat($(this).val()) || 0;
@@ -772,11 +785,10 @@ function activarInputsValidadores() {
 
     $(document).on('input', '#mod-inasistencias', function () {
         const clave = $('#campo-clave').text().trim();
-        if (!clave) return;
-        let empleado = null;
-        jsonNominaConfianza.departamentos.forEach(dept => {
-            (dept.empleados || []).forEach(emp => { if (emp.clave == clave) empleado = emp; });
-        });
+        const idEmpresa = $('#campo-id-empresa').val().trim();
+        if (!clave || !idEmpresa) return;
+        
+        const empleado = buscarEmpleadoPorClaveYEmpresa(clave, idEmpresa);
         if (empleado) {
             empleado._inasistencias_editado_manual = true;
             empleado.inasistencia = parseFloat($(this).val()) || 0;
@@ -785,11 +797,10 @@ function activarInputsValidadores() {
 
     $(document).on('input', '#mod-uniformes', function () {
         const clave = $('#campo-clave').text().trim();
-        if (!clave) return;
-        let empleado = null;
-        jsonNominaConfianza.departamentos.forEach(dept => {
-            (dept.empleados || []).forEach(emp => { if (emp.clave == clave) empleado = emp; });
-        });
+        const idEmpresa = $('#campo-id-empresa').val().trim();
+        if (!clave || !idEmpresa) return;
+        
+        const empleado = buscarEmpleadoPorClaveYEmpresa(clave, idEmpresa);
         if (empleado) {
             empleado._uniformes_editado_manual = true;
             empleado.uniformes = parseFloat($(this).val()) || 0;
@@ -798,11 +809,10 @@ function activarInputsValidadores() {
 
     $(document).on('input', '#mod-permiso', function () {
         const clave = $('#campo-clave').text().trim();
-        if (!clave) return;
-        let empleado = null;
-        jsonNominaConfianza.departamentos.forEach(dept => {
-            (dept.empleados || []).forEach(emp => { if (emp.clave == clave) empleado = emp; });
-        });
+        const idEmpresa = $('#campo-id-empresa').val().trim();
+        if (!clave || !idEmpresa) return;
+        
+        const empleado = buscarEmpleadoPorClaveYEmpresa(clave, idEmpresa);
         if (empleado) {
             empleado._permiso_editado_manual = true;
             empleado.permiso = parseFloat($(this).val()) || 0;
@@ -811,11 +821,10 @@ function activarInputsValidadores() {
 
     $(document).on('input', '#mod-prestamo', function () {
         const clave = $('#campo-clave').text().trim();
-        if (!clave) return;
-        let empleado = null;
-        jsonNominaConfianza.departamentos.forEach(dept => {
-            (dept.empleados || []).forEach(emp => { if (emp.clave == clave) empleado = emp; });
-        });
+        const idEmpresa = $('#campo-id-empresa').val().trim();
+        if (!clave || !idEmpresa) return;
+        
+        const empleado = buscarEmpleadoPorClaveYEmpresa(clave, idEmpresa);
         if (empleado) {
             empleado._prestamo_editado_manual = true;
             empleado.prestamo = parseFloat($(this).val()) || 0;
@@ -829,11 +838,10 @@ function activarInputsValidadores() {
         const codigo = $input.data('codigo');
         if (!codigo) return; // sin código no hay copia que validar
         const clave = $('#campo-clave').text().trim();
-        if (!clave) return;
-        let empleado = null;
-        jsonNominaConfianza.departamentos.forEach(dept => {
-            (dept.empleados || []).forEach(emp => { if (emp.clave == clave) empleado = emp; });
-        });
+        const idEmpresa = $('#campo-id-empresa').val().trim();
+        if (!clave || !idEmpresa) return;
+        
+        const empleado = buscarEmpleadoPorClaveYEmpresa(clave, idEmpresa);
         if (!empleado) return;
 
         const copia = Array.isArray(empleado.conceptos_copia) ? empleado.conceptos_copia.find(c => String(c.codigo) === String(codigo)) : null;
@@ -854,11 +862,11 @@ function activarInputsValidadores() {
 function limpiarBusqueda() {
     // Limpiar el campo de búsqueda
     $('#busqueda-nomina-confianza').val('');
-    
+
     // Verificar si hay filtros activos de departamento o empresa
     const valorDepartamento = String($('#filtro-departamento').val() || '0');
     const valorEmpresa = String($('#filtro-empresa').val() || '0');
-    
+
     // Si hay filtros activos, aplicarlos; si no, mostrar todos los empleados
     if (valorDepartamento !== '0' || valorEmpresa !== '0') {
         // Hay filtros activos, aplicar solo esos filtros
@@ -874,7 +882,7 @@ function limpiarBusqueda() {
 }
 
 // Evento para el botón de limpiar búsqueda
-$(document).on('click', '#btn-clear-busqueda', function() {
+$(document).on('click', '#btn-clear-busqueda', function () {
     limpiarBusqueda();
 });
 

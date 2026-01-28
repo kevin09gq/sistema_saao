@@ -4,6 +4,9 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Definir zona horaria de la CDMX bhl
+date_default_timezone_set('America/Mexico_City');
+
 $rutaRaiz = "/sistema_saao";
 
 //Define paths for local libraries
@@ -14,6 +17,8 @@ define('JQUERY_JS', $rutaRaiz . '/public/plugins/jquery.min.js');
 define('SWEETALERT', $rutaRaiz . '/public/plugins/sweetalert2011.js');
 define('JQUERY_INPUTMASK', $rutaRaiz . '/public/plugins/jquery.inputmask.min.js');
 
+define('JQUERY_UI_JS', $rutaRaiz . '/public/plugins/jquery-ui.min.js');
+define('JQUERY_UI_CSS', $rutaRaiz . '/public/plugins/jquery-ui.min.css');
 
 define('DIAS_SEMANA', ['SABADO', 'DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES']);
 

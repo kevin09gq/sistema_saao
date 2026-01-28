@@ -229,6 +229,63 @@ CREATE TABLE festividades (
 -- =============================
 -- TABLAS DE PRÉSTAMOS
 -- =============================
+CREATE TABLE IF NOT EXISTS prestamos (
+  id_prestamo INT(11) NOT NULL AUTO_INCREMENT,
+  id_empleado INT(11) NOT NULL,
+  folio VARCHAR(100) NOT NULL,
+  monto DECIMAL(10,2) NOT NULL,
+  semana INT(11) NOT NULL,
+  anio YEAR(4) NOT NULL,
+  fecha_registro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+  estado ENUM('activo','liquidado','pausado') NOT NULL DEFAULT 'activo',
+  PRIMARY KEY (id_prestamo),
+  FOREIGN KEY (id_empleado)
+    REFERENCES info_empleados(id_empleado)
+    ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS prestamos_abonos (
+  id_abono INT(11) NOT NULL AUTO_INCREMENT,
+  id_prestamo INT(11) NOT NULL,
+  monto_pago DECIMAL(10,2) NOT NULL,
+  num_sem_pago INT(11) NOT NULL,
+  anio_pago YEAR(4) NOT NULL,
+  fecha_pago DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+  es_nomina TINYINT(1) NOT NULL DEFAULT 1,
+  PRIMARY KEY (id_abono),
+  FOREIGN KEY (id_prestamo)
+    REFERENCES prestamos(id_prestamo)
+    ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS planes_pagos (
+  id_plan INT(11) NOT NULL AUTO_INCREMENT,
+  id_prestamo INT(11) NOT NULL,
+  sem_inicio INT(11) NOT NULL,
+  anio_inicio YEAR(4) NOT NULL,
+  sem_fin INT(11) NOT NULL,
+  anio_fin INT(11) NOT NULL,
+  fecha_registro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+  PRIMARY KEY (id_plan),
+  FOREIGN KEY (id_prestamo)
+    REFERENCES prestamos(id_prestamo)
+    ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS detalle_planes (
+  id_detalle INT(11) NOT NULL AUTO_INCREMENT,
+  id_plan INT(11) NOT NULL,
+  detalle LONGTEXT
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_bin
+    NOT NULL
+    CHECK (JSON_VALID(detalle)),
+  fecha_registro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+  PRIMARY KEY (id_detalle),
+  FOREIGN KEY (id_plan)
+    REFERENCES planes_pagos(id_plan)
+    ON DELETE CASCADE
+);
 
 
 -- =============================

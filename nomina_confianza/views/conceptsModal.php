@@ -18,6 +18,61 @@
                 </button>
             </li>
         </ul>
+        <style>
+            /* Aumentar tamaño y altura de controles de hora dentro del modal */
+            .modal-detalles input[type="time"] {
+                font-size: 1.05rem; /* texto más grande */
+                padding: .5rem .75rem;
+                height: 46px;
+                line-height: 1.2;
+                border-radius: .375rem;
+            }
+
+            /* Inputs específicos: ocupar todo el ancho de su columna */
+            #input-entrada-copiar,
+            #input-salida-comida-copiar,
+            #input-entrada-comida-copiar,
+            #input-salida-copiar {
+                width: 100%;
+                font-size: 1.05rem;
+            }
+
+            /* Separación entre columnas (gaps visibles) */
+            .horarios-copiar-row {
+                gap: 1rem; /* espacio horizontal entre columnas (si el navegador soporta gap) */
+            }
+
+            /* Mejorar legibilidad de las horas mostradas en la tabla de horarios */
+            #tabla-horarios-oficiales .custom-table td {
+                font-size: 0.98rem;
+                vertical-align: middle;
+            }
+
+            /* Icono del botón copiar ligeramente más pequeño y centrado */
+            #btn-copiar-horarios i {
+                font-size: 0.95rem;
+                margin-right: .35rem;
+            }
+
+            /* Responsive: en pantallas pequeñas hacer que los inputs ocupen todo el ancho disponible */
+            @media (max-width: 575.98px) {
+                #input-entrada-copiar,
+                #input-salida-comida-copiar,
+                #input-entrada-comida-copiar,
+                #input-salida-copiar {
+                    width: 100%;
+                }
+
+                .horarios-copiar-row {
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .horarios-copiar-row .col-md-2 {
+                    width: 100%;
+                }
+            }
+        </style>
         <div class="tab-content">
             <!-- Info Trabajador -->
             <div class="tab-pane fade show active" id="tab_info" role="tabpanel" aria-labelledby="tab-info">
@@ -37,6 +92,8 @@
                         <span class="info-label">Departamento:</span>
                         <span class="info-value" id="campo-departamento"></span>
                     </div>
+                    <!-- Campo oculto para almacenar id_empresa -->
+                    <input type="" id="campo-id-empresa" value="">
                 </div>
             </div>
 
@@ -76,6 +133,39 @@
 
                 <!-- Tabla de Registros BD -->
                 <div class="table-container" id="tabla-horarios-oficiales" hidden>
+                    <!-- Campos de entrada rápida para copiar a todos los días -->
+                    <div class="card bg-light mb-3">
+                        <div class="card-body">
+                           
+                
+
+                            <div class="row gx-3 gy-2 align-items-end horarios-copiar-row">
+                                <div class="col-md-3 col-sm-6">
+                                    <label class="form-label fw-semibold small">Entrada</label>
+                                    <input type="time" step="60" class="form-control form-control-sm" id="input-entrada-copiar" placeholder="HH:MM">
+                                </div>
+                                <div class="col-md-3 col-sm-6">
+                                    <label class="form-label fw-semibold small">Salida Comida</label>
+                                    <input type="time" step="60" class="form-control form-control-sm" id="input-salida-comida-copiar" placeholder="HH:MM">
+                                </div>
+                                <div class="col-md-3 col-sm-6">
+                                    <label class="form-label fw-semibold small">Entrada Comida</label>
+                                    <input type="time" step="60" class="form-control form-control-sm" id="input-entrada-comida-copiar" placeholder="HH:MM">
+                                </div>
+                                <div class="col-md-3 col-sm-6">
+                                    <label class="form-label fw-semibold small">Salida</label>
+                                    <input type="time" step="60" class="form-control form-control-sm" id="input-salida-copiar" placeholder="HH:MM">
+                                </div>
+                                <div class="col-md-3 d-flex justify-content-end align-items-end">
+                                    <button type="button" class="btn btn-primary btn-sm" id="btn-copiar-horarios" title="Copiar a Todos los Días" aria-label="Copiar a Todos los Días">
+                                        <i class="bi bi-clipboard-check"></i> Copiar
+                                    </button>
+                                </div>
+                            </div>
+                           
+                        </div>
+                    </div>
+
                     <table class="custom-table">
                         <thead>
                             <tr>
@@ -576,9 +666,52 @@
                                     <h6 class="fw-semibold text-info mb-3">
                                         <i class="bi bi-calendar-x"></i> Historial de Inasistencias por Día
                                     </h6>
+                                    
+                                    <!-- Formulario para agregar inasistencia manual -->
+                                    <div class="card bg-light mb-3">
+                                        <div class="card-body">
+                                            <div class="row g-2 align-items-end">
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-semibold small">Día de la Semana</label>
+                                                    <select class="form-select form-select-sm" id="select-dia-inasistencia">
+                                                        <option value="">Seleccionar día...</option>
+                                                        <option value="Lunes">Lunes</option>
+                                                        <option value="Martes">Martes</option>
+                                                        <option value="Miércoles">Miércoles</option>
+                                                        <option value="Jueves">Jueves</option>
+                                                        <option value="Viernes">Viernes</option>
+                                                        <option value="Sábado">Sábado</option>
+                                                        <option value="Domingo">Domingo</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-semibold small">Descuento ($)</label>
+                                                    <input type="number" step="0.01" class="form-control form-control-sm" id="input-descuento-inasistencia" placeholder="0.00" min="0">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <button type="button" class="btn btn-info btn-sm w-100" id="btn-agregar-inasistencia">
+                                                        <i class="bi bi-plus-circle"></i> Agregar Inasistencia
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
                                     <div id="contenedor-historial-inasistencias" class="historial-inasistencias-container">
                                         <!-- El historial se cargará dinámicamente aquí -->
                                     </div>
+                                </div>
+                            </div>
+
+                            <!-- Separador visual -->
+                            <hr class="mod-separador">
+
+                            <!-- Sección de F.A/GAFET/COFIA -->
+                            <div class="row mb-3">
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label fw-semibold">F.A/GAFET/COFIA ($)</label>
+                                    <input type="number" step="0.01" class="form-control mod-input-rosa" id="mod-fa-gafet-cofia" value="" placeholder="0.00" readonly>
+                                    <small class="text-muted">Suma automática de deducciones adicionales</small>
                                 </div>
                             </div>
 
@@ -601,6 +734,24 @@
                             <i class="bi bi-currency-dollar"></i> Sueldo a Cobrar
                         </div>
                         <div class="card-body mod-card-body-verde">
+                            <!-- Opciones de redondeo: checkbox + modo -->
+                            <div class="row mb-3">
+                                <div class="col-md-6 offset-md-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="mod-redondear-sueldo">
+                                        <label class="form-check-label fw-semibold" for="mod-redondear-sueldo">Redondear sueldo a cobrar</label>
+                                    </div>
+                                    <div class="mt-2" id="mod-redondeo-opciones" style="display:none;">
+                                        <select id="mod-redondeo-modo" class="form-select form-select-sm w-auto d-inline-block">
+                                            <option value="nearest">Al entero más cercano</option>
+                                            <option value="up">Hacia arriba</option>
+                                            <option value="down">Hacia abajo</option>
+                                        </select>
+                                        <small class="text-muted ms-2">Modo de redondeo</small>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="row justify-content-center">
                                 <div class="col-md-6 text-center">
                                     <label class="sueldo-cobrar-label">
@@ -632,3 +783,4 @@
         </div>
     </div>
 </div>
+

@@ -1,3 +1,8 @@
+<?php
+include "../../config/config.php";
+verificarSesion();
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -5,9 +10,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reloj Checador | Sistema SAAO</title>
-    <?php
-    include "../../config/config.php";
-    ?>
 
     <!-- Estilos de Bootstrap y Bootstrap Icons -->
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
@@ -35,7 +37,7 @@
     <div class="container-nomina" id="container-reloj">
         <!-- Contenedor tipo navbar para formulario y filtros -->
         <div class="navbar-nomina">
-            <div class="titulo-nomina">Procesamiento de Reloj 8 Hrs</div>
+            <div class="titulo-nomina">Reloj Biometrico checador</div>
             <div class="subtitulo-nomina">Selecciona los archivos Excel para procesar la información</div>
 
             <form id="form_excel" enctype="multipart/form-data" class="form-nomina-inline">
@@ -67,12 +69,12 @@
                     <label for="biometrico_rancho_relicario">
                         <i class="bi bi-file-earmark-excel-fill text-success"></i> Biometrico Rancho Relicario
                     </label>
-                    <input type="file" 
-                           class="input-biometrico-rancho" 
-                           id="biometrico_rancho_relicario" 
-                           name="biometrico_rancho_relicario" 
-                           data-rancho="Relicario"
-                           accept=".xls,.xlsx">
+                    <input type="file"
+                        class="input-biometrico-rancho"
+                        id="biometrico_rancho_relicario"
+                        name="biometrico_rancho_relicario"
+                        data-rancho="Relicario"
+                        accept=".xls,.xlsx">
                 </div>
 
                 <!-- BIOMETRICO DE RANCHO PILAR (OPCIONAL) -->
@@ -80,12 +82,12 @@
                     <label for="biometrico_rancho_pilar">
                         <i class="bi bi-file-earmark-excel-fill text-success"></i> Biometrico Rancho Pilar
                     </label>
-                    <input type="file" 
-                           class="input-biometrico-rancho" 
-                           id="biometrico_rancho_pilar" 
-                           name="biometrico_rancho_pilar" 
-                           data-rancho="Pilar"
-                           accept=".xls,.xlsx">
+                    <input type="file"
+                        class="input-biometrico-rancho"
+                        id="biometrico_rancho_pilar"
+                        name="biometrico_rancho_pilar"
+                        data-rancho="Pilar"
+                        accept=".xls,.xlsx">
                 </div>
 
                 <!-- RANCHO HEUASTECA (PROXIMAMENTE)
@@ -106,7 +108,12 @@
                     <button type="button" id="btn_procesar_archivos" class="btn btn-primary">
                         <i class="bi bi-arrow-repeat"></i> Procesar
                     </button>
+
+                    <button type="button" id="btn_cargar_historial" class="btn btn-outline-success mt-2" data-bs-toggle="modal" data-bs-target="#modalCargarHistorial">
+                        <i class="bi bi-clock-history me-1"></i> Cargar Historial
+                    </button>
                 </div>
+
             </form>
 
         </div>
@@ -143,21 +150,28 @@
             </div>
             <!-- Botones de exportación -->
             <div class="export-buttons">
-                <button class="btn-export-excel" id="btn_export_excel" title="Exportar a Excel">
+                <button class="btn btn-success fw-bold" id="btn_export_excel" title="Exportar a Excel">
                     <i class="bi bi-file-earmark-excel"></i>
                     Excel
                 </button>
-                <button class="btn-export-pdf" id="btn_export_pdf" title="Exportar a PDF">
+                <button class="btn btn-danger fw-bold" id="btn_export_pdf" title="Exportar a PDF">
                     <i class="bi bi-file-earmark-pdf"></i>
                     PDF
                 </button>
-                <button class="btn-limpiar-datos" id="btn_guardar_datos">
-                    <i class="bi bi-floppy"></i>
+
+                <button type="button" class="btn btn-warning fw-bold" id="btn_guardar_historial" data-bs-toggle="modal" data-bs-target="#modalGuardarHistorial">
+                    <i class="bi bi-floppy me-2"></i>
+                    Guardar Progreso
+                </button>
+
+                
+                <button class="btn btn-primary fw-bold" id="btn_guardar_datos">
+                    <i class="bi bi-floppy me-2"></i>
                     Guardar datos
                 </button>
-                <button class="btn-limpiar-datos" id="btn_limpiar_datos">
-                    <i class="bi bi-trash"></i>
-                    Subir Nuevamente
+                <button class="btn btn-secondary fw-bold" id="btn_limpiar_datos">
+                    <i class="bi bi-trash me-2"></i>
+                    Limpiar
                 </button>
             </div>
         </div>
@@ -176,15 +190,17 @@
     <?php include 'detalles_modal.php'; ?>
     <?php include 'horarios_modal.php'; ?>
     <?php include 'eventos_modal.php'; ?>
+    <?php include 'modal_guardar_historial.php'; ?>
+    <?php include 'modal_cargar_historial.php'; ?>
 
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
     <!-- Bootstrap JS -->
     <script src="<?= BOOTSTRAP_JS ?>"></script>
-
+    <!-- Libreria SweetAlert2 -->
     <script src="<?= SWEETALERT ?>"></script>
-    <!-- Script personalizado -->
 
+    <!-- Script personalizado -->
     <script src="../js/process_excel.js"></script>
     <script src="../js/interfaz.js"></script>
     <script src="../js/llenar_modal.js"></script>
@@ -194,6 +210,11 @@
 
     <script src="../js/generar_pdf.js"></script>
     <script src="../js/generar_excel.js"></script>
+    
+    <script src="../js/guardar_historial.js"></script>
+    <script src="../js/cargar_historial.js"></script>
+
+
 
 
     <script>

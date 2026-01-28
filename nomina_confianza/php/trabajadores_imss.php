@@ -13,7 +13,7 @@ if (!is_array($data) || !isset($data['claves']) || !is_array($data['claves'])) {
 }
 
 // Normalizar y deduplicar claves
-$claves = array_values(array_unique(array_map(function($c){
+$claves = array_values(array_unique(array_map(function ($c) {
     return trim((string)$c);
 }, $data['claves'])));
 
@@ -22,6 +22,9 @@ if (count($claves) === 0) {
     exit;
 }
 
+// Obtener id_empresa del request (opcional, por defecto 1)
+$idEmpresa = isset($data['id_empresa']) ? intval($data['id_empresa']) : 1;
+
 // Preparar consulta dinámica con placeholders
 $placeholders = implode(',', array_fill(0, count($claves), '?'));
 // Añadimos salario_semanal y horario_oficial
@@ -29,7 +32,8 @@ $sql = "SELECT e.id_empleado, e.clave_empleado, CONCAT(e.nombre, ' ', e.ap_pater
                e.salario_semanal, e.salario_diario, e.id_empresa, h.horario_oficial
         FROM info_empleados e
         LEFT JOIN horarios_oficiales h ON e.id_empleado = h.id_empleado
-        WHERE e.id_status = 1 AND e.clave_empleado IN ($placeholders)
+        WHERE e.id_status = 1 
+          AND e.id_empresa = ? AND e.clave_empleado IN ($placeholders)
         ORDER BY e.nombre, e.ap_paterno, e.ap_materno";
 
 if (!$stmt = mysqli_prepare($conexion, $sql)) {
@@ -37,14 +41,15 @@ if (!$stmt = mysqli_prepare($conexion, $sql)) {
     exit;
 }
 
-// Tipos: todas las claves son strings
-$types = str_repeat('s', count($claves));
+// Tipos: id_empresa (int) + claves (strings)
+$types = 'i' . str_repeat('s', count($claves));
 
 // Construir argumentos para bind_param
 $bind_params = [];
-$bind_params[] = & $types;
+$bind_params[] = &$types;
+$bind_params[] = &$idEmpresa;
 foreach ($claves as $i => $val) {
-    $bind_params[] = & $claves[$i];
+    $bind_params[] = &$claves[$i];
 }
 
 // Llamar a bind_param con argumentos variables
@@ -69,4 +74,3 @@ if ($result) {
 }
 
 echo json_encode($empleados);
-
