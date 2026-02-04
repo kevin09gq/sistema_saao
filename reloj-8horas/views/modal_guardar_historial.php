@@ -17,9 +17,13 @@
                         </div>
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-12 mb-2">
+                                <div class="col-6 mb-2">
                                     <label class="form-label fw-bold">Número de Semana:</label>
                                     <span id="historial-num-semana" class="badge bg-primary fs-6">-</span>
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <label class="form-label fw-bold">Empresa:</label>
+                                    <span id="historial-empresa" class="badge bg-info fs-6">-</span>
                                 </div>
                                 <div class="col-6">
                                     <label class="form-label fw-bold">Fecha Inicio:</label>
@@ -33,41 +37,12 @@
                         </div>
                     </div>
 
-                    <!-- Resumen de datos -->
-                    <div class="card mb-3">
-                        <div class="card-header bg-light">
-                            <i class="bi bi-people me-1"></i> Resumen de Datos
-                        </div>
-                        <div class="card-body">
-                            <div class="row text-center">
-                                <div class="col-6">
-                                    <div class="border rounded p-2">
-                                        <span class="d-block fs-4 fw-bold text-primary" id="historial-total-deptos">0</span>
-                                        <small class="text-muted">Departamentos</small>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="border rounded p-2">
-                                        <span class="d-block fs-4 fw-bold text-success" id="historial-total-empleados">0</span>
-                                        <small class="text-muted">Empleados</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Observación -->
                     <div class="mb-3">
                         <label for="historial-observacion" class="form-label fw-bold">
                             <i class="bi bi-chat-left-text me-1"></i> Observación (opcional)
                         </label>
-                        <textarea 
-                            class="form-control" 
-                            id="historial-observacion" 
-                            name="observacion" 
-                            rows="2" 
-                            maxlength="120"
-                            placeholder="Ej: Pendiente revisar empleado X..."></textarea>
+                        <textarea class="form-control" id="historial-observacion" name="observacion" rows="2" maxlength="120" placeholder="Ej: Pendiente revisar empleado X..."></textarea>
                         <div class="form-text">
                             <span id="historial-observacion-count">0</span>/120 caracteres
                         </div>

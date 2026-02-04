@@ -47,6 +47,9 @@ $observacion = isset($datos['observacion']) && $datos['observacion'] !== ''
     ? substr($datos['observacion'], 0, 120) 
     : null;
 
+// Obtener id_empresa del JSON de biométricos (1 = SAAO, 2 = SB)
+$id_empresa = isset($datos['biometricos']['id_empresa']) ? intval($datos['biometricos']['id_empresa']) : 1;
+
 // Validar formato de fechas (YYYY-MM-DD)
 if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha_inicio) || 
     !preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha_fin)) {
@@ -57,11 +60,11 @@ if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha_inicio) ||
     exit;
 }
 
-// Verificar si ya existe un registro con la misma semana y fechas
+// Verificar si ya existe un registro con la misma semana, fechas y empresa
 $sqlVerificar = "SELECT id FROM historial_biometrico 
-                 WHERE num_sem = ? AND fecha_inicio = ? AND fecha_fin = ?";
+                 WHERE num_sem = ? AND fecha_inicio = ? AND fecha_fin = ? AND id_empresa = ?";
 $stmtVerificar = $conexion->prepare($sqlVerificar);
-$stmtVerificar->bind_param("iss", $num_sem, $fecha_inicio, $fecha_fin);
+$stmtVerificar->bind_param("issi", $num_sem, $fecha_inicio, $fecha_fin, $id_empresa);
 $stmtVerificar->execute();
 $resultVerificar = $stmtVerificar->get_result();
 
@@ -72,10 +75,10 @@ if ($resultVerificar->num_rows > 0) {
     $idExistente = $row['id'];
     
     $sqlUpdate = "UPDATE historial_biometrico 
-                  SET biometrios = ?, observacion = ?, fecha_registro = NOW() 
+                  SET biometrios = ?, observacion = ?, id_empresa = ?, fecha_registro = NOW() 
                   WHERE id = ?";
     $stmtUpdate = $conexion->prepare($sqlUpdate);
-    $stmtUpdate->bind_param("ssi", $biometricos, $observacion, $idExistente);
+    $stmtUpdate->bind_param("ssii", $biometricos, $observacion, $id_empresa, $idExistente);
     
     if ($stmtUpdate->execute()) {
         echo json_encode([
@@ -94,10 +97,10 @@ if ($resultVerificar->num_rows > 0) {
     $stmtUpdate->close();
 } else {
     // No existe, insertar nuevo
-    $sqlInsert = "INSERT INTO historial_biometrico (biometrios, num_sem, fecha_inicio, fecha_fin, observacion) 
-                  VALUES (?, ?, ?, ?, ?)";
+    $sqlInsert = "INSERT INTO historial_biometrico (biometrios, num_sem, fecha_inicio, fecha_fin, observacion, id_empresa) 
+                  VALUES (?, ?, ?, ?, ?, ?)";
     $stmtInsert = $conexion->prepare($sqlInsert);
-    $stmtInsert->bind_param("sisss", $biometricos, $num_sem, $fecha_inicio, $fecha_fin, $observacion);
+    $stmtInsert->bind_param("sisssi", $biometricos, $num_sem, $fecha_inicio, $fecha_fin, $observacion, $id_empresa);
     
     if ($stmtInsert->execute()) {
         $nuevoId = $conexion->insert_id;

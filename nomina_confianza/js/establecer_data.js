@@ -7,10 +7,7 @@ function cargarData(jsonNominaConfianza, clave, idEmpresa = null) {
    
     // Buscar el empleado por clave e id_empresa en todos los departamentos
     let empleadoEncontrado = null;
-    
-  console.log(idEmpresa);
-  
-    
+        
     jsonNominaConfianza.departamentos.forEach(departamento => {
         departamento.empleados.forEach(empleado => {
             // Comparar clave Y id_empresa para identificar correctamente al empleado
@@ -67,6 +64,10 @@ function cargarData(jsonNominaConfianza, clave, idEmpresa = null) {
         $('#mod-imss').val(conceptoIMSS ? conceptoIMSS.resultado : '');
         $('#mod-infonavit').val(conceptoInfonavit ? conceptoInfonavit.resultado : '');
         $('#mod-ajustes-sub').val(conceptoAjusteSub ? conceptoAjusteSub.resultado : '');
+
+        // Total de conceptos (ISR + IMSS + INFONAVIT + AJUSTE SUB)
+        establecerTotalConceptos();
+        activarActualizacionTotalConceptos();
 
 
         // Deducciones
@@ -183,6 +184,27 @@ function cargarData(jsonNominaConfianza, clave, idEmpresa = null) {
     } else {
        
     }
+}
+
+// ========================================
+// TOTAL DE CONCEPTOS (ISR + IMSS + INFONAVIT + AJUSTE SUB)
+// ========================================
+function establecerTotalConceptos() {
+    const isr = parseFloat($('#mod-isr').val()) || 0;
+    const imss = parseFloat($('#mod-imss').val()) || 0;
+    const infonavit = parseFloat($('#mod-infonavit').val()) || 0;
+    const ajusteSub = parseFloat($('#mod-ajustes-sub').val()) || 0;
+
+    const total = isr + imss + infonavit + ajusteSub;
+    $('#mod-total-conceptos').val(total.toFixed(2));
+}
+
+function activarActualizacionTotalConceptos() {
+    // Evitar duplicar listeners si se abre el modal muchas veces
+    $('#mod-isr, #mod-imss, #mod-infonavit, #mod-ajustes-sub').off('input.totalConceptos');
+    $('#mod-isr, #mod-imss, #mod-infonavit, #mod-ajustes-sub').on('input.totalConceptos', function () {
+        establecerTotalConceptos();
+    });
 }
 
 // Función para mostrar registros en la tabla de checador

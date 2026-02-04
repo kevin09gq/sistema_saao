@@ -28,7 +28,7 @@ function getDepartamentos() {
                                     <td>${element.nombre_departamento}</td>
                                     <td>
                                         <button class="btn btn-sm btn-edit btn-edit-departamento" id="btn-edit-departamento-${element.id_departamento}" data-id="${element.id_departamento}" title="Editar"><i class="bi bi-pencil"></i></button>
-                                        <button class="btn btn-sm btn-delete btn-delete-departamento" id="btn-delete-departamento-${element.id_departamento}" data-id="${element.id_departamento}" title="Eliminar"><i class="bi bi-trash"></i></button>
+                                        <button class="btn btn-sm btn-delete btn-delete-departamento" id="btn-delete-departamento-${element.id_departamento}" data-id="${element.id_departamento}" title="Eliminar" hidden><i class="bi bi-trash"></i></button>
                                     </td>
                                 </tr>   
                         `;

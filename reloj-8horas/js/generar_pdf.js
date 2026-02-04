@@ -74,13 +74,16 @@ function diffHHMM(inicio, fin) {
 // Obtener clase CSS según el tipo de registro
 function getRowClass(tipo, emp) {
     const t = String(tipo || '').toLowerCase();
-    if (t === 'ausencia' || t === 'inasistencia' || t === 'no_laboro' || t === 'sin_turno') return 'table-secondary';
+    if (t === 'ausencia' || t === 'inasistencia') return 'table-secondary';
     if (t === 'incapacidad') return 'table-primary';
     if (t === 'vacaciones') return 'table-success';
     if (t === 'descanso') return 'table-warning';
-    if (emp?.incapacidades) return 'table-primary';
-    if (emp?.vacaciones) return 'table-success';
-    if (emp?.ausencias) return 'table-secondary';
+    if (t === 'sin_horario' || t === 'sin_turno') return 'table-warning';
+    
+    // if (emp?.incapacidades) return 'table-primary';
+    // if (emp?.vacaciones) return 'table-success';
+    // if (emp?.ausencias) return 'table-secondary';
+
     return '';
 }
 
@@ -222,7 +225,11 @@ function generarPaginaEmpleado(item, datos, esPrimeraEnPagina = false, esPrimero
         const id = emp.clave || emp.id_empleado || '';
         const descansoClass = String(r.tipo) === 'descanso' ? rowClass : '';
 
+        // Para asistencia, verificar cuántos registros tiene el día
+        // Si tiene 4 registros (E1, S1, E2, S2) → 2 filas
+        // Si tiene 2 registros (E1, S1 sin comida) → 1 fila
         if (String(r.tipo) === 'asistencia') {
+            // Primera fila siempre (E1, S1)
             html += `
                 <tr>
                     <td>${id}</td>
@@ -237,20 +244,26 @@ function generarPaginaEmpleado(item, datos, esPrimeraEnPagina = false, esPrimero
                     <td></td>
                     <td class="${descansoClass}"></td>
                 </tr>
-                <tr>
-                    <td>${id}</td>
-                    <td>${dia}</td>
-                    <td>${r.fecha || ''}</td>
-                    <td>${turnoTxt}</td>
-                    <td class="${rowClass}">${e2}</td>
-                    <td class="${rowClass}">${s2}</td>
-                    <td></td>
-                    <td></td>
-                    <td>${diffHHMM(e2, s2) || '00:00'}</td>
-                    <td></td>
-                    <td class="${descansoClass}"></td>
-                </tr>
             `;
+            
+            // Segunda fila solo si tiene E2 o S2 (turno con comida)
+            if (e2 || s2) {
+                html += `
+                    <tr>
+                        <td>${id}</td>
+                        <td>${dia}</td>
+                        <td>${r.fecha || ''}</td>
+                        <td>${turnoTxt}</td>
+                        <td class="${rowClass}">${e2}</td>
+                        <td class="${rowClass}">${s2}</td>
+                        <td></td>
+                        <td></td>
+                        <td>${diffHHMM(e2, s2) || '00:00'}</td>
+                        <td></td>
+                        <td class="${descansoClass}"></td>
+                    </tr>
+                `;
+            }
         } else {
             html += `
                 <tr>

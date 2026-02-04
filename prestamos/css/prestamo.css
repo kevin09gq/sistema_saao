@@ -1,0 +1,31 @@
+@media (max-width: 30em) { /* 30 * 16px = 480px */
+
+    #tabla-prestamos {
+        width: 100%;
+        font-size: 0.9em;
+    }
+
+    #tabla-prestamos tr {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 1em;
+        border: 1px solid gray;
+    }
+
+    #tabla-prestamos td[data-titulo] {
+        display: flex;
+    }
+
+    #tabla-prestamos td[data-titulo]::before {
+        content: attr(data-titulo);
+        width: 90px;
+        color: silver;
+        font-weight: bold;
+    }
+
+
+
+    #tabla-prestamos thead {
+        display: none;
+    }
+}

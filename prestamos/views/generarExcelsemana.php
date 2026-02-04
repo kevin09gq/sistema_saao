@@ -38,44 +38,34 @@ function setCell($sheet, int $col, int $row, $value): void
     $sheet->setCellValue(Coordinate::stringFromColumnIndex($col) . $row, $value);
 }
 
-// Traer filas base: empleados que abonaron en la semana seleccionada
-// La deuda se calcula sobre los préstamos que tuvieron abonos ESA semana (sin filtrar por estado)
+// Traer empleados que abonaron en la semana seleccionada
+// Solo considera préstamos ACTIVOS y excluye abonos PAUSADOS
 $sql = "SELECT
         e.id_empleado,
         CONCAT(e.nombre, ' ', e.ap_paterno, ' ', e.ap_materno) AS colaborador,
         COALESCE(d.nombre_departamento, 'SIN DEPTO') AS departamento,
         COALESCE(e.status_nss, 0) AS status_nss,
-        -- Abono de esta semana
-        SUM(pa.monto_pago) AS pagado_semana,
-        -- Total de los préstamos que se abonaron esta semana
+        -- Abono de esta semana (solo no pausados)
+        SUM(CASE WHEN pa.pausado = 0 THEN pa.monto_pago ELSE 0 END) AS pagado_semana,
+        -- Total de préstamos ACTIVOS del empleado
         (
             SELECT COALESCE(SUM(p2.monto), 0)
             FROM prestamos p2
-            WHERE p2.id_prestamo IN (
-                SELECT DISTINCT pa_inner.id_prestamo
-                FROM prestamos_abonos pa_inner
-                INNER JOIN prestamos p_inner ON p_inner.id_prestamo = pa_inner.id_prestamo
-                WHERE p_inner.id_empleado = e.id_empleado
-                  AND pa_inner.anio_pago = ?
-                  AND pa_inner.num_sem_pago = ?
-            )
+            WHERE p2.id_empleado = e.id_empleado
+              AND p2.estado = 'activo'
         ) AS total_prestamos,
-        -- Abonos anteriores de esos mismos préstamos
+        -- Abonos anteriores de préstamos ACTIVOS (solo no pausados)
         (
             SELECT COALESCE(SUM(pa2.monto_pago), 0)
             FROM prestamos_abonos pa2
-            WHERE pa2.id_prestamo IN (
-                SELECT DISTINCT pa_inner.id_prestamo
-                FROM prestamos_abonos pa_inner
-                INNER JOIN prestamos p_inner ON p_inner.id_prestamo = pa_inner.id_prestamo
-                WHERE p_inner.id_empleado = e.id_empleado
-                  AND pa_inner.anio_pago = ?
-                  AND pa_inner.num_sem_pago = ?
-            )
-            AND (pa2.anio_pago < ? OR (pa2.anio_pago = ? AND pa2.num_sem_pago < ?))
+            INNER JOIN prestamos p2 ON p2.id_prestamo = pa2.id_prestamo
+            WHERE p2.id_empleado = e.id_empleado
+              AND p2.estado = 'activo'
+              AND pa2.pausado = 0
+              AND (pa2.anio_pago < ? OR (pa2.anio_pago = ? AND pa2.num_sem_pago < ?))
         ) AS abonado_antes
     FROM info_empleados e
-    INNER JOIN prestamos p ON p.id_empleado = e.id_empleado
+    INNER JOIN prestamos p ON p.id_empleado = e.id_empleado AND p.estado = 'activo'
     INNER JOIN prestamos_abonos pa ON pa.id_prestamo = p.id_prestamo
     LEFT JOIN departamentos d ON d.id_departamento = e.id_departamento
     WHERE pa.anio_pago = ? AND pa.num_sem_pago = ?
@@ -85,7 +75,7 @@ $sql = "SELECT
 ";
 
 $stmt = $conexion->prepare($sql);
-$stmt->bind_param('iiiiiiiii', $anio, $semana, $anio, $semana, $anio, $anio, $semana, $anio, $semana);
+$stmt->bind_param('iiiii', $anio, $anio, $semana, $anio, $semana);
 $stmt->execute();
 $res = $stmt->get_result();
 $rows = [];

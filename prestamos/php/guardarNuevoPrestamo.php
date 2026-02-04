@@ -35,6 +35,73 @@ if (isset($_SESSION["logged_in"])) {
         $semana_fin = intval($_POST["semana_fin"]);
         $anio_fin = intval($_POST["anio_fin"]);
 
+        // Parámetro para indicar si el usuario ya confirmó el solapamiento
+        $confirmarSolapamiento = isset($_POST["confirmar_solapamiento"]) && $_POST["confirmar_solapamiento"] === 'true';
+
+        /**
+         * =====================================================
+         * Validar solapamiento solo si NO se confirmó desde el frontend
+         * Si el usuario ya fue advertido y confirmó, se omite esta validación
+         * =====================================================
+         */
+        if (!$confirmarSolapamiento) {
+            $semanaToValor = function($sem, $anio) {
+                return (int)$anio * 100 + (int)$sem;
+            };
+
+            $valorNuevoInicio = $semanaToValor($semana_inicio, $anio_inicio);
+            $valorNuevoFin = $semanaToValor($semana_fin, $anio_fin);
+
+            // Buscar todos los planes del empleado con préstamos activos o pausados
+            $sqlOtrosPlanes = "
+                SELECT 
+                    pp.id_plan,
+                    pp.sem_inicio,
+                    pp.anio_inicio,
+                    pp.sem_fin,
+                    pp.anio_fin,
+                    p.folio
+                FROM planes_pagos pp
+                INNER JOIN prestamos p ON p.id_prestamo = pp.id_prestamo
+                WHERE p.id_empleado = ?
+                  AND p.estado IN ('activo', 'pausado')
+                ORDER BY pp.anio_inicio ASC, pp.sem_inicio ASC
+            ";
+
+            $stmtOtros = $conexion->prepare($sqlOtrosPlanes);
+            $stmtOtros->bind_param('i', $id_empleado);
+            $stmtOtros->execute();
+            $resOtros = $stmtOtros->get_result();
+
+            $planesSolapados = [];
+            while ($otroPlan = $resOtros->fetch_assoc()) {
+                $otroInicio = $semanaToValor($otroPlan['sem_inicio'], $otroPlan['anio_inicio']);
+                $otroFin = $semanaToValor($otroPlan['sem_fin'], $otroPlan['anio_fin']);
+                
+                // Hay solapamiento si: valorNuevoFin >= otroInicio AND valorNuevoInicio <= otroFin
+                if ($valorNuevoFin >= $otroInicio && $valorNuevoInicio <= $otroFin) {
+                    $planesSolapados[] = [
+                        'folio' => $otroPlan['folio'],
+                        'rango' => "Sem {$otroPlan['sem_inicio']}/{$otroPlan['anio_inicio']} - Sem {$otroPlan['sem_fin']}/{$otroPlan['anio_fin']}"
+                    ];
+                }
+            }
+            $stmtOtros->close();
+
+            // Si hay solapamiento, retornar advertencia para que el frontend confirme
+            if (count($planesSolapados) > 0) {
+                respuestas(409, "Solapamiento detectado", 
+                    "El plan se solapa con " . count($planesSolapados) . " préstamo(s) existente(s). Confirme para continuar.", 
+                    "warning",
+                    [
+                        'requiere_confirmacion' => true,
+                        'planes_solapados' => $planesSolapados
+                    ]
+                );
+                exit;
+            }
+        }
+
 
         // ===================================
         // Insertar un prestamo

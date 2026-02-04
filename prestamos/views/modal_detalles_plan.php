@@ -1,6 +1,6 @@
 <!-- Modal -->
 <div class="modal fade" id="modalDetallesPlan" tabindex="-1" aria-labelledby="modalDetallesPlanLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header bg-success text-white">
                 <h1 class="modal-title fs-5" id="modalDetallesPlanLabel">Detalles del plan de pago</h1>

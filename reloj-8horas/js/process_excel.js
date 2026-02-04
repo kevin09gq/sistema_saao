@@ -1,11 +1,9 @@
-/**
- * =====================================
- *  Departamentos con reglas especiales
- * =====================================
- */
-const DEPA_CDMX = "Sucursal CdMx administrativos";
-const DEPA_VIGILANCIA = "Seguridad Vigilancia e Intendencia";
-const DEPA_COMPRA = "Compra de limon";
+// Autor: Brandon
+
+// Departamentos con reflas especiales
+const DEPA_CDMX = "Sucursal CdMx administrativos"; // No estan dados de alta en el biometrico
+const DEPA_VIGILANCIA = "Seguridad Vigilancia e Intendencia"; // Pueden trabajar dias festivos
+const DEPA_COMPRA = "Compra de limon"; // No estan dados de alta en el biometrico
 
 
 $(document).ready(function () {
@@ -281,6 +279,28 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
         if (Array.isArray(horario) && horario.length > 0) {
             const turnoDelDia = horario.find(h => h.dia.toUpperCase() === nombreDia);
             if (turnoDelDia) {
+                // Verificar si tiene un evento especial (descanso o día festivo)
+                if (turnoDelDia.evento === 'descanso') {
+                    return { 
+                        hora_inicio: null, 
+                        hora_fin: null, 
+                        salida_comida: null, 
+                        entrada_comida: null, 
+                        tiene_comida: false,
+                        evento: 'descanso'
+                    };
+                }
+                if (turnoDelDia.evento === 'dia_festivo') {
+                    return { 
+                        hora_inicio: null, 
+                        hora_fin: null, 
+                        salida_comida: null, 
+                        entrada_comida: null, 
+                        tiene_comida: false,
+                        evento: 'dia_festivo'
+                    };
+                }
+                
                 // Si el horario tiene entrada y salida vacías o null, es día de descanso
                 const entrada = turnoDelDia.entrada && turnoDelDia.entrada.trim() !== '' ? turnoDelDia.entrada : null;
                 const salida = turnoDelDia.salida && turnoDelDia.salida.trim() !== '' ? turnoDelDia.salida : null;
@@ -292,7 +312,8 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                         hora_fin: null,
                         salida_comida: null,
                         entrada_comida: null,
-                        tiene_comida: false
+                        tiene_comida: false,
+                        evento: ''
                     };
                 }
 
@@ -306,7 +327,8 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                     hora_fin: salida,
                     salida_comida: salidaComida,
                     entrada_comida: entradaComida,
-                    tiene_comida: tieneComida
+                    tiene_comida: tieneComida,
+                    evento: ''
                 };
             }
         }
@@ -316,7 +338,8 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
             hora_fin: null,
             salida_comida: null,
             entrada_comida: null,
-            tiene_comida: false
+            tiene_comida: false,
+            evento: ''
         };
     };
 
@@ -450,18 +473,486 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
         return minReal >= (minBase + rango.min) && minReal <= (minBase + rango.max);
     }
 
+    // ============================================================
+    // CLASIFICADOR DE INCIDENCIAS DE MARCAJES
+    // Analiza las marcas del día y determina el tipo de incidencia
+    // según los casos documentados en casos_incidencias.txt
+    // Retorna: { caso, descripcion, marcasClasificadas, observaciones, requiereAtencion }
+    // ============================================================
+    function clasificarIncidenciaMarcajes(todasLasMarcas, turno, tieneComida) {
+        const numMarcas = todasLasMarcas.length;
+        const inicio = normalizarHora(turno.hora_inicio);
+        const fin = normalizarHora(turno.hora_fin);
+        const minInicio = horaAMinutos(inicio);
+        const minFin = horaAMinutos(fin);
+        
+        let comidaSalida = null, comidaEntrada = null;
+        let minComidaSalida = null, minComidaEntrada = null;
+        
+        if (tieneComida) {
+            comidaSalida = normalizarHora(turno.salida_comida);
+            comidaEntrada = normalizarHora(turno.entrada_comida);
+            minComidaSalida = horaAMinutos(comidaSalida);
+            minComidaEntrada = horaAMinutos(comidaEntrada);
+        }
+        
+        const resultado = {
+            caso: '',
+            descripcion: '',
+            marcasClasificadas: {
+                entrada: null,
+                salidaComida: null,
+                entradaComida: null,
+                salida: null
+            },
+            observaciones: [],
+            requiereAtencion: false
+        };
+        
+        // ============================================================
+        // CASO E: 0 marcas - Sin asistencia o olvido total
+        // ============================================================
+        if (numMarcas === 0) {
+            resultado.caso = 'E-19';
+            resultado.descripcion = 'Sin marcas registradas';
+            resultado.observaciones.push('OLVIDO TOTAL O INASISTENCIA');
+            resultado.requiereAtencion = true;
+            return resultado;
+        }
+        
+        // ============================================================
+        // CASO D: 1 marca - Olvido parcial
+        // ============================================================
+        if (numMarcas === 1) {
+            const marca = todasLasMarcas[0];
+            const puntoMedio = tieneComida ? minComidaSalida : Math.floor((minInicio + minFin) / 2);
+            
+            if (marca.minutos <= minInicio + 90) {
+                resultado.caso = 'D-15';
+                resultado.descripcion = 'Solo entrada inicial';
+                resultado.marcasClasificadas.entrada = marca;
+                resultado.observaciones.push('FALTA SALIDA (OLVIDO)');
+            } else if (tieneComida && marca.minutos >= minComidaSalida - 30 && marca.minutos <= minComidaSalida + 30) {
+                resultado.caso = 'D-16';
+                resultado.descripcion = 'Solo salida a comida';
+                resultado.marcasClasificadas.salidaComida = marca;
+                resultado.observaciones.push('MARCÓ MAL O LLEGÓ TARDE');
+            } else if (tieneComida && marca.minutos >= minComidaEntrada - 30 && marca.minutos <= minComidaEntrada + 60) {
+                resultado.caso = 'D-17';
+                resultado.descripcion = 'Solo entrada después de comer';
+                resultado.marcasClasificadas.entradaComida = marca;
+                resultado.observaciones.push('LLEGÓ TARDE (SOLO MARCÓ REGRESO)');
+            } else if (marca.minutos >= minFin - 90) {
+                resultado.caso = 'D-18';
+                resultado.descripcion = 'Solo salida final';
+                resultado.marcasClasificadas.salida = marca;
+                resultado.observaciones.push('FALTA ENTRADA (OLVIDO)');
+            } else {
+                resultado.caso = 'D-XX';
+                resultado.descripcion = 'Una marca no clasificable';
+                if (marca.minutos <= puntoMedio) {
+                    resultado.marcasClasificadas.entrada = marca;
+                } else {
+                    resultado.marcasClasificadas.salida = marca;
+                }
+                resultado.observaciones.push('MARCA AMBIGUA');
+            }
+            resultado.requiereAtencion = true;
+            return resultado;
+        }
+        
+        // ============================================================
+        // CASO C: 2 marcas
+        // ============================================================
+        if (numMarcas === 2) {
+            const primera = todasLasMarcas[0];
+            const segunda = todasLasMarcas[1];
+            
+            if (!tieneComida) {
+                // Sin comida: 2 marcas es lo ideal
+                resultado.caso = 'A-IDEAL';
+                resultado.descripcion = 'Entrada y salida (sin comida)';
+                resultado.marcasClasificadas.entrada = primera;
+                resultado.marcasClasificadas.salida = segunda;
+                return resultado;
+            }
+            
+            // Con comida: 2 marcas es incompleto
+            // C-10: Solo entrada y salida final (sin comidas)
+            if (primera.minutos <= minInicio + 60 && segunda.minutos >= minFin - 60) {
+                resultado.caso = 'C-10';
+                resultado.descripcion = 'Solo entrada y salida (sin marcar comidas)';
+                resultado.marcasClasificadas.entrada = primera;
+                resultado.marcasClasificadas.salida = segunda;
+                resultado.observaciones.push('NO MARCÓ COMIDAS');
+                resultado.requiereAtencion = true;
+                return resultado;
+            }
+            
+            // C-11: Solo comidas (omitieron E1 y S2)
+            if (primera.minutos >= minComidaSalida - 30 && primera.minutos <= minComidaSalida + 30 &&
+                segunda.minutos >= minComidaEntrada - 30 && segunda.minutos <= minComidaEntrada + 60) {
+                resultado.caso = 'C-11';
+                resultado.descripcion = 'Solo comidas (sin entrada/salida)';
+                resultado.marcasClasificadas.salidaComida = primera;
+                resultado.marcasClasificadas.entradaComida = segunda;
+                resultado.observaciones.push('FALTA ENTRADA Y SALIDA');
+                resultado.requiereAtencion = true;
+                return resultado;
+            }
+            
+            // C-12: Entrada y salida a comer (se fue después de comer)
+            if (primera.minutos <= minInicio + 60 && 
+                segunda.minutos >= minComidaSalida - 30 && segunda.minutos <= minComidaSalida + 60) {
+                resultado.caso = 'C-12';
+                resultado.descripcion = 'Entrada y salida a comer (no regresó)';
+                resultado.marcasClasificadas.entrada = primera;
+                resultado.marcasClasificadas.salidaComida = segunda;
+                resultado.observaciones.push('NO REGRESÓ DE COMER');
+                resultado.requiereAtencion = true;
+                return resultado;
+            }
+            
+            // C-13: Entrada y entrada después de comer
+            if (primera.minutos <= minInicio + 60 && 
+                segunda.minutos >= minComidaEntrada - 30 && segunda.minutos <= minComidaEntrada + 60) {
+                resultado.caso = 'C-13';
+                resultado.descripcion = 'Entrada y regreso de comida (faltan salidas)';
+                resultado.marcasClasificadas.entrada = primera;
+                resultado.marcasClasificadas.entradaComida = segunda;
+                resultado.observaciones.push('FALTAN SALIDAS');
+                resultado.requiereAtencion = true;
+                return resultado;
+            }
+            
+            // Fallback: clasificar por distancia
+            resultado.caso = 'C-XX';
+            resultado.descripcion = '2 marcas no clasificables claramente';
+            resultado.observaciones.push('MARCAJE INCOMPLETO');
+            resultado.requiereAtencion = true;
+            
+            const dist1Entrada = Math.abs(primera.minutos - minInicio);
+            const dist2Salida = Math.abs(segunda.minutos - minFin);
+            
+            if (dist1Entrada < 90) resultado.marcasClasificadas.entrada = primera;
+            if (dist2Salida < 90) resultado.marcasClasificadas.salida = segunda;
+            
+            return resultado;
+        }
+        
+        // ============================================================
+        // CASO B: 3 marcas (falta 1)
+        // ============================================================
+        if (numMarcas === 3 && tieneComida) {
+            const m1 = todasLasMarcas[0];
+            const m2 = todasLasMarcas[1];
+            const m3 = todasLasMarcas[2];
+            const puntoMedioComida = Math.floor((minComidaSalida + minComidaEntrada) / 2);
+            
+            // B-5: Sin salida a comer (E1 → E2 → S2)
+            if (m1.minutos <= minInicio + 60 && 
+                m2.minutos >= minComidaEntrada - 30 && m2.minutos <= minComidaEntrada + 60 &&
+                m3.minutos >= minFin - 60) {
+                resultado.caso = 'B-5';
+                resultado.descripcion = 'Sin salida a comida';
+                resultado.marcasClasificadas.entrada = m1;
+                resultado.marcasClasificadas.entradaComida = m2;
+                resultado.marcasClasificadas.salida = m3;
+                resultado.observaciones.push('FALTA SALIDA COMIDA');
+                resultado.requiereAtencion = true;
+                return resultado;
+            }
+            
+            // B-6: Sin entrada después de comer (E1 → S1 → S2)
+            if (m1.minutos <= minInicio + 60 && 
+                m2.minutos >= minComidaSalida - 30 && m2.minutos <= minComidaSalida + 30 &&
+                m3.minutos >= minFin - 60) {
+                resultado.caso = 'B-6';
+                resultado.descripcion = 'Sin entrada después de comida';
+                resultado.marcasClasificadas.entrada = m1;
+                resultado.marcasClasificadas.salidaComida = m2;
+                resultado.marcasClasificadas.salida = m3;
+                resultado.observaciones.push('FALTA ENTRADA COMIDA');
+                resultado.requiereAtencion = true;
+                return resultado;
+            }
+            
+            // B-7: Sin salida final (E1 → S1 → E2)
+            if (m1.minutos <= minInicio + 60 && 
+                m2.minutos >= minComidaSalida - 30 && m2.minutos <= minComidaSalida + 30 &&
+                m3.minutos >= minComidaEntrada - 30 && m3.minutos <= minComidaEntrada + 60) {
+                resultado.caso = 'B-7';
+                resultado.descripcion = 'Sin salida final';
+                resultado.marcasClasificadas.entrada = m1;
+                resultado.marcasClasificadas.salidaComida = m2;
+                resultado.marcasClasificadas.entradaComida = m3;
+                resultado.observaciones.push('FALTA SALIDA FINAL');
+                resultado.requiereAtencion = true;
+                return resultado;
+            }
+            
+            // B-8: Sin entrada inicial (S1 → E2 → S2)
+            if (m1.minutos >= minComidaSalida - 30 && m1.minutos <= minComidaSalida + 30 &&
+                m2.minutos >= minComidaEntrada - 30 && m2.minutos <= minComidaEntrada + 60 &&
+                m3.minutos >= minFin - 60) {
+                resultado.caso = 'B-8';
+                resultado.descripcion = 'Sin entrada inicial';
+                resultado.marcasClasificadas.salidaComida = m1;
+                resultado.marcasClasificadas.entradaComida = m2;
+                resultado.marcasClasificadas.salida = m3;
+                resultado.observaciones.push('FALTA ENTRADA INICIAL');
+                resultado.requiereAtencion = true;
+                return resultado;
+            }
+            
+            // Clasificación genérica para 3 marcas
+            resultado.caso = 'B-XX';
+            resultado.descripcion = '3 marcas - falta 1';
+            resultado.observaciones.push('MARCAJE INCOMPLETO');
+            resultado.requiereAtencion = true;
+            
+            if (m1.minutos <= minComidaSalida - 30) {
+                resultado.marcasClasificadas.entrada = m1;
+                if (m2.minutos <= puntoMedioComida) {
+                    resultado.marcasClasificadas.salidaComida = m2;
+                    if (m3.minutos > puntoMedioComida && m3.minutos < minFin - 60) {
+                        resultado.marcasClasificadas.entradaComida = m3;
+                    } else {
+                        resultado.marcasClasificadas.salida = m3;
+                    }
+                } else {
+                    resultado.marcasClasificadas.entradaComida = m2;
+                    resultado.marcasClasificadas.salida = m3;
+                }
+            }
+            
+            return resultado;
+        }
+        
+        // ============================================================
+        // CASO A: 4 marcas (ideal con comida)
+        // ============================================================
+        if (numMarcas === 4 && tieneComida) {
+            resultado.caso = 'A-1';
+            resultado.descripcion = 'Ideal: E1 → S1 → E2 → S2';
+            resultado.marcasClasificadas.entrada = todasLasMarcas[0];
+            resultado.marcasClasificadas.salidaComida = todasLasMarcas[1];
+            resultado.marcasClasificadas.entradaComida = todasLasMarcas[2];
+            resultado.marcasClasificadas.salida = todasLasMarcas[3];
+            
+            const m1 = todasLasMarcas[0].minutos;
+            const m2 = todasLasMarcas[1].minutos;
+            const m3 = todasLasMarcas[2].minutos;
+            
+            // A-2: Orden invertido en comidas (E1 → E2 → S1 → S2)
+            if (m2 > m3) {
+                resultado.caso = 'A-2';
+                resultado.descripcion = 'Orden invertido en comidas';
+                resultado.marcasClasificadas.salidaComida = todasLasMarcas[2];
+                resultado.marcasClasificadas.entradaComida = todasLasMarcas[1];
+                resultado.observaciones.push('COMIDAS EN ORDEN INVERTIDO');
+                resultado.requiereAtencion = true;
+            }
+            
+            // A-4: Intervalos anómalos (comida muy corta)
+            const duracionComidaReal = m3 - m2;
+            if (duracionComidaReal < 10) {
+                resultado.caso = 'A-4';
+                resultado.descripcion = 'Comida muy corta (<10 min)';
+                resultado.observaciones.push('COMIDA ANÓMALA');
+                resultado.requiereAtencion = true;
+            }
+            
+            return resultado;
+        }
+        
+        // ============================================================
+        // CASO F: 5+ marcas (extras)
+        // ============================================================
+        if (numMarcas >= 5) {
+            resultado.caso = 'F-20';
+            resultado.descripcion = `${numMarcas} marcas (extras detectadas)`;
+            resultado.observaciones.push('MARCAS DUPLICADAS O EXTRAS');
+            resultado.requiereAtencion = true;
+            
+            resultado.marcasClasificadas.entrada = todasLasMarcas[0];
+            resultado.marcasClasificadas.salida = todasLasMarcas[numMarcas - 1];
+            
+            if (tieneComida) {
+                const puntoMedioComida = Math.floor((minComidaSalida + minComidaEntrada) / 2);
+                let mejorSalidaComida = null, mejorEntradaComida = null;
+                let distSC = Infinity, distEC = Infinity;
+                
+                for (let i = 1; i < numMarcas - 1; i++) {
+                    const m = todasLasMarcas[i];
+                    const dSC = Math.abs(m.minutos - minComidaSalida);
+                    const dEC = Math.abs(m.minutos - minComidaEntrada);
+                    
+                    if (dSC < distSC && m.minutos <= puntoMedioComida) {
+                        distSC = dSC;
+                        mejorSalidaComida = m;
+                    }
+                    if (dEC < distEC && m.minutos > puntoMedioComida) {
+                        distEC = dEC;
+                        mejorEntradaComida = m;
+                    }
+                }
+                
+                resultado.marcasClasificadas.salidaComida = mejorSalidaComida;
+                resultado.marcasClasificadas.entradaComida = mejorEntradaComida;
+            }
+            
+            return resultado;
+        }
+        
+        // Fallback
+        resultado.caso = 'X-XX';
+        resultado.descripcion = 'Caso no clasificado';
+        resultado.observaciones.push('REVISAR MANUALMENTE');
+        resultado.requiereAtencion = true;
+        
+        return resultado;
+    }
+
+    // ============================================================
+    // VALIDADOR DE HORARIOS ANÓMALOS (Casos G)
+    // ============================================================
+    function validarHorariosAnomalos(marcasClasificadas, turno, tieneComida) {
+        const anomalias = [];
+        const minInicio = horaAMinutos(normalizarHora(turno.hora_inicio));
+        const minFin = horaAMinutos(normalizarHora(turno.hora_fin));
+        
+        const entrada = marcasClasificadas.entrada;
+        const salida = marcasClasificadas.salida;
+        const salidaComida = marcasClasificadas.salidaComida;
+        const entradaComida = marcasClasificadas.entradaComida;
+        
+        // G-23: Jornada demasiado corta (menos de 4 horas trabajadas)
+        if (entrada && salida) {
+            const duracionReal = salida.minutos - entrada.minutos;
+            let tiempoComida = 0;
+            if (tieneComida && salidaComida && entradaComida) {
+                tiempoComida = entradaComida.minutos - salidaComida.minutos;
+            }
+            const trabajoNeto = duracionReal - tiempoComida;
+            
+            if (trabajoNeto < 240 && trabajoNeto > 0) {
+                anomalias.push({
+                    tipo: 'G-23',
+                    descripcion: 'JORNADA CORTA',
+                    detalle: `Solo ${Math.floor(trabajoNeto/60)}h ${trabajoNeto%60}m trabajadas`
+                });
+            }
+        }
+        
+        // G-24: Jornada demasiado larga (más de 12 horas)
+        if (entrada && salida) {
+            const duracionTotal = salida.minutos - entrada.minutos;
+            if (duracionTotal > 720) {
+                anomalias.push({
+                    tipo: 'G-24',
+                    descripcion: 'JORNADA MUY LARGA',
+                    detalle: `${Math.floor(duracionTotal/60)}h ${duracionTotal%60}m (posible error)`
+                });
+            }
+        }
+        
+        // G-25: Comidas muy cortas o muy largas
+        if (tieneComida && salidaComida && entradaComida) {
+            const duracionComida = entradaComida.minutos - salidaComida.minutos;
+            const minComidaEntradaEsp = horaAMinutos(normalizarHora(turno.entrada_comida));
+            const minComidaSalidaEsp = horaAMinutos(normalizarHora(turno.salida_comida));
+            const duracionComidaEsperada = minComidaEntradaEsp - minComidaSalidaEsp;
+            
+            if (duracionComida < 10) {
+                anomalias.push({
+                    tipo: 'G-25',
+                    descripcion: 'COMIDA MUY CORTA',
+                    detalle: `Solo ${duracionComida} minutos`
+                });
+            }
+            
+            if (duracionComida > duracionComidaEsperada * 2) {
+                anomalias.push({
+                    tipo: 'G-25B',
+                    descripcion: 'COMIDA MUY LARGA',
+                    detalle: `${Math.floor(duracionComida/60)}h ${duracionComida%60}m`
+                });
+            }
+        }
+        
+        return anomalias;
+    }
+
+    // ============================================================
+    // CONSTANTES DE REGLAS DE GENERACIÓN
+    // Estas reglas se aplican cuando NO hay marca biométrica clara
+    // o cuando la marca está fuera del rango aceptable
+    // ============================================================
+    const REGLAS_GENERACION = {
+        // ENTRADA: Generar entre -13 y 0 minutos antes de la hora oficial
+        // Ejemplo: para horario 8:00, el rango es 7:47 - 8:00
+        entrada: { min: -13, max: 0 },
+        
+        // SALIDA COMIDA: Generar entre -5 y 0 minutos antes de la hora oficial
+        salida_comida: { min: -5, max: 0 },
+        
+        // SALIDA COMIDA TARDE: Si salió tarde, generar entre 0 y +3 minutos
+        salida_comida_tarde: { min: 0, max: 3 },
+        
+        // ENTRADA COMIDA: Se calcula para asegurar mínimo 57 min de comida
+        // El rango es -3 a 0 minutos ANTES de la hora oficial
+        entrada_comida: { min: -3, max: 0 },
+        
+        // SALIDA FINAL: SIEMPRE generar entre 0 y +7 minutos después de la hora oficial
+        salida: { min: 0, max: 7 },
+        
+        // Duración mínima de comida en minutos (57 min para 1 hora, 117 min para 2 horas)
+        // Se calcula como: duración_oficial - 3 minutos
+        MINUTOS_MENOS_COMIDA: 3
+    };
+
+    // ============================================================
+    // RANGOS DE CONSERVACIÓN
+    // Si la marca biométrica está dentro de estos rangos, se CONSERVA
+    // ============================================================
+    const RANGOS_CONSERVAR = {
+        // ENTRADA: Conservar si está entre -5 y +infinito (tarde siempre se conserva)
+        entrada: { min: -5, max: Infinity },
+        
+        // SALIDA COMIDA: Conservar si salió antes o cerca de la hora (hasta +5 min)
+        salida_comida: { min: -Infinity, max: 5 },
+        
+        // ENTRADA COMIDA: Conservar si regresó tarde (conviene a la empresa)
+        // o si está dentro de -3 min de la hora oficial
+        entrada_comida: { min: -3, max: Infinity },
+        
+        // SALIDA FINAL: Nunca se conserva, siempre se genera entre 0 y +7
+        salida: { min: 0, max: 7 }
+    };
+
     function construirRegistrosDia(turno, fecha, observacion) {
         const inicio = normalizarHora(turno.hora_inicio);
         const fin = normalizarHora(turno.hora_fin);
+        const minInicio = horaAMinutos(inicio);
+        const minFin = horaAMinutos(fin);
 
         // Verificar si el turno tiene comida
         const tieneComida = turno.tiene_comida === true;
 
-        // Rangos de variación para datos generados (más realistas):
-        // Entrada: -10 a +3 minutos (puede llegar 10 min antes hasta 3 después)
-        const e1 = jitterHora(inicio, -10, 3, `${empleado.id_empleado || empleado.clave || empleado.nombre}|${fecha}|E1`);
-        // Salida final: -10 a 0 minutos (ej: 5:50 - 6:00 si sale a 6:00) - NUNCA DESPUÉS
-        const s2 = jitterHora(fin, -10, 0, `${empleado.id_empleado || empleado.clave || empleado.nombre}|${fecha}|S2`);
+        const seedBase = `${empleado.id_empleado || empleado.clave || empleado.nombre}|${fecha}`;
+        
+        // ============================================================
+        // ENTRADA AL TRABAJO: Generar entre -5 y 0 minutos
+        // Ejemplo: Para entrada 8:00 → generar entre 7:55 y 8:00
+        // ============================================================
+        const e1 = jitterHora(inicio, REGLAS_GENERACION.entrada.min, REGLAS_GENERACION.entrada.max, `${seedBase}|E1`);
+        
+        // ============================================================
+        // SALIDA FINAL: SIEMPRE entre 0 y +7 minutos
+        // Ejemplo: Para salida 17:00 → generar entre 17:00 y 17:07
+        // ============================================================
+        const s2 = jitterHora(fin, REGLAS_GENERACION.salida.min, REGLAS_GENERACION.salida.max, `${seedBase}|S2`);
 
         // Si NO tiene comida, solo devolver entrada y salida (2 registros)
         if (!tieneComida) {
@@ -471,14 +962,45 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
             ];
         }
 
-        // Si tiene comida, devolver los 4 registros
+        // ============================================================
+        // CÁLCULO DE HORARIOS DE COMIDA
+        // La comida debe durar MÍNIMO (duración_oficial - 3 minutos)
+        // Ejemplo: Si horario dice 13:00-14:00 (1 hora) → mínimo 57 min
+        //          Si horario dice 12:00-14:00 (2 horas) → mínimo 117 min (1:57)
+        // ============================================================
         const comidaSalidaBase = normalizarHora(turno.salida_comida);
         const comidaEntradaBase = normalizarHora(turno.entrada_comida);
-
-        // Salida a comida: -10 a +5 minutos (ej: 12:50 - 1:05 si comida es a 1:00)
-        const s1 = jitterHora(comidaSalidaBase, -10, 5, `${empleado.id_empleado || empleado.clave || empleado.nombre}|${fecha}|S1`);
-        // Entrada después de comida: -5 a +10 minutos (puede regresar 5 antes hasta 10 después)
-        const e2 = jitterHora(comidaEntradaBase, -5, 10, `${empleado.id_empleado || empleado.clave || empleado.nombre}|${fecha}|E2`);
+        
+        const minComidaSalida = horaAMinutos(comidaSalidaBase);
+        const minComidaEntrada = horaAMinutos(comidaEntradaBase);
+        const duracionComidaOficial = minComidaEntrada - minComidaSalida;
+        const duracionComidaMinima = duracionComidaOficial - REGLAS_GENERACION.MINUTOS_MENOS_COMIDA;
+        
+        // ============================================================
+        // SALIDA A COMIDA: Generar entre -5 y 0 minutos
+        // Ejemplo: Para comida 13:00 → generar entre 12:55 y 13:00
+        // ============================================================
+        const s1 = jitterHora(comidaSalidaBase, REGLAS_GENERACION.salida_comida.min, REGLAS_GENERACION.salida_comida.max, `${seedBase}|S1`);
+        
+        // ============================================================
+        // ENTRADA DE COMIDA: Calcular para asegurar mínimo 57 min de comida
+        // Partimos de S1 real y sumamos la duración mínima
+        // Ejemplo: Si S1 = 12:58, duración mínima = 57 → E2 mínimo = 13:55
+        // Luego agregamos variación de -3 a 0 para acercarnos a la hora oficial
+        // ============================================================
+        const minSalidaComidaReal = horaAMinutos(s1);
+        const minEntradaComidaMinima = minSalidaComidaReal + duracionComidaMinima;
+        
+        // La entrada de comida debe ser al menos minEntradaComidaMinima
+        // pero también cerca de la hora oficial (entre -3 y 0 min antes)
+        const minEntradaComidaOficialMenos3 = minComidaEntrada + REGLAS_GENERACION.entrada_comida.min;
+        
+        // Usar el mayor entre: (S1 + duración mínima) y (hora oficial - 3 min)
+        const minEntradaComidaBase = Math.max(minEntradaComidaMinima, minEntradaComidaOficialMenos3);
+        
+        // Agregar pequeña variación (0 a +3 min)
+        const variacionE2 = hashString(`${seedBase}|E2_VAR`) % 4; // 0 a 3
+        const e2 = minutosAHora(minEntradaComidaBase + variacionE2);
 
         return [
             { tipo: 'entrada', hora: e1, observacion },
@@ -521,8 +1043,9 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
     // FUNCIÓN PARA AJUSTAR REGISTROS SI EXCEDEN MÁXIMO DE HORAS
     // Si el tiempo trabajado excede max_horas + 15 minutos,
     // ajusta la salida final para que quede dentro del límite
+    // IMPORTANTE: La salida NUNCA puede ser antes de la hora oficial del turno
     // ============================================================
-    function ajustarRegistrosSiExcedenMaximo(registros, maxHorasTurno, seedKey) {
+    function ajustarRegistrosSiExcedenMaximo(registros, maxHorasTurno, seedKey, horaFinTurno = null) {
         if (!registros || registros.length === 0) return registros;
         
         const TOLERANCIA_MINUTOS = 15; // 15 minutos de tolerancia sobre el máximo
@@ -554,27 +1077,19 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
             return registros;
         }
         
-        // Calcular cuántos minutos hay que recortar
-        const exceso = minutosTrabajados - maxMinutosPermitidos;
+        // El tiempo excede el máximo - esto indica un problema con los datos
+        // En lugar de mover la salida antes de la hora oficial, simplemente
+        // dejamos la salida en el rango permitido (0 a +7) y marcamos como advertencia
+        // La salida ya fue generada correctamente en el rango 0 a +7
+        // No modificamos la hora, solo agregamos una nota
         
-        // Encontrar el último par (salida final) para ajustar
-        if (pares.length === 0) return registros;
-        
-        const ultimoPar = pares[pares.length - 1];
-        const idxSalidaFinal = ultimoPar.idxSalida;
-        
-        // Calcular nueva hora de salida (restar el exceso + variación aleatoria de -25 a -10 min)
-        // Esto hace que la salida quede entre 10-25 minutos antes del límite máximo
-        const variacion = 10 + (hashString(seedKey + '|AJUSTE') % 16); // Variación de 10 a 25 min
-        const nuevaSalidaMinutos = ultimoPar.minSalida - exceso - variacion;
-        const nuevaSalidaHora = minutosAHora(nuevaSalidaMinutos);
-        
-        // Actualizar el registro de salida
-        registros[idxSalidaFinal] = {
-            tipo: 'salida',
-            hora: nuevaSalidaHora,
-            observacion: 'AJUSTADO (EXCEDE MÁXIMO TURNO)'
-        };
+        if (pares.length > 0) {
+            const ultimoPar = pares[pares.length - 1];
+            const idxSalidaFinal = ultimoPar.idxSalida;
+            
+            // Mantener la hora pero actualizar la observación
+            registros[idxSalidaFinal].observacion = registros[idxSalidaFinal].observacion + ' [TIEMPO EXCEDE MÁXIMO]';
+        }
         
         return registros;
     }
@@ -637,6 +1152,48 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
             ultimoTurnoValido = determinarTipoTurnoDia(turno.hora_inicio, turno.hora_fin);
         }
 
+        // REGLA 0: Verificar si el turno tiene un EVENTO especial (desde horarios variables)
+        // Estos eventos tienen prioridad sobre las demás reglas
+        if (turno.evento === 'descanso') {
+            resultados.push({
+                fecha: dia.fecha,
+                tipo: "descanso",
+                registros: [],
+                trabajado_minutos: 0,
+                trabajado_hhmm: '00:00',
+                trabajado_decimal: 0,
+                observacion_dia: "DESCANSO (HORARIO VARIABLE)",
+                tipo_turno: ultimoTurnoValido.tipo_turno,
+                max_horas: ultimoTurnoValido.max_horas
+            });
+            return;
+        }
+        
+        if (turno.evento === 'dia_festivo') {
+            // Para día festivo desde horario variable, verificar si tiene registros
+            const registrosDelDiaFestivo = registrosMap[dia.fecha] || [];
+            const tieneRegistrosEnFestivo = registrosDelDiaFestivo.length > 0 &&
+                registrosDelDiaFestivo.some(r => r.entrada || r.salida);
+            
+            if (!tieneRegistrosEnFestivo) {
+                // No trabajó el día festivo
+                resultados.push({
+                    fecha: dia.fecha,
+                    tipo: "dia_festivo",
+                    registros: [],
+                    trabajado_minutos: 0,
+                    trabajado_hhmm: '00:00',
+                    trabajado_decimal: 0,
+                    observacion_dia: "DÍA FESTIVO (HORARIO VARIABLE)",
+                    tipo_turno: ultimoTurnoValido.tipo_turno,
+                    max_horas: ultimoTurnoValido.max_horas
+                });
+                return;
+            }
+            // Si tiene registros, continuar procesando normalmente (trabajó el festivo)
+            console.log(`[FESTIVO HORARIO VARIABLE] ${empleado.nombre} trabajó el día festivo ${dia.fecha}`);
+        }
+
         // REGLA 1: DOMINGOS son SIEMPRE descanso para TODOS (sin excepciones)
         if (dia.esDomingo) {
             resultados.push({
@@ -656,18 +1213,49 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
         // REGLA 1.5: DÍAS FESTIVOS → marcar como dia_festivo
         // Verificar si la fecha está en el set de festividades
         if (festivosSet.has(dia.fecha)) {
-            resultados.push({
-                fecha: dia.fecha,
-                tipo: "dia_festivo",
-                registros: [],
-                trabajado_minutos: 0,
-                trabajado_hhmm: '00:00',
-                trabajado_decimal: 0,
-                observacion_dia: "DÍA FESTIVO",
-                tipo_turno: ultimoTurnoValido.tipo_turno,
-                max_horas: ultimoTurnoValido.max_horas
-            });
-            return;
+            // Para VIGILANCIA: verificar si tienen registros biométricos en este día
+            // Si tienen registros → trabajaron, procesar como día normal
+            // Si NO tienen registros → se les dio el día festivo
+            if (esVigilancia) {
+                const registrosDelDiaFestivo = registrosMap[dia.fecha] || [];
+                const tieneRegistrosEnFestivo = registrosDelDiaFestivo.length > 0 &&
+                    registrosDelDiaFestivo.some(r => r.entrada || r.salida);
+                
+                if (tieneRegistrosEnFestivo) {
+                    // Vigilancia CON registros en día festivo → procesar como día normal
+                    // No retornar aquí, dejar que continúe el procesamiento normal
+                    // Solo agregar una nota de que es día festivo trabajado
+                    console.log(`[VIGILANCIA] ${empleado.nombre} trabajó el día festivo ${dia.fecha}`);
+                } else {
+                    // Vigilancia SIN registros en día festivo → se les dio el día
+                    resultados.push({
+                        fecha: dia.fecha,
+                        tipo: "dia_festivo",
+                        registros: [],
+                        trabajado_minutos: 0,
+                        trabajado_hhmm: '00:00',
+                        trabajado_decimal: 0,
+                        observacion_dia: "DÍA FESTIVO",
+                        tipo_turno: ultimoTurnoValido.tipo_turno,
+                        max_horas: ultimoTurnoValido.max_horas
+                    });
+                    return;
+                }
+            } else {
+                // Para otros departamentos: siempre es día festivo
+                resultados.push({
+                    fecha: dia.fecha,
+                    tipo: "dia_festivo",
+                    registros: [],
+                    trabajado_minutos: 0,
+                    trabajado_hhmm: '00:00',
+                    trabajado_decimal: 0,
+                    observacion_dia: "DÍA FESTIVO",
+                    tipo_turno: ultimoTurnoValido.tipo_turno,
+                    max_horas: ultimoTurnoValido.max_horas
+                });
+                return;
+            }
         }
 
         // Calcular tipo de turno para este día específico (o usar el último válido si no hay horario)
@@ -1122,37 +1710,61 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
 
             // ================================================================
             // APLICAR MARCAS ENCONTRADAS AL REGISTRO BASE
-            // REGLA DE ORO: Lo que CONVIENE a la empresa → CONSERVAR
-            //               Lo que NO conviene → REDONDEAR al horario
             // ================================================================
+            // REGLAS NUEVAS:
+            // 
+            // ENTRADA:
+            //   - MUY TEMPRANO (antes de -5 min) → Generar entre -5 y 0 min
+            //   - DENTRO DEL RANGO (-5 a 0 min) → CONSERVAR
+            //   - TARDE (después de hora) → CONSERVAR (conviene a la empresa)
+            //   - SIN MARCA → Generar entre -5 y 0 min
+            //
+            // SALIDA COMIDA:
+            //   - TEMPRANO (antes de hora) → CONSERVAR (conviene a la empresa)
+            //   - A TIEMPO (0 a +5 min) → CONSERVAR
+            //   - MUY TARDE (después de +5 min) → Generar entre 0 y +3 min
+            //   - SIN MARCA → Generar entre -5 y 0 min
+            //
+            // ENTRADA COMIDA:
+            //   - MUY TEMPRANO (comida < 57 min) → Generar asegurando mínimo 57 min
+            //   - DENTRO DEL RANGO (-3 a 0 min) → CONSERVAR
+            //   - TARDE (después de hora) → CONSERVAR (conviene a la empresa)
+            //   - SIN MARCA → Generar asegurando mínimo 57 min de comida
+            //
+            // SALIDA FINAL:
+            //   - SIEMPRE generar entre 0 y +7 minutos de la hora oficial
+            //   - No importa cuándo marcó, siempre se ajusta a este rango
+            // ================================================================
+
+            const seedKey = `${empleado.id_empleado || empleado.clave || empleado.nombre}|${dia.fecha}`;
 
             // ============================================================
             // ENTRADA AL TRABAJO (siempre índice 0)
-            // - TARDE → CONSERVAR (conviene: no paga esos minutos)
-            // - A TIEMPO (rango) → CONSERVAR
-            // - MUY TEMPRANO → REDONDEAR (no conviene: pagaría tiempo extra)
             // ============================================================
             if (marcaEntrada) {
                 const minMarcaEntrada = marcaEntrada.minutos;
+                const limiteRangoEntrada = minInicio + REGLAS_GENERACION.entrada.min; // ej: 8:00 + (-5) = 7:55
 
                 if (minMarcaEntrada > minInicio) {
-                    // Llegó TARDE (después de su hora, ej: 9:30 para entrada 9:00)
+                    // Llegó TARDE (después de su hora, ej: 8:20 para entrada 8:00)
                     // → CONSERVAR: Le conviene a la empresa (no paga esos minutos)
-                    base[0] = { tipo: 'entrada', hora: marcaEntrada.hora, observacion: 'RETARDO' };
-                } else if (minMarcaEntrada >= (minInicio + RANGOS_TOLERANCIA.entrada.min)) {
-                    // Llegó dentro del rango permitido (ej: 8:45-9:00 para entrada 9:00)
+                    const minutosTarde = minMarcaEntrada - minInicio;
+                    base[0] = { tipo: 'entrada', hora: marcaEntrada.hora, observacion: `RETARDO (+${minutosTarde} min)` };
+                } else if (minMarcaEntrada >= limiteRangoEntrada) {
+                    // Llegó dentro del rango (-5 a 0 min, ej: 7:55-8:00)
                     // → CONSERVAR: Está OK
                     base[0] = { tipo: 'entrada', hora: marcaEntrada.hora, observacion: 'BIOMÉTRICO' };
                 } else {
-                    // Llegó MUY TEMPRANO (antes del rango, ej: 8:20 para entrada 9:00)
-                    // → REDONDEAR: No conviene a la empresa (pagaría tiempo extra)
+                    // Llegó MUY TEMPRANO (antes del rango, ej: 7:30 para entrada 8:00)
+                    // → GENERAR: Entre -5 y 0 minutos de la hora oficial
                     base[0] = {
                         tipo: 'entrada',
-                        hora: jitterHora(inicio, -12, -3, `${empleado.id_empleado || empleado.clave || empleado.nombre}|${dia.fecha}|E1_ADJ`),
+                        hora: jitterHora(inicio, REGLAS_GENERACION.entrada.min, REGLAS_GENERACION.entrada.max, `${seedKey}|E1_ADJ`),
                         observacion: 'AJUSTADO (MUY TEMPRANO)'
                     };
                 }
             }
+            // Si no hay marca de entrada, el registro base ya tiene el valor generado por construirRegistrosDia
 
             // Determinar índice de salida final según si tiene comida
             // Con comida: [entrada(0), salidaComida(1), entradaComida(2), salida(3)]
@@ -1165,48 +1777,57 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
             if (tieneComida) {
                 const minSalidaComidaEsperada = horaAMinutos(comidaSalida);
                 const minEntradaComidaEsperada = horaAMinutos(comidaEntrada);
+                const duracionComidaOficial = minEntradaComidaEsperada - minSalidaComidaEsperada;
+                const duracionComidaMinima = duracionComidaOficial - REGLAS_GENERACION.MINUTOS_MENOS_COMIDA; // ej: 60 - 3 = 57 min
                 
                 // ============================================================
                 // SALIDA A COMIDA
-                // - ANTES de su hora → CONSERVAR (conviene: trabajó menos)
-                // - A TIEMPO o poco después (0 a +15 min) → CONSERVAR
-                // - MUY TARDE (+15 min) → REDONDEAR (no conviene: trabajó de más sin pago)
+                // - TEMPRANO → CONSERVAR (conviene: trabajó menos)
+                // - A TIEMPO (0 a +5 min) → CONSERVAR
+                // - MUY TARDE (+5 min) → GENERAR entre 0 y +3 min
                 // ============================================================
                 if (marcaSalidaComida) {
                     const minMarcaSalidaComida = marcaSalidaComida.minutos;
                     
                     if (minMarcaSalidaComida < minSalidaComidaEsperada) {
-                        // Salió ANTES de su hora (ej: 12:55 para comida 13:00)
+                        // Salió ANTES de su hora (ej: 12:45 para comida 13:00)
                         // → CONSERVAR: Le conviene a la empresa (trabajó menos)
-                        base[1] = { tipo: 'salida', hora: marcaSalidaComida.hora, observacion: 'SALIÓ TEMPRANO' };
-                    } else if (minMarcaSalidaComida <= (minSalidaComidaEsperada + RANGOS_TOLERANCIA.salida_comida.max)) {
-                        // Salió dentro del rango permitido (ej: 13:00-13:15)
+                        const minutosAntes = minSalidaComidaEsperada - minMarcaSalidaComida;
+                        base[1] = { tipo: 'salida', hora: marcaSalidaComida.hora, observacion: `SALIÓ TEMPRANO (-${minutosAntes} min)` };
+                    } else if (minMarcaSalidaComida <= (minSalidaComidaEsperada + RANGOS_CONSERVAR.salida_comida.max)) {
+                        // Salió dentro del rango (0 a +5 min)
                         // → CONSERVAR: Está OK
                         base[1] = { tipo: 'salida', hora: marcaSalidaComida.hora, observacion: 'BIOMÉTRICO' };
                     } else {
-                        // Salió MUY TARDE (ej: 13:30+ para comida 13:00)
-                        // → REDONDEAR: No conviene (está trabajando de más sin pago)
+                        // Salió MUY TARDE (ej: 13:15+ para comida 13:00)
+                        // → GENERAR: Entre 0 y +3 minutos
                         base[1] = {
                             tipo: 'salida',
-                            hora: jitterHora(comidaSalida, 5, 12, `${empleado.id_empleado || empleado.clave || empleado.nombre}|${dia.fecha}|S1_ADJ`),
+                            hora: jitterHora(comidaSalida, REGLAS_GENERACION.salida_comida_tarde.min, REGLAS_GENERACION.salida_comida_tarde.max, `${seedKey}|S1_ADJ`),
                             observacion: 'AJUSTADO (MUY TARDE)'
                         };
                     }
                 }
+                // Si no hay marca, el registro base ya tiene el valor generado
 
                 // ============================================================
                 // ENTRADA DE COMIDA (regreso)
-                // - TARDE → CONSERVAR (conviene: no paga esos minutos de descanso extra)
-                // - A TIEMPO → CONSERVAR
-                // - TEMPRANO → CONSERVAR (conviene: trabaja más sin pago extra)
-                // - MUY TEMPRANO (>30 min antes) → REDONDEAR (probable error de marcación)
+                // - MUY TEMPRANO (comida < 57 min) → GENERAR asegurando mínimo
+                // - DENTRO DEL RANGO (-3 a 0 min) → CONSERVAR
+                // - TARDE → CONSERVAR (conviene: no trabajó esos minutos)
                 // ============================================================
                 if (marcaEntradaComida) {
                     const minMarcaEntradaComida = marcaEntradaComida.minutos;
-                    const MARGEN_ERROR_TEMPRANO = 30; // Más de 30 min antes = probable error
+                    
+                    // Calcular duración real de la comida basada en la salida a comida
+                    const salidaComidaReal = base[1] ? horaAMinutos(base[1].hora) : minSalidaComidaEsperada;
+                    const duracionComidaReal = minMarcaEntradaComida - salidaComidaReal;
+                    
+                    // Límite inferior: -3 minutos antes de la hora oficial
+                    const limiteRangoEntradaComida = minEntradaComidaEsperada + REGLAS_GENERACION.entrada_comida.min;
                     
                     if (minMarcaEntradaComida > minEntradaComidaEsperada) {
-                        // Regresó TARDE (ej: 14:10, 14:44 para entrada comida 14:00)
+                        // Regresó TARDE (ej: 14:15 para entrada comida 14:00)
                         // → CONSERVAR: Le conviene a la empresa (no paga esos minutos)
                         const minutosTarde = minMarcaEntradaComida - minEntradaComidaEsperada;
                         base[2] = { 
@@ -1214,40 +1835,65 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                             hora: marcaEntradaComida.hora, 
                             observacion: `RETARDO COMIDA (+${minutosTarde} min)` 
                         };
-                    } else if (minMarcaEntradaComida >= (minEntradaComidaEsperada - MARGEN_ERROR_TEMPRANO)) {
-                        // Regresó A TIEMPO o TEMPRANO (hasta 30 min antes)
-                        // → CONSERVAR: Le conviene (trabaja más sin pago extra)
+                    } else if (minMarcaEntradaComida >= limiteRangoEntradaComida && duracionComidaReal >= duracionComidaMinima) {
+                        // Regresó dentro del rango (-3 a 0 min) Y la comida duró al menos 57 min
+                        // → CONSERVAR: Está OK
                         base[2] = { tipo: 'entrada', hora: marcaEntradaComida.hora, observacion: 'BIOMÉTRICO' };
                     } else {
-                        // Regresó MUY TEMPRANO (más de 30 min antes, ej: 13:20 para 14:00)
-                        // → REDONDEAR: Probable error de marcación
+                        // Regresó MUY TEMPRANO o la comida fue muy corta
+                        // → GENERAR: Asegurar mínimo 57 minutos de comida
+                        const minEntradaComidaMinima = salidaComidaReal + duracionComidaMinima;
+                        const minEntradaComidaGenerada = Math.max(minEntradaComidaMinima, limiteRangoEntradaComida);
+                        const variacion = hashString(`${seedKey}|E2_ADJ`) % 4; // 0 a 3 min de variación
+                        
                         base[2] = {
                             tipo: 'entrada',
-                            hora: jitterHora(comidaEntrada, -3, 2, `${empleado.id_empleado || empleado.clave || empleado.nombre}|${dia.fecha}|E2_ADJ`),
-                            observacion: 'AJUSTADO (POSIBLE ERROR)'
+                            hora: minutosAHora(minEntradaComidaGenerada + variacion),
+                            observacion: 'AJUSTADO (COMIDA CORTA)'
                         };
                     }
                 }
+                // Si no hay marca, el registro base ya tiene el valor generado
             }
 
             // ============================================================
             // SALIDA A CASA (SALIDA FINAL)
-            // - ANTES o a tiempo → CONSERVAR
-            // - MUY TARDE → REDONDEAR (no conviene: pagaría horas extra)
+            // - Si salió DENTRO del rango (0 a +7 min) → CONSERVAR
+            // - Si salió ANTES de la hora oficial → GENERAR entre 0 y +7
+            // - Si salió MUY TARDE (después de +7 min) → GENERAR entre 0 y +7
             // ============================================================
             if (marcaSalida) {
                 const minMarcaSalida = marcaSalida.minutos;
-
-                if (minMarcaSalida <= minFin) {
-                    // Salió antes o a la hora exacta
-                    // → CONSERVAR: Está OK / Conviene
-                    base[indiceSalidaFinal] = { tipo: 'salida', hora: marcaSalida.hora, observacion: 'BIOMÉTRICO' };
+                const limiteInferior = minFin + REGLAS_GENERACION.salida.min; // ej: 17:00 + 0 = 17:00
+                const limiteSuperior = minFin + REGLAS_GENERACION.salida.max; // ej: 17:00 + 7 = 17:07
+                
+                if (minMarcaSalida >= limiteInferior && minMarcaSalida <= limiteSuperior) {
+                    // Salió DENTRO del rango permitido (17:00 a 17:07)
+                    // → CONSERVAR: Está OK
+                    base[indiceSalidaFinal] = { 
+                        tipo: 'salida', 
+                        hora: marcaSalida.hora, 
+                        observacion: 'BIOMÉTRICO' 
+                    };
+                } else if (minMarcaSalida < limiteInferior) {
+                    // Salió ANTES de la hora oficial (ej: 16:50 para salida 17:00)
+                    // → GENERAR: Entre 0 y +7 minutos de la hora oficial
+                    base[indiceSalidaFinal] = {
+                        tipo: 'salida',
+                        hora: jitterHora(fin, REGLAS_GENERACION.salida.min, REGLAS_GENERACION.salida.max, `${seedKey}|S2_EARLY`),
+                        observacion: 'AJUSTADO (SALIÓ ANTES)'
+                    };
                 } else {
-                    // Salió DESPUÉS de su hora oficial (ej: 17:30 para salida 17:00)
-                    // → REDONDEAR: No conviene (no se pagan horas extra)
-                    base[indiceSalidaFinal] = { tipo: 'salida', hora: fin, observacion: 'AJUSTADO (HORA EXTRA)' };
+                    // Salió MUY TARDE (ej: 17:20, 18:30 para salida 17:00)
+                    // → GENERAR: Entre 0 y +7 minutos de la hora oficial
+                    base[indiceSalidaFinal] = {
+                        tipo: 'salida',
+                        hora: jitterHora(fin, REGLAS_GENERACION.salida.min, REGLAS_GENERACION.salida.max, `${seedKey}|S2_LATE`),
+                        observacion: 'AJUSTADO (SALIÓ TARDE)'
+                    };
                 }
             }
+            // Si no hay marca de salida, el registro base ya tiene el valor generado por construirRegistrosDia
 
             // ============================================================
             // VALIDACIÓN FINAL: Ajustar si excede máximo de horas del turno
@@ -1257,6 +1903,36 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
             const seedKeyAjuste = `${empleado.id_empleado || empleado.clave || empleado.nombre}|${dia.fecha}`;
             ajustarRegistrosSiExcedenMaximo(base, infoTurnoDia.max_horas, seedKeyAjuste);
 
+            // ============================================================
+            // CLASIFICAR INCIDENCIA Y GENERAR OBSERVACIÓN DETALLADA
+            // Usar el clasificador de incidencias para determinar el caso
+            // ============================================================
+            const incidencia = clasificarIncidenciaMarcajes(todasLasMarcas, turno, tieneComida);
+            const anomalias = validarHorariosAnomalos(incidencia.marcasClasificadas, turno, tieneComida);
+            
+            // Generar observación del día basada en la incidencia detectada
+            let observacionDia = "OK";
+            
+            if (incidencia.caso === 'A-1' || incidencia.caso === 'A-IDEAL') {
+                // Caso ideal: todas las marcas correctas
+                observacionDia = "MARCAJE COMPLETO";
+            } else if (incidencia.requiereAtencion) {
+                // Casos que requieren atención
+                const obs = [`[${incidencia.caso}]`, incidencia.descripcion];
+                if (incidencia.observaciones.length > 0) {
+                    obs.push(`(${incidencia.observaciones.join(', ')})`);
+                }
+                observacionDia = obs.join(' ');
+            } else {
+                observacionDia = "OK/PARCIAL";
+            }
+            
+            // Agregar anomalías de horario si existen
+            if (anomalias.length > 0) {
+                const anomaliasStr = anomalias.map(a => `[${a.tipo}] ${a.descripcion}`).join('; ');
+                observacionDia += ` | ${anomaliasStr}`;
+            }
+
             const trabajo = calcularTrabajoDesdeRegistros(base, infoTurnoDia.max_horas);
             resultados.push({
                 fecha: dia.fecha,
@@ -1265,15 +1941,41 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                 trabajado_minutos: trabajo.minutos,
                 trabajado_hhmm: trabajo.hhmm,
                 trabajado_decimal: trabajo.decimal,
-                observacion_dia: "OK/PARCIAL",
+                observacion_dia: observacionDia,
                 tipo_turno: infoTurnoDia.tipo_turno,
-                max_horas: infoTurnoDia.max_horas
+                max_horas: infoTurnoDia.max_horas,
+                incidencia: incidencia.caso,  // Código de incidencia para referencia
+                requiere_revision: incidencia.requiereAtencion || anomalias.length > 0
             });
             return;
         }
 
-        // REGLA 5: Si NO tiene registro biométrico → inasistencia
+        // REGLA 5: Si NO tiene registro biométrico este día específico
+        // NUEVA LÓGICA: Si dias_ausencias === 0, RRHH indicó que no tuvo ausencias
+        // → Auto-generar registros en lugar de marcar inasistencia
         if (!tieneRegistroBiometrico) {
+            const diasAusenciasRestantes = empleado.dias_ausencias || 0;
+            
+            if (diasAusenciasRestantes === 0 && diasProcesados < diasTrabajadosRestantes) {
+                // RRHH indicó 0 ausencias → auto-generar registro
+                diasProcesados++;
+                const registrosDia = construirRegistrosDia(turno, dia.fecha, 'REGISTRO GENERADO');
+                const trabajo = calcularTrabajoDesdeRegistros(registrosDia, infoTurnoDia.max_horas);
+                resultados.push({
+                    fecha: dia.fecha,
+                    tipo: "asistencia",
+                    registros: registrosDia,
+                    trabajado_minutos: trabajo.minutos,
+                    trabajado_hhmm: trabajo.hhmm,
+                    trabajado_decimal: trabajo.decimal,
+                    observacion_dia: "SIN CHECADA (0 AUSENCIAS RRHH)",
+                    tipo_turno: infoTurnoDia.tipo_turno,
+                    max_horas: infoTurnoDia.max_horas
+                });
+                return;
+            }
+            
+            // Si tiene ausencias pendientes o ya completó dias_trabajados → inasistencia
             resultados.push({
                 fecha: dia.fecha,
                 tipo: "inasistencia",

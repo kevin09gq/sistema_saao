@@ -62,19 +62,8 @@ try {
                     $total_incapacidades += $incapacidades;
                     $total_dias_trabajados += $dias_trabajados;
 
-                    // Obtener id_empresa del empleado
-                    $sql_empresa = "SELECT id_empresa FROM info_empleados WHERE id_empleado = ?";
-                    $stmt_empresa = $conn->prepare($sql_empresa);
-                    $stmt_empresa->bind_param("i", $empleado_id);
-                    $stmt_empresa->execute();
-                    $result_empresa = $stmt_empresa->get_result();
-                    $id_empresa = null;
-                    if ($result_empresa->num_rows > 0) {
-                        $row_empresa = $result_empresa->fetch_assoc();
-                        $id_empresa = $row_empresa['id_empresa'];
-                    }
-                    $stmt_empresa->close();
-
+                    // Usar id_empresa general del JSON
+                    $id_empresa = isset($datos['id_empresa']) ? intval($datos['id_empresa']) : null;
                     if (!$id_empresa) {
                         continue; // Si no tiene empresa asignada, saltar este empleado
                     }

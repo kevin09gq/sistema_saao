@@ -6,6 +6,25 @@ $(document).ready(function () {
     // Inicializar la funciones
     buscar_empleado();
     initPlanPago();
+    sincronizarAnioConFecha();
+
+
+    /**
+     * ==========================================
+     * Sincronizar año de inicio con fecha seleccionada
+     * ==========================================
+     */
+    function sincronizarAnioConFecha() {
+        $("#fecha").on("change", function () {
+            const fechaSeleccionada = $(this).val();
+            if (fechaSeleccionada) {
+                const anio = new Date(fechaSeleccionada).getFullYear();
+                $("#anio_inicio").val(anio);
+                // Disparar evento para recalcular el plan
+                $("#anio_inicio").trigger('input');
+            }
+        });
+    }
 
 
     /**
@@ -29,7 +48,7 @@ $(document).ready(function () {
     $(document).on('submit', '#form-nuevo-prestamo', function (e) {
         e.preventDefault();
 
-        // Datps generales del prestamo
+        // Datos generales del prestamo
         const id_empleado = $("#id_empleado").val();
         const folio = $("#folio").val();
         const monto = $("#monto").val();
@@ -39,7 +58,7 @@ $(document).ready(function () {
         //    Datos del plan de pago
         // ==============================
         const semana_inicio = $("#semana_inicio").val();
-        const anio_inicio = new Date().getFullYear();
+        const anio_inicio = $("#anio_inicio").val();
         const semana_fin = $("#semana_fin").val();
         const anio_fin = $("#anio_fin").val();
 
@@ -63,7 +82,6 @@ $(document).ready(function () {
             }
         });
 
-
         // =======================
         // Datos a enviar por AJAX
         // =======================
@@ -79,9 +97,22 @@ $(document).ready(function () {
             semana_fin,
             anio_fin,
             // Detalle del plan de pago
-            detalle_plan
+            detalle_plan,
+            // Flag para confirmar solapamiento (inicialmente false)
+            confirmar_solapamiento: 'false'
         };
 
+        // Intentar guardar el préstamo
+        guardarPrestamo(datos);
+
+    });
+
+    /**
+     * ==========================================
+     * Función para guardar el préstamo
+     * ==========================================
+     */
+    function guardarPrestamo(datos) {
         $.ajax({
             type: "POST",
             url: "../php/guardarNuevoPrestamo.php",
@@ -101,11 +132,54 @@ $(document).ready(function () {
 
             },
             error: function (xhr, status, error) {
-                console.error("Error en la solicitud AJAX:", status, error);
+                console.error("El servidor devolvio un error: ", status, error);
+                
+                let respuesta = xhr.responseJSON || {};
+                
+                // Verificar si es una advertencia de solapamiento que requiere confirmación
+                if (xhr.status === 409 && respuesta.data && respuesta.data.requiere_confirmacion) {
+                    // Construir lista de planes solapados
+                    let listaPlanesHtml = '<ul class="text-start mb-0">';
+                    respuesta.data.planes_solapados.forEach(function(plan) {
+                        listaPlanesHtml += `<li><strong>Folio ${plan.folio}</strong><br><small class="text-muted">${plan.rango}</small></li>`;
+                    });
+                    listaPlanesHtml += '</ul>';
+
+                    // Mostrar confirmación con los detalles del solapamiento
+                    Swal.fire({
+                        title: '⚠️ Solapamiento de Planes Detectado',
+                        html: `
+                            <p>El nuevo plan de pago <strong>(Sem ${datos.semana_inicio}/${datos.anio_inicio} - Sem ${datos.semana_fin}/${datos.anio_fin})</strong> 
+                            se solapa con los siguientes planes existentes:</p>
+                            ${listaPlanesHtml}
+                            <hr>
+                            <p class="text-warning mb-0"><i class="bi bi-exclamation-triangle"></i> Esto significa que el empleado tendrá pagos simultáneos de múltiples préstamos durante algunas semanas.</p>
+                        `,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Sí, guardar de todas formas',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Usuario confirma, enviar de nuevo con flag de confirmación
+                            datos.confirmar_solapamiento = 'true';
+                            guardarPrestamo(datos);
+                        }
+                    });
+                } else {
+                    // Otro tipo de error
+                    Swal.fire({
+                        title: respuesta.titulo || 'Error',
+                        text: respuesta.mensaje || 'Ocurrió un error al guardar',
+                        icon: respuesta.icono || 'error',
+                        confirmButtonText: 'Aceptar'
+                    });
+                }
             }
         });
-
-    });
+    }
 
 
     /**
@@ -184,7 +258,7 @@ $(document).ready(function () {
                     if (response.data.sem_fin_plan && response.data.anio_fin_plan) {
                         let semFinPlan = Number(response.data.sem_fin_plan);
                         let anioFinPlan = Number(response.data.anio_fin_plan);
-                        
+
                         // Obtener semana y año actual
                         let now = new Date();
                         let startOfYear = new Date(now.getFullYear(), 0, 1);
@@ -236,7 +310,7 @@ $(document).ready(function () {
             let num = parseInt($("#num_semana").val()) || 0;
             let pago = parseFloat($("#pago_semana").val()) || 0;
             let inicio = parseInt($("#semana_inicio").val()) || 1;
-            const baseYear = new Date().getFullYear();
+            const baseYear = parseInt($("#anio_inicio").val()) || new Date().getFullYear();
 
             if (!monto || !num || !pago) {
                 $("#plan_table").html("");
@@ -333,6 +407,7 @@ $(document).ready(function () {
         $("#num_semana").on("input", function () { updatePagoFromMonto(); });
         $("#pago_semana").on("input", function () { updateNumFromPago(); });
         $("#semana_inicio").on("input", function () { renderPlan(); });
+        $("#anio_inicio").on("input", function () { renderPlan(); });
 
         // Inicializar valores por defecto
         if ($("#num_semana").val() === "") $("#num_semana").val(5);

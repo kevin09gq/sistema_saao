@@ -1,13 +1,19 @@
+// Autor: Brandon
+
 $(document).ready(function () {
 
-    // Mapeo de checkboxes a nombres de departamentos (parciales para buscar)
+    // Mapeo de checkboxes a nombres de departamentos (con variantes por cambios históricos)
+    // NOTA: Solo 10 Libras y 40 Libras tienen variantes históricas (Empaque -> Produccion)
+    // "Produccion" es un departamento independiente y NO tiene variantes
     const DEPARTAMENTOS_MAP = {
-        'checkBoxProduccion': 'Produccion',
-        'checkBoxProduccion40Libras': 'Produccion 40 Libras',
-        'checkBoxProduccion10Libras': 'Produccion 10 Libras'
+        'checkBoxProduccion': ['Produccion'],  // Solo "Produccion", sin variantes
+        'checkBoxProduccion40Libras': ['Produccion 40 Libras', 'Empaque 40 Libras'],
+        'checkBoxProduccion10Libras': ['Produccion 10 Libras', 'Empaque 10 Libras']
     };
 
-    // Event listener para guardar horario variable
+    // ===================================================
+    // AQUI SE GUARDA EL HORARIO VARIABLE A LOS EMPLEADOS
+    // ===================================================
     $(document).on('click', '#btn-guardar-horario-variable', async function () {
         
         // 1. Leer los datos del formulario
@@ -57,9 +63,13 @@ $(document).ready(function () {
         
         (jsonUnido.departamentos || []).forEach(depto => {
             // Verificar si este departamento está seleccionado
+            // departamentosSeleccionados es un array de arrays con variantes
             const deptoNombreLimpio = limpiarNombreDepto(depto.nombre);
-            const estaSeleccionado = departamentosSeleccionados.some(seleccionado => 
-                deptoNombreLimpio.includes(seleccionado)
+            
+            // IMPORTANTE: Usar comparación EXACTA (===), no .includes()
+            // Esto evita que "Produccion" coincida con "Produccion 10 Libras"
+            const estaSeleccionado = departamentosSeleccionados.some(variantes => 
+                variantes.some(variante => deptoNombreLimpio === variante)
             );
             
             if (!estaSeleccionado) return;
@@ -126,8 +136,91 @@ $(document).ready(function () {
     });
 
     // Event listener para limpiar el modal al cerrarse
+    /*
     $('#horariosModal').on('hidden.bs.modal', function () {
         limpiarFormularioModal();
+    }); */
+
+    // ============================================================
+    // BOTÓN PARA LIMPIAR UNA FILA DEL FORMULARIO DE HORARIOS
+    // ============================================================
+    $(document).on('click', '.btn-limpiar-fila-horario', function (e) {
+        e.preventDefault();
+        const $fila = $(this).closest('tr');
+        
+        // Limpiar select del día
+        // $fila.find('select[name="horario_variable_dia[]"]').val('');
+        
+        // Limpiar todos los inputs de hora
+        $fila.find('input[type="time"]').val('');
+        
+        // Limpiar el evento oculto
+        $fila.find('input[name="horario_variable_evento[]"]').val('');
+        
+        // Ocultar el badge de evento
+        $fila.find('.evento-badge').addClass('d-none').text('');
+    });
+
+    // ============================================================
+    // BOTÓN PARA ABRIR MODAL DE EVENTOS DEL DÍA
+    // ============================================================
+    let $filaEventoActual = null;
+
+    $(document).on('click', '.btn-evento-dia', function (e) {
+        e.preventDefault();
+        $filaEventoActual = $(this).closest('tr');
+        
+        // Obtener el valor actual del evento (si existe)
+        const eventoActual = $filaEventoActual.find('input[name="horario_variable_evento[]"]').val();
+        
+        // Limpiar selección previa
+        $('input[name="tipoEventoHorarioVariable"]').prop('checked', false);
+        
+        // Si hay un evento, seleccionarlo
+        if (eventoActual) {
+            $(`input[name="tipoEventoHorarioVariable"][value="${eventoActual}"]`).prop('checked', true);
+        }
+        
+        // Abrir el modal de eventos para horarios variables
+        $('#eventosHorarioVariableModal').modal('show');
+    });
+
+    // ============================================================
+    // GUARDAR EVENTO DEL DÍA EN HORARIOS VARIABLES
+    // ============================================================
+    $(document).on('click', '#btn-guardar-evento-horario-variable', function () {
+        if (!$filaEventoActual) return;
+        
+        const eventoSeleccionado = $('input[name="tipoEventoHorarioVariable"]:checked').val() || '';
+        
+        // Guardar en el input oculto
+        $filaEventoActual.find('input[name="horario_variable_evento[]"]').val(eventoSeleccionado);
+        
+        // Actualizar el badge visual
+        const $badge = $filaEventoActual.find('.evento-badge');
+        
+        if (eventoSeleccionado) {
+            let badgeText = '';
+            let badgeClass = 'bg-secondary';
+            
+            if (eventoSeleccionado === 'descanso') {
+                badgeText = '🏠 Descanso';
+                badgeClass = 'bg-warning text-dark';
+            } else if (eventoSeleccionado === 'dia_festivo') {
+                badgeText = '🎉 Festivo';
+                badgeClass = 'bg-info';
+            }
+            
+            $badge.removeClass('d-none bg-secondary bg-warning bg-info text-dark')
+                  .addClass(badgeClass)
+                  .text(badgeText);
+        } else {
+            $badge.addClass('d-none').text('');
+        }
+        
+        // Cerrar el modal
+        $('#eventosHorarioVariableModal').modal('hide');
+        $filaEventoActual = null;
     });
 
     // Event listener para convertir a mayúsculas automáticamente al escribir en el campo día
@@ -152,6 +245,10 @@ $(document).ready(function () {
         $('#tbody_horarios tr').each(function () {
             $(this).find('input[type="text"]').val('');
             $(this).find('input[type="time"]').val('');
+            $(this).find('select').val('');
+            // Limpiar eventos
+            $(this).find('input[name="horario_variable_evento[]"]').val('');
+            $(this).find('.evento-badge').addClass('d-none').text('');
         });
         
         // Desmarcar checkbox de Produccion
@@ -176,15 +273,17 @@ $(document).ready(function () {
             const salidaComida = $fila.find('input[name="horario_variable_salida_comida[]"]').val();
             const entradaComida = $fila.find('input[name="horario_variable_entrada_comida[]"]').val();
             const salida = $fila.find('input[name="horario_variable_salida[]"]').val();
+            const evento = $fila.find('input[name="horario_variable_evento[]"]').val() || '';
             
-            // Solo agregar si tiene al menos el día y alguna hora
-            if (dia && (entrada || salida)) {
+            // Agregar si tiene el día seleccionado (con horario O con evento)
+            if (dia) {
                 horarios.push({
                     dia: dia,
                     entrada: entrada || '',
                     salida_comida: salidaComida || '',
                     entrada_comida: entradaComida || '',
-                    salida: salida || ''
+                    salida: salida || '',
+                    evento: evento  // 'descanso', 'dia_festivo' o ''
                 });
             }
         });
@@ -194,6 +293,8 @@ $(document).ready(function () {
 
     /**
      * Obtiene los nombres de departamentos seleccionados en los checkboxes
+     * Retorna un array de arrays, donde cada sub-array contiene las variantes del nombre
+     * Ejemplo: [['Produccion 10 Libras', 'Empaque 10 Libras'], ['Produccion 40 Libras', 'Empaque 40 Libras']]
      */
     function obtenerDepartamentosSeleccionados() {
         const seleccionados = [];
@@ -201,6 +302,7 @@ $(document).ready(function () {
         Object.keys(DEPARTAMENTOS_MAP).forEach(checkboxId => {
             const $checkbox = $(`#${checkboxId}`);
             if ($checkbox.is(':checked')) {
+                // DEPARTAMENTOS_MAP[checkboxId] ahora es un array de variantes
                 seleccionados.push(DEPARTAMENTOS_MAP[checkboxId]);
             }
         });
@@ -356,6 +458,28 @@ $(document).ready(function () {
             
             const turnoDelDia = horario.find(h => h.dia.toUpperCase() === nombreDia);
             if (turnoDelDia) {
+                // Verificar si tiene un evento especial (descanso o día festivo)
+                if (turnoDelDia.evento === 'descanso') {
+                    return { 
+                        hora_inicio: null, 
+                        hora_fin: null, 
+                        salida_comida: null, 
+                        entrada_comida: null, 
+                        tiene_comida: false,
+                        evento: 'descanso'
+                    };
+                }
+                if (turnoDelDia.evento === 'dia_festivo') {
+                    return { 
+                        hora_inicio: null, 
+                        hora_fin: null, 
+                        salida_comida: null, 
+                        entrada_comida: null, 
+                        tiene_comida: false,
+                        evento: 'dia_festivo'
+                    };
+                }
+                
                 const entrada = turnoDelDia.entrada && turnoDelDia.entrada.trim() !== '' ? turnoDelDia.entrada : null;
                 const salida = turnoDelDia.salida && turnoDelDia.salida.trim() !== '' ? turnoDelDia.salida : null;
                 
@@ -374,10 +498,11 @@ $(document).ready(function () {
                     hora_fin: salida,
                     salida_comida: salidaComida,
                     entrada_comida: entradaComida,
-                    tiene_comida: tieneComida
+                    tiene_comida: tieneComida,
+                    evento: ''
                 };
             }
-            return { hora_inicio: null, hora_fin: null, salida_comida: null, entrada_comida: null, tiene_comida: false };
+            return { hora_inicio: null, hora_fin: null, salida_comida: null, entrada_comida: null, tiene_comida: false, evento: '' };
         };
 
         function normalizarHora(hora) {
@@ -417,6 +542,134 @@ $(document).ready(function () {
             return minutosAHora(base + offset);
         }
 
+        // ============================================================
+        // CLASIFICADOR DE INCIDENCIAS DE MARCAJES (versión local)
+        // ============================================================
+        function clasificarIncidenciaMarcajes(todasLasMarcas, turno, tieneComida) {
+            const numMarcas = todasLasMarcas.length;
+            const inicio = normalizarHora(turno.hora_inicio);
+            const fin = normalizarHora(turno.hora_fin);
+            const minInicio = horaAMinutos(inicio);
+            const minFin = horaAMinutos(fin);
+            
+            let minComidaSalida = null, minComidaEntrada = null;
+            
+            if (tieneComida) {
+                minComidaSalida = horaAMinutos(normalizarHora(turno.salida_comida));
+                minComidaEntrada = horaAMinutos(normalizarHora(turno.entrada_comida));
+            }
+            
+            const resultado = {
+                caso: '',
+                descripcion: '',
+                marcasClasificadas: { entrada: null, salidaComida: null, entradaComida: null, salida: null },
+                observaciones: [],
+                requiereAtencion: false
+            };
+            
+            if (numMarcas === 0) {
+                resultado.caso = 'E-19';
+                resultado.observaciones.push('OLVIDO TOTAL');
+                resultado.requiereAtencion = true;
+                return resultado;
+            }
+            
+            if (numMarcas === 1) {
+                const marca = todasLasMarcas[0];
+                if (marca.minutos <= minInicio + 90) {
+                    resultado.caso = 'D-15';
+                    resultado.marcasClasificadas.entrada = marca;
+                    resultado.observaciones.push('FALTA SALIDA');
+                } else if (marca.minutos >= minFin - 90) {
+                    resultado.caso = 'D-18';
+                    resultado.marcasClasificadas.salida = marca;
+                    resultado.observaciones.push('FALTA ENTRADA');
+                } else {
+                    resultado.caso = 'D-XX';
+                    resultado.observaciones.push('MARCA AMBIGUA');
+                }
+                resultado.requiereAtencion = true;
+                return resultado;
+            }
+            
+            if (numMarcas === 2 && !tieneComida) {
+                resultado.caso = 'A-IDEAL';
+                resultado.marcasClasificadas.entrada = todasLasMarcas[0];
+                resultado.marcasClasificadas.salida = todasLasMarcas[1];
+                return resultado;
+            }
+            
+            if (numMarcas === 2 && tieneComida) {
+                resultado.caso = 'C-10';
+                resultado.marcasClasificadas.entrada = todasLasMarcas[0];
+                resultado.marcasClasificadas.salida = todasLasMarcas[1];
+                resultado.observaciones.push('NO MARCÓ COMIDAS');
+                resultado.requiereAtencion = true;
+                return resultado;
+            }
+            
+            if (numMarcas === 3 && tieneComida) {
+                resultado.caso = 'B-XX';
+                resultado.observaciones.push('MARCAJE INCOMPLETO');
+                resultado.requiereAtencion = true;
+                return resultado;
+            }
+            
+            if (numMarcas === 4 && tieneComida) {
+                resultado.caso = 'A-1';
+                resultado.marcasClasificadas.entrada = todasLasMarcas[0];
+                resultado.marcasClasificadas.salidaComida = todasLasMarcas[1];
+                resultado.marcasClasificadas.entradaComida = todasLasMarcas[2];
+                resultado.marcasClasificadas.salida = todasLasMarcas[3];
+                return resultado;
+            }
+            
+            if (numMarcas >= 5) {
+                resultado.caso = 'F-20';
+                resultado.observaciones.push('MARCAS DUPLICADAS');
+                resultado.requiereAtencion = true;
+                return resultado;
+            }
+            
+            return resultado;
+        }
+
+        // ============================================================
+        // VALIDADOR DE HORARIOS ANÓMALOS (versión local)
+        // ============================================================
+        function validarHorariosAnomalos(marcasClasificadas, turno, tieneComida) {
+            const anomalias = [];
+            const entrada = marcasClasificadas.entrada;
+            const salida = marcasClasificadas.salida;
+            const salidaComida = marcasClasificadas.salidaComida;
+            const entradaComida = marcasClasificadas.entradaComida;
+            
+            if (entrada && salida) {
+                const duracionReal = salida.minutos - entrada.minutos;
+                let tiempoComida = 0;
+                if (tieneComida && salidaComida && entradaComida) {
+                    tiempoComida = entradaComida.minutos - salidaComida.minutos;
+                }
+                const trabajoNeto = duracionReal - tiempoComida;
+                
+                if (trabajoNeto < 240 && trabajoNeto > 0) {
+                    anomalias.push({ tipo: 'G-23', descripcion: 'JORNADA CORTA' });
+                }
+                if (duracionReal > 720) {
+                    anomalias.push({ tipo: 'G-24', descripcion: 'JORNADA MUY LARGA' });
+                }
+            }
+            
+            if (tieneComida && salidaComida && entradaComida) {
+                const duracionComida = entradaComida.minutos - salidaComida.minutos;
+                if (duracionComida < 10) {
+                    anomalias.push({ tipo: 'G-25', descripcion: 'COMIDA MUY CORTA' });
+                }
+            }
+            
+            return anomalias;
+        }
+
         function construirRegistrosDia(turno, fecha, observacion) {
             const inicio = normalizarHora(turno.hora_inicio);
             const fin = normalizarHora(turno.hora_fin);
@@ -424,10 +677,29 @@ $(document).ready(function () {
             // Verificar si el turno tiene comida
             const tieneComida = turno.tiene_comida === true;
 
-            // Entrada: -10 a +3 minutos
-            const e1 = jitterHora(inicio, -10, 3, `${empleado.id_empleado || empleado.clave}|${fecha}|E1`);
-            // Salida final: -10 a 0 minutos
-            const s2 = jitterHora(fin, -10, 0, `${empleado.id_empleado || empleado.clave}|${fecha}|S2`);
+            // ============================================================
+            // REGLAS DE GENERACIÓN DE HORAS (ACTUALIZADAS):
+            // ENTRADA: Entre -13 y 0 minutos antes de la hora oficial (rango 7:47-8:00 para horario 8:00)
+            // SALIDA FINAL: SIEMPRE entre 0 y +7 minutos después de la hora oficial
+            // SALIDA COMIDA: Entre -5 y 0 minutos antes de la hora oficial
+            // ENTRADA COMIDA: Calcular para asegurar mínimo 57 min de comida
+            // ============================================================
+            
+            const REGLAS = {
+                entrada: { min: -13, max: 0 },
+                salida: { min: 0, max: 7 },
+                salida_comida: { min: -5, max: 0 },
+                entrada_comida: { min: -3, max: 0 },
+                MINUTOS_MENOS_COMIDA: 3
+            };
+            
+            const seedBase = `${empleado.id_empleado || empleado.clave}|${fecha}`;
+            
+            // Entrada al trabajo: -13 a 0 minutos
+            const e1 = jitterHora(inicio, REGLAS.entrada.min, REGLAS.entrada.max, `${seedBase}|E1`);
+            
+            // Salida final: SIEMPRE 0 a +7 minutos
+            const s2 = jitterHora(fin, REGLAS.salida.min, REGLAS.salida.max, `${seedBase}|S2`);
 
             // Si NO tiene comida, solo devolver entrada y salida
             if (!tieneComida) {
@@ -437,15 +709,25 @@ $(document).ready(function () {
                 ];
             }
             
-            // Si tiene comida, devolver los 4 registros
+            // Calcular horarios de comida (duración = oficial - 3 minutos = mínimo 57 min)
             const comidaSalidaBase = normalizarHora(turno.salida_comida);
             const comidaEntradaBase = normalizarHora(turno.entrada_comida);
             
-            // Salida a comida: -10 a +5 minutos
-            const s1 = jitterHora(comidaSalidaBase, -10, 5, `${empleado.id_empleado || empleado.clave}|${fecha}|S1`);
-            // Entrada después de comida: -5 a +10 minutos
-            // NOTA: Los registros procesados detectarán retardos mayores a 15 minutos
-            const e2 = jitterHora(comidaEntradaBase, -5, 10, `${empleado.id_empleado || empleado.clave}|${fecha}|E2`);
+            const minComidaSalida = horaAMinutos(comidaSalidaBase);
+            const minComidaEntrada = horaAMinutos(comidaEntradaBase);
+            const duracionComidaOficial = minComidaEntrada - minComidaSalida;
+            const duracionComidaMinima = duracionComidaOficial - REGLAS.MINUTOS_MENOS_COMIDA; // 57 min para 1hr, 117 min para 2hrs
+            
+            // Salida a comida: -5 a 0 minutos
+            const s1 = jitterHora(comidaSalidaBase, REGLAS.salida_comida.min, REGLAS.salida_comida.max, `${seedBase}|S1`);
+            
+            // Entrada de comida: Calcular para que dure mínimo 57 min
+            const minSalidaComidaReal = horaAMinutos(s1);
+            const minEntradaComidaMinima = minSalidaComidaReal + duracionComidaMinima;
+            const minEntradaComidaOficialMenos3 = minComidaEntrada + REGLAS.entrada_comida.min;
+            const minEntradaComidaFinal = Math.max(minEntradaComidaMinima, minEntradaComidaOficialMenos3);
+            const variacionEntradaComida = hashString(`${seedBase}|E2_VAR`) % 4; // 0 a 3 min
+            const e2 = minutosAHora(minEntradaComidaFinal + variacionEntradaComida);
 
             return [
                 { tipo: 'entrada', hora: e1, observacion },
@@ -485,6 +767,8 @@ $(document).ready(function () {
         }
 
         // Función para ajustar registros si exceden máximo de horas del turno
+        // Función para ajustar registros si exceden máximo de horas del turno
+        // IMPORTANTE: La salida NUNCA puede ser antes de la hora oficial del turno
         function ajustarRegistrosSiExcedenMaximo(registros, maxHorasTurno, seedKey) {
             if (!registros || registros.length === 0) return registros;
             
@@ -509,16 +793,9 @@ $(document).ready(function () {
                 return registros;
             }
             
-            const exceso = minutosTrabajados - maxMinutosPermitidos;
+            // El tiempo excede el máximo - solo agregar nota, NO mover la salida antes de la hora oficial
             const ultimoPar = pares[pares.length - 1];
-            const variacion = 10 + (hashString(seedKey + '|AJUSTE') % 16);
-            const nuevaSalidaMinutos = ultimoPar.minSalida - exceso - variacion;
-            
-            registros[ultimoPar.idxSalida] = {
-                tipo: 'salida',
-                hora: minutosAHora(nuevaSalidaMinutos),
-                observacion: 'AJUSTADO (EXCEDE MÁXIMO TURNO)'
-            };
+            registros[ultimoPar.idxSalida].observacion = registros[ultimoPar.idxSalida].observacion + ' [TIEMPO EXCEDE MÁXIMO]';
             
             return registros;
         }
@@ -592,21 +869,94 @@ $(document).ready(function () {
             
             // DÍAS FESTIVOS → marcar como dia_festivo
             if (festivosSet.has(dia.fecha)) {
+                // Para VIGILANCIA: verificar si tienen registros biométricos en este día
+                if (esVigilancia) {
+                    const registrosDelDiaFestivo = registrosMap[dia.fecha] || [];
+                    const tieneRegistrosEnFestivo = registrosDelDiaFestivo.length > 0 &&
+                        registrosDelDiaFestivo.some(r => r.entrada || r.salida);
+                    
+                    if (tieneRegistrosEnFestivo) {
+                        // Vigilancia CON registros → procesar como día normal (no retornar)
+                        console.log(`[VIGILANCIA] ${empleado.nombre} trabajó el día festivo ${dia.fecha}`);
+                    } else {
+                        // Vigilancia SIN registros → se les dio el día festivo
+                        resultados.push({
+                            fecha: dia.fecha,
+                            tipo: "dia_festivo",
+                            registros: [],
+                            trabajado_minutos: 0,
+                            trabajado_hhmm: '00:00',
+                            trabajado_decimal: 0,
+                            observacion_dia: "DÍA FESTIVO",
+                            tipo_turno: ultimoTurnoValido.tipo_turno,
+                            max_horas: ultimoTurnoValido.max_horas
+                        });
+                        return;
+                    }
+                } else {
+                    // Para otros departamentos: siempre es día festivo
+                    resultados.push({
+                        fecha: dia.fecha,
+                        tipo: "dia_festivo",
+                        registros: [],
+                        trabajado_minutos: 0,
+                        trabajado_hhmm: '00:00',
+                        trabajado_decimal: 0,
+                        observacion_dia: "DÍA FESTIVO",
+                        tipo_turno: ultimoTurnoValido.tipo_turno,
+                        max_horas: ultimoTurnoValido.max_horas
+                    });
+                    return;
+                }
+            }
+
+            const turno = obtenerTurnoPorDia(dia.fecha);
+            
+            // ============================================================
+            // VERIFICAR SI EL DÍA TIENE UN EVENTO ESPECIAL DEL HORARIO VARIABLE
+            // (descanso o día festivo definido por RRHH)
+            // ============================================================
+            if (turno.evento === 'descanso') {
                 resultados.push({
                     fecha: dia.fecha,
-                    tipo: "dia_festivo",
+                    tipo: "descanso",
                     registros: [],
                     trabajado_minutos: 0,
                     trabajado_hhmm: '00:00',
                     trabajado_decimal: 0,
-                    observacion_dia: "DÍA FESTIVO",
+                    observacion_dia: "DÍA DE DESCANSO (HORARIO VARIABLE)",
                     tipo_turno: ultimoTurnoValido.tipo_turno,
                     max_horas: ultimoTurnoValido.max_horas
                 });
                 return;
             }
-
-            const turno = obtenerTurnoPorDia(dia.fecha);
+            
+            if (turno.evento === 'dia_festivo') {
+                // Verificar si tiene registros biométricos (asistencia a pesar del festivo)
+                const registrosDelDiaFestivo = registrosMap[dia.fecha] || [];
+                const tieneRegistrosEnFestivo = registrosDelDiaFestivo.length > 0 &&
+                    registrosDelDiaFestivo.some(r => r.entrada || r.salida);
+                
+                if (tieneRegistrosEnFestivo) {
+                    // Tiene registros → procesar como día normal (continuar)
+                    console.log(`[HORARIO VARIABLE] ${empleado.nombre} trabajó el día festivo ${dia.fecha}`);
+                } else {
+                    // Sin registros → día festivo
+                    resultados.push({
+                        fecha: dia.fecha,
+                        tipo: "dia_festivo",
+                        registros: [],
+                        trabajado_minutos: 0,
+                        trabajado_hhmm: '00:00',
+                        trabajado_decimal: 0,
+                        observacion_dia: "DÍA FESTIVO (HORARIO VARIABLE)",
+                        tipo_turno: ultimoTurnoValido.tipo_turno,
+                        max_horas: ultimoTurnoValido.max_horas
+                    });
+                    return;
+                }
+            }
+            
             const esLaborable = turno.hora_inicio && turno.hora_fin;
             
             // Usar el turno del día si es laborable, sino usar el último turno válido
@@ -769,8 +1119,32 @@ $(document).ready(function () {
                 return;
             }
 
-            // Sin registro biométrico del día (pero sí está dado de alta en reloj) → inasistencia
+            // Sin registro biométrico del día (pero sí está dado de alta en reloj)
+            // NUEVA LÓGICA: Si dias_ausencias === 0, RRHH indicó que no tuvo ausencias
+            // → Auto-generar registros en lugar de marcar inasistencia
             if (!tieneRegistroBiometrico) {
+                const diasAusenciasRestantes = empleado.dias_ausencias || 0;
+                
+                if (diasAusenciasRestantes === 0 && diasProcesados < diasTrabajadosRestantes) {
+                    // RRHH indicó 0 ausencias → auto-generar registro
+                    diasProcesados++;
+                    const registrosDia = construirRegistrosDia(turno, dia.fecha, 'REGISTRO GENERADO');
+                    const trabajo = calcularTrabajoDesdeRegistros(registrosDia, maxHoras);
+                    resultados.push({
+                        fecha: dia.fecha,
+                        tipo: "asistencia",
+                        registros: registrosDia,
+                        trabajado_minutos: trabajo.minutos,
+                        trabajado_hhmm: trabajo.hhmm,
+                        trabajado_decimal: trabajo.decimal,
+                        observacion_dia: "SIN CHECADA (0 AUSENCIAS RRHH)",
+                        tipo_turno: tipoTurno,
+                        max_horas: maxHoras
+                    });
+                    return;
+                }
+                
+                // Si tiene ausencias pendientes o ya completó dias_trabajados → inasistencia
                 resultados.push({
                     fecha: dia.fecha,
                     tipo: "inasistencia",

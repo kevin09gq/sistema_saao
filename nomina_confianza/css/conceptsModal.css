@@ -611,6 +611,17 @@
     font-weight: 500;
 }
 
+.mod-input-amarillo-total-conceptos {
+    border: 2px solid #8d591e !important;
+    background: #fffbeb !important;
+    border-radius: 10px !important;
+    padding: 0.625rem 1rem !important;
+    font-size: 0.95rem !important;
+    transition: all 0.3s ease !important;
+    color: #6b310d !important;
+    font-weight: 700;
+}
+
 .mod-input-amarillo:focus {
     border-color: #fbbf24 !important;
     background: #fffbeb !important;

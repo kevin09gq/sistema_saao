@@ -24,9 +24,36 @@ $numeroSemana = null;
 $fechaInicio = null;
 $fechaCierre = null;
 
-// Identificar empresa
-$rfc_empresa_1 = "0105";
-$rfc_empresa_2 = "0105";
+// Variable para identificar la empresa
+$idEmpresa = 1; // Por defecto SAAO
+$nombreEmpresa = null;
+
+// =============================================================================
+// Buscar nombre de empresa en celdas E2:I2 (fila 2, columnas E-I = índices 4-8)
+// =============================================================================
+if (isset($rows[1])) { // Fila 2 es índice 1
+    $fila2 = $rows[1];
+    // Buscar en columnas E hasta I (índices 4 a 8)
+    for ($col = 4; $col <= 8; $col++) {
+        if (isset($fila2[$col]) && is_string($fila2[$col]) && trim($fila2[$col]) !== '') {
+            $textoEmpresa = trim($fila2[$col]);
+            
+            if (preg_match('/SB\s+CITRIC/i', $textoEmpresa)) {
+                // Si es SB el id es 2
+                $idEmpresa = 2;
+                $nombreEmpresa = $textoEmpresa;
+                break;
+            }
+            
+            if (preg_match('/CITRICOS\s+SAAO/i', $textoEmpresa)) {
+                // Si es SAAO el id es 1
+                $idEmpresa = 1;
+                $nombreEmpresa = $textoEmpresa;
+                break;
+            }
+        }
+    }
+}
 
 // Buscar datos generales en las primeras filas
 foreach ($rows as $row) {
@@ -137,11 +164,13 @@ foreach ($rows as $row) {
         // Los días reales trabajados se obtienen de "Sueldo"
 
         /**
+         * ==============================================================
          * Estos son eventos que pueden o no
          * encontrarse en el archivo,
          * nota: justo al lado de Vacaciones hay un número
          * este número indica la cantidad de días que tuvo de vacaciones
          * lo mismo para incapacidades y ausencias
+         * =============================================================
          */
         $nextRowIdx = array_search($row, $rows, true) + 1;
         if (isset($rows[$nextRowIdx])) {
@@ -236,7 +265,8 @@ $output = [
     'fecha_cierre'  => $fechaCierre,
     'departamentos' => $departamentos,
     'puestos'       => $puestos,
-    'id_empresa' => 1
+    'id_empresa'    => $idEmpresa,
+    'nombre_empresa' => $nombreEmpresa
 ];
 
 echo json_encode($output);

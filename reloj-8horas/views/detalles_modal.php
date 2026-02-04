@@ -26,7 +26,7 @@
 
             <!-- Info Trabajador -->
             <div class="tab-pane fade show active" id="tab_info" role="tabpanel" aria-labelledby="tab-info">
-                <h4 class="tab-title">📋 Detalles del empleado</h4>
+                <h5 class="tab-title">📋 Detalles del empleado</h5>
 
                 <!-- Información básica del empleado -->
                 <div class="empleado-info">
@@ -66,11 +66,11 @@
             <!-- Registros -->
             <div class="tab-pane fade" id="tab_registros" role="tabpanel" aria-labelledby="tab-registros">
 
-                <h4 class="tab-title">⏱️ Registros del empleado</h4>
+                <h5 class="tab-title">⏱️ Registros del empleado</h5>
 
                 <div class="text-center mb-3">
-                    <button class="btn btn-outline-primary" type="button" id="btn-registros-procesados">Ver procesados</button>
-                    <button class="btn btn-outline-secondary" type="button" id="btn-registros-originales">Ver originales</button>
+                    <button class="btn btn-sm btn-outline-primary" type="button" id="btn-registros-procesados">Ver procesados</button>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" id="btn-registros-originales">Ver originales</button>
                 </div>
                 <!-- Aquí se mostrarán los registros_procesados del empleado -->
 
@@ -115,12 +115,34 @@
 
             <!-- Modificar Horarios -->
             <div class="tab-pane fade" id="tab_horarios" role="tabpanel" aria-labelledby="tab-horarios">
-                <h4 class="tab-title">📅Horarios</h4>
+                <h5 class="tab-title">📅Horarios</h5>
 
                 <div class="contenedor-aplicar-horario-variable" hidden>
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" role="switch" id="aplicarHorarioEmpleado" checked>
                         <label class="form-check-label" for="aplicarHorarioEmpleado">Aplicar horario variable general.</label>
+                    </div>
+                </div>
+
+                <div class="row mb-3 align-items-end mt-2">
+                    <div class="col">
+                        <label for="input_copiar_entrada" class="form-label mb-0">Entrada</label>
+                        <input type="time" class="form-control" id="input_detalles_copiar_entrada">
+                    </div>
+                    <div class="col">
+                        <label for="input_copiar_salida_comida" class="form-label mb-0">Salida Comida</label>
+                        <input type="time" class="form-control" id="input_detalles_copiar_salida_comida">
+                    </div>
+                    <div class="col">
+                        <label for="input_copiar_entrada_comida" class="form-label mb-0">Entrada Comida</label>
+                        <input type="time" class="form-control" id="input_detalles_copiar_entrada_comida">
+                    </div>
+                    <div class="col">
+                        <label for="input_copiar_salida" class="form-label mb-0">Salida</label>
+                        <input type="time" class="form-control" id="input_detalles_copiar_salida">
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-outline-primary" id="btn-copiar-horario-detalles">Copiar</button>
                     </div>
                 </div>
 

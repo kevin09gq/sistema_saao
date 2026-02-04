@@ -66,9 +66,14 @@ $(document).ready(function () {
                     id_abono: null
                 }));
             } else {
+                // Fila pagada/pausada: tomar datos originales pero con observación editable
                 const idx = Number($tr.attr('data-idx'));
                 const orig = detalleCache[idx] || {};
-                arr.push(normalizarFila(orig));
+                const obsEditada = $tr.find('.js-obs-nopend').val() || '';
+                arr.push(normalizarFila({
+                    ...orig,
+                    observacion: obsEditada
+                }));
             }
         });
 
@@ -133,14 +138,17 @@ $(document).ready(function () {
                 const editable = isPendiente(estado);
 
                 if (!editable) {
+                    // Filas pagadas/pausadas: solo observación es editable
                     return `
                         <tr data-estado="${String(estado)}" data-idx="${idx}">
                             <td>${row.num_semana ?? ''}</td>
                             <td>${row.anio ?? ''}</td>
                             <td>$${round2(row.monto_semanal)}</td>
                             <td>${row.fecha_pago ?? ''}</td>
-                            <td>${row.observacion ?? ''}</td>
-                            <td>${estado}</td>
+                            <td>
+                                <input type="text" class="form-control form-control-sm js-obs-nopend" value="${row.observacion ?? ''}">
+                            </td>
+                            <td><span class="badge ${estado.toLowerCase() === 'pagado' ? 'bg-success' : 'bg-secondary'}">${estado}</span></td>
                             <td></td>
                         </tr>
                     `;
@@ -366,7 +374,34 @@ $(document).ready(function () {
                     Swal.fire('Error', 'Respuesta inválida', 'error');
                     return;
                 }
-                Swal.fire(resp.titulo || 'OK', resp.mensaje || 'Guardado', resp.icono || 'success');
+                
+                // Verificar si hay aviso de solapamiento
+                let tieneAvisoSolapamiento = resp.data && resp.data.aviso_solapamiento === true;
+                
+                if (tieneAvisoSolapamiento && resp.data.planes_solapados && resp.data.planes_solapados.length > 0) {
+                    // Construir lista de planes solapados
+                    let listaPlanes = resp.data.planes_solapados.map(p => 
+                        `<li><strong>Folio ${p.folio}</strong>: ${p.rango}</li>`
+                    ).join('');
+                    
+                    Swal.fire({
+                        title: resp.titulo || 'Plan actualizado',
+                        html: `
+                            <p>${resp.mensaje || 'Proceso completado'}</p>
+                            <hr>
+                            <div class="alert alert-warning text-start">
+                                <strong><i class="bi bi-exclamation-triangle-fill"></i> Atención:</strong><br>
+                                Este plan se solapa con los siguientes préstamos:
+                                <ul class="mt-2 mb-0">${listaPlanes}</ul>
+                            </div>
+                        `,
+                        icon: 'warning',
+                        confirmButtonText: 'Entendido'
+                    });
+                } else {
+                    Swal.fire(resp.titulo || 'OK', resp.mensaje || 'Guardado', resp.icono || 'success');
+                }
+                
                 if ((resp.icono || '').toLowerCase() === 'success') {
                     cargarPlan();
                 }

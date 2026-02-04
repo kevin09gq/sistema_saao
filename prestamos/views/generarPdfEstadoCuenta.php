@@ -285,7 +285,7 @@ try {
 
     $html .= '<br><h3 style="margin:0 0 6px 0;">2) Préstamos activos</h3>';
     $html .= '<table border="1" cellpadding="4">
-        <tr style="background-color:#E8F5E9;">
+        <tr style="background-color:#E8F5E9;" align="center">
             <th width="15%">Folio</th>
             <th width="18%">Monto entregado</th>
             <th width="17%">Fecha de entrega</th>
@@ -311,7 +311,7 @@ try {
             $totalSaldoActivos += $saldo;
             
             $html .= '<tr>';
-            $html .= '<td>' . htmlspecialchars((string)($p['folio'] ?? ''), ENT_QUOTES, 'UTF-8') . '</td>';
+            $html .= '<td align="center">' . htmlspecialchars((string)($p['folio'] ?? ''), ENT_QUOTES, 'UTF-8') . '</td>';
             $html .= '<td align="right">' . formatoMonedaPdf($monto) . '</td>';
             $html .= '<td align="center">' . formatearFechaPdf($p['fecha_registro'] ?? '', true) . '</td>';
             $html .= '<td align="center">' . htmlspecialchars((string)($p['estado'] ?? ''), ENT_QUOTES, 'UTF-8') . '</td>';
@@ -332,7 +332,7 @@ try {
 
     $html .= '<br><h3 style="margin:0 0 6px 0;">3) Abonos de préstamos activos</h3>';
     $html .= '<table border="1" cellpadding="4">
-        <tr style="background-color:#FFF3E0;">
+        <tr style="background-color:#FFF3E0;" align="center" align="center">
             <th width="22%">Monto pagado</th>
             <th width="18%">Semana/Año</th>
             <th width="30%">Fecha de pago</th>
@@ -351,7 +351,7 @@ try {
             $html .= '<td align="right">' . formatoMonedaPdf($montoPago) . '</td>';
             $html .= '<td align="center">' . (int)($a['num_sem_pago'] ?? 0) . '/' . (int)($a['anio_pago'] ?? 0) . '</td>';
             $html .= '<td align="center">' . formatearFechaPdf($a['fecha_pago'] ?? '', true) . '</td>';
-            $html .= '<td>' . htmlspecialchars((string)($a['folio'] ?? ''), ENT_QUOTES, 'UTF-8') . '</td>';
+            $html .= '<td align="center">' . htmlspecialchars((string)($a['folio'] ?? ''), ENT_QUOTES, 'UTF-8') . '</td>';
             $html .= '</tr>';
         }
         
@@ -364,7 +364,7 @@ try {
 
     $html .= '<br><h3 style="margin:0 0 6px 0;">4) Préstamos liquidados</h3>';
     $html .= '<table border="1" cellpadding="4">
-        <tr style="background-color:#E3F2FD;">
+        <tr style="background-color:#E3F2FD;" align="center">
             <th width="15%">Folio</th>
             <th width="18%">Monto entregado</th>
             <th width="17%">Fecha de entrega</th>
@@ -390,7 +390,7 @@ try {
             $totalSaldoLiquidados += $saldo;
             
             $html .= '<tr>';
-            $html .= '<td>' . htmlspecialchars((string)($p['folio'] ?? ''), ENT_QUOTES, 'UTF-8') . '</td>';
+            $html .= '<td align="center">' . htmlspecialchars((string)($p['folio'] ?? ''), ENT_QUOTES, 'UTF-8') . '</td>';
             $html .= '<td align="right">' . formatoMonedaPdf($monto) . '</td>';
             $html .= '<td align="center">' . formatearFechaPdf($p['fecha_registro'] ?? '', true) . '</td>';
             $html .= '<td align="center">' . htmlspecialchars((string)($p['estado'] ?? ''), ENT_QUOTES, 'UTF-8') . '</td>';
@@ -411,7 +411,7 @@ try {
 
     $html .= '<br><h3 style="margin:0 0 6px 0;">5) Abonos de préstamos liquidados</h3>';
     $html .= '<table border="1" cellpadding="4">
-        <tr style="background-color:#F3E5F5;">
+        <tr style="background-color:#F3E5F5;" align="center">
             <th width="22%">Monto pagado</th>
             <th width="18%">Semana/Año</th>
             <th width="30%">Fecha de pago</th>
@@ -430,7 +430,7 @@ try {
             $html .= '<td align="right">' . formatoMonedaPdf($montoPago) . '</td>';
             $html .= '<td align="center">' . (int)($a['num_sem_pago'] ?? 0) . '/' . (int)($a['anio_pago'] ?? 0) . '</td>';
             $html .= '<td align="center">' . formatearFechaPdf($a['fecha_pago'] ?? '', true) . '</td>';
-            $html .= '<td>' . htmlspecialchars((string)($a['folio'] ?? ''), ENT_QUOTES, 'UTF-8') . '</td>';
+            $html .= '<td align="center">' . htmlspecialchars((string)($a['folio'] ?? ''), ENT_QUOTES, 'UTF-8') . '</td>';
             $html .= '</tr>';
         }
         

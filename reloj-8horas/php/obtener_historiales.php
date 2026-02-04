@@ -29,7 +29,7 @@ $resultTotal = $conexion->query($sqlTotal);
 $total = $resultTotal->fetch_assoc()['total'];
 
 // Obtener historiales con paginación
-$sql = "SELECT id, num_sem, fecha_inicio, fecha_fin, observacion, fecha_registro 
+$sql = "SELECT id, num_sem, fecha_inicio, fecha_fin, observacion, fecha_registro, id_empresa 
         FROM historial_biometrico 
         ORDER BY $ordenColumna $ordenDir
         LIMIT ? OFFSET ?";
@@ -55,7 +55,8 @@ while ($row = $result->fetch_assoc()) {
         'fecha_inicio' => $row['fecha_inicio'],
         'fecha_fin' => $row['fecha_fin'],
         'observacion' => $row['observacion'],
-        'fecha_registro' => $row['fecha_registro']
+        'fecha_registro' => $row['fecha_registro'],
+        'id_empresa' => intval($row['id_empresa'])
     ];
 }
 

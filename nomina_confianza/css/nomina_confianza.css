@@ -956,8 +956,6 @@ body {
 #tabla-nomina-container .table-responsive {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    /* mejora el scroll en móviles */
-    /* Firefox */
     scrollbar-width: thin;
     scrollbar-color: rgba(0,0,0,0.35) rgba(0,0,0,0.05);
 }

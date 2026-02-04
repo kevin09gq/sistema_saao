@@ -75,11 +75,9 @@ function actualizarEmpleado(jsonNominaConfianza, claveEmpleado, idEmpresa) {
         
         nuevosHistorial.push(historialItem);
     });
-    
-    // Actualizar el array completo solo si hay elementos en el DOM
-    if (nuevosHistorial.length > 0) {
-        empleadoEncontrado.historial_retardos = nuevosHistorial;
-    }
+
+    // Actualizar el array completo (incluso si está vacío)
+    empleadoEncontrado.historial_retardos = nuevosHistorial;
 
     // Actualizar historial de inasistencias desde el DOM - PRESERVAR INASISTENCIAS MANUALES
     if (!empleadoEncontrado.historial_inasistencias) {

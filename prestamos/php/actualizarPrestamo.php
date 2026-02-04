@@ -43,7 +43,7 @@ $id_detalle     = isset($_POST['id_detalle'])  ? intval($_POST['id_detalle'])  :
 $id_empleado    = isset($_POST['id_empleado']) ? intval($_POST['id_empleado']) : 0;
 $folio          = isset($_POST['folio'])       ? trim($_POST['folio'])         : '';
 $monto          = isset($_POST['monto'])       ? floatval($_POST['monto'])     : 0;
-$fecha          = isset($_POST['fecha'])       ? trim($_POST['fecha']) . ' ' . date('H:i:s') : '';
+$fecha          = isset($_POST['fecha'])       ? trim($_POST['fecha']) : '';
 
 // Datos del plan de pago
 $semana_inicio  = isset($_POST['semana_inicio']) ? intval($_POST['semana_inicio']) : 0;
@@ -94,6 +94,70 @@ $stmt->close();
 if ($row['total'] > 0) {
     respuestas(400, "Error", "Este préstamo ya tiene abonos y no puede ser editado", "error");
 }
+
+/**
+ * =====================================================
+ * Obtener datos actuales del plan para comparar después
+ * =====================================================
+ */
+$stmtPlanActual = $conexion->prepare("SELECT sem_inicio, anio_inicio, sem_fin, anio_fin FROM planes_pagos WHERE id_plan = ?");
+$stmtPlanActual->bind_param('i', $id_plan);
+$stmtPlanActual->execute();
+$resPlanActual = $stmtPlanActual->get_result();
+$planActualData = $resPlanActual->fetch_assoc();
+$stmtPlanActual->close();
+
+$semFinAnterior = (int)($planActualData['sem_fin'] ?? 0);
+$anioFinAnterior = (int)($planActualData['anio_fin'] ?? 0);
+
+/**
+ * =====================================================
+ * Detectar solapamiento con otros préstamos (solo aviso, no bloquea)
+ * =====================================================
+ */
+$semanaToValor = function($sem, $anio) {
+    return (int)$anio * 100 + (int)$sem;
+};
+
+$valorNuevoInicio = $semanaToValor($semana_inicio, $anio_inicio);
+$valorNuevoFin = $semanaToValor($semana_fin, $anio_fin);
+
+// Buscar todos los planes del empleado excepto el actual para detectar solapamiento
+$sqlOtrosPlanes = "
+    SELECT 
+        pp.id_plan,
+        pp.sem_inicio,
+        pp.anio_inicio,
+        pp.sem_fin,
+        pp.anio_fin,
+        p.folio
+    FROM planes_pagos pp
+    INNER JOIN prestamos p ON p.id_prestamo = pp.id_prestamo
+    WHERE p.id_empleado = ?
+      AND pp.id_plan != ?
+      AND p.estado = 'activo'
+    ORDER BY pp.anio_inicio ASC, pp.sem_inicio ASC
+";
+
+$planesSolapados = [];
+$stmtOtros = $conexion->prepare($sqlOtrosPlanes);
+$stmtOtros->bind_param('ii', $id_empleado, $id_plan);
+$stmtOtros->execute();
+$resOtros = $stmtOtros->get_result();
+
+while ($otroPlan = $resOtros->fetch_assoc()) {
+    $otroInicio = $semanaToValor($otroPlan['sem_inicio'], $otroPlan['anio_inicio']);
+    $otroFin = $semanaToValor($otroPlan['sem_fin'], $otroPlan['anio_fin']);
+    
+    // Hay solapamiento si: valorNuevoFin >= otroInicio AND valorNuevoInicio <= otroFin
+    if ($valorNuevoFin >= $otroInicio && $valorNuevoInicio <= $otroFin) {
+        $planesSolapados[] = [
+            'folio' => $otroPlan['folio'],
+            'rango' => "Sem {$otroPlan['sem_inicio']}/{$otroPlan['anio_inicio']} - Sem {$otroPlan['sem_fin']}/{$otroPlan['anio_fin']}"
+        ];
+    }
+}
+$stmtOtros->close();
 
 // Obtener semana y año de la fecha del préstamo
 $fechaObj = new DateTime($fecha);
@@ -181,8 +245,17 @@ try {
     // Confirmar transacción
     $conexion->commit();
 
-    // Si llega hasta aqui significa que todo salió bien
-    respuestas(200, "Éxito", "Préstamo actualizado correctamente", "success");
+    // Preparar respuesta con posible aviso de solapamiento
+    $mensaje = "Préstamo actualizado correctamente";
+    $dataRespuesta = ['id_prestamo' => $id_prestamo];
+    
+    if (count($planesSolapados) > 0) {
+        $dataRespuesta['aviso_solapamiento'] = true;
+        $dataRespuesta['planes_solapados'] = $planesSolapados;
+        $mensaje .= ". AVISO: Este plan se solapa con otros planes del empleado.";
+    }
+    
+    respuestas(200, "Éxito", $mensaje, "success", $dataRespuesta);
 
 } catch (Exception $e) {
     // Revertir cambios en caso de error

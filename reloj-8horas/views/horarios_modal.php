@@ -43,6 +43,7 @@
                                 <th>Salida Comida</th>
                                 <th>Entrada Comida</th>
                                 <th>Salida</th>
+                                <th>Eventos</th>
                             </tr>
                         </thead>
                         <tbody id="tbody_horarios">
@@ -71,6 +72,18 @@
                                     <td>
                                         <input type="time" class="form-control" name="horario_variable_salida[]" placeholder="Salida">
                                     </td>
+                                    <td>
+                                        <input type="hidden" name="horario_variable_evento[]" value="">
+                                        <div class="d-flex gap-1">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary btn-limpiar-fila-horario" title="Limpiar fila">
+                                                <i class="bi bi-eraser"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-info btn-evento-dia" title="Definir evento del día">
+                                                <i class="bi bi-calendar-event"></i>
+                                            </button>
+                                            <span class="badge bg-secondary evento-badge d-none"></span>
+                                        </div>
+                                    </td>
                                 </tr>
                             <?php endfor; ?>
                         </tbody>
@@ -89,7 +102,7 @@
                                     const tbody = document.getElementById('tbody_horarios');
                                     if (!tbody) return;
                                     const filas = tbody.querySelectorAll('tr');
-                                    for (let i = 0; i < 5 && i < filas.length; i++) {
+                                    for (let i = 0; i < 7 && i < filas.length; i++) {
                                         const inputs = filas[i].querySelectorAll('input[type="time"]');
                                         if (inputs.length === 4) {
                                             inputs[0].value = entrada;

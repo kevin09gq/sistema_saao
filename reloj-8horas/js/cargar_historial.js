@@ -1,6 +1,7 @@
 /**
  * Cargar Historial Biométrico
  * Este script maneja la carga de historiales guardados desde la base de datos
+ * Autor: Brandon
  */
 
 // Estado de la paginación y orden
@@ -163,12 +164,19 @@ async function cargarListaHistoriales(resetPagina = false) {
             const observacion = h.observacion || '<em class="text-muted">Sin observación</em>';
             const fechaGuardado = formatearFechaHora(h.fecha_registro);
             
+            // Nombre de empresa: 1 = SAAO, 2 = SB
+            const nombreEmpresa = h.id_empresa === 2 ? 'SB' : 'SAAO';
+            const badgeEmpresa = h.id_empresa === 2 
+                ? '<span class="badge bg-success">SB</span>' 
+                : '<span class="badge bg-info">SAAO</span>';
+            
             const $row = $(`
                 <tr data-id="${h.id}">
                     <td class="text-center">
                         <span class="badge bg-primary fs-6">${h.num_sem}</span>
                     </td>
                     <td>${periodo}</td>
+                    <td class="text-center">${badgeEmpresa}</td>
                     <td>${observacion}</td>
                     <td><small>${fechaGuardado}</small></td>
                     <td class="text-center">

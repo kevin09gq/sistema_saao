@@ -127,11 +127,11 @@ $(document).ready(function () {
 
             html += `
                 <tr>
-                    <td>${item.empleado}</td>
-                    <td class="text-end">$ ${formatearMoneda(item.prestamo)}</td>
-                    <td class="text-end">$ ${formatearMoneda(item.abonado)}</td>
-                    <td class="text-end">$ ${formatearMoneda(item.deuda)}</td>
-                    <td class="text-center">${badge}</td>
+                    <td data-titulo="empleado">${item.empleado}</td>
+                    <td data-titulo="prestamo" class="text-end">$ ${formatearMoneda(item.prestamo)}</td>
+                    <td data-titulo="abonado" class="text-end">$ ${formatearMoneda(item.abonado)}</td>
+                    <td data-titulo="deuda" class="text-end">$ ${formatearMoneda(item.deuda)}</td>
+                    <td data-titulo="estado" class="text-center">${badge}</td>
                     <td class="text-center">
                         <a class="btn btn-outline-primary" href="${link_detalles}" title="Ver Detalles"><i class="bi bi-search"></i></a>
                         <a class="btn btn-outline-danger" href="${link_pdf}" target="_blank" title="Generar Estado de Cuenta"><i class="bi bi-file-earmark-pdf"></i></a>

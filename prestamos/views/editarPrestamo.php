@@ -50,7 +50,7 @@ $stmt = $conexion->prepare("SELECT
         p.id_prestamo,
         p.folio,
         p.monto AS monto_prestamo,
-        DATE_FORMAT(p.fecha_registro, '%Y-%m-%d') AS fecha_registro_prestamo,
+        p.fecha_registro AS fecha_registro_prestamo,
         
         
         e.id_empleado,
@@ -154,7 +154,7 @@ $prestamo = $result->fetch_assoc();
                             </div>
                             <div class="col-12 col-md-6">
                                 <label for="fecha" class="form-label">Fecha</label>
-                                <input value="<?= $prestamo['fecha_registro_prestamo'] ?>" type="date" class="form-control form-control-lg shadow-sm" id="fecha" name="fecha" required>
+                                <input value="<?= $prestamo['fecha_registro_prestamo'] ?>" type="datetime-local" class="form-control form-control-lg shadow-sm" id="fecha" name="fecha" required>
                             </div>
                         </div>
 
@@ -188,6 +188,10 @@ $prestamo = $result->fetch_assoc();
                                         }
                                         ?>
                                     </select>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <label for="anio_inicio" class="form-label">Año inicio</label>
+                                    <input placeholder="0" type="number" id="anio_inicio" name="anio_inicio" class="form-control form-control-lg shadow-sm" min="2000" value="2024" required>
                                 </div>
                             </div>
 
@@ -254,6 +258,9 @@ $prestamo = $result->fetch_assoc();
             id_detalle: <?= json_encode($prestamo['id_detalle']) ?>,
             detalle: <?= $prestamo['detalle'] ?>
         };
+
+        console.log(PRESTAMO_DATA);
+        
     </script>
     <script src="../js/editarPrestamo.js"></script>
 

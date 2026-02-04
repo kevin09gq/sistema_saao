@@ -38,9 +38,9 @@ if (!is_array($detalle)) {
     exit;
 }
 
-// Obtener monto del préstamo para validar sumas
+// Obtener monto del préstamo, id_empleado y datos del plan para validar sumas y recorrer planes posteriores
 $sqlMonto = "
-    SELECT p.monto
+    SELECT p.monto, p.id_empleado, pp.sem_inicio, pp.anio_inicio, pp.sem_fin AS sem_fin_actual, pp.anio_fin AS anio_fin_actual
     FROM planes_pagos pp
     INNER JOIN prestamos p ON p.id_prestamo = pp.id_prestamo
     WHERE pp.id_plan = ?
@@ -65,6 +65,11 @@ if (!$rowMonto) {
     exit;
 }
 $montoPrestamo = (float)$rowMonto['monto'];
+$idEmpleado = (int)$rowMonto['id_empleado'];
+$semInicioPlan = (int)$rowMonto['sem_inicio'];
+$anioInicioPlan = (int)$rowMonto['anio_inicio'];
+$semFinActual = (int)$rowMonto['sem_fin_actual'];
+$anioFinActual = (int)$rowMonto['anio_fin_actual'];
 
 // Validar estructura y que NO se modifiquen filas no pendientes
 $sqlOriginal = "
@@ -172,18 +177,19 @@ foreach ($detalle as $row) {
             $aEstado = norm_estado($row['estado'] ?? '');
             $bEstado = $origEstado;
 
+            // Permitir que SOLO la observación cambie, todo lo demás debe ser igual
             if (
                 $aMonto !== $bMonto ||
                 $aSemana !== $bSemana ||
                 $aAnio !== $bAnio ||
                 $aFecha !== $bFecha ||
-                $aObs !== $bObs ||
                 $aIdAbono !== $bIdAbono ||
                 $aEstado !== $bEstado
             ) {
-                respuestas(409, 'No permitido', 'No se pueden modificar filas ya pagadas o pausadas', 'warning', []);
+                respuestas(409, 'No permitido', 'No se pueden modificar filas ya pagadas o pausadas (solo la observación es editable)', 'warning', []);
                 exit;
             }
+            // La observación ($aObs vs $bObs) SÍ puede cambiar, no la validamos
         }
     }
 }
@@ -217,6 +223,62 @@ $lastRow = end($detalle);
 $semFin = isset($lastRow['num_semana']) ? (int)$lastRow['num_semana'] : 0;
 $anioFin = isset($lastRow['anio']) ? (int)$lastRow['anio'] : 0;
 
+// Obtener la primera fila para validar el inicio
+$firstRow = reset($detalle);
+$semInicioNuevo = isset($firstRow['num_semana']) ? (int)$firstRow['num_semana'] : $semInicioPlan;
+$anioInicioNuevo = isset($firstRow['anio']) ? (int)$firstRow['anio'] : $anioInicioPlan;
+
+/**
+ * =====================================================
+ * Detectar solapamiento con otros préstamos (solo aviso, no bloquea)
+ * =====================================================
+ */
+$semanaToValorValidacion = function($sem, $anio) {
+    return (int)$anio * 100 + (int)$sem;
+};
+
+$valorNuevoInicio = $semanaToValorValidacion($semInicioNuevo, $anioInicioNuevo);
+$valorNuevoFin = $semanaToValorValidacion($semFin, $anioFin);
+
+// Buscar todos los planes del empleado excepto el actual para detectar solapamiento
+$sqlOtrosPlanes = "
+    SELECT 
+        pp.id_plan,
+        pp.sem_inicio,
+        pp.anio_inicio,
+        pp.sem_fin,
+        pp.anio_fin,
+        p.folio
+    FROM planes_pagos pp
+    INNER JOIN prestamos p ON p.id_prestamo = pp.id_prestamo
+    WHERE p.id_empleado = ?
+      AND pp.id_plan != ?
+      AND p.estado = 'activo'
+    ORDER BY pp.anio_inicio ASC, pp.sem_inicio ASC
+";
+
+$planesSolapados = [];
+$stmtOtrosPlanes = $conexion->prepare($sqlOtrosPlanes);
+if ($stmtOtrosPlanes) {
+    $stmtOtrosPlanes->bind_param('ii', $idEmpleado, $idPlan);
+    $stmtOtrosPlanes->execute();
+    $resOtrosPlanes = $stmtOtrosPlanes->get_result();
+
+    while ($otroPlan = $resOtrosPlanes->fetch_assoc()) {
+        $otroInicio = $semanaToValorValidacion($otroPlan['sem_inicio'], $otroPlan['anio_inicio']);
+        $otroFin = $semanaToValorValidacion($otroPlan['sem_fin'], $otroPlan['anio_fin']);
+        
+        // Hay solapamiento si: valorNuevoFin >= otroInicio AND valorNuevoInicio <= otroFin
+        if ($valorNuevoFin >= $otroInicio && $valorNuevoInicio <= $otroFin) {
+            $planesSolapados[] = [
+                'folio' => $otroPlan['folio'],
+                'rango' => "Sem {$otroPlan['sem_inicio']}/{$otroPlan['anio_inicio']} - Sem {$otroPlan['sem_fin']}/{$otroPlan['anio_fin']}"
+            ];
+        }
+    }
+    $stmtOtrosPlanes->close();
+}
+
 // Iniciar transacción para asegurar integridad
 $conexion->begin_transaction();
 
@@ -247,10 +309,21 @@ try {
 
     // Confirmar transacción
     $conexion->commit();
-    respuestas(200, 'OK', 'Plan actualizado', 'success', [
+    
+    // Preparar respuesta con posible aviso de solapamiento
+    $mensaje = 'Plan actualizado correctamente';
+    $dataRespuesta = [
         'sem_fin' => $semFin,
         'anio_fin' => $anioFin
-    ]);
+    ];
+    
+    if (count($planesSolapados) > 0) {
+        $dataRespuesta['aviso_solapamiento'] = true;
+        $dataRespuesta['planes_solapados'] = $planesSolapados;
+        $mensaje .= '. AVISO: Este plan se solapa con otros planes del empleado.';
+    }
+    
+    respuestas(200, 'OK', $mensaje, 'success', $dataRespuesta);
 
 } catch (Exception $e) {
     $conexion->rollback();

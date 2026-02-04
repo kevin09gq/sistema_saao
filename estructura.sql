@@ -66,7 +66,7 @@ CREATE TABLE contacto_emergencia (
     domicilio VARCHAR(900)
 );
 
-CREATE TABLE info_empleados (
+CREATE TABLE info_empleados (3
     id_empleado INT AUTO_INCREMENT PRIMARY KEY,
     id_rol INT NOT NULL,
     id_status INT NOT NULL,
@@ -185,6 +185,17 @@ CREATE TABLE tabulador (
   FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
 );
 
+
+CREATE TABLE nomina_40lbs(
+    id_nomina_40lbs INT AUTO_INCREMENT PRIMARY KEY,
+    id_empresa INT NOT NULL,
+    numero_semana INT NOT NULL,
+    nomina_40lbs LONGTEXT NOT NULL,
+    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
+);
+
+
+
 -- =============================
 -- TABLAS DE NÓMINA CONFIANZA
 -- =============================
@@ -226,66 +237,87 @@ CREATE TABLE festividades (
 );
 
 
+-- ============================
+-- Tablas para la AUTORIZACION
+-- ============================
+
+
+CREATE TABLE claves_autorizacion (
+  id_autorizacion int(11) NOT NULL AUTO_INCREMENT,
+  id_empleado int(11) NOT NULL,
+  clave varchar(200) NOT NULL,
+  fecha_creacion datetime NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (id_autorizacion),
+  FOREIGN KEY (id_empleado) REFERENCES info_empleados (id_empleado) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+
+CREATE TABLE historiales_autorizaciones (
+  id int(11) NOT NULL AUTO_INCREMENT,
+  id_clave int(11) NOT NULL,
+  motivo text NOT NULL,
+  fecha datetime NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (id),
+  FOREIGN KEY (id_clave) REFERENCES claves_autorizacion (id_autorizacion) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+
+
+
+
 -- =============================
 -- TABLAS DE PRÉSTAMOS
 -- =============================
-CREATE TABLE IF NOT EXISTS prestamos (
-  id_prestamo INT(11) NOT NULL AUTO_INCREMENT,
-  id_empleado INT(11) NOT NULL,
-  folio VARCHAR(100) NOT NULL,
-  monto DECIMAL(10,2) NOT NULL,
-  semana INT(11) NOT NULL,
-  anio YEAR(4) NOT NULL,
-  fecha_registro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP(),
-  estado ENUM('activo','liquidado','pausado') NOT NULL DEFAULT 'activo',
+
+CREATE TABLE prestamos (
+  id_prestamo int(11) NOT NULL AUTO_INCREMENT,
+  id_empleado int(11) NOT NULL,
+  folio varchar(100) NOT NULL,
+  monto decimal(10,2) NOT NULL,
+  semana int(11) NOT NULL,
+  anio int(11) NOT NULL,
+  fecha_registro datetime NOT NULL DEFAULT current_timestamp(),
+  estado enum('activo','liquidado','pausado') NOT NULL DEFAULT 'activo',
   PRIMARY KEY (id_prestamo),
-  FOREIGN KEY (id_empleado)
-    REFERENCES info_empleados(id_empleado)
-    ON DELETE CASCADE
+  FOREIGN KEY (id_empleado) REFERENCES info_empleados (id_empleado) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS prestamos_abonos (
-  id_abono INT(11) NOT NULL AUTO_INCREMENT,
-  id_prestamo INT(11) NOT NULL,
-  monto_pago DECIMAL(10,2) NOT NULL,
-  num_sem_pago INT(11) NOT NULL,
-  anio_pago YEAR(4) NOT NULL,
-  fecha_pago DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP(),
-  es_nomina TINYINT(1) NOT NULL DEFAULT 1,
+CREATE TABLE prestamos_abonos (
+  id_abono int(11) NOT NULL AUTO_INCREMENT,
+  id_prestamo int(11) NOT NULL,
+  monto_pago decimal(10,2) NOT NULL,
+  num_sem_pago int(11) NOT NULL,
+  anio_pago int(11) NOT NULL,
+  fecha_pago datetime NOT NULL DEFAULT current_timestamp(),
+  es_nomina tinyint(1) NOT NULL DEFAULT 1,
+  pausado tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (id_abono),
-  FOREIGN KEY (id_prestamo)
-    REFERENCES prestamos(id_prestamo)
-    ON DELETE CASCADE
+  FOREIGN KEY (id_prestamo) REFERENCES prestamos (id_prestamo) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS planes_pagos (
-  id_plan INT(11) NOT NULL AUTO_INCREMENT,
-  id_prestamo INT(11) NOT NULL,
-  sem_inicio INT(11) NOT NULL,
-  anio_inicio YEAR(4) NOT NULL,
-  sem_fin INT(11) NOT NULL,
-  anio_fin INT(11) NOT NULL,
-  fecha_registro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+CREATE TABLE planes_pagos (
+  id_plan int(11) NOT NULL AUTO_INCREMENT,
+  id_prestamo int(11) NOT NULL,
+  sem_inicio int(11) NOT NULL,
+  anio_inicio int(11) NOT NULL,
+  sem_fin int(11) NOT NULL,
+  anio_fin int(11) NOT NULL,
+  fecha_registro datetime NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (id_plan),
-  FOREIGN KEY (id_prestamo)
-    REFERENCES prestamos(id_prestamo)
-    ON DELETE CASCADE
+  FOREIGN KEY (id_prestamo) REFERENCES prestamos (id_prestamo) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS detalle_planes (
-  id_detalle INT(11) NOT NULL AUTO_INCREMENT,
-  id_plan INT(11) NOT NULL,
-  detalle LONGTEXT
-    CHARACTER SET utf8mb4
-    COLLATE utf8mb4_bin
-    NOT NULL
-    CHECK (JSON_VALID(detalle)),
-  fecha_registro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+
+CREATE TABLE detalle_planes (
+  id_detalle int(11) NOT NULL AUTO_INCREMENT,
+  id_plan int(11) NOT NULL,
+  detalle longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  fecha_registro datetime NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (id_detalle),
-  FOREIGN KEY (id_plan)
-    REFERENCES planes_pagos(id_plan)
-    ON DELETE CASCADE
+  FOREIGN KEY (id_plan) REFERENCES planes_pagos (id_plan) ON DELETE CASCADE,
+  CONSTRAINT detalle_planes_chk_1 CHECK (json_valid(detalle))
 );
+
 
 
 -- =============================
@@ -299,18 +331,30 @@ CREATE TABLE empleado_horario_reloj (
     FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado)  
 );
 
+CREATE TABLE historial_biometrico (
+  id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id_empresa int(11) NOT NULL DEFAULT 1 COMMENT '1=SAAO, 2=SB',
+  biometrios longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(biometrios)),
+  num_sem int(11) NOT NULL,
+  fecha_inicio date NOT NULL,
+  fecha_fin date NOT NULL,
+  observacion varchar(120) NULL,
+  fecha_registro datetime NOT NULL DEFAULT current_timestamp()
+);
+
 CREATE TABLE historial_incidencias_semanal (
     id INT AUTO_INCREMENT PRIMARY KEY,
     semana VARCHAR(10) NOT NULL,
     anio INT NOT NULL,
     empleado_id INT NOT NULL,
+    id_empresa INT NOT NULL,
     vacaciones INT DEFAULT 0,
     ausencias INT DEFAULT 0,
     incapacidades INT DEFAULT 0,
-    dias_pagados INT DEFAULT 0,
-    FOREIGN KEY (empleado_id) REFERENCES info_empleados(id_empleado)
-)
-
+    dias_trabajados INT DEFAULT 0,
+    FOREIGN KEY (empleado_id) REFERENCES info_empleados(id_empleado),
+    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
+);
 
 
 -- =============================

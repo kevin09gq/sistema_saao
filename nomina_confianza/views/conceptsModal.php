@@ -430,6 +430,13 @@
                                     </div>
                                 </div>
 
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label fw-semibold">TOTAL CONCEPTOS ($)</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" class="form-control mod-input-amarillo-total-conceptos" id="mod-total-conceptos" value="" placeholder="0.00" readonly>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     </div>

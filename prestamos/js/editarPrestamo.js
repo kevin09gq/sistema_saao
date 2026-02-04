@@ -41,6 +41,7 @@ $(document).ready(function () {
         const numSemanas = calcularDuracionSemanas(semInicio, anioInicio, semFin, anioFin);
 
         $('#semana_inicio').val(semInicio);
+        $('#anio_inicio').val(anioInicio);
         $('#num_semana').val(numSemanas);
         $('#semana_fin').val(semFin);
         $('#anio_fin').val(anioFin);
@@ -160,10 +161,8 @@ $(document).ready(function () {
             let pago = parseFloat($("#pago_semana").val()) || 0;
             let inicio = parseInt($("#semana_inicio").val()) || 1;
 
-            // Usar el año de inicio del préstamo si existe, sino el actual
-            const baseYear = (typeof PRESTAMO_DATA !== 'undefined' && PRESTAMO_DATA.anio_inicio)
-                ? parseInt(PRESTAMO_DATA.anio_inicio)
-                : new Date().getFullYear();
+            // Usar el año del input anio_inicio
+            const baseYear = parseInt($("#anio_inicio").val()) || new Date().getFullYear();
 
             if (!monto || !num || !pago) {
                 $("#plan_table").html("");
@@ -260,6 +259,7 @@ $(document).ready(function () {
         $("#num_semana").on("input", function () { updatePagoFromMonto(); });
         $("#pago_semana").on("input", function () { updateNumFromPago(); });
         $("#semana_inicio").on("change", function () { renderPlan(); });
+        $("#anio_inicio").on("input change", function () { renderPlan(); });
     }
 
 
@@ -330,7 +330,7 @@ $(document).ready(function () {
                 //    Datos del plan de pago
                 // ==============================
                 const semana_inicio = $("#semana_inicio").val();
-                const anio_inicio = new Date().getFullYear();
+                const anio_inicio = $("#anio_inicio").val();
                 const semana_fin = $("#semana_fin").val();
                 const anio_fin = $("#anio_fin").val();
 
@@ -384,23 +384,50 @@ $(document).ready(function () {
                     success: function (response) {
                         console.log(response);
 
-                        Swal.fire({
-                            title: response.titulo,
-                            text: response.mensaje,
-                            icon: response.icono,
-                            confirmButtonText: 'Aceptar'
-                        }).then(() => {
-                            if (response.icono === 'success') {
+                        // Verificar si hay aviso de solapamiento
+                        let tieneAvisoSolapamiento = response.data && response.data.aviso_solapamiento === true;
+                        
+                        if (tieneAvisoSolapamiento && response.data.planes_solapados && response.data.planes_solapados.length > 0) {
+                            // Construir lista de planes solapados
+                            let listaPlanes = response.data.planes_solapados.map(p => 
+                                `<li><strong>Folio ${p.folio}</strong>: ${p.rango}</li>`
+                            ).join('');
+                            
+                            Swal.fire({
+                                title: response.titulo || 'Préstamo actualizado',
+                                html: `
+                                    <p>${response.mensaje || 'Proceso completado'}</p>
+                                    <hr>
+                                    <div class="alert alert-warning text-start">
+                                        <strong><i class="bi bi-exclamation-triangle-fill"></i> Atención:</strong><br>
+                                        Este plan se solapa con los siguientes préstamos:
+                                        <ul class="mt-2 mb-0">${listaPlanes}</ul>
+                                    </div>
+                                `,
+                                icon: 'warning',
+                                confirmButtonText: 'Entendido'
+                            }).then(() => {
                                 window.location.href = URL_APP + "prestamos/views/";
-                            }
-                        });
+                            });
+                        } else {
+                            Swal.fire({
+                                title: response.titulo,
+                                text: response.mensaje,
+                                icon: response.icono,
+                                confirmButtonText: 'Aceptar'
+                            }).then(() => {
+                                if (response.icono === 'success') {
+                                    window.location.href = URL_APP + "prestamos/views/";
+                                }
+                            });
+                        }
                     },
                     error: function (xhr, status, error) {
                         console.error("Error en la solicitud AJAX:", status, error);
                         Swal.fire({
-                            title: "Error",
-                            text: "Ocurrió un error al procesar la solicitud.",
-                            icon: "error",
+                            title: xhr.responseJSON.titulo,
+                            text: xhr.responseJSON.mensaje,
+                            icon: xhr.responseJSON.icono,
                             confirmButtonText: 'Aceptar'
                         });
                     }

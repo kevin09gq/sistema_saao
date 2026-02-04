@@ -20,6 +20,8 @@ verificarSesion();
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
 
+    <link rel="stylesheet" href="../css/prestamo.css">
+
     <style>
         .concept-title {
             flex: 1;
@@ -89,18 +91,18 @@ verificarSesion();
             <div class="table-responsive my-3">
                 <div class="card shadow-sm">
                     <div class="card-body">
-                        <table class="table table-hover table-bordered">
+                        <table class="table table-hover table-bordered" id="tabla-prestamos">
                             <thead>
                                 <tr>
-                                    <th class="bg-success text-white text-center">Empleado</th>
-                                    <th class="bg-success text-white text-center">Prestamo</th>
-                                    <th class="bg-success text-white text-center">Abonado</th>
-                                    <th class="bg-success text-white text-center">Deuda</th>
-                                    <th class="bg-success text-white text-center">Estado</th>
-                                    <th class="bg-success text-white text-center">Opciones</th>
+                                    <th data-titulo="empleado" class="bg-success text-white text-center">Empleado</th>
+                                    <th data-titulo="prestamo" class="bg-success text-white text-center">Prestamo</th>
+                                    <th data-titulo="abonado" class="bg-success text-white text-center">Abonado</th>
+                                    <th data-titulo="deuda" class="bg-success text-white text-center">Deuda</th>
+                                    <th data-titulo="estado" class="bg-success text-white text-center">Estado</th>
+                                    <th data-titulo="opciones" class="bg-success text-white text-center">Opciones</th>
                                 </tr>
                             </thead>
-                            <tbody class="table-group-divider" id="cuerpo-tabla-prestamos">
+                            <tbody id="cuerpo-tabla-prestamos">
 
                             </tbody>
                         </table>

@@ -58,6 +58,20 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
         return 0.0;
     };
 
+    // Buscar concepto por nombre (coincidencia parcial, case-insensitive)
+    $getConceptoByName = function ($patternList) use ($conceptos) {
+        foreach ($conceptos as $c) {
+            $nombre = strtoupper(trim((string)($c['nombre'] ?? '')));
+            foreach ($patternList as $p) {
+                $pup = strtoupper($p);
+                if ($pup !== '' && strpos($nombre, $pup) !== false) {
+                    return toNumber($c['resultado'] ?? 0);
+                }
+            }
+        }
+        return 0.0;
+    };
+
     $infonavit = $getConcepto('16');
     $isr = $getConcepto('45');
     $imssDed = $getConcepto('52');
@@ -97,8 +111,15 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
         $neto = $totalPercepciones - $totalDeducciones;
     }
     
-    // REDONDEAR el sueldo neto según regla matemática estándar
-    $neto = redondear($neto);
+    $netoOriginal = $neto;
+    $netoRedondeado = redondear($netoOriginal);
+    $ajusteRedondeo = round($netoRedondeado - $netoOriginal, 2);
+    $redondeoActivo = !empty($emp['redondeo_activo']);
+    $redondeoGuardado = isset($emp['redondeo']) ? toNumber($emp['redondeo']) : 0.0;
+    if ($redondeoActivo && abs($redondeoGuardado) > 0.0001) {
+        $ajusteRedondeo = round($redondeoGuardado, 2);
+    }
+    $neto = $netoRedondeado;
 
     $semana = safeText($meta['numero_semana'] ?? '');
 
@@ -242,6 +263,13 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
     if (toNumber($emp['uniformes'] ?? 0) > 0) $deducciones[] = ['label' => 'Uniformes', 'monto' => toNumber($emp['uniformes'])];
     if (toNumber($emp['inasistencia'] ?? 0) > 0) $deducciones[] = ['label' => 'Inasistencias', 'monto' => toNumber($emp['inasistencia'])];
     if (toNumber($emp['permiso'] ?? 0) > 0) $deducciones[] = ['label' => 'Permisos', 'monto' => toNumber($emp['permiso'])];
+    // AJUSTES AL SUB puede venir como propiedad directa, como concepto código 107 o como concepto con nombre similar
+    $valAjustesSub = max(
+        toNumber($emp['ajustes_sub'] ?? 0),
+        $getConcepto('107'),
+        $getConceptoByName(['AJUSTES AL SUB', 'AJUSTE AL SUB', 'AJUSTES SUB', 'AJUSTE SUB', 'AJUSTES', 'AJUSTE'])
+    );
+    if ($valAjustesSub > 0) $deducciones[] = ['label' => 'AJUSTES AL SUB', 'monto' => $valAjustesSub];
 
     // Agregar deducciones personalizadas del arreglo deducciones_adicionales
     if (isset($emp['deducciones_adicionales']) && is_array($emp['deducciones_adicionales'])) {
@@ -253,6 +281,7 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
             }
         }
     }
+    if ($ajusteRedondeo < 0) $deducciones[] = ['label' => 'Redondeo', 'monto' => abs($ajusteRedondeo)];
 
     // Calcular el total de deducciones sumando todos los elementos del array
     $totalDeduccionesCalculado = 0.0;
@@ -272,6 +301,10 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
         if ($ad['total'] > 0) {
             $percepciones[] = ['label' => $conceptoNum++ . ' ' . $ad['nombre'], 'cantidad' => $ad['cantidad'], 'monto' => $ad['total']];
         }
+    }
+    if ($ajusteRedondeo > 0) {
+        $percepciones[] = ['label' => $conceptoNum++ . ' Redondeo', 'cantidad' => 0, 'monto' => $ajusteRedondeo];
+        $totalPercepciones += $ajusteRedondeo;
     }
 
     // Calcular el máximo de conceptos

@@ -1,3 +1,4 @@
+// Autor: Brandon
 
 $(document).ready(function () {
 
@@ -323,8 +324,11 @@ $(document).ready(function () {
             const tooltipAttrs = tooltipText ? `class="celda-con-tooltip" data-tooltip="${tooltipText}"` : '';
             const id = emp.clave || emp.id_empleado || (idxGlobal + 1);
 
-            // Para asistencia, se imprimen 2 filas como en la imagen
+            // Para asistencia, verificar cuántos registros tiene el día
+            // Si tiene 4 registros (E1, S1, E2, S2) → 2 filas
+            // Si tiene 2 registros (E1, S1 sin comida) → 1 fila
             if (String(r.tipo) === 'asistencia') {
+                // Primera fila siempre (E1, S1)
                 $tbody.append(`
                     <tr>
                         <td>${id}</td>
@@ -340,21 +344,25 @@ $(document).ready(function () {
                         <td></td>
                     </tr>
                 `);
-                $tbody.append(`
-                    <tr>
-                        <td>${id}</td>
-                        <td>${dia}</td>
-                        <td>${r.fecha || ''}</td>
-                        <td>${turnoTxt}</td>
-                        <td ${cellStyle} ${tooltipAttrs}>${e2}</td>
-                        <td ${cellStyle} ${tooltipAttrs}>${s2}</td>
-                        <td></td>
-                        <td></td>
-                        <td>${diffHHMM(e2, s2) || '00:00'}</td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                `);
+                
+                // Segunda fila solo si tiene E2 o S2 (turno con comida)
+                if (e2 || s2) {
+                    $tbody.append(`
+                        <tr>
+                            <td>${id}</td>
+                            <td>${dia}</td>
+                            <td>${r.fecha || ''}</td>
+                            <td>${turnoTxt}</td>
+                            <td ${cellStyle} ${tooltipAttrs}>${e2}</td>
+                            <td ${cellStyle} ${tooltipAttrs}>${s2}</td>
+                            <td></td>
+                            <td></td>
+                            <td>${diffHHMM(e2, s2) || '00:00'}</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    `);
+                }
             } else {
                 // Para eventos, una fila con columnas en blanco
                 $tbody.append(`
@@ -373,6 +381,8 @@ $(document).ready(function () {
                     </tr>
                 `);
             }
+
+            
         });
 
         // Filas de resumen como en la imagen

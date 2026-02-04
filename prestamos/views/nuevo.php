@@ -33,11 +33,15 @@ verificarSesion();
                     <form method="post" id="form-nuevo-prestamo">
 
                         <div class="d-flex">
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-secondary my-auto me-2"
+                                    onclick="window.history.back()"
+                                    ><i class="bi bi-arrow-left"></i></button>
+
                             <h4 class="card-title me-auto my-auto">Nuevo prestamo</h4>
-                            <button type="submit" class="btn btn-success ms-auto">
-                                <i class="bi bi-save2-fill"></i> Guardar Prestamo
+                            <button type="submit" class="btn btn-success ms-auto" title="Guardar prestamo">
+                                <i class="bi bi-floppy-fill me-2"></i>Guardar Prestamo
                             </button>
-                            <button type="button" class="btn btn-secondary ms-2" id="btnCancelar">Cancelar</button>
                         </div>
 
                         <hr>
@@ -80,12 +84,12 @@ verificarSesion();
 
                         <div id="contenedor-plan-pago">
                             <div class="row g-2">
-                                <div class="col-12 col-md-4">
+                                <div class="col-12 col-md-2">
                                     <label for="num_semana" class="form-label">Número de semanas</label>
                                     <input placeholder="0" type="number" id="num_semana" name="num_semana" class="form-control form-control-lg shadow-sm" min="1" value="5" required>
                                 </div>
 
-                                <div class="col-12 col-md-4">
+                                <div class="col-12 col-md-3">
                                     <label for="pago_semana" class="form-label">Pago por semana $</label>
                                     <input placeholder="0.0" type="number" id="pago_semana" name="pago_semana" class="form-control form-control-lg shadow-sm" min="0" step="0.01" required>
                                 </div>
@@ -97,6 +101,11 @@ verificarSesion();
                                             <option <?= $i == date('W') ? 'selected' : '' ?> value="<?= $i ?>">Semana <?= $i ?></option>
                                         <?php endfor; ?>
                                     </select>
+                                </div>
+
+                                <div class="col-12 col-md-2">
+                                    <label for="anio_inicio" class="form-label">Año inicio</label>
+                                    <input placeholder="0" type="number" id="anio_inicio" name="anio_inicio" class="form-control form-control-lg shadow-sm" min="1" value="<?= date('Y') ?>" required>
                                 </div>
                             </div>
 

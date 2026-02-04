@@ -100,13 +100,55 @@ function obtenerDetallePlan($conexion, int $id_plan): array
     $res = $stmt->get_result();
     $row = $res->fetch_assoc();
     $stmt->close();
-    
-    if ($row && isset($row['detalle'])) {
-        $decoded = json_decode($row['detalle'], true);
-        return is_array($decoded) ? $decoded : [];
+
+    if (!$row || !isset($row['detalle'])) {
+        return [];
     }
-    
-    return [];
+
+    $decoded = json_decode($row['detalle'], true);
+    if (!is_array($decoded)) {
+        return [];
+    }
+
+    // Obtener información de los abonos relacionados
+    $idsAbonos = [];
+    foreach ($decoded as $item) {
+        if (isset($item['id_abono']) && $item['id_abono'] !== null && $item['id_abono'] !== '') {
+            $idsAbonos[] = (int)$item['id_abono'];
+        }
+    }
+
+    $abonosInfo = [];
+    if (!empty($idsAbonos)) {
+        $placeholders = implode(',', array_fill(0, count($idsAbonos), '?'));
+        $sqlAbonos = "SELECT id_abono, es_nomina FROM prestamos_abonos WHERE id_abono IN ($placeholders)";
+        $stmtAbonos = $conexion->prepare($sqlAbonos);
+
+        $types = str_repeat('i', count($idsAbonos));
+        $stmtAbonos->bind_param($types, ...$idsAbonos);
+        $stmtAbonos->execute();
+        $resAbonos = $stmtAbonos->get_result();
+
+        while ($abono = $resAbonos->fetch_assoc()) {
+            $abonosInfo[(int)$abono['id_abono']] = [
+                'es_nomina' => (int)$abono['es_nomina']
+            ];
+        }
+        $stmtAbonos->close();
+    }
+
+    // Agregar la información del abono al detalle
+    foreach ($decoded as &$item) {
+        $idAbono = isset($item['id_abono']) && $item['id_abono'] !== null && $item['id_abono'] !== '' ? (int)$item['id_abono'] : null;
+        if ($idAbono && isset($abonosInfo[$idAbono])) {
+            $item['es_nomina'] = $abonosInfo[$idAbono]['es_nomina'];
+        } else {
+            $item['es_nomina'] = null;
+        }
+    }
+    unset($item);
+
+    return $decoded;
 }
 
 class PDFPlanPago extends TCPDF
@@ -266,20 +308,21 @@ try {
 
     // 4) Detalle del plan
     $html .= '<br><h3 style="margin:0 0 6px 0;">4) Detalle del plan de pago</h3>';
-    
+
     if (empty($detallePlan)) {
         $html .= '<table border="1" cellpadding="4">
             <tr><td align="center">No hay detalle disponible para este plan</td></tr>
         </table>';
     } else {
         $html .= '<table border="1" cellpadding="4">
-            <tr style="background-color:#E8F5E9;">
-                <th width="15%">Semana</th>
-                <th width="12%">Año</th>
-                <th width="20%">Monto a pagar</th>
-                <th width="15%">Estado</th>
-                <th width="20%">Fecha de pago</th>
-                <th width="18%">Observación</th>
+            <tr style="background-color:#E8F5E9; font-weight:bold;">
+                <th align="center" width="12%">Semana</th>
+                <th align="center" width="8%">Año</th>
+                <th align="center" width="15%">Monto a pagar</th>
+                <th align="center" width="10%">Estado</th>
+                <th align="center" width="20%">Fecha de pago</th>
+                <th align="center" width="12%">Origen</th>
+                <th align="center" width="23%">Observación</th>
             </tr>';
 
         $totalDetalle = 0;
@@ -290,25 +333,33 @@ try {
             $estado = isset($item['estado']) ? (string)$item['estado'] : 'Pendiente';
             $fechaPago = isset($item['fecha_pago']) ? (string)$item['fecha_pago'] : '';
             $obs = isset($item['observacion']) ? (string)$item['observacion'] : '';
-            
+
+            // Determinar el origen del pago
+            $origen = '-';
+            $estadoLower = strtolower($estado);
+            if ($estadoLower === 'pagado' && isset($item['es_nomina'])) {
+                $origen = (int)$item['es_nomina'] === 1 ? 'Nómina' : 'Tesorería';
+            }
+
             $totalDetalle += $monto;
-            
+
             $html .= '<tr>';
-            $html .= '<td align="center">Semana ' . $semana . '</td>';
+            $html .= '<td align="center">Sem ' . $semana . '</td>';
             $html .= '<td align="center">' . $anio . '</td>';
             $html .= '<td align="right">' . formatoMonedaPdf($monto) . '</td>';
             $html .= '<td align="center">' . htmlspecialchars($estado, ENT_QUOTES, 'UTF-8') . '</td>';
             $html .= '<td align="center">' . ($fechaPago ? formatearFechaPdf($fechaPago, true) : '-') . '</td>';
+            $html .= '<td align="center">' . $origen . '</td>';
             $html .= '<td>' . ($obs ? htmlspecialchars($obs, ENT_QUOTES, 'UTF-8') : '-') . '</td>';
             $html .= '</tr>';
         }
-        
+
         $html .= '<tr style="background-color:#C8E6C9;font-weight:bold;">';
         $html .= '<td colspan="2">TOTAL A PAGAR</td>';
         $html .= '<td align="right">' . formatoMonedaPdf($totalDetalle) . '</td>';
-        $html .= '<td colspan="3"></td>';
+        $html .= '<td colspan="4"></td>';
         $html .= '</tr>';
-        
+
         $html .= '</table>';
     }
 
@@ -316,7 +367,6 @@ try {
 
     $nombre = 'PLAN PAGO - ' . htmlspecialchars((string)($plan['empleado'] ?? ''), ENT_QUOTES, 'UTF-8') . ' - Folio ' . htmlspecialchars((string)($plan['folio'] ?? ''), ENT_QUOTES, 'UTF-8') . ' - ' . date('d-m-Y') . '.pdf';
     $pdf->Output($nombre, 'I');
-
 } catch (Exception $e) {
     http_response_code(500);
     echo 'Error al generar PDF: ' . $e->getMessage();

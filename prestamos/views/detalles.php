@@ -87,13 +87,15 @@ if (!$id) {
                 </div>
             </div>
 
-            <!-- INFORMACIÓN DE LOS PRESTAMOS DEL EMPLEADO -->
+            <!-- ====================================
+            INFORMACIÓN DE LOS PRESTAMOS DEL EMPLEADO
+            ===================================== -->
+            <h5>Préstamos del empleado</h5>
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
 
-                    <div class="d-flex justify-content-between align-items-center mb-3">
+                    <!-- <div class="d-flex justify-content-between align-items-center mb-3">
 
-                        <h5 class="me-auto">Préstamos del empleado</h5>
                         <div class="dropdown">
                             <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Filtro">
                                 <i class="bi bi-sort-alpha-down"></i>
@@ -108,7 +110,69 @@ if (!$id) {
                             </ul>
                         </div>
                         <a class="btn btn-sm btn-outline-primary ms-2" href="nuevo.php">Nuevo</a>
+                    </div> -->
+
+                    <!-- Filtros para los prestamos -->
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+
+                        <!-- Lado izquierdo -->
+                        <div class="d-flex align-items-center gap-2">
+
+                            <!-- Ordenar -->
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-secondary dropdown-toggle"
+                                    type="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false"
+                                    title="Ordenar">
+                                    <i class="bi bi-sort-alpha-down"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <button class="dropdown-item" id="btnMasRecientePrestamo">
+                                            Más recientes
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button class="dropdown-item" id="btnMasAntiguoPrestamo">
+                                            Más antiguos
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- Buscar -->
+                            <input type="text"
+                                class="form-control form-control-sm"
+                                id="busqueda_prestamo"
+                                name="busqueda_prestamo"
+                                placeholder="Buscar..."
+                                style="max-width: 200px;">
+
+                            <!-- Cantidad por página -->
+                            <select class="form-select form-select-sm"
+                                id="limite_prestamo"
+                                name="limite_prestamo"
+                                title="Registros por página"
+                                style="width: 110px;">
+                                <option value="5" selected>5</option>
+                                <option value="10">10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="-1">Todos</option>
+                            </select>
+
+                        </div>
+
+                        <!-- Lado derecho -->
+                        <div>
+                            <a class="btn btn-sm btn-outline-primary" href="nuevo.php">
+                                Nuevo
+                            </a>
+                        </div>
+
                     </div>
+
 
                     <div class="table-responsive">
                         <table class="table table-hover table-bordered align-middle">
@@ -131,29 +195,75 @@ if (!$id) {
                 </div>
             </div>
 
-            <!-- INFORMACIÓN DE LOS ABONOS DEL EMPLEADO -->
+            <!-- ====================================
+            INFORMACIÓN DE LOS ABONOS DEL EMPLEADO
+            ===================================== -->
+            <h5>Abonos del empleado</h5>
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="me-auto">Abonos del empleado</h5>
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Filtro">
-                                <i class="bi bi-sort-alpha-down"></i>
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <button class="dropdown-item" id="btnMasRecienteAbono">Más Recientes</button>
-                                </li>
-                                <li>
-                                    <button class="dropdown-item" id="btnMasAntiguoAbono">Más Antiguos</button>
-                                </li>
-                            </ul>
+
+                    <!-- Filtros para los Abonos -->
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+
+                        <!-- Lado izquierdo -->
+                        <div class="d-flex align-items-center gap-2">
+
+                            <!-- Ordenar -->
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-secondary dropdown-toggle"
+                                    type="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false"
+                                    title="Ordenar">
+                                    <i class="bi bi-sort-alpha-down"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <button class="dropdown-item" id="btnMasRecienteAbono">
+                                            Más recientes
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button class="dropdown-item" id="btnMasAntiguoAbono">
+                                            Más antiguos
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- Buscar -->
+                            <input type="text"
+                                class="form-control form-control-sm"
+                                id="busqueda_abono"
+                                name="busqueda_abono"
+                                placeholder="Buscar..."
+                                style="max-width: 200px;">
+
+                            <!-- Cantidad por página -->
+                            <select class="form-select form-select-sm"
+                                id="limite_abono"
+                                name="limite_abono"
+                                title="Registros por página"
+                                style="width: 110px;">
+                                <option value="5" selected>5</option>
+                                <option value="10">10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="-1">Todos</option>
+                            </select>
+
                         </div>
-                        <!-- Button trigger modal -->
-                        <button type="button" class="btn btn-sm btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#modalAbono">
-                            Abonar
-                        </button>
+
+                        <!-- Lado derecho -->
+                        <div>
+                            <button type="button" class="btn btn-sm btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#modalAbono">
+                                Abonar
+                            </button>
+                        </div>
+
                     </div>
+
+
                     <div class="table-responsive">
                         <table class="table table-hover table-bordered align-middle">
                             <thead>
@@ -162,7 +272,9 @@ if (!$id) {
                                     <th class="bg-success text-white text-center">Semana de Abono</th>
                                     <th class="bg-success text-white text-center">Monto</th>
                                     <th class="bg-success text-white text-center">Fecha</th>
+                                    <th class="bg-success text-white text-center">Observacion</th>
                                     <th class="bg-success text-white text-center">Origen</th>
+                                    <th class="bg-success text-white text-center">Accion</th>
                                 </tr>
                             </thead>
                             <tbody id="tabla-abonos"></tbody>
@@ -172,25 +284,70 @@ if (!$id) {
                 </div>
             </div>
 
-            <!-- INFORMACIÓN DE LOS PLANES DE PAGO DEL EMPLEADO -->
+            <!-- ====================================
+            INFORMACIÓN DE LOS PLANES Y DETALLES
+            ===================================== -->
+            <h5>Planes de pago</h5>
             <div class="card shadow-sm mb-5">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="me-auto">Planes de pago</h5>
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Filtro">
-                                <i class="bi bi-sort-alpha-down"></i>
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <button class="dropdown-item" id="btnMasRecientePlan">Más Recientes</button>
-                                </li>
-                                <li>
-                                    <button class="dropdown-item" id="btnMasAntiguoPlan">Más Antiguos</button>
-                                </li>
-                            </ul>
+
+
+                    <!-- Filtros para los Planes -->
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+
+                        <!-- Lado izquierdo -->
+                        <div class="d-flex align-items-center gap-2">
+
+                            <!-- Ordenar -->
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-secondary dropdown-toggle"
+                                    type="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false"
+                                    title="Ordenar">
+                                    <i class="bi bi-sort-alpha-down"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <button class="dropdown-item" id="btnMasRecientePlan">
+                                            Más recientes
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button class="dropdown-item" id="btnMasAntiguoPlan">
+                                            Más antiguos
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- Buscar -->
+                            <input type="text"
+                                class="form-control form-control-sm"
+                                id="busqueda_plan"
+                                name="busqueda_plan"
+                                placeholder="Buscar..."
+                                style="max-width: 200px;">
+
+                            <!-- Cantidad por página -->
+                            <select class="form-select form-select-sm"
+                                id="limite_plan"
+                                name="limite_plan"
+                                title="Registros por página"
+                                style="width: 110px;">
+                                <option value="5" selected>5</option>
+                                <option value="10">10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="-1">Todos</option>
+                            </select>
+
                         </div>
+
                     </div>
+
+
+
                     <div class="table-responsive">
                         <table class="table table-hover table-bordered align-middle">
                             <thead>

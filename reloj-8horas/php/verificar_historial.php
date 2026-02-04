@@ -29,6 +29,7 @@ if (!$datos) {
 $num_sem = intval($datos['num_sem']);
 $fecha_inicio = $datos['fecha_inicio'];
 $fecha_fin = $datos['fecha_fin'];
+$id_empresa = isset($datos['id_empresa']) ? intval($datos['id_empresa']) : 1;
 
 // Validar formato de fechas (YYYY-MM-DD)
 if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha_inicio) || 
@@ -40,11 +41,11 @@ if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha_inicio) ||
     exit;
 }
 
-// Verificar si ya existe un registro con la misma semana y fechas
+// Verificar si ya existe un registro con la misma semana, fechas y empresa
 $sql = "SELECT id, observacion, fecha_registro FROM historial_biometrico 
-        WHERE num_sem = ? AND fecha_inicio = ? AND fecha_fin = ?";
+        WHERE num_sem = ? AND fecha_inicio = ? AND fecha_fin = ? AND id_empresa = ?";
 $stmt = $conexion->prepare($sql);
-$stmt->bind_param("iss", $num_sem, $fecha_inicio, $fecha_fin);
+$stmt->bind_param("issi", $num_sem, $fecha_inicio, $fecha_fin, $id_empresa);
 $stmt->execute();
 $result = $stmt->get_result();
 

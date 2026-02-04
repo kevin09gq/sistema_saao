@@ -910,6 +910,7 @@ function mostrarHistorialRetardos(empleado) {
     $contenedor.html(html);
 
     // Agregar eventos para actualizar totales cuando cambien los valores
+    $contenedor.off('input', '.historial-minutos, .historial-tolerancia, .historial-descuento-min');
     $contenedor.on('input', '.historial-minutos, .historial-tolerancia, .historial-descuento-min', function() {
         const $item = $(this).closest('.historial-retardo-item');
         const index = parseInt($item.data('index'));
@@ -953,6 +954,7 @@ function mostrarHistorialRetardos(empleado) {
     });
     
     // Remover clase de edición cuando se pierde el foco
+    $contenedor.off('blur', '.historial-minutos, .historial-tolerancia, .historial-descuento-min');
     $contenedor.on('blur', '.historial-minutos, .historial-tolerancia, .historial-descuento-min', function() {
         const $item = $(this).closest('.historial-retardo-item');
         setTimeout(() => {
@@ -1037,6 +1039,7 @@ function mostrarHistorialInasistencias(empleado) {
     $contenedor.html(html);
 
     // Agregar eventos para actualizar totales cuando cambien los valores
+    $contenedor.off('input', '.historial-inasistencia-descuento');
     $contenedor.on('input', '.historial-inasistencia-descuento', function() {
         const $item = $(this).closest('.historial-inasistencia-item');
         const index = parseInt($item.data('index'));
@@ -1055,6 +1058,7 @@ function mostrarHistorialInasistencias(empleado) {
     });
     
     // Evento para eliminar inasistencia
+    $contenedor.off('click', '.btn-eliminar-inasistencia');
     $contenedor.on('click', '.btn-eliminar-inasistencia', function() {
         const index = parseInt($(this).data('index'));
         

@@ -1,6 +1,7 @@
 /**
  * Guardar Historial Biométrico
  * Este script maneja el guardado del JSON procesado en la base de datos
+ * Autor: Brandon
  */
 
 // Función para convertir fecha del formato "29/Nov/2025" a "2025-11-29"
@@ -51,7 +52,7 @@ function contarTotalEmpleados(json) {
 let registroExistente = null;
 
 // Función para verificar si ya existe un registro en la BD
-async function verificarExistenciaHistorial(numSem, fechaInicio, fechaFin) {
+async function verificarExistenciaHistorial(numSem, fechaInicio, fechaFin, idEmpresa) {
     try {
         const response = await fetch('../php/verificar_historial.php', {
             method: 'POST',
@@ -61,7 +62,8 @@ async function verificarExistenciaHistorial(numSem, fechaInicio, fechaFin) {
             body: JSON.stringify({
                 num_sem: numSem,
                 fecha_inicio: fechaInicio,
-                fecha_fin: fechaFin
+                fecha_fin: fechaFin,
+                id_empresa: idEmpresa || 1
             })
         });
         
@@ -134,12 +136,21 @@ async function llenarModalHistorial() {
     document.getElementById('historial-fecha-inicio').textContent = json.fecha_inicio || '-';
     document.getElementById('historial-fecha-fin').textContent = json.fecha_cierre || '-';
     
-    // Llenar resumen de datos
-    const totalDeptos = json.departamentos ? json.departamentos.length : 0;
-    const totalEmpleados = contarTotalEmpleados(json);
+    // Mostrar empresa (1 = SAAO, 2 = SB)
+    const idEmpresaModal = json.id_empresa || 1;
+    const nombreEmpresa = idEmpresaModal === 2 ? 'SB' : 'SAAO';
+    const spanEmpresa = document.getElementById('historial-empresa');
+    if (spanEmpresa) {
+        spanEmpresa.textContent = nombreEmpresa;
+        spanEmpresa.className = idEmpresaModal === 2 ? 'badge bg-success fs-6' : 'badge bg-info fs-6';
+    }
     
-    document.getElementById('historial-total-deptos').textContent = totalDeptos;
-    document.getElementById('historial-total-empleados').textContent = totalEmpleados;
+    // Llenar resumen de datos
+    // const totalDeptos = json.departamentos ? json.departamentos.length : 0;
+    // const totalEmpleados = contarTotalEmpleados(json);
+    
+    // document.getElementById('historial-total-deptos').textContent = totalDeptos;
+    // document.getElementById('historial-total-empleados').textContent = totalEmpleados;
     
     // Limpiar observación
     document.getElementById('historial-observacion').value = '';
@@ -148,6 +159,7 @@ async function llenarModalHistorial() {
     // Verificar si ya existe en la BD
     const fechaInicioBD = convertirFechaParaBD(json.fecha_inicio);
     const fechaFinBD = convertirFechaParaBD(json.fecha_cierre);
+    const idEmpresa = json.id_empresa || 1;
     
     // Mostrar loading en el área de alerta
     const alertaContainer = document.getElementById('alerta-existencia');
@@ -160,7 +172,7 @@ async function llenarModalHistorial() {
         `;
     }
     
-    const resultado = await verificarExistenciaHistorial(json.numero_semana, fechaInicioBD, fechaFinBD);
+    const resultado = await verificarExistenciaHistorial(json.numero_semana, fechaInicioBD, fechaFinBD, idEmpresa);
     mostrarEstadoExistencia(resultado);
     
     return true;

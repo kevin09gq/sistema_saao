@@ -11,6 +11,13 @@
 
                 <div class="modal-body">
                     <div class="form-check">
+                        <input class="form-check-input fs-4" type="radio" name="tipoEvento" id="dia_festivo" value="dia_festivo">
+                        <label class="form-check-label fs-4" for="dia_festivo">
+                            🎉 Festivo
+                        </label>
+                    </div>
+
+                    <div class="form-check">
                         <input class="form-check-input fs-4" type="radio" name="tipoEvento" id="vacaciones" value="vacaciones">
                         <label class="form-check-label fs-4" for="vacaciones">
                             🏖️ Vacación

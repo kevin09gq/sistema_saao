@@ -1,6 +1,6 @@
 <!-- Modal Cargar Historial -->
 <div class="modal fade" id="modalCargarHistorial" tabindex="-1" aria-labelledby="modalCargarHistorialLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header bg-info text-white">
                 <h5 class="modal-title" id="modalCargarHistorialLabel">
@@ -53,6 +53,7 @@
                                 <tr>
                                     <th scope="col" style="width: 80px;">Semana</th>
                                     <th scope="col">Período</th>
+                                    <th scope="col" style="width: 80px;">Empresa</th>
                                     <th scope="col">Observación</th>
                                     <th scope="col" style="width: 160px;">Guardado</th>
                                     <th scope="col" style="width: 80px;">Acciones</th>

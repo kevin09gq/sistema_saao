@@ -1,0 +1,63 @@
+mira, creo que estos son los siguiente casos de incidencias de marcajes:
+
+Casos que logré identificar:
+A. Casos con 4 marcas (correctas o con problemas)
+1. Ideal: E1 → S1 → E2 → S2 (en orden y horarios razonables).
+2. Orden invertido en comidas:
+E1 → E2 → S1 → S2 (marca "entrada después de comer" antes que "salida a comer").
+3. Marcas duplicadas en un evento:
+E1 → E1 → S1 → E2 → S2 (5 marcas, duplicado en entrada).
+E1 → S1 → S1 → E2 → S2 (duplicado en salida a comer).
+4. Intervalos anómalos:
+E1 y S1 con menos de X minutos (ejemplo: 5 minutos), luego E2 → S2 normal (posible error o prueba).
+
+B. Casos con 3 marcas (falta 1 marca)
+5. Sin salida a comer: E1 → E2 → S2 (omitió S1).
+6. Sin entrada después de comer: E1 → S1 → S2 (omitió E2).
+7. Sin salida final: E1 → S1 → E2 (no marcó fin de jornada).
+8. Sin entrada inicial: S1 → E2 → S2 (llegó tarde y omitió E1).
+9. Marcas consecutivas sin sentido:
+E1 → S1 → S2 (pero S1 y S2 muy juntos, posible error).
+
+C. Casos con 2 marcas
+10. Solo entrada y salida final: E1 → S2 (sin comidas).
+11. Solo comidas: S1 → E2 (omitieron E1 y S2).
+12. Entrada y salida a comer: E1 → S1 (se fue después de comer).
+13. Entrada y entrada después de comer: E1 → E2 (raro, pero posible).
+14. Dos marcas idénticas:
+E1 → E1 (doble entrada, luego se fue sin marcar salidas).
+S2 → S2 (doble salida final, error).
+
+D. Casos con 1 marca
+15. Solo entrada inicial: E1 (se olvidó de marcar salidas).
+16. Solo salida a comer: S1 (raro, quizás marcó mal al llegar).
+17. Solo entrada después de comer: E2 (llegó tarde y omitió todo lo anterior).
+18. Solo salida final: S2 (omitió entrada y comidas).
+
+E. Casos con 0 marcas
+19. Sin asistencia o olvido total de marcar.
+
+F. Casos con 5+ marcas (marcas extras)
+20. Doble registro completo:
+E1 → S1 → E2 → S2 → E1 (repitió entrada al día siguiente en mismo archivo).
+21. Marcas por error/ajuste:
+E1 → S1 → E2 → S1 → E2 → S2 (confusión al volver de comer).
+22. Marcas repetidas en corto tiempo:
+E1 → E1 → S1 → S1 → E2 → E2 → S2 → S2 (posible falla del reloj o usuario).
+
+
+G. Casos por horarios anómalos
+23. Jornada demasiado corta:
+E1 y S2 con menos de 4 horas (sin comidas), ¿media jornada?
+24. Jornada demasiado larga:
+Más de 12 horas (posible error de fecha).
+25. Comidas fuera de horario:
+S1 a las 10:00 AM y E2 a las 10:05 AM (comida de 5 minutos, improbable).
+26. Marcas en días no laborales:
+Registros en sábado/domingo (error o trabajo extra).
+
+H. Casos por interpretación errónea del reloj
+27. El reloj asume "entrada" siempre que sea la primera marca del día:
+Si un empleado llega tarde y marca primero a las 3:00 PM (interpretado como E1, pero en realidad es E2).
+28. Confusión entre "salida" y "entrada":
+Empleado marca a las 2:00 PM (para salir a comer), pero el reloj lo toma como "entrada" porque hubo un error previo.

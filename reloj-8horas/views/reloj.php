@@ -160,7 +160,7 @@ verificarSesion();
                 </button>
 
                 <button type="button" class="btn btn-warning fw-bold" id="btn_guardar_historial" data-bs-toggle="modal" data-bs-target="#modalGuardarHistorial">
-                    <i class="bi bi-floppy me-2"></i>
+                    <i class="bi bi-bookmark-fill me-2"></i>
                     Guardar Progreso
                 </button>
 
@@ -190,6 +190,7 @@ verificarSesion();
     <?php include 'detalles_modal.php'; ?>
     <?php include 'horarios_modal.php'; ?>
     <?php include 'eventos_modal.php'; ?>
+    <?php include 'eventos_variables_modal.php'; ?>
     <?php include 'modal_guardar_historial.php'; ?>
     <?php include 'modal_cargar_historial.php'; ?>
 

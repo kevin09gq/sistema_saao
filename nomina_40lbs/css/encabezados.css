@@ -1,0 +1,289 @@
+/* Estilos para la sección de encabezado de la tabla */
+.header-tabla-40lbs {
+    background: white;
+    padding: 20px 24px;
+    border-bottom: 1px solid #f1f3f4;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-tabla-40lbs h3 {
+    margin: 0;
+    color: #1f2937;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.header-controls-40lbs {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.sem-info-40lbs {
+    background: #10b981;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Controles de filtro y búsqueda - Estilos mejorados */
+.container-tabla-nomina-40lbs {
+    margin: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    overflow: hidden;
+    border: none;
+}
+
+
+
+.controles-tabla-40lbs {
+    padding: 10px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+}
+
+.filtros-container-40lbs {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex: 1;
+    position: relative;
+    z-index: 1;
+}
+
+
+/* Filtro de departamento mejorado */
+.filtro-departamento-40lbs {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 12px;
+    color: #334155;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2310b981' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 12px center;
+    background-repeat: no-repeat;
+    background-size: 18px;
+    min-width: 180px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    font-weight: 500;
+    max-width: 200px;
+    ;
+}
+
+.filtro-departamento-40lbs:hover {
+    border-color: #10b981;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+    background: linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%);
+}
+
+.filtro-departamento-40lbs:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1), 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+
+/* Contenedor de búsqueda mejorado */
+.busqueda-container-40lbs {
+    position: relative;
+    flex: 1;
+    max-width: 250px;
+}
+
+
+.busqueda-container-40lbs::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border-radius: 10px;
+    z-index: -1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.busqueda-container-40lbs i {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #10b981;
+    font-size: 16px;
+    z-index: 2;
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+
+.campo-busqueda-40lbs {
+    width: 100%;
+    background: transparent;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 56px 12px 48px;
+    /* más espacio para el botón X más grande a la derecha */
+    font-size: 14px;
+    color: #334155;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    position: relative;
+    z-index: 1;
+}
+
+.campo-busqueda-40lbs::placeholder {
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+.campo-busqueda-40lbs:hover {
+    border-color: #10b981;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+.campo-busqueda-40lbs:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1), 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+.campo-busqueda-40lbs:focus~i {
+    color: #059669;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.campo-busqueda-40lbs {
+    flex: 1;
+}
+
+
+#btn-clear-busqueda {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    padding: 0;
+    width: 32px;
+    /* mayor área táctil */
+    height: 32px;
+    /* mayor área táctil */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    font-size: 18px;
+    /* icono más grande */
+    cursor: pointer;
+    z-index: 3;
+    /* por encima del input */
+}
+
+#btn-clear-busqueda:hover{
+    color: #ef4444;
+}
+
+.export-buttons-40lbs {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .header-tabla-40lbs {
+        padding: 10px 15px;
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+
+    .header-tabla-40lbs h3 {
+        font-size: 14px;
+    }
+
+    .header-controls-40lbs {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .container-tabla-nomina-40lbs {
+        margin: 10px;
+    }
+
+    .controles-tabla-40lbs {
+        padding: 16px 20px;
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+    }
+
+    .filtros-container-40lbs {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .busqueda-container-40lbs {
+        max-width: none;
+    }
+
+    .campo-busqueda-40lbs {
+        padding: 10px 14px 10px 44px;
+    }
+
+      .export-buttons-40lbs {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+}
+
+
+@media (max-width: 480px) {
+
+    .controles-tabla-40lbs {
+        padding: 12px 16px;
+    }
+
+    .filtro-departamento-40lbs,
+    .campo-busqueda-40lbs {
+        font-size: 13px;
+        border-radius: 8px;
+    }
+    
+    .busqueda-container-40lbs i {
+        left: 14px;
+        font-size: 14px;
+    }
+
+    .filtro-departamento-40lbs {
+        padding: 8px 32px 8px 12px;
+    }
+
+    
+    .campo-busqueda-40lbs {
+        padding: 8px 12px 8px 40px;
+    }
+
+
+}
