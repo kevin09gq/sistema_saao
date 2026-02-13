@@ -25,6 +25,8 @@ switch ($_SERVER['REQUEST_METHOD']) {
             validarExistenciaTrabajador();
         } else if ($_POST['case'] === 'validarExistenciaTrabajadorBD') {
             validarExistenciaTrabajadorBD();
+        } else if ($_POST['case'] === 'validarEmpleadosNuevos') {
+            validarEmpleadosNuevos();
         } else {
             echo json_encode([
                 'error' => 'Case no válido',
@@ -254,6 +256,59 @@ function validarEmpleadosSinSeguroBiometrico() {
         echo json_encode([
             'error' => 'Error en la consulta: ' . mysqli_error($conexion),
             'empleados' => []
+        ]);
+    }
+}
+
+// Función para validar empleados nuevos encontrados en el archivo Excel
+function validarEmpleadosNuevos() {
+    global $conexion;
+    
+    // Obtener las claves
+    $clavesRecibidas = $_POST['claves'];
+    $clavesExistentes = [];
+    
+    // Verificar conexión
+    if (!$conexion) {
+        echo json_encode([
+            'error' => 'Error de conexión a la base de datos',
+            'existentes' => []
+        ]);
+        return;
+    }
+    
+    // Crear lista segura de claves
+    $valores = [];
+    foreach ($clavesRecibidas as $clave) {
+        $valores[] = "'" . mysqli_real_escape_string($conexion, $clave) . "'";
+    }
+    $clavesString = implode(',', $valores);
+    
+    // Consultar empleados existentes (activos y de la empresa)
+    $sql = "SELECT clave_empleado, nombre, ap_paterno, ap_materno, id_empresa 
+            FROM info_empleados 
+            WHERE clave_empleado IN ($clavesString) 
+            AND id_status = 1 
+            AND id_empresa = 1";
+    
+    $result = mysqli_query($conexion, $sql);
+    
+    if ($result) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $clavesExistentes[] = [
+                'clave' => $row['clave_empleado'],
+                'id_empresa' => $row['id_empresa'],
+                'nombre' => $row['ap_paterno'] . ' ' . $row['ap_materno'] . ' ' . $row['nombre']
+            ];
+        }
+        
+        echo json_encode([
+            'existentes' => $clavesExistentes
+        ], JSON_UNESCAPED_UNICODE);
+    } else {
+        echo json_encode([
+            'error' => 'Error en la consulta: ' . mysqli_error($conexion),
+            'existentes' => []
         ]);
     }
 }

@@ -30,31 +30,20 @@ for ($i = 1; $i <= $highestRow; $i++) {
             'nombre' => $colD,
             'id_biometrico' => null, // Agregar campo para ID biométrico
             'registros' => [],
-            'horas_totales' => "",
-            'tiempo_total' => ""
+         
         ];
         $leyendoRegistros = false;
     } elseif ($colA === "ID") {
         $leyendoRegistros = true;
     } elseif (stripos($colA, 'Horas totales') !== false) {
         if ($empleadoActual !== null) {
-            $empleadoActual['horas_totales'] = $colE;
+         
 
-            // Convertir a HH:MM y asignar a tiempo_total
-            if (is_numeric($colE)) {
-                $horas = floor($colE);
-                $minutos = round(($colE - $horas) * 60);
-                $empleadoActual['tiempo_total'] = sprintf("%d:%02d", $horas, $minutos);
-            }
+         
         }
     } elseif (stripos($colG, 'Tiempo total') !== false) {
         if ($empleadoActual !== null) {
-            // Usar getCalculatedValue por si es fórmula, si no, getValue
-            $valorCalculado = $sheet->getCell("J{$i}")->getCalculatedValue();
-            if ($valorCalculado === null || $valorCalculado === '') {
-                $valorCalculado = $sheet->getCell("J{$i}")->getValue();
-            }
-            $empleadoActual['tiempo_total'] = $valorCalculado;
+           
             $empleados[] = $empleadoActual;
             $empleadoActual = null;
         }
@@ -68,14 +57,13 @@ for ($i = 1; $i <= $highestRow; $i++) {
         $fecha = trim($sheet->getCell("C{$i}")->getValue());
         $entrada = trim($sheet->getCell("E{$i}")->getValue());
         $salida = trim($sheet->getCell("F{$i}")->getValue());
-        $trabajado = trim($sheet->getCell("J{$i}")->getValue());
+       
 
-        if ($fecha !== "" || $entrada !== "" || $salida !== "" || $trabajado !== "") {
+        if ($fecha !== "" || $entrada !== "" || $salida !== "" ) {
             $empleadoActual['registros'][] = [
                 'fecha' => $fecha,
                 'entrada' => $entrada,
                 'salida' => $salida,
-                'trabajado' => $trabajado
             ];
         }
     }

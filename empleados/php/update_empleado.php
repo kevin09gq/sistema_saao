@@ -1009,7 +1009,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $respuesta = array(
                     "title" => "EXITO",
                     "text" => "Actualización exitosa.",
-                    "type" => "warning",
+                    "type" => "success",
                     "timeout" => 3000,
                 );
 

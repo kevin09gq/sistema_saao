@@ -14,6 +14,8 @@ verificarSesion();
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="public/styles/main.css">
+    <link rel="stylesheet" href="public/styles/notificacion.css">
+   
     <!-- Iconos Bootstrap -->
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <!-- SweetAlert2 CSS -->
@@ -42,81 +44,86 @@ verificarSesion();
     </div>
 
     <!-- Sección principal de bienvenida (Hero Section) -->
-    <section class="hero-section text-center">
+    <section class="hero-section py-5">
         <div class="container">
-            <h1 class="display-5 fw-bold text-success">Sistema Integral de Gestión</h1>
-            <p class="lead mb-4">Administra gafetes, contratos y nóminas de los empleados de la empacadora de limón de manera eficiente y profesional.</p>
+            <div class="row align-items-center hero-row">
+                <div class="col-lg-7">
+                    <h1 class="hero-title">Sistema Empacadora de Limón</h1>
+                    <p class="hero-subtitle">Gestiona empleados, nóminas, contratos y más desde un panel simple y accesible.</p>
+                    <div class="mt-4">
+                        <a href="empleados/views/lista_empleados.php" class="btn btn-hero btn-primary me-2">Empleados</a>
+                        <a href="nomina/views/" class="btn btn-outline-hero">Ver funcionalidades</a>
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="card feature-overview p-4 shadow-sm">
+                        <h5 class="mb-3">Contenido del sistema</h5>
+                        <ul class="list-unstyled mb-0">
+                            <li class="py-2">
+                                <a class="feature-link link-empleados" href="#" title="Gestión de empleados">
+                                    <i class="bi bi-people-fill me-2"></i>
+                                    <span>Gestión de empleados</span>
+                                </a>
+                            </li>
+                            <li class="py-2">
+                                <a class="feature-link link-nomina" href="#" title="Nómina y exportes">
+                                    <i class="bi bi-cash-stack me-2"></i>
+                                    <span>Nómina y exportes</span>
+                                </a>
+                            </li>
+                            <li class="py-2">
+                                <a class="feature-link link-contratos" href="#" title="Contratos y plantillas">
+                                    <i class="bi bi-file-earmark-text-fill me-2"></i>
+                                    <span>Contratos y plantillas</span>
+                                </a>
+                            </li>
+                            <li class="py-2">
+                                <a class="feature-link link-autorizaciones" href="#" title="Autorizaciones y claves">
+                                    <i class="bi bi-key-fill me-2"></i>
+                                    <span>Autorizaciones y claves</span>
+                                </a>
+                            </li>
+                            <li class="py-2">
+                                <a class="feature-link link-prestamos" href="#" title="Préstamos y pagos">
+                                    <i class="bi bi-bank2 me-2"></i>
+                                    <span>Préstamos y pagos</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
-    <!-- Tarjetas de funcionalidades principales del sistema -->
-    <div class="container my-5">
-        <div class="row g-4">
-
-            <div class="col-md-3">
-                <div class="card h-100 text-center">
-                    <div class="card-body">
-                        <i class="bi bi-person-badge text-success" style="font-size: 48px;"></i>
-                        <h5 class="card-title mt-3">Gestión de Gafetes</h5>
-                        <p class="card-text">Crea, imprime y administra gafetes personalizados para los empleados.</p>
-                        <a href="gafetes/gafetes.php" class="btn btn-success">Ir a Gafetes</a>
+    <section class="features-section py-5">
+        <div class="container">
+            <div class="row features mt-5">
+                <div class="col-md-4 mb-3">
+                    <div class="feature-card p-4 h-100 text-center">
+                        <div class="feature-icon mb-3"> <i class="bi bi-people"></i> </div>
+                        <h6>Empleados</h6>
+                        <p class="mb-0">Registro, historial y asignaciones de casilleros.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="feature-card p-4 h-100 text-center">
+                        <div class="feature-icon mb-3"> <i class="bi bi-cash-stack"></i> </div>
+                        <h6>Nómina</h6>
+                        <p class="mb-0">Generación, exportación y tabuladores.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="feature-card p-4 h-100 text-center">
+                        <div class="feature-icon mb-3"> <i class="bi bi-file-earmark-text"></i> </div>
+                        <h6>Contratos</h6>
+                        <p class="mb-0">Plantillas y exportación a Word.</p>
                     </div>
                 </div>
             </div>
-
-            <div class="col-md-3">
-                <div class="card h-100 text-center">
-                    <div class="card-body">
-                        <i class="bi bi-file-earmark-text text-success" style="font-size: 48px;"></i>
-                        <h5 class="card-title mt-3">Contratos Laborales</h5>
-                        <p class="card-text">Genera y gestiona contratos de trabajo de manera sencilla y segura.</p>
-                        <a href="contratos/contratos.php" class="btn btn-success">Ir a Contratos</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-3">
-                <div class="card h-100 text-center">
-                    <div class="card-body">
-                        <i class="bi bi-cash-coin text-success" style="font-size: 48px;"></i>
-                        <h5 class="card-title mt-3">Cálculo de Nómina</h5>
-                        <p class="card-text">Automatiza el cálculo y control de nóminas para todos los empleados.</p>
-                        <a href="nomina/views/nomina.php" class="btn btn-success">Ir a Nómina</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tarjeta para ir al reloj de 8 horas -->
-            <div class="col-md-3">
-                <div class="card h-100 text-center">
-                    <div class="card-body">
-                        <i class="bi bi-stopwatch text-success" style="font-size: 48px;"></i>
-                        <h5 class="card-title mt-3">Biometricos</h5>
-                        <p class="card-text">Automatiza el cálculo y control de nóminas para todos los empleados.</p>
-                        <a href="reloj-8horas/views/reloj.php" class="btn btn-success">Ir a Reloj</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tarjeta para ir a prestamos -->
-            <div class="col-md-3">
-                <div class="card h-100 text-center">
-                    <div class="card-body">
-                        <i class="bi bi-cash-stack text-success" style="font-size: 48px;"></i>
-                        <h5 class="card-title mt-3">Prestamos</h5>
-                        <p class="card-text">Registrar prestamos y abonos de los empleados</p>
-                        <a href="prestamos/views/" class="btn btn-success">Ir a Prestamos</a>
-                    </div>
-                </div>
-            </div>
-
         </div>
-    </div>
+    </section>
 
-    <!-- Pie de página simple -->
-    <footer class="bg-success text-white text-center py-3">
-        <small>&copy; <?= date('Y') ?> Empacadora de Limón. Todos los derechos reservados.</small>
-    </footer>
 
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>

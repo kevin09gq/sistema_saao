@@ -20,6 +20,8 @@ define('JQUERY_INPUTMASK', $rutaRaiz . '/public/plugins/jquery.inputmask.min.js'
 define('JQUERY_UI_JS', $rutaRaiz . '/public/plugins/jquery-ui.min.js');
 define('JQUERY_UI_CSS', $rutaRaiz . '/public/plugins/jquery-ui.min.css');
 
+define('ICONO_SISTEMA', $rutaRaiz . '/public/img/icon.png');
+
 define('DIAS_SEMANA', ['SABADO', 'DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES']);
 
 // Función para verificar si el usuario está autenticado

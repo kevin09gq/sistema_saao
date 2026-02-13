@@ -147,7 +147,7 @@ function renderTablaEmpleados() {
                     </div>
                 </td>
                 <td>${emp.clave_empleado}</td>
-                <td><span id="btn_status" data-id-empleado="${emp.id_empleado}" data-id-status="${emp.id_status}" class="status ${emp.id_status == 1 ? 'status-activo' : 'status-inactivo'}">${emp.nombre_status}</span></td>
+                <td><span style="cursor: pointer;" id="btn_status" data-id-empleado="${emp.id_empleado}" data-id-status="${emp.id_status}" class="status ${emp.id_status == 1 ? 'status-activo' : 'status-inactivo'}">${emp.nombre_status}</span></td>
                 <td class="text-end">
                     <button class="btn btn-view btn-actualizar" data-id="${emp.id_empleado}" data-clave="${emp.clave_empleado}" title="Actualizar"><i class="bi bi-pencil"></i></button>
                     ${emp.nombre_status !== 'Activo' ? `<button class="btn btn-danger btn-eliminar" data-id="${emp.id_empleado}" data-nombre="${emp.nombre} ${emp.ap_paterno} ${emp.ap_materno}" title="Eliminar"><i class="bi bi-trash"></i></button>` : ''}

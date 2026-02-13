@@ -310,6 +310,33 @@ verificarSesion();
                                     <div class="row">
                                         <div class="col-12">
                                             <h6 class="mb-3">Horarios Reloj Checador</h6>
+
+                                            <!-- Formulario para copiar -->
+                                            <div class="mb-4">
+                                                <div class="row g-2">
+                                                    <div class="col">
+                                                        <label class="form-label" for="ref_entrada">Entrada</label>
+                                                        <input type="time" id="ref_entrada" class="form-control" placeholder="Entrada">
+                                                    </div>
+                                                    <div class="col">
+                                                        <label class="form-label" for="ref_salida_comida">Salida Comida</label>
+                                                        <input type="time" id="ref_salida_comida" class="form-control" placeholder="Salida Comida">
+                                                    </div>
+                                                    <div class="col">
+                                                        <label class="form-label" for="ref_entrada_comida">Entrada Comida</label>
+                                                        <input type="time" id="ref_entrada_comida" class="form-control" placeholder="Entrada Comida">
+                                                    </div>
+                                                    <div class="col">
+                                                        <label class="form-label" for="ref_salida">Salida</label>
+                                                        <input type="time" id="ref_salida" class="form-control" placeholder="Salida">
+                                                    </div>
+                                                    <div class="col-auto">
+                                                        <label class="form-label" for="btnCopiarHorarios">&ensp;</label><br>
+                                                        <button type="button" id="btnCopiarHorarios" class="btn btn-primary my-auto" title="Copiar horarios"><i class="bi bi-copy"></i></button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                             <table class="table table-bordered table-hover">
                                                 <thead class="table-light">
                                                     <tr>
@@ -318,13 +345,22 @@ verificarSesion();
                                                         <th>Salida Comida</th>
                                                         <th>Entrada Comida</th>
                                                         <th>Salida</th>
+                                                        <th>¿Descanso?</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody id="tbody_horarios">
                                                     <?php for ($i = 1; $i <= 7; $i++): ?>
                                                         <tr>
                                                             <td>
-                                                                <input type="text" class="form-control" name="horario_dia[]" placeholder="Día">
+                                                                <!-- <input type="text" class="form-control" name="horario_dia[]" placeholder="Día"> -->
+                                                                <select class="form-select" name="horario_dia[]">
+                                                                    <option selected value="">Seleccionar...</option>
+
+                                                                    <?php foreach (DIAS_SEMANA as $dia): ?>
+                                                                        <option value="<?php echo $dia; ?>"><?php echo $dia; ?></option>
+                                                                    <?php endforeach; ?>
+
+                                                                </select>
                                                             </td>
                                                             <td>
                                                                 <input type="time" class="form-control" name="horario_entrada[]" placeholder="Entrada">
@@ -338,6 +374,15 @@ verificarSesion();
                                                             <td>
                                                                 <input type="time" class="form-control" name="horario_salida[]" placeholder="Salida">
                                                             </td>
+                                                            <td class="text-center">
+                                                                <div class="d-inline form-check form-switch d-inline-flex align-items-center">
+                                                                    <input
+                                                                        class="form-check-input chk-descanso"
+                                                                        type="checkbox"
+                                                                        name="horario_descanso[]"
+                                                                        value="1">
+                                                                </div>
+                                                            </td>
                                                         </tr>
                                                     <?php endfor; ?>
                                                 </tbody>
@@ -345,11 +390,39 @@ verificarSesion();
                                         </div>
                                     </div>
                                 </div>
-                                
+
+                                <!-- Tab Horarios Oficiales -->
                                 <div class="tab-pane fade" id="tab_horarios_oficiales" role="tabpanel" aria-labelledby="tab-horarios-oficiales">
                                     <div class="row">
                                         <div class="col-12">
                                             <h6 class="mb-3">Horarios Oficiales</h6>
+
+                                            <!-- Formulario para copiar -->
+                                            <div class="mb-4">
+                                                <div class="row g-2">
+                                                    <div class="col">
+                                                        <label class="form-label" for="ref_entrada_oficial">Entrada</label>
+                                                        <input type="time" id="ref_entrada_oficial" class="form-control" placeholder="Entrada">
+                                                    </div>
+                                                    <div class="col">
+                                                        <label class="form-label" for="ref_salida_comida_oficial">Salida Comida</label>
+                                                        <input type="time" id="ref_salida_comida_oficial" class="form-control" placeholder="Salida Comida">
+                                                    </div>
+                                                    <div class="col">
+                                                        <label class="form-label" for="ref_entrada_comida_oficial">Entrada Comida</label>
+                                                        <input type="time" id="ref_entrada_comida_oficial" class="form-control" placeholder="Entrada Comida">
+                                                    </div>
+                                                    <div class="col">
+                                                        <label class="form-label" for="ref_salida_oficial">Salida</label>
+                                                        <input type="time" id="ref_salida_oficial" class="form-control" placeholder="Salida">
+                                                    </div>
+                                                    <div class="col-auto">
+                                                        <label class="form-label" for="btnCopiarHorariosOficial">&ensp;</label> <br>
+                                                        <button type="button" id="btnCopiarHorariosOficial" class="btn btn-primary my-auto"><i class="bi bi-copy"></i></button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                             <table class="table table-bordered table-hover">
                                                 <thead class="table-light">
                                                     <tr>
@@ -364,7 +437,16 @@ verificarSesion();
                                                     <?php for ($i = 1; $i <= 7; $i++): ?>
                                                         <tr>
                                                             <td>
-                                                                <input type="text" class="form-control" name="horario_oficial_dia[]" placeholder="Día">
+                                                                <!-- <input type="text" class="form-control" name="horario_oficial_dia[]" placeholder="Día"> -->
+
+                                                                <select class="form-select" name="horario_oficial_dia[]">
+                                                                    <option selected value="">Seleccionar...</option>
+
+                                                                    <?php foreach (DIAS_SEMANA as $dia): ?>
+                                                                        <option value="<?php echo $dia; ?>"><?php echo $dia; ?></option>
+                                                                    <?php endforeach; ?>
+
+                                                                </select>
                                                             </td>
                                                             <td>
                                                                 <input type="time" class="form-control" name="horario_oficial_entrada[]" placeholder="Entrada">

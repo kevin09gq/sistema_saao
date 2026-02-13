@@ -59,8 +59,11 @@
             <h3 id=nombre_nomina></h3>
             <div class="header-controls-40lbs">
                 <span class="sem-info-40lbs" id="num_semana"></span>
-                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_actualizar_horarios" title="Actualizar horarios" aria-label="Actualizar Biometrico">
-                    <i class="bi bi-clock"></i>
+                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_actualizar_biometrico" title="Actualizar Biometrico" aria-label="Actualizar Biometrico">
+                    <i class="bi bi-person-badge"></i>
+                </button>
+                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_establecer_horario_semanal" title="Establecer Horario Semanal" aria-label="Establecer Horario Semanal">
+                    <i class="bi bi-calendar-check"></i>
                 </button>
                 <button class="btn btn-outline-primary" id="btn-seleccionar-empleados" title="Seleccionar empleados">
                     <i class="bi bi-people"></i>
@@ -182,6 +185,8 @@
 
     <!-- Incluir el modal -->
 
+    <?php include 'modalHorarios.php'; ?>
+
 
 
     <!-- jQuery -->
@@ -196,6 +201,8 @@
     <script src="../js/showDataTable.js"></script>
     <script src="../js/storage.js"></script>
     <script src="../js/saveGetNomina.js"></script>
+    <script src="../js/horariosSemanales.js"></script>
+    <script src="../js/redondearHorarios.js"></script>
 
 </body>
 

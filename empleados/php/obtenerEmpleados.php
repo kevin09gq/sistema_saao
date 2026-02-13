@@ -285,6 +285,22 @@ function cambiarStatus($idEmpleado, $idStatus, $fechaIngreso = null)
     $hoy = date('Y-m-d');
 
     if ($estadoActual === 1) {
+
+        // si el empleado tiene algún préstamo ACTIVO o PAUSADO, no se puede desactivar
+        $stmtPrest = $conexion->prepare("SELECT 1 FROM prestamos WHERE id_empleado = ? AND estado IN ('activo','pausado') LIMIT 1");
+        if ($stmtPrest) {
+            $stmtPrest->bind_param("i", $idEmpleado);
+            $stmtPrest->execute();
+            $resPrest = $stmtPrest->get_result();
+            $tienePrestamoBloqueante = ($resPrest && $resPrest->num_rows > 0);
+            $stmtPrest->close();
+
+            if ($tienePrestamoBloqueante) {
+                print_r(false);
+                return;
+            }
+        }
+
         // Pasa de Activo -> Baja
         // Traer el último registro del historial
         $stmtHist = $conexion->prepare("SELECT id_historial, fecha_reingreso, fecha_salida FROM historial_reingresos WHERE id_empleado = ? ORDER BY fecha_reingreso DESC, id_historial DESC LIMIT 1");

@@ -1,0 +1,163 @@
+/* Estilo del logo en la barra de navegación */
+.navbar-brand img {
+    height: 40px;
+    margin-right: 10px;
+}
+
+/* Estilos para el botón de notificación */
+.notification-btn {
+    position: absolute;
+    top: 105px; /* Justo debajo del navbar */
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.notification-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+}
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #dc3545;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse 2s infinite;
+}
+
+/* Panel de notificaciones */
+.notification-panel {
+    position: fixed;
+    top: 0;
+    right: -400px;
+    width: 350px;
+    height: 100vh;
+    background-color: white;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+    z-index: 1050;
+    transition: right 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #e0e0e0;
+}
+
+.notification-panel.show {
+    right: 0;
+}
+
+.notification-header {
+    padding: 1rem;
+    background: linear-gradient(90deg, #28a745, #20c997);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.notification-header h5 {
+    margin: 0;
+    font-weight: 600;
+}
+
+.notification-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+/* Estilos mejorados para las notificaciones */
+.notification-item {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    border-left: 4px solid #28a745;
+    transition: all 0.2s ease;
+}
+
+.notification-item:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.notification-item.expired {
+    border-left-color: #dc3545;
+}
+
+.notification-item .notification-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.notification-item .notification-title h6 {
+    margin: 0;
+    font-weight: 600;
+    color: #333;
+}
+
+.notification-item .notification-title .badge {
+    font-size: 0.7rem;
+    padding: 0.3em 0.6em;
+}
+
+.notification-item .notification-content {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.notification-item .notification-meta {
+    font-size: 0.8rem;
+    color: #999;
+    display: flex;
+    justify-content: space-between;
+}
+
+.notification-item .notification-meta small {
+    margin-right: 1rem;
+}
+
+/* Estilos para el panel cuando no hay notificaciones */
+.no-notifications {
+    text-align: center;
+    padding: 2rem;
+    color: #999;
+}
+
+.no-notifications i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #e0e0e0;
+}
+
+/* Media query para dispositivos móviles */
+@media (max-width: 576px) {
+    .notification-panel {
+        width: 100%;
+        right: -100%;
+    }
+}

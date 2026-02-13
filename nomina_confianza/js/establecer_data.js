@@ -1,26 +1,24 @@
 // Cargar los datos del empleado en el modal
 function cargarData(jsonNominaConfianza, clave, idEmpresa = null) {
     alternarTablas();
-    
-    // Configurar funcionalidad de copiar horarios
-    configurarCopiarHorarios();
-   
+
+
     // Buscar el empleado por clave e id_empresa en todos los departamentos
     let empleadoEncontrado = null;
-        
+
     jsonNominaConfianza.departamentos.forEach(departamento => {
         departamento.empleados.forEach(empleado => {
             // Comparar clave Y id_empresa para identificar correctamente al empleado
             const claveCoincide = String(empleado.clave).trim() === String(clave).trim();
             const empresaCoincide = idEmpresa === null || Number(empleado.id_empresa || 1) === Number(idEmpresa);
-            
+
             if (claveCoincide && empresaCoincide) {
                 empleadoEncontrado = empleado;
-               
+
             }
         });
     });
-    
+
     // Si se encontró el empleado, establecer sus datos en el modal
     if (empleadoEncontrado) {
         $('#campo-nombre').text(empleadoEncontrado.nombre);
@@ -76,7 +74,7 @@ function cargarData(jsonNominaConfianza, clave, idEmpresa = null) {
         $('#mod-uniformes').val(empleadoEncontrado.uniformes || '');
         $('#mod-checador').val(empleadoEncontrado.checador || '');
         $('#mod-retardos').val(empleadoEncontrado.retardos || '');
-        $('#mod-inasistencias').val(empleadoEncontrado.inasistencia || '');
+        $('#mod-inasistencias').val((empleadoEncontrado.inasistencia || 0).toFixed(2));
         $('#mod-permiso').val(empleadoEncontrado.permiso || '');
         $('#mod-fa-gafet-cofia').val(empleadoEncontrado.fa_gafet_cofia || '0.00');
 
@@ -98,7 +96,10 @@ function cargarData(jsonNominaConfianza, clave, idEmpresa = null) {
 
         // Mostrar registros en la tabla (ahora con los historiales ya generados)
         mostrarRegistrosChecador(empleadoEncontrado);
-        
+
+
+
+
         // Mostrar horarios oficiales en la tabla
         mostrarRegistrosBD(empleadoEncontrado);
 
@@ -182,7 +183,7 @@ function cargarData(jsonNominaConfianza, clave, idEmpresa = null) {
             activarFuncionalidadInasistencias();
         }
     } else {
-       
+
     }
 }
 
@@ -211,35 +212,35 @@ function activarActualizacionTotalConceptos() {
 function mostrarRegistrosChecador(empleado) {
     const $tbody = $('#tabla-checador tbody');
     $tbody.empty(); // Limpiar la tabla
-    
+
     // Verificar si el empleado tiene registros
     if (!empleado.registros || empleado.registros.length === 0) {
         $tbody.append('<tr><td colspan="4" class="text-center">No hay registros disponibles</td></tr>');
         return;
     }
-    
+
     // Recorrer los registros y agregarlos a la tabla
     empleado.registros.forEach((registro, indexRegistro) => {
         // Obtener el nombre del día a partir de la fecha
         const nombreDia = obtenerNombreDia(registro.fecha);
-        
+
         // Agrupar registros por fecha para identificar primer/último del día
         const registrosMismaFecha = empleado.registros.filter(r => r.fecha === registro.fecha);
         const registrosConEntrada = registrosMismaFecha.filter(r => r.entrada && r.entrada !== '-');
         const registrosConSalida = registrosMismaFecha.filter(r => r.salida && r.salida !== '-');
-        
+
         // Determinar si es el primer registro con entrada del día
-        const esPrimeraEntrada = registrosConEntrada.length > 0 && 
+        const esPrimeraEntrada = registrosConEntrada.length > 0 &&
             registrosConEntrada[0].entrada === registro.entrada;
-        
+
         // Determinar si es el último registro con salida del día
-        const esUltimaSalida = registrosConSalida.length > 0 && 
+        const esUltimaSalida = registrosConSalida.length > 0 &&
             registrosConSalida[registrosConSalida.length - 1].salida === registro.salida;
-        
+
         // Detectar eventos específicos de ESTE REGISTRO
         const eventosDelRegistro = [];
         let claseEvento = '';
-        
+
         // 1. RETARDOS (VERDE) - solo en la PRIMERA entrada del día
         if (esPrimeraEntrada && empleado.historial_retardos && empleado.historial_retardos.length > 0) {
             const retardo = empleado.historial_retardos.find(r => r.fecha === registro.fecha);
@@ -247,11 +248,11 @@ function mostrarRegistrosChecador(empleado) {
                 eventosDelRegistro.push({ tipo: 'retardo', nombre: 'Retardo', prioridad: 1 });
             }
         }
-        
+
         // 2. OLVIDOS DEL CHECADOR (ROJO) - si ESTE registro tiene entrada o salida vacía
         const faltaEntrada = !registro.entrada || registro.entrada === '' || registro.entrada === '-';
         const faltaSalida = !registro.salida || registro.salida === '' || registro.salida === '-';
-        
+
         if (faltaEntrada || faltaSalida) {
             if (empleado.historial_olvidos && empleado.historial_olvidos.length > 0) {
                 const olvido = empleado.historial_olvidos.find(o => o.fecha === registro.fecha);
@@ -260,7 +261,7 @@ function mostrarRegistrosChecador(empleado) {
                 }
             }
         }
-        
+
         // 3. INASISTENCIAS (NARANJA) - solo si NO tiene entrada ni salida
         const esRegistroVacio = faltaEntrada && faltaSalida;
         if (esRegistroVacio && empleado.historial_inasistencias && empleado.historial_inasistencias.length > 0) {
@@ -269,7 +270,7 @@ function mostrarRegistrosChecador(empleado) {
                 eventosDelRegistro.push({ tipo: 'inasistencia', nombre: 'Inasistencia', prioridad: 3 });
             }
         }
-        
+
         // 4. SALIDAS TEMPRANAS (AZUL) - solo en la ÚLTIMA salida del día
         if (esUltimaSalida && empleado.historial_salidas_tempranas && empleado.historial_salidas_tempranas.length > 0) {
             const salidaTemprana = empleado.historial_salidas_tempranas.find(s => s.fecha === registro.fecha);
@@ -277,7 +278,7 @@ function mostrarRegistrosChecador(empleado) {
                 eventosDelRegistro.push({ tipo: 'salida-temprana', nombre: 'Salida temprana', prioridad: 4 });
             }
         }
-        
+
         // 5. ENTRADAS TEMPRANAS (VERDE) - solo en la PRIMERA entrada del día
         if (esPrimeraEntrada && empleado.historial_entradas_tempranas && empleado.historial_entradas_tempranas.length > 0) {
             const entradaTemprana = empleado.historial_entradas_tempranas.find(e => e.fecha === registro.fecha);
@@ -285,7 +286,7 @@ function mostrarRegistrosChecador(empleado) {
                 eventosDelRegistro.push({ tipo: 'entrada-temprana', nombre: 'Entrada temprana', prioridad: 5 });
             }
         }
-        
+
         // 6. SALIDAS TARDÍAS (MORADO) - solo en la ÚLTIMA salida del día
         if (esUltimaSalida && empleado.historial_salidas_tardias && empleado.historial_salidas_tardias.length > 0) {
             const salidaTardia = empleado.historial_salidas_tardias.find(s => s.fecha === registro.fecha);
@@ -293,14 +294,14 @@ function mostrarRegistrosChecador(empleado) {
                 eventosDelRegistro.push({ tipo: 'salida-tardia', nombre: 'Salida tardía', prioridad: 6 });
             }
         }
-        
+
         // Determinar clase CSS (mayor prioridad = número menor)
         let badgeMultiple = '';
-        
+
         if (eventosDelRegistro.length > 0) {
             eventosDelRegistro.sort((a, b) => a.prioridad - b.prioridad);
             claseEvento = `evento-${eventosDelRegistro[0].tipo}`;
-            
+
             // Si hay múltiples eventos, mostrar iniciales
             if (eventosDelRegistro.length > 1) {
                 const iniciales = {
@@ -311,23 +312,31 @@ function mostrarRegistrosChecador(empleado) {
                     'entrada-temprana': 'ET',
                     'salida-tardia': 'SL'
                 };
-                
+
                 const textoInicial = eventosDelRegistro.map(e => iniciales[e.tipo] || '?').join('·');
                 badgeMultiple = `<span class="badge-eventos" title="Este registro tiene ${eventosDelRegistro.length} eventos">${textoInicial}</span>`;
             }
         }
-        
+
         // Crear tooltip con TODOS los eventos del registro
-        const tituloEvento = eventosDelRegistro.length > 0 
+        const tituloEvento = eventosDelRegistro.length > 0
             ? eventosDelRegistro.map(e => `• ${e.nombre}`).join('\n')
             : '';
-        
+
         const fila = `
             <tr class="${claseEvento}" title="${tituloEvento}">
                 <td>${nombreDia} ${badgeMultiple}</td>
                 <td>${registro.fecha || '-'}</td>
                 <td>${registro.entrada || '-'}</td>
                 <td>${registro.salida || '-'}</td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-outline-success btn-agregar-registro me-1" data-clave="${empleado.clave}" data-fecha="${registro.fecha || ''}" data-index="${indexRegistro}" title="Agregar registro">
+                        <i class="bi bi-plus-lg"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-primary btn-editar-registro" data-clave="${empleado.clave}" data-fecha="${registro.fecha || ''}" data-index="${indexRegistro}" title="Editar registro">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                </td>
             </tr>
         `;
         $tbody.append(fila);
@@ -338,10 +347,10 @@ function mostrarRegistrosChecador(empleado) {
 function mostrarRegistrosBD(empleado) {
     const $tbody = $('#horarios-oficiales-body');
     $tbody.empty(); // Limpiar la tabla
-    
+
     // Lista de días de la semana
     const diasSemana = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
-    
+
     // Crear un mapa de registros por día para búsqueda rápida
     const registrosPorDia = {};
     if (empleado.horario_oficial && Array.isArray(empleado.horario_oficial)) {
@@ -349,28 +358,41 @@ function mostrarRegistrosBD(empleado) {
             registrosPorDia[dia.dia] = dia;
         });
     }
-    
+
     // Iterar sobre los 7 días de la semana (SIEMPRE mostrar 7 filas)
     diasSemana.forEach(nombreDia => {
         // Buscar si existe un registro para este día
         const diaRegistro = registrosPorDia[nombreDia];
-        
+
         // Crear opciones del select
         let opcionesSelect = `<option value="">- Seleccionar día -</option>`;
         opcionesSelect += diasSemana.map(dia => {
             const seleccionado = nombreDia === dia ? 'selected' : '';
             return `<option value="${dia}" ${seleccionado}>${dia}</option>`;
         }).join('');
-        
+
         // Asignar datos del registro si existe, sino mostrar "-"
         const entrada = diaRegistro ? (diaRegistro.entrada || '-') : '-';
         const salidaComida = diaRegistro ? (diaRegistro.salida_comida || '-') : '-';
         const entradaComida = diaRegistro ? (diaRegistro.entrada_comida || '-') : '-';
         const salida = diaRegistro ? (diaRegistro.salida || '-') : '-';
-        
+
+        // Obtener justificación del horario oficial (nueva lógica)
+        const tipoJustificacion = (diaRegistro && diaRegistro.justificado && diaRegistro.tipo_justificacion) ?
+            String(diaRegistro.tipo_justificacion) : '';
+        const badgeJustificacion = tipoJustificacion ?
+            `<span class="badge bg-warning text-dark ms-1" data-justificacion="1" style="font-size:0.75rem;">${tipoJustificacion}</span>` : '';
+
+        // Mantener compatibilidad con el sistema anterior de tipos_dia
+        const tipoDia = (empleado && empleado.dias_justificados && empleado.dias_justificados[nombreDia]) ? String(empleado.dias_justificados[nombreDia]) : '';
+        const badgeTipoDia = tipoDia ? `<span class="badge bg-info text-dark" style="font-size:0.75rem;">${tipoDia}</span>` : '';
+
+        // Usar el badge de justificación si existe, sino el badge de tipo_dia para compatibilidad
+        const badgeFinal = badgeJustificacion || badgeTipoDia;
+
         // Crear fila
         const fila = `
-            <tr>
+            <tr data-dia-semana="${nombreDia}">
                 <td>
                     <select class="form-control form-control-sm select-dia">
                         ${opcionesSelect}
@@ -380,19 +402,31 @@ function mostrarRegistrosBD(empleado) {
                 <td>${salidaComida}</td>
                 <td>${entradaComida}</td>
                 <td>${salida}</td>
+                <td>
+                    <div class="d-flex gap-1 align-items-center">
+                        <button type="button" class="btn btn-outline-primary btn-sm btn-abrir-tipo-dia" title="Abrir modal">
+                            <i class="bi bi-clipboard2-check"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-danger btn-sm btn-eliminar-horario" title="Eliminar">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                        ${badgeFinal}
+                    </div>
+                </td>
             </tr>
         `;
         $tbody.append(fila);
     });
 }
 
- 
+
+
 // Función simple para obtener el nombre del día de la semana
 function obtenerNombreDia(fecha) {
     if (!fecha) return '-';
-    
+
     const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-    
+
     // Convertir formato DD/MM/YYYY a YYYY-MM-DD para que Date lo entienda
     let fechaParseada;
     if (fecha.includes('/')) {
@@ -402,72 +436,12 @@ function obtenerNombreDia(fecha) {
     } else {
         fechaParseada = new Date(fecha);
     }
-    
+
     // Verificar si la fecha es válida
     if (isNaN(fechaParseada.getTime())) {
         return '-';
     }
-    
+
     return dias[fechaParseada.getDay()];
-}
-
-// ========================================
-// COPIAR HORARIOS A TODOS LOS DÍAS
-// ========================================
-function configurarCopiarHorarios() {
-    $(document).on('click', '#btn-copiar-horarios', function() {
-        // Obtener los valores de los campos de entrada
-        const entrada = $('#input-entrada-copiar').val().trim();
-        const salidaComida = $('#input-salida-comida-copiar').val().trim();
-        const entradaComida = $('#input-entrada-comida-copiar').val().trim();
-        const salida = $('#input-salida-copiar').val().trim();
-        
-        // Validar que al menos un campo tenga valor (se hace más abajo con mensaje no bloqueante)
-        
-        // No mostrar mensajes al copiar (operación silenciosa)
-
-        
-        if (!entrada && !salidaComida && !entradaComida && !salida) {
-            return; // Sin acción si no hay valores
-        }
-        
-        // Aplicar los valores a las primeras 6 filas (LUNES a SÁBADO). DOMINGO se conserva sin cambios.
-        $('#horarios-oficiales-body tr').slice(0, 6).each(function() {
-            const $fila = $(this);
-
-            // helper para actualizar celda (si hay input, cambiar su valor; sino, texto)
-            const setCellValue = (idx, val) => {
-                const $celda = $fila.find('td').eq(idx);
-                const $input = $celda.find('input');
-                if ($input.length > 0) {
-                    $input.val(val).trigger('change');
-                } else {
-                    $celda.text(val);
-                }
-            };
-
-            if (entrada) {
-                setCellValue(1, entrada); // Columna Entrada
-            }
-            if (salidaComida) {
-                setCellValue(2, salidaComida); // Columna Salida Comida
-            }
-            if (entradaComida) {
-                setCellValue(3, entradaComida); // Columna Entrada Comida
-            }
-            if (salida) {
-                setCellValue(4, salida); // Columna Salida
-            }
-        });
-        
-        // Limpiar los campos de entrada después de copiar
-        $('#input-entrada-copiar').val('');
-        $('#input-salida-comida-copiar').val('');
-        $('#input-entrada-comida-copiar').val('');
-        $('#input-salida-copiar').val('');
-        
-        // Copiado completado (silencioso)
-
-    });
 }
 

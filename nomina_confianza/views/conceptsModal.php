@@ -122,6 +122,7 @@
                                 <th>Fecha</th>
                                 <th>Entrada</th>
                                 <th>Salida</th>
+                                <th>Acción</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -174,6 +175,7 @@
                                 <th>Salida Comida</th>
                                 <th>Entrada Comida</th>
                                 <th>Salida</th>
+                                <th>Acción</th>
 
                             </tr>
                         </thead>

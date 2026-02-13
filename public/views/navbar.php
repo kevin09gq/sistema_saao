@@ -28,6 +28,7 @@
                     <ul class="submenu dropdown-menu" aria-labelledby="empleadosDropdown">
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/empleados/views/form_actualizar_empleado.php">Actualizar Empleado</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/empleados/views/form_registro.php">Registrar Empleado</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/claves_autorizacion/views/autorizacion.php">Claves de Autorización</a></li>
                     </ul>
                 </li>
 

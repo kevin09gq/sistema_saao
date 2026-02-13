@@ -4,11 +4,11 @@ $('#btn_export_excel').on('click',  async function () {
         return;
     }
 
-    //Verificar si hay sueldos negativos antes de exportar
+    /*Verificar si hay sueldos negativos antes de exportar
     const haySueldosNegativos = await verificarSueldosNegativos();
     if (haySueldosNegativos) {
         return; // Si hay sueldos negativos, no continuar con la exportación
-    }
+    }*/
 
     const tituloNomina = ($('#nombre_nomina').length ? $('#nombre_nomina').text() : '').trim();
     const numeroSemana = jsonGlobal.numero_semana;
@@ -86,12 +86,12 @@ $('#btn_export_pdf').on('click', async function () {
         return;
     }
 
-    // Verificar si hay sueldos negativos antes de exportar
+    /* Verificar si hay sueldos negativos antes de exportar
     const haySueldosNegativos = await verificarSueldosNegativos();
     if (haySueldosNegativos) {
         return; // Si hay sueldos negativos, no continuar con la exportación
     }
-
+*/
     const tituloNomina = ($('#nombre_nomina').length ? $('#nombre_nomina').text() : '').trim();
     const numeroSemana = jsonGlobal.numero_semana;
     const fechaCierre = jsonGlobal.fecha_cierre;
@@ -180,11 +180,11 @@ $('#btn_export_pdf_reporte').on('click', async function () {
         return;
     }
 
-    // Verificar si hay sueldos negativos antes de exportar
+    /* Verificar si hay sueldos negativos antes de exportar
     const haySueldosNegativos = await verificarSueldosNegativos();
     if (haySueldosNegativos) {
         return; // Si hay sueldos negativos, no continuar con la exportación
-    }
+    }*/
 
     // Mostrar indicador de carga
     Swal.fire({

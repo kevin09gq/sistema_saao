@@ -39,6 +39,12 @@ $(document).ready(function () {
 
     abrirModal();
     eliminarTarjetaDeEmpleados();
+    diasJustificados();
+    eliminarMarcaje();
+    diasInhabiles();
+    establecerHorarioVariable();
+    copiarHorarioVariable();
+ 
 });
 
 // Función para actualizar la cabecera de la nómina

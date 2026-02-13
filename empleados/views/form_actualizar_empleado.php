@@ -438,7 +438,7 @@ verificarSesion();
                                     <div class="col-12">
                                         <h6 class="mb-3">Horarios de reloj checador</h6>
 
-                                        <!-- Formulario de referencia -->
+                                        <!-- Formulario para copiar -->
                                         <div class="mb-4">
                                             <div class="row g-2">
                                                 <div class="col">
@@ -458,7 +458,8 @@ verificarSesion();
                                                     <input type="time" id="ref_salida" class="form-control" placeholder="Salida">
                                                 </div>
                                                 <div class="col-auto">
-                                                    <button type="button" id="btnCopiarHorarios" class="btn btn-primary my-auto">Copiar</button>
+                                                    <label class="form-label" for="btnCopiarHorarios">&ensp;</label><br>
+                                                    <button type="button" id="btnCopiarHorarios" class="btn btn-outline-primary my-auto" title="Copiar horarios"><i class="bi bi-copy"></i></button>
                                                 </div>
                                             </div>
                                         </div>
@@ -472,7 +473,8 @@ verificarSesion();
                                                         <th>Salida Comida</th>
                                                         <th>Entrada Comida</th>
                                                         <th>Salida</th>
-                                                        <th style="width: 80px;">Acciones</th>
+                                                        <th>Acciones</th>
+                                                        <th>¿Descanso?</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody id="tbody_horarios">
@@ -503,9 +505,22 @@ verificarSesion();
                                                                 <input type="time" class="form-control" name="horario_salida[]" placeholder="Salida">
                                                             </td>
                                                             <td class="text-center">
-                                                                <button type="button" class="btn btn-danger btn-sm btn-eliminar-horario" title="Limpiar fila">
+
+                                                                <!-- Botón para limpiar la fila -->
+                                                                <button type="button" class="d-inline btn btn-danger btn-sm btn-eliminar-horario" title="Limpiar fila">
                                                                     <i class="bi bi-trash"></i>
                                                                 </button>
+
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <!-- valor por defecto -->
+                                                                <div class="d-inline form-check form-switch d-inline-flex align-items-center">
+                                                                    <input
+                                                                        class="form-check-input chk-descanso"
+                                                                        type="checkbox"
+                                                                        name="horario_descanso[]"
+                                                                        value="1">
+                                                                </div>
                                                             </td>
                                                         </tr>
                                                     <?php endfor; ?>
@@ -541,7 +556,8 @@ verificarSesion();
                                                     <input type="time" id="ref_of_salida" class="form-control" placeholder="Salida">
                                                 </div>
                                                 <div class="col-auto">
-                                                    <button type="button" id="btnCopiarHorariosOficiales" class="btn btn-primary my-auto">Copiar</button>
+                                                    <label class="form-label" for="btnCopiarHorariosOficiales">&ensp;</label><br>
+                                                    <button type="button" id="btnCopiarHorariosOficiales" class="btn btn-primary my-auto" title="Copiar horarios oficiales"><i class="bi bi-copy"></i></button>
                                                 </div>
                                             </div>
                                         </div>
@@ -609,6 +625,7 @@ verificarSesion();
             </div>
         </div>
     </div>
+    
     <div class="modal fade" id="modal_historial_reingreso" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">

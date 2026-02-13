@@ -369,7 +369,7 @@ function limpiarEventosEspeciales(nominaExistente) {
                 // Limpiar historial de olvidos
                 empleado.historial_olvidos = [];
                 empleado.checador = 0;
-                empleado.olvidos_checador = 0;
+              
                 
                 // Limpiar historial de entradas tempranas
                 empleado.historial_entradas_tempranas = [];

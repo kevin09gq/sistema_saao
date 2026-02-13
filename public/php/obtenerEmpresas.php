@@ -1,7 +1,7 @@
 <?php
 include("../../conexion/conexion.php");
 
-$sql = "SELECT * FROM departamentos";
+$sql = "SELECT * FROM empresa";
 $query = $conexion->query($sql);
 
 if (!$query) {
@@ -9,11 +9,10 @@ if (!$query) {
 }
 
 $arreglo = array();
-
 while ($row = $query->fetch_object()) {
     $arreglo[] = array(
-        "id_departamento" => $row->id_departamento,
-        "nombre_departamento" => $row->nombre_departamento,
+        "id_empresa" => $row->id_empresa,
+        "nombre_empresa" => $row->nombre_empresa,
     );
 }
 

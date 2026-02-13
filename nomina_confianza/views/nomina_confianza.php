@@ -95,6 +95,12 @@
                 <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta" aria-label="Quitar tarjeta">
                     <i class="bi bi-credit-card-2-back"></i>
                 </button>
+                <button class="btn btn-outline-dark btn-add-horario-variable" id="btn_add_horario_variable" title="Agregar horario variable" aria-label="Agregar horario variable">
+                    <i class="bi bi-calendar-plus"></i>
+                </button>
+                <button class="btn btn-outline-secondary btn-dias-inhabiles" id="btn_dias_inhabiles" title="Dias inhabiles" aria-label="Dias inhabiles">
+                    <i class="bi bi-calendar-minus"></i>
+                </button>
 
 
             </div>
@@ -194,12 +200,17 @@
 
     <!-- Modal de detalles (incluir plantilla) -->
     <?php include 'conceptsModal.php'; ?>
+    <?php include 'modalTipoDia.php'; ?>
     <?php include 'modalPrestamos.php'; ?>
     <?php include 'modalSeleccionarEmpleados.php'; ?>
     <?php include 'modalConceptosTotales.php'; ?>
     <?php include 'modalExportExcel.php'; ?>
     <?php include 'modal_seleccion_tickets_confianza.php'; ?>
     <?php include 'modalReasignarDepartamento.php'; ?>
+    <?php include 'modalHorarioVariable.php'; ?>
+    <?php include 'modalEmpleadosSinHorarioOficial.php'; ?>
+    <?php include 'modalDiasInhabiles.php'; ?>
+
 
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
@@ -226,8 +237,9 @@
     <script src="../js/ticket_pdf.js"></script>
     <!-- Eliminar tarjeta: asigna 0 a la propiedad tarjeta de todos los empleados -->
     <script src="../js/eliminarTarjeta.js"></script>
-<script src="../js/ticket_seleccion_confianza.js"></script>
-<script src="../js/reasignarDepartamento.js"></script>
+    <script src="../js/ticket_seleccion_confianza.js"></script>
+    <script src="../js/reasignarDepartamento.js"></script>
+    <script src="../js/marcajes.js"></script>
 
 </body>
 

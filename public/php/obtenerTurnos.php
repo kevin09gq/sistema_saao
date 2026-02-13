@@ -7,7 +7,16 @@ if (!$conexion) {
 }
 
 // Consulta para obtener todos los turnos
-$sql = "SELECT id_turno, descripcion, DATE_FORMAT(hora_inicio, '%H:%i') AS inicio_hora, DATE_FORMAT (hora_fin, '%H:%i') AS fin_hora, max FROM turnos ORDER BY descripcion";
+$sql = "SELECT
+            id_turno, 
+            descripcion, 
+            DATE_FORMAT(hora_inicio, '%H:%i') AS inicio_hora, 
+            DATE_FORMAT (hora_fin, '%H:%i') AS fin_hora, 
+            max  
+        FROM 
+            turnos 
+        ORDER BY 
+            descripcion";
 $resultado = mysqli_query($conexion, $sql);
 
 // Verificar si hay resultados
@@ -28,4 +37,3 @@ echo json_encode($turnos);
 
 // Cerrar la conexión
 mysqli_close($conexion);
-?>

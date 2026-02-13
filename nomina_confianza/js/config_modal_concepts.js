@@ -442,8 +442,8 @@ function hacerHorasEditables() {
         const $celda = $(this);
         const indiceCelda = $celda.index(); // Obtener el índice de la columna
 
-        // NO permitir editar la primera columna (Día)
-        if (indiceCelda === 0) return;
+        // NO permitir editar la primera columna (Día) ni la última columna (Acciones)
+        if (indiceCelda === 0 || indiceCelda === 5) return;
 
         const textoActual = $celda.text().trim();
 

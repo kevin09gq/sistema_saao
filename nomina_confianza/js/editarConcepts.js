@@ -330,6 +330,10 @@ function actualizarHorarioOficial(claveEmpleado, idEmpresa) {
     // Actualizar la propiedad horario_oficial del empleado
     empleadoEncontrado.horario_oficial = nuevoHorario;
     
+    // GUARDAR TIPOS DE DÍA (vacaciones, descanso, enfermedad, festivo)
+    // Leer los tipos_dia del objeto empleado (ya están guardados por el handler en establecer_data.js)
+    // No es necesario leerlos de la tabla porque se guardan directamente en el objeto
+    
     // PRESERVAR INASISTENCIAS MANUALES antes de limpiar
     let inasistenciasManuales = [];
     if (Array.isArray(empleadoEncontrado.historial_inasistencias)) {

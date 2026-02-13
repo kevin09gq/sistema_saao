@@ -121,8 +121,6 @@ $(document).ready(function () {
     obtenerPuesto();
 
 
-    obtenerTurnos() // Agrego esto BHL
-
     // Agregar funcionalidad al botón cancelar
     $(document).on('click', '#btn_cancelar_form', function (e) {
         e.preventDefault();
@@ -163,6 +161,9 @@ $(document).ready(function () {
         });
     };
 
+    // ---------------------------------------
+    // Funciones para obtener datos de selects
+    // ---------------------------------------
 
     //Funcion para obtener los departamentos
     function obtenerDepartamentos() {
@@ -260,88 +261,13 @@ $(document).ready(function () {
         });
     }
 
-    // Obtener los turnos activos BHL
-    function obtenerTurnos() {
-        $.ajax({
-            type: "GET",
-            url: rutaRaiz + "public/php/obtenerTurnos.php",
-            success: function (response) {
-                let turnos = JSON.parse(response);
-                let opciones = `<option value="">Selecciona un turno</option>`;
+    // ====================================================================================================================================
+    // ====================================================================================================================================
 
-                turnos.forEach((element) => {
-                    opciones += `
-                        <option value="${element.id_turno}">${element.descripcion} (${element.inicio_hora}-${element.fin_hora})</option>
-                    `;
-                });
+    // ==========================================
+    // Funciones para registrar un nuevo empleado
+    // ==========================================
 
-                // Asegúrate de usar el ID correcto del select
-                $("#turno_trabajador").html(opciones);
-                $("#turno_trabajador_sabado").html(opciones);
-            },
-            error: function () {
-                alert("Parece que ocurrio un error, contacta a sistemas.")
-            }
-        });
-    }
-
-
-    // Función para limpiar el formulario después de un registro exitoso BHL
-    function limpiarFormulario() {
-        // Limpiar campos de texto
-        $("#clave_trabajador, #nombre_trabajador, #apellido_paterno, #apellido_materno").val("");
-        $("#domicilio_trabajador, #imss_trabajador, #curp_trabajador, #grupo_sanguineo_trabajador").val("");
-        $("#enfermedades_alergias_trabajador, #fecha_ingreso_trabajador, #num_casillero, #fecha_nacimiento").val("");
-        $("#rfc_trabajador").val("");
-
-        // Limpiar campos de salario
-        $("#salario_semanal, #salario_diario").val("");
-        $("#biometrico").val("");
-        $("#telefono_empleado").val("");
-
-        // Limpiar campos de contacto de emergencia
-        $("#nombre_emergencia, #ap_paterno_emergencia, #ap_materno_emergencia").val("");
-        $("#parentesco_emergencia, #telefono_emergencia, #domicilio_emergencia").val("");
-
-        // Limpiar campos de beneficiarios
-        $('input[name="beneficiario_nombre[]"]').val("");
-        $('input[name="beneficiario_ap_paterno[]"]').val("");
-        $('input[name="beneficiario_ap_materno[]"]').val("");
-        $('input[name="beneficiario_parentesco[]"]').val("");
-        $('input[name="beneficiario_porcentaje[]"]').val("");
-
-        // Resetear selects a su opción por defecto
-        $("#sexo_trabajador").val("");
-        $("#estado_civil_trabajador").val("");
-        $("#departamento_trabajador").val("");
-        $("#area_trabajador").val("");
-        $("#puesto_trabajador").val("");
-        $("#empresa_trabajador").val("");
-        $("#turno_trabajador").val("");
-        $("#turno_trabajador_sabado").val("");
-
-        // Remover clases de validación
-        $("input, select, textarea").removeClass('border-success border-danger');
-
-        // Opcional: hacer scroll hacia arriba del formulario
-        $("html, body").animate({ scrollTop: 0 }, 500);
-
-        // Resetear el switch de status NSS
-        $("#status_nss").prop("disabled", true).prop("checked", false);
-
-        // Limpiar campos de horarios
-        $('input[name="horario_dia[]"]').val("");
-        $('input[name="horario_entrada[]"]').val("");
-        $('input[name="horario_salida_comida[]"]').val("");
-        $('input[name="horario_entrada_comida[]"]').val("");
-        $('input[name="horario_salida[]"]').val("");
-
-
-        // Actualizar el total de porcentajes después de limpiar
-        actualizarTotalPorcentaje();
-    }
-
-    // Asocia el evento submit al formulario (correcto para enviar datos después) BHL
     function registrarEmpleado() {
         $("#form_registro_empleado").on("submit", function (e) {
             e.preventDefault();
@@ -430,12 +356,13 @@ $(document).ready(function () {
 
             // Recoger los datos del horario
             let horarios = [];
-            $('input[name="horario_dia[]"]').each(function (index) {
+            $('select[name="horario_dia[]"]').each(function (index) {
                 const dia = $(this).val().trim();
                 const entrada = $('input[name="horario_entrada[]"]').eq(index).val().trim();
                 const salida_comida = $('input[name="horario_salida_comida[]"]').eq(index).val().trim();
                 const entrada_comida = $('input[name="horario_entrada_comida[]"]').eq(index).val().trim();
                 const salida = $('input[name="horario_salida[]"]').eq(index).val().trim();
+                const descanso = $('input[name="horario_descanso[]"]').eq(index).is(':checked') ? 1 : 0;
 
                 // Solo agregar si al menos un campo tiene valor
                 if (dia || entrada || salida_comida || entrada_comida || salida) {
@@ -444,7 +371,8 @@ $(document).ready(function () {
                         entrada: entrada || "",
                         salida_comida: salida_comida || "",
                         entrada_comida: entrada_comida || "",
-                        salida: salida || ""
+                        salida: salida || "",
+                        descanso: descanso
                     });
                 }
             });
@@ -455,6 +383,29 @@ $(document).ready(function () {
             if (horario_fijo == 0) {
                 horarios = []; // Si es variable, no enviar horarios predefinidos
             }
+
+            // =================================
+            // Obtener datos del horario oficial
+            // =================================
+            let horarios_oficiales = [];
+            $('select[name="horario_oficial_dia[]"]').each(function (index) {
+                const dia = $(this).val().trim();
+                const entrada = $('input[name="horario_oficial_entrada[]"]').eq(index).val().trim();
+                const salida_comida = $('input[name="horario_oficial_salida_comida[]"]').eq(index).val().trim();
+                const entrada_comida = $('input[name="horario_oficial_entrada_comida[]"]').eq(index).val().trim();
+                const salida = $('input[name="horario_oficial_salida[]"]').eq(index).val().trim();
+
+                // Solo agregar si al menos un campo tiene valor
+                if (dia || entrada || salida_comida || entrada_comida || salida) {
+                    horarios_oficiales.push({
+                        dia: dia || "",
+                        entrada: entrada || "",
+                        salida_comida: salida_comida || "",
+                        entrada_comida: entrada_comida || "",
+                        salida: salida || ""
+                    });
+                }
+            });
 
             // Validaciones obligatorias
             let obligatoriosValidos = (
@@ -543,7 +494,10 @@ $(document).ready(function () {
 
                 // Datos de horarios y saber si es fijo o variable
                 horarios: horarios,
-                horario_fijo: horario_fijo
+                horario_fijo: horario_fijo,
+
+                // Datos de horarios oficiales
+                horarios_oficiales: horarios_oficiales
             }; // Aqui agregue el turno BHL 
 
             $.ajax({
@@ -601,6 +555,75 @@ $(document).ready(function () {
         })
     }
 
+    // Función para limpiar el formulario después de un registro exitoso BHL
+    function limpiarFormulario() {
+        // Limpiar campos de texto
+        $("#clave_trabajador, #nombre_trabajador, #apellido_paterno, #apellido_materno").val("");
+        $("#domicilio_trabajador, #imss_trabajador, #curp_trabajador, #grupo_sanguineo_trabajador").val("");
+        $("#enfermedades_alergias_trabajador, #fecha_ingreso_trabajador, #num_casillero, #fecha_nacimiento").val("");
+        $("#rfc_trabajador").val("");
+
+        // Limpiar campos de salario
+        $("#salario_semanal, #salario_diario").val("");
+        $("#biometrico").val("");
+        $("#telefono_empleado").val("");
+
+        // Limpiar campos de contacto de emergencia
+        $("#nombre_emergencia, #ap_paterno_emergencia, #ap_materno_emergencia").val("");
+        $("#parentesco_emergencia, #telefono_emergencia, #domicilio_emergencia").val("");
+
+        // Limpiar campos de beneficiarios
+        $('input[name="beneficiario_nombre[]"]').val("");
+        $('input[name="beneficiario_ap_paterno[]"]').val("");
+        $('input[name="beneficiario_ap_materno[]"]').val("");
+        $('input[name="beneficiario_parentesco[]"]').val("");
+        $('input[name="beneficiario_porcentaje[]"]').val("");
+
+        // Resetear selects a su opción por defecto
+        $("#sexo_trabajador").val("");
+        $("#estado_civil_trabajador").val("");
+        $("#departamento_trabajador").val("");
+        $("#area_trabajador").val("");
+        $("#puesto_trabajador").val("");
+        $("#empresa_trabajador").val("");
+        $("#turno_trabajador").val("");
+        $("#turno_trabajador_sabado").val("");
+
+        // Remover clases de validación
+        $("input, select, textarea").removeClass('border-success border-danger');
+
+        // Opcional: hacer scroll hacia arriba del formulario
+        $("html, body").animate({ scrollTop: 0 }, 500);
+
+        // Resetear el switch de status NSS
+        $("#status_nss").prop("disabled", true).prop("checked", false);
+
+        // Limpiar campos de horarios
+        $('input[name="horario_dia[]"]').val("");
+        $('input[name="horario_entrada[]"]').val("");
+        $('input[name="horario_salida_comida[]"]').val("");
+        $('input[name="horario_entrada_comida[]"]').val("");
+        $('input[name="horario_salida[]"]').val("");
+
+        // Limpiar campos de horarios oficiales
+        $('input[name="horario_oficial_dia[]"]').val("");
+        $('input[name="horario_oficial_entrada[]"]').val("");
+        $('input[name="horario_oficial_salida_comida[]"]').val("");
+        $('input[name="horario_oficial_entrada_comida[]"]').val("");
+        $('input[name="horario_oficial_salida[]"]').val("");
+
+
+        // Actualizar el total de porcentajes después de limpiar
+        actualizarTotalPorcentaje();
+    }
+
+    // ====================================================================================================================================
+    // ====================================================================================================================================
+
+    // ============================================================
+    // Manejar el cambio del switch para horarios fijos o variables
+    // ============================================================
+
     $switch.on("change", function () {
         if ($(this).is(":checked")) {
             $tab.prop("disabled", false); // habilita el tab
@@ -609,4 +632,66 @@ $(document).ready(function () {
             // deshabilita el tab
         }
     });
+
+    // ====================================================================================================================================
+    // ====================================================================================================================================
+
+    // ============================================================
+    // Todos los eventos relacionados con los Horiarios Biometricos
+    // ============================================================
+    $(document).on('click', '#btnCopiarHorarios', function () {
+        // Obtener valores del formulario de referencia
+        const entrada = $('#ref_entrada').val();
+        const salidaComida = $('#ref_salida_comida').val();
+        const entradaComida = $('#ref_entrada_comida').val();
+        const salida = $('#ref_salida').val();
+
+        // Copiar a las primeras 6 filas
+        $('#tbody_horarios tr').each(function (index) {
+            if (index < 7) { // solo las primeras 6 filas
+                $(this).find('input[name="horario_entrada[]"]').val(entrada);
+                $(this).find('input[name="horario_salida_comida[]"]').val(salidaComida);
+                $(this).find('input[name="horario_entrada_comida[]"]').val(entradaComida);
+                $(this).find('input[name="horario_salida[]"]').val(salida);
+            }
+        });
+    });
+
+    $(document).on('change', '.chk-descanso', function (e) {
+        e.preventDefault();
+
+        // referencia a la fila donde está el checkbox
+        let $fila = $(this).closest('tr');
+
+        if ($(this).is(':checked')) {
+            // limpiar todos los inputs de hora en esa fila
+            $fila.find('input[type="time"]').val('');
+        }
+    });
+
+
+    // ====================================================================================================================================
+    // ====================================================================================================================================
+
+    // =================================================
+    // Evento para copiar horarios de Oficiales
+    // =================================================
+    $(document).on('click', '#btnCopiarHorariosOficial', function () {
+        // Obtener valores del formulario de referencia
+        const entrada = $('#ref_entrada_oficial').val();
+        const salidaComida = $('#ref_salida_comida_oficial').val();
+        const entradaComida = $('#ref_entrada_comida_oficial').val();
+        const salida = $('#ref_salida_oficial').val();
+
+        // Copiar a las primeras 6 filas
+        $('#tbody_horarios_oficiales tr').each(function (index) {
+            if (index < 7) { // solo las primeras 6 filas
+                $(this).find('input[name="horario_oficial_entrada[]"]').val(entrada);
+                $(this).find('input[name="horario_oficial_salida_comida[]"]').val(salidaComida);
+                $(this).find('input[name="horario_oficial_entrada_comida[]"]').val(entradaComida);
+                $(this).find('input[name="horario_oficial_salida[]"]').val(salida);
+            }
+        });
+    });
+
 });

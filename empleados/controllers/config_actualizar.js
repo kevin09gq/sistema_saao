@@ -34,15 +34,6 @@ $(document).ready(function () {
         }
     });
 
-    // Formatear campos del dia de horario
-    $('input[name="horario_dia[]"]').each(function () {
-        formatearMayusculas(this);
-    });
-    // Formatear campos del dia de horario oficial
-    $('input[name="horario_oficial_dia[]"]').each(function () {
-        formatearMayusculas(this);
-    });
-
     // Función para formatear texto a mayúsculas mientras se escribe
     function formatearMayusculas(selector) {
         $(selector).on('input', function () {
@@ -115,7 +106,6 @@ $(document).ready(function () {
         const $fila = $(this).closest('tr');
 
         // Limpiar todos los campos de la fila
-        $fila.find('select[name="horario_dia[]"]').val('');
         $fila.find('input[name="horario_entrada[]"]').val('');
         $fila.find('input[name="horario_salida_comida[]"]').val('');
         $fila.find('input[name="horario_entrada_comida[]"]').val('');
@@ -123,6 +113,18 @@ $(document).ready(function () {
 
         // Remover clases de validación
         $fila.find('input').removeClass('border-success border-danger');
+    });
+
+    $(document).on('change', '.chk-descanso', function (e) {
+        e.preventDefault();
+
+        // referencia a la fila donde está el checkbox
+        let $fila = $(this).closest('tr');
+
+        if ($(this).is(':checked')) {
+            // limpiar todos los inputs de hora en esa fila
+            $fila.find('input[type="time"]').val('');
+        }
     });
 
     // Manejar el botón de eliminar horario oficial
@@ -138,7 +140,6 @@ $(document).ready(function () {
         // Remover clases de validación
         $fila.find('input').removeClass('border-success border-danger');
     });
-
 
     // Helper: Formatea 'YYYY-MM-DD' a 'DD/MM/YYYY'
     function formatToDMY(dateStr) {
@@ -525,8 +526,6 @@ $(document).ready(function () {
                 success: function (empleado) {
                     if (!empleado.error) {
 
-                        console.log(empleado);
-
                         // Extraemos todos los datos del empleado incluyendo los nuevos campos
                         let nombreEmpleado = empleado.nombre_empleado;
                         let apPaternoEmpleado = empleado.apellido_paterno_empleado;
@@ -801,6 +800,8 @@ $(document).ready(function () {
 
                         // Poblar la tabla de los horarios de reloj BHL
                         try {
+                            // Obtener el día de descanso
+                            let dia_descanso = empleado.dia_descanso;
                             const horarios = Array.isArray(empleado.horario_reloj) ? empleado.horario_reloj : [];
                             const $tbodyHorarios = $('#tbody_horarios');
 
@@ -821,6 +822,13 @@ $(document).ready(function () {
                                         $fila.find('input[name="horario_salida_comida[]"]').val(horario.salida_comida || '');
                                         $fila.find('input[name="horario_entrada_comida[]"]').val(horario.entrada_comida || '');
                                         $fila.find('input[name="horario_salida[]"]').val(horario.salida || '');
+
+                                        if (horario.descanso && horario.descanso == 1) {
+                                            $fila.find('input[name="horario_descanso[]"]').prop('checked', true);
+                                        } else {
+                                            $fila.find('input[name="horario_descanso[]"]').prop('checked', false);
+                                        }
+
                                     }
                                 });
                             }
@@ -1014,6 +1022,7 @@ $(document).ready(function () {
             const salida_comida = $('input[name="horario_salida_comida[]"]').eq(index).val().trim();
             const entrada_comida = $('input[name="horario_entrada_comida[]"]').eq(index).val().trim();
             const salida = $('input[name="horario_salida[]"]').eq(index).val().trim();
+            const descanso = $('input[name="horario_descanso[]"]').eq(index).is(':checked') ? 1 : 0;
 
             // Solo agregar si al menos un campo tiene valor
             if (dia || entrada || salida_comida || entrada_comida || salida) {
@@ -1022,7 +1031,8 @@ $(document).ready(function () {
                     entrada: entrada || "",
                     salida_comida: salida_comida || "",
                     entrada_comida: entrada_comida || "",
-                    salida: salida || ""
+                    salida: salida || "",
+                    descanso: descanso
                 });
             }
         });
@@ -1147,14 +1157,19 @@ $(document).ready(function () {
             beneficiario_parentesco: beneficiarios.map(b => b.parentesco),
             beneficiario_porcentaje: beneficiarios.map(b => b.porcentaje),
 
-            // Datos de horarios BHL
+            // Datos de horarios del reloj BHL
             horarios: horarios,
             horario_fijo: horario_fijo,
+
+            // Datos de horarios oficiales
             horarios_oficiales: horarios_oficiales,
         };
 
         // Guardar la página actual antes de actualizar
         const paginaAnterior = paginaActual;
+
+        console.log(datos);
+
 
         $.ajax({
             type: "POST",
@@ -1203,52 +1218,96 @@ $(document).ready(function () {
         let idEmpleado = $(this).data("id-empleado");
         let idStatus = $(this).data("id-status");
 
+        let mensaje = idStatus == 1 ? "¿Deseas desactivar a este empleado?" : "¿Deseas activar a este empleado?";
+
+        console.log(idStatus);
+
+        Swal.fire({
+            title: "Cambiar status",
+            text: mensaje,
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "rgb(127, 127, 127)",
+            confirmButtonText: "Sí, cambiar",
+            cancelButtonText: "Cancelar",
+            reverseButtons: true,
+            focusCancel: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+
+                // Evitar doble click y desactivar visualmente
+                const $el = $(this);
+                if ($el.data('processing')) return;
+                $el.data('processing', true).addClass('disabled').css('pointer-events', 'none').css('opacity', '0.6');
+
+                let datos = {
+                    id_empleado: idEmpleado,
+                    id_status: idStatus,
+                    accion: "cambiarStatus"
+                };
+
+                $.ajax({
+                    type: "POST",
+                    url: "../php/obtenerEmpleados.php",
+                    data: datos,
+                    success: function (response) {
+
+                        console.log(response);
 
 
-        // Evitar doble click y desactivar visualmente
-        const $el = $(this);
-        if ($el.data('processing')) return;
-        $el.data('processing', true).addClass('disabled').css('pointer-events', 'none').css('opacity', '0.6');
+                        if (response == true) {
+                            // Actualizar solo los datos sin cambiar la página actual
+                            $.ajax({
+                                type: "POST",
+                                url: "../php/obtenerEmpleados.php",
+                                data: {
+                                    accion: "cargarEmpleados",
+                                },
+                                dataType: "json",
+                                success: function (empleados) {
+                                    empleadosData = empleados;
+                                    paginacionStatus(empleados);
 
-        let datos = {
-            id_empleado: idEmpleado,
-            id_status: idStatus,
-
-            accion: "cambiarStatus"
-        };
-
-
-
-        $.ajax({
-            type: "POST",
-            url: "../php/obtenerEmpleados.php",
-            data: datos,
-            success: function (response) {
-                if (response == true) {
-                    // Actualizar solo los datos sin cambiar la página actual
-                    $.ajax({
-                        type: "POST",
-                        url: "../php/obtenerEmpleados.php",
-                        data: {
-                            accion: "cargarEmpleados",
-                        },
-                        dataType: "json",
-                        success: function (empleados) {
-                            empleadosData = empleados;
-                            paginacionStatus(empleadosData);
-                        },
-                        complete: function () {
+                                    const Toast = Swal.mixin({
+                                        toast: true,
+                                        position: "top-end",
+                                        showConfirmButton: false,
+                                        timer: 3000,
+                                        timerProgressBar: true,
+                                        didOpen: (toast) => {
+                                            toast.onmouseenter = Swal.stopTimer;
+                                            toast.onmouseleave = Swal.resumeTimer;
+                                        }
+                                    });
+                                    Toast.fire({
+                                        icon: "success",
+                                        title: "Cambio de status exitoso"
+                                    });
+                                },
+                                complete: function () {
+                                    $el.data('processing', false).removeClass('disabled').css('pointer-events', '').css('opacity', '');
+                                }
+                            });
+                        } else {
                             $el.data('processing', false).removeClass('disabled').css('pointer-events', '').css('opacity', '');
+                            Swal.fire({
+                                title: "No permitido",
+                                text: "Este empleado tiene una deuda pendiente",
+                                icon: "error",
+                                confirmButtonText: "Entendido"
+                            });
                         }
-                    });
-                } else {
-                    $el.data('processing', false).removeClass('disabled').css('pointer-events', '').css('opacity', '');
-                }
-            },
-            error: function () {
-                $el.data('processing', false).removeClass('disabled').css('pointer-events', '').css('opacity', '');
+                    },
+                    error: function () {
+                        $el.data('processing', false).removeClass('disabled').css('pointer-events', '').css('opacity', '');
+                    }
+                });
+
             }
         });
+
+
     });
 
     // Eliminar empleado (visible en filas inactivas)
@@ -1384,16 +1443,27 @@ $(document).ready(function () {
         const entradaComida = $('#ref_entrada_comida').val();
         const salida = $('#ref_salida').val();
 
-        // Copiar a las primeras 6 filas
+        // Verificar si al menos uno tiene valor
+        if (!entrada && !salidaComida && !entradaComida && !salida) return;
+
+        // Copiar a las primeras 7 filas
         $('#tbody_horarios tr').each(function (index) {
-            if (index < 6) { // solo las primeras 6 filas
-                $(this).find('input[name="horario_entrada[]"]').val(entrada);
-                $(this).find('input[name="horario_salida_comida[]"]').val(salidaComida);
-                $(this).find('input[name="horario_entrada_comida[]"]').val(entradaComida);
-                $(this).find('input[name="horario_salida[]"]').val(salida);
+            if (index < 7) { // solo las primeras 7 filas
+                if (entrada) {
+                    $(this).find('input[name="horario_entrada[]"]').val(entrada);
+                }
+                if (salidaComida) {
+                    $(this).find('input[name="horario_salida_comida[]"]').val(salidaComida);
+                }
+                if (entradaComida) {
+                    $(this).find('input[name="horario_entrada_comida[]"]').val(entradaComida);
+                }
+                if (salida) {
+                    $(this).find('input[name="horario_salida[]"]').val(salida);
+                }
             }
         });
-    });
+    }); // BHL
 
     $(document).on('click', '#btnCopiarHorariosOficiales', function () {
         // Obtener valores del formulario de referencia de horarios oficiales
@@ -1404,7 +1474,7 @@ $(document).ready(function () {
 
         // Copiar a las primeras 6 filas de horarios oficiales
         $('#tbody_horarios_oficiales tr').each(function (index) {
-            if (index < 6) { // solo las primeras 6 filas
+            if (index < 7) { // solo las primeras 6 filas
                 $(this).find('input[name="horario_oficial_entrada[]"]').val(entrada);
                 $(this).find('input[name="horario_oficial_salida_comida[]"]').val(salidaComida);
                 $(this).find('input[name="horario_oficial_entrada_comida[]"]').val(entradaComida);

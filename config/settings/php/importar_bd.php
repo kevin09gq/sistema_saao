@@ -1,12 +1,6 @@
 <?php
 session_start();
 
-// Configuración de la base de datos
-$db_host = 'localhost';
-$db_user = 'root';
-$db_pass = 'cuates2003';
-$db_name = 'sistema_nomina';
-
 // Configuración de tiempo de ejecución y memoria
 set_time_limit(300); // 5 minutos
 ini_set('memory_limit', '512M');
@@ -48,23 +42,24 @@ if ($sql_content === false || empty($sql_content)) {
     exit;
 }
 
-// Conectar a la base de datos
-$mysqli = new mysqli($db_host, $db_user, $db_pass, $db_name);
+// Usar la conexión existente
+require_once __DIR__ . '/../../../conexion/conexion.php';
 
-// Verificar la conexión
-if ($mysqli->connect_error) {
+// Mantener compatibilidad con el resto del script
+$mysqli = $conexion;
+
+// Configurar el charset (si la conexión está disponible)
+if ($mysqli && !mysqli_connect_error()) {
+    $mysqli->set_charset("utf8mb4");
+    // Desactivar autocommit para transacciones
+    $mysqli->autocommit(false);
+} else {
     echo "<script>
-        alert('Error de conexión: " . addslashes($mysqli->connect_error) . "');
+        alert('Error de conexión a la base de datos.');
         window.location.href = '../views/configuracion.php';
     </script>";
     exit;
 }
-
-// Configurar el charset
-$mysqli->set_charset("utf8mb4");
-
-// Desactivar autocommit para transacciones
-$mysqli->autocommit(false);
 
 try {
     // Dividir el contenido en consultas individuales

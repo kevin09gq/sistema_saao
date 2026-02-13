@@ -190,6 +190,12 @@ function detectarInasistencias(claveEmpleado, idEmpresa = null) {
     empleado.horario_oficial.forEach(horario => {
         const diaSemana = String(horario.dia || '').toUpperCase().trim();
 
+        // VERIFICAR SI EL DÍA TIENE TIPO ASIGNADO (vacaciones, descanso, etc.)
+        // Si tiene tipo, NO detectar inasistencias para este día
+        if (empleado.dias_justificados && empleado.dias_justificados[diaSemana]) {
+            return; // Saltar procesamiento para este día
+        }
+
         // Verificar si el día tiene horario de entrada (significa que debe trabajar)
         if (horario.entrada && horario.entrada !== '') {
 
@@ -263,19 +269,20 @@ function detectarOlvidosChecador(claveEmpleado, idEmpresa = null) {
 
     if (!empleado || !Array.isArray(empleado.registros)) return;
 
-    // Preservar descuentos editados manualmente
+    // Preservar descuentos editados manualmente (si existen), pero SOLO evitar regenerar
+    // el historial si el usuario lo editó manualmente (marca _checador_editado_manual).
     const descuentosPrevios = {};
-    
-    // Si ya existe un historial editado manualmente
     if (Array.isArray(empleado.historial_olvidos) && empleado.historial_olvidos.length > 0) {
-        // Guardar descuentos del historial existente por fecha
+        // Guardar descuentos del historial existente por fecha para preservarlos al regenerar
         empleado.historial_olvidos.forEach(olvido => {
             if (olvido && olvido.fecha) {
                 descuentosPrevios[olvido.fecha] = parseFloat(olvido.descuento_olvido) || 20;
             }
         });
-        
-        // Solo recalcular el total desde el historial existente
+    }
+
+    // Si el historial fue editado manualmente por el usuario, solo recalcular totales y no regenerar
+    if (empleado._checador_editado_manual) {
         if (typeof recalcularTotalOlvidos === 'function') {
             recalcularTotalOlvidos(empleado);
         }
@@ -317,15 +324,13 @@ function detectarOlvidosChecador(claveEmpleado, idEmpresa = null) {
         }
     });
 
-    // Guardar número de olvidos
-    empleado.olvidos_checador = empleado.historial_olvidos.length;
 
     // El total se calcula desde el historial
     if (typeof recalcularTotalOlvidos === 'function') {
         recalcularTotalOlvidos(empleado);
     }
 
-    console.log(`Total olvidos de checador: ${empleado.olvidos_checador}`);
+   
 }
 
 function detectarEntradasTempranas(claveEmpleado, idEmpresa = null) {
@@ -575,6 +580,12 @@ function detectarSalidasTempranas(claveEmpleado, idEmpresa = null) {
         const [dia, mes, anio] = fecha.split('/');
         const diaSemana = dias[new Date(anio, mes - 1, dia).getDay()];
         const diaFormateado = diasNormales[new Date(anio, mes - 1, dia).getDay()];
+
+        // VERIFICAR SI EL DÍA TIENE TIPO ASIGNADO (vacaciones, descanso, etc.)
+        // Si tiene tipo, NO detectar salidas tempranas para este día
+        if (empleado.dias_justificados && empleado.dias_justificados[diaSemana]) {
+            return; // Saltar procesamiento para este día
+        }
 
         // Buscar horario oficial para ese día
         const horarioOficial = empleado.horario_oficial.find(h => 
@@ -829,7 +840,7 @@ function detectarOlvidosChecadorAutomatico(empleado) {
 
     let descuentoOlvidos = (olvidos * 20).toFixed(2);
 
-    empleado.olvidos_checador = olvidos;
+   
     empleado.checador = parseFloat(descuentoOlvidos) || 0;
 
     return empleado.checador;
@@ -1011,6 +1022,24 @@ function mostrarHistorialInasistencias(empleado) {
     
     // Agregar filas de datos
     empleado.historial_inasistencias.forEach((inasistencia, index) => {
+        const diaSemana = String(inasistencia.dia || '').toUpperCase().trim();
+        
+        // VERIFICAR SI EL DÍA TIENE TIPO ASIGNADO (vacaciones, descanso, etc.)
+        // Si tiene tipo, NO mostrar como inasistencia
+        if (empleado.dias_justificados && empleado.dias_justificados[diaSemana]) {
+            return; // Saltar este día
+        }
+        
+        // También verificar la nueva estructura en horario_oficial
+        if (empleado.horario_oficial && Array.isArray(empleado.horario_oficial)) {
+            const diaHorario = empleado.horario_oficial.find(h => 
+                String(h.dia || '').toUpperCase().trim() === diaSemana
+            );
+            if (diaHorario && diaHorario.justificado) {
+                return; // Saltar este día justificado
+            }
+        }
+        
         const esManual = inasistencia.tipo === 'manual';
         
         const deleteButton = esManual 
@@ -1555,6 +1584,13 @@ function mostrarInasistencias(empleado) {
     empleado.horario_oficial.forEach(horario => {
         const diaSemana = String(horario.dia || '').toUpperCase().trim();
         if (!horario.entrada || horario.entrada === '') return;
+
+        // VERIFICAR SI EL DÍA TIENE TIPO ASIGNADO (vacaciones, descanso, etc.)
+        // Si tiene tipo, NO mostrar como inasistencia
+        if (empleado.dias_justificados && empleado.dias_justificados[diaSemana]) {
+            return; // Saltar este día
+        }
+       
 
         let tieneRegistro = false;
         empleado.registros.forEach(reg => {
