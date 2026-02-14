@@ -14,6 +14,7 @@ verificarSesion();
     <!-- Iconos Bootstrap -->
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <link rel="stylesheet" href="../styles/actualizar_empleado.css">
+
     <style>
         .buscador-wrap {
             position: relative;
@@ -52,7 +53,9 @@ verificarSesion();
 </head>
 
 <body>
+
     <?php include("../../public/views/navbar.php"); ?>
+
     <div class="container py-4">
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
 
@@ -172,7 +175,7 @@ verificarSesion();
                         <div class="tab-content">
 
                             <!-- Trabajador -->
-                            <div class="tab-pane fade show active" id="tab_trabajador" role="tabpanel" aria-labelledby="tab-trabajador">
+                            <div class="tab-pane fade" id="tab_trabajador" role="tabpanel" aria-labelledby="tab-trabajador">
                                 <input type="hidden" id="modal_id_empleado" name="id_empleado">
                                 <div class="row">
                                     <input type="hidden" id="empleado_id" value="">
@@ -275,29 +278,29 @@ verificarSesion();
                                 </div>
                                 <div class="row">
                                     <div class="col-md-4 mb-3">
-                                        <label for="modal_departamento" class="form-label">Departamento</label>
-                                        <select class="form-select" id="modal_departamento" name="id_departamento">
-                                            <!-- Opciones dinámicas -->
-                                        </select>
-                                    </div>
-                                    <div class="col-md-4 mb-3">
-                                        <label for="modal_empresa" class="form-label">Empresa</label>
-                                        <select class="form-select" id="modal_empresa" name="id_empresa">
-                                            <option value="">Selecciona una empresa</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-4 mb-3">
                                         <label for="modal_area" class="form-label">Área</label>
                                         <select class="form-select" id="modal_area" name="id_area">
                                             <option value="">Selecciona un área</option>
                                         </select>
                                     </div>
-                                </div>
-                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="modal_departamento" class="form-label">Departamento</label>
+                                        <select class="form-select" id="modal_departamento" name="id_departamento">
+                                            <option value="">Selecciona un puesto</option>
+                                        </select>
+                                    </div>
                                     <div class="col-md-4 mb-3">
                                         <label for="modal_puesto" class="form-label">Puesto</label>
                                         <select class="form-select" id="modal_puesto" name="id_puestoEspecial">
                                             <option value="">Selecciona un puesto</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="modal_empresa" class="form-label">Empresa</label>
+                                        <select class="form-select" id="modal_empresa" name="id_empresa">
+                                            <option value="">Selecciona una empresa</option>
                                         </select>
                                     </div>
                                     <div class="col-md-4 mb-3">
@@ -625,7 +628,7 @@ verificarSesion();
             </div>
         </div>
     </div>
-    
+
     <div class="modal fade" id="modal_historial_reingreso" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -651,6 +654,7 @@ verificarSesion();
             </div>
         </div>
     </div>
+
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
     <!-- Bootstrap JS -->
@@ -659,3 +663,7 @@ verificarSesion();
     <script src="../controllers/config_actualizar.js"></script>
     <script src="../controllers/casillero_empleado.js"></script>
     <script src="../../public/js/validaciones.js"></script>
+    
+</body>
+
+</html>

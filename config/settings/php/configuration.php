@@ -92,6 +92,16 @@ if (isset($_GET['accion']) || isset($_POST['accion'])) {
         case 'actualizarFestividad':
             actualizarFestividad();
             break;
+
+        case 'registrarDepartamentoPuesto':
+            registrarDepartamentoPuesto();
+            break;
+        case 'actualizarDepartamentoPuesto':
+            actualizarDepartamentoPuesto();
+            break;
+        case 'eliminarDepartamentoPuesto':
+            eliminarDepartamentoPuesto();
+            break;
         default:
             echo "Acción no reconocida";
     }
@@ -103,9 +113,10 @@ function registrarDepartamento()
 {
     global $conexion;
 
-    if (isset($_POST['nombre_departamento'])) {
+    if (isset($_POST['nombre_departamento']) and isset($_POST['id_area'])) {
         // Eliminar espacios en blanco al principio y al final
         $nombreDepartamento = trim($_POST['nombre_departamento']);
+        $idArea = (int)$_POST['id_area'];
 
         // Verificar que el nombre no esté vacío después de eliminar espacios
         if (empty($nombreDepartamento)) {
@@ -127,14 +138,14 @@ function registrarDepartamento()
         }
 
         // Preparar la consulta para insertar el nuevo departamento
-        $sql = $conexion->prepare("INSERT INTO departamentos (nombre_departamento) VALUES (?)");
+        $sql = $conexion->prepare("INSERT INTO departamentos (nombre_departamento, id_area) VALUES (?, ?)");
 
         if (!$sql) {
             echo "Error en la preparación: " . $conexion->error;
             return;
         }
 
-        $sql->bind_param("s", $nombreDepartamento);
+        $sql->bind_param("si", $nombreDepartamento, $idArea);
 
         // Ejecutar la consulta y verificar si fue exitosa
         if ($sql->execute()) {
@@ -209,9 +220,10 @@ function actualizarDepartamento()
 {
     global $conexion;
 
-    if (isset($_POST['id_departamento']) && isset($_POST['nombre_departamento'])) {
+    if (isset($_POST['id_departamento']) && isset($_POST['nombre_departamento']) && isset($_POST['id_area'])) {
         $idDepartamento = (int)$_POST['id_departamento'];
         $nombreDepartamento = trim($_POST['nombre_departamento']);
+        $idArea = (int)$_POST['id_area'];
 
         // Verificar que el nombre no esté vacío
         if (empty($nombreDepartamento)) {
@@ -233,14 +245,14 @@ function actualizarDepartamento()
         }
 
         // Preparar la consulta para actualizar el departamento
-        $sql = $conexion->prepare("UPDATE departamentos SET nombre_departamento = ? WHERE id_departamento = ?");
+        $sql = $conexion->prepare("UPDATE departamentos SET nombre_departamento = ?, id_area = ? WHERE id_departamento = ?");
 
         if (!$sql) {
             echo "Error en la preparación: " . $conexion->error;
             return;
         }
 
-        $sql->bind_param("si", $nombreDepartamento, $idDepartamento);
+        $sql->bind_param("sii", $nombreDepartamento, $idArea, $idDepartamento);
 
         // Ejecutar la consulta y verificar si fue exitosa
         if ($sql->execute()) {
@@ -1182,7 +1194,7 @@ function registrarTurno()
     global $conexion;
 
     if (isset($_POST['descripcion']) && isset($_POST['max'])) {
-        
+
         $descripcion = trim($_POST['descripcion']);
         $hora_inicio = isset($_POST['hora_inicio']) && $_POST['hora_inicio'] !== '' ? trim($_POST['hora_inicio']) : null;
         $hora_fin    = isset($_POST['hora_fin']) && $_POST['hora_fin'] !== '' ? trim($_POST['hora_fin']) : null;
@@ -1275,7 +1287,7 @@ function actualizarTurno()
 {
     global $conexion;
 
-    if ( isset($_POST['turno_id']) && isset($_POST['descripcion']) && isset($_POST['max']) ) {
+    if (isset($_POST['turno_id']) && isset($_POST['descripcion']) && isset($_POST['max'])) {
         $id_turno = (int)$_POST['turno_id'];
         $descripcion = trim($_POST['descripcion']);
         $hora_inicio = trim($_POST['hora_inicio']) ?? null;
@@ -1561,5 +1573,178 @@ function actualizarFestividad()
         $sql->close();
     } else {
         echo "5"; // No se recibieron todos los datos necesarios
+    }
+}
+
+/**
+ * =============================================================
+ * SECCION PARA MENEJAR LA RELACION ENTRE PUESTO Y DEPARTAMENTOS
+ * =============================================================
+ */
+function registrarDepartamentoPuesto()
+{
+    global $conexion;
+
+    if (isset($_POST['id_puesto']) && isset($_POST['id_departamento'])) {
+        // Eliminar espacios en blanco al principio y al final
+        $idPuesto = trim($_POST['id_puesto']);
+        $idDepartamento = trim($_POST['id_departamento']);
+
+        // Verificar que el nombre no esté vacío después de eliminar espacios
+        if (empty($idPuesto) or empty($idDepartamento)) {
+            echo "0"; // El nombre está vacío
+            return;
+        }
+
+        // Verificar si la relación ya existe (evitar duplicados)
+        $checkSql = "SELECT COUNT(*) as count FROM departamentos_puestos WHERE id_departamento = ? AND id_puestoEspecial = ?";
+        $checkStmt = $conexion->prepare($checkSql);
+        
+        if (!$checkStmt) {
+            echo "Error en la preparación: " . $conexion->error;
+            return;
+        }
+        
+        $checkStmt->bind_param("ii", $idDepartamento, $idPuesto);
+        $checkStmt->execute();
+        $result = $checkStmt->get_result();
+        $row = $result->fetch_assoc();
+        $checkStmt->close();
+
+        if ($row['count'] > 0) {
+            echo "3"; // Relación ya existe
+            return;
+        }
+
+        /**
+         * La tabla departamentos_puestos es una tabla intermedia
+         * entre departamamentos y puestos_especiales
+         */
+
+        // Preparar la consulta para insertar el nuevo puesto
+        $sql = $conexion->prepare("INSERT INTO departamentos_puestos (id_departamento, id_puestoEspecial) VALUES (?, ?)");
+
+        if (!$sql) {
+            echo "Error en la preparación: " . $conexion->error;
+            return;
+        }
+
+        $sql->bind_param("ii", $idDepartamento, $idPuesto);
+
+        // Ejecutar la consulta y verificar si fue exitosa
+        if ($sql->execute()) {
+            echo "1"; // Éxito
+        } else {
+            echo "2"; // Error al ejecutar
+        }
+
+        // Cerrar la declaración
+        $sql->close();
+    } else {
+        echo "2"; // No se recibió el nombre del puesto
+    }
+}
+
+function actualizarDepartamentoPuesto()
+{
+    global $conexion;
+
+    if (isset($_POST['id_puesto']) && isset($_POST['id_departamento']) && isset($_POST['id_departamento_puesto'])) {
+
+        $idPuesto = (int)$_POST['id_puesto'];
+        $idDepartamento = (int)$_POST['id_departamento'];
+        $id = (int)$_POST['id_departamento_puesto'];
+
+        // Verificar que los IDs no estén vacíos
+        if (empty($idPuesto) or empty($idDepartamento) or empty($id)) {
+            echo "0"; // Datos vacíos
+            return;
+        }
+
+        // Verificar si ya existe otra relación con los mismos datos (excepto el actual)
+        $checkSql = "SELECT COUNT(*) as count FROM departamentos_puestos WHERE id_departamento = ? AND id_puestoEspecial = ? AND id_departamento_puesto != ?";
+        $checkStmt = $conexion->prepare($checkSql);
+        
+        if (!$checkStmt) {
+            echo "Error en la preparación: " . $conexion->error;
+            return;
+        }
+        
+        $checkStmt->bind_param("iii", $idDepartamento, $idPuesto, $id);
+        $checkStmt->execute();
+        $result = $checkStmt->get_result();
+        $row = $result->fetch_assoc();
+        $checkStmt->close();
+
+        if ($row['count'] > 0) {
+            echo "3"; // Relación ya existe
+            return;
+        }
+
+        // Preparar la consulta para actualizar el puesto
+        $sql = $conexion->prepare("UPDATE departamentos_puestos SET id_puestoEspecial = ?, id_departamento = ? WHERE id_departamento_puesto = ?");
+
+        if (!$sql) {
+            echo "Error en la preparación: " . $conexion->error;
+            return;
+        }
+
+        $sql->bind_param("iii", $idPuesto, $idDepartamento, $id);
+
+        // Ejecutar la consulta y verificar si fue exitosa
+        if ($sql->execute()) {
+            echo "1"; // Éxito
+        } else {
+            echo "2"; // Error al ejecutar
+        }
+
+        // Cerrar la declaración
+        $sql->close();
+    } else {
+        echo "2"; // No se recibieron todos los datos necesarios
+    }
+}
+
+function eliminarDepartamentoPuesto()
+{
+    global $conexion;
+
+    if (isset($_POST['id_departamento_puesto'])) {
+
+        $idDepartamentoPuesto = (int)$_POST['id_departamento_puesto'];
+
+        // Iniciar transacción para asegurar que ambas operaciones se completen o ninguna
+        $conexion->begin_transaction();
+
+        try {
+
+            // Ahora eliminamos el puesto
+            $deleteSql = "DELETE FROM departamentos_puestos WHERE id_departamento_puesto = ?";
+            $deleteStmt = $conexion->prepare($deleteSql);
+
+            if (!$deleteStmt) {
+                throw new Exception("Error al preparar la eliminación: " . $conexion->error);
+            }
+
+            $deleteStmt->bind_param("i", $idDepartamentoPuesto);
+            $deleteResult = $deleteStmt->execute();
+            $deleteStmt->close();
+
+            if ($deleteResult) {
+                // Confirmar la transacción
+                $conexion->commit();
+                echo "1"; // Éxito
+            } else {
+                // Revertir la transacción
+                $conexion->rollback();
+                echo "2"; // Error al eliminar
+            }
+        } catch (Exception $e) {
+            // Revertir la transacción en caso de error
+            $conexion->rollback();
+            echo "Error: " . $e->getMessage();
+        }
+    } else {
+        echo "2"; // No se recibió el ID del departamento_puesto
     }
 }

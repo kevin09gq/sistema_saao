@@ -2,8 +2,8 @@ $(document).ready(function () {
     const rutaRaiz = '/sistema_saao/';
 
     // Agregue esto BHL
-    const $switch = $("#modal_switchCheckHorarioFijo");
-    const $tab = $("#tab-horarios");
+    const $switch_horario_fijo = $("#modal_switchCheckHorarioFijo");
+    const $tab_horarios = $("#tab-horarios");
 
     getDepartamentos();
     obtenerDatosEmpleados();
@@ -101,32 +101,6 @@ $(document).ready(function () {
         actualizarTotalPorcentaje();
     });
 
-    // Manejar el botón de eliminar horario BHL
-    $(document).on('click', '.btn-eliminar-horario', function () {
-        const $fila = $(this).closest('tr');
-
-        // Limpiar todos los campos de la fila
-        $fila.find('input[name="horario_entrada[]"]').val('');
-        $fila.find('input[name="horario_salida_comida[]"]').val('');
-        $fila.find('input[name="horario_entrada_comida[]"]').val('');
-        $fila.find('input[name="horario_salida[]"]').val('');
-
-        // Remover clases de validación
-        $fila.find('input').removeClass('border-success border-danger');
-    });
-
-    $(document).on('change', '.chk-descanso', function (e) {
-        e.preventDefault();
-
-        // referencia a la fila donde está el checkbox
-        let $fila = $(this).closest('tr');
-
-        if ($(this).is(':checked')) {
-            // limpiar todos los inputs de hora en esa fila
-            $fila.find('input[type="time"]').val('');
-        }
-    });
-
     // Manejar el botón de eliminar horario oficial
     $(document).on('click', '.btn-eliminar-horario-oficial', function () {
         const $fila = $(this).closest('tr');
@@ -190,7 +164,125 @@ $(document).ready(function () {
         return trimmed;
     }
 
-    // Se Obtienen los departamentos
+    // ===================================================
+    // Funciones para obtener datos de selects con filtros
+    // ===================================================
+
+    // Obtener áreas para el modal
+    function obtenerAreasModal() {
+        $.ajax({
+            type: "GET",
+            url: rutaRaiz + "public/php/obtenerAreas.php",
+            success: function (response) {
+                let areas = JSON.parse(response);
+                let opciones = `<option value="0">Ninguna</option>`;
+
+                areas.forEach((element) => {
+                    opciones += `<option value="${element.id_area}">${element.nombre_area}</option>`;
+                });
+
+                $("#modal_area").html(opciones);
+            },
+            error: function () {
+                console.error('Error al obtener áreas');
+            }
+        });
+    }
+
+    // Obtener departamentos para el modal (con filtro opcional por área)
+    function obtenerDepartamentosModal(idArea = null) {
+        let ajaxConfig = {
+            url: rutaRaiz + "public/php/obtenerDepartamentos.php",
+            success: function (response) {
+                let departamentos = JSON.parse(response);
+                let opciones = `<option value="0">Ninguno</option>`;
+
+                departamentos.forEach((element) => {
+                    opciones += `<option value="${element.id_departamento}">${element.nombre_departamento}</option>`;
+                });
+
+                $("#modal_departamento").html(opciones);
+            },
+            error: function () {
+                console.error('Error al obtener departamentos');
+            }
+        };
+
+        // Si se proporciona idArea, hacer POST con filtro
+        if (idArea && idArea != "0") {
+            ajaxConfig.type = "POST";
+            ajaxConfig.data = { id_area: idArea };
+        } else {
+            ajaxConfig.type = "GET";
+        }
+
+        $.ajax(ajaxConfig);
+    }
+
+    // Obtener puestos para el modal (con filtro opcional por departamento)
+    function obtenerPuestosModal(idDepartamento = null) {
+        let ajaxConfig = {
+            url: rutaRaiz + "public/php/obtenerPuestos.php",
+            success: function (response) {
+                let puestos = JSON.parse(response);
+                let opciones = `<option value="0">Ninguno</option>`;
+
+                puestos.forEach((element) => {
+                    opciones += `<option value="${element.id_puestoEspecial}">${element.nombre_puesto}</option>`;
+                });
+
+                $("#modal_puesto").html(opciones);
+            },
+            error: function (error) {
+                console.error('Error al obtener puestos:', error);
+            }
+        };
+
+        // Si se proporciona idDepartamento, hacer POST con filtro
+        if (idDepartamento && idDepartamento != "0") {
+            ajaxConfig.type = "POST";
+            ajaxConfig.data = { id_departamento: idDepartamento };
+        } else {
+            ajaxConfig.type = "GET";
+        }
+
+        $.ajax(ajaxConfig);
+    }
+
+    // ===================================================
+    // Eventos de cascada para los selects del modal
+    // ===================================================
+
+    // Cuando se selecciona un área en el modal
+    $(document).on('change', '#modal_area', function() {
+        const idArea = $(this).val();
+        
+        if (idArea && idArea !== "0") {
+            // Cargar departamentos filtrados por área
+            obtenerDepartamentosModal(idArea);
+            // Limpiar y resetear el select de puestos
+            $('#modal_puesto').html('<option value="0">Ninguno</option>');
+        } else {
+            // Si no hay área, cargar todos los departamentos
+            obtenerDepartamentosModal();
+            $('#modal_puesto').html('<option value="0">Ninguno</option>');
+        }
+    });
+
+    // Cuando se selecciona un departamento en el modal
+    $(document).on('change', '#modal_departamento', function() {
+        const idDepartamento = $(this).val();
+        
+        if (idDepartamento && idDepartamento !== "0") {
+            // Cargar puestos filtrados por departamento
+            obtenerPuestosModal(idDepartamento);
+        } else {
+            // Si no hay departamento, cargar todos los puestos
+            obtenerPuestosModal();
+        }
+    });
+
+    // Se Obtienen los departamentos para el filtro principal
     function getDepartamentos() {
         $.ajax({
             type: "GET",
@@ -232,6 +324,7 @@ $(document).ready(function () {
         });
     }
 
+    // Obtener datos de empleados
     function obtenerDatosEmpleados() {
         $.ajax({
             type: "POST",
@@ -504,13 +597,16 @@ $(document).ready(function () {
     /**
      * ================================================
      * Función para abrir el modal de actualización
-     * y poblar los campso con los valores del empleado
+     * y poblar los campos con los valores del empleado
      * ================================================
      */
     function setValoresModal(params) {
         $(document).on("click", ".btn-actualizar", function () {
             let idEmpleado = $(this).data("id");
             let claveEmpleado = $(this).data("clave");
+
+            // Cuando se abra el formulario se reinicia
+            $("#form_modal_actualizar_empleado").trigger("reset");
 
             let data = {
                 id_empleado: idEmpleado,
@@ -572,11 +668,11 @@ $(document).ready(function () {
                         let horarioFijo = empleado.horario_fijo;
                         // Inicializar el estado del switch según horarioFijo
                         if (horarioFijo == 1) {
-                            $switch.prop("checked", true);
-                            $tab.prop("disabled", false); // habilita el tab 
+                            $switch_horario_fijo.prop("checked", true);
+                            $tab_horarios.prop("disabled", false); // habilita el tab 
                         } else {
-                            $switch.prop("checked", false);
-                            $tab.prop("disabled", true); // deshabilita el tab 
+                            $switch_horario_fijo.prop("checked", false);
+                            $tab_horarios.prop("disabled", true); // deshabilita el tab 
                         }
 
                         $("#label-nombre-empleado").text(nombreEmpleado + " " + apPaternoEmpleado + " " + apMaternoEmpleado);
@@ -660,39 +756,16 @@ $(document).ready(function () {
 
                         }
 
-                        // Cargar departamentos con la ruta correcta
-                        $.ajax({
-                            type: "GET",
-                            url: rutaRaiz + "public/php/obtenerDepartamentos.php", // Ruta corregida
-                            success: function (response) {
-                                let departamentos = JSON.parse(response);
-                                let opciones = `<option value="0">Ninguno</option>`;
-
-                                departamentos.forEach((element) => {
-                                    opciones += `
-                                <option value="${element.id_departamento}">${element.nombre_departamento}</option>`;
-                                });
-
-                                $("#modal_departamento").html(opciones);
-                                if (!idDepartamentoEmpleado || idDepartamentoEmpleado === "0") {
-                                    $("#modal_departamento").val("0");
-                                } else {
-                                    $("#modal_departamento").val(idDepartamentoEmpleado);
-                                }
-                            }
-                        });
-
                         // Cargar empresas
                         $.ajax({
                             type: "GET",
-                            url: rutaRaiz + "public/php/obtenerEmpresa.php", // Ruta corregida
+                            url: rutaRaiz + "public/php/obtenerEmpresa.php",
                             success: function (response) {
                                 let empresas = JSON.parse(response);
                                 let opciones = `<option value="0">Ninguna</option>`;
 
                                 empresas.forEach((element) => {
-                                    opciones += `
-                                <option value="${element.id_empresa}">${element.nombre_empresa}</option>`;
+                                    opciones += `<option value="${element.id_empresa}">${element.nombre_empresa}</option>`;
                                 });
 
                                 $("#modal_empresa").html(opciones);
@@ -704,49 +777,108 @@ $(document).ready(function () {
                             }
                         });
 
-                        // Cargar áreas
+                        // ============================================================
+                        // Cargar áreas, departamentos y puestos en cascada
+                        // ============================================================
+
+                        // Paso 1: Cargar áreas
                         $.ajax({
                             type: "GET",
-                            url: rutaRaiz + "public/php/obtenerAreas.php", // Ruta corregida
+                            url: rutaRaiz + "public/php/obtenerAreas.php",
                             success: function (response) {
                                 let areas = JSON.parse(response);
                                 let opciones = `<option value="0">Ninguna</option>`;
 
                                 areas.forEach((element) => {
-                                    opciones += `
-                                <option value="${element.id_area}">${element.nombre_area}</option>`;
+                                    opciones += `<option value="${element.id_area}">${element.nombre_area}</option>`;
                                 });
 
                                 $("#modal_area").html(opciones);
+                                
+                                // Seleccionar el área del empleado
                                 if (!idArea || idArea === "0") {
                                     $("#modal_area").val("0");
+                                    // Si no hay área, cargar todos los departamentos
+                                    cargarDepartamentosYSeleccionar(null, idDepartamentoEmpleado, idPuesto);
                                 } else {
                                     $("#modal_area").val(idArea);
+                                    // Cargar departamentos filtrados por área
+                                    cargarDepartamentosYSeleccionar(idArea, idDepartamentoEmpleado, idPuesto);
                                 }
                             }
                         });
 
-                        // Cargar puestos
-                        $.ajax({
-                            type: "GET",
-                            url: rutaRaiz + "public/php/obtenerPuestos.php", // Ruta corregida
-                            success: function (response) {
-                                let puestos = JSON.parse(response);
-                                let opciones = `<option value="0">Ninguno</option>`;
+                        // Función auxiliar para cargar departamentos y luego puestos
+                        function cargarDepartamentosYSeleccionar(idArea, idDepartamento, idPuesto) {
+                            let ajaxConfig = {
+                                url: rutaRaiz + "public/php/obtenerDepartamentos.php",
+                                success: function (response) {
+                                    let departamentos = JSON.parse(response);
+                                    let opciones = `<option value="0">Ninguno</option>`;
 
-                                puestos.forEach((element) => {
-                                    opciones += `
-                                <option value="${element.id_puestoEspecial}">${element.nombre_puesto}</option>`;
-                                });
+                                    departamentos.forEach((element) => {
+                                        opciones += `<option value="${element.id_departamento}">${element.nombre_departamento}</option>`;
+                                    });
 
-                                $("#modal_puesto").html(opciones);
-                                if (!idPuesto || idPuesto === "0") {
-                                    $("#modal_puesto").val("0");
-                                } else {
-                                    $("#modal_puesto").val(idPuesto);
+                                    $("#modal_departamento").html(opciones);
+                                    
+                                    // Seleccionar el departamento del empleado
+                                    if (!idDepartamento || idDepartamento === "0") {
+                                        $("#modal_departamento").val("0");
+                                        // Si no hay departamento, cargar todos los puestos
+                                        cargarPuestosYSeleccionar(null, idPuesto);
+                                    } else {
+                                        $("#modal_departamento").val(idDepartamento);
+                                        // Cargar puestos filtrados por departamento
+                                        cargarPuestosYSeleccionar(idDepartamento, idPuesto);
+                                    }
                                 }
+                            };
+
+                            // Filtrar por área si se proporciona
+                            if (idArea && idArea !== "0") {
+                                ajaxConfig.type = "POST";
+                                ajaxConfig.data = { id_area: idArea };
+                            } else {
+                                ajaxConfig.type = "GET";
                             }
-                        });
+
+                            $.ajax(ajaxConfig);
+                        }
+
+                        // Función auxiliar para cargar puestos y seleccionar
+                        function cargarPuestosYSeleccionar(idDepartamento, idPuesto) {
+                            let ajaxConfig = {
+                                url: rutaRaiz + "public/php/obtenerPuestos.php",
+                                success: function (response) {
+                                    let puestos = JSON.parse(response);
+                                    let opciones = `<option value="0">Ninguno</option>`;
+
+                                    puestos.forEach((element) => {
+                                        opciones += `<option value="${element.id_puestoEspecial}">${element.nombre_puesto}</option>`;
+                                    });
+
+                                    $("#modal_puesto").html(opciones);
+                                    
+                                    // Seleccionar el puesto del empleado
+                                    if (!idPuesto || idPuesto === "0") {
+                                        $("#modal_puesto").val("0");
+                                    } else {
+                                        $("#modal_puesto").val(idPuesto);
+                                    }
+                                }
+                            };
+
+                            // Filtrar por departamento si se proporciona
+                            if (idDepartamento && idDepartamento !== "0") {
+                                ajaxConfig.type = "POST";
+                                ajaxConfig.data = { id_departamento: idDepartamento };
+                            } else {
+                                ajaxConfig.type = "GET";
+                            }
+
+                            $.ajax(ajaxConfig);
+                        }
 
                         // Poblar la tabla de beneficiarios en el modal
                         try {
@@ -917,17 +1049,36 @@ $(document).ready(function () {
 
             });
 
+            // Inicializar los tap control del modal
+            $("#tab-trabajador").addClass("active");
+            $("#tab-emergencia").removeClass("active");
+            $("#tab-reingresos").removeClass("active");
+            $("#tab-beneficiarios").removeClass("active");
+            $("#tab-horarios").removeClass("active");
+            $("#tab-horarios-oficiales").removeClass("active");
+
+            // Inicializar el contenido de los tabs
+            $("#tab_trabajador").addClass("show active");
+            $("#tab_emergencia").removeClass("show active");
+            $("#tab_reingresos").removeClass("show active");
+            $("#tab_beneficiarios").removeClass("show active");
+            $("#tab_horarios").removeClass("show active");
+            $("#tab_horarios_oficiales").removeClass("show active");
+
+
             // Finalmente mostramos el modal
             $("#modal_actualizar_empleado").modal("show");
         });
     } // Aqui agregue cosas BHL
 
 
-    // Evento para enviar el formulario de actualización
+    // ========================================================================================
+    // Evento para ENVIAR el formulario de actualización
     // Se valida que los campos obligatorios no estén vacíos y que los opcionales sean válidos
     // Si hay algún error, se muestra un mensaje de advertencia
     // Si todo es correcto, se envían los datos al servidor para actualizar el empleado
     // y se actualiza la tabla de empleados
+    // ========================================================================================
     $("#form_modal_actualizar_empleado").submit(function (e) {
         e.preventDefault();
 
@@ -1435,7 +1586,30 @@ $(document).ready(function () {
         });
     }
 
+    $(document).on('click', '#btnCopiarHorariosOficiales', function () {
+        // Obtener valores del formulario de referencia de horarios oficiales
+        const entrada = $('#ref_of_entrada').val();
+        const salidaComida = $('#ref_of_salida_comida').val();
+        const entradaComida = $('#ref_of_entrada_comida').val();
+        const salida = $('#ref_of_salida').val();
 
+        // Copiar a las primeras 6 filas de horarios oficiales
+        $('#tbody_horarios_oficiales tr').each(function (index) {
+            if (index < 7) { // solo las primeras 6 filas
+                $(this).find('input[name="horario_oficial_entrada[]"]').val(entrada);
+                $(this).find('input[name="horario_oficial_salida_comida[]"]').val(salidaComida);
+                $(this).find('input[name="horario_oficial_entrada_comida[]"]').val(entradaComida);
+                $(this).find('input[name="horario_oficial_salida[]"]').val(salida);
+            }
+        });
+    });
+
+
+    // =====================================================
+    // SECCION PARA MANEJAR LOS HORARIOS PARA BIOMETRICO BHL
+    // =====================================================
+
+    // Evento para el botón de copiar horarios
     $(document).on('click', '#btnCopiarHorarios', function () {
         // Obtener valores del formulario de referencia
         const entrada = $('#ref_entrada').val();
@@ -1463,31 +1637,41 @@ $(document).ready(function () {
                 }
             }
         });
-    }); // BHL
-
-    $(document).on('click', '#btnCopiarHorariosOficiales', function () {
-        // Obtener valores del formulario de referencia de horarios oficiales
-        const entrada = $('#ref_of_entrada').val();
-        const salidaComida = $('#ref_of_salida_comida').val();
-        const entradaComida = $('#ref_of_entrada_comida').val();
-        const salida = $('#ref_of_salida').val();
-
-        // Copiar a las primeras 6 filas de horarios oficiales
-        $('#tbody_horarios_oficiales tr').each(function (index) {
-            if (index < 7) { // solo las primeras 6 filas
-                $(this).find('input[name="horario_oficial_entrada[]"]').val(entrada);
-                $(this).find('input[name="horario_oficial_salida_comida[]"]').val(salidaComida);
-                $(this).find('input[name="horario_oficial_entrada_comida[]"]').val(entradaComida);
-                $(this).find('input[name="horario_oficial_salida[]"]').val(salida);
-            }
-        });
     });
 
-    $switch.on("change", function () {
+    // Manejar el botón de limpiar la fila del horario
+    $(document).on('click', '.btn-eliminar-horario', function () {
+        const $fila = $(this).closest('tr');
+
+        // Limpiar todos los campos de la fila
+        $fila.find('input[name="horario_entrada[]"]').val('');
+        $fila.find('input[name="horario_salida_comida[]"]').val('');
+        $fila.find('input[name="horario_entrada_comida[]"]').val('');
+        $fila.find('input[name="horario_salida[]"]').val('');
+
+        // Remover clases de validación
+        $fila.find('input').removeClass('border-success border-danger');
+    });
+
+    // Manejar el checkbox de día de descanso
+    $(document).on('change', '.chk-descanso', function (e) {
+        e.preventDefault();
+
+        // referencia a la fila donde está el checkbox
+        let $fila = $(this).closest('tr');
+
+        if ($(this).is(':checked')) {
+            // limpiar todos los inputs de hora en esa fila
+            $fila.find('input[type="time"]').val('');
+        }
+    });
+
+    // Manejar el switch de horario fijo/variable
+    $switch_horario_fijo.on("change", function () {
         if ($(this).is(":checked")) {
-            $tab.prop("disabled", false); // habilita el tab
+            $tab_horarios.prop("disabled", false); // habilita el tab
         } else {
-            $tab.prop("disabled", true); // deshabilita el tab 
+            $tab_horarios.prop("disabled", true); // deshabilita el tab 
         }
     });
 

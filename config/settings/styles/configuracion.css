@@ -448,6 +448,60 @@ textarea.form-control {
     background: #22c55e;
 }
 
+
+
+
+
+
+
+/* Estilos para la tabla de puestos con scroll */
+#departamentos-puestos-table-responsive {
+    max-height: 400px;  /* Altura para mostrar aproximadamente 5 filas */
+    overflow-y: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+#tabla-departamentos-puestos {
+    margin-bottom: 0;
+}
+
+#tabla-departamentos-puestos thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* Estilo para la barra de desplazamiento de puestos */
+#departamentos-puestos-table-responsive::-webkit-scrollbar {
+    width: 8px;
+}
+
+#departamentos-puestos-table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+#departamentos-puestos-table-responsive::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+#departamentos-puestos-table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #22c55e;
+}
+
+
+
+
+
+
+
+
+
+
+
+
 /* Estilos para la tabla de áreas con scroll */
 #areas-table-responsive {
     max-height: 300px;  /* Altura para mostrar aproximadamente 5 filas */

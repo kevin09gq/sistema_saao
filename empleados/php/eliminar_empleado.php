@@ -128,62 +128,6 @@ try {
     $sqlLiberarHorarioOficial->execute();
     $sqlLiberarHorarioOficial->close();
 
-    // Eliminar historial de incidencias semanal relacionado al empleado
-    $sqlDelHistInc = $conexion->prepare("DELETE FROM historial_incidencias_semanal WHERE empleado_id = ?");
-    $sqlDelHistInc->bind_param("i", $id_empleado);
-    if (!$sqlDelHistInc->execute()) {
-        throw new Exception('No se pudo eliminar el historial de incidencias semanal.');
-    }
-    $sqlDelHistInc->close();
-
-    // =============================
-    // ELIMINAR AUTORIZACIONES RELACIONADAS (historiales_autorizaciones, claves_autorizacion)
-    // =============================
-    $sqlDelHistAut = $conexion->prepare("DELETE historiales_autorizaciones FROM historiales_autorizaciones JOIN claves_autorizacion ON historiales_autorizaciones.id_clave = claves_autorizacion.id_autorizacion WHERE claves_autorizacion.id_empleado = ?");
-    $sqlDelHistAut->bind_param("i", $id_empleado);
-    if (!$sqlDelHistAut->execute()) {
-        throw new Exception('No se pudo eliminar historiales de autorizaciones.');
-    }
-    $sqlDelHistAut->close();
-
-    $sqlDelClaves = $conexion->prepare("DELETE FROM claves_autorizacion WHERE id_empleado = ?");
-    $sqlDelClaves->bind_param("i", $id_empleado);
-    if (!$sqlDelClaves->execute()) {
-        throw new Exception('No se pudo eliminar claves de autorización.');
-    }
-    $sqlDelClaves->close();
-
-    // =============================
-    // ELIMINAR PRÉSTAMOS RELACIONADOS (detalle_planes, planes_pagos, prestamos_abonos, prestamos)
-    // =============================
-    $sqlDelDetalle = $conexion->prepare("DELETE detalle_planes FROM detalle_planes JOIN planes_pagos ON detalle_planes.id_plan = planes_pagos.id_plan JOIN prestamos ON planes_pagos.id_prestamo = prestamos.id_prestamo WHERE prestamos.id_empleado = ?");
-    $sqlDelDetalle->bind_param("i", $id_empleado);
-    if (!$sqlDelDetalle->execute()) {
-        throw new Exception('No se pudo eliminar detalle de planes.');
-    }
-    $sqlDelDetalle->close();
-
-    $sqlDelPlanes = $conexion->prepare("DELETE planes_pagos FROM planes_pagos JOIN prestamos ON planes_pagos.id_prestamo = prestamos.id_prestamo WHERE prestamos.id_empleado = ?");
-    $sqlDelPlanes->bind_param("i", $id_empleado);
-    if (!$sqlDelPlanes->execute()) {
-        throw new Exception('No se pudo eliminar planes de pagos.');
-    }
-    $sqlDelPlanes->close();
-
-    $sqlDelAbonos = $conexion->prepare("DELETE prestamos_abonos FROM prestamos_abonos JOIN prestamos ON prestamos_abonos.id_prestamo = prestamos.id_prestamo WHERE prestamos.id_empleado = ?");
-    $sqlDelAbonos->bind_param("i", $id_empleado);
-    if (!$sqlDelAbonos->execute()) {
-        throw new Exception('No se pudo eliminar abonos de préstamos.');
-    }
-    $sqlDelAbonos->close();
-
-    $sqlDelPrest = $conexion->prepare("DELETE FROM prestamos WHERE id_empleado = ?");
-    $sqlDelPrest->bind_param("i", $id_empleado);
-    if (!$sqlDelPrest->execute()) {
-        throw new Exception('No se pudo eliminar préstamos.');
-    }
-    $sqlDelPrest->close();
-
     // =============================
     // ELIMINAR EMPLEADO
     // =============================
@@ -226,6 +170,7 @@ try {
         'icon' => $rutaRaiz . 'plugins/toasts/icons/icon_success.png',
         'timeout' => 3000
     ]);
+    
 } catch (Exception $e) {
     $conexion->rollback();
     http_response_code(500);

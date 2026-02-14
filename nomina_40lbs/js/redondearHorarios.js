@@ -133,17 +133,31 @@ function redondearRegistrosEmpleado(empleado, horariosPorDia) {
                     
                     resultadoFinal = resultadoInterrumpido;
                 } else {
-                    // CUANDO HAY 2+ REGISTROS: PROCESAR COMO JORNADA COMPLETA CON COMIDA
-                    // Si hay 2+ registros, siempre hay comida → no aplica CASO 5
-                    console.log('🔍 Jornada con 2+ registros detectada - Procesando con comida');
-                    
-                    // EJECUCIÓN DE CASOS NORMALES (1, 2, 3, 4, 6, 7): Jornada completa con comida
-                    // Origen de datos: procesarJornadaNormal() llama internamente a:
-                    //   - procesarFaltaEntrada() -> procesarRetardoEntrada() (CASOS 1 y 3)
-                    //   - procesarFaltaSalida() -> procesarSalidaAnticipada() (CASOS 2 y 4)
-                    //   - procesarSalidaComidaAnticipada() (CASO 6)
-                    //   - procesarRegresoComidaTarde() (CASO 7)
-                    resultadoFinal = procesarJornadaNormal(registrosDelDia, horarioSemanal, horaEntradaRegistro);
+                    // VERIFICAR SI EL HORARIO OFICIAL CONTEMPLA COMIDA
+                    // Si el horario oficial no tiene comida (00:00), siempre es jornada interrumpida
+                    if (horarioSemanal.entrada_comida === "00:00" || horarioSemanal.termino_comida === "00:00") {
+                        console.log('🔍 Horario oficial sin comida detectado - Jornada sin comida');
+                        
+                        var resultadoSinComida = {
+                            entrada: procesarFaltaEntrada(horaEntradaRegistro, horarioSemanal.entrada),
+                            entrada_comida: "00:00",   // Horario oficial no contempla comida
+                            termino_comida: "00:00",   // Horario oficial no contempla comida
+                            salida: procesarFaltaSalida(horaSalidaRegistro, horarioSemanal.salida) // Procesa salida normal
+                        };
+                        
+                        resultadoFinal = resultadoSinComida;
+                    } else {
+                        // CUANDO HAY 2+ REGISTROS Y HORARIO CON COMIDA: PROCESAR COMO JORNADA COMPLETA CON COMIDA
+                        console.log('🔍 Jornada con 2+ registros y horario con comida detectada - Procesando con comida');
+                        
+                        // EJECUCIÓN DE CASOS NORMALES (1, 2, 3, 4, 6, 7, 8, 9): Jornada completa con comida
+                        // Origen de datos: procesarJornadaNormal() llama internamente a:
+                        //   - procesarFaltaEntrada() -> procesarRetardoEntrada() (CASOS 1 y 3)
+                        //   - procesarFaltaSalida() -> procesarSalidaAnticipada() (CASOS 2 y 4)
+                        //   - procesarFaltaSalidaComida() -> procesarSalidaComidaAnticipada() (CASOS 6 y 8)
+                        //   - procesarFaltaRegresoComida() -> procesarRegresoComidaTarde() (CASOS 7 y 9)
+                        resultadoFinal = procesarJornadaNormal(registrosDelDia, horarioSemanal, horaEntradaRegistro);
+                    }
                 }
                 
                 console.log('🔍 DEBUG - Resultado final antes de guardar:', resultadoFinal);
@@ -314,6 +328,36 @@ function procesarRegresoComidaTarde(horaRegresoComidaRegistro, horaTerminoComida
     }
 }
 
+// CASO 8: Falta de marcaje en salida a comer
+// EJECUCIÓN: Se llama desde procesarJornadaNormal() cuando hay 2+ registros
+// CONDICIÓN: horaSalidaComidaRegistro está vacío o es ""
+// ORIGEN: procesarJornadaNormal() -> procesarFaltaSalidaComida()
+function procesarFaltaSalidaComida(horaSalidaComidaRegistro, horaEntradaComidaSemanal) {
+    // DATO: horaSalidaComidaRegistro (desde biométrico), horaEntradaComidaSemanal (desde configuración)
+    if (!horaSalidaComidaRegistro || horaSalidaComidaRegistro.trim() === '') {
+        // Si no hay marcaje de salida a comer: autocompleta con hora programada
+        console.log('🔧 Falta de salida a comer - Autocompletada:', horaEntradaComidaSemanal);
+        return horaEntradaComidaSemanal; // Retorna hora programada (autocompletada)
+    }
+    // Si hay marcaje: procesa normal (aplica CASO 6)
+    return procesarSalidaComidaAnticipada(horaSalidaComidaRegistro, horaEntradaComidaSemanal);
+}
+
+// CASO 9: Falta de marcaje en regreso de comida
+// EJECUCIÓN: Se llama desde procesarJornadaNormal() cuando hay 2+ registros
+// CONDICIÓN: horaRegresoComidaRegistro está vacío o es ""
+// ORIGEN: procesarJornadaNormal() -> procesarFaltaRegresoComida()
+function procesarFaltaRegresoComida(horaRegresoComidaRegistro, horaTerminoComidaSemanal) {
+    // DATO: horaRegresoComidaRegistro (desde biométrico), horaTerminoComidaSemanal (desde configuración)
+    if (!horaRegresoComidaRegistro || horaRegresoComidaRegistro.trim() === '') {
+        // Si no hay marcaje de regreso de comida: autocompleta con hora programada
+        console.log('🔧 Falta de regreso de comida - Autocompletado:', horaTerminoComidaSemanal);
+        return horaTerminoComidaSemanal; // Retorna hora programada (autocompletado)
+    }
+    // Si hay marcaje: procesa normal (aplica CASO 7)
+    return procesarRegresoComidaTarde(horaRegresoComidaRegistro, horaTerminoComidaSemanal);
+}
+
 // Función auxiliar para procesar jornada normal con comida
 // EJECUCIÓN: Se llama desde redondearRegistrosEmpleado() cuando no es jornada interrumpida
 // CONDICIÓN: horaSalidaRegistro ≥ horarioSemanal.entrada_comida
@@ -333,11 +377,11 @@ function procesarJornadaNormal(registrosDelDia, horarioSemanal, horaEntradaRegis
         var horaSalidaComidaRegistro = primerRegistro.salida;      // Salida a comer (desde biométrico)
         var horaRegresoComidaRegistro = segundoRegistro.entrada;    // Regreso de comida (desde biométrico)
         
-        // CASO 6: Procesar salida a comer
-        entradaComidaRedondeada = procesarSalidaComidaAnticipada(horaSalidaComidaRegistro, horarioSemanal.entrada_comida);
+        // CASO 8: Procesar salida a comer (con detección de olvido)
+        entradaComidaRedondeada = procesarFaltaSalidaComida(horaSalidaComidaRegistro, horarioSemanal.entrada_comida);
         
-        // CASO 7: Procesar regreso de comida
-        terminoComidaRedondeada = procesarRegresoComidaTarde(horaRegresoComidaRegistro, horarioSemanal.termino_comida);
+        // CASO 9: Procesar regreso de comida (con detección de olvido)
+        terminoComidaRedondeada = procesarFaltaRegresoComida(horaRegresoComidaRegistro, horarioSemanal.termino_comida);
     } else {
         // Si por alguna razón no hay 2+ registros, usa valores programados
         entradaComidaRedondeada = horarioSemanal.entrada_comida;

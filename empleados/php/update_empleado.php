@@ -159,8 +159,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // verificar si el biometrico ya existe para otro empleado
     if (!empty($biometrico)) {
-        $sql_check_biometrico = $conexion->prepare("SELECT COUNT(*) FROM info_empleados WHERE biometrico = ? AND id_empleado != ?");
-        $sql_check_biometrico->bind_param("ii", $biometrico, $id_empleado);
+        $sql_check_biometrico = $conexion->prepare("SELECT COUNT(*) FROM info_empleados WHERE biometrico = ? AND id_area = ? AND id_empleado != ?");
+        $sql_check_biometrico->bind_param("iii", $biometrico, $id_area, $id_empleado);
         $sql_check_biometrico->execute();
         $sql_check_biometrico->bind_result($count_biometrico);
         $sql_check_biometrico->fetch();
@@ -169,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($count_biometrico > 0) {
             $respuesta = array(
                 "title" => "ADVERTENCIA",
-                "text" => "El número biométrico ya está en uso por otro empleado.",
+                "text" => "El número biométrico ya está en uso por otro empleado en esta Área.",
                 "type" => "info",
                 "timeout" => 3000,
             );

@@ -16,23 +16,38 @@ CREATE TABLE empresa (
 );
 
 
-CREATE TABLE areas (
-    id_area INT AUTO_INCREMENT PRIMARY KEY,
-    nombre_area VARCHAR(100) NOT NULL,
-    logo_area VARCHAR(200) NULL
+CREATE TABLE IF NOT EXISTS areas (
+  id_area int(11) NOT NULL AUTO_INCREMENT,
+  nombre_area varchar(100) NOT NULL,
+  logo_area varchar(200) DEFAULT NULL,
+  PRIMARY KEY (id_area)
 );
 
-
-CREATE TABLE departamentos (
-    id_departamento INT AUTO_INCREMENT PRIMARY KEY,
-    nombre_departamento VARCHAR(100) NOT NULL
+CREATE TABLE IF NOT EXISTS departamentos (
+  id_departamento int(11) NOT NULL AUTO_INCREMENT,
+  nombre_departamento varchar(100) NOT NULL,
+  id_area int(11) DEFAULT NULL,
+  PRIMARY KEY (id_departamento),
+  FOREIGN KEY (id_area) REFERENCES areas(id_area)
 );
 
-CREATE TABLE puestos_especiales (
-    id_puestoEspecial INT AUTO_INCREMENT PRIMARY KEY,
-    nombre_puesto VARCHAR(100) NOT NULL,
-    direccion_puesto VARCHAR(200) NULL,
-    color_hex VARCHAR(7) NULL
+CREATE TABLE IF NOT EXISTS puestos_especiales (
+  id_puestoEspecial int(11) NOT NULL AUTO_INCREMENT,
+  nombre_puesto varchar(100) NOT NULL,
+  direccion_puesto varchar(200) DEFAULT NULL,
+  color_hex varchar(7) DEFAULT NULL,
+  PRIMARY KEY (id_puestoEspecial)
+);
+
+-- Esta tabla relaciona departamentos con
+-- los puestos
+CREATE TABLE IF NOT EXISTS departamentos_puestos (
+  id_departamento_puesto int(11) NOT NULL AUTO_INCREMENT,
+  id_departamento int(11) DEFAULT NULL,
+  id_puestoEspecial int(11) DEFAULT NULL,
+  PRIMARY KEY (id_departamento_puesto),
+  FOREIGN KEY (id_departamento) REFERENCES departamentos(id_departamento),
+  FOREIGN KEY (id_puestoEspecial) REFERENCES puestos_especiales(id_puestoEspecial)
 );
 
 CREATE TABLE status (
@@ -66,7 +81,7 @@ CREATE TABLE contacto_emergencia (
     domicilio VARCHAR(900)
 );
 
-CREATE TABLE info_empleados (3
+CREATE TABLE info_empleados (
     id_empleado INT AUTO_INCREMENT PRIMARY KEY,
     id_rol INT NOT NULL,
     id_status INT NOT NULL,
@@ -96,6 +111,7 @@ CREATE TABLE info_empleados (3
     status_nss TINYINT(1) DEFAULT 0,
     rfc_empleado VARCHAR(13),
     estado_civil VARCHAR(50),
+    horario_fijo TINYINT(1) DEFAULT 1
     
     FOREIGN KEY (id_rol) REFERENCES rol(id_rol),
     FOREIGN KEY (id_status) REFERENCES status(id_status),
@@ -372,30 +388,6 @@ INSERT INTO empresa (nombre_empresa) VALUES
 ('Citricos SAAO'),
 ('SB citric´s group');
 
--- Insertar áreas
-INSERT INTO areas (nombre_area) VALUES 
-('Empaque'),
-('Rancho Relicario'),
-('Rancho Pilar'),
-('Rancho Huasteca');
-
--- Insertar puestos especiales
-INSERT INTO puestos_especiales (nombre_puesto) VALUES 
-('Flejadores'),
-('Patineros'),
-('Aux corridas'),
-('Foleadores');
-
--- Insertar departamentos
-INSERT INTO departamentos (id_departamento, nombre_departamento) VALUES
-(1, 'Administración'),
-(2, 'Personal de Confianza Produccion'),
-(3, 'Seguridad Vigilancia e Intendencia'),
-(4, 'Produccion 40 Libras'),
-(5, 'Produccion 10 Libras'),
-(6, 'Rancho Relicario'),
-(7, 'Ranchos'),
-(8, 'Administracion Sucursal CdMx');
 
 
 

@@ -240,8 +240,6 @@ function obtenerEmpleadosSinSS(JsonListaRaya) {
                 // Agregar departamento al jsonNomina40lbs
                 if (JsonListaRaya && JsonListaRaya.departamentos) {
                     JsonListaRaya.departamentos.push(departamentoSinSeguro);
-
-
                 }
 
                 // Asignar propiedades necesarias a todos los empleados

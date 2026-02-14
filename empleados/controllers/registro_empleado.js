@@ -73,11 +73,6 @@ $(document).ready(function () {
         formatearMayusculas(this);
     });
 
-    // Formatear campos del dia de horario
-    $('input[name="horario_dia[]"]').each(function () {
-        formatearMayusculas(this);
-    });
-
     // Función para actualizar el total de porcentajes de beneficiarios
     function actualizarTotalPorcentaje() {
         let total = 0;
@@ -161,33 +156,14 @@ $(document).ready(function () {
         });
     };
 
-    // ---------------------------------------
+
+
+    // ====================================================================================================================================
+    // ====================================================================================================================================
+
+    // =======================================
     // Funciones para obtener datos de selects
-    // ---------------------------------------
-
-    //Funcion para obtener los departamentos
-    function obtenerDepartamentos() {
-        $.ajax({
-            type: "GET",
-            url: rutaRaiz + "public/php/obtenerDepartamentos.php",
-            success: function (response) {
-                let departamentos = JSON.parse(response);
-                let opciones = `<option value="">Selecciona un departamento</option>`;
-
-                departamentos.forEach((element) => {
-                    opciones += `
-        <option value="${element.id_departamento}">${element.nombre_departamento}</option>
-      `;
-                });
-
-                // Asegúrate de usar el ID correcto del select
-                $("#departamento_trabajador").html(opciones);
-            },
-            error: function () {
-
-            }
-        });
-    }
+    // =======================================
 
     //Funcion para obtener las Areas
     function obtenerAreas() {
@@ -213,6 +189,104 @@ $(document).ready(function () {
         });
     }
 
+    //Funcion para obtener los departamentos (con filtro opcional por área)
+    function obtenerDepartamentos(idArea = null) {
+        let ajaxConfig = {
+            url: rutaRaiz + "public/php/obtenerDepartamentos.php",
+            success: function (response) {
+                let departamentos = JSON.parse(response);
+                let opciones = `<option value="">Selecciona un departamento</option>`;
+
+                departamentos.forEach((element) => {
+                    opciones += `
+                        <option value="${element.id_departamento}">${element.nombre_departamento}</option>
+                    `;
+                });
+
+                $("#departamento_trabajador").html(opciones);
+            },
+            error: function () {
+                console.error('Error al obtener departamentos');
+            }
+        };
+
+        // Si se proporciona idArea, hacer POST con filtro
+        if (idArea) {
+            ajaxConfig.type = "POST";
+            ajaxConfig.data = { id_area: idArea };
+        } else {
+            ajaxConfig.type = "GET";
+        }
+
+        $.ajax(ajaxConfig);
+    }
+
+    //Funcion para obtener los puestos (con filtro opcional por departamento)
+    function obtenerPuesto(idDepartamento = null) {
+        let ajaxConfig = {
+            url: rutaRaiz + "public/php/obtenerPuestos.php",
+            success: function (response) {
+                let puestos = JSON.parse(response);
+                let opciones = `<option value="">Selecciona un puesto</option>`;
+
+                puestos.forEach((element) => {
+                    opciones += `<option value="${element.id_puestoEspecial}">${element.nombre_puesto}</option>`;
+                });
+
+                $("#puesto_trabajador").html(opciones);
+            },
+            error: function (error) {
+                console.error('Error al obtener puestos:', error);
+            }
+        };
+
+        // Si se proporciona idDepartamento, hacer POST con filtro
+        if (idDepartamento) {
+            ajaxConfig.type = "POST";
+            ajaxConfig.data = { id_departamento: idDepartamento };
+        } else {
+            ajaxConfig.type = "GET";
+        }
+
+        $.ajax(ajaxConfig);
+    }
+
+    // ===================================================
+    // Evento: Cuando se selecciona un área
+    // ===================================================
+    $(document).on('change', '#area_trabajador', function() {
+        const idArea = $(this).val();
+        
+        if (idArea) {
+            // Se habilita el select de depa y se llena
+            $('#departamento_trabajador').prop('disabled', false);
+            obtenerDepartamentos(idArea);
+            
+            // Limpiar y deshabilitar el select de puestos
+            $('#puesto_trabajador').html('<option value="">Selecciona un puesto</option>').prop('disabled', true);
+        } else {
+            // Si no hay area seleccionada, deshabilitar ambos selects
+            $('#departamento_trabajador').html('<option value="">Selecciona un departamento</option>').prop('disabled', true);
+            $('#puesto_trabajador').html('<option value="">Selecciona un puesto</option>').prop('disabled', true);
+        }
+    });
+
+    // ===================================================
+    // Evento: Cuando se selecciona un departamento
+    // ===================================================
+    $(document).on('change', '#departamento_trabajador', function() {
+        const idDepartamento = $(this).val();
+        
+        if (idDepartamento) {
+            // Aqui es disabled y lleno el select de puestos
+            $('#puesto_trabajador').prop('disabled', false);
+            obtenerPuesto(idDepartamento);
+        } else {
+            // Si no hay departamento seleccionado, deshabilitar el select de puestos
+            $('#puesto_trabajador').html('<option value="">Selecciona un puesto</option>').prop('disabled', true);
+        }
+    });
+
     //Funcion para obtener las Areas
     function obtenerEmpresa() {
         $.ajax({
@@ -237,29 +311,7 @@ $(document).ready(function () {
         });
     }
 
-    //Funcion para obtener las Areas
-    function obtenerPuesto() {
-        $.ajax({
-            type: "GET",
-            url: rutaRaiz + "public/php/obtenerPuestos.php",
-            success: function (response) {
-                let puestos = JSON.parse(response);
-                let opciones = `<option value="">Selecciona un puesto</option>`;
 
-                puestos.forEach((element) => {
-                    opciones += `
-                                 <option value="${element.id_puestoEspecial}">${element.nombre_puesto}</option>
-                                     `;
-                });
-
-                // Asegúrate de usar el ID correcto del select
-                $("#puesto_trabajador").html(opciones);
-            },
-            error: function () {
-
-            }
-        });
-    }
 
     // ====================================================================================================================================
     // ====================================================================================================================================
@@ -617,6 +669,8 @@ $(document).ready(function () {
         actualizarTotalPorcentaje();
     }
 
+
+
     // ====================================================================================================================================
     // ====================================================================================================================================
 
@@ -633,13 +687,17 @@ $(document).ready(function () {
         }
     });
 
+
+
     // ====================================================================================================================================
     // ====================================================================================================================================
 
     // ============================================================
     // Todos los eventos relacionados con los Horiarios Biometricos
     // ============================================================
-    $(document).on('click', '#btnCopiarHorarios', function () {
+
+    $(document).on('click', '#btnCopiarHorarios', function (e) {
+        e.preventDefault();
         // Obtener valores del formulario de referencia
         const entrada = $('#ref_entrada').val();
         const salidaComida = $('#ref_salida_comida').val();
@@ -670,12 +728,14 @@ $(document).ready(function () {
     });
 
 
+
     // ====================================================================================================================================
     // ====================================================================================================================================
 
-    // =================================================
+    // ============================================================
     // Evento para copiar horarios de Oficiales
-    // =================================================
+    // ============================================================
+
     $(document).on('click', '#btnCopiarHorariosOficial', function () {
         // Obtener valores del formulario de referencia
         const entrada = $('#ref_entrada_oficial').val();

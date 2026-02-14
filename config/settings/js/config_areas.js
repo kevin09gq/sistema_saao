@@ -148,6 +148,8 @@ function registrarArea() {
                         // Recargar la lista de áreas
                         getAreas();
                         
+                        getObtenerAreasSelect();
+                        
                         // Mostrar mensaje de éxito con SweetAlert2
                         let mensaje = accion === "registrarArea" ? 
                             "Área registrada correctamente" : 
@@ -256,6 +258,7 @@ function eliminarArea() {
                                 confirmButtonColor: '#22c55e'
                             });
                             getAreas();
+                            getObtenerAreasSelect();
                         } else if (resultado == "2") {
                             Swal.fire({
                                 icon: 'error',

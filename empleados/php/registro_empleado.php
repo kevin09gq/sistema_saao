@@ -109,16 +109,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         $sql->close();
 
-        // =============================
+        // ====================================
         //  VALIDAR NÚMERO BIOMÉTRICO
-        // =============================
+        // ====================================
         if (!empty($biometrico)) {
-            $sqlBiometrico = $conexion->prepare("SELECT id_empleado FROM info_empleados WHERE biometrico = ?");
+            $sqlBiometrico = $conexion->prepare("SELECT id_empleado FROM info_empleados WHERE biometrico = ? AND id_area = ?");
             if (!$sqlBiometrico) {
                 throw new Exception("Error al preparar consulta de verificación biométrica: " . $conexion->error);
             }
 
-            $sqlBiometrico->bind_param("i", $biometrico);
+            $sqlBiometrico->bind_param("ii", $biometrico, $id_area);
             $sqlBiometrico->execute();
             $resultadoBiometrico = $sqlBiometrico->get_result();
 
@@ -126,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $respuesta = array(
                     "success" => false,
                     "title" => "ADVERTENCIA",
-                    "text" => "El número biométrico ya está registrado a otro empleado.",
+                    "text" => "El número biométrico ya está registrado a otro empleado para esta Área.",
                     "type" => "warning",
                     "timeout" => 3000,
                 );

@@ -23,7 +23,7 @@ verificarSesion(); // Proteger esta página
     <?php include("../../../public/views/navbar.php"); ?>
 
     <div class="container mt-4">
-        <div class="card main-card">
+        <div class="card main-card mb-5">
             <div class="card-header">
                 <h4 class="form-section-title">
                     <i class="bi bi-gear-fill section-icon"></i>
@@ -33,19 +33,20 @@ verificarSesion(); // Proteger esta página
             <div class="card-body">
                 <!-- Pestañas de navegación -->
                 <ul class="nav nav-tabs" id="configTabs" role="tablist">
+
                     <li class="nav-item" role="presentation">
-                        <a class="nav-link active" id="departamentos-tab" data-bs-toggle="tab" href="#departamentos" role="tab">
+                        <a class="nav-link active" id="areas-tab" data-bs-toggle="tab" href="#areas" role="tab">
+                            <i class="bi bi-diagram-3"></i> Áreas
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="departamentos-tab" data-bs-toggle="tab" href="#departamentos" role="tab">
                             <i class="bi bi-building"></i> Departamentos
                         </a>
                     </li>
                     <li class="nav-item" role="presentation">
                         <a class="nav-link" id="puestos-tab" data-bs-toggle="tab" href="#puestos" role="tab">
                             <i class="bi bi-briefcase"></i> Puestos
-                        </a>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <a class="nav-link" id="areas-tab" data-bs-toggle="tab" href="#areas" role="tab">
-                            <i class="bi bi-diagram-3"></i> Áreas
                         </a>
                     </li>
 
@@ -88,116 +89,9 @@ verificarSesion(); // Proteger esta página
 
                 <!-- Contenido de las pestañas -->
                 <div class="tab-content" id="configTabsContent">
-                    <!-- DEPARTAMENTOS - Simplificado -->
-                    <div class="tab-pane fade show active" id="departamentos" role="tabpanel">
-                        <div class="row mt-4">
-                            <div class="col-md-7" id="departamentos-list-container">
-                                <div class="table-container" id="departamentos-table-container">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h5><i class="bi bi-list-ul"></i> Lista de Departamentos</h5>
-                                        <div class="search-box-container">
-                                            <input type="text" class="search-box" id="search-departamentos" placeholder="Buscar departamento...">
-                                        </div>
-                                    </div>
-                                    <div class="table-responsive" id="departamentos-table-responsive">
-                                        <table class="table table-hover" id="tabla-departamentos">
-                                            <thead>
-                                                <tr>
-                                                    <th>ID</th>
-                                                    <th>Nombre</th>
-                                                    <th>Acciones</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="departamentos-tbody">
-                                                <!-- Ejemplo de registros -->
-
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-5">
-                                <div class="form-container">
-                                    <h5 class="mb-3"><i class="bi bi-plus-circle"></i> Agregar Departamento</h5>
-                                    <form id="departamentoForm">
-                                        <input type="hidden" id="departamento_id" name="departamento_id">
-                                        <div class="mb-3">
-                                            <label for="nombre_departamento" class="form-label">Nombre del Departamento</label>
-                                            <input type="text" class="form-control" id="nombre_departamento" name="nombre_departamento" required>
-                                        </div>
-                                        <div class="form-actions">
-                                            <button type="submit" class="btn btn-success" id="btn-guardar-departamento"><i class="bi bi-save"></i> Guardar</button>
-                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-departamento"><i class="bi bi-x-circle"></i> Cancelar</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- PUESTOS - Simplificado -->
-                    <div class="tab-pane fade" id="puestos" role="tabpanel">
-                        <div class="row mt-4">
-                            <div class="col-md-7" id="puestos-list-container">
-                                <div class="table-container" id="puestos-table-container">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h5><i class="bi bi-list-ul"></i> Lista de Puestos</h5>
-                                        <div class="search-box-container">
-                                            <input type="text" class="search-box" id="search-puestos" placeholder="Buscar puesto...">
-                                        </div>
-                                    </div>
-                                    <div class="table-responsive" id="puestos-table-responsive">
-                                        <table class="table table-hover" id="tabla-puestos">
-                                            <thead>
-                                                <tr>
-                                                    <th>ID</th>
-                                                    <th>Nombre</th>
-                                                    <th>Acciones</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="puestos-tbody">
-                                                <!-- Ejemplo de registros -->
-
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-5">
-                                <div class="form-container">
-                                    <h5 class="mb-3"><i class="bi bi-plus-circle"></i> Agregar Puesto</h5>
-                                    <form id="puestoForm">
-                                        <input type="hidden" id="puesto_id" name="puesto_id">
-                                        <div class="mb-3">
-                                            <label for="nombre_puesto" class="form-label">Nombre del Puesto</label>
-                                            <input type="text" class="form-control" id="nombre_puesto" name="nombre_puesto" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="direccion_puesto" class="form-label">Dirección del Puesto</label>
-                                            <input type="text" class="form-control" id="direccion_puesto" name="direccion_puesto">
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="color_hex" class="form-label">Color (Hexadecimal)</label>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <input type="color" class="form-control form-control-color" id="color_picker" value="#000000" title="Elige un color">
-                                                <input type="text" class="form-control" id="color_hex" name="color_hex" placeholder="#000000" maxlength="7">
-                                            </div>
-                                            <small class="text-muted">Formato #RRGGBB. Puedes elegir con el selector o escribir el valor.</small>
-                                        </div>
-
-                                        <div class="form-actions">
-                                            <button type="submit" class="btn btn-success" id="btn-guardar-puesto"><i class="bi bi-save"></i> Guardar</button>
-                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-puesto"><i class="bi bi-x-circle"></i> Cancelar</button>
-
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
                     <!-- ÁREAS - Con gestión de imágenes -->
-                    <div class="tab-pane fade" id="areas" role="tabpanel">
+                    <div class="tab-pane fade show active" id="areas" role="tabpanel">
                         <div class="row mt-4">
                             <div class="col-md-7" id="areas-list-container">
                                 <div class="table-container" id="areas-table-container">
@@ -251,6 +145,189 @@ verificarSesion(); // Proteger esta página
                                     </form>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- DEPARTAMENTOS - Simplificado -->
+                    <div class="tab-pane fade " id="departamentos" role="tabpanel">
+                        <div class="row mt-4">
+                            <!-- Tabla -->
+                            <div class="col-md-7" id="departamentos-list-container">
+                                <div class="table-container" id="departamentos-table-container">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5><i class="bi bi-list-ul"></i> Lista de Departamentos</h5>
+                                        <div class="search-box-container">
+                                            <input type="text" class="search-box" id="search-departamentos" placeholder="Buscar departamento...">
+                                        </div>
+                                    </div>
+                                    <div class="table-responsive" id="departamentos-table-responsive">
+                                        <table class="table table-hover" id="tabla-departamentos">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Nombre</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="departamentos-tbody">
+                                                <!-- Ejemplo de registros -->
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Formulario -->
+                            <div class="col-md-5">
+                                <div class="form-container">
+                                    <h5 class="mb-3"><i class="bi bi-plus-circle"></i> Agregar Departamento</h5>
+                                    <form id="departamentoForm">
+                                        <input type="hidden" id="departamento_id" name="departamento_id">
+                                        <div class="mb-3">
+                                            <label for="nombre_departamento" class="form-label">Nombre del Departamento</label>
+                                            <input type="text" class="form-control" id="nombre_departamento" name="nombre_departamento" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="id_area_departamento" class="form-label">Área perteneciente</label>
+                                            <select class="form-select" name="id_area_departamento" id="id_area_departamento">
+                                                <!-- Se llenará dinámicamente con las áreas disponibles -->
+                                            </select>
+                                        </div>
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn btn-success" id="btn-guardar-departamento"><i class="bi bi-save"></i> Guardar</button>
+                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-departamento"><i class="bi bi-x-circle"></i> Cancelar</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PUESTOS - Simplificado -->
+                    <div class="tab-pane fade" id="puestos" role="tabpanel">
+                        <div class="row mt-4">
+
+                            <!-- Tabla para listar los puestos -->
+                            <div class="col-md-7" id="puestos-list-container">
+                                <div class="table-container" id="puestos-table-container">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5><i class="bi bi-list-ul"></i> Lista de Puestos</h5>
+                                        <div class="search-box-container">
+                                            <input type="text" class="search-box" id="search-puestos" placeholder="Buscar puesto...">
+                                        </div>
+                                    </div>
+                                    <div class="table-responsive" id="puestos-table-responsive">
+                                        <table class="table table-hover" id="tabla-puestos">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Nombre</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="puestos-tbody">
+                                                <!-- Ejemplo de registros -->
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Formulario para nuevo puesto -->
+                            <div class="col-md-5">
+                                <div class="form-container">
+                                    <h5 class="mb-3"><i class="bi bi-plus-circle"></i> Agregar Puesto</h5>
+                                    <form id="puestoForm">
+                                        <input type="hidden" id="puesto_id" name="puesto_id">
+                                        <div class="mb-3">
+                                            <label for="nombre_puesto" class="form-label">Nombre del Puesto</label>
+                                            <input type="text" class="form-control" id="nombre_puesto" name="nombre_puesto" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="direccion_puesto" class="form-label">Dirección del Puesto</label>
+                                            <input type="text" class="form-control" id="direccion_puesto" name="direccion_puesto">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="color_hex" class="form-label">Color (Hexadecimal)</label>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <input type="color" class="form-control form-control-color" id="color_picker" value="#000000" title="Elige un color">
+                                                <input type="text" class="form-control" id="color_hex" name="color_hex" placeholder="#000000" maxlength="7">
+                                            </div>
+                                            <small class="text-muted">Formato #RRGGBB. Puedes elegir con el selector o escribir el valor.</small>
+                                        </div>
+
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn btn-success" id="btn-guardar-puesto"><i class="bi bi-save"></i> Guardar</button>
+                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-puesto"><i class="bi bi-x-circle"></i> Cancelar</button>
+
+                                        </div>
+                                    </form>
+                                </div>
+
+                            </div>
+
+                            <hr class="my-3">
+
+                            <!-- Tabla para listar la relacion de puestos y departamentos -->
+                            <div class="col-md-7" id="departamentos-puestos-list-container">
+                                <div class="table-container" id="departamentos-puestos-table-container">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5><i class="bi bi-list-ul"></i> Lista de relaciones</h5>
+                                        <div class="search-box-container">
+                                            <input type="text" class="search-box" id="search-departamentos-puestos" placeholder="Buscar relación...">
+                                        </div>
+                                    </div>
+                                    <div class="table-responsive" id="departamentos-puestos-table-responsive">
+                                        <table class="table table-hover" id="tabla-departamentos-puestos">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Departamento</th>
+                                                    <th>Puesto</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="departamentos-puestos-tbody">
+                                                <!-- Ejemplo de registros -->
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Formulario para relacionar un puesto con un departamento -->
+                            <div class="col-md-5">
+                                <div class="form-container">
+                                    <h5 class="mb-3"><i class="bi bi-plus-circle"></i> Asignar puesto a departamento</h5>
+                                    <form id="departamento-puesto-form">
+
+                                        <input type="hidden" id="departamento_puesto_id" name="departamento_puesto_id">
+
+                                        <div class="mb-3">
+                                            <label for="select_departamento" class="form-label">Departamento</label>
+                                            <select class="form-select" name="select_departamento" id="select_departamento">
+                                                <!-- Se llenará dinámicamente con las áreas disponibles -->
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="select_puesto" class="form-label">Puesto</label>
+                                            <select class="form-select" name="select_puesto" id="select_puesto">
+                                                <!-- Se llenará dinámicamente con las áreas disponibles -->
+                                            </select>
+                                        </div>
+
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn btn-success" id="btn-guardar-departamento-puesto"><i class="bi bi-save"></i> Guardar</button>
+                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-departamento-puesto"><i class="bi bi-x-circle"></i> Cancelar</button>
+
+                                        </div>
+                                    </form>
+                                </div>
+
+                            </div>
+
                         </div>
                     </div>
 
@@ -587,6 +664,8 @@ verificarSesion(); // Proteger esta página
                 </div>
             </div>
         </div>
+        <br>
+        <br>
     </div>
 
     <!-- Modal para mostrar la imagen del área -->

@@ -190,13 +190,13 @@ verificarSesion();
                                         </div>
                                         <div class="col-md-3 mb-3">
                                             <label for="departamento_trabajador" class="form-label">Departamento</label>
-                                            <select class="form-select" id="departamento_trabajador" name="id_departamento">
+                                            <select class="form-select" id="departamento_trabajador" name="id_departamento" disabled>
                                                 <option value="">Selecciona un departamento</option>
                                             </select>
                                         </div>
                                         <div class="col-md-3 mb-3">
                                             <label for="puesto_trabajador" class="form-label">Puesto</label>
-                                            <select class="form-select" id="puesto_trabajador" name="id_puesto">
+                                            <select class="form-select" id="puesto_trabajador" name="id_puesto" disabled>
                                                 <option value="">Selecciona un puesto</option>
                                             </select>
                                         </div>
@@ -337,8 +337,8 @@ verificarSesion();
                                                 </div>
                                             </div>
 
-                                            <table class="table table-bordered table-hover">
-                                                <thead class="table-light">
+                                            <table class="table table-borderless">
+                                                <thead>
                                                     <tr>
                                                         <th>Día</th>
                                                         <th>Entrada</th>
@@ -467,6 +467,7 @@ verificarSesion();
                                         </div>
                                     </div>
                                 </div>
+
                             </div>
 
                             <!-- Botones de acción -->
