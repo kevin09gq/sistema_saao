@@ -189,7 +189,7 @@
 
 
     <!-- Incluir el modal -->
-    <?php include "modalCoordinadorl.php"; ?>
+    <?php include "modalCoordinador.php"; ?>
 
 
 
@@ -207,7 +207,9 @@
     <script src="../js/storage.js"></script>
     <script src="../js/busquedaFiltrado.js"></script>
     <script src="../js/abrirModal.js"></script>
+    <script src="../js/configModalCoordinador/configModal.js"></script>
     <script src="../js/configModalCoordinador/establecerData.js"></script>
+    
 
 
 </body>

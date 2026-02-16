@@ -157,11 +157,12 @@ body {
 .form-control,
 .form-select {
     height: 42px;
-    padding: 0.75rem;
+   padding: 0 0.75rem;
     font-size: 0.95rem;
     border: 2px solid #e5e7eb;
     border-radius: 8px;
     transition: all 0.3s ease;
+    line-height: 1.5;
 }
 
 .form-control:focus,

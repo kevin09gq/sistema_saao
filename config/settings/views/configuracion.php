@@ -31,61 +31,110 @@ verificarSesion(); // Proteger esta página
                 </h4>
             </div>
             <div class="card-body">
+
+
                 <!-- Pestañas de navegación -->
-                <ul class="nav nav-tabs" id="configTabs" role="tablist">
+                <div class="row row-cols-1 row-cols-md-5 g-2" id="configTabs" role="tablist">
+                    <div class="col">
+                        <div class="card nav-link active" id="areas-tab"
+                            data-bs-toggle="tab" data-bs-target="#areas"
+                            role="tab" aria-controls="areas" aria-selected="true">
+                            <div class="card-body p-1">
+                                <h6 class="card-title my-0"><i class="bi bi-diagram-3"></i> Áreas</h6>
+                            </div>
+                        </div>
+                    </div>
 
-                    <li class="nav-item" role="presentation">
-                        <a class="nav-link active" id="areas-tab" data-bs-toggle="tab" href="#areas" role="tab">
-                            <i class="bi bi-diagram-3"></i> Áreas
-                        </a>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <a class="nav-link" id="departamentos-tab" data-bs-toggle="tab" href="#departamentos" role="tab">
-                            <i class="bi bi-building"></i> Departamentos
-                        </a>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <a class="nav-link" id="puestos-tab" data-bs-toggle="tab" href="#puestos" role="tab">
-                            <i class="bi bi-briefcase"></i> Puestos
-                        </a>
-                    </li>
+                    <div class="col">
+                        <div class="card nav-link" id="departamentos-tab"
+                            data-bs-toggle="tab" data-bs-target="#departamentos"
+                            role="tab" aria-controls="departamentos" aria-selected="false">
+                            <div class="card-body p-1">
+                                <h6 class="card-title my-0"><i class="bi bi-building"></i> Departamentos</h6>
+                            </div>
+                        </div>
+                    </div>
 
-                    <!-- Se agrego esto para los tunos -->
-                    <li class="nav-item" role="presentation">
-                        <a class="nav-link" id="turnos-tab" data-bs-toggle="tab" href="#turnos" role="tab">
-                            <i class="bi bi-clock-history"></i> Turnos
-                        </a>
-                    </li>
+                    <div class="col">
+                        <div class="card nav-link" id="puestos-tab"
+                            data-bs-toggle="tab" data-bs-target="#puestos"
+                            role="tab" aria-controls="puestos" aria-selected="false">
+                            <div class="card-body p-1">
+                                <h6 class="card-title my-0"><i class="bi bi-briefcase"></i> Puestos</h6>
+                            </div>
+                        </div>
+                    </div>
 
-                    <!-- Se agrego esto para los dias festivos -->
-                    <li class="nav-item" role="presentation">
-                        <a class="nav-link" id="festividades-tab" data-bs-toggle="tab" href="#festividades" role="tab">
-                            <i class="bi bi-calendar-date"></i> Festividades
-                        </a>
-                    </li>
+                    <div class="col">
+                        <div class="card nav-link" id="turnos-tab"
+                            data-bs-toggle="tab" data-bs-target="#turnos"
+                            role="tab" aria-controls="turnos" aria-selected="false">
+                            <div class="card-body p-1">
+                                <h6 class="card-title my-0"><i class="bi bi-clock-history"></i> Turnos</h6>
+                            </div>
+                        </div>
+                    </div>
 
+                    <div class="col">
+                        <div class="card nav-link" id="festividades-tab"
+                            data-bs-toggle="tab" data-bs-target="#festividades"
+                            role="tab" aria-controls="festividades" aria-selected="false">
+                            <div class="card-body p-1">
+                                <h6 class="card-title my-0"><i class="bi bi-calendar-date"></i> Festividades</h6>
+                            </div>
+                        </div>
+                    </div>
 
-                    <li class="nav-item" role="presentation">
-                        <a class="nav-link" id="empresas-tab" data-bs-toggle="tab" href="#empresas" role="tab">
-                            <i class="bi bi-building-fill"></i> Empresas
-                        </a>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <a class="nav-link" id="tabulador-tab" data-bs-toggle="tab" href="#tabulador" role="tab">
-                            <i class="bi bi-table"></i> Tabulador
-                        </a>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <a class="nav-link" id="usuario-tab" data-bs-toggle="tab" href="#usuario" role="tab">
-                            <i class="bi bi-person-gear"></i> Usuario
-                        </a>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <a class="nav-link" id="exportar-importar-tab" data-bs-toggle="tab" href="#exportar-importar" role="tab">
-                            <i class="bi bi-database"></i> Exportar/Importar BD
-                        </a>
-                    </li>
-                </ul>
+                    <div class="col">
+                        <div class="card nav-link" id="empresas-tab"
+                            data-bs-toggle="tab" data-bs-target="#empresas"
+                            role="tab" aria-controls="empresas" aria-selected="false">
+                            <div class="card-body p-1">
+                                <h6 class="card-title my-0"><i class="bi bi-building-fill"></i> Empresas</h6>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="card nav-link" id="ranchos-tab"
+                            data-bs-toggle="tab" data-bs-target="#ranchos"
+                            role="tab" aria-controls="ranchos" aria-selected="false">
+                            <div class="card-body p-1">
+                                <h6 class="card-title my-0"><i class="bi bi-leaf-fill me-2"></i>Ranchos</h6>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="card nav-link" id="tabulador-tab"
+                            data-bs-toggle="tab" data-bs-target="#tabulador"
+                            role="tab" aria-controls="tabulador" aria-selected="false">
+                            <div class="card-body p-1">
+                                <h6 class="card-title my-0"><i class="bi bi-table"></i> Tabulador</h6>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="card nav-link" id="usuario-tab"
+                            data-bs-toggle="tab" data-bs-target="#usuario"
+                            role="tab" aria-controls="usuario" aria-selected="false">
+                            <div class="card-body p-1">
+                                <h6 class="card-title my-0"><i class="bi bi-person-gear"></i> Usuario</h6>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="card nav-link" id="exportar-importar-tab"
+                            data-bs-toggle="tab" data-bs-target="#exportar-importar"
+                            role="tab" aria-controls="exportar-importar" aria-selected="false">
+                            <div class="card-body p-1">
+                                <h6 class="card-title my-0"><i class="bi bi-database"></i> Exportar/Importar</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Contenido de las pestañas -->
                 <div class="tab-content" id="configTabsContent">
@@ -536,6 +585,188 @@ verificarSesion(); // Proteger esta página
                         </div>
                     </div>
 
+                    <!-- Ranchos -->
+                    <div class="tab-pane fade" id="ranchos" role="tabpanel">
+                        <div class="row mt-4">
+
+                            <div class="col-md-7" id="ranchos-list-container">
+                                <div class="table-container" id="ranchos-table-container">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5><i class="bi bi-list-ul me-2"></i>Información de los ranchos</h5>
+                                        <div class="search-box-container">
+                                            <input type="text" class="search-box" id="search-ranchos" placeholder="Buscar Ranchos...">
+                                        </div>
+                                    </div>
+                                    <div class="table-responsive" id="ranchos-table-responsive">
+                                        <table class="table table-hover" id="tabla-ranchos">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Rancho</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="ranchos-tbody">
+                                                <!-- Ejemplo de registros -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-5">
+                                <div class="form-container">
+                                    <h5 class="mb-3"><i class="bi bi-plus-circle"></i> Agregar Ranchos</h5>
+                                    <form id="ranchosForm">
+
+                                        <input type="number" id="id_info_rancho" hidden>
+
+                                        <div class="mb-3">
+                                            <label for="id_rancho" class="form-label">Seleccionar rancho:</label>
+                                            <select class="form-select" name="id_rancho" id="id_rancho">
+                                                <!-- Se llenará dinámicamente con los ranchos disponibles -->
+                                            </select>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-12 col-md-6 mb-3">
+                                                <label for="costo_jornal" class="form-label">Pago Jornal</label>
+                                                <input type="number" class="form-control" name="costo_jornal" id="costo_jornal" placeholder="Ingrese el pago jornal">
+                                            </div>
+                                            <div class="col-12 col-md-6 mb-3">
+                                                <label for="costo_tardeada" class="form-label">Pago Tardeada</label>
+                                                <input type="number" class="form-control" name="costo_tardeada" id="costo_tardeada" placeholder="Ingrese el pago tardeada">
+                                            </div>
+                                            <div class="col-12 col-md-6 mb-3">
+                                                <label for="costo_pasaje" class="form-label">Pago Pasaje</label>
+                                                <input type="number" class="form-control" name="costo_pasaje" id="costo_pasaje" placeholder="Ingrese el pago pasaje">
+                                            </div>
+                                            <div class="col-12 col-md-6 mb-3">
+                                                <label for="costo_comida" class="form-label">Pago Comida</label>
+                                                <input type="number" class="form-control" name="costo_comida" id="costo_comida" placeholder="Ingrese el pago comida">
+                                            </div>
+                                            <div class="col-12 col-md-6 mb-3">
+                                                <label for="num_arboles" class="form-label">Num. Árboles</label>
+                                                <input type="number" class="form-control" name="num_arboles" id="num_arboles" placeholder="Ingrese el número de árboles">
+                                            </div>
+                                            <div class="col-12 col-md-6 mb-3">
+
+                                                <label class="form-label">&nbsp;</label><br>
+                                                <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#modalHorarioJornaleros">
+                                                    <i class="bi bi-calendar3 me-2"></i>Horario jornalero
+                                                </button>
+
+                                                <!-- Modal para asignar el horario al jornalero -->
+                                                <div class="modal fade" id="modalHorarioJornaleros" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                                    <div class="modal-dialog modal-xl">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h1 class="modal-title fs-5" id="exampleModalLabel">Horario Jornalero</h1>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <div class="table-responsive">
+
+                                                                    <!-- Formulario para copiar -->
+                                                                    <div class="mb-4">
+                                                                        <div class="row g-2">
+                                                                            <div class="col">
+                                                                                <label class="form-label" for="ref_entrada">Entrada</label>
+                                                                                <input type="time" id="ref_entrada" class="form-control" placeholder="Entrada">
+                                                                            </div>
+                                                                            <div class="col">
+                                                                                <label class="form-label" for="ref_salida_comida">Salida Comida</label>
+                                                                                <input type="time" id="ref_salida_comida" class="form-control" placeholder="Salida Comida">
+                                                                            </div>
+                                                                            <div class="col">
+                                                                                <label class="form-label" for="ref_entrada_comida">Entrada Comida</label>
+                                                                                <input type="time" id="ref_entrada_comida" class="form-control" placeholder="Entrada Comida">
+                                                                            </div>
+                                                                            <div class="col">
+                                                                                <label class="form-label" for="ref_salida">Salida</label>
+                                                                                <input type="time" id="ref_salida" class="form-control" placeholder="Salida">
+                                                                            </div>
+                                                                            <div class="col-auto">
+                                                                                <label class="form-label" for="btnCopiarHorarios">&ensp;</label><br>
+                                                                                <button type="button" id="btnCopiarHorarios" class="btn btn-outline-primary my-auto" title="Copiar horarios"><i class="bi bi-copy"></i></button>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <!-- Tabla del horario -->
+                                                                    <table class="table table-borderless">
+                                                                        <thead>
+                                                                            <tr class="text-center">
+                                                                                <th>Día</th>
+                                                                                <th>Entrada</th>
+                                                                                <th>Salida Comida</th>
+                                                                                <th>Entrada Comida</th>
+                                                                                <th>Salida</th>
+                                                                                <th>Acciones</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody id="tbody_horarios">
+                                                                            <?php for ($i = 1; $i <= 7; $i++): ?>
+                                                                                <tr>
+                                                                                    <td>
+                                                                                        <!-- <input type="text" class="form-control" name="horario_dia[]" placeholder="Día"> -->
+                                                                                        <select class="form-select" name="horario_dia[]">
+                                                                                            <option selected value="">Seleccionar...</option>
+
+                                                                                            <?php foreach (DIAS_SEMANA as $dia): ?>
+                                                                                                <option value="<?php echo $dia; ?>"><?php echo $dia; ?></option>
+                                                                                            <?php endforeach; ?>
+
+                                                                                        </select>
+
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <input type="time" class="form-control" name="horario_entrada[]" placeholder="Entrada">
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <input type="time" class="form-control" name="horario_salida_comida[]" placeholder="Salida Comida">
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <input type="time" class="form-control" name="horario_entrada_comida[]" placeholder="Entrada Comida">
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <input type="time" class="form-control" name="horario_salida[]" placeholder="Salida">
+                                                                                    </td>
+                                                                                    <td class="text-center">
+
+                                                                                        <!-- Botón para limpiar la fila -->
+                                                                                        <button type="button" class="d-inline btn btn-danger btn-sm btn-eliminar-fila" title="Limpiar fila">
+                                                                                            <i class="bi bi-trash"></i>
+                                                                                        </button>
+
+                                                                                    </td>
+                                                                                </tr>
+                                                                            <?php endfor; ?>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+
+
+
+
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn btn-success" id="btn-guardar-rancho">Guardar</button>
+                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-rancho" onclick="resetearFormulario()">Cancelar</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
                     <!-- TABULADOR - Solo interfaz -->
                     <div class="tab-pane fade" id="tabulador" role="tabpanel">
                         <div class="row mt-4">
@@ -706,6 +937,52 @@ verificarSesion(); // Proteger esta página
         </div>
     </div>
 
+    <!-- Modal para ver los detalles de la información del rancho -->
+    <div class="modal fade" id="modalInfoRancho" tabindex="-1" aria-labelledby="modalInfoRanchoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="modalInfoRanchoLabel">Detalles de la información del rancho</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive mb-4">
+                        <h6 class="mb-3">Información general</h6>
+                        <table class="table table-hover table-bordered shadow-sm">
+                            <thead>
+                                <tr class="text-center">
+                                    <th>Rancho</th>
+                                    <th>Jornal</th>
+                                    <th>Tardeada</th>
+                                    <th>Pasaje</th>
+                                    <th>Comida</th>
+                                    <th>N.árboles</th>
+                                </tr>
+                            </thead>
+                            <tbody id="body-info-rancho"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="table-responsive">
+                        <h6 class="mb-3">Horarios de los jornaleros</h6>
+                        <table class="table table-hover table-bordered shadow-sm">
+                            <thead>
+                                <tr class="text-center">
+                                    <th>Día</th>
+                                    <th>Entrada</th>
+                                    <th>Salida Comida</th>
+                                    <th>Entrada Comida</th>
+                                    <th>Salida</th>
+                                </tr>
+                            </thead>
+                            <tbody id="body-rancho-horario-jornaleros"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
     <!-- Bootstrap JS -->
@@ -719,6 +996,7 @@ verificarSesion(); // Proteger esta página
     <!-- Agregue este js para los turnos -->
     <script src="../js/config_turnos.js"></script>
     <script src="../js/config_festividades.js"></script>
+    <script src="../js/config_ranchos.js"></script>
 
     <script src="../js/config_empresas.js"></script>
     <script src="../js/obtener_tabulador.js"></script>

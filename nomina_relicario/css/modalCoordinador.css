@@ -111,3 +111,44 @@
 @media (max-width:768px){
   .evento-card .evento-content{max-height:140px}
 }
+
+/* Línea separadora entre las tablas y la sección de eventos */
+.table-container + .eventos-especiales-container{
+  border-top:1px solid #e9ecef;
+  padding-top:1rem;
+  margin-top:1rem;
+}
+
+/* Scrollbar más delgado para modal y contenedores de tabla */
+#modal-coordinadores .modal-body,
+#modal-coordinadores .table-container,
+#modal-coordinadores .eventos-especiales-container{
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: rgba(16,24,40,0.35) transparent;
+}
+
+/* WebKit (Chrome, Edge, Safari) */
+#modal-coordinadores .modal-body::-webkit-scrollbar,
+#modal-coordinadores .table-container::-webkit-scrollbar,
+#modal-coordinadores .eventos-especiales-container::-webkit-scrollbar{
+  width: 8px;
+  height: 8px;
+}
+#modal-coordinadores .modal-body::-webkit-scrollbar-track,
+#modal-coordinadores .table-container::-webkit-scrollbar-track,
+#modal-coordinadores .eventos-especiales-container::-webkit-scrollbar-track{
+  background: transparent;
+}
+#modal-coordinadores .modal-body::-webkit-scrollbar-thumb,
+#modal-coordinadores .table-container::-webkit-scrollbar-thumb,
+#modal-coordinadores .eventos-especiales-container::-webkit-scrollbar-thumb{
+  background-color: rgba(16,24,40,0.35);
+  border-radius: 8px;
+  border: 2px solid transparent; /* crea espacio alrededor del thumb */
+  background-clip: padding-box;
+}
+#modal-coordinadores .modal-body::-webkit-scrollbar-thumb:hover,
+#modal-coordinadores .table-container::-webkit-scrollbar-thumb:hover,
+#modal-coordinadores .eventos-especiales-container::-webkit-scrollbar-thumb:hover{
+  background-color: rgba(16,24,40,0.55);
+}

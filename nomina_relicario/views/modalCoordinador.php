@@ -50,7 +50,7 @@
                         </div>
 
                         <!-- Tabla de Registros del Biometrico -->
-                        <div class="table-container" id="tabla-biometrico-coordinadores" hidden>
+                        <div class="table-container" id="tabla-biometrico-coordinadores">
                             <table class=" custom-table">
                                 <thead>
                                     <tr>
@@ -68,7 +68,7 @@
                         </div>
 
                         <!-- Tabla de Registros BD -->
-                        <div class="table-container" id="tabla-horarios-oficiales-coordinadores">
+                        <div class="table-container" id="tabla-horarios-oficiales-coordinadores" hidden>
                             <!-- Campos de entrada rápida para copiar a todos los días -->
                             <div class="card bg-light mb-3">
                                 <div class="card-body">
