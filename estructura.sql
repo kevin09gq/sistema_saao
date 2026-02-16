@@ -226,8 +226,22 @@ CREATE TABLE horarios_oficiales (
 CREATE TABLE nomina_confianza (
     id_nomina_confianza INT AUTO_INCREMENT PRIMARY KEY,
     id_empresa INT NOT NULL,
+    anio INT NOT NULL,
     numero_semana INT NOT NULL,
     nomina LONGTEXT NOT NULL,
+    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
+);
+
+-- =============================
+-- TABLAS DE NÓMINA RELICARIO
+-- =============================
+
+CREATE TABLE nomina_relicario (
+    id_nomina_relicario INT AUTO_INCREMENT PRIMARY KEY,
+    id_empresa INT NOT NULL,
+    anio INT NOT NULL,
+    numero_semana INT NOT NULL,
+    nomina_relicario LONGTEXT NOT NULL,
     FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
 );
 

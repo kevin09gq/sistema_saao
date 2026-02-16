@@ -36,10 +36,8 @@ switch ($_SERVER['REQUEST_METHOD']) {
         }
         break;
     case 'GET':
-        if (isset($_GET['case']) && $_GET['case'] === 'obtenerJornaleros') {
-            obtenerJornaleros();
-        } else if (isset($_GET['case']) && $_GET['case'] === 'obtenerCoordinadores') {
-            obtenerCoordinadores();
+        if (isset($_GET['case']) && $_GET['case'] === 'obtenerJornalerosCoordinadores') {
+            obtenerJornalerosCoordinadores();
         } else if (isset($_GET['case']) && $_GET['case'] === 'validarEmpleadosSinSeguroBiometrico') {
             validarEmpleadosSinSeguroBiometrico();
         } else {
@@ -75,22 +73,35 @@ function validarExistenciaTrabajador()
     }
     $clavesString = implode(',', $valores);
 
-    // Consultar empleados existentes
-    $sql = "SELECT clave_empleado, nombre, ap_paterno, ap_materno, salario_semanal, salario_diario, id_empresa, id_departamento, id_puestoEspecial FROM info_empleados WHERE clave_empleado IN ($clavesString) AND id_status = 1 AND id_empresa = 1 ";
+    // Consultar empleados existentes con LEFT JOIN a horarios_oficiales
+    $sql = "SELECT ie.id_empleado, ie.clave_empleado, ie.nombre, ie.ap_paterno, ie.ap_materno, ie.biometrico, ie.salario_semanal, ie.salario_diario, ie.id_empresa, ie.id_departamento, ie.id_puestoEspecial, ho.horario_oficial 
+            FROM info_empleados ie 
+            LEFT JOIN horarios_oficiales ho ON ie.id_empleado = ho.id_empleado
+            WHERE ie.clave_empleado IN ($clavesString) AND ie.id_status = 1 AND ie.id_empresa = 1";
     $result = mysqli_query($conexion, $sql);
 
     // Procesar resultados
     if ($result) {
         while ($row = mysqli_fetch_assoc($result)) {
-            $clavesExistentes[] = [
+            $empleado = [
                 'clave' => $row['clave_empleado'],
                 'id_empresa' => $row['id_empresa'],
                 'id_departamento' => $row['id_departamento'],
                 'id_puestoEspecial' => $row['id_puestoEspecial'],
                 'salario_semanal' => $row['salario_semanal'],
                 'salario_diario' => $row['salario_diario'],
-                'nombre' => $row['nombre'] . ' ' . $row['ap_paterno'] . ' ' . $row['ap_materno']
+                'nombre' => $row['nombre'] . ' ' . $row['ap_paterno'] . ' ' . $row['ap_materno'],
+                'biometrico' => $row['biometrico']
             ];
+            
+            // Agregar horario_oficial solo si id_departamento es 6 y existe
+            if ($row['id_departamento'] == 6 && isset($row['horario_oficial']) && $row['horario_oficial'] !== null) {
+                // Decodificar el JSON string a objeto/array
+                $horario = json_decode($row['horario_oficial'], true);
+                $empleado['horario_oficial'] = $horario !== null ? $horario : $row['horario_oficial'];
+            }
+            
+            $clavesExistentes[] = $empleado;
         }
 
         echo json_encode([
@@ -150,7 +161,7 @@ function validarExistenciaTrabajadorBD()
     }
 }
 
-function obtenerJornaleros()
+function obtenerJornalerosCoordinadores()
 {
     global $conexion;
 
@@ -163,14 +174,15 @@ function obtenerJornaleros()
         return;
     }
 
-    // Consultar empleados sin seguro
-    $sql = "SELECT clave_empleado, nombre, ap_paterno, ap_materno, id_empresa, id_departamento, id_puestoEspecial
-            FROM info_empleados
-            WHERE id_status = 1
-            AND id_empresa = 1
-            AND id_departamento = 7
-            AND status_nss = 0
-            ORDER BY nombre ASC";
+    // Consultar empleados sin seguro con LEFT JOIN a horarios_oficiales
+    $sql = "SELECT ie.id_empleado, ie.clave_empleado, ie.nombre, ie.ap_paterno, ie.ap_materno, ie.biometrico, ie.id_empresa, ie.id_departamento, ie.id_puestoEspecial, ho.horario_oficial
+            FROM info_empleados ie
+            LEFT JOIN horarios_oficiales ho ON ie.id_empleado = ho.id_empleado
+            WHERE ie.id_status = 1
+            AND ie.id_empresa = 1
+            AND ie.id_departamento IN (6,7)
+            AND ie.status_nss = 0
+            ORDER BY ie.nombre ASC";
 
     $result = mysqli_query($conexion, $sql);
 
@@ -178,15 +190,25 @@ function obtenerJornaleros()
     $empleados = [];
     if ($result) {
         while ($row = mysqli_fetch_assoc($result)) {
-            $empleados[] = [
+            $empleado = [
                 'clave' => $row['clave_empleado'],
                 'nombre' => $row['nombre'],
                 'ap_paterno' => $row['ap_paterno'],
                 'ap_materno' => $row['ap_materno'],
                 'id_empresa' => $row['id_empresa'],
                 'id_departamento' => $row['id_departamento'],
-                'id_puestoEspecial' => $row['id_puestoEspecial']
+                'id_puestoEspecial' => $row['id_puestoEspecial'],
+                'biometrico' => $row['biometrico']
             ];
+            
+            // Agregar horario_oficial solo si id_departamento es 6 y existe
+            if ($row['id_departamento'] == 6 && isset($row['horario_oficial']) && $row['horario_oficial'] !== null) {
+                // Decodificar el JSON string a objeto/array
+                $horario = json_decode($row['horario_oficial'], true);
+                $empleado['horario_oficial'] = $horario !== null ? $horario : $row['horario_oficial'];
+            }
+            
+            $empleados[] = $empleado;
         }
 
         echo json_encode([
@@ -200,55 +222,6 @@ function obtenerJornaleros()
     }
 }
 
-function obtenerCoordinadores()
-{
-    global $conexion;
-
-    // Verificar conexión
-    if (!$conexion) {
-        echo json_encode([
-            'error' => 'Error de conexión a la base de datos',
-            'empleados' => []
-        ]);
-        return;
-    }
-
-    // Consultar empleados sin seguro
-    $sql = "SELECT  clave_empleado, nombre, ap_paterno, ap_materno, id_empresa, id_departamento, id_puestoEspecial
-            FROM info_empleados
-            WHERE id_status = 1
-            AND id_empresa = 1
-            AND id_departamento = 6
-            AND status_nss = 0
-            ORDER BY nombre ASC";
-
-    $result = mysqli_query($conexion, $sql);
-
-    // Procesar resultados
-    $empleados = [];
-    if ($result) {
-        while ($row = mysqli_fetch_assoc($result)) {
-            $empleados[] = [
-                'clave' => $row['clave_empleado'],
-                'nombre' => $row['nombre'],
-                'ap_paterno' => $row['ap_paterno'],
-                'ap_materno' => $row['ap_materno'],
-                'id_empresa' => $row['id_empresa'],
-                'id_departamento' => $row['id_departamento'],
-                'id_puestoEspecial' => $row['id_puestoEspecial']
-            ];
-        }
-
-        echo json_encode([
-            'empleados' => $empleados
-        ], JSON_UNESCAPED_UNICODE);
-    } else {
-        echo json_encode([
-            'error' => 'Error en la consulta: ' . mysqli_error($conexion),
-            'empleados' => []
-        ]);
-    }
-}
 
 function validarEmpleadosSinSeguroBiometrico()
 {
@@ -281,14 +254,15 @@ function validarEmpleadosSinSeguroBiometrico()
     }
     $biometricosString = implode(',', $valores);
 
-    // Consultar empleados sin seguro que coincidan con biometricos
-    $sql = "SELECT clave_empleado, nombre, ap_paterno, ap_materno, id_empresa, biometrico
-            FROM info_empleados
-            WHERE biometrico IN ($biometricosString)
-            AND id_status = 1
-            AND id_empresa = 1
-            AND id_departamento IN (4, 5)
-            AND status_nss = 0";
+    // Consultar empleados sin seguro con LEFT JOIN a horarios_oficiales
+    $sql = "SELECT ie.id_empleado, ie.clave_empleado, ie.nombre, ie.ap_paterno, ie.ap_materno, ie.biometrico, ie.id_empresa, ie.id_departamento, ie.id_puestoEspecial, ho.horario_oficial
+            FROM info_empleados ie
+            LEFT JOIN horarios_oficiales ho ON ie.id_empleado = ho.id_empleado
+            WHERE ie.id_status = 1
+            AND ie.id_empresa = 1
+            AND ie.id_departamento IN (6, 7)
+            AND ie.status_nss = 0
+            ORDER BY ie.nombre ASC";
 
     $result = mysqli_query($conexion, $sql);
 
@@ -296,14 +270,25 @@ function validarEmpleadosSinSeguroBiometrico()
     $empleados = [];
     if ($result) {
         while ($row = mysqli_fetch_assoc($result)) {
-            $empleados[] = [
+            $empleado = [
                 'clave' => $row['clave_empleado'],
                 'nombre' => $row['nombre'],
                 'ap_paterno' => $row['ap_paterno'],
                 'ap_materno' => $row['ap_materno'],
                 'id_empresa' => $row['id_empresa'],
+                'id_departamento' => $row['id_departamento'],
+                'id_puestoEspecial' => $row['id_puestoEspecial'],
                 'biometrico' => $row['biometrico']
             ];
+            
+            // Agregar horario_oficial solo si id_departamento es 6 y existe
+            if ($row['id_departamento'] == 6 && isset($row['horario_oficial']) && $row['horario_oficial'] !== null) {
+                // Decodificar el JSON string a objeto/array
+                $horario = json_decode($row['horario_oficial'], true);
+                $empleado['horario_oficial'] = $horario !== null ? $horario : $row['horario_oficial'];
+            }
+            
+            $empleados[] = $empleado;
         }
 
         echo json_encode([
@@ -342,22 +327,35 @@ function validarEmpleadosNuevos()
     }
     $clavesString = implode(',', $valores);
 
-    // Consultar empleados existentes (activos y de la empresa)
-    $sql = "SELECT clave_empleado, nombre, ap_paterno, ap_materno, id_empresa 
-            FROM info_empleados 
-            WHERE clave_empleado IN ($clavesString) 
-            AND id_status = 1 
-            AND id_empresa = 1";
+    // Consultar empleados existentes (activos y de la empresa) con LEFT JOIN a horarios_oficiales
+    $sql = "SELECT ie.id_empleado, ie.clave_empleado, ie.nombre, ie.ap_paterno, ie.ap_materno, ie.biometrico, ie.id_empresa, ie.id_departamento, ie.id_puestoEspecial, ho.horario_oficial
+            FROM info_empleados ie
+            LEFT JOIN horarios_oficiales ho ON ie.id_empleado = ho.id_empleado
+            WHERE ie.clave_empleado IN ($clavesString) 
+            AND ie.id_status = 1 
+            AND ie.id_empresa = 1";
 
     $result = mysqli_query($conexion, $sql);
 
     if ($result) {
         while ($row = mysqli_fetch_assoc($result)) {
-            $clavesExistentes[] = [
+            $empleado = [
                 'clave' => $row['clave_empleado'],
                 'id_empresa' => $row['id_empresa'],
-                'nombre' => $row['ap_paterno'] . ' ' . $row['ap_materno'] . ' ' . $row['nombre']
+                'nombre' => $row['nombre'] . ' ' . $row['ap_paterno'] . ' ' . $row['ap_materno'],
+                'biometrico' => $row['biometrico'],
+                'id_departamento' => $row['id_departamento'],
+                'id_puestoEspecial' => $row['id_puestoEspecial']
             ];
+            
+            // Agregar horario_oficial solo si id_departamento es 6 y existe
+            if ($row['id_departamento'] == 6 && isset($row['horario_oficial']) && $row['horario_oficial'] !== null) {
+                // Decodificar el JSON string a objeto/array
+                $horario = json_decode($row['horario_oficial'], true);
+                $empleado['horario_oficial'] = $horario !== null ? $horario : $row['horario_oficial'];
+            }
+            
+            $clavesExistentes[] = $empleado;
         }
 
         echo json_encode([

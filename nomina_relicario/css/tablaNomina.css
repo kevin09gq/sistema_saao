@@ -1,0 +1,182 @@
+/*  Scroll horizontal sólo para la tabla de nómina (cambios mínimos y locales) */
+#tabla-nomina-container-relicario .table-responsive-relicario {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,0,0,0.35) rgba(0,0,0,0.05);
+}
+
+
+/* WebKit (Chrome, Edge, Safari) - scroll horizontal más delgado */
+#tabla-nomina-container-relicario .table-responsive-relicario::-webkit-scrollbar {
+    height: 8px; /* ajustar si quieres más/menos */
+}
+#tabla-nomina-container-relicario .table-responsive-relicario::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.03);
+    border-radius: 8px;
+}
+#tabla-nomina-container-relicario .table-responsive-relicario::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.25);
+    border-radius: 8px;
+    min-height: 20px;
+}
+#tabla-nomina-container-relicario .table-responsive-relicario::-webkit-scrollbar-thumb:hover {
+    background: rgba(0,0,0,0.35);
+}
+
+/* Estilo general para el contenedor de la tabla */
+.table-responsive-relicario {
+    overflow-x: auto;
+    max-width: 100%;
+    background: white;
+}
+
+.table-nomina-relicario {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 11px;
+    min-width: 1400px;
+    background: white;
+}
+
+
+.table-nomina-relicario th {
+    background: white;
+    color: #9ca3af;
+    font-weight: 500;
+    padding: 16px 12px;
+    text-align: center;
+    border: none;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 10px;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.table-nomina-relicario td {
+    padding: 16px 12px;
+    border: none;
+    border-bottom: 1px solid #f9fafb;
+    text-align: center;
+    font-size: 12.5px;
+    line-height: 1.3;
+    background: white;
+    vertical-align: middle;
+    font-family: 'Segoe UI', sans-serif;
+    font-variant-numeric: tabular-nums;
+
+}
+
+.table-nomina-relicario td:nth-child(2) {
+    padding: 16px 12px;
+    border: none;
+    border-bottom: 1px solid #f9fafb;
+    text-align: center;
+    font-size: 11px;
+    line-height: 1.3;
+    background: white;
+    vertical-align: middle;
+    font-family: 'Segoe UI', sans-serif;
+
+
+}
+
+
+.table-nomina-relicario tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.table-nomina-relicario tbody tr:nth-child(even) {
+    background-color: #fafbfc;
+}
+
+.table-nomina-relicario tbody tr:hover {
+    background-color: #f0f9f4;
+}
+
+/* Columnas específicas con el estilo de la imagen */
+.table-nomina-relicario td:nth-child(1) {
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.table-nomina-relicario td:nth-child(2) {
+    text-align: left;
+    font-weight: 600;
+    min-width: 250px;
+    color: #1f2937;
+}
+
+.table-nomina-relicario td:nth-child(3),
+.table-nomina-relicario td:nth-child(4),
+.table-nomina-relicario td:nth-child(5),
+.table-nomina-relicario td:nth-child(6){
+    color: #10b981;
+    font-weight: 600;
+    background: rgba(16, 185, 129, 0.05);
+    font-variant-numeric: tabular-nums;
+}
+
+
+
+/* Cambiar el color de las filas en las columnas de DEDUCCIONES (ajustado) */
+.table-nomina-relicario td:nth-child(7),
+.table-nomina-relicario td:nth-child(8),
+.table-nomina-relicario td:nth-child(9),
+.table-nomina-relicario td:nth-child(10),
+.table-nomina-relicario td:nth-child(11),
+.table-nomina-relicario td:nth-child(12),
+.table-nomina-relicario td:nth-child(13),
+.table-nomina-relicario td:nth-child(14),
+.table-nomina-relicario td:nth-child(15),
+.table-nomina-relicario td:nth-child(16),
+.table-nomina-relicario td:nth-child(17){
+    color: #ef4444;
+    /* Rojo */
+    font-weight: 600;
+    /* Opcional: para resaltar el texto */
+    font-variant-numeric: tabular-nums;
+}
+
+/* Estilo para valores vacíos (--) */
+.valor-vacio {
+    color: #d1d5db !important;
+    font-weight: 300;
+    user-select: none;
+    pointer-events: none;
+}
+/* Celdas vacías con estilo sutil */
+.table-nomina-relicario td:empty {
+    background: #f9fafb;
+    position: relative;
+}
+
+.table-nomina-relicario td:empty::after {
+    content: '—';
+    color: #d1d5db;
+    font-weight: 300;
+}
+
+
+
+@media (max-width: 768px) {
+
+
+    .table-nomina-relicario {
+        font-size: 9px;
+    }
+
+    .table-nomina-relicario th,
+    .table-nomina-relicario td {
+        padding: 4px 3px;
+        font-size: 8px;
+    }
+
+
+
+}
+
+
+

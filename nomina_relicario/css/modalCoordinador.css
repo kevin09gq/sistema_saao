@@ -1,0 +1,113 @@
+/* Estilos mínimos y concisos para la barra de navegación del modal */
+#modalTabs-coordinadores{background:#f8f9fa;border-bottom:1px solid #e9ecef;border-radius:.375rem .375rem 0 0;padding:.25rem;margin-bottom:1rem}
+#modalTabs-coordinadores .nav-link{color:#6c757d;padding:.5rem .9rem;font-weight:500;border:0;background:transparent;transition:color .15s,background .15s;cursor:pointer}
+#modalTabs-coordinadores .nav-link:hover{color:#495057;background:rgba(0,0,0,.03)}
+#modalTabs-coordinadores .nav-link.active{color:#0d6efd;background:#fff;border-bottom:2px solid #0d6efd;font-weight:600}
+#modalTabs-coordinadores .nav-link:focus{outline:none;box-shadow:0 0 0 .2rem rgba(13,110,253,.12)}
+
+/* INFORMACION DEL COORDINADOR */
+.empleado-info{
+  background:#fbfcfd; /* card muy claro */
+  border:1px solid #eef0f2;
+  border-radius:.5rem;
+  padding:1rem 1.25rem;
+  display:flex;
+  flex-direction:column;
+  gap:.6rem;
+  box-shadow:0 6px 18px rgba(3,18,26,0.03);
+}
+.empleado-info .info-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:.75rem;
+  padding:.5rem 0;
+  border-top:1px solid transparent;
+}
+.empleado-info .info-row + .info-row{border-top:1px solid #eef0f2}
+.empleado-info .info-label{
+  color:#6c757d;
+  font-size:.85rem;
+  width:140px;
+  font-weight:600;
+}
+.empleado-info .info-value{
+  color:#111827;
+  font-weight:700;
+  text-align:right;
+  font-size:.95rem;
+}
+.empleado-info input[type="text"], .empleado-info input[type="number"]{
+  border:1px solid #d7dce0;
+  padding:.35rem .5rem;
+  border-radius:.35rem;
+  background:#fff;
+  min-width:90px;
+  text-align:left;
+}
+
+
+/* REGISTROS BIOMETRICO Y HORARIO OFICIALES */
+
+/* Use Bootstrap button styles for mini-tabs; no custom ID CSS needed */
+
+/* Estilos compactos para la tabla de biométrico */
+#tabla-biometrico-coordinadores{overflow:auto;max-height:320px}
+#tabla-biometrico-coordinadores table{width:100%;border-collapse:collapse;font-size:.95rem}
+#tabla-biometrico-coordinadores th,#tabla-biometrico-coordinadores td{padding:.45rem .6rem;border-bottom:1px solid #eef1f4;text-align:left}
+#tabla-biometrico-coordinadores thead th{background:#28a745;color:#fff;font-weight:700;position:sticky;top:0}
+#tabla-biometrico-coordinadores tbody tr:nth-child(odd){background:#f8f9fa}
+#tabla-biometrico-coordinadores tbody tr:nth-child(even){background:#fff}
+
+/* Estilos para el row de copiar horarios */
+.horarios-copiar-row{align-items:center}
+.horarios-copiar-row .form-control{max-width:100%;border-radius:.35rem}
+.horarios-copiar-row .form-label{margin-bottom:.35rem;font-size:.85rem;color:#666}
+.horarios-copiar-row .col-md-3{display:flex;flex-direction:column}
+.horarios-copiar-row .col-md-3 .form-control-sm{padding:.35rem .5rem;font-size:.9rem}
+.horarios-copiar-row .btn-sm{white-space:nowrap}
+#btn-copiar-horarios-coordinadores{margin-top:0}
+
+/* Estilos compactos para la tabla de Registros BD */
+#tabla-horarios-oficiales-coordinadores{overflow:auto;max-height:420px;margin-top:.5rem}
+#tabla-horarios-oficiales-coordinadores table{width:100%;border-collapse:collapse;font-size:.95rem}
+#tabla-horarios-oficiales-coordinadores th,#tabla-horarios-oficiales-coordinadores td{padding:.5rem .6rem;border-bottom:1px solid #eef1f4}
+#tabla-horarios-oficiales-coordinadores thead th{background:#28a745;color:#fff;font-weight:700;position:sticky;top:0}
+#tabla-horarios-oficiales-coordinadores tbody tr:nth-child(odd){background:#f8f9fa}
+#tabla-horarios-oficiales-coordinadores tbody tr:nth-child(even){background:#fff}
+#tabla-horarios-oficiales-coordinadores tbody tr:hover{background:#f8fafc}
+#tabla-horarios-oficiales-coordinadores td .form-control-sm{height:36px;padding:.25rem .5rem}
+
+/* Estilos para tarjetas de eventos (cada tarjeta con color propio) */
+.evento-card{border:1px solid #e6e9eb;border-radius:.5rem;padding:.6rem;height:100%;display:flex;flex-direction:column;gap:.5rem}
+.evento-card .evento-header{display:flex;align-items:center;gap:.5rem;font-weight:700;color:inherit}
+.evento-card .evento-header i{font-size:1.05rem}
+.evento-card .evento-content{min-height:60px;max-height:220px;overflow:auto;color:#273041}
+.evento-card .evento-total{margin-top:.25rem;text-align:right;font-size:.95rem}
+
+/* Variantes por tipo de evento (colores distintivos) */
+.entrada-temprana{border-left:4px solid #0d6efd}
+.entrada-temprana .evento-header{color:#0d6efd}
+
+.salida-tardia{border-left:4px solid #fd7e14}
+.salida-tardia .evento-header{color:#fd7e14}
+
+.salida-temprana{border-left:4px solid #6f42c1}
+.salida-temprana .evento-header{color:#6f42c1}
+
+.olvido-checador{border-left:4px solid #dc3545}
+.olvido-checador .evento-header{color:#dc3545}
+
+.retardo{border-left:4px solid #ffc107}
+.retardo .evento-header{color:#856404}
+
+.falta{border-left:4px solid #6c757d}
+.falta .evento-header{color:#495057}
+
+.analisis-permisos{border-left:4px solid #20c997}
+.analisis-permisos .evento-header{color:#20c997}
+
+/* Pequeños ajustes responsivos */
+@media (max-width:768px){
+  .evento-card .evento-content{max-height:140px}
+}

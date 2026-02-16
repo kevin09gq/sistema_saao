@@ -9,7 +9,7 @@ $(document).ready(function () {
     limpiarCamposNomina();
 
     console.log(jsonNomina40lbs);
-    
+
 });
 
 
@@ -188,11 +188,11 @@ function validarExistenciaTrabajador(JsonListaRaya, omitirSinSeguro = false) {
                     // jsonNomina40lbs = JsonListaRaya;
                     // ordenarEmpleadosPorApellido(JsonListaRaya);
                     // Actualizar jsonNomina40lbs y continuar con el proceso
-                    asignarPropiedadesEmpleado(JsonListaRaya);
-                    jsonNomina40lbs = JsonListaRaya;
-                    ordenarEmpleadosPorApellido(JsonListaRaya);
+                    // asignarPropiedadesEmpleado(JsonListaRaya);
+                    //jsonNomina40lbs = JsonListaRaya;
+                    //ordenarEmpleadosPorApellido(JsonListaRaya);
                     // Verificar empleados sin seguro basados en la lista de raya
-                    verificarEmpleadosSinSeguro(JsonListaRaya, JsonListaRaya);
+                    // verificarEmpleadosSinSeguro(JsonListaRaya, JsonListaRaya);
 
                 }
 
@@ -477,7 +477,7 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
                 asignarPropiedadesEmpleado(jsonNomina40lbs);
                 ordenarEmpleadosPorApellido(jsonNomina40lbs);
 
-                  initComponents();
+                initComponents();
 
                 if (typeof saveNomina === 'function') {
                     saveNomina(jsonNomina40lbs);
@@ -485,12 +485,12 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
 
                 // Filtrar empleados con id_departamento 4
                 let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNomina40lbs, 4);
-                           
+
                 mostrarDatosTabla(jsonFiltrado, 1);
 
-            console.log(jsonNomina40lbs);
-            
-            
+                console.log(jsonNomina40lbs);
+
+
             }
         },
         error: function (xhr, status, error) {
@@ -616,12 +616,12 @@ function agregarEmpleadosNuevos(jsonNomina40lbs, JsonListaRaya) {
                             // Actualizar nombre con datos de BD
                             empleadoEncontrado.empleado.nombre = empValido.nombre;
                             empleadoEncontrado.empleado.id_empresa = empValido.id_empresa;
-                            
+
                             // Buscar o crear departamento destino
                             let deptoDestino = jsonNomina40lbs.departamentos.find(
                                 depto => depto.nombre === empleadoEncontrado.departamento_origen
                             );
-                            
+
                             if (!deptoDestino) {
                                 // Crear departamento si no existe
                                 deptoDestino = {
@@ -630,7 +630,7 @@ function agregarEmpleadosNuevos(jsonNomina40lbs, JsonListaRaya) {
                                 };
                                 jsonNomina40lbs.departamentos.push(deptoDestino);
                             }
-                            
+
                             // Agregar empleado al departamento
                             deptoDestino.empleados.push(empleadoEncontrado.empleado);
                         }
@@ -643,11 +643,11 @@ function agregarEmpleadosNuevos(jsonNomina40lbs, JsonListaRaya) {
             }
         });
     }
-    
+
     // Asignar propiedades necesarias a todos los empleados (incluyendo nuevos)
     asignarPropiedadesEmpleado(jsonNomina40lbs);
     ordenarEmpleadosPorApellido(jsonNomina40lbs);
-    
+
     // DESPUÉS de agregar empleados nuevos, verificar empleados sin seguro
     verificarEmpleadosSinSeguro(jsonNomina40lbs);
 }
@@ -711,11 +711,11 @@ function verificarEmpleadosSinSeguro(jsonNomina40lbs) {
                         deptoSinSeguro.empleados.push(empleado);
                     }
                 });
-                
+
                 // Asignar propiedades necesarias a todos los empleados (incluyendo los nuevos de "Sin Seguro")
                 asignarPropiedadesEmpleado(jsonNomina40lbs);
                 ordenarEmpleadosPorApellido(jsonNomina40lbs);
-                
+
                 initComponents();
 
                 if (typeof saveNomina === 'function') {
@@ -725,13 +725,13 @@ function verificarEmpleadosSinSeguro(jsonNomina40lbs) {
 
                 // Filtrar empleados con id_departamento 4
                 let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNomina40lbs, 4);
-               
-                
+
+
                 mostrarDatosTabla(jsonFiltrado, 1);
 
-               
 
-               
+
+
             }
         },
         error: function (xhr, status, error) {

@@ -27,8 +27,8 @@ $idEmpresa = isset($_POST['id_empresa']) ? intval($_POST['id_empresa']) : 1;
 
 // Departamentos permitidos
 $departamentosPermitidos = [
-    'Relicario Coordinadores',
-    'Relicario Jornaleros' 
+    'Rancho El Relicario Coordinadores',
+    'Rancho el Relicario Jornaleros' 
 ];
 
 // Buscar datos generales en las primeras filas

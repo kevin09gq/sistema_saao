@@ -12,7 +12,10 @@
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <link rel="stylesheet" href="../css/nomina_relicario.css">
-    
+    <link rel="stylesheet" href="../css/tablaNomina.css">
+    <link rel="stylesheet" href="../css/encabezados.css">
+    <link rel="stylesheet" href="../css/modalCoordinador.css">
+
     <!-- SweetAlert2 CSS -->
     <script src="<?= SWEETALERT ?>"></script>
 </head>
@@ -89,16 +92,20 @@
         <!-- Controles de filtro y búsqueda -->
         <div class="controles-tabla-relicario">
             <div class="filtros-container-relicario">
-                <select class="filtro-departamento-relicario" id="filtro-departamento">
+
+                <select class="filtro-departamento-relicario" id="filtro-puesto">
+                    <option value="1" selected>Jornalero Base</option>
+                    <option value="2">Jornalero Vivero</option>
+                    <option value="3">Jornalero De Apoyo</option>
+                    <option value="4">Coordinador Rancho</option>
+                    <option value="5">Coordinador Vivero</option>
                 </select>
 
-                <select class="filtro-departamento-relicario" id="filtro-empresa">
-                </select>
 
 
                 <div class="busqueda-container-relicario" id="busqueda-container">
                     <i class="bi bi-search"></i>
-                    <input type="text" class="campo-busqueda-relicario" placeholder="Buscar..." id="busqueda-nomina-confianza">
+                    <input type="text" class="campo-busqueda-relicario" placeholder="Buscar..." id="busqueda-nomina-relicario">
                     <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="btn-clear-busqueda" title="Limpiar">
                         <i class="bi bi-x-circle"></i>
                     </button>
@@ -116,7 +123,7 @@
                 <button class="btn btn-outline-danger me-2" id="btn_export_pdf_reporte" title="Exportar a PDF">
                     <i class="bi bi-file-earmark-pdf"></i> Reporte
                 </button>
-                <button class="btn btn-outline-primary me-2" id="btn_guardar_nomina_confianza" title="Guardar nómina">
+                <button class="btn btn-outline-primary me-2" id="btn_guardar_nomina_relicario" title="Guardar nómina">
                     <i class="bi bi-save"></i> Guardar Nómina
                 </button>
                 <button class="btn btn-outline-warning" id="btn_limpiar_datos" title="Subir Nuevamente">
@@ -137,8 +144,8 @@
                         <tr>
                             <th rowspan="2">#</th>
                             <th rowspan="2">NOMBRE</th>
-                            <th rowspan="2">SUELDO <br> NETO</th>
-                            <th rowspan="2">INCENTIVO</th>
+                            <th rowspan="2">SUELDO <br> SEMANAL</th>
+                            <th rowspan="2">PASAJE</th>
                             <th rowspan="2">EXTRAS</th>
                             <th rowspan="2">Total Percepciones</th>
                             <th rowspan="2">ISR</th>
@@ -171,7 +178,7 @@
 
                 </table>
             </div>
-            <ul id="paginacion-nomina" class="pagination" style="margin: 20px 0 0 0; justify-content: center;"></ul>
+            <ul id="paginacion-nomina" class="pagination my-5" style="margin: 20px 0 0 0; justify-content: center;"></ul>
         </div>
     </div>
 
@@ -182,6 +189,7 @@
 
 
     <!-- Incluir el modal -->
+    <?php include "modalCoordinadorl.php"; ?>
 
 
 
@@ -193,6 +201,13 @@
     <script src="<?= BOOTSTRAP_JS ?>"></script>
     <!-- Archivo JS específico -->
     <script src="../js/process_excel.js"></script>
+    <script src="../js/showDataTable.js"></script>
+    <script src="../js/configComponentes.js"></script>
+    <script src="../js/saveGetNomina.js"></script>
+    <script src="../js/storage.js"></script>
+    <script src="../js/busquedaFiltrado.js"></script>
+    <script src="../js/abrirModal.js"></script>
+    <script src="../js/configModalCoordinador/establecerData.js"></script>
 
 
 </body>
