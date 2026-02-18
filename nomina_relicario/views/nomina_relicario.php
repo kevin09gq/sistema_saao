@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="../css/encabezados.css">
     <link rel="stylesheet" href="../css/modalCoordinador.css">
 
+
     <!-- SweetAlert2 CSS -->
     <script src="<?= SWEETALERT ?>"></script>
 </head>
@@ -93,12 +94,20 @@
         <div class="controles-tabla-relicario">
             <div class="filtros-container-relicario">
 
-                <select class="filtro-departamento-relicario" id="filtro-puesto">
+                <!-- <select class="filtro-departamento-relicario" id="filtro-puesto">
                     <option value="1" selected>Jornalero Base</option>
                     <option value="2">Jornalero Vivero</option>
                     <option value="3">Jornalero De Apoyo</option>
                     <option value="4">Coordinador Rancho</option>
                     <option value="5">Coordinador Vivero</option>
+                </select> -->
+
+                <select class="filtro-departamento-relicario" id="filtro_departamento">
+                    <!-- Departamento -->
+                </select>
+
+                <select class="filtro-departamento-relicario" id="filtro_puesto">
+                    <!-- Departamento -->
                 </select>
 
 
@@ -189,8 +198,8 @@
 
 
     <!-- Incluir el modal -->
-    <?php include "modalCoordinador.php"; ?>
 
+    <?php include "modalCoordinador.php"; ?>
 
 
     <!-- jQuery -->
@@ -209,7 +218,8 @@
     <script src="../js/abrirModal.js"></script>
     <script src="../js/configModalCoordinador/configModal.js"></script>
     <script src="../js/configModalCoordinador/establecerData.js"></script>
-    
+    <script src="../js/configModalCoordinador/editarData.js"></script>
+    <script src="../js/configModalCoordinador/newConcepts.js"></script>
 
 
 </body>

@@ -252,16 +252,197 @@
 
                     </div>
 
+                    <!-- EDITAR Y AGREGAR CONCEPTOS (PROPIEDADES DEL EMPLEADO) -->
                     <div class="tab-pane fade" id="tab_modificar_detalles-coordinadores" role="tabpanel" aria-labelledby="tab-modificar-detalles-coordinadores">
-                        <!-- contenido modificar detalles (vacío por ahora) -->
-                        <p class="text-muted">Opciones de modificación.</p>
+                        <form id="form-modificar-sueldo">
+
+                            <!-- PERCEPCIONES -->
+                            <div class="card shadow-sm mb-3 mod-card">
+                                <div class="card-header mod-card-header-azul">
+                                    <i class="bi bi-cash-coin"></i> Percepciones
+                                </div>
+                                <div class="card-body mod-card-body-azul">
+                                    <!-- Primera fila: Campos principales con altura fija -->
+                                    <div class="row mb-4">
+                                        <div class="col-md-6 d-flex flex-column">
+                                            <label class="form-label fw-semibold">Sueldo Semanal ($)</label>
+                                            <div class="flex-grow-1 d-flex align-items-end">
+                                                <input type="number" step="0.01" class="form-control mod-input-azul" id="mod-sueldo-semanal-coordinador" value="" placeholder="0.00">
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6 d-flex flex-column">
+                                            <label class="form-label fw-semibold">Total Sueldo Extra ($)</label>
+                                            <small class="text-muted mb-1">Calculado automáticamente</small>
+                                            <input type="number" step="0.01" class="form-control mod-input-azul mod-input-readonly" id="mod-total-extra-coordinador" value="" placeholder="0.00" readonly>
+                                        </div>
+                                    </div>
+
+                                    <!-- Separador visual -->
+                                    <hr class="mod-separador">
+
+                                    <!-- Título de componentes -->
+                                    <div class="row mb-3">
+                                        <div class="col-12">
+                                            <h6 class="componentes-title">
+                                                <i class="bi bi-list-ul"></i> Componentes del Sueldo Extra
+                                            </h6>
+                                            <small class="componentes-subtitle">Configure los diferentes conceptos que conforman el sueldo extra</small>
+                                        </div>
+                                    </div>
+
+
+                                    <!-- Contenedor para conceptos adicionales -->
+                                    <div class="row" id="contenedor-conceptos-adicionales-coordinador">
+                                        <!-- Los conceptos adicionales se cargarán aquí dinámicamente -->
+                                    </div>
+
+                                    <!-- Botón para agregar más conceptos -->
+                                    <div class="row">
+                                        <div class="col-12 text-center">
+                                            <button type="button" class="btn btn-outline-primary btn-sm" id="btn-agregar-percepcion-coordinador">
+                                                <i class="bi bi-plus-circle"></i> Agregar Otro Concepto
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            
+                           
+                            <!-- CONCEPTOS -->
+                            <div class="card shadow-sm mb-3 mod-card">
+                                <div class="card-header mod-card-header-amarillo">
+                                    <i class="bi bi-dash-circle"></i> Conceptos
+                                </div>
+                                <div class="card-body mod-card-body-amarillo">
+                                    <div class="row mb-3" id="contenedor-conceptos-coordinador">
+                                        <div class="col-md-4 mb-2">
+                                            <label class="form-label fw-semibold">ISR ($)</label>
+                                            <div class="input-group">
+                                                <input type="number" step="0.01" class="form-control mod-input-amarillo" id="mod-isr-coordinador" value="" placeholder="0.00">
+                                                <button type="button" class="btn btn-outline-secondary" id="btn-aplicar-isr-coordinador" title="Aplicar Nuevo ISR">
+                                                    <i class="bi bi-calculator"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-2">
+                                            <label class="form-label fw-semibold">IMSS ($)</label>
+                                            <div class="input-group">
+                                                <input type="number" step="0.01" class="form-control mod-input-amarillo" id="mod-imss-coordinador" value="" placeholder="0.00">
+                                                <button type="button" class="btn btn-outline-secondary" id="btn-aplicar-imss-coordinador" title="Aplicar Nuevo IMSS">
+                                                    <i class="bi bi-calculator"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-2">
+                                            <label class="form-label fw-semibold">INFONAVIT ($)</label>
+                                            <div class="input-group">
+                                                <input type="number" step="0.01" class="form-control mod-input-amarillo" id="mod-infonavit-coordinador" value="" placeholder="0.00">
+                                                <button type="button" class="btn btn-outline-secondary" id="btn-aplicar-infonavit-coordinador" title="Aplicar Nuevo INFONAVIT">
+                                                    <i class="bi bi-calculator"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col-md-4 mb-2">
+                                            <label class="form-label fw-semibold">AJUSTES AL SUB ($)</label>
+                                            <div class="input-group">
+                                                <input type="number" step="0.01" class="form-control mod-input-amarillo" id="mod-ajustes-sub-coordinador" value="" placeholder="0.00">
+                                                <button type="button" class="btn btn-outline-secondary" id="btn-aplicar-ajuste-sub-coordinador" title="Aplicar Nuevo Ajuste al Sub">
+                                                    <i class="bi bi-calculator"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4 mb-2">
+                                            <label class="form-label fw-semibold">TOTAL CONCEPTOS ($)</label>
+                                            <div class="input-group">
+                                                <input type="number" step="0.01" class="form-control mod-input-amarillo-total-conceptos" id="mod-total-conceptos-coordinador" value="" placeholder="0.00" readonly>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- DEDUCCIONES -->
+                            <div class="card shadow-sm mb-3 mod-card">
+                                <div class="card-header mod-card-header-rojo">
+                                    <i class="bi bi-dash-lg"></i> Deducciones
+                                </div>
+                                <div class="card-body mod-card-body-rojo">
+                                    <div class="row mb-4" id ="contenedor-deducciones-coordinador">
+                                        <div class="col-md-4 d-flex flex-column">
+                                            <label class="form-label fw-semibold">Dispersión Tarjeta ($)</label>
+                                            <input type="number" step="0.01" class="form-control mod-input-rojo" id="mod-tarjeta-coordinador" value="" placeholder="0.00">
+                                        </div>
+                                        <div class="col-md-4 d-flex flex-column">
+                                            <label class="form-label fw-semibold">Préstamos ($)</label>
+                                            <input type="number" step="0.01" class="form-control mod-input-rojo" id="mod-prestamo-coordinador" value="" placeholder="0.00">
+                                        </div>
+                                        <div class="col-md-4 d-flex flex-column">
+                                            <label class="form-label fw-semibold">Checador ($)</label>
+                                            <input type="number" step="0.01" class="form-control mod-input-rojo" id="mod-checador-coordinador" value="" placeholder="0.00">
+                                        </div>
+                                    </div>                                  
+                                </div>
+                            </div>
+
+
+                             <!-- DEDUCCIONES -->
+
+                            <!-- Sueldo a Cobrar -->
+                            <div class="card shadow-sm mb-3 mod-card">
+                                <div class="card-header mod-card-header-verde">
+                                    <i class="bi bi-currency-dollar"></i> Sueldo a Cobrar
+                                </div>
+                                <div class="card-body mod-card-body-verde">
+                                    <!-- Opciones de redondeo: checkbox + modo -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-6 offset-md-3">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="mod-redondear-sueldo-coordinador">
+                                                <label class="form-check-label fw-semibold" for="mod-redondear-sueldo-coordinador">Redondear sueldo a cobrar</label>
+                                            </div>
+                                            <div class="mt-2" id="mod-redondeo-opciones-coordinador" style="display:none;">
+                                                <select id="mod-redondeo-modo-coordinador" class="form-select form-select-sm w-auto d-inline-block">
+                                                    <option value="nearest">Al entero más cercano</option>
+                                                    <option value="up">Hacia arriba</option>
+                                                    <option value="down">Hacia abajo</option>
+                                                </select>
+                                                <small class="text-muted ms-2">Modo de redondeo</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row justify-content-center">
+                                        <div class="col-md-6 text-center">
+                                            <label class="sueldo-cobrar-label">
+                                                <i class="bi bi-cash-stack"></i> Total a Cobrar
+                                            </label>
+                                            <input type="number" step="0.01" class="sueldo-cobrar-input"
+                                                id="mod-sueldo-a-cobrar-coordinador" value="8">
+                                            <small class="sueldo-cobrar-descripcion">
+                                                <i class="bi bi-info-circle"></i>
+
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </form>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <span class="badge bg-verde-empleado me-auto" id="nombre-empleado-modal"></span>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="btn-cancelar-conceptos">Cancelar</button>
-                <button type="button" class="btn btn-success" id="btn-guardar-conceptos">Guardar</button>
+                <button type="button" class="btn btn-success" id="btn-guardar-propiedades-coordinador">Guardar</button>
             </div>
         </div>
     </div>

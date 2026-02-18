@@ -61,7 +61,7 @@ function restoreNomina() {
         // Renderizar tabla restaurada
         if (typeof mostrarDatosTabla === 'function') {
              // Filtrar empleados con id_tipo_puesto 1
-                let jsonFiltrado = filtrarEmpleadosPorTipoPuesto(jsonNominaRelicario, 1);
+                let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, 7);
 
 
                 mostrarDatosTabla(jsonFiltrado, 1);

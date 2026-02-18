@@ -69,7 +69,7 @@ function registrarTurno() {
         if (descripcion != "" && max != "") {
             $.ajax({
                 type: "POST",
-                url: "../php/configuration.php",
+                url: "../php/configTurnos.php",
                 data: formData,
                 contentType: false,
                 processData: false,
@@ -152,7 +152,7 @@ function eliminarTurno() {
             if (result.isConfirmed) {
                 $.ajax({
                     type: "POST",
-                    url: "../php/configuration.php",
+                    url: "../php/configTurnos.php",
                     data: {
                         accion: "eliminarTurno",
                         id_turno: idTurno
@@ -203,7 +203,7 @@ function editarTurno() {
         let idTurno = $(this).data("id");
         $.ajax({
             type: "POST",
-            url: "../php/configuration.php",
+            url: "../php/configTurnos.php",
             data: {
                 accion: "obtenerInfoTurno",
                 id_turno: idTurno

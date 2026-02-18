@@ -52,7 +52,7 @@ function mostrarImagenArea() {
 
         $.ajax({
             type: "POST",
-            url: "../php/configuration.php",
+            url: "../php/configAreas.php",
             data: {
                 accion: "obtenerImagenArea",
                 id_area: idArea
@@ -135,7 +135,7 @@ function registrarArea() {
         if (nombreArea != "") {
             $.ajax({
                 type: "POST",
-                url: "../php/configuration.php",
+                url: "../php/configAreas.php",
                 data: formData,
                 contentType: false,
                 processData: false,
@@ -243,7 +243,7 @@ function eliminarArea() {
             if (result.isConfirmed) {
                 $.ajax({
                     type: "POST",
-                    url: "../php/configuration.php",
+                    url: "../php/configAreas.php",
                     data: {
                         accion: "eliminarArea",
                         id_area: idArea
@@ -259,6 +259,17 @@ function eliminarArea() {
                             });
                             getAreas();
                             getObtenerAreasSelect();
+                            // Actualizar la tabla de departamentos si existe
+                            if (typeof getDepartamentos === 'function') {
+                                getDepartamentos();
+                            }
+                            if (typeof getObtenerDepartamentosSelect === 'function') {
+                                getObtenerDepartamentosSelect();
+                            }
+                            // Actualizar la tabla de ranchos si existe
+                            if (typeof obtenerInfoRanchos === 'function') {
+                                obtenerInfoRanchos();
+                            }
                         } else if (resultado == "2") {
                             Swal.fire({
                                 icon: 'error',
@@ -295,7 +306,7 @@ function editarArea() {
         let idArea = $(this).data("id");
         $.ajax({
             type: "POST",
-            url: "../php/configuration.php",
+            url: "../php/configAreas.php",
             data: {
                 accion: "obtenerInfoArea",
                 id_area: idArea
@@ -369,7 +380,7 @@ function editarArea() {
             if (result.isConfirmed) {
                 $.ajax({
                     type: "POST",
-                    url: "../php/configuration.php",
+                    url: "../php/configAreas.php",
                     data: {
                         accion: "eliminarImagenArea",
                         id_area: areaId

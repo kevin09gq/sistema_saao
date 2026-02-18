@@ -71,7 +71,7 @@ function mostrarDatosTabla(jsonNominaRelicario, pagina = 1) {
         //  const totalARecibir = importeEfectivo - (parseFloat(empleado.prestamo) || 0);
 
         const fila = `
-            <tr data-clave="${empleado.clave || 'N/A'}" data-id-empresa="${empleado.id_empresa || 1}" data-id-tipo-puesto="${empleado.id_tipo_puesto || 0}">
+            <tr data-clave="${empleado.clave || 'N/A'}" data-id-empresa="${empleado.id_empresa || 1}" data-id-departamento="${empleado.id_departamento || 0}">
                 <td>${numeroFila}</td>
                 <td>${empleado.nombre}</td>
                 <td>${formatearValor(empleado.sueldo_neto || 0)}</td>

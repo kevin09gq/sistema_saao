@@ -6,7 +6,7 @@ $(document).ready(function () {
     confirmarsaveNomina();
     limpiarCamposNomina();
     console.log(jsonNominaRelicario);
-    
+
 
 });
 
@@ -256,7 +256,7 @@ function obtenerJornalerosCoordinadores(JsonListaRaya) {
                 jsonNominaRelicario = JsonListaRaya;
                 initComponents();
                 // Filtrar empleados con id_tipo_puesto 1
-                let jsonFiltrado = filtrarEmpleadosPorTipoPuesto(jsonNominaRelicario, 1);
+                let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, 7);
                          
                 mostrarDatosTabla(jsonFiltrado, 1);
                 console.log(jsonNominaRelicario);
@@ -482,7 +482,7 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
                 ordenarEmpleadosPorNombre(jsonNominaRelicario);
                 initComponents();
                 // Filtrar empleados con id_tipo_puesto 1
-                let jsonFiltrado = filtrarEmpleadosPorTipoPuesto(jsonNominaRelicario, 1);
+                let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, 7);
                 mostrarDatosTabla(jsonFiltrado, 1);
                 console.log(jsonNominaRelicario);
 
@@ -725,7 +725,7 @@ function verificarEmpleadosSinSeguro(jsonNominaRelicario) {
                 initComponents();
                 
                 // Filtrar empleados con id_tipo_puesto 1
-                let jsonFiltrado = filtrarEmpleadosPorTipoPuesto(jsonNominaRelicario, 1);
+                let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, 7);
 
                 mostrarDatosTabla(jsonFiltrado, 1);
                 console.log(jsonNominaRelicario);
@@ -805,7 +805,7 @@ function asignarPropiedadesEmpleado(jsonNominaRelicario) {
             }
 
             // Agregar o mantener las propiedades necesarias (no sobrescribir si ya vienen de la BD)
-            empleado.sueldo_semanal = empleado.sueldo_semanal ?? 0;
+       
             empleado.vacaciones = empleado.vacaciones ?? 0;
             empleado.sueldo_extra_total = empleado.sueldo_extra_total ?? 0;
             empleado.retardos = empleado.retardos ?? 0;
@@ -867,27 +867,8 @@ function inicializarRegistrosVacios(jsonNominaRelicario) {
     });
 }
 
-// Función para filtrar empleados por id_tipo_puesto
-function filtrarEmpleadosPorTipoPuesto(jsonNomina, id_tipo_puesto) {
-    let jsonFiltrado = {
-        departamentos: []
-    };
 
-    if (jsonNomina && jsonNomina.departamentos) {
-        jsonNomina.departamentos.forEach(depto => {
-            let deptoFiltrado = {
-                nombre: depto.nombre,
-                empleados: depto.empleados.filter(emp => emp.id_tipo_puesto === id_tipo_puesto)
-            };
 
-            // Solo agregar departamento si tiene empleados con el id_tipo_puesto especificado
-            if (deptoFiltrado.empleados.length > 0) {
-                jsonFiltrado.departamentos.push(deptoFiltrado);
-            }
-        });
-    }
 
-    return jsonFiltrado;
-}
 
 

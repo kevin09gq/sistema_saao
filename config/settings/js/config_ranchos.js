@@ -30,7 +30,7 @@ function alerta(titulo, mensaje, icono) {
  */
 function obtenerInfoRanchos() {
     $.ajax({
-        url: "../php/configuration.php",
+        url: "../php/configRanchos.php",
         method: "GET",
         data: { accion: "obtenerInfoRanchos" },
         dataType: "json",
@@ -101,7 +101,7 @@ function obtenerInfoRanchos() {
  */
 function obtenerRanchos() {
     $.ajax({
-        url: "../php/configuration.php",
+        url: "../php/configRanchos.php",
         method: "GET",
         data: { accion: "obtenerRanchos" },
         dataType: "json",
@@ -286,7 +286,7 @@ $(document).on("submit", "#ranchosForm", function (e) {
 
     $.ajax({
         type: "POST",
-        url: "../php/configuration.php",
+        url: "../php/configRanchos.php",
         data: datos,
         dataType: "json",
         success: function (response) {
@@ -433,7 +433,7 @@ $(document).on("click", ".btn-borrar-rancho", function (e) {
         if (result.isConfirmed) {
             $.ajax({
                 type: "POST",
-                url: "../php/configuration.php",
+                url: "../php/configRanchos.php",
                 data: { accion: "borrarInfoRancho", id_info_rancho: id_info_rancho },
                 dataType: "json",
                 success: function (response) {

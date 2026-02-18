@@ -37,11 +37,11 @@ function abrirModal() {
         const accion = $(this).data('action');
         if (accion === 'ver' && filaSeleccionada) {
      
-            // Obtener idTipoPuesto desde la fila seleccionada
-            const idTipoPuesto = filaSeleccionada.data('id-tipo-puesto');
+            // Obtener id_departamento desde la fila seleccionada
+            const idDepartamento = filaSeleccionada.data('id-departamento');
             
-            // Solo abrir modal si es Coordinador (id_tipo_puesto 4 o 5)
-            if (idTipoPuesto === 4 || idTipoPuesto === 5) {
+            // Solo abrir modal si es Coordinador (id_departamento 6)
+            if (idDepartamento === 6) {
                 // Obtener clave e id_empresa del empleado
                 const clave = String(filaSeleccionada.data('clave') || '').trim();
                 const idEmpresa = parseInt(filaSeleccionada.data('id-empresa')) || 1;
@@ -55,7 +55,7 @@ function abrirModal() {
                    console.warn('Empleado no encontrado');
                 } 
             } else {
-                console.warn('Este empleado no es un Coordinador (tipo:', idTipoPuesto + ')');
+                console.warn('Este empleado no es un Coordinador (departamento:', idDepartamento + ')');
                 alert('Este modal es solo para Coordinadores.');
             }
         }

@@ -184,7 +184,7 @@ function agregarPuesto() {
         if (nombrePuesto != "") {
             $.ajax({
                 type: "POST",
-                url: "../php/configuration.php",
+                url: "../php/configPuestos.php",
                 data: {
                     accion: accion,
                     id_puesto: idPuesto,
@@ -197,6 +197,8 @@ function agregarPuesto() {
                         limpiarYResetearPuesto();
                         getPuestos();
                         getObtenerPuestosSelect();
+                        // Actualizar la tabla de departamentos-puestos
+                        getDepartamentoPuesto();
 
                         // Mostrar mensaje de éxito con SweetAlert2
                         let mensaje = accion === "registrarPuesto" ?
@@ -245,7 +247,7 @@ function agregarPuestoDepartamento() {
         if (idPuesto != "" && idDepartamento != "") {
             $.ajax({
                 type: "POST",
-                url: "../php/configuration.php",
+                url: "../php/configPuestos.php",
                 data: {
                     accion: accion,
                     id_puesto: idPuesto,
@@ -349,7 +351,7 @@ function eliminarPuesto() {
                 // Realizar la petición AJAX para eliminar el puesto
                 $.ajax({
                     type: "POST",
-                    url: "../php/configuration.php",
+                    url: "../php/configPuestos.php",
                     data: {
                         accion: "eliminarPuesto",
                         id_puesto: idPuesto
@@ -370,6 +372,8 @@ function eliminarPuesto() {
                             // Recargar la lista de puestos
                             getPuestos();
                             getObtenerPuestosSelect();
+                            // Actualizar la tabla de departamentos-puestos
+                            getDepartamentoPuesto();
                         } else if (resultado == "2") {
                             // Error al eliminar
                             Swal.fire({
@@ -409,7 +413,7 @@ function editarPuesto() {
         // Obtener información del puesto
         $.ajax({
             type: "GET",
-            url: "../php/configuration.php",
+            url: "../php/configPuestos.php",
             data: {
                 accion: "obtenerInfoPuesto",
                 id_puesto: idPuesto
@@ -489,7 +493,7 @@ function eliminarDepartamentoPuesto() {
                 // Realizar la petición AJAX para eliminar el puesto
                 $.ajax({
                     type: "POST",
-                    url: "../php/configuration.php",
+                    url: "../php/configPuestos.php",
                     data: {
                         accion: "eliminarDepartamentoPuesto",
                         id_departamento_puesto: idDepartamentoPuesto

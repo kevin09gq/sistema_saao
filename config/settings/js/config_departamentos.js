@@ -85,7 +85,7 @@ function agregarDepartamento() {
         if (nombreDepartamento != "") {
             $.ajax({
                 type: "POST",
-                url: "../php/configuration.php",
+                url: "../php/configDepartamentos.php",
                 data: {
                     accion: accion,
                     id_departamento: idDepartamento,
@@ -98,6 +98,10 @@ function agregarDepartamento() {
                         limpiarYResetearDepartamento();
                         getDepartamentos();
                         getObtenerDepartamentosSelect();
+                        // Actualizar la tabla de departamentos-puestos si existe
+                        if (typeof getDepartamentoPuesto === 'function') {
+                            getDepartamentoPuesto();
+                        }
 
                         let mensaje = accion === "registrarDepartamento" ?
                             "Departamento registrado correctamente" :
@@ -175,7 +179,7 @@ function eliminarDepartamento() {
                 // Realizar la petición AJAX para eliminar el departamento
                 $.ajax({
                     type: "POST",
-                    url: "../php/configuration.php",
+                    url: "../php/configDepartamentos.php",
                     data: {
                         accion: "eliminarDepartamento",
                         id_departamento: idDepartamento
@@ -196,6 +200,21 @@ function eliminarDepartamento() {
                             // Recargar la lista de departamentos
                             getDepartamentos();
                             getObtenerDepartamentosSelect();
+                            
+                            // Actualizar la tabla de departamentos-puestos si existe
+                            if (typeof getDepartamentoPuesto === 'function') {
+                                getDepartamentoPuesto();
+                            }
+                            
+                     
+                            
+                            // Si existe una función para recargar la tabla de nóminas-departamentos
+                            if (typeof cargarDepartamentosDeNomina === 'function') {
+                                // Recargar si existe una nómina seleccionada
+                                if (typeof nominaActualId !== 'undefined' && nominaActualId !== null) {
+                                    cargarDepartamentosDeNomina(nominaActualId);
+                                }
+                            }
                         } else if (resultado == "2") {
                             // Error al eliminar
                             Swal.fire({

@@ -414,7 +414,11 @@ INSERT INTO empresa (nombre_empresa) VALUES
 ('Citricos SAAO'),
 ('SB citric´s group');
 
-
+-- Insertar tipos de nómina
+INSERT INTO tipos_nomina (nombre_nomina, descripcion) VALUES 
+('Nómina 40 LBS', 'Nómina para empleados de 40 libras'),
+('Nómina Confianza', 'Nómina para empleados de confianza'),
+('Nómina Relicario', 'Nómina para empleados del relicario');
 
 
 -- Procedimiento para crear casilleros del 1 al 300

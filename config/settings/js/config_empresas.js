@@ -89,7 +89,7 @@ function registrarEmpresa() {
         if (nombreEmpresa != "") {
             $.ajax({
                 type: "POST",
-                url: "../php/configuration.php",
+                url: "../php/configEmpresas.php",
                 data: formData,
                 contentType: false,
                 processData: false,
@@ -169,7 +169,7 @@ function mostrarImagenEmpresa() {
 
         $.ajax({
             type: "POST",
-            url: "../php/configuration.php",
+            url: "../php/configEmpresas.php",
             data: {
                 accion: "obtenerImagenEmpresa",
                 id_empresa: idEmpresa
@@ -231,7 +231,7 @@ function editarEmpresa() {
         let idEmpresa = $(this).data("id");
         $.ajax({
             type: "POST",
-            url: "../php/configuration.php",
+            url: "../php/configEmpresas.php",
             data: {
                 accion: "obtenerInfoEmpresa",
                 id_empresa: idEmpresa
@@ -312,7 +312,7 @@ function editarEmpresa() {
                 // Si sí tiene empresaId => borrar en el servidor
                 $.ajax({
                     type: "POST",
-                    url: "../php/configuration.php",
+                    url: "../php/configEmpresas.php",
                     data: {
                         accion: "eliminarLogoEmpresa",
                         id_empresa: empresaId

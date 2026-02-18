@@ -100,3 +100,145 @@ function copiarHorariosATodos() {
         
     });
 }
+
+// ========================================
+// SUMAS AUTOMATICAS PERCEPCIONES EXTRA
+// ========================================
+
+sumasAutomaticasPercepciones();
+
+function sumasAutomaticasPercepciones() {
+
+    // Evento cuando cambia una percepción extra
+    $(document).on('input', '.cantidad-percepcion', function () {
+        calcularTotalPercepcionesEnTiempoReal();
+    });
+}
+
+function calcularTotalPercepcionesEnTiempoReal() {
+   
+    // Sumar todas las percepciones extras
+    let totalExtras = 0;
+    $('#contenedor-conceptos-adicionales-coordinador').find('.cantidad-percepcion').each(function () {
+        const cantidad = parseFloat($(this).val()) || 0;
+        totalExtras += cantidad;
+    });
+;
+    $('#mod-total-extra-coordinador').val(totalExtras.toFixed(2));
+}
+
+// ========================================
+// SUMAS AUTOMATICAS CONCEPTOS
+// ========================================
+
+sumasAutomaticasConceptos();
+
+function sumasAutomaticasConceptos() {
+    // Evento cuando cambia un concepto (ISR, IMSS, INFONAVIT, AJUSTES)
+    $(document).on('input', '#mod-isr-coordinador, #mod-imss-coordinador, #mod-infonavit-coordinador, #mod-ajustes-sub-coordinador', function () {
+        calcularTotalConceptosEnTiempoReal();
+    });
+}
+
+function calcularTotalConceptosEnTiempoReal() {
+    // Obtener valores de cada concepto
+    const isr = parseFloat($('#mod-isr-coordinador').val()) || 0;
+    const imss = parseFloat($('#mod-imss-coordinador').val()) || 0;
+    const infonavit = parseFloat($('#mod-infonavit-coordinador').val()) || 0;
+    const ajustes = parseFloat($('#mod-ajustes-sub-coordinador').val()) || 0;
+    
+    // Sumar todos los conceptos
+    const totalConceptos = isr + imss + infonavit + ajustes;
+    
+    // Actualizar el total en el campo readonly
+    $('#mod-total-conceptos-coordinador').val(totalConceptos.toFixed(2));
+}
+
+// ========================================
+// LIMPIAR MODAL COORDINADOR
+// ========================================
+function limpiarModalCoordinador() {
+    // ========================================
+    // LIMPIAR TAB: TRABAJADOR (Información del empleado)
+    // ========================================
+    $('#campo-clave-coordinadores').text('');
+    $('#campo-nombre-coordinadores').text('');
+    $('#campo-departamento-coordinadores').text('');
+    $('#campo-puesto-coordinadores').text('');
+    $('#campo-id-empresa-coordinadores').val('');
+    $('#nombre-empleado-modal').text('');
+    
+    // ========================================
+    // LIMPIAR TAB: REGISTROS (Tablas)
+    // ========================================
+    // Limpiar tabla biométrica
+    $('#tbody-biometrico-coordinadores').empty();
+    
+    // Limpiar tabla horarios oficiales
+    $('#tbody-horarios-oficiales-coordinadores').empty();
+    
+    // Limpiar inputs de copia rápida
+    $('#input-entrada-copiar-coordinadores').val('');
+    $('#input-salida-comida-copiar-coordinadores').val('');
+    $('#input-entrada-comida-copiar-coordinadores').val('');
+    $('#input-salida-copiar-coordinadores').val('');
+    
+    // ========================================
+    // LIMPIAR EVENTOS ESPECIALES
+    // ========================================
+    $('#entradas-tempranas-coordinadores').empty();
+    $('#salidas-tardias-coordinadores').empty();
+    $('#salidas-tempranas-coordinadores').empty();
+    $('#olvidos-checador-coordinadores').empty();
+    $('#retardos-coordinadores').empty();
+    $('#faltas-content-coordinadores').empty();
+    $('#analisis-permisos-comida-content-coordinadores').empty();
+    
+    // Limpiar totales de eventos
+    $('#total-entradas-tempranas-coordinadores').text('0');
+    $('#total-salidas-tardias-coordinadores').text('0');
+    $('#total-salidas-tempranas-coordinadores').text('0');
+    $('#total-olvidos-checador-coordinadores').text('0');
+    $('#total-retardos-coordinadores').text('0');
+    $('#total-faltas-coordinadores').text('0');
+    $('#total-analisis-permisos-comida-coordinadores').text('0');
+    
+    // ========================================
+    // LIMPIAR TAB: MODIFICAR DETALLES (Percepciones)
+    // ========================================
+    // Limpiar sueldo semanal
+    $('#mod-sueldo-semanal-coordinador').val('');
+    
+    // Limpiar total extra
+    $('#mod-total-extra-coordinador').val('');
+    
+    // Limpiar todos los inputs de percepciones adicionales
+    $('#contenedor-conceptos-adicionales-coordinador').find('input').val('');
+    
+    // Limpiar contenedor de conceptos adicionales
+    $('#contenedor-conceptos-adicionales-coordinador').empty();
+
+    // ========================================
+    // LIMPIAR TAB: MODIFICAR DETALLES (conceptos)
+    // ========================================
+    $('#mod-isr-coordinador').val('');
+    $('#mod-imss-coordinador').val('');
+    $('#mod-infonavit-coordinador').val('');
+    $('#mod-ajustes-sub-coordinador').val('');
+    $('#mod-total-conceptos-coordinador').val('');
+
+    // ========================================
+    // LIMPIAR: SUELDO A COBRAR
+    // ========================================
+    // Desmarcar checkbox de redondeo
+    $('#mod-redondear-sueldo-coordinador').prop('checked', false);
+    
+    // Ocultar opciones de redondeo
+    $('#mod-redondeo-opciones-coordinador').hide();
+    
+    // Resetear modo de redondeo
+    $('#mod-redondeo-modo-coordinador').val('nearest');
+    
+    // Limpiar sueldo a cobrar
+    $('#mod-sueldo-a-cobrar-coordinador').val('');
+}

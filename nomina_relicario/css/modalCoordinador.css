@@ -152,3 +152,83 @@
 #modal-coordinadores .eventos-especiales-container::-webkit-scrollbar-thumb:hover{
   background-color: rgba(16,24,40,0.55);
 }
+
+/* ========================================
+ * ESTILOS PARA PERCEPCIONES (MOD-CARD)
+ * ======================================== */
+.mod-card{border:1px solid #dbeafe;border-radius:.5rem;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.mod-card-header-azul{background:linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);color:#1e40af;font-weight:700;padding:.75rem 1rem;border-bottom:2px solid #3b82f6}
+.mod-card-body-azul{background:#f8fbff;padding:1.5rem}
+
+/* Inputs para percepciones */
+.mod-input-azul{border:1px solid #93c5fd;border-radius:.35rem;padding:.5rem .75rem;font-size:.95rem;transition:border-color .2s,box-shadow .2s}
+.mod-input-azul:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+
+/* Input de solo lectura */
+.mod-input-readonly{background:#f0f4f8;color:#6b7280;cursor:not-allowed}
+.mod-input-readonly:focus{border-color:#93c5fd;box-shadow:none}
+
+/* Separador visual */
+.mod-separador{border:0;border-top:1px solid #cbd5e1;margin:1rem 0}
+
+/* Títulos de componentes */
+.componentes-title{color:#0f172a;font-weight:700;margin-bottom:.25rem}
+.componentes-subtitle{color:#64748b;display:block;margin-bottom:.75rem}
+
+/* ========================================
+ * ESTILOS PARA CONCEPTOS (MOD-CARD)
+ * ======================================== */
+.mod-card-header-amarillo{background:linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);color:#92400e;font-weight:700;padding:.75rem 1rem;border-bottom:2px solid #f59e0b}
+.mod-card-body-amarillo{background:#fffbf0;padding:1.5rem}
+
+/* Inputs para conceptos */
+.mod-input-amarillo{border:1px solid #fcd34d;border-radius:.35rem;padding:.5rem .75rem;font-size:.95rem;background:#fffef9;transition:border-color .2s,box-shadow .2s}
+.mod-input-amarillo:focus{border-color:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.1)}
+
+/* Input total conceptos - read-only con estilo especial */
+.mod-input-amarillo-total-conceptos{border:1px solid #fcd34d;border-radius:.35rem;padding:.5rem .75rem;font-size:.95rem;background:#fef3c7;color:#78350f;font-weight:600;cursor:default}
+.mod-input-amarillo-total-conceptos:focus{border-color:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.1)}
+
+/* Botones de cálculo en grupo de entrada */
+.mod-card-body-amarillo .input-group .btn-outline-secondary{border-color:#fcd34d;color:#92400e;transition:all .2s}
+.mod-card-body-amarillo .input-group .btn-outline-secondary:hover{background:#fef3c7;border-color:#f59e0b;color:#f59e0b}
+
+/* Labels con estilo amarillo */
+.mod-card-body-amarillo .form-label{color:#78350f;font-size:.95rem}
+
+/* ========================================
+ * COLORES DIFERENTES POR CONCEPTO
+ * ======================================== */
+
+/* ISR - Rojo/Rosa */
+#mod-isr-coordinador{border-color:#f87171 !important}
+#mod-isr-coordinador:focus{border-color:#dc2626 !important;box-shadow:0 0 0 3px rgba(220,38,38,.1) !important}
+#mod-isr-coordinador::-webkit-input-placeholder{color:#dc2626}
+
+/* IMSS - Azul */
+#mod-imss-coordinador{border-color:#60a5fa !important}
+#mod-imss-coordinador:focus{border-color:#2563eb !important;box-shadow:0 0 0 3px rgba(37,99,235,.1) !important}
+#mod-imss-coordinador::-webkit-input-placeholder{color:#2563eb}
+
+/* INFONAVIT - Verde */
+#mod-infonavit-coordinador{border-color:#34d399 !important}
+#mod-infonavit-coordinador:focus{border-color:#10b981 !important;box-shadow:0 0 0 3px rgba(16,185,129,.1) !important}
+#mod-infonavit-coordinador::-webkit-input-placeholder{color:#10b981}
+
+/* AJUSTES AL SUB - Púrpura */
+#mod-ajustes-sub-coordinador{border-color:#c084fc !important}
+#mod-ajustes-sub-coordinador:focus{border-color:#9333ea !important;box-shadow:0 0 0 3px rgba(147,51,234,.1) !important}
+#mod-ajustes-sub-coordinador::-webkit-input-placeholder{color:#9333ea}
+
+/* ========================================
+ * ESTILOS PARA DEDUCCIONES (MOD-CARD)
+ * ======================================== */
+.mod-card-header-rojo{background:linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);color:#991b1b;font-weight:700;padding:.75rem 1rem;border-bottom:2px solid #ef4444}
+.mod-card-body-rojo{background:#fef2f2;padding:1.5rem}
+
+/* Inputs para deducciones */
+.mod-input-rojo{border:1px solid #fca5a5;border-radius:.35rem;padding:.5rem .75rem;font-size:.95rem;background:#fefbfb;transition:border-color .2s,box-shadow .2s}
+.mod-input-rojo:focus{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,.1)}
+
+/* Labels con estilo rojo */
+.mod-card-body-rojo .form-label{color:#7f1d1d;font-size:.95rem}

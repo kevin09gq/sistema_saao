@@ -767,6 +767,8 @@ verificarSesion(); // Proteger esta página
                         </div>
                     </div>
 
+
+
                     <!-- TABULADOR - Solo interfaz -->
                     <div class="tab-pane fade" id="tabulador" role="tabpanel">
                         <div class="row mt-4">

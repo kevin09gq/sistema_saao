@@ -64,7 +64,7 @@ function registrarFestividad() {
         if (nombre_festividad != "" && fecha_festividad != "") {
             $.ajax({
                 type: "POST",
-                url: "../php/configuration.php",
+                url: "../php/configFestividades.php",
                 data: formData,
                 contentType: false,
                 processData: false,
@@ -143,7 +143,7 @@ function eliminarFestividad() {
             if (result.isConfirmed) {
                 $.ajax({
                     type: "POST",
-                    url: "../php/configuration.php",
+                    url: "../php/configFestividades.php",
                     data: {
                         accion: "eliminarFestividad",
                         id_festividad: idFestividad
@@ -194,7 +194,7 @@ function editarFestividad() {
         let idFestividad = $(this).data("id");
         $.ajax({
             type: "POST",
-            url: "../php/configuration.php",
+            url: "../php/configFestividades.php",
             data: {
                 accion: "obtenerInfoFestividad",
                 id_festividad: idFestividad
