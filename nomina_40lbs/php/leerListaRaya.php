@@ -56,7 +56,7 @@ foreach ($rows as $row) {
             
             //   Verificar si es el departamento de Producción 40 Libras o Producción 10 Libras
             $esProduccion40 = stripos($nombreCompleto, 'PRODUCCION 40 LIBRAS') !== false;
-            $esProduccion10 = stripos($nombreCompleto, 'EMPAQUE 10 LIBRAS') !== false;
+            $esProduccion10 = stripos($nombreCompleto, 'PRODUCCION 10 LIBRAS') !== false;
 
             
             $ultimoEmpleadoIdx = null;

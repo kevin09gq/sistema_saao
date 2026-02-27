@@ -52,29 +52,32 @@ function mostrarDatosTabla(jsonNominaRelicario, pagina = 1) {
         };
 
         // Calcular Total Percepciones
-            const totalPercepciones = 0
-        // const totalPercepciones = calcularTotalPercepciones(empleado);
+        const totalPercepciones = calcularTotalPercepciones(empleado);
 
         // Calcular Total Deducciones
-        // const totalDeducciones = calcularTotalDeducciones(empleado);
+        const totalDeducciones = calcularTotalDeducciones(empleado);
 
-        // const totalNetoRecibir = (parseFloat(totalPercepciones) - parseFloat(totalDeducciones)).toFixed(2);
+        // Calcular Neto a Recibir 
+        const totalNetoRecibir = (parseFloat(totalPercepciones) - parseFloat(totalDeducciones)).toFixed(2);
 
-        // Calcular Total a Cobrar
-        // const totalCobrar = calcularTotalCobrar(empleado);
-
-        // Calcular importe en efectivo: totalCobrar - DISPERSION DE TARJETA (empleado.tarjeta)
-        // const tarjetaVal = parseFloat(empleado.tarjeta) || 0;
-        //const importeEfectivo = (parseFloat(totalNetoRecibir) || 0) - tarjetaVal;
+        // Calcular Importe Efectivo 
+        const tarjetaVal = parseFloat(empleado.tarjeta) || 0;
+        const importeEfectivo = (parseFloat(totalNetoRecibir) || 0) - tarjetaVal;
 
         //Calcular TOTAL A RECIBIR
-        //  const totalARecibir = importeEfectivo - (parseFloat(empleado.prestamo) || 0);
+        const totalRecibir = importeEfectivo - (parseFloat(empleado.prestamo) || 0);
+
+        // Calcular Total a Cobrar
+        const totalCobrar = calcularTotalCobrar(empleado);
+
+
+
 
         const fila = `
             <tr data-clave="${empleado.clave || 'N/A'}" data-id-empresa="${empleado.id_empresa || 1}" data-id-departamento="${empleado.id_departamento || 0}">
                 <td>${numeroFila}</td>
                 <td>${empleado.nombre}</td>
-                <td>${formatearValor(empleado.sueldo_neto || 0)}</td>
+                <td>${formatearValor(empleado.salario_semanal || 0)}</td>
                 <td>${formatearValor(empleado.pasaje || 0)}</td>
                 <td>${formatearValor(empleado.sueldo_extra_total || 0)}</td>  
                 <td>${formatearValor(totalPercepciones)}</td>             
@@ -92,20 +95,18 @@ function mostrarDatosTabla(jsonNominaRelicario, pagina = 1) {
                 <td>${formatearValor(empleado.checador || 0, true)}</td> <!-- CHECADOR -->
                 <td>${formatearValor(empleado.fa_gafet_cofia || 0, true)}</td> <!-- F.A/GAFET/COFIA -->
 
-                <td></td> <!-- TOTAL DEDUCCIONES -->
-                <td></td> <!-- NETO A RECIBIR -->
+                <td>${formatearValor(totalDeducciones, true)}</td> <!-- TOTAL DEDUCCIONES -->
+                <td>${formatearValor(totalNetoRecibir || 0)}</td> <!-- NETO A RECIBIR -->
                 <td>${formatearValor(empleado.tarjeta || 0, true)}</td> <!-- DISPERSION DE TARJETA -->
-                <td></td> <!-- IMPORTE EN EFECTIVO -->
-                <td>${formatearValor(empleado.prestamo || 0, true)}</td> <!-- PRÉSTAMO -->
-
-                <!-- TOTAL A RECIBIR -->
-                <td></td>
+                <td>${formatearValor(importeEfectivo || 0)}</td> <!-- IMPORTE EN EFECTIVO -->
+                <td>${formatearValor(empleado.prestamo || 0, true)}</td> <!-- PRÉSTAMO -->        
+                <td>${formatearValor(totalRecibir || 0)}</td>  <!-- TOTAL A RECIBIR -->
                 
                 <!-- REDONDEADO -->
                 <td class="${parseFloat(empleado.redondeo) < 0 ? 'redondeo-negativo' : 'redondeo-positivo'}">${formatearValor(empleado.redondeo || 0)}</td>
-                
+               
                 <!-- TOTAL EFECTIVO REDONDEADO -->
-                 <td class=""></td>
+                <td class="${totalCobrar < 0 ? 'sueldo-negativo' : ''}"><strong>${formatearValor(totalCobrar)}</strong></td>
              
             </tr>
         `;
@@ -160,4 +161,58 @@ function paginarTabla(jsonNominaRelicario, totalEmpleados, paginaActual, emplead
         paginaActualNomina = nuevaPagina; // Guardar la página actual
         mostrarDatosTabla(jsonNominaRelicario, nuevaPagina);
     });
+}
+
+function calcularTotalPercepciones(empleado) {
+    const sueldo = parseFloat(empleado.salario_semanal || 0);
+    const extras = parseFloat(empleado.sueldo_extra_total || 0);
+
+    return (sueldo + extras);
+}
+
+// Función para calcular Total Deducciones
+function calcularTotalDeducciones(empleado) {
+    // Función auxiliar para buscar concepto
+    const buscarConcepto = (codigo) => {
+        if (!Array.isArray(empleado.conceptos)) return 0;
+        const concepto = empleado.conceptos.find(c => String(c.codigo) === String(codigo));
+        return concepto ? (parseFloat(concepto.resultado) || 0) : 0;
+    };
+
+    const retardos = parseFloat(empleado.retardos) || 0;
+    const isr = buscarConcepto('45');
+    const imss = buscarConcepto('52');
+    const ajusteSub = buscarConcepto('107');
+    const infonavit = buscarConcepto('16');
+    const permiso = parseFloat(empleado.permiso) || 0;
+    const inasistencias = parseFloat(empleado.inasistencia) || 0;
+    const uniformes = parseFloat(empleado.uniformes) || 0;
+    const checador = parseFloat(empleado.checador) || 0;
+    const faGafetCofia = parseFloat(empleado.fa_gafet_cofia) || 0;
+
+
+
+    const total = retardos + isr + imss + ajusteSub + infonavit + permiso + inasistencias + uniformes + checador + faGafetCofia;
+    return total.toFixed(2);
+}
+
+function calcularTotalCobrar(empleado) {
+    const percepciones = parseFloat(calcularTotalPercepciones(empleado)) || 0;
+    const deducciones = parseFloat(calcularTotalDeducciones(empleado)) || 0;
+    const prestamo = parseFloat(empleado.prestamo) || 0;
+    const tarjeta = parseFloat(empleado.tarjeta) || 0;
+
+    let totalCobrar = percepciones - deducciones - prestamo - tarjeta;
+    const totalOriginal = totalCobrar;
+
+    // Aplicar redondeo al entero más cercano si el empleado lo tiene activo
+    if (empleado.redondeo_activo) {
+        totalCobrar = Math.round(totalCobrar);
+    }
+
+    // Calcular y guardar la cantidad redondeada (diferencia entre el valor redondeado y el original)
+    empleado.redondeo = empleado.redondeo_activo ? (totalCobrar - totalOriginal) : 0;
+    empleado.total_cobrar = totalCobrar.toFixed(2); // Guardar en el empleado objeto
+
+    return totalCobrar.toFixed(2);
 }

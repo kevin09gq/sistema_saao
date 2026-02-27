@@ -7,6 +7,7 @@ $(document).ready(function () {
     restoreNomina();
     confirmarsaveNomina();
     limpiarCamposNomina();
+    
 
     console.log(jsonNomina40lbs);
 
@@ -231,7 +232,8 @@ function obtenerEmpleadosSinSS(JsonListaRaya) {
                         clave: empleadoBD.clave,
                         nombre: empleadoBD.ap_paterno + ' ' + empleadoBD.ap_materno + ' ' + empleadoBD.nombre,
                         tarjeta: null,
-                        id_empresa: empleadoBD.id_empresa
+                        id_empresa: empleadoBD.id_empresa,
+                        id_departamento: parseInt(empleadoBD.id_departamento)
 
                     };
                     departamentoSinSeguro.empleados.push(empleado);
@@ -253,7 +255,7 @@ function obtenerEmpleadosSinSS(JsonListaRaya) {
 
 
                 // Filtrar empleados con id_departamento 4
-                let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNomina40lbs, 4);
+                let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNomina40lbs, 4, true);
                 console.log(jsonNomina40lbs);
 
 
@@ -328,7 +330,7 @@ function procesarBiometrico(form, JsonListaRaya) {
 // PASO 2: Función para unir los registros del biométrico al JSON de nómina
 function unirJson(json1, json2) {
     // Departamentos objetivo donde se debe aplicar la unión de registros
-    const objetivos = ['produccion 40 libras', 'empaque 10 libras', 'sin seguro'];
+    const objetivos = ['produccion 40 libras', 'produccion 10 libras', 'sin seguro'];
 
     // Normalizar nombre de departamento (quita número inicial y pasa a minúsculas)
     const normalizarDept = s => String(s || '').replace(/^\s*\d+\s+/, '').trim().toLowerCase();
@@ -462,6 +464,7 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
                         nombre: empleadoBD.ap_paterno + ' ' + empleadoBD.ap_materno + ' ' + empleadoBD.nombre,
                         tarjeta: null,
                         id_empresa: empleadoBD.id_empresa,
+                        id_departamento: parseInt(empleadoBD.id_departamento),
                         // Establecer registros del biometrico si existen
                         registros: empleadoBiometrico ? (empleadoBiometrico.registros || []) : []
                     };
@@ -484,7 +487,7 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
                 }
 
                 // Filtrar empleados con id_departamento 4
-                let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNomina40lbs, 4);
+                let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNomina40lbs, 4, true);
 
                 mostrarDatosTabla(jsonFiltrado, 1);
 
@@ -724,7 +727,7 @@ function verificarEmpleadosSinSeguro(jsonNomina40lbs) {
 
 
                 // Filtrar empleados con id_departamento 4
-                let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNomina40lbs, 4);
+                let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNomina40lbs, 4, true);
 
 
                 mostrarDatosTabla(jsonFiltrado, 1);
@@ -760,7 +763,7 @@ function asignarPropiedadesEmpleado(jsonNomina40lbs) {
         else if (nombreLower === 'produccion') mappedId = 2;
         else if (nombreLower === 'seguridad vigilancia e intendencia') mappedId = 3;
         else if (nombreLower === 'produccion 40 libras') mappedId = 4;
-        else if (nombreLower === 'empaque 10 libras') mappedId = 5;
+        else if (nombreLower === 'produccion 10 libras') mappedId = 5;
         else if (nombreLower === 'relicario coordinadores') mappedId = 6;
         else if (nombreLower === 'relicario jornaleros') mappedId = 7;
         else if (nombreLower === 'rancho el pilar') mappedId = 8;
@@ -776,8 +779,13 @@ function asignarPropiedadesEmpleado(jsonNomina40lbs) {
 
         // Verificar si es departamento que necesita propiedades específicas
         const esProduccion40 = nombreLower.includes('produccion 40 libras');
-        const esEmpaque10 = nombreLower.includes('empaque 10 libras');
+        const esEmpaque10 = nombreLower.includes('produccion 10 libras');
         const esSinSeguro = nombreLower.includes('sin seguro');
+
+        // Asignar propiedad seguroSocial a TODOS los empleados del departamento
+        departamento.empleados.forEach(empleado => {
+            empleado.seguroSocial = esSinSeguro ? false : true;
+        });
 
         if (esProduccion40 || esEmpaque10 || esSinSeguro) {
             // Recorrer empleados solo para departamentos específicos
@@ -807,30 +815,8 @@ function asignarPropiedadesEmpleado(jsonNomina40lbs) {
                 empleado.redondeo = empleado.redondeo ?? 0;
                 empleado.redondeo_activo = empleado.redondeo_activo ?? false;
 
-                // Inicializar historial de retardos
-                if (!empleado.historial_retardos || !Array.isArray(empleado.historial_retardos)) {
-                    empleado.historial_retardos = [];
-                }
+           
 
-                // Inicializar historial de inasistencias
-                if (!empleado.historial_inasistencias || !Array.isArray(empleado.historial_inasistencias)) {
-                    empleado.historial_inasistencias = [];
-                }
-
-                // Inicializar historial de olvidos
-                if (!empleado.historial_olvidos || !Array.isArray(empleado.historial_olvidos)) {
-                    empleado.historial_olvidos = [];
-                }
-
-                // Inicializar historial de uniformes
-                if (!empleado.historial_uniformes || !Array.isArray(empleado.historial_uniformes)) {
-                    empleado.historial_uniformes = [];
-                }
-
-                // Inicializar historial de permisos
-                if (!empleado.historial_permisos || !Array.isArray(empleado.historial_permisos)) {
-                    empleado.historial_permisos = [];
-                }
 
                 // Crear array de conceptos si no existe
                 if (!empleado.conceptos || !Array.isArray(empleado.conceptos)) {
@@ -862,20 +848,32 @@ function ordenarEmpleadosPorApellido(jsonOrdenado) {
 
 }
 
-// Función para filtrar empleados por id_departamento
-function filtrarEmpleadosPorDepartamento(jsonNomina, idDepartamento) {
+// Función para filtrar empleados por id_departamento y opcionalmente por seguroSocial
+function filtrarEmpleadosPorDepartamento(jsonNomina, idDepartamento, seguroSocial = true) {
     let jsonFiltrado = {
         departamentos: []
     };
 
     if (jsonNomina && jsonNomina.departamentos) {
         jsonNomina.departamentos.forEach(depto => {
+            let empleadosFiltrados = depto.empleados.filter(emp => {
+                // Filtrar por id_departamento
+                if (emp.id_departamento !== idDepartamento) {
+                    return false;
+                }
+                // Filtrar por seguroSocial si se proporciona el parámetro
+                if (seguroSocial !== null && emp.seguroSocial !== seguroSocial) {
+                    return false;
+                }
+                return true;
+            });
+
             let deptoFiltrado = {
                 nombre: depto.nombre,
-                empleados: depto.empleados.filter(emp => emp.id_departamento === idDepartamento)
+                empleados: empleadosFiltrados
             };
 
-            // Solo agregar departamento si tiene empleados con el id_departamento especificado
+            // Solo agregar departamento si tiene empleados después del filtro
             if (deptoFiltrado.empleados.length > 0) {
                 jsonFiltrado.departamentos.push(deptoFiltrado);
             }

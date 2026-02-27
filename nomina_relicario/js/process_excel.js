@@ -166,7 +166,7 @@ function validarExistenciaTrabajador(JsonListaRaya, omitirSinSeguro = false) {
                                 emp.id_puestoEspecial = empBD.id_puestoEspecial;
                                 emp.biometrico = empBD.biometrico;
                                 emp.seguroSocial = true;
-                                
+
                                 // Agregar horario_oficial para empleados del departamento 6 (incluso si está vacío)
                                 if (empBD.id_departamento == 6) {
                                     emp.horario_oficial = empBD.horario_oficial || null;
@@ -222,7 +222,7 @@ function obtenerJornalerosCoordinadores(JsonListaRaya) {
                         biometrico: empleadoBD.biometrico,
                         seguroSocial: false
                     };
-                    
+
                     // Agregar horario_oficial para empleados del departamento 6 (incluso si está vacío)
                     if (empleadoBD.id_departamento == 6) {
                         empleado.horario_oficial = empleadoBD.horario_oficial || null;
@@ -254,12 +254,25 @@ function obtenerJornalerosCoordinadores(JsonListaRaya) {
                 asignarPropiedadesEmpleado(JsonListaRaya);
                 ordenarEmpleadosPorNombre(JsonListaRaya);
                 jsonNominaRelicario = JsonListaRaya;
-                initComponents();
+                // Calcular retardos e inasistencias para todos los coordinadores (departamento 6)
+                if (typeof calcularRetardosTodosCoordinadores === 'function') {
+                    calcularRetardosTodosCoordinadores(jsonNominaRelicario);
+                }
+                if (typeof calcularInasistenciasTodosCoordinadores === 'function') {
+                    calcularInasistenciasTodosCoordinadores(jsonNominaRelicario);
+                }
+                if (typeof calcularOlvidosTodosCoordinadores === 'function') {
+                    calcularOlvidosTodosCoordinadores(jsonNominaRelicario);
+                }
+
+                // initComponents();
                 // Filtrar empleados con id_tipo_puesto 1
-                let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, 7);
-                         
-                mostrarDatosTabla(jsonFiltrado, 1);
-                console.log(jsonNominaRelicario);
+                //let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, 7);
+
+                //mostrarDatosTabla(jsonFiltrado, 1);
+                //console.log(jsonNominaRelicario);
+
+                mostrarConfigValores();
 
             }
         },
@@ -452,7 +465,7 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
                         // Establecer registros del biometrico si existen
                         registros: empleadoBiometrico ? (empleadoBiometrico.registros || []) : []
                     };
-                    
+
                     // Agregar horario_oficial para empleados del departamento 6 (incluso si está vacío)
                     if (empleadoBD.id_departamento == 6) {
                         empleado.horario_oficial = empleadoBD.horario_oficial || null;
@@ -480,6 +493,16 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
                 });
                 asignarPropiedadesEmpleado(jsonNominaRelicario);
                 ordenarEmpleadosPorNombre(jsonNominaRelicario);
+                // Calcular retardos e inasistencias para todos los coordinadores (departamento 6)
+                if (typeof calcularRetardosTodosCoordinadores === 'function') {
+                    calcularRetardosTodosCoordinadores(jsonNominaRelicario);
+                }
+                if (typeof calcularInasistenciasTodosCoordinadores === 'function') {
+                    calcularInasistenciasTodosCoordinadores(jsonNominaRelicario);
+                }
+                if (typeof calcularOlvidosTodosCoordinadores === 'function') {
+                    calcularOlvidosTodosCoordinadores(jsonNominaRelicario);
+                }
                 initComponents();
                 // Filtrar empleados con id_tipo_puesto 1
                 let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, 7);
@@ -547,7 +570,36 @@ function validarExistenciaTrabajadorBD(jsonNominaRelicario, JsonListaRaya) {
                     return departamento.empleados.length > 0;
                 });
 
+                // Actualizar conceptos_copia y tarjeta_copia con los nuevos datos del Excel
+                // Solo para empleados con seguro social que existan en ambos JSON
+                jsonNominaRelicario.departamentos.forEach(function (departamentoBD) {
+                    departamentoBD.empleados.forEach(function (empleadoBD) {
+                        if (!empleadoBD.seguroSocial) return;
 
+                        // Buscar al mismo empleado en el nuevo Excel usando su clave
+                        let empleadoExcel = null;
+                        for (let deptoExcel of JsonListaRaya.departamentos) {
+                            empleadoExcel = deptoExcel.empleados.find(e => e.clave === empleadoBD.clave);
+                            if (empleadoExcel) break;
+                        }
+                        if (!empleadoExcel) return;
+
+                        // Actualizar el resultado de cada concepto buscando por código
+                        if (empleadoExcel.conceptos && empleadoExcel.conceptos.length > 0) {
+                            // Si conceptos_copia no existe aún (datos viejos de BD sin esta propiedad), crearla
+                            if (!empleadoBD.conceptos_copia || !Array.isArray(empleadoBD.conceptos_copia)) {
+                                empleadoBD.conceptos_copia = JSON.parse(JSON.stringify(empleadoBD.conceptos || []));
+                            }
+                            empleadoExcel.conceptos.forEach(function (conceptoExcel) {
+                                const conceptoCopia = empleadoBD.conceptos_copia.find(c => c.codigo === conceptoExcel.codigo);
+                                if (conceptoCopia) conceptoCopia.resultado = conceptoExcel.resultado;
+                            });
+                        }
+
+                        // Actualizar tarjeta_copia con el valor del nuevo Excel
+                        if (empleadoExcel.tarjeta !== undefined) empleadoBD.tarjeta_copia = empleadoExcel.tarjeta;
+                    });
+                });
 
                 // Agregar empleados nuevos del archivo Excel
                 agregarEmpleadosNuevos(jsonNominaRelicario, JsonListaRaya);
@@ -616,7 +668,7 @@ function agregarEmpleadosNuevos(jsonNominaRelicario, JsonListaRaya) {
                             empleadoEncontrado.empleado.id_puestoEspecial = empValido.id_puestoEspecial;
                             empleadoEncontrado.empleado.biometrico = empValido.biometrico;
                             empleadoEncontrado.empleado.seguroSocial = true;
-                            
+
                             // Agregar horario_oficial para empleados del departamento 6 (incluso si está vacío)
                             if (empValido.id_departamento == 6) {
                                 empleadoEncontrado.empleado.horario_oficial = empValido.horario_oficial || null;
@@ -692,7 +744,7 @@ function verificarEmpleadosSinSeguro(jsonNominaRelicario) {
                         biometrico: empSinSeguro.biometrico,
                         seguroSocial: false,
                     };
-                    
+
                     // Agregar horario_oficial para empleados del departamento 6 (incluso si está vacío)
                     if (empleado.id_departamento == 6) {
                         empleado.horario_oficial = empSinSeguro.horario_oficial || null;
@@ -721,9 +773,20 @@ function verificarEmpleadosSinSeguro(jsonNominaRelicario) {
 
                 asignarPropiedadesEmpleado(jsonNominaRelicario);
                 ordenarEmpleadosPorNombre(jsonNominaRelicario);
-                
+
+                /* Calcular retardos e inasistencias para todos los coordinadores (departamento 6)
+                if (typeof calcularRetardosTodosCoordinadores === 'function') {
+                    calcularRetardosTodosCoordinadores(jsonNominaRelicario);
+                }
+                if (typeof calcularInasistenciasTodosCoordinadores === 'function') {
+                    calcularInasistenciasTodosCoordinadores(jsonNominaRelicario);
+                }
+                if (typeof calcularOlvidosTodosCoordinadores === 'function') {
+                    calcularOlvidosTodosCoordinadores(jsonNominaRelicario);
+                }*/
+
                 initComponents();
-                
+
                 // Filtrar empleados con id_tipo_puesto 1
                 let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, 7);
 
@@ -744,7 +807,6 @@ function verificarEmpleadosSinSeguro(jsonNominaRelicario) {
 
 
 // FUNCIONES AUXILIARES
-
 
 // Función para asignar propiedades necesarias a empleados de departamentos específicos
 
@@ -805,7 +867,7 @@ function asignarPropiedadesEmpleado(jsonNominaRelicario) {
             }
 
             // Agregar o mantener las propiedades necesarias (no sobrescribir si ya vienen de la BD)
-       
+
             empleado.vacaciones = empleado.vacaciones ?? 0;
             empleado.sueldo_extra_total = empleado.sueldo_extra_total ?? 0;
             empleado.retardos = empleado.retardos ?? 0;
@@ -829,6 +891,13 @@ function asignarPropiedadesEmpleado(jsonNominaRelicario) {
                         { codigo: "16", resultado: '' },   // Infonavit
                         { codigo: "107", resultado: '' }   // Ajuste al Sub
                     ];
+                }
+                // Crear copias solo si NO existen ya (para no pisar las actualizadas en Validación 3)
+                if (!empleado.conceptos_copia || !Array.isArray(empleado.conceptos_copia)) {
+                    empleado.conceptos_copia = JSON.parse(JSON.stringify(empleado.conceptos));
+                }
+                if (empleado.tarjeta_copia === undefined) {
+                    empleado.tarjeta_copia = empleado.tarjeta;
                 }
             }
 

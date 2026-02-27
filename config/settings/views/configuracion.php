@@ -795,6 +795,8 @@ verificarSesion(); // Proteger esta página
                                         <table class="table tabulador-table" style="min-width:700px;">
                                             <thead>
                                                 <tr>
+                                                    
+                                                    <th class="bg-warning text-dark">Seleccionar</th>
                                                     <th class="bg-warning text-dark">De la hora</th>
                                                     <th class="bg-warning text-dark">A la</th>
                                                     <th class="bg-warning text-dark">Minutos Trabajados</th>

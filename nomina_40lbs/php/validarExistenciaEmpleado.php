@@ -158,7 +158,7 @@ function obtenerEmpleadosSinSeguro()
     }
 
     // Consultar empleados sin seguro
-    $sql = "SELECT clave_empleado, nombre, ap_paterno, ap_materno, id_empresa, biometrico
+    $sql = "SELECT clave_empleado, nombre, ap_paterno, ap_materno, id_empresa, id_departamento, biometrico
             FROM info_empleados
             WHERE id_status = 1
             AND id_empresa = 1
@@ -179,6 +179,7 @@ function obtenerEmpleadosSinSeguro()
                 'ap_paterno' => $row['ap_paterno'],
                 'ap_materno' => $row['ap_materno'],
                 'id_empresa' => $row['id_empresa'],
+                'id_departamento' => $row['id_departamento'],
                 'biometrico' => $row['biometrico']
             ];
         }
@@ -225,7 +226,7 @@ function validarEmpleadosSinSeguroBiometrico() {
     $biometricosString = implode(',', $valores);
     
     // Consultar empleados sin seguro que coincidan con biometricos
-    $sql = "SELECT clave_empleado, nombre, ap_paterno, ap_materno, id_empresa, biometrico
+    $sql = "SELECT clave_empleado, nombre, ap_paterno, ap_materno, id_empresa, id_departamento, biometrico
             FROM info_empleados
             WHERE biometrico IN ($biometricosString)
             AND id_status = 1
@@ -245,6 +246,7 @@ function validarEmpleadosSinSeguroBiometrico() {
                 'ap_paterno' => $row['ap_paterno'],
                 'ap_materno' => $row['ap_materno'],
                 'id_empresa' => $row['id_empresa'],
+                'id_departamento' => $row['id_departamento'],
                 'biometrico' => $row['biometrico']
             ];
         }

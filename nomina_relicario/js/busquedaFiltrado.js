@@ -10,6 +10,55 @@ eventoSelectDepartamento();
 
 
 
+// ========================================
+// CARGAR DATA EN SELECTS DE FILTRADO
+// ========================================
+
+function obtenerDepartamentos() {
+    $.ajax({
+        type: "GET",
+        url: "../php/info-rancho.php",
+        data: { accion: "obtenerDepartamento" },
+        dataType: "json",
+        success: function (response) {
+
+            const data = response.data;
+            let tmp = '';
+
+            // El valor por defecto es el departamento 7 (Jornaleros), por eso se marca como selected
+            data.forEach(element => {
+                tmp += `<option ${element.id_departamento === 7 ? 'selected' : ''} value="${element.id_departamento}">${element.nombre_departamento}</option>`;
+            });
+
+            $('#filtro_departamento').html(tmp);
+
+        }
+    });
+}
+
+function obtenerPuestos(id_departamento) {
+    $.ajax({
+        type: "GET",
+        url: "../php/info-rancho.php",
+        data: { accion: "obtenerPuesto", id_departamento: id_departamento },
+        dataType: "json",
+        success: function (response) {
+
+            const data = response.data;
+            let tmp = '<option value="-1">Seleccionar Puesto</option>';
+
+            data.forEach(element => {
+                tmp += `<option value="${element.id_puestoEspecial}">${element.nombre_puesto}</option>`;
+            });
+
+            $('#filtro_puesto').html(tmp);
+
+        }
+    });
+}
+
+
+
 /**
  * ================================================================
  * FILTRAR LA TABLA POR EL DEPARTAMENTO SELECCIONADO
@@ -26,6 +75,7 @@ function seleccionarDepartamento() {
         let id_departamento = parseInt($(this).val());
         let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, id_departamento);
         obtenerPuestos(id_departamento);
+        window.paginaActualNomina = 1; // Resetear a página 1
         mostrarDatosTabla(jsonFiltrado);
     });
 }
@@ -41,6 +91,8 @@ function seleccionarPuesto() {
         let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, id_departamento);
         // Luego filtra por puesto dentro del departamento filtrado
         jsonFiltrado = filtrarEmpleadosPorPuesto(jsonFiltrado, id_puestoEspecial);
+        // Resetear a página 1
+        window.paginaActualNomina = 1;
         // Lo muestra en la tabla
         mostrarDatosTabla(jsonFiltrado);
     });
@@ -98,12 +150,15 @@ function limpiarBusqueda() {
 }
 
 
-/**
- * Función para filtrar empleados por id_departamento
- * @param {Object} jsonNomina - El JSON de nómina completo
- * @param {int} id_departamento - El ID del departamento por el cual filtrar
- * @returns {Object} Un nuevo JSON de nómina que solo incluye empleados del departamento especificado
- */
+
+// ========================================
+// FUNCIONES DE FILTRADO POR DEPARTAMENTO Y PUESTO
+// ========================================
+// Estas funciones filtran el JSON de nómina según:
+// - Departamento seleccionado
+// - Puesto especial dentro del departamento
+// Ambas retornan un JSON filtrado que se pasa a mostrarDatosTabla()
+// ========================================
 function filtrarEmpleadosPorDepartamento(jsonNomina, id_departamento) {
     let jsonFiltrado = {
         departamentos: []
@@ -125,12 +180,7 @@ function filtrarEmpleadosPorDepartamento(jsonNomina, id_departamento) {
     return jsonFiltrado;
 }
 
-/**
- * Función para filtrar empleados por id_puestoEspecial
- * @param {Object} jsonNomina - El JSON de nómina completo
- * @param {int} id_puestoEspecial - El ID del puesto especial por el cual filtrar
- * @returns {Object} Un nuevo JSON de nómina que solo incluye empleados con el id_puestoEspecial especificado
- */
+
 function filtrarEmpleadosPorPuesto(jsonNomina, id_puestoEspecial) {
     let jsonFiltrado = {
         departamentos: []
@@ -162,61 +212,6 @@ function filtrarEmpleadosPorPuesto(jsonNomina, id_puestoEspecial) {
 }
 
 
-/** ============================= FUNCIONES AUXILIARES PARA OBTENER DATOS DE LOS SELECT ============================= */
-
-/**
- * Función para llenar el select de departamentos
- */
-function obtenerDepartamentos() {
-    $.ajax({
-        type: "GET",
-        url: "../php/info-rancho.php",
-        data: { accion: "obtenerDepartamento" },
-        dataType: "json",
-        success: function (response) {
-
-            const data = response.data;
-            let tmp = '';
-
-            // El valor por defecto es el departamento 7 (Jornaleros), por eso se marca como selected
-            data.forEach(element => {
-                tmp += `<option ${element.id_departamento === 7 ? 'selected' : ''} value="${element.id_departamento}">${element.nombre_departamento}</option>`;
-            });
-
-            $('#filtro_departamento').html(tmp);
-
-        }
-    });
-}
-
-/**
- * Función para llenar el select de puestos
- * @param {int} id_departamento 
- */
-function obtenerPuestos(id_departamento) {
-    $.ajax({
-        type: "GET",
-        url: "../php/info-rancho.php",
-        data: { accion: "obtenerPuesto", id_departamento: id_departamento },
-        dataType: "json",
-        success: function (response) {
-
-            const data = response.data;
-            let tmp = '<option value="-1">Seleccionar Puesto</option>';
-
-            data.forEach(element => {
-                tmp += `<option value="${element.id_puestoEspecial}">${element.nombre_puesto}</option>`;
-            });
-
-            $('#filtro_puesto').html(tmp);
-
-        }
-    });
-}
-
-/**
- * Función para detectar el cambio en el select de departamento y actualizar el select de puestos en consecuencia
- */
 function eventoSelectDepartamento() {
     $(document).on("change", "#filtro_departamento", function (e) {
         const id_departamento = $(this).val();

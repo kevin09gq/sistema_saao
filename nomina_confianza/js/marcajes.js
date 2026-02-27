@@ -407,31 +407,16 @@ function copiarHorarioVariable() {
 }
 
 function lstEmpSinHorarioVar() {
-    // Encontrar empleados sin horario oficial (ausente o todos los días vacíos)
+    // Listar todos los empleados del jsonNominaConfianza
     const empleados = [];
     if (!jsonNominaConfianza || !Array.isArray(jsonNominaConfianza.departamentos)) return empleados;
 
     jsonNominaConfianza.departamentos.forEach(dept => {
         dept.empleados.forEach(emp => {
-            const horario = emp.horario_oficial;
-            let sinHorario = false;
+            // Si el empleado está marcado para no mostrar, saltarlo
+            if (emp.mostrar === false) return;
 
-            if (!Array.isArray(horario) || horario.length === 0) {
-                sinHorario = true;
-            } else {
-                // Si existen 7 días pero todos los campos de horas están vacíos, considerarlo sin horario
-                const anyNonEmpty = horario.some(d => {
-                    return (d.entrada && String(d.entrada).trim() !== '') ||
-                        (d.salida_comida && String(d.salida_comida).trim() !== '') ||
-                        (d.entrada_comida && String(d.entrada_comida).trim() !== '') ||
-                        (d.salida && String(d.salida).trim() !== '');
-                });
-                if (!anyNonEmpty) sinHorario = true;
-            }
-
-            if (sinHorario && emp.mostrar !== false) {
-                empleados.push({ clave: emp.clave, nombre: emp.nombre, id_empresa: emp.id_empresa });
-            }
+            empleados.push({ clave: emp.clave, nombre: emp.nombre, id_empresa: emp.id_empresa });
         });
     });
 
@@ -545,9 +530,29 @@ function establecerHorarioVariable() {
 
             // Asignar copia del horario
             emp.horario_oficial = horario.map(h => ({ ...h }));
+        });
+
+        // Guardar PRIMERO antes de redetectar eventos
+        if (typeof saveNomina === 'function') saveNomina(jsonNominaConfianza);
+
+        // AHORA redetectar eventos para cada empleado seleccionado
+        seleccionados.forEach(sel => {
+            // Buscar empleado de nuevo para redetectar
+            let emp = null;
+            jsonNominaConfianza.departamentos.forEach(dept => {
+                dept.empleados.forEach(e => {
+                    if (String(e.clave) === String(sel.clave) && String(e.id_empresa) === String(sel.id_empresa)) {
+                        emp = e;
+                    }
+                });
+            });
+
+            if (!emp) return;
+
+            // Mostrar registros actualizado
+            if (typeof mostrarRegistrosBD === 'function') mostrarRegistrosBD(emp);
 
             // Redetectar eventos para este empleado
-            if (typeof mostrarRegistrosBD === 'function') mostrarRegistrosBD(emp);
             if (typeof detectarRetardos === 'function') detectarRetardos(emp.clave, emp.id_empresa);
             if (typeof detectarInasistencias === 'function') detectarInasistencias(emp.clave, emp.id_empresa);
             if (typeof detectarOlvidosChecador === 'function') detectarOlvidosChecador(emp.clave, emp.id_empresa);
@@ -567,7 +572,7 @@ function establecerHorarioVariable() {
             }
         });
 
-        // Guardar y refrescar tabla manteniendo la página actual y filtros
+        // Guardar nuevamente después de los redetectores
         if (typeof saveNomina === 'function') saveNomina(jsonNominaConfianza);
         if (typeof configPaginacionSearch === 'function') {
             configPaginacionSearch();

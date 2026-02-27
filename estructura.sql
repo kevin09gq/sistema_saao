@@ -209,7 +209,7 @@ CREATE TABLE horarios_oficiales (
 CREATE TABLE tabulador (
   id_tabulador INT  PRIMARY KEY,
   id_empresa INT NOT NULL,
-  info_tabulador JSON NOT NULL,
+  info_tabulador LONGTEXT NOT NULL,
   FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
 );
 

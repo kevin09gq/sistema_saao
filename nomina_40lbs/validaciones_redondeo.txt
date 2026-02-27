@@ -1,0 +1,276 @@
+=================================================================
+SISTEMA DE REDONDEO DE HORARIOS - VALIDACIONES COMPLETAS
+=================================================================
+
+FECHA: 23/02/2026
+ARCHIVO: redondearHorarios.js
+AUTOR: Sistema de Redondeo SAO
+
+=================================================================
+1. ESTRUCTURA GENERAL DEL SISTEMA
+=================================================================
+
+El sistema procesa registros biométricos de empleados aplicando
+redondeo según horarios oficiales configurados por día.
+
+FLUJO PRINCIPAL:
+1. Agrupar registros por fecha
+2. Determinar día de la semana
+3. Obtener horario oficial del día
+4. Aplicar validaciones según casos
+5. Generar registros redondeados
+
+=================================================================
+2. VALIDACIONES PRINCIPALES
+=================================================================
+
+2.1 VALIDACIÓN DE HORARIO OFICIAL SIN COMIDA
+-------------------------------------------------
+CONDICIÓN: horarioSemanal.entrada_comida === "00:00" || horarioSemanal.termino_comida === "00:00"
+
+ACCIÓN: Siempre tratar como jornada sin comida
+REGLA: Ignorar múltiples registros, usar solo primer registro
+RESULTADO: entrada_comida = "00:00", termino_comida = "00:00"
+
+2.2 VALIDACIÓN DE JORNADA INTERRUMPIDA
+-------------------------------------------------
+CONDICIÓN: registrosDelDia.length === 1
+
+ACCIÓN: Jornada sin comida (un solo registro)
+REGLA: No hay periodo de comida
+RESULTADO: entrada_comida = "00:00", termino_comida = "00:00"
+
+2.3 VALIDACIÓN DE JORNADA NORMAL CON COMIDA
+-------------------------------------------------
+CONDICIÓN: registrosDelDia.length >= 2 Y horario con comida
+
+ACCIÓN: Procesar como jornada completa con comida
+REGLA: Aplicar todos los casos de redondeo
+RESULTADO: Procesar entrada, comida y salida
+
+=================================================================
+3. CASOS DE REDONDEO IMPLEMENTADOS
+=================================================================
+
+CASO 1: RETARDO EN ENTRADA
+------------------------------
+CONDICIÓN: horaEntradaRegistro > horaEntradaSemanal
+FUNCIÓN: procesarRetardoEntrada()
+REGLA:
+- Si hora real > hora programada: Mantiene hora real (retardo)
+- Si hora real ≤ hora programada: Redondea a hora programada (a tiempo)
+
+CASO 2: SALIDA ANTICIPADA
+------------------------------
+CONDICIÓN: horaSalidaRegistro < horaSalidaSemanal
+FUNCIÓN: procesarSalidaAnticipada()
+REGLA CON TOLERANCIA:
+- Si hora real < hora programada - 15 min: Mantiene hora real
+- Si hora real ≥ hora programada - 15 min: Redondea a hora programada
+- TOLERANCIA: 15 minutos antes para salida
+
+CASO 3: FALTA DE ENTRADA
+------------------------------
+CONDICIÓN: !horaEntradaRegistro || horaEntradaRegistro.trim() === ''
+FUNCIÓN: procesarFaltaEntrada()
+REGLA:
+- Si no hay marcaje: Autocompleta con hora programada
+- Si hay marcaje: Aplica CASO 1
+
+CASO 4: FALTA DE SALIDA
+------------------------------
+CONDICIÓN: !horaSalidaRegistro || horaSalidaRegistro.trim() === ''
+FUNCIÓN: procesarFaltaSalida()
+REGLA:
+- Si no hay marcaje: Autocompleta con hora programada
+- Si hay marcaje: Aplica CASO 2
+
+CASO 5: JORNADA INTERRUMPIDA
+------------------------------
+CONDICIÓN: horaSalidaRegistro ≤ horarioSemanal.entrada_comida
+FUNCIÓN: procesarJornadaInterrumpida()
+REGLA:
+- Salida antes de hora de comida: Jornada sin comida
+- entrada_comida = "00:00", termino_comida = "00:00"
+
+CASO 6: SALIDA A COMER ANTES DEL HORARIO OFICIAL
+-------------------------------------------------
+CONDICIÓN: horaSalidaComidaRegistro < horarioSemanal.entrada_comida
+FUNCIÓN: procesarSalidaComidaAnticipada()
+REGLA CON TOLERANCIA:
+- Si hora real < hora programada - 15 min: Mantiene hora real
+- Si hora real ≥ hora programada - 15 min: Redondea a hora programada
+- TOLERANCIA: 15 minutos antes para entrada de comida
+
+CASO 7: REGRESO DE COMIDA DESPUÉS DEL HORARIO OFICIAL
+-------------------------------------------------------
+CONDICIÓN: horaRegresoComidaRegistro > horarioSemanal.termino_comida
+FUNCIÓN: procesarRegresoComidaTarde()
+REGLA:
+- Si hora real > hora programada: Redondea a hora programada
+- Si hora real ≤ hora programada: Redondea a hora programada
+- NOTA: Siempre redondea a hora programada
+
+CASO 8: FALTA DE MARCAJE EN SALIDA A COMER
+-------------------------------------------------
+CONDICIÓN: !horaSalidaComidaRegistro || horaSalidaComidaRegistro.trim() === ''
+FUNCIÓN: procesarFaltaSalidaComida()
+REGLA:
+- Si no hay marcaje: Autocompleta con hora programada
+- Si hay marcaje: Aplica CASO 6
+
+CASO 9: FALTA DE MARCAJE EN REGRESO DE COMIDA
+--------------------------------------------------
+CONDICIÓN: !horaRegresoComidaRegistro || horaRegresoComidaRegistro.trim() === ''
+FUNCIÓN: procesarFaltaRegresoComida()
+REGLA:
+- Si no hay marcaje: Autocompleta con hora programada
+- Si hay marcaje: Aplica CASO 7
+
+=================================================================
+4. REGLAS DE TOLERANCIA
+=================================================================
+
+4.1 TOLERANCIA PARA SALIDA (CASO 2)
+---------------------------------------
+RANGO: hora oficial - 15 minutos hasta cualquier hora después
+EJEMPLO (salida oficial 12:30):
+- 12:14 o antes: Mantiene hora real ❌
+- 12:15 o después: Redondea a 12:30 ✅
+
+4.2 TOLERANCIA PARA ENTRADA DE COMIDA (CASO 6)
+--------------------------------------------------
+RANGO: hora oficial - 15 minutos hasta cualquier hora después
+EJEMPLO (comida oficial 13:00):
+- 12:44 o antes: Mantiene hora real ❌
+- 12:45 o después: Redondea a 13:00 ✅
+
+4.3 SIN TOLERANCIA PARA OTROS CASOS
+---------------------------------------
+CASO 1 (Entrada): Sin tolerancia, solo comparación directa
+CASO 3 (Falta entrada): Autocompletar sin tolerancia
+CASO 4 (Falta salida): Autocompletar sin tolerancia
+CASO 5 (Jornada interrumpida): Sin tolerancia
+CASO 7 (Regreso comida): Siempre redondea a hora oficial
+CASO 8/9 (Olvido comida): Autocompletar sin tolerancia
+
+=================================================================
+5. EJEMPLOS PRÁCTICOS
+=================================================================
+
+EJEMPLO 1: HORARIO SIN COMIDA + MÚLTIPLES REGISTROS
+-------------------------------------------------
+HORARIO OFICIAL: 08:00 | 00:00 | 00:00 | 12:30
+REGISTROS: 07:43|12:28, 13:00|20:00
+
+PROCESAMIENTO:
+1. Detecta horario sin comida (00:00)
+2. Ignora múltiples registros
+3. Usa solo primer registro: 07:43|12:28
+4. Aplica tolerancia de salida: 12:28 ≥ 12:15 → redondea a 12:30
+
+RESULTADO:
+{
+  "fecha": "26/01/2026",
+  "entrada": "08:00",
+  "entrada_comida": "00:00",
+  "termino_comida": "00:00",
+  "salida": "12:30"
+}
+
+EJEMPLO 2: HORARIO CON COMIDA + TOLERANCIA
+-------------------------------------------------
+HORARIO OFICIAL: 08:00 | 13:00 | 14:00 | 19:30
+REGISTROS: 07:55|12:57, 14:05|20:10
+
+PROCESAMIENTO:
+1. Detecta horario con comida
+2. Procesa entrada: 07:55 → redondea a 08:00
+3. Procesa entrada comida: 12:57 ≥ 12:45 → redondea a 13:00
+4. Procesa regreso comida: 14:05 → redondea a 14:00
+5. Procesa salida: 20:10 ≥ 19:15 → redondea a 19:30
+
+RESULTADO:
+{
+  "fecha": "26/01/2026",
+  "entrada": "08:00",
+  "entrada_comida": "13:00",
+  "termino_comida": "14:00",
+  "salida": "19:30"
+}
+
+EJEMPLO 3: JORNADA INTERRUMPIDA
+-------------------------------------------------
+HORARIO OFICIAL: 08:00 | 13:00 | 14:00 | 20:00
+REGISTROS: 07:42|12:10 (solo un registro)
+
+PROCESAMIENTO:
+1. Detecta un solo registro
+2. Verifica salida antes de comida: 12:10 ≤ 13:00
+3. Aplica jornada interrumpida
+4. Procesa entrada: 07:42 → redondea a 08:00
+5. Mantiene salida real: 12:10
+
+RESULTADO:
+{
+  "fecha": "26/01/2026",
+  "entrada": "08:00",
+  "entrada_comida": "00:00",
+  "termino_comida": "00:00",
+  "salida": "12:10"
+}
+
+=================================================================
+6. REGLAS ESPECIALES
+=================================================================
+
+6.1 PRIORIDAD DE VALIDACIONES
+------------------------------
+1. Horario oficial sin comida (máxima prioridad)
+2. Jornada interrumpida (1 registro)
+3. Jornada normal con comida (2+ registros)
+
+6.2 MANEJO DE HORARIOS OFICIALES
+----------------------------------
+- Si entrada_comida = "00:00" O termino_comida = "00:00": Sin comida
+- Si ambos tienen valores diferentes de "00:00": Con comida
+- El horario oficial siempre tiene prioridad sobre biométrico
+
+6.3 FORMATO DE SALIDA
+--------------------------
+Todos los registros redondeados contienen:
+- fecha: Fecha del registro
+- entrada: Hora de entrada redondeada
+- entrada_comida: Hora de comida (programada o 00:00)
+- termino_comida: Hora de regreso (programada o 00:00)
+- salida: Hora de salida redondeada
+
+=================================================================
+7. FUNCIONES AUXILIARES
+=================================================================
+
+convertirHoraAMinutos(hora): Convierte formato HH:MM a minutos totales
+aplicarTolerancia(hora): Calcula rangos de tolerancia (obsoleta)
+
+=================================================================
+8. LOGS DE DEPURACIÓN
+=================================================================
+
+Logs habilitados para seguimiento:
+- Empleado: nombre del empleado procesado
+- Registros originales: array completo de registros biométricos
+- Registros redondeados: resultado final del procesamiento
+
+=================================================================
+9. CONSIDERACIONES FINALES
+=================================================================
+
+- El sistema respeta siempre el horario oficial configurado
+- La tolerancia solo aplica en casos específicos (salida y entrada comida)
+- Los casos de olvido se autocompletan con hora oficial
+- Las jornadas sin comida ignoran registros adicionales
+- Todos los tiempos están en formato 24 horas HH:MM
+
+=================================================================
+FIN DEL DOCUMENTO DE VALIDACIONES
+=================================================================

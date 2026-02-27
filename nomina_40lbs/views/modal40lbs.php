@@ -1,4 +1,4 @@
-<div class="modal fade" id="modal-coordinadores" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="modal-40lbs" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
@@ -7,7 +7,7 @@
             </div>
             <div class="modal-body">
                 <!-- Barra de navegación -->
-                <ul class="nav nav-tabs mb-3" id="modalTabs-coordinadores" role="tablist">
+                <ul class="nav nav-tabs mb-3" id="modalTabs-40lbs" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active" id="tab-info-coordinadores" data-bs-toggle="tab" data-bs-target="#tab_info-coordinadores" type="button" role="tab" aria-controls="tab_info-coordinadores" aria-selected="true">Trabajador</button>
                     </li>

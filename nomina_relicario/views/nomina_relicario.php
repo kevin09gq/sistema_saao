@@ -56,6 +56,34 @@
         </div>
     </div>
 
+       <!-- Contenedor de Configuración de Valores -->
+        <div class="container mt-5 mb-5">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card shadow-sm" id="config-valores-relicario" hidden>
+                        <div class="card-body">
+                            <h5 class="card-title text-center mb-4">
+                                <i class="bi bi-gear"></i> Configuración de Valores
+                            </h5>
+                            <div class="mb-3">
+                                <label for="precio_pasaje_relicario" class="form-label">Precio del Pasaje</label>
+                                <input type="number" id="precio_pasaje_relicario" class="form-control" placeholder="Ej. 50.00" step="0.01" min="0">
+                            </div>
+                            <div class="mb-3">
+                                <label for="pago_tardeada_relicario" class="form-label">Pago Tardeada</label>
+                                <input type="number" id="pago_tardeada_relicario" class="form-control" placeholder="Ej. 25.00" step="0.01" min="0">
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-primary btn-lg" id="btn_config_avanzar_relicario" type="button">
+                                    <i class="bi bi-arrow-right"></i> Avanzar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     <div class="container-tabla-nomina-relicario" id="tabla-nomina-responsive" hidden>
         <div class="header-tabla-relicario">
             <h3 id=nombre_nomina></h3>
@@ -138,13 +166,11 @@
                 <button class="btn btn-outline-warning" id="btn_limpiar_datos" title="Subir Nuevamente">
                     <i class="bi bi-trash"></i> Subir Nuevamente
                 </button>
-                <button class="btn btn-outline-info" id="btnReasignarDepartamento" title="Reasignar Departamentos">
-                    <i class="bi bi-arrow-left-right"></i> Reasignar
-                </button>
-
-
+              
             </div>
         </div>
+
+     
 
         <div id="tabla-nomina-container-relicario" class="tabla-nomina-container-relicario">
             <div class="table-responsive-relicario">
@@ -197,9 +223,11 @@
     </div>
 
 
-    <!-- Incluir el modal -->
-
+    <!-- Incluir los modales -->
     <?php include "modalCoordinador.php"; ?>
+    <?php include "modalTipoDia.php"; ?>
+    <?php include "biometricoModal.php"; ?>
+    <?php include "modalSeleccionarEmpleados.php"; ?>
 
 
     <!-- jQuery -->
@@ -216,10 +244,15 @@
     <script src="../js/storage.js"></script>
     <script src="../js/busquedaFiltrado.js"></script>
     <script src="../js/abrirModal.js"></script>
+    <script src="../js/actualizarBiomtrico.js"></script>
+    <script src="../js/seleccionar_empleados.js"></script>
     <script src="../js/configModalCoordinador/configModal.js"></script>
     <script src="../js/configModalCoordinador/establecerData.js"></script>
     <script src="../js/configModalCoordinador/editarData.js"></script>
     <script src="../js/configModalCoordinador/newConcepts.js"></script>
+    <script src="../js/configModalCoordinador/eventos.js"></script>
+    <script src="../js/configModalCoordinador/justificacionCoordinador.js"></script>
+
 
 
 </body>

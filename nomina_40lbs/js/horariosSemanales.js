@@ -93,6 +93,7 @@ function configModalHorarios() {
     $('#btn_guardar_horarios_semanales').on('click', function () {
         guardarHorariosEnJSON();
         redondearHorarios();
+        getTabulador();
         $('#modalHorarios').modal('hide');
     });
 }

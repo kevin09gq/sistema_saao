@@ -92,11 +92,11 @@
         <div class="controles-tabla-40lbs">
             <div class="filtros-container-40lbs">
                 <select class="filtro-departamento-40lbs" id="filtro-departamento">
+                    <option value= "1">40 Libras CSS</option>
+                    <option value= "2">40 Libras SSS</option>
+                    <option value= "3">10 Libras CSS</option>
+                    <option value= "4">10 Libras SSS</option>       
                 </select>
-
-                <select class="filtro-departamento-40lbs" id="filtro-empresa">
-                </select>
-
 
                 <div class="busqueda-container-40lbs" id="busqueda-container">
                     <i class="bi bi-search"></i>
@@ -203,6 +203,7 @@
     <script src="../js/saveGetNomina.js"></script>
     <script src="../js/horariosSemanales.js"></script>
     <script src="../js/redondearHorarios.js"></script>
+    <script src="../js/filtroBusqueda.js"></script>
 
 </body>
 
