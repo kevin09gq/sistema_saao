@@ -26,7 +26,7 @@ function vinculaBotonesToipoDia() {
 
 
 function guardarJustificacion(tipo) {
-    const empleado = objEmpleado.getEmpleado();
+    const empleado = objEmpleadoCoordinador.getEmpleado();
     
     // Validar que exista empleado y día
     if (!empleado || !diaJustificacionActual) {

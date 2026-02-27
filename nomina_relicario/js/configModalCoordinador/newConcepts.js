@@ -15,7 +15,7 @@ function mostrarEstructuraPercepciones() {
     $("#btn-agregar-percepcion-coordinador").click(function (e) {
         e.preventDefault();
 
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoCoordinador.getEmpleado();
 
         // Si no hay empleado, salir
         if (!empleado) {
@@ -116,7 +116,7 @@ function guardarPercepcionesExtra(empleado) {
 function eliminarPercepcionExtra() {
     // Delegación de eventos para eliminar percepciones
     $("#contenedor-conceptos-adicionales-coordinador").on('click', '.btn-eliminar-percepcion', function () {
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoCoordinador.getEmpleado();
 
         // Si no hay empleado, salir
         if (!empleado) return;
@@ -141,7 +141,7 @@ function mostrarEstructuraDeducciones() {
     $("#btn-agregar-deduccion-coordinador").click(function (e) {
         e.preventDefault();
 
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoCoordinador.getEmpleado();
 
         // Si no hay empleado, salir
         if (!empleado) return;
@@ -235,9 +235,9 @@ function guardarDeduccionesExtra(empleado) {
 function eliminarDeduccionExtra() {
     // Delegación de eventos para eliminar deducciones
     $("#contenedor-deducciones-adicionales-coordinador").on('click', '.btn-eliminar-deduccion', function () {
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoCoordinador.getEmpleado();
 
-        // Si no 2 empleado, salir
+        // Si no hay empleado, salir
         if (!empleado) return;
 
         const $elemento = $(this).closest('.deduccion-extra-item');
@@ -259,7 +259,7 @@ function guardarInasistenciaManual() {
     $("#btn-agregar-inasistencia-coordinador").click(function (e) {
         e.preventDefault();
 
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoCoordinador.getEmpleado();
 
         // Si no hay empleado, salir
         if (!empleado) {
@@ -316,7 +316,7 @@ function eliminarInasistenciaManual() {
     
     // Delegación de eventos para eliminar inasistencias manuales
     $contenedor.on('click', '.btn-eliminar-inasistencia-manual', function () {
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoCoordinador.getEmpleado();
 
         // Si no hay empleado, salir
         if (!empleado) return;
@@ -351,7 +351,7 @@ function editarOlvidoChecador() {
     
     $contenedor.off('click', '.btn-editar-olvido');
     $contenedor.on('click', '.btn-editar-olvido', function () {
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoCoordinador.getEmpleado();
         if (!empleado) return;
 
         const indice = $(this).data('index');
@@ -432,7 +432,7 @@ function editarRetardoChecador() {
     
     contenedor.off('click', '.btn-editar-retardo');
     contenedor.on('click', '.btn-editar-retardo', function () {
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoCoordinador.getEmpleado();
         if (!empleado) return;
 
         const indice = $(this).data('index');
@@ -562,7 +562,7 @@ function guardarPermisoManual() {
     $("#btn-agregar-permiso-coordinador").click(function (e) {
         e.preventDefault();
 
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoCoordinador.getEmpleado();
 
         // Si no hay empleado, salir
         if (!empleado) {
@@ -622,7 +622,7 @@ function eliminarPermisoManual() {
     
     // Delegación de eventos para eliminar permisos manuales
     $contenedor.on('click', '.btn-eliminar-permiso-manual', function () {
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoCoordinador.getEmpleado();
 
         // Si no hay empleado, salir
         if (!empleado) return;
@@ -659,7 +659,7 @@ eliminarPermisoManual();
 function guardarUniformeManual() {
     $("#btn-agregar-uniforme-coordinador").click(function(e) {
         e.preventDefault();
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoCoordinador.getEmpleado();
         if (!empleado) return;
 
         const folio = $('#input-folio-uniforme-coordinador').val().trim();
@@ -697,7 +697,7 @@ function guardarUniformeManual() {
 function eliminarUniformeManual() {
     const $contenedor = $('#contenedor-historial-uniforme-coordinador');
     $contenedor.on('click', '.btn-eliminar-uniforme-manual', function() {
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoCoordinador.getEmpleado();
         if (!empleado) return;
         const index = $(this).data('index');
         empleado.historial_uniforme.splice(index,1);

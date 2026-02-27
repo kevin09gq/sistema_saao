@@ -1,21 +1,46 @@
+
+
 function initComponents() {
-    //  $("#container-nomina_relicario").attr("hidden", true);
-
-    //$("#tabla-nomina-responsive").removeAttr("hidden");
-
-
+    $("#container-nomina_relicario").attr("hidden", true);
+    $("#tabla-nomina-responsive").removeAttr("hidden");
+    $("#config-valores-relicario").attr("hidden", true);
 }
 
 
 function mostrarConfigValores() {
     $("#container-nomina_relicario").attr("hidden", true);
     $("#config-valores-relicario").removeAttr("hidden");
+    asignarValoresConfig();
 }
 
 function asignarValoresConfig() {
-    $("#btn_guardar_config").click(function (e) {
+    $("#btn_config_avanzar_relicario").click(function (e) {
         e.preventDefault();
 
+        // Obtener los valores de los inputs
+        let pasajeVal = $("#precio_pasaje_relicario").val().trim();
+        let tardeadaVal = $("#pago_tardeada_relicario").val().trim();
+
+        // Si están vacíos, asignar 0, si no parsear
+        let pasaje = pasajeVal === '' ? 0 : parseFloat(pasajeVal);
+        let tardeada = tardeadaVal === '' ? 0 : parseFloat(tardeadaVal);
+
+        // Validar que sean números válidos
+        if (isNaN(pasaje) || isNaN(tardeada)) {
+            Swal.fire('Error', 'Los valores deben ser números válidos', 'error');
+            return;
+        }
+
+        // Asignar valores al JSON global
+        jsonNominaRelicario.precio_pasaje = pasaje;
+        jsonNominaRelicario.pago_tardeada = tardeada;
+
+        $("#config-valores-relicario").attr("hidden", true);
+        // Filtrar empleados con id_tipo_puesto 1
+        let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, 7);
+
+        mostrarDatosTabla(jsonFiltrado, 1);
+        $("#tabla-nomina-responsive").removeAttr("hidden");
     });
 }
 

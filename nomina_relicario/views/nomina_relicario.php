@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="../css/tablaNomina.css">
     <link rel="stylesheet" href="../css/encabezados.css">
     <link rel="stylesheet" href="../css/modalCoordinador.css">
+    <link rel="stylesheet" href="../css/modalJornaleros.css">
 
 
     <!-- SweetAlert2 CSS -->
@@ -28,7 +29,7 @@
     ?>
 
     <!-- Contenedor principal centrado -->
-    <div class="container-nomina_relicario" id="container-nomina_relicario">
+    <div class="container-nomina_relicario" id="container-nomina_relicario" hidden>
         <!-- Contenedor tipo navbar para formulario y filtros -->
         <div class="navbar-nomina_relicario">
             <div class="titulo-nomina_relicario">Procesamiento de Nómina Relicario</div>
@@ -57,10 +58,10 @@
     </div>
 
        <!-- Contenedor de Configuración de Valores -->
-        <div class="container mt-5 mb-5">
+        <div class="container mt-5 mb-5" id="config-valores-relicario" hidden>
             <div class="row justify-content-center">
                 <div class="col-md-6">
-                    <div class="card shadow-sm" id="config-valores-relicario" hidden>
+                    <div class="card shadow-sm" >
                         <div class="card-body">
                             <h5 class="card-title text-center mb-4">
                                 <i class="bi bi-gear"></i> Configuración de Valores
@@ -225,9 +226,11 @@
 
     <!-- Incluir los modales -->
     <?php include "modalCoordinador.php"; ?>
+    <?php include "modalJornaleros.php"; ?>
     <?php include "modalTipoDia.php"; ?>
     <?php include "biometricoModal.php"; ?>
     <?php include "modalSeleccionarEmpleados.php"; ?>
+
 
 
     <!-- jQuery -->
@@ -252,6 +255,8 @@
     <script src="../js/configModalCoordinador/newConcepts.js"></script>
     <script src="../js/configModalCoordinador/eventos.js"></script>
     <script src="../js/configModalCoordinador/justificacionCoordinador.js"></script>
+    <script src="../js/configModalJornaleros/establecerData.js"></script>
+    <script src="../js/configModalJornaleros/editarData.js"></script>
 
 
 

@@ -1,5 +1,5 @@
 // Objeto para almacenar el empleado actual del modal
-const objEmpleado = {
+const objEmpleadoCoordinador= {
     empleado: null,
 
     // Getter: obtener el empleado actual
@@ -20,7 +20,7 @@ const objEmpleado = {
 
 function establerDataModalCoordinador(empleado) {
     // Guardar el empleado en el objeto
-    objEmpleado.setEmpleado(empleado);
+    objEmpleadoCoordinador.setEmpleado(empleado);
 
     // Establecer información del empleado
     establecerInformacionEmpleado(empleado);
@@ -46,7 +46,7 @@ function establerDataModalCoordinador(empleado) {
     // Establecer datos de conceptos
     establecerConceptos(empleado);
     // Establecer datos de deducciones
-    establerDeducciones(empleado);
+    establecerDeducciones(empleado);
 
     establecerHistorialChecador(empleado);
     establecerHistorialRetardos(empleado);
@@ -72,6 +72,7 @@ function establecerInformacionEmpleado(empleado) {
     $('#campo-departamento-coordinadores').text(empleado.departamento || '');
     $('#campo-puesto-coordinadores').text(empleado.id_puestoEspecial || empleado.puesto || '');
     $('#nombre-empleado-modal').text(empleado.nombre || '');
+  
 
 }
 /************************************
@@ -443,7 +444,7 @@ function desabilitarCamposConceptos(tieneSeguroSocial) {
  * ESTABLECER DEDUCCIONES DEL EMPLEADO
  ************************************/
 
-function establerDeducciones(empleado) {
+function establecerDeducciones(empleado) {
     // Si no hay empleado, salir
     if (!empleado) return;
 

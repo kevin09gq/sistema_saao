@@ -36,27 +36,35 @@ function abrirModal() {
     $menu.on('click', '.cm-item', function () {
         const accion = $(this).data('action');
         if (accion === 'ver' && filaSeleccionada) {
-     
+
             // Obtener id_departamento desde la fila seleccionada
             const idDepartamento = filaSeleccionada.data('id-departamento');
-            
+
             // Solo abrir modal si es Coordinador (id_departamento 6)
             if (idDepartamento === 6) {
                 // Obtener clave e id_empresa del empleado
                 const clave = String(filaSeleccionada.data('clave') || '').trim();
                 const idEmpresa = parseInt(filaSeleccionada.data('id-empresa')) || 1;
-                
+
                 // Buscar el empleado usando la función dedicada
                 const empleadoEncontrado = buscarEmpleado(clave, idEmpresa);
-                
+
                 if (empleadoEncontrado) {
                     establerDataModalCoordinador(empleadoEncontrado);
                 } else {
-                   console.warn('Empleado no encontrado');
-                } 
-            } else {
-                console.warn('Este empleado no es un Coordinador (departamento:', idDepartamento + ')');
-                alert('Este modal es solo para Coordinadores.');
+                    console.warn('Empleado no encontrado');
+                }
+            } else if (idDepartamento === 7) {
+                // Si es Jornalero (id_departamento 7)
+                const clave = String(filaSeleccionada.data('clave') || '').trim();
+                const idEmpresa = parseInt(filaSeleccionada.data('id-empresa')) || 1;
+                const empleadoEncontrado = buscarEmpleado(clave, idEmpresa);
+                if (empleadoEncontrado) {
+                    establerDataModalJornalero(empleadoEncontrado);
+                } else {
+                    console.warn('Empleado no encontrado');
+                }
+
             }
         }
         $menu.hide();
@@ -68,11 +76,11 @@ function buscarEmpleado(clave, idEmpresa) {
     if (!jsonNominaRelicario || !jsonNominaRelicario.departamentos) {
         return null;
     }
-    
+
     for (let depto of jsonNominaRelicario.departamentos) {
         if (depto.empleados) {
-            const empleado = depto.empleados.find(emp => 
-                String(emp.clave || '').trim() === clave && 
+            const empleado = depto.empleados.find(emp =>
+                String(emp.clave || '').trim() === clave &&
                 parseInt(emp.id_empresa) === idEmpresa
             );
             if (empleado) {

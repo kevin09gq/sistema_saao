@@ -218,7 +218,7 @@ function calcularTotalConceptosEnTiempoReal() {
 
 function actualizarConceptos() {
     $(document).on('click', '#btn-aplicar-isr-coordinador', function () {
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoCoordinador.getEmpleado();
 
         // Si no hay empleado, salir
         if (!empleado) return;
@@ -242,7 +242,7 @@ function actualizarConceptos() {
     });
 
     $(document).on('click', '#btn-aplicar-imss-coordinador', function () {
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoCoordinador.getEmpleado();
 
         // Si no hay empleado, salir
         if (!empleado) return;
@@ -266,7 +266,7 @@ function actualizarConceptos() {
     });
 
     $(document).on('click', '#mod-infonavit-coordinador', function () {
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoCoordinador.getEmpleado();
 
         // Si no hay empleado, salir
         if (!empleado) return;
@@ -290,7 +290,7 @@ function actualizarConceptos() {
     });
 
     $(document).on('click', '#btn-aplicar-ajuste-sub-coordinador', function () {
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoCoordinador.getEmpleado();
 
         // Si no hay empleado, salir
         if (!empleado) return;
@@ -315,7 +315,7 @@ function actualizarConceptos() {
 
  
     $(document).on('click', '#btn-aplicar-tarjeta-coordinador', function () {
-       const empleado = objEmpleado.getEmpleado();
+       const empleado = objEmpleadoCoordinador.getEmpleado();
 
         // Si no hay empleado, salir
         if (!empleado) return;
@@ -339,7 +339,7 @@ function actualizarConceptos() {
 
 function validarConceptoMax(inputSelector, codigo) {
     $(document).on('input', inputSelector, function () {
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoCoordinador.getEmpleado();
 
         // Si no hay empleado, salir
         if (!empleado) return;
@@ -357,7 +357,7 @@ function validarConceptoMax(inputSelector, codigo) {
 }
 function validarConceptoMaxTarjeta() {
        $(document).on('input', '#mod-tarjeta-coordinador', function () {
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoCoordinador.getEmpleado();
 
         // Si no hay empleado, salir
         if (!empleado) return;
@@ -389,7 +389,7 @@ function aplicarTotalHistorial() {
 
     // Checador: suma de descuento_olvido en historial_olvidos
     $(document).on('click', '#btn-aplicar-checador-coordinador', function () {
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoCoordinador.getEmpleado();
         if (!empleado) return;
 
         const totalChecador = Array.isArray(empleado.historial_olvidos)
@@ -405,7 +405,7 @@ function aplicarTotalHistorial() {
 
     // Retardos: suma de total_descontado en historial_retardos
     $(document).on('click', '#btn-calcular-retardos-coordinador', function () {
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoCoordinador.getEmpleado();
         if (!empleado) return;
 
         const totalRetardos = Array.isArray(empleado.historial_retardos)
@@ -421,7 +421,7 @@ function aplicarTotalHistorial() {
 
     // Inasistencias: suma de descuento_inasistencia en historial_inasistencias
     $(document).on('click', '#btn-calcular-inasistencias-coordinador', function () {
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoCoordinador.getEmpleado();
         if (!empleado) return;
 
         const totalInasistencias = Array.isArray(empleado.historial_inasistencias)
@@ -523,7 +523,7 @@ function aplicarRedondeo(totalSinRedondear) {
     $('#mod-sueldo-a-cobrar-coordinador').val(totalFinal.toFixed(2));
 
     // Persistir en el objeto empleado
-    const empleado = objEmpleado.getEmpleado();
+    const empleado = objEmpleadoCoordinador.getEmpleado();
     if (empleado) {
         empleado.redondeo_activo = redondeoActivo;
         empleado.redondeo        = diferencia;   // negativo si se restó, positivo si se sumó

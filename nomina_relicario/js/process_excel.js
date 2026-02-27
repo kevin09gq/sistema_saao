@@ -1,6 +1,7 @@
 jsonNominaRelicario = null;
 
 $(document).ready(function () {
+
     processExcelData();
     restoreNomina();
     confirmarsaveNomina();
@@ -12,6 +13,7 @@ $(document).ready(function () {
 
 // PASO 1: Función para procesar los archivos Excel subidos por el usuario y unir los datos 
 function processExcelData(params) {
+    $("#container-nomina_relicario").removeAttr("hidden");
     $('#btn_procesar_nomina_relicario').on('click', function (e) {
         e.preventDefault();
 
@@ -254,23 +256,8 @@ function obtenerJornalerosCoordinadores(JsonListaRaya) {
                 asignarPropiedadesEmpleado(JsonListaRaya);
                 ordenarEmpleadosPorNombre(JsonListaRaya);
                 jsonNominaRelicario = JsonListaRaya;
-                // Calcular retardos e inasistencias para todos los coordinadores (departamento 6)
-                if (typeof calcularRetardosTodosCoordinadores === 'function') {
-                    calcularRetardosTodosCoordinadores(jsonNominaRelicario);
-                }
-                if (typeof calcularInasistenciasTodosCoordinadores === 'function') {
-                    calcularInasistenciasTodosCoordinadores(jsonNominaRelicario);
-                }
-                if (typeof calcularOlvidosTodosCoordinadores === 'function') {
-                    calcularOlvidosTodosCoordinadores(jsonNominaRelicario);
-                }
 
-                // initComponents();
-                // Filtrar empleados con id_tipo_puesto 1
-                //let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, 7);
-
-                //mostrarDatosTabla(jsonFiltrado, 1);
-                //console.log(jsonNominaRelicario);
+                console.log(jsonNominaRelicario);
 
                 mostrarConfigValores();
 
@@ -503,10 +490,7 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
                 if (typeof calcularOlvidosTodosCoordinadores === 'function') {
                     calcularOlvidosTodosCoordinadores(jsonNominaRelicario);
                 }
-                initComponents();
-                // Filtrar empleados con id_tipo_puesto 1
-                let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, 7);
-                mostrarDatosTabla(jsonFiltrado, 1);
+                mostrarConfigValores();
                 console.log(jsonNominaRelicario);
 
             }

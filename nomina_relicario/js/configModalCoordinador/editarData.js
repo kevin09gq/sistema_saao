@@ -3,7 +3,7 @@ editarPropiedades();
 function editarPropiedades() {
     $("#btn-guardar-propiedades-coordinador").click(function (e) {
         e.preventDefault();
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoCoordinador.getEmpleado();
 
         // Si no hay empleado, salir
         if (!empleado) return;
@@ -30,7 +30,7 @@ function editarPropiedades() {
         limpiarModalCoordinador();
 
         //limpiar empleado abierto después de guardar
-        objEmpleado.limpiarEmpleado();
+        objEmpleadoCoordinador.limpiarEmpleado();
         // Cerrar modal después de guardar
         $('#modal-coordinadores').modal('hide');
 
