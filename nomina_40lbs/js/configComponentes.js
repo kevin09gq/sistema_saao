@@ -32,23 +32,5 @@ function limpiarCamposNomina() {
 
 }
 
-function getTabulador() {
-    var idEmpresa = 1; // Ajusta según tu lógica
-    $.ajax({
-        url: '../php/getTabulador.php',
-        type: 'POST',
-        data: {
-            accion: 'obtenerTabulador',
-            id_empresa: idEmpresa
-        },
-        dataType: 'json',
-        success: function (datos) {
-            console.log("Tabulador recibido:", datos);
-            
 
-        },
-        error: function (xhr, status, error) {
-        }
-    });
-}
 

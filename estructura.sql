@@ -40,15 +40,12 @@ CREATE TABLE IF NOT EXISTS puestos_especiales (
 );
 
 CREATE TABLE info_ranchos (
-  id_info_rancho int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  id_area int NOT NULL,
-  costo_jornal decimal(10,2) NOT NULL,
-  costo_tardeada decimal(10,2) NOT NULL,
-  costo_pasaje decimal(10,2) NOT NULL,
-  costo_comida decimal(10,2) NOT NULL,
-  horario_jornalero longtext,
-  num_arboles int NOT NULL,
-  FOREIGN KEY (id_area) REFERENCES areas(id_area) ON DELETE CASCADE ON UPDATE CASCADE
+    id_info_rancho INT AUTO_INCREMENT PRIMARY KEY,
+    id_area INT NOT NULL,
+    horario_jornalero LONGTEXT NOT NULL,
+    num_arboles INT NOT NULL,
+    FOREIGN KEY (id_area)
+    REFERENCES areas(id_area)
 );
 
 -- Esta tabla relaciona departamentos con

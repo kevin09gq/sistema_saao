@@ -62,8 +62,10 @@ function establerDataModalCoordinador(empleado) {
     const modal = new bootstrap.Modal(modalEl);
     modal.show();
 }
+
+
 /************************************
- * ESTABLECER REGISTROS DEL BIOMETRICO
+ * ESTABLECER REGISTROS DEL EMPLEADO
  ************************************/
 function establecerInformacionEmpleado(empleado) {
     // Rellenar los campos del modal con los datos del empleado
@@ -75,6 +77,7 @@ function establecerInformacionEmpleado(empleado) {
   
 
 }
+
 /************************************
  * ESTABLECER REGISTROS DEL BIOMETRICO
  ************************************/

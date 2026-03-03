@@ -7,6 +7,7 @@ $(document).ready(function () {
     obtenerRanchos();
     copiarHorario();
     limpiarFilaHorario();
+    esDescanso();
     obtenerInfoRanchos();
 
 });
@@ -42,6 +43,9 @@ function obtenerInfoRanchos() {
             let data = response.data;
             let contador = 1;
 
+            console.log(data);
+
+
             data.forEach(element => {
                 tmp += `
                 <tr>
@@ -53,10 +57,6 @@ function obtenerInfoRanchos() {
                             type="button"
                             data-id="${element.id_info_rancho}" 
                             data-rancho="${element.id_area}"
-                            data-jornal="${element.costo_jornal}"
-                            data-tardeada="${element.costo_tardeada}"
-                            data-pasaje="${element.costo_pasaje}"
-                            data-comida="${element.costo_comida}"
                             data-arboles="${element.num_arboles}"
                             data-horario='${element.horario_jornalero ? JSON.stringify(element.horario_jornalero) : ''}'
                             class="btn btn-sm btn-outline-primary btn-editar-rancho"><i class="bi bi-pencil-fill"></i></button>
@@ -65,10 +65,6 @@ function obtenerInfoRanchos() {
                             title="Ver detalles de la información del rancho"
                             type="button"
                             data-nombre="${element.nombre_area}"
-                            data-jornal="${element.costo_jornal}"
-                            data-tardeada="${element.costo_tardeada}"
-                            data-pasaje="${element.costo_pasaje}"
-                            data-comida="${element.costo_comida}"
                             data-arboles="${element.num_arboles}"
                             data-horario='${element.horario_jornalero ? JSON.stringify(element.horario_jornalero) : ''}'
                             class="btn btn-sm btn-outline-success btn-ver-info-rancho"><i class="bi bi-search"></i></button>
@@ -135,24 +131,16 @@ function copiarHorario() {
 
         // Obtener valores del formulario de referencia
         const entrada = $('#ref_entrada').val();
-        const salidaComida = $('#ref_salida_comida').val();
-        const entradaComida = $('#ref_entrada_comida').val();
         const salida = $('#ref_salida').val();
 
         // Verificar si al menos uno tiene valor
-        if (!entrada && !salidaComida && !entradaComida && !salida) return;
+        if (!entrada && !salida) return;
 
         // Copiar a las primeras 7 filas
         $('#tbody_horarios tr').each(function (index) {
             if (index < 7) { // solo las primeras 7 filas
                 if (entrada) {
                     $(this).find('input[name="horario_entrada[]"]').val(entrada);
-                }
-                if (salidaComida) {
-                    $(this).find('input[name="horario_salida_comida[]"]').val(salidaComida);
-                }
-                if (entradaComida) {
-                    $(this).find('input[name="horario_entrada_comida[]"]').val(entradaComida);
                 }
                 if (salida) {
                     $(this).find('input[name="horario_salida[]"]').val(salida);
@@ -162,8 +150,6 @@ function copiarHorario() {
 
         // Limpiar los campos de referencia
         $('#ref_entrada').val('');
-        $('#ref_salida_comida').val('');
-        $('#ref_entrada_comida').val('');
         $('#ref_salida').val('');
     });
 }
@@ -176,8 +162,16 @@ function limpiarFilaHorario() {
         const $fila = $(this).closest('tr');
         // Limpiar todos los campos de la fila
         $fila.find('input[name="horario_entrada[]"]').val('');
-        $fila.find('input[name="horario_salida_comida[]"]').val('');
-        $fila.find('input[name="horario_entrada_comida[]"]').val('');
+        $fila.find('input[name="horario_salida[]"]').val('');
+    });
+}
+
+function esDescanso() {
+    $(document).on("click", ".chk-descanso", function () {
+        // Recuperar la fila donde se hizo clic
+        const $fila = $(this).closest('tr');
+        // Limpiar todos los campos de la fila
+        $fila.find('input[name="horario_entrada[]"]').val('');
         $fila.find('input[name="horario_salida[]"]').val('');
     });
 }
@@ -207,11 +201,26 @@ $(document).on("submit", "#ranchosForm", function (e) {
     const accion = id_info_rancho ? "actualizarInfoRancho" : "registrarInfoRancho";
 
     const id_area = $("#id_rancho").val();
-    const costo_jornal = $("#costo_jornal").val();
-    const costo_tardeada = $("#costo_tardeada").val();
-    const costo_pasaje = $("#costo_pasaje").val();
-    const costo_comida = $("#costo_comida").val();
     const num_arboles = $("#num_arboles").val();
+
+    // Recoger los datos del horario
+    let horarios = [];
+    $('select[name="horario_dia[]"]').each(function (index) {
+        const dia = $(this).val().trim();
+        const entrada = $('input[name="horario_entrada[]"]').eq(index).val().trim();
+        const salida = $('input[name="horario_salida[]"]').eq(index).val().trim();
+        const descanso = $('input[name="horario_descanso[]"]').eq(index).is(':checked') ? 1 : 0;
+
+        // Solo agregar si al menos un campo tiene valor
+        if (dia || entrada || salida) {
+            horarios.push({
+                dia: dia || "",
+                entrada: entrada || "",
+                salida: salida || "",
+                descanso: descanso
+            });
+        }
+    });
 
     // ==========================================================================================
     //                                Validar campos requeridos
@@ -220,47 +229,10 @@ $(document).on("submit", "#ranchosForm", function (e) {
         alerta("Rancho requerido", "Debe seleccionar un rancho.", "error");
         return;
     }
-    if (!costo_jornal) {
-        alerta("Pago jornal requerido", "Ingresar el pago del jornal.", "error");
-        return;
-    }
-    if (!costo_tardeada) {
-        alerta("Pago tardeada requerido", "Ingresar el pago de la tardeada.", "error");
-        return;
-    }
-    if (!costo_pasaje) {
-        alerta("Pago pasaje requerido", "Ingresar el pago del pasaje.", "error");
-        return;
-    }
-    if (!costo_comida) {
-        alerta("Pago comida requerido", "Ingresar el pago de la comida.", "error");
-        return;
-    }
     if (!num_arboles) {
         alerta("Número de árboles requerido", "Ingresar el número de árboles.", "error");
         return;
     }
-
-    // Recoger los datos del horario
-    let horarios = [];
-    $('select[name="horario_dia[]"]').each(function (index) {
-        const dia = $(this).val().trim();
-        const entrada = $('input[name="horario_entrada[]"]').eq(index).val().trim();
-        const salida_comida = $('input[name="horario_salida_comida[]"]').eq(index).val().trim();
-        const entrada_comida = $('input[name="horario_entrada_comida[]"]').eq(index).val().trim();
-        const salida = $('input[name="horario_salida[]"]').eq(index).val().trim();
-
-        // Solo agregar si al menos un campo tiene valor
-        if (dia || entrada || salida_comida || entrada_comida || salida) {
-            horarios.push({
-                dia: dia || "",
-                entrada: entrada || "",
-                salida_comida: salida_comida || "",
-                entrada_comida: entrada_comida || "",
-                salida: salida || ""
-            });
-        }
-    });
 
     // Validar que el usuario haya llenado al menos un horario
     if (horarios.length === 0) {
@@ -273,10 +245,6 @@ $(document).on("submit", "#ranchosForm", function (e) {
         id_info_rancho: id_info_rancho,
 
         id_area: id_area,
-        costo_jornal: costo_jornal,
-        costo_tardeada: costo_tardeada,
-        costo_pasaje: costo_pasaje,
-        costo_comida: costo_comida,
         num_arboles: num_arboles,
         horarios: horarios
     }
@@ -322,20 +290,12 @@ $(document).on("click", ".btn-editar-rancho", function (e) {
 
     const id_info_rancho = $(this).data("id");
     const id_area = $(this).data("rancho");
-    const costo_jornal = $(this).data("jornal");
-    const costo_tardeada = $(this).data("tardeada");
-    const costo_pasaje = $(this).data("pasaje");
-    const costo_comida = $(this).data("comida");
     const num_arboles = $(this).data("arboles");
     const horario_jornalero = $(this).data("horario");
 
     // Llenar los campos del formulario con los datos del rancho
     $("#id_info_rancho").val(id_info_rancho);
     $("#id_rancho").val(id_area);
-    $("#costo_jornal").val(costo_jornal);
-    $("#costo_tardeada").val(costo_tardeada);
-    $("#costo_pasaje").val(costo_pasaje);
-    $("#costo_comida").val(costo_comida);
     $("#num_arboles").val(num_arboles);
 
     // Llenar los campos del horario
@@ -353,9 +313,12 @@ $(document).on("click", ".btn-editar-rancho", function (e) {
                 // Ahora horario_dia es un select
                 $fila.find('select[name="horario_dia[]"]').val(horario.dia || '');
                 $fila.find('input[name="horario_entrada[]"]').val(horario.entrada || '');
-                $fila.find('input[name="horario_salida_comida[]"]').val(horario.salida_comida || '');
-                $fila.find('input[name="horario_entrada_comida[]"]').val(horario.entrada_comida || '');
                 $fila.find('input[name="horario_salida[]"]').val(horario.salida || '');
+                if (horario.descanso && horario.descanso == 1) {
+                    $fila.find('input[name="horario_descanso[]"]').prop('checked', true);
+                } else {
+                    $fila.find('input[name="horario_descanso[]"]').prop('checked', false);
+                }
             }
         });
     }
@@ -373,10 +336,6 @@ $(document).on("click", ".btn-ver-info-rancho", function (e) {
     e.preventDefault();
 
     const nombre_area = $(this).data("nombre");
-    const costo_jornal = $(this).data("jornal");
-    const costo_tardeada = $(this).data("tardeada");
-    const costo_pasaje = $(this).data("pasaje");
-    const costo_comida = $(this).data("comida");
     const num_arboles = $(this).data("arboles");
     const horario_jornalero = $(this).data("horario");
 
@@ -384,10 +343,6 @@ $(document).on("click", ".btn-ver-info-rancho", function (e) {
     $("#body-info-rancho").html(`
     <tr class="text-center">
         <td><span class="badge text-bg-success fs-6">${nombre_area}</span></td>
-        <td>$ ${costo_jornal}</td>
-        <td>$ ${costo_tardeada}</td>
-        <td>$ ${costo_pasaje}</td>
-        <td>$ ${costo_comida}</td>
         <td>${num_arboles}</td>  
     `);
 
@@ -398,9 +353,8 @@ $(document).on("click", ".btn-ver-info-rancho", function (e) {
         <tr class="text-center">
             <td>${element.dia}</td>
             <td>${element.entrada}</td>
-            <td>${element.salida_comida}</td>
-            <td>${element.entrada_comida}</td>
             <td>${element.salida}</td>
+            <td>${element.descanso == 1 ? '<span class="badge bg-warning-subtle border border-warning-subtle text-warning-emphasis rounded-pill">Descanso</span>' : ""}</td>
         </tr>`;
     });
 

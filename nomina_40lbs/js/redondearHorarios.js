@@ -1,5 +1,5 @@
 jsonTabulador = null;
-
+let cantidadIncentivo = 250;
 function redondearHorarios() {
     // Verificar que exista jsonNomina40lbs con datos
     if (!jsonNomina40lbs || !jsonNomina40lbs.departamentos) {
@@ -24,7 +24,7 @@ function redondearHorarios() {
 
         // Solo procesar los departamentos relevantes
         if (nombreDept.includes('produccion 40 libras') ||
-            nombreDept.includes('empaque 10 libras') ||
+            nombreDept.includes('produccion 10 libras') ||
             nombreDept.includes('sin seguro')) {
 
 
@@ -178,7 +178,7 @@ function redondearRegistrosEmpleado(empleado, horariosPorDia) {
 
                 // Crear registro redondeado final con estructura simple
                 var registroRedondeadoSimple = {
-                    fecha: fecha,                                    // Fecha del registro (desde biométrico)
+                    dia: diaSemana,                                  // Día del registro (viernes, sábado, etc.)
                     entrada: resultadoFinal.entrada,               // Entrada redondeada (puede ser real o programada)
                     entrada_comida: resultadoFinal.entrada_comida,  // Entrada a comida (programada o 00:00)
                     termino_comida: resultadoFinal.termino_comida,   // Término de comida (programada o 00:00)
@@ -197,6 +197,31 @@ function redondearRegistrosEmpleado(empleado, horariosPorDia) {
     var totalesEmpleado = calcularTotalesEmpleadoRedondeado(empleado);
     empleado.minutos_trabajados = totalesEmpleado.minutos_netos;
     empleado.horas_trabajadas = formatearMinutosAHHMM(totalesEmpleado.minutos_netos);
+
+    aplicarIncentivoEmpleado(empleado);
+
+    // Agregar días faltantes de la semana (viernes a jueves) con propiedades vacías
+    const diasSemana = ['viernes', 'sábado', 'domingo', 'lunes', 'martes', 'miércoles', 'jueves'];
+    diasSemana.forEach(function (dia) {
+        const existe = empleado.biometrico_redondeado.some(r => r.dia === dia);
+        if (!existe) {
+            empleado.biometrico_redondeado.push({
+                dia: dia,
+                entrada: '',
+                entrada_comida: '',
+                termino_comida: '',
+                salida: '',
+                horas_comida: '',
+                horas_trabajadas: '',
+                minutos_trabajados: 0
+            });
+        }
+    });
+
+    // Ordenar los días de viernes a jueves
+    empleado.biometrico_redondeado.sort(function (a, b) {
+        return diasSemana.indexOf(a.dia) - diasSemana.indexOf(b.dia);
+    });
 
     console.log('Registros redondeados:', empleado.biometrico_redondeado);
 }
@@ -428,6 +453,17 @@ function formatearMinutosAHHMM(totalMinutos) {
     return hh + ':' + mm;
 }
 
+function aplicarIncentivoEmpleado(empleado) {
+    var registros = empleado && empleado.biometrico_redondeado ? empleado.biometrico_redondeado : [];
+    var tuvoFalta = registros.some(function (r) {
+        var e = (r.entrada || '').trim();
+        var s = (r.salida || '').trim();
+        return e === '00:00' && s === '00:00';
+    });
+
+    empleado.incentivo = tuvoFalta ? 0 : cantidadIncentivo;
+}
+
 function calcularTotalesEmpleadoRedondeado(empleado) {
     var totales = {
         minutos_turno: 0,
@@ -473,6 +509,26 @@ function getTabulador() {
          jsonTabulador = datos;
          console.log("Tabulador recibido:", jsonTabulador);
          imprimirSueldoBasePorHorasTrabajadas(jsonTabulador);
+
+         if (typeof mostrarDatosTabla === 'function') {
+             var pagina = (typeof paginaActualNomina !== 'undefined' && paginaActualNomina) ? paginaActualNomina : 1;
+             var jsonParaMostrar = jsonNomina40lbs;
+
+             if (typeof filtrarEmpleadosPorDepartamento === 'function') {
+                 var mapaFiltro = {
+                     '1': { idDepartamento: 4, seguroSocial: true },
+                     '2': { idDepartamento: 4, seguroSocial: false },
+                     '3': { idDepartamento: 5, seguroSocial: true },
+                     '4': { idDepartamento: 5, seguroSocial: false }
+                 };
+                 var cfg = mapaFiltro[$('#filtro-departamento').val()];
+                 if (cfg) {
+                     jsonParaMostrar = filtrarEmpleadosPorDepartamento(jsonNomina40lbs, cfg.idDepartamento, cfg.seguroSocial);
+                 }
+             }
+
+             mostrarDatosTabla(jsonParaMostrar, pagina);
+         }
             
 
         },
@@ -520,9 +576,18 @@ function imprimirSueldoBasePorHorasTrabajadas(tabulador) {
         return;
     }
 
+    var itemHoraExtra = null;
+    for (var i = 0; i < (tabulador || []).length; i++) {
+        if (tabulador[i] && tabulador[i].tipo === 'hora_extra' && tabulador[i].rango && tabulador[i].rango.desde) {
+            itemHoraExtra = tabulador[i];
+            break;
+        }
+    }
+    var minDesdeHoraExtra = itemHoraExtra ? convertirHoraAMinutos((itemHoraExtra.rango.desde || '').trim()) : null;
+
     jsonNomina40lbs.departamentos.forEach(function (departamento) {
         var nombreDept = (departamento.nombre || "").toLowerCase();
-        if (!(nombreDept.includes('produccion 40 libras') || nombreDept.includes('empaque 10 lbs') || nombreDept.includes('sin seguro'))) {
+        if (!(nombreDept.includes('produccion 40 libras') || nombreDept.includes('produccion 10 libras') || nombreDept.includes('sin seguro'))) {
             return;
         }
 
@@ -532,11 +597,25 @@ function imprimirSueldoBasePorHorasTrabajadas(tabulador) {
                 return;
             }
 
+            var minutosEmpleado = convertirHoraAMinutos(horas);
+
             var rango = obtenerRangoTabuladorPorHorasTrabajadas(horas, tabulador);
             if (rango) {
+                empleado.sueldo_neto = rango.sueldo_base;
                 console.log('Tabulador =>', empleado.nombre, 'horas_trabajadas:', horas, 'sueldo_base:', rango.sueldo_base);
             } else {
+                empleado.sueldo_neto = 0;
                 console.log('Tabulador =>', empleado.nombre, 'horas_trabajadas:', horas, 'sueldo_base: NO ENCONTRADO');
+            }
+
+            if (itemHoraExtra && minDesdeHoraExtra !== null && minutosEmpleado > minDesdeHoraExtra) {
+                var minutosExtra = Math.max(0, minutosEmpleado - minDesdeHoraExtra);
+                var costo = parseFloat(itemHoraExtra.costo_por_minuto) || 0;
+                var pagoExtra = minutosExtra * costo;
+                empleado.horas_extra = pagoExtra;
+                console.log('Hora extra =>', empleado.nombre, 'minutos_extra:', minutosExtra, 'costo_por_minuto:', costo, 'pago_extra:', pagoExtra);
+            } else {
+                empleado.horas_extra = 0;
             }
         });
     });

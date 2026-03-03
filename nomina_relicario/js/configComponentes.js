@@ -1,3 +1,5 @@
+quitarTarjeta();
+updateTarjeta();
 
 
 function initComponents() {
@@ -7,13 +9,13 @@ function initComponents() {
 }
 
 
-function mostrarConfigValores() {
+function mostrarConfigValores(bandera) {
     $("#container-nomina_relicario").attr("hidden", true);
     $("#config-valores-relicario").removeAttr("hidden");
-    asignarValoresConfig();
+    asignarValoresConfig(bandera);
 }
 
-function asignarValoresConfig() {
+function asignarValoresConfig(statusRancho = true) {
     $("#btn_config_avanzar_relicario").click(function (e) {
         e.preventDefault();
 
@@ -36,14 +38,18 @@ function asignarValoresConfig() {
         jsonNominaRelicario.pago_tardeada = tardeada;
 
         $("#config-valores-relicario").attr("hidden", true);
-        // Filtrar empleados con id_tipo_puesto 1
-        let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, 7);
-
-        mostrarDatosTabla(jsonFiltrado, 1);
         $("#tabla-nomina-responsive").removeAttr("hidden");
+
+        if (statusRancho) {
+            // obtenerHorarioRancho es async: llamará calcularSueldoSemanal que refresca la tabla
+            obtenerHorarioRancho();
+        } else {
+            // Sin horarioRancho (nómina restaurada): renderizar tabla directamente
+            let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, 7);
+            mostrarDatosTabla(jsonFiltrado, 1);
+        }
     });
 }
-
 
 function limpiarCamposNomina() {
     $("#btn_limpiar_datos").click(function (e) {
@@ -70,7 +76,6 @@ function limpiarCamposNomina() {
 
 }
 
-updateTarjeta();
 function updateTarjeta() {
     $(document).on('click', '#btn_aplicar_copias_global', function (e) {
         e.preventDefault();
@@ -126,7 +131,7 @@ function updateTarjeta() {
         }
     });
 }
-quitarTarjeta();
+
 function quitarTarjeta() {
 
     $(document).on('click', '#btn_delete_tarjeta', function () {

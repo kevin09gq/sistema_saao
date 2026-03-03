@@ -1,3 +1,7 @@
+if (typeof paginaActualNomina === 'undefined') {
+    var paginaActualNomina = 1;
+}
+
 function mostrarDatosTabla(jsonNomina40lbs, pagina = 1) {
     const empleadosPorPagina = 7;
 

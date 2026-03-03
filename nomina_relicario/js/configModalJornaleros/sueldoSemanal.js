@@ -1,0 +1,184 @@
+
+/************************************
+ * OBTENER EL HORARIO DEL RANCHO 
+ ************************************/
+
+function obtenerHorarioRancho(empleado = null) {
+    // Obtener el id_area del Relicario (siempre es 2)
+    const id_area = 2;
+
+    $.ajax({
+        type: "GET",
+        url: "../php/info-rancho.php",
+        data: {
+            accion: "obtenerHorarioRancho",
+            id_area: id_area
+        },
+        dataType: "json",
+        success: function (response) {
+
+            // response.data contiene el horario_jornalero
+            if (response.data && response.data.horario_jornalero) {
+                const horarioRancho = JSON.parse(response.data.horario_jornalero);
+                jsonNominaRelicario.horarioRancho = horarioRancho;
+                // Siempre recalcular después de obtener/actualizar el horario
+                calcularSueldoSemanal(empleado);
+            }
+        },
+        error: function (error) {
+            console.error("Error al obtener el horario:", error);
+        }
+    });
+}
+
+/************************************
+ * CALCULAR SUELDO SEMANAL, PASAJE
+ ************************************/
+
+function calcularSueldoSemanal(empleado = null) {
+    // Verificar que existe jsonNominaRelicario
+    if (!jsonNominaRelicario || !jsonNominaRelicario.departamentos) {
+        return;
+    }
+
+   
+    // Determinar qué empleados procesar
+    let empleadosAProcesar = [];
+
+    if (empleado) {
+        // Si se envía un empleado o empleados específicos
+        if (Array.isArray(empleado)) {
+            empleadosAProcesar = empleado;
+        } else {
+            empleadosAProcesar = [empleado];
+        }
+    } else {
+        // Si no se envía nada, recorrer todos los del departamento 7
+        jsonNominaRelicario.departamentos.forEach(departamento => {
+            if (!departamento.empleados) return;
+
+            departamento.empleados.forEach(empleado => {
+                if (parseInt(empleado.id_departamento) === 7) {
+                    empleadosAProcesar.push(empleado);
+                }
+            });
+        });
+    }
+
+    // === PROCESAR EMPLEADOS ===
+    empleadosAProcesar.forEach(empleado => {
+        // Verificar que sea departamento 7 (si es de jsonNominaRelicario)
+        if (parseInt(empleado.id_departamento) !== 7) {
+            return;
+        }
+
+        // === CONTAR DÍAS DE ASISTENCIA ===
+        let diasAsistidos = 0;
+
+        if (empleado.registros && Array.isArray(empleado.registros)) {
+            // Agrupar registros por fecha para manejar múltiples marcajes el mismo día
+            const registrosPorFecha = {};
+
+            empleado.registros.forEach(registro => {
+                const fecha = registro.fecha;
+                if (!registrosPorFecha[fecha]) {
+                    registrosPorFecha[fecha] = [];
+                }
+                registrosPorFecha[fecha].push(registro);
+            });
+
+            // Contar días donde hubo al menos una entrada válida
+            Object.keys(registrosPorFecha).forEach(fecha => {
+                const registrosDelDia = registrosPorFecha[fecha];
+
+                // Verificar si hay al menos una entrada válida ese día
+                const tieneEntradaValida = registrosDelDia.some(registro =>
+                    registro.entrada && registro.entrada.trim() !== ""
+                );
+
+                if (tieneEntradaValida) {
+                    diasAsistidos++;
+                }
+            });
+        }
+
+        // === CALCULAR SUELDO SEMANAL ===
+        const salarioDiario = parseFloat(empleado.salario_diario) || 0;
+        const sueldoSemanal = diasAsistidos * salarioDiario;
+        empleado.salario_semanal = sueldoSemanal === 0 ? 0 : sueldoSemanal.toFixed(2);
+
+        // === CALCULAR PASAJE ===
+        let pasajeTotal = 0;
+        let aplicaPasaje = false;
+
+        // Solo para empleados del departamento 7 con id_tipo_puesto diferente de 3
+        if (parseInt(empleado.id_departamento) === 7 && parseInt(empleado.id_tipo_puesto) !== 3) {
+            const precioPasaje = parseFloat(jsonNominaRelicario.precio_pasaje) || 0;
+            pasajeTotal = diasAsistidos * precioPasaje;
+            aplicaPasaje = true;
+        }
+
+      
+
+        if (aplicaPasaje) {
+            empleado.pasaje = pasajeTotal === 0 ? 0 : pasajeTotal.toFixed(2);
+        }
+
+        // calcular y asignar tardeadas
+        const diasTardeados = calcularTardeadas(empleado);
+        const montoTardeada = parseFloat(jsonNominaRelicario.pago_tardeada) || 0;
+       
+        const totalTarde = diasTardeados * montoTardeada;
+        empleado.tardeada = totalTarde === 0 ? 0 : totalTarde.toFixed(2);
+    });
+
+    // Refrescar la tabla con los valores calculados
+    if (typeof filtrarEmpleadosPorDepartamento === 'function' && typeof mostrarDatosTabla === 'function') {
+        let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, 7);
+        mostrarDatosTabla(jsonFiltrado, window.paginaActualNomina || 1);
+    }
+}
+
+
+/************************************
+ * CALCULAR TARDEADAS 
+ ************************************/
+
+// calcula cuántos días el empleado se pasó más de 45 min de la hora de salida
+// usa jsonNominaRelicario.horarioRancho que es un arreglo de objetos {dia,entrada,salida,...}
+function calcularTardeadas(empleado) {
+    if (!empleado.registros || !jsonNominaRelicario.horarioRancho) return 0;
+
+    const diasSemana = ['DOMINGO','LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO'];
+    let contador = 0;
+
+    // agrupar por fecha
+    const regs = {};
+    empleado.registros.forEach(r => {
+        if (!regs[r.fecha]) regs[r.fecha] = [];
+        regs[r.fecha].push(r);
+    });
+
+    Object.keys(regs).forEach(fecha => {
+        const ult = regs[fecha][regs[fecha].length - 1];
+        // tomar la última hora registrada (entrada o salida)
+        const horaMarcaje = ult.salida || ult.entrada;
+        if (!horaMarcaje) return;
+
+        // convertir dd/mm/yyyy a fecha
+        const p = fecha.split('/');
+        const dt = new Date(p[2], p[1]-1, p[0]);
+        const dia = diasSemana[dt.getDay()];
+
+        const horarioDia = jsonNominaRelicario.horarioRancho.find(h => h.dia === dia);
+        if (!horarioDia || !horarioDia.salida) return;
+
+        // comparar la última marca con la hora de salida del horario
+        const [hE,mE] = horaMarcaje.split(':').map(Number);
+        const [hH,mH] = horarioDia.salida.split(':').map(Number);
+        const diff = hE*60 + mE - (hH*60 + mH);
+        if (diff > 45) contador++;
+    });
+
+    return contador;
+}

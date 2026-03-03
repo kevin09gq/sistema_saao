@@ -74,14 +74,14 @@
 #btn-copiar-horarios-jornaleros{margin-top:0}
 
 /* Estilos compactos para la tabla de Registros BD */
-#tabla-horarios-oficiales-jornaleros{overflow:auto;max-height:420px;margin-top:.5rem}
-#tabla-horarios-oficiales-jornaleros table{width:100%;border-collapse:collapse;font-size:.95rem}
-#tabla-horarios-oficiales-jornaleros th,#tabla-horarios-oficiales-jornaleros td{padding:.5rem .6rem;border-bottom:1px solid #eef1f4}
-#tabla-horarios-oficiales-jornaleros thead th{background:#28a745;color:#fff;font-weight:700;position:sticky;top:0}
-#tabla-horarios-oficiales-jornaleros tbody tr:nth-child(odd){background:#f8f9fa}
-#tabla-horarios-oficiales-jornaleros tbody tr:nth-child(even){background:#fff}
-#tabla-horarios-oficiales-jornaleros tbody tr:hover{background:#f8fafc}
-#tabla-horarios-oficiales-jornaleros td .form-control-sm{height:36px;padding:.25rem .5rem}
+#tabla-dias-trabajados-jornaleros{overflow:auto;max-height:420px;margin-top:.5rem}
+#tabla-dias-trabajados-jornaleros table{width:100%;border-collapse:collapse;font-size:.95rem}
+#tabla-dias-trabajados-jornaleros th,#tabla-dias-trabajados-jornaleros td{padding:.5rem .6rem;border-bottom:1px solid #eef1f4}
+#tabla-dias-trabajados-jornaleros thead th{background:#28a745;color:#fff;font-weight:700;position:sticky;top:0}
+#tabla-dias-trabajados-jornaleros tbody tr:nth-child(odd){background:#f8f9fa}
+#tabla-dias-trabajados-jornaleros tbody tr:nth-child(even){background:#fff}
+#tabla-dias-trabajados-jornaleros tbody tr:hover{background:#f8fafc}
+#tabla-dias-trabajados-jornaleros td .form-control-sm{height:36px;padding:.25rem .5rem}
 
 
 /* ========================================

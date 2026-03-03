@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="../css/nomina_40lbs.css">
     <link rel="stylesheet" href="../css/encabezados.css">
     <link rel="stylesheet" href="../css/tablaNomina.css">
+    <link rel="stylesheet" href="../css/modal40lbs.css">
 
     <!-- SweetAlert2 CSS -->
     <script src="<?= SWEETALERT ?>"></script>
@@ -92,10 +93,10 @@
         <div class="controles-tabla-40lbs">
             <div class="filtros-container-40lbs">
                 <select class="filtro-departamento-40lbs" id="filtro-departamento">
-                    <option value= "1">40 Libras CSS</option>
-                    <option value= "2">40 Libras SSS</option>
-                    <option value= "3">10 Libras CSS</option>
-                    <option value= "4">10 Libras SSS</option>       
+                    <option value="1">40 Libras CSS</option>
+                    <option value="2">40 Libras SSS</option>
+                    <option value="3">10 Libras CSS</option>
+                    <option value="4">10 Libras SSS</option>
                 </select>
 
                 <div class="busqueda-container-40lbs" id="busqueda-container">
@@ -185,6 +186,7 @@
 
     <!-- Incluir el modal -->
 
+    <?php include 'modal40lbs.php'; ?>
     <?php include 'modalHorarios.php'; ?>
 
 
@@ -204,6 +206,10 @@
     <script src="../js/horariosSemanales.js"></script>
     <script src="../js/redondearHorarios.js"></script>
     <script src="../js/filtroBusqueda.js"></script>
+    <script src="../js/abrirModal.js"></script>
+    <script src="../js/configModal/establecerData.js"></script>
+    <script src="../js/configModal/configModal.js"></script>
+    <script src="../js/configModal/eventos.js"></script>
 
 </body>
 

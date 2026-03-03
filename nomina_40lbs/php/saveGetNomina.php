@@ -121,4 +121,5 @@ function obtenerNomina($data, $conexion) {
         echo json_encode(['success' => true, 'found' => false]);
     }
 }
+
 ?>

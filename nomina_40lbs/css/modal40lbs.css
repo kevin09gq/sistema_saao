@@ -7,7 +7,7 @@
 
 
 /* ========================================
- * INFORMACION DEL COORDINADOR
+ * INFORMACION DEL 40lbs
  * ======================================== */
 
 
@@ -57,12 +57,12 @@
  * ======================================== */
 
 /* Estilos compactos para la tabla de biométrico */
-#tabla-biometrico-coordinadores{overflow:auto;max-height:320px}
-#tabla-biometrico-coordinadores table{width:100%;border-collapse:collapse;font-size:.95rem}
-#tabla-biometrico-coordinadores th,#tabla-biometrico-coordinadores td{padding:.45rem .6rem;border-bottom:1px solid #eef1f4;text-align:left}
-#tabla-biometrico-coordinadores thead th{background:#28a745;color:#fff;font-weight:700;position:sticky;top:0}
-#tabla-biometrico-coordinadores tbody tr:nth-child(odd){background:#f8f9fa}
-#tabla-biometrico-coordinadores tbody tr:nth-child(even){background:#fff}
+#tabla-biometrico-40lbs{overflow:auto;max-height:320px}
+#tabla-biometrico-40lbs table{width:100%;border-collapse:collapse;font-size:.95rem}
+#tabla-biometrico-40lbs th,#tabla-biometrico-40lbs td{padding:.45rem .6rem;border-bottom:1px solid #eef1f4;text-align:left}
+#tabla-biometrico-40lbs thead th{background:#28a745;color:#fff;font-weight:700;position:sticky;top:0}
+#tabla-biometrico-40lbs tbody tr:nth-child(odd){background:#f8f9fa}
+#tabla-biometrico-40lbs tbody tr:nth-child(even){background:#fff}
 
 /* Estilos para el row de copiar horarios */
 .horarios-copiar-row{align-items:center}
@@ -71,17 +71,17 @@
 .horarios-copiar-row .col-md-3{display:flex;flex-direction:column}
 .horarios-copiar-row .col-md-3 .form-control-sm{padding:.35rem .5rem;font-size:.9rem}
 .horarios-copiar-row .btn-sm{white-space:nowrap}
-#btn-copiar-horarios-coordinadores{margin-top:0}
+#btn-copiar-horarios-40lbs{margin-top:0}
 
 /* Estilos compactos para la tabla de Registros BD */
-#tabla-horarios-oficiales-coordinadores{overflow:auto;max-height:420px;margin-top:.5rem}
-#tabla-horarios-oficiales-coordinadores table{width:100%;border-collapse:collapse;font-size:.95rem}
-#tabla-horarios-oficiales-coordinadores th,#tabla-horarios-oficiales-coordinadores td{padding:.5rem .6rem;border-bottom:1px solid #eef1f4}
-#tabla-horarios-oficiales-coordinadores thead th{background:#28a745;color:#fff;font-weight:700;position:sticky;top:0}
-#tabla-horarios-oficiales-coordinadores tbody tr:nth-child(odd){background:#f8f9fa}
-#tabla-horarios-oficiales-coordinadores tbody tr:nth-child(even){background:#fff}
-#tabla-horarios-oficiales-coordinadores tbody tr:hover{background:#f8fafc}
-#tabla-horarios-oficiales-coordinadores td .form-control-sm{height:36px;padding:.25rem .5rem}
+#tabla-biometrico-redondeado{overflow:auto;max-height:420px;margin-top:.5rem}
+#tabla-biometrico-redondeado table{width:100%;border-collapse:collapse;font-size:.95rem}
+#tabla-biometrico-redondeado th,#tabla-biometrico-redondeado td{padding:.5rem .6rem;border-bottom:1px solid #eef1f4}
+#tabla-biometrico-redondeado thead th{background:#28a745;color:#fff;font-weight:700;position:sticky;top:0}
+#tabla-biometrico-redondeado tbody tr:nth-child(odd){background:#f8f9fa}
+#tabla-biometrico-redondeado tbody tr:nth-child(even){background:#fff}
+#tabla-biometrico-redondeado tbody tr:hover{background:#f8fafc}
+#tabla-biometrico-redondeado td .form-control-sm{height:36px;padding:.25rem .5rem}
 
 
 /* ========================================
@@ -95,35 +95,35 @@
 .evento-card .evento-total{margin-top:.25rem;text-align:right;font-size:.95rem}
 
 
-#entradas-tempranas-coordinadores{background:linear-gradient(135deg,#dbeafe 0%,#e0f2fe 100%);border-left:4px solid #0d6efd;border-radius:.5rem;padding:.75rem;font-size:.9rem;line-height:1.6;color:#0c63e4}
-#entradas-tempranas-coordinadores .evento-item{padding:.35rem 0;border-bottom:1px solid rgba(13,110,253,.2)}
-#entradas-tempranas-coordinadores .evento-item:last-child{border-bottom:0}
-#total-entradas-tempranas-coordinadores{color:#0d6efd;font-weight:700;font-size:1.05rem}
+#entradas-tempranas-40lbs{background:linear-gradient(135deg,#dbeafe 0%,#e0f2fe 100%);border-left:4px solid #0d6efd;border-radius:.5rem;padding:.75rem;font-size:.9rem;line-height:1.6;color:#0c63e4}
+#entradas-tempranas-40lbs .evento-item{padding:.35rem 0;border-bottom:1px solid rgba(13,110,253,.2)}
+#entradas-tempranas-40lbs .evento-item:last-child{border-bottom:0}
+#total-entradas-tempranas-40lbs{color:#0d6efd;font-weight:700;font-size:1.05rem}
 
-#salidas-tardias-coordinadores{background:linear-gradient(135deg,#ffedd5 0%,#fed7aa 100%);border-left:4px solid #fd7e14;border-radius:.5rem;padding:.75rem;font-size:.9rem;line-height:1.6;color:#f76707}
-#salidas-tardias-coordinadores .evento-item{padding:.35rem 0;border-bottom:1px solid rgba(253,126,20,.2)}
-#salidas-tardias-coordinadores .evento-item:last-child{border-bottom:0}
-#total-salidas-tardias-coordinadores{color:#fd7e14;font-weight:700;font-size:1.05rem}
+#salidas-tardias-40lbs{background:linear-gradient(135deg,#ffedd5 0%,#fed7aa 100%);border-left:4px solid #fd7e14;border-radius:.5rem;padding:.75rem;font-size:.9rem;line-height:1.6;color:#f76707}
+#salidas-tardias-40lbs .evento-item{padding:.35rem 0;border-bottom:1px solid rgba(253,126,20,.2)}
+#salidas-tardias-40lbs .evento-item:last-child{border-bottom:0}
+#total-salidas-tardias-40lbs{color:#fd7e14;font-weight:700;font-size:1.05rem}
 
-#salidas-tempranas-coordinadores{background:linear-gradient(135deg,#f3e8ff 0%,#e9d5ff 100%);border-left:4px solid #a855f7;border-radius:.5rem;padding:.75rem;font-size:.9rem;line-height:1.6;color:#9333ea}
-#salidas-tempranas-coordinadores .evento-item{padding:.35rem 0;border-bottom:1px solid rgba(168,85,247,.2)}
-#salidas-tempranas-coordinadores .evento-item:last-child{border-bottom:0}
-#total-salidas-tempranas-coordinadores{color:#a855f7;font-weight:700;font-size:1.05rem}
+#salidas-tempranas-40lbs{background:linear-gradient(135deg,#f3e8ff 0%,#e9d5ff 100%);border-left:4px solid #a855f7;border-radius:.5rem;padding:.75rem;font-size:.9rem;line-height:1.6;color:#9333ea}
+#salidas-tempranas-40lbs .evento-item{padding:.35rem 0;border-bottom:1px solid rgba(168,85,247,.2)}
+#salidas-tempranas-40lbs .evento-item:last-child{border-bottom:0}
+#total-salidas-tempranas-40lbs{color:#a855f7;font-weight:700;font-size:1.05rem}
 
-#olvidos-checador-coordinadores{background:linear-gradient(135deg,#fee2e2 0%,#fecaca 100%);border-left:4px solid #dc3545;border-radius:.5rem;padding:.75rem;font-size:.9rem;line-height:1.6;color:#c41c3b}
-#olvidos-checador-coordinadores .evento-item{padding:.35rem 0;border-bottom:1px solid rgba(220,53,69,.2)}
-#olvidos-checador-coordinadores .evento-item:last-child{border-bottom:0}
-#total-olvidos-checador-coordinadores{color:#dc3545;font-weight:700;font-size:1.05rem}
+#olvidos-checador-40lbs{background:linear-gradient(135deg,#fee2e2 0%,#fecaca 100%);border-left:4px solid #dc3545;border-radius:.5rem;padding:.75rem;font-size:.9rem;line-height:1.6;color:#c41c3b}
+#olvidos-checador-40lbs .evento-item{padding:.35rem 0;border-bottom:1px solid rgba(220,53,69,.2)}
+#olvidos-checador-40lbs .evento-item:last-child{border-bottom:0}
+#total-olvidos-checador-40lbs{color:#dc3545;font-weight:700;font-size:1.05rem}
 
-#retardos-coordinadores{background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%);border-left:4px solid #ffc107;border-radius:.5rem;padding:.75rem;font-size:.9rem;line-height:1.6;color:#b8860b}
-#retardos-coordinadores .evento-item{padding:.35rem 0;border-bottom:1px solid rgba(255,193,7,.2)}
-#retardos-coordinadores .evento-item:last-child{border-bottom:0}
-#total-retardos-coordinadores{color:#ffc107;font-weight:700;font-size:1.05rem}
+#retardos-40lbs{background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%);border-left:4px solid #ffc107;border-radius:.5rem;padding:.75rem;font-size:.9rem;line-height:1.6;color:#b8860b}
+#retardos-40lbs .evento-item{padding:.35rem 0;border-bottom:1px solid rgba(255,193,7,.2)}
+#retardos-40lbs .evento-item:last-child{border-bottom:0}
+#total-retardos-40lbs{color:#ffc107;font-weight:700;font-size:1.05rem}
 
-#inasistencias-content-coordinadores{background:linear-gradient(135deg,#f3f4f6 0%,#e5e7eb 100%);border-left:4px solid #6c757d;border-radius:.5rem;padding:.75rem;font-size:.9rem;line-height:1.6;color:#495057}
-#inasistencias-content-coordinadores .evento-item{padding:.35rem 0;border-bottom:1px solid rgba(108,117,125,.2)}
-#inasistencias-content-coordinadores .evento-item:last-child{border-bottom:0}
-#total-inasistencias-coordinadores{color:#6c757d;font-weight:700;font-size:1.05rem}
+#inasistencias-content-40lbs{background:linear-gradient(135deg,#f3f4f6 0%,#e5e7eb 100%);border-left:4px solid #6c757d;border-radius:.5rem;padding:.75rem;font-size:.9rem;line-height:1.6;color:#495057}
+#inasistencias-content-40lbs .evento-item{padding:.35rem 0;border-bottom:1px solid rgba(108,117,125,.2)}
+#inasistencias-content-40lbs .evento-item:last-child{border-bottom:0}
+#total-inasistencias-40lbs{color:#6c757d;font-weight:700;font-size:1.05rem}
 
 
 
@@ -223,24 +223,24 @@
 
 
 /* ISR - Rojo/Rosa */
-#mod-isr-coordinador{border-color:#f87171 !important}
-#mod-isr-coordinador:focus{border-color:#dc2626 !important;box-shadow:0 0 0 3px rgba(220,38,38,.1) !important}
-#mod-isr-coordinador::-webkit-input-placeholder{color:#dc2626}
+#mod-isr-40lbs{border-color:#f87171 !important}
+#mod-isr-40lbs:focus{border-color:#dc2626 !important;box-shadow:0 0 0 3px rgba(220,38,38,.1) !important}
+#mod-isr-40lbs::-webkit-input-placeholder{color:#dc2626}
 
 /* IMSS - Azul */
-#mod-imss-coordinador{border-color:#60a5fa !important}
-#mod-imss-coordinador:focus{border-color:#2563eb !important;box-shadow:0 0 0 3px rgba(37,99,235,.1) !important}
-#mod-imss-coordinador::-webkit-input-placeholder{color:#2563eb}
+#mod-imss-40lbs{border-color:#60a5fa !important}
+#mod-imss-40lbs:focus{border-color:#2563eb !important;box-shadow:0 0 0 3px rgba(37,99,235,.1) !important}
+#mod-imss-40lbs::-webkit-input-placeholder{color:#2563eb}
 
 /* INFONAVIT - Verde */
-#mod-infonavit-coordinador{border-color:#34d399 !important}
-#mod-infonavit-coordinador:focus{border-color:#10b981 !important;box-shadow:0 0 0 3px rgba(16,185,129,.1) !important}
-#mod-infonavit-coordinador::-webkit-input-placeholder{color:#10b981}
+#mod-infonavit-40lbs{border-color:#34d399 !important}
+#mod-infonavit-40lbs:focus{border-color:#10b981 !important;box-shadow:0 0 0 3px rgba(16,185,129,.1) !important}
+#mod-infonavit-40lbs::-webkit-input-placeholder{color:#10b981}
 
 /* AJUSTES AL SUB - Púrpura */
-#mod-ajustes-sub-coordinador{border-color:#c084fc !important}
-#mod-ajustes-sub-coordinador:focus{border-color:#9333ea !important;box-shadow:0 0 0 3px rgba(147,51,234,.1) !important}
-#mod-ajustes-sub-coordinador::-webkit-input-placeholder{color:#9333ea}
+#mod-ajustes-sub-40lbs{border-color:#c084fc !important}
+#mod-ajustes-sub-40lbs:focus{border-color:#9333ea !important;box-shadow:0 0 0 3px rgba(147,51,234,.1) !important}
+#mod-ajustes-sub-40lbs::-webkit-input-placeholder{color:#9333ea}
 
 
 /* ========================================
@@ -264,7 +264,7 @@
  * ======================================== */
 
 /* Historial de Olvidos por Día */
-#historial-olvidos-coordinadores h6{color:#dc3545;border-bottom:2px solid #fee2e2;padding-bottom:.5rem}
+#historial-olvidos-40lbs h6{color:#dc3545;border-bottom:2px solid #fee2e2;padding-bottom:.5rem}
 #contenedor-historial-olvidos{background:#fef2f2;border:1px solid #fca5a5;border-radius:.5rem;padding:1rem;overflow-x:auto;max-height:300px;overflow-y:auto}
 #contenedor-historial-olvidos table{width:100%;border-collapse:collapse;font-size:.9rem;margin:0}
 #contenedor-historial-olvidos thead{background:#fee2e2;color:#991b1b;font-weight:700;position:sticky;top:0}
@@ -273,7 +273,7 @@
 #contenedor-historial-olvidos .sin-eventos{text-align:center;color:#dc3545;padding:1rem;font-style:italic}
 
 /* Historial de Retardos por Día */
-#historial-retardos-coordinadores h6{color:#ffc107;border-bottom:2px solid #fef3c7;padding-bottom:.5rem}
+#historial-retardos-40lbs h6{color:#ffc107;border-bottom:2px solid #fef3c7;padding-bottom:.5rem}
 #contenedor-historial-retardos{background:#fefbf0;border:1px solid #fcd34d;border-radius:.5rem;padding:1rem;overflow-x:auto;max-height:300px;overflow-y:auto}
 #contenedor-historial-retardos table{width:100%;border-collapse:collapse;font-size:.9rem;margin:0}
 #contenedor-historial-retardos thead{background:#fef3c7;color:#78350f;font-weight:700;position:sticky;top:0}
@@ -282,27 +282,27 @@
 #contenedor-historial-retardos .sin-eventos{text-align:center;color:#ffc107;padding:1rem;font-style:italic}
 
 /* Formulario para agregar inasistencia manual */
-#add-inasistencia-coordinador{gap:.75rem;align-items:flex-end}
-#add-inasistencia-coordinador .form-label{color:#495057;font-size:.9rem;margin-bottom:.35rem;font-weight:600}
-#add-inasistencia-coordinador .form-select,#add-inasistencia-coordinador .form-control{border:1px solid #d3d7df;border-radius:.35rem;padding:.5rem;font-size:.9rem}
-#add-inasistencia-coordinador .form-select:focus,#add-inasistencia-coordinador .form-control:focus{border-color:#6c757d;box-shadow:0 0 0 3px rgba(108,117,125,.1);outline:0}
-#add-inasistencia-coordinador .btn-info{background:#6c757d;border-color:#6c757d;color:#fff;font-weight:600;transition:all .2s}
-#add-inasistencia-coordinador .btn-info:hover{background:#5a6268;border-color:#5a6268}
+#add-inasistencia-40lbs{gap:.75rem;align-items:flex-end}
+#add-inasistencia-40lbs .form-label{color:#495057;font-size:.9rem;margin-bottom:.35rem;font-weight:600}
+#add-inasistencia-40lbs .form-select,#add-inasistencia-40lbs .form-control{border:1px solid #d3d7df;border-radius:.35rem;padding:.5rem;font-size:.9rem}
+#add-inasistencia-40lbs .form-select:focus,#add-inasistencia-40lbs .form-control:focus{border-color:#6c757d;box-shadow:0 0 0 3px rgba(108,117,125,.1);outline:0}
+#add-inasistencia-40lbs .btn-info{background:#6c757d;border-color:#6c757d;color:#fff;font-weight:600;transition:all .2s}
+#add-inasistencia-40lbs .btn-info:hover{background:#5a6268;border-color:#5a6268}
 
 /* Contenedor del historial de inasistencias */
-#contenedor-historial-inasistencias-coordinador{background:#f8f9fa;border:1px solid #d3d7df;border-radius:.5rem;padding:1rem;overflow-x:auto;max-height:300px;overflow-y:auto}
-#contenedor-historial-inasistencias-coordinador table{width:100%;border-collapse:collapse;font-size:.9rem;margin:0}
-#contenedor-historial-inasistencias-coordinador thead{background:#e5e7eb;color:#495057;font-weight:700;position:sticky;top:0}
-#contenedor-historial-inasistencias-coordinador th,#contenedor-historial-inasistencias-coordinador td{padding:.5rem .75rem;border-bottom:1px solid #d3d7df;text-align:left}
-#contenedor-historial-inasistencias-coordinador tbody tr:hover{background:#f3f4f6}
-#contenedor-historial-inasistencias-coordinador .sin-eventos{text-align:center;color:#6c757d;padding:1rem;font-style:italic}
+#contenedor-historial-inasistencias-40lbs{background:#f8f9fa;border:1px solid #d3d7df;border-radius:.5rem;padding:1rem;overflow-x:auto;max-height:300px;overflow-y:auto}
+#contenedor-historial-inasistencias-40lbs table{width:100%;border-collapse:collapse;font-size:.9rem;margin:0}
+#contenedor-historial-inasistencias-40lbs thead{background:#e5e7eb;color:#495057;font-weight:700;position:sticky;top:0}
+#contenedor-historial-inasistencias-40lbs th,#contenedor-historial-inasistencias-40lbs td{padding:.5rem .75rem;border-bottom:1px solid #d3d7df;text-align:left}
+#contenedor-historial-inasistencias-40lbs tbody tr:hover{background:#f3f4f6}
+#contenedor-historial-inasistencias-40lbs .sin-eventos{text-align:center;color:#6c757d;padding:1rem;font-style:italic}
 
 /* ========================================
  * ESTILOS PARA SUELDO A COBRAR (MODAL)      
  * ======================================== */
-#mod-sueldo-coordinador{border:1px solid #d1fae5;border-radius:.5rem;box-shadow:0 1px 3px rgba(0,0,0,.05);background:#f0fdf4;padding:1.5rem;margin-top:1rem}
-#mod-sueldo-coordinador .form-check-label{color:#065f46;font-weight:600}
-#mod-sueldo-coordinador .sueldo-cobrar-label{font-size:1.1rem;color:#065f46;font-weight:700}
-#mod-sueldo-coordinador .sueldo-cobrar-input{border:1px solid #6ee7b7;border-radius:.35rem;padding:.5rem .75rem;font-size:1rem;width:100%;text-align:center;background:#fff}
-#mod-sueldo-coordinador .sueldo-cobrar-input:focus{border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.1)}
-#mod-sueldo-coordinador .sueldo-cobrar-descripcion{color:#065f46;font-size:.85rem}
+#mod-sueldo-40lbs{border:1px solid #d1fae5;border-radius:.5rem;box-shadow:0 1px 3px rgba(0,0,0,.05);background:#f0fdf4;padding:1.5rem;margin-top:1rem}
+#mod-sueldo-40lbs .form-check-label{color:#065f46;font-weight:600}
+#mod-sueldo-40lbs .sueldo-cobrar-label{font-size:1.1rem;color:#065f46;font-weight:700}
+#mod-sueldo-40lbs .sueldo-cobrar-input{border:1px solid #6ee7b7;border-radius:.35rem;padding:.5rem .75rem;font-size:1rem;width:100%;text-align:center;background:#fff}
+#mod-sueldo-40lbs .sueldo-cobrar-input:focus{border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.1)}
+#mod-sueldo-40lbs .sueldo-cobrar-descripcion{color:#065f46;font-size:.85rem}

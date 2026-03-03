@@ -43,8 +43,8 @@
                                     <i class="bi bi-check-circle"></i> Biometrico
                                 </button>
 
-                                <button type="button" class="btn btn-outline-primary mini-tab-registros" id="btn-horarios-oficiales-jornaleros">
-                                    <i class="bi bi-clock-history"></i> Horarios Oficial
+                                <button type="button" class="btn btn-outline-primary mini-tab-registros" id="btn-dias-trabajados-jornaleros">
+                                    <i class="bi bi-clock-history"></i> Dias Trabajados
                                 </button>
                             </div>
                         </div>
@@ -68,51 +68,19 @@
                         </div>
 
                         <!-- Tabla de Registros BD -->
-                        <div class="table-container" id="tabla-horarios-oficiales-jornaleros" hidden>
-                            <!-- Campos de entrada rápida para copiar a todos los días -->
-                            <div class="card bg-light mb-3">
-                                <div class="card-body">
-
-                                    <div class="row gx-3 gy-2 align-items-end horarios-copiar-row">
-                                        <div class="col-md-3 col-sm-6">
-                                            <label class="form-label fw-semibold small">Entrada</label>
-                                            <input type="time" step="60" class="form-control form-control-sm" id="input-entrada-copiar-jornaleros" placeholder="HH:MM">
-                                        </div>
-                                        <div class="col-md-3 col-sm-6">
-                                            <label class="form-label fw-semibold small">Salida Comida</label>
-                                            <input type="time" step="60" class="form-control form-control-sm" id="input-salida-comida-copiar-jornaleros" placeholder="HH:MM">
-                                        </div>
-                                        <div class="col-md-3 col-sm-6">
-                                            <label class="form-label fw-semibold small">Entrada Comida</label>
-                                            <input type="time" step="60" class="form-control form-control-sm" id="input-entrada-comida-copiar-jornaleros" placeholder="HH:MM">
-                                        </div>
-                                        <div class="col-md-3 col-sm-6">
-                                            <label class="form-label fw-semibold small">Salida</label>
-                                            <input type="time" step="60" class="form-control form-control-sm" id="input-salida-copiar-jornaleros" placeholder="HH:MM">
-                                        </div>
-                                        <div class="col-md-3 d-flex justify-content-end align-items-end">
-                                            <button type="button" class="btn btn-primary btn-sm" id="btn-copiar-horarios-jornaleros" title="Copiar a Todos los Días" aria-label="Copiar a Todos los Días">
-                                                <i class="bi bi-clipboard-check"></i> Copiar
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div>
+                        <div class="table-container" id="tabla-dias-trabajados-jornaleros" hidden>
+                           
 
                             <table class="custom-table">
                                 <thead>
                                     <tr>
                                         <th>Día</th>
-                                        <th>Entrada</th>
-                                        <th>Salida Comida</th>
-                                        <th>Entrada Comida</th>
-                                        <th>Salida</th>
-                                        <th>Acción</th>
-
+                                        <th>Fecha</th>
+                                        <th>Cantidad</th>
+                                       
                                     </tr>
                                 </thead>
-                                <tbody id="tbody-horarios-oficiales-jornaleros">
+                                <tbody id="tbody-dias-trabajados-jornaleros">
                                     <!-- Los datos se llenarán con JavaScript -->
 
                                 </tbody>
@@ -270,6 +238,22 @@
                                             <label class="form-label fw-semibold">Sueldo Semanal ($)</label>
                                             <div class="flex-grow-1 d-flex align-items-end">
                                                 <input type="number" step="0.01" class="form-control mod-input-azul" id="mod-sueldo-semanal-jornalero" value="" placeholder="0.00">
+                                            </div>
+                                        </div>
+
+                                         <div class="col-md-6 d-flex flex-column">
+                                            <label class="form-label fw-semibold">Pasaje ($)</label>
+                                            <div class="flex-grow-1 d-flex align-items-end">
+                                                <input type="number" step="0.01" class="form-control mod-input-azul" id="mod-pasaje-jornalero" value="" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-4">
+                                        <div class="col-md-6 d-flex flex-column">
+                                            <label class="form-label fw-semibold">Tardeada</label>
+                                            <div class="flex-grow-1 d-flex align-items-end">
+                                                <input type="number" step="0.01" class="form-control mod-input-azul" id="mod-tardeada-jornalero" value="" placeholder="0.00">
                                             </div>
                                         </div>
 

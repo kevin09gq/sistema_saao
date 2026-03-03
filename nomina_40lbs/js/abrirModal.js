@@ -10,13 +10,9 @@ abrirModal();
 
 function mostrarContextMenu() {
     // Click derecho en fila de la tabla
-    $('#tabla-nomina-body-relicario').on('contextmenu', 'tr', function (e) {
+    $('#tabla-nomina-body-40lbs').on('contextmenu', 'tr', function (e) {
         e.preventDefault();
         filaSeleccionada = $(this);
-
-        // Obtener datos de la fila
-        const clave = filaSeleccionada.data('clave');
-        const idTipoPuesto = filaSeleccionada.data('id-tipo-puesto');
 
         // Posicionar y mostrar menú
         $menu.css({
@@ -36,28 +32,21 @@ function abrirModal() {
     $menu.on('click', '.cm-item', function () {
         const accion = $(this).data('action');
         if (accion === 'ver' && filaSeleccionada) {
-     
-            // Obtener id_departamento desde la fila seleccionada
-            const idDepartamento = filaSeleccionada.data('id-departamento');
-            
-            // Solo abrir modal si es Coordinador (id_departamento 6)
-            if (idDepartamento === 6) {
-                // Obtener clave e id_empresa del empleado
-                const clave = String(filaSeleccionada.data('clave') || '').trim();
-                const idEmpresa = parseInt(filaSeleccionada.data('id-empresa')) || 1;
-                
-                // Buscar el empleado usando la función dedicada
-                const empleadoEncontrado = buscarEmpleado(clave, idEmpresa);
-                
-                if (empleadoEncontrado) {
-                    establerDataModalCoordinador(empleadoEncontrado);
-                } else {
-                   console.warn('Empleado no encontrado');
-                } 
+
+
+            // Obtener clave e id_empresa del empleado
+            const clave = String(filaSeleccionada.data('clave') || '').trim();
+            const idEmpresa = parseInt(filaSeleccionada.data('id-empresa')) || 1;
+
+            // Buscar el empleado usando la función dedicada
+            const empleadoEncontrado = buscarEmpleado(clave, idEmpresa);
+
+            if (empleadoEncontrado) {
+                establerDataModal(empleadoEncontrado);
             } else {
-                console.warn('Este empleado no es un Coordinador (departamento:', idDepartamento + ')');
-                alert('Este modal es solo para Coordinadores.');
+                console.warn('Empleado no encontrado');
             }
+
         }
         $menu.hide();
     });
@@ -65,14 +54,14 @@ function abrirModal() {
 
 // Función para buscar empleado por clave e id_empresa
 function buscarEmpleado(clave, idEmpresa) {
-    if (!jsonNominaRelicario || !jsonNominaRelicario.departamentos) {
+    if (!jsonNomina40lbs || !jsonNomina40lbs.departamentos) {
         return null;
     }
-    
-    for (let depto of jsonNominaRelicario.departamentos) {
+
+    for (let depto of jsonNomina40lbs.departamentos) {
         if (depto.empleados) {
-            const empleado = depto.empleados.find(emp => 
-                String(emp.clave || '').trim() === clave && 
+            const empleado = depto.empleados.find(emp =>
+                String(emp.clave || '').trim() === clave &&
                 parseInt(emp.id_empresa) === idEmpresa
             );
             if (empleado) {

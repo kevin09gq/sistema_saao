@@ -1,5 +1,9 @@
 editarPropiedades();
 
+/************************************
+ * EDIAR PROPIEDADES DEL EMPLEADO DESDE EL MODAL DE COORDINADOR
+ ************************************/
+
 function editarPropiedades() {
     $("#btn-guardar-propiedades-coordinador").click(function (e) {
         e.preventDefault();
@@ -53,6 +57,10 @@ function editarPropiedades() {
 
 }
 
+/************************************
+ * MODIFICAR PERCEPCIONES DEL EMPLEADO
+ ************************************/
+
 function modificarPercepciones(empleado) {
 
     // Obtener valores de las percepciones del modal
@@ -68,6 +76,10 @@ function modificarPercepciones(empleado) {
     empleado.sueldo_extra_total = sueldoExtraTotal;
 
 }
+
+/************************************
+ * MODIFICAR CONCEPTOS DEL EMPLEADO
+ ************************************/
 
 function modificarConceptos(empleado) {
     // Conceptos específicos
@@ -89,6 +101,11 @@ function modificarConceptos(empleado) {
 
 
 }
+
+/************************************
+ * MODIFICAR DEDUCCIONES DEL EMPLEADO
+ ************************************/
+
 
 // Esta función marca flags (_retardos_editado_manual, _checador_editado_manual, _inasistencia_editado_manual) en el objeto empleado
 // para indicar que el usuario editó manualmente el campo o lo dejó vacío en el modal.
@@ -155,6 +172,11 @@ function modificarDeducciones(empleado) {
     // Si redondeoActivoGuardar === true: empleado.redondeo ya tiene la diferencia correcta
     // (asignada por aplicarRedondeo() al vuelo), no se sobreescribe.
 }
+
+
+/************************************
+ * MODIFICAR HORARIO OFICIAL DEL EMPLEADO
+ ************************************/
 
 function modificarHorarioOficial(empleado){
     // Validar que exista empleado y horario oficial

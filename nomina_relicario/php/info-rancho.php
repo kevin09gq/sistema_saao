@@ -18,6 +18,9 @@ if (isset($_GET['accion']) || isset($_POST['accion'])) {
          case 'obtenerPuesto':
             obtenerPuesto();
             break;
+        case 'obtenerHorarioRancho':
+            obtenerHorarioRancho();
+            break;
 
 
         default:
@@ -100,4 +103,32 @@ function obtenerPuesto() {
     }
 
     respuesta(200, "exito", "exito", "success", $dep);
+}
+
+/**
+ * Función para obtener el horario del rancho
+ */
+function obtenerHorarioRancho() {
+    global $conexion;
+
+    if (empty($_GET["id_area"])) {
+        respuesta(400, "Error", "No se proporcionó el ID del área", "error", []);
+        return;
+    }
+
+    $id_area = $_GET["id_area"];
+
+    // SQL PARA OBTENER EL HORARIO DEL RANCHO
+    $sql = "SELECT horario_jornalero, num_arboles FROM info_ranchos WHERE id_area = ?";
+    $stmt = $conexion->prepare($sql);
+    $stmt->bind_param("i", $id_area);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        respuesta(200, "exito", "Horario obtenido correctamente", "success", $row);
+    } else {
+        respuesta(404, "Error", "No se encontró horario para esta área", "error", []);
+    }
 }

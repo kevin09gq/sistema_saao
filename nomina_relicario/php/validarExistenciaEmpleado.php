@@ -140,13 +140,15 @@ function validarExistenciaTrabajadorBD()
     $clavesString = implode(',', $valores);
 
     // Consultar empleados existentes (activos y de la empresa)
-    $sql = "SELECT clave_empleado FROM info_empleados WHERE clave_empleado IN ($clavesString) AND id_status = 1 AND id_empresa = 1";
+    $sql = "SELECT clave_empleado, salario_semanal, salario_diario FROM info_empleados WHERE clave_empleado IN ($clavesString) AND id_status = 1 AND id_empresa = 1";
     $result = mysqli_query($conexion, $sql);
 
     if ($result) {
         while ($row = mysqli_fetch_assoc($result)) {
             $clavesExistentes[] = [
-                'clave' => $row['clave_empleado']
+                'clave' => $row['clave_empleado'],
+                'salario_semanal' => $row['salario_semanal'],
+                'salario_diario' => $row['salario_diario']
             ];
         }
 
@@ -175,7 +177,7 @@ function obtenerJornalerosCoordinadores()
     }
 
     // Consultar empleados sin seguro con LEFT JOIN a horarios_oficiales
-    $sql = "SELECT ie.id_empleado, ie.clave_empleado, ie.nombre, ie.ap_paterno, ie.ap_materno, ie.biometrico, ie.id_empresa, ie.id_departamento, ie.id_puestoEspecial, ho.horario_oficial
+    $sql = "SELECT ie.id_empleado, ie.clave_empleado, ie.nombre, ie.ap_paterno, ie.ap_materno, ie.biometrico, ie.salario_semanal, ie.salario_diario, ie.id_empresa, ie.id_departamento, ie.id_puestoEspecial, ho.horario_oficial
             FROM info_empleados ie
             LEFT JOIN horarios_oficiales ho ON ie.id_empleado = ho.id_empleado
             WHERE ie.id_status = 1
@@ -195,6 +197,8 @@ function obtenerJornalerosCoordinadores()
                 'nombre' => $row['nombre'],
                 'ap_paterno' => $row['ap_paterno'],
                 'ap_materno' => $row['ap_materno'],
+                'salario_semanal' => $row['salario_semanal'],
+                'salario_diario' => $row['salario_diario'],
                 'id_empresa' => $row['id_empresa'],
                 'id_departamento' => $row['id_departamento'],
                 'id_puestoEspecial' => $row['id_puestoEspecial'],
@@ -255,7 +259,7 @@ function validarEmpleadosSinSeguroBiometrico()
     $biometricosString = implode(',', $valores);
 
     // Consultar empleados sin seguro con LEFT JOIN a horarios_oficiales
-    $sql = "SELECT ie.id_empleado, ie.clave_empleado, ie.nombre, ie.ap_paterno, ie.ap_materno, ie.biometrico, ie.id_empresa, ie.id_departamento, ie.id_puestoEspecial, ho.horario_oficial
+    $sql = "SELECT ie.id_empleado, ie.clave_empleado, ie.nombre, ie.ap_paterno, ie.ap_materno, ie.biometrico, ie.salario_semanal, ie.salario_diario, ie.id_empresa, ie.id_departamento, ie.id_puestoEspecial, ho.horario_oficial
             FROM info_empleados ie
             LEFT JOIN horarios_oficiales ho ON ie.id_empleado = ho.id_empleado
             WHERE ie.id_status = 1
@@ -275,6 +279,8 @@ function validarEmpleadosSinSeguroBiometrico()
                 'nombre' => $row['nombre'],
                 'ap_paterno' => $row['ap_paterno'],
                 'ap_materno' => $row['ap_materno'],
+                'salario_semanal' => $row['salario_semanal'],
+                'salario_diario' => $row['salario_diario'],
                 'id_empresa' => $row['id_empresa'],
                 'id_departamento' => $row['id_departamento'],
                 'id_puestoEspecial' => $row['id_puestoEspecial'],
@@ -328,7 +334,7 @@ function validarEmpleadosNuevos()
     $clavesString = implode(',', $valores);
 
     // Consultar empleados existentes (activos y de la empresa) con LEFT JOIN a horarios_oficiales
-    $sql = "SELECT ie.id_empleado, ie.clave_empleado, ie.nombre, ie.ap_paterno, ie.ap_materno, ie.biometrico, ie.id_empresa, ie.id_departamento, ie.id_puestoEspecial, ho.horario_oficial
+    $sql = "SELECT ie.id_empleado, ie.clave_empleado, ie.nombre, ie.ap_paterno, ie.ap_materno, ie.biometrico, ie.salario_semanal, ie.salario_diario, ie.id_empresa, ie.id_departamento, ie.id_puestoEspecial, ho.horario_oficial
             FROM info_empleados ie
             LEFT JOIN horarios_oficiales ho ON ie.id_empleado = ho.id_empleado
             WHERE ie.clave_empleado IN ($clavesString) 
@@ -342,6 +348,8 @@ function validarEmpleadosNuevos()
             $empleado = [
                 'clave' => $row['clave_empleado'],
                 'id_empresa' => $row['id_empresa'],
+                'salario_semanal' => $row['salario_semanal'],
+                'salario_diario' => $row['salario_diario'],
                 'nombre' => $row['nombre'] . ' ' . $row['ap_paterno'] . ' ' . $row['ap_materno'],
                 'biometrico' => $row['biometrico'],
                 'id_departamento' => $row['id_departamento'],

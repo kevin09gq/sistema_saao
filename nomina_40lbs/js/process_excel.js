@@ -7,8 +7,6 @@ $(document).ready(function () {
     restoreNomina();
     confirmarsaveNomina();
     limpiarCamposNomina();
-    
-
     console.log(jsonNomina40lbs);
 
 });

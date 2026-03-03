@@ -10,8 +10,6 @@ if (isset($_GET['accion']) || isset($_POST['accion'])) {
     $accion = $_GET['accion'] ?? $_POST['accion'];
 
     switch ($accion) {
-
- 
             // Configurar ranchos
         case 'obtenerRanchos':
             obtenerRanchos();
@@ -81,32 +79,12 @@ function registrarInfoRancho()
         respuesta(400, "Rancho requerido", "Debes seleccionar un rancho", "error", []);
         exit;
     }
-    if (empty($_POST['costo_jornal'])) {
-        respuesta(400, "Costo jornal requerido", "Debes ingresar el costo del jornal", "error", []);
-        exit;
-    }
-    if (empty($_POST['costo_tardeada'])) {
-        respuesta(400, "Costo tardeada requerido", "Debes ingresar el costo de la tardeada", "error", []);
-        exit;
-    }
-    if (empty($_POST['costo_pasaje'])) {
-        respuesta(400, "Costo pasaje requerido", "Debes ingresar el costo del pasaje", "error", []);
-        exit;
-    }
-    if (empty($_POST['costo_comida'])) {
-        respuesta(400, "Costo comida requerido", "Debes ingresar el costo de la comida", "error", []);
-        exit;
-    }
     if (empty($_POST['num_arboles'])) {
         respuesta(400, "Número de árboles requerido", "Debes ingresar el número de árboles", "error", []);
         exit;
     }
 
     $id_area = (int)$_POST['id_area'];
-    $costo_jornal = (float)$_POST['costo_jornal'];
-    $costo_tardeada = (float)$_POST['costo_tardeada'];
-    $costo_pasaje = (float)$_POST['costo_pasaje'];
-    $costo_comida = (float)$_POST['costo_comida'];
     $num_arboles = (int)$_POST['num_arboles'];
     $horarioJSON = json_encode($_POST['horarios'], JSON_UNESCAPED_UNICODE);
 
@@ -125,15 +103,13 @@ function registrarInfoRancho()
     $check->close();
 
     // 2. Insertar si no existe
-    $sql = $conexion->prepare("INSERT INTO info_ranchos 
-    (id_area, costo_jornal, costo_tardeada, costo_pasaje, costo_comida, num_arboles, horario_jornalero) 
-    VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $sql = $conexion->prepare("INSERT INTO info_ranchos (id_area, num_arboles, horario_jornalero) VALUES (?, ?, ?)");
     if (!$sql) {
         respuesta(500, "Error en la preparación", "Hubo un error al preparar la consulta: " . $conexion->error, "error", []);
         exit;
     }
 
-    $sql->bind_param("iddddis", $id_area, $costo_jornal, $costo_tardeada, $costo_pasaje, $costo_comida, $num_arboles, $horarioJSON);
+    $sql->bind_param("iis", $id_area, $num_arboles, $horarioJSON);
 
     if ($sql->execute()) {
         respuesta(200, "Información registrada", "La información del rancho se ha registrado correctamente", "success", []);
@@ -155,22 +131,6 @@ function actualizarInfoRancho()
         respuesta(400, "Rancho requerido", "Debes seleccionar un rancho", "error", []);
         exit;
     }
-    if (empty($_POST['costo_jornal'])) {
-        respuesta(400, "Costo jornal requerido", "Debes ingresar el costo del jornal", "error", []);
-        exit;
-    }
-    if (empty($_POST['costo_tardeada'])) {
-        respuesta(400, "Costo tardeada requerido", "Debes ingresar el costo de la tardeada", "error", []);
-        exit;
-    }
-    if (empty($_POST['costo_pasaje'])) {
-        respuesta(400, "Costo pasaje requerido", "Debes ingresar el costo del pasaje", "error", []);
-        exit;
-    }
-    if (empty($_POST['costo_comida'])) {
-        respuesta(400, "Costo comida requerido", "Debes ingresar el costo de la comida", "error", []);
-        exit;
-    }
     if (empty($_POST['num_arboles'])) {
         respuesta(400, "Número de árboles requerido", "Debes ingresar el número de árboles", "error", []);
         exit;
@@ -178,10 +138,6 @@ function actualizarInfoRancho()
 
     $id_info_rancho = (int)$_POST['id_info_rancho'];
     $id_area = (int)$_POST['id_area'];
-    $costo_jornal = (float)$_POST['costo_jornal'];
-    $costo_tardeada = (float)$_POST['costo_tardeada'];
-    $costo_pasaje = (float)$_POST['costo_pasaje'];
-    $costo_comida = (float)$_POST['costo_comida'];
     $num_arboles = (int)$_POST['num_arboles'];
     $horarioJSON = json_encode($_POST['horarios'], JSON_UNESCAPED_UNICODE);
 
@@ -201,14 +157,14 @@ function actualizarInfoRancho()
 
     // 2. Insertar si no existe
     $sql = $conexion->prepare("UPDATE info_ranchos SET 
-        id_area = ?, costo_jornal = ?, costo_tardeada = ?, costo_pasaje = ?, costo_comida = ?, num_arboles = ?, horario_jornalero = ? 
+        id_area = ?, num_arboles = ?, horario_jornalero = ? 
         WHERE id_info_rancho = ?");
     if (!$sql) {
         respuesta(500, "Error en la preparación", "Hubo un error al preparar la consulta: " . $conexion->error, "error", []);
         exit;
     }
 
-    $sql->bind_param("iddddisi", $id_area, $costo_jornal, $costo_tardeada, $costo_pasaje, $costo_comida, $num_arboles, $horarioJSON, $id_info_rancho);
+    $sql->bind_param("iisi", $id_area, $num_arboles, $horarioJSON, $id_info_rancho);
 
     if ($sql->execute()) {
         respuesta(200, "Información actualizada", "La información del rancho se ha actualizado correctamente", "success", []);
@@ -226,10 +182,6 @@ function obtenerInfoRanchos()
                 ir.id_info_rancho,
                 ir.id_area,
                 a.nombre_area,
-                ir.costo_jornal,
-                ir.costo_tardeada,
-                ir.costo_pasaje,
-                ir.costo_comida,
                 ir.num_arboles,
                 ir.horario_jornalero
             FROM info_ranchos ir

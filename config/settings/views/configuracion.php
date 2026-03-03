@@ -629,25 +629,10 @@ verificarSesion(); // Proteger esta página
                                         </div>
 
                                         <div class="row">
+
                                             <div class="col-12 col-md-6 mb-3">
-                                                <label for="costo_jornal" class="form-label">Pago Jornal</label>
-                                                <input type="number" class="form-control" name="costo_jornal" id="costo_jornal" placeholder="Ingrese el pago jornal">
-                                            </div>
-                                            <div class="col-12 col-md-6 mb-3">
-                                                <label for="costo_tardeada" class="form-label">Pago Tardeada</label>
-                                                <input type="number" class="form-control" name="costo_tardeada" id="costo_tardeada" placeholder="Ingrese el pago tardeada">
-                                            </div>
-                                            <div class="col-12 col-md-6 mb-3">
-                                                <label for="costo_pasaje" class="form-label">Pago Pasaje</label>
-                                                <input type="number" class="form-control" name="costo_pasaje" id="costo_pasaje" placeholder="Ingrese el pago pasaje">
-                                            </div>
-                                            <div class="col-12 col-md-6 mb-3">
-                                                <label for="costo_comida" class="form-label">Pago Comida</label>
-                                                <input type="number" class="form-control" name="costo_comida" id="costo_comida" placeholder="Ingrese el pago comida">
-                                            </div>
-                                            <div class="col-12 col-md-6 mb-3">
-                                                <label for="num_arboles" class="form-label">Num. Árboles</label>
-                                                <input type="number" class="form-control" name="num_arboles" id="num_arboles" placeholder="Ingrese el número de árboles">
+                                                <label for="num_arboles" class="form-label">Num. Tablas</label>
+                                                <input type="number" class="form-control" name="num_arboles" id="num_arboles" placeholder="Número de tablas">
                                             </div>
                                             <div class="col-12 col-md-6 mb-3">
 
@@ -661,7 +646,7 @@ verificarSesion(); // Proteger esta página
                                                     <div class="modal-dialog modal-xl">
                                                         <div class="modal-content">
                                                             <div class="modal-header">
-                                                                <h1 class="modal-title fs-5" id="exampleModalLabel">Horario Jornalero</h1>
+                                                                <h1 class="modal-title fs-5" id="exampleModalLabel">Horario de Jornalero</h1>
                                                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                             </div>
                                                             <div class="modal-body">
@@ -670,19 +655,11 @@ verificarSesion(); // Proteger esta página
                                                                     <!-- Formulario para copiar -->
                                                                     <div class="mb-4">
                                                                         <div class="row g-2">
-                                                                            <div class="col">
+                                                                            <div class="col-12 col-md-4">
                                                                                 <label class="form-label" for="ref_entrada">Entrada</label>
                                                                                 <input type="time" id="ref_entrada" class="form-control" placeholder="Entrada">
                                                                             </div>
-                                                                            <div class="col">
-                                                                                <label class="form-label" for="ref_salida_comida">Salida Comida</label>
-                                                                                <input type="time" id="ref_salida_comida" class="form-control" placeholder="Salida Comida">
-                                                                            </div>
-                                                                            <div class="col">
-                                                                                <label class="form-label" for="ref_entrada_comida">Entrada Comida</label>
-                                                                                <input type="time" id="ref_entrada_comida" class="form-control" placeholder="Entrada Comida">
-                                                                            </div>
-                                                                            <div class="col">
+                                                                            <div class="col-12 col-md-4">
                                                                                 <label class="form-label" for="ref_salida">Salida</label>
                                                                                 <input type="time" id="ref_salida" class="form-control" placeholder="Salida">
                                                                             </div>
@@ -699,9 +676,8 @@ verificarSesion(); // Proteger esta página
                                                                             <tr class="text-center">
                                                                                 <th>Día</th>
                                                                                 <th>Entrada</th>
-                                                                                <th>Salida Comida</th>
-                                                                                <th>Entrada Comida</th>
                                                                                 <th>Salida</th>
+                                                                                <th>Descanso</th>
                                                                                 <th>Acciones</th>
                                                                             </tr>
                                                                         </thead>
@@ -724,13 +700,16 @@ verificarSesion(); // Proteger esta página
                                                                                         <input type="time" class="form-control" name="horario_entrada[]" placeholder="Entrada">
                                                                                     </td>
                                                                                     <td>
-                                                                                        <input type="time" class="form-control" name="horario_salida_comida[]" placeholder="Salida Comida">
-                                                                                    </td>
-                                                                                    <td>
-                                                                                        <input type="time" class="form-control" name="horario_entrada_comida[]" placeholder="Entrada Comida">
-                                                                                    </td>
-                                                                                    <td>
                                                                                         <input type="time" class="form-control" name="horario_salida[]" placeholder="Salida">
+                                                                                    </td>
+                                                                                    <td class="text-center">
+                                                                                        <div class="d-inline form-check form-switch d-inline-flex align-items-center">
+                                                                                            <input
+                                                                                                class="form-check-input chk-descanso"
+                                                                                                type="checkbox"
+                                                                                                name="horario_descanso[]"
+                                                                                                value="1">
+                                                                                        </div>
                                                                                     </td>
                                                                                     <td class="text-center">
 
@@ -767,8 +746,6 @@ verificarSesion(); // Proteger esta página
                         </div>
                     </div>
 
-
-
                     <!-- TABULADOR - Solo interfaz -->
                     <div class="tab-pane fade" id="tabulador" role="tabpanel">
                         <div class="row mt-4">
@@ -795,7 +772,7 @@ verificarSesion(); // Proteger esta página
                                         <table class="table tabulador-table" style="min-width:700px;">
                                             <thead>
                                                 <tr>
-                                                    
+
                                                     <th class="bg-warning text-dark">Seleccionar</th>
                                                     <th class="bg-warning text-dark">De la hora</th>
                                                     <th class="bg-warning text-dark">A la</th>
@@ -956,11 +933,7 @@ verificarSesion(); // Proteger esta página
                             <thead>
                                 <tr class="text-center">
                                     <th>Rancho</th>
-                                    <th>Jornal</th>
-                                    <th>Tardeada</th>
-                                    <th>Pasaje</th>
-                                    <th>Comida</th>
-                                    <th>N.árboles</th>
+                                    <th>Número de Tablas</th>
                                 </tr>
                             </thead>
                             <tbody id="body-info-rancho"></tbody>
@@ -974,9 +947,8 @@ verificarSesion(); // Proteger esta página
                                 <tr class="text-center">
                                     <th>Día</th>
                                     <th>Entrada</th>
-                                    <th>Salida Comida</th>
-                                    <th>Entrada Comida</th>
                                     <th>Salida</th>
+                                    <th>Descanso</th>
                                 </tr>
                             </thead>
                             <tbody id="body-rancho-horario-jornaleros"></tbody>

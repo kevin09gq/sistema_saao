@@ -1,19 +1,21 @@
-editarPropiedades();
+editarPropiedadesJornalero();
 
-function editarPropiedades() {
+function editarPropiedadesJornalero() {
     $("#btn-guardar-propiedades-jornalero").click(function (e) {
         e.preventDefault();
         const empleado = objEmpleadoJornalero.getEmpleado();
 
         // Si no hay empleado, salir
         if (!empleado) return;
-        modificarDeducciones(empleado);
 
+        modificarPercepcionesJornalero(empleado);
+        modificarConceptosJornalero(empleado);
 
-     
 
         //limpiar empleado abierto después de guardar
         objEmpleadoJornalero.limpiarEmpleado();
+
+
         // Cerrar modal después de guardar
         $('#modal-jornaleros').modal('hide');
 
@@ -31,18 +33,41 @@ function editarPropiedades() {
 
     });
 
+}
 
 
+/************************************
+ * MODIFICAR PERCEPCIONES DEL EMPLEADO
+ ************************************/
+
+function modificarPercepcionesJornalero(empleado) {
+
+    // Obtener valores de las percepciones del modal
+    let sueldoSemanal = parseFloat($('#mod-sueldo-semanal-jornalero').val());
+    let pasaje = parseFloat($('#mod-pasaje-jornalero').val());
+    let tardeada = parseFloat($('#mod-tardeada-jornalero').val());
+    let sueldoExtraTotal = parseFloat($('#mod-total-extra-jornalero').val());
+
+    // Si los valores son NaN o vacíos, establecer como 0
+    sueldoSemanal = isNaN(sueldoSemanal) ? 0 : sueldoSemanal;
+    pasaje = isNaN(pasaje) ? 0 : pasaje;
+    tardeada = isNaN(tardeada) ? 0 : tardeada;
+    sueldoExtraTotal = isNaN(sueldoExtraTotal) ? 0 : sueldoExtraTotal;
+
+    // Establecer los valores en el objeto empleado
+    empleado.salario_semanal = sueldoSemanal;
+    empleado.pasaje = pasaje;
+    empleado.tardeada = tardeada;
+    empleado.sueldo_extra_total = sueldoExtraTotal;
 
 }
 
 
-
-function modificarConceptos(empleado) {
+function modificarConceptosJornalero(empleado) {
     // Conceptos específicos
     const conceptos = empleado.conceptos || [];
 
-    const actualizarConcepto = (codigo, nuevoResultado) => {
+    const actualizarConceptoJornalero = (codigo, nuevoResultado) => {
         const concepto = conceptos.find(c => c.codigo === codigo);
         if (concepto) {
             concepto.resultado = nuevoResultado;
@@ -51,12 +76,10 @@ function modificarConceptos(empleado) {
         }
     };
 
-    actualizarConcepto("45", parseFloat($('#mod-isr-jornalero').val()) || 0); // ISR
-    actualizarConcepto("52", parseFloat($('#mod-imss-jornalero').val()) || 0); // IMSS
-    actualizarConcepto("16", parseFloat($('#mod-infonavit-jornalero').val()) || 0); // Infonavit
-    actualizarConcepto("107", parseFloat($('#mod-ajustes-sub-jornalero').val()) || 0); // Ajuste al Sub
-
-
+    actualizarConceptoJornalero("45", parseFloat($('#mod-isr-jornalero').val()) || 0); // ISR
+    actualizarConceptoJornalero("52", parseFloat($('#mod-imss-jornalero').val()) || 0); // IMSS
+    actualizarConceptoJornalero("16", parseFloat($('#mod-infonavit-jornalero').val()) || 0); // Infonavit
+    actualizarConceptoJornalero("107", parseFloat($('#mod-ajustes-sub-jornalero').val()) || 0); // Ajuste al Sub
 }
 
 

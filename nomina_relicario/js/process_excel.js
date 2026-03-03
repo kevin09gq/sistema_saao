@@ -218,6 +218,7 @@ function obtenerJornalerosCoordinadores(JsonListaRaya) {
                     var empleado = {
                         clave: empleadoBD.clave,
                         nombre: empleadoBD.nombre + ' ' + empleadoBD.ap_paterno + ' ' + empleadoBD.ap_materno,
+                        salario_diario: empleadoBD.salario_diario,
                         id_empresa: empleadoBD.id_empresa,
                         id_departamento: empleadoBD.id_departamento,
                         id_puestoEspecial: empleadoBD.id_puestoEspecial,
@@ -225,9 +226,10 @@ function obtenerJornalerosCoordinadores(JsonListaRaya) {
                         seguroSocial: false
                     };
 
-                    // Agregar horario_oficial para empleados del departamento 6 (incluso si está vacío)
+                    // Agregar horario_oficial y salario_semanal solo para departamento 6
                     if (empleadoBD.id_departamento == 6) {
                         empleado.horario_oficial = empleadoBD.horario_oficial || null;
+                        empleado.salario_semanal = empleadoBD.salario_semanal;
                     }
 
                     // Determinar a qué departamento agregar
@@ -259,7 +261,7 @@ function obtenerJornalerosCoordinadores(JsonListaRaya) {
 
                 console.log(jsonNominaRelicario);
 
-                mostrarConfigValores();
+                mostrarConfigValores(false);
 
             }
         },
@@ -444,6 +446,7 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
                         clave: empleadoBD.clave,
                         nombre: empleadoBD.nombre + ' ' + empleadoBD.ap_paterno + ' ' + empleadoBD.ap_materno,
                         tarjeta: null,
+                        salario_diario: empleadoBD.salario_diario,
                         id_empresa: empleadoBD.id_empresa,
                         id_departamento: empleadoBD.id_departamento,
                         id_puestoEspecial: empleadoBD.id_puestoEspecial,
@@ -453,9 +456,10 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
                         registros: empleadoBiometrico ? (empleadoBiometrico.registros || []) : []
                     };
 
-                    // Agregar horario_oficial para empleados del departamento 6 (incluso si está vacío)
+                    // Agregar horario_oficial y salario_semanal solo para departamento 6
                     if (empleadoBD.id_departamento == 6) {
                         empleado.horario_oficial = empleadoBD.horario_oficial || null;
+                        empleado.salario_semanal = empleadoBD.salario_semanal;
                     }
 
                     // Determinar a qué departamento agregar
@@ -490,7 +494,7 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
                 if (typeof calcularOlvidosTodosCoordinadores === 'function') {
                     calcularOlvidosTodosCoordinadores(jsonNominaRelicario);
                 }
-                mostrarConfigValores();
+                mostrarConfigValores(true);
                 console.log(jsonNominaRelicario);
 
             }
@@ -647,15 +651,17 @@ function agregarEmpleadosNuevos(jsonNominaRelicario, JsonListaRaya) {
                         if (empleadoEncontrado) {
                             // Actualizar nombre con datos de BD
                             empleadoEncontrado.empleado.nombre = empValido.nombre;
+                            empleadoEncontrado.empleado.salario_diario = empValido.salario_diario;
                             empleadoEncontrado.empleado.id_empresa = empValido.id_empresa;
                             empleadoEncontrado.empleado.id_departamento = empValido.id_departamento;
                             empleadoEncontrado.empleado.id_puestoEspecial = empValido.id_puestoEspecial;
                             empleadoEncontrado.empleado.biometrico = empValido.biometrico;
                             empleadoEncontrado.empleado.seguroSocial = true;
 
-                            // Agregar horario_oficial para empleados del departamento 6 (incluso si está vacío)
+                            // Agregar horario_oficial y salario_semanal solo para departamento 6
                             if (empValido.id_departamento == 6) {
                                 empleadoEncontrado.empleado.horario_oficial = empValido.horario_oficial || null;
+                                empleadoEncontrado.empleado.salario_semanal = empValido.salario_semanal;
                             }
 
                             // Buscar o crear departamento destino
@@ -722,6 +728,7 @@ function verificarEmpleadosSinSeguro(jsonNominaRelicario) {
                     const empleado = {
                         clave: empSinSeguro.clave,
                         nombre: empSinSeguro.nombre + ' ' + empSinSeguro.ap_paterno + ' ' + empSinSeguro.ap_materno,
+                        salario_diario: empSinSeguro.salario_diario,
                         id_empresa: empSinSeguro.id_empresa,
                         id_departamento: empSinSeguro.id_departamento,
                         id_puestoEspecial: empSinSeguro.id_puestoEspecial,
@@ -729,9 +736,10 @@ function verificarEmpleadosSinSeguro(jsonNominaRelicario) {
                         seguroSocial: false,
                     };
 
-                    // Agregar horario_oficial para empleados del departamento 6 (incluso si está vacío)
+                    // Agregar horario_oficial y salario_semanal solo para departamento 6
                     if (empleado.id_departamento == 6) {
                         empleado.horario_oficial = empSinSeguro.horario_oficial || null;
+                        empleado.salario_semanal = empSinSeguro.salario_semanal;
                     }
 
                     // Determinar a qué departamento agregar
@@ -843,6 +851,9 @@ function asignarPropiedadesEmpleado(jsonNominaRelicario) {
             // Asignar propiedad pasaje para jornaleros base y vivero
             if ([1, 2].includes(empleado.id_tipo_puesto)) {
                 empleado.pasaje = empleado.pasaje ?? 0;
+            }
+              if ([1, 2, 3].includes(empleado.id_tipo_puesto)) {
+                empleado.tardeada = empleado.tardeada ?? 0;
             }
 
             // Inicializar registros como array vacío si no existen

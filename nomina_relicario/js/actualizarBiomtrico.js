@@ -35,7 +35,7 @@ function listarEmpleados() {
             if (emp.mostrar === false) return; // omitir
             const item = `
                 <label class="list-group-item">
-                    <input type="checkbox" class="form-check-input me-2" value="${emp.clave}">
+                    <input type="checkbox" class="form-check-input me-2" data-empresa="${emp.id_empresa}" value="${emp.clave}">
                     ${emp.nombre} <small class="text-muted">(${emp.clave})</small>
                 </label>
             `;
@@ -91,7 +91,10 @@ function subirBiometrico() {
 
         // Obtener claves de empleados seleccionados
         const clavesSeleccionadas = $('#lista-empleados-biometrico input:checked').map(function() {
-            return $(this).val();
+            return {
+                clave: $(this).val(),
+                id_empresa: $(this).data('empresa')
+            };
         }).get();
 
         // Procesar archivo biométrico
@@ -112,8 +115,8 @@ function subirBiometrico() {
                     unirBiometricoConSeleccionados(jsonNominaRelicario, JsonBiometrico, clavesSeleccionadas);
 
                     // Recalcular por empleado seleccionado: retardos, inasistencias y olvidos
-                    clavesSeleccionadas.forEach(clave => {
-                        const emp = obtenerEmpleadoPorClave(clave);
+                    clavesSeleccionadas.forEach(obj => {
+                        const emp = obtenerEmpleadoPorClave(obj.clave, obj.id_empresa);
                         if (!emp) return;
 
                         if (typeof asignarHistorialRetardos === 'function') {
@@ -136,12 +139,18 @@ function subirBiometrico() {
                                 asignarTotalOlvidosCoordinador(emp, true);
                             }
                         }
+
+                      
                     });
 
-                    // Actualizar tabla manteniendo filtrado y pagination
-                    const jsonFiltrado = window.jsonFiltrado || filtrarEmpleadosPorDepartamento(jsonNominaRelicario, 7);
-                    const paginaActual = window.paginaActualNomina || 1;
-                    mostrarDatosTabla(jsonFiltrado, paginaActual);
+                    // Recalcular sueldo semanal y pasaje para jornaleros antes de mostrar tabla
+                    if (jsonNominaRelicario.horarioRancho) {
+                        // Si ya existe horario, recalcular directamente
+                        calcularSueldoSemanal();
+                    } else {
+                        // Si no existe, obtenerlo primero
+                        obtenerHorarioRancho();
+                    }
 
                     // Cerrar modal y limpiar
                     const modal = bootstrap.Modal.getInstance(document.getElementById('biometricoModal'));
@@ -170,14 +179,14 @@ function subirBiometrico() {
 }
 
 // Helper: buscar empleado por clave en la nómina
-function obtenerEmpleadoPorClave(clave) {
+function obtenerEmpleadoPorClave(clave, id_empresa) {
     if (!jsonNominaRelicario || !Array.isArray(jsonNominaRelicario.departamentos)) {
         return null;
     }
     for (const depto of jsonNominaRelicario.departamentos) {
         if (!Array.isArray(depto.empleados)) continue;
         for (const emp of depto.empleados) {
-            if (String(emp.clave) === String(clave)) {
+            if (String(emp.clave) === String(clave) && emp.id_empresa === id_empresa) {
                 return emp;
             }
         }
@@ -206,13 +215,16 @@ function unirBiometricoConSeleccionados(jsonNominaRelicario, JsonBiometrico, cla
         });
     }
 
+    // Parámetro 'clavesSeleccionadas' es array de objetos {clave,id_empresa}
+    const seleccionadosSet = new Set(clavesSeleccionadas.map(o => String(o.clave) + '|' + String(o.id_empresa)));
+
     // Recorrer departamentos y actualizar SOLO empleados seleccionados
     if (jsonNominaRelicario && jsonNominaRelicario.departamentos) {
         jsonNominaRelicario.departamentos.forEach(depto => {
             if (depto.empleados) {
                 depto.empleados.forEach(emp => {
-                    // Solo procesar si esta clave fue seleccionada
-                    if (clavesSeleccionadas.includes(String(emp.clave))) {
+                    // Solo procesar si esta clave+empresa fue seleccionada
+                    if (seleccionadosSet.has(String(emp.clave) + '|' + String(emp.id_empresa))) {
                         const empBio = empleados2Map[normalizar(emp.nombre)];
                         if (empBio) {
                             // Copiar registros del biométrico

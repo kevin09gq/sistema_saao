@@ -57,33 +57,33 @@
         </div>
     </div>
 
-       <!-- Contenedor de Configuración de Valores -->
-        <div class="container mt-5 mb-5" id="config-valores-relicario" hidden>
-            <div class="row justify-content-center">
-                <div class="col-md-6">
-                    <div class="card shadow-sm" >
-                        <div class="card-body">
-                            <h5 class="card-title text-center mb-4">
-                                <i class="bi bi-gear"></i> Configuración de Valores
-                            </h5>
-                            <div class="mb-3">
-                                <label for="precio_pasaje_relicario" class="form-label">Precio del Pasaje</label>
-                                <input type="number" id="precio_pasaje_relicario" class="form-control" placeholder="Ej. 50.00" step="0.01" min="0">
-                            </div>
-                            <div class="mb-3">
-                                <label for="pago_tardeada_relicario" class="form-label">Pago Tardeada</label>
-                                <input type="number" id="pago_tardeada_relicario" class="form-control" placeholder="Ej. 25.00" step="0.01" min="0">
-                            </div>
-                            <div class="d-grid gap-2">
-                                <button class="btn btn-primary btn-lg" id="btn_config_avanzar_relicario" type="button">
-                                    <i class="bi bi-arrow-right"></i> Avanzar
-                                </button>
-                            </div>
+    <!-- Contenedor de Configuración de Valores -->
+    <div class="container mt-5 mb-5" id="config-valores-relicario" hidden>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title text-center mb-4">
+                            <i class="bi bi-gear"></i> Configuración de Valores
+                        </h5>
+                        <div class="mb-3">
+                            <label for="precio_pasaje_relicario" class="form-label">Precio del Pasaje</label>
+                            <input type="number" id="precio_pasaje_relicario" class="form-control" placeholder="Ej. 50.00" step="0.01" min="0">
+                        </div>
+                        <div class="mb-3">
+                            <label for="pago_tardeada_relicario" class="form-label">Pago Tardeada</label>
+                            <input type="number" id="pago_tardeada_relicario" class="form-control" placeholder="Ej. 25.00" step="0.01" min="0">
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary btn-lg" id="btn_config_avanzar_relicario" type="button">
+                                <i class="bi bi-arrow-right"></i> Avanzar
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
     <div class="container-tabla-nomina-relicario" id="tabla-nomina-responsive" hidden>
         <div class="header-tabla-relicario">
@@ -167,11 +167,11 @@
                 <button class="btn btn-outline-warning" id="btn_limpiar_datos" title="Subir Nuevamente">
                     <i class="bi bi-trash"></i> Subir Nuevamente
                 </button>
-              
+
             </div>
         </div>
 
-     
+
 
         <div id="tabla-nomina-container-relicario" class="tabla-nomina-container-relicario">
             <div class="table-responsive-relicario">
@@ -257,6 +257,10 @@
     <script src="../js/configModalCoordinador/justificacionCoordinador.js"></script>
     <script src="../js/configModalJornaleros/establecerData.js"></script>
     <script src="../js/configModalJornaleros/editarData.js"></script>
+    <script src="../js/configModalJornaleros/configModal.js"></script>
+    <script src="../js/configModalJornaleros/sueldoSemanal.js"></script>
+    <script src="../js/configModalJornaleros/eventos.js"></script>
+    <script src="../js/configModalJornaleros/newConcepts.js"></script>
 
 
 
