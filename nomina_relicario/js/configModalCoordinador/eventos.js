@@ -32,8 +32,41 @@ function nombreDia(fecha) {
 
 
 // ========================================
-// CALCULAR Y ASIGNAR HISTORIAL Y EL TOTAL DE EVENTOS  AL ARRANCAR EL SISTEMA
+// RECALCULAR EVENTOS DE UN COORDINADOR INDIVIDUAL (después de actualizar biométrico)
 // ========================================
+
+function recalcularEventosCoordinador(empleado) {
+    // Validar que sea coordinador
+    if (!empleado || parseInt(empleado.id_departamento) !== 6) {
+        return;
+    }
+
+    // Recalcular retardos
+    asignarHistorialRetardos(empleado);
+    asignarTotalRetardosCoordinador(empleado, true);
+    if (Array.isArray(empleado.historial_retardos) && empleado.historial_retardos.length === 0) {
+        delete empleado.historial_retardos;
+    }
+
+    // Recalcular inasistencias
+    asignarHistorialInasistencias(empleado);
+    asignarTotalInasistenciasCoordinador(empleado, true);
+    if (Array.isArray(empleado.historial_inasistencias) && empleado.historial_inasistencias.length === 0) {
+        delete empleado.historial_inasistencias;
+    }
+
+    // Recalcular olvidos del checador
+    asignarHistorialOlvidos(empleado);
+    asignarTotalOlvidosCoordinador(empleado, true);
+    if (Array.isArray(empleado.historial_olvidos) && empleado.historial_olvidos.length === 0) {
+        delete empleado.historial_olvidos;
+    }
+}
+
+// ========================================
+// CALCULAR EVENTOS AL ARRANQUE DEL SISTEMA
+// ========================================
+
 function calcularRetardosTodosCoordinadores(jsonNominaRelicario) {
     // Validar que exista la nómina y sus departamentos
     if (!jsonNominaRelicario || !Array.isArray(jsonNominaRelicario.departamentos)) {

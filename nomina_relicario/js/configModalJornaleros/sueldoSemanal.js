@@ -41,7 +41,7 @@ function calcularSueldoSemanal(empleado = null) {
         return;
     }
 
-   
+
     // Determinar qué empleados procesar
     let empleadosAProcesar = [];
 
@@ -118,25 +118,48 @@ function calcularSueldoSemanal(empleado = null) {
             aplicaPasaje = true;
         }
 
-      
-
         if (aplicaPasaje) {
             empleado.pasaje = pasajeTotal === 0 ? 0 : pasajeTotal.toFixed(2);
         }
 
+        // === CALCULAR COMIDA ===
+        let comidaTotal = 0;
+        let aplicaComida = false;
+
+        // Solo para empleados del departamento 7 con id_tipo_puesto diferente de 3
+        if (parseInt(empleado.id_departamento) === 7 && parseInt(empleado.id_tipo_puesto) !== 3) {
+            const precioComida = parseFloat(jsonNominaRelicario.pago_comida) || 0;
+            comidaTotal = diasAsistidos * precioComida;
+            aplicaComida = true;
+        }
+
+        if (aplicaComida) {
+            empleado.comida = comidaTotal === 0 ? 0 : comidaTotal.toFixed(2);
+        }
+
+        // === CALCULAR TARDEADAS ===
+
         // calcular y asignar tardeadas
         const diasTardeados = calcularTardeadas(empleado);
         const montoTardeada = parseFloat(jsonNominaRelicario.pago_tardeada) || 0;
-       
-        const totalTarde = diasTardeados * montoTardeada;
-        empleado.tardeada = totalTarde === 0 ? 0 : totalTarde.toFixed(2);
+
+        const totalTardeada = diasTardeados * montoTardeada;
+        empleado.tardeada = totalTardeada === 0 ? 0 : totalTardeada.toFixed(2);
+        empleado.sueldo_extra_total = (parseFloat(empleado.sueldo_extra_total) || 0) + totalTardeada;
+
     });
 
-    // Refrescar la tabla con los valores calculados
-    if (typeof filtrarEmpleadosPorDepartamento === 'function' && typeof mostrarDatosTabla === 'function') {
-        let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, 7);
-        mostrarDatosTabla(jsonFiltrado, window.paginaActualNomina || 1);
-    }
+    // Actualizar la tabla manteniendo el filtrado y paginación actual
+    const id_departamento = parseInt($('#filtro_departamento').val());
+    const id_puestoEspecial = parseInt($('#filtro_puesto').val());
+
+    // Aplicar los mismos filtros que están activos
+    let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, id_departamento);
+    jsonFiltrado = filtrarEmpleadosPorPuesto(jsonFiltrado, id_puestoEspecial);
+
+    // Mostrar la tabla en la página actual (usar window.paginaActualNomina para acceso global)
+
+    mostrarDatosTabla(jsonFiltrado, window.paginaActualNomina || 1);
 }
 
 
@@ -149,7 +172,7 @@ function calcularSueldoSemanal(empleado = null) {
 function calcularTardeadas(empleado) {
     if (!empleado.registros || !jsonNominaRelicario.horarioRancho) return 0;
 
-    const diasSemana = ['DOMINGO','LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO'];
+    const diasSemana = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
     let contador = 0;
 
     // agrupar por fecha
@@ -167,16 +190,16 @@ function calcularTardeadas(empleado) {
 
         // convertir dd/mm/yyyy a fecha
         const p = fecha.split('/');
-        const dt = new Date(p[2], p[1]-1, p[0]);
+        const dt = new Date(p[2], p[1] - 1, p[0]);
         const dia = diasSemana[dt.getDay()];
 
         const horarioDia = jsonNominaRelicario.horarioRancho.find(h => h.dia === dia);
         if (!horarioDia || !horarioDia.salida) return;
 
         // comparar la última marca con la hora de salida del horario
-        const [hE,mE] = horaMarcaje.split(':').map(Number);
-        const [hH,mH] = horarioDia.salida.split(':').map(Number);
-        const diff = hE*60 + mE - (hH*60 + mH);
+        const [hE, mE] = horaMarcaje.split(':').map(Number);
+        const [hH, mH] = horarioDia.salida.split(':').map(Number);
+        const diff = hE * 60 + mE - (hH * 60 + mH);
         if (diff > 45) contador++;
     });
 

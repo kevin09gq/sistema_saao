@@ -38,6 +38,163 @@ function diaSemanaRancho(fecha) {
 }
 
 // ========================================
+// RECALCULAR EVENTOS DE UN COORDINADOR INDIVIDUAL (después de actualizar biométrico)
+// ========================================
+
+function recalcularEventosJornalero(empleado) {
+    // Validar que sea jornalero
+    if (!empleado || parseInt(empleado.id_departamento) !== 7) {
+        return;
+    }
+
+    // Recalcular olvidos del checador
+    asignarHistorialOlvidosJornalero(empleado);
+    asignarTotalOlvidosJornalero(empleado, true);
+    if (Array.isArray(empleado.historial_olvidos) && empleado.historial_olvidos.length === 0) {
+        delete empleado.historial_olvidos;
+    }
+}
+
+
+// ========================================
+// CALCULAR Y ASIGNAR HISTORIAL Y EL TOTAL DE EVENTOS  AL ARRANCAR EL SISTEMA
+// ========================================
+
+function calcularOlvidosTodosJornaleros(jsonNominaRelicario) {
+    // Validar que exista la nómina y sus departamentos
+    if (!jsonNominaRelicario || !Array.isArray(jsonNominaRelicario.departamentos)) {
+        return;
+    }
+
+    // Iterar sobre todos los departamentos
+    jsonNominaRelicario.departamentos.forEach(departamento => {
+        // Iterar sobre todos los empleados del departamento
+        if (!Array.isArray(departamento.empleados)) return;
+
+        departamento.empleados.forEach(empleado => {
+            // Solo procesar jornaleros (id_departamento === 7)
+            if (parseInt(empleado.id_departamento) !== 7) return;
+
+            // Calcular el historial de olvidos para este coordinador
+            asignarHistorialOlvidosJornalero(empleado);
+
+            // Calcular y asignar el total de olvidos a la propiedad
+            asignarTotalOlvidosJornalero(empleado, true); // force=true para asegurar la asignación
+
+            // Limpiar historial si está vacío
+            if (Array.isArray(empleado.historial_olvidos) && empleado.historial_olvidos.length === 0) {
+                delete empleado.historial_olvidos;
+            }
+        });
+    });
+}
+
+
+// ========================================
+// ASIGNAR HISTORIAL DE LOS EVENTOS 
+// ========================================
+
+function asignarHistorialOlvidosJornalero(empleado) {
+    // Validaciones básicas
+    if (!empleado || !Array.isArray(empleado.registros)) {
+        return;
+    }
+
+    // Inicializar historial si no existe
+    if (!Array.isArray(empleado.historial_olvidos)) {
+        empleado.historial_olvidos = [];
+    }
+
+    // Preservar descuentos manuales previos (por fecha) para no perderlos al recalcular
+    const descuentosPrevios = {};
+    const editadosPrevios = {};
+    empleado.historial_olvidos.forEach(olvido => {
+        if (!olvido || !olvido.fecha) return;
+        const fechaNormalizada = String(olvido.fecha).trim();
+        // Preservar el valor previo incluso si es 0. Solo usar la constante si no existe valor previo.
+        if (olvido.descuento_olvido !== undefined && olvido.descuento_olvido !== null && olvido.descuento_olvido !== '') {
+            descuentosPrevios[fechaNormalizada] = parseFloat(olvido.descuento_olvido);
+        } else {
+            descuentosPrevios[fechaNormalizada] = descuentoPorChecador;
+        }
+        // Preservar si el registro fue editado manualmente
+        editadosPrevios[fechaNormalizada] = olvido.editado === true;
+    });
+
+    const nuevoHistorial = [];
+    const diasNormales = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const diasSemana = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
+
+    // Revisar cada registro
+    empleado.registros.forEach(reg => {
+        if (!reg.fecha) return;
+
+        // Validar si tiene entrada o salida (valores no vacíos)
+        const tieneEntrada = reg.entrada && String(reg.entrada).trim() !== '' && String(reg.entrada).trim() !== '-';
+        const tieneSalida = reg.salida && String(reg.salida).trim() !== '' && String(reg.salida).trim() !== '-';
+
+        // Olvido: tiene UNO pero NO el otro (registro incompleto)
+        if ((tieneEntrada && !tieneSalida) || (!tieneEntrada && tieneSalida)) {
+            // Obtener nombre del día de la semana
+            const [dia, mes, anio] = String(reg.fecha).split('/').map(x => parseInt(x.trim()));
+            const fechaObj = new Date(anio, mes - 1, dia);
+            const diaNormal = diasNormales[fechaObj.getDay()];
+            const fechaNormalizada = String(reg.fecha).trim();
+
+            // Usar descuento previo si existe (editado manualmente), si no usar constante global
+            const descuentoPorOlvido = descuentosPrevios[fechaNormalizada] !== undefined
+                ? descuentosPrevios[fechaNormalizada]
+                : descuentoPorChecador;
+
+            nuevoHistorial.push({
+                dia: diaNormal,
+                fecha: fechaNormalizada,
+                descuento_olvido: descuentoPorOlvido,
+                editado: editadosPrevios[fechaNormalizada] === true
+            });
+        }
+    });
+
+    // Ordenar por fecha
+    nuevoHistorial.sort((a, b) => {
+        const [da, ma, aa] = a.fecha.split('/').map(Number);
+        const [db, mb, ab] = b.fecha.split('/').map(Number);
+        return new Date(aa, ma - 1, da) - new Date(ab, mb - 1, db);
+    });
+
+    // Reemplazar historial completo
+    empleado.historial_olvidos = nuevoHistorial;
+}
+
+// ========================================
+// ASIGNAR EL TOTAL DE LOS EVENTOS A LAS PROPIEDADES CORRESPONDIENTES DEL EMPLEADO
+// ========================================
+
+function asignarTotalOlvidosJornalero(empleado, force = false) {
+    // Validar que exista el historial de olvidos
+    if (!Array.isArray(empleado.historial_olvidos)) {
+        return;
+    }
+
+    // Si fue editado manualmente y no es force, respetar la edición manual
+    if (empleado._checador_editado_manual && !force) {
+        return;
+    }
+
+    // Contar total de olvidos y sumar descuentos
+    let totalOlvidos = 0;
+    let totalDescontado = 0;
+    empleado.historial_olvidos.forEach(olvido => {
+        totalOlvidos += 1;
+        totalDescontado += parseFloat(olvido.descuento_olvido) || 0;
+    });
+
+    // Asignar totales a propiedades del empleado
+    empleado.checador = totalDescontado;
+}
+
+
+// ========================================
 // FUNCIÓN GENÉRICA PARA MOSTRAR EVENTOS
 // ========================================
 

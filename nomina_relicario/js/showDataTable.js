@@ -79,6 +79,7 @@ function mostrarDatosTabla(jsonNominaRelicario, pagina = 1) {
                 <td>${empleado.nombre}</td>
                 <td>${formatearValor(empleado.salario_semanal || 0)}</td>
                 <td>${formatearValor(empleado.pasaje || 0)}</td>
+                <td>${formatearValor(empleado.comida || 0)}</td>
                 <td>${formatearValor(empleado.sueldo_extra_total || 0)}</td>  
                 <td>${formatearValor(totalPercepciones)}</td>             
 
@@ -166,8 +167,10 @@ function paginarTabla(jsonNominaRelicario, totalEmpleados, paginaActual, emplead
 function calcularTotalPercepciones(empleado) {
     const sueldo = parseFloat(empleado.salario_semanal || 0);
     const extras = parseFloat(empleado.sueldo_extra_total || 0);
+    const pasaje = parseFloat(empleado.pasaje || 0);
+    const comida = parseFloat(empleado.comida || 0);
 
-    return (sueldo + extras);
+    return (sueldo + pasaje + comida + extras);
 }
 
 // Función para calcular Total Deducciones

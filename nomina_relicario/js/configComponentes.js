@@ -1,6 +1,9 @@
 quitarTarjeta();
 updateTarjeta();
 
+// ============================================
+// FUNCIONES DE INICIALIZACIÓN Y CONFIGURACIÓN DE COMPONENTES
+// ============================================
 
 function initComponents() {
     $("#container-nomina_relicario").attr("hidden", true);
@@ -8,13 +11,18 @@ function initComponents() {
     $("#config-valores-relicario").attr("hidden", true);
 }
 
-
+// ============================================
+// MOSTRAR CONFIGURACIÓN DE VALORES Y ASIGNAR EVENTOS
+// ============================================
 function mostrarConfigValores(bandera) {
     $("#container-nomina_relicario").attr("hidden", true);
     $("#config-valores-relicario").removeAttr("hidden");
     asignarValoresConfig(bandera);
 }
 
+// ============================================
+// OBTENER EL VALOR DEL PASAJE Y TARDEADA, ASIGNAR AL JSON
+// ============================================
 function asignarValoresConfig(statusRancho = true) {
     $("#btn_config_avanzar_relicario").click(function (e) {
         e.preventDefault();
@@ -22,13 +30,15 @@ function asignarValoresConfig(statusRancho = true) {
         // Obtener los valores de los inputs
         let pasajeVal = $("#precio_pasaje_relicario").val().trim();
         let tardeadaVal = $("#pago_tardeada_relicario").val().trim();
+        let comidaVal = $("#pago_comida_relicario").val().trim();
 
         // Si están vacíos, asignar 0, si no parsear
         let pasaje = pasajeVal === '' ? 0 : parseFloat(pasajeVal);
         let tardeada = tardeadaVal === '' ? 0 : parseFloat(tardeadaVal);
+        let comida = comidaVal === '' ? 0 : parseFloat(comidaVal);
 
         // Validar que sean números válidos
-        if (isNaN(pasaje) || isNaN(tardeada)) {
+        if (isNaN(pasaje) || isNaN(tardeada) || isNaN(comida)) {
             Swal.fire('Error', 'Los valores deben ser números válidos', 'error');
             return;
         }
@@ -36,6 +46,7 @@ function asignarValoresConfig(statusRancho = true) {
         // Asignar valores al JSON global
         jsonNominaRelicario.precio_pasaje = pasaje;
         jsonNominaRelicario.pago_tardeada = tardeada;
+        jsonNominaRelicario.pago_comida = comida;
 
         $("#config-valores-relicario").attr("hidden", true);
         $("#tabla-nomina-responsive").removeAttr("hidden");
@@ -51,6 +62,9 @@ function asignarValoresConfig(statusRancho = true) {
     });
 }
 
+// ============================================
+// LIMPIAR CAMPOS DE NÓMINA
+// ============================================
 function limpiarCamposNomina() {
     $("#btn_limpiar_datos").click(function (e) {
         e.preventDefault();
@@ -76,6 +90,9 @@ function limpiarCamposNomina() {
 
 }
 
+// ============================================
+// ACTUALIZAR CONCEPTOS Y TARJETA A TODOS LOS EMPLEADOS
+// ============================================
 function updateTarjeta() {
     $(document).on('click', '#btn_aplicar_copias_global', function (e) {
         e.preventDefault();
@@ -132,6 +149,9 @@ function updateTarjeta() {
     });
 }
 
+// ============================================
+// QUITA TARJETA A TODOS LOS EMPLEADOS 
+// ============================================
 function quitarTarjeta() {
 
     $(document).on('click', '#btn_delete_tarjeta', function () {

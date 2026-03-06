@@ -18,6 +18,7 @@ function abrirModalBiometrico() {
         }
 
         buscarEmpleados(); // activar búsqueda al abrir modal
+        inicializarSelectoresToolBiometrico(); // activar botones de seleccionar/deseleccionar
     });
 }
 
@@ -55,6 +56,32 @@ function buscarEmpleados() {
     });
 }
 
+// ========================================
+// SELECCIONAR/DESELECCIONAR TODOS
+// ========================================
+
+function inicializarSelectoresToolBiometrico() {
+    // Botón Seleccionar Todo
+    $(document).on('click', '#btn-seleccionar-todos-biometrico', function () {
+        seleccionarTodosBiometrico();
+    });
+
+    // Botón Deseleccionar Todo
+    $(document).on('click', '#btn-deseleccionar-todos-biometrico', function () {
+        deseleccionarTodosBiometrico();
+    });
+}
+
+function seleccionarTodosBiometrico() {
+    // Seleccionar solo los checkboxes visibles (después de filtrar con búsqueda)
+    $('#lista-empleados-biometrico .list-group-item:visible input[type="checkbox"]').prop('checked', true);
+}
+
+function deseleccionarTodosBiometrico() {
+    // Deseleccionar todos los checkboxes visibles
+    $('#lista-empleados-biometrico .list-group-item:visible input[type="checkbox"]').prop('checked', false);
+}
+
 function subirBiometrico() {
     // manejar clic en siguiente para mostrar el input de archivo
     $(document).on('click', '#btn-siguiente-biometrico', function () {
@@ -90,7 +117,7 @@ function subirBiometrico() {
         boton.prop('disabled', true).text('Procesando...');
 
         // Obtener claves de empleados seleccionados
-        const clavesSeleccionadas = $('#lista-empleados-biometrico input:checked').map(function() {
+        const clavesSeleccionadas = $('#lista-empleados-biometrico input:checked').map(function () {
             return {
                 clave: $(this).val(),
                 id_empresa: $(this).data('empresa')
@@ -110,47 +137,50 @@ function subirBiometrico() {
             success: function (res) {
                 try {
                     const JsonBiometrico = JSON.parse(res);
-                    
+
                     // Unir biométrico solo con empleados seleccionados
                     unirBiometricoConSeleccionados(jsonNominaRelicario, JsonBiometrico, clavesSeleccionadas);
 
-                    // Recalcular por empleado seleccionado: retardos, inasistencias y olvidos
+                    // Recalcular eventos por empleado seleccionado
                     clavesSeleccionadas.forEach(obj => {
                         const emp = obtenerEmpleadoPorClave(obj.clave, obj.id_empresa);
-                        if (!emp) return;
-
-                        if (typeof asignarHistorialRetardos === 'function') {
-                            asignarHistorialRetardos(emp);
-                            if (typeof asignarTotalRetardosCoordinador === 'function') {
-                                asignarTotalRetardosCoordinador(emp, true);
-                            }
+                        if (!emp) {
+                            console.warn(`No se encontró empleado con clave ${obj.clave}`);
+                            return;
                         }
 
-                        if (typeof asignarHistorialInasistencias === 'function') {
-                            asignarHistorialInasistencias(emp);
-                            if (typeof asignarTotalInasistenciasCoordinador === 'function') {
-                                asignarTotalInasistenciasCoordinador(emp, true);
+                        // Si es coordinador (id_departamento === 6), recalcular eventos
+                        if (parseInt(emp.id_departamento) === 6) {
+                            console.log('Recalculando como coordinador...');
+                            if (typeof recalcularEventosCoordinador === 'function') {
+                                recalcularEventosCoordinador(emp);
+                            } else {
+                                console.error('recalcularEventosCoordinador no está disponible');
                             }
                         }
-
-                        if (typeof asignarHistorialOlvidos === 'function') {
-                            asignarHistorialOlvidos(emp);
-                            if (typeof asignarTotalOlvidosCoordinador === 'function') {
-                                asignarTotalOlvidosCoordinador(emp, true);
+                        else if (parseInt(emp.id_departamento) === 7) {
+                            // Verificar si existe horarioRancho
+                            if (!jsonNominaRelicario.horarioRancho || !Array.isArray(jsonNominaRelicario.horarioRancho)) {
+                                console.log('horarioRancho no existe, obteniendo...');
+                                // Si no existe, obtenerlo primero
+                                obtenerHorarioRancho(emp);
                             }
+
+                            // Recalcular eventos
+                            if (typeof recalcularEventosJornalero === 'function') {
+                                recalcularEventosJornalero(emp);
+                            } else {
+                                console.error('recalcularEventosJornalero no está disponible');
+                            }
+
+                            // Recalcular sueldo semanal, pasaje y tardeadas
+                            if (typeof calcularSueldoSemanal === 'function') {
+                                calcularSueldoSemanal(emp);
+                            }
+                            calcularTotalExtra(emp);
                         }
 
-                      
                     });
-
-                    // Recalcular sueldo semanal y pasaje para jornaleros antes de mostrar tabla
-                    if (jsonNominaRelicario.horarioRancho) {
-                        // Si ya existe horario, recalcular directamente
-                        calcularSueldoSemanal();
-                    } else {
-                        // Si no existe, obtenerlo primero
-                        obtenerHorarioRancho();
-                    }
 
                     // Cerrar modal y limpiar
                     const modal = bootstrap.Modal.getInstance(document.getElementById('biometricoModal'));
@@ -161,6 +191,17 @@ function subirBiometrico() {
                     resetearModalBiometrico();
 
                     alert('Biométrico actualizado correctamente');
+
+                    const id_departamento = parseInt($('#filtro_departamento').val());
+                    const id_puestoEspecial = parseInt($('#filtro_puesto').val());
+
+                    // Aplicar los mismos filtros que están activos
+                    let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, id_departamento);
+                    jsonFiltrado = filtrarEmpleadosPorPuesto(jsonFiltrado, id_puestoEspecial);
+
+                    // Mostrar la tabla en la página actual (usar window.paginaActualNomina para acceso global)
+
+                    mostrarDatosTabla(jsonFiltrado, window.paginaActualNomina || 1)
 
                 } catch (e) {
                     console.error('Error al procesar biométrico:', e);
@@ -186,7 +227,7 @@ function obtenerEmpleadoPorClave(clave, id_empresa) {
     for (const depto of jsonNominaRelicario.departamentos) {
         if (!Array.isArray(depto.empleados)) continue;
         for (const emp of depto.empleados) {
-            if (String(emp.clave) === String(clave) && emp.id_empresa === id_empresa) {
+            if (String(emp.clave) === String(clave) && String(emp.id_empresa) === String(id_empresa)) {
                 return emp;
             }
         }

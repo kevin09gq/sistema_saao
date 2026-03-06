@@ -494,6 +494,12 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
                 if (typeof calcularOlvidosTodosCoordinadores === 'function') {
                     calcularOlvidosTodosCoordinadores(jsonNominaRelicario);
                 }
+                if (typeof calcularOlvidosTodosJornaleros === 'function') {
+                    calcularOlvidosTodosJornaleros(jsonNominaRelicario);
+                }
+                if (typeof calcularRetardosTodosJornaleros === 'function') {
+                    calcularRetardosTodosJornaleros(jsonNominaRelicario);
+                }
                 mostrarConfigValores(true);
                 console.log(jsonNominaRelicario);
 
@@ -851,8 +857,9 @@ function asignarPropiedadesEmpleado(jsonNominaRelicario) {
             // Asignar propiedad pasaje para jornaleros base y vivero
             if ([1, 2].includes(empleado.id_tipo_puesto)) {
                 empleado.pasaje = empleado.pasaje ?? 0;
+                empleado.comida = empleado.comida ?? 0;
             }
-              if ([1, 2, 3].includes(empleado.id_tipo_puesto)) {
+            if ([1, 2, 3].includes(empleado.id_tipo_puesto)) {
                 empleado.tardeada = empleado.tardeada ?? 0;
             }
 

@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="../css/encabezados.css">
     <link rel="stylesheet" href="../css/modalCoordinador.css">
     <link rel="stylesheet" href="../css/modalJornaleros.css">
+    <link rel="stylesheet" href="../css/conceptos_totales.css">
 
 
     <!-- SweetAlert2 CSS -->
@@ -74,6 +75,10 @@
                             <label for="pago_tardeada_relicario" class="form-label">Pago Tardeada</label>
                             <input type="number" id="pago_tardeada_relicario" class="form-control" placeholder="Ej. 25.00" step="0.01" min="0">
                         </div>
+                        <div class="mb-3">
+                            <label for="pago_comida_relicario" class="form-label">Pago Comida</label>
+                            <input type="number" id="pago_comida_relicario" class="form-control" placeholder="Ej. 25.00" step="0.01" min="0">
+                        </div>
                         <div class="d-grid gap-2">
                             <button class="btn btn-primary btn-lg" id="btn_config_avanzar_relicario" type="button">
                                 <i class="bi bi-arrow-right"></i> Avanzar
@@ -93,14 +98,23 @@
                 <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_actualizar_biometrico" title="Actualizar Biometrico" aria-label="Actualizar Biometrico">
                     <i class="bi bi-person-badge"></i>
                 </button>
-                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_establecer_horario_semanal" title="Establecer Horario Semanal" aria-label="Establecer Horario Semanal">
-                    <i class="bi bi-calendar-check"></i>
+                <button class="btn btn-outline-primary actualizar-valores" type="button" id="btn_actualizar_valores" title="Actualizar Valores" aria-label="Actualizar Valores pasaje y tardeada">
+                    <i class="bi bi-gear"></i>
+                </button>
+                <button class="btn btn-outline-primary quitrar-comida-pasaje" type="button" id="btn_quitar_comida_pasaje" title="Quitar Comida y Pasaje" aria-label="Quitar Comida y Pasaje">
+                    <i class="bi bi-x-circle"></i>
+                </button>
+                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_establecer_dias_justificados" title="dias justificados" aria-label="dias-justificados">
+                    <i class="bi bi-check-circle"></i>
                 </button>
                 <button class="btn btn-outline-primary" id="btn-seleccionar-empleados" title="Seleccionar empleados">
                     <i class="bi bi-people"></i>
                 </button>
                 <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global" title="Aplicar Tarjeta">
                     <i class="bi bi-arrow-clockwise"></i>
+                </button>
+                <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta" aria-label="Quitar tarjeta">
+                    <i class="bi bi-credit-card-2-back"></i>
                 </button>
                 <button class="btn btn-outline-primary btn-suma" type="button" id="btn_conceptos_totales" title="Totales por concepto" aria-label="Totales por concepto">
                     <i class="bi bi-calculator"></i>
@@ -111,10 +125,6 @@
                 <button class="btn btn-outline-secondary btn-ticket-zebra" id="btn_ticket_manual" title="Descargar Ticket Manual">
                     <i class="bi bi-ticket-perforated"></i>
                 </button>
-                <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta" aria-label="Quitar tarjeta">
-                    <i class="bi bi-credit-card-2-back"></i>
-                </button>
-
 
             </div>
         </div>
@@ -182,6 +192,7 @@
                             <th rowspan="2">NOMBRE</th>
                             <th rowspan="2">SUELDO <br> SEMANAL</th>
                             <th rowspan="2">PASAJE</th>
+                            <th rowspan="2">COMIDA</th>
                             <th rowspan="2">EXTRAS</th>
                             <th rowspan="2">Total Percepciones</th>
                             <th rowspan="2">ISR</th>
@@ -230,6 +241,11 @@
     <?php include "modalTipoDia.php"; ?>
     <?php include "biometricoModal.php"; ?>
     <?php include "modalSeleccionarEmpleados.php"; ?>
+    <?php include "modalTardeadaPasaje.php"; ?>
+    <?php include "modalDiasInhabiles.php"; ?>
+    <?php include "modalQuitarComidaPasaje.php"; ?>
+    <?php include "modalConceptosTotales.php"; ?>
+    <?php include "modalExportarNomina.php"; ?>
 
 
 
@@ -261,6 +277,9 @@
     <script src="../js/configModalJornaleros/sueldoSemanal.js"></script>
     <script src="../js/configModalJornaleros/eventos.js"></script>
     <script src="../js/configModalJornaleros/newConcepts.js"></script>
+    <script src="../js/tardeadaPasaje.js"></script>
+    <script src="../js/conceptos_totales.js"></script>
+    <script src="../js/exportarNominaExcel.js"></script>
 
 
 

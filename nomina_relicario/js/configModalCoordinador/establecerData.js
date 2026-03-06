@@ -140,12 +140,7 @@ function establecerColorBiometrico(empleado) {
     
     // Array de nombres de días
     const diasSemana = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
-    
-    // Función auxiliar: convierte HH:MM a minutos
-    function aMinutos(hora) {
-        const [h, m] = hora.split(':');
-        return parseInt(h) * 60 + parseInt(m);
-    }
+
     
     // Primer paso: identificar la primera y última fila de cada fecha
     const primeraFilaPorFecha = {};
@@ -525,6 +520,7 @@ function establecerHistorialChecador(empleado) {
 
     $contenedor.html(html);
 }
+
 function establecerHistorialUniforme(empleado) {
     if (!empleado) return;
     const $contenedor = $('#contenedor-historial-uniforme-coordinador');
@@ -555,6 +551,7 @@ function establecerHistorialUniforme(empleado) {
     `;
     $contenedor.html(html);
 }
+
 function establecerHistorialRetardos(empleado) {
     // Validar que exista el empleado
     if (!empleado) return;

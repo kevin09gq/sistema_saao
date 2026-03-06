@@ -19,6 +19,16 @@
                     >
                 </div>
 
+                <!-- Botones Seleccionar/Deseleccionar Todos -->
+                <div class="mb-3 d-flex gap-2">
+                    <button type="button" class="btn btn-outline-success btn-sm" id="btn-seleccionar-todos-biometrico">
+                        <i class="bi bi-check-all"></i> Seleccionar Todo
+                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm" id="btn-deseleccionar-todos-biometrico">
+                        <i class="bi bi-x-circle"></i> Deseleccionar Todo
+                    </button>
+                </div>
+
                 <!-- Contenedor de lista de empleados -->
                 <div class="list-group" id="lista-empleados-biometrico" style="max-height: 400px; overflow-y: auto;">
                     <!-- Se llenará con jQuery -->

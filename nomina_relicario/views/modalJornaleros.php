@@ -69,7 +69,7 @@
 
                         <!-- Tabla de Registros BD -->
                         <div class="table-container" id="tabla-dias-trabajados-jornaleros" hidden>
-                           
+
 
                             <table class="custom-table">
                                 <thead>
@@ -77,7 +77,7 @@
                                         <th>Día</th>
                                         <th>Fecha</th>
                                         <th>Cantidad</th>
-                                       
+                                        <th>Día Trabajado</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tbody-dias-trabajados-jornaleros">
@@ -241,7 +241,7 @@
                                             </div>
                                         </div>
 
-                                         <div class="col-md-6 d-flex flex-column">
+                                        <div class="col-md-6 d-flex flex-column">
                                             <label class="form-label fw-semibold">Pasaje ($)</label>
                                             <div class="flex-grow-1 d-flex align-items-end">
                                                 <input type="number" step="0.01" class="form-control mod-input-azul" id="mod-pasaje-jornalero" value="" placeholder="0.00">
@@ -249,14 +249,23 @@
                                         </div>
                                     </div>
 
-                                    <div class="row mb-4">
+                                    <div class="row mb-4">                    
+                                        <div class="col-md-6 d-flex flex-column">
+                                            <label class="form-label fw-semibold">Comida ($)</label>
+                                            <div class="flex-grow-1 d-flex align-items-end">
+                                                <input type="number" step="0.01" class="form-control mod-input-azul" id="mod-comida-jornalero" value="" placeholder="0.00">
+                                            </div>
+                                        </div>
+
                                         <div class="col-md-6 d-flex flex-column">
                                             <label class="form-label fw-semibold">Tardeada</label>
                                             <div class="flex-grow-1 d-flex align-items-end">
                                                 <input type="number" step="0.01" class="form-control mod-input-azul" id="mod-tardeada-jornalero" value="" placeholder="0.00">
                                             </div>
-                                        </div>
+                                        </div>                                        
+                                    </div>
 
+                                    <div class = "row mb-4">
                                         <div class="col-md-6 d-flex flex-column">
                                             <label class="form-label fw-semibold">Total Sueldo Extra ($)</label>
                                             <small class="text-muted mb-1">Calculado automáticamente</small>
@@ -375,17 +384,24 @@
                                             <label class="form-label fw-semibold">Préstamos ($)</label>
                                             <input type="number" step="0.01" class="form-control mod-input-rojo" id="mod-prestamo-jornalero" value="" placeholder="0.00">
                                         </div>
-                                        <div class="col-md-4 d-flex flex-column">
-                                            <label class="form-label fw-semibold">Checador ($)</label>
-                                            <div class="input-group">
-                                                <input type="number" step="0.01" class="form-control mod-input-rojo" id="mod-checador-jornalero" value="" placeholder="0.00">
 
-                                                <button type="button" class="btn btn-outline-secondary" id="btn-aplicar-checador-jornalero" title="Aplicar Checador">
-                                                    <i class="bi bi-calculator"></i>
-                                                </button>
-                                            </div>
+                                        <div class="col-md-4 d-flex flex-column">
+                                            <label class="form-label fw-semibold">Retardos ($)</label>
+                                            <input type="number" step="0.01" class="form-control mod-input-rojo" id="mod-retardos-jornalero" value="" placeholder="0.00">
                                         </div>
 
+
+                                    </div>
+
+                                    <div class="col-md-4 d-flex flex-column">
+                                        <label class="form-label fw-semibold">Checador ($)</label>
+                                        <div class="input-group">
+                                            <input type="number" step="0.01" class="form-control mod-input-rojo" id="mod-checador-jornalero" value="" placeholder="0.00">
+
+                                            <button type="button" class="btn btn-outline-secondary" id="btn-aplicar-checador-jornalero" title="Aplicar Checador">
+                                                <i class="bi bi-calculator"></i>
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <!-- Separador visual -->
@@ -397,91 +413,8 @@
                                                 <h6 class="fw-semibold text-danger mb-3">
                                                     <i class="bi bi-exclamation-triangle-fill"></i> Historial de Olvidos por Día
                                                 </h6>
-                                                <div id="contenedor-historial-olvidos" class="historial-olvidos-container">
+                                                <div id="contenedor-historial-olvidos-jornaleros" class="historial-olvidos-container">
                                                     <!-- Se llenará con JavaScript -->
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row mb-3">
-                                            <div class="col-md-4 mb-2">
-                                                <label class="form-label fw-semibold">Total Retardos ($)</label>
-                                                <div class="input-group">
-                                                    <input type="number" step="0.01" class="form-control mod-input-rojo" id="mod-retardos-jornalero" value="" placeholder="0.00">
-                                                    <button type="button" class="btn btn-outline-secondary" id="btn-calcular-retardos-jornalero" title="Calcular desde historial">
-                                                        <i class="bi bi-calculator"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Historial Detallado de Retardos -->
-                                        <div class="row mb-3">
-                                            <div class="col-12" id="historial-retardos-jornaleros">
-                                                <h6 class="fw-semibold text-warning mb-3">
-                                                    <i class="bi bi-clock-history"></i> Historial de Retardos por Día
-                                                </h6>
-                                                <div id="contenedor-historial-retardos" class="historial-retardos-container">
-                                                    <!-- Se llenará con JavaScript -->
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Separador visual -->
-                                        <hr class="mod-separador">
-
-                                        <!-- Sección de Inasistencias -->
-                                        <div class="row mb-3">
-                                            <div class="col-md-4 mb-2">
-                                                <label class="form-label fw-semibold">Inasistencias($)</label>
-                                                <div class="input-group">
-                                                    <input type="number" step="0.01" class="form-control mod-input-rojo" id="mod-inasistencias-jornalero" value="" placeholder="0.00">
-                                                    <button type="button" class="btn btn-outline-secondary" id="btn-calcular-inasistencias-jornalero" title="Calcular desde historial">
-                                                        <i class="bi bi-calculator"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Historial Detallado de Inasistencias -->
-                                        <div class="row mb-3">
-                                            <div class="col-12">
-                                                <h6 class="fw-semibold text-info mb-3">
-                                                    <i class="bi bi-calendar-x"></i> Historial de Inasistencias por Día
-                                                </h6>
-
-                                                <!-- Formulario para agregar inasistencia manual -->
-                                                <div class="card bg-light mb-3">
-                                                    <div class="card-body">
-                                                        <div class="row g-2 align-items-end" id="add-inasistencia-jornalero">
-                                                            <div class="col-md-4">
-                                                                <label class="form-label fw-semibold small">Día de la Semana</label>
-                                                                <select class="form-select form-select-sm" id="select-dia-inasistencia-jornalero">
-                                                                    <option value="">Seleccionar día...</option>
-                                                                    <option value="Lunes">Lunes</option>
-                                                                    <option value="Martes">Martes</option>
-                                                                    <option value="Miércoles">Miércoles</option>
-                                                                    <option value="Jueves">Jueves</option>
-                                                                    <option value="Viernes">Viernes</option>
-                                                                    <option value="Sábado">Sábado</option>
-                                                                    <option value="Domingo">Domingo</option>
-                                                                </select>
-                                                            </div>
-                                                            <div class="col-md-4">
-                                                                <label class="form-label fw-semibold small">Descuento ($)</label>
-                                                                <input type="number" step="0.01" class="form-control form-control-sm" id="input-descuento-inasistencia-jornalero" placeholder="0.00" min="0">
-                                                            </div>
-                                                            <div class="col-md-4">
-                                                                <button type="button" class="btn btn-info btn-sm w-100" id="btn-agregar-inasistencia-jornalero">
-                                                                    <i class="bi bi-plus-circle"></i> Agregar Inasistencia
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div id="contenedor-historial-inasistencias-jornalero" class="historial-inasistencias-container">
-                                                    <!-- El historial se cargará dinámicamente aquí -->
                                                 </div>
                                             </div>
                                         </div>
