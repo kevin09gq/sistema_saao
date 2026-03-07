@@ -107,7 +107,6 @@ function establecerBiometrico(empleado) {
                 <td>${registro.fecha}</td>
                 <td>${registro.entrada || '-'}</td>
                 <td>${registro.salida || '-'}</td>
-                <td><button class="btn btn-sm btn-outline-secondary">Editar</button></td>
             </tr>
         `;
 

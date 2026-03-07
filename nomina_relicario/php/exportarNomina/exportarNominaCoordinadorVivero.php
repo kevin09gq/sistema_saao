@@ -23,15 +23,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['jsonNomina'])) {
 //  CONFIGURACIÓN INICIAL
 //=====================
 
-
 $spreadsheet = new Spreadsheet();
 $sheet = $spreadsheet->getActiveSheet();
 
+// Establecer el nombre de la pestaña
+$sheet->setTitle('COORDINADORES VIVERO');
+
 // Aplicar fuente Arial como predeterminada para toda la hoja
 $spreadsheet->getDefaultStyle()->getFont()->setName('Arial');
-
-// Establecer el nombre de la pestaña
-$sheet->setTitle('JORNALEROS');
 
 //=====================
 //  TÍTULOS
@@ -49,7 +48,7 @@ if ($jsonNomina) {
 }
 
 $titulo1 = 'RANCHO EL RELICARIO';
-$titulo2 = 'PERSONAL DE BASE';
+$titulo2 = 'COORDINADORES - VIVERO';
 $titulo3 = 'NOMINA DEL ' . strtoupper($fecha_inicio) . ' AL ' . strtoupper($fecha_cierre);
 $titulo4 = 'SEMANA ' . (isset($jsonNomina['numero_semana']) ? str_pad($jsonNomina['numero_semana'], 2, '0', STR_PAD_LEFT) : '00') . '-' . $ano;
 
@@ -229,21 +228,21 @@ foreach ($tamanioLetraColumnas as $columna => $tamanio) {
 }
 
 //=====================
-//  AGREGAR DATOS DE EMPLEADOS JORNALEROS BASE
+//  AGREGAR DATOS DE EMPLEADOS COODINADORES DE Vivero
 //=====================
 
-// Recopilar empleados Jornaleros Base (id_puestoEspecial = 10 o 11 y mostrar = true)
-$empleadosJornaleros = [];
+// Recopilar empleados Jornaleros Base (id_tipo_puesto = 5 y mostrar = true)
+$empleadosCoodinadores = [];
 
 if ($jsonNomina && isset($jsonNomina['departamentos'])) {
     foreach ($jsonNomina['departamentos'] as $departamento) {
         if (isset($departamento['empleados'])) {
             foreach ($departamento['empleados'] as $empleado) {
-                $idPuestoEspecial = $empleado['id_puestoEspecial'] ?? null;
+                $idPuestoEspecial = $empleado['id_tipo_puesto'] ?? null;
                 $mostrar = $empleado['mostrar'] ?? false;
 
-                if (($idPuestoEspecial == 10 || $idPuestoEspecial == 11) && $mostrar) {
-                    $empleadosJornaleros[] = $empleado;
+                if (($idPuestoEspecial == 5) && $mostrar) {
+                    $empleadosCoodinadores[] = $empleado;
                 }
             }
         }
@@ -251,7 +250,7 @@ if ($jsonNomina && isset($jsonNomina['departamentos'])) {
 }
 
 // Ordenar empleados por nombre (orden ascendente A-Z)
-usort($empleadosJornaleros, function ($a, $b) {
+usort($empleadosCoodinadores, function ($a, $b) {
     return strcmp($a['nombre'] ?? '', $b['nombre'] ?? '');
 });
 
@@ -261,6 +260,9 @@ usort($empleadosJornaleros, function ($a, $b) {
 
 // Determinar si la columna COMIDA tiene datos
 $comidaTieneDatos = false;
+
+// Determinar si la columna PASAJE tiene datos
+$pasajeTieneDatos = false;
 
 // Determinar si la columna AJUSTES AL SUB (código 107) tiene datos
 $ajustesAlSubTieneDatos = false;
@@ -275,31 +277,35 @@ $uniformesTieneDatos = false;
 $checadorTieneDatos = false;
 $faxGafetCofiaTieneDatos = false;
 
-foreach ($empleadosJornaleros as $empleado) {
+foreach ($empleadosCoodinadores as $empleado) {
     if (($empleado['comida'] ?? 0) != 0) {
         $comidaTieneDatos = true;
     }
-    
+
+    if (($empleado['pasaje'] ?? 0) != 0) {
+        $pasajeTieneDatos = true;
+    }
+
     if (($empleado['inasistencia'] ?? 0) != 0) {
         $ausentismoTieneDatos = true;
     }
-    
+
     if (($empleado['permiso'] ?? 0) != 0) {
         $permisoTieneDatos = true;
     }
-    
+
     if (($empleado['retardos'] ?? 0) != 0) {
         $retardosTieneDatos = true;
     }
-    
+
     if (($empleado['uniformes'] ?? 0) != 0) {
         $uniformesTieneDatos = true;
     }
-    
+
     if (($empleado['checador'] ?? 0) != 0) {
         $checadorTieneDatos = true;
     }
-    
+
     if (($empleado['fa_gafet_cofia'] ?? 0) != 0) {
         $faxGafetCofiaTieneDatos = true;
     }
@@ -319,7 +325,7 @@ foreach ($empleadosJornaleros as $empleado) {
 $numeroFila = 7;
 $numeroEmpleado = 1;
 
-foreach ($empleadosJornaleros as $empleado) {
+foreach ($empleadosCoodinadores as $empleado) {
 
     //====================================
     //  AGREGAR INFORMACION DEL EMPLEADO
@@ -542,28 +548,28 @@ for ($fila = 7; $fila < $numeroFila; $fila++) {
         $sheet->getStyle($col . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
         $sheet->getStyle($col . $fila)->getFont()->setColor(new Color('FF0000'));
     }
-    
+
     // Columnas con formato descuentos: M-R (AUSENTISMO, PERMISO, RETARDOS, UNIFORMES, CHECADOR, F.A/GAFET/COFIA)
     for ($col = 'M'; $col <= 'R'; $col++) {
         $sheet->getStyle($col . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
         $sheet->getStyle($col . $fila)->getFont()->setColor(new Color('FF0000'));
     }
-    
+
     // Columna S: TOTAL DE DEDUCCIONES (rojo con signo negativo)
     $sheet->getStyle('S' . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
     $sheet->getStyle('S' . $fila)->getFont()->setColor(new Color('FF0000'));
-    
+
     // Columna U: DISPERSION DE TARJETA (rojo con signo negativo)
     $sheet->getStyle('U' . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
     $sheet->getStyle('U' . $fila)->getFont()->setColor(new Color('FF0000'));
-    
+
     // Columna W: PRESTAMO (rojo con signo negativo)
     $sheet->getStyle('W' . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
     $sheet->getStyle('W' . $fila)->getFont()->setColor(new Color('FF0000'));
-    
+
     // Columna Y: REDONDEADO (formato condicional: positivo normal, negativo rojo)
     $sheet->getStyle('Y' . $fila)->getNumberFormat()->setFormatCode('$#,##0.00;[RED]-$#,##0.00');
-    
+
     // Columnas de moneda normal: D, E, F, G, H, T, V, X, Z
     foreach (['D', 'E', 'F', 'G', 'H', 'T', 'V', 'X', 'Z'] as $col) {
         $sheet->getStyle($col . $fila)->getNumberFormat()->setFormatCode('$#,##0.00');
@@ -589,7 +595,7 @@ foreach ($columnasData as $columna) {
     $sheet->setCellValue($columna . $filaTotal, '=SUM(' . $columna . '7:' . $columna . ($filaTotal - 1) . ')');
     $sheet->getStyle($columna . $filaTotal)->getFont()->setBold(true);
     $sheet->getStyle($columna . $filaTotal)->getFont()->setSize(14);
-    
+
     // Aplicar formato de moneda según la columna
     if (in_array($columna, ['I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'U', 'W'])) {
         // Formato rojo con signo negativo
@@ -602,7 +608,7 @@ foreach ($columnasData as $columna) {
         // Formato moneda normal
         $sheet->getStyle($columna . $filaTotal)->getNumberFormat()->setFormatCode('$#,##0.00');
     }
-    
+
     // Centrar alineación
     $sheet->getStyle($columna . $filaTotal)->getAlignment()->setHorizontal('center');
     $sheet->getStyle($columna . $filaTotal)->getAlignment()->setVertical('center');
@@ -635,6 +641,11 @@ $sheet->getStyle('A6:AA' . $filaTotal)->applyFromArray($estiloBordesTabla);
 // Ocultar columna COMIDA si no tiene datos
 if (!$comidaTieneDatos) {
     $sheet->getColumnDimension('F')->setVisible(false);
+}
+
+// Ocultar columna PASAJE si no tiene datos
+if (!$pasajeTieneDatos) {
+    $sheet->getColumnDimension('E')->setVisible(false);
 }
 
 // Ocultar columna AJUSTES AL SUB si no tiene datos
@@ -763,7 +774,7 @@ $sheet->getPageSetup()->setPrintArea('A1:AA' . $ultimaFila);
 $writer = new Xlsx($spreadsheet);
 
 // Definir el nombre del archivo con fecha y hora
-$filename = 'Nomina_Jornalero_Base_' . date('Y-m-d_H-i-s') . '.xlsx';
+$filename = 'Nomina_Coordinador_Vivero_' . date('Y-m-d_H-i-s') . '.xlsx';
 
 // Configurar las cabeceras para descargar el archivo
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');

@@ -23,15 +23,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['jsonNomina'])) {
 //  CONFIGURACIÓN INICIAL
 //=====================
 
-
 $spreadsheet = new Spreadsheet();
 $sheet = $spreadsheet->getActiveSheet();
 
 // Aplicar fuente Arial como predeterminada para toda la hoja
 $spreadsheet->getDefaultStyle()->getFont()->setName('Arial');
 
+
 // Establecer el nombre de la pestaña
-$sheet->setTitle('JORNALEROS');
+$sheet->setTitle('P DE APOYO');
+
 
 //=====================
 //  TÍTULOS
@@ -49,7 +50,7 @@ if ($jsonNomina) {
 }
 
 $titulo1 = 'RANCHO EL RELICARIO';
-$titulo2 = 'PERSONAL DE BASE';
+$titulo2 = 'PERSONAL DE APOYO';
 $titulo3 = 'NOMINA DEL ' . strtoupper($fecha_inicio) . ' AL ' . strtoupper($fecha_cierre);
 $titulo4 = 'SEMANA ' . (isset($jsonNomina['numero_semana']) ? str_pad($jsonNomina['numero_semana'], 2, '0', STR_PAD_LEFT) : '00') . '-' . $ano;
 
@@ -232,7 +233,7 @@ foreach ($tamanioLetraColumnas as $columna => $tamanio) {
 //  AGREGAR DATOS DE EMPLEADOS JORNALEROS BASE
 //=====================
 
-// Recopilar empleados Jornaleros Base (id_puestoEspecial = 10 o 11 y mostrar = true)
+// Recopilar empleados Jornaleros De Apoyo (id_puestoEspecial = 37 o 39 y mostrar = true)
 $empleadosJornaleros = [];
 
 if ($jsonNomina && isset($jsonNomina['departamentos'])) {
@@ -242,7 +243,7 @@ if ($jsonNomina && isset($jsonNomina['departamentos'])) {
                 $idPuestoEspecial = $empleado['id_puestoEspecial'] ?? null;
                 $mostrar = $empleado['mostrar'] ?? false;
 
-                if (($idPuestoEspecial == 10 || $idPuestoEspecial == 11) && $mostrar) {
+                if (($idPuestoEspecial == 37 || $idPuestoEspecial == 39) && $mostrar) {
                     $empleadosJornaleros[] = $empleado;
                 }
             }
@@ -262,6 +263,14 @@ usort($empleadosJornaleros, function ($a, $b) {
 // Determinar si la columna COMIDA tiene datos
 $comidaTieneDatos = false;
 
+// Determinar si la columna PASAJE tiene datos
+$pasajeTieneDatos = false;
+
+// Determinar si las columnas de deducciones de conceptos tienen datos
+$isrTieneDatos = false;
+$imssTieneDatos = false;
+$infonavitTieneDatos = false;
+
 // Determinar si la columna AJUSTES AL SUB (código 107) tiene datos
 $ajustesAlSubTieneDatos = false;
 
@@ -278,6 +287,10 @@ $faxGafetCofiaTieneDatos = false;
 foreach ($empleadosJornaleros as $empleado) {
     if (($empleado['comida'] ?? 0) != 0) {
         $comidaTieneDatos = true;
+    }
+    
+    if (($empleado['pasaje'] ?? 0) != 0) {
+        $pasajeTieneDatos = true;
     }
     
     if (($empleado['inasistencia'] ?? 0) != 0) {
@@ -304,12 +317,23 @@ foreach ($empleadosJornaleros as $empleado) {
         $faxGafetCofiaTieneDatos = true;
     }
 
-    // Verificar si existe código 107 en conceptos
+    // Verificar códigos de conceptos
     if (!empty($empleado['conceptos']) && is_array($empleado['conceptos'])) {
         foreach ($empleado['conceptos'] as $concepto) {
-            if ($concepto['codigo'] === '107' && ($concepto['resultado'] ?? 0) != 0) {
+            $codigo = $concepto['codigo'] ?? null;
+            $resultado = $concepto['resultado'] ?? 0;
+            
+            if ($codigo === '45' && $resultado != 0) {
+                $isrTieneDatos = true;
+            }
+            if ($codigo === '52' && $resultado != 0) {
+                $imssTieneDatos = true;
+            }
+            if ($codigo === '16' && $resultado != 0) {
+                $infonavitTieneDatos = true;
+            }
+            if ($codigo === '107' && $resultado != 0) {
                 $ajustesAlSubTieneDatos = true;
-                break;
             }
         }
     }
@@ -635,6 +659,26 @@ $sheet->getStyle('A6:AA' . $filaTotal)->applyFromArray($estiloBordesTabla);
 // Ocultar columna COMIDA si no tiene datos
 if (!$comidaTieneDatos) {
     $sheet->getColumnDimension('F')->setVisible(false);
+}
+
+// Ocultar columna PASAJE si no tiene datos
+if (!$pasajeTieneDatos) {
+    $sheet->getColumnDimension('E')->setVisible(false);
+}
+
+// Ocultar columna ISR si no tiene datos
+if (!$isrTieneDatos) {
+    $sheet->getColumnDimension('I')->setVisible(false);
+}
+
+// Ocultar columna IMSS si no tiene datos
+if (!$imssTieneDatos) {
+    $sheet->getColumnDimension('J')->setVisible(false);
+}
+
+// Ocultar columna INFONAVIT si no tiene datos
+if (!$infonavitTieneDatos) {
+    $sheet->getColumnDimension('K')->setVisible(false);
 }
 
 // Ocultar columna AJUSTES AL SUB si no tiene datos

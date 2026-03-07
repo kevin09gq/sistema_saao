@@ -23,7 +23,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['jsonNomina'])) {
 //  CONFIGURACIÓN INICIAL
 //=====================
 
-
 $spreadsheet = new Spreadsheet();
 $sheet = $spreadsheet->getActiveSheet();
 
@@ -31,7 +30,8 @@ $sheet = $spreadsheet->getActiveSheet();
 $spreadsheet->getDefaultStyle()->getFont()->setName('Arial');
 
 // Establecer el nombre de la pestaña
-$sheet->setTitle('JORNALEROS');
+$sheet->setTitle('COORDINADORES');
+
 
 //=====================
 //  TÍTULOS
@@ -49,7 +49,7 @@ if ($jsonNomina) {
 }
 
 $titulo1 = 'RANCHO EL RELICARIO';
-$titulo2 = 'PERSONAL DE BASE';
+$titulo2 = 'COORDINADORES - RANCHO';
 $titulo3 = 'NOMINA DEL ' . strtoupper($fecha_inicio) . ' AL ' . strtoupper($fecha_cierre);
 $titulo4 = 'SEMANA ' . (isset($jsonNomina['numero_semana']) ? str_pad($jsonNomina['numero_semana'], 2, '0', STR_PAD_LEFT) : '00') . '-' . $ano;
 
@@ -229,21 +229,21 @@ foreach ($tamanioLetraColumnas as $columna => $tamanio) {
 }
 
 //=====================
-//  AGREGAR DATOS DE EMPLEADOS JORNALEROS BASE
+//  AGREGAR DATOS DE EMPLEADOS COODINADORES DE RANCHO
 //=====================
 
-// Recopilar empleados Jornaleros Base (id_puestoEspecial = 10 o 11 y mostrar = true)
-$empleadosJornaleros = [];
+// Recopilar empleados Jornaleros Base (id_tipo_puesto = 4 y mostrar = true)
+$empleadosCoodinadores = [];
 
 if ($jsonNomina && isset($jsonNomina['departamentos'])) {
     foreach ($jsonNomina['departamentos'] as $departamento) {
         if (isset($departamento['empleados'])) {
             foreach ($departamento['empleados'] as $empleado) {
-                $idPuestoEspecial = $empleado['id_puestoEspecial'] ?? null;
+                $idPuestoEspecial = $empleado['id_tipo_puesto'] ?? null;
                 $mostrar = $empleado['mostrar'] ?? false;
 
-                if (($idPuestoEspecial == 10 || $idPuestoEspecial == 11) && $mostrar) {
-                    $empleadosJornaleros[] = $empleado;
+                if (($idPuestoEspecial == 4) && $mostrar) {
+                    $empleadosCoodinadores[] = $empleado;
                 }
             }
         }
@@ -251,7 +251,7 @@ if ($jsonNomina && isset($jsonNomina['departamentos'])) {
 }
 
 // Ordenar empleados por nombre (orden ascendente A-Z)
-usort($empleadosJornaleros, function ($a, $b) {
+usort($empleadosCoodinadores, function ($a, $b) {
     return strcmp($a['nombre'] ?? '', $b['nombre'] ?? '');
 });
 
@@ -261,6 +261,9 @@ usort($empleadosJornaleros, function ($a, $b) {
 
 // Determinar si la columna COMIDA tiene datos
 $comidaTieneDatos = false;
+
+// Determinar si la columna PASAJE tiene datos
+$pasajeTieneDatos = false;
 
 // Determinar si la columna AJUSTES AL SUB (código 107) tiene datos
 $ajustesAlSubTieneDatos = false;
@@ -275,9 +278,13 @@ $uniformesTieneDatos = false;
 $checadorTieneDatos = false;
 $faxGafetCofiaTieneDatos = false;
 
-foreach ($empleadosJornaleros as $empleado) {
+foreach ($empleadosCoodinadores as $empleado) {
     if (($empleado['comida'] ?? 0) != 0) {
         $comidaTieneDatos = true;
+    }
+    
+    if (($empleado['pasaje'] ?? 0) != 0) {
+        $pasajeTieneDatos = true;
     }
     
     if (($empleado['inasistencia'] ?? 0) != 0) {
@@ -319,7 +326,7 @@ foreach ($empleadosJornaleros as $empleado) {
 $numeroFila = 7;
 $numeroEmpleado = 1;
 
-foreach ($empleadosJornaleros as $empleado) {
+foreach ($empleadosCoodinadores as $empleado) {
 
     //====================================
     //  AGREGAR INFORMACION DEL EMPLEADO
@@ -635,6 +642,11 @@ $sheet->getStyle('A6:AA' . $filaTotal)->applyFromArray($estiloBordesTabla);
 // Ocultar columna COMIDA si no tiene datos
 if (!$comidaTieneDatos) {
     $sheet->getColumnDimension('F')->setVisible(false);
+}
+
+// Ocultar columna PASAJE si no tiene datos
+if (!$pasajeTieneDatos) {
+    $sheet->getColumnDimension('E')->setVisible(false);
 }
 
 // Ocultar columna AJUSTES AL SUB si no tiene datos

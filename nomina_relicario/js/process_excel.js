@@ -74,6 +74,10 @@ function processExcelData(params) {
                             // Obtener la nómina real desde el servidor
                             getNominaRelicario(numeroSemana, anio).then(function (nomina) {
                                 jsonNominaRelicario = nomina;
+                                //Actualizar Fechas de inicio y cierre
+                                jsonNominaRelicario.fecha_inicio = JsonListaRaya.fecha_inicio;
+                                jsonNominaRelicario.fecha_cierre = JsonListaRaya.fecha_cierre;
+                            
                                 validarExistenciaTrabajadorBD(jsonNominaRelicario, JsonListaRaya);
 
 
@@ -260,6 +264,7 @@ function obtenerJornalerosCoordinadores(JsonListaRaya) {
                 jsonNominaRelicario = JsonListaRaya;
 
                 console.log(jsonNominaRelicario);
+                actualizarCabeceraNomina(jsonNominaRelicario);
 
                 mostrarConfigValores(false);
 
@@ -500,6 +505,7 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
                 if (typeof calcularRetardosTodosJornaleros === 'function') {
                     calcularRetardosTodosJornaleros(jsonNominaRelicario);
                 }
+                actualizarCabeceraNomina(jsonNominaRelicario);
                 mostrarConfigValores(true);
                 console.log(jsonNominaRelicario);
 
@@ -783,6 +789,7 @@ function verificarEmpleadosSinSeguro(jsonNominaRelicario) {
                     calcularOlvidosTodosCoordinadores(jsonNominaRelicario);
                 }*/
 
+                actualizarCabeceraNomina(jsonNominaRelicario);
                 initComponents();
 
                 // Filtrar empleados con id_tipo_puesto 1

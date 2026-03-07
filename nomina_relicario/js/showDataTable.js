@@ -219,3 +219,5 @@ function calcularTotalCobrar(empleado) {
 
     return totalCobrar.toFixed(2);
 }
+
+

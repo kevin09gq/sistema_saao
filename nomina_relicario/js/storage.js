@@ -62,10 +62,10 @@ function restoreNomina() {
         if (typeof mostrarDatosTabla === 'function') {
              // Filtrar empleados con id_tipo_puesto 1
                 let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, 7);
-
-
                 mostrarDatosTabla(jsonFiltrado, 1);
         }
+
+        actualizarCabeceraNomina(jsonNominaRelicario);
 
         return true;
     } catch (err) {

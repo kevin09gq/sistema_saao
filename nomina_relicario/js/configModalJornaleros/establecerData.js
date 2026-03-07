@@ -123,7 +123,6 @@ function establecerBiometricoJornalero(empleado) {
                 <td>${registro.fecha}</td>
                 <td>${registro.entrada || '-'}</td>
                 <td>${registro.salida || '-'}</td>
-                <td><button class="btn btn-sm btn-outline-secondary">Editar</button></td>
             </tr>
         `;
 
@@ -243,7 +242,7 @@ function establecerColorBiometricoJornalero(empleado) {
         olvido: '#fee2e2',            // Rojo (olvidos)
         entrada_temprana: '#dbeafe',  // Azul (entradas tempranas)
         salida_tardia: '#fed7aa',     // Naranja (salidas tardías)
-        salida_temprana: '#d1d5db',   // Gris oscuro (salidas tempranas)
+        salida_temprana: '#e5d4f0',   // Gris oscuro (salidas tempranas)
      
     };
     

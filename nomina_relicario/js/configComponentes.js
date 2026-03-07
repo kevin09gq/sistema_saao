@@ -18,6 +18,7 @@ function mostrarConfigValores(bandera) {
     $("#container-nomina_relicario").attr("hidden", true);
     $("#config-valores-relicario").removeAttr("hidden");
     asignarValoresConfig(bandera);
+    actualizarCabeceraNomina(jsonNominaRelicario);
 }
 
 // ============================================
@@ -205,4 +206,72 @@ function quitarTarjeta() {
             }
         });
     });
+}
+
+// Función para actualizar la cabecera de la nómina
+function actualizarCabeceraNomina(json) {
+    if (!json) return;
+
+    // Función para obtener el nombre del mes en español
+    function mesEnLetras(mes) {
+        const meses = [
+            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+        ];
+        return meses[mes - 1];
+    }
+
+    // Extraer día, mes y año de las fechas
+    function descomponerFecha(fecha) {
+        // Verificar que la fecha no sea null o undefined
+        if (!fecha) {
+            return { dia: '', mes: '', anio: '' };
+        }
+
+        // Ejemplo: "21/Jun/2025" o "21/05/2025"
+        const partes = fecha.split('/');
+        let dia = partes[0] || '';
+        let mes = partes[1] || '';
+        let anio = partes[2] || '';
+
+        // Si el mes es numérico, conviértelo a nombre
+        if (/^\d+$/.test(mes)) {
+            mes = mesEnLetras(parseInt(mes, 10));
+        } else {
+            // Si el mes es abreviado (Jun), conviértelo a nombre completo
+            const mesesAbrev = {
+                'Ene': 'Enero', 'Feb': 'Febrero', 'Mar': 'Marzo', 'Abr': 'Abril', 'May': 'Mayo', 'Jun': 'Junio',
+                'Jul': 'Julio', 'Ago': 'Agosto', 'Sep': 'Septiembre', 'Oct': 'Octubre', 'Nov': 'Noviembre', 'Dic': 'Diciembre'
+            };
+            mes = mesesAbrev[mes] || mes;
+        }
+        return { dia, mes, anio };
+    }
+
+    // Verificar que las fechas existan antes de procesarlas
+    if (!json.fecha_inicio || !json.fecha_cierre) {
+        $('#nombre_nomina').text('NÓMINA');
+        $('#num_semana').text(`SEM ${json.numero_semana || ''}`);
+        return;
+    }
+
+    const ini = descomponerFecha(json.fecha_inicio);
+    const fin = descomponerFecha(json.fecha_cierre);
+
+    let nombreNomina = '';
+    if (ini.anio === fin.anio) {
+        if (ini.mes === fin.mes) {
+            // Mismo mes y año
+            nombreNomina = `NÓMINA DEL ${ini.dia} AL ${fin.dia} DE ${fin.mes.toUpperCase()} DEL ${fin.anio}`;
+        } else {
+            // Mismo año, diferente mes
+            nombreNomina = `NÓMINA DEL ${ini.dia} ${ini.mes.toUpperCase()} AL ${fin.dia} DE ${fin.mes.toUpperCase()} DEL ${fin.anio}`;
+        }
+    } else {
+        // Diferente año
+        nombreNomina = `NÓMINA DEL ${ini.dia} ${ini.mes.toUpperCase()} DEL ${ini.anio} AL ${fin.dia} DE ${fin.mes.toUpperCase()} DEL ${fin.anio}`;
+    }
+
+    $('#nombre_nomina').text(nombreNomina);
+    $('#num_semana').text(`SEM ${json.numero_semana}`);
 }

@@ -1,7 +1,7 @@
 /* Estilos para la página de generación de tickets manuales */
 
 .ticket-selection-container {
-    max-width: 800px;
+    max-width: 1200px;
     margin: 2rem auto;
     padding: 2rem;
 }
@@ -29,8 +29,8 @@
 
 .ticket-options {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
     margin-top: 2rem;
 }
 
@@ -104,6 +104,12 @@
     font-size: 0.9rem;
 }
 
+@media (max-width: 1024px) {
+    .ticket-options {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 @media (max-width: 768px) {
     .ticket-selection-container {
         padding: 1rem;
@@ -112,5 +118,6 @@
     
     .ticket-options {
         grid-template-columns: 1fr;
+        gap: 1rem;
     }
 }

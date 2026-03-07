@@ -13,80 +13,74 @@
 
                 <div class="list-group">
                     <!-- Jornalero Base -->
-                    <button type="button" class="list-group-item list-group-item-action btn-export-tipo" id = "btn-export-jornalero-base"
-                        data-tipo="1" data-nombre="Jornalero Base">
+                    <button type="button" class="list-group-item list-group-item-action btn-export-tipo" id="btn-export-jornalero-base">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="mb-1">
                                     <i class="bi bi-person-badge"></i> Jornalero Base
                                 </h6>
                             </div>
+                            <i class="bi bi-file-earmark-spreadsheet text-success fs-4"></i>
+                        </div>
+                    </button>
+
+                    <!-- Jornalero De Apoyo -->
+                    <button type="button" class="list-group-item list-group-item-action btn-export-tipo" id="btn-export-jornalero-apoyo">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">
+                                    <i class="bi bi-people"></i> Jornalero de apoyo
+                                </h6>
+                            </div>
+                            <i class="bi bi-file-earmark-bar-graph text-primary fs-4"></i>
                         </div>
                     </button>
 
                     <!-- Jornalero Vivero -->
-                    <button type="button" class="list-group-item list-group-item-action btn-export-tipo"
-                        data-tipo="2" data-nombre="Jornalero Vivero">
+                    <button type="button" class="list-group-item list-group-item-action btn-export-tipo" id="btn-export-jornalero-vivero">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="mb-1">
-                                    <i class="bi bi-leaf"></i> Jornalero Vivero
+                                    <i class="bi bi-flower1"></i> Jornalero Vivero
                                 </h6>
                             </div>
-                        </div>
-                    </button>
-
-                    <!-- Jornalero de Apoyo -->
-                    <button type="button" class="list-group-item list-group-item-action btn-export-tipo"
-                        data-tipo="3" data-nombre="Jornalero de Apoyo">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="mb-1">
-                                    <i class="bi bi-hand-thumbs-up"></i> Jornalero de Apoyo
-                                </h6>
-
-                            </div>
+                            <i class="bi bi-file-earmark-richtext text-warning fs-4"></i>
                         </div>
                     </button>
 
                     <!-- Coordinador Rancho -->
-                    <button type="button" class="list-group-item list-group-item-action btn-export-tipo"
-                        data-tipo="4" data-nombre="Coordinador Rancho">
+                    <button type="button" class="list-group-item list-group-item-action btn-export-tipo" id="btn-export-coodinador-rancho">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="mb-1">
-                                    <i class="bi bi-diagram-3"></i> Coordinador Rancho
+                                    <i class="bi bi-person-workspace"></i> Coodinador Rancho
                                 </h6>
-
                             </div>
-
+                            <i class="bi bi-file-earmark-person text-danger fs-4"></i>
                         </div>
                     </button>
 
                     <!-- Coordinador Vivero -->
-                    <button type="button" class="list-group-item list-group-item-action btn-export-tipo"
-                        data-tipo="5" data-nombre="Coordinador Vivero">
+                    <button type="button" class="list-group-item list-group-item-action btn-export-tipo" id="btn-export-coodinador-vivero">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="mb-1">
-                                    <i class="bi bi-flower1"></i> Coordinador Vivero
+                                    <i class="bi bi-person-workspace"></i> Coodinador vivero
                                 </h6>
-
                             </div>
-
+                            <i class="bi bi-file-earmark-person text-success fs-4"></i>
                         </div>
                     </button>
 
                     <!-- Opción: Exportar Todo -->
-                    <button type="button" class="list-group-item list-group-item-action btn-export-tipo bg-light border-2"
-                        data-tipo="0" data-nombre="Nómina Completa">
+                    <button type="button" class="list-group-item list-group-item-action btn-export-tipo" id="btn-export-nomina-completa">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="mb-1">
-                                    <i class="bi bi-file-spreadsheet"></i> Nómina Completa
+                                    <i class="bi bi-collection"></i> Nomina Completa
                                 </h6>
                             </div>
-
+                            <i class="bi bi-file-earmark-zip text-dark fs-4"></i>
                         </div>
                     </button>
                 </div>

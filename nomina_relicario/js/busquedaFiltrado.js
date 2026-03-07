@@ -103,27 +103,67 @@ function seleccionarPuesto() {
  * ===============================================================
  * FILTRAR LA TABLA MEDIANTE LA BUSQUEDA DE TEXTO
  * ---------------------------------------------------------------
- *   - Se recupera el valor del input de búsqueda
- *   - filter es propia de JQuery y sirve para filtrar
- *   - toggle muestra o esconde la fila dependiendo si coincide
- *   - Oculta la paginación cuando hay búsqueda activa
+ *   - Obtiene: valor búsqueda, departamento y puesto seleccionados
+ *   - Aplica filtros secuencialmente: departamento → puesto → búsqueda
+ *   - Renderiza el JSON filtrado en la tabla (página 1)
+ *   - Oculta paginación si hay búsqueda, la muestra si está vacía
  * ===============================================================
  */
 function buscarEmpleado() {
     $("#busqueda-nomina-relicario").on("keyup", function () {
-        // Pasa todo a minusculas solo para comparar
-        let valor = $(this).val().toLowerCase();
-        $("#tabla-nomina-body-relicario tr").filter(function () {
-            $(this).toggle($(this).text().toLowerCase().indexOf(valor) > -1);
+        
+        // Obtener valores de los filtros
+        let textoBusqueda = $(this).val().toLowerCase().trim();
+        let id_departamento = parseInt($('#filtro_departamento').val());
+        let id_puestoEspecial = parseInt($('#filtro_puesto').val());
+        
+        // Paso 1: Filtrar por departamento
+        let resultado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, id_departamento);
+        
+        // Paso 2: Filtrar por puesto
+        resultado = filtrarEmpleadosPorPuesto(resultado, id_puestoEspecial);
+        
+        // Paso 3: Filtrar por búsqueda (si hay texto)
+        if (textoBusqueda !== '') {
+            resultado = filtrarEmpleadosPorBusqueda(resultado, textoBusqueda);
+            $('#paginacion-nomina').hide(); // Sin paginación en búsqueda
+        } else {
+            $('#paginacion-nomina').show(); // Con paginación normal
+        }
+        
+        // Mostrar los resultados en página 1
+        window.paginaActualNomina = 1;
+        mostrarDatosTabla(resultado, 1);
+    });
+}
+
+/**
+ * ===============================================================
+ * Función auxiliar: filtrar JSON por búsqueda de texto
+ * ===============================================================
+ */
+function filtrarEmpleadosPorBusqueda(jsonNomina, textoBusqueda) {
+    let resultado = {
+        departamentos: []
+    };
+
+    jsonNomina.departamentos.forEach(depto => {
+        let empleadosFiltrados = depto.empleados.filter(emp => {
+            let nombre = (emp.nombre || '').toLowerCase();
+            let clave = (emp.clave || '').toLowerCase();
+            
+            return nombre.includes(textoBusqueda) || clave.includes(textoBusqueda);
         });
 
-        // Ocultar o Mostrar la paginación
-        if (valor.trim() !== '') {
-            $('#paginacion-nomina').hide(); // Ocultar solo la paginación
-        } else {
-            $('#paginacion-nomina').show(); // Mostrar solo la paginación
+        if (empleadosFiltrados.length > 0) {
+            resultado.departamentos.push({
+                nombre: depto.nombre,
+                empleados: empleadosFiltrados
+            });
         }
     });
+
+    return resultado;
 }
 
 
@@ -131,21 +171,30 @@ function buscarEmpleado() {
  * ================================================================
  * LIMPIAR LA BUSQUEDA DE TEXTO
  * ----------------------------------------------------------------
- *   - Al hacer click en el botón de limpiar, se borra el texto
- *   - Se muestran todas las filas de la tabla
- *   - Restaura la paginación original
+ *   - Borra el texto del input de búsqueda
+ *   - Restaura los filtros actuales de departamento y puesto
+ *   - Vuelve a mostrar paginación
  * ================================================================
  */
 function limpiarBusqueda() {
     $(document).on("click", '#btn-clear-busqueda', function (e) {
         e.preventDefault();
+        
+        // Limpiar el input
         $("#busqueda-nomina-relicario").val("");
-
-        // Mostrar la paginación
+        
+        // Obtener filtros actuales
+        let id_departamento = parseInt($('#filtro_departamento').val());
+        let id_puestoEspecial = parseInt($('#filtro_puesto').val());
+        
+        // Aplicar filtros nuevamente
+        let resultado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, id_departamento);
+        resultado = filtrarEmpleadosPorPuesto(resultado, id_puestoEspecial);
+        
+        // Mostrar resultados y restaurar paginación
+        window.paginaActualNomina = 1;
+        mostrarDatosTabla(resultado, 1);
         $('#paginacion-nomina').show();
-
-        // Volver a mostrar las filas de la tabla
-        $("#tabla-nomina-body-relicario tr").show();
     });
 }
 

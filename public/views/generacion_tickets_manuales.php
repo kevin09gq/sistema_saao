@@ -78,6 +78,26 @@ verificarSesion(); // Proteger esta página
                     <i class="bi bi-arrow-right-circle me-2"></i>Seleccionar
                 </button>
             </div>
+            
+            <!-- Ticket Manual Nómina Relicario -->
+            <div class="ticket-option-card" onclick="openNominaRelicarioModal()">
+                <div class="option-icon">
+                    <i class="bi bi-briefcase"></i>
+                </div>
+                <h3>Ticket Manual - Nómina Relicario</h3>
+                <p>Para empleados relicarios con beneficios especiales</p>
+                
+                <ul class="feature-list">
+                    <li><i class="bi bi-check-circle-fill text-success me-2"></i>Sueldo base y complementos</li>
+                    <li><i class="bi bi-check-circle-fill text-success me-2"></i>Bonificaciones especiales</li>
+                    <li><i class="bi bi-check-circle-fill text-success me-2"></i>Deducciones adaptadas</li>
+                    <li><i class="bi bi-check-circle-fill text-success me-2"></i>Prestaciones adicionales</li>
+                </ul>
+                
+                <button class="btn-select-ticket">
+                    <i class="bi bi-arrow-right-circle me-2"></i>Seleccionar
+                </button>
+            </div>
         </div>
         
 
@@ -86,6 +106,7 @@ verificarSesion(); // Proteger esta página
     <!-- Incluir ambos modales -->
     <?php include "../../nomina/views/modal_ticket_manual.php"; ?>
     <?php include "../../nomina_confianza/views/modal_ticket_manual.php"; ?>
+    <?php include "../../nomina_relicario/views/modal_ticket_manual.php"; ?>
     
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>

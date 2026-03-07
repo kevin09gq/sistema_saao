@@ -58,7 +58,7 @@
                                         <th>Fecha</th>
                                         <th>Entrada</th>
                                         <th>Salida</th>
-                                        <th>Acción</th>
+                                        
                                     </tr>
                                 </thead>
                                 <tbody id="tbody-biometrico-jornaleros">

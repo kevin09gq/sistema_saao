@@ -246,6 +246,8 @@
     <?php include "modalQuitarComidaPasaje.php"; ?>
     <?php include "modalConceptosTotales.php"; ?>
     <?php include "modalExportarNomina.php"; ?>
+    <?php include "modalSeleccionarEmpleados.php"; ?>
+     <?php include "modal_ticket_manual.php"; ?>
 
 
 
@@ -280,6 +282,9 @@
     <script src="../js/tardeadaPasaje.js"></script>
     <script src="../js/conceptos_totales.js"></script>
     <script src="../js/exportarNominaExcel.js"></script>
+    <script src="../js/ticket_manual.js"></script>
+    <script src="../js/ticket_pdf.js"></script>
+    <script src="../js/ticket_seleccion_relicario.js"></script>
 
 
 
