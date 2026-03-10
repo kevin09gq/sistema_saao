@@ -1,3 +1,7 @@
+// ========================================
+// FUNCIONES AUXILIARES
+// ========================================
+
 // Convierte "HH:MM" a minutos totales
 function aMinutos(hora) {
     const [h, m] = hora.split(':').map(Number);

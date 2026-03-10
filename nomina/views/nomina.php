@@ -293,6 +293,7 @@
     <script src="<?= JQUERY_INPUTMASK ?>"></script>
     <!-- Bootstrap JS -->
     <script src="<?= BOOTSTRAP_JS ?>"></script>
+    <script src="../js/rangos_horas.js"></script>
     <script src="../../config/settings/js/obtener_tabulador.js"></script>
     <script src="../js/leer_excel.js"></script>
     <script src="../js/config_tabla.js"></script>

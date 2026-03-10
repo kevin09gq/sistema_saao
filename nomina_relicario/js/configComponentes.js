@@ -9,6 +9,8 @@ function initComponents() {
     $("#container-nomina_relicario").attr("hidden", true);
     $("#tabla-nomina-responsive").removeAttr("hidden");
     $("#config-valores-relicario").attr("hidden", true);
+    // Se oculta la tabla de corte
+    $("#tabla-corte-container-relicario").prop("hidden", true);
 }
 
 // ============================================

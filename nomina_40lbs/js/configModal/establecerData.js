@@ -144,7 +144,7 @@ function establecerPercepciones(empleado) {
     $("#mod-incentivo-40lbs").val(empleado.incentivo || '');
 
     // Establecer Horas extras
-    $("#mod-horas-extras-40lbs").val(empleado.horas_extras || '');
+    $("#mod-horas-extras-40lbs").val(empleado.horas_extra || '');
 
     // Establecer Bono de Antiguedad
     $("#mod-bono-antiguedad-40lbs").val(empleado.bono_antiguedad || '');

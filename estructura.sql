@@ -254,6 +254,27 @@ CREATE TABLE nomina_relicario (
     FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
 );
 
+CREATE TABLE cortes_relicario (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_nomina INT NOT NULL,
+    nombre_cortador VARCHAR(150) NOT NULL,
+    folio VARCHAR(10) NOT NULL,
+    precio_reja DECIMAL(10,2) NOT NULL,
+    fecha_corte DATE NOT NULL,
+    FOREIGN KEY (id_nomina)
+    REFERENCES nomina_relicario(id_nomina_relicario)
+  
+);
+
+
+CREATE TABLE cortes_relicario_tablas (
+    id_corte INT NOT NULL,
+    num_tabla INT NOT NULL,
+    rejas INT NOT NULL,
+    FOREIGN KEY (id_corte)
+    REFERENCES cortes_relicario(id)
+  
+);
 
 -- =============================
 -- TABLAS DE TURNOS Y FESTIVIDADES BHL

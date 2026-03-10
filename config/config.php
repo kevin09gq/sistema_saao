@@ -24,6 +24,7 @@ define('ICONO_SISTEMA', $rutaRaiz . '/public/img/icon.png');
 
 define('DIAS_SEMANA', ['SABADO', 'DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES']);
 
+define('DIAS_SEMANA_NOMINA', ['VIERNES', 'SABADO', 'DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES']);
 // Función para verificar si el usuario está autenticado
 function verificarSesion() {
     if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {

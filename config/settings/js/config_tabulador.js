@@ -143,6 +143,7 @@ function actualizarTabulador() {
                     desde: desde,
                     hasta: hasta
                 },
+                tipo: (hasta.toLowerCase() === 'en adelante') ? 'hora_extra' : 'normal',
                 minutos: parseInt(minutos) || 0,
                 sueldo_base: parseFloat(sueldoBase) || 0,
                 sueldo_especial: parseFloat(sueldoEspecial) || 0,

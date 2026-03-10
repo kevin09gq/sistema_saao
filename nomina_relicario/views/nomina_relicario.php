@@ -13,11 +13,16 @@
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <link rel="stylesheet" href="../css/nomina_relicario.css">
     <link rel="stylesheet" href="../css/tablaNomina.css">
+
+    <!-- estilos para el corte -->
+    <link rel="stylesheet" href="../css/tablaCorte.css">
+
     <link rel="stylesheet" href="../css/encabezados.css">
     <link rel="stylesheet" href="../css/modalCoordinador.css">
     <link rel="stylesheet" href="../css/modalJornaleros.css">
     <link rel="stylesheet" href="../css/conceptos_totales.css">
 
+    <link rel="stylesheet" href="<?= JQUERY_UI_CSS ?>">
 
     <!-- SweetAlert2 CSS -->
     <script src="<?= SWEETALERT ?>"></script>
@@ -95,6 +100,9 @@
             <h3 id=nombre_nomina></h3>
             <div class="header-controls-relicario">
                 <span class="sem-info-relicario" id="num_semana"></span>
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalCorte" title="Tickes de Corte de Rejas">
+                    <i class="bi bi-truck"></i>
+                </button>
                 <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_actualizar_biometrico" title="Actualizar Biometrico" aria-label="Actualizar Biometrico">
                     <i class="bi bi-person-badge"></i>
                 </button>
@@ -132,14 +140,6 @@
         <!-- Controles de filtro y búsqueda -->
         <div class="controles-tabla-relicario">
             <div class="filtros-container-relicario">
-
-                <!-- <select class="filtro-departamento-relicario" id="filtro-puesto">
-                    <option value="1" selected>Jornalero Base</option>
-                    <option value="2">Jornalero Vivero</option>
-                    <option value="3">Jornalero De Apoyo</option>
-                    <option value="4">Coordinador Rancho</option>
-                    <option value="5">Coordinador Vivero</option>
-                </select> -->
 
                 <select class="filtro-departamento-relicario" id="filtro_departamento">
                     <!-- Departamento -->
@@ -180,8 +180,6 @@
 
             </div>
         </div>
-
-
 
         <div id="tabla-nomina-container-relicario" class="tabla-nomina-container-relicario">
             <div class="table-responsive-relicario">
@@ -227,11 +225,45 @@
             </div>
             <ul id="paginacion-nomina" class="pagination my-5" style="margin: 20px 0 0 0; justify-content: center;"></ul>
         </div>
+
+
+        <div id="tabla-corte-container-relicario" class="tabla-nomina-container-relicario-corte" hidden>
+            <div class="table-responsive-relicario-corte">
+                <table class="table-nomina-relicario-corte" id="tabla-nomina-corte">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">#</th>
+                            <th rowspan="2">NOMBRE</th>
+                            <th rowspan="2">CONCEPTO</th>
+                            <th rowspan="2">V</th>
+                            <th rowspan="2">SA</th>
+                            <th rowspan="2">DO</th>
+                            <th rowspan="2">L</th>
+                            <th rowspan="2">MA</th>
+                            <th rowspan="2">MI</th>
+                            <th rowspan="2">J</th>
+                            <th rowspan="2">TOTAL<br>REJAS</th>
+                            <th rowspan="2">PRECIO<br>POR REJA</th>
+                            <th rowspan="2">TOTAL<br>EFECTIVO</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-body-corte-relicario">
+                        <!-- Filas de la tabla se generarán dinámicamente -->
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+
     </div>
 
     <!-- Menú contextual simple para la tabla -->
     <div id="context-menu" style="position:absolute;z-index:10000;display:none;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);padding:4px;">
         <div class="cm-item" data-action="ver" style="padding:6px 12px;cursor:pointer;">Ver detalles</div>
+    </div>
+    <!-- Menú contextual simple para la tabla de corte -->
+    <div id="context_menu_corte" style="position:absolute;z-index:10000;display:none;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);padding:4px;">
+        <div class="cm_item_corte" data-action="ver" style="padding:6px 12px;cursor:pointer;">🔎​ Ver detalles</div>
     </div>
 
 
@@ -247,12 +279,18 @@
     <?php include "modalConceptosTotales.php"; ?>
     <?php include "modalExportarNomina.php"; ?>
     <?php include "modalSeleccionarEmpleados.php"; ?>
-     <?php include "modal_ticket_manual.php"; ?>
+    <?php include "modal_ticket_manual.php"; ?>
+
+    <!-- Modal para los cortes -->
+    <?php include "modalCorte.php"; ?>
+    <?php include "modalCorteNominaEditar.php"; ?>
+    <?php include "modalCorteEditar.php"; ?>
 
 
 
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
+    <script src="<?= JQUERY_UI_JS ?>"></script>
     <!-- Plugin Inputmask -->
     <script src="<?= JQUERY_INPUTMASK ?>"></script>
     <!-- Bootstrap JS -->
@@ -285,6 +323,11 @@
     <script src="../js/ticket_manual.js"></script>
     <script src="../js/ticket_pdf.js"></script>
     <script src="../js/ticket_seleccion_relicario.js"></script>
+
+    <!-- JS PARA EL CORTE -->
+    <script src="../js/configModalCorte/configCorte.js"></script>
+    <script src="../js/configModalCorte/showTablaCorte.js"></script>
+    <script src="../js/configModalCorte/abrirModalDetallesCorte.js"></script>
 
 
 

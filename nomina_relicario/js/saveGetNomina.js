@@ -1,5 +1,5 @@
 function confirmarsaveNomina() {
-  $('#btn_guardar_nomina_relicario').on('click', function () {
+    $('#btn_guardar_nomina_relicario').on('click', function () {
         Swal.fire({
             title: '¿Confirmar guardado?',
             text: `¿Está seguro que desea guardar la nómina de la semana ${jsonNominaRelicario.numero_semana}?`,
@@ -15,11 +15,18 @@ function confirmarsaveNomina() {
     });
 }
 
-function saveNominaRelicario(){
+function saveNominaRelicario() {
 
-    const jsonData = jsonNominaRelicario;
+    // Quitar el departamento "Corte" del objeto global para no guardarlo en la nómina (se procesa aparte)
+    const jsonData = { ...jsonNominaRelicario, departamentos: jsonNominaRelicario.departamentos.filter(d => d.nombre !== "Corte") };
     const numeroSemana = jsonData.numero_semana;
-    
+
+    // Obtener el dep Corte por separado
+    const departamentoCorte = jsonNominaRelicario.departamentos.find(d => d.nombre === "Corte");
+    // Obtener empleados del dep. Corte
+    const empleadosCorte = departamentoCorte ? departamentoCorte.empleados : [];
+
+
     // IMPORTANTE: Usar fecha_cierre para determinar el año (NO fecha_inicio)
     // Esto es crítico para semanas que cruzan el cambio de año
     // Ejemplo: Semana 1 del 2026 que va del 27/Dic/2025 al 02/Ene/2026
@@ -40,8 +47,8 @@ function saveNominaRelicario(){
     } else {
         anio = new Date().getFullYear();
     }
-    
-   
+
+
     $.ajax({
         url: '../php/saveGetNomina.php',
         type: 'POST',
@@ -50,12 +57,13 @@ function saveNominaRelicario(){
             numero_semana: numeroSemana,
             anio: anio,
             nomina: JSON.stringify(jsonData),
+            corte: JSON.stringify(empleadosCorte), // Enviar solo los empleados del departamento de Corte
             actualizar: true,
             case: 'guardarNominaRelicario' // Agregar el caso para identificar la función en el servidor
         }),
         contentType: 'application/json; charset=UTF-8',
         success: function (response, textStatus, xhr) {
-           
+
 
             // Parseo simple y seguro (más conciso)
             let parsed = null;

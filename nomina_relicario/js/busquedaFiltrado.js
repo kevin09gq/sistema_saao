@@ -23,6 +23,14 @@ function obtenerDepartamentos() {
         success: function (response) {
 
             const data = response.data;
+
+            // Se agrega el departamento de Corte de forma manual, ya que no se encuentra en la base de datos, pero es necesario para el filtro
+            data.push({
+                "id_departamento": 800,
+                "nombre_departamento": "Corte",
+                "id_area": 2
+            });
+
             let tmp = '';
 
             // El valor por defecto es el departamento 7 (Jornaleros), por eso se marca como selected
@@ -73,10 +81,28 @@ function seleccionarDepartamento() {
         e.preventDefault();
 
         let id_departamento = parseInt($(this).val());
-        let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, id_departamento);
-        obtenerPuestos(id_departamento);
-        window.paginaActualNomina = 1; // Resetear a página 1
-        mostrarDatosTabla(jsonFiltrado);
+
+        if (id_departamento !== 800) {
+            // Se muestra la tabla de nomina normal
+            $("#tabla-nomina-container-relicario").prop("hidden", false);
+            // Se oculta la tabla de corte
+            $("#tabla-corte-container-relicario").prop("hidden", true);
+
+            // Filtrar el JSON por el departamento seleccionado
+            let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, id_departamento);
+            obtenerPuestos(id_departamento);
+            window.paginaActualNomina = 1; // Resetear a página 1
+            mostrarDatosTabla(jsonFiltrado);
+        } else {
+            // Se oculta la tabla de nomina normal
+            $("#tabla-nomina-container-relicario").prop("hidden", true);
+            // Se muestra la tabla de corte
+            $("#tabla-corte-container-relicario").prop("hidden", false);
+
+            mostrarDatosTablaCorte(jsonNominaRelicario);
+
+        }
+
     });
 }
 
@@ -111,18 +137,18 @@ function seleccionarPuesto() {
  */
 function buscarEmpleado() {
     $("#busqueda-nomina-relicario").on("keyup", function () {
-        
+
         // Obtener valores de los filtros
         let textoBusqueda = $(this).val().toLowerCase().trim();
         let id_departamento = parseInt($('#filtro_departamento').val());
         let id_puestoEspecial = parseInt($('#filtro_puesto').val());
-        
+
         // Paso 1: Filtrar por departamento
         let resultado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, id_departamento);
-        
+
         // Paso 2: Filtrar por puesto
         resultado = filtrarEmpleadosPorPuesto(resultado, id_puestoEspecial);
-        
+
         // Paso 3: Filtrar por búsqueda (si hay texto)
         if (textoBusqueda !== '') {
             resultado = filtrarEmpleadosPorBusqueda(resultado, textoBusqueda);
@@ -130,7 +156,7 @@ function buscarEmpleado() {
         } else {
             $('#paginacion-nomina').show(); // Con paginación normal
         }
-        
+
         // Mostrar los resultados en página 1
         window.paginaActualNomina = 1;
         mostrarDatosTabla(resultado, 1);
@@ -151,7 +177,7 @@ function filtrarEmpleadosPorBusqueda(jsonNomina, textoBusqueda) {
         let empleadosFiltrados = depto.empleados.filter(emp => {
             let nombre = (emp.nombre || '').toLowerCase();
             let clave = (emp.clave || '').toLowerCase();
-            
+
             return nombre.includes(textoBusqueda) || clave.includes(textoBusqueda);
         });
 
@@ -179,18 +205,18 @@ function filtrarEmpleadosPorBusqueda(jsonNomina, textoBusqueda) {
 function limpiarBusqueda() {
     $(document).on("click", '#btn-clear-busqueda', function (e) {
         e.preventDefault();
-        
+
         // Limpiar el input
         $("#busqueda-nomina-relicario").val("");
-        
+
         // Obtener filtros actuales
         let id_departamento = parseInt($('#filtro_departamento').val());
         let id_puestoEspecial = parseInt($('#filtro_puesto').val());
-        
+
         // Aplicar filtros nuevamente
         let resultado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, id_departamento);
         resultado = filtrarEmpleadosPorPuesto(resultado, id_puestoEspecial);
-        
+
         // Mostrar resultados y restaurar paginación
         window.paginaActualNomina = 1;
         mostrarDatosTabla(resultado, 1);

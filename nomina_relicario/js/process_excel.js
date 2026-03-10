@@ -560,6 +560,12 @@ function validarExistenciaTrabajadorBD(jsonNominaRelicario, JsonListaRaya) {
 
                 // Filtrar empleados: solo dejar los que existen en BD (id_status=1 e id_empresa=1)
                 jsonNominaRelicario.departamentos.forEach(function (departamento) {
+
+                    // Si es Corte, no filtrar contra BD
+                    if (departamento.nombre === "Corte") {
+                        return;
+                    }
+
                     departamento.empleados = departamento.empleados.filter(function (empleado) {
                         return clavesExistentes.includes(String(empleado.clave));
                     });

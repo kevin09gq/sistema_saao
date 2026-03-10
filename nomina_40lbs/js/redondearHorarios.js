@@ -543,32 +543,33 @@ function obtenerRangoTabuladorPorHorasTrabajadas(horasTrabajadasHHMM, tabulador)
     }
 
     var minutosEmpleado = convertirHoraAMinutos((horasTrabajadasHHMM || "").trim());
+    var rangoEncontrado = null;
+    var maxMinDesde = -1;
 
+    // Buscar el rango NO hora_extra cuyo "desde" sea el más alto pero <= minutos trabajados
     for (var i = 0; i < tabulador.length; i++) {
         var item = tabulador[i];
-        if (!item || !item.rango) {
+        
+        // Saltar items sin rango o con tipo hora_extra
+        if (!item || !item.rango || item.tipo === 'hora_extra') {
             continue;
         }
 
         var desdeStr = (item.rango.desde || "").trim();
-        var hastaStr = (item.rango.hasta || "").trim();
-
-        if (desdeStr === "") {
+        if (!desdeStr) {
             continue;
         }
 
         var minDesde = convertirHoraAMinutos(desdeStr);
-        var minHasta = Infinity;
-        if (hastaStr !== "" && hastaStr.toLowerCase() !== 'en adelante') {
-            minHasta = convertirHoraAMinutos(hastaStr);
-        }
-
-        if (minutosEmpleado >= minDesde && minutosEmpleado <= minHasta) {
-            return item;
+        
+        // Buscar el rango con el "desde" más alto que sea <= a las horas trabajadas
+        if (minutosEmpleado >= minDesde && minDesde > maxMinDesde) {
+            maxMinDesde = minDesde;
+            rangoEncontrado = item;
         }
     }
 
-    return null;
+    return rangoEncontrado;
 }
 
 function imprimirSueldoBasePorHorasTrabajadas(tabulador) {
@@ -612,7 +613,7 @@ function imprimirSueldoBasePorHorasTrabajadas(tabulador) {
                 var minutosExtra = Math.max(0, minutosEmpleado - minDesdeHoraExtra);
                 var costo = parseFloat(itemHoraExtra.costo_por_minuto) || 0;
                 var pagoExtra = minutosExtra * costo;
-                empleado.horas_extra = pagoExtra;
+                empleado.horas_extra = pagoExtra.toFixed(2);
                 console.log('Hora extra =>', empleado.nombre, 'minutos_extra:', minutosExtra, 'costo_por_minuto:', costo, 'pago_extra:', pagoExtra);
             } else {
                 empleado.horas_extra = 0;
@@ -620,4 +621,5 @@ function imprimirSueldoBasePorHorasTrabajadas(tabulador) {
         });
     });
 }
+
 
