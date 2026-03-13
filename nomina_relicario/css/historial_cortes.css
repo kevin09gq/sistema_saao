@@ -1,0 +1,53 @@
+/* Estilos para el historial de cortes relicario */
+.filters-container {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.cortes-table-container {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.table-cortes th {
+    background-color: #198754; /* Verde éxito */
+    color: white;
+    font-weight: 500;
+}
+
+.table-cortes tr:hover {
+    background-color: #f1fcf1; /* Verde muy claro para el hover */
+    cursor: pointer;
+}
+
+.details-modal-header {
+    background-color: #198754; /* Verde éxito */
+    color: white;
+}
+
+.badge-rejas {
+    font-size: 1rem;
+    padding: 8px 12px;
+}
+
+.corte-header-info {
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+}
+
+.corte-cortador-name {
+    color: #198754; /* Verde éxito */
+    font-weight: 600;
+}
+
+.tabla-item {
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    margin-bottom: 5px;
+}

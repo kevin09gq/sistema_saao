@@ -1,5 +1,5 @@
 <!-- Modal para selección de empleados para tickets -->
-<link rel="stylesheet" href="../css/modal_seleccion_tickets.css">
+<link rel="stylesheet" href="../styles/modal_seleccion_tickets.css">
 <div class="modal fade" id="modal_seleccion_tickets" tabindex="-1" aria-labelledby="modal_seleccion_tickets_label" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -19,12 +19,16 @@
                             <i class="bi bi-x-square"></i> Deseleccionar Todos
                         </button>
                     </div>
-                    <div class="position-relative w-100" style="display: flex; align-items: center;">
-                        <i class="bi bi-search position-absolute text-muted" style="left: 15px; z-index: 5; pointer-events: none;"></i>
-                        <input type="text" class="form-control" id="buscar_empleado_ticket" placeholder="Buscar empleado..." style="padding-left: 40px !important; padding-right: 40px !important; border-radius: 8px !important; height: 45px;">
-                        <button class="btn-clear-inside" type="button" id="btn_limpiar_busqueda" tabindex="-1" title="Limpiar búsqueda">
-                            <i class="bi bi-x-circle-fill"></i>
-                        </button>
+                    <div class="position-relative">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" class="form-control input-con-boton" id="buscar_empleado_ticket" placeholder="Buscar empleado...">
+                            <button class="btn-clear-inside" type="button" id="btn_limpiar_busqueda" tabindex="-1">
+                                <i class="bi bi-x-circle-fill"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 

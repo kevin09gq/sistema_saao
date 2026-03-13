@@ -37,7 +37,7 @@ function nombreDia(fecha) {
 
 function recalcularEventosCoordinador(empleado) {
     // Validar que sea coordinador
-    if (!empleado || parseInt(empleado.id_departamento) !== 6) {
+    if (!empleado || parseInt(empleado.id_departamento) !== 8) {
         return;
     }
 
@@ -67,20 +67,20 @@ function recalcularEventosCoordinador(empleado) {
 // CALCULAR EVENTOS AL ARRANQUE DEL SISTEMA
 // ========================================
 
-function calcularRetardosTodosCoordinadores(jsonNominaRelicario) {
+function calcularRetardosTodosCoordinadores(jsonNominaPilar) {
     // Validar que exista la nómina y sus departamentos
-    if (!jsonNominaRelicario || !Array.isArray(jsonNominaRelicario.departamentos)) {
+    if (!jsonNominaPilar || !Array.isArray(jsonNominaPilar.departamentos)) {
         return;
     }
 
     // Iterar sobre todos los departamentos
-    jsonNominaRelicario.departamentos.forEach(departamento => {
+    jsonNominaPilar.departamentos.forEach(departamento => {
         // Iterar sobre todos los empleados del departamento
         if (!Array.isArray(departamento.empleados)) return;
 
         departamento.empleados.forEach(empleado => {
-            // Solo procesar coordinadores (id_departamento === 6)
-            if (parseInt(empleado.id_departamento) !== 6) return;
+            // Solo procesar coordinadores (id_departamento === 8)
+            if (parseInt(empleado.id_departamento) !== 8) return;
 
             // Calcular el historial de retardos para este coordinador
             asignarHistorialRetardos(empleado);
@@ -96,20 +96,20 @@ function calcularRetardosTodosCoordinadores(jsonNominaRelicario) {
     });
 }
 
-function calcularInasistenciasTodosCoordinadores(jsonNominaRelicario) {
+function calcularInasistenciasTodosCoordinadores(jsonNominaPilar) {
     // Validar que exista la nómina y sus departamentos
-    if (!jsonNominaRelicario || !Array.isArray(jsonNominaRelicario.departamentos)) {
+    if (!jsonNominaPilar || !Array.isArray(jsonNominaPilar.departamentos)) {
         return;
     }
 
     // Iterar sobre todos los departamentos
-    jsonNominaRelicario.departamentos.forEach(departamento => {
+    jsonNominaPilar.departamentos.forEach(departamento => {
         // Iterar sobre todos los empleados del departamento
         if (!Array.isArray(departamento.empleados)) return;
 
         departamento.empleados.forEach(empleado => {
-            // Solo procesar coordinadores (id_departamento === 6)
-            if (parseInt(empleado.id_departamento) !== 6) return;
+            // Solo procesar coordinadores (id_departamento === 8)
+            if (parseInt(empleado.id_departamento) !== 8) return;
 
             // Calcular el historial de inasistencias para este coordinador
             asignarHistorialInasistencias(empleado);
@@ -125,20 +125,20 @@ function calcularInasistenciasTodosCoordinadores(jsonNominaRelicario) {
     });
 }
 
-function calcularOlvidosTodosCoordinadores(jsonNominaRelicario) {
+function calcularOlvidosTodosCoordinadores(jsonNominaPilar) {
     // Validar que exista la nómina y sus departamentos
-    if (!jsonNominaRelicario || !Array.isArray(jsonNominaRelicario.departamentos)) {
+    if (!jsonNominaPilar || !Array.isArray(jsonNominaPilar.departamentos)) {
         return;
     }
 
     // Iterar sobre todos los departamentos
-    jsonNominaRelicario.departamentos.forEach(departamento => {
+    jsonNominaPilar.departamentos.forEach(departamento => {
         // Iterar sobre todos los empleados del departamento
         if (!Array.isArray(departamento.empleados)) return;
 
         departamento.empleados.forEach(empleado => {
-            // Solo procesar coordinadores (id_departamento === 6)
-            if (parseInt(empleado.id_departamento) !== 6) return;
+            // Solo procesar coordinadores (id_departamento === 8)
+            if (parseInt(empleado.id_departamento) !== 8) return;
 
             // Calcular el historial de olvidos para este coordinador
             asignarHistorialOlvidos(empleado);
