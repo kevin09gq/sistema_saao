@@ -49,7 +49,7 @@ if ($jsonNomina) {
     $ano = date('Y');
 }
 
-$titulo1 = 'RANCHO EL RELICARIO';
+$titulo1 = 'RANCHO EL PILAR';
 $titulo2 = 'PERSONAL DE APOYO';
 $titulo3 = 'NOMINA DEL ' . strtoupper($fecha_inicio) . ' AL ' . strtoupper($fecha_cierre);
 $titulo4 = 'SEMANA ' . (isset($jsonNomina['numero_semana']) ? str_pad($jsonNomina['numero_semana'], 2, '0', STR_PAD_LEFT) : '00') . '-' . $ano;
@@ -69,11 +69,12 @@ $sheet->mergeCells('A4:AA4');
 // Formatear título 1 - RANCHO EL RELICARIO (Rojo, Negrita, Tamaño 24)
 $sheet->getStyle('A1')->getFont()->setBold(true);
 $sheet->getStyle('A1')->getFont()->setSize(24);
-$sheet->getStyle('A1')->getFont()->setColor(new Color('FF0000'));
+$sheet->getStyle('A1')->getFont()->setColor(new Color('7030A0'));
 
 // Formatear título 2 - PERSONAL DE BASE (Negrita, Tamaño 11)
 $sheet->getStyle('A2')->getFont()->setBold(true);
 $sheet->getStyle('A2')->getFont()->setSize(20);
+$sheet->getStyle('A2')->getFont()->setColor(new Color('DBADFF'));
 
 // Formatear título 3 - NOMINA (Negrita, Tamaño 10)
 $sheet->getStyle('A3')->getFont()->setBold(true);
@@ -141,17 +142,17 @@ foreach ($columnas as $columna) {
     $columnaLetra++;
 }
 
-// Formatear los encabezados (Negrita, Centrados, Tamaño 10, Fondo Rojo, Letra Blanca)
+// Formatear los encabezados (Negrita, Centrados, Tamaño 10, Fondo Purpura, Letra Negra)
 $sheet->getStyle('A6:AA6')->getFont()->setBold(true);
 $sheet->getStyle('A6:AA6')->getFont()->setSize(10);
-$sheet->getStyle('A6:AA6')->getFont()->setColor(new Color('FFFFFF')); // Letra blanca
+$sheet->getStyle('A6:AA6')->getFont()->setColor(new Color('000000')); // Letra negra
 $sheet->getStyle('A6:AA6')->getAlignment()->setHorizontal('center');
 $sheet->getStyle('A6:AA6')->getAlignment()->setVertical('center');
 $sheet->getStyle('A6:AA6')->getAlignment()->setWrapText(true); // Ajustar texto
 
-// Agregar color de fondo rojo a los encabezados
+// Agregar color de fondo purpura a los encabezados
 $sheet->getStyle('A6:AA6')->getFill()->setFillType('solid');
-$sheet->getStyle('A6:AA6')->getFill()->getStartColor()->setRGB('FF0000'); // Rojo
+$sheet->getStyle('A6:AA6')->getFill()->getStartColor()->setRGB('E5C8E6'); // Purpura
 
 // Ajustar el ancho de las columnas para mejor visualización
 $columnasAncho = [
@@ -240,10 +241,10 @@ if ($jsonNomina && isset($jsonNomina['departamentos'])) {
     foreach ($jsonNomina['departamentos'] as $departamento) {
         if (isset($departamento['empleados'])) {
             foreach ($departamento['empleados'] as $empleado) {
-                $idPuestoEspecial = $empleado['id_puestoEspecial'] ?? null;
+                $idPuestoEspecial = $empleado['id_tipo_puesto'] ?? null;
                 $mostrar = $empleado['mostrar'] ?? false;
 
-                if (($idPuestoEspecial == 37 || $idPuestoEspecial == 39) && $mostrar) {
+                if ($idPuestoEspecial == 3 && $mostrar) {
                     $empleadosJornaleros[] = $empleado;
                 }
             }

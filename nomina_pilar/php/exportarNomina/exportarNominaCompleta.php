@@ -34,12 +34,7 @@ if ($jsonNomina) {
     $fecha_cierre = $jsonNomina['fecha_cierre'] ?? 'Fecha Cierre';
     $numero_semana = $jsonNomina['numero_semana'] ?? '00';
     $ano = date('Y');
-} else {
-    $fecha_inicio = '16/Ene';
-    $fecha_cierre = '22/Ene';
-    $numero_semana = '00';
-    $ano = date('Y');
-}
+} 
 
 //=====================
 //  DEFINIR COLUMNAS COMUNES
@@ -184,7 +179,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja) {
     //  TÍTULOS
     //=====================
     
-    $titulo1 = 'RANCHO EL RELICARIO';
+    $titulo1 = 'RANCHO EL PILAR';
     $titulo3 = 'NOMINA DEL ' . strtoupper($fecha_inicio) . ' AL ' . strtoupper($fecha_cierre);
     $titulo4 = 'SEMANA ' . str_pad($numero_semana, 2, '0', STR_PAD_LEFT) . '-' . $ano;
     
@@ -200,14 +195,15 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja) {
     $sheet->mergeCells('A3:AA3');
     $sheet->mergeCells('A4:AA4');
     
-    // Formatear título 1 - RANCHO EL RELICARIO (Rojo, Negrita, Tamaño 24)
+    // Formatear título 1 - RANCHO EL PILAR (Purpura, Negrita, Tamaño 24)
     $sheet->getStyle('A1')->getFont()->setBold(true);
     $sheet->getStyle('A1')->getFont()->setSize(24);
-    $sheet->getStyle('A1')->getFont()->setColor(new Color('FF0000'));
+    $sheet->getStyle('A1')->getFont()->setColor(new Color('7030A0'));
     
     // Formatear título 2 (Negrita, Tamaño 20)
     $sheet->getStyle('A2')->getFont()->setBold(true);
     $sheet->getStyle('A2')->getFont()->setSize(20);
+    $sheet->getStyle('A2')->getFont()->setColor(new Color('DBADFF'));
     
     // Formatear título 3 - NOMINA (Negrita, Tamaño 14)
     $sheet->getStyle('A3')->getFont()->setBold(true);
@@ -247,14 +243,14 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja) {
     // Formatear los encabezados (Negrita, Centrados, Tamaño 10, Fondo Rojo, Letra Blanca)
     $sheet->getStyle('A6:AA6')->getFont()->setBold(true);
     $sheet->getStyle('A6:AA6')->getFont()->setSize(10);
-    $sheet->getStyle('A6:AA6')->getFont()->setColor(new Color('FFFFFF')); // Letra blanca
+    $sheet->getStyle('A6:AA6')->getFont()->setColor(new Color('000000')); // Letra negra
     $sheet->getStyle('A6:AA6')->getAlignment()->setHorizontal('center');
     $sheet->getStyle('A6:AA6')->getAlignment()->setVertical('center');
     $sheet->getStyle('A6:AA6')->getAlignment()->setWrapText(true);
     
     // Agregar color de fondo rojo a los encabezados
     $sheet->getStyle('A6:AA6')->getFill()->setFillType('solid');
-    $sheet->getStyle('A6:AA6')->getFill()->getStartColor()->setRGB('FF0000'); // Rojo
+    $sheet->getStyle('A6:AA6')->getFill()->getStartColor()->setRGB('E5C8E6'); // Rojo
     
     // Ajustar el ancho de las columnas
     foreach ($columnasAncho as $columna => $ancho) {
@@ -614,24 +610,18 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja) {
 
 // Jornalero Base
 crearHoja($spreadsheet, 'PERSONAL DE BASE', function($emp) {
-    $id = $emp['id_puestoEspecial'] ?? null;
+    $id = $emp['id_tipo_puesto'] ?? null;
     $mostrar = $emp['mostrar'] ?? false;
-    return (($id == 10 || $id == 11) && $mostrar);
+    return (($id == 1) && $mostrar);
 }, 'JORNALERO BASE');
 
 // Jornalero Apoyo
 crearHoja($spreadsheet, 'PERSONAL DE APOYO', function($emp) {
-    $id = $emp['id_puestoEspecial'] ?? null;
+    $id = $emp['id_tipo_puesto'] ?? null;
     $mostrar = $emp['mostrar'] ?? false;
-    return (($id == 37 || $id == 39) && $mostrar);
+    return (($id == 3) && $mostrar);
 }, 'JORNALERO APOYO');
 
-// Jornalero Vivero
-crearHoja($spreadsheet, 'PERSONAL DE VIVERO', function($emp) {
-    $id = $emp['id_puestoEspecial'] ?? null;
-    $mostrar = $emp['mostrar'] ?? false;
-    return (($id == 38) && $mostrar);
-}, 'JORNALERO VIVERO');
 
 // Coordinador Rancho
 crearHoja($spreadsheet, 'COORDINADORES - RANCHO', function($emp) {
@@ -640,12 +630,6 @@ crearHoja($spreadsheet, 'COORDINADORES - RANCHO', function($emp) {
     return (($id == 4) && $mostrar);
 }, 'COORDINADOR RANCHO');
 
-// Coordinador Vivero
-crearHoja($spreadsheet, 'COORDINADORES - VIVERO', function($emp) {
-    $id = $emp['id_tipo_puesto'] ?? null;
-    $mostrar = $emp['mostrar'] ?? false;
-    return (($id == 5) && $mostrar);
-}, 'COORDINADOR VIVERO');
 
 //=====================
 //  DESCARGAR ARCHIVO
@@ -653,7 +637,7 @@ crearHoja($spreadsheet, 'COORDINADORES - VIVERO', function($emp) {
 
 $writer = new Xlsx($spreadsheet);
 
-$filename = 'SEM ' . str_pad($numero_semana, 2, '0', STR_PAD_LEFT) . ' - ' . $ano . ' RANCHO EL RELICARIO NOMINAS COMPLETAS - ' . date('Y-m-d_H-i-s') . '.xlsx';
+$filename = 'SEM ' . str_pad($numero_semana, 2, '0', STR_PAD_LEFT) . ' - ' . $ano . ' RANCHO EL PILAR NOMINAS COMPLETAS - ' . date('Y-m-d_H-i-s') . '.xlsx';
 
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Content-Disposition: attachment; filename="' . $filename . '"');

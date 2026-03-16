@@ -315,7 +315,7 @@ function reporteNominaPdf() {
                 var url = URL.createObjectURL(blob);
                 link.href = url;
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'REPORTE_NOMINA_JORNALERO_BASE_' + timestamp + '.pdf';
+                link.download = 'REPORTE_NOMINA_RELICARIO_' + timestamp + '.pdf';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);

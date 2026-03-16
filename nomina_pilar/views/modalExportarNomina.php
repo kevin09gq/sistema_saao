@@ -36,18 +36,7 @@
                         </div>
                     </button>
 
-                    <!-- Jornalero Vivero -->
-                    <button type="button" class="list-group-item list-group-item-action btn-export-tipo" id="btn-export-jornalero-vivero">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="mb-1">
-                                    <i class="bi bi-flower1"></i> Jornalero Vivero
-                                </h6>
-                            </div>
-                            <i class="bi bi-file-earmark-richtext text-warning fs-4"></i>
-                        </div>
-                    </button>
-
+                   
                     <!-- Coordinador Rancho -->
                     <button type="button" class="list-group-item list-group-item-action btn-export-tipo" id="btn-export-coodinador-rancho">
                         <div class="d-flex justify-content-between align-items-center">
@@ -57,18 +46,6 @@
                                 </h6>
                             </div>
                             <i class="bi bi-file-earmark-person text-danger fs-4"></i>
-                        </div>
-                    </button>
-
-                    <!-- Coordinador Vivero -->
-                    <button type="button" class="list-group-item list-group-item-action btn-export-tipo" id="btn-export-coodinador-vivero">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="mb-1">
-                                    <i class="bi bi-person-workspace"></i> Coodinador vivero
-                                </h6>
-                            </div>
-                            <i class="bi bi-file-earmark-person text-success fs-4"></i>
                         </div>
                     </button>
 

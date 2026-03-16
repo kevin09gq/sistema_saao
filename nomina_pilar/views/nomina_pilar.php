@@ -320,9 +320,9 @@
     <script src="../js/actualizarBiomtrico.js"></script>
     <script src="../js/seleccionar_empleados.js"></script>
     <script src="../js/conceptos_totales.js"></script>
-
-    <!--  
     <script src="../js/exportarNominaExcel.js"></script>
+    <!--  
+   
     <script src="../js/ticket_manual.js"></script>
     <script src="../js/ticket_pdf.js"></script>
     <script src="../js/ticket_seleccion_pilar.js"></script>

@@ -34,7 +34,7 @@ class PDFEncabezado extends TCPDF
         // Título principal
         $this->SetFont('helvetica', 'B', 16);
         $this->SetY(12);
-        $this->Cell(0, 10, 'REPORTE NÓMINA RANCHO RALICARIO', 0, 1, 'C', 0, '', 0, false, 'M', 'M');
+        $this->Cell(0, 10, 'REPORTE NÓMINA RANCHO PILAR', 0, 1, 'C', 0, '', 0, false, 'M', 'M');
 
         // Subtítulo
         $this->SetFont('helvetica', 'B', 12);
@@ -140,12 +140,10 @@ $tituloNomina = 'NÓMINA DEL ' . obtenerTituloPeriodo($fecha_inicio, $fecha_cier
 $jsonNominaStr = $_POST['jsonNomina'] ?? '{}';
 $datosNomina = json_decode($jsonNominaStr, true);
 
-// Filtrar empleados del jsonNominaRelicario
+// Filtrar empleados del jsonNominaPilar
 $empleadosJornaleroBase = [];
-$empleadosJornaleroVivero = [];
 $empleadosJornalerosApoyo = [];
 $empleadosCoordinadoresRancho = [];
-$empleadosCoordinadoresVivero = [];
 if (isset($datosNomina['departamentos']) && is_array($datosNomina['departamentos'])) {
     foreach ($datosNomina['departamentos'] as $depto) {
         if (
@@ -156,14 +154,10 @@ if (isset($datosNomina['departamentos']) && is_array($datosNomina['departamentos
                 if (isset($empleado['mostrar']) ? $empleado['mostrar'] : false) {
                     if (isset($empleado['id_tipo_puesto']) && $empleado['id_tipo_puesto'] == 1) {
                         $empleadosJornaleroBase[] = $empleado;
-                    } elseif (isset($empleado['id_tipo_puesto']) && $empleado['id_tipo_puesto'] == 2) {
-                        $empleadosJornaleroVivero[] = $empleado;
                     } elseif (isset($empleado['id_tipo_puesto']) && $empleado['id_tipo_puesto'] == 3) {
                         $empleadosJornalerosApoyo[] = $empleado;
                     } elseif (isset($empleado['id_tipo_puesto']) && $empleado['id_tipo_puesto'] == 4) {
                         $empleadosCoordinadoresRancho[] = $empleado;
-                    } elseif (isset($empleado['id_tipo_puesto']) && $empleado['id_tipo_puesto'] == 5) {
-                        $empleadosCoordinadoresVivero[] = $empleado;
                     }
                 }
             }
@@ -190,10 +184,8 @@ $pdf->SetAutoPageBreak(TRUE, 15);
 //=====================================
 $resumenPorTipo = [
     'JORNALERO BASE' => ['count' => 0, 'neto' => 0, 'percepciones' => 0, 'deducciones' => 0, 'percepciones_detalle' => [], 'deducciones_detalle' => []],
-    'JORNALERO VIVERO' => ['count' => 0, 'neto' => 0, 'percepciones' => 0, 'deducciones' => 0, 'percepciones_detalle' => [], 'deducciones_detalle' => []],
     'JORNALEROS DE APOYO' => ['count' => 0, 'neto' => 0, 'percepciones' => 0, 'deducciones' => 0, 'percepciones_detalle' => [], 'deducciones_detalle' => []],
     'COORDINADORES RANCHO' => ['count' => 0, 'neto' => 0, 'percepciones' => 0, 'deducciones' => 0, 'percepciones_detalle' => [], 'deducciones_detalle' => []],
-    'COORDINADORES VIVERO' => ['count' => 0, 'neto' => 0, 'percepciones' => 0, 'deducciones' => 0, 'percepciones_detalle' => [], 'deducciones_detalle' => []],
 ];
 $totalGeneralPercepciones = 0;
 $totalGeneralDeducciones = 0;
@@ -219,20 +211,12 @@ foreach ($empleadosJornaleroBase as $emp) {
     $emp['_tipo'] = 'JORNALERO BASE';
     $empleadosPorTipo[] = $emp;
 }
-foreach ($empleadosJornaleroVivero as $emp) {
-    $emp['_tipo'] = 'JORNALERO VIVERO';
-    $empleadosPorTipo[] = $emp;
-}
 foreach ($empleadosJornalerosApoyo as $emp) {
     $emp['_tipo'] = 'JORNALEROS DE APOYO';
     $empleadosPorTipo[] = $emp;
 }
 foreach ($empleadosCoordinadoresRancho as $emp) {
     $emp['_tipo'] = 'COORDINADORES RANCHO';
-    $empleadosPorTipo[] = $emp;
-}
-foreach ($empleadosCoordinadoresVivero as $emp) {
-    $emp['_tipo'] = 'COORDINADORES VIVERO';
     $empleadosPorTipo[] = $emp;
 }
 

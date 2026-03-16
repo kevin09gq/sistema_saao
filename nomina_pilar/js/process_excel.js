@@ -925,9 +925,8 @@ function asignarPropiedadesEmpleado(jsonNominaPilar) {
             /*
             FLUJO DE ASIGNACIÓN DE TIPO PUESTO:
             
-            Si el empleado está en el departamento 6 (Coordinadores):
-              - Si tiene puesto 40 → Es Coordinador Vivero (id_tipo_puesto = 5)
-              - Si tiene cualquier otro puesto → Es Coordinador Rancho (id_tipo_puesto = 4)
+            Si el empleado está en el departamento 8 (Coordinadores):
+              - Si tiene el id_departamento 8 son coordinadores, aqui no hay distincion por puesto especial.
             
             Si el empleado está en el departamento 7 (Jornaleros):
               - Si tiene puesto 10 o 11 → Es Jornalero Base (id_tipo_puesto = 1)
@@ -936,22 +935,15 @@ function asignarPropiedadesEmpleado(jsonNominaPilar) {
               - Si no tiene puesto asignado (null) → Por defecto es Jornalero Base (id_tipo_puesto = 1)
             */
 
-            /* Mapear id_puestoEspecial a id_tipo_jornalero según departamento
-            if (idDepto === 6) {
+            /* Mapear id_puestoEspecial a id_tipo_jornalero según departamento*/
+            if (idDepto === 8) {
                 // Departamento: Coordinadores
-                empleado.id_tipo_puesto = (idPuesto === 40) ? 5 : 4;
-            } else if (idDepto === 7) {
+                empleado.id_tipo_puesto = 4; // Coordinador
+                
+            } else if (idDepto === 11) {
                 // Departamento: Jornaleros
-                if ([10, 11].includes(idPuesto)) {
-                    empleado.id_tipo_puesto = 1; // Jornalero Base
-                } else if (idPuesto === 38) {
-                    empleado.id_tipo_puesto = 2; // Jornalero Vivero
-                } else if ([37, 39].includes(idPuesto)) {
-                    empleado.id_tipo_puesto = 3; // Jornalero de Apoyo
-                } else if (idPuesto === null) {
-                    empleado.id_tipo_puesto = 1; // Jornalero Base (por defecto)
-                }
-            }*/
+              empleado.id_tipo_puesto = (idPuesto === 37 || idPuesto === 39) ? 3 : ((idPuesto === 38) ? 2 : 1);
+            }
 
             // Asignar propiedad pasaje para jornaleros base y vivero
             if (["11"].includes(empleado.id_departamento)) {
