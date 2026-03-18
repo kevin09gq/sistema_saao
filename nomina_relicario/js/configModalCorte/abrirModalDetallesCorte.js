@@ -667,7 +667,17 @@ function actualizarTicketsEmpleado(json, nombreEmpleado, precioOriginal, nuevosT
         // Combinar tickets de otros precios con los nuevos tickets actualizados
         empleado.tickets = [...ticketsOtrosPrecios, ...nuevosTickets];
         
-        console.log('Tickets actualizados para:', nombreEmpleado, nuevosTickets);
+        // Si el empleado es REJA y queda sin tickets, eliminarlo del JSON
+        if (empleado.concepto === 'REJA' && empleado.tickets.length === 0) {
+            const indexEmpleado = departamentoCorte.empleados.indexOf(empleado);
+            if (indexEmpleado > -1) {
+                departamentoCorte.empleados.splice(indexEmpleado, 1);
+                console.log('Empleado eliminado del JSON (sin tickets):', nombreEmpleado);
+            }
+        } else {
+            console.log('Tickets actualizados para:', nombreEmpleado, nuevosTickets);
+        }
+        
         return true;
         
     } catch (error) {

@@ -181,7 +181,7 @@ $encabezados_corte = [
     'M' => 'TOTAL EFECTIVO', // Para NOMINA: suma de pagos por día; para REJA: Total Rejas * Precio por Reja
 ];
 
-// Ancho de columnas
+// Ancho de columnas para el corte de limon
 $anchos_corte = [
     'A' => 10,   // N°
     'B' => 38,  // NOMBRE

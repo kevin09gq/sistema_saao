@@ -43,21 +43,21 @@ function recalcularEventosCoordinador(empleado) {
 
     // Recalcular retardos
     asignarHistorialRetardos(empleado);
-    asignarTotalRetardosCoordinador(empleado, false);
+    asignarTotalRetardosCoordinador(empleado, true);
     if (Array.isArray(empleado.historial_retardos) && empleado.historial_retardos.length === 0) {
         delete empleado.historial_retardos;
     }
 
     // Recalcular inasistencias
     asignarHistorialInasistencias(empleado);
-    asignarTotalInasistenciasCoordinador(empleado, false);
+    asignarTotalInasistenciasCoordinador(empleado, true);
     if (Array.isArray(empleado.historial_inasistencias) && empleado.historial_inasistencias.length === 0) {
         delete empleado.historial_inasistencias;
     }
 
     // Recalcular olvidos del checador
     asignarHistorialOlvidos(empleado);
-    asignarTotalOlvidosCoordinador(empleado, false);
+    asignarTotalOlvidosCoordinador(empleado, true);
     if (Array.isArray(empleado.historial_olvidos) && empleado.historial_olvidos.length === 0) {
         delete empleado.historial_olvidos;
     }

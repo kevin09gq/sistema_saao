@@ -210,8 +210,9 @@ $(document).ready(function() {
 
     // Cerrar sugerencias al hacer clic fuera
     $(document).on('click', function(e) {
+        // Solo ocultar las sugerencias específicas del ticket manual, no todos los list-group
         if (!$(e.target).closest('.position-relative').length) {
-            $('.list-group').hide();
+            $('#suggestions_clave_manual, #suggestions_nombre_manual').hide();
         }
     });
 });

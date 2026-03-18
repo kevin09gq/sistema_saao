@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="../css/modalCoordinador.css">
     <link rel="stylesheet" href="../css/modalJornaleros.css">
     <link rel="stylesheet" href="../css/conceptos_totales.css">
+    <link rel="stylesheet" href="../css/ticket_manual.css">
 
     <link rel="stylesheet" href="<?= JQUERY_UI_CSS ?>">
 
@@ -325,20 +326,25 @@
     <script src="../js/conceptos_totales.js"></script>
     <script src="../js/exportarNominaExcel.js"></script>
     <script src="../js/ticket_pdf.js"></script>
-    
+
     <script src="../js/ticket_pdf.js"></script>
     <script src="../js/ticket_seleccion_pilar.js"></script>
+
+    <script src="../js/ticket_manual_pilar.js"></script>
+    <script src="../js/ticket_pdf.js"></script>
+    <script src="../js/ticket_seleccion_pilar.js"></script>
+
     <!--  
-   
     <script src="../js/ticket_manual.js"></script>
     <script src="../js/ticket_pdf.js"></script>
     <script src="../js/ticket_seleccion_pilar.js"></script>
+    -->
 
     <script src="../js/configModalCorte/configCorte.js"></script>
     <script src="../js/configModalCorte/showTablaCorte.js"></script>
     <script src="../js/configModalCorte/abrirModalDetallesCorte.js"></script>
 
--->
+
 
 </body>
 

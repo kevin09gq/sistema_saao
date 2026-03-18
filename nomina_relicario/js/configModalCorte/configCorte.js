@@ -2,15 +2,139 @@ let rejas_totales = document.getElementById("rejas_totales");
 let precio_reja = document.getElementById("precio_reja");
 let total_pagar = document.getElementById("total_pagar");
 const modalCorte = new bootstrap.Modal(document.getElementById("modalCorte"));
+//const dias_nomina = ["VIERNES", "SABADO", "DOMINGO", "LUNES", "MARTES", "MIERCOLES", "JUEVES"];
+const dias_nomina = ["DOMINGO", "LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO"];
 
 $(document).ready(function () {
 
     obtenerTablasRancho();
+    // llenar_cuerpo_tabla_pagos_por_dia();
     buscar_cortador();
     buscar_cortador_nomina();
 
 
 });
+
+
+/**
+ * Obtiene un rango de fechas entre dos fechas dadas
+ * @param {String} inicioStr 
+ * @param {String} finStr 
+ * @returns 
+ */
+function obtenerRangoFechas(inicioStr, finStr) {
+    const meses = {
+        Ene: 0, Feb: 1, Mar: 2, Abr: 3, May: 4, Jun: 5,
+        Jul: 6, Ago: 7, Sep: 8, Oct: 9, Nov: 10, Dic: 11
+    };
+
+    const mesesInv = Object.keys(meses); // ["Ene","Feb",...]
+
+    // Función para convertir "12/Ene/2026" a Date
+    function parseFecha(str) {
+        const [dia, mesAbrev, anio] = str.split("/");
+        return new Date(anio, meses[mesAbrev], dia);
+    }
+
+    // Función para formatear Date a "12/Ene/2026"
+    function formatearFecha(date) {
+        const dia = date.getDate();
+        const mesAbrev = mesesInv[date.getMonth()];
+        const anio = date.getFullYear();
+        return `${dia}/${mesAbrev}/${anio}`;
+    }
+
+    const inicio = parseFecha(inicioStr);
+    const fin = parseFecha(finStr);
+
+    const resultado = [];
+    let actual = new Date(inicio);
+
+    while (actual <= fin) {
+        resultado.push(formatearFecha(actual));
+        actual.setDate(actual.getDate() + 1);
+    }
+
+    return resultado;
+}
+
+/**
+ * 
+ * @param {String} fechaStr Fecha con formato "12/Ene/2026"
+ * @returns Nombre del día de la semana en español (ej. "LUNES")
+ */
+function obtenerDiaSemana(fechaStr) {
+  // Mapeo de meses abreviados en español a número (0 = enero)
+  const meses = {
+    Ene: 0,
+    Feb: 1,
+    Mar: 2,
+    Abr: 3,
+    May: 4,
+    Jun: 5,
+    Jul: 6,
+    Ago: 7,
+    Sep: 8,
+    Oct: 9,
+    Nov: 10,
+    Dic: 11
+  };
+
+  // Separar la cadena
+  const [dia, mesStr, anio] = fechaStr.split("/");
+  const mes = meses[mesStr];
+
+  // Crear objeto Date
+  const fecha = new Date(anio, mes, dia);
+
+  // getDay() devuelve: 0=Domingo, 1=Lunes, ..., 6=Sábado
+  const indice = fecha.getDay();
+
+  // Ajustar al arreglo dias_nomina
+  return dias_nomina[indice];
+}
+
+/**
+ * Función para llenar el cuerpo de la tabla de pagos por día con las fechas del rango y los inputs correspondientes
+ */
+function llenar_cuerpo_tabla_pagos_por_dia() {
+    let tmp =  ``;
+
+    if (jsonNominaRelicario == null) {
+        return;
+    }
+
+    const rangoFechas = obtenerRangoFechas(jsonNominaRelicario.fecha_inicio, jsonNominaRelicario.fecha_cierre);
+
+    for (let i = 0; i < dias_nomina.length; i++) {
+        tmp += `
+            <tr>
+                <td>${ rangoFechas[i] }</td>
+                <td>${ obtenerDiaSemana(rangoFechas[i]) }</td>
+                <td>
+                    <input type="number" step="0.01" min="0"
+                        class="form-control shadow-sm pago_del_dia"
+                        name="pago_${ dias_nomina[i] }" id="pago_${ dias_nomina[i] }"
+                        placeholder="Pago del día">
+                </td>
+                <td class="text-center">
+                    <button class="btn btn-outline-danger btn_limpiar_dia" type="button" title="Limpiar fila"><i class="bi bi-trash"></i></button>
+                </td>
+            </tr>
+        `;
+    }
+
+    tmp += `
+        <tr>
+            <td></td>
+            <td>Total:</td>
+            <td class="text-end"><strong id="total_pagos">$0.00</strong></td>
+            <td></td>
+        </tr>
+    `;
+
+    $("#cuerpo_tabla_pagos_por_dia").html(tmp);
+}
 
 /**
  * ====================================================================
@@ -50,7 +174,8 @@ function alerta(icono, titulo, texto, toast = false) {
     Swal.fire({
         title: titulo,
         text: texto,
-        icon: icono
+        icon: icono,
+        confirmButtonText: "Entendido"
     });
 }
 
@@ -355,10 +480,6 @@ $(document).on("submit", "#form_corte", function (e) {
 
     // Recuperar el precio de la reja
     let precio = parseFloat(precio_reja.value) || 0;
-    if (precio <= 0) {
-        alerta("info", "Precio de reja inválido", "Debes ingresar un precio por reja valido");
-        return;
-    }
 
     /**
      * ============================================================ 
@@ -443,7 +564,7 @@ function guardarTicketCorte(folio, nombreCortador, fecha, datosRejas, precio) {
     // Mostrar alerta de éxito y limpiar el formulario
     alerta("success", "Corte guardado", "El ticket del corte se ha guardado correctamente", true);
     limpiar_formulario_corte();
-    modalCorte.hide();
+    //modalCorte.hide();
 
     let dep = $("#filtro_departamento").val();
 
@@ -750,7 +871,7 @@ $(document).on('submit', '#form_corte_nomina', function (e) {
     // Mostrar alerta de éxito y limpiar el formulario
     alerta("success", "Corte guardado", "Nomina guardada con exito", true);
     limpiar_formulario_corte();
-    modalCorte.hide();
+    //modalCorte.hide();
 
     // Cargar tabla principal
     let dep = $("#filtro_departamento").val();
@@ -770,7 +891,7 @@ function obtenerPagosPorDia() {
 
     $("#cuerpo_tabla_pagos_por_dia tr").not(":last").each(function () {
 
-        let dia = $(this).find("td:first").text().trim();
+        let dia = $(this).find("td:eq(0)").text().trim();
         let valor = parseFloat($(this).find(".pago_del_dia").val());
 
         // Si es NaN o vacío, convertir a 0

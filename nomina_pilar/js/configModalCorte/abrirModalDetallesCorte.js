@@ -47,10 +47,10 @@ $(document).on('click', '#context_menu_corte', function (e) {
 
     switch (concepto) {
         case 'REJA':
-            inicializar_modal_corte_rejas_detalles(jsonNominaRelicario, nombre, precio);
+            inicializar_modal_corte_rejas_detalles(jsonNominaPilar, nombre, precio);
             break;
         case 'NOMINA':
-            inicializar_modal_corte_nomina_detalles(jsonNominaRelicario, nombre);
+            inicializar_modal_corte_nomina_detalles(jsonNominaPilar, nombre);
             break;
         default:
             console.warn('Concepto no reconocido');
@@ -279,14 +279,14 @@ $(btn_guardar_cambios_nomina_corte).on('click', function (e) {
     const nuevosPageos = recopilarPagosDelModal();
 
     // Actualizar el empleado en el JSON
-    const actualizado = actualizarPagosEmpleado(jsonNominaRelicario, nombreEmpleado, nuevosPageos);
+    const actualizado = actualizarPagosEmpleado(jsonNominaPilar, nombreEmpleado, nuevosPageos);
 
     if (actualizado) {
         // Mostrar mensaje de éxito
         alerta("success", "Pagos actualizados", "Los pagos del empleado han sido actualizados correctamente.");
 
         // Después de actualizar los datos, cerrar el modal y refrescar la tabla
-        mostrarDatosTablaCorte(jsonNominaRelicario);
+        mostrarDatosTablaCorte(jsonNominaPilar);
         modal_corte_nomina_detalles.hide();
     } else {
         // Mostrar mensaje de error
@@ -588,29 +588,29 @@ function agregarTabla(ticketIndex) {
  */
 function recopilarTicketsDelModal() {
     const tickets = [];
-    
+
     // Recorrer todas las tarjetas de tickets visibles
-    $('#lista-reja-tab-pane .card').each(function(index) {
+    $('#lista-reja-tab-pane .card').each(function (index) {
         const ticketId = $(this).attr('id');
         if (!ticketId) return; // Saltar si no tiene ID (ticket eliminado)
-        
+
         const ticketIndex = ticketId.split('_')[1];
-        
+
         // Obtener datos básicos del ticket
         const folio = $(`#folio_${ticketIndex}`).val().trim();
         const fecha = $(`#fecha_${ticketIndex}`).val();
         const precioReja = parseFloat($(`#precio_${ticketIndex}`).val()) || 0;
-        
+
         // Recopilar datosRejas (tablas y cantidades)
         const datosRejas = [];
-        $(`#tablas_container_${ticketIndex} .row`).each(function() {
+        $(`#tablas_container_${ticketIndex} .row`).each(function () {
             const tablaInput = $(this).find('input[id^="tabla_"]');
             const cantidadInput = $(this).find('input[id^="cantidad_"]');
-            
+
             if (tablaInput.length && cantidadInput.length) {
                 const tabla = parseInt(tablaInput.val()) || 0;
                 const cantidad = parseInt(cantidadInput.val()) || 0;
-                
+
                 if (tabla > 0 && cantidad > 0) {
                     datosRejas.push({
                         tabla: tabla,
@@ -619,7 +619,7 @@ function recopilarTicketsDelModal() {
                 }
             }
         });
-        
+
         // Solo agregar el ticket si tiene datos válidos
         if (folio && fecha && datosRejas.length > 0) {
             tickets.push({
@@ -630,7 +630,7 @@ function recopilarTicketsDelModal() {
             });
         }
     });
-    
+
     return tickets;
 }
 
@@ -649,27 +649,39 @@ function actualizarTicketsEmpleado(json, nombreEmpleado, precioOriginal, nuevosT
             console.error('Departamento Corte no encontrado');
             return false;
         }
-        
-        const empleado = departamentoCorte.empleados.find(emp => 
+
+        const empleado = departamentoCorte.empleados.find(emp =>
             emp.nombre === nombreEmpleado && emp.concepto === 'REJA'
         );
-        
+
         if (!empleado) {
             console.error('Empleado no encontrado');
             return false;
         }
-        
+
         // Filtrar tickets que NO tengan el precio original (mantener los otros precios)
-        const ticketsOtrosPrecios = empleado.tickets.filter(ticket => 
+        const ticketsOtrosPrecios = empleado.tickets.filter(ticket =>
             parseFloat(ticket.precio_reja) !== precioOriginal
         );
-        
+
         // Combinar tickets de otros precios con los nuevos tickets actualizados
         empleado.tickets = [...ticketsOtrosPrecios, ...nuevosTickets];
-        
-        console.log('Tickets actualizados para:', nombreEmpleado, nuevosTickets);
+
+        // Si el empleado es REJA y queda sin tickets, eliminarlo del JSON
+        if (empleado.concepto === 'REJA' && empleado.tickets.length === 0) {
+            const indexEmpleado = departamentoCorte.empleados.indexOf(empleado);
+            if (indexEmpleado > -1) {
+                departamentoCorte.empleados.splice(indexEmpleado, 1);
+                console.log('Empleado eliminado del JSON (sin tickets):', nombreEmpleado);
+                alerta("success", "Empleado eliminado", "Empleado " + nombreEmpleado + " ha sido eliminado (sin tickets).", true);
+            }
+        } else {
+            console.log('Tickets actualizados para:', nombreEmpleado, nuevosTickets);
+            alerta("success", "Empleado actualizado", "Empleado " + nombreEmpleado + " ha sido actualizado.", true);
+        }
+
         return true;
-        
+
     } catch (error) {
         console.error('Error al actualizar tickets del empleado:', error);
         return false;
@@ -695,13 +707,13 @@ $(btn_guardar_cambios_reja_corte).on('click', function (e) {
             // Obtener el nombre del empleado y precio actual
             const nombreEmpleado = $('#span_nombre_cortador_reja').text().trim();
             const precioOriginal = parseFloat($('#span_precio_reja').text().replace('$', '').replace(/,/g, ''));
-            
+
             // Recopilar los nuevos tickets de los inputs
             const nuevosTickets = recopilarTicketsDelModal();
-            
+
             // Actualizar el empleado en el JSON
-            const actualizado = actualizarTicketsEmpleado(jsonNominaRelicario, nombreEmpleado, precioOriginal, nuevosTickets);
-            
+            const actualizado = actualizarTicketsEmpleado(jsonNominaPilar, nombreEmpleado, precioOriginal, nuevosTickets);
+
             if (actualizado) {
                 // Mostrar mensaje de éxito
                 Swal.fire({
@@ -711,9 +723,9 @@ $(btn_guardar_cambios_reja_corte).on('click', function (e) {
                     timer: 2000,
                     showConfirmButton: false
                 });
-                
+
                 // Se actualiza la tabla y se cierra el modal
-                mostrarDatosTablaCorte(jsonNominaRelicario);
+                mostrarDatosTablaCorte(jsonNominaPilar);
                 modal_corte_reja_detalles.hide();
             } else {
                 // Mostrar mensaje de error

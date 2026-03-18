@@ -238,7 +238,6 @@ function deseleccionarTodosEmpleados() {
  */
 function limpiarCampoBusqueda() {
     $('#buscar_empleado_ticket').val('');
-    $('#btn_limpiar_busqueda').hide();
     // Mostrar todos los empleados al limpiar
     $('.empleado-item').removeClass('d-none').show();
 }
@@ -248,15 +247,10 @@ function limpiarCampoBusqueda() {
  */
 function filtrarEmpleados() {
     const filtro = $('#buscar_empleado_ticket').val().toLowerCase().trim();
-    const $btnLimpiar = $('#btn_limpiar_busqueda');
     const $items = $('.empleado-item');
-    
-    // Mostrar/ocultar botón de limpieza
     if (filtro === '') {
-        $btnLimpiar.hide();
         $items.removeClass('d-none').show();
     } else {
-        $btnLimpiar.css('display', 'flex');
         $items.each(function() {
             const $item = $(this);
             const nombre = $item.data('nombre') || '';

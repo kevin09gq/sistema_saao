@@ -213,15 +213,9 @@ function mostrarDeduccionesExtrasJornalero(empleado) {
             </div>
         `;
             $('#contenedor-deducciones-adicionales-jornalero').append(elementoDeduccion);
-
-            // Agregar evento change para actualizar
-            $('#contenedor-deducciones-adicionales-jornalero').find('.deduccion-extra-item').last().find('input').on('change', function () {
-                guardarDeduccionesExtraJornalero(empleado);
-            });
         });
     }
 }
-
 
 // Función para guardar las deducciones adicionales en el objeto empleado
 function guardarDeduccionesExtraJornalero(empleado) {

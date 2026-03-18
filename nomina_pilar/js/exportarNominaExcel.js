@@ -2,6 +2,7 @@ abrirModalExportarExcel();
 exportarJornaleroBase();
 exportarJornaleroApoyo();
 exportarCoordinadorRancho();
+exportarCorte();
 nominaCompleta();
 reporteNominaPdf();
 
@@ -26,6 +27,18 @@ function exportarJornaleroBase() {
 
         if (validarEmpleadosNegativos()) return;
 
+        // Mostrar alerta de carga
+        Swal.fire({
+            title: 'Generando documento...',
+            html: 'Por favor espera mientras se genera el archivo Excel.',
+            icon: 'info',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: (modal) => {
+                Swal.showLoading();
+            }
+        });
+
         // Enviar el jsonNominaPilar al servidor PHP mediante POST
         $.ajax({
             url: '../php/exportarNomina/exportarNominaJornaleroBase.php',
@@ -37,6 +50,7 @@ function exportarJornaleroBase() {
                 responseType: 'blob'
             },
             success: function (blob) {
+                Swal.close();
                 // Crear un blob y descargar el archivo
                 var link = document.createElement('a');
                 var url = URL.createObjectURL(blob);
@@ -51,6 +65,7 @@ function exportarJornaleroBase() {
                 URL.revokeObjectURL(url);
             },
             error: function (xhr, status, error) {
+                Swal.close();
                 console.error('Error al descargar el Excel:', error);
                 alert('Error: No se pudo generar el archivo Excel.');
             }
@@ -71,6 +86,18 @@ function exportarJornaleroApoyo() {
 
         if (validarEmpleadosNegativos()) return;
 
+        // Mostrar alerta de carga
+        Swal.fire({
+            title: 'Generando documento...',
+            html: 'Por favor espera mientras se genera el archivo Excel.',
+            icon: 'info',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: (modal) => {
+                Swal.showLoading();
+            }
+        });
+
         // Enviar el jsonNominaPilar al servidor PHP mediante POST
         $.ajax({
             url: '../php/exportarNomina/exportarNominaJornaleroApoyo.php',
@@ -82,6 +109,7 @@ function exportarJornaleroApoyo() {
                 responseType: 'blob'
             },
             success: function (blob) {
+                Swal.close();
                 // Crear un blob y descargar el archivo
                 var link = document.createElement('a');
                 var url = URL.createObjectURL(blob);
@@ -96,6 +124,7 @@ function exportarJornaleroApoyo() {
                 URL.revokeObjectURL(url);
             },
             error: function (xhr, status, error) {
+                Swal.close();
                 console.error('Error al descargar el Excel:', error);
                 alert('Error: No se pudo generar el archivo Excel.');
             }
@@ -117,6 +146,18 @@ function exportarCoordinadorRancho() {
 
         if (validarEmpleadosNegativos()) return;
 
+        // Mostrar alerta de carga
+        Swal.fire({
+            title: 'Generando documento...',
+            html: 'Por favor espera mientras se genera el archivo Excel.',
+            icon: 'info',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: (modal) => {
+                Swal.showLoading();
+            }
+        });
+
         // Enviar el jsonNominaPilar al servidor PHP mediante POST
         $.ajax({
             url: '../php/exportarNomina/exportarNominaCoordinadorRancho.php',
@@ -128,6 +169,7 @@ function exportarCoordinadorRancho() {
                 responseType: 'blob'
             },
             success: function (blob) {
+                Swal.close();
                 // Crear un blob y descargar el archivo
                 var link = document.createElement('a');
                 var url = URL.createObjectURL(blob);
@@ -142,6 +184,7 @@ function exportarCoordinadorRancho() {
                 URL.revokeObjectURL(url);
             },
             error: function (xhr, status, error) {
+                Swal.close();
                 console.error('Error al descargar el Excel:', error);
                 alert('Error: No se pudo generar el archivo Excel.');
             }
@@ -159,7 +202,19 @@ function nominaCompleta() {
             alert('No hay datos de nómina para exportar. Por favor, procesa los datos primero.');
             return;
         }
-       // if (validarEmpleadosNegativos()) return;
+        // if (validarEmpleadosNegativos()) return;
+
+        // Mostrar alerta de carga
+        Swal.fire({
+            title: 'Generando documento...',
+            html: 'Por favor espera mientras se genera el archivo Excel.',
+            icon: 'info',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: (modal) => {
+                Swal.showLoading();
+            }
+        });
 
         // Enviar el jsonNominaPilar al servidor PHP mediante POST
         $.ajax({
@@ -172,6 +227,7 @@ function nominaCompleta() {
                 responseType: 'blob'
             },
             success: function (blob) {
+                Swal.close();
                 // Crear un blob y descargar el archivo
                 var link = document.createElement('a');
                 var url = URL.createObjectURL(blob);
@@ -186,6 +242,7 @@ function nominaCompleta() {
                 URL.revokeObjectURL(url);
             },
             error: function (xhr, status, error) {
+                Swal.close();
                 console.error('Error al descargar el Excel:', error);
                 alert('Error: No se pudo generar el archivo Excel.');
             }
@@ -273,4 +330,78 @@ function validarEmpleadosNegativos() {
     }
 
     return false; // permitir descarga
+}
+
+
+
+// Generar porte excel para corte de limones
+function exportarCorte() {
+    // Lógica para exportar la nómina de Corte
+    $("#btn-export-corte").click(function (e) {
+        e.preventDefault();
+
+        // Validar que jsonNominaRelicario exista
+        if (!jsonNominaPilar) {
+            alert('No hay datos de nómina para exportar. Por favor, procesa los datos primero.');
+            return;
+        }
+
+        // Validar que el departamento Corte exista
+        const departamentoCorte = jsonNominaPilar.departamentos.find(d => d.nombre === 'Corte');
+        if (!departamentoCorte || !departamentoCorte.empleados || departamentoCorte.empleados.length === 0) {
+            alerta("info", "Nomina no encontrada", "No se encontró el departamento de Corte o no tiene empleados. Por favor, cargar los tickets de corte de limon.");
+            return;
+        }
+
+        if (validarEmpleadosNegativos()) return;
+
+        // Mostrar alerta de carga
+        Swal.fire({
+            title: 'Generando documento...',
+            html: 'Por favor espera mientras se genera el archivo Excel.',
+            icon: 'info',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: (modal) => {
+                Swal.showLoading();
+            }
+        });
+
+        // Enviar el jsonNominaPilar al servidor PHP mediante POST
+        $.ajax({
+            url: '../php/exportarNomina/exportarNominaCorte.php',
+            type: 'POST',
+            data: {
+                jsonNomina: JSON.stringify(jsonNominaPilar)
+            },
+            xhrFields: {
+                responseType: 'blob'
+            },
+            success: function (blob) {
+                // Cerrar la alerta de carga
+                Swal.close();
+
+                // Crear un blob y descargar el archivo
+                var link = document.createElement('a');
+                var url = URL.createObjectURL(blob);
+                link.href = url;
+                var numeroSemana = String(jsonNominaPilar.numero_semana).padStart(2, '0');
+                var aniosCierre = jsonNominaPilar.fecha_cierre.split('/')[2];
+                var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
+                link.download = 'SEM ' + numeroSemana + ' - ' + aniosCierre + ' RANCHO EL PILAR NOMINAS - CORTE REJAS DE LIMON - ' + timestamp + '.xlsx';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            },
+            error: function (xhr, status, error) {
+                // Cerrar la alerta de carga
+                Swal.close();
+
+                console.error('Error al descargar el Excel:', error);
+                alerta("error", "Error al generar reporte excel", "No se pudo generar el archivo Excel para el corte de limones. Por favor, intenta nuevamente o contacta al soporte.");
+            }
+        });
+
+    });
 }

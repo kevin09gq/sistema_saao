@@ -88,12 +88,15 @@ function processExcelData(params) {
                                 $('#btn_procesar_nomina_pilar').removeClass('loading').prop('disabled', false);
                             });
                         } else {
-                        
+
                             if (hayBiometrico) {
                                 // Si hay biométrico, validar existencia pero omitir agregar empleados sin seguro por ahora
                                 validarExistenciaTrabajador(JsonListaRaya, true);
                                 procesarBiometrico(form, JsonListaRaya);
                                 //console.log(jsonNominaPilar);
+                                
+                                $('#btn_procesar_nomina_pilar').removeClass('loading').prop('disabled', false);
+                                
 
                             } else {
                                 // Normalizar nombres de departamentos en JsonListaRaya antes de usar
@@ -299,6 +302,12 @@ function obtenerJornalerosCoordinadores(JsonListaRaya) {
                 console.log(jsonNominaPilar);
                 actualizarCabeceraNomina(jsonNominaPilar);
 
+                // BHL: Llenar tabla de pagos por día cuando se cargue la nómina
+                /* 
+                if (typeof llenar_cuerpo_tabla_pagos_por_dia === 'function') {
+                    llenar_cuerpo_tabla_pagos_por_dia();
+                } */
+
                 mostrarConfigValores(false);
 
             }
@@ -348,6 +357,12 @@ function procesarBiometrico(form, JsonListaRaya) {
                     obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos);
 
                 }
+
+                // BHL: Llenar tabla de pagos por día cuando se cargue la nómina
+                /*
+                if (typeof llenar_cuerpo_tabla_pagos_por_dia === 'function') {
+                    llenar_cuerpo_tabla_pagos_por_dia();
+                } */
 
 
 
@@ -545,9 +560,15 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
                     calcularRetardosTodosJornaleros(jsonNominaPilar);
                 }
                 actualizarCabeceraNomina(jsonNominaPilar);
-                
+
+                // BHL: Llenar tabla de pagos por día cuando se cargue la nómina
+                /*
+               if (typeof llenar_cuerpo_tabla_pagos_por_dia === 'function') {
+                   llenar_cuerpo_tabla_pagos_por_dia();
+               } */
+
                 mostrarConfigValores(true);
-                
+
                 console.log(jsonNominaPilar);
 
             }
@@ -615,10 +636,10 @@ function validarExistenciaTrabajadorBD(jsonNominaPilar, JsonListaRaya) {
                 // Filtrar empleados: solo dejar los que existen en BD (id_status=1 e id_empresa=1)
                 jsonNominaPilar.departamentos.forEach(function (departamento) {
 
-                    /*Si es Corte, no filtrar contra BD
+                    // Si es Corte, no filtrar contra BD
                     if (departamento.nombre === "Corte") {
                         return;
-                    }*/
+                    }
 
                     departamento.empleados = departamento.empleados.filter(function (empleado) {
                         return clavesExistentes.includes(String(empleado.clave));
@@ -882,6 +903,13 @@ function verificarEmpleadosSinSeguro(jsonNominaPilar) {
                 }*/
 
                 actualizarCabeceraNomina(jsonNominaPilar);
+
+                // BHL: Llenar tabla de pagos por día cuando se cargue la nómina
+                /*
+                if (typeof llenar_cuerpo_tabla_pagos_por_dia === 'function') {
+                    llenar_cuerpo_tabla_pagos_por_dia();
+                } */
+
                 initComponents();
 
                 // Filtrar empleados con id_tipo_puesto 1
@@ -939,10 +967,10 @@ function asignarPropiedadesEmpleado(jsonNominaPilar) {
             if (idDepto === 8) {
                 // Departamento: Coordinadores
                 empleado.id_tipo_puesto = 4; // Coordinador
-                
+
             } else if (idDepto === 11) {
                 // Departamento: Jornaleros
-              empleado.id_tipo_puesto = (idPuesto === 37 || idPuesto === 39) ? 3 : ((idPuesto === 38) ? 2 : 1);
+                empleado.id_tipo_puesto = (idPuesto === 37 || idPuesto === 39) ? 3 : ((idPuesto === 38) ? 2 : 1);
             }
 
             // Asignar propiedad pasaje para jornaleros base y vivero

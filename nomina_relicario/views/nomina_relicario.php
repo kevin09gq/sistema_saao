@@ -279,9 +279,7 @@
     <?php include "modalConceptosTotales.php"; ?>
     <?php include "modalExportarNomina.php"; ?>
     <?php include "modalSeleccionarEmpleados.php"; ?>
-
     <?php include "modal_ticket_manual.php"; ?>
-    <?php include "modal_seleccion_tickets_relicario.php"; ?>
 
     <!-- Modal para los cortes -->
     <?php include "modalCorte.php"; ?>

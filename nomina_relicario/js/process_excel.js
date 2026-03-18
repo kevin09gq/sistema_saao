@@ -6,7 +6,7 @@ $(document).ready(function () {
     restoreNomina();
     confirmarsaveNomina();
     limpiarCamposNomina();
-    console.log(jsonNominaRelicario);
+    console.log("Log 1: ", jsonNominaRelicario);
 
 
 });
@@ -77,7 +77,7 @@ function processExcelData(params) {
                                 //Actualizar Fechas de inicio y cierre
                                 jsonNominaRelicario.fecha_inicio = JsonListaRaya.fecha_inicio;
                                 jsonNominaRelicario.fecha_cierre = JsonListaRaya.fecha_cierre;
-                            
+
                                 validarExistenciaTrabajadorBD(jsonNominaRelicario, JsonListaRaya);
 
 
@@ -102,6 +102,8 @@ function processExcelData(params) {
 
                             }
                         }
+
+
 
                     });
 
@@ -266,6 +268,12 @@ function obtenerJornalerosCoordinadores(JsonListaRaya) {
                 console.log(jsonNominaRelicario);
                 actualizarCabeceraNomina(jsonNominaRelicario);
 
+                // BHL: Llenar tabla de pagos por día cuando se cargue la nómina
+                /*
+                if (typeof llenar_cuerpo_tabla_pagos_por_dia === 'function') {
+                    llenar_cuerpo_tabla_pagos_por_dia();
+                } */
+
                 mostrarConfigValores(false);
 
             }
@@ -314,10 +322,13 @@ function procesarBiometrico(form, JsonListaRaya) {
                 if (empleadosNoUnidos && empleadosNoUnidos.length > 0) {
                     obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos);
                     console.log(empleadosNoUnidos);
-
                 }
 
-
+                // BHL: Llenar tabla de pagos por día cuando se cargue la nómina
+                /*
+                if (typeof llenar_cuerpo_tabla_pagos_por_dia === 'function') {
+                    llenar_cuerpo_tabla_pagos_por_dia();
+                } */
 
 
             } catch (e) {
@@ -506,6 +517,13 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
                     calcularRetardosTodosJornaleros(jsonNominaRelicario);
                 }
                 actualizarCabeceraNomina(jsonNominaRelicario);
+
+                // BHL: Llenar tabla de pagos por día cuando se cargue la nómina
+                /*
+                if (typeof llenar_cuerpo_tabla_pagos_por_dia === 'function') {
+                    llenar_cuerpo_tabla_pagos_por_dia();
+                }*/
+
                 mostrarConfigValores(true);
                 console.log(jsonNominaRelicario);
 
@@ -796,6 +814,13 @@ function verificarEmpleadosSinSeguro(jsonNominaRelicario) {
                 }*/
 
                 actualizarCabeceraNomina(jsonNominaRelicario);
+
+                // BHL: Llenar tabla de pagos por día cuando se cargue la nómina
+                /*
+                if (typeof llenar_cuerpo_tabla_pagos_por_dia === 'function') {
+                    llenar_cuerpo_tabla_pagos_por_dia();
+                } */
+
                 initComponents();
 
                 // Filtrar empleados con id_tipo_puesto 1

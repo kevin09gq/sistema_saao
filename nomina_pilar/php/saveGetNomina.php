@@ -37,7 +37,7 @@ function guardarNominaPilar($data, $conexion)
     $actualizar = $data['actualizar'];
 
     // Obtener todo lo de corte
-    // $corte = $data['corte'];
+    $corte = $data['corte'];
 
     // Verificar si ya existe la nómina considerando número de semana y año
     $query = "SELECT * FROM nomina_pilar WHERE numero_semana = ? AND anio = ?";
@@ -63,7 +63,7 @@ function guardarNominaPilar($data, $conexion)
                 $idNominaActualizada = $rowId['id_nomina_pilar'];
 
                 // También actualizar los tickets de corte
-                //guardarTicketsCorte($corte, $idNominaActualizada, $conexion);
+                guardarTicketsCorte($corte, $idNominaActualizada, $conexion);
 
                 echo json_encode(['success' => true, 'message' => 'Nómina actualizada correctamente']);
             } else {
@@ -81,7 +81,7 @@ function guardarNominaPilar($data, $conexion)
             // Recuperar el ID insertado
             $ultimoId = $conexion->insert_id;
 
-            //guardarTicketsCorte($corte, $ultimoId, $conexion);
+            guardarTicketsCorte($corte, $ultimoId, $conexion);
 
             echo json_encode(['success' => true, 'message' => 'Nómina guardada correctamente']);
         } else {
@@ -136,14 +136,14 @@ function obtenerNomina($data, $conexion)
         $nomina = json_decode($nomina_raw, true);
 
         // Obtener también los tickets de corte
-       // $ticketsCorte = obtenerTicketsCorteInterno($idNomina, $conexion);
+        $ticketsCorte = obtenerTicketsCorteInterno($idNomina, $conexion);
 
         if (json_last_error() === JSON_ERROR_NONE) {
 
-         /*   $nomina['departamentos'][] = [
+            $nomina['departamentos'][] = [
                 'nombre' => 'Corte',
                 'empleados' => $ticketsCorte
-            ];*/
+            ];
 
             echo json_encode([
                 'success' => true,
@@ -164,6 +164,9 @@ function obtenerNomina($data, $conexion)
 }
 
 
+
+
+
 /**
  * Función para guardar tickets de corte (llamada desde guardarNominaRelicario)
  */
@@ -179,7 +182,7 @@ function guardarTicketsCorte($corte, $idNomina, $conexion)
         }
 
         // Primero limpiar tickets existentes para esta nómina (en caso de actualización)
-        $deleteQuery = "DELETE FROM cortes_relicario WHERE id_nomina = ?";
+        $deleteQuery = "DELETE FROM cortes_pilar WHERE id_nomina = ?";
         $deleteStmt = $conexion->prepare($deleteQuery);
         $deleteStmt->bind_param("i", $idNomina);
         $deleteStmt->execute();
@@ -195,7 +198,7 @@ function guardarTicketsCorte($corte, $idNomina, $conexion)
                 $precioReja = $ticket['precio_reja'];
 
                 // Insertar el ticket principal en cortes_relicario
-                $insertCorteQuery = "INSERT INTO cortes_relicario (id_nomina, nombre_cortador, folio, precio_reja, fecha_corte) VALUES (?, ?, ?, ?, ?)";
+                $insertCorteQuery = "INSERT INTO cortes_pilar (id_nomina, nombre_cortador, folio, precio_reja, fecha_corte) VALUES (?, ?, ?, ?, ?)";
                 $insertCorteStmt = $conexion->prepare($insertCorteQuery);
                 $insertCorteStmt->bind_param("issds", $idNomina, $nombreCortador, $folio, $precioReja, $fechaCorte);
 
@@ -208,7 +211,7 @@ function guardarTicketsCorte($corte, $idNomina, $conexion)
                         $numTabla = intval($datosTabla['tabla']);
                         $cantidadRejas = intval($datosTabla['cantidad']);
 
-                        $insertTablaQuery = "INSERT INTO cortes_relicario_tablas (id_corte, num_tabla, rejas) VALUES (?, ?, ?)";
+                        $insertTablaQuery = "INSERT INTO cortes_pilar_tablas (id_corte, num_tabla, rejas) VALUES (?, ?, ?)";
                         $insertTablaStmt = $conexion->prepare($insertTablaQuery);
                         $insertTablaStmt->bind_param("iii", $idCorte, $numTabla, $cantidadRejas);
                         $insertTablaStmt->execute();
@@ -236,7 +239,7 @@ function obtenerTicketsCorte($data, $conexion)
     $id_empresa = isset($data['id_empresa']) ? intval($data['id_empresa']) : 1;
 
     // Obtener el ID de la nómina primero
-    $queryNomina = "SELECT id_nomina_relicario FROM nomina_relicario WHERE id_empresa = ? AND numero_semana = ? AND anio = ? ORDER BY id_nomina_relicario DESC LIMIT 1";
+    $queryNomina = "SELECT id_nomina_pilar FROM nomina_pilar WHERE id_empresa = ? AND numero_semana = ? AND anio = ? ORDER BY id_nomina_pilar DESC LIMIT 1";
     $stmtNomina = $conexion->prepare($queryNomina);
     $stmtNomina->bind_param("iii", $id_empresa, $numero_semana, $anio);
     $stmtNomina->execute();
@@ -244,7 +247,7 @@ function obtenerTicketsCorte($data, $conexion)
 
     if ($resultNomina && $resultNomina->num_rows > 0) {
         $rowNomina = $resultNomina->fetch_assoc();
-        $idNomina = $rowNomina['id_nomina_relicario'];
+        $idNomina = $rowNomina['id_nomina_pilar'];
 
         $ticketsCorte = obtenerTicketsCorteInterno($idNomina, $conexion);
         echo json_encode(['success' => true, 'found' => true, 'ticketsCorte' => $ticketsCorte]);
@@ -261,7 +264,7 @@ function obtenerTicketsCorteInterno($idNomina, $conexion)
     $empleadosCorte = [];
 
     // Obtener todos los cortes para esta nómina
-    $queryCortes = "SELECT id, nombre_cortador, folio, precio_reja, fecha_corte FROM cortes_relicario WHERE id_nomina = ? ORDER BY nombre_cortador, fecha_corte";
+    $queryCortes = "SELECT id, nombre_cortador, folio, precio_reja, fecha_corte FROM cortes_pilar WHERE id_nomina = ? ORDER BY nombre_cortador, fecha_corte";
     $stmtCortes = $conexion->prepare($queryCortes);
     $stmtCortes->bind_param("i", $idNomina);
     $stmtCortes->execute();
@@ -275,7 +278,7 @@ function obtenerTicketsCorteInterno($idNomina, $conexion)
         $fechaCorte = $corte['fecha_corte'];
 
         // Obtener las tablas de rejas para este corte
-        $queryTablas = "SELECT num_tabla, rejas FROM cortes_relicario_tablas WHERE id_corte = ? ORDER BY num_tabla";
+        $queryTablas = "SELECT num_tabla, rejas FROM cortes_pilar_tablas WHERE id_corte = ? ORDER BY num_tabla";
         $stmtTablas = $conexion->prepare($queryTablas);
         $stmtTablas->bind_param("i", $idCorte);
         $stmtTablas->execute();

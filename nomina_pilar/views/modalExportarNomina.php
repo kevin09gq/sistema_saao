@@ -49,6 +49,18 @@
                         </div>
                     </button>
 
+                    <!-- Corte Rejas de Limón -->
+                    <button type="button" class="list-group-item list-group-item-action btn-export-tipo" id="btn-export-corte">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">
+                                    <i class="bi bi-leaf-fill me-2"></i>Corte Rejas de Limón
+                                </h6>
+                            </div>
+                            <i class="bi bi-file-earmark-spreadsheet text-success fs-4"></i>
+                        </div>
+                    </button>
+
                     <!-- Opción: Exportar Todo -->
                     <button type="button" class="list-group-item list-group-item-action btn-export-tipo" id="btn-export-nomina-completa">
                         <div class="d-flex justify-content-between align-items-center">

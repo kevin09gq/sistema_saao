@@ -1,9 +1,9 @@
-function mostrarDatosTablaCorte(jsonNominaRelicario) {
+function mostrarDatosTablaCorte(jsonNominaPilar) {
     // Aquí sí filtras sobre el arreglo de departamentos
-    let departamentoCorte = jsonNominaRelicario.departamentos.find(d => d.nombre === "Corte");
+    let departamentoCorte = jsonNominaPilar.departamentos.find(d => d.nombre === "Corte");
 
     // Limpiar la tabla
-    $('#tabla-body-corte-relicario').empty();
+    $('#tabla-body-corte-pilar').empty();
 
     // Si no existe el departamento de corte, no mostrar nada
     if (!departamentoCorte || !departamentoCorte.empleados) {
@@ -25,7 +25,7 @@ function mostrarDatosTablaCorte(jsonNominaRelicario) {
                 
                 // Generar fila HTML
                 const filaHTML = generarFilaTablaCorte(numeroFila, datosFila);
-                $('#tabla-body-corte-relicario').append(filaHTML);
+                $('#tabla-body-corte-pilar').append(filaHTML);
                 
                 numeroFila++;
             });
@@ -36,7 +36,7 @@ function mostrarDatosTablaCorte(jsonNominaRelicario) {
             
             // Generar fila HTML
             const filaHTML = generarFilaTablaCorte(numeroFila, datosFila);
-            $('#tabla-body-corte-relicario').append(filaHTML);
+            $('#tabla-body-corte-pilar').append(filaHTML);
             
             numeroFila++;
         }

@@ -11,42 +11,18 @@ function editarPropiedades() {
 
         // Si no hay empleado, salir
         if (!empleado) return;
-        
-        // 1. PRIMERO: Aplicar cambios de horario oficial (si los hay)
-        //    Esto es CRÍTICO porque los cálculos de retardos dependen del horario.
-        //    Si modificamos el horario después de calcular retardos, los nuevos
-        //    retardos generados por el cambio de horario NO se crearán.
+        modificarPercepciones(empleado);
+        modificarConceptos(empleado);
+        modificarDeducciones(empleado);
         modificarHorarioOficial(empleado);
-        
-        // 2. SEGUNDO: Recalcular historiales basándose en el horario actualizado.
-        //    Los historiales (retardos, inasistencias, olvidos) ahora se generan
-        //    con el nuevo horario, creando nuevos registros si es necesario.
+
         asignarHistorialOlvidos(empleado);
         asignarHistorialRetardos(empleado);
         asignarHistorialInasistencias(empleado);
         
-        // 3. TERCERO: Calcular los totales. Con force=false, respeta los flags
-        //    de edición manual (_retardos_editado_manual, etc.)
-        asignarTotalOlvidosCoordinador(empleado, false);
-        asignarTotalRetardosCoordinador(empleado, false);
-        asignarTotalInasistenciasCoordinador(empleado, false);
-
-        // 3.5 ACTUALIZAR MODAL: Si se acaba de crear horario_oficial, actualizar los campos
-        //     con los nuevos valores recalculados basados en el nuevo horario
-        if (empleado._horario_oficial_recien_creado) {
-            actualizarValoresHistorialesEnModal(empleado);
-            delete empleado._horario_oficial_recien_creado;
-        }
-
-       
-
-        // 4. CUARTO: Aplicar modificaciones del usuario desde el modal.
-        //    Ahora, si el usuario editó manualmente una deducción o concepto,
-        //    estas funciones detectarán el cambio y establecerán los flags
-        //    correspondientes para proteger esos valores.
-        modificarPercepciones(empleado);
-        modificarConceptos(empleado);
-        modificarDeducciones(empleado);
+        asignarTotalOlvidosCoordinador(empleado);
+        asignarTotalRetardosCoordinador(empleado);
+        asignarTotalInasistenciasCoordinador(empleado);
 
         // Resetear flags de edición manual después de guardar
         delete empleado._retardos_editado_manual;
@@ -127,38 +103,6 @@ function modificarConceptos(empleado) {
 }
 
 /************************************
- * ACTUALIZAR VALORES DE HISTORIALES EN EL MODAL
- ************************************/
-
-function actualizarValoresHistorialesEnModal(empleado) {
-    // Validar que exista empleado
-    if (!empleado) {
-        return;
-    }
-
-    // Si no hay historial de retardos o está vacío, poner 0; si no, mostrar el total
-    if (!Array.isArray(empleado.historial_retardos) || empleado.historial_retardos.length === 0) {
-        $('#mod-retardos-coordinador').val(0);
-    } else {
-        $('#mod-retardos-coordinador').val(empleado.retardos || 0);
-    }
-
-    // Si no hay historial de inasistencias o está vacío, poner 0; si no, mostrar el total
-    if (!Array.isArray(empleado.historial_inasistencias) || empleado.historial_inasistencias.length === 0) {
-        $('#mod-inasistencias-coordinador').val(0);
-    } else {
-        $('#mod-inasistencias-coordinador').val(empleado.inasistencia || 0);
-    }
-
-    // Si no hay historial de olvidos o está vacío, poner 0; si no, mostrar el total
-    if (!Array.isArray(empleado.historial_olvidos) || empleado.historial_olvidos.length === 0) {
-        $('#mod-checador-coordinador').val(0);
-    } else {
-        $('#mod-checador-coordinador').val(empleado.checador || 0);
-    }
-}
-
-/************************************
  * MODIFICAR DEDUCCIONES DEL EMPLEADO
  ************************************/
 
@@ -235,19 +179,9 @@ function modificarDeducciones(empleado) {
  ************************************/
 
 function modificarHorarioOficial(empleado){
-    // Validar que exista empleado 
-    if (!empleado) {
+    // Validar que exista empleado y horario oficial
+    if (!empleado || !Array.isArray(empleado.horario_oficial)) {
         return;
-    }
-
-    // Detectar si se acaba de crear horario_oficial (no existía antes)
-    const horarioNoExistia = !empleado.horario_oficial || !Array.isArray(empleado.horario_oficial);
-    
-    // Si no existe horario_oficial, inicializarlo como array vacío
-    if (horarioNoExistia) {
-        empleado.horario_oficial = [];
-        // Marcar con una bandera para actualizar el modal después de recalcular
-        empleado._horario_oficial_recien_creado = true;
     }
     
     // Iterar sobre cada fila de la tabla de horarios
@@ -262,23 +196,17 @@ function modificarHorarioOficial(empleado){
         const salida = $celdas.eq(4).text().trim(); // Salida
         
         // Buscar el horario correspondiente por el nombre del día
-        let horario = empleado.horario_oficial.find(h => 
+        const horario = empleado.horario_oficial.find(h => 
             String(h.dia || '').toUpperCase().trim() === dia.toUpperCase().trim()
         );
         
-        // Si no existe el horario para este día, crearlo
-        if (!horario) {
-            horario = {
-                dia: dia.toUpperCase()
-            };
-            empleado.horario_oficial.push(horario);
+        if (horario) {
+            // Actualizar los valores (convertir '-' en vacío)
+            horario.entrada = entrada === '-' ? '' : entrada;
+            horario.salida_comida = salidaComida === '-' ? '' : salidaComida;
+            horario.entrada_comida = entradaComida === '-' ? '' : entradaComida;
+            horario.salida = salida === '-' ? '' : salida;
         }
-        
-        // Actualizar los valores (convertir '-' en vacío)
-        horario.entrada = entrada === '-' ? '' : entrada;
-        horario.salida_comida = salidaComida === '-' ? '' : salidaComida;
-        horario.entrada_comida = entradaComida === '-' ? '' : entradaComida;
-        horario.salida = salida === '-' ? '' : salida;
     });
 }
 

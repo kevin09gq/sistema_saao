@@ -58,7 +58,7 @@ function saveNominaPilar() {
             numero_semana: numeroSemana,
             anio: anio,
             nomina: JSON.stringify(jsonData),
-            //corte: JSON.stringify(empleadosCorte), // Enviar solo los empleados del departamento de Corte
+            corte: JSON.stringify(empleadosCorte), // Enviar solo los empleados del departamento de Corte
             actualizar: true,
             case: 'guardarNominaPilar' // Agregar el caso para identificar la función en el servidor
         }),

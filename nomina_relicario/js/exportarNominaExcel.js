@@ -30,6 +30,18 @@ function exportarJornaleroBase() {
 
         if (validarEmpleadosNegativos()) return;
 
+        // Mostrar alerta de carga
+        Swal.fire({
+            title: 'Generando documento...',
+            html: 'Por favor espera mientras se genera el archivo Excel.',
+            icon: 'info',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: (modal) => {
+                Swal.showLoading();
+            }
+        });
+
         // Enviar el jsonNominaRelicario al servidor PHP mediante POST
         $.ajax({
             url: '../php/exportarNomina/exportarNominaJornaleroBase.php',
@@ -41,6 +53,8 @@ function exportarJornaleroBase() {
                 responseType: 'blob'
             },
             success: function (blob) {
+                Swal.close();
+
                 // Crear un blob y descargar el archivo
                 var link = document.createElement('a');
                 var url = URL.createObjectURL(blob);
@@ -55,6 +69,7 @@ function exportarJornaleroBase() {
                 URL.revokeObjectURL(url);
             },
             error: function (xhr, status, error) {
+                Swal.close();
                 console.error('Error al descargar el Excel:', error);
                 alert('Error: No se pudo generar el archivo Excel.');
             }
@@ -75,6 +90,18 @@ function exportarJornaleroApoyo() {
 
         if (validarEmpleadosNegativos()) return;
 
+        // Mostrar alerta de carga
+        Swal.fire({
+            title: 'Generando documento...',
+            html: 'Por favor espera mientras se genera el archivo Excel.',
+            icon: 'info',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: (modal) => {
+                Swal.showLoading();
+            }
+        });
+
         // Enviar el jsonNominaRelicario al servidor PHP mediante POST
         $.ajax({
             url: '../php/exportarNomina/exportarNominaJornaleroApoyo.php',
@@ -86,6 +113,7 @@ function exportarJornaleroApoyo() {
                 responseType: 'blob'
             },
             success: function (blob) {
+                Swal.close();
                 // Crear un blob y descargar el archivo
                 var link = document.createElement('a');
                 var url = URL.createObjectURL(blob);
@@ -100,6 +128,7 @@ function exportarJornaleroApoyo() {
                 URL.revokeObjectURL(url);
             },
             error: function (xhr, status, error) {
+                Swal.close();
                 console.error('Error al descargar el Excel:', error);
                 alert('Error: No se pudo generar el archivo Excel.');
             }
@@ -119,6 +148,19 @@ function exportarJornaleroVivero() {
         }
 
         if (validarEmpleadosNegativos()) return;
+
+        // Mostrar alerta de carga
+        Swal.fire({
+            title: 'Generando documento...',
+            html: 'Por favor espera mientras se genera el archivo Excel.',
+            icon: 'info',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: (modal) => {
+                Swal.showLoading();
+            }
+        });
+
         // Enviar el jsonNominaRelicario al servidor PHP mediante POST
         $.ajax({
             url: '../php/exportarNomina/exportarNominaJornaleroVivero.php',
@@ -130,6 +172,7 @@ function exportarJornaleroVivero() {
                 responseType: 'blob'
             },
             success: function (blob) {
+                Swal.close();
                 // Crear un blob y descargar el archivo
                 var link = document.createElement('a');
                 var url = URL.createObjectURL(blob);
@@ -144,6 +187,7 @@ function exportarJornaleroVivero() {
                 URL.revokeObjectURL(url);
             },
             error: function (xhr, status, error) {
+                Swal.close();
                 console.error('Error al descargar el Excel:', error);
                 alert('Error: No se pudo generar el archivo Excel.');
             }
@@ -164,6 +208,18 @@ function exportarCoordinadorRancho() {
 
         if (validarEmpleadosNegativos()) return;
 
+        // Mostrar alerta de carga
+        Swal.fire({
+            title: 'Generando documento...',
+            html: 'Por favor espera mientras se genera el archivo Excel.',
+            icon: 'info',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: (modal) => {
+                Swal.showLoading();
+            }
+        });
+
         // Enviar el jsonNominaRelicario al servidor PHP mediante POST
         $.ajax({
             url: '../php/exportarNomina/exportarNominaCoordinadorRancho.php',
@@ -175,6 +231,7 @@ function exportarCoordinadorRancho() {
                 responseType: 'blob'
             },
             success: function (blob) {
+                Swal.close();
                 // Crear un blob y descargar el archivo
                 var link = document.createElement('a');
                 var url = URL.createObjectURL(blob);
@@ -189,6 +246,7 @@ function exportarCoordinadorRancho() {
                 URL.revokeObjectURL(url);
             },
             error: function (xhr, status, error) {
+                Swal.close();
                 console.error('Error al descargar el Excel:', error);
                 alert('Error: No se pudo generar el archivo Excel.');
             }
@@ -210,6 +268,18 @@ function exportarCoordinadorVivero() {
 
         if (validarEmpleadosNegativos()) return;
 
+        // Mostrar alerta de carga
+        Swal.fire({
+            title: 'Generando documento...',
+            html: 'Por favor espera mientras se genera el archivo Excel.',
+            icon: 'info',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: (modal) => {
+                Swal.showLoading();
+            }
+        });
+
         // Enviar el jsonNominaRelicario al servidor PHP mediante POST
         $.ajax({
             url: '../php/exportarNomina/exportarNominaCoordinadorVivero.php',
@@ -221,6 +291,7 @@ function exportarCoordinadorVivero() {
                 responseType: 'blob'
             },
             success: function (blob) {
+                Swal.close();
                 // Crear un blob y descargar el archivo
                 var link = document.createElement('a');
                 var url = URL.createObjectURL(blob);
@@ -235,6 +306,7 @@ function exportarCoordinadorVivero() {
                 URL.revokeObjectURL(url);
             },
             error: function (xhr, status, error) {
+                Swal.close();
                 console.error('Error al descargar el Excel:', error);
                 alert('Error: No se pudo generar el archivo Excel.');
             }
@@ -255,6 +327,18 @@ function nominaCompleta() {
         }
         if (validarEmpleadosNegativos()) return;
 
+        // Mostrar alerta de carga
+        Swal.fire({
+            title: 'Generando documento...',
+            html: 'Por favor espera mientras se genera el archivo Excel.',
+            icon: 'info',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: (modal) => {
+                Swal.showLoading();
+            }
+        });
+
         // Enviar el jsonNominaRelicario al servidor PHP mediante POST
         $.ajax({
             url: '../php/exportarNomina/exportarNominaCompleta.php',
@@ -266,6 +350,7 @@ function nominaCompleta() {
                 responseType: 'blob'
             },
             success: function (blob) {
+                Swal.close();
                 // Crear un blob y descargar el archivo
                 var link = document.createElement('a');
                 var url = URL.createObjectURL(blob);
@@ -280,6 +365,7 @@ function nominaCompleta() {
                 URL.revokeObjectURL(url);
             },
             error: function (xhr, status, error) {
+                Swal.close();
                 console.error('Error al descargar el Excel:', error);
                 alert('Error: No se pudo generar el archivo Excel.');
             }
@@ -441,6 +527,6 @@ function exportarCorte() {
                 alerta("error", "Error al generar reporte excel", "No se pudo generar el archivo Excel para el corte de limones. Por favor, intenta nuevamente o contacta al soporte.");
             }
         });
-        
+
     });
 }
