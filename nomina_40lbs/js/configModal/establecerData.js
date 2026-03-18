@@ -34,6 +34,15 @@ function establerDataModal(empleado) {
     // Establecer percepciones del empleado
     establecerPercepciones(empleado);
 
+    // Establecer percepciones adicionales del empleado
+    mostrarPercepcionesExtras40lbs(empleado);
+
+    // Establecer conceptos del empleado
+    establecerConceptos(empleado);
+
+    // Establecer deducciones del empleado
+    establecerDeducciones(empleado);
+
     mostrarEntradasTempranas(empleado);
     mostrarSalidasTardias(empleado);
     mostrarSalidasTempranas(empleado);
@@ -156,6 +165,101 @@ function establecerPercepciones(empleado) {
     $("#mod-puesto-40lbs").val(empleado.puesto || '');
 
     // Establecer total extras
-    $("#mod-sueldo-extra-total-40lbs").val(empleado.sueldo_extra_total || '');
+    $("#mod-total-extra-40lbs").val(empleado.sueldo_extra_total || '');
 
+}
+
+/************************************
+ * ESTABLECER CONCEPTOS DEL EMPLEADO
+ ************************************/
+
+function establecerConceptos(empleado) {
+
+    // Si no hay empleado, salir
+    if (!empleado) return;
+
+    // Verificar si el empleado tiene seguro social
+    const tieneSeguroSocial = empleado.seguroSocial !== false;
+
+    desabilitarCamposConceptos(tieneSeguroSocial);
+    const conceptos = empleado.conceptos || [];
+
+    // Buscar conceptos por código
+    const conceptoISR = conceptos.find(c => c.codigo === "45");
+    const conceptoIMSS = conceptos.find(c => c.codigo === "52");
+    const conceptoInfonavit = conceptos.find(c => c.codigo === "16");
+    const conceptoAjusteSub = conceptos.find(c => c.codigo === "107");
+
+    // Establecer valores en los campos de entrada
+    $('#mod-isr-40lbs').val(conceptoISR ? conceptoISR.resultado || '' : '');
+    $('#mod-imss-40lbs').val(conceptoIMSS ? conceptoIMSS.resultado || '' : '');
+    $('#mod-infonavit-40lbs').val(conceptoInfonavit ? conceptoInfonavit.resultado || '' : '');
+    $('#mod-ajustes-sub-40lbs').val(conceptoAjusteSub ? conceptoAjusteSub.resultado || '' : '');
+
+    // Calcular total de conceptos
+    calcularTotalConceptosJornalero();
+}
+
+// Función para calcular el total de conceptos y mostrarlo en el campo correspondiente
+function calcularTotalConceptosJornalero() {
+    const isr = parseFloat($('#mod-isr-40lbs').val()) || 0;
+    const imss = parseFloat($('#mod-imss-40lbs').val()) || 0;
+    const infonavit = parseFloat($('#mod-infonavit-40lbs').val()) || 0;
+    const ajusteSub = parseFloat($('#mod-ajustes-sub-40lbs').val()) || 0;
+
+    const total = isr + imss + infonavit + ajusteSub;
+
+    $('#mod-total-conceptos-40lbs').val(total.toFixed(2));
+}
+
+function desabilitarCamposConceptos(tieneSeguroSocial) {
+
+    // Deshabilitar o habilitar campos de conceptos según seguroSocial
+    if (!tieneSeguroSocial) {
+        // Deshabilitar campos de entrada
+        $('#mod-isr-40lbs').prop('disabled', true);
+        $('#mod-imss-40lbs').prop('disabled', true);
+        $('#mod-infonavit-40lbs').prop('disabled', true);
+        $('#mod-ajustes-sub-40lbs').prop('disabled', true);
+
+        // Deshabilitar botones de aplicar
+        $('#btn-aplicar-isr-40lbs').prop('disabled', true);
+        $('#btn-aplicar-imss-40lbs').prop('disabled', true);
+        $('#btn-aplicar-infonavit-40lbs').prop('disabled', true);
+        $('#btn-aplicar-ajuste-sub-40lbs').prop('disabled', true);
+
+        // Deshabilitar total (aunque ya tiene readonly)
+        $('#mod-total-conceptos-40lbs').prop('disabled', true);
+
+        return; // Salir sin procesar conceptos
+    }
+
+    // Si tiene seguro social, habilitar los campos
+    $('#mod-isr-40lbs').prop('disabled', false);
+    $('#mod-imss-40lbs').prop('disabled', false);
+    $('#mod-infonavit-40lbs').prop('disabled', false);
+    $('#mod-ajustes-sub-40lbs').prop('disabled', false);
+
+    $('#btn-aplicar-isr-40lbs').prop('disabled', false);
+    $('#btn-aplicar-imss-40lbs').prop('disabled', false);
+    $('#btn-aplicar-infonavit-40lbs').prop('disabled', false);
+    $('#btn-aplicar-ajuste-sub-40lbs').prop('disabled', false);
+
+    $('#mod-total-conceptos-40lbs').prop('disabled', false);
+}
+
+
+/************************************
+ * ESTABLECER DEDUCCIONES DEL EMPLEADO
+ ************************************/
+
+function establecerDeducciones(empleado) {
+    // Si no hay empleado, salir
+    if (!empleado) return;
+
+    // Establecer tarjeta 
+    $('#mod-tarjeta-40lbs').val(empleado.tarjeta || '');
+    // Establecer préstamo
+    $('#mod-prestamo-40lbs').val(empleado.prestamo || '');
+    
 }

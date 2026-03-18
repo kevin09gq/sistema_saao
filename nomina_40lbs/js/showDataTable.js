@@ -165,3 +165,65 @@ function paginarTabla(jsonNomina40lbs, totalEmpleados, paginaActual, empleadosPo
         mostrarDatosTabla(jsonNomina40lbs, nuevaPagina);
     });
 }
+
+// Función para filtrar empleados por id_departamento y opcionalmente por seguroSocial
+function filtrarEmpleadosPorDepartamento(jsonNomina, idDepartamento, seguroSocial = true) {
+    let jsonFiltrado = {
+        departamentos: []
+    };
+
+    if (jsonNomina && jsonNomina.departamentos) {
+        jsonNomina.departamentos.forEach(depto => {
+            let empleadosFiltrados = depto.empleados.filter(emp => {
+                // Filtrar por id_departamento
+                if (emp.id_departamento !== idDepartamento) {
+                    return false;
+                }
+                // Filtrar por seguroSocial si se proporciona el parámetro
+                if (seguroSocial !== null && emp.seguroSocial !== seguroSocial) {
+                    return false;
+                }
+                return true;
+            });
+
+            let deptoFiltrado = {
+                nombre: depto.nombre,
+                empleados: empleadosFiltrados
+            };
+
+            // Solo agregar departamento si tiene empleados después del filtro
+            if (deptoFiltrado.empleados.length > 0) {
+                jsonFiltrado.departamentos.push(deptoFiltrado);
+            }
+        });
+    }
+
+    return jsonFiltrado;
+}
+
+function refrescarTabla() {
+    const valorSelect = $('#filtro-departamento').val() || '1';
+    let idDepartamento = null;
+    let seguroSocial = null;
+
+    // Mapear valor del select a parámetros de filtro
+    if (valorSelect === '1') {
+        idDepartamento = 4;
+        seguroSocial = true;
+    } else if (valorSelect === '2') {
+        idDepartamento = 4;
+        seguroSocial = false;
+    } else if (valorSelect === '3') {
+        idDepartamento = 5;
+        seguroSocial = true;
+    } else if (valorSelect === '4') {
+        idDepartamento = 5;
+        seguroSocial = false;
+    }
+
+    // Aplicar filtro y mostrar tabla con página actual
+    const jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNomina40lbsOriginal || jsonNomina40lbs, idDepartamento, seguroSocial);
+    mostrarDatosTabla(jsonFiltrado, paginaActualNomina);
+}
+
+

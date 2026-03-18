@@ -184,7 +184,24 @@
     font-weight: 300;
 }
 
+/* Estado visual para sueldo a cobrar negativo */
+.sueldo-negativo {
+    background: rgba(239, 68, 68, 0.08) !important;
+    color: #b91c1c !important;
+    font-weight: 700 !important;
+    border-radius: 6px !important;
+    border: none !important;
+}
 
+/* REDONDEO: negativo en rojo, positivo en negro */
+.redondeo-negativo {
+    color: #ef4444;
+    font-weight: 700;
+}
+.redondeo-positivo {
+    color: #000000;
+    font-weight: 700;
+}
 
 @media (max-width: 768px) {
 

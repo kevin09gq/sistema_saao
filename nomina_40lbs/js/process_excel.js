@@ -552,6 +552,36 @@ function validarExistenciaTrabajadorBD(JsonNomina40lbs, JsonListaRaya) {
                     return departamento.empleados.length > 0;
                 });
 
+                // Actualizar conceptos_copia y tarjeta_copia con los nuevos datos del Excel
+                // Solo para empleados con seguro social que existan en ambos JSON
+                JsonNomina40lbs.departamentos.forEach(function (departamentoBD) {
+                    departamentoBD.empleados.forEach(function (empleadoBD) {
+                        if (!empleadoBD.seguroSocial) return;
+
+                        // Buscar al mismo empleado en el nuevo Excel usando su clave
+                        let empleadoExcel = null;
+                        for (let deptoExcel of JsonListaRaya.departamentos) {
+                            empleadoExcel = deptoExcel.empleados.find(e => e.clave === empleadoBD.clave);
+                            if (empleadoExcel) break;
+                        }
+                        if (!empleadoExcel) return;
+
+                        // Actualizar el resultado de cada concepto buscando por código
+                        if (empleadoExcel.conceptos && empleadoExcel.conceptos.length > 0) {
+                            // Si conceptos_copia no existe aún (datos viejos de BD sin esta propiedad), crearla
+                            if (!empleadoBD.conceptos_copia || !Array.isArray(empleadoBD.conceptos_copia)) {
+                                empleadoBD.conceptos_copia = JSON.parse(JSON.stringify(empleadoBD.conceptos || []));
+                            }
+                            empleadoExcel.conceptos.forEach(function (conceptoExcel) {
+                                const conceptoCopia = empleadoBD.conceptos_copia.find(c => c.codigo === conceptoExcel.codigo);
+                                if (conceptoCopia) conceptoCopia.resultado = conceptoExcel.resultado;
+                            });
+                        }
+
+                        // Actualizar tarjeta_copia con el valor del nuevo Excel
+                        if (empleadoExcel.tarjeta !== undefined) empleadoBD.tarjeta_copia = empleadoExcel.tarjeta;
+                    });
+                });
                 console.log('Empleados filtrados:', JsonNomina40lbs);
 
                 // Agregar empleados nuevos del archivo Excel
@@ -813,17 +843,23 @@ function asignarPropiedadesEmpleado(jsonNomina40lbs) {
                 empleado.redondeo = empleado.redondeo ?? 0;
                 empleado.redondeo_activo = empleado.redondeo_activo ?? false;
 
-           
-
-
-                // Crear array de conceptos si no existe
-                if (!empleado.conceptos || !Array.isArray(empleado.conceptos)) {
-                    empleado.conceptos = [
-                        { codigo: "45", resultado: '' },   // ISR
-                        { codigo: "52", resultado: '' },   // IMSS
-                        { codigo: "16", resultado: '' },   // Infonavit
-                        { codigo: "107", resultado: '' }   // Ajuste al Sub
-                    ];
+                // Crear array de conceptos solo si tiene seguro social
+                if (empleado.seguroSocial) {
+                    if (!empleado.conceptos || !Array.isArray(empleado.conceptos)) {
+                        empleado.conceptos = [
+                            { codigo: "45", resultado: '' },   // ISR
+                            { codigo: "52", resultado: '' },   // IMSS
+                            { codigo: "16", resultado: '' },   // Infonavit
+                            { codigo: "107", resultado: '' }   // Ajuste al Sub
+                        ];
+                    }
+                    // Crear copias solo si NO existen ya (para no pisar las actualizadas en Validación 3)
+                    if (!empleado.conceptos_copia || !Array.isArray(empleado.conceptos_copia)) {
+                        empleado.conceptos_copia = JSON.parse(JSON.stringify(empleado.conceptos));
+                    }
+                    if (empleado.tarjeta_copia === undefined) {
+                        empleado.tarjeta_copia = empleado.tarjeta;
+                    }
                 }
                 // Agregar propiedad mostrar (para filtrar en tabla)
                 if (empleado.mostrar === undefined) {
@@ -846,37 +882,3 @@ function ordenarEmpleadosPorApellido(jsonOrdenado) {
 
 }
 
-// Función para filtrar empleados por id_departamento y opcionalmente por seguroSocial
-function filtrarEmpleadosPorDepartamento(jsonNomina, idDepartamento, seguroSocial = true) {
-    let jsonFiltrado = {
-        departamentos: []
-    };
-
-    if (jsonNomina && jsonNomina.departamentos) {
-        jsonNomina.departamentos.forEach(depto => {
-            let empleadosFiltrados = depto.empleados.filter(emp => {
-                // Filtrar por id_departamento
-                if (emp.id_departamento !== idDepartamento) {
-                    return false;
-                }
-                // Filtrar por seguroSocial si se proporciona el parámetro
-                if (seguroSocial !== null && emp.seguroSocial !== seguroSocial) {
-                    return false;
-                }
-                return true;
-            });
-
-            let deptoFiltrado = {
-                nombre: depto.nombre,
-                empleados: empleadosFiltrados
-            };
-
-            // Solo agregar departamento si tiene empleados después del filtro
-            if (deptoFiltrado.empleados.length > 0) {
-                jsonFiltrado.departamentos.push(deptoFiltrado);
-            }
-        });
-    }
-
-    return jsonFiltrado;
-}

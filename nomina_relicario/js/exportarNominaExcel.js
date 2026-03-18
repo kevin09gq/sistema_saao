@@ -7,6 +7,8 @@ exportarCoordinadorVivero();
 nominaCompleta();
 reporteNominaPdf();
 
+exportarCorte();
+
 function abrirModalExportarExcel() {
     $(document).on('click', '#btn_export_excel', function (e) {
         e.preventDefault();
@@ -315,7 +317,7 @@ function reporteNominaPdf() {
                 var url = URL.createObjectURL(blob);
                 link.href = url;
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'REPORTE_NOMINA_RELICARIO_' + timestamp + '.pdf';
+                link.download = 'REPORTE_NOMINA_JORNALERO_BASE_' + timestamp + '.pdf';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -365,4 +367,80 @@ function validarEmpleadosNegativos() {
     }
 
     return false; // permitir descarga
+}
+
+
+
+
+
+// Generar porte excel para corte de limones
+function exportarCorte() {
+    // Lógica para exportar la nómina de Corte
+    $("#btn-export-corte").click(function (e) {
+        e.preventDefault();
+
+        // Validar que jsonNominaRelicario exista
+        if (!jsonNominaRelicario) {
+            alert('No hay datos de nómina para exportar. Por favor, procesa los datos primero.');
+            return;
+        }
+
+        // Validar que el departamento Corte exista
+        const departamentoCorte = jsonNominaRelicario.departamentos.find(d => d.nombre === 'Corte');
+        if (!departamentoCorte || !departamentoCorte.empleados || departamentoCorte.empleados.length === 0) {
+            alerta("info", "Nomina no encontrada", "No se encontró el departamento de Corte o no tiene empleados. Por favor, cargar los tickets de corte de limon.");
+            return;
+        }
+
+        if (validarEmpleadosNegativos()) return;
+
+        // Mostrar alerta de carga
+        Swal.fire({
+            title: 'Generando documento...',
+            html: 'Por favor espera mientras se genera el archivo Excel.',
+            icon: 'info',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: (modal) => {
+                Swal.showLoading();
+            }
+        });
+
+        // Enviar el jsonNominaRelicario al servidor PHP mediante POST
+        $.ajax({
+            url: '../php/exportarNomina/exportarNominaCorte.php',
+            type: 'POST',
+            data: {
+                jsonNomina: JSON.stringify(jsonNominaRelicario)
+            },
+            xhrFields: {
+                responseType: 'blob'
+            },
+            success: function (blob) {
+                // Cerrar la alerta de carga
+                Swal.close();
+
+                // Crear un blob y descargar el archivo
+                var link = document.createElement('a');
+                var url = URL.createObjectURL(blob);
+                link.href = url;
+                var numeroSemana = String(jsonNominaRelicario.numero_semana).padStart(2, '0');
+                var aniosCierre = jsonNominaRelicario.fecha_cierre.split('/')[2];
+                var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
+                link.download = 'SEM ' + numeroSemana + ' - ' + aniosCierre + ' RANCHO EL RELICARIO NOMINAS - CORTE REJAS DE LIMON - ' + timestamp + '.xlsx';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            },
+            error: function (xhr, status, error) {
+                // Cerrar la alerta de carga
+                Swal.close();
+
+                console.error('Error al descargar el Excel:', error);
+                alerta("error", "Error al generar reporte excel", "No se pudo generar el archivo Excel para el corte de limones. Por favor, intenta nuevamente o contacta al soporte.");
+            }
+        });
+        
+    });
 }

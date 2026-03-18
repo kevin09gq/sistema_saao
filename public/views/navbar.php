@@ -5,11 +5,11 @@
             <img src="<?= $rutaRaiz ?>/public/img/logo.jpg" alt="Logo SAAO" class="rounded-circle">
             <span class="navbar-title">Cítricos SAAO</span>
         </a>
-        
+
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
-        
+
         <div class="collapse navbar-collapse" id="navbarNav">
             <!-- Estructura de menú adaptada: conserva clases e IDs para JS -->
             <ul class="navbar-menu navbar-nav ms-auto">
@@ -61,6 +61,8 @@
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina/views/nomina.php">40 lbs</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_confianza/views/nomina_confianza.php">Confianza</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_relicario/views/nomina_relicario.php">Rancho Relicario</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_pilar/views/nomina_pilar.php">Pilar</a></li>
+
                     </ul>
                 </li>
 

@@ -1,6 +1,6 @@
 /**
  * ================================================================
- * MÓDULO DE SELECCIÓN DE EMPLEADOS PARA TICKETS - NÓMINA RELICARIO
+ * MÓDULO DE SELECCIÓN DE EMPLEADOS PARA TICKETS - NÓMINA PILAR
  * ================================================================
  * Maneja la selección manual de empleados para generar tickets PDF
  * ================================================================
@@ -14,14 +14,17 @@ let empleadosSeleccionados = new Set();
 $(document).ready(function() {
     // Evento para abrir modal de selección de empleados
     $('#btn_ticket_manual').on('click', function() {
-        // FORZAR RECARGA desde localStorage para obtener datos actualizados
-        const nominaData = JSON.parse(localStorage.getItem('jsonNominaRelicario') || '{}');
-        // Actualizar variable global si hay datos más recientes
-        if (nominaData && nominaData.departamentos) {
-            if (typeof window.jsonNominaRelicario !== 'undefined') {
-                window.jsonNominaRelicario = nominaData;
+        // PRIORIZAR la variable global que ya está en memoria y actualizada
+        let nominaData = window.jsonNominaPilar;
+        
+        // Si por alguna razón no está en memoria, intentar cargar de localStorage
+        if (!nominaData || !nominaData.departamentos) {
+            nominaData = JSON.parse(localStorage.getItem('jsonNominaPilar') || '{}');
+            if (nominaData && nominaData.departamentos) {
+                window.jsonNominaPilar = nominaData;
             }
         }
+
         if (!nominaData || !nominaData.departamentos) {
             Swal.fire({
                 icon: 'warning',
@@ -94,19 +97,20 @@ $(document).ready(function() {
 });
 
 /**
- * Carga todos los empleados de nómina relicario
+ * Carga todos los empleados de nómina pilar
  */
 function cargarEmpleadosParaTickets() {
     empleadosParaTickets = [];
     empleadosSeleccionados.clear();
     
-    const nominaData = JSON.parse(localStorage.getItem('jsonNominaRelicario') || '{}');
+    // Usar la variable global que ya está actualizada
+    const nominaData = window.jsonNominaPilar;
     
     if (!nominaData || !nominaData.departamentos) {
         return;
     }
 
-    // Procesar todos los departamentos de nómina relicario
+    // Procesar todos los departamentos de nómina pilar
     nominaData.departamentos.forEach(depto => {
         const nombreDepto = depto.nombre || '';
         if (depto.empleados && Array.isArray(depto.empleados)) {
@@ -115,7 +119,7 @@ function cargarEmpleadosParaTickets() {
                     empleadosParaTickets.push({
                         ...emp,
                         departamento: nombreDepto,
-                        tipo: 'relicario'
+                        tipo: 'pilar'
                     });
                 }
             });
@@ -146,31 +150,31 @@ function mostrarEmpleados(empleados) {
                 const nombre = empleado.nombre || 'Sin nombre';
                 const departamento = empleado.departamento || 'Sin departamento';
                     
-                // Determinar la clase del badge según el departamento específico de Relicario
+                // Determinar la clase del badge según el departamento específico de Pilar
                 let badgeClass = 'bg-secondary'; // Color por defecto
                 const deptoLower = departamento.toLowerCase();
                     
-                // Departamentos específicos de Relicario con colores únicos
+                // Departamentos específicos con colores únicos (adaptados para Pilar)
                 if (deptoLower.includes('jornalero') || deptoLower.includes('jornal')) {
-                    badgeClass = 'bg-success'; // Verde para jornaleros
+                    badgeClass = 'bg-success';
                 } else if (deptoLower.includes('coordinador') || deptoLower.includes('coordi')) {
-                    badgeClass = 'bg-primary'; // Azul para coordinadores
+                    badgeClass = 'bg-primary';
                 } else if (deptoLower.includes('vivero') || deptoLower.includes('vive')) {
-                    badgeClass = 'bg-warning text-dark'; // Amarillo para vivero
+                    badgeClass = 'bg-warning text-dark';
                 } else if (deptoLower.includes('rancho') || deptoLower.includes('ranch')) {
-                    badgeClass = 'bg-danger'; // Rojo para rancho
+                    badgeClass = 'bg-danger';
                 } else if (deptoLower.includes('apoyo') || deptoLower.includes('apoy')) {
-                    badgeClass = 'bg-info'; // Azul claro para apoyo
+                    badgeClass = 'bg-info';
                 } else if (deptoLower.includes('base') || deptoLower.includes('bas')) {
-                    badgeClass = 'bg-dark'; // Oscuro para base
+                    badgeClass = 'bg-dark';
                 } else if (deptoLower.includes('administracion') || deptoLower.includes('admin')) {
-                    badgeClass = 'bg-primary'; // Azul para administración
+                    badgeClass = 'bg-primary';
                 } else if (deptoLower.includes('produccion') || deptoLower.includes('produc')) {
-                    badgeClass = 'bg-warning text-dark'; // Amarillo para producción
+                    badgeClass = 'bg-warning text-dark';
                 } else if (deptoLower.includes('seguridad') || deptoLower.includes('vigilancia') || deptoLower.includes('intendencia')) {
-                    badgeClass = 'bg-purple'; // Púrpura para seguridad
+                    badgeClass = 'bg-purple';
                 } else if (deptoLower.includes('sin seguro') || deptoLower.includes('sin')) {
-                    badgeClass = 'bg-orange'; // Naranja para sin seguro
+                    badgeClass = 'bg-orange';
                 }
                     
                 const isSelected = empleadosSeleccionados.has(clave);
@@ -238,6 +242,7 @@ function deseleccionarTodosEmpleados() {
  */
 function limpiarCampoBusqueda() {
     $('#buscar_empleado_ticket').val('');
+    $('#btn_limpiar_busqueda').hide();
     // Mostrar todos los empleados al limpiar
     $('.empleado-item').removeClass('d-none').show();
 }
@@ -247,10 +252,15 @@ function limpiarCampoBusqueda() {
  */
 function filtrarEmpleados() {
     const filtro = $('#buscar_empleado_ticket').val().toLowerCase().trim();
+    const $btnLimpiar = $('#btn_limpiar_busqueda');
     const $items = $('.empleado-item');
+    
+    // Mostrar/ocultar botón de limpieza
     if (filtro === '') {
+        $btnLimpiar.hide();
         $items.removeClass('d-none').show();
     } else {
+        $btnLimpiar.css('display', 'flex');
         $items.each(function() {
             const $item = $(this);
             const nombre = $item.data('nombre') || '';
@@ -294,8 +304,8 @@ function generarTicketsSeleccionados() {
 
     console.log('Empleados seleccionados:', empleadosData);
 
-    // Preparar datos para el servidor
-    const nominaCompleta = JSON.parse(localStorage.getItem('jsonNominaRelicario') || '{}');
+    // Preparar datos para el servidor - Usar la variable global actualizada
+    const nominaCompleta = window.jsonNominaPilar;
     
     const datosParaTickets = {
         empleados_seleccionados: empleadosData,
@@ -332,7 +342,7 @@ function generarTicketsSeleccionados() {
             const a = document.createElement('a');
             a.style.display = 'none';
             a.href = url;
-            a.download = `tickets_relicario_seleccionados_${new Date().getTime()}.pdf`;
+            a.download = `tickets_pilar_seleccionados_${new Date().getTime()}.pdf`;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);

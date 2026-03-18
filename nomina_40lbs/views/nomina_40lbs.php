@@ -208,8 +208,10 @@
     <script src="../js/filtroBusqueda.js"></script>
     <script src="../js/abrirModal.js"></script>
     <script src="../js/configModal/establecerData.js"></script>
+    <script src="../js/configModal/editarData.js"></script>
     <script src="../js/configModal/configModal.js"></script>
     <script src="../js/configModal/eventos.js"></script>
+    <script src="../js/configModal/newConcepts.js"></script>
 
 </body>
 

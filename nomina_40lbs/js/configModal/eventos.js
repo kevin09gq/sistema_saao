@@ -1,32 +1,102 @@
 // ========================================
-// FUNCIONES AUXILIARES
+// VARIABLES GLOBALES
 // ========================================
+let descuentoPorMinuto = 25;
+let descuentoPorChecador = 20;
 
-// Convierte "HH:MM" a minutos totales
-function aMinutos(hora) {
-    const [h, m] = hora.split(':').map(Number);
-    return h * 60 + m;
+
+// ========================================
+// ASIGNAR HISTORIAL DE OLVIDOS DEL CHECADOR
+// ========================================
+function asignarHistorialOlvidos(empleado) {
+    // Validaciones básicas
+    if (!empleado || !Array.isArray(empleado.registros)) {
+        return;
+    }
+
+    // Inicializar historial si no existe
+    if (!Array.isArray(empleado.historial_olvidos)) {
+        empleado.historial_olvidos = [];
+    }
+
+    // Preservar descuentos manuales previos (por fecha) para no perderlos al recalcular
+    const descuentosPrevios = {};
+    const editadosPrevios = {};
+    empleado.historial_olvidos.forEach(olvido => {
+        if (!olvido || !olvido.fecha) return;
+        const fechaNormalizada = String(olvido.fecha).trim();
+
+        if (olvido.descuento_olvido !== undefined && olvido.descuento_olvido !== null && olvido.descuento_olvido !== '') {
+            descuentosPrevios[fechaNormalizada] = parseFloat(olvido.descuento_olvido);
+        } else {
+            descuentosPrevios[fechaNormalizada] = descuentoPorChecador;
+        }
+
+        editadosPrevios[fechaNormalizada] = olvido.editado === true;
+    });
+
+    const nuevoHistorial = [];
+
+    // Revisar cada registro
+    empleado.registros.forEach(reg => {
+        if (!reg || !reg.fecha) return;
+
+        const tieneEntrada = reg.entrada && String(reg.entrada).trim() !== '' && String(reg.entrada).trim() !== '-';
+        const tieneSalida = reg.salida && String(reg.salida).trim() !== '' && String(reg.salida).trim() !== '-';
+
+        // Olvido: tiene UNO pero NO el otro
+        if ((tieneEntrada && !tieneSalida) || (!tieneEntrada && tieneSalida)) {
+            const fechaNormalizada = String(reg.fecha).trim();
+            const descuentoPorOlvido = descuentosPrevios[fechaNormalizada] !== undefined
+                ? descuentosPrevios[fechaNormalizada]
+                : descuentoPorChecador;
+
+            nuevoHistorial.push({
+                dia: nombreDia(fechaNormalizada),
+                fecha: fechaNormalizada,
+                descuento_olvido: descuentoPorOlvido,
+                editado: editadosPrevios[fechaNormalizada] === true
+            });
+        }
+    });
+
+    // Ordenar por fecha
+    nuevoHistorial.sort((a, b) => {
+        const [da, ma, aa] = a.fecha.split('/').map(Number);
+        const [db, mb, ab] = b.fecha.split('/').map(Number);
+        return new Date(aa, ma - 1, da) - new Date(ab, mb - 1, db);
+    });
+
+    // Reemplazar historial completo
+    empleado.historial_olvidos = nuevoHistorial;
 }
 
-// Convierte minutos a texto legible (ej: 1h 30m, 45m)
-function aTextoTiempo(minutos) {
-    if (minutos < 60) return `${minutos}m`;
-    const h = Math.floor(minutos / 60);
-    const m = minutos % 60;
-    return m === 0 ? `${h}h` : `${h}h ${m}m`;
+// ========================================
+// ASIGNAR EL TOTAL DE LOS EVENTOS A LAS PROPIEDADES CORRESPONDIENTES DEL EMPLEADO
+// ========================================
+function asignarTotalOlvidos(empleado, force = false) {
+    // Validar que exista el historial de olvidos
+    if (!Array.isArray(empleado.historial_olvidos)) {
+        return;
+    }
+
+    // Si fue editado manualmente y no es force, respetar la edición manual
+    if (empleado._checador_editado_manual && !force) {
+        return;
+    }
+
+    // Contar total de olvidos y sumar descuentos
+    let totalOlvidos = 0;
+    let totalDescontado = 0;
+    empleado.historial_olvidos.forEach(olvido => {
+        totalOlvidos += 1;
+        totalDescontado += parseFloat(olvido.descuento_olvido) || 0;
+    });
+
+    // Asignar totales a propiedades del empleado
+    empleado.checador = totalDescontado;
 }
 
-// Obtiene el nombre del día a partir de una fecha "DD/MM/YYYY"
-function nombreDia(fecha) {
-    const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-    const [d, m, a] = fecha.split('/');
-    return dias[new Date(a, m - 1, d).getDay()];
-}
-
-// Normaliza string removiendo acentos
-function normalizarDia(dia) {
-    return dia.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
-}
 
 // ========================================
 // FUNCIÓN GENÉRICA DE EVENTOS
@@ -180,5 +250,37 @@ function mostrarInasistencias(empleado) {
         $total.text(inasistencias.length);
     }
 }
-
 function mostrarOlvidosChecador(empleado) {}
+
+
+
+// ========================================
+// FUNCIONES AUXILIARES
+// ========================================
+
+// Convierte "HH:MM" a minutos totales
+function aMinutos(hora) {
+    const [h, m] = hora.split(':').map(Number);
+    return h * 60 + m;
+}
+
+// Convierte minutos a texto legible (ej: 1h 30m, 45m)
+function aTextoTiempo(minutos) {
+    if (minutos < 60) return `${minutos}m`;
+    const h = Math.floor(minutos / 60);
+    const m = minutos % 60;
+    return m === 0 ? `${h}h` : `${h}h ${m}m`;
+}
+
+// Obtiene el nombre del día a partir de una fecha "DD/MM/YYYY"
+function nombreDia(fecha) {
+    const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const [d, m, a] = fecha.split('/');
+    return dias[new Date(a, m - 1, d).getDay()];
+}
+
+// Normaliza string removiendo acentos
+function normalizarDia(dia) {
+    return dia.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+}
+

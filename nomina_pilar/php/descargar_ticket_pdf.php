@@ -214,8 +214,8 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
     $nombreFontSize = strlen($nombreCompleto) > 35 ? 8 : (strlen($nombreCompleto) >= 31 ? 13 : 15);
     $textB(12, 20, $pt($nombreFontSize), $nombreCompleto);
 
-    $deptoFontSize = 15;
-    $text(310, 20, $pt($deptoFontSize), $departamento);
+    $deptoFontSize = 20;
+    $text(310, 15, $pt($deptoFontSize), $departamento);
     $text(551, 20, $pt(17), 'F.Ingr: ' . $fechaIngreso);
     $text(710, 18, $pt(18), 'SEM ' . $semana);
 
@@ -520,7 +520,7 @@ if (count($claves) > 0) {
             FROM info_empleados e
             LEFT JOIN puestos_especiales p ON e.id_puestoEspecial = p.id_puestoEspecial
             LEFT JOIN departamentos d ON e.id_departamento = d.id_departamento
-            WHERE e.clave_empleado IN ($placeholders)";
+            WHERE e.clave_empleado IN ($placeholders) AND d.id_area = 3";
 
     $stmt = mysqli_prepare($conexion, $sql);
     if ($stmt) {
@@ -553,8 +553,8 @@ if (count($claves) > 0) {
 $pdf = new TCPDF('L', 'mm', [50.8, 104], true, 'UTF-8', false);
 $pdf->SetCreator('Sistema SAAO');
 $pdf->SetAuthor('Sistema SAAO');
-$pdf->SetTitle('Tickets Relicario');
-$pdf->SetSubject('Tickets Nómina Relicario');
+$pdf->SetTitle('Tickets Pilar');
+$pdf->SetSubject('Tickets Nómina Pilar');
 $pdf->setPrintHeader(false);
 $pdf->setPrintFooter(false);
 $pdf->SetAutoPageBreak(false, 0);
@@ -569,7 +569,7 @@ foreach ($empleados as $emp) {
 }
 
 $sem      = $meta['numero_semana'] ? ('_sem_' . preg_replace('/[^0-9A-Za-z_-]/', '', (string)$meta['numero_semana'])) : '';
-$filename = 'tickets_relicario' . $sem . '.pdf';
+$filename = 'tickets_pilar' . $sem . '.pdf';
 
 if (function_exists('ob_get_length') && ob_get_length()) {
     @ob_end_clean();

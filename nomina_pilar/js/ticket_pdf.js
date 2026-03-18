@@ -1,7 +1,7 @@
-// ticket_pdf.js - Ticket general para nómina relicario
+// ticket_pdf.js - Ticket general para nómina pilar
 $(document).ready(function () {
     $('#btn_ticket_pdf').on('click', function () {
-        if (typeof jsonNominaRelicario === 'undefined' || !jsonNominaRelicario) {
+        if (typeof jsonNominaPilar === 'undefined' || !jsonNominaPilar) {
             Swal.fire('Sin datos', 'No hay datos de nómina para generar el PDF.', 'warning');
             return;
         }
@@ -11,7 +11,7 @@ $(document).ready(function () {
         let id_puestoEspecial = parseInt($('#filtro_puesto').val() || '-1');
         
         // Aplicar los mismos filtros que se usan para mostrar la tabla
-        let datosFiltrados = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, id_departamento);
+        let datosFiltrados = filtrarEmpleadosPorDepartamento(jsonNominaPilar, id_departamento);
         if (id_puestoEspecial !== -1) {
             datosFiltrados = filtrarEmpleadosPorPuesto(datosFiltrados, id_puestoEspecial);
         }
@@ -43,7 +43,7 @@ $(document).ready(function () {
         var datosEnviar = {
             nomina: datosFiltrados,
             meta: {
-                numero_semana: jsonNominaRelicario.numero_semana || ''
+                numero_semana: jsonNominaPilar.numero_semana || ''
             }
         };
 
@@ -68,7 +68,7 @@ $(document).ready(function () {
                     $('#btn_ticket_pdf').prop('disabled', false).html('<i class="bi bi-ticket-perforated"></i>');
                     return;
                 }
-                var filename = 'tickets_relicario.pdf';
+                var filename = 'tickets_pilar.pdf';
                 var disposition = xhr.getResponseHeader('Content-Disposition');
                 if (disposition && disposition.indexOf('filename=') !== -1) {
                     var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;

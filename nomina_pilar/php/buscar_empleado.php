@@ -32,7 +32,7 @@ try {
                 LEFT JOIN empresa emp ON e.id_empresa = emp.id_empresa
                 WHERE e.clave_empleado = ?
                 AND e.id_status = 1
-                AND d.id_area = 2
+                AND d.id_area = 3
                 LIMIT 10";
         $stmt = $conexion->prepare($sql);
         $stmt->bind_param("s", $query);
@@ -56,7 +56,7 @@ try {
                 LEFT JOIN puestos_especiales p ON e.id_puestoEspecial = p.id_puestoEspecial
                 LEFT JOIN empresa emp ON e.id_empresa = emp.id_empresa
                 WHERE e.id_status = 1
-                AND d.id_area = 2
+                AND d.id_area = 3
                 AND (
                     e.nombre LIKE ? 
                     OR e.ap_paterno LIKE ? 

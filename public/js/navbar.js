@@ -40,6 +40,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return 'nominas'; // Highlight 'Nóminas' for Confianza
         } else if (path.includes('/nomina_relicario/views/nomina_relicario.php')) {
             return 'nominas'; // Highlight 'Nóminas' for Rancho Relicario
+        }else if (path.includes('/nomina_pilar/views/nomina_pilar.php')) {
+            return 'nominas'; // Highlight 'Nóminas' for Otros
         } else if (path.includes('/empleados/views/form_registro.php')) {
             return 'empleados_registro';
         } else if (path.includes('/empleados/')) {
