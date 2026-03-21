@@ -5,7 +5,7 @@ seleccionarPuesto();
 buscarEmpleado();
 limpiarBusqueda();
 obtenerDepartamentos();
-obtenerPuestos(7);
+obtenerPuestos(12);
 eventoSelectDepartamento();
 
 
@@ -28,14 +28,14 @@ function obtenerDepartamentos() {
             data.push({
                 "id_departamento": 800,
                 "nombre_departamento": "Corte",
-                "id_area": 2
+                "id_area": 4
             });
 
             let tmp = '';
 
-            // El valor por defecto es el departamento 7 (Jornaleros), por eso se marca como selected
+            // El valor por defecto es el departamento 12 (Jornaleros), por eso se marca como selected
             data.forEach(element => {
-                tmp += `<option ${element.id_departamento === 7 ? 'selected' : ''} value="${element.id_departamento}">${element.nombre_departamento}</option>`;
+                tmp += `<option ${element.id_departamento === 12 ? 'selected' : ''} value="${element.id_departamento}">${element.nombre_departamento}</option>`;
             });
 
             $('#filtro_departamento').html(tmp);
@@ -84,22 +84,22 @@ function seleccionarDepartamento() {
 
         if (id_departamento !== 800) {
             // Se muestra la tabla de nomina normal
-            $("#tabla-nomina-container-pilar").prop("hidden", false);
+            $("#tabla-nomina-container-huasteca").prop("hidden", false);
             // Se oculta la tabla de corte
-            $("#tabla-corte-container-pilar").prop("hidden", true);
+            $("#tabla-corte-container-huasteca").prop("hidden", true);
 
             // Filtrar el JSON por el departamento seleccionado
-            let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaPilar, id_departamento);
+            let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaHuasteca, id_departamento);
             obtenerPuestos(id_departamento);
             window.paginaActualNomina = 1; // Resetear a página 1
             mostrarDatosTabla(jsonFiltrado);
         } else {
             // Se oculta la tabla de nomina normal
-            $("#tabla-nomina-container-pilar").prop("hidden", true);
+            $("#tabla-nomina-container-huasteca").prop("hidden", true);
             // Se muestra la tabla de corte
-            $("#tabla-corte-container-pilar").prop("hidden", false);
+            $("#tabla-corte-container-huasteca").prop("hidden", false);
 
-            mostrarDatosTablaCorte(jsonNominaPilar);
+            mostrarDatosTablaCorte(jsonNominaHuasteca);
 
         }
 
@@ -114,7 +114,7 @@ function seleccionarPuesto() {
         let id_departamento = parseInt($('#filtro_departamento').val()); // Obtener id_departamento
 
         // Primero filtra el departamento seleccionado
-        let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaPilar, id_departamento);
+        let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaHuasteca, id_departamento);
         // Luego filtra por puesto dentro del departamento filtrado
         jsonFiltrado = filtrarEmpleadosPorPuesto(jsonFiltrado, id_puestoEspecial);
         // Resetear a página 1
@@ -136,7 +136,7 @@ function seleccionarPuesto() {
  * ===============================================================
  */
 function buscarEmpleado() {
-    $("#busqueda-nomina-pilar").on("keyup", function () {
+    $("#busqueda-nomina-huasteca").on("keyup", function () {
 
         // Obtener valores de los filtros
         let textoBusqueda = $(this).val().toLowerCase().trim();
@@ -144,7 +144,7 @@ function buscarEmpleado() {
         let id_puestoEspecial = parseInt($('#filtro_puesto').val());
 
         // Paso 1: Filtrar por departamento
-        let resultado = filtrarEmpleadosPorDepartamento(jsonNominaPilar, id_departamento);
+        let resultado = filtrarEmpleadosPorDepartamento(jsonNominaHuasteca, id_departamento);
 
         // Paso 2: Filtrar por puesto
         resultado = filtrarEmpleadosPorPuesto(resultado, id_puestoEspecial);
@@ -207,14 +207,14 @@ function limpiarBusqueda() {
         e.preventDefault();
 
         // Limpiar el input
-        $("#busqueda-nomina-pilar").val("");
+        $("#busqueda-nomina-huasteca").val("");
 
         // Obtener filtros actuales
         let id_departamento = parseInt($('#filtro_departamento').val());
         let id_puestoEspecial = parseInt($('#filtro_puesto').val());
 
         // Aplicar filtros nuevamente
-        let resultado = filtrarEmpleadosPorDepartamento(jsonNominaPilar, id_departamento);
+        let resultado = filtrarEmpleadosPorDepartamento(jsonNominaHuasteca, id_departamento);
         resultado = filtrarEmpleadosPorPuesto(resultado, id_puestoEspecial);
 
         // Mostrar resultados y restaurar paginación

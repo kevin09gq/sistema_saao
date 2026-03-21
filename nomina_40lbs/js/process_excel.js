@@ -477,7 +477,7 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
 
                 asignarPropiedadesEmpleado(jsonNomina40lbs);
                 ordenarEmpleadosPorApellido(jsonNomina40lbs);
-
+                calcularOlvidosTodosEmpleados(jsonNomina40lbs);
                 initComponents();
 
                 if (typeof saveNomina === 'function') {
@@ -582,7 +582,6 @@ function validarExistenciaTrabajadorBD(JsonNomina40lbs, JsonListaRaya) {
                         if (empleadoExcel.tarjeta !== undefined) empleadoBD.tarjeta_copia = empleadoExcel.tarjeta;
                     });
                 });
-                console.log('Empleados filtrados:', JsonNomina40lbs);
 
                 // Agregar empleados nuevos del archivo Excel
                 agregarEmpleadosNuevos(JsonNomina40lbs, JsonListaRaya);
@@ -756,12 +755,7 @@ function verificarEmpleadosSinSeguro(jsonNomina40lbs) {
 
                 // Filtrar empleados con id_departamento 4
                 let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNomina40lbs, 4, true);
-
-
                 mostrarDatosTabla(jsonFiltrado, 1);
-
-
-
 
             }
         },

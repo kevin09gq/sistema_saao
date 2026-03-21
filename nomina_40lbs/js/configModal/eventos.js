@@ -1,13 +1,54 @@
 // ========================================
 // VARIABLES GLOBALES
 // ========================================
-let descuentoPorMinuto = 25;
+
 let descuentoPorChecador = 20;
 
+// ========================================
+// CALCULAR EVENTOS AL ARRANQUE DEL SISTEMA
+// ========================================
 
-// ========================================
-// ASIGNAR HISTORIAL DE OLVIDOS DEL CHECADOR
-// ========================================
+
+function calcularOlvidosTodosEmpleados(jsonNomina40lbs) {
+    // Validar que exista la nómina y sus departamentos
+    if (!jsonNomina40lbs || !Array.isArray(jsonNomina40lbs.departamentos)) {
+        return;
+    }
+
+    // Solo incluir al departamento de 40 libras, 10 libras y sin seguro
+
+    const departamentosFiltrados = jsonNomina40lbs.departamentos.filter(depto => {
+        const nombreDepto = String(depto.nombre || '').toLowerCase();
+        return nombreDepto.includes('produccion 40 libras') || nombreDepto.includes('produccion 10 libras') || nombreDepto.includes('sin seguro');
+    });
+
+
+    // Iterar sobre todos los departamentos
+    departamentosFiltrados.forEach(departamento => {
+        // Iterar sobre todos los empleados del departamento
+        if (!Array.isArray(departamento.empleados)) return;
+
+        departamento.empleados.forEach(empleado => {
+            
+
+            // Calcular el historial de olvidos para este coordinador
+            asignarHistorialOlvidos(empleado);
+
+            // Calcular y asignar el total de olvidos a la propiedad
+            asignarTotalOlvidos(empleado, true); // force=true para asegurar la asignación
+
+            // Limpiar historial si está vacío
+            if (Array.isArray(empleado.historial_olvidos) && empleado.historial_olvidos.length === 0) {
+                delete empleado.historial_olvidos;
+            }
+        });
+    });
+}
+
+
+// ========================================================
+// ASIGNAR HISTORIAL DE OLVIDOS DEL CHECADOR, INASISTENCIAS
+// ========================================================
 function asignarHistorialOlvidos(empleado) {
     // Validaciones básicas
     if (!empleado || !Array.isArray(empleado.registros)) {
@@ -71,6 +112,7 @@ function asignarHistorialOlvidos(empleado) {
     empleado.historial_olvidos = nuevoHistorial;
 }
 
+
 // ========================================
 // ASIGNAR EL TOTAL DE LOS EVENTOS A LAS PROPIEDADES CORRESPONDIENTES DEL EMPLEADO
 // ========================================
@@ -95,6 +137,25 @@ function asignarTotalOlvidos(empleado, force = false) {
 
     // Asignar totales a propiedades del empleado
     empleado.checador = totalDescontado;
+}
+
+function asignarTotalInasistencias(empleado, force = false) {
+    if (!Array.isArray(empleado.historial_inasistencias)) {
+        return;
+    }
+
+    if (empleado._inasistencia_editado_manual && !force) {
+        return;
+    }
+
+    let totalInasistencias = 0;
+    let totalDescontado = 0;
+    empleado.historial_inasistencias.forEach(inasistencia => {
+        totalInasistencias += 1;
+        totalDescontado += parseFloat(inasistencia.descuento_inasistencia) || 0;
+    });
+
+    empleado.inasistencia = totalDescontado;
 }
 
 

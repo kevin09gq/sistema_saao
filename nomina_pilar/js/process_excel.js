@@ -350,8 +350,8 @@ function procesarBiometrico(form, JsonListaRaya) {
             try {
                 const JsonBiometrico = JSON.parse(res2);
 
-                jsonNominaPilar = unirJson(JsonListaRaya, JsonBiometrico);
-                const empleadosNoUnidos = obtenerEmpleadosNoUnidos(JsonListaRaya, JsonBiometrico);
+                jsonNominaPilar = unirJson(JsonListaRaya, JsonBiometrico);              
+                const empleadosNoUnidos = obtenerEmpleadosNoUnidos(JsonListaRaya, JsonBiometrico);                
                 // Validar empleados sin IMSS solo si hay empleados no unidos
                 if (empleadosNoUnidos && empleadosNoUnidos.length > 0) {
                     obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos);

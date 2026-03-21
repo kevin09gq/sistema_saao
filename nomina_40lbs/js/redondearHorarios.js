@@ -495,7 +495,10 @@ function calcularTotalesEmpleadoRedondeado(empleado) {
 // ASIGNAR SUELDO NETO AL EMPLEADO SEGÚN HORAS TRABAJADAS
 // ======================================================
 
-function getTabulador() {
+// empleadosFiltro es OPCIONAL:
+//   - Si se pasa (array de objetos emp), solo recalcula el sueldo de esos empleados
+//   - Si NO se pasa, recalcula TODOS (uso normal al cargar la nómina)
+function getTabulador(empleadosFiltro) {
     var idEmpresa = 1; // Ajusta según tu lógica
     $.ajax({
         url: '../php/getTabulador.php',
@@ -506,31 +509,11 @@ function getTabulador() {
         },
         dataType: 'json',
         success: function (datos) {
-         jsonTabulador = datos;
-         console.log("Tabulador recibido:", jsonTabulador);
-         imprimirSueldoBasePorHorasTrabajadas(jsonTabulador);
-
-         if (typeof mostrarDatosTabla === 'function') {
-             var pagina = (typeof paginaActualNomina !== 'undefined' && paginaActualNomina) ? paginaActualNomina : 1;
-             var jsonParaMostrar = jsonNomina40lbs;
-
-             if (typeof filtrarEmpleadosPorDepartamento === 'function') {
-                 var mapaFiltro = {
-                     '1': { idDepartamento: 4, seguroSocial: true },
-                     '2': { idDepartamento: 4, seguroSocial: false },
-                     '3': { idDepartamento: 5, seguroSocial: true },
-                     '4': { idDepartamento: 5, seguroSocial: false }
-                 };
-                 var cfg = mapaFiltro[$('#filtro-departamento').val()];
-                 if (cfg) {
-                     jsonParaMostrar = filtrarEmpleadosPorDepartamento(jsonNomina40lbs, cfg.idDepartamento, cfg.seguroSocial);
-                 }
-             }
-
-             mostrarDatosTabla(jsonParaMostrar, pagina);
-         }
-            
-
+            jsonTabulador = datos;
+            console.log("Tabulador recibido:", jsonTabulador);
+            // Pasa el filtro: si vino vacío recalcula todos, si vino con empleados solo esos
+            imprimirSueldoBasePorHorasTrabajadas(jsonTabulador, empleadosFiltro || null);
+            refrescarTabla();
         },
         error: function (xhr, status, error) {
         }
@@ -572,9 +555,18 @@ function obtenerRangoTabuladorPorHorasTrabajadas(horasTrabajadasHHMM, tabulador)
     return rangoEncontrado;
 }
 
-function imprimirSueldoBasePorHorasTrabajadas(tabulador) {
+// empleadosSeleccionados es OPCIONAL. Si se pasa, solo recalcula esos empleados.
+// Si NO se pasa (o es null), recalcula TODOS (comportamiento original).
+function imprimirSueldoBasePorHorasTrabajadas(tabulador, empleadosSeleccionados) {
     if (!jsonNomina40lbs || !jsonNomina40lbs.departamentos) {
         return;
+    }
+
+    // Construir un Set con las referencias de los objetos empleado (solo si hay seleccionados)
+    // Usar referencias de objeto es más simple y rápido que comparar claves
+    var soloSeleccionados = null;
+    if (empleadosSeleccionados && empleadosSeleccionados.length > 0) {
+        soloSeleccionados = new Set(empleadosSeleccionados);
     }
 
     var itemHoraExtra = null;
@@ -593,6 +585,13 @@ function imprimirSueldoBasePorHorasTrabajadas(tabulador) {
         }
 
         (departamento.empleados || []).forEach(function (empleado) {
+
+            // ✅ FILTRO: Si hay seleccionados, solo procesar los que estén en la lista
+            // Se compara por referencia de objeto (mismo emp de jsonNomina40lbs)
+            if (soloSeleccionados !== null && !soloSeleccionados.has(empleado)) {
+                return; // ← Saltar este empleado, no tocar su sueldo
+            }
+
             var horas = (empleado.horas_trabajadas || "").trim();
             if (!horas) {
                 return;
@@ -614,12 +613,56 @@ function imprimirSueldoBasePorHorasTrabajadas(tabulador) {
                 var costo = parseFloat(itemHoraExtra.costo_por_minuto) || 0;
                 var pagoExtra = minutosExtra * costo;
                 empleado.horas_extra = pagoExtra.toFixed(2);
+
                 console.log('Hora extra =>', empleado.nombre, 'minutos_extra:', minutosExtra, 'costo_por_minuto:', costo, 'pago_extra:', pagoExtra);
             } else {
                 empleado.horas_extra = 0;
             }
+
+            // RECALCULAR SUELDO_EXTRA_TOTAL después de asignar horas_extra
+            recalcularSueldoExtraTotal(empleado);
         });
     });
 }
 
+// ======================================================
+// RECALCULAR SUELDO EXTRA TOTAL
+// ======================================================
 
+// Función para obtener el total de conceptos adicionales del objeto empleado
+function obtenerTotalConceptosAdicionales(empleado) {
+    if (!empleado.percepciones_extra || !Array.isArray(empleado.percepciones_extra)) {
+        return 0;
+    }
+
+    return empleado.percepciones_extra.reduce(function (total, percepcion) {
+        return total + (parseFloat(percepcion.cantidad) || 0);
+    }, 0);
+}
+
+// Función para recalcular sueldo_extra_total basándose en las propiedades del empleado
+function recalcularSueldoExtraTotal(empleado) {
+    if (!empleado) {
+        return;
+    }
+
+    var totalExtras = 0;
+
+    // Sumar percepciones extras
+    totalExtras += obtenerTotalConceptosAdicionales(empleado);
+
+    // Sumar horas extras
+    totalExtras += parseFloat(empleado.horas_extra) || 0;
+
+    // Sumar bono de antiguedad
+    totalExtras += parseFloat(empleado.bono_antiguedad) || 0;
+
+    // Sumar actividades especiales
+    totalExtras += parseFloat(empleado.actividades_especiales) || 0;
+
+    // Sumar puesto
+    totalExtras += parseFloat(empleado.puesto) || 0;
+
+    // Asignar el total
+    empleado.sueldo_extra_total = parseFloat(totalExtras.toFixed(2));
+}

@@ -4,29 +4,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nómina pilar</title>
+    <title>Nómina huasteca</title>
     <?php
     include "../../config/config.php";
     verificarSesion(); // Proteger esta página
     ?>
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
-    <link rel="stylesheet" href="../css/nomina_pilar.css">
-    <link rel="stylesheet" href="../css/tablaNomina.css">
-
-    <!-- estilos para el corte -->
-    <link rel="stylesheet" href="../css/tablaCorte.css">
-
-    <link rel="stylesheet" href="../css/encabezados.css">
-    <link rel="stylesheet" href="../css/modalCoordinador.css">
-    <link rel="stylesheet" href="../css/modalJornaleros.css">
-    <link rel="stylesheet" href="../css/conceptos_totales.css">
-    <link rel="stylesheet" href="../css/ticket_manual.css">
-
     <link rel="stylesheet" href="<?= JQUERY_UI_CSS ?>">
-
     <!-- SweetAlert2 CSS -->
     <script src="<?= SWEETALERT ?>"></script>
+
+    <link rel="stylesheet" href="../css/nomina_huasteca.css">
+    <link rel="stylesheet" href="../css/tablaNomina.css">
+    <link rel="stylesheet" href="../css/encabezados.css">
 </head>
 
 <body>
@@ -36,27 +27,27 @@
     ?>
 
     <!-- Contenedor principal centrado -->
-    <div class="container-nomina_pilar" id="container-nomina_pilar" hidden>
+    <div class="container-nomina_huasteca" id="container-nomina_huasteca" hidden>
         <!-- Contenedor tipo navbar para formulario y filtros -->
-        <div class="navbar-nomina_pilar">
-            <div class="titulo-nomina_pilar">Procesamiento de Nómina pilar</div>
-            <div class="subtitulo-nomina_pilar">Selecciona los archivos Excel para procesar la información</div>
+        <div class="navbar-nomina_huasteca">
+            <div class="titulo-nomina_huasteca">Procesamiento de Nómina huasteca</div>
+            <div class="subtitulo-nomina_huasteca">Selecciona los archivos Excel para procesar la información</div>
 
-            <form id="form_excel_raya" enctype="multipart/form-data" class="form-nomina-inline-pilar">
+            <form id="form_excel_raya" enctype="multipart/form-data" class="form-nomina-inline-huasteca">
                 <div>
-                    <label for="archivo_excel_lista_raya_pilar">
+                    <label for="archivo_excel_lista_raya_huasteca">
                         <i class="bi bi-file-earmark-excel-fill"></i> Lista de Raya
                     </label>
-                    <input type="file" id="archivo_excel_lista_raya_pilar" name="archivo_excel_lista_raya_pilar" accept=".xls,.xlsx" required>
+                    <input type="file" id="archivo_excel_lista_raya_huasteca" name="archivo_excel_lista_raya_huasteca" accept=".xls,.xlsx" required>
                 </div>
                 <div>
-                    <label for="archivo_excel_biometrico_pilar">
+                    <label for="archivo_excel_biometrico_huasteca">
                         <i class="bi bi-file-earmark-excel-fill"></i> Biometrico
                     </label>
-                    <input type="file" id="archivo_excel_biometrico_pilar" name="archivo_excel_biometrico_pilar" accept=".xls,.xlsx" required>
+                    <input type="file" id="archivo_excel_biometrico_huasteca" name="archivo_excel_biometrico_huasteca" accept=".xls,.xlsx" required>
                 </div>
                 <div>
-                    <button type="button" id="btn_procesar_nomina_pilar" class="btn-procesar-nomina_pilar">
+                    <button type="button" id="btn_procesar_nomina_huasteca" class="btn-procesar-nomina_huasteca">
                         <i class="bi bi-arrow-repeat"></i> Procesar
                     </button>
                 </div>
@@ -64,8 +55,44 @@
         </div>
     </div>
 
+    <div id="container-acceso-huasteca" hidden>
+        <!-- Apartado para crear una nueva nómina centrado -->
+        <div class="container d-flex justify-content-center align-items-center" style="min-height: 60vh;">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow-sm mb-4" id="crear-nomina-huasteca">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3 text-center"><i class="bi bi-journal-plus"></i> Crear nueva nómina</h5>
+                        <form id="form_crear_nomina_huasteca" class="row g-3">
+                            <div class="col-md-6">
+                                <label for="anio_nomina_huasteca" class="form-label">Año</label>
+                                <input type="number" class="form-control" id="anio_nomina_huasteca" name="anio_nomina_huasteca" min="2000" max="2100" placeholder="Ej. 2026">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="semana_nomina_huasteca" class="form-label">No. Semana</label>
+                                <input type="number" class="form-control" id="semana_nomina_huasteca" name="semana_nomina_huasteca" min="1" max="53" placeholder="Ej. 5">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="fecha_inicio_nomina_huasteca" class="form-label">Fecha de inicio</label>
+                                <input type="date" class="form-control" id="fecha_inicio_nomina_huasteca" name="fecha_inicio_nomina_huasteca">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="fecha_cierre_nomina_huasteca" class="form-label">Fecha de cierre</label>
+                                <input type="date" class="form-control" id="fecha_cierre_nomina_huasteca" name="fecha_cierre_nomina_huasteca">
+                            </div>
+                            <div class="col-12 d-flex justify-content-center mt-3">
+                                <button type="button" class="btn btn-success px-4" id="btn_crear_nomina_huasteca">
+                                    <i class="bi bi-plus-circle"></i> Crear Nómina
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Contenedor de Configuración de Valores -->
-    <div class="container mt-5 mb-5" id="config-valores-pilar" hidden>
+    <div class="container mt-5 mb-5" id="config-valores-huasteca" hidden>
         <div class="row justify-content-center">
             <div class="col-md-6">
                 <div class="card shadow-sm">
@@ -74,19 +101,19 @@
                             <i class="bi bi-gear"></i> Configuración de Valores
                         </h5>
                         <div class="mb-3">
-                            <label for="precio_pasaje_pilar" class="form-label">Precio del Pasaje</label>
-                            <input type="number" id="precio_pasaje_pilar" class="form-control" placeholder="Ej. 50.00" step="0.01" min="0">
+                            <label for="precio_pasaje_huasteca" class="form-label">Precio del Pasaje</label>
+                            <input type="number" id="precio_pasaje_huasteca" class="form-control" placeholder="Ej. 50.00" step="0.01" min="0">
                         </div>
                         <div class="mb-3">
-                            <label for="pago_tardeada_pilar" class="form-label">Pago Tardeada</label>
-                            <input type="number" id="pago_tardeada_pilar" class="form-control" placeholder="Ej. 25.00" step="0.01" min="0">
+                            <label for="pago_tardeada_huasteca" class="form-label">Pago Tardeada</label>
+                            <input type="number" id="pago_tardeada_huasteca" class="form-control" placeholder="Ej. 25.00" step="0.01" min="0">
                         </div>
                         <div class="mb-3">
-                            <label for="pago_comida_pilar" class="form-label">Pago Comida</label>
-                            <input type="number" id="pago_comida_pilar" class="form-control" placeholder="Ej. 25.00" step="0.01" min="0">
+                            <label for="pago_comida_huasteca" class="form-label">Pago Comida</label>
+                            <input type="number" id="pago_comida_huasteca" class="form-control" placeholder="Ej. 25.00" step="0.01" min="0">
                         </div>
                         <div class="d-grid gap-2">
-                            <button class="btn btn-primary btn-lg" id="btn_config_avanzar_pilar" type="button">
+                            <button class="btn btn-primary btn-lg" id="btn_config_avanzar_huasteca" type="button">
                                 <i class="bi bi-arrow-right"></i> Avanzar
                             </button>
                         </div>
@@ -96,11 +123,11 @@
         </div>
     </div>
 
-    <div class="container-tabla-nomina-pilar" id="tabla-nomina-responsive" hidden>
-        <div class="header-tabla-pilar">
+    <div class="container-tabla-nomina-huasteca" id="tabla-nomina-responsive" hidden>
+        <div class="header-tabla-huasteca">
             <h3 id=nombre_nomina></h3>
-            <div class="header-controls-pilar">
-                <span class="sem-info-pilar" id="num_semana"></span>
+            <div class="header-controls-huasteca">
+                <span class="sem-info-huasteca" id="num_semana"></span>
                 <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalCorte" title="Tickes de Corte de Rejas">
                     <i class="bi bi-truck"></i>
                 </button>
@@ -139,22 +166,22 @@
         </div>
 
         <!-- Controles de filtro y búsqueda -->
-        <div class="controles-tabla-pilar">
-            <div class="filtros-container-pilar">
+        <div class="controles-tabla-huasteca">
+            <div class="filtros-container-huasteca">
 
-                <select class="filtro-departamento-pilar" id="filtro_departamento">
+                <select class="filtro-departamento-huasteca" id="filtro_departamento">
                     <!-- Departamento -->
                 </select>
 
-                <select class="filtro-departamento-pilar" id="filtro_puesto">
+                <select class="filtro-departamento-huasteca" id="filtro_puesto">
                     <!-- Departamento -->
                 </select>
 
 
 
-                <div class="busqueda-container-pilar" id="busqueda-container">
+                <div class="busqueda-container-huasteca" id="busqueda-container">
                     <i class="bi bi-search"></i>
-                    <input type="text" class="campo-busqueda-pilar" placeholder="Buscar..." id="busqueda-nomina-pilar">
+                    <input type="text" class="campo-busqueda-huasteca" placeholder="Buscar..." id="busqueda-nomina-huasteca">
                     <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="btn-clear-busqueda" title="Limpiar">
                         <i class="bi bi-x-circle"></i>
                     </button>
@@ -164,7 +191,7 @@
 
 
             <!-- Botones de exportación -->
-            <div class="export-buttons-pilar">
+            <div class="export-buttons-huasteca">
                 <button class="btn btn-outline-success me-2" id="btn_export_excel" title="Exportar a Excel">
                     <i class="bi bi-file-earmark-excel"></i> Excel
                 </button>
@@ -172,7 +199,7 @@
                 <button class="btn btn-outline-danger me-2" id="btn_export_pdf_reporte" title="Exportar a PDF">
                     <i class="bi bi-file-earmark-pdf"></i> Reporte
                 </button>
-                <button class="btn btn-outline-primary me-2" id="btn_guardar_nomina_pilar" title="Guardar nómina">
+                <button class="btn btn-outline-primary me-2" id="btn_guardar_nomina_huasteca" title="Guardar nómina">
                     <i class="bi bi-save"></i> Guardar Nómina
                 </button>
                 <button class="btn btn-outline-warning" id="btn_limpiar_datos" title="Subir Nuevamente">
@@ -182,9 +209,9 @@
             </div>
         </div>
 
-        <div id="tabla-nomina-container-pilar" class="tabla-nomina-container-pilar">
-            <div class="table-responsive-pilar">
-                <table class="table-nomina-pilar" id="tabla-nomina">
+        <div id="tabla-nomina-container-huasteca" class="tabla-nomina-container-huasteca">
+            <div class="table-responsive-huasteca">
+                <table class="table-nomina-huasteca" id="tabla-nomina">
                     <thead>
                         <tr>
                             <th rowspan="2">#</th>
@@ -215,7 +242,7 @@
 
                         </tr>
                     </thead>
-                    <tbody id="tabla-nomina-body-pilar">
+                    <tbody id="tabla-nomina-body-huasteca">
                         <!-- Filas de la tabla se generarán dinámicamente -->
 
 
@@ -228,9 +255,9 @@
         </div>
 
 
-        <div id="tabla-corte-container-pilar" class="tabla-nomina-container-pilar-corte" hidden>
-            <div class="table-responsive-pilar-corte">
-                <table class="table-nomina-pilar-corte" id="tabla-nomina-corte">
+        <div id="tabla-corte-container-huasteca" class="tabla-nomina-container-huasteca-corte" hidden>
+            <div class="table-responsive-huasteca-corte">
+                <table class="table-nomina-huasteca-corte" id="tabla-nomina-corte">
                     <thead>
                         <tr>
                             <th rowspan="2">#</th>
@@ -248,7 +275,7 @@
                             <th rowspan="2">TOTAL<br>EFECTIVO</th>
                         </tr>
                     </thead>
-                    <tbody id="tabla-body-corte-pilar">
+                    <tbody id="tabla-body-corte-huasteca">
                         <!-- Filas de la tabla se generarán dinámicamente -->
                     </tbody>
 
@@ -262,33 +289,14 @@
     <div id="context-menu" style="position:absolute;z-index:10000;display:none;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);padding:4px;">
         <div class="cm-item" data-action="ver" style="padding:6px 12px;cursor:pointer;">Ver detalles</div>
     </div>
-    <!-- Menú contextual simple para la tabla de corte -->
+    <!-- Menú contextual simple para la tabla de corte 
     <div id="context_menu_corte" style="position:absolute;z-index:10000;display:none;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);padding:4px;">
         <div class="cm_item_corte" data-action="ver" style="padding:6px 12px;cursor:pointer;">🔎​ Ver detalles</div>
     </div>
-
+-->
 
     <!-- Incluir los modales -->
-    <?php include "modalCoordinador.php"; ?>
-    <?php include "modalJornaleros.php"; ?>
-    <?php include "modalTipoDia.php"; ?>
-    <?php include "biometricoModal.php"; ?>
-    <?php include "modalSeleccionarEmpleados.php"; ?>
-    <?php include "modalTardeadaPasaje.php"; ?>
-    <?php include "modalDiasInhabiles.php"; ?>
-    <?php include "modalQuitarComidaPasaje.php"; ?>
-    <?php include "modalConceptosTotales.php"; ?>
-    <?php include "modalExportarNomina.php"; ?>
-    <?php include "modalSeleccionarEmpleados.php"; ?>
 
-    <?php include "modal_seleccion_tickets_pilar.php"; ?>
-    <?php include "modal_ticket_manual_pilar.php"; ?>
-
-
-    <!-- Modal para los cortes -->
-    <?php include "modalCorte.php"; ?>
-    <?php include "modalCorteNominaEditar.php"; ?>
-    <?php include "modalCorteEditar.php"; ?>
 
 
 
@@ -300,51 +308,13 @@
     <!-- Bootstrap JS -->
     <script src="<?= BOOTSTRAP_JS ?>"></script>
     <!-- Archivo JS específico -->
-    <script src="../js/process_excel.js"></script>
-    <script src="../js/showDataTable.js"></script>
+    <script src="../js/accesoSinListaRaya/createEstructuraNomina.js"></script>
     <script src="../js/configComponentes.js"></script>
-    <script src="../js/saveGetNomina.js"></script>
-    <script src="../js/busquedaFiltrado.js"></script>
     <script src="../js/storage.js"></script>
+    <script src="../js/showDataTable.js"></script>
+    <script src="../js/busquedaFiltrado.js"></script>
+
     <script src="../js/configModalJornaleros/sueldoSemanal.js"></script>
-    <script src="../js/abrirModal.js"></script>
-    <script src="../js/configModalCoordinador/establecerData.js"></script>
-    <script src="../js/configModalCoordinador/configModal.js"></script>
-    <script src="../js/configModalCoordinador/editarData.js"></script>
-    <script src="../js/configModalCoordinador/newConcepts.js"></script>
-    <script src="../js/configModalCoordinador/eventos.js"></script>
-    <script src="../js/configModalJornaleros/establecerData.js"></script>
-    <script src="../js/configModalJornaleros/editarData.js"></script>
-    <script src="../js/configModalJornaleros/configModal.js"></script>
-    <script src="../js/configModalJornaleros/sueldoSemanal.js"></script>
-    <script src="../js/configModalJornaleros/eventos.js"></script>
-    <script src="../js/configModalJornaleros/newConcepts.js"></script>
-    <script src="../js/configModalCoordinador/justificacionCoordinador.js"></script>
-    <script src="../js/tardeadaPasaje.js"></script>
-    <script src="../js/actualizarBiomtrico.js"></script>
-    <script src="../js/seleccionar_empleados.js"></script>
-    <script src="../js/conceptos_totales.js"></script>
-    <script src="../js/exportarNominaExcel.js"></script>
-    <script src="../js/ticket_pdf.js"></script>
-
-    <script src="../js/ticket_pdf.js"></script>
-    <script src="../js/ticket_seleccion_pilar.js"></script>
-
-
-      <!--  
-    <script src="../js/ticket_manual_pilar.js"></script>
-    <script src="../js/ticket_pdf.js"></script>
-    <script src="../js/ticket_seleccion_pilar.js"></script>
-
-  
-    <script src="../js/ticket_manual.js"></script>
-    <script src="../js/ticket_pdf.js"></script>
-    <script src="../js/ticket_seleccion_pilar.js"></script>
-    -->
-
-    <script src="../js/configModalCorte/configCorte.js"></script>
-    <script src="../js/configModalCorte/showTablaCorte.js"></script>
-    <script src="../js/configModalCorte/abrirModalDetallesCorte.js"></script>
 
 
 

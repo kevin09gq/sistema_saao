@@ -1,24 +1,19 @@
-if (typeof paginaActualNomina === 'undefined') {
-    var paginaActualNomina = 1;
-}
-
-function mostrarDatosTabla(jsonNomina40lbs, pagina = 1) {
+function mostrarDatosTabla(jsonNominaHuasteca, pagina = 1) {
     const empleadosPorPagina = 7;
 
     // Obtener todos los empleados de todos los departamentos o solo del departamento especificado
     let todosEmpleados = [];
-    jsonNomina40lbs.departamentos.forEach(depto => {
+    jsonNominaHuasteca.departamentos.forEach(depto => {
         // Si se especifica un departamento, solo procesar ese departamento
 
-        // Filtrar solo empleados con mostrar=true
-        const empleadosFiltrados = depto.empleados.filter(emp => emp.mostrar !== false);
+        // Filtrar solo empleados con mostrar=true y agregar nombre del departamento
+        const empleadosFiltrados = depto.empleados
+            .filter(emp => emp.mostrar !== false)
+            .map(emp => ({ ...emp, departamento: depto.nombre }));
         todosEmpleados = todosEmpleados.concat(empleadosFiltrados);
     });
 
-    // Ordenar todos los empleados A→Z por apellido paterno (sin modificar el JSON original)
-    todosEmpleados.sort((a, b) => {
-        return String(a.nombre || '').localeCompare(String(b.nombre || ''), 'es', { sensitivity: 'base' });
-    });
+
 
     // Calcular índices para la paginación
     const inicio = (pagina - 1) * empleadosPorPagina;
@@ -26,13 +21,13 @@ function mostrarDatosTabla(jsonNomina40lbs, pagina = 1) {
     const empleadosPagina = todosEmpleados.slice(inicio, fin);
 
     // Limpiar la tabla
-    $('#tabla-nomina-body-40lbs').empty();
+    $('#tabla-nomina-body-huasteca').empty();
 
     // Mostrar empleados de la página actual
     empleadosPagina.forEach((empleado, index) => {
         const numeroFila = inicio + index + 1;
 
-        // Función para buscar concepto por código (segura si no existe 'conceptos')
+        /*Función para buscar concepto por código (segura si no existe 'conceptos')
         const buscarConcepto = (codigo) => {
             if (!Array.isArray(empleado.conceptos)) return '0.00';
             const concepto = empleado.conceptos.find(c => String(c.codigo) === String(codigo));
@@ -42,6 +37,8 @@ function mostrarDatosTabla(jsonNomina40lbs, pagina = 1) {
             }
             return '0.00';
         };
+        */
+
 
         // Función para formatear valores (mostrar — si es 0.00)
         // alwaysNegative: si true, forzar visualmente el signo negativo aunque el valor sea positivo
@@ -57,74 +54,75 @@ function mostrarDatosTabla(jsonNomina40lbs, pagina = 1) {
         };
 
         // Calcular Total Percepciones
-        const totalPercepciones = calcularTotalPercepciones(empleado);
+        //const totalPercepciones = calcularTotalPercepciones(empleado);
 
         // Calcular Total Deducciones
-        const totalDeducciones = calcularTotalDeducciones(empleado);
+       // const totalDeducciones = calcularTotalDeducciones(empleado);
 
-        // Calcular Neto a Recibir
-        const totalNetoRecibir = (parseFloat(totalPercepciones) - parseFloat(totalDeducciones)).toFixed(2);
+        // Calcular Neto a Recibir 
+        //const totalNetoRecibir = (parseFloat(totalPercepciones) - parseFloat(totalDeducciones)).toFixed(2);
 
-        // Calcular importe en efectivo: totalCobrar - DISPERSION DE TARJETA (empleado.tarjeta)
-        const tarjetaVal = parseFloat(empleado.tarjeta) || 0;
-        const importeEfectivo = (parseFloat(totalNetoRecibir) || 0) - tarjetaVal;
+        // Calcular Importe Efectivo 
+        //const tarjetaVal = parseFloat(empleado.tarjeta) || 0;
+        //const importeEfectivo = (parseFloat(totalNetoRecibir) || 0) - tarjetaVal;
 
         //Calcular TOTAL A RECIBIR
-        const totalARecibir = importeEfectivo - (parseFloat(empleado.prestamo) || 0);
-
+        //const totalRecibir = importeEfectivo - (parseFloat(empleado.prestamo) || 0);
 
         // Calcular Total a Cobrar
-        const totalCobrar = calcularTotalCobrar(empleado);
+        //const totalCobrar = calcularTotalCobrar(empleado);
+
+
 
 
         const fila = `
-            <tr data-clave="${empleado.clave || 'N/A'}" data-id-empresa="${empleado.id_empresa || 1}">
+            <tr data-clave="${empleado.clave || 'N/A'}" data-id-empresa="${empleado.id_empresa || 1}" data-id-departamento="${empleado.id_departamento || 0}">
                 <td>${numeroFila}</td>
                 <td>${empleado.nombre}</td>
-                <td>${formatearValor(empleado.sueldo_neto || 0)}</td>
-                <td>${formatearValor(empleado.incentivo || 0)}</td>
-                <td>${formatearValor(empleado.sueldo_extra_total || 0)}</td>               
-                <td>${formatearValor(totalPercepciones)}</td>
+                <td>${formatearValor(empleado.salario_semanal || 0)}</td>
+                <td>${formatearValor(empleado.pasaje || 0)}</td>
+                <td>${formatearValor(empleado.comida || 0)}</td>
+                <td>${formatearValor(empleado.sueldo_extra_total || 0)}</td>  
+                <td></td>             
 
                 <!-- Deducciones individuales -->
-                <td>${formatearValor(buscarConcepto('45'), true)}</td> <!-- ISR -->
-                <td>${formatearValor(buscarConcepto('52'), true)}</td> <!-- IMSS -->
-                <td>${formatearValor(buscarConcepto('16'), true)}</td> <!-- INFONAVIT -->
-                <td>${formatearValor(buscarConcepto('107'), true)}</td> <!-- AJUSTES AL SUB -->
+                <td></td> <!-- ISR -->
+                <td></td> <!-- IMSS -->
+                <td></td> <!-- INFONAVIT -->
+                <td></td> <!-- AJUSTES AL SUB -->
 
                 <td>${formatearValor(empleado.inasistencia || 0, true)}</td> <!-- AUSENTISMO -->
                 <td>${formatearValor(empleado.permiso || 0, true)}</td> <!-- PERMISO -->
+                <td>${formatearValor(empleado.retardos || 0, true)}</td> <!-- RETARDOS -->
                 <td>${formatearValor(empleado.uniformes || 0, true)}</td> <!-- UNIFORMES -->
                 <td>${formatearValor(empleado.checador || 0, true)}</td> <!-- CHECADOR -->
                 <td>${formatearValor(empleado.fa_gafet_cofia || 0, true)}</td> <!-- F.A/GAFET/COFIA -->
 
-                <td>${formatearValor(totalDeducciones, true)}</td> <!-- TOTAL DEDUCCIONES -->
-                <td>${formatearValor(totalNetoRecibir || 0)}</td> <!-- NETO A RECIBIR -->
+                <td></td> <!-- TOTAL DEDUCCIONES -->
+                <td></td> <!-- NETO A RECIBIR -->
                 <td>${formatearValor(empleado.tarjeta || 0, true)}</td> <!-- DISPERSION DE TARJETA -->
-                <td>${formatearValor(importeEfectivo || 0)}</td> <!-- IMPORTE EN EFECTIVO -->
-                <td>${formatearValor(empleado.prestamo || 0, true)}</td> <!-- PRÉSTAMO -->
-
-                <!-- TOTAL A RECIBIR -->
-                <td>$${formatearValor(totalARecibir || 0)}</td>
-
+                <td></td> <!-- IMPORTE EN EFECTIVO -->
+                <td>${formatearValor(empleado.prestamo || 0, true)}</td> <!-- PRÉSTAMO -->        
+                <td></td>  <!-- TOTAL A RECIBIR -->
+                
                 <!-- REDONDEADO -->
-                <td class="${parseFloat(empleado.redondeo) < 0 ? 'redondeo-negativo' : 'redondeo-positivo'}">${formatearValor(empleado.redondeo || 0)}</td>
+                <td></td>
                
                 <!-- TOTAL EFECTIVO REDONDEADO -->
-                <td class="${totalCobrar < 0 ? 'sueldo-negativo' : ''}"><strong>${formatearValor(totalCobrar)}</strong></td>
+                <td></td>
              
             </tr>
         `;
-        $('#tabla-nomina-body-40lbs').append(fila);
+        $('#tabla-nomina-body-huasteca').append(fila);
     });
 
     // Crear la paginación
-    paginarTabla(jsonNomina40lbs, todosEmpleados.length, pagina, empleadosPorPagina);
+    paginarTabla(jsonNominaHuasteca, todosEmpleados.length, pagina, empleadosPorPagina);
 }
 
 
 
-function paginarTabla(jsonNomina40lbs, totalEmpleados, paginaActual, empleadosPorPagina) {
+function paginarTabla(jsonNominaHuasteca, totalEmpleados, paginaActual, empleadosPorPagina) {
     // Calcular total de páginas
     const totalPaginas = Math.ceil(totalEmpleados / empleadosPorPagina);
 
@@ -164,75 +162,17 @@ function paginarTabla(jsonNomina40lbs, totalEmpleados, paginaActual, empleadosPo
         e.preventDefault();
         const nuevaPagina = parseInt($(this).data('pagina'));
         paginaActualNomina = nuevaPagina; // Guardar la página actual
-        mostrarDatosTabla(jsonNomina40lbs, nuevaPagina);
+        mostrarDatosTabla(jsonNominaHuasteca, nuevaPagina);
     });
 }
 
-// Función para filtrar empleados por id_departamento y opcionalmente por seguroSocial
-function filtrarEmpleadosPorDepartamento(jsonNomina, idDepartamento, seguroSocial = true) {
-    let jsonFiltrado = {
-        departamentos: []
-    };
-
-    if (jsonNomina && jsonNomina.departamentos) {
-        jsonNomina.departamentos.forEach(depto => {
-            let empleadosFiltrados = depto.empleados.filter(emp => {
-                // Filtrar por id_departamento
-                if (emp.id_departamento !== idDepartamento) {
-                    return false;
-                }
-                // Filtrar por seguroSocial si se proporciona el parámetro
-                if (seguroSocial !== null && emp.seguroSocial !== seguroSocial) {
-                    return false;
-                }
-                return true;
-            });
-
-            let deptoFiltrado = {
-                nombre: depto.nombre,
-                empleados: empleadosFiltrados
-            };
-
-            // Solo agregar departamento si tiene empleados después del filtro
-            if (deptoFiltrado.empleados.length > 0) {
-                jsonFiltrado.departamentos.push(deptoFiltrado);
-            }
-        });
-    }
-
-    return jsonFiltrado;
-}
-
-function refrescarTabla() {
-    const valorSelect = $('#filtro-departamento').val() || '1';
-    let idDepartamento = null;
-    let seguroSocial = null;
-
-    // Mapear valor del select a parámetros de filtro
-    if (valorSelect === '1') {
-        idDepartamento = 4;
-        seguroSocial = true;
-    } else if (valorSelect === '2') {
-        idDepartamento = 4;
-        seguroSocial = false;
-    } else if (valorSelect === '3') {
-        idDepartamento = 5;
-        seguroSocial = true;
-    } else if (valorSelect === '4') {
-        idDepartamento = 5;
-        seguroSocial = false;
-    }
-
-    // Aplicar filtro y mostrar tabla con página actual
-    const jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNomina40lbsOriginal || jsonNomina40lbs, idDepartamento, seguroSocial);
-    mostrarDatosTabla(jsonFiltrado, paginaActualNomina);
-}
-
 function calcularTotalPercepciones(empleado) {
-    const sueldoNeto = parseFloat(empleado.sueldo_neto || 0);
+    const sueldo = parseFloat(empleado.salario_semanal || 0);
     const extras = parseFloat(empleado.sueldo_extra_total || 0);
-    const incentivo = parseFloat(empleado.incentivo || 0);
-    return (sueldoNeto + extras + incentivo);
+    const pasaje = parseFloat(empleado.pasaje || 0);
+    const comida = parseFloat(empleado.comida || 0);
+
+    return (sueldo + pasaje + comida + extras);
 }
 
 // Función para calcular Total Deducciones
@@ -244,7 +184,7 @@ function calcularTotalDeducciones(empleado) {
         return concepto ? (parseFloat(concepto.resultado) || 0) : 0;
     };
 
-
+    const retardos = parseFloat(empleado.retardos) || 0;
     const isr = buscarConcepto('45');
     const imss = buscarConcepto('52');
     const ajusteSub = buscarConcepto('107');
@@ -257,7 +197,7 @@ function calcularTotalDeducciones(empleado) {
 
 
 
-    const total = isr + imss + ajusteSub + infonavit + permiso + inasistencias + uniformes + checador + faGafetCofia;
+    const total = retardos + isr + imss + ajusteSub + infonavit + permiso + inasistencias + uniformes + checador + faGafetCofia;
     return total.toFixed(2);
 }
 

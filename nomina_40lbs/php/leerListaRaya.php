@@ -48,7 +48,7 @@ foreach ($rows as $row) {
                 $departamentos[] = $actualDepto;
             }
             
-            $nombreCompleto = trim($match[1] . ' ' . $match[2]);
+            $nombreCompleto = trim($match[2]);
             $actualDepto = [
                 'nombre' => $nombreCompleto,
                 'empleados' => []

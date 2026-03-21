@@ -1,26 +1,27 @@
-mostrarEstructuraPercepciones40lbs();
-eliminarPercepcionExtra40lbs();
-mostrarEstructuraDeducciones40lbs();
-eliminarDeduccionExtra40lbs();
-guardarInasistenciaManual();
-eliminarInasistenciaManual();
-editarOlvidoChecador();
-guardarPermisoManual();
-eliminarPermisoManual();
-guardarUniformeManual();
-eliminarUniformeManual();
+mostrarEstructuraPercepcionesJornaleros();
+eliminarPercepcionExtraJornalero();
+mostrarEstructuraDeduccionesJornaleros();
+eliminarDeduccionExtraJornalero();
+
+editarOlvidoChecadorJornalero();
+
+guardarPermisoManualJornalero();
+eliminarPermisoManualJornalero();
+
+guardarUniformeManualJornalero();
+eliminarUniformeManualJornalero();
 
 /************************************
  * AGREGAR PERCEPCIONES ADICIONALES
  ************************************/
 
 // Función para mostrar la estructura de percepciones adicionales en la interfaz
-function mostrarEstructuraPercepciones40lbs() {
+function mostrarEstructuraPercepcionesJornaleros() {
     // Agregar percepciones adicionales
-    $("#btn-agregar-percepcion-40lbs").click(function (e) {
+    $("#btn-agregar-percepcion-jornalero").click(function (e) {
         e.preventDefault();
 
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoJornalero.getEmpleado();
 
         // Si no hay empleado, salir
         if (!empleado) {
@@ -46,21 +47,21 @@ function mostrarEstructuraPercepciones40lbs() {
     `;
 
         // Agregar el nuevo concepto al contenedor
-        $('#contenedor-conceptos-adicionales-40lbs').append(nuevoConcepto);
+        $('#contenedor-conceptos-adicionales-jornalero').append(nuevoConcepto);
 
         // Agregar evento change para guardar cambios
-        $('#contenedor-conceptos-adicionales-40lbs').find('.percepcion-extra-item').last().find('input').on('change', function () {
-            guardarPercepcionesExtra40lbs(empleado);
+        $('#contenedor-conceptos-adicionales-jornalero').find('.percepcion-extra-item').last().find('input').on('change', function () {
+            guardarPercepcionesExtraJornalero(empleado);
         });
 
     });
 }
 
 // Función para mostrar las percepciones adicionales existentes de un empleado en el modal
-function mostrarPercepcionesExtras40lbs(empleado) {
+function mostrarPercepcionesExtrasJornalero(empleado) {
 
     // Limpiar el contenedor de percepciones adicionales
-    $('#contenedor-conceptos-adicionales-40lbs').empty();
+    $('#contenedor-conceptos-adicionales-jornalero').empty();
 
     // Si existen percepciones adicionales, mostrarlas
     if (empleado.percepciones_extra && Array.isArray(empleado.percepciones_extra) && empleado.percepciones_extra.length > 0) {
@@ -84,18 +85,18 @@ function mostrarPercepcionesExtras40lbs(empleado) {
             `;
 
             // Agregar el elemento al contenedor
-            $('#contenedor-conceptos-adicionales-40lbs').append(htmlPercepcion);
+            $('#contenedor-conceptos-adicionales-jornalero').append(htmlPercepcion);
 
             // Agregar evento change para actualizar
-            $('#contenedor-conceptos-adicionales-40lbs').find('.percepcion-extra-item').last().find('input').on('change', function () {
-                guardarPercepcionesExtra40lbs(empleado);
+            $('#contenedor-conceptos-adicionales-jornalero').find('.percepcion-extra-item').last().find('input').on('change', function () {
+                guardarPercepcionesExtraJornalero(empleado);
             });
         });
     }
 }
 
 // Función para guardar las percepciones adicionales en el objeto empleado
-function guardarPercepcionesExtra40lbs(empleado) {
+function guardarPercepcionesExtraJornalero(empleado) {
     // Si no hay empleado, salir
     if (!empleado) return;
 
@@ -104,7 +105,7 @@ function guardarPercepcionesExtra40lbs(empleado) {
 
 
     // Iterar sobre todos los elementos de percepción
-    $('#contenedor-conceptos-adicionales-40lbs').find('.percepcion-extra-item').each(function () {
+    $('#contenedor-conceptos-adicionales-jornalero').find('.percepcion-extra-item').each(function () {
         const nombre = $(this).find('.nombre-percepcion').val().trim();
         const cantidad = parseFloat($(this).find('.cantidad-percepcion').val()) || 0;
 
@@ -120,10 +121,10 @@ function guardarPercepcionesExtra40lbs(empleado) {
 }
 
 // Función para eliminar una percepción adicional del empleado
-function eliminarPercepcionExtra40lbs() {
+function eliminarPercepcionExtraJornalero() {
     // Delegación de eventos para eliminar percepciones
-    $("#contenedor-conceptos-adicionales-40lbs").on('click', '.btn-eliminar-percepcion', function () {
-        const empleado = objEmpleado.getEmpleado();
+    $("#contenedor-conceptos-adicionales-jornalero").on('click', '.btn-eliminar-percepcion', function () {
+        const empleado = objEmpleadoJornalero.getEmpleado();
 
         // Si no hay empleado, salir
         if (!empleado) return;
@@ -133,22 +134,23 @@ function eliminarPercepcionExtra40lbs() {
         if (!$elemento || $elemento.length === 0) return;
 
         $elemento.remove();
-        guardarPercepcionesExtra40lbs(empleado);
-        calcularTotalPercepcionesEnTiempoReal();
+        guardarPercepcionesExtraJornalero(empleado);
+        calcularTotalPercepcionesEnTiempoRealJornalero();
     });
 }
+
 
 /************************************
  * AGREGAR DEDUCCIONES ADICIONALES
  ************************************/
 
 // Función para mostrar la estructura de deducciones adicionales en la interfaz
-function mostrarEstructuraDeducciones40lbs() {
+function mostrarEstructuraDeduccionesJornaleros() {
     // Agregar deducciones adicionales
-    $("#btn-agregar-deduccion-40lbs").click(function (e) {
+    $("#btn-agregar-deduccion-jornalero").click(function (e) {
         e.preventDefault();
 
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoJornalero.getEmpleado();
 
         // Si no hay empleado, salir
         if (!empleado) return;
@@ -172,24 +174,24 @@ function mostrarEstructuraDeducciones40lbs() {
     `;
 
         // Agregar la nueva deducción al contenedor
-        $('#contenedor-deducciones-adicionales-40lbs').append(nuevaDeduccion);
+        $('#contenedor-deducciones-adicionales-jornalero').append(nuevaDeduccion);
 
         // Agregar evento change para guardar cambios
-        $('#contenedor-deducciones-adicionales-40lbs').find('.deduccion-extra-item').last().find('input').on('change', function () {
-            guardarDeduccionesExtra40lbs(empleado);
+        $('#contenedor-deducciones-adicionales-jornalero').find('.deduccion-extra-item').last().find('input').on('change', function () {
+            guardarDeduccionesExtraJornalero(empleado);
         });
 
     });
 }
 
 // Función para mostrar las deducciones adicionales existentes de un empleado en el modal
-function mostrarDeduccionesExtras40lbs(empleado) {
+function mostrarDeduccionesExtrasJornalero(empleado) {
 
     // Si no hay empleado, salir
     if (!empleado) return;
 
     // Limpiar el contenedor de deducciones adicionales
-    $('#contenedor-deducciones-adicionales-40lbs').empty();
+    $('#contenedor-deducciones-adicionales-jornalero').empty();
 
     // Si existen deducciones adicionales, mostrarlas
     if (empleado.deducciones_extra && Array.isArray(empleado.deducciones_extra) && empleado.deducciones_extra.length > 0) {
@@ -210,18 +212,18 @@ function mostrarDeduccionesExtras40lbs(empleado) {
                 </div>
             </div>
         `;
-            $('#contenedor-deducciones-adicionales-40lbs').append(elementoDeduccion);
+            $('#contenedor-deducciones-adicionales-jornalero').append(elementoDeduccion);
 
             // Agregar evento change para actualizar
-            $('#contenedor-deducciones-adicionales-40lbs').find('.deduccion-extra-item').last().find('input').on('change', function () {
-                guardarDeduccionesExtra40lbs(empleado);
+            $('#contenedor-deducciones-adicionales-jornalero').find('.deduccion-extra-item').last().find('input').on('change', function () {
+                guardarDeduccionesExtraJornalero(empleado);
             });
         });
     }
 }
 
 // Función para guardar las deducciones adicionales en el objeto empleado
-function guardarDeduccionesExtra40lbs(empleado) {
+function guardarDeduccionesExtraJornalero(empleado) {
     // Si no hay empleado, salir
     if (!empleado) return;
 
@@ -229,7 +231,7 @@ function guardarDeduccionesExtra40lbs(empleado) {
     empleado.deducciones_extra = [];
 
     // Iterar sobre todos los elementos de deducción
-    $('#contenedor-deducciones-adicionales-40lbs').find('.deduccion-extra-item').each(function () {
+    $('#contenedor-deducciones-adicionales-jornalero').find('.deduccion-extra-item').each(function () {
         const nombre = $(this).find('.nombre-deduccion').val().trim();
         const cantidad = parseFloat($(this).find('.cantidad-deduccion').val()) || 0;
 
@@ -244,10 +246,10 @@ function guardarDeduccionesExtra40lbs(empleado) {
 }
 
 // Función para eliminar una deducción adicional del empleado
-function eliminarDeduccionExtra40lbs() {
+function eliminarDeduccionExtraJornalero() {
     // Delegación de eventos para eliminar deducciones
-    $("#contenedor-deducciones-adicionales-40lbs").on('click', '.btn-eliminar-deduccion', function () {
-        const empleado = objEmpleado.getEmpleado();
+    $("#contenedor-deducciones-adicionales-jornalero").on('click', '.btn-eliminar-deduccion', function () {
+        const empleado = objEmpleadoJornalero.getEmpleado();
 
         // Si no hay empleado, salir
         if (!empleado) return;
@@ -257,112 +259,22 @@ function eliminarDeduccionExtra40lbs() {
         if (!$elemento || $elemento.length === 0) return;
 
         $elemento.remove();
-        guardarDeduccionesExtra40lbs(empleado);
-        calcularTotalDeduccionesEnTiempoReal();
+        guardarDeduccionesExtraJornalero(empleado);
+        calcularTotalDeduccionesEnTiempoRealJornalero();
     });
 }
-
-/************************************
- * AGREGAR INASISTENCIAS MANUALES
- ************************************/
-
-// Función para guardar inasistencia manual en el historial
-function guardarInasistenciaManual() {
-    $("#btn-agregar-inasistencia-40lbs").click(function (e) {
-        e.preventDefault();
-
-        const empleado = objEmpleado.getEmpleado();
-
-        // Si no hay empleado, salir
-        if (!empleado) {
-            return;
-        }
-
-        // Obtener valores del formulario
-        const dia = $('#select-dia-inasistencia-40lbs').val().trim();
-        const descuento = parseFloat($('#input-descuento-inasistencia-40lbs').val()) || 0;
-
-        // Validar que tenga día
-        if (!dia) {
-            alert('Por favor selecciona un día');
-            return;
-        }
-
-        // Inicializar historial si no existe
-        if (!Array.isArray(empleado.historial_inasistencias)) {
-            empleado.historial_inasistencias = [];
-        }
-
-        // Agregar nueva inasistencia manual
-        empleado.historial_inasistencias.push({
-            dia: dia,
-            descuento_inasistencia: descuento,
-            tipo: 'manual'
-        });
-
-        // Limpiar formulario
-        $('#select-dia-inasistencia-40lbs').val('');
-        $('#input-descuento-inasistencia-40lbs').val('0.00');
-
-        // Calcular y actualizar el total de inasistencias
-        const totalInasistencias = empleado.historial_inasistencias.reduce((sum, i) => {
-            return sum + (parseFloat(i.descuento_inasistencia) || 0);
-        }, 0);
-        $('#mod-inasistencias-40lbs').val(totalInasistencias.toFixed(2));
-
-        empleado.inasistencia = totalInasistencias;
-        establecerHistorialInasistencias(empleado);
-    calcularSueldoACobrar();
-
-    });
-}
-
-/************************************
- * ELIMINAR INASISTENCIAS MANUALES
- ************************************/
-
-// Función para eliminar inasistencia manual del historial
-function eliminarInasistenciaManual() {
-    const $contenedor = $('#contenedor-historial-inasistencias-40lbs');
-
-    // Delegación de eventos para eliminar inasistencias manuales
-    $contenedor.on('click', '.btn-eliminar-inasistencia-manual', function () {
-        const empleado = objEmpleado.getEmpleado();
-
-        // Si no hay empleado, salir
-        if (!empleado) return;
-
-        const index = $(this).data('index');
-
-        // Eliminar la inasistencia del array
-        empleado.historial_inasistencias.splice(index, 1);
-
-        // Calcular y actualizar el total de inasistencias
-        const totalInasistencias = empleado.historial_inasistencias.reduce((sum, i) => {
-            return sum + (parseFloat(i.descuento_inasistencia) || 0);
-        }, 0);
-        $('#mod-inasistencias-40lbs').val(totalInasistencias.toFixed(2));
-        empleado.inasistencia = totalInasistencias;
-
-        // Actualizar la tabla
-        establecerHistorialInasistencias(empleado);
-        calcularSueldoACobrar();
-
-    });
-}
-
 
 /************************************
  * EDITAR HISTORIAL CHECADOR MANUALES
  ************************************/
 
 // Función para editar el descuento de un olvido en el historial
-function editarOlvidoChecador() {
-    const $contenedor = $('#contenedor-historial-olvidos');
+function editarOlvidoChecadorJornalero() {
+    const $contenedor = $('#contenedor-historial-olvidos-jornaleros');
 
     $contenedor.off('click', '.btn-editar-olvido');
     $contenedor.on('click', '.btn-editar-olvido', function () {
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoJornalero.getEmpleado();
         if (!empleado) return;
 
         const indice = $(this).data('index');
@@ -385,23 +297,23 @@ function editarOlvidoChecador() {
 
         // Botón confirmar
         celdaDescuento.find('.btn-confirmar-olvido').on('click', function () {
-            guardarDescuentoOlvido(inputNuevo, olvido, empleado);
+            guardarDescuentoOlvidoJornalero(inputNuevo, olvido, empleado);
         });
 
         // Botón cancelar
         celdaDescuento.find('.btn-cancelar-olvido').on('click', function () {
-            establecerHistorialChecador(empleado);
+            establecerHistorialChecadorJornalero(empleado);
         });
     });
 }
 
 // Función para guardar el descuento del olvido editado
-function guardarDescuentoOlvido(inputElement, olvidoObject, empleadoObject) {
+function guardarDescuentoOlvidoJornalero(inputElement, olvidoObject, empleadoObject) {
     const raw = inputElement.val();
 
     // Si está vacío, cancelar edición y mantener valor anterior
     if (raw === null || raw.trim() === '') {
-        establecerHistorialChecador(empleadoObject);
+        establecerHistorialChecadorJornalero(empleadoObject);
         return;
     }
 
@@ -409,7 +321,7 @@ function guardarDescuentoOlvido(inputElement, olvidoObject, empleadoObject) {
     // Validar número (permitir 0)
     if (isNaN(valorNuevo) || valorNuevo < 0) {
         alert('Por favor ingresa un valor válido');
-        establecerHistorialChecador(empleadoObject);
+        establecerHistorialChecadorJornalero(empleadoObject);
         return;
     }
 
@@ -422,10 +334,11 @@ function guardarDescuentoOlvido(inputElement, olvidoObject, empleadoObject) {
         suma + (parseFloat(item.descuento_olvido) || 0), 0);
 
     empleadoObject.checador = total;
-    $('#mod-checador-40lbs').val(total.toFixed(2));
-    establecerHistorialChecador(empleadoObject);
-     calcularSueldoACobrar();
+    $('#mod-checador-jornalero').val(total.toFixed(2));
+    establecerHistorialChecadorJornalero(empleadoObject);
+    calcularSueldoACobrarJornalero();
 }
+
 
 
 /************************************
@@ -433,16 +346,23 @@ function guardarDescuentoOlvido(inputElement, olvidoObject, empleadoObject) {
  ************************************/
 
 // Función para guardar permiso manual en el historial
-function guardarPermisoManual() {
+function guardarPermisoManualJornalero() {
+    // Función para recalcular descuento en tiempo real
+    function recalcularDescuentoPermiso() {
+        const minutos = parseInt($('#input-minutos-permiso-jornalero').val()) || 0;
+        const costoMinuto = parseFloat($('#input-costo-minuto-permiso-jornalero').val()) || 0;
+        const descuento = minutos * costoMinuto;
+        $('#input-descuento-permiso-jornalero').val(descuento.toFixed(2));
+    }
 
     // Agregar eventos de input para cálculo en tiempo real
-    $('#input-minutos-permiso-40lbs').on('input', recalcularDescuentoPermiso);
-    $('#input-costo-minuto-permiso-40lbs').on('input', recalcularDescuentoPermiso);
+    $('#input-minutos-permiso-jornalero').on('input', recalcularDescuentoPermiso);
+    $('#input-costo-minuto-permiso-jornalero').on('input', recalcularDescuentoPermiso);
 
-    $("#btn-agregar-permiso-40lbs").click(function (e) {
+    $("#btn-agregar-permiso-jornalero").click(function (e) {
         e.preventDefault();
 
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoJornalero.getEmpleado();
 
         // Si no hay empleado, salir
         if (!empleado) {
@@ -450,9 +370,9 @@ function guardarPermisoManual() {
         }
 
         // Obtener valores del formulario
-        const dia = $('#select-dia-permiso-40lbs').val().trim();
-        const minutos = parseInt($('#input-minutos-permiso-40lbs').val()) || 0;
-        const costoMinuto = parseFloat($('#input-costo-minuto-permiso-40lbs').val()) || 0;
+        const dia = $('#select-dia-permiso-jornalero').val().trim();
+        const minutos = parseInt($('#input-minutos-permiso-jornalero').val()) || 0;
+        const costoMinuto = parseFloat($('#input-costo-minuto-permiso-jornalero').val()) || 0;
         const descuento = minutos * costoMinuto;
 
         // Validar que tenga día
@@ -476,10 +396,10 @@ function guardarPermisoManual() {
         });
 
         // Limpiar formulario
-        $('#select-dia-permiso-40lbs').val('');
-        $('#input-minutos-permiso-40lbs').val('0');
-        $('#input-costo-minuto-permiso-40lbs').val('0.00');
-        $('#input-descuento-permiso-40lbs').val('0.00');
+        $('#select-dia-permiso-jornalero').val('');
+        $('#input-minutos-permiso-jornalero').val('0');
+        $('#input-costo-minuto-permiso-jornalero').val('0.00');
+        $('#input-descuento-permiso-jornalero').val('0.00');
 
         // Calcular y actualizar el total de permisos
         const totalPermisos = empleado.historial_permisos.reduce((sum, p) => {
@@ -487,30 +407,22 @@ function guardarPermisoManual() {
         }, 0);
 
         empleado.permiso = totalPermisos;
-        $('#mod-permisos-40lbs').val(totalPermisos.toFixed(2));
+        $('#mod-permisos-jornalero').val(totalPermisos.toFixed(2));
 
-        establecerHistorialPermisos(empleado);
-        calcularSueldoACobrar();
+        establecerHistorialPermisosJornalero(empleado);
+        calcularSueldoACobrarJornalero();
 
+        console.log('Permiso guardado:', empleado.historial_permisos);
     });
 }
 
-// Función para recalcular descuento en tiempo real
-function recalcularDescuentoPermiso() {
-    const minutos = parseInt($('#input-minutos-permiso-40lbs').val()) || 0;
-    const costoMinuto = parseFloat($('#input-costo-minuto-permiso-40lbs').val()) || 0;
-    const descuento = minutos * costoMinuto;
-    $('#input-descuento-permiso-40lbs').val(descuento.toFixed(2));
-}
-
-
 // Función para eliminar permiso manual del historial
-function eliminarPermisoManual() {
-    const $contenedor = $('#contenedor-historial-permisos-40lbs');
+function eliminarPermisoManualJornalero() {
+    const $contenedor = $('#contenedor-historial-permisos-jornalero');
 
     // Delegación de eventos para eliminar permisos manuales
     $contenedor.on('click', '.btn-eliminar-permiso-manual', function () {
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoJornalero.getEmpleado();
 
         // Si no hay empleado, salir
         if (!empleado) return;
@@ -525,12 +437,13 @@ function eliminarPermisoManual() {
             return sum + (parseFloat(p.descuento_permiso) || 0);
         }, 0);
         empleado.permiso = totalPermisos;
-        $('#mod-permisos-40lbs').val(totalPermisos.toFixed(2));
+        $('#mod-permisos-jornalero').val(totalPermisos.toFixed(2));
 
         // Actualizar la tabla
-        establecerHistorialPermisos(empleado);
-        calcularSueldoACobrar();
+        establecerHistorialPermisosJornalero(empleado);
+        calcularSueldoACobrarJornalero();
 
+        console.log('Permiso eliminado. Historial actualizado:', empleado.historial_permisos);
     });
 }
 
@@ -540,14 +453,14 @@ function eliminarPermisoManual() {
 // ----------------------------------
 
 // Función para guardar uniforme manual en el historial
-function guardarUniformeManual() {
-    $("#btn-agregar-uniforme-40lbs").click(function(e) {
+function guardarUniformeManualJornalero() {
+    $("#btn-agregar-uniforme-jornalero").click(function(e) {
         e.preventDefault();
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoJornalero.getEmpleado();
         if (!empleado) return;
 
-        const folio = $('#input-folio-uniforme-40lbs').val().trim();
-        const cantidad = parseInt($('#input-cantidad-uniforme-40lbs').val()) || 0;
+        const folio = $('#input-folio-uniforme-jornalero').val().trim();
+        const cantidad = parseInt($('#input-cantidad-uniforme-jornalero').val()) || 0;
         if (!folio) {
             alert('Por favor ingresa un folio');
             return;
@@ -564,34 +477,33 @@ function guardarUniformeManual() {
             cantidad: cantidad,
         });
 
-        $('#input-folio-uniforme-40lbs').val('');
-        $('#input-cantidad-uniforme-40lbs').val('0');
+        $('#input-folio-uniforme-jornalero').val('');
+        $('#input-cantidad-uniforme-jornalero').val('0');
 
         // recalcular total
         const total = empleado.historial_uniforme.reduce((s, u) => s + (parseInt(u.cantidad) || 0), 0);
-        $('#mod-uniforme-40lbs').val(total);
+        $('#mod-uniforme-jornalero').val(total);
         empleado.uniformes = total;
-        establecerHistorialUniforme(empleado);
-        calcularSueldoACobrar();
-       
+        establecerHistorialUniformeJornalero(empleado);
+        calcularSueldoACobrarJornalero();
+        console.log('Uniforme guardado', empleado.historial_uniforme);
     });
 }
 
 // Función para eliminar uniforme manual del historial
-function eliminarUniformeManual() {
-    const $contenedor = $('#contenedor-historial-uniforme-40lbs');
+function eliminarUniformeManualJornalero() {
+    const $contenedor = $('#contenedor-historial-uniforme-jornalero');
     $contenedor.on('click', '.btn-eliminar-uniforme-manual', function() {
-        const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleadoJornalero.getEmpleado();
         if (!empleado) return;
         const index = $(this).data('index');
         empleado.historial_uniforme.splice(index,1);
         const total = empleado.historial_uniforme.reduce((s, u) => s + (parseInt(u.cantidad) || 0), 0);
-        $('#mod-uniforme-40lbs').val(total);
+        $('#mod-uniforme-jornalero').val(total);
         empleado.uniformes = total;
-        establecerHistorialUniforme(empleado);
-        calcularSueldoACobrar();
+        establecerHistorialUniformeJornalero(empleado);
+        calcularSueldoACobrarJornalero();
         
     });
 }
-
 

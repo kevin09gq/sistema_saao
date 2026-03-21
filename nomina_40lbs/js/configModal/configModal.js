@@ -1,7 +1,9 @@
 alternarTablas();
 sumasAutomaticasPercepciones();
+sumasAutomaticasDeducciones();
 sumasAutomaticasConceptos();
 actualizarConceptos();
+aplicarTotalHistorial();
 // ========================================
 // ALTERNAR ENTRE TABLAS: BIOMÉTRICO Y HORARIOS OFICIALES
 // ========================================
@@ -76,6 +78,32 @@ function calcularTotalPercepcionesEnTiempoReal() {
 
     // Establecer el total en el campo
     $('#mod-total-extra-40lbs').val(totalExtras.toFixed(2));
+    calcularSueldoACobrar();
+}
+
+// ========================================
+// SUMAS AUTOMATICAS DEDUCCIONES EXTRA
+// ========================================
+
+function sumasAutomaticasDeducciones() {
+
+    // Evento cuando cambia una deducción extra
+    $(document).on('input', '.cantidad-deduccion', function () {
+        calcularTotalDeduccionesEnTiempoReal();
+    });
+}
+
+function calcularTotalDeduccionesEnTiempoReal() {
+
+    // Sumar todas las deducciones extras
+    let totalDeducciones = 0;
+    $('#contenedor-deducciones-adicionales-40lbs').find('.cantidad-deduccion').each(function () {
+        const cantidad = parseFloat($(this).val()) || 0;
+        totalDeducciones += cantidad;
+    });
+
+    $('#mod-fagafetcofia-40lbs').val(totalDeducciones.toFixed(2));
+    calcularSueldoACobrar();
 }
 
 
@@ -103,7 +131,7 @@ function calcularTotalConceptosEnTiempoReal() {
 
     // Actualizar el total en el campo readonly
     $('#mod-total-conceptos-40lbs').val(totalConceptos.toFixed(2));
-    //calcularSueldoACobrarJornalero();
+    calcularSueldoACobrar();
 }
 
 // ========================================
@@ -168,8 +196,6 @@ function actualizarConceptos() {
 
         const copia = Array.isArray(empleado.conceptos_copia) ? empleado.conceptos_copia.find(c => String(c.codigo) === '16') : null;
         if (!copia) {
-            console.log("no");
-            
             return;
         }
 
@@ -210,9 +236,9 @@ function actualizarConceptos() {
         calcularTotalConceptosEnTiempoReal();
     });
 
- 
+
     $(document).on('click', '#btn-aplicar-tarjeta-40lbs', function () {
-       const empleado = objEmpleado.getEmpleado();
+        const empleado = objEmpleado.getEmpleado();
 
         // Si no hay empleado, salir
         if (!empleado) return;
@@ -226,7 +252,7 @@ function actualizarConceptos() {
         empleado.tarjeta = copiaTarjeta;
         // Actualizar input del modal
         $('#mod-tarjeta-40lbs').val(copiaTarjeta);
-        //calcularSueldoACobrar();
+        calcularSueldoACobrar();
     });
 }
 
@@ -253,7 +279,7 @@ function validarConceptoMax(inputSelector, codigo) {
     });
 }
 function validarConceptoMaxTarjeta() {
-       $(document).on('input', '#mod-tarjeta-40lbs', function () {
+    $(document).on('input', '#mod-tarjeta-40lbs', function () {
         const empleado = objEmpleado.getEmpleado();
 
         // Si no hay empleado, salir
@@ -276,4 +302,132 @@ validarConceptoMax('#mod-imss-40lbs', '52');
 validarConceptoMax('#mod-infonavit-40lbs', '16');
 validarConceptoMax('#mod-ajustes-sub-40lbs', '107');
 validarConceptoMaxTarjeta();
+
+
+// ========================================
+// APLICAR TOTAL DEL HISTORIAL
+// ========================================
+
+function aplicarTotalHistorial() {
+
+    // Checador: suma de descuento_olvido en historial_olvidos
+    $(document).on('click', '#btn-aplicar-checador-40lbs', function () {
+        const empleado = objEmpleado.getEmpleado();
+        if (!empleado) return;
+
+        const totalChecador = Array.isArray(empleado.historial_olvidos)
+            ? empleado.historial_olvidos.reduce(function (suma, olvido) {
+                return suma + (parseFloat(olvido.descuento_olvido) || 0);
+            }, 0)
+            : 0;
+
+        $('#mod-checador-40lbs').val(totalChecador.toFixed(2));
+        empleado.checador = totalChecador;
+        calcularSueldoACobrar();
+    });
+
+
+    // Inasistencias: suma de descuento_inasistencia en historial_inasistencias
+    $(document).on('click', '#btn-calcular-inasistencias-40lbs', function () {
+        const empleado = objEmpleado.getEmpleado();
+        if (!empleado) return;
+
+        const totalInasistencias = Array.isArray(empleado.historial_inasistencias)
+            ? empleado.historial_inasistencias.reduce(function (suma, inasistencia) {
+                return suma + (parseFloat(inasistencia.descuento_inasistencia) || 0);
+            }, 0)
+            : 0;
+
+        $('#mod-inasistencias-40lbs').val(totalInasistencias.toFixed(2));
+        empleado.inasistencia = totalInasistencias;
+         calcularSueldoACobrar();
+    });
+}
+
+inicializarSueldoACobrar();
+
+// Registra todos los eventos que deben disparar el recálculo del sueldo a cobrar
+function inicializarSueldoACobrar() {
+
+    // Escuchar cambios directos en sueldo semanal
+    $(document).on('input', '#mod-sueldo-neto-40lbs, #mod-incentivo-40lbs, #mod-total-extra-40lbs', calcularSueldoACobrar);
+
+    // Escuchar cambios en todas las deducciones editables
+    $(document).on('input',
+        '#mod-tarjeta-40lbs, #mod-prestamo-40lbs, #mod-checador-40lbs, ' +
+        '#mod-inasistencias-40lbs, ' +
+        '#mod-permisos-40lbs, #mod-fagafetcofia-40lbs',
+        calcularSueldoACobrar
+    );
+
+
+    // Mostrar/ocultar opciones de redondeo y recalcular al activar el checkbox
+    $(document).on('change', '#mod-redondear-sueldo-40lbs', function () {
     
+        calcularSueldoACobrar();
+    });
+
+    // Recalcular al cambiar el modo de redondeo
+    $(document).on('change', '#mod-redondeo-modo-40lbs', calcularSueldoACobrar);
+}
+
+// Calcula y actualiza el campo "Sueldo a Cobrar" con todos los valores actuales del modal
+function calcularSueldoACobrar() {
+
+    // ---- PERCEPCIONES ----
+    const sueldoNeto = parseFloat($('#mod-sueldo-neto-40lbs').val()) || 0;
+    const incentivo = parseFloat($('#mod-incentivo-40lbs').val()) || 0;
+    const sueldoExtra = parseFloat($('#mod-total-extra-40lbs').val()) || 0;
+    const totalPercepciones = sueldoNeto + incentivo + sueldoExtra;
+
+    // ---- CONCEPTOS (ISR, IMSS, INFONAVIT, AJUSTE AL SUB) ----
+    const totalConceptos = parseFloat($('#mod-total-conceptos-40lbs').val()) || 0;
+
+    // ---- DEDUCCIONES ----
+    const tarjeta = parseFloat($('#mod-tarjeta-40lbs').val()) || 0;
+    const prestamo = parseFloat($('#mod-prestamo-40lbs').val()) || 0;
+    const checador = parseFloat($('#mod-checador-40lbs').val()) || 0;
+    const inasistencias = parseFloat($('#mod-inasistencias-40lbs').val()) || 0;
+    const permisos = parseFloat($('#mod-permisos-40lbs').val()) || 0;
+    const uniforme = parseFloat($('#mod-uniforme-40lbs').val()) || 0;
+    const fagafetcofia = parseFloat($('#mod-fagafetcofia-40lbs').val()) || 0;
+    const totalDeducciones = tarjeta + prestamo + checador + inasistencias + permisos + uniforme + fagafetcofia;
+
+    // ---- CÁLCULO FINAL ----
+    const totalSinRedondear = totalPercepciones - totalConceptos - totalDeducciones;
+
+    // Delegar al redondeo (que también actualiza el campo y persiste en empleado)
+    aplicarRedondeo(totalSinRedondear);
+}
+
+// ========================================
+// APLICAR REDONDEO AL SUELDO A COBRAR
+// ========================================
+
+function aplicarRedondeo(totalSinRedondear) {
+    const redondeoActivo = $('#mod-redondear-sueldo-40lbs').is(':checked');
+
+    let totalFinal;
+    let diferencia;
+
+    if (redondeoActivo) {
+        totalFinal = Math.round(totalSinRedondear);                          // ej. 10
+        diferencia = parseFloat((totalFinal - totalSinRedondear).toFixed(2)); // ej. -0.49 o +0.50
+    } else {
+        totalFinal = totalSinRedondear;
+        diferencia = 0;
+    }
+
+    // Actualizar campo visible
+    $('#mod-sueldo-a-cobrar-40lbs').val(totalFinal.toFixed(2));
+
+    // Persistir en el objeto empleado
+    const empleado = objEmpleado.getEmpleado();
+    if (empleado) {
+        empleado.redondeo_activo = redondeoActivo;
+        empleado.redondeo = diferencia;   // negativo si se restó, positivo si se sumó
+        empleado.total_cobrar = totalFinal;   // valor final que se cobra
+    }
+}
+
+

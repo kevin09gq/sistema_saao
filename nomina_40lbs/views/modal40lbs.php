@@ -435,33 +435,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="row mb-3">
-                                            <div class="col-md-4 mb-2">
-                                                <label class="form-label fw-semibold">Total Retardos ($)</label>
-                                                <div class="input-group">
-                                                    <input type="number" step="0.01" class="form-control mod-input-rojo" id="mod-retardos-40lbs" value="" placeholder="0.00">
-                                                    <button type="button" class="btn btn-outline-secondary" id="btn-calcular-retardos-40lbs" title="Calcular desde historial">
-                                                        <i class="bi bi-calculator"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Historial Detallado de Retardos -->
-                                        <div class="row mb-3">
-                                            <div class="col-12" id="historial-retardos-40lbs">
-                                                <h6 class="fw-semibold text-warning mb-3">
-                                                    <i class="bi bi-clock-history"></i> Historial de Retardos por Día
-                                                </h6>
-                                                <div id="contenedor-historial-retardos" class="historial-retardos-container">
-                                                    <!-- Se llenará con JavaScript -->
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Separador visual -->
-                                        <hr class="mod-separador">
-
+                                 
                                         <!-- Sección de Inasistencias -->
                                         <div class="row mb-3">
                                             <div class="col-md-4 mb-2">

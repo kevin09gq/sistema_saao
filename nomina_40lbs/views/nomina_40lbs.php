@@ -150,7 +150,6 @@
                             <th rowspan="2">AJUSTES <br> AL SUB</th>
                             <th rowspan="2">AUSENTISMO</th>
                             <th rowspan="2">PERMISO</th>
-                            <th rowspan="2">RETARDOS</th>
                             <th rowspan="2">UNIFORMES</th>
                             <th rowspan="2">CHECADOR</th>
                             <th rowspan="2">F.A/GAFET/COFIA</th>
@@ -188,7 +187,7 @@
 
     <?php include 'modal40lbs.php'; ?>
     <?php include 'modalHorarios.php'; ?>
-
+    <?php include 'biometricoModal.php'; ?>
 
 
     <!-- jQuery -->
@@ -212,6 +211,7 @@
     <script src="../js/configModal/configModal.js"></script>
     <script src="../js/configModal/eventos.js"></script>
     <script src="../js/configModal/newConcepts.js"></script>
+    <script src="../js/actualizarBiomtrico.js"></script>
 
 </body>
 

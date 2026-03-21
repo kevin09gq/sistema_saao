@@ -1,5 +1,5 @@
 /*  Scroll horizontal sólo para la tabla de nómina (cambios mínimos y locales) */
-#tabla-nomina-container-40lbs .table-responsive-40lbs {
+#tabla-nomina-container-huasteca .table-responsive-huasteca {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
@@ -8,30 +8,30 @@
 
 
 /* WebKit (Chrome, Edge, Safari) - scroll horizontal más delgado */
-#tabla-nomina-container-40lbs .table-responsive-40lbs::-webkit-scrollbar {
+#tabla-nomina-container-huasteca .table-responsive-huasteca::-webkit-scrollbar {
     height: 8px; /* ajustar si quieres más/menos */
 }
-#tabla-nomina-container-40lbs .table-responsive-40lbs::-webkit-scrollbar-track {
+#tabla-nomina-container-huasteca .table-responsive-huasteca::-webkit-scrollbar-track {
     background: rgba(0,0,0,0.03);
     border-radius: 8px;
 }
-#tabla-nomina-container-40lbs .table-responsive-40lbs::-webkit-scrollbar-thumb {
+#tabla-nomina-container-huasteca .table-responsive-huasteca::-webkit-scrollbar-thumb {
     background: rgba(0,0,0,0.25);
     border-radius: 8px;
     min-height: 20px;
 }
-#tabla-nomina-container-40lbs .table-responsive-40lbs::-webkit-scrollbar-thumb:hover {
+#tabla-nomina-container-huasteca .table-responsive-huasteca::-webkit-scrollbar-thumb:hover {
     background: rgba(0,0,0,0.35);
 }
 
 /* Estilo general para el contenedor de la tabla */
-.table-responsive-40lbs {
+.table-responsive-huasteca {
     overflow-x: auto;
     max-width: 100%;
     background: white;
 }
 
-.table-nomina-40lbs {
+.table-nomina-huasteca {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
@@ -41,7 +41,7 @@
 }
 
 
-.table-nomina-40lbs th {
+.table-nomina-huasteca th {
     background: white;
     color: #9ca3af;
     font-weight: 500;
@@ -55,7 +55,7 @@
     letter-spacing: 0.05em;
 }
 
-.table-nomina-40lbs td {
+.table-nomina-huasteca td {
     padding: 16px 12px;
     border: none;
     border-bottom: 1px solid #f9fafb;
@@ -69,7 +69,7 @@
 
 }
 
-.table-nomina-40lbs td:nth-child(2) {
+.table-nomina-huasteca td:nth-child(2) {
     padding: 16px 12px;
     border: none;
     border-bottom: 1px solid #f9fafb;
@@ -84,35 +84,36 @@
 }
 
 
-.table-nomina-40lbs tbody tr {
+.table-nomina-huasteca tbody tr {
     transition: background-color 0.2s ease;
 }
 
-.table-nomina-40lbs tbody tr:nth-child(even) {
+.table-nomina-huasteca tbody tr:nth-child(even) {
     background-color: #fafbfc;
 }
 
-.table-nomina-40lbs tbody tr:hover {
+.table-nomina-huasteca tbody tr:hover {
     background-color: #f0f9f4;
 }
 
 /* Columnas específicas con el estilo de la imagen */
-.table-nomina-40lbs td:nth-child(1) {
+.table-nomina-huasteca td:nth-child(1) {
     color: #6b7280;
     font-weight: 500;
 }
 
-.table-nomina-40lbs td:nth-child(2) {
+.table-nomina-huasteca td:nth-child(2) {
     text-align: left;
     font-weight: 600;
     min-width: 250px;
     color: #1f2937;
 }
 
-.table-nomina-40lbs td:nth-child(3),
-.table-nomina-40lbs td:nth-child(4),
-.table-nomina-40lbs td:nth-child(5),
-.table-nomina-40lbs td:nth-child(6){
+.table-nomina-huasteca td:nth-child(3),
+.table-nomina-huasteca td:nth-child(4),
+.table-nomina-huasteca td:nth-child(5),
+.table-nomina-huasteca td:nth-child(6),
+.table-nomina-huasteca td:nth-child(7){
     color: #10b981;
     font-weight: 600;
     background: rgba(16, 185, 129, 0.05);
@@ -122,18 +123,19 @@
 
 
 /* Cambiar el color de las filas en las columnas de DEDUCCIONES (ajustado) */
-.table-nomina-40lbs td:nth-child(7),
-.table-nomina-40lbs td:nth-child(8),
-.table-nomina-40lbs td:nth-child(9),
-.table-nomina-40lbs td:nth-child(10),
-.table-nomina-40lbs td:nth-child(11),
-.table-nomina-40lbs td:nth-child(12),
-.table-nomina-40lbs td:nth-child(13),
-.table-nomina-40lbs td:nth-child(14),
-.table-nomina-40lbs td:nth-child(15),
-.table-nomina-40lbs td:nth-child(16),
-.table-nomina-40lbs td:nth-child(18),
-.table-nomina-40lbs td:nth-child(20) {
+.table-nomina-huasteca td:nth-child(8),
+.table-nomina-huasteca td:nth-child(9),
+.table-nomina-huasteca td:nth-child(10),
+.table-nomina-huasteca td:nth-child(11),
+.table-nomina-huasteca td:nth-child(12),
+.table-nomina-huasteca td:nth-child(13),
+.table-nomina-huasteca td:nth-child(14),
+.table-nomina-huasteca td:nth-child(15),
+.table-nomina-huasteca td:nth-child(16),
+.table-nomina-huasteca td:nth-child(17),
+.table-nomina-huasteca td:nth-child(18),
+.table-nomina-huasteca td:nth-child(20),
+.table-nomina-huasteca td:nth-child(22) {
     color: #ef4444;
     /* Rojo */
     font-weight: 600;
@@ -141,10 +143,11 @@
     font-variant-numeric: tabular-nums;
 }
 
-.table-nomina-40lbs td:nth-child(17),
-.table-nomina-40lbs td:nth-child(19),
-.table-nomina-40lbs td:nth-child(21)
+.table-nomina-huasteca td:nth-child(19),
+.table-nomina-huasteca td:nth-child(21),
+.table-nomina-huasteca td:nth-child(23)
  {
+   
     color: #000000;
     font-weight: 700;
     border-radius: 6px;
@@ -152,7 +155,8 @@
     font-variant-numeric: tabular-nums;
 }
 
-.table-nomina-40lbs td:nth-child(23) {
+
+.table-nomina-huasteca td:nth-child(25) {
     background: rgba(59, 130, 246, 0.1);
     color: #1d4ed8;
     font-weight: 700;
@@ -160,7 +164,6 @@
     margin: 2px;
     font-variant-numeric: tabular-nums;
 }
-
 
 /* Estilo para valores vacíos (--) */
 .valor-vacio {
@@ -170,12 +173,12 @@
     pointer-events: none;
 }
 /* Celdas vacías con estilo sutil */
-.table-nomina-40lbs td:empty {
+.table-nomina-huasteca td:empty {
     background: #f9fafb;
     position: relative;
 }
 
-.table-nomina-40lbs td:empty::after {
+.table-nomina-huasteca td:empty::after {
     content: '—';
     color: #d1d5db;
     font-weight: 300;
@@ -203,12 +206,12 @@
 @media (max-width: 768px) {
 
 
-    .table-nomina-40lbs {
+    .table-nomina-huasteca {
         font-size: 9px;
     }
 
-    .table-nomina-40lbs th,
-    .table-nomina-40lbs td {
+    .table-nomina-huasteca th,
+    .table-nomina-huasteca td {
         padding: 4px 3px;
         font-size: 8px;
     }
