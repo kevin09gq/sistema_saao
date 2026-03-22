@@ -54,9 +54,9 @@ $columnas = [
     'INFONAVIT',
     'AJUSTES AL SUB',
     'AUSENTISMO',
-    'PERMISO',
-    'RETARDOS',
     'UNIFORMES',
+    'PERMISOS',
+    'RETARDOS',
     'CHECADOR',
     'F.A/GAFET/COFIA',
     'TOTAL DE DEDUCCIONES',
@@ -84,9 +84,9 @@ $columnasAncho = [
     'K' => 20,  // INFONAVIT
     'L' => 22,  // AJUSTES AL SUB
     'M' => 21,  // AUSENTISMO
-    'N' => 20,  // PERMISO
-    'O' => 20,  // RETARDOS
-    'P' => 20,  // UNIFORMES
+    'N' => 20,  // UNIFORMES
+    'O' => 20,  // PERMISOS
+    'P' => 20,  // RETARDOS
     'Q' => 20,  // CHECADOR
     'R' => 22,  // F.A/GAFET/COFIA
     'S' => 22,  // TOTAL DE DEDUCCIONES
@@ -114,9 +114,9 @@ $tamanioLetraColumnas = [
     'K' => 14,  // INFONAVIT
     'L' => 14,  // AJUSTES AL SUB
     'M' => 14,  // AUSENTISMO
-    'N' => 14,  // PERMISO
-    'O' => 14,  // RETARDOS
-    'P' => 14,  // UNIFORMES
+    'N' => 14,  // UNIFORMES
+    'O' => 14,  // PERMISOS
+    'P' => 14,  // RETARDOS
     'Q' => 14,  // CHECADOR
     'R' => 13,  // F.A/GAFET/COFIA
     'S' => 13,  // TOTAL DE DEDUCCIONES
@@ -144,9 +144,9 @@ $tamanioLetraFilas = [
     'K' => 15,  // INFONAVIT
     'L' => 15,  // AJUSTES AL SUB
     'M' => 15,  // AUSENTISMO
-    'N' => 15,  // PERMISO
-    'O' => 15,  // RETARDOS
-    'P' => 15,  // UNIFORMES
+    'N' => 15,  // UNIFORMES
+    'O' => 15,  // PERMISOS
+    'P' => 15,  // RETARDOS
     'Q' => 15,  // CHECADOR
     'R' => 15,  // F.A/GAFET/COFIA
     'S' => 15,  // TOTAL DE DEDUCCIONES
@@ -325,6 +325,16 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja) {
     
     $comidaTieneDatos = false;
     $pasajeTieneDatos = false;
+    $isrTieneDatos = false;
+    $imssTieneDatos = false;
+    $infonavitTieneDatos = false;
+    $ajustesAlSubTieneDatos = false;
+    $ausentismoTieneDatos = false;
+    $uniformesTieneDatos = false;
+    $permisoTieneDatos = false;
+    $retardosTieneDatos = false;
+    $checadorTieneDatos = false;
+    $faxGafetCofiaTieneDatos = false;
     
     foreach ($empleados as $empleado) {
         if (($empleado['comida'] ?? 0) != 0) {
@@ -332,6 +342,37 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja) {
         }
         if (($empleado['pasaje'] ?? 0) != 0) {
             $pasajeTieneDatos = true;
+        }
+        if (($empleado['inasistencia'] ?? 0) != 0) {
+            $ausentismoTieneDatos = true;
+        }
+        if (($empleado['uniformes'] ?? 0) != 0) {
+            $uniformesTieneDatos = true;
+        }
+        if (($empleado['permiso'] ?? 0) != 0) {
+            $permisoTieneDatos = true;
+        }
+        if (($empleado['retardos'] ?? 0) != 0) {
+            $retardosTieneDatos = true;
+        }
+        if (($empleado['checador'] ?? 0) != 0) {
+            $checadorTieneDatos = true;
+        }
+        if (($empleado['fa_gafet_cofia'] ?? 0) != 0) {
+            $faxGafetCofiaTieneDatos = true;
+        }
+
+        if (!empty($empleado['conceptos']) && is_array($empleado['conceptos'])) {
+            foreach ($empleado['conceptos'] as $concepto) {
+                $codigo = $concepto['codigo'] ?? '';
+                $resultado = $concepto['resultado'] ?? 0;
+                if ($resultado != 0) {
+                    if ($codigo === '45') $isrTieneDatos = true;
+                    if ($codigo === '52') $imssTieneDatos = true;
+                    if ($codigo === '16') $infonavitTieneDatos = true;
+                    if ($codigo === '107') $ajustesAlSubTieneDatos = true;
+                }
+            }
         }
     }
     
@@ -404,6 +445,10 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja) {
             foreach ($empleado['conceptos'] as $concepto) {
                 $codigo = $concepto['codigo'] ?? null;
                 $resultado = $concepto['resultado'] ?? 0;
+
+                if ($codigo === '107' && !$ajustesAlSubTieneDatos) {
+                    continue;
+                }
                 
                 if (isset($mapeoConceptos[$codigo]) && !empty($resultado) && $resultado != 0) {
                     $columna = $mapeoConceptos[$codigo];
@@ -422,23 +467,23 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja) {
             $sheet->getStyle('M' . $numeroFila)->getFont()->setColor(new Color('FF0000'));
         }
         
-        $permiso = $empleado['permiso'] ?? 0;
-        if (!empty($permiso) && $permiso != 0) {
-            $sheet->setCellValue('N' . $numeroFila, $permiso);
+        $uniformes = $empleado['uniformes'] ?? 0;
+        if (!empty($uniformes) && $uniformes != 0) {
+            $sheet->setCellValue('N' . $numeroFila, $uniformes);
             $sheet->getStyle('N' . $numeroFila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
             $sheet->getStyle('N' . $numeroFila)->getFont()->setColor(new Color('FF0000'));
         }
-        
-        $retardos = $empleado['retardos'] ?? 0;
-        if (!empty($retardos) && $retardos != 0) {
-            $sheet->setCellValue('O' . $numeroFila, $retardos);
+
+        $permiso = $empleado['permiso'] ?? 0;
+        if (!empty($permiso) && $permiso != 0) {
+            $sheet->setCellValue('O' . $numeroFila, $permiso);
             $sheet->getStyle('O' . $numeroFila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
             $sheet->getStyle('O' . $numeroFila)->getFont()->setColor(new Color('FF0000'));
         }
         
-        $uniformes = $empleado['uniformes'] ?? 0;
-        if (!empty($uniformes) && $uniformes != 0) {
-            $sheet->setCellValue('P' . $numeroFila, $uniformes);
+        $retardos = $empleado['retardos'] ?? 0;
+        if (!empty($retardos) && $retardos != 0) {
+            $sheet->setCellValue('P' . $numeroFila, $retardos);
             $sheet->getStyle('P' . $numeroFila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
             $sheet->getStyle('P' . $numeroFila)->getFont()->setColor(new Color('FF0000'));
         }
@@ -552,7 +597,8 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja) {
     $columnasData = ['D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
     
     foreach ($columnasData as $columna) {
-        $sheet->setCellValue($columna . $filaTotal, '=SUM(' . $columna . '7:' . $columna . ($filaTotal - 1) . ')');
+        $rangoSuma = $columna . '7:' . $columna . ($filaTotal - 1);
+        $sheet->setCellValue($columna . $filaTotal, '=IF(SUM(' . $rangoSuma . ')=0,"",SUM(' . $rangoSuma . '))');
         $sheet->getStyle($columna . $filaTotal)->getFont()->setBold(true);
         $sheet->getStyle($columna . $filaTotal)->getFont()->setSize(14);
         
@@ -593,12 +639,45 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja) {
     //  OCULTAR COLUMNAS SIN DATOS
     //=====================
     
+    if (!$pasajeTieneDatos) {
+        $sheet->getColumnDimension('E')->setVisible(false);
+    }
     if (!$comidaTieneDatos) {
         $sheet->getColumnDimension('F')->setVisible(false);
     }
-    
-    if (!$pasajeTieneDatos) {
-        $sheet->getColumnDimension('E')->setVisible(false);
+    if (!$isrTieneDatos) {
+        $sheet->getColumnDimension('I')->setVisible(false);
+    }
+    if (!$imssTieneDatos) {
+        $sheet->getColumnDimension('J')->setVisible(false);
+    }
+    if (!$infonavitTieneDatos) {
+        $sheet->getColumnDimension('K')->setVisible(false);
+    }
+    if (!$ajustesAlSubTieneDatos) {
+        $sheet->getColumnDimension('L')->setVisible(false);
+    }
+    if (!$ausentismoTieneDatos) {
+        $sheet->getColumnDimension('M')->setVisible(false);
+    }
+    if (!$uniformesTieneDatos) {
+        $sheet->getColumnDimension('N')->setVisible(false);
+    }
+    if (!$permisoTieneDatos) {
+        $sheet->getColumnDimension('O')->setVisible(false);
+    }
+    if (!$retardosTieneDatos) {
+        $sheet->getColumnDimension('P')->setVisible(false);
+    }
+    if (!$checadorTieneDatos) {
+        $sheet->getColumnDimension('Q')->setVisible(false);
+    }
+    if (!$faxGafetCofiaTieneDatos) {
+        $sheet->getColumnDimension('R')->setVisible(false);
+    }
+
+    if (!$isrTieneDatos && !$imssTieneDatos && !$infonavitTieneDatos && !$ajustesAlSubTieneDatos && !$ausentismoTieneDatos && !$uniformesTieneDatos && !$permisoTieneDatos && !$retardosTieneDatos && !$checadorTieneDatos && !$faxGafetCofiaTieneDatos) {
+        $sheet->getColumnDimension('S')->setVisible(false);
     }
     
     //=====================

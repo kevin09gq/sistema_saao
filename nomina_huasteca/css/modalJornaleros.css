@@ -1,0 +1,308 @@
+/* Estilos mínimos y concisos para la barra de navegación del modal */
+#modalTabs-jornaleros{background:#f8f9fa;border-bottom:1px solid #e9ecef;border-radius:.375rem .375rem 0 0;padding:.25rem;margin-bottom:1rem}
+#modalTabs-jornaleros .nav-link{color:#6c757d;padding:.5rem .9rem;font-weight:500;border:0;background:transparent;transition:color .15s,background .15s;cursor:pointer}
+#modalTabs-jornaleros .nav-link:hover{color:#495057;background:rgba(0,0,0,.03)}
+#modalTabs-jornaleros .nav-link.active{color:#0d6efd;background:#fff;border-bottom:2px solid #0d6efd;font-weight:600}
+#modalTabs-jornaleros .nav-link:focus{outline:none;box-shadow:0 0 0 .2rem rgba(13,110,253,.12)}
+
+
+/* ========================================
+ * INFORMACION DEL jornalero
+ * ======================================== */
+
+
+.empleado-info{
+  background:#fbfcfd; /* card muy claro */
+  border:1px solid #eef0f2;
+  border-radius:.5rem;
+  padding:1rem 1.25rem;
+  display:flex;
+  flex-direction:column;
+  gap:.6rem;
+  box-shadow:0 6px 18px rgba(3,18,26,0.03);
+}
+.empleado-info .info-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:.75rem;
+  padding:.5rem 0;
+  border-top:1px solid transparent;
+}
+.empleado-info .info-row + .info-row{border-top:1px solid #eef0f2}
+.empleado-info .info-label{
+  color:#6c757d;
+  font-size:.85rem;
+  width:140px;
+  font-weight:600;
+}
+.empleado-info .info-value{
+  color:#111827;
+  font-weight:700;
+  text-align:right;
+  font-size:.95rem;
+}
+.empleado-info input[type="text"], .empleado-info input[type="number"]{
+  border:1px solid #d7dce0;
+  padding:.35rem .5rem;
+  border-radius:.35rem;
+  background:#fff;
+  min-width:90px;
+  text-align:left;
+}
+
+
+/* ========================================
+ * TABLAS REGISTROS BIOMETRICO Y HORARIO OFICIALES
+ * ======================================== */
+
+/* Estilos compactos para la tabla de biométrico */
+#tabla-biometrico-jornaleros{overflow:auto;max-height:320px}
+#tabla-biometrico-jornaleros table{width:100%;border-collapse:collapse;font-size:.95rem}
+#tabla-biometrico-jornaleros th,#tabla-biometrico-jornaleros td{padding:.45rem .6rem;border-bottom:1px solid #eef1f4;text-align:left}
+#tabla-biometrico-jornaleros thead th{background:#28a745;color:#fff;font-weight:700;position:sticky;top:0}
+#tabla-biometrico-jornaleros tbody tr:nth-child(odd){background:#f8f9fa}
+#tabla-biometrico-jornaleros tbody tr:nth-child(even){background:#fff}
+
+/* Estilos para el row de copiar horarios */
+.horarios-copiar-row{align-items:center}
+.horarios-copiar-row .form-control{max-width:100%;border-radius:.35rem}
+.horarios-copiar-row .form-label{margin-bottom:.35rem;font-size:.85rem;color:#666}
+.horarios-copiar-row .col-md-3{display:flex;flex-direction:column}
+.horarios-copiar-row .col-md-3 .form-control-sm{padding:.35rem .5rem;font-size:.9rem}
+.horarios-copiar-row .btn-sm{white-space:nowrap}
+#btn-copiar-horarios-jornaleros{margin-top:0}
+
+/* Estilos compactos para la tabla de Registros BD */
+#tabla-dias-trabajados-jornaleros{overflow:auto;max-height:420px;margin-top:.5rem}
+#tabla-dias-trabajados-jornaleros table{width:100%;border-collapse:collapse;font-size:.95rem}
+#tabla-dias-trabajados-jornaleros th,#tabla-dias-trabajados-jornaleros td{padding:.5rem .6rem;border-bottom:1px solid #eef1f4}
+#tabla-dias-trabajados-jornaleros thead th{background:#28a745;color:#fff;font-weight:700;position:sticky;top:0}
+#tabla-dias-trabajados-jornaleros tbody tr:nth-child(odd){background:#f8f9fa}
+#tabla-dias-trabajados-jornaleros tbody tr:nth-child(even){background:#fff}
+#tabla-dias-trabajados-jornaleros tbody tr:hover{background:#f8fafc}
+#tabla-dias-trabajados-jornaleros td .form-control-sm{height:36px;padding:.25rem .5rem}
+
+
+/* ========================================
+ * EVENTOS ESPECIALES
+ * ======================================== */
+ /* Estilos para tarjetas de eventos (cada tarjeta con color propio) */
+.evento-card{border:1px solid #e6e9eb;border-radius:.5rem;padding:.6rem;height:100%;display:flex;flex-direction:column;gap:.5rem}
+.evento-card .evento-header{display:flex;align-items:center;gap:.5rem;font-weight:700;color:inherit}
+.evento-card .evento-header i{font-size:1.05rem}
+.evento-card .evento-content{min-height:60px;max-height:220px;overflow:auto;color:#273041}
+.evento-card .evento-total{margin-top:.25rem;text-align:right;font-size:.95rem}
+
+
+#entradas-tempranas-jornaleros{background:linear-gradient(135deg,#dbeafe 0%,#e0f2fe 100%);border-left:4px solid #0d6efd;border-radius:.5rem;padding:.75rem;font-size:.9rem;line-height:1.6;color:#0c63e4}
+#entradas-tempranas-jornaleros .evento-item{padding:.35rem 0;border-bottom:1px solid rgba(13,110,253,.2)}
+#entradas-tempranas-jornaleros .evento-item:last-child{border-bottom:0}
+#total-entradas-tempranas-jornaleros{color:#0d6efd;font-weight:700;font-size:1.05rem}
+
+#salidas-tardias-jornaleros{background:linear-gradient(135deg,#ffedd5 0%,#fed7aa 100%);border-left:4px solid #fd7e14;border-radius:.5rem;padding:.75rem;font-size:.9rem;line-height:1.6;color:#f76707}
+#salidas-tardias-jornaleros .evento-item{padding:.35rem 0;border-bottom:1px solid rgba(253,126,20,.2)}
+#salidas-tardias-jornaleros .evento-item:last-child{border-bottom:0}
+#total-salidas-tardias-jornaleros{color:#fd7e14;font-weight:700;font-size:1.05rem}
+
+#salidas-tempranas-jornaleros{background:linear-gradient(135deg,#f3e8ff 0%,#e9d5ff 100%);border-left:4px solid #a855f7;border-radius:.5rem;padding:.75rem;font-size:.9rem;line-height:1.6;color:#9333ea}
+#salidas-tempranas-jornaleros .evento-item{padding:.35rem 0;border-bottom:1px solid rgba(168,85,247,.2)}
+#salidas-tempranas-jornaleros .evento-item:last-child{border-bottom:0}
+#total-salidas-tempranas-jornaleros{color:#a855f7;font-weight:700;font-size:1.05rem}
+
+#olvidos-checador-jornaleros{background:linear-gradient(135deg,#fee2e2 0%,#fecaca 100%);border-left:4px solid #dc3545;border-radius:.5rem;padding:.75rem;font-size:.9rem;line-height:1.6;color:#c41c3b}
+#olvidos-checador-jornaleros .evento-item{padding:.35rem 0;border-bottom:1px solid rgba(220,53,69,.2)}
+#olvidos-checador-jornaleros .evento-item:last-child{border-bottom:0}
+#total-olvidos-checador-jornaleros{color:#dc3545;font-weight:700;font-size:1.05rem}
+
+#retardos-jornaleros{background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%);border-left:4px solid #ffc107;border-radius:.5rem;padding:.75rem;font-size:.9rem;line-height:1.6;color:#b8860b}
+#retardos-jornaleros .evento-item{padding:.35rem 0;border-bottom:1px solid rgba(255,193,7,.2)}
+#retardos-jornaleros .evento-item:last-child{border-bottom:0}
+#total-retardos-jornaleros{color:#ffc107;font-weight:700;font-size:1.05rem}
+
+#inasistencias-content-jornaleros{background:linear-gradient(135deg,#f3f4f6 0%,#e5e7eb 100%);border-left:4px solid #6c757d;border-radius:.5rem;padding:.75rem;font-size:.9rem;line-height:1.6;color:#495057}
+#inasistencias-content-jornaleros .evento-item{padding:.35rem 0;border-bottom:1px solid rgba(108,117,125,.2)}
+#inasistencias-content-jornaleros .evento-item:last-child{border-bottom:0}
+#total-inasistencias-jornaleros{color:#6c757d;font-weight:700;font-size:1.05rem}
+
+
+
+
+/* Pequeños ajustes responsivos */
+@media (max-width:768px){
+  .evento-card .evento-content{max-height:140px}
+}
+
+/* Línea separadora entre las tablas y la sección de eventos */
+.table-container + .eventos-especiales-container{
+  border-top:1px solid #e9ecef;
+  padding-top:1rem;
+  margin-top:1rem;
+}
+
+
+/* ========================================
+ * SCROLLBAR PERSONALIZADO PARA MODAL Y CONTENEDORES DE LAS TABLAS
+ * ======================================== */
+/* Scrollbar más delgado para modal y contenedores de tabla */
+#modal-jornaleros .modal-body,
+#modal-jornaleros .table-container,
+#modal-jornaleros .eventos-especiales-container{
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: rgba(16,24,40,0.35) transparent;
+}
+
+/* WebKit (Chrome, Edge, Safari) */
+#modal-jornaleros .modal-body::-webkit-scrollbar,
+#modal-jornaleros .table-container::-webkit-scrollbar,
+#modal-jornaleros .eventos-especiales-container::-webkit-scrollbar{
+  width: 8px;
+  height: 8px;
+}
+#modal-jornaleros .modal-body::-webkit-scrollbar-track,
+#modal-jornaleros .table-container::-webkit-scrollbar-track,
+#modal-jornaleros .eventos-especiales-container::-webkit-scrollbar-track{
+  background: transparent;
+}
+#modal-jornaleros .modal-body::-webkit-scrollbar-thumb,
+#modal-jornaleros .table-container::-webkit-scrollbar-thumb,
+#modal-jornaleros .eventos-especiales-container::-webkit-scrollbar-thumb{
+  background-color: rgba(16,24,40,0.35);
+  border-radius: 8px;
+  border: 2px solid transparent; /* crea espacio alrededor del thumb */
+  background-clip: padding-box;
+}
+#modal-jornaleros .modal-body::-webkit-scrollbar-thumb:hover,
+#modal-jornaleros .table-container::-webkit-scrollbar-thumb:hover,
+#modal-jornaleros .eventos-especiales-container::-webkit-scrollbar-thumb:hover{
+  background-color: rgba(16,24,40,0.55);
+}
+
+/* ========================================
+ * ESTILOS PARA PERCEPCIONES (MOD-CARD)
+ * ======================================== */
+.mod-card{border:1px solid #dbeafe;border-radius:.5rem;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.mod-card-header-azul{background:linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);color:#1e40af;font-weight:700;padding:.75rem 1rem;border-bottom:2px solid #3b82f6}
+.mod-card-body-azul{background:#f8fbff;padding:1.5rem}
+
+/* Inputs para percepciones */
+.mod-input-azul{border:1px solid #93c5fd;border-radius:.35rem;padding:.5rem .75rem;font-size:.95rem;transition:border-color .2s,box-shadow .2s}
+.mod-input-azul:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+
+/* Input de solo lectura */
+.mod-input-readonly{background:#f0f4f8;color:#6b7280;cursor:not-allowed}
+.mod-input-readonly:focus{border-color:#93c5fd;box-shadow:none}
+
+/* Separador visual */
+.mod-separador{border:0;border-top:1px solid #cbd5e1;margin:1rem 0}
+
+/* Títulos de componentes */
+.componentes-title{color:#0f172a;font-weight:700;margin-bottom:.25rem}
+.componentes-subtitle{color:#64748b;display:block;margin-bottom:.75rem}
+
+/* ========================================
+ * ESTILOS PARA CONCEPTOS (MOD-CARD)
+ * ======================================== */
+.mod-card-header-amarillo{background:linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);color:#92400e;font-weight:700;padding:.75rem 1rem;border-bottom:2px solid #f59e0b}
+.mod-card-body-amarillo{background:#fffbf0;padding:1.5rem}
+
+/* Inputs para conceptos */
+.mod-input-amarillo{border:1px solid #fcd34d;border-radius:.35rem;padding:.5rem .75rem;font-size:.95rem;background:#fffef9;transition:border-color .2s,box-shadow .2s}
+.mod-input-amarillo:focus{border-color:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.1)}
+
+/* Input total conceptos - read-only con estilo especial */
+.mod-input-amarillo-total-conceptos{border:1px solid #fcd34d;border-radius:.35rem;padding:.5rem .75rem;font-size:.95rem;background:#fef3c7;color:#78350f;font-weight:600;cursor:default}
+.mod-input-amarillo-total-conceptos:focus{border-color:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.1)}
+
+/* Botones de cálculo en grupo de entrada */
+.mod-card-body-amarillo .input-group .btn-outline-secondary{border-color:#fcd34d;color:#92400e;transition:all .2s}
+.mod-card-body-amarillo .input-group .btn-outline-secondary:hover{background:#fef3c7;border-color:#f59e0b;color:#f59e0b}
+
+/* Labels con estilo amarillo */
+.mod-card-body-amarillo .form-label{color:#78350f;font-size:.95rem}
+
+
+/* ISR - Rojo/Rosa */
+#mod-isr-jornalero{border-color:#f87171 !important}
+#mod-isr-jornalero:focus{border-color:#dc2626 !important;box-shadow:0 0 0 3px rgba(220,38,38,.1) !important}
+#mod-isr-jornalero::-webkit-input-placeholder{color:#dc2626}
+
+/* IMSS - Azul */
+#mod-imss-jornalero{border-color:#60a5fa !important}
+#mod-imss-jornalero:focus{border-color:#2563eb !important;box-shadow:0 0 0 3px rgba(37,99,235,.1) !important}
+#mod-imss-jornalero::-webkit-input-placeholder{color:#2563eb}
+
+/* INFONAVIT - Verde */
+#mod-infonavit-jornalero{border-color:#34d399 !important}
+#mod-infonavit-jornalero:focus{border-color:#10b981 !important;box-shadow:0 0 0 3px rgba(16,185,129,.1) !important}
+#mod-infonavit-jornalero::-webkit-input-placeholder{color:#10b981}
+
+/* AJUSTES AL SUB - Púrpura */
+#mod-ajustes-sub-jornalero{border-color:#c084fc !important}
+#mod-ajustes-sub-jornalero:focus{border-color:#9333ea !important;box-shadow:0 0 0 3px rgba(147,51,234,.1) !important}
+#mod-ajustes-sub-jornalero::-webkit-input-placeholder{color:#9333ea}
+
+
+/* ========================================
+ * ESTILOS PARA DEDUCCIONES (MOD-CARD)
+ * ======================================== */
+.mod-card-header-rojo{background:linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);color:#991b1b;font-weight:700;padding:.75rem 1rem;border-bottom:2px solid #ef4444}
+.mod-card-body-rojo{background:#fef2f2;padding:1.5rem}
+
+/* Inputs para deducciones */
+.mod-input-rojo{border:1px solid #fca5a5;border-radius:.35rem;padding:.5rem .75rem;font-size:.95rem;background:#fefbfb;transition:border-color .2s,box-shadow .2s}
+.mod-input-rojo:focus{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,.1)}
+
+/* Labels con estilo rojo */
+.mod-card-body-rojo .form-label{color:#7f1d1d;font-size:.95rem}
+
+
+
+
+/* ========================================
+ * ESTILOS PARA HISTORIAL DE RETARDOS, INASISTENCIAS, CHECADOR
+ * ======================================== */
+
+/* Historial de Olvidos por Día */
+#historial-olvidos-jornaleros h6{color:#dc3545;border-bottom:2px solid #fee2e2;padding-bottom:.5rem}
+#contenedor-historial-olvidos{background:#fef2f2;border:1px solid #fca5a5;border-radius:.5rem;padding:1rem;overflow-x:auto;max-height:300px;overflow-y:auto}
+#contenedor-historial-olvidos table{width:100%;border-collapse:collapse;font-size:.9rem;margin:0}
+#contenedor-historial-olvidos thead{background:#fee2e2;color:#991b1b;font-weight:700;position:sticky;top:0}
+#contenedor-historial-olvidos th,#contenedor-historial-olvidos td{padding:.5rem .75rem;border-bottom:1px solid #fca5a5;text-align:left}
+#contenedor-historial-olvidos tbody tr:hover{background:#ffebee}
+#contenedor-historial-olvidos .sin-eventos{text-align:center;color:#dc3545;padding:1rem;font-style:italic}
+
+/* Historial de Retardos por Día */
+#historial-retardos-jornaleros h6{color:#ffc107;border-bottom:2px solid #fef3c7;padding-bottom:.5rem}
+#contenedor-historial-retardos{background:#fefbf0;border:1px solid #fcd34d;border-radius:.5rem;padding:1rem;overflow-x:auto;max-height:300px;overflow-y:auto}
+#contenedor-historial-retardos table{width:100%;border-collapse:collapse;font-size:.9rem;margin:0}
+#contenedor-historial-retardos thead{background:#fef3c7;color:#78350f;font-weight:700;position:sticky;top:0}
+#contenedor-historial-retardos th,#contenedor-historial-retardos td{padding:.5rem .75rem;border-bottom:1px solid #fcd34d;text-align:left}
+#contenedor-historial-retardos tbody tr:hover{background:#fffbf0}
+#contenedor-historial-retardos .sin-eventos{text-align:center;color:#ffc107;padding:1rem;font-style:italic}
+
+/* Formulario para agregar inasistencia manual */
+#add-inasistencia-jornalero{gap:.75rem;align-items:flex-end}
+#add-inasistencia-jornalero .form-label{color:#495057;font-size:.9rem;margin-bottom:.35rem;font-weight:600}
+#add-inasistencia-jornalero .form-select,#add-inasistencia-jornalero .form-control{border:1px solid #d3d7df;border-radius:.35rem;padding:.5rem;font-size:.9rem}
+#add-inasistencia-jornalero .form-select:focus,#add-inasistencia-jornalero .form-control:focus{border-color:#6c757d;box-shadow:0 0 0 3px rgba(108,117,125,.1);outline:0}
+#add-inasistencia-jornalero .btn-info{background:#6c757d;border-color:#6c757d;color:#fff;font-weight:600;transition:all .2s}
+#add-inasistencia-jornalero .btn-info:hover{background:#5a6268;border-color:#5a6268}
+
+/* Contenedor del historial de inasistencias */
+#contenedor-historial-inasistencias-jornalero{background:#f8f9fa;border:1px solid #d3d7df;border-radius:.5rem;padding:1rem;overflow-x:auto;max-height:300px;overflow-y:auto}
+#contenedor-historial-inasistencias-jornalero table{width:100%;border-collapse:collapse;font-size:.9rem;margin:0}
+#contenedor-historial-inasistencias-jornalero thead{background:#e5e7eb;color:#495057;font-weight:700;position:sticky;top:0}
+#contenedor-historial-inasistencias-jornalero th,#contenedor-historial-inasistencias-jornalero td{padding:.5rem .75rem;border-bottom:1px solid #d3d7df;text-align:left}
+#contenedor-historial-inasistencias-jornalero tbody tr:hover{background:#f3f4f6}
+#contenedor-historial-inasistencias-jornalero .sin-eventos{text-align:center;color:#6c757d;padding:1rem;font-style:italic}
+
+/* ========================================
+ * ESTILOS PARA SUELDO A COBRAR (MODAL)      
+ * ======================================== */
+#mod-sueldo-jornalero{border:1px solid #d1fae5;border-radius:.5rem;box-shadow:0 1px 3px rgba(0,0,0,.05);background:#f0fdf4;padding:1.5rem;margin-top:1rem}
+#mod-sueldo-jornalero .form-check-label{color:#065f46;font-weight:600}
+#mod-sueldo-jornalero .sueldo-cobrar-label{font-size:1.1rem;color:#065f46;font-weight:700}
+#mod-sueldo-jornalero .sueldo-cobrar-input{border:1px solid #6ee7b7;border-radius:.35rem;padding:.5rem .75rem;font-size:1rem;width:100%;text-align:center;background:#fff}
+#mod-sueldo-jornalero .sueldo-cobrar-input:focus{border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.1)}
+#mod-sueldo-jornalero .sueldo-cobrar-descripcion{color:#065f46;font-size:.85rem}

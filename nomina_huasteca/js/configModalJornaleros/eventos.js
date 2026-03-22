@@ -43,7 +43,7 @@ function diaSemanaRancho(fecha) {
 
 function recalcularEventosJornalero(empleado) {
     // Validar que sea jornalero
-    if (!empleado || parseInt(empleado.id_departamento) !== 11) {
+    if (!empleado || parseInt(empleado.id_departamento) !== 13) {
         return;
     }
 
@@ -60,20 +60,20 @@ function recalcularEventosJornalero(empleado) {
 // CALCULAR Y ASIGNAR HISTORIAL Y EL TOTAL DE EVENTOS  AL ARRANCAR EL SISTEMA
 // ========================================
 
-function calcularOlvidosTodosJornaleros(jsonNominaPilar) {
+function calcularOlvidosTodosJornaleros(jsonNominaHuasteca) {
     // Validar que exista la nómina y sus departamentos
-    if (!jsonNominaPilar || !Array.isArray(jsonNominaPilar.departamentos)) {
+    if (!jsonNominaHuasteca || !Array.isArray(jsonNominaHuasteca.departamentos)) {
         return;
     }
 
     // Iterar sobre todos los departamentos
-    jsonNominaPilar.departamentos.forEach(departamento => {
+    jsonNominaHuasteca.departamentos.forEach(departamento => {
         // Iterar sobre todos los empleados del departamento
         if (!Array.isArray(departamento.empleados)) return;
 
         departamento.empleados.forEach(empleado => {
-            // Solo procesar jornaleros (id_departamento === 11)
-            if (parseInt(empleado.id_departamento) !== 11) return;
+            // Solo procesar jornaleros (id_departamento === 13)
+            if (parseInt(empleado.id_departamento) !== 13) return;
 
             // Calcular el historial de olvidos para este coordinador
             asignarHistorialOlvidosJornalero(empleado);
@@ -202,7 +202,7 @@ function mostrarEventosPorEntradaJornalero(empleado, selectorContent, selectorTo
     const $content = $(selectorContent);
     $content.empty();
 
-    const horarioRancho = jsonNominaPilar?.horarioRancho;
+    const horarioRancho = jsonNominaHuasteca?.horarioRancho;
 
     if (!Array.isArray(empleado.registros) || !Array.isArray(horarioRancho)) {
         $content.html(`<p class="sin-eventos">${textoVacio}</p>`);
@@ -351,7 +351,7 @@ function mostrarOlvidosChecadorJornalero(empleado) {
     const $content = $('#olvidos-checador-jornaleros');
     $content.empty();
 
-    const horarioRancho = jsonNominaPilar?.horarioRancho;
+    const horarioRancho = jsonNominaHuasteca?.horarioRancho;
 
     if (!Array.isArray(empleado.registros) || !Array.isArray(horarioRancho)) {
         $content.html('<p class="sin-eventos">Sin olvidos del checador</p>');
@@ -360,7 +360,7 @@ function mostrarOlvidosChecadorJornalero(empleado) {
     }
 
     // Descuento por olvido del checador (desde config o valor por defecto 20)
-    const descuentoOlvido = parseFloat(jsonNominaPilar?.descuento_checador) || 20;
+    const descuentoOlvido = parseFloat(jsonNominaHuasteca?.descuento_checador) || 20;
 
     // Detectar olvidos: tiene entrada pero NO salida, o salida pero NO entrada
     // Solo en días que tengan horario asignado en el rancho

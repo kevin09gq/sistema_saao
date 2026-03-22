@@ -117,9 +117,9 @@ $columnas = [
     'INFONAVIT',
     'AJUSTES AL SUB',
     'AUSENTISMO',
-    'PERMISO',
-    'RETARDOS',
     'UNIFORMES',
+    'PERMISOS',
+    'RETARDOS',
     'CHECADOR',
     'F.A/GAFET/COFIA',
     'TOTAL DE DEDUCCIONES',
@@ -167,9 +167,9 @@ $columnasAncho = [
     'K' => 20,  // INFONAVIT
     'L' => 22,  // AJUSTES AL SUB
     'M' => 21,  // AUSENTISMO
-    'N' => 20,  // PERMISO
-    'O' => 20,  // RETARDOS
-    'P' => 20,  // UNIFORMES
+    'N' => 20,  // UNIFORMES
+    'O' => 20,  // PERMISOS
+    'P' => 20,  // RETARDOS
     'Q' => 20,  // CHECADOR
     'R' => 22,  // F.A/GAFET/COFIA
     'S' => 22,  // TOTAL DE DEDUCCIONES
@@ -207,9 +207,9 @@ $tamanioLetraColumnas = [
     'K' => 14,  // INFONAVIT
     'L' => 14,  // AJUSTES AL SUB
     'M' => 14,  // AUSENTISMO
-    'N' => 14,  // PERMISO
-    'O' => 14,  // RETARDOS
-    'P' => 14,  // UNIFORMES
+    'N' => 14,  // UNIFORMES
+    'O' => 14,  // PERMISOS
+    'P' => 14,  // RETARDOS
     'Q' => 14,  // CHECADOR
     'R' => 13,  // F.A/GAFET/COFIA
     'S' => 13,  // TOTAL DE DEDUCCIONES
@@ -428,13 +428,23 @@ foreach ($empleadosCoodinadores as $empleado) {
         }
     }
 
-    // Agregar permiso en la columna PERMISO (solo si hay datos)
+    // Agregar uniformes en la columna UNIFORMES (solo si hay datos)
+    if ($uniformesTieneDatos) {
+        $uniformes = $empleado['uniformes'] ?? 0;
+        if (!empty($uniformes) && $uniformes != 0) {
+            $sheet->setCellValue('N' . $numeroFila, $uniformes);
+            $sheet->getStyle('N' . $numeroFila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
+            $sheet->getStyle('N' . $numeroFila)->getFont()->setColor(new Color('FF0000'));
+        }
+    }
+
+    // Agregar permiso en la columna PERMISOS (solo si hay datos)
     if ($permisoTieneDatos) {
         $permiso = $empleado['permiso'] ?? 0;
         if (!empty($permiso) && $permiso != 0) {
-            $sheet->setCellValue('N' . $numeroFila, $permiso);
-            $sheet->getStyle('N' . $numeroFila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
-            $sheet->getStyle('N' . $numeroFila)->getFont()->setColor(new Color('FF0000'));
+            $sheet->setCellValue('O' . $numeroFila, $permiso);
+            $sheet->getStyle('O' . $numeroFila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
+            $sheet->getStyle('O' . $numeroFila)->getFont()->setColor(new Color('FF0000'));
         }
     }
 
@@ -442,17 +452,7 @@ foreach ($empleadosCoodinadores as $empleado) {
     if ($retardosTieneDatos) {
         $retardos = $empleado['retardos'] ?? 0;
         if (!empty($retardos) && $retardos != 0) {
-            $sheet->setCellValue('O' . $numeroFila, $retardos);
-            $sheet->getStyle('O' . $numeroFila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
-            $sheet->getStyle('O' . $numeroFila)->getFont()->setColor(new Color('FF0000'));
-        }
-    }
-
-    // Agregar uniformes en la columna UNIFORMES (solo si hay datos)
-    if ($uniformesTieneDatos) {
-        $uniformes = $empleado['uniformes'] ?? 0;
-        if (!empty($uniformes) && $uniformes != 0) {
-            $sheet->setCellValue('P' . $numeroFila, $uniformes);
+            $sheet->setCellValue('P' . $numeroFila, $retardos);
             $sheet->getStyle('P' . $numeroFila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
             $sheet->getStyle('P' . $numeroFila)->getFont()->setColor(new Color('FF0000'));
         }
@@ -550,7 +550,7 @@ for ($fila = 7; $fila < $numeroFila; $fila++) {
         $sheet->getStyle($col . $fila)->getFont()->setColor(new Color('FF0000'));
     }
     
-    // Columnas con formato descuentos: M-R (AUSENTISMO, PERMISO, RETARDOS, UNIFORMES, CHECADOR, F.A/GAFET/COFIA)
+    // Columnas con formato descuentos: M-R (AUSENTISMO, UNIFORMES, PERMISOS, RETARDOS, CHECADOR, F.A/GAFET/COFIA)
     for ($col = 'M'; $col <= 'R'; $col++) {
         $sheet->getStyle($col . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
         $sheet->getStyle($col . $fila)->getFont()->setColor(new Color('FF0000'));
@@ -593,7 +593,8 @@ $sheet->getStyle('A' . $filaTotal)->getAlignment()->setVertical('center');
 $columnasData = ['D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
 
 foreach ($columnasData as $columna) {
-    $sheet->setCellValue($columna . $filaTotal, '=SUM(' . $columna . '7:' . $columna . ($filaTotal - 1) . ')');
+    $rangoSuma = $columna . '7:' . $columna . ($filaTotal - 1);
+    $sheet->setCellValue($columna . $filaTotal, '=IF(SUM(' . $rangoSuma . ')=0,"",SUM(' . $rangoSuma . '))');
     $sheet->getStyle($columna . $filaTotal)->getFont()->setBold(true);
     $sheet->getStyle($columna . $filaTotal)->getFont()->setSize(14);
     
@@ -659,18 +660,18 @@ if (!$ausentismoTieneDatos) {
     $sheet->getColumnDimension('M')->setVisible(false);
 }
 
-// Ocultar columna PERMISO si no tiene datos
-if (!$permisoTieneDatos) {
+// Ocultar columna UNIFORMES si no tiene datos
+if (!$uniformesTieneDatos) {
     $sheet->getColumnDimension('N')->setVisible(false);
+}
+
+// Ocultar columna PERMISOS si no tiene datos
+if (!$permisoTieneDatos) {
+    $sheet->getColumnDimension('O')->setVisible(false);
 }
 
 // Ocultar columna RETARDOS si no tiene datos
 if (!$retardosTieneDatos) {
-    $sheet->getColumnDimension('O')->setVisible(false);
-}
-
-// Ocultar columna UNIFORMES si no tiene datos
-if (!$uniformesTieneDatos) {
     $sheet->getColumnDimension('P')->setVisible(false);
 }
 
@@ -703,9 +704,9 @@ $tamanioLetraFilas = [
     'K' => 15,  // INFONAVIT
     'L' => 15,  // AJUSTES AL SUB
     'M' => 15,  // AUSENTISMO
-    'N' => 15,  // PERMISO
-    'O' => 15,  // RETARDOS
-    'P' => 15,  // UNIFORMES
+    'N' => 15,  // UNIFORMES
+    'O' => 15,  // PERMISOS
+    'P' => 15,  // RETARDOS
     'Q' => 15,  // CHECADOR
     'R' => 15,  // F.A/GAFET/COFIA
     'S' => 15,  // TOTAL DE DEDUCCIONES

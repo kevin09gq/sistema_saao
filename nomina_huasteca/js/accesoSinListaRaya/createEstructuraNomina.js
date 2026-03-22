@@ -2,6 +2,12 @@ let jsonNominaHuasteca = null;
 
 $(document).ready(function () {
     crearEstructuraJson();
+    restoreNomina();
+    limpiarCamposNomina();
+    obtenerNominaHuasteca();
+    console.log(jsonNominaHuasteca);
+    
+
 });
 
 // ============================================
@@ -9,6 +15,7 @@ $(document).ready(function () {
 // ============================================
 
 function crearEstructuraJson() {
+
     $("#container-acceso-huasteca").removeAttr("hidden");
     $('#btn_crear_nomina_huasteca').on('click', function () {
         // Obtener valores de los campos
@@ -32,17 +39,6 @@ function crearEstructuraJson() {
 
         obtenerJornalerosCoordinadores(jsonNominaHuasteca);
     });
-}
-
-// ============================================
-// FORMATEAR FECHA PARA MOSTRAR EN NÓMINA (DD/Mes/AAAA)
-// ============================================
-
-function formatearFechaNomina(fecha) {
-    if (!fecha) return '';
-    var meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-    var partes = fecha.split('-');
-    return partes[2] + '/' + meses[parseInt(partes[1]) - 1] + '/' + partes[0];
 }
 
 // ============================================
@@ -133,6 +129,225 @@ function obtenerJornalerosCoordinadores(jsonNominaHuasteca) {
     });
 }
 
+// ============================================
+// RECUPERAR NÓMINA HUASTECA GUARDADA EN LA BASE DE DATOS (SI EXISTE)
+// ============================================
+
+function obtenerNominaHuasteca() {
+    $('#btn_recuperar_nomina_huasteca').on('click', function () {
+        var anio = parseInt($('#anio_recuperar_nomina_huasteca').val());
+        var semana = parseInt($('#semana_recuperar_nomina_huasteca').val());
+
+        if (!anio || !semana) {
+            Swal.fire('Error', 'Por favor completa año y semana', 'error');
+            return;
+        }
+
+        // 1. Validar que exista la nómina en la BD
+        validarExistenciaNomina(semana, anio)
+            .then(function (existe) {
+                if (!existe) {
+                    Swal.fire({
+                        title: 'No encontrada',
+                        text: `No existe una nómina guardada para la semana ${semana} del año ${anio}.`,
+                        icon: 'warning'
+                    });
+                    return;
+                }
+
+                // 2. Obtener la nómina completa
+                return getNominaHuasteca(semana, anio)
+                    .then(function (nomina) {
+                        if (!nomina) {
+                            Swal.fire('Error', 'No se pudo recuperar la nómina. Intenta de nuevo.', 'error');
+                            return;
+                        }
+
+                        // 3. Cargar en la variable global y en localStorage
+                        jsonNominaHuasteca = nomina;
+                        validarExistenciaTrabajadorBD(jsonNominaHuasteca);
+                        
+
+
+                    });
+            })
+            .catch(function (err) {
+                console.error('Error en obtenerNominaHuasteca:', err);
+                Swal.fire('Error', 'Ocurrió un error al comunicarse con el servidor.', 'error');
+            });
+    });
+}
+
+// Validar existencia de trabajadores en la BD
+function validarExistenciaTrabajadorBD(jsonNominaHuasteca) {
+
+    // Array para almacenar todas las claves de empleados
+    var clavesEmpleados = [];
+
+    // Recorrer todos los departamentos
+    jsonNominaHuasteca.departamentos.forEach(function (departamento) {
+        departamento.empleados.forEach(function (empleado) {
+            clavesEmpleados.push(empleado.clave);
+        });
+    });
+
+    // Enviar las claves al servidor para validar
+    $.ajax({
+        url: '../php/validarExistenciaEmpleado.php',
+        type: 'POST',
+        data: {
+            claves: clavesEmpleados,
+            case: 'validarExistenciaTrabajadorBD'
+        },
+        dataType: 'json',
+        success: function (response) {
+            if (response.existentes) {
+                // Obtener claves existentes en la BD
+                var clavesExistentes = response.existentes.map(emp => emp.clave);
+
+                // Filtrar empleados: solo dejar los que existen en BD (id_status=1 e id_empresa=1)
+                jsonNominaHuasteca.departamentos.forEach(function (departamento) {
+                    departamento.empleados = departamento.empleados.filter(function (empleado) {
+                        return clavesExistentes.includes(String(empleado.clave));
+                    });
+                });
+
+                // Quitar departamentos vacíos
+                jsonNominaHuasteca.departamentos = jsonNominaHuasteca.departamentos.filter(function (departamento) {
+                    return departamento.empleados.length > 0;
+                });
+
+
+                verificarEmpleadosSinSeguro(jsonNominaHuasteca); // Verificar y agregar empleados sin seguro que no están en la nómina recuperada
+
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error('Error al verificar empleados:', error);
+            console.error('Respuesta del servidor:', xhr.responseText);
+        }
+    });
+}
+
+// Verificar y agregar empleados sin seguro que no están en la nómina recuperada
+function verificarEmpleadosSinSeguro(jsonNominaHuasteca) {
+
+    // Recopilar todas las claves de empleados en la nómina actual
+    let clavesNomina = new Set();
+    jsonNominaHuasteca.departamentos.forEach(function (departamento) {
+        departamento.empleados.forEach(function (empleado) {
+            clavesNomina.add(String(empleado.clave));
+        });
+    });
+
+    // Mostrar loading antes de la petición ajax
+    Swal.fire({
+        title: 'Espere...',
+        text: 'Verificando empleados sin seguro...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+
+    // Obtener empleados sin seguro de la base de datos
+    $.ajax({
+        url: '../php/validarExistenciaEmpleado.php',
+        type: 'GET',
+        data: {
+            case: 'obtenerJornalerosCoordinadores'
+        },
+        dataType: 'json',
+        success: function (response) {
+            if (response.empleados && response.empleados.length > 0) {
+                // Filtrar empleados sin seguro que no están en la nómina actual
+                const empleadosSinSeguro = response.empleados.filter(emp => {
+                    return !clavesNomina.has(String(emp.clave));
+                });
+
+                // Agregar empleados sin seguro al departamento correspondiente
+                empleadosSinSeguro.forEach(function (empSinSeguro) {
+                    const empleado = {
+                        clave: empSinSeguro.clave,
+                        nombre: empSinSeguro.nombre + ' ' + empSinSeguro.ap_paterno + ' ' + empSinSeguro.ap_materno,
+                        salario_diario: empSinSeguro.salario_diario,
+                        id_empresa: empSinSeguro.id_empresa,
+                        id_departamento: empSinSeguro.id_departamento,
+                        id_puestoEspecial: empSinSeguro.id_puestoEspecial,
+                        biometrico: empSinSeguro.biometrico,
+                        seguroSocial: false,
+                    };
+
+                    // Agregar horario_oficial y salario_semanal solo para departamento 12 (coordinadores)
+                    if (empleado.id_departamento == 12) {
+                        empleado.horario_oficial = empSinSeguro.horario_oficial || null;
+                        empleado.salario_semanal = empSinSeguro.salario_semanal;
+                    }
+
+                    // Determinar a qué departamento agregar
+                    let nombreDpto = null;
+                    if (empleado.id_departamento == 12) {
+                        nombreDpto = 'huasteca coordinadores';
+                    } else if (empleado.id_departamento == 13) {
+                        nombreDpto = 'huasteca jornaleros';
+                    }
+
+                    // Si se determina un departamento válido, agregar el empleado
+                    if (nombreDpto && jsonNominaHuasteca && jsonNominaHuasteca.departamentos) {
+                        let dpto = jsonNominaHuasteca.departamentos.find(d => d.nombre === nombreDpto);
+
+                        // Si el departamento no existe, crearlo
+                        if (!dpto) {
+                            dpto = {
+                                nombre: nombreDpto,
+                                empleados: []
+                            };
+                            jsonNominaHuasteca.departamentos.push(dpto);
+                        }
+
+                        // Evitar duplicados
+                        const yaExiste = dpto.empleados.some(e => e.clave === empleado.clave);
+                        if (!yaExiste) {
+                            dpto.empleados.push(empleado);
+                        }
+                    }
+                });
+
+                asignarPropiedadesEmpleado(jsonNominaHuasteca);
+                ordenarEmpleadosPorNombre(jsonNominaHuasteca);
+
+                saveNomina(jsonNominaHuasteca);
+                initComponents();
+
+                // Filtrar por departamento 12 (coordinadores) por defecto
+                let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaHuasteca, 12);
+                mostrarDatosTabla(jsonFiltrado, 1);
+                console.log(jsonNominaHuasteca);
+
+                // Cerrar loading y mostrar éxito
+                Swal.fire({
+                    title: '¡Nómina lista!',
+                    text: 'Se han cargado los datos correctamente.',
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false,
+                    timerProgressBar: true
+                });
+
+            } else {
+                // Si no hay empleados que procesar, igual cerramos el loading
+                Swal.close();
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error('Error al obtener empleados sin seguro:', error);
+            Swal.fire({
+                title: 'Error',
+                text: 'Hubo un problema al verificar empleados sin seguro.',
+                icon: 'error'
+            });
+        }
+    });
+}
+
 
 
 // FUNCIONES AUXILIARES
@@ -205,8 +420,8 @@ function asignarPropiedadesEmpleado(jsonNominaHuasteca) {
             empleado.redondeo_activo = empleado.redondeo_activo ?? false;
 
 
-            
-        
+
+
             // Agregar propiedad mostrar (para filtrar en tabla)
             if (empleado.mostrar === undefined) {
                 empleado.mostrar = true;
@@ -240,6 +455,13 @@ function inicializarRegistrosVacios(jsonNominaHuasteca) {
             }
         });
     });
+}
+
+function formatearFechaNomina(fecha) {
+    if (!fecha) return '';
+    var meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    var partes = fecha.split('-');
+    return partes[2] + '/' + meses[parseInt(partes[1]) - 1] + '/' + partes[0];
 }
 
 

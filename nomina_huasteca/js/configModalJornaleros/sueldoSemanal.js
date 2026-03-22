@@ -67,12 +67,12 @@ function calcularSueldoSemanal(empleado = null) {
             empleadosAProcesar = [empleado];
         }
     } else {
-        // Si no se envía nada, recorrer todos los del departamento 11
+        // Si no se envía nada, recorrer todos los del departamento 13
         jsonNominaHuasteca.departamentos.forEach(departamento => {
             if (!departamento.empleados) return;
 
             departamento.empleados.forEach(empleado => {
-                if (parseInt(empleado.id_departamento) === 11) {
+                if (parseInt(empleado.id_departamento) === 13) {
                     empleadosAProcesar.push(empleado);
                 }
             });
@@ -81,7 +81,7 @@ function calcularSueldoSemanal(empleado = null) {
 
     // === PROCESAR EMPLEADOS ===
     empleadosAProcesar.forEach(empleado => {
-        // Verificar que sea departamento 11 (si es de jsonNominaHuasteca)
+        // Verificar que sea departamento 13 (si es de jsonNominaHuasteca)
         if (parseInt(empleado.id_departamento) !== 13) {
             return;
         }
@@ -141,8 +141,8 @@ function calcularSueldoSemanal(empleado = null) {
         let comidaTotal = 0;
         let aplicaComida = false;
 
-        // Solo para empleados del departamento 11 con id_tipo_puesto diferente de 3
-        if (parseInt(empleado.id_departamento) === 11) {
+        // Solo para empleados del departamento 13 con id_tipo_puesto diferente de 3
+        if (parseInt(empleado.id_departamento) === 13) {
             const precioComida = parseFloat(jsonNominaHuasteca.pago_comida) || 0;
             comidaTotal = diasAsistidos * precioComida;
             aplicaComida = true;

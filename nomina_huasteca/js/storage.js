@@ -29,14 +29,16 @@ function loadNomina() {
 }
 
 function clearNomina() {
-    try {
+   try {
         localStorage.removeItem('jsonNominaHuasteca');
         window.jsonNominaHuasteca = null;
 
+        // Marcar que se limpió intencionalmente para que restoreNomina no restaure
+        sessionStorage.setItem('nominaLimpiada', '1');
+
         // Limpiar tabla, formulario y ocultar contenedor
         $('#tabla-nomina-body-huasteca').empty();
-        
-        //('#form_excel_raya')[0].reset();
+        $('#form_excel_raya')[0].reset();
         $('#tabla-nomina-responsive').prop('hidden', true);
 
         return true;
@@ -49,6 +51,12 @@ function clearNomina() {
 // Restaura la nómina desde localStorage y actualiza la vista si las funciones UI están disponibles
 function restoreNomina() {
     try {
+        // Si el usuario limpió intencionalmente, no restaurar
+        if (sessionStorage.getItem('nominaLimpiada') === '1') {
+            sessionStorage.removeItem('nominaLimpiada');
+            return false;
+        }
+
         const stored = loadNomina();
         if (!stored) return false;
 

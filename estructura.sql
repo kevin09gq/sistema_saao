@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS departamentos (
   nombre_departamento varchar(100) NOT NULL,
   id_area int(11) DEFAULT NULL,
   PRIMARY KEY (id_departamento),
-  FOREIGN KEY (id_area) REFERENCES areas(id_area)
+  FOREIGN KEY (id_area) REFERENCES areas(id_area) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS puestos_especiales (
@@ -45,7 +45,7 @@ CREATE TABLE info_ranchos (
     horario_jornalero LONGTEXT NOT NULL,
     num_arboles INT NOT NULL,
     FOREIGN KEY (id_area)
-    REFERENCES areas(id_area)
+    REFERENCES areas(id_area) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- Esta tabla relaciona departamentos con
@@ -55,8 +55,8 @@ CREATE TABLE IF NOT EXISTS departamentos_puestos (
   id_departamento int(11) DEFAULT NULL,
   id_puestoEspecial int(11) DEFAULT NULL,
   PRIMARY KEY (id_departamento_puesto),
-  FOREIGN KEY (id_departamento) REFERENCES departamentos(id_departamento),
-  FOREIGN KEY (id_puestoEspecial) REFERENCES puestos_especiales(id_puestoEspecial)
+  FOREIGN KEY (id_departamento) REFERENCES departamentos(id_departamento) ON UPDATE CASCADE ON DELETE CASCADE,
+  FOREIGN KEY (id_puestoEspecial) REFERENCES puestos_especiales(id_puestoEspecial) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE status (
@@ -122,12 +122,12 @@ CREATE TABLE info_empleados (
     estado_civil VARCHAR(50),
     horario_fijo TINYINT(1) DEFAULT 1
     
-    FOREIGN KEY (id_rol) REFERENCES rol(id_rol),
-    FOREIGN KEY (id_status) REFERENCES status(id_status),
-    FOREIGN KEY (id_puestoEspecial) REFERENCES puestos_especiales(id_puestoEspecial),
-    FOREIGN KEY (id_departamento) REFERENCES departamentos(id_departamento),
-    FOREIGN KEY (id_area) REFERENCES areas(id_area),
-    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
+    FOREIGN KEY (id_rol) REFERENCES rol(id_rol) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (id_status) REFERENCES status(id_status) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (id_puestoEspecial) REFERENCES puestos_especiales(id_puestoESpecial) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (id_departamento) REFERENCES departamentos(id_departamento) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (id_area) REFERENCES areas(id_area) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- =============================
@@ -138,7 +138,7 @@ CREATE TABLE historial_reingresos (
     id_empleado INT NOT NULL,
     fecha_reingreso DATE NOT NULL,
     fecha_salida DATE NULL,
-    FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado)
+    FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 
@@ -147,8 +147,8 @@ CREATE TABLE empleado_contacto (
     id_empleado INT NOT NULL,
     id_contacto INT NOT NULL,
     parentesco VARCHAR(100),
-    FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado),
-    FOREIGN KEY (id_contacto) REFERENCES contacto_emergencia(id_contacto)
+    FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (id_contacto) REFERENCES contacto_emergencia(id_contacto) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE empleado_beneficiario (
@@ -157,8 +157,8 @@ CREATE TABLE empleado_beneficiario (
     id_beneficiario INT NOT NULL,
     parentesco VARCHAR(100),
     porcentaje DECIMAL(5,2) DEFAULT 0,
-    FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado),
-    FOREIGN KEY (id_beneficiario) REFERENCES beneficiarios(id_beneficiario)
+    FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (id_beneficiario) REFERENCES beneficiarios(id_beneficiario) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE casilleros (
@@ -168,8 +168,8 @@ CREATE TABLE casilleros (
 CREATE TABLE empleado_casillero (
     id_empleado INT NOT NULL,
     num_casillero VARCHAR(50) NOT NULL,
-    FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado),
-    FOREIGN KEY (num_casillero) REFERENCES casilleros(num_casillero)
+    FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (num_casillero) REFERENCES casilleros(num_casillero) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 
@@ -182,7 +182,7 @@ CREATE TABLE info_admin (
     id_rol INT NOT NULL,
     correo VARCHAR(100) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    FOREIGN KEY (id_rol) REFERENCES rol(id_rol)
+    FOREIGN KEY (id_rol) REFERENCES rol(id_rol) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- =============================
@@ -194,8 +194,8 @@ CREATE TABLE nomina (
   id_empresa INT NOT NULL,
   datos_nomina JSON NOT NULL,
   id_horario INT,
-  FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa),
-  FOREIGN KEY (id_horario) REFERENCES horarios_oficiales(id_horario)
+  FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa) ON UPDATE CASCADE ON DELETE CASCADE,
+  FOREIGN KEY (id_horario) REFERENCES horarios_oficiales(id_horario) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE horarios_oficiales (
@@ -216,7 +216,7 @@ CREATE TABLE nomina_40lbs(
     id_empresa INT NOT NULL,
     numero_semana INT NOT NULL,
     nomina_40lbs LONGTEXT NOT NULL,
-    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
+    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 
@@ -229,7 +229,7 @@ CREATE TABLE horarios_oficiales (
     id_horario INT AUTO_INCREMENT PRIMARY KEY,
     id_empleado INT NOT NULL,
     horario_oficial LONGTEXT NOT NULL,
-    FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado)  
+    FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE nomina_confianza (
@@ -238,7 +238,7 @@ CREATE TABLE nomina_confianza (
     anio INT NOT NULL,
     numero_semana INT NOT NULL,
     nomina LONGTEXT NOT NULL,
-    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
+    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- =============================
@@ -251,31 +251,31 @@ CREATE TABLE nomina_relicario (
     anio INT NOT NULL,
     numero_semana INT NOT NULL,
     nomina_relicario LONGTEXT NOT NULL,
-    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
+    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE cortes_relicario (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    id_nomina INT NOT NULL,
-    nombre_cortador VARCHAR(150) NOT NULL,
-    folio VARCHAR(10) NOT NULL,
-    precio_reja DECIMAL(10,2) NOT NULL,
-    fecha_corte DATE NOT NULL,
-    FOREIGN KEY (id_nomina)
+  id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id_nomina INT(11) NOT NULL,
+  nombre_cortador VARCHAR(150) NOT NULL,
+  folio VARCHAR(10) NOT NULL,
+  precio_reja DECIMAL(10,2) NOT NULL,
+  fecha_corte DATE NOT NULL,
+  FOREIGN KEY (id_nomina) 
     REFERENCES nomina_relicario(id_nomina_relicario)
-  
+    ON UPDATE CASCADE 
+    ON DELETE CASCADE
 );
-
 
 CREATE TABLE cortes_relicario_tablas (
-    id_corte INT NOT NULL,
-    num_tabla INT NOT NULL,
-    rejas INT NOT NULL,
-    FOREIGN KEY (id_corte)
+  id_corte INT(11) NOT NULL,
+  num_tabla INT(11) NOT NULL,
+  rejas INT(11) NOT NULL,
+  FOREIGN KEY (id_corte) 
     REFERENCES cortes_relicario(id)
-  
+    ON UPDATE CASCADE 
+    ON DELETE CASCADE
 );
-
 -- =============================
 -- TABLAS DE TURNOS Y FESTIVIDADES BHL
 -- =============================
@@ -388,7 +388,7 @@ CREATE TABLE empleado_horario_reloj (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_empleado INT NOT NULL,
     horario LONGTEXT NOT NULL,
-    FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado)  
+    FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE historial_biometrico (
@@ -412,8 +412,8 @@ CREATE TABLE historial_incidencias_semanal (
     ausencias INT DEFAULT 0,
     incapacidades INT DEFAULT 0,
     dias_trabajados INT DEFAULT 0,
-    FOREIGN KEY (empleado_id) REFERENCES info_empleados(id_empleado),
-    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
+    FOREIGN KEY (empleado_id) REFERENCES info_empleados(id_empleado) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 

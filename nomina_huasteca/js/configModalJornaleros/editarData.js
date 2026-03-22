@@ -28,7 +28,7 @@ function editarPropiedadesJornalero() {
         const id_puestoEspecial = parseInt($('#filtro_puesto').val());
 
         // Aplicar los mismos filtros que están activos
-        let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaPilar, id_departamento);
+        let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaHuasteca, id_departamento);
         jsonFiltrado = filtrarEmpleadosPorPuesto(jsonFiltrado, id_puestoEspecial);
 
         // Mostrar la tabla en la página actual (usar window.paginaActualNomina para acceso global)

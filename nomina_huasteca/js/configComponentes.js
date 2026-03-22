@@ -7,7 +7,8 @@
 // ============================================
 
 function initComponents() {
-    $("#container-nomina_huasteca").attr("hidden", true);
+   // $("#container-nomina_huasteca").attr("hidden", true);
+    $("#container-acceso-huasteca").attr("hidden", true);
     $("#tabla-nomina-responsive").removeAttr("hidden");
     $("#config-valores-huasteca").attr("hidden", true);
     // Se oculta la tabla de corte
@@ -62,6 +63,7 @@ function asignarValoresConfig(statusRancho = true) {
             // obtenerHorarioRancho es async: llamará calcularSueldoSemanal que refresca la tabla
             obtenerHorarioRancho();
             
+
         } else {
             // Sin horarioRancho (nómina restaurada): renderizar tabla directamente
             //  let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaHuasteca, 8);
@@ -88,8 +90,14 @@ function limpiarCamposNomina() {
         }).then((result) => {
             if (result.isConfirmed) {
                 clearNomina();
-                $("#container-nomina_huasteca").removeAttr("hidden");
+                // Asignar null a la variable local para que beforeunload no re-guarde en localStorage
+                jsonNominaHuasteca = null;
+                // $("#container-nomina_huasteca").removeAttr("hidden");
+                $("#container-acceso-huasteca").removeAttr("hidden");
                 $("#tabla-nomina-responsive").attr("hidden", true);
+                // Resetear el tab de Bootstrap a "Crear"
+                var tabCrear = new bootstrap.Tab(document.getElementById('tab-crear-nomina'));
+                tabCrear.show();
             }
         });
 
@@ -97,6 +105,8 @@ function limpiarCamposNomina() {
     });
 
 }
+
+
 
 // ============================================
 // ACTUALIZAR CONCEPTOS Y TARJETA A TODOS LOS EMPLEADOS

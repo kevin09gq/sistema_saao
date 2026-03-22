@@ -18,6 +18,9 @@
     <link rel="stylesheet" href="../css/nomina_huasteca.css">
     <link rel="stylesheet" href="../css/tablaNomina.css">
     <link rel="stylesheet" href="../css/encabezados.css">
+    <link rel="stylesheet" href="../css/modalCoordinador.css">
+    <link rel="stylesheet" href="../css/modalJornaleros.css">
+
 </head>
 
 <body>
@@ -56,39 +59,81 @@
     </div>
 
     <div id="container-acceso-huasteca" hidden>
-        <!-- Apartado para crear una nueva nómina centrado -->
-        <div class="container d-flex justify-content-center align-items-center" style="min-height: 60vh;">
-            <div class="col-md-8 col-lg-6">
-                <div class="card shadow-sm mb-4" id="crear-nomina-huasteca">
-                    <div class="card-body">
-                        <h5 class="card-title mb-3 text-center"><i class="bi bi-journal-plus"></i> Crear nueva nómina</h5>
-                        <form id="form_crear_nomina_huasteca" class="row g-3">
-                            <div class="col-md-6">
-                                <label for="anio_nomina_huasteca" class="form-label">Año</label>
-                                <input type="number" class="form-control" id="anio_nomina_huasteca" name="anio_nomina_huasteca" min="2000" max="2100" placeholder="Ej. 2026">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="semana_nomina_huasteca" class="form-label">No. Semana</label>
-                                <input type="number" class="form-control" id="semana_nomina_huasteca" name="semana_nomina_huasteca" min="1" max="53" placeholder="Ej. 5">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="fecha_inicio_nomina_huasteca" class="form-label">Fecha de inicio</label>
-                                <input type="date" class="form-control" id="fecha_inicio_nomina_huasteca" name="fecha_inicio_nomina_huasteca">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="fecha_cierre_nomina_huasteca" class="form-label">Fecha de cierre</label>
-                                <input type="date" class="form-control" id="fecha_cierre_nomina_huasteca" name="fecha_cierre_nomina_huasteca">
-                            </div>
-                            <div class="col-12 d-flex justify-content-center mt-3">
-                                <button type="button" class="btn btn-success px-4" id="btn_crear_nomina_huasteca">
-                                    <i class="bi bi-plus-circle"></i> Crear Nómina
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+
+        <div class="container mt-4" style="max-width: 600px;">
+
+            <!-- Nav Tabs Bootstrap nativo -->
+            <ul class="nav nav-tabs" id="tabsAccesoHuasteca" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="tab-crear-nomina" data-bs-toggle="tab"
+                        data-bs-target="#panel-crear-nomina" type="button" role="tab"
+                        aria-controls="panel-crear-nomina" aria-selected="true">
+                        <i class="bi bi-journal-plus"></i> Crear nómina
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tab-recuperar-nomina" data-bs-toggle="tab"
+                        data-bs-target="#panel-recuperar-nomina" type="button" role="tab"
+                        aria-controls="panel-recuperar-nomina" aria-selected="false">
+                        <i class="bi bi-arrow-clockwise"></i> Recuperar nómina
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Contenido de los tabs -->
+            <div class="tab-content border border-top-0 rounded-bottom p-4 shadow-sm bg-white" id="tabsAccesoHuastecaContent">
+
+                <!-- Panel: Crear nueva nómina -->
+                <div class="tab-pane fade show active" id="panel-crear-nomina" role="tabpanel" aria-labelledby="tab-crear-nomina">
+                    <h5 class="mb-3 text-center"><i class="bi bi-journal-plus"></i> Crear nueva nómina</h5>
+                    <form id="form_crear_nomina_huasteca" class="row g-3">
+                        <div class="col-md-6">
+                            <label for="anio_nomina_huasteca" class="form-label">Año</label>
+                            <input type="number" class="form-control" id="anio_nomina_huasteca" name="anio_nomina_huasteca" min="2000" max="2100" placeholder="Ej. 2026">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="semana_nomina_huasteca" class="form-label">No. Semana</label>
+                            <input type="number" class="form-control" id="semana_nomina_huasteca" name="semana_nomina_huasteca" min="1" max="53" placeholder="Ej. 5">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="fecha_inicio_nomina_huasteca" class="form-label">Fecha de inicio</label>
+                            <input type="date" class="form-control" id="fecha_inicio_nomina_huasteca" name="fecha_inicio_nomina_huasteca">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="fecha_cierre_nomina_huasteca" class="form-label">Fecha de cierre</label>
+                            <input type="date" class="form-control" id="fecha_cierre_nomina_huasteca" name="fecha_cierre_nomina_huasteca">
+                        </div>
+                        <div class="col-12 d-flex justify-content-center mt-3">
+                            <button type="button" class="btn btn-success px-4" id="btn_crear_nomina_huasteca">
+                                <i class="bi bi-plus-circle"></i> Crear Nómina
+                            </button>
+                        </div>
+                    </form>
                 </div>
+
+                <!-- Panel: Recuperar nómina -->
+                <div class="tab-pane fade" id="panel-recuperar-nomina" role="tabpanel" aria-labelledby="tab-recuperar-nomina">
+                    <h5 class="mb-3 text-center"><i class="bi bi-arrow-clockwise"></i> Recuperar nómina</h5>
+                    <form id="form_recuperar_nomina_huasteca" class="row g-3">
+                        <div class="col-md-6">
+                            <label for="anio_recuperar_nomina_huasteca" class="form-label">Año</label>
+                            <input type="number" class="form-control" id="anio_recuperar_nomina_huasteca" name="anio_recuperar_nomina_huasteca" min="2000" max="2100" placeholder="Ej. 2026">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="semana_recuperar_nomina_huasteca" class="form-label">No. Semana</label>
+                            <input type="number" class="form-control" id="semana_recuperar_nomina_huasteca" name="semana_recuperar_nomina_huasteca" min="1" max="53" placeholder="Ej. 5">
+                        </div>
+                        <div class="col-12 d-flex justify-content-center mt-3">
+                            <button type="button" class="btn btn-primary px-4" id="btn_recuperar_nomina_huasteca">
+                                <i class="bi bi-search"></i> Recuperar Nómina
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
             </div>
         </div>
+
     </div>
 
     <!-- Contenedor de Configuración de Valores -->
@@ -296,8 +341,8 @@
 -->
 
     <!-- Incluir los modales -->
-
-
+    <?php include "modalCoordinador.php"; ?>
+    <?php include "modalJornaleros.php"; ?>
 
 
     <!-- jQuery -->
@@ -313,8 +358,24 @@
     <script src="../js/storage.js"></script>
     <script src="../js/showDataTable.js"></script>
     <script src="../js/busquedaFiltrado.js"></script>
-
+    <script src="../js/saveGetNomina.js"></script>
+    <script src="../js/abrirModal.js"></script>
     <script src="../js/configModalJornaleros/sueldoSemanal.js"></script>
+
+    <script src="../js/configModalCoordinador/establecerData.js"></script>
+    <script src="../js/configModalCoordinador/configModal.js"></script>
+    <script src="../js/configModalCoordinador/editarData.js"></script>
+    <script src="../js/configModalCoordinador/newConcepts.js"></script>
+    <script src="../js/configModalCoordinador/eventos.js"></script>
+    <script src="../js/configModalCoordinador/justificacionCoordinador.js"></script>
+
+    <script src="../js/configModalJornaleros/establecerData.js"></script>
+    <script src="../js/configModalJornaleros/editarData.js"></script>
+    <script src="../js/configModalJornaleros/configModal.js"></script>
+    <script src="../js/configModalJornaleros/sueldoSemanal.js"></script>
+    <script src="../js/configModalJornaleros/eventos.js"></script>
+    <script src="../js/configModalJornaleros/newConcepts.js"></script>
+
 
 
 

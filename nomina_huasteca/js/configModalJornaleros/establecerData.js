@@ -233,7 +233,7 @@ function establecerColorBiometricoJornalero(empleado) {
     if (!empleado) return;
     
     // Validar que exista horarioRancho global
-    const horarioRancho = jsonNominaPilar?.horarioRancho;
+    const horarioRancho = jsonNominaHuasteca?.horarioRancho;
     if (!Array.isArray(horarioRancho)) return;
     
     // Definir colores y abreviaturas para cada tipo de evento
