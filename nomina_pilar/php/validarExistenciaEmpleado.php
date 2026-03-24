@@ -40,6 +40,8 @@ switch ($_SERVER['REQUEST_METHOD']) {
             obtenerJornalerosCoordinadores();
         } else if (isset($_GET['case']) && $_GET['case'] === 'validarEmpleadosSinSeguroBiometrico') {
             validarEmpleadosSinSeguroBiometrico();
+        } else if (isset($_GET['case']) && $_GET['case'] === 'obtenerDepartamentosNomina') {
+            obtenerDepartamentosNomina();
         } else {
             echo json_encode(['error' => 'Case no válido']);
         }
@@ -375,4 +377,78 @@ function validarEmpleadosNuevos()
             'existentes' => []
         ]);
     }
+}
+
+// Función para obtener departamentos asociados a una nómina
+function obtenerDepartamentosNomina()
+{
+    global $conexion;
+
+    // Obtener id_nomina del query string (default 5 para Pilar)
+    $idNomina = isset($_GET['id_nomina']) ? intval($_GET['id_nomina']) : 5;
+
+    // Verificar conexión
+    if (!$conexion) {
+        echo json_encode([
+            'error' => 'Error de conexión a la base de datos',
+            'departamentos' => []
+        ]);
+        return;
+    }
+
+    // Consultar departamentos asociados a la nómina
+    $sql = "SELECT d.id_departamento, d.nombre_departamento
+            FROM nomina_departamento nd
+            INNER JOIN departamentos d ON d.id_departamento = nd.id_departamento
+            WHERE nd.id_nomina = ?
+            ORDER BY d.nombre_departamento ASC";
+
+    // Preparar la sentencia
+    $stmt = mysqli_prepare($conexion, $sql);
+    
+    if (!$stmt) {
+        echo json_encode([
+            'error' => 'Error al preparar la consulta: ' . mysqli_error($conexion),
+            'departamentos' => []
+        ]);
+        return;
+    }
+
+    // Vincular parámetros
+    mysqli_stmt_bind_param($stmt, "i", $idNomina);
+
+    // Ejecutar la consulta
+    if (!mysqli_stmt_execute($stmt)) {
+        echo json_encode([
+            'error' => 'Error al ejecutar la consulta: ' . mysqli_stmt_error($stmt),
+            'departamentos' => []
+        ]);
+        mysqli_stmt_close($stmt);
+        return;
+    }
+
+    // Obtener resultados
+    $result = mysqli_stmt_get_result($stmt);
+
+    // Procesar resultados
+    $departamentos = [];
+    if ($result) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $departamentos[] = [
+                'id_departamento' => intval($row['id_departamento']),
+                'nombre_departamento' => $row['nombre_departamento']
+            ];
+        }
+
+        echo json_encode([
+            'departamentos' => $departamentos
+        ], JSON_UNESCAPED_UNICODE);
+    } else {
+        echo json_encode([
+            'error' => 'Error en la consulta: ' . mysqli_error($conexion),
+            'departamentos' => []
+        ]);
+    }
+
+    mysqli_stmt_close($stmt);
 }

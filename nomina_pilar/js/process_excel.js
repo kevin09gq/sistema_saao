@@ -109,6 +109,7 @@ function processExcelData(params) {
                                         departamento.nombre = mapaDepartamentos[departamento.nombre];
                                     }
                                 });
+                                crearEstructuaJson();
 
                                 // Si no hay biométrico, validar existencia y sí agregar empleados sin seguro
                                 validarExistenciaTrabajador(JsonListaRaya, false);
@@ -1056,6 +1057,43 @@ function inicializarRegistrosVacios(jsonNominaPilar) {
 }
 
 
+// Función para crear la estructura inicial del JSON de nómina basada en los departamentos configurados
+function crearEstructuaJson() {
+    $.ajax({
+        url: '../php/validarExistenciaEmpleado.php',
+        type: 'GET',
+        data: {
+            case: 'obtenerDepartamentosNomina',
+            id_nomina: 5 // Pilar
+        },
+        dataType: 'json',
+        success: function (response) {
+            if (response.departamentos) {
+                // Estructura filtrada: solo departamentos
+                let jsonEstructura = {
+                    "departamentos": []
+                };
+
+                // Agregar los departamentos obtenidos
+                response.departamentos.forEach(depto => {
+                    jsonEstructura.departamentos.push({
+                        "id": depto.id_departamento,
+                        "nombre": depto.nombre_departamento,
+                        "empleados": []
+                    });
+                });
+
+                // Asignar el JSON a la variable global y mostrarlo
+               // jsonNominaPilar = jsonEstructura;
+                console.log("Estructura JSON creada (Solo departamentos):", jsonEstructura);
+               
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error('Error al obtener estructura de departamentos:', error);
+        }
+    });
+}
 
 
 

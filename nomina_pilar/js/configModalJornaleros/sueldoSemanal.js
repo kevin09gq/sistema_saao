@@ -146,7 +146,13 @@ function calcularSueldoSemanal(empleado = null) {
 
         const totalTardeada = diasTardeados * montoTardeada;
         empleado.tardeada = totalTardeada === 0 ? 0 : totalTardeada.toFixed(2);
-        empleado.sueldo_extra_total = (parseFloat(empleado.sueldo_extra_total) || 0) + totalTardeada;
+        // Recalcular el total extra de forma limpia (tardeada + percepciones_extra)
+        if (typeof calcularTotalExtra === 'function') {
+            calcularTotalExtra(empleado);
+        } else {
+            // Fallback si no está cargado el script del modal
+            empleado.sueldo_extra_total = parseFloat(empleado.tardeada) || 0;
+        }
 
     });
 
