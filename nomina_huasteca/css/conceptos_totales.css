@@ -1,0 +1,103 @@
+/* Estilos específicos para el modal "Totales por Concepto" */
+#modalConceptosTotales .card {
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  box-shadow: none;
+}
+
+#modalConceptosTotales .card .card-title {
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-bottom: 0.25rem;
+}
+
+#modalConceptosTotales .card h4 {
+  font-size: 1.6rem;
+  margin: 0;
+  font-weight: 700;
+}
+
+#modalConceptosTotales .text-success { color: #198754; }
+#modalConceptosTotales .text-danger  { color: #dc3545; }
+#modalConceptosTotales .text-primary { color: #0d6efd; }
+
+/* Accordion */
+#modalConceptosTotales .accordion .accordion-item { border: none; }
+#modalConceptosTotales .accordion-item + .accordion-item { border-top: 1px solid #e9ecef; }
+
+#modalConceptosTotales .accordion-button {
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.95rem;
+}
+
+#modalConceptosTotales .concept-title {
+  flex: 1;
+  text-align: left;
+}
+
+#modalConceptosTotales .badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+#modalConceptosTotales .accordion-body {
+  padding: 0.75rem 1rem;
+}
+
+#modalConceptosTotales .table {
+  margin-bottom: 0;
+  background: transparent;
+  font-size: 0.9rem;
+}
+
+#modalConceptosTotales .table th,
+#modalConceptosTotales .table td { 
+  vertical-align: middle;
+  padding: 0.5rem;
+}
+
+#modalConceptosTotales .table th {
+  background: #f8f9fa;
+  font-weight: 600;
+  border-bottom: 2px solid #e9ecef;
+}
+
+#modalConceptosTotales .table td.text-end { 
+  font-weight: 600;
+  color: #495057;
+}
+
+#modalConceptosTotales .text-muted {
+  color: #6c757d !important;
+}
+
+/* Separadores de secciones */
+#modalConceptosTotales h6 {
+  border-bottom: 2px solid #e9ecef;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+#modalConceptosTotales h6.text-success {
+  border-bottom-color: #198754;
+}
+
+#modalConceptosTotales h6.text-danger {
+  border-bottom-color: #dc3545;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 767px) {
+  #modalConceptosTotales .card h4 { font-size: 1.25rem; }
+  #modalConceptosTotales .accordion-button { font-size: 0.9rem; }
+  #modalConceptosTotales .badge { font-size: 0.75rem; }
+}

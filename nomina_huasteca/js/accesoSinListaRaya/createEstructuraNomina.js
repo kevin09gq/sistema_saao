@@ -18,8 +18,15 @@ function crearEstructuraJson() {
 
     $("#container-acceso-huasteca").removeAttr("hidden");
     $('#btn_crear_nomina_huasteca').on('click', function () {
-        // Obtener valores de los campos
-        // Función simple para formatear fecha a 30/Ene/2026
+        // Mostrar alerta de carga
+        Swal.fire({
+            title: 'Creando nómina...',
+            text: 'Espere un momento por favor.',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
 
         jsonNominaHuasteca = {
             numero_semana: $('#semana_nomina_huasteca').val(),
@@ -109,6 +116,10 @@ function obtenerJornalerosCoordinadores(jsonNominaHuasteca) {
                 asignarPropiedadesEmpleado(jsonNominaHuasteca);
                 ordenarEmpleadosPorNombre(jsonNominaHuasteca);
                 inicializarRegistrosVacios(jsonNominaHuasteca);
+                
+                // Guardar explícitamente al crear para asegurar persistencia
+                saveNomina(jsonNominaHuasteca);
+                
                 mostrarConfigValores(true);
 
                 console.log(jsonNominaHuasteca);
@@ -382,15 +393,15 @@ function asignarPropiedadesEmpleado(jsonNominaHuasteca) {
               - Si no tiene puesto asignado (null) → Por defecto es Jornalero Base (id_tipo_puesto = 1)
             */
 
-            /* Mapear id_puestoEspecial a id_tipo_jornalero según departamento
+            // Mapear id_puestoEspecial a id_tipo_jornalero según departamento
             if (idDepto === 12) {
                 // Departamento: Coordinadores
                 empleado.id_tipo_puesto = 4; // Coordinador
 
-            } else if (idDepto === 11) {
+            } else if (idDepto === 13) {
                 // Departamento: Jornaleros
                 empleado.id_tipo_puesto = (idPuesto === 37 || idPuesto === 39) ? 3 : ((idPuesto === 38) ? 2 : 1);
-            }*/
+            }
 
             // Asignar propiedad pasaje para jornaleros base y vivero
             if (["13"].includes(empleado.id_departamento)) {

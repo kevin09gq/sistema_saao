@@ -1,3 +1,5 @@
+quitarTarjeta();
+updateTarjeta();
 
 
 // ============================================
@@ -21,6 +23,9 @@ function initComponents() {
 // CUANDO HAYA EMPLEADOS ASEGURADOS
 // ============================================
 function mostrarConfigValores(bandera) {
+    // Cerrar cualquier alerta de carga abierta
+    Swal.close();
+
     $("#container-acceso-huasteca").attr("hidden", true);
     $("#config-valores-huasteca").removeAttr("hidden");
     asignarValoresConfig(bandera);
@@ -54,6 +59,9 @@ function asignarValoresConfig(statusRancho = true) {
         jsonNominaHuasteca.precio_pasaje = pasaje;
         jsonNominaHuasteca.pago_tardeada = tardeada;
         jsonNominaHuasteca.pago_comida = comida;
+        
+        // Guardar valores de configuración en localStorage
+        saveNomina(jsonNominaHuasteca);
 
         $("#config-valores-huasteca").attr("hidden", true);
         $("#tabla-nomina-responsive").removeAttr("hidden");

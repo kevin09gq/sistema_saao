@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="../css/encabezados.css">
     <link rel="stylesheet" href="../css/modalCoordinador.css">
     <link rel="stylesheet" href="../css/modalJornaleros.css">
+    <link rel="stylesheet" href="../css/conceptos_totales.css">
 
 </head>
 
@@ -343,6 +344,15 @@
     <!-- Incluir los modales -->
     <?php include "modalCoordinador.php"; ?>
     <?php include "modalJornaleros.php"; ?>
+    <?php include "modalSeleccionarEmpleados.php"; ?>
+    <?php include "modalConceptosTotales.php"; ?>
+    <?php include "biometricoModal.php"; ?>
+    <?php include "modalTardeadaPasaje.php"; ?>
+    <?php include "modalQuitarComidaPasaje.php"; ?>
+    <?php include "modalDiasInhabiles.php"; ?>
+    <?php include "modalTipoDia.php"; ?>
+    <?php include "modalExportarNomina.php"; ?>
+
 
 
     <!-- jQuery -->
@@ -360,7 +370,13 @@
     <script src="../js/busquedaFiltrado.js"></script>
     <script src="../js/saveGetNomina.js"></script>
     <script src="../js/abrirModal.js"></script>
+    <script src="../js/seleccionar_empleados.js"></script>
+    <script src="../js/conceptos_totales.js"></script>
+    <script src="../js/actualizarBiomtrico.js"></script>
+    <script src="../js/tardeadaPasaje.js"></script>
+    <script src="../js/exportarNominaExcel.js"></script>
     <script src="../js/configModalJornaleros/sueldoSemanal.js"></script>
+
 
     <script src="../js/configModalCoordinador/establecerData.js"></script>
     <script src="../js/configModalCoordinador/configModal.js"></script>
