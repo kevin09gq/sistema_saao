@@ -60,11 +60,11 @@ $(document).on('click', '#context_menu_corte', function (e) {
 });
 
 
-
 /**
- * ===========================================================
  * INCIALIZAR EL MODAL PARA LOS DETALLES DE LA NOMINA DE CORTE
- * ==========================================================
+ * @param {JsonObject} json jsonNominaRelicario de process_excel.js
+ * @param {string} nombreEmpleado nombre del empleado para filtrar
+ * @returns 
  */
 function inicializar_modal_corte_nomina_detalles(json, nombreEmpleado) {
     // Obtener el nombre del empleado de la fila seleccionada
@@ -138,7 +138,10 @@ function llenarTabDetalles(nombre, datos) {
     $('#span_sueldo_diario').text(`$${datos.sueldoDiario.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
     $('#span_dias_trabajados').text(datos.diasTrabajados);
     $('#span_total_efectivo').text(`$${datos.totalEfectivo.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
-    $('#badge_nombre_cortador').text(nombre);
+    $('#badge_nombre_cortador').html(`<i class="bi bi-person-fill me-2"></i>${nombre}`);
+
+    // Se agrega el nombre del empleado como un parametro data
+    $('#btn_borrar_nomina').attr('data-nombre', nombre);
 }
 
 /**
@@ -300,6 +303,14 @@ $(btn_guardar_cambios_nomina_corte).on('click', function (e) {
  * INCIALIZAR EL MODAL PARA LOS DETALLES DE LAS REJAS DE CORTE
  * ===========================================================
  */
+
+/**
+ * INCIALIZAR EL MODAL PARA LOS DETALLES DE LAS REJAS DE CORTE
+ * @param {JsonObject} json jsonNominaRelicario de process_excel.js
+ * @param {string} nombreEmpleado nombre del empleado para filtrar
+ * @param {float} precioReja precio de la reja para filtrar los tickets
+ * @returns 
+ */
 function inicializar_modal_corte_rejas_detalles(json, nombreEmpleado, precioReja) {
     // Obtener el nombre del empleado de la fila seleccionada
     const nombre = nombreEmpleado || String(filaSeleccionada.data('nombre') || '').trim();
@@ -343,6 +354,7 @@ function inicializar_modal_corte_rejas_detalles(json, nombreEmpleado, precioReja
     modal_corte_reja_detalles.show();
 }
 
+
 /**
  * Procesa los datos de rejas del empleado para un precio específico
  * @param {Array} tickets - Array de tickets del empleado filtrados por precio
@@ -368,6 +380,7 @@ function procesarDatosRejas(tickets, precio) {
     };
 }
 
+
 /**
  * Llena el tab de detalles del modal de rejas
  * @param {String} nombre - Nombre del empleado
@@ -378,8 +391,9 @@ function llenarTabDetallesRejas(nombre, datos) {
     $('#span_total_rejas').text(datos.totalRejas.toLocaleString('en-US'));
     $('#span_precio_reja').text(`$${datos.precioReja.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
     $('#span_total_efectivo_reja').text(`$${datos.totalEfectivo.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
-    $('#badge_nombre_cortador_reja').text(nombre);
+    $('#badge_nombre_cortador_reja').html(`<i class="bi bi-person-fill me-2"></i>${nombre}`);
 }
+
 
 /**
  * Llena el tab de tickets de rejas con inputs editables
@@ -404,6 +418,7 @@ function llenarTabTicketsRejas(tickets) {
         </div>
     `);
 }
+
 
 /**
  * Genera el HTML para un ticket individual
@@ -491,6 +506,7 @@ function generarHtmlTicket(ticket, index) {
     `;
 }
 
+
 /**
  * Elimina un ticket completo
  * @param {Number} ticketIndex - Índice del ticket a eliminar
@@ -512,6 +528,7 @@ function eliminarTicket(ticketIndex) {
         }
     });
 }
+
 
 /**
  * Elimina una tabla específica de un ticket
@@ -535,6 +552,7 @@ function eliminarTabla(ticketIndex, tablaIndex) {
         }
     });
 }
+
 
 /**
  * Agrega una nueva tabla a un ticket específico
@@ -588,29 +606,29 @@ function agregarTabla(ticketIndex) {
  */
 function recopilarTicketsDelModal() {
     const tickets = [];
-    
+
     // Recorrer todas las tarjetas de tickets visibles
-    $('#lista-reja-tab-pane .card').each(function(index) {
+    $('#lista-reja-tab-pane .card').each(function (index) {
         const ticketId = $(this).attr('id');
         if (!ticketId) return; // Saltar si no tiene ID (ticket eliminado)
-        
+
         const ticketIndex = ticketId.split('_')[1];
-        
+
         // Obtener datos básicos del ticket
         const folio = $(`#folio_${ticketIndex}`).val().trim();
         const fecha = $(`#fecha_${ticketIndex}`).val();
         const precioReja = parseFloat($(`#precio_${ticketIndex}`).val()) || 0;
-        
+
         // Recopilar datosRejas (tablas y cantidades)
         const datosRejas = [];
-        $(`#tablas_container_${ticketIndex} .row`).each(function() {
+        $(`#tablas_container_${ticketIndex} .row`).each(function () {
             const tablaInput = $(this).find('input[id^="tabla_"]');
             const cantidadInput = $(this).find('input[id^="cantidad_"]');
-            
+
             if (tablaInput.length && cantidadInput.length) {
                 const tabla = parseInt(tablaInput.val()) || 0;
                 const cantidad = parseInt(cantidadInput.val()) || 0;
-                
+
                 if (tabla > 0 && cantidad > 0) {
                     datosRejas.push({
                         tabla: tabla,
@@ -619,7 +637,7 @@ function recopilarTicketsDelModal() {
                 }
             }
         });
-        
+
         // Solo agregar el ticket si tiene datos válidos
         if (folio && fecha && datosRejas.length > 0) {
             tickets.push({
@@ -630,9 +648,10 @@ function recopilarTicketsDelModal() {
             });
         }
     });
-    
+
     return tickets;
 }
+
 
 /**
  * Actualiza los tickets de un empleado en el JSON para un precio específico
@@ -649,24 +668,24 @@ function actualizarTicketsEmpleado(json, nombreEmpleado, precioOriginal, nuevosT
             console.error('Departamento Corte no encontrado');
             return false;
         }
-        
-        const empleado = departamentoCorte.empleados.find(emp => 
+
+        const empleado = departamentoCorte.empleados.find(emp =>
             emp.nombre === nombreEmpleado && emp.concepto === 'REJA'
         );
-        
+
         if (!empleado) {
             console.error('Empleado no encontrado');
             return false;
         }
-        
+
         // Filtrar tickets que NO tengan el precio original (mantener los otros precios)
-        const ticketsOtrosPrecios = empleado.tickets.filter(ticket => 
+        const ticketsOtrosPrecios = empleado.tickets.filter(ticket =>
             parseFloat(ticket.precio_reja) !== precioOriginal
         );
-        
+
         // Combinar tickets de otros precios con los nuevos tickets actualizados
         empleado.tickets = [...ticketsOtrosPrecios, ...nuevosTickets];
-        
+
         // Si el empleado es REJA y queda sin tickets, eliminarlo del JSON
         if (empleado.concepto === 'REJA' && empleado.tickets.length === 0) {
             const indexEmpleado = departamentoCorte.empleados.indexOf(empleado);
@@ -677,14 +696,15 @@ function actualizarTicketsEmpleado(json, nombreEmpleado, precioOriginal, nuevosT
         } else {
             console.log('Tickets actualizados para:', nombreEmpleado, nuevosTickets);
         }
-        
+
         return true;
-        
+
     } catch (error) {
         console.error('Error al actualizar tickets del empleado:', error);
         return false;
     }
 }
+
 
 // Evento para guardar los cambios al hacer click en el botón de guardar de rejas
 $(btn_guardar_cambios_reja_corte).on('click', function (e) {
@@ -705,13 +725,13 @@ $(btn_guardar_cambios_reja_corte).on('click', function (e) {
             // Obtener el nombre del empleado y precio actual
             const nombreEmpleado = $('#span_nombre_cortador_reja').text().trim();
             const precioOriginal = parseFloat($('#span_precio_reja').text().replace('$', '').replace(/,/g, ''));
-            
+
             // Recopilar los nuevos tickets de los inputs
             const nuevosTickets = recopilarTicketsDelModal();
-            
+
             // Actualizar el empleado en el JSON
             const actualizado = actualizarTicketsEmpleado(jsonNominaRelicario, nombreEmpleado, precioOriginal, nuevosTickets);
-            
+
             if (actualizado) {
                 // Mostrar mensaje de éxito
                 Swal.fire({
@@ -721,7 +741,7 @@ $(btn_guardar_cambios_reja_corte).on('click', function (e) {
                     timer: 2000,
                     showConfirmButton: false
                 });
-                
+
                 // Se actualiza la tabla y se cierra el modal
                 mostrarDatosTablaCorte(jsonNominaRelicario);
                 modal_corte_reja_detalles.hide();
@@ -733,6 +753,70 @@ $(btn_guardar_cambios_reja_corte).on('click', function (e) {
                     text: 'No se pudieron actualizar los tickets del empleado.',
                     confirmButtonColor: '#bc2b2b'
                 });
+            }
+        }
+    });
+
+});
+
+
+// Eliminar la nomina del empleado
+$(document).on('click', '#btn_borrar_nomina', function (e) {
+    e.preventDefault();
+
+    const nombre = $(this).attr('data-nombre');
+
+    Swal.fire({
+        title: "Eliminar Nómina de " + nombre,
+        text: "Esta acción eliminará el concepto Nomina, ¿seguro de continuar?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d63030",
+        cancelButtonColor: "rgb(167, 167, 167)",
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            
+            if (jsonNominaRelicario == null) {
+                alerta("error", "Error de datos", "No se pudo eliminar la nómina porque no se han cargado los datos correctamente.");
+                return;
+            }
+
+            try {
+                // Buscar el departamento "Corte"
+                const departamentoCorte = jsonNominaRelicario.departamentos.find(dept => dept.nombre === 'Corte');
+                
+                if (!departamentoCorte) {
+                    alerta("error", "Departamento no encontrado", "El departamento 'Corte' no existe en los datos.");
+                    return;
+                }
+
+                // Buscar y eliminar el empleado con concepto "NOMINA"
+                const indexEmpleado = departamentoCorte.empleados.findIndex(emp => 
+                    emp.nombre === nombre && emp.concepto === 'NOMINA'
+                );
+
+                if (indexEmpleado === -1) {
+                    alerta("error", "Nómina no encontrada", "No se encontró la nómina del empleado " + nombre);
+                    return;
+                }
+
+                // Eliminar el empleado con concepto NOMINA
+                departamentoCorte.empleados.splice(indexEmpleado, 1);
+
+                console.log('Nómina eliminada para:', nombre);
+
+                // Mostrar mensaje de éxito
+                alerta("success", "Nómina eliminada", "La nómina de " + nombre + " ha sido eliminada correctamente.");
+
+                // Refrescar la tabla y cerrar el modal
+                mostrarDatosTablaCorte(jsonNominaRelicario);
+                modal_corte_nomina_detalles.hide();
+
+            } catch (error) {
+                console.error('Error al eliminar la nómina:', error);
+                alerta("error", "Error al eliminar", "Ocurrió un error al intentar eliminar la nómina.");
             }
         }
     });

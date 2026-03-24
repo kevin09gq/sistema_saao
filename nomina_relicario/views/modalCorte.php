@@ -3,9 +3,9 @@
     <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content">
 
-            <div class="modal-header">
+            <div class="modal-header bg-secondary text-white" data-bs-theme="dark">
                 <h1 class="modal-title fs-5" id="modalCorteLabel">Rejas de Corte de Limón RANCHO EL RELICARIO</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
             <div class="modal-body">
@@ -97,36 +97,12 @@
                                         <thead class="table-light">
                                             <tr>
                                                 <th style="width: 20%;">DIA</th>
-                                                <th style="width: 30%;">PAGO</th>
+                                                <th style="width: 20%;">FECHA</th>
+                                                <th style="width: 40%;">PAGO</th>
                                                 <th class="text-center" style="width: 20%;">Accion</th>
                                             </tr>
                                         </thead>
-                                        <tbody id="cuerpo_tabla_pagos_por_dia">
-
-                                            <?php foreach (DIAS_SEMANA_NOMINA as $dia) : ?>
-
-                                                <tr>
-                                                    <td><?php echo $dia; ?></td>
-                                                    <td>
-                                                        <input type="number" step="0.01" min="0"
-                                                            class="form-control shadow-sm pago_del_dia"
-                                                            name="pago_<?php echo strtolower($dia); ?>" id="pago_<?php echo strtolower($dia); ?>"
-                                                            placeholder="Pago del día">
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <button class="btn btn-outline-danger btn_limpiar_dia" type="button" title="Limpiar fila"><i class="bi bi-trash"></i></button>
-                                                    </td>
-                                                </tr>
-
-                                            <?php endforeach; ?>
-
-                                            <tr>
-                                                <td>Total:</td>
-                                                <td class="text-end"><strong id="total_pagos">$0.00</strong></td>
-                                                <td></td>
-                                            </tr>
-
-                                        </tbody>
+                                        <tbody id="cuerpo_tabla_pagos_por_dia"><!-- Cuerpo de la tabla --></tbody>
                                     </table>
                                 </div>
                             </div>
@@ -141,8 +117,7 @@
 
                 </div>
             </div>
-
-
+            
 
         </div>
     </div>

@@ -50,36 +50,12 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th style="width: 20%;">DIA</th>
-                                        <th style="width: 30%;">PAGO</th>
-                                        <th class="text-center" style="width: 20%;">Accion</th>
+                                        <th style="width: 20%;">FECHA</th>
+                                        <th style="width: 50%;">PAGO</th>
+                                        <th class="text-center" style="width: 10%;">Accion</th>
                                     </tr>
                                 </thead>
-                                <tbody id="cuerpo_tabla_pagos_por_dia_nomina">
-
-                                    <?php foreach (DIAS_SEMANA_NOMINA as $dia) : ?>
-
-                                        <tr>
-                                            <td><?php echo $dia; ?></td>
-                                            <td>
-                                                <input type="number" step="0.01" min="0"
-                                                    class="form-control shadow-sm pago_del_dia_editar"
-                                                    name="pago_editar_<?php echo strtolower($dia); ?>" id="pago_editar_<?php echo strtolower($dia); ?>"
-                                                    placeholder="Pago del día">
-                                            </td>
-                                            <td class="text-center">
-                                                <button class="btn btn-outline-danger btn_limpiar_dia" type="button" title="Limpiar fila"><i class="bi bi-trash"></i></button>
-                                            </td>
-                                        </tr>
-
-                                    <?php endforeach; ?>
-
-                                    <tr>
-                                        <td>Total:</td>
-                                        <td class="text-end"><strong id="total_pagos_nomina_editar">$0.00</strong></td>
-                                        <td></td>
-                                    </tr>
-
-                                </tbody>
+                                <tbody id="cuerpo_tabla_pagos_por_dia_nomina"><!-- Cuerpo de la nomina --></tbody>
                             </table>
                         </div>
                     </div>
@@ -88,8 +64,20 @@
 
             <div class="modal-footer">
                 <span class="badge text-bg-success me-auto fs-5" id="badge_nombre_cortador">NOMBRE DEL CORTADOR</span>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-success fw-bold shadow-sm" id="btn_guardar_cambios_nomina_corte">Guardar Cambios</button>
+
+                <button
+                    type="button" 
+                    class="btn btn-outline-danger" 
+                    id="btn_borrar_nomina"
+                    title="Borrar nomina completa"><i class="bi bi-trash-fill"></i></button>
+                <button
+                    type="button" 
+                    class="btn btn-secondary" 
+                    data-bs-dismiss="modal"><i class="bi bi-x-circle me-2"></i>Cerrar</button>
+                <button 
+                    type="button" 
+                    class="btn btn-success fw-bold shadow-sm" 
+                    id="btn_guardar_cambios_nomina_corte"><i class="bi bi-check2-square me-2"></i>Guardar Cambios</button>
             </div>
         </div>
     </div>

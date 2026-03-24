@@ -115,6 +115,90 @@ function procesarNominaParaFila(string $nombre, string $concepto, array $nomina)
 }
 
 
+/**
+ * Resta un día a una fecha en formato 'DD/MM/AAA' con meses abreviados en español (ENE, FEB, MAR, etc.) y devuelve la nueva fecha en el mismo formato.
+ */
+function restarUnDia($fecha)
+{
+    // Mapeo de meses abreviados en español a número
+    $meses = [
+        "Ene" => 1,
+        "Feb" => 2,
+        "Mar" => 3,
+        "Abr" => 4,
+        "May" => 5,
+        "Jun" => 6,
+        "Jul" => 7,
+        "Ago" => 8,
+        "Sep" => 9,
+        "Oct" => 10,
+        "Nov" => 11,
+        "Dic" => 12
+    ];
+
+    // Separar la fecha
+    list($dia, $mesAbrev, $anio) = explode("/", $fecha);
+
+    // Crear objeto DateTime
+    $mesNum = $meses[$mesAbrev];
+    $date = DateTime::createFromFormat("d/m/Y", "$dia/$mesNum/$anio");
+
+    // Restar un día
+    $date->modify("-1 day");
+
+    // Buscar la abreviatura del mes resultante
+    $mesAbrevNuevo = array_search((int)$date->format("m"), $meses);
+
+    // Formatear resultado
+    return $date->format("d") . "/" . $mesAbrevNuevo . "/" . $date->format("Y");
+}
+
+/**
+ * Genera un rango de fechas entre dos fechas dadas en formato 'DD/MM/AAA' con meses abreviados en español (ENE, FEB, MAR, etc.) y devuelve un array con todas las fechas del rango en el mismo formato.
+ */
+function rangoDeFechas($fechaInicio, $fechaFin)
+{
+    // Mapeo de meses abreviados en español a número
+    $meses = [
+        "Ene" => 1,
+        "Feb" => 2,
+        "Mar" => 3,
+        "Abr" => 4,
+        "May" => 5,
+        "Jun" => 6,
+        "Jul" => 7,
+        "Ago" => 8,
+        "Sep" => 9,
+        "Oct" => 10,
+        "Nov" => 11,
+        "Dic" => 12
+    ];
+
+    // Separar fecha inicio
+    list($diaIni, $mesIni, $anioIni) = explode("/", $fechaInicio);
+    $mesNumIni = $meses[$mesIni];
+    $dateIni = DateTime::createFromFormat("d/m/Y", "$diaIni/$mesNumIni/$anioIni");
+
+    // Separar fecha fin
+    list($diaFin, $mesFin, $anioFin) = explode("/", $fechaFin);
+    $mesNumFin = $meses[$mesFin];
+    $dateFin = DateTime::createFromFormat("d/m/Y", "$diaFin/$mesNumFin/$anioFin");
+
+    // Crear rango de fechas
+    $intervalo = new DateInterval("P1D");
+    $periodo = new DatePeriod($dateIni, $intervalo, $dateFin->modify("+1 day"));
+
+    $resultado = [];
+    foreach ($periodo as $fecha) {
+        // Convertir número de mes a abreviatura
+        $mesAbrev = array_search((int)$fecha->format("m"), $meses);
+        $resultado[] = $fecha->format("d") . "/" . $mesAbrev . "/" . $fecha->format("Y");
+    }
+
+    return $resultado;
+}
+
+
 
 //=====================
 //  PROCESAR FILAS DEL DEPARTAMENTO CORTE
@@ -173,8 +257,10 @@ $sheet->setTitle('CORTE');
 //=====================
 
 if ($jsonNomina) {
-    $fecha_inicio = $jsonNomina['fecha_inicio'] ?? 'Fecha Inicio';
-    $fecha_cierre = $jsonNomina['fecha_cierre'] ?? 'Fecha Cierre';
+    //$fecha_inicio = $jsonNomina['fecha_inicio'] ?? 'Fecha Inicio';
+    //$fecha_cierre = $jsonNomina['fecha_cierre'] ?? 'Fecha Cierre';
+    $fecha_inicio = restarUnDia($jsonNomina['fecha_inicio']) ?? 'Fecha Inicio';
+    $fecha_cierre =  restarUnDia($jsonNomina['fecha_cierre']) ?? 'Fecha Cierre';
     $ano = date('Y');
 } else {
     $fecha_inicio = 'Fecha Inicio';
@@ -215,6 +301,49 @@ if (file_exists($logoPath)) {
     $logo->setCoordinates('B1');
     $logo->setOffsetX(10);
     $logo->setWorksheet($sheet);
+}
+
+
+// ==============================================================
+// FILA DE LOS DIAS DE LA SEMANA (fila 5 de las columna D a la J)
+// ==============================================================
+
+// Generar rango de fechas entre fecha_inicio y fecha_cierre
+$fechas = rangoDeFechas($fecha_inicio, $fecha_cierre);
+
+// Fila donde quieres imprimir
+$fila = 5;
+
+// Columna de inicio
+$columnaInicio = 'D';
+
+// Recorremos las fechas y las imprimimos
+$columna = $columnaInicio;
+
+// Imprimir solo el día (DD) de cada fecha en las columnas D a J
+foreach ($fechas as $fecha) {
+    // Extraer solo el día (ejemplo: "05" de "05/Ene/2026")
+    $dia = explode("/", $fecha)[0];
+
+    // Escribir en la celda
+    $sheet->setCellValue($columna . $fila, $dia);
+
+    // Estilos para el rango D5:J5
+    $sheet->getStyle('D5:J5')->getAlignment()->setHorizontal('center');
+    $sheet->getStyle('D5:J5')->getAlignment()->setVertical('center');
+
+    // Aplicar estilo: centrado y borde negro
+    $sheet->getStyle($columna . $fila)->applyFromArray([
+        'borders' => [
+            'allBorders' => [
+                'borderStyle' => Border::BORDER_THIN,
+                'color' => ['argb' => '000000'],
+            ],
+        ],
+    ]);
+
+    // Avanzar a la siguiente columna
+    $columna++;
 }
 
 
@@ -343,7 +472,40 @@ foreach ($filasCorte as $fila) {
             // Rejas: número entero
             $sheet->getStyle($col . $numeroFila)->getNumberFormat()->setFormatCode('#,##0');
         }
-    }
+    } 
+
+    /*
+    $diasCols = [
+        'D' => 'viernes',
+        'E' => 'sabado',
+        'F' => 'domingo',
+        'G' => 'lunes',
+        'H' => 'martes',
+        'I' => 'miercoles',
+        'J' => 'jueves',
+    ];
+
+    foreach ($diasCols as $col => $campo) {
+        $valor = $fila[$campo] ?? null;
+
+        if ($valor != 0 && $valor !== null) {
+            $sheet->setCellValue($col . $numeroFila, $valor);
+        } else {
+            $sheet->setCellValue($col . $numeroFila, '');
+        }
+
+        if ($esNomina) {
+            $sheet->getStyle($col . $numeroFila)
+                ->getNumberFormat()
+                ->setFormatCode('$#,##0.00');
+        } else {
+            $sheet->getStyle($col . $numeroFila)
+                ->getNumberFormat()
+                ->setFormatCode('#,##0');
+        }
+    } */
+
+
 
     // TOTAL REJAS (K)
     if (!$esNomina) {
@@ -391,7 +553,9 @@ foreach ($filasCorte as $fila) {
 //  FILA DE TOTALES
 //=====================
 
+
 $filaTotal = $numeroFila;
+
 
 $sheet->setCellValue('C' . $filaTotal, 'TOTALES');
 $sheet->getStyle('C' . $filaTotal)->applyFromArray([
@@ -437,7 +601,6 @@ $sheet->getStyle('M' . $filaTotal)->getNumberFormat()->setFormatCode('$#,##0.00'
 $sheet->getRowDimension($filaTotal)->setRowHeight(25);
 
 
-
 //=====================
 //  BORDES
 //=====================
@@ -461,7 +624,7 @@ $sheet->getRowDimension(1)->setRowHeight(38);
 $sheet->getRowDimension(2)->setRowHeight(28);
 $sheet->getRowDimension(3)->setRowHeight(24);
 $sheet->getRowDimension(4)->setRowHeight(24);
-$sheet->getRowDimension(5)->setRowHeight(10);
+$sheet->getRowDimension(5)->setRowHeight(20); // Fila de los números de semanas
 $sheet->getRowDimension(6)->setRowHeight(40);
 
 for ($f = 7; $f < $numeroFila; $f++) {
