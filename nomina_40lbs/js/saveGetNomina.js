@@ -1,5 +1,5 @@
 function confirmarsaveNomina() {
-  $('#btn_guardar_nomina_confianza').on('click', function () {
+  $('#btn_guardar_nomina_40lbs').on('click', function () {
         Swal.fire({
             title: '¿Confirmar guardado?',
             text: `¿Está seguro que desea guardar la nómina de la semana ${jsonNomina40lbs.numero_semana}?`,

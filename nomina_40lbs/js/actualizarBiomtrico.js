@@ -179,10 +179,7 @@ function subirBiometrico() {
                             asignarTotalOlvidos(emp, true);
                         }
 
-                        // 3) Recalcular total de inasistencias si ya existe historial
-                        if (typeof asignarTotalInasistencias === 'function' && Array.isArray(emp.historial_inasistencias)) {
-                            asignarTotalInasistencias(emp, true);
-                        }
+                      
 
                     });
 

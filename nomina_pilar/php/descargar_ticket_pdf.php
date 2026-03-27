@@ -208,21 +208,21 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
 
     // ─── Encabezado ──────────────────────────────────────────────────
     $pdf->SetLineWidth($dot(2));
-    $pdf->Rect($dot(10), $dot(10), $dot(812), $dot(386));
+    $pdf->Rect($dot(10), $dot(12), $dot(812), $dot(386));
 
     $nombreCompleto = $clave . ' ' . $nombre;
     $nombreFontSize = strlen($nombreCompleto) > 35 ? 8 : (strlen($nombreCompleto) >= 31 ? 13 : 15);
-    $textB(12, 20, $pt($nombreFontSize), $nombreCompleto);
+    $textB(12, 22, $pt($nombreFontSize), $nombreCompleto);
 
     $deptoFontSize = 20;
-    $text(310, 15, $pt($deptoFontSize), $departamento);
-    $text(551, 20, $pt(17), 'F.Ingr: ' . $fechaIngreso);
-    $text(710, 18, $pt(18), 'SEM ' . $semana);
+    $text(310, 17, $pt($deptoFontSize), $departamento);
+    $text(551, 22, $pt(17), 'F.Ingr: ' . $fechaIngreso);
+    $text(710, 20, $pt(18), 'SEM ' . $semana);
 
     $pdf->SetLineWidth($dot(1));
-    $pdf->Line($dot(10), $dot(40), $dot(10 + 812), $dot(40));
-    $pdf->Line($dot(280), $dot(40), $dot(280), $dot(68));
-    $pdf->Line($dot(520), $dot(40), $dot(520), $dot(68));
+    $pdf->Line($dot(10), $dot(42), $dot(10 + 812), $dot(42));
+    $pdf->Line($dot(280), $dot(42), $dot(280), $dot(70));
+    $pdf->Line($dot(520), $dot(42), $dot(520), $dot(70));
 
     // Puesto
     $lenPuesto = strlen($puesto);
@@ -232,28 +232,28 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
     elseif ($lenPuesto > 19)  $puestoFontSize = 5;
     elseif ($lenPuesto > 15)  $puestoFontSize = 5.8;
     else                       $puestoFontSize = 6;
-    $text(18, 49, $puestoFontSize, $puesto);
-    $text(290, 45, $pt(18), 'Sal. diario: $ ' . money($salarioDiario));
-    $text(530, 45, $pt(18), 'Sal. Semanal: $ ' . money($sueldoSemanal));
+    $text(18, 51, $puestoFontSize, $puesto);
+    $text(290, 47, $pt(18), 'Sal. diario: $ ' . money($salarioDiario));
+    $text(530, 47, $pt(18), 'Sal. Semanal: $ ' . money($sueldoSemanal));
 
     $pdf->SetLineWidth($dot(1));
-    $pdf->Line($dot(10), $dot(68), $dot(10 + 812), $dot(68));
+    $pdf->Line($dot(10), $dot(70), $dot(10 + 812), $dot(70));
 
     $f20 = $pt(20);
-    $textB(100, 76, $f20, 'PERCEPCIONES');
-    $textB(520, 76, $f20, 'DEDUCCIONES');
+    $textB(100, 78, $f20, 'PERCEPCIONES');
+    $textB(520, 78, $f20, 'DEDUCCIONES');
 
     $pdf->SetLineWidth($dot(1));
-    $pdf->Line($dot(10), $dot(105), $dot(10 + 812), $dot(105));
+    $pdf->Line($dot(10), $dot(107), $dot(10 + 812), $dot(107));
 
     // ─── Tabla de conceptos ─────────────────────────────────────────
-    $y0   = 90;
+    $y0   = 92;
     $lh   = 26;
     $f16  = $pt(16);
     $maxConceptos = max(count($percepciones), count($deducciones));
     $maxRowsPrimeraHoja    = 11;
     $maxRowsContinuacion   = 13;
-    $tableTopPrimeraHoja   = 105;
+    $tableTopPrimeraHoja   = 107;
     $textYOffset           = 8;
 
     if ($maxConceptos <= 9) {

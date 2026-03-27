@@ -139,6 +139,9 @@ function llenarTabDetalles(nombre, datos) {
     $('#span_dias_trabajados').text(datos.diasTrabajados);
     $('#span_total_efectivo').text(`$${datos.totalEfectivo.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
     $('#badge_nombre_cortador').text(nombre);
+
+    // Se agrega el nombre del empleado como un parametro data
+    $('#btn_borrar_nomina').attr('data-nombre', nombre);
 }
 
 /**
@@ -735,6 +738,70 @@ $(btn_guardar_cambios_reja_corte).on('click', function (e) {
                     text: 'No se pudieron actualizar los tickets del empleado.',
                     confirmButtonColor: '#bc2b2b'
                 });
+            }
+        }
+    });
+
+});
+
+
+// Eliminar la nomina del empleado
+$(document).on('click', '#btn_borrar_nomina', function (e) {
+    e.preventDefault();
+
+    const nombre = $(this).attr('data-nombre');
+
+    Swal.fire({
+        title: "Eliminar Nómina de " + nombre,
+        text: "Esta acción eliminará el concepto Nomina, ¿seguro de continuar?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d63030",
+        cancelButtonColor: "rgb(167, 167, 167)",
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            
+            if (jsonNominaPilar == null) {
+                alerta("error", "Error de datos", "No se pudo eliminar la nómina porque no se han cargado los datos correctamente.");
+                return;
+            }
+
+            try {
+                // Buscar el departamento "Corte"
+                const departamentoCorte = jsonNominaPilar.departamentos.find(dept => dept.nombre === 'Corte');
+                
+                if (!departamentoCorte) {
+                    alerta("error", "Departamento no encontrado", "El departamento 'Corte' no existe en los datos.");
+                    return;
+                }
+
+                // Buscar y eliminar el empleado con concepto "NOMINA"
+                const indexEmpleado = departamentoCorte.empleados.findIndex(emp => 
+                    emp.nombre === nombre && emp.concepto === 'NOMINA'
+                );
+
+                if (indexEmpleado === -1) {
+                    alerta("error", "Nómina no encontrada", "No se encontró la nómina del empleado " + nombre);
+                    return;
+                }
+
+                // Eliminar el empleado con concepto NOMINA
+                departamentoCorte.empleados.splice(indexEmpleado, 1);
+
+                console.log('Nómina eliminada para:', nombre);
+
+                // Mostrar mensaje de éxito
+                alerta("success", "Nómina eliminada", "La nómina de " + nombre + " ha sido eliminada correctamente.");
+
+                // Refrescar la tabla y cerrar el modal
+                mostrarDatosTablaCorte(jsonNominaPilar);
+                modal_corte_nomina_detalles.hide();
+
+            } catch (error) {
+                console.error('Error al eliminar la nómina:', error);
+                alerta("error", "Error al eliminar", "Ocurrió un error al intentar eliminar la nómina.");
             }
         }
     });

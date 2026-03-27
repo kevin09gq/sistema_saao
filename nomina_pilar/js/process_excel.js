@@ -303,10 +303,9 @@ function obtenerJornalerosCoordinadores(JsonListaRaya) {
                 actualizarCabeceraNomina(jsonNominaPilar);
 
                 // BHL: Llenar tabla de pagos por día cuando se cargue la nómina
-                /* 
                 if (typeof llenar_cuerpo_tabla_pagos_por_dia === 'function') {
                     llenar_cuerpo_tabla_pagos_por_dia();
-                } */
+                }
 
                 mostrarConfigValores(false);
 
@@ -359,10 +358,9 @@ function procesarBiometrico(form, JsonListaRaya) {
                 }
 
                 // BHL: Llenar tabla de pagos por día cuando se cargue la nómina
-                /*
                 if (typeof llenar_cuerpo_tabla_pagos_por_dia === 'function') {
                     llenar_cuerpo_tabla_pagos_por_dia();
-                } */
+                }
 
 
 
@@ -562,10 +560,9 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
                 actualizarCabeceraNomina(jsonNominaPilar);
 
                 // BHL: Llenar tabla de pagos por día cuando se cargue la nómina
-                /*
                if (typeof llenar_cuerpo_tabla_pagos_por_dia === 'function') {
                    llenar_cuerpo_tabla_pagos_por_dia();
-               } */
+               }
 
                 mostrarConfigValores(true);
 
@@ -905,10 +902,9 @@ function verificarEmpleadosSinSeguro(jsonNominaPilar) {
                 actualizarCabeceraNomina(jsonNominaPilar);
 
                 // BHL: Llenar tabla de pagos por día cuando se cargue la nómina
-                /*
                 if (typeof llenar_cuerpo_tabla_pagos_por_dia === 'function') {
                     llenar_cuerpo_tabla_pagos_por_dia();
-                } */
+                }
 
                 initComponents();
 

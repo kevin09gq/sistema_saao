@@ -36,6 +36,7 @@ function editarPropiedades() {
 
         // Refrescar la tabla manteniendo paginación y filtro actual
         refrescarTabla();
+        limpiarModal();
 
         // Cerrar modal después de guardar
         $('#modal-40lbs').modal('hide');

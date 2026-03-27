@@ -294,6 +294,7 @@ function asignarHistorialInasistencias(empleado) {
 
     // Crear nuevo historial comenzando con las manuales
     const nuevoHistorial = [...inasistenciasManuales];
+
     const diasSemana = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
     const diasNormales = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -458,10 +459,12 @@ function asignarTotalInasistenciasCoordinador(empleado, force = false) {
     }
 
     // Contar total de inasistencias y sumar descuentos
-    let totalInasistencias = 0;
     let totalDescontado = 0;
     empleado.historial_inasistencias.forEach(inasistencia => {
-        totalInasistencias += 1;
+        // Si el usuario eligió ignorar automáticas, no las sumamos al total
+        if (inasistencia.tipo === 'automatico' && empleado.ignorar_inasistencias_automaticas === true) {
+            return;
+        }
         totalDescontado += parseFloat(inasistencia.descuento_inasistencia) || 0;
     });
 

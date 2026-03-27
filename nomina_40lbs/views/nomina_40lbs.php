@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="../css/encabezados.css">
     <link rel="stylesheet" href="../css/tablaNomina.css">
     <link rel="stylesheet" href="../css/modal40lbs.css">
+    <link rel="stylesheet" href="../css/conceptos_totales.css">
 
     <!-- SweetAlert2 CSS -->
     <script src="<?= SWEETALERT ?>"></script>
@@ -27,7 +28,7 @@
     ?>
 
     <!-- Contenedor principal centrado -->
-    <div class="container-nomina_40lbs" id="container-nomina_40lbs">
+    <div class="container-nomina_40lbs" id="container-nomina_40lbs" hidden>
         <!-- Contenedor tipo navbar para formulario y filtros -->
         <div class="navbar-nomina_40lbs">
             <div class="titulo-nomina_40lbs">Procesamiento de Nómina</div>
@@ -72,6 +73,12 @@
                 <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global" title="Aplicar Tarjeta">
                     <i class="bi bi-arrow-clockwise"></i>
                 </button>
+                <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta" aria-label="Quitar tarjeta">
+                    <i class="bi bi-credit-card-2-back"></i>
+                </button>
+                <button class="btn btn-outline-info" id="btn_ver_dispersion" title="Ver Dispersión de Tarjeta">
+                    <i class="bi bi-list-columns-reverse"></i>
+                </button>
                 <button class="btn btn-outline-primary btn-suma" type="button" id="btn_conceptos_totales" title="Totales por concepto" aria-label="Totales por concepto">
                     <i class="bi bi-calculator"></i>
                 </button>
@@ -81,10 +88,6 @@
                 <button class="btn btn-outline-secondary btn-ticket-zebra" id="btn_ticket_manual" title="Descargar Ticket Manual">
                     <i class="bi bi-ticket-perforated"></i>
                 </button>
-                <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta" aria-label="Quitar tarjeta">
-                    <i class="bi bi-credit-card-2-back"></i>
-                </button>
-
 
             </div>
         </div>
@@ -101,7 +104,7 @@
 
                 <div class="busqueda-container-40lbs" id="busqueda-container">
                     <i class="bi bi-search"></i>
-                    <input type="text" class="campo-busqueda-40lbs" placeholder="Buscar..." id="busqueda-nomina-confianza">
+                    <input type="text" class="campo-busqueda-40lbs" placeholder="Buscar..." id="busqueda-nomina-40lbs">
                     <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="btn-clear-busqueda" title="Limpiar">
                         <i class="bi bi-x-circle"></i>
                     </button>
@@ -119,7 +122,7 @@
                 <button class="btn btn-outline-danger me-2" id="btn_export_pdf_reporte" title="Exportar a PDF">
                     <i class="bi bi-file-earmark-pdf"></i> Reporte
                 </button>
-                <button class="btn btn-outline-primary me-2" id="btn_guardar_nomina_confianza" title="Guardar nómina">
+                <button class="btn btn-outline-primary me-2" id="btn_guardar_nomina_40lbs" title="Guardar nómina">
                     <i class="bi bi-save"></i> Guardar Nómina
                 </button>
                 <button class="btn btn-outline-warning" id="btn_limpiar_datos" title="Subir Nuevamente">
@@ -188,7 +191,10 @@
     <?php include 'modal40lbs.php'; ?>
     <?php include 'modalHorarios.php'; ?>
     <?php include 'biometricoModal.php'; ?>
-
+    <?php include 'modalSeleccionarEmpleados.php'; ?>
+    <?php include 'modalConceptosTotales.php'; ?>
+    <?php include 'modalExportarNomina.php'; ?>
+    <?php include 'dispersionTarjeta.php'; ?>
 
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
@@ -206,12 +212,20 @@
     <script src="../js/redondearHorarios.js"></script>
     <script src="../js/filtroBusqueda.js"></script>
     <script src="../js/abrirModal.js"></script>
+    <script src="../js/actualizarBiomtrico.js"></script>
+    <script src="../js/seleccionar_empleados.js"></script>
+    <script src="../js/conceptos_totales.js"></script>
+    <script src="../js/exportarNominaExcel.js"></script>
+
     <script src="../js/configModal/establecerData.js"></script>
     <script src="../js/configModal/editarData.js"></script>
     <script src="../js/configModal/configModal.js"></script>
     <script src="../js/configModal/eventos.js"></script>
     <script src="../js/configModal/newConcepts.js"></script>
-    <script src="../js/actualizarBiomtrico.js"></script>
+
+    <!-- Dispersion Tarjeta -->
+    <script src="../js/configModalDispersionTarjeta/establecerData.js"></script>
+    <script src="../js/configModalDispersionTarjeta/filtroBusqueda.js"></script>
 
 </body>
 

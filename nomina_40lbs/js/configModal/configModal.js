@@ -254,6 +254,16 @@ function actualizarConceptos() {
         $('#mod-tarjeta-40lbs').val(copiaTarjeta);
         calcularSueldoACobrar();
     });
+
+    //  Al presionar el botón de incentivo, ponerlo en 0
+    $(document).on('click', '#btn-aplicar-incentivo-40lbs', function () {
+        const empleado = objEmpleado.getEmpleado();
+        if (!empleado) return;
+
+        $('#mod-incentivo-40lbs').val('0.00');
+        empleado.incentivo = 0;
+        calcularSueldoACobrar();
+    });
 }
 
 // ========================================
@@ -430,4 +440,101 @@ function aplicarRedondeo(totalSinRedondear) {
     }
 }
 
+
+
+// ========================================
+// LIMPIAR MODAL 
+// ========================================
+function limpiarModal() {
+    // ========================================
+    // LIMPIAR TAB: TRABAJADOR (Información del empleado)
+    // ========================================
+    $('#campo-clave-40lbs').text('');
+    $('#campo-nombre-40lbs').text('');
+    $('#campo-departamento-40lbs').text('');
+    $('#campo-puesto-40lbs').text('');
+    $('#campo-id-empresa-40lbs').val('');
+    $('#nombre-empleado-modal').text('');
+
+    // ========================================
+    // LIMPIAR TAB: REGISTROS (Tablas)
+    // ========================================
+    // Limpiar tabla biométrica
+    $('#tbody-biometrico-40lbs').empty();
+
+    // Limpiar tabla horarios oficiales
+    $('#tbody-biometrico-redondeado-40lbs').empty();
+
+    // Limpiar inputs de copia rápida (si existen en el modal, si no, omitir o agregar)
+    // En modal40lbs.php no veo estos inputs de "copia rapida", pero los dejo por si acaso o los quito si no aplican.
+    // Viendo el modal, no están. Los comentaré o quitaré.
+
+    // ========================================
+    // LIMPIAR EVENTOS ESPECIALES
+    // ========================================
+    $('#entradas-tempranas-40lbs').empty();
+    $('#salidas-tardias-40lbs').empty();
+    $('#salidas-tempranas-40lbs').empty();
+    $('#olvidos-checador-40lbs').empty();
+    $('#retardos-40lbs').empty();
+    $('#inasistencias-content-40lbs').empty();
+    // $('#analisis-permisos-comida-content-40lbs').empty(); // Comentado en el modal
+
+    // Limpiar totales de eventos
+    $('#total-entradas-tempranas-40lbs').text('0');
+    $('#total-salidas-tardias-40lbs').text('0');
+    $('#total-salidas-tempranas-40lbs').text('0');
+    $('#total-olvidos-checador-40lbs').text('0');
+    $('#total-retardos-40lbs').text('0');
+    $('#total-inasistencias-40lbs').text('0');
+
+    // ========================================
+    // LIMPIAR TAB: MODIFICAR DETALLES (Percepciones)
+    // ========================================
+    $('#mod-sueldo-neto-40lbs').val('');
+    $('#mod-incentivo-40lbs').val('');
+    $('#mod-total-extra-40lbs').val('');
+    
+    // Componentes del sueldo extra
+    $('#mod-horas-extras-40lbs').val('');
+    $('#mod-bono-antiguedad-40lbs').val('');
+    $('#mod-actividades-especiales-40lbs').val('');
+    $('#mod-puesto-40lbs').val('');
+
+    // Limpiar contenedor de conceptos adicionales
+    $('#contenedor-conceptos-adicionales-40lbs').empty();
+
+    // ========================================
+    // LIMPIAR TAB: MODIFICAR DETALLES (Conceptos)
+    // ========================================
+    $('#mod-isr-40lbs').val('');
+    $('#mod-imss-40lbs').val('');
+    $('#mod-infonavit-40lbs').val('');
+    $('#mod-ajustes-sub-40lbs').val('');
+    $('#mod-total-conceptos-40lbs').val('');
+
+    // ========================================
+    // LIMPIAR TAB: MODIFICAR DETALLES (Deducciones)
+    // ========================================
+    $('#mod-tarjeta-40lbs').val('');
+    $('#mod-prestamo-40lbs').val('');
+    $('#mod-checador-40lbs').val('');
+    $('#mod-inasistencias-40lbs').val('');
+    $('#mod-permisos-40lbs').val('');
+    $('#mod-uniforme-40lbs').val('');
+    $('#mod-fagafetcofia-40lbs').val('');
+    
+    // Historiales
+    $('#contenedor-historial-olvidos').empty();
+    $('#contenedor-historial-inasistencias-40lbs').empty();
+    $('#contenedor-historial-permisos-40lbs').empty();
+    $('#contenedor-historial-uniforme-40lbs').empty();
+    $('#contenedor-deducciones-adicionales-40lbs').empty();
+
+    // ========================================
+    // LIMPIAR: SUELDO A COBRAR
+    // ========================================
+    $('#mod-redondear-sueldo-40lbs').prop('checked', false);
+    $('#mod-sueldo-a-cobrar-40lbs').val('');
+}
 

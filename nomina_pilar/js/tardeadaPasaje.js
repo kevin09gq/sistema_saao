@@ -170,17 +170,33 @@ function aplicarQuitarComidaPasaje() {
             );
 
             if (empleado) {
-                if (accion === 'comida' || accion === 'ambos') {
-                    empleado.comida = 0;
+                // Comida
+                if (accion === 'quitar_comida' || accion === 'quitar_ambos') {
+                    empleado.comida_override = 'quitar';
+                } else if (accion === 'agregar_comida' || accion === 'agregar_ambos') {
+                    empleado.comida_override = 'agregar';
                 }
-                if (accion === 'pasaje' || accion === 'ambos') {
-                    empleado.pasaje = 0;
+
+                // Pasaje
+                if (accion === 'quitar_pasaje' || accion === 'quitar_ambos') {
+                    empleado.pasaje_override = 'quitar';
+                } else if (accion === 'agregar_pasaje' || accion === 'agregar_ambos') {
+                    empleado.pasaje_override = 'agregar';
+                }
+
+                // Restablecer
+                if (accion === 'restablecer_todos') {
+                    empleado.comida_override = null;
+                    empleado.pasaje_override = null;
                 }
             }
         });
     });
 
-    console.log(`Se quitó ${accion} a ${empleadosSeleccionados.length} empleados`);
+    console.log(`Acción ${accion} aplicada a ${empleadosSeleccionados.length} empleados`);
+
+    // Recalcular sueldos para aplicar los overrides
+    actualizarPasajeTardeadaEnEmpleados();
 
     // Limpiar campos
     $('#select-accion-quitar').val('');

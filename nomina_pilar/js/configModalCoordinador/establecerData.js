@@ -624,16 +624,23 @@ function establecerHistorialInasistencias(empleado) {
                 </tr>
             </thead>
             <tbody>
-                ${empleado.historial_inasistencias.map((inasistencia, index) => `
-                    <tr>
+                ${empleado.historial_inasistencias.map((inasistencia, index) => {
+                    const esAutoIgnorada = inasistencia.tipo === 'automatico' && empleado.ignorar_inasistencias_automaticas;
+                    return `
+                    <tr class="${esAutoIgnorada ? 'opacity-50 text-decoration-line-through' : ''}">
                         <td>${inasistencia.dia}</td>
                         <td>$${parseFloat(inasistencia.descuento_inasistencia).toFixed(2)}</td>
-                        <td><span class="badge ${inasistencia.tipo === 'manual' ? 'bg-info' : 'bg-secondary'}">${inasistencia.tipo === 'manual' ? 'Manual' : 'Automática'}</span></td>
+                        <td>
+                            <span class="badge ${inasistencia.tipo === 'manual' ? 'bg-info' : 'bg-secondary'}">
+                                ${inasistencia.tipo === 'manual' ? 'Manual' : 'Automática'}
+                            </span>
+                            ${esAutoIgnorada ? '<span class="badge bg-warning text-dark ms-1">Ignorada</span>' : ''}
+                        </td>
                         <td>
                             ${inasistencia.tipo === 'manual' ? `<button type="button" class="btn btn-sm btn-danger btn-eliminar-inasistencia-manual" data-index="${index}"><i class="bi bi-trash"></i></button>` : '<span class="text-muted">-</span>'}
                         </td>
                     </tr>
-                `).join('')}
+                `}).join('')}
             </tbody>
         </table>
     `;

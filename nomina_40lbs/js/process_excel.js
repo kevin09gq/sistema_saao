@@ -14,6 +14,8 @@ $(document).ready(function () {
 
 // PASO 1: Función para procesar los archivos Excel subidos por el usuario y unir los datos 
 function processExcelData(params) {
+       $("#container-nomina_40lbs").removeClass("hidden");
+
     $('#btn_procesar_nomina_40lbs').on('click', function (e) {
         e.preventDefault();
 
@@ -256,6 +258,7 @@ function obtenerEmpleadosSinSS(JsonListaRaya) {
                 let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNomina40lbs, 4, true);
                 console.log(jsonNomina40lbs);
 
+                actualizarCabeceraNomina(jsonNomina40lbs);
 
                 mostrarDatosTabla(jsonFiltrado, 1);
                 console.log(jsonNomina40lbs);
@@ -484,6 +487,7 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
                     saveNomina(jsonNomina40lbs);
                 }
 
+                actualizarCabeceraNomina(jsonNomina40lbs);
                 // Filtrar empleados con id_departamento 4
                 let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNomina40lbs, 4, true);
 
@@ -674,10 +678,7 @@ function agregarEmpleadosNuevos(jsonNomina40lbs, JsonListaRaya) {
         });
     }
 
-    // Asignar propiedades necesarias a todos los empleados (incluyendo nuevos)
-    asignarPropiedadesEmpleado(jsonNomina40lbs);
-    ordenarEmpleadosPorApellido(jsonNomina40lbs);
-
+  
     // DESPUÉS de agregar empleados nuevos, verificar empleados sin seguro
     verificarEmpleadosSinSeguro(jsonNomina40lbs);
 }
@@ -685,13 +686,9 @@ function agregarEmpleadosNuevos(jsonNomina40lbs, JsonListaRaya) {
 
 //PASO 3: Verificar Y agrega nuevos empleados sin seguro (se ejecuta después de agregar empleados nuevos)
 function verificarEmpleadosSinSeguro(jsonNomina40lbs) {
-    // Recopilar todas las claves de empleados en la nómina actual (que representa la lista de raya)
+    // Recopilar todas las claves de empleados en la nómina actual
     let clavesNomina = new Set();
     jsonNomina40lbs.departamentos.forEach(function (departamento) {
-        // Excluir el departamento "Sin Seguro" de esta verificación
-        if (departamento.nombre.toLowerCase().includes('sin seguro')) {
-            return;
-        }
         departamento.empleados.forEach(function (empleado) {
             clavesNomina.add(String(empleado.clave));
         });
@@ -732,7 +729,8 @@ function verificarEmpleadosSinSeguro(jsonNomina40lbs) {
                         clave: empSinSeguro.clave,
                         nombre: empSinSeguro.ap_paterno + ' ' + empSinSeguro.ap_materno + ' ' + empSinSeguro.nombre,
                         tarjeta: null,
-                        id_empresa: empSinSeguro.id_empresa
+                        id_empresa: empSinSeguro.id_empresa,
+                        id_departamento: parseInt(empSinSeguro.id_departamento)
                     };
 
                     // Solo agregar si no existe ya en el departamento
@@ -752,6 +750,7 @@ function verificarEmpleadosSinSeguro(jsonNomina40lbs) {
                     saveNomina(jsonNomina40lbs);
                 }
 
+                actualizarCabeceraNomina(jsonNomina40lbs);
 
                 // Filtrar empleados con id_departamento 4
                 let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNomina40lbs, 4, true);
@@ -818,14 +817,13 @@ function asignarPropiedadesEmpleado(jsonNomina40lbs) {
                 }
 
                 // Agregar o mantener las propiedades necesarias (no sobrescribir si ya vienen de la BD)
-                empleado.sueldo_neto = empleado.sueldo_semanal ?? 0;
+                empleado.sueldo_neto = empleado.sueldo_neto ?? 0;
                 empleado.incentivo = empleado.incentivo ?? 0;
                 empleado.horas_extra = empleado.horas_extra ?? 0;
                 empleado.bono_antiguedad = empleado.bono_antiguedad ?? 0;
                 empleado.actividades_especiales = empleado.actividades_especiales ?? 0;
                 empleado.puesto = empleado.puesto ?? '';
                 empleado.sueldo_extra_total = empleado.sueldo_extra_total ?? 0;
-                empleado.retardos = empleado.retardos ?? 0;
                 empleado.prestamo = empleado.prestamo ?? 0;
                 empleado.permiso = empleado.permiso ?? 0;
                 empleado.inasistencia = empleado.inasistencia ?? 0;

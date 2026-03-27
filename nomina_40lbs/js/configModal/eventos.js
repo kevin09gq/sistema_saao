@@ -139,24 +139,6 @@ function asignarTotalOlvidos(empleado, force = false) {
     empleado.checador = totalDescontado;
 }
 
-function asignarTotalInasistencias(empleado, force = false) {
-    if (!Array.isArray(empleado.historial_inasistencias)) {
-        return;
-    }
-
-    if (empleado._inasistencia_editado_manual && !force) {
-        return;
-    }
-
-    let totalInasistencias = 0;
-    let totalDescontado = 0;
-    empleado.historial_inasistencias.forEach(inasistencia => {
-        totalInasistencias += 1;
-        totalDescontado += parseFloat(inasistencia.descuento_inasistencia) || 0;
-    });
-
-    empleado.inasistencia = totalDescontado;
-}
 
 
 // ========================================
@@ -311,8 +293,28 @@ function mostrarInasistencias(empleado) {
         $total.text(inasistencias.length);
     }
 }
-function mostrarOlvidosChecador(empleado) {}
 
+function mostrarOlvidosChecador(empleado) {
+    const $content = $('#olvidos-checador-40lbs');
+    $content.empty();
+
+    // Validar que exista el historial de olvidos
+    if (!Array.isArray(empleado.historial_olvidos) || empleado.historial_olvidos.length === 0) {
+        $content.html('<p class="sin-eventos">Sin olvidos del checador</p>');
+        $('#total-olvidos-checador-40lbs').text('0');
+        return;
+    }
+
+    // Renderizar historial de olvidos
+    $content.html(empleado.historial_olvidos.map(olvido => `
+        <div class="evento-item">
+            <span>${olvido.dia} ${olvido.fecha} · $${parseFloat(olvido.descuento_olvido).toFixed(2)}</span>
+        </div>
+    `).join(''));
+
+    // Mostrar total de olvidos
+    $('#total-olvidos-checador-40lbs').text(empleado.historial_olvidos.length);
+}
 
 
 // ========================================

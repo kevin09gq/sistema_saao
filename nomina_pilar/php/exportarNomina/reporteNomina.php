@@ -258,8 +258,16 @@ foreach ($empleadosPorTipo as $empleado) {
     $comida = isset($empleado['comida']) ? floatval($empleado['comida']) : 0;
 
     $total_extra = 0;
-    $percepciones_extra = isset($empleado['percepciones_extra']) && is_array($empleado['percepciones_extra']) ? $empleado['percepciones_extra'] : [];
     $componentesExtraDetalle = [];
+
+    // Sumar tardeada si existe
+    $tardeada = isset($empleado['tardeada']) ? floatval($empleado['tardeada']) : 0;
+    if ($tardeada > 0) {
+        $total_extra += $tardeada;
+        $componentesExtraDetalle['Tardeada'] = $tardeada;
+    }
+
+    $percepciones_extra = isset($empleado['percepciones_extra']) && is_array($empleado['percepciones_extra']) ? $empleado['percepciones_extra'] : [];
     if (count($percepciones_extra) > 0) {
         foreach ($percepciones_extra as $extra) {
             $cantidad = isset($extra['cantidad']) ? floatval($extra['cantidad']) : 0;

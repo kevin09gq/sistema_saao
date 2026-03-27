@@ -64,6 +64,7 @@ function restoreNomina() {
                 mostrarDatosTabla(jsonNomina40lbs, 1);
             }
         }
+        actualizarCabeceraNomina(jsonNomina40lbs);
 
         return true;
     } catch (err) {

@@ -28,6 +28,9 @@ function establerDataModal(empleado) {
     // Establecer Biometrico del empleado
     establecerBiometrico(empleado);
 
+    // Colorear filas de biométrico según eventos
+    establecerColorBiometrico(empleado);
+
     // Establecer Biometrico Redondeado del empleado
     establecerBiomtricoRedondeado(empleado);
 
@@ -59,6 +62,7 @@ function establerDataModal(empleado) {
     mostrarRetardos(empleado);
     mostrarInasistencias(empleado);
     mostrarOlvidosChecador(empleado);
+    
 
     calcularSueldoACobrar();
 
@@ -116,6 +120,142 @@ function establecerBiometrico(empleado) {
     });
 }
 
+function establecerColorBiometrico(empleado) {
+    if (!empleado || !empleado.registros) return;
+
+    // Definir colores para cada tipo de evento
+    const colores = {
+        retardo: '#fef3c7',           // Amarillo (retardos)
+        olvido: '#fee2e2',            // Rojo (olvidos)
+        entrada_temprana: '#dbeafe',  // Azul (entradas tempranas)
+        salida_tardia: '#fed7aa',     // Naranja (salidas tardías)
+        salida_temprana: '#d1d5db',   // Gris oscuro (salidas tempranas)
+        inasistencia: '#f3f4f6'       // Gris (inasistencias)
+    };
+
+    const abreviaturas = {
+        retardo: 'R',
+        olvido: 'O',
+        entrada_temprana: 'ET',
+        salida_tardia: 'STA',
+        salida_temprana: 'STE',
+        inasistencia: 'I'
+    };
+
+    // Identificar la primera y última fila de cada fecha para aplicar eventos específicos
+    const primeraFilaPorFecha = {};
+    const ultimaFilaPorFecha = {};
+    let fechaAnterior = null;
+
+    $('#tbody-biometrico-40lbs tr').each(function () {
+        const $celdas = $(this).find('td');
+        const fecha = $celdas.eq(1).text().trim();
+
+        if (fecha) {
+            if (fecha !== fechaAnterior) {
+                primeraFilaPorFecha[fecha] = this;
+                fechaAnterior = fecha;
+            }
+            ultimaFilaPorFecha[fecha] = this;
+        }
+    });
+
+    // Obtener horarios semanales globales para comparaciones (si están disponibles)
+    const horariosPorDia = {};
+    if (window.jsonNomina40lbs && Array.isArray(window.jsonNomina40lbs.horarios_semanales)) {
+        window.jsonNomina40lbs.horarios_semanales.forEach(h => {
+            horariosPorDia[normalizarDia(h.dia)] = h;
+        });
+    }
+
+    // Recorrer las filas y aplicar lógica de colorización
+    $('#tbody-biometrico-40lbs tr').each(function () {
+        const $fila = $(this);
+        const $celdas = $fila.find('td');
+        const fecha = $celdas.eq(1).text().trim();
+        const entrada = $celdas.eq(2).text().trim();
+        const salida = $celdas.eq(3).text().trim();
+
+        if (!fecha) return;
+
+        const eventosEnRegistro = [];
+        let colorAplicar = null;
+        const diaNom = normalizarDia(nombreDia(fecha));
+        const horario = horariosPorDia[diaNom];
+
+        // 1. INASISTENCIAS (Basado en historial)
+        if (Array.isArray(empleado.historial_inasistencias)) {
+            const tieneInasistencia = empleado.historial_inasistencias.some(i =>
+                normalizarDia(i.dia) === diaNom
+            );
+            if (tieneInasistencia) {
+                colorAplicar = colores.inasistencia;
+                eventosEnRegistro.push(abreviaturas.inasistencia);
+            }
+        }
+
+        // 2. OLVIDOS (Si falta entrada o salida)
+        if ((entrada === '-' || salida === '-') && Array.isArray(empleado.historial_olvidos)) {
+            const tieneOlvido = empleado.historial_olvidos.some(o => o.fecha === fecha);
+            if (tieneOlvido) {
+                if (!colorAplicar) colorAplicar = colores.olvido;
+                eventosEnRegistro.push(abreviaturas.olvido);
+            }
+        }
+
+        // Si tenemos horario, calcular eventos de tiempo
+        if (horario) {
+            // 3. RETARDOS (Solo en la primera fila del día)
+            if (primeraFilaPorFecha[fecha] === this && entrada && entrada !== '-' && horario.entrada) {
+                const diff = aMinutos(entrada) - aMinutos(horario.entrada);
+                if (diff > 0) {
+                    if (!colorAplicar) colorAplicar = colores.retardo;
+                    eventosEnRegistro.push(abreviaturas.retardo);
+                }
+            }
+
+            // 4. ENTRADAS TEMPRANAS (Solo en la primera fila del día)
+            if (primeraFilaPorFecha[fecha] === this && entrada && entrada !== '-' && horario.entrada) {
+                const diff = aMinutos(entrada) - aMinutos(horario.entrada);
+                if (diff < -50) { // Siguiendo lógica de eventos.js
+                    if (!colorAplicar) colorAplicar = colores.entrada_temprana;
+                    eventosEnRegistro.push(abreviaturas.entrada_temprana);
+                }
+            }
+
+            // 5. SALIDAS TARDÍAS (Solo en la última fila del día)
+            if (ultimaFilaPorFecha[fecha] === this && salida && salida !== '-' && horario.salida) {
+                const diff = aMinutos(salida) - aMinutos(horario.salida);
+                if (diff > 50) { // Siguiendo lógica de eventos.js
+                    if (!colorAplicar) colorAplicar = colores.salida_tardia;
+                    eventosEnRegistro.push(abreviaturas.salida_tardia);
+                }
+            }
+
+            // 6. SALIDAS TEMPRANAS (Solo en la última fila del día)
+            if (ultimaFilaPorFecha[fecha] === this && salida && salida !== '-' && horario.salida) {
+                const diff = aMinutos(salida) - aMinutos(horario.salida);
+                if (diff < -5) { // Siguiendo lógica de eventos.js
+                    if (!colorAplicar) colorAplicar = colores.salida_temprana;
+                    eventosEnRegistro.push(abreviaturas.salida_temprana);
+                }
+            }
+        }
+
+        // Aplicar el color si se encontró un evento
+        if (colorAplicar) {
+            $fila.css('background-color', colorAplicar);
+        }
+
+        // Agregar badge si hay eventos detectados
+        if (eventosEnRegistro.length > 0) {
+            const eventosTexto = eventosEnRegistro.join(', ');
+            const badgeColor = '#000000';
+            const badge = `<span class="badge" style="background-color: ${colorAplicar || '#e5e7eb'}; color: ${badgeColor}; margin-left: 8px; font-size: 0.85em; padding: 2px 6px; border:1px solid ${badgeColor}; border-radius:4px;">${eventosTexto}</span>`;
+            $celdas.eq(0).append(badge);
+        }
+    });
+}
 /************************************
  * ESTABLECER BIOMÉTRICO REDONDEADO DEL EMPLEADO
  ************************************/

@@ -1,3 +1,5 @@
+quitarTarjeta();
+updateTarjeta();
 
 
 // ============================================
@@ -7,7 +9,7 @@
 // ============================================
 
 function initComponents() {
-   // $("#container-nomina_huasteca").attr("hidden", true);
+    $("#container-nomina_huasteca").attr("hidden", true);
     $("#container-acceso-huasteca").attr("hidden", true);
     $("#tabla-nomina-responsive").removeAttr("hidden");
     $("#config-valores-huasteca").attr("hidden", true);
@@ -21,10 +23,13 @@ function initComponents() {
 // CUANDO HAYA EMPLEADOS ASEGURADOS
 // ============================================
 function mostrarConfigValores(bandera) {
+    // Cerrar cualquier alerta de carga abierta
+    Swal.close();
+
     $("#container-acceso-huasteca").attr("hidden", true);
     $("#config-valores-huasteca").removeAttr("hidden");
     asignarValoresConfig(bandera);
-    //actualizarCabeceraNomina(jsonNominaHuasteca);
+    actualizarCabeceraNomina(jsonNominaHuasteca);
 }
 
 // ============================================
@@ -55,6 +60,9 @@ function asignarValoresConfig(statusRancho = true) {
         jsonNominaHuasteca.pago_tardeada = tardeada;
         jsonNominaHuasteca.pago_comida = comida;
 
+        // Guardar valores de configuración en localStorage
+        saveNomina(jsonNominaHuasteca);
+
         $("#config-valores-huasteca").attr("hidden", true);
         $("#tabla-nomina-responsive").removeAttr("hidden");
 
@@ -62,7 +70,7 @@ function asignarValoresConfig(statusRancho = true) {
 
             // obtenerHorarioRancho es async: llamará calcularSueldoSemanal que refresca la tabla
             obtenerHorarioRancho();
-            
+
 
         } else {
             // Sin horarioRancho (nómina restaurada): renderizar tabla directamente

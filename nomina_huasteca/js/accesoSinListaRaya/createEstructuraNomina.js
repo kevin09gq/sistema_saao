@@ -1,12 +1,14 @@
 let jsonNominaHuasteca = null;
 
 $(document).ready(function () {
+   
+   
     crearEstructuraJson();
-    restoreNomina();
+     restoreNomina();
     limpiarCamposNomina();
     obtenerNominaHuasteca();
     console.log(jsonNominaHuasteca);
-    
+
 
 });
 
@@ -15,11 +17,26 @@ $(document).ready(function () {
 // ============================================
 
 function crearEstructuraJson() {
-
-    $("#container-acceso-huasteca").removeAttr("hidden");
+   $("#container-acceso-huasteca").removeAttr("hidden");
     $('#btn_crear_nomina_huasteca').on('click', function () {
-        // Obtener valores de los campos
-        // Función simple para formatear fecha a 30/Ene/2026
+        const semana = $('#semana_nomina_huasteca').val();
+        const fechaInicio = $('#fecha_inicio_nomina_huasteca').val();
+        const fechaCierre = $('#fecha_cierre_nomina_huasteca').val();
+
+        if (!semana || !fechaInicio || !fechaCierre) {
+            Swal.fire('Error', 'Por favor completa todos los campos para crear la nómina.', 'error');
+            return;
+        }
+
+        // Mostrar alerta de carga
+        Swal.fire({
+            title: 'Creando nómina...',
+            text: 'Espere un momento por favor.',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
 
         jsonNominaHuasteca = {
             numero_semana: $('#semana_nomina_huasteca').val(),
@@ -109,16 +126,19 @@ function obtenerJornalerosCoordinadores(jsonNominaHuasteca) {
                 asignarPropiedadesEmpleado(jsonNominaHuasteca);
                 ordenarEmpleadosPorNombre(jsonNominaHuasteca);
                 inicializarRegistrosVacios(jsonNominaHuasteca);
+
+                // Guardar explícitamente al crear para asegurar persistencia
+                saveNomina(jsonNominaHuasteca);
+
                 mostrarConfigValores(true);
 
                 console.log(jsonNominaHuasteca);
 
 
                 // BHL: Llenar tabla de pagos por día cuando se cargue la nómina
-                /* 
                 if (typeof llenar_cuerpo_tabla_pagos_por_dia === 'function') {
                     llenar_cuerpo_tabla_pagos_por_dia();
-                } */
+                }
 
 
             }
@@ -166,7 +186,7 @@ function obtenerNominaHuasteca() {
                         // 3. Cargar en la variable global y en localStorage
                         jsonNominaHuasteca = nomina;
                         validarExistenciaTrabajadorBD(jsonNominaHuasteca);
-                        
+
 
 
                     });
@@ -207,6 +227,12 @@ function validarExistenciaTrabajadorBD(jsonNominaHuasteca) {
 
                 // Filtrar empleados: solo dejar los que existen en BD (id_status=1 e id_empresa=1)
                 jsonNominaHuasteca.departamentos.forEach(function (departamento) {
+
+                    // Si es Corte, no filtrar contra BD
+                    if (departamento.nombre === "Corte") {
+                        return;
+                    }
+
                     departamento.empleados = departamento.empleados.filter(function (empleado) {
                         return clavesExistentes.includes(String(empleado.clave));
                     });
@@ -313,10 +339,9 @@ function verificarEmpleadosSinSeguro(jsonNominaHuasteca) {
 
                 asignarPropiedadesEmpleado(jsonNominaHuasteca);
                 ordenarEmpleadosPorNombre(jsonNominaHuasteca);
-
                 saveNomina(jsonNominaHuasteca);
                 initComponents();
-
+                actualizarCabeceraNomina(jsonNominaHuasteca);
                 // Filtrar por departamento 12 (coordinadores) por defecto
                 let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaHuasteca, 12);
                 mostrarDatosTabla(jsonFiltrado, 1);
@@ -382,15 +407,15 @@ function asignarPropiedadesEmpleado(jsonNominaHuasteca) {
               - Si no tiene puesto asignado (null) → Por defecto es Jornalero Base (id_tipo_puesto = 1)
             */
 
-            /* Mapear id_puestoEspecial a id_tipo_jornalero según departamento
+            // Mapear id_puestoEspecial a id_tipo_jornalero según departamento
             if (idDepto === 12) {
                 // Departamento: Coordinadores
                 empleado.id_tipo_puesto = 4; // Coordinador
 
-            } else if (idDepto === 11) {
+            } else if (idDepto === 13) {
                 // Departamento: Jornaleros
                 empleado.id_tipo_puesto = (idPuesto === 37 || idPuesto === 39) ? 3 : ((idPuesto === 38) ? 2 : 1);
-            }*/
+            }
 
             // Asignar propiedad pasaje para jornaleros base y vivero
             if (["13"].includes(empleado.id_departamento)) {

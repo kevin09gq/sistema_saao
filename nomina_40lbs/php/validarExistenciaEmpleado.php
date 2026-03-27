@@ -164,7 +164,6 @@ function obtenerEmpleadosSinSeguro()
             AND id_empresa = 1
             AND id_departamento IN (4, 5)
             AND status_nss = 0
-            AND biometrico <> 0
             ORDER BY nombre ASC";
 
     $result = mysqli_query($conexion, $sql);

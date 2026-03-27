@@ -61,7 +61,19 @@
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina/views/nomina.php">40 lbs</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_confianza/views/nomina_confianza.php">Confianza</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_relicario/views/nomina_relicario.php">Rancho Relicario</a></li>
-                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_pilar/views/nomina_pilar.php">Pilar</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_pilar/views/nomina_pilar.php">Rancho Pilar</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_palmilla/views/nomina_palmilla.php">Rancho Palmilla</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_huasteca/views/nomina_huasteca.php">Rancho Huasteca</a></li>
+                        <li class="dropdown-divider"></li>
+                        <li class="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle" href="#">Historial Cortes</a>
+                            <ul class="submenu dropdown-menu">
+                                <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_palmilla/views/historial_cortes.php">Palmilla</a></li>
+                                <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_relicario/views/historial_cortes.php">Relicario</a></li>
+                                <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_pilar/views/historial_cortes.php">Pilar</a></li>
+                                <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_huasteca/views/historial_cortes.php">Huasteca</a></li>
+                            </ul>
+                        </li>
 
                     </ul>
                 </li>

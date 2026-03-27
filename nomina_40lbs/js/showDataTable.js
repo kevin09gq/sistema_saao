@@ -168,23 +168,39 @@ function paginarTabla(jsonNomina40lbs, totalEmpleados, paginaActual, empleadosPo
     });
 }
 
-// Función para filtrar empleados por id_departamento y opcionalmente por seguroSocial
-function filtrarEmpleadosPorDepartamento(jsonNomina, idDepartamento, seguroSocial = true) {
+// Función para filtrar empleados por id_departamento, seguroSocial y término de búsqueda
+function filtrarEmpleadosPorDepartamento(jsonNomina, idDepartamento, seguroSocial = true, busqueda = '') {
     let jsonFiltrado = {
         departamentos: []
     };
 
+    const normalizar = (texto) => {
+        return String(texto || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    };
+
+    const terminoBusqueda = normalizar(busqueda);
+
     if (jsonNomina && jsonNomina.departamentos) {
         jsonNomina.departamentos.forEach(depto => {
             let empleadosFiltrados = depto.empleados.filter(emp => {
-                // Filtrar por id_departamento
-                if (emp.id_departamento !== idDepartamento) {
+                // 1. Filtrar por id_departamento
+                if (idDepartamento !== null && emp.id_departamento !== idDepartamento) {
                     return false;
                 }
-                // Filtrar por seguroSocial si se proporciona el parámetro
+
+                // 2. Filtrar por seguroSocial
                 if (seguroSocial !== null && emp.seguroSocial !== seguroSocial) {
                     return false;
                 }
+
+                // 3. Filtrar por búsqueda de nombre (si existe término)
+                if (terminoBusqueda !== '') {
+                    const nombreNormalizado = normalizar(emp.nombre);
+                    if (!nombreNormalizado.includes(terminoBusqueda)) {
+                        return false;
+                    }
+                }
+
                 return true;
             });
 
@@ -193,7 +209,6 @@ function filtrarEmpleadosPorDepartamento(jsonNomina, idDepartamento, seguroSocia
                 empleados: empleadosFiltrados
             };
 
-            // Solo agregar departamento si tiene empleados después del filtro
             if (deptoFiltrado.empleados.length > 0) {
                 jsonFiltrado.departamentos.push(deptoFiltrado);
             }
@@ -223,8 +238,11 @@ function refrescarTabla() {
         seguroSocial = false;
     }
 
+    // Obtener término de búsqueda actual
+    const busqueda = $('#busqueda-nomina-40lbs').val() || '';
+
     // Aplicar filtro y mostrar tabla con página actual
-    const jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNomina40lbsOriginal || jsonNomina40lbs, idDepartamento, seguroSocial);
+    const jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNomina40lbs, idDepartamento, seguroSocial, busqueda);
     mostrarDatosTabla(jsonFiltrado, paginaActualNomina);
 }
 

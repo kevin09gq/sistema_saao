@@ -121,8 +121,8 @@ function guardarJustificacionGeneralCoordinadores() {
 
         // Iterar sobre todos los empleados
         departamento.empleados.forEach(empleado => {
-            // Solo procesar coordinadores (id_departamento === 8)
-            if (parseInt(empleado.id_departamento) !== 8) return;
+            // Solo procesar coordinadores (id_departamento === 12)
+            if (parseInt(empleado.id_departamento) !== 12) return;
 
             // 1. Crear propiedad dias_justificados si no existe
             if (!Array.isArray(empleado.dias_justificados)) {

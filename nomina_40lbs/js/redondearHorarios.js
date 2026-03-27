@@ -118,9 +118,10 @@ function redondearRegistrosEmpleado(empleado, horariosPorDia) {
                     };
                 } else {
                 // DATOS DEL REGISTRO BIOMÉTRICO DEL EMPLEADO
-                var primerRegistro = registrosDelDia[0];           // Primer registro biométrico del día
-                var horaEntradaRegistro = primerRegistro.entrada;   // Hora de entrada real del empleado (desde biométrico)
-                var horaSalidaRegistro = primerRegistro.salida;     // Hora de salida real del empleado (desde biométrico)
+                // Tomamos la primera entrada y la última salida del día detectada en el biométrico
+                var horaEntradaRegistro = registrosDelDia[0].entrada;
+                var ultimoRegistro = registrosDelDia[registrosDelDia.length - 1];
+                var horaSalidaRegistro = ultimoRegistro.salida;
 
                 // DATOS DEL HORARIO SEMANAL CONFIGURADO
                 var horarioSemanal = horariosPorDia[diaSemana];      // Horario completo del día (desde configuración)

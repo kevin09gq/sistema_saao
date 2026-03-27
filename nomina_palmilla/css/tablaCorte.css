@@ -1,0 +1,199 @@
+/*  Scroll horizontal sólo para la tabla de corte (cambios mínimos y locales) */
+#tabla-corte-container-palmilla .table-responsive-palmilla-corte {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.35) rgba(0, 0, 0, 0.05);
+}
+
+
+/* WebKit (Chrome, Edge, Safari) - scroll horizontal más delgado */
+#tabla-corte-container-palmilla .table-responsive-palmilla-corte::-webkit-scrollbar {
+    height: 8px;
+    /* ajustar si quieres más/menos */
+}
+
+#tabla-corte-container-palmilla .table-responsive-palmilla-corte::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 8px;
+}
+
+#tabla-corte-container-palmilla .table-responsive-palmilla-corte::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 8px;
+    min-height: 20px;
+}
+
+#tabla-corte-container-palmilla .table-responsive-palmilla-corte::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.35);
+}
+
+/* Estilo general para el contenedor de la tabla */
+.table-responsive-palmilla-corte {
+    overflow-x: auto;
+    max-width: 100%;
+    background: white;
+}
+
+.table-nomina-palmilla-corte {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 14px; /* Incrementar el tamaño de la fuente */
+    min-width: 1400px;
+    background: white;
+}
+
+
+.table-nomina-palmilla-corte th {
+    background: white;
+    color: #9ca3af;
+    font-weight: 600;
+    padding: 16px 12px;
+    text-align: center;
+    border: none;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 12px; /* Incrementar el tamaño de la fuente para los encabezados */
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.table-nomina-palmilla-corte td {
+    padding: 16px 12px;
+    border: none;
+    border-bottom: 1px solid #f9fafb;
+    text-align: center;
+    font-size: 14px; /* Incrementar el tamaño de la fuente para las celdas */
+    line-height: 1.3;
+    background: white;
+    vertical-align: middle;
+    font-family: 'Segoe UI', sans-serif;
+    font-variant-numeric: tabular-nums;
+
+}
+
+.table-nomina-palmilla-corte td:nth-child(2) {
+    padding: 16px 12px;
+    border: none;
+    border-bottom: 1px solid #f9fafb;
+    text-align: center;
+    font-size: 11px;
+    line-height: 1.3;
+    background: white;
+    vertical-align: middle;
+    font-family: 'Segoe UI', sans-serif;
+
+
+}
+
+
+.table-nomina-palmilla-corte tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.table-nomina-palmilla-corte tbody tr:nth-child(even) {
+    background-color: #fafbfc;
+}
+
+.table-nomina-palmilla-corte tbody tr:hover {
+    background-color: #f0f9f4;
+}
+
+
+/* Estilo para las filas con el concepto NOMINA */
+.table-nomina-palmilla-corte tbody tr[data-concepto="NOMINA"] {
+    background-color: #E0F8FF; /* Fondo azul claro */
+    color: #000000; /* Letras en negro */
+}
+
+/* Estilo para las columnas de totales en filas con concepto NOMINA */
+.table-nomina-palmilla-corte tbody tr[data-concepto="NOMINA"] td:nth-child(11),
+.table-nomina-palmilla-corte tbody tr[data-concepto="NOMINA"] td:nth-child(12),
+.table-nomina-palmilla-corte tbody tr[data-concepto="NOMINA"] td:nth-child(13) {
+    font-weight: bold; /* Letras en negrita */
+    color: #000000; /* Letras en negro */
+}
+
+/* Columnas específicas con el estilo de la imagen */
+.table-nomina-palmilla-corte td:nth-child(1) {
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.table-nomina-palmilla-corte td:nth-child(2) {
+    text-align: left;
+    font-weight: 600;
+    min-width: 250px;
+    color: #1f2937;
+}
+
+/* Corregir el estilo de la columna de conceptos */
+.table-nomina-palmilla-corte td:nth-child(3) {
+    color: #000000; /* Mantener el color de las letras en negro */
+    font-weight: bold; /* Mantener las letras en negrita */
+    background: #f9f9f9; /* Cambiar el fondo al color gris */
+    font-variant-numeric: tabular-nums;
+}
+
+/* Columnas de los días de la semana (V, SA, DO, L, MA, MI, J) - color verde */
+.table-nomina-palmilla-corte td:nth-child(4),
+.table-nomina-palmilla-corte td:nth-child(5),
+.table-nomina-palmilla-corte td:nth-child(6),
+.table-nomina-palmilla-corte td:nth-child(7),
+.table-nomina-palmilla-corte td:nth-child(8),
+.table-nomina-palmilla-corte td:nth-child(9),
+.table-nomina-palmilla-corte td:nth-child(10) {
+    color: #10b981;
+    font-weight: 600;
+    background: rgba(16, 185, 129, 0.05);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Columnas de totales (TOTAL REJAS, PRECIO POR REJA, TOTAL EFECTIVO) - color rojo */
+.table-nomina-palmilla-corte td:nth-child(11),
+.table-nomina-palmilla-corte td:nth-child(12),
+.table-nomina-palmilla-corte td:nth-child(13) {
+    color: #ef4444;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Estilo para valores vacíos (--) */
+.valor-vacio {
+    color: #d1d5db !important;
+    font-weight: 300;
+    user-select: none;
+    pointer-events: none;
+}
+
+/* Celdas vacías con estilo sutil */
+.table-nomina-palmilla-corte td:empty {
+    background: #f9fafb;
+    position: relative;
+}
+
+.table-nomina-palmilla-corte td:empty::after {
+    content: '—';
+    color: #d1d5db;
+    font-weight: 300;
+}
+
+
+
+@media (max-width: 768px) {
+
+
+    .table-nomina-palmilla-corte {
+        font-size: 9px;
+    }
+
+    .table-nomina-palmilla-corte th,
+    .table-nomina-palmilla-corte td {
+        padding: 4px 3px;
+        font-size: 8px;
+    }
+
+
+
+}

@@ -312,7 +312,7 @@ function guardarInasistenciaManual() {
 
         empleado.inasistencia = totalInasistencias;
         establecerHistorialInasistencias(empleado);
-    calcularSueldoACobrar();
+        calcularSueldoACobrar();
 
     });
 }
@@ -424,7 +424,7 @@ function guardarDescuentoOlvido(inputElement, olvidoObject, empleadoObject) {
     empleadoObject.checador = total;
     $('#mod-checador-40lbs').val(total.toFixed(2));
     establecerHistorialChecador(empleadoObject);
-     calcularSueldoACobrar();
+    calcularSueldoACobrar();
 }
 
 
@@ -541,7 +541,7 @@ function eliminarPermisoManual() {
 
 // Función para guardar uniforme manual en el historial
 function guardarUniformeManual() {
-    $("#btn-agregar-uniforme-40lbs").click(function(e) {
+    $("#btn-agregar-uniforme-40lbs").click(function (e) {
         e.preventDefault();
         const empleado = objEmpleado.getEmpleado();
         if (!empleado) return;
@@ -573,24 +573,24 @@ function guardarUniformeManual() {
         empleado.uniformes = total;
         establecerHistorialUniforme(empleado);
         calcularSueldoACobrar();
-       
+
     });
 }
 
 // Función para eliminar uniforme manual del historial
 function eliminarUniformeManual() {
     const $contenedor = $('#contenedor-historial-uniforme-40lbs');
-    $contenedor.on('click', '.btn-eliminar-uniforme-manual', function() {
+    $contenedor.on('click', '.btn-eliminar-uniforme-manual', function () {
         const empleado = objEmpleado.getEmpleado();
         if (!empleado) return;
         const index = $(this).data('index');
-        empleado.historial_uniforme.splice(index,1);
+        empleado.historial_uniforme.splice(index, 1);
         const total = empleado.historial_uniforme.reduce((s, u) => s + (parseInt(u.cantidad) || 0), 0);
         $('#mod-uniforme-40lbs').val(total);
         empleado.uniformes = total;
         establecerHistorialUniforme(empleado);
         calcularSueldoACobrar();
-        
+
     });
 }
 

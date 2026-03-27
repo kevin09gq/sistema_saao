@@ -27,7 +27,7 @@ function mostrarDatosTabla(jsonNominaHuasteca, pagina = 1) {
     empleadosPagina.forEach((empleado, index) => {
         const numeroFila = inicio + index + 1;
 
-        /*Función para buscar concepto por código (segura si no existe 'conceptos')
+        //Función para buscar concepto por código (segura si no existe 'conceptos')
         const buscarConcepto = (codigo) => {
             if (!Array.isArray(empleado.conceptos)) return '0.00';
             const concepto = empleado.conceptos.find(c => String(c.codigo) === String(codigo));
@@ -37,8 +37,7 @@ function mostrarDatosTabla(jsonNominaHuasteca, pagina = 1) {
             }
             return '0.00';
         };
-        */
-
+        
 
         // Función para formatear valores (mostrar — si es 0.00)
         // alwaysNegative: si true, forzar visualmente el signo negativo aunque el valor sea positivo
@@ -54,23 +53,23 @@ function mostrarDatosTabla(jsonNominaHuasteca, pagina = 1) {
         };
 
         // Calcular Total Percepciones
-        //const totalPercepciones = calcularTotalPercepciones(empleado);
+        const totalPercepciones = calcularTotalPercepciones(empleado);
 
         // Calcular Total Deducciones
-       // const totalDeducciones = calcularTotalDeducciones(empleado);
+       const totalDeducciones = calcularTotalDeducciones(empleado);
 
         // Calcular Neto a Recibir 
-        //const totalNetoRecibir = (parseFloat(totalPercepciones) - parseFloat(totalDeducciones)).toFixed(2);
+        const totalNetoRecibir = (parseFloat(totalPercepciones) - parseFloat(totalDeducciones)).toFixed(2);
 
         // Calcular Importe Efectivo 
-        //const tarjetaVal = parseFloat(empleado.tarjeta) || 0;
-        //const importeEfectivo = (parseFloat(totalNetoRecibir) || 0) - tarjetaVal;
+        const tarjetaVal = parseFloat(empleado.tarjeta) || 0;
+        const importeEfectivo = (parseFloat(totalNetoRecibir) || 0) - tarjetaVal;
 
         //Calcular TOTAL A RECIBIR
-        //const totalRecibir = importeEfectivo - (parseFloat(empleado.prestamo) || 0);
+        const totalRecibir = importeEfectivo - (parseFloat(empleado.prestamo) || 0);
 
         // Calcular Total a Cobrar
-        //const totalCobrar = calcularTotalCobrar(empleado);
+        const totalCobrar = calcularTotalCobrar(empleado);
 
 
 
@@ -79,11 +78,12 @@ function mostrarDatosTabla(jsonNominaHuasteca, pagina = 1) {
             <tr data-clave="${empleado.clave || 'N/A'}" data-id-empresa="${empleado.id_empresa || 1}" data-id-departamento="${empleado.id_departamento || 0}">
                 <td>${numeroFila}</td>
                 <td>${empleado.nombre}</td>
+                <td class="text-center"><strong>${parseInt(empleado.dias_trabajados) > 0 ? empleado.dias_trabajados : '<span class="valor-vacio">—</span>'}</strong></td>
                 <td>${formatearValor(empleado.salario_semanal || 0)}</td>
                 <td>${formatearValor(empleado.pasaje || 0)}</td>
                 <td>${formatearValor(empleado.comida || 0)}</td>
                 <td>${formatearValor(empleado.sueldo_extra_total || 0)}</td>  
-                <td></td>             
+                <td>${formatearValor(totalPercepciones)}</td>             
 
                 <!-- Deducciones individuales -->
                 <td></td> <!-- ISR -->
@@ -98,18 +98,19 @@ function mostrarDatosTabla(jsonNominaHuasteca, pagina = 1) {
                 <td>${formatearValor(empleado.checador || 0, true)}</td> <!-- CHECADOR -->
                 <td>${formatearValor(empleado.fa_gafet_cofia || 0, true)}</td> <!-- F.A/GAFET/COFIA -->
 
-                <td></td> <!-- TOTAL DEDUCCIONES -->
-                <td></td> <!-- NETO A RECIBIR -->
+                <td>${formatearValor(totalDeducciones, true)}</td> <!-- TOTAL DEDUCCIONES -->
+                <td>${formatearValor(totalNetoRecibir || 0)}</td> <!-- NETO A RECIBIR -->
                 <td>${formatearValor(empleado.tarjeta || 0, true)}</td> <!-- DISPERSION DE TARJETA -->
-                <td></td> <!-- IMPORTE EN EFECTIVO -->
+                <td>${formatearValor(importeEfectivo || 0)}</td> <!-- IMPORTE EN EFECTIVO -->
                 <td>${formatearValor(empleado.prestamo || 0, true)}</td> <!-- PRÉSTAMO -->        
-                <td></td>  <!-- TOTAL A RECIBIR -->
+                <td>${formatearValor(totalRecibir || 0)}</td>  <!-- TOTAL A RECIBIR -->
                 
                 <!-- REDONDEADO -->
-                <td></td>
+                <td class="${parseFloat(empleado.redondeo) < 0 ? 'redondeo-negativo' : 'redondeo-positivo'}">${formatearValor(empleado.redondeo || 0)}</td>
                
                 <!-- TOTAL EFECTIVO REDONDEADO -->
-                <td></td>
+                <td class="${totalCobrar < 0 ? 'sueldo-negativo' : ''}"><strong>${formatearValor(totalCobrar)}</strong></td>
+             
              
             </tr>
         `;

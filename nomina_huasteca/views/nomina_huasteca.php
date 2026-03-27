@@ -17,9 +17,16 @@
 
     <link rel="stylesheet" href="../css/nomina_huasteca.css">
     <link rel="stylesheet" href="../css/tablaNomina.css">
+
+    <!-- estilos para el corte -->
+    <link rel="stylesheet" href="../css/tablaCorte.css">
+
+
     <link rel="stylesheet" href="../css/encabezados.css">
     <link rel="stylesheet" href="../css/modalCoordinador.css">
     <link rel="stylesheet" href="../css/modalJornaleros.css">
+    <link rel="stylesheet" href="../css/conceptos_totales.css">
+    <link rel="stylesheet" href="../css/modal_seleccion_tickets.css">
 
 </head>
 
@@ -87,21 +94,17 @@
                 <div class="tab-pane fade show active" id="panel-crear-nomina" role="tabpanel" aria-labelledby="tab-crear-nomina">
                     <h5 class="mb-3 text-center"><i class="bi bi-journal-plus"></i> Crear nueva nómina</h5>
                     <form id="form_crear_nomina_huasteca" class="row g-3">
-                        <div class="col-md-6">
-                            <label for="anio_nomina_huasteca" class="form-label">Año</label>
-                            <input type="number" class="form-control" id="anio_nomina_huasteca" name="anio_nomina_huasteca" min="2000" max="2100" placeholder="Ej. 2026">
-                        </div>
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <label for="semana_nomina_huasteca" class="form-label">No. Semana</label>
-                            <input type="number" class="form-control" id="semana_nomina_huasteca" name="semana_nomina_huasteca" min="1" max="53" placeholder="Ej. 5">
+                            <input type="number" class="form-control" id="semana_nomina_huasteca" name="semana_nomina_huasteca" min="1" max="53" placeholder="Ej. 5" required>
                         </div>
                         <div class="col-md-6">
                             <label for="fecha_inicio_nomina_huasteca" class="form-label">Fecha de inicio</label>
-                            <input type="date" class="form-control" id="fecha_inicio_nomina_huasteca" name="fecha_inicio_nomina_huasteca">
+                            <input type="date" class="form-control" id="fecha_inicio_nomina_huasteca" name="fecha_inicio_nomina_huasteca" required>
                         </div>
                         <div class="col-md-6">
                             <label for="fecha_cierre_nomina_huasteca" class="form-label">Fecha de cierre</label>
-                            <input type="date" class="form-control" id="fecha_cierre_nomina_huasteca" name="fecha_cierre_nomina_huasteca">
+                            <input type="date" class="form-control" id="fecha_cierre_nomina_huasteca" name="fecha_cierre_nomina_huasteca" required>
                         </div>
                         <div class="col-12 d-flex justify-content-center mt-3">
                             <button type="button" class="btn btn-success px-4" id="btn_crear_nomina_huasteca">
@@ -117,11 +120,11 @@
                     <form id="form_recuperar_nomina_huasteca" class="row g-3">
                         <div class="col-md-6">
                             <label for="anio_recuperar_nomina_huasteca" class="form-label">Año</label>
-                            <input type="number" class="form-control" id="anio_recuperar_nomina_huasteca" name="anio_recuperar_nomina_huasteca" min="2000" max="2100" placeholder="Ej. 2026">
+                            <input type="number" class="form-control" id="anio_recuperar_nomina_huasteca" name="anio_recuperar_nomina_huasteca" min="2000" max="2100" placeholder="Ej. 2026" required>
                         </div>
                         <div class="col-md-6">
                             <label for="semana_recuperar_nomina_huasteca" class="form-label">No. Semana</label>
-                            <input type="number" class="form-control" id="semana_recuperar_nomina_huasteca" name="semana_recuperar_nomina_huasteca" min="1" max="53" placeholder="Ej. 5">
+                            <input type="number" class="form-control" id="semana_recuperar_nomina_huasteca" name="semana_recuperar_nomina_huasteca" min="1" max="53" placeholder="Ej. 5" required>
                         </div>
                         <div class="col-12 d-flex justify-content-center mt-3">
                             <button type="button" class="btn btn-primary px-4" id="btn_recuperar_nomina_huasteca">
@@ -260,7 +263,8 @@
                     <thead>
                         <tr>
                             <th rowspan="2">#</th>
-                            <th rowspan="2">NOMBRE</th>
+                            <th rowspan="2"> NOMBRE </th>
+                            <th rowspan="2">DÍAS <br> TRAB.</th>
                             <th rowspan="2">SUELDO <br> SEMANAL</th>
                             <th rowspan="2">PASAJE</th>
                             <th rowspan="2">COMIDA</th>
@@ -334,15 +338,29 @@
     <div id="context-menu" style="position:absolute;z-index:10000;display:none;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);padding:4px;">
         <div class="cm-item" data-action="ver" style="padding:6px 12px;cursor:pointer;">Ver detalles</div>
     </div>
-    <!-- Menú contextual simple para la tabla de corte 
+    <!-- Menú contextual simple para la tabla de corte -->
     <div id="context_menu_corte" style="position:absolute;z-index:10000;display:none;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);padding:4px;">
         <div class="cm_item_corte" data-action="ver" style="padding:6px 12px;cursor:pointer;">🔎​ Ver detalles</div>
     </div>
--->
 
     <!-- Incluir los modales -->
     <?php include "modalCoordinador.php"; ?>
     <?php include "modalJornaleros.php"; ?>
+    <?php include "modalSeleccionarEmpleados.php"; ?>
+    <?php include "modalConceptosTotales.php"; ?>
+    <?php include "biometricoModal.php"; ?>
+    <?php include "modalTardeadaPasaje.php"; ?>
+    <?php include "modalQuitarComidaPasaje.php"; ?>
+    <?php include "modalDiasInhabiles.php"; ?>
+    <?php include "modalTipoDia.php"; ?>
+    <?php include "modalExportarNomina.php"; ?>
+    <?php include "modal_seleccion_tickets_huasteca.php"; ?>
+
+    <!-- Modal para los cortes -->
+    <?php include "modalCorte.php"; ?>
+    <?php include "modalCorteNominaEditar.php"; ?>
+    <?php include "modalCorteEditar.php"; ?>
+
 
 
     <!-- jQuery -->
@@ -360,7 +378,13 @@
     <script src="../js/busquedaFiltrado.js"></script>
     <script src="../js/saveGetNomina.js"></script>
     <script src="../js/abrirModal.js"></script>
+    <script src="../js/seleccionar_empleados.js"></script>
+    <script src="../js/conceptos_totales.js"></script>
+    <script src="../js/actualizarBiomtrico.js"></script>
+    <script src="../js/tardeadaPasaje.js"></script>
+    <script src="../js/exportarNominaExcel.js"></script>
     <script src="../js/configModalJornaleros/sueldoSemanal.js"></script>
+
 
     <script src="../js/configModalCoordinador/establecerData.js"></script>
     <script src="../js/configModalCoordinador/configModal.js"></script>
@@ -377,7 +401,12 @@
     <script src="../js/configModalJornaleros/newConcepts.js"></script>
 
 
+    <script src="../js/configModalCorte/configCorte.js"></script>
+    <script src="../js/configModalCorte/showTablaCorte.js"></script>
+    <script src="../js/configModalCorte/abrirModalDetallesCorte.js"></script>
 
+    <script src="../js/ticket_pdf.js"></script>
+    <script src="../js/ticket_seleccion_huasteca.js"></script>
 
 </body>
 

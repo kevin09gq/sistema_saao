@@ -102,6 +102,9 @@ function calcularSueldoSemanal(empleado = null) {
             });
         }
 
+        // === ASIGNAR DÍAS TRABAJADOS ===
+        empleado.dias_trabajados = diasAsistidos;
+
         // === CALCULAR SUELDO SEMANAL ===
         const salarioDiario = parseFloat(empleado.salario_diario) || 0;
         const sueldoSemanal = diasAsistidos * salarioDiario;
@@ -115,7 +118,14 @@ function calcularSueldoSemanal(empleado = null) {
         // Solo para empleados del departamento 11 
         if (parseInt(empleado.id_departamento) === 11) {
             const precioPasaje = parseFloat(jsonNominaPilar.precio_pasaje) || 0;
-            pasajeTotal = diasAsistidos * precioPasaje;
+
+            if (empleado.pasaje_override === 'quitar') {
+                pasajeTotal = 0;
+            } else if (empleado.pasaje_override === 'agregar') {
+                pasajeTotal = (diasAsistidos || 1) * precioPasaje;
+            } else {
+                pasajeTotal = diasAsistidos * precioPasaje;
+            }
             aplicaPasaje = true;
         }
 
@@ -130,7 +140,14 @@ function calcularSueldoSemanal(empleado = null) {
         // Solo para empleados del departamento 11 con id_tipo_puesto diferente de 3
         if (parseInt(empleado.id_departamento) === 11) {
             const precioComida = parseFloat(jsonNominaPilar.pago_comida) || 0;
-            comidaTotal = diasAsistidos * precioComida;
+
+            if (empleado.comida_override === 'quitar') {
+                comidaTotal = 0;
+            } else if (empleado.comida_override === 'agregar') {
+                comidaTotal = (diasAsistidos || 1) * precioComida;
+            } else {
+                comidaTotal = diasAsistidos * precioComida;
+            }
             aplicaComida = true;
         }
 
@@ -146,7 +163,13 @@ function calcularSueldoSemanal(empleado = null) {
 
         const totalTardeada = diasTardeados * montoTardeada;
         empleado.tardeada = totalTardeada === 0 ? 0 : totalTardeada.toFixed(2);
-        empleado.sueldo_extra_total = (parseFloat(empleado.sueldo_extra_total) || 0) + totalTardeada;
+        // Recalcular el total extra de forma limpia (tardeada + percepciones_extra)
+        if (typeof calcularTotalExtra === 'function') {
+            calcularTotalExtra(empleado);
+        } else {
+            // Fallback si no está cargado el script del modal
+            empleado.sueldo_extra_total = parseFloat(empleado.tardeada) || 0;
+        }
 
     });
 

@@ -2,9 +2,42 @@
 CREATE DATABASE IF NOT EXISTS sistema_nomina;
 USE sistema_nomina;
 
+
 -- =============================
--- TABLAS BASE
+-- TABLAS DE NÓMINAS FLEXIBLES
 -- =============================
+
+-- Tabla de nombres de nómina
+CREATE TABLE IF NOT EXISTS nombre_nominas (
+  id_nomina INT AUTO_INCREMENT PRIMARY KEY,
+  nombre_nomina VARCHAR(100) NOT NULL
+);
+
+-- Relación nómina-departamento (muchos a muchos)
+CREATE TABLE IF NOT EXISTS nomina_departamento (
+  id_nomina_departamento INT AUTO_INCREMENT PRIMARY KEY,
+  id_nomina INT NOT NULL,
+  id_departamento INT NOT NULL,
+  FOREIGN KEY (id_nomina) REFERENCES nombre_nominas(id_nomina) ON UPDATE CASCADE ON DELETE CASCADE,
+  FOREIGN KEY (id_departamento) REFERENCES departamentos(id_departamento) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+-- Tipos lógicos de puesto
+CREATE TABLE IF NOT EXISTS rol_laboral (
+  id_rol_laboral INT AUTO_INCREMENT PRIMARY KEY,
+  nombre_rol VARCHAR(100) NOT NULL
+);
+
+-- Relación tipo lógico ↔ puesto real ↔ nómina
+CREATE TABLE IF NOT EXISTS rol_laboral_puesto (
+  id_rol_laboral INT NOT NULL,
+  id_puestoEspecial INT NOT NULL,
+  id_nomina INT NOT NULL,
+  PRIMARY KEY (id_rol_laboral, id_puestoEspecial, id_nomina),
+  FOREIGN KEY (id_rol_laboral) REFERENCES rol_laboral(id_rol_laboral) ON UPDATE CASCADE ON DELETE CASCADE,
+  FOREIGN KEY (id_puestoEspecial) REFERENCES puestos_especiales(id_puestoEspecial) ON UPDATE CASCADE ON DELETE CASCADE,
+  FOREIGN KEY (id_nomina) REFERENCES nombre_nominas(id_nomina) ON UPDATE CASCADE ON DELETE CASCADE
+);
 
 CREATE TABLE empresa (
     id_empresa INT AUTO_INCREMENT PRIMARY KEY,
@@ -12,7 +45,7 @@ CREATE TABLE empresa (
     logo_empresa VARCHAR(200) NULL,
     rfc_empresa VARCHAR(12) NULL,
     domicilio_fiscal VARCHAR(200) NULL,
-    marca_empresa VARCHAR(2s00) NULL
+    marca_empresa VARCHAR(200) NULL
 );
 
 

@@ -188,7 +188,8 @@
                     <thead>
                         <tr>
                             <th rowspan="2">#</th>
-                            <th rowspan="2">NOMBRE</th>
+                            <th rowspan="2"> NOMBRE </th>
+                            <th rowspan="2">DÍAS <br> TRAB.</th>
                             <th rowspan="2">SUELDO <br> SEMANAL</th>
                             <th rowspan="2">PASAJE</th>
                             <th rowspan="2">COMIDA</th>
@@ -289,6 +290,8 @@
     <?php include "modalCorte.php"; ?>
     <?php include "modalCorteNominaEditar.php"; ?>
     <?php include "modalCorteEditar.php"; ?>
+
+
 
 
 
