@@ -176,28 +176,28 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
     };
 
     $pdf->SetLineWidth($dot(2));
-    $pdf->Rect($dot(10), $dot(10), $dot(812), $dot(386));
+    $pdf->Rect($dot(10), $dot(12), $dot(812), $dot(386));
 
     // Una sola línea: Clave | Nombre | Departamento | Fecha Ingreso | Semana
     $nombreCompleto = $clave . ' ' . $nombre;
     // Ajustar tamaño de fuente del nombre según longitud
     $nombreFontSize = strlen($nombreCompleto) > 35 ? 8 : (strlen($nombreCompleto) >= 31 ? 13 : 15);
-    $textB(12, 20, $pt($nombreFontSize), $nombreCompleto);
+    $textB(12, 22, $pt($nombreFontSize), $nombreCompleto);
     
     // Ajustar tamaño de fuente del departamento según longitud
     $deptoFontSize = strlen($departamento) > 18 ? 18 : (strlen($departamento) > 15 ? 18 : 18);
-    $text(310, 18, $pt($deptoFontSize), $departamento);
+    $text(310, 20, $pt($deptoFontSize), $departamento);
     
-    $text(515, 18, $pt(18), 'F.Ingr: ' . $fechaIngreso);
-    $text(710, 18, $pt(18), 'SEM ' . $semana);
+    $text(515, 20, $pt(18), 'F.Ingr: ' . $fechaIngreso);
+    $text(710, 20, $pt(18), 'SEM ' . $semana);
 
     $pdf->SetLineWidth($dot(1));
-    $pdf->Line($dot(10), $dot(40), $dot(10 + 812), $dot(40));
+    $pdf->Line($dot(10), $dot(42), $dot(10 + 812), $dot(42));
 
     $pdf->SetLineWidth($dot(1));
-    $pdf->Line($dot(10), $dot(40), $dot(10 + 812), $dot(40));
-    $pdf->Line($dot(280), $dot(40), $dot(280), $dot(68));
-    $pdf->Line($dot(520), $dot(40), $dot(520), $dot(68));
+    $pdf->Line($dot(10), $dot(42), $dot(10 + 812), $dot(42));
+    $pdf->Line($dot(280), $dot(42), $dot(280), $dot(70));
+    $pdf->Line($dot(520), $dot(42), $dot(520), $dot(70));
     
     // Ajustar tamaño de fuente del puesto según longitud
     $puestoTexto = $puesto;
@@ -220,21 +220,21 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
     } else {
         $puestoFontSize = 6;
     }
-    $text(18, 49, $puestoFontSize, $puestoTexto);
-    $text(290, 45, $pt(18), 'Sal. diario: $ ' . money($salarioDiario));
-    $text(530, 45, $pt(18), 'Sal. Semanal: $ ' . money($sueldoSemanal));
+    $text(18, 51, $puestoFontSize, $puestoTexto);
+    $text(290, 47, $pt(18), 'Sal. diario: $ ' . money($salarioDiario));
+    $text(530, 47, $pt(18), 'Sal. Semanal: $ ' . money($sueldoSemanal));
 
     $pdf->SetLineWidth($dot(1));
-    $pdf->Line($dot(10), $dot(68), $dot(10 + 812), $dot(68));
+    $pdf->Line($dot(10), $dot(70), $dot(10 + 812), $dot(70));
 
     $f20 = $pt(20);
-    $textB(100, 76, $f20, 'PERCEPCIONES');
-    $textB(520, 76, $f20, 'DEDUCCIONES');
+    $textB(100, 78, $f20, 'PERCEPCIONES');
+    $textB(520, 78, $f20, 'DEDUCCIONES');
 
     $pdf->SetLineWidth($dot(1));
-    $pdf->Line($dot(10), $dot(105), $dot(10 + 812), $dot(105));
+    $pdf->Line($dot(10), $dot(107), $dot(10 + 812), $dot(107));
 
-    $y0 = 90;
+    $y0 = 92;
     $lh = 26;
     $f16 = $pt(16);
     $maxRowsPrimeraHoja = 11;
