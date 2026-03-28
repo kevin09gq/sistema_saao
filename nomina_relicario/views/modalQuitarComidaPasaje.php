@@ -3,7 +3,7 @@
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="modalQuitarComidaPasajeLabel">Quitar comida / pasaje a jornaleros</h5>
+        <h5 class="modal-title" id="modalQuitarComidaPasajeLabel">Gestionar comida / pasaje a jornaleros</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
       <div class="modal-body">
@@ -12,9 +12,21 @@
             <label for="select-accion-quitar" class="form-label">Acción</label>
             <select id="select-accion-quitar" class="form-select">
               <option value="">- Seleccionar -</option>
-              <option value="comida">Quitar comida</option>
-              <option value="pasaje">Quitar pasaje</option>
-              <option value="ambos">Quitar ambos</option>
+              <optgroup label="Comida">
+                <option value="quitar_comida">Quitar comida</option>
+                <option value="agregar_comida">Agregar comida</option>
+              </optgroup>
+              <optgroup label="Pasaje">
+                <option value="quitar_pasaje">Quitar pasaje</option>
+                <option value="agregar_pasaje">Agregar pasaje</option>
+              </optgroup>
+              <optgroup label="Ambos">
+                <option value="quitar_ambos">Quitar ambos</option>
+                <option value="agregar_ambos">Agregar ambos</option>
+              </optgroup>
+              <optgroup label="Restablecer">
+                <option value="restablecer_todos">Restablecer valores automáticos</option>
+              </optgroup>
             </select>
           </div>
         </div>
@@ -36,7 +48,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-danger" id="btn-aplicar-quitar">Aplicar</button>
+        <button type="button" class="btn btn-primary" id="btn-aplicar-quitar">Aplicar cambios</button>
       </div>
     </div>
   </div>

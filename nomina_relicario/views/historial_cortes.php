@@ -22,7 +22,7 @@ verificarSesion();
     <div class="container mt-4">
         
         <div class="header-historial">
-            <h2><i class="bi bi-clock-history me-2"></i> Historial de Cortes de Rejas</h2>
+            <h2><i class="bi bi-clock-history me-2"></i> Historial de Cortes de Rejas(Relicario)</h2>
             <a href="nomina_relicario.php" class="btn btn-light btn-sm text-success fw-bold">
                 <i class="bi bi-arrow-left"></i> Regresar a Nómina
             </a>

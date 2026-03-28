@@ -19,7 +19,7 @@ function editarPropiedades() {
         asignarHistorialOlvidos(empleado);
         asignarHistorialRetardos(empleado);
         asignarHistorialInasistencias(empleado);
-        
+
         asignarTotalOlvidosCoordinador(empleado);
         asignarTotalRetardosCoordinador(empleado);
         asignarTotalInasistenciasCoordinador(empleado);
@@ -29,7 +29,7 @@ function editarPropiedades() {
         delete empleado._checador_editado_manual;
         delete empleado._inasistencia_editado_manual;
 
-      
+
         //limpiar modal después de guardar
         limpiarModalCoordinador();
 
@@ -38,17 +38,8 @@ function editarPropiedades() {
         // Cerrar modal después de guardar
         $('#modal-coordinadores').modal('hide');
 
-        // Actualizar la tabla manteniendo el filtrado y paginación actual
-        const id_departamento = parseInt($('#filtro_departamento').val());
-        const id_puestoEspecial = parseInt($('#filtro_puesto').val());
-        
-        // Aplicar los mismos filtros que están activos
-        let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, id_departamento);
-        jsonFiltrado = filtrarEmpleadosPorPuesto(jsonFiltrado, id_puestoEspecial);
-        
-        // Mostrar la tabla en la página actual (usar window.paginaActualNomina para acceso global)
-        
-        mostrarDatosTabla(jsonFiltrado, window.paginaActualNomina || 1);
+        // Actualizar la tabla manteniendo el filtrado, búsqueda y paginación actual
+        aplicarFiltrosActuales();
 
     });
 
@@ -141,22 +132,22 @@ function modificarDeducciones(empleado) {
     if (inasistenciasVacio || inasistencias !== (empleado.inasistencia || 0)) {
         empleado._inasistencia_editado_manual = true;
     }
-    
+
     if (retardosVacio || retardos !== (empleado.retardos || 0)) {
         empleado._retardos_editado_manual = true;
     }
     if (checadorVacio || checador !== (empleado.checador || 0)) {
         empleado._checador_editado_manual = true;
     }
-    
 
-    empleado.tarjeta       = tarejta;
-    empleado.prestamo      = prestamo;
-    empleado.checador      = checador;
-    empleado.retardos      = retardos;
-    empleado.inasistencia  = inasistencias;
-    empleado.uniformes     = uniformes;
-    empleado.permiso       = permiso;
+
+    empleado.tarjeta = tarejta;
+    empleado.prestamo = prestamo;
+    empleado.checador = checador;
+    empleado.retardos = retardos;
+    empleado.inasistencia = inasistencias;
+    empleado.uniformes = uniformes;
+    empleado.permiso = permiso;
     empleado.fa_gafet_cofia = fa_gafet_cofia;
 
     // Guardar estado del redondeo al presionar Guardar
@@ -164,7 +155,7 @@ function modificarDeducciones(empleado) {
     // aquí nos aseguramos de que queden sincronizados correctamente.
     const redondeoActivoGuardar = $('#mod-redondear-sueldo-coordinador').is(':checked');
     empleado.redondeo_activo = redondeoActivoGuardar;
-    empleado.total_cobrar    = parseFloat($('#mod-sueldo-a-cobrar-coordinador').val()) || 0;
+    empleado.total_cobrar = parseFloat($('#mod-sueldo-a-cobrar-coordinador').val()) || 0;
     if (!redondeoActivoGuardar) {
         // Sin redondeo: no hay diferencia
         empleado.redondeo = 0;
@@ -178,28 +169,28 @@ function modificarDeducciones(empleado) {
  * MODIFICAR HORARIO OFICIAL DEL EMPLEADO
  ************************************/
 
-function modificarHorarioOficial(empleado){
+function modificarHorarioOficial(empleado) {
     // Validar que exista empleado y horario oficial
     if (!empleado || !Array.isArray(empleado.horario_oficial)) {
         return;
     }
-    
+
     // Iterar sobre cada fila de la tabla de horarios
     $('#tbody-horarios-oficiales-coordinadores tr').each(function (index) {
         const $celdas = $(this).find('td');
-        
+
         // Obtener los valores de cada celda
         const dia = $celdas.eq(0).text().trim(); // Día (no editable)
         const entrada = $celdas.eq(1).text().trim(); // Entrada
         const salidaComida = $celdas.eq(2).text().trim(); // Salida Comida
         const entradaComida = $celdas.eq(3).text().trim(); // Entrada Comida
         const salida = $celdas.eq(4).text().trim(); // Salida
-        
+
         // Buscar el horario correspondiente por el nombre del día
-        const horario = empleado.horario_oficial.find(h => 
+        const horario = empleado.horario_oficial.find(h =>
             String(h.dia || '').toUpperCase().trim() === dia.toUpperCase().trim()
         );
-        
+
         if (horario) {
             // Actualizar los valores (convertir '-' en vacío)
             horario.entrada = entrada === '-' ? '' : entrada;

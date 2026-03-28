@@ -123,9 +123,17 @@ function pintarDashboard(data) {
     document.getElementById('panel_desglose_completo').style.display = 'flex';
 
     // KPIs
+
     document.getElementById('res_total_rejas').innerText = data.total_rejas.toLocaleString();
     document.getElementById('res_total_dinero').innerText = `$${parseFloat(data.total_dinero).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`;
     document.getElementById('res_mejor_tabla').innerText = data.mejor_tabla;
+
+    // Cambiar los títulos de los KPIs
+    const kpiTitles = document.querySelectorAll('.kpi-title');
+    if (kpiTitles.length >= 3) {
+        kpiTitles[1].textContent = 'Gastos de cortes';
+        kpiTitles[2].textContent = 'Sección con más rejas';
+    }
 
     window.rankingTablasActual = data.ranking_tablas || [];
 
@@ -478,22 +486,25 @@ function generarPDFConLogo(logoBase64, datosExportar, folioUnico = null) {
     const COL_SUBTEXT = [100, 100, 100]; // Gris
 
     // Logo en la esquina superior izquierda
-    if (logoBase64) {
-        try {
-            doc.addImage(logoBase64, 'JPEG', MARGIN, 3, 20, 20);
-        } catch (e) { /* ignorar si falla */ }
-    }
+    // Logo eliminado por solicitud
 
-    // Título y fecha centrados
+    // Título principal
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...COL_HEADER_TEXT);
-    doc.text('Historial Detallado de Cortes', PAGE_W / 2, 13, { align: 'center' });
+    doc.text('Reportes de Rejas Cortes', PAGE_W / 2, 13, { align: 'center' });
 
+    // Subtítulo
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...COL_HEADER_TEXT);
+    doc.text('Rancho Relicario', PAGE_W / 2, 19, { align: 'center' });
+
+    // Fecha
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...COL_SUBTEXT);
-    doc.text(`Generado: ${new Date().toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' })}`, PAGE_W / 2, 19, { align: 'center' });
+    doc.text(`Generado: ${new Date().toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' })}`, PAGE_W / 2, 25, { align: 'center' });
 
     // Línea roja delgada y profesional debajo del encabezado
     doc.setDrawColor(210, 50, 50); // Color rojo acento
@@ -525,11 +536,19 @@ function generarPDFConLogo(logoBase64, datosExportar, folioUnico = null) {
             });
         }
 
-        const FICHA_H_APPROX = 50 + tablas.length * 6;
-        if (y + FICHA_H_APPROX > PAGE_H - 18) {
+        // Calcular altura considerando número de líneas de chips
+        const numChips = tablas.length;
+        const chipsPerLine = Math.floor((CONTENT_W - 6) / 85); // Aprox 85 ancho por chip
+        const numLines = Math.max(1, Math.ceil(numChips / chipsPerLine));
+        const FICHA_H_APPROX = 17 + 7 + 7 + 7 + 7 + 5 + 7 + (numLines * 5) + 1; // Altura muy compacta sin espacio desperdiciado
+        
+        if (y + FICHA_H_APPROX + 15 > PAGE_H - 18) { // Verificar si cabe con separación
             doc.addPage();
             y = MARGIN;
         }
+
+        // Guardar posición inicial para calcular altura real
+        const y_inicio = y;
 
         // Borde de tarjeta
         doc.setDrawColor(...COL_BORDER);
@@ -587,11 +606,11 @@ function generarPDFConLogo(logoBase64, datosExportar, folioUnico = null) {
         doc.setFontSize(8.5);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(...COL_LABEL);
-        doc.text('Ganancia Total:', MARGIN + 3, y);
+        doc.text('Gastos cortes:', MARGIN + 3, y);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(...COL_GREEN);
         doc.setFontSize(10);
-        doc.text(`$${ganancia.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`, MARGIN + 3 + doc.getTextWidth('Ganancia Total:') + 1.5, y);
+        doc.text(`$${ganancia.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`, MARGIN + 3 + doc.getTextWidth('Gastos cortes:') + 8, y);
         y += 7;
 
         // Separador
@@ -615,7 +634,7 @@ function generarPDFConLogo(logoBase64, datosExportar, folioUnico = null) {
 
             if (bx + chipW > PAGE_W - MARGIN - 3) {
                 bx = MARGIN + 3;
-                y += 8; // Más espacio vertical si salta de línea en chips
+                y += 10; // Espacio vertical más generoso entre filas de tablas
             }
 
             doc.setFillColor(...COL_LIGHT);
@@ -631,7 +650,9 @@ function generarPDFConLogo(logoBase64, datosExportar, folioUnico = null) {
             bx += chipW + 4; // Más espacio horizontal entre chips
         });
 
-        y += 16;  // separacion entre fichas (folios) reducida
+        // Calcular final de ficha y agregar separación CLARA
+        const y_fin_ficha = y_inicio + FICHA_H_APPROX;
+        y = y_fin_ficha + 15; // 15 puntos de separación garantizada entre fichas
     });
 
     // ===== PIE DE PAGINA =====

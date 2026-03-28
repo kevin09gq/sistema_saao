@@ -178,15 +178,16 @@ function establecerDiasTrabajadosJornalero(empleado) {
             registro.entrada && registro.entrada.trim() !== ""
         );
 
+        // Calcular día de la semana a partir de la fecha (formato DD/MM/YYYY)
+        const [dia, mes, anio] = fecha.split('/');
+        const fechaObj = new Date(anio, mes - 1, dia);
+        const nombreDia = dias[fechaObj.getDay()];
+
+        // Obtener salario diario
+        const salarioDiario = parseFloat(empleado.salario_diario) || 0;
+
         if (tieneEntradaValida) {
             diasTrabajados++;
-            // Calcular día de la semana a partir de la fecha (formato DD/MM/YYYY)
-            const [dia, mes, anio] = fecha.split('/');
-            const fechaObj = new Date(anio, mes - 1, dia);
-            const nombreDia = dias[fechaObj.getDay()];
-
-            // Obtener salario diario
-            const salarioDiario = parseFloat(empleado.salario_diario) || 0;
             totalCantidad += salarioDiario;
 
             // Crear fila
@@ -196,6 +197,19 @@ function establecerDiasTrabajadosJornalero(empleado) {
                     <td>${fecha}</td>
                     <td>$${salarioDiario.toFixed(2)}</td>
                     <td class="text-center"><strong>1</strong></td>
+                </tr>
+            `;
+
+            // Agregar fila a la tabla
+            filas.push(fila);
+        } else {
+             // Crear fila para día no trabajado
+             const fila = `
+                <tr class="text-muted table-light">
+                    <td>${nombreDia}</td>
+                    <td>${fecha}</td>
+                    <td>$0.00</td>
+                    <td class="text-center"><strong>0</strong></td>
                 </tr>
             `;
 

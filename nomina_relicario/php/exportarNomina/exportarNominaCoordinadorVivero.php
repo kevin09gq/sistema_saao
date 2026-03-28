@@ -10,6 +10,44 @@ use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 
+/**
+ * Resta un día a una fecha en formato 'DD/MM/AAA' con meses abreviados en español (ENE, FEB, MAR, etc.) y devuelve la nueva fecha en el mismo formato.
+ */
+function restarUnDia($fecha)
+{
+    // Mapeo de meses abreviados en español a número
+    $meses = [
+        "Ene" => 1,
+        "Feb" => 2,
+        "Mar" => 3,
+        "Abr" => 4,
+        "May" => 5,
+        "Jun" => 6,
+        "Jul" => 7,
+        "Ago" => 8,
+        "Sep" => 9,
+        "Oct" => 10,
+        "Nov" => 11,
+        "Dic" => 12
+    ];
+
+    // Separar la fecha
+    list($dia, $mesAbrev, $anio) = explode("/", $fecha);
+
+    // Crear objeto DateTime
+    $mesNum = $meses[$mesAbrev];
+    $date = DateTime::createFromFormat("d/m/Y", "$dia/$mesNum/$anio");
+
+    // Restar un día
+    $date->modify("-1 day");
+
+    // Buscar la abreviatura del mes resultante
+    $mesAbrevNuevo = array_search((int) $date->format("m"), $meses);
+
+    // Formatear resultado
+    return $date->format("d") . "/" . $mesAbrevNuevo . "/" . $date->format("Y");
+}
+
 //=====================
 //  RECIBIR DATOS DEL JSON
 //=====================
@@ -38,8 +76,8 @@ $spreadsheet->getDefaultStyle()->getFont()->setName('Arial');
 
 // Usar datos del JSON si existen
 if ($jsonNomina) {
-    $fecha_inicio = $jsonNomina['fecha_inicio'] ?? 'Fecha Inicio';
-    $fecha_cierre = $jsonNomina['fecha_cierre'] ?? 'Fecha Cierre';
+    $fecha_inicio = restarUnDia($jsonNomina['fecha_inicio']) ?? 'Fecha Inicio';
+    $fecha_cierre = restarUnDia($jsonNomina['fecha_cierre']) ?? 'Fecha Cierre';
     $ano = date('Y');
 } else {
     $fecha_inicio = '16/Ene';
@@ -119,7 +157,7 @@ $columnas = [
     'UNIFORMES',
     'PERMISOS',
     'RETARDOS',
-    'CHECADOR',
+    'BIOMETRICO',
     'F.A/GAFET/COFIA',
     'TOTAL DE DEDUCCIONES',
     'NETO A RECIBIR',
@@ -375,7 +413,8 @@ foreach ($empleadosCoodinadores as $empleado) {
 
     // Agregar fórmula de TOTAL PERCEPCIONES (suma dinámica de columnas existentes)
     $columnasParaSumar = ['D', 'E'];
-    if ($comidaTieneDatos) $columnasParaSumar[] = 'F';
+    if ($comidaTieneDatos)
+        $columnasParaSumar[] = 'F';
     $columnasParaSumar[] = 'G';
 
     $primeraColumna = reset($columnasParaSumar);
@@ -389,9 +428,9 @@ foreach ($empleadosCoodinadores as $empleado) {
 
     // Mapeo de códigos de conceptos a columnas
     $mapeoConceptos = [
-        '45'  => 'I',   // ISR
-        '52'  => 'J',   // IMSS
-        '16'  => 'K',   // INFONAVIT
+        '45' => 'I',   // ISR
+        '52' => 'J',   // IMSS
+        '16' => 'K',   // INFONAVIT
         '107' => 'L',   // AJUSTES AL SUB
     ];
 
@@ -683,6 +722,10 @@ if (!$checadorTieneDatos) {
 if (!$faxGafetCofiaTieneDatos) {
     $sheet->getColumnDimension('R')->setVisible(false);
 }
+
+// Ocultar columnas de totales permanentemente
+$sheet->getColumnDimension('H')->setVisible(false);
+$sheet->getColumnDimension('S')->setVisible(false);
 
 //=====================
 //  CONFIGURAR ALTURA DE FILAS Y TAMAÑO DE LETRA

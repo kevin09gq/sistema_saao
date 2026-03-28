@@ -10,6 +10,44 @@ use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 
+/**
+ * Resta un día a una fecha en formato 'DD/MM/AAA' con meses abreviados en español (ENE, FEB, MAR, etc.) y devuelve la nueva fecha en el mismo formato.
+ */
+function restarUnDia($fecha)
+{
+    // Mapeo de meses abreviados en español a número
+    $meses = [
+        "Ene" => 1,
+        "Feb" => 2,
+        "Mar" => 3,
+        "Abr" => 4,
+        "May" => 5,
+        "Jun" => 6,
+        "Jul" => 7,
+        "Ago" => 8,
+        "Sep" => 9,
+        "Oct" => 10,
+        "Nov" => 11,
+        "Dic" => 12
+    ];
+
+    // Separar la fecha
+    list($dia, $mesAbrev, $anio) = explode("/", $fecha);
+
+    // Crear objeto DateTime
+    $mesNum = $meses[$mesAbrev];
+    $date = DateTime::createFromFormat("d/m/Y", "$dia/$mesNum/$anio");
+
+    // Restar un día
+    $date->modify("-1 day");
+
+    // Buscar la abreviatura del mes resultante
+    $mesAbrevNuevo = array_search((int) $date->format("m"), $meses);
+
+    // Formatear resultado
+    return $date->format("d") . "/" . $mesAbrevNuevo . "/" . $date->format("Y");
+}
+
 //=====================
 //  RECIBIR DATOS DEL JSON
 //=====================
@@ -39,8 +77,8 @@ $sheet->setTitle('COORDINADORES');
 
 // Usar datos del JSON si existen
 if ($jsonNomina) {
-    $fecha_inicio = $jsonNomina['fecha_inicio'] ?? 'Fecha Inicio';
-    $fecha_cierre = $jsonNomina['fecha_cierre'] ?? 'Fecha Cierre';
+    $fecha_inicio = restarUnDia($jsonNomina['fecha_inicio']) ?? 'Fecha Inicio';
+    $fecha_cierre = restarUnDia($jsonNomina['fecha_cierre']) ?? 'Fecha Cierre';
     $ano = date('Y');
 } else {
     $fecha_inicio = '16/Ene';
@@ -120,7 +158,7 @@ $columnas = [
     'UNIFORMES',
     'PERMISOS',
     'RETARDOS',
-    'CHECADOR',
+    'BIOMETRICO',
     'F.A/GAFET/COFIA',
     'TOTAL DE DEDUCCIONES',
     'NETO A RECIBIR',
@@ -282,31 +320,31 @@ foreach ($empleadosCoodinadores as $empleado) {
     if (($empleado['comida'] ?? 0) != 0) {
         $comidaTieneDatos = true;
     }
-    
+
     if (($empleado['pasaje'] ?? 0) != 0) {
         $pasajeTieneDatos = true;
     }
-    
+
     if (($empleado['inasistencia'] ?? 0) != 0) {
         $ausentismoTieneDatos = true;
     }
-    
+
     if (($empleado['permiso'] ?? 0) != 0) {
         $permisoTieneDatos = true;
     }
-    
+
     if (($empleado['retardos'] ?? 0) != 0) {
         $retardosTieneDatos = true;
     }
-    
+
     if (($empleado['uniformes'] ?? 0) != 0) {
         $uniformesTieneDatos = true;
     }
-    
+
     if (($empleado['checador'] ?? 0) != 0) {
         $checadorTieneDatos = true;
     }
-    
+
     if (($empleado['fa_gafet_cofia'] ?? 0) != 0) {
         $faxGafetCofiaTieneDatos = true;
     }
@@ -376,7 +414,8 @@ foreach ($empleadosCoodinadores as $empleado) {
 
     // Agregar fórmula de TOTAL PERCEPCIONES (suma dinámica de columnas existentes)
     $columnasParaSumar = ['D', 'E'];
-    if ($comidaTieneDatos) $columnasParaSumar[] = 'F';
+    if ($comidaTieneDatos)
+        $columnasParaSumar[] = 'F';
     $columnasParaSumar[] = 'G';
 
     $primeraColumna = reset($columnasParaSumar);
@@ -390,9 +429,9 @@ foreach ($empleadosCoodinadores as $empleado) {
 
     // Mapeo de códigos de conceptos a columnas
     $mapeoConceptos = [
-        '45'  => 'I',   // ISR
-        '52'  => 'J',   // IMSS
-        '16'  => 'K',   // INFONAVIT
+        '45' => 'I',   // ISR
+        '52' => 'J',   // IMSS
+        '16' => 'K',   // INFONAVIT
         '107' => 'L',   // AJUSTES AL SUB
     ];
 
@@ -549,28 +588,28 @@ for ($fila = 7; $fila < $numeroFila; $fila++) {
         $sheet->getStyle($col . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
         $sheet->getStyle($col . $fila)->getFont()->setColor(new Color('FF0000'));
     }
-    
+
     // Columnas con formato descuentos: M-R (AUSENTISMO, UNIFORMES, PERMISOS, RETARDOS, CHECADOR, F.A/GAFET/COFIA)
     for ($col = 'M'; $col <= 'R'; $col++) {
         $sheet->getStyle($col . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
         $sheet->getStyle($col . $fila)->getFont()->setColor(new Color('FF0000'));
     }
-    
+
     // Columna S: TOTAL DE DEDUCCIONES (rojo con signo negativo)
     $sheet->getStyle('S' . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
     $sheet->getStyle('S' . $fila)->getFont()->setColor(new Color('FF0000'));
-    
+
     // Columna U: DISPERSION DE TARJETA (rojo con signo negativo)
     $sheet->getStyle('U' . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
     $sheet->getStyle('U' . $fila)->getFont()->setColor(new Color('FF0000'));
-    
+
     // Columna W: PRESTAMO (rojo con signo negativo)
     $sheet->getStyle('W' . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
     $sheet->getStyle('W' . $fila)->getFont()->setColor(new Color('FF0000'));
-    
+
     // Columna Y: REDONDEADO (formato condicional: positivo normal, negativo rojo)
     $sheet->getStyle('Y' . $fila)->getNumberFormat()->setFormatCode('$#,##0.00;[RED]-$#,##0.00');
-    
+
     // Columnas de moneda normal: D, E, F, G, H, T, V, X, Z
     foreach (['D', 'E', 'F', 'G', 'H', 'T', 'V', 'X', 'Z'] as $col) {
         $sheet->getStyle($col . $fila)->getNumberFormat()->setFormatCode('$#,##0.00');
@@ -597,7 +636,7 @@ foreach ($columnasData as $columna) {
     $sheet->setCellValue($columna . $filaTotal, '=IF(SUM(' . $rangoSuma . ')=0,"",SUM(' . $rangoSuma . '))');
     $sheet->getStyle($columna . $filaTotal)->getFont()->setBold(true);
     $sheet->getStyle($columna . $filaTotal)->getFont()->setSize(14);
-    
+
     // Aplicar formato de moneda según la columna
     if (in_array($columna, ['I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'U', 'W'])) {
         // Formato rojo con signo negativo
@@ -610,7 +649,7 @@ foreach ($columnasData as $columna) {
         // Formato moneda normal
         $sheet->getStyle($columna . $filaTotal)->getNumberFormat()->setFormatCode('$#,##0.00');
     }
-    
+
     // Centrar alineación
     $sheet->getStyle($columna . $filaTotal)->getAlignment()->setHorizontal('center');
     $sheet->getStyle($columna . $filaTotal)->getAlignment()->setVertical('center');
@@ -684,6 +723,10 @@ if (!$checadorTieneDatos) {
 if (!$faxGafetCofiaTieneDatos) {
     $sheet->getColumnDimension('R')->setVisible(false);
 }
+
+// Ocultar columnas de totales permanentemente
+$sheet->getColumnDimension('H')->setVisible(false);
+$sheet->getColumnDimension('S')->setVisible(false);
 
 //=====================
 //  CONFIGURAR ALTURA DE FILAS Y TAMAÑO DE LETRA
