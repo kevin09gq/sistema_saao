@@ -56,6 +56,16 @@ verificarSesion(); // Proteger esta página
                     </div>
 
                     <div class="col">
+                        <div class="card nav-link" id="nominas-tab"
+                            data-bs-toggle="tab" data-bs-target="#nominas"
+                            role="tab" aria-controls="nominas" aria-selected="false">
+                            <div class="card-body p-1">
+                                <h6 class="card-title my-0"><i class="bi bi-wallet2"></i> Nóminas</h6>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col">
                         <div class="card nav-link" id="puestos-tab"
                             data-bs-toggle="tab" data-bs-target="#puestos"
                             role="tab" aria-controls="puestos" aria-selected="false">
@@ -249,6 +259,55 @@ verificarSesion(); // Proteger esta página
                                     </form>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- NÓMINAS -->
+                    <div class="tab-pane fade " id="nominas" role="tabpanel">
+                        <div class="row mt-4">
+                            <!-- Tabla de Nombres de Nómina -->
+                            <div class="col-md-7" id="nominas-list-container">
+                                <div class="table-container" id="nominas-table-container">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5><i class="bi bi-list-ul"></i> Tipos de Nómina</h5>
+                                        <div class="search-box-container">
+                                            <input type="text" class="search-box" id="search-nominas" placeholder="Buscar nómina...">
+                                        </div>
+                                    </div>
+                                    <div class="table-responsive" id="nominas-table-responsive">
+                                        <table class="table table-hover" id="tabla-nominas">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Nombre</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="nominas-tbody">
+                                                <!-- Ejemplo de registros -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Formulario Nombre de Nómina -->
+                            <div class="col-md-5">
+                                <div class="form-container">
+                                    <h5 class="mb-3"><i class="bi bi-plus-circle"></i> Agregar Nómina</h5>
+                                    <form id="nominaForm">
+                                        <input type="hidden" id="nomina_id" name="nomina_id">
+                                        <div class="mb-3">
+                                            <label for="nombre_nomina" class="form-label">Nombre de la Nómina</label>
+                                            <input type="text" class="form-control" id="nombre_nomina" name="nombre_nomina" required>
+                                        </div>
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn btn-success" id="btn-guardar-nomina"><i class="bi bi-save"></i> Guardar</button>
+                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-nomina"><i class="bi bi-x-circle"></i> Cancelar</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
 
@@ -958,6 +1017,118 @@ verificarSesion(); // Proteger esta página
             </div>
         </div>
     </div>
+    
+    <!-- Modal para Asignar Departamentos a Nómina -->
+    <div class="modal fade" id="modalAsignarDepartamentos" tabindex="-1" aria-labelledby="lblNombreNominaModal" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title">
+                        <i class="bi bi-diagram-3 me-2 text-primary"></i>Departamentos en Nómina: <strong id="lblNombreNominaModal" class="text-primary"></strong>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Formulario para agregar -->
+                    <form id="formAgregarDeptoNomina" class="p-3 bg-light rounded border mb-4 shadow-sm">
+                        <input type="hidden" id="modal_nomina_id" name="modal_nomina_id">
+                        <div class="row gx-3 align-items-end mb-3">
+                            <div class="col-sm-6">
+                                <label for="modal_select_area" class="form-label fw-bold text-secondary mb-1">1. Filtrar por Área</label>
+                                <select class="form-select border-primary-subtle" id="modal_select_area">
+                                    <option value="" selected disabled>Seleccione un área...</option>
+                                    <!-- Se llenará dinámicamente -->
+                                </select>
+                            </div>
+                            <div class="col-sm-6">
+                                <label for="modal_select_departamento" class="form-label fw-bold text-secondary mb-1">2. Elegir Departamento</label>
+                                <select class="form-select border-primary-subtle" id="modal_select_departamento" required disabled>
+                                    <option value="" selected disabled>Primero elija un área...</option>
+                                    <!-- Se llenará dinámicamente -->
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row gx-3">
+                            <div class="col-12 mt-2">
+                                <button type="submit" class="btn btn-success w-100 shadow-sm" id="btn-asignar-depto-modal">
+                                    <i class="bi bi-plus-circle me-1"></i> Confirmar Asignación
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Lista de departamentos actuales -->
+                    <h6 class="border-bottom pb-2 mb-3 fw-bold text-secondary"><i class="bi bi-tags me-2"></i>Departamentos Asignados</h6>
+                    <div id="contenedorDepartamentosAsignados" class="d-flex flex-wrap gap-2 p-2 min-vh-25">
+                        <!-- Badges dinámicos -->
+                        <div class="text-center w-100 text-muted"><div class="spinner-border spinner-border-sm" role="status"></div> Cargando...</div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary shadow-sm" data-bs-dismiss="modal">Cerrar ventana</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Configurar Roles por Puesto -->
+    <div class="modal fade" id="modalConfigurarRolesPuesto" tabindex="-1" aria-labelledby="lblNombreNominaRolesModal" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title">
+                        <i class="bi bi-person-badge me-2 text-warning"></i>Roles por Puesto: <strong id="lblNombreNominaRolesModal" class="text-warning"></strong>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Formulario para asignar un rol a un puesto -->
+                    <form id="formRelacionRolPuesto" class="p-3 bg-light rounded border mb-4 shadow-sm">
+                        <input type="hidden" id="modal_roles_nomina_id" name="modal_roles_nomina_id">
+                        <div class="row gx-3 align-items-end">
+                            <div class="col-md-5">
+                                <label for="modal_select_puesto_rol" class="form-label fw-bold text-secondary mb-1">Puesto Real</label>
+                                <select class="form-select" id="modal_select_puesto_rol" required>
+                                    <option value="" selected disabled>Seleccione puesto...</option>
+                                    <!-- Dinámico -->
+                                </select>
+                            </div>
+                            <div class="col-md-5">
+                                <label for="modal_select_rol_laboral" class="form-label fw-bold text-secondary mb-1">Rol en Nómina (Tipo Lógico)</label>
+                                <div class="input-group">
+                                    <select class="form-select" id="modal_select_rol_laboral" required>
+                                        <option value="" selected disabled>Seleccione rol...</option>
+                                        <!-- Dinámico -->
+                                    </select>
+                                    <button class="btn btn-outline-secondary" type="button" id="btn-gestionar-catalogo-roles" title="Gestionar catálogo de roles">
+                                        <i class="bi bi-gear"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-2 mt-3 mt-md-0">
+                                <button type="submit" class="btn btn-warning text-white w-100 shadow-sm">
+                                    <i class="bi bi-check-circle me-1"></i> Mapear
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Mapeo Actual -->
+                    <h6 class="border-bottom pb-2 mb-3 fw-bold text-secondary">
+                        <i class="bi bi-list-check me-2"></i>Configuración de Puestos
+                    </h6>
+                    <div id="contenedorMapeoRolesPuestos" class="p-2 min-vh-25">
+                        <!-- Mapeos dinámicos -->
+                        <div class="text-center w-100 text-muted"><div class="spinner-border spinner-border-sm" role="status"></div> Cargando...</div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light justify-content-between">
+                    <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Asocia cada puesto de trabajo a un rol lógico para cálculos de nómina.</small>
+                    <button type="button" class="btn btn-secondary shadow-sm" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
@@ -968,6 +1139,7 @@ verificarSesion(); // Proteger esta página
     <script src="../js/config_departamentos.js"></script>
     <script src="../js/config_puestos.js"></script>
     <script src="../js/config_areas.js"></script>
+    <script src="../js/config_nominas.js"></script>
 
     <!-- Agregue este js para los turnos -->
     <script src="../js/config_turnos.js"></script>
