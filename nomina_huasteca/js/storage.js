@@ -51,20 +51,32 @@ function clearNomina() {
 // Restaura la nómina desde localStorage y actualiza la vista si las funciones UI están disponibles
 function restoreNomina() {
     try {
-        // Si el usuario limpió intencionalmente, no restaurar
-        if (sessionStorage.getItem('nominaLimpiada') === '1') {
+        const wasCleared = sessionStorage.getItem('nominaLimpiada') === '1';
+        const stored = loadNomina();
+
+        if (wasCleared && !stored) {
+            console.info('[restoreNomina] Bloqueado por nominaLimpiada y sin datos guardados.');
             sessionStorage.removeItem('nominaLimpiada');
             return false;
         }
 
-        const stored = loadNomina();
-        if (!stored) return false;
+        if (!stored) {
+            console.info('[restoreNomina] Sin datos en localStorage.');
+            return false;
+        }
+
+        if (wasCleared) {
+            console.info('[restoreNomina] nominaLimpiada activo, pero hay datos guardados. Se restaura.');
+            sessionStorage.removeItem('nominaLimpiada');
+        }
 
         // Poner la variable global para que el resto del código la use
         jsonNominaHuasteca = stored;
 
         if (typeof initComponents === 'function') {
             initComponents();
+        } else {
+            console.warn('[restoreNomina] initComponents no disponible.');
         }
 
         // Renderizar tabla restaurada
@@ -72,13 +84,19 @@ function restoreNomina() {
             // Filtrar empleados con id_departamento = 12
             let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaHuasteca, 12);
             mostrarDatosTabla(jsonFiltrado, 1);
+        } else {
+            console.warn('[restoreNomina] mostrarDatosTabla no disponible.');
         }
 
-       // actualizarCabeceraNomina(jsonNominaHuasteca);
+        if (typeof actualizarCabeceraNomina === 'function') {
+            actualizarCabeceraNomina(jsonNominaHuasteca);
+        } else {
+            console.warn('[restoreNomina] actualizarCabeceraNomina no disponible.');
+        }
 
         return true;
     } catch (err) {
-
+        console.error('[restoreNomina] Error al restaurar:', err);
         return false;
     }
 }

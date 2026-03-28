@@ -1,12 +1,14 @@
 let jsonNominaHuasteca = null;
 
 $(document).ready(function () {
+   
+   
     crearEstructuraJson();
-    restoreNomina();
+     restoreNomina();
     limpiarCamposNomina();
     obtenerNominaHuasteca();
     console.log(jsonNominaHuasteca);
-    
+
 
 });
 
@@ -15,9 +17,17 @@ $(document).ready(function () {
 // ============================================
 
 function crearEstructuraJson() {
-
-    $("#container-acceso-huasteca").removeAttr("hidden");
+   $("#container-acceso-huasteca").removeAttr("hidden");
     $('#btn_crear_nomina_huasteca').on('click', function () {
+        const semana = $('#semana_nomina_huasteca').val();
+        const fechaInicio = $('#fecha_inicio_nomina_huasteca').val();
+        const fechaCierre = $('#fecha_cierre_nomina_huasteca').val();
+
+        if (!semana || !fechaInicio || !fechaCierre) {
+            Swal.fire('Error', 'Por favor completa todos los campos para crear la nómina.', 'error');
+            return;
+        }
+
         // Mostrar alerta de carga
         Swal.fire({
             title: 'Creando nómina...',
@@ -116,20 +126,19 @@ function obtenerJornalerosCoordinadores(jsonNominaHuasteca) {
                 asignarPropiedadesEmpleado(jsonNominaHuasteca);
                 ordenarEmpleadosPorNombre(jsonNominaHuasteca);
                 inicializarRegistrosVacios(jsonNominaHuasteca);
-                
+
                 // Guardar explícitamente al crear para asegurar persistencia
                 saveNomina(jsonNominaHuasteca);
-                
+
                 mostrarConfigValores(true);
 
                 console.log(jsonNominaHuasteca);
 
 
                 // BHL: Llenar tabla de pagos por día cuando se cargue la nómina
-                /* 
                 if (typeof llenar_cuerpo_tabla_pagos_por_dia === 'function') {
                     llenar_cuerpo_tabla_pagos_por_dia();
-                } */
+                }
 
 
             }
@@ -177,7 +186,7 @@ function obtenerNominaHuasteca() {
                         // 3. Cargar en la variable global y en localStorage
                         jsonNominaHuasteca = nomina;
                         validarExistenciaTrabajadorBD(jsonNominaHuasteca);
-                        
+
 
 
                     });
@@ -218,6 +227,12 @@ function validarExistenciaTrabajadorBD(jsonNominaHuasteca) {
 
                 // Filtrar empleados: solo dejar los que existen en BD (id_status=1 e id_empresa=1)
                 jsonNominaHuasteca.departamentos.forEach(function (departamento) {
+
+                    // Si es Corte, no filtrar contra BD
+                    if (departamento.nombre === "Corte") {
+                        return;
+                    }
+
                     departamento.empleados = departamento.empleados.filter(function (empleado) {
                         return clavesExistentes.includes(String(empleado.clave));
                     });
@@ -324,10 +339,9 @@ function verificarEmpleadosSinSeguro(jsonNominaHuasteca) {
 
                 asignarPropiedadesEmpleado(jsonNominaHuasteca);
                 ordenarEmpleadosPorNombre(jsonNominaHuasteca);
-
                 saveNomina(jsonNominaHuasteca);
                 initComponents();
-
+                actualizarCabeceraNomina(jsonNominaHuasteca);
                 // Filtrar por departamento 12 (coordinadores) por defecto
                 let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaHuasteca, 12);
                 mostrarDatosTabla(jsonFiltrado, 1);

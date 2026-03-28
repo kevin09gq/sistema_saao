@@ -392,7 +392,7 @@
                                             <input type="number" step="0.01" class="form-control mod-input-rojo" id="mod-prestamo-coordinador" value="" placeholder="0.00">
                                         </div>
                                         <div class="col-md-4 d-flex flex-column">
-                                            <label class="form-label fw-semibold">Checador ($)</label>
+                                            <label class="form-label fw-semibold">Biometrico ($)</label>
                                             <div class="input-group">
                                                 <input type="number" step="0.01" class="form-control mod-input-rojo" id="mod-checador-coordinador" value="" placeholder="0.00">
 
@@ -449,7 +449,7 @@
                                         <!-- Sección de Inasistencias -->
                                         <div class="row mb-3">
                                             <div class="col-md-4 mb-2">
-                                                <label class="form-label fw-semibold">Inasistencias($)</label>
+                                                <label class="form-label fw-semibold">Ausentismo($)</label>
                                                 <div class="input-group">
                                                     <input type="number" step="0.01" class="form-control mod-input-rojo" id="mod-inasistencias-coordinador" value="" placeholder="0.00">
                                                     <button type="button" class="btn btn-outline-secondary" id="btn-calcular-inasistencias-coordinador" title="Calcular desde historial">
@@ -463,7 +463,7 @@
                                         <div class="row mb-3">
                                             <div class="col-12">
                                                 <h6 class="fw-semibold text-info mb-3">
-                                                    <i class="bi bi-calendar-x"></i> Historial de Inasistencias por Día
+                                                    <i class="bi bi-calendar-x"></i> Historial de Ausentismo por Día
                                                 </h6>
 
                                                 <!-- Formulario para agregar inasistencia manual -->

@@ -37,7 +37,7 @@ function guardarNominaHuasteca($data, $conexion)
     $actualizar = $data['actualizar'];
 
     // Obtener todo lo de corte
-    //$corte = $data['corte'];
+    $corte = $data['corte'];
 
     // Verificar si ya existe la nómina considerando número de semana y año
     $query = "SELECT * FROM nomina_huasteca WHERE numero_semana = ? AND anio = ?";
@@ -63,7 +63,7 @@ function guardarNominaHuasteca($data, $conexion)
                 $idNominaActualizada = $rowId['id_nomina_huasteca'];
 
                 // También actualizar los tickets de corte
-                // guardarTicketsCorte($corte, $idNominaActualizada, $conexion);
+                guardarTicketsCorte($corte, $idNominaActualizada, $conexion);
 
                 echo json_encode(['success' => true, 'message' => 'Nómina actualizada correctamente']);
             } else {
@@ -81,7 +81,7 @@ function guardarNominaHuasteca($data, $conexion)
             // Recuperar el ID insertado
             $ultimoId = $conexion->insert_id;
 
-            //guardarTicketsCorte($corte, $ultimoId, $conexion);
+            guardarTicketsCorte($corte, $ultimoId, $conexion);
 
             echo json_encode(['success' => true, 'message' => 'Nómina guardada correctamente']);
         } else {
@@ -136,14 +136,14 @@ function obtenerNomina($data, $conexion)
         $nomina = json_decode($nomina_raw, true);
 
         // Obtener también los tickets de corte
-        //$ticketsCorte = obtenerTicketsCorteInterno($idNomina, $conexion);
+        $ticketsCorte = obtenerTicketsCorteInterno($idNomina, $conexion);
 
         if (json_last_error() === JSON_ERROR_NONE) {
 
-           /* $nomina['departamentos'][] = [
+            $nomina['departamentos'][] = [
                 'nombre' => 'Corte',
                 'empleados' => $ticketsCorte
-            ];*/
+            ];
 
             echo json_encode([
                 'success' => true,
@@ -181,6 +181,12 @@ function guardarTicketsCorte($corte, $idNomina, $conexion)
             return;
         }
 
+        // Primero limpiar las tablas de cortes para esta nómina (en caso de actualización)
+        $deleteTablesQuery = "DELETE FROM cortes_huasteca_tablas WHERE id_corte IN (SELECT id FROM cortes_huasteca WHERE id_nomina = ?)";
+        $deleteTablesStmt = $conexion->prepare($deleteTablesQuery);
+        $deleteTablesStmt->bind_param("i", $idNomina);
+        $deleteTablesStmt->execute();
+
         // Primero limpiar tickets existentes para esta nómina (en caso de actualización)
         $deleteQuery = "DELETE FROM cortes_huasteca WHERE id_nomina = ?";
         $deleteStmt = $conexion->prepare($deleteQuery);
@@ -197,7 +203,7 @@ function guardarTicketsCorte($corte, $idNomina, $conexion)
                 $fechaCorte = $ticket['fecha'];
                 $precioReja = $ticket['precio_reja'];
 
-                // Insertar el ticket principal en cortes_relicario
+                // Insertar el ticket principal en cortes_huasteca
                 $insertCorteQuery = "INSERT INTO cortes_huasteca (id_nomina, nombre_cortador, folio, precio_reja, fecha_corte) VALUES (?, ?, ?, ?, ?)";
                 $insertCorteStmt = $conexion->prepare($insertCorteQuery);
                 $insertCorteStmt->bind_param("issds", $idNomina, $nombreCortador, $folio, $precioReja, $fechaCorte);

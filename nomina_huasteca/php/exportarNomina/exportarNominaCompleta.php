@@ -30,8 +30,8 @@ $spreadsheet->getDefaultStyle()->getFont()->setName('Arial');
 
 // Datos de fecha
 if ($jsonNomina) {
-    $fecha_inicio = $jsonNomina['fecha_inicio'] ?? 'Fecha Inicio';
-    $fecha_cierre = $jsonNomina['fecha_cierre'] ?? 'Fecha Cierre';
+    $fecha_inicio = restarUnDia($jsonNomina['fecha_inicio']) ?? 'Fecha Inicio';
+    $fecha_cierre = restarUnDia($jsonNomina['fecha_cierre']) ?? 'Fecha Cierre';
     $numero_semana = $jsonNomina['numero_semana'] ?? '00';
     $ano = date('Y');
 } 
@@ -57,7 +57,7 @@ $columnas = [
     'UNIFORMES',
     'PERMISOS',
     'RETARDOS',
-    'CHECADOR',
+    'BIOMETRICO',
     'F.A/GAFET/COFIA',
     'TOTAL DE DEDUCCIONES',
     'NETO A RECIBIR',
@@ -213,7 +213,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja) {
     //  TÍTULOS
     //=====================
     
-    $titulo1 = 'RANCHO EL PILAR';
+    $titulo1 = 'RANCHO LA HUASTECA';
     $titulo3 = 'NOMINA DEL ' . strtoupper($fecha_inicio) . ' AL ' . strtoupper($fecha_cierre);
     $titulo4 = 'SEMANA ' . str_pad($numero_semana, 2, '0', STR_PAD_LEFT) . '-' . $ano;
     
@@ -229,15 +229,15 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja) {
     $sheet->mergeCells('A3:AA3');
     $sheet->mergeCells('A4:AA4');
     
-    // Formatear título 1 - RANCHO EL PILAR (Purpura, Negrita, Tamaño 24)
+    // Formatear título 1 - RANCHO LA HUASTECA (Purpura, Negrita, Tamaño 24)
     $sheet->getStyle('A1')->getFont()->setBold(true);
     $sheet->getStyle('A1')->getFont()->setSize(24);
-    $sheet->getStyle('A1')->getFont()->setColor(new Color('7030A0'));
+    $sheet->getStyle('A1')->getFont()->setColor(new Color('32BA5B'));
     
     // Formatear título 2 (Negrita, Tamaño 20)
     $sheet->getStyle('A2')->getFont()->setBold(true);
     $sheet->getStyle('A2')->getFont()->setSize(20);
-    $sheet->getStyle('A2')->getFont()->setColor(new Color('DBADFF'));
+    $sheet->getStyle('A2')->getFont()->setColor(new Color('32BA5B'));
     
     // Formatear título 3 - NOMINA (Negrita, Tamaño 14)
     $sheet->getStyle('A3')->getFont()->setBold(true);
@@ -284,7 +284,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja) {
     
     // Agregar color de fondo rojo a los encabezados
     $sheet->getStyle('A6:AA6')->getFill()->setFillType('solid');
-    $sheet->getStyle('A6:AA6')->getFill()->getStartColor()->setRGB('E5C8E6'); // Rojo
+    $sheet->getStyle('A6:AA6')->getFill()->getStartColor()->setRGB('32BA5B'); // Rojo
     
     // Ajustar el ancho de las columnas
     foreach ($columnasAncho as $columna => $ancho) {
@@ -645,6 +645,10 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja) {
     if (!$comidaTieneDatos) {
         $sheet->getColumnDimension('F')->setVisible(false);
     }
+    
+    // Ocultar TOTAL PERCEPCIONES siempre
+    $sheet->getColumnDimension('H')->setVisible(false);
+    
     if (!$isrTieneDatos) {
         $sheet->getColumnDimension('I')->setVisible(false);
     }
@@ -676,9 +680,8 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja) {
         $sheet->getColumnDimension('R')->setVisible(false);
     }
 
-    if (!$isrTieneDatos && !$imssTieneDatos && !$infonavitTieneDatos && !$ajustesAlSubTieneDatos && !$ausentismoTieneDatos && !$uniformesTieneDatos && !$permisoTieneDatos && !$retardosTieneDatos && !$checadorTieneDatos && !$faxGafetCofiaTieneDatos) {
-        $sheet->getColumnDimension('S')->setVisible(false);
-    }
+    // Ocultar TOTAL DE DEDUCCIONES siempre
+    $sheet->getColumnDimension('S')->setVisible(false);
     
     //=====================
     //  CONFIGURAR ALTURA DE FILAS Y TAMAÑO DE LETRA
@@ -806,6 +809,91 @@ function procesarNominaParaFila(string $nombre, string $concepto, array $nomina)
     ];
 }
 
+/**
+ * Resta un día a una fecha en formato 'DD/MM/AAA' con meses abreviados en español (ENE, FEB, MAR, etc.) y devuelve la nueva fecha en el mismo formato.
+ */
+function restarUnDia($fecha)
+{
+    // Mapeo de meses abreviados en español a número
+    $meses = [
+        "Ene" => 1,
+        "Feb" => 2,
+        "Mar" => 3,
+        "Abr" => 4,
+        "May" => 5,
+        "Jun" => 6,
+        "Jul" => 7,
+        "Ago" => 8,
+        "Sep" => 9,
+        "Oct" => 10,
+        "Nov" => 11,
+        "Dic" => 12
+    ];
+
+    // Separar la fecha
+    list($dia, $mesAbrev, $anio) = explode("/", $fecha);
+
+    // Crear objeto DateTime
+    $mesNum = $meses[$mesAbrev];
+    $date = DateTime::createFromFormat("d/m/Y", "$dia/$mesNum/$anio");
+
+    // Restar un día
+    $date->modify("-1 day");
+
+    // Buscar la abreviatura del mes resultante
+    $mesAbrevNuevo = array_search((int)$date->format("m"), $meses);
+
+    // Formatear resultado
+    return $date->format("d") . "/" . $mesAbrevNuevo . "/" . $date->format("Y");
+}
+
+/**
+ * Genera un rango de fechas entre dos fechas dadas en formato 'DD/MM/AAA' con meses abreviados en español (ENE, FEB, MAR, etc.) y devuelve un array con todas las fechas del rango en el mismo formato.
+ */
+function rangoDeFechas($fechaInicio, $fechaFin)
+{
+    // Mapeo de meses abreviados en español a número
+    $meses = [
+        "Ene" => 1,
+        "Feb" => 2,
+        "Mar" => 3,
+        "Abr" => 4,
+        "May" => 5,
+        "Jun" => 6,
+        "Jul" => 7,
+        "Ago" => 8,
+        "Sep" => 9,
+        "Oct" => 10,
+        "Nov" => 11,
+        "Dic" => 12
+    ];
+
+    // Separar fecha inicio
+    list($diaIni, $mesIni, $anioIni) = explode("/", $fechaInicio);
+    $mesNumIni = $meses[$mesIni];
+    $dateIni = DateTime::createFromFormat("d/m/Y", "$diaIni/$mesNumIni/$anioIni");
+
+    // Separar fecha fin
+    list($diaFin, $mesFin, $anioFin) = explode("/", $fechaFin);
+    $mesNumFin = $meses[$mesFin];
+    $dateFin = DateTime::createFromFormat("d/m/Y", "$diaFin/$mesNumFin/$anioFin");
+
+    // Crear rango de fechas
+    $intervalo = new DateInterval("P1D");
+    $periodo = new DatePeriod($dateIni, $intervalo, $dateFin->modify("+1 day"));
+
+    $resultado = [];
+    foreach ($periodo as $fecha) {
+        // Convertir número de mes a abreviatura
+        $mesAbrev = array_search((int)$fecha->format("m"), $meses);
+        $resultado[] = $fecha->format("d") . "/" . $mesAbrev . "/" . $fecha->format("Y");
+    }
+
+    return $resultado;
+}
+
+
+
 // ========================================
 // FUNCION PARA CREAR HOJA DE CORTE (REJAS)
 // ========================================
@@ -850,7 +938,7 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
 
     // Poner los titulos, logo y estilos
 
-    $titulo1 = 'RANCHO EL RELICARIO';
+    $titulo1 = 'RANCHO HUASTECA';
     // $titulo2 = 'REJAS DE CORTE DE LIMON';
     $titulo3 = 'NOMINA DEL ' . strtoupper($fecha_inicio) . ' AL ' . strtoupper($fecha_cierre);
     $titulo4 = 'SEMANA ' . (isset($jsonNomina['numero_semana']) ? str_pad($jsonNomina['numero_semana'], 2, '0', STR_PAD_LEFT) : '00') . ' - ' . $ano;
@@ -889,6 +977,50 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
     foreach ($encabezados_corte as $col => $titulo) {
         $sheet->setCellValue($col . '6', $titulo);
     }
+
+    // ==============================================================
+    // FILA DE LOS DIAS DE LA SEMANA (fila 5 de las columna D a la J)
+    // ==============================================================
+
+    // Generar rango de fechas entre fecha_inicio y fecha_cierre
+    $fechas = rangoDeFechas($fecha_inicio, $fecha_cierre);
+
+    // Fila donde quieres imprimir
+    $fila = 5;
+
+    // Columna de inicio
+    $columnaInicio = 'D';
+
+    // Recorremos las fechas y las imprimimos
+    $columna = $columnaInicio;
+
+    // Imprimir solo el día (DD) de cada fecha en las columnas D a J
+    foreach ($fechas as $fecha) {
+        // Extraer solo el día (ejemplo: "05" de "05/Ene/2026")
+        $dia = explode("/", $fecha)[0];
+
+        // Escribir en la celda
+        $sheet->setCellValue($columna . $fila, $dia);
+
+        // Estilos para el rango D5:J5
+        $sheet->getStyle('D5:J5')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('D5:J5')->getAlignment()->setVertical('center');
+
+        // Aplicar estilo: centrado y borde negro
+        $sheet->getStyle($columna . $fila)->applyFromArray([
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color' => ['argb' => '000000'],
+                ],
+            ],
+        ]);
+
+        // Avanzar a la siguiente columna
+        $columna++;
+    }
+
+
 
     // Formatear los encabezados (Negrita, Centrados, Tamaño 10, Fondo Rojo, Letra Blanca)
     $sheet->getStyle('A6:M6')->getFont()->setBold(true);
@@ -1081,7 +1213,7 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
     $sheet->getRowDimension(2)->setRowHeight(28);
     $sheet->getRowDimension(3)->setRowHeight(24);
     $sheet->getRowDimension(4)->setRowHeight(24);
-    $sheet->getRowDimension(5)->setRowHeight(10);
+    $sheet->getRowDimension(5)->setRowHeight(20);
     $sheet->getRowDimension(6)->setRowHeight(40);
 
     for ($f = 7; $f < $numeroFila; $f++) {
@@ -1159,7 +1291,7 @@ if ($existeCorteConEmpleados) {
 
 $writer = new Xlsx($spreadsheet);
 
-$filename = 'SEM ' . str_pad($numero_semana, 2, '0', STR_PAD_LEFT) . ' - ' . $ano . ' RANCHO EL PILAR NOMINAS COMPLETAS - ' . date('Y-m-d_H-i-s') . '.xlsx';
+$filename = 'SEM ' . str_pad($numero_semana, 2, '0', STR_PAD_LEFT) . ' - ' . $ano . ' RANCHO LA HUASTECA NOMINAS COMPLETAS - ' . date('Y-m-d_H-i-s') . '.xlsx';
 
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Content-Disposition: attachment; filename="' . $filename . '"');

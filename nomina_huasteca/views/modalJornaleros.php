@@ -394,7 +394,7 @@
                                     </div>
 
                                     <div class="col-md-4 d-flex flex-column">
-                                        <label class="form-label fw-semibold">Checador ($)</label>
+                                        <label class="form-label fw-semibold">Biometrico ($)</label>
                                         <div class="input-group">
                                             <input type="number" step="0.01" class="form-control mod-input-rojo" id="mod-checador-jornalero" value="" placeholder="0.00">
 

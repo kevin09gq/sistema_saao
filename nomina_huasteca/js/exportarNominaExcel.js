@@ -2,7 +2,7 @@ abrirModalExportarExcel();
 exportarJornaleroBase();
 exportarJornaleroApoyo();
 exportarCoordinadorRancho();
-//exportarCorte();
+exportarCorte();
 nominaCompleta();
 reporteNominaPdf();
 
@@ -58,7 +58,7 @@ function exportarJornaleroBase() {
                 var numeroSemana = String(jsonNominaHuasteca.numero_semana).padStart(2, '0');
                 var aniosCierre = jsonNominaHuasteca.fecha_cierre.split('/')[2];
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'SEM ' + numeroSemana + ' - ' + aniosCierre + ' RANCHO EL PILAR NOMINAS - JORNALERO BASE - ' + timestamp + '.xlsx';
+                link.download = 'SEM ' + numeroSemana + ' - ' + aniosCierre + ' RANCHO LA HUASTECA NOMINAS - JORNALERO BASE - ' + timestamp + '.xlsx';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -117,7 +117,7 @@ function exportarJornaleroApoyo() {
                 var numeroSemana = String(jsonNominaHuasteca.numero_semana).padStart(2, '0');
                 var aniosCierre = jsonNominaHuasteca.fecha_cierre.split('/')[2];
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'SEM ' + numeroSemana + ' - ' + aniosCierre + ' RANCHO EL PILAR NOMINAS - JORNALERO APOYO - ' + timestamp + '.xlsx';
+                link.download = 'SEM ' + numeroSemana + ' - ' + aniosCierre + ' RANCHO LA HUASTECA NOMINAS - JORNALERO APOYO - ' + timestamp + '.xlsx';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -144,7 +144,7 @@ function exportarCoordinadorRancho() {
             return;
         }
 
-        if (validarEmpleadosNegativos()) return;
+       if (validarEmpleadosNegativos()) return;
 
         // Mostrar alerta de carga
         Swal.fire({
@@ -177,7 +177,7 @@ function exportarCoordinadorRancho() {
                 var numeroSemana = String(jsonNominaHuasteca.numero_semana).padStart(2, '0');
                 var aniosCierre = jsonNominaHuasteca.fecha_cierre.split('/')[2];
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'SEM ' + numeroSemana + ' - ' + aniosCierre + ' RANCHO EL PILAR NOMINAS - COORDINADOR RANCHO - ' + timestamp + '.xlsx';
+                link.download = 'SEM ' + numeroSemana + ' - ' + aniosCierre + ' RANCHO LA HUASTECA NOMINAS - COORDINADOR RANCHO - ' + timestamp + '.xlsx';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -202,7 +202,7 @@ function nominaCompleta() {
             alert('No hay datos de nómina para exportar. Por favor, procesa los datos primero.');
             return;
         }
-        // if (validarEmpleadosNegativos()) return;
+        if (validarEmpleadosNegativos()) return;
 
         // Mostrar alerta de carga
         Swal.fire({
@@ -235,7 +235,7 @@ function nominaCompleta() {
                 var numeroSemana = String(jsonNominaHuasteca.numero_semana).padStart(2, '0');
                 var aniosCierre = jsonNominaHuasteca.fecha_cierre.split('/')[2];
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'SEM ' + numeroSemana + ' - ' + aniosCierre + ' RANCHO EL PILAR NOMINAS COMPLETAS - ' + timestamp + '.xlsx';
+                link.download = 'SEM ' + numeroSemana + ' - ' + aniosCierre + ' RANCHO LA HUASTECA NOMINAS COMPLETAS - ' + timestamp + '.xlsx';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -260,7 +260,7 @@ function reporteNominaPdf() {
             return;
         }
 
-        //if (validarEmpleadosNegativos()) return;
+        if (validarEmpleadosNegativos()) return;
         $.ajax({
             url: '../php/exportarNomina/reporteNomina.php',
             type: 'POST',
@@ -280,7 +280,7 @@ function reporteNominaPdf() {
                 var url = URL.createObjectURL(blob);
                 link.href = url;
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'REPORTE_NOMINA_PILAR_' + timestamp + '.pdf';
+                link.download = 'REPORTE_NOMINA_HUASTECA_' + timestamp + '.pdf';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -340,6 +340,9 @@ function exportarCorte() {
     $("#btn-export-corte").click(function (e) {
         e.preventDefault();
 
+        console.log("Hola desde solo corte");
+        
+
         // Validar que jsonNominaRelicario exista
         if (!jsonNominaHuasteca) {
             alert('No hay datos de nómina para exportar. Por favor, procesa los datos primero.');
@@ -352,8 +355,6 @@ function exportarCorte() {
             alerta("info", "Nomina no encontrada", "No se encontró el departamento de Corte o no tiene empleados. Por favor, cargar los tickets de corte de limon.");
             return;
         }
-
-        if (validarEmpleadosNegativos()) return;
 
         // Mostrar alerta de carga
         Swal.fire({
@@ -388,7 +389,7 @@ function exportarCorte() {
                 var numeroSemana = String(jsonNominaHuasteca.numero_semana).padStart(2, '0');
                 var aniosCierre = jsonNominaHuasteca.fecha_cierre.split('/')[2];
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'SEM ' + numeroSemana + ' - ' + aniosCierre + ' RANCHO EL PILAR NOMINAS - CORTE REJAS DE LIMON - ' + timestamp + '.xlsx';
+                link.download = 'SEM ' + numeroSemana + ' - ' + aniosCierre + ' RANCHO LA HUASTECA NOMINAS - CORTE REJAS DE LIMON - ' + timestamp + '.xlsx';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);

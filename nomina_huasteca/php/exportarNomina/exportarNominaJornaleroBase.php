@@ -10,6 +10,44 @@ use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 
+/**
+ * Resta un día a una fecha en formato 'DD/MM/AAA' con meses abreviados en español (ENE, FEB, MAR, etc.) y devuelve la nueva fecha en el mismo formato.
+ */
+function restarUnDia($fecha)
+{
+    // Mapeo de meses abreviados en español a número
+    $meses = [
+        "Ene" => 1,
+        "Feb" => 2,
+        "Mar" => 3,
+        "Abr" => 4,
+        "May" => 5,
+        "Jun" => 6,
+        "Jul" => 7,
+        "Ago" => 8,
+        "Sep" => 9,
+        "Oct" => 10,
+        "Nov" => 11,
+        "Dic" => 12
+    ];
+
+    // Separar la fecha
+    list($dia, $mesAbrev, $anio) = explode("/", $fecha);
+
+    // Crear objeto DateTime
+    $mesNum = $meses[$mesAbrev];
+    $date = DateTime::createFromFormat("d/m/Y", "$dia/$mesNum/$anio");
+
+    // Restar un día
+    $date->modify("-1 day");
+
+    // Buscar la abreviatura del mes resultante
+    $mesAbrevNuevo = array_search((int)$date->format("m"), $meses);
+
+    // Formatear resultado
+    return $date->format("d") . "/" . $mesAbrevNuevo . "/" . $date->format("Y");
+}
+
 //=====================
 //  RECIBIR DATOS DEL JSON
 //=====================
@@ -39,8 +77,8 @@ $sheet->setTitle('JORNALEROS');
 
 // Usar datos del JSON si existen
 if ($jsonNomina) {
-    $fecha_inicio = $jsonNomina['fecha_inicio'] ?? 'Fecha Inicio';
-    $fecha_cierre = $jsonNomina['fecha_cierre'] ?? 'Fecha Cierre';
+    $fecha_inicio = restarUnDia($jsonNomina['fecha_inicio']) ?? 'Fecha Inicio';
+    $fecha_cierre = restarUnDia($jsonNomina['fecha_cierre']) ?? 'Fecha Cierre';
     $ano = date('Y');
 } else {
     $fecha_inicio = '16/Ene';
@@ -48,7 +86,7 @@ if ($jsonNomina) {
     $ano = date('Y');
 }
 
-$titulo1 = 'RANCHO EL PILAR';
+$titulo1 = 'RANCHO LA HUASTECA';
 $titulo2 = 'PERSONAL DE BASE';
 $titulo3 = 'NOMINA DEL ' . strtoupper($fecha_inicio) . ' AL ' . strtoupper($fecha_cierre);
 $titulo4 = 'SEMANA ' . (isset($jsonNomina['numero_semana']) ? str_pad($jsonNomina['numero_semana'], 2, '0', STR_PAD_LEFT) : '00') . '-' . $ano;
@@ -68,12 +106,12 @@ $sheet->mergeCells('A4:AA4');
 // Formatear título 1 - RANCHO EL RELICARIO (Rojo, Negrita, Tamaño 24)
 $sheet->getStyle('A1')->getFont()->setBold(true);
 $sheet->getStyle('A1')->getFont()->setSize(24);
-$sheet->getStyle('A1')->getFont()->setColor(new Color('7030A0'));
+$sheet->getStyle('A1')->getFont()->setColor(new Color('32BA5B'));
 
 // Formatear título 2 - PERSONAL DE BASE (Negrita, Tamaño 11)
 $sheet->getStyle('A2')->getFont()->setBold(true);
 $sheet->getStyle('A2')->getFont()->setSize(20);
-$sheet->getStyle('A2')->getFont()->setColor(new Color('DBADFF'));
+$sheet->getStyle('A2')->getFont()->setColor(new Color('32BA5B'));
 
 // Formatear título 3 - NOMINA (Negrita, Tamaño 10)
 $sheet->getStyle('A3')->getFont()->setBold(true);
@@ -121,7 +159,7 @@ $columnas = [
     'UNIFORMES',
     'PERMISOS',
     'RETARDOS',
-    'CHECADOR',
+    'BIOMETRICO',
     'F.A/GAFET/COFIA',
     'TOTAL DE DEDUCCIONES',
     'NETO A RECIBIR',
@@ -151,7 +189,7 @@ $sheet->getStyle('A6:AA6')->getAlignment()->setWrapText(true); // Ajustar texto
 
 // Agregar color de fondo purpura a los encabezados
 $sheet->getStyle('A6:AA6')->getFill()->setFillType('solid');
-$sheet->getStyle('A6:AA6')->getFill()->getStartColor()->setRGB('E5C8E6'); // Purpura
+$sheet->getStyle('A6:AA6')->getFill()->getStartColor()->setRGB('32BA5B'); // Purpura
 
 // Ajustar el ancho de las columnas para mejor visualización
 $columnasAncho = [
@@ -271,6 +309,9 @@ $ausentismoTieneDatos = false;
 $permisoTieneDatos = false;
 $retardosTieneDatos = false;
 $uniformesTieneDatos = false;
+$isrTieneDatos = false;
+$imssTieneDatos = false;
+$infonavitTieneDatos = false;
 
 // Determinar si las columnas CHECADOR y F.A/GAFET/COFIA tienen datos
 $checadorTieneDatos = false;
@@ -305,12 +346,16 @@ foreach ($empleadosJornaleros as $empleado) {
         $faxGafetCofiaTieneDatos = true;
     }
 
-    // Verificar si existe código 107 en conceptos
+    // Verificar conceptos para ISR, IMSS, INFONAVIT y AJUSTES AL SUB
     if (!empty($empleado['conceptos']) && is_array($empleado['conceptos'])) {
         foreach ($empleado['conceptos'] as $concepto) {
-            if ($concepto['codigo'] === '107' && ($concepto['resultado'] ?? 0) != 0) {
-                $ajustesAlSubTieneDatos = true;
-                break;
+            $codigo = $concepto['codigo'] ?? '';
+            $resultado = $concepto['resultado'] ?? 0;
+            if ($resultado != 0) {
+                if ($codigo === '45') $isrTieneDatos = true;
+                if ($codigo === '52') $imssTieneDatos = true;
+                if ($codigo === '16') $infonavitTieneDatos = true;
+                if ($codigo === '107') $ajustesAlSubTieneDatos = true;
             }
         }
     }
@@ -639,6 +684,24 @@ if (!$comidaTieneDatos) {
     $sheet->getColumnDimension('F')->setVisible(false);
 }
 
+// Ocultar TOTAL PERCEPCIONES siempre
+$sheet->getColumnDimension('H')->setVisible(false);
+
+// Ocultar columna ISR si no tiene datos
+if (!$isrTieneDatos) {
+    $sheet->getColumnDimension('I')->setVisible(false);
+}
+
+// Ocultar columna IMSS si no tiene datos
+if (!$imssTieneDatos) {
+    $sheet->getColumnDimension('J')->setVisible(false);
+}
+
+// Ocultar columna INFONAVIT si no tiene datos
+if (!$infonavitTieneDatos) {
+    $sheet->getColumnDimension('K')->setVisible(false);
+}
+
 // Ocultar columna AJUSTES AL SUB si no tiene datos
 if (!$ajustesAlSubTieneDatos) {
     $sheet->getColumnDimension('L')->setVisible(false);
@@ -673,6 +736,9 @@ if (!$checadorTieneDatos) {
 if (!$faxGafetCofiaTieneDatos) {
     $sheet->getColumnDimension('R')->setVisible(false);
 }
+
+// Ocultar TOTAL DE DEDUCCIONES siempre
+$sheet->getColumnDimension('S')->setVisible(false);
 
 //=====================
 //  CONFIGURAR ALTURA DE FILAS Y TAMAÑO DE LETRA

@@ -34,7 +34,7 @@ class PDFEncabezado extends TCPDF
         // Título principal
         $this->SetFont('helvetica', 'B', 16);
         $this->SetY(12);
-        $this->Cell(0, 10, 'REPORTE NÓMINA RANCHO PILAR', 0, 1, 'C', 0, '', 0, false, 'M', 'M');
+        $this->Cell(0, 10, 'REPORTE NÓMINA RANCHO HUASTECA', 0, 1, 'C', 0, '', 0, false, 'M', 'M');
 
         // Subtítulo
         $this->SetFont('helvetica', 'B', 12);
@@ -258,8 +258,16 @@ foreach ($empleadosPorTipo as $empleado) {
     $comida = isset($empleado['comida']) ? floatval($empleado['comida']) : 0;
 
     $total_extra = 0;
-    $percepciones_extra = isset($empleado['percepciones_extra']) && is_array($empleado['percepciones_extra']) ? $empleado['percepciones_extra'] : [];
     $componentesExtraDetalle = [];
+
+    // Sumar tardeada si existe
+    $tardeada = isset($empleado['tardeada']) ? floatval($empleado['tardeada']) : 0;
+    if ($tardeada > 0) {
+        $total_extra += $tardeada;
+        $componentesExtraDetalle['Tardeada'] = $tardeada;
+    }
+
+    $percepciones_extra = isset($empleado['percepciones_extra']) && is_array($empleado['percepciones_extra']) ? $empleado['percepciones_extra'] : [];
     if (count($percepciones_extra) > 0) {
         foreach ($percepciones_extra as $extra) {
             $cantidad = isset($extra['cantidad']) ? floatval($extra['cantidad']) : 0;

@@ -78,6 +78,7 @@ function mostrarDatosTabla(jsonNominaHuasteca, pagina = 1) {
             <tr data-clave="${empleado.clave || 'N/A'}" data-id-empresa="${empleado.id_empresa || 1}" data-id-departamento="${empleado.id_departamento || 0}">
                 <td>${numeroFila}</td>
                 <td>${empleado.nombre}</td>
+                <td class="text-center"><strong>${parseInt(empleado.dias_trabajados) > 0 ? empleado.dias_trabajados : '<span class="valor-vacio">—</span>'}</strong></td>
                 <td>${formatearValor(empleado.salario_semanal || 0)}</td>
                 <td>${formatearValor(empleado.pasaje || 0)}</td>
                 <td>${formatearValor(empleado.comida || 0)}</td>
