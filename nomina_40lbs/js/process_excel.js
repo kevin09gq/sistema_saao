@@ -3,6 +3,8 @@ jsonNomina40lbs = null;
 
 
 $(document).ready(function () {
+    $("#container-nomina_40lbs").addClass("hidden");
+
     processExcelData();
     restoreNomina();
     confirmarsaveNomina();
@@ -14,7 +16,6 @@ $(document).ready(function () {
 
 // PASO 1: Función para procesar los archivos Excel subidos por el usuario y unir los datos 
 function processExcelData(params) {
-       $("#container-nomina_40lbs").removeClass("hidden");
 
     $('#btn_procesar_nomina_40lbs').on('click', function (e) {
         e.preventDefault();
@@ -678,7 +679,7 @@ function agregarEmpleadosNuevos(jsonNomina40lbs, JsonListaRaya) {
         });
     }
 
-  
+
     // DESPUÉS de agregar empleados nuevos, verificar empleados sin seguro
     verificarEmpleadosSinSeguro(jsonNomina40lbs);
 }

@@ -28,7 +28,7 @@
     ?>
 
     <!-- Contenedor principal centrado -->
-    <div class="container-nomina_40lbs" id="container-nomina_40lbs" hidden>
+    <div class="container-nomina_40lbs" id="container-nomina_40lbs">
         <!-- Contenedor tipo navbar para formulario y filtros -->
         <div class="navbar-nomina_40lbs">
             <div class="titulo-nomina_40lbs">Procesamiento de Nómina</div>
@@ -225,6 +225,7 @@
 
     <!-- Dispersion Tarjeta -->
     <script src="../js/configModalDispersionTarjeta/establecerData.js"></script>
+    <script src="../js/configModalDispersionTarjeta/editarData.js"></script>
     <script src="../js/configModalDispersionTarjeta/filtroBusqueda.js"></script>
 
 </body>

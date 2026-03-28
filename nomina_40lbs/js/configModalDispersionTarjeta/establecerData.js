@@ -45,11 +45,18 @@ function renderizarTablaTarjeta(empleados) {
             totalGeneral += montoTarjeta;
 
             const row = `
-                <tr>
+                <tr data-clave="${emp.clave}">
                     <td class="text-center">${index + 1}</td>
                     <td><span class="badge bg-light text-dark border">${emp.clave || 'N/A'}</span></td>
                     <td>${emp.nombre || 'SIN NOMBRE'}</td>
-                    <td class="text-end fw-bold text-dark">$${emp.tarjeta ? emp.tarjeta.toFixed(2) : '0.00'}</td>
+                    <td class="text-end">
+                        <div class="d-flex align-items-center justify-content-end gap-2">
+                             <span class="fw-bold text-dark valor-tarjeta">$${montoTarjeta.toFixed(2)}</span>
+                             <button class="btn btn-sm btn-outline-primary btn-editar-tarjeta" title="Editar monto">
+                                <i class="bi bi-pencil-square"></i>
+                             </button>
+                        </div>
+                    </td>
                 </tr>
             `;
             $tbody.append(row);

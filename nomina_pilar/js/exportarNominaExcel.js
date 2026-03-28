@@ -202,7 +202,7 @@ function nominaCompleta() {
             alert('No hay datos de nómina para exportar. Por favor, procesa los datos primero.');
             return;
         }
-        if (validarEmpleadosNegativos()) return;
+         if (validarEmpleadosNegativos()) return;
 
         // Mostrar alerta de carga
         Swal.fire({
