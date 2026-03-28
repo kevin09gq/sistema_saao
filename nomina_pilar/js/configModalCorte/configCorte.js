@@ -2,17 +2,27 @@ let rejas_totales = document.getElementById("rejas_totales");
 let precio_reja = document.getElementById("precio_reja");
 let total_pagar = document.getElementById("total_pagar");
 const modalCorte = new bootstrap.Modal(document.getElementById("modalCorte"));
-const dias_nomina = ["VIERNES", "SABADO", "DOMINGO", "LUNES", "MARTES", "MIERCOLES", "JUEVES"];
+
+// Dias de la semana en el orden ideal para la nómina (DOMINGO = 0, LUNES = 1, ..., SABADO = 6)
+const dias_nomina = ["DOMINGO", "LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO"];
 
 $(document).ready(function () {
 
     obtenerTablasRancho();
-    // llenar_cuerpo_tabla_pagos_por_dia();
+    llenar_cuerpo_tabla_pagos_por_dia();
     buscar_cortador();
     buscar_cortador_nomina();
 
 
 });
+
+/**
+ * ====================================================================
+ * ====================================================================
+ * +++++ FUNCIONES PARA LLENAR LAS TABLAS DE LOS PAGOS DE DOMINA  +++++
+ * ====================================================================
+ * ====================================================================
+ */
 
 
 /**
@@ -43,8 +53,20 @@ function obtenerRangoFechas(inicioStr, finStr) {
         return `${dia}/${mesAbrev}/${anio}`;
     }
 
-    const inicio = parseFecha(inicioStr);
-    const fin = parseFecha(finStr);
+    // Función para dar o quitar dias a una fecha
+    function moverDias(fecha, dias) {
+        const nueva = new Date(fecha);
+        nueva.setDate(nueva.getDate() + dias);
+        return nueva;
+    }
+
+    // Convertir las fechas de inicio y fin a objetos Date
+    let inicio = parseFecha(inicioStr);
+    let fin = parseFecha(finStr);
+
+    // Quitar un día tanto al inicio como al fin
+    inicio = moverDias(inicio, -1);
+    fin = moverDias(fin, -1);
 
     const resultado = [];
     let actual = new Date(inicio);
@@ -58,30 +80,81 @@ function obtenerRangoFechas(inicioStr, finStr) {
 }
 
 /**
+ * 
+ * @param {String} fechaStr Fecha con formato "12/Ene/2026"
+ * @returns Nombre del día de la semana en español (ej. "LUNES")
+ */
+function obtenerDiaSemana(fechaStr) {
+    // Mapeo de meses abreviados en español a número (0 = enero)
+    const meses = {
+        Ene: 0,
+        Feb: 1,
+        Mar: 2,
+        Abr: 3,
+        May: 4,
+        Jun: 5,
+        Jul: 6,
+        Ago: 7,
+        Sep: 8,
+        Oct: 9,
+        Nov: 10,
+        Dic: 11
+    };
+
+    // Separar la cadena
+    const [dia, mesStr, anio] = fechaStr.split("/");
+    const mes = meses[mesStr];
+
+    // Crear objeto Date
+    const fecha = new Date(anio, mes, dia);
+
+    // getDay() devuelve: 0=Domingo, 1=Lunes, ..., 6=Sábado
+    const indice = fecha.getDay();
+
+    // Ajustar al arreglo dias_nomina
+    return dias_nomina[indice];
+}
+
+/**
  * Función para llenar el cuerpo de la tabla de pagos por día con las fechas del rango y los inputs correspondientes
  */
 function llenar_cuerpo_tabla_pagos_por_dia() {
-    let tmp =  ``;
+    // Limpiar el cuerpo de la tabla antes de llenarlo
+    $("#cuerpo_tabla_pagos_por_dia", "#cuerpo_tabla_pagos_por_dia_nomina").html("");
 
+    // Variables temporales para construir el HTML de las filas
+    let tmp = ``;
+    let tmp_editar = ``;
+
+    // Validar que el JSON de nómina no sea null antes de intentar acceder a sus propiedades
     if (jsonNominaPilar == null) {
         return;
     }
 
+    // Obtener el rango de fechas entre fecha_inicio y fecha_cierre
     const rangoFechas = obtenerRangoFechas(jsonNominaPilar.fecha_inicio, jsonNominaPilar.fecha_cierre);
+
+    // ======================================================
+    // Generar las filas de la tabla con las fechas del rango
+    // ====================================================== 
 
     for (let i = 0; i < dias_nomina.length; i++) {
         tmp += `
             <tr>
-                <td>${ rangoFechas[i] }</td>
-                <td>${ dias_nomina[i] }</td>
+                <td>${obtenerDiaSemana(rangoFechas[i])}</td>
+                <td>${rangoFechas[i]}</td>
                 <td>
                     <input type="number" step="0.01" min="0"
                         class="form-control shadow-sm pago_del_dia"
-                        name="pago_${ dias_nomina[i] }" id="pago_${ dias_nomina[i] }"
+                        name="pago_${obtenerDiaSemana(rangoFechas[i]).toLowerCase()}"
+                        id="pago_${obtenerDiaSemana(rangoFechas[i]).toLowerCase()}"
                         placeholder="Pago del día">
                 </td>
                 <td class="text-center">
-                    <button class="btn btn-outline-danger btn_limpiar_dia" type="button" title="Limpiar fila"><i class="bi bi-trash"></i></button>
+                    <button
+                        class="btn btn-outline-danger btn_limpiar_dia"
+                        type="button"
+                        title="Limpiar fila"><i class="bi bi-eraser-fill"></i></button>
                 </td>
             </tr>
         `;
@@ -96,7 +169,47 @@ function llenar_cuerpo_tabla_pagos_por_dia() {
         </tr>
     `;
 
+
+    // ============================================================================
+    // Generar las filas de la tabla con las fechas del rango para editar la nómina
+    // ============================================================================
+
+    for (let i = 0; i < dias_nomina.length; i++) {
+        tmp_editar += `
+            <tr>
+                <td>${obtenerDiaSemana(rangoFechas[i])}</td>
+                <td>${rangoFechas[i]}</td>
+                <td>
+                    <input type="number" step="0.01" min="0"
+                        class="form-control shadow-sm pago_del_dia_editar"
+                        name="pago_editar_${obtenerDiaSemana(rangoFechas[i]).toLowerCase()}"
+                        id="pago_editar_${obtenerDiaSemana(rangoFechas[i]).toLowerCase()}"
+                        placeholder="Pago del día">
+                </td>
+                <td class="text-center">
+                    <button 
+                        class="btn btn-outline-danger btn_limpiar_dia" 
+                        type="button" 
+                        title="Limpiar fila"><i class="bi bi-eraser-fill"></i></button>
+                </td>
+            </tr>
+        `;
+    }
+
+    tmp_editar += `
+        <tr>
+            <td></td>
+            <td>Total:</td>
+            <td class="text-end"><strong id="total_pagos_nomina_editar">$0.00</strong></td>
+            <td></td>
+        </tr>
+    `;
+
+    // ========================================================
+    // Agregar las filas al cuerpo de la tabla
+    // ========================================================
     $("#cuerpo_tabla_pagos_por_dia").html(tmp);
+    $("#cuerpo_tabla_pagos_por_dia_nomina").html(tmp_editar);
 }
 
 /**
@@ -612,22 +725,121 @@ $(document).on("click", "#btn_copiar_salario", function (e) {
     e.preventDefault();
 
     let salario = $("#salario_diario").val().trim();
+
     if (salario === "" || isNaN(salario)) {
         alerta("info", "Salario diario inválido", "Por favor, ingresa un salario diario válido para copiar");
         return;
     }
 
-    // Convertir a número con 2 decimales
     salario = parseFloat(salario).toFixed(2);
 
-    // Poner el salario en todos los inputs dentro del tbody
+    // Nombre del empleado
+    const empleadoNombre = $("#nombre_cortador_nomina").val().trim();
+
+    if (empleadoNombre === "") {
+        alerta("info", "Nombre requerido", "Ingresa el nombre del Cabo para copiar el salario diario");
+        return;
+    }
+
+    // ======================================
+    // Buscar departamento Corte (si existe)
+    // ======================================
+    let corteDepto = null;
+
+    if (jsonNominaPilar.departamentos) {
+        corteDepto = jsonNominaPilar.departamentos.find(d => d.nombre === "Corte");
+    }
+
+    // ======================================
+    // Obtener tickets (si existen)
+    // ======================================
+    let ticketsReja = [];
+
+    if (corteDepto && corteDepto.empleados) {
+        const empleadoReja = corteDepto.empleados.find(e =>
+            e.nombre === empleadoNombre && e.concepto === "REJA"
+        );
+
+        if (empleadoReja && empleadoReja.tickets) {
+            ticketsReja = empleadoReja.tickets;
+        }
+    }
+
+    // ======================================
+    // Set de fechas con REJA
+    // ======================================
+    const fechasConReja = new Set();
+
+    ticketsReja.forEach(ticket => {
+        if (ticket.fecha) {
+            fechasConReja.add(ticket.fecha); // YYYY-MM-DD
+        }
+    });
+
+    console.log("Empleado:", empleadoNombre);
+    console.log("Fechas con REJA:", [...fechasConReja]);
+
+    // ======================================
+    // Función para convertir fecha tabla → ISO
+    // ======================================
+    function convertirFechaAISO(fechaStr) {
+        const meses = {
+            "ENE": "01",
+            "FEB": "02",
+            "MAR": "03",
+            "ABR": "04",
+            "MAY": "05",
+            "JUN": "06",
+            "JUL": "07",
+            "AGO": "08",
+            "SEP": "09",
+            "OCT": "10",
+            "NOV": "11",
+            "DIC": "12"
+        };
+
+        const partes = fechaStr.split("/");
+
+        if (partes.length !== 3) return null;
+
+        const dia = partes[0].padStart(2, "0");
+        const mes = meses[partes[1].toUpperCase()];
+        const anio = partes[2];
+
+        if (!mes) return null;
+
+        return `${anio}-${mes}-${dia}`;
+    }
+
+    // ======================================
+    // Llenar tabla
+    // ======================================
     $("#cuerpo_tabla_pagos_por_dia")
         .find("tr")
-        .not(":last") // Evita la fila del TOTAL
-        .find('input[type="number"]')
-        .val(salario);
+        .not(":last")
+        .each(function () {
 
-    // Calcular el total después de copiar el salario
+            const fechaTexto = $(this).find("td:eq(1)").text().trim();
+            const fechaISO = convertirFechaAISO(fechaTexto);
+
+            const input = $(this).find('input[type="number"]');
+
+            // Si no se pudo convertir, limpiar
+            if (!fechaISO) {
+                input.val("");
+                return;
+            }
+            
+            // - Sin tickets → llenar todo
+            // - Con tickets → solo fechas coincidentes
+            if (fechasConReja.size === 0 || fechasConReja.has(fechaISO)) {
+                input.val(salario);
+            } else {
+                input.val("");
+            }
+        });
+
+    // Calcular total
     calcularTotalPagos();
 });
 

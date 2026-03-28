@@ -265,19 +265,19 @@ function guardarInasistenciaManual() {
         e.preventDefault();
 
         const empleado = objEmpleadoCoordinador.getEmpleado();
-
-        // Si no hay empleado, salir
-        if (!empleado) {
-            return;
-        }
+        if (!empleado) return;
 
         // Obtener valores del formulario
         const dia = $('#select-dia-inasistencia-coordinador').val().trim();
         const descuento = parseFloat($('#input-descuento-inasistencia-coordinador').val()) || 0;
 
-        // Validar que tenga día
         if (!dia) {
-            alert('Por favor selecciona un día');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Día faltante',
+                text: 'Por favor selecciona un día de la semana',
+                confirmButtonColor: '#3085d6'
+            });
             return;
         }
 
@@ -286,29 +286,76 @@ function guardarInasistenciaManual() {
             empleado.historial_inasistencias = [];
         }
 
-        // Agregar nueva inasistencia manual
-        empleado.historial_inasistencias.push({
-            dia: dia,
-            descuento_inasistencia: descuento,
-            tipo: 'manual'
-        });
+        // Verificar si existen automáticas actualmente
+        const tieneAutomaticas = empleado.historial_inasistencias.some(i => i.tipo === 'automatico');
 
-        // Limpiar formulario
-        $('#select-dia-inasistencia-coordinador').val('');
-        $('#input-descuento-inasistencia-coordinador').val('0.00');
-
-        // Calcular y actualizar el total de inasistencias
-        const totalInasistencias = empleado.historial_inasistencias.reduce((sum, i) => {
-            return sum + (parseFloat(i.descuento_inasistencia) || 0);
-        }, 0);
-        $('#mod-inasistencias-coordinador').val(totalInasistencias.toFixed(2));
-
-        empleado.inasistencia = totalInasistencias;
-        establecerHistorialInasistencias(empleado);
-        calcularSueldoACobrar();
-
-        console.log('Inasistencia guardada:', empleado.historial_inasistencias);
+        // Si ya tiene el flag de ignorar, simplemente agregamos la manual
+        if (empleado.ignorar_inasistencias_automaticas === true || !tieneAutomaticas) {
+            finalizarGuardadoInasistencia(empleado, dia, descuento);
+        } else {
+            // Preguntar si quiere sumar o solo manuales
+            Swal.fire({
+                title: 'Inasistencias Automáticas Detectadas',
+                text: "¿Deseas sumar esta inasistencia manual a las calculadas automáticamente o prefieres solo tomar las manuales?",
+                icon: 'question',
+                showCancelButton: true,
+                showDenyButton: true,
+                confirmButtonText: '<i class="bi bi-plus-circle"></i> Sumar ambas',
+                denyButtonText: '<i class="bi bi-person-check"></i> Solo manuales',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#28a745',
+                denyButtonColor: '#17a2b8',
+                cancelButtonColor: '#6c757d',
+                width: '600px'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Sumar: mantener flag en falso/null
+                    empleado.ignorar_inasistencias_automaticas = false;
+                    finalizarGuardadoInasistencia(empleado, dia, descuento);
+                } else if (result.isDenied) {
+                    // Solo manuales: activar flag y limpiar automáticas
+                    empleado.ignorar_inasistencias_automaticas = true;
+                    // eliminamos manuales_editado_manual para que no interfiera si existe uno previo en otro modulo
+                    empleado._inasistencia_editado_manual = true; 
+                    
+                    finalizarGuardadoInasistencia(empleado, dia, descuento);
+                }
+            });
+        }
     });
+}
+
+// Función auxiliar para centralizar la agregación y refresco
+function finalizarGuardadoInasistencia(empleado, dia, descuento) {
+    // Agregar nueva inasistencia manual
+    empleado.historial_inasistencias.push({
+        dia: dia,
+        descuento_inasistencia: descuento,
+        tipo: 'manual'
+    });
+
+    // Limpiar formulario UI
+    $('#select-dia-inasistencia-coordinador').val('');
+    $('#input-descuento-inasistencia-coordinador').val('0.00');
+
+    // Recalcular inasistencias (llamará a asignarHistorialInasistencias en eventos.js, 
+    // la cual ya modificamos para respetar ignorar_inasistencias_automaticas)
+    asignarHistorialInasistencias(empleado);
+    
+    // Calcular total actual respetando el flag de ignorar automáticas
+    const totalInasistencias = empleado.historial_inasistencias.reduce((sum, i) => {
+        if (i.tipo === 'automatico' && empleado.ignorar_inasistencias_automaticas) {
+            return sum;
+        }
+        return sum + (parseFloat(i.descuento_inasistencia) || 0);
+    }, 0);
+    
+    $('#mod-inasistencias-coordinador').val(totalInasistencias.toFixed(2));
+    empleado.inasistencia = totalInasistencias;
+
+    // Refrescar UI del modal
+    establecerHistorialInasistencias(empleado);
+    calcularSueldoACobrar();
 }
 
 /************************************
@@ -322,8 +369,6 @@ function eliminarInasistenciaManual() {
     // Delegación de eventos para eliminar inasistencias manuales
     $contenedor.on('click', '.btn-eliminar-inasistencia-manual', function () {
         const empleado = objEmpleadoCoordinador.getEmpleado();
-
-        // Si no hay empleado, salir
         if (!empleado) return;
 
         const index = $(this).data('index');
@@ -331,8 +376,20 @@ function eliminarInasistenciaManual() {
         // Eliminar la inasistencia del array
         empleado.historial_inasistencias.splice(index, 1);
 
-        // Calcular y actualizar el total de inasistencias
+        // Si ya no quedan manuales, por seguridad podemos permitir que vuelvan las automáticas
+        const tieneManuales = empleado.historial_inasistencias.some(i => i.tipo === 'manual');
+        if (!tieneManuales) {
+            empleado.ignorar_inasistencias_automaticas = false;
+        }
+
+        // Recalcular el historial (esto traerá de vuelta las automáticas si el flag es false)
+        asignarHistorialInasistencias(empleado);
+
+        // Calcular y actualizar el total de inasistencias respetando el flag
         const totalInasistencias = empleado.historial_inasistencias.reduce((sum, i) => {
+            if (i.tipo === 'automatico' && empleado.ignorar_inasistencias_automaticas) {
+                return sum;
+            }
             return sum + (parseFloat(i.descuento_inasistencia) || 0);
         }, 0);
         $('#mod-inasistencias-coordinador').val(totalInasistencias.toFixed(2));
@@ -341,8 +398,6 @@ function eliminarInasistenciaManual() {
         // Actualizar la tabla
         establecerHistorialInasistencias(empleado);
         calcularSueldoACobrar();
-
-        console.log('Inasistencia eliminada. Historial actualizado:', empleado.historial_inasistencias);
     });
 }
 
