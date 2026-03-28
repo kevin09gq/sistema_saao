@@ -24,6 +24,7 @@ function editarPropiedades() {
         asignarHistorialOlvidos(empleado);
         asignarHistorialRetardos(empleado);
         asignarHistorialInasistencias(empleado);
+<<<<<<< HEAD
         
         // 3. TERCERO: Calcular los totales. Con force=false, respeta los flags
         //    de edición manual (_retardos_editado_manual, etc.)
@@ -47,13 +48,19 @@ function editarPropiedades() {
         modificarPercepciones(empleado);
         modificarConceptos(empleado);
         modificarDeducciones(empleado);
+=======
+
+        asignarTotalOlvidosCoordinador(empleado);
+        asignarTotalRetardosCoordinador(empleado);
+        asignarTotalInasistenciasCoordinador(empleado);
+>>>>>>> d47f2597972a63bfde96235bb44ebc1d4a071513
 
         // Resetear flags de edición manual después de guardar
         delete empleado._retardos_editado_manual;
         delete empleado._checador_editado_manual;
         delete empleado._inasistencia_editado_manual;
 
-      
+
         //limpiar modal después de guardar
         limpiarModalCoordinador();
 
