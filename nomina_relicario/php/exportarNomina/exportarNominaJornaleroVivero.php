@@ -42,7 +42,7 @@ function restarUnDia($fecha)
     $date->modify("-1 day");
 
     // Buscar la abreviatura del mes resultante
-    $mesAbrevNuevo = array_search((int)$date->format("m"), $meses);
+    $mesAbrevNuevo = array_search((int) $date->format("m"), $meses);
 
     // Formatear resultado
     return $date->format("d") . "/" . $mesAbrevNuevo . "/" . $date->format("Y");
@@ -407,7 +407,8 @@ foreach ($empleadosJornalerosVivero as $empleado) {
 
     // Agregar fórmula de TOTAL PERCEPCIONES (suma dinámica de columnas existentes)
     $columnasParaSumar = ['D', 'E'];
-    if ($comidaTieneDatos) $columnasParaSumar[] = 'F';
+    if ($comidaTieneDatos)
+        $columnasParaSumar[] = 'F';
     $columnasParaSumar[] = 'G';
 
     $primeraColumna = reset($columnasParaSumar);
@@ -421,9 +422,9 @@ foreach ($empleadosJornalerosVivero as $empleado) {
 
     // Mapeo de códigos de conceptos a columnas
     $mapeoConceptos = [
-        '45'  => 'I',   // ISR
-        '52'  => 'J',   // IMSS
-        '16'  => 'K',   // INFONAVIT
+        '45' => 'I',   // ISR
+        '52' => 'J',   // IMSS
+        '16' => 'K',   // INFONAVIT
         '107' => 'L',   // AJUSTES AL SUB
     ];
 

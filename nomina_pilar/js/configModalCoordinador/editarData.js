@@ -62,17 +62,8 @@ function editarPropiedades() {
         // Cerrar modal después de guardar
         $('#modal-coordinadores').modal('hide');
 
-        // Actualizar la tabla manteniendo el filtrado y paginación actual
-        const id_departamento = parseInt($('#filtro_departamento').val());
-        const id_puestoEspecial = parseInt($('#filtro_puesto').val());
-        
-        // Aplicar los mismos filtros que están activos
-        let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaPilar, id_departamento);
-        jsonFiltrado = filtrarEmpleadosPorPuesto(jsonFiltrado, id_puestoEspecial);
-        
-        // Mostrar la tabla en la página actual (usar window.paginaActualNomina para acceso global)
-        
-        mostrarDatosTabla(jsonFiltrado, window.paginaActualNomina || 1);
+        // Actualizar la tabla manteniendo el filtrado, búsqueda y paginación actual
+        aplicarFiltrosActuales();
 
     });
 

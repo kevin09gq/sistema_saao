@@ -137,30 +137,41 @@ function seleccionarPuesto() {
  */
 function buscarEmpleado() {
     $("#busqueda-nomina-relicario").on("keyup", function () {
-
-        // Obtener valores de los filtros
-        let textoBusqueda = $(this).val().toLowerCase().trim();
-        let id_departamento = parseInt($('#filtro_departamento').val());
-        let id_puestoEspecial = parseInt($('#filtro_puesto').val());
-
-        // Paso 1: Filtrar por departamento
-        let resultado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, id_departamento);
-
-        // Paso 2: Filtrar por puesto
-        resultado = filtrarEmpleadosPorPuesto(resultado, id_puestoEspecial);
-
-        // Paso 3: Filtrar por búsqueda (si hay texto)
-        if (textoBusqueda !== '') {
-            resultado = filtrarEmpleadosPorBusqueda(resultado, textoBusqueda);
-            $('#paginacion-nomina').hide(); // Sin paginación en búsqueda
-        } else {
-            $('#paginacion-nomina').show(); // Con paginación normal
-        }
-
-        // Mostrar los resultados en página 1
-        window.paginaActualNomina = 1;
-        mostrarDatosTabla(resultado, 1);
+        aplicarFiltrosActuales();
     });
+}
+
+/**
+ * ===============================================================
+ * APLICAR TODOS LOS FILTROS ACTUALES (DEPARTAMENTO, PUESTO, BUSQUEDA)
+ * ---------------------------------------------------------------
+ *   - Centraliza la lógica de filtrado para ser usada tras búsquedas
+ *     o ediciones de datos.
+ * ===============================================================
+ */
+function aplicarFiltrosActuales() {
+    // Obtener valores de los filtros
+    let textoBusqueda = $("#busqueda-nomina-relicario").val().toLowerCase().trim();
+    let id_departamento = parseInt($('#filtro_departamento').val());
+    let id_puestoEspecial = parseInt($('#filtro_puesto').val());
+
+    // Paso 1: Filtrar por departamento
+    let resultado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, id_departamento);
+
+    // Paso 2: Filtrar por puesto
+    resultado = filtrarEmpleadosPorPuesto(resultado, id_puestoEspecial);
+
+    // Paso 3: Filtrar por búsqueda (si hay texto)
+    if (textoBusqueda !== '') {
+        resultado = filtrarEmpleadosPorBusqueda(resultado, textoBusqueda);
+        $('#paginacion-nomina').hide(); // Sin paginación en búsqueda
+        window.paginaActualNomina = 1; // Resetear a página 1 en búsqueda
+    } else {
+        $('#paginacion-nomina').show(); // Con paginación normal
+    }
+
+    // Mostrar los resultados
+    mostrarDatosTabla(resultado, window.paginaActualNomina || 1);
 }
 
 /**

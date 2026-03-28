@@ -109,11 +109,12 @@
     color: #1f2937;
 }
 
-.table-nomina-relicario td:nth-child(3),
+
 .table-nomina-relicario td:nth-child(4),
 .table-nomina-relicario td:nth-child(5),
 .table-nomina-relicario td:nth-child(6),
-.table-nomina-relicario td:nth-child(7){
+.table-nomina-relicario td:nth-child(7),
+.table-nomina-relicario td:nth-child(8){
     color: #10b981;
     font-weight: 600;
     background: rgba(16, 185, 129, 0.05);
@@ -123,7 +124,6 @@
 
 
 /* Cambiar el color de las filas en las columnas de DEDUCCIONES (ajustado) */
-.table-nomina-relicario td:nth-child(8),
 .table-nomina-relicario td:nth-child(9),
 .table-nomina-relicario td:nth-child(10),
 .table-nomina-relicario td:nth-child(11),
@@ -134,8 +134,9 @@
 .table-nomina-relicario td:nth-child(16),
 .table-nomina-relicario td:nth-child(17),
 .table-nomina-relicario td:nth-child(18),
-.table-nomina-relicario td:nth-child(20),
-.table-nomina-relicario td:nth-child(22) {
+.table-nomina-relicario td:nth-child(19),
+.table-nomina-relicario td:nth-child(21),
+.table-nomina-relicario td:nth-child(23) {
     color: #ef4444;
     /* Rojo */
     font-weight: 600;
@@ -143,9 +144,10 @@
     font-variant-numeric: tabular-nums;
 }
 
-.table-nomina-relicario td:nth-child(19),
-.table-nomina-relicario td:nth-child(21),
-.table-nomina-relicario td:nth-child(23)
+
+.table-nomina-relicario td:nth-child(20),
+.table-nomina-relicario td:nth-child(22),
+.table-nomina-relicario td:nth-child(24)
  {
    
     color: #000000;
@@ -156,7 +158,7 @@
 }
 
 
-.table-nomina-relicario td:nth-child(25) {
+.table-nomina-relicario td:nth-child(26) {
     background: rgba(59, 130, 246, 0.1);
     color: #1d4ed8;
     font-weight: 700;
@@ -183,6 +185,44 @@
     color: #d1d5db;
     font-weight: 300;
 }
+
+
+/* Estado visual para sueldo a cobrar negativo */
+.sueldo-negativo {
+    background: rgba(239, 68, 68, 0.08) !important;
+    color: #b91c1c !important;
+    font-weight: 700 !important;
+    border-radius: 6px !important;
+    border: none !important;
+}
+
+/* REDONDEO: negativo en rojo, positivo en negro */
+.redondeo-negativo {
+    color: #ef4444;
+    font-weight: 700;
+}
+.redondeo-positivo {
+    color: #000000;
+    font-weight: 700;
+}
+
+
+.pagination {
+     justify-content: center;
+ }
+
+ .pagination .page-link {
+     color: #22c55e;
+     border: none;
+     background: none;
+     font-weight: 500;
+ }
+
+ .pagination .active .page-link {
+     background: #22c55e;
+     color: #fff;
+     border-radius: 6px;
+ }
 
 
 

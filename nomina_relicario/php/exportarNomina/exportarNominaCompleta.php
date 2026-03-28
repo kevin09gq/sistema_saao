@@ -372,10 +372,14 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja)
                 $codigo = $concepto['codigo'] ?? '';
                 $resultado = $concepto['resultado'] ?? 0;
                 if ($resultado != 0) {
-                    if ($codigo === '45') $isrTieneDatos = true;
-                    if ($codigo === '52') $imssTieneDatos = true;
-                    if ($codigo === '16') $infonavitTieneDatos = true;
-                    if ($codigo === '107') $ajustesAlSubTieneDatos = true;
+                    if ($codigo === '45')
+                        $isrTieneDatos = true;
+                    if ($codigo === '52')
+                        $imssTieneDatos = true;
+                    if ($codigo === '16')
+                        $infonavitTieneDatos = true;
+                    if ($codigo === '107')
+                        $ajustesAlSubTieneDatos = true;
                 }
             }
         }
@@ -427,7 +431,8 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja)
 
         // TOTAL PERCEPCIONES
         $columnasParaSumar = ['D', 'E'];
-        if ($comidaTieneDatos) $columnasParaSumar[] = 'F';
+        if ($comidaTieneDatos)
+            $columnasParaSumar[] = 'F';
         $columnasParaSumar[] = 'G';
 
         $primeraColumna = reset($columnasParaSumar);
@@ -440,9 +445,9 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja)
         //=============================
 
         $mapeoConceptos = [
-            '45'  => 'I',   // ISR
-            '52'  => 'J',   // IMSS
-            '16'  => 'K',   // INFONAVIT
+            '45' => 'I',   // ISR
+            '52' => 'J',   // IMSS
+            '16' => 'K',   // INFONAVIT
             '107' => 'L',   // AJUSTES AL SUB
         ];
 
@@ -739,7 +744,7 @@ function obtenerDiaSemanaCorte(string $fechaStr): string
     [$anio, $mes, $dia] = array_map('intval', explode('-', $fechaStr));
     $timestamp = mktime(0, 0, 0, $mes, $dia, $anio);
     $dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
-    return $dias[(int)date('w', $timestamp)];
+    return $dias[(int) date('w', $timestamp)];
 }
 
 /**
@@ -749,7 +754,7 @@ function agruparTicketsPorPrecio(array $tickets): array
 {
     $agrupados = [];
     foreach ($tickets as $ticket) {
-        $precio = (string)$ticket['precio_reja'];
+        $precio = (string) $ticket['precio_reja'];
         $agrupados[$precio][] = $ticket;
     }
     return $agrupados;
@@ -771,17 +776,17 @@ function procesarTicketsParaFila(string $nombre, string $concepto, array $ticket
     }
 
     return [
-        'nombre'        => $nombre,
-        'concepto'      => $concepto,
-        'viernes'       => $rejasPorDia['VIERNES'],
-        'sabado'        => $rejasPorDia['SABADO'],
-        'domingo'       => $rejasPorDia['DOMINGO'],
-        'lunes'         => $rejasPorDia['LUNES'],
-        'martes'        => $rejasPorDia['MARTES'],
-        'miercoles'     => $rejasPorDia['MIERCOLES'],
-        'jueves'        => $rejasPorDia['JUEVES'],
-        'precio'        => $precio,
-        'tipoConcepto'  => 'REJA',
+        'nombre' => $nombre,
+        'concepto' => $concepto,
+        'viernes' => $rejasPorDia['VIERNES'],
+        'sabado' => $rejasPorDia['SABADO'],
+        'domingo' => $rejasPorDia['DOMINGO'],
+        'lunes' => $rejasPorDia['LUNES'],
+        'martes' => $rejasPorDia['MARTES'],
+        'miercoles' => $rejasPorDia['MIERCOLES'],
+        'jueves' => $rejasPorDia['JUEVES'],
+        'precio' => $precio,
+        'tipoConcepto' => 'REJA',
     ];
 }
 
@@ -793,23 +798,23 @@ function procesarNominaParaFila(string $nombre, string $concepto, array $nomina)
     $pagosPorDia = ['VIERNES' => 0.0, 'SABADO' => 0.0, 'DOMINGO' => 0.0, 'LUNES' => 0.0, 'MARTES' => 0.0, 'MIERCOLES' => 0.0, 'JUEVES' => 0.0];
 
     foreach ($nomina as $diaPago) {
-        $dia  = strtoupper($diaPago['dia']);
-        $pago = (float)($diaPago['pago'] ?? 0);
+        $dia = strtoupper($diaPago['dia']);
+        $pago = (float) ($diaPago['pago'] ?? 0);
         if (array_key_exists($dia, $pagosPorDia)) {
             $pagosPorDia[$dia] = $pago;
         }
     }
 
     return [
-        'nombre'       => $nombre,
-        'concepto'     => $concepto,
-        'viernes'      => $pagosPorDia['VIERNES'],
-        'sabado'       => $pagosPorDia['SABADO'],
-        'domingo'      => $pagosPorDia['DOMINGO'],
-        'lunes'        => $pagosPorDia['LUNES'],
-        'martes'       => $pagosPorDia['MARTES'],
-        'miercoles'    => $pagosPorDia['MIERCOLES'],
-        'jueves'       => $pagosPorDia['JUEVES'],
+        'nombre' => $nombre,
+        'concepto' => $concepto,
+        'viernes' => $pagosPorDia['VIERNES'],
+        'sabado' => $pagosPorDia['SABADO'],
+        'domingo' => $pagosPorDia['DOMINGO'],
+        'lunes' => $pagosPorDia['LUNES'],
+        'martes' => $pagosPorDia['MARTES'],
+        'miercoles' => $pagosPorDia['MIERCOLES'],
+        'jueves' => $pagosPorDia['JUEVES'],
         'tipoConcepto' => 'NOMINA',
     ];
 }
@@ -846,7 +851,7 @@ function restarUnDia($fecha)
     $date->modify("-1 day");
 
     // Buscar la abreviatura del mes resultante
-    $mesAbrevNuevo = array_search((int)$date->format("m"), $meses);
+    $mesAbrevNuevo = array_search((int) $date->format("m"), $meses);
 
     // Formatear resultado
     return $date->format("d") . "/" . $mesAbrevNuevo . "/" . $date->format("Y");
@@ -890,7 +895,7 @@ function rangoDeFechas($fechaInicio, $fechaFin)
     $resultado = [];
     foreach ($periodo as $fecha) {
         // Convertir número de mes a abreviatura
-        $mesAbrev = array_search((int)$fecha->format("m"), $meses);
+        $mesAbrev = array_search((int) $fecha->format("m"), $meses);
         $resultado[] = $fecha->format("d") . "/" . $mesAbrev . "/" . $fecha->format("Y");
     }
 
@@ -915,16 +920,17 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
 
     if ($jsonNomina && isset($jsonNomina['departamentos'])) {
         foreach ($jsonNomina['departamentos'] as $departamento) {
-            if (($departamento['nombre'] ?? '') !== 'Corte') continue;
+            if (($departamento['nombre'] ?? '') !== 'Corte')
+                continue;
 
             foreach ($departamento['empleados'] ?? [] as $empleado) {
                 $concepto = $empleado['concepto'] ?? '';
-                $nombre   = $empleado['nombre']   ?? '';
+                $nombre = $empleado['nombre'] ?? '';
 
                 if ($concepto === 'REJA' && !empty($empleado['tickets'])) {
                     $grupos = agruparTicketsPorPrecio($empleado['tickets']);
                     foreach ($grupos as $precio => $ticketsGrupo) {
-                        $filasCorte[] = procesarTicketsParaFila($nombre, $concepto, $ticketsGrupo, (float)$precio);
+                        $filasCorte[] = procesarTicketsParaFila($nombre, $concepto, $ticketsGrupo, (float) $precio);
                     }
                 } elseif ($concepto === 'NOMINA' && !empty($empleado['nomina'])) {
                     $filasCorte[] = procesarNominaParaFila($nombre, $concepto, $empleado['nomina']);
@@ -1047,15 +1053,15 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
     //  AGREGAR FILAS DE DATOS
     //=====================
 
-    $numeroFila     = 7;
+    $numeroFila = 7;
     $numeroEmpleado = 1;   // Contador para la columna N° (A)
-    $filasReja      = [];  // Guardar índices de filas REJA para los totales
+    $filasReja = [];  // Guardar índices de filas REJA para los totales
 
     // Colores para estilo visual
     $colorConcepto = 'F2F2F2';  // fondo columna CONCEPTO GRIS CLARO
-    $colorNomina   = 'FFD6D6';  // fondo filas NOMINA
-    $colorDias     = 'D5F5E3';  // verde claro para columnas de días (REJA)
-    $colorTotales  = 'F2F2F2';  // rojo claro para columnas de totales
+    $colorNomina = 'FFD6D6';  // fondo filas NOMINA
+    $colorDias = 'D5F5E3';  // verde claro para columnas de días (REJA)
+    $colorTotales = 'F2F2F2';  // rojo claro para columnas de totales
 
 
     foreach ($filasCorte as $fila) {
@@ -1133,7 +1139,7 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
             $sheet->setCellValue('M' . $numeroFila, '=K' . $numeroFila . '*L' . $numeroFila);
         }
         $sheet->getStyle('M' . $numeroFila)->applyFromArray([
-            'font'         => ['bold' => true],
+            'font' => ['bold' => true],
             'numberFormat' => ['formatCode' => '$#,##0.00'],
         ]);
 
@@ -1157,9 +1163,9 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
     $filaTotal = $numeroFila;
     $sheet->setCellValue('A' . $filaTotal, 'TOTALES');
     $sheet->getStyle('A' . $filaTotal)->applyFromArray([
-        'font'      => ['bold' => true, 'size' => 12],
+        'font' => ['bold' => true, 'size' => 12],
         'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
-        'fill'      => ['fillType' => 'solid', 'startColor' => ['rgb' => $colorTotales]],
+        'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => $colorTotales]],
     ]);
 
     // Aplicar fondo gris a toda la fila de totales
@@ -1171,7 +1177,7 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
     // Columna K (TOTAL REJAS): Solo sumar filas REJA
     if (!empty($filasReja)) {
         $primeraFila = min($filasReja);
-        $ultimaFila  = max($filasReja);
+        $ultimaFila = max($filasReja);
 
         // Construir fórmula SUM solo para filas REJA (si hay múltiples no contiguas, usar SUM directo)
         // SUMIF busca en una columna (C) el valor 'REJA' y suma los correspondientes en K
@@ -1179,7 +1185,7 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
         $sheet->setCellValue('K' . $filaTotal, '=IF(' . $formulaK . '=0,"",' . $formulaK . ')');
 
         $sheet->getStyle('K' . $filaTotal)->applyFromArray([
-            'font'      => ['bold' => true, 'size' => 12],
+            'font' => ['bold' => true, 'size' => 12],
             'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
         ]);
         $sheet->getStyle('K' . $filaTotal)->getNumberFormat()->setFormatCode('#,##0');
@@ -1191,7 +1197,7 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
     $rangoSumaM = 'M7:M' . ($filaTotal - 1);
     $sheet->setCellValue('M' . $filaTotal, '=IF(SUM(' . $rangoSumaM . ')=0,"",SUM(' . $rangoSumaM . '))');
     $sheet->getStyle('M' . $filaTotal)->applyFromArray([
-        'font'      => ['bold' => true, 'size' => 12],
+        'font' => ['bold' => true, 'size' => 12],
         'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
     ]);
     $sheet->getStyle('M' . $filaTotal)->getNumberFormat()->setFormatCode('$#,##0.00');
@@ -1205,7 +1211,7 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
         'borders' => [
             'allBorders' => [
                 'borderStyle' => Border::BORDER_THIN,
-                'color'       => ['rgb' => '000000'],
+                'color' => ['rgb' => '000000'],
             ],
         ],
     ]);

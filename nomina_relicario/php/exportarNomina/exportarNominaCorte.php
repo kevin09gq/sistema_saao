@@ -39,7 +39,7 @@ function obtenerDiaSemanaCorte(string $fechaStr): string
     [$anio, $mes, $dia] = array_map('intval', explode('-', $fechaStr));
     $timestamp = mktime(0, 0, 0, $mes, $dia, $anio);
     $dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
-    return $dias[(int)date('w', $timestamp)];
+    return $dias[(int) date('w', $timestamp)];
 }
 
 /**
@@ -49,7 +49,7 @@ function agruparTicketsPorPrecio(array $tickets): array
 {
     $agrupados = [];
     foreach ($tickets as $ticket) {
-        $precio = (string)$ticket['precio_reja'];
+        $precio = (string) $ticket['precio_reja'];
         $agrupados[$precio][] = $ticket;
     }
     return $agrupados;
@@ -71,17 +71,17 @@ function procesarTicketsParaFila(string $nombre, string $concepto, array $ticket
     }
 
     return [
-        'nombre'        => $nombre,
-        'concepto'      => $concepto,
-        'viernes'       => $rejasPorDia['VIERNES'],
-        'sabado'        => $rejasPorDia['SABADO'],
-        'domingo'       => $rejasPorDia['DOMINGO'],
-        'lunes'         => $rejasPorDia['LUNES'],
-        'martes'        => $rejasPorDia['MARTES'],
-        'miercoles'     => $rejasPorDia['MIERCOLES'],
-        'jueves'        => $rejasPorDia['JUEVES'],
-        'precio'        => $precio,
-        'tipoConcepto'  => 'REJA',
+        'nombre' => $nombre,
+        'concepto' => $concepto,
+        'viernes' => $rejasPorDia['VIERNES'],
+        'sabado' => $rejasPorDia['SABADO'],
+        'domingo' => $rejasPorDia['DOMINGO'],
+        'lunes' => $rejasPorDia['LUNES'],
+        'martes' => $rejasPorDia['MARTES'],
+        'miercoles' => $rejasPorDia['MIERCOLES'],
+        'jueves' => $rejasPorDia['JUEVES'],
+        'precio' => $precio,
+        'tipoConcepto' => 'REJA',
     ];
 }
 
@@ -93,23 +93,23 @@ function procesarNominaParaFila(string $nombre, string $concepto, array $nomina)
     $pagosPorDia = ['VIERNES' => 0.0, 'SABADO' => 0.0, 'DOMINGO' => 0.0, 'LUNES' => 0.0, 'MARTES' => 0.0, 'MIERCOLES' => 0.0, 'JUEVES' => 0.0];
 
     foreach ($nomina as $diaPago) {
-        $dia  = strtoupper($diaPago['dia']);
-        $pago = (float)($diaPago['pago'] ?? 0);
+        $dia = strtoupper($diaPago['dia']);
+        $pago = (float) ($diaPago['pago'] ?? 0);
         if (array_key_exists($dia, $pagosPorDia)) {
             $pagosPorDia[$dia] = $pago;
         }
     }
 
     return [
-        'nombre'       => $nombre,
-        'concepto'     => $concepto,
-        'viernes'      => $pagosPorDia['VIERNES'],
-        'sabado'       => $pagosPorDia['SABADO'],
-        'domingo'      => $pagosPorDia['DOMINGO'],
-        'lunes'        => $pagosPorDia['LUNES'],
-        'martes'       => $pagosPorDia['MARTES'],
-        'miercoles'    => $pagosPorDia['MIERCOLES'],
-        'jueves'       => $pagosPorDia['JUEVES'],
+        'nombre' => $nombre,
+        'concepto' => $concepto,
+        'viernes' => $pagosPorDia['VIERNES'],
+        'sabado' => $pagosPorDia['SABADO'],
+        'domingo' => $pagosPorDia['DOMINGO'],
+        'lunes' => $pagosPorDia['LUNES'],
+        'martes' => $pagosPorDia['MARTES'],
+        'miercoles' => $pagosPorDia['MIERCOLES'],
+        'jueves' => $pagosPorDia['JUEVES'],
         'tipoConcepto' => 'NOMINA',
     ];
 }
@@ -147,7 +147,7 @@ function restarUnDia($fecha)
     $date->modify("-1 day");
 
     // Buscar la abreviatura del mes resultante
-    $mesAbrevNuevo = array_search((int)$date->format("m"), $meses);
+    $mesAbrevNuevo = array_search((int) $date->format("m"), $meses);
 
     // Formatear resultado
     return $date->format("d") . "/" . $mesAbrevNuevo . "/" . $date->format("Y");
@@ -191,7 +191,7 @@ function rangoDeFechas($fechaInicio, $fechaFin)
     $resultado = [];
     foreach ($periodo as $fecha) {
         // Convertir número de mes a abreviatura
-        $mesAbrev = array_search((int)$fecha->format("m"), $meses);
+        $mesAbrev = array_search((int) $fecha->format("m"), $meses);
         $resultado[] = $fecha->format("d") . "/" . $mesAbrev . "/" . $fecha->format("Y");
     }
 
@@ -208,16 +208,17 @@ $filasCorte = [];
 
 if ($jsonNomina && isset($jsonNomina['departamentos'])) {
     foreach ($jsonNomina['departamentos'] as $departamento) {
-        if (($departamento['nombre'] ?? '') !== 'Corte') continue;
+        if (($departamento['nombre'] ?? '') !== 'Corte')
+            continue;
 
         foreach ($departamento['empleados'] ?? [] as $empleado) {
             $concepto = $empleado['concepto'] ?? '';
-            $nombre   = $empleado['nombre']   ?? '';
+            $nombre = $empleado['nombre'] ?? '';
 
             if ($concepto === 'REJA' && !empty($empleado['tickets'])) {
                 $grupos = agruparTicketsPorPrecio($empleado['tickets']);
                 foreach ($grupos as $precio => $ticketsGrupo) {
-                    $filasCorte[] = procesarTicketsParaFila($nombre, $concepto, $ticketsGrupo, (float)$precio);
+                    $filasCorte[] = procesarTicketsParaFila($nombre, $concepto, $ticketsGrupo, (float) $precio);
                 }
             } elseif ($concepto === 'NOMINA' && !empty($empleado['nomina'])) {
                 $filasCorte[] = procesarNominaParaFila($nombre, $concepto, $empleado['nomina']);
@@ -260,7 +261,7 @@ if ($jsonNomina) {
     //$fecha_inicio = $jsonNomina['fecha_inicio'] ?? 'Fecha Inicio';
     //$fecha_cierre = $jsonNomina['fecha_cierre'] ?? 'Fecha Cierre';
     $fecha_inicio = restarUnDia($jsonNomina['fecha_inicio']) ?? 'Fecha Inicio';
-    $fecha_cierre =  restarUnDia($jsonNomina['fecha_cierre']) ?? 'Fecha Cierre';
+    $fecha_cierre = restarUnDia($jsonNomina['fecha_cierre']) ?? 'Fecha Cierre';
     $ano = date('Y');
 } else {
     $fecha_inicio = 'Fecha Inicio';
@@ -411,15 +412,15 @@ foreach ($anchos as $col => $ancho) {
 //  AGREGAR FILAS DE DATOS
 //=====================
 
-$numeroFila     = 7;
+$numeroFila = 7;
 $numeroEmpleado = 1;   // Contador para la columna N° (A)
-$filasReja      = [];  // Guardar índices de filas REJA para los totales
+$filasReja = [];  // Guardar índices de filas REJA para los totales
 
 // Colores para estilo visual
 $colorConcepto = 'F2F2F2';  // fondo columna CONCEPTO GRIS CLARO
-$colorNomina   = 'FFD6D6';  // fondo filas NOMINA
-$colorDias     = 'D5F5E3';  // verde claro para columnas de días (REJA)
-$colorTotales  = 'E0E0E0';  // rojo claro para columnas de totales
+$colorNomina = 'FFD6D6';  // fondo filas NOMINA
+$colorDias = 'D5F5E3';  // verde claro para columnas de días (REJA)
+$colorTotales = 'E0E0E0';  // rojo claro para columnas de totales
 
 
 foreach ($filasCorte as $fila) {
@@ -472,7 +473,7 @@ foreach ($filasCorte as $fila) {
             // Rejas: número entero
             $sheet->getStyle($col . $numeroFila)->getNumberFormat()->setFormatCode('#,##0');
         }
-    } 
+    }
 
     /*
     $diasCols = [
@@ -530,7 +531,7 @@ foreach ($filasCorte as $fila) {
         $sheet->setCellValue('M' . $numeroFila, '=K' . $numeroFila . '*L' . $numeroFila);
     }
     $sheet->getStyle('M' . $numeroFila)->applyFromArray([
-        'font'         => ['bold' => true],
+        'font' => ['bold' => true],
         'numberFormat' => ['formatCode' => '$#,##0.00'],
     ]);
 
@@ -559,9 +560,9 @@ $filaTotal = $numeroFila;
 
 $sheet->setCellValue('C' . $filaTotal, 'TOTALES');
 $sheet->getStyle('C' . $filaTotal)->applyFromArray([
-    'font'      => ['bold' => true, 'size' => 12],
+    'font' => ['bold' => true, 'size' => 12],
     'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
-    'fill'      => ['fillType' => 'solid', 'startColor' => ['rgb' => $colorTotales]],
+    'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => $colorTotales]],
 ]);
 
 // Aplicar fondo gris a toda la fila de totales
@@ -573,7 +574,7 @@ $sheet->getStyle('A' . $filaTotal . ':M' . $filaTotal)->getFill()
 // Columna K (TOTAL REJAS): Solo sumar filas REJA
 if (!empty($filasReja)) {
     $primeraFila = min($filasReja);
-    $ultimaFila  = max($filasReja);
+    $ultimaFila = max($filasReja);
 
     // Construir fórmula SUM solo para filas REJA (si hay múltiples no contiguas, usar SUM directo)
     $sheet->setCellValue('K' . $filaTotal, '=SUM(K' . $primeraFila . ':K' . $ultimaFila . ')');
@@ -582,7 +583,7 @@ if (!empty($filasReja)) {
     $sheet->setCellValue('K' . $filaTotal, '=SUMIF(C7:C' . ($filaTotal - 1) . ',"REJA",K7:K' . ($filaTotal - 1) . ')');
 
     $sheet->getStyle('K' . $filaTotal)->applyFromArray([
-        'font'      => ['bold' => true, 'size' => 12],
+        'font' => ['bold' => true, 'size' => 12],
         'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
     ]);
     $sheet->getStyle('K' . $filaTotal)->getNumberFormat()->setFormatCode('#,##0');
@@ -593,7 +594,7 @@ if (!empty($filasReja)) {
 // Columna M (TOTAL EFECTIVO): Sumar TODO (REJA + NOMINA)
 $sheet->setCellValue('M' . $filaTotal, '=SUM(M7:M' . ($filaTotal - 1) . ')');
 $sheet->getStyle('M' . $filaTotal)->applyFromArray([
-    'font'      => ['bold' => true, 'size' => 12],
+    'font' => ['bold' => true, 'size' => 12],
     'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
 ]);
 $sheet->getStyle('M' . $filaTotal)->getNumberFormat()->setFormatCode('$#,##0.00');
@@ -609,7 +610,7 @@ $sheet->getStyle('A6:N' . $filaTotal)->applyFromArray([
     'borders' => [
         'allBorders' => [
             'borderStyle' => Border::BORDER_THIN,
-            'color'       => ['rgb' => '000000'],
+            'color' => ['rgb' => '000000'],
         ],
     ],
 ]);

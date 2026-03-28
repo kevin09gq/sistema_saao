@@ -28,7 +28,7 @@ function exportarJornaleroBase() {
             return;
         }
 
-        //if (validarEmpleadosNegativos()) return;
+        if (validarEmpleadosNegativos()) return;
 
         // Mostrar alerta de carga
         Swal.fire({
