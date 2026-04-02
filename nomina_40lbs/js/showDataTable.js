@@ -5,6 +5,11 @@ if (typeof paginaActualNomina === 'undefined') {
 function mostrarDatosTabla(jsonNomina40lbs, pagina = 1) {
     const empleadosPorPagina = 7;
 
+    const sanitizarColorHex = (color) => {
+        const c = String(color || '').trim();
+        return (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/).test(c) ? c : '';
+    };
+
     // Obtener todos los empleados de todos los departamentos o solo del departamento especificado
     let todosEmpleados = [];
     jsonNomina40lbs.departamentos.forEach(depto => {
@@ -80,7 +85,7 @@ function mostrarDatosTabla(jsonNomina40lbs, pagina = 1) {
         const fila = `
             <tr data-clave="${empleado.clave || 'N/A'}" data-id-empresa="${empleado.id_empresa || 1}">
                 <td>${numeroFila}</td>
-                <td>${empleado.nombre}</td>
+                <td style="${sanitizarColorHex(empleado.color_puesto) ? `color:${sanitizarColorHex(empleado.color_puesto)};` : ''}">${empleado.nombre}</td>
                 <td>${formatearValor(empleado.sueldo_neto || 0)}</td>
                 <td>${formatearValor(empleado.incentivo || 0)}</td>
                 <td>${formatearValor(empleado.sueldo_extra_total || 0)}</td>               

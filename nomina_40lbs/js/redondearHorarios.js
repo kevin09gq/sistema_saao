@@ -613,11 +613,14 @@ function imprimirSueldoBasePorHorasTrabajadas(tabulador, empleadosSeleccionados)
                 var minutosExtra = Math.max(0, minutosEmpleado - minDesdeHoraExtra);
                 var costo = parseFloat(itemHoraExtra.costo_por_minuto) || 0;
                 var pagoExtra = minutosExtra * costo;
+                
                 empleado.horas_extra = pagoExtra.toFixed(2);
+                empleado.minutos_extras_trabajados = minutosExtra; // Guardar minutos adicionales
 
                 console.log('Hora extra =>', empleado.nombre, 'minutos_extra:', minutosExtra, 'costo_por_minuto:', costo, 'pago_extra:', pagoExtra);
             } else {
                 empleado.horas_extra = 0;
+                empleado.minutos_extras_trabajados = 0;
             }
 
             // RECALCULAR SUELDO_EXTRA_TOTAL después de asignar horas_extra

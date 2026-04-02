@@ -8,35 +8,39 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <label for="filtro-departamento-tarjeta" class="form-label fw-bold">Filtrar por Departamento:</label>
-                        <select id="filtro-departamento-tarjeta" class="form-select border-primary">
-                            <option value="todos">Todos los departamentos</option>
-                            <!-- Se cargará dinámicamente -->
-                        </select>
-                    </div>
-                    <div class="col-md-6 d-flex align-items-end justify-content-end">
-                        <div class="badge bg-info text-dark p-2 fs-6">
-                            Total Empleados: <span id="total-empleados-tarjeta">0</span>
+            <div class="modal-body p-0">
+                <!-- Sección de Filtros Estática -->
+                <div class="sticky-top bg-white p-3 border-bottom shadow-sm" style="z-index: 1020;">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <label for="filtro-departamento-tarjeta" class="form-label fw-bold mb-1">Filtrar por Departamento:</label>
+                            <select id="filtro-departamento-tarjeta" class="form-select border-primary shadow-sm">
+                                <option value="todos">Todos los departamentos</option>
+                                <!-- Se cargará dinámicamente -->
+                            </select>
+                        </div>
+                        <div class="col-md-6 d-flex justify-content-end align-items-center mt-3 mt-md-0">
+                            <div class="badge bg-info text-dark p-2 fs-6 shadow-sm">
+                                <i class="bi bi-people-fill me-1"></i> Total Empleados: <span id="total-empleados-tarjeta">0</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="table-responsive">
-                    <table class="table table-hover table-bordered align-middle" id="tabla-dispersion-tarjeta">
-                        <thead class="table-light">
-                            <tr>
-                                <th class="text-center" style="width: 50px;">#</th>
-                                <th style="width: 100px;">Clave</th>
-                                <th>Nombre del Empleado</th>
-                                <th class="text-end" style="width: 150px;">Tarjeta ($)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody-dispersion-tarjeta">
-                            <!-- Se cargará dinámicamente -->
-                        </tbody>
+                <div class="p-3">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered align-middle" id="tabla-dispersion-tarjeta">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center" style="width: 50px;">#</th>
+                                    <th style="width: 100px;">Clave</th>
+                                    <th>Nombre del Empleado</th>
+                                    <th class="text-end" style="width: 150px;">Tarjeta ($)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-dispersion-tarjeta">
+                                <!-- Se cargará dinámicamente -->
+                            </tbody>
                         <tfoot class="table-light fw-bold">
                             <tr>
                                 <td colspan="3" class="text-end">TOTAL GENERAL:</td>

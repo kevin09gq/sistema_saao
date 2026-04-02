@@ -45,7 +45,7 @@ function renderizarTablaTarjeta(empleados) {
             totalGeneral += montoTarjeta;
 
             const row = `
-                <tr data-clave="${emp.clave}">
+                <tr data-clave="${emp.clave}" data-tarjeta-copia="${emp.tarjeta_copia || 0}">
                     <td class="text-center">${index + 1}</td>
                     <td><span class="badge bg-light text-dark border">${emp.clave || 'N/A'}</span></td>
                     <td>${emp.nombre || 'SIN NOMBRE'}</td>

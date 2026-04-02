@@ -36,6 +36,18 @@
                     <!-- REGISTROS BIOMETRICO Y HORARIO OFICIALES -->
                     <div class="tab-pane fade" id="tab_registros-40lbs" role="tabpanel" aria-labelledby="tab-registros-40lbs">
 
+                        <!-- Resumen de minutos -->
+                        <div class="row mb-3 bg-light p-2 rounded mx-1 border">
+                            <div class="col-md-6 text-center border-end">
+                                <span class="d-block text-muted small fw-bold text-uppercase">Minutos Trabajados</span>
+                                <span class="fs-5 text-primary fw-bold" id="campo-minutos-trabajados-40lbs">0</span>
+                            </div>
+                            <div class="col-md-6 text-center">
+                                <span class="d-block text-muted small fw-bold text-uppercase">Minutos Extras</span>
+                                <span class="fs-5 text-success fw-bold" id="campo-minutos-extras-40lbs">0</span>
+                            </div>
+                        </div>
+
                         <!-- Botones para cambiar vista como mini-tabs -->
                         <div class="d-flex justify-content-center mb-3">
                             <div class="btn-group" role="group" aria-label="Vista de registros">

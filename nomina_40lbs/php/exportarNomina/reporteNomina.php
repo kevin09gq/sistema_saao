@@ -506,6 +506,43 @@ if ($contadorEmpleados > 0) {
             $pdf->Cell(50, 6, formatoMoneda($monto), 0, 1, 'R');
         }
     }
+
+    //=====================================
+    // PÁGINA FINAL: HORARIO SEMANAL
+    //=====================================
+    if (isset($datosNomina['horarios_semanales']) && !empty($datosNomina['horarios_semanales'])) {
+        $pdf->AddPage();
+        $pdf->SetFont('helvetica', 'B', 16);
+        $pdf->Cell(0, 12, 'HORARIO SEMANAL DE TRABAJO', 0, 1, 'C');
+        $pdf->Ln(10);
+
+        // Encabezados de tabla
+        $pdf->SetFont('helvetica', 'B', 11);
+        $pdf->SetFillColor(240, 240, 240);
+        $pdf->Cell(40, 10, 'DÍA', 1, 0, 'C', true);
+        $pdf->Cell(35, 10, 'ENTRADA', 1, 0, 'C', true);
+        $pdf->Cell(40, 10, 'SALIDA COMIDA', 1, 0, 'C', true);
+        $pdf->Cell(40, 10, 'ENTRADA COMIDA', 1, 0, 'C', true);
+        $pdf->Cell(35, 10, 'SALIDA', 1, 1, 'C', true);
+
+        // Definir orden de la semana (Viernes a Jueves)
+        $diasFijos = ['Viernes', 'Sábado', 'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves'];
+        $horariosIndexados = [];
+        foreach ($datosNomina['horarios_semanales'] as $h) {
+            $horariosIndexados[$h['dia']] = $h;
+        }
+
+        $pdf->SetFont('dejavusans', '', 10);
+        foreach ($diasFijos as $dia) {
+            $h = isset($horariosIndexados[$dia]) ? $horariosIndexados[$dia] : null;
+
+            $pdf->Cell(40, 8, $dia, 1, 0, 'L');
+            $pdf->Cell(35, 8, ($h && !empty($h['entrada']) ? $h['entrada'] : '-'), 1, 0, 'C');
+            $pdf->Cell(40, 8, ($h && !empty($h['entrada_comida']) ? $h['entrada_comida'] : '-'), 1, 0, 'C');
+            $pdf->Cell(40, 8, ($h && !empty($h['termino_comida']) ? $h['termino_comida'] : '-'), 1, 0, 'C');
+            $pdf->Cell(35, 8, ($h && !empty($h['salida']) ? $h['salida'] : '-'), 1, 1, 'C');
+        }
+    }
 }
 
 // Descarga
