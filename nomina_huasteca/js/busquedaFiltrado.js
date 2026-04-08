@@ -5,7 +5,6 @@ seleccionarPuesto();
 buscarEmpleado();
 limpiarBusqueda();
 obtenerDepartamentos();
-obtenerPuestos(12);
 eventoSelectDepartamento();
 
 
@@ -24,21 +23,26 @@ function obtenerDepartamentos() {
 
             const data = response.data;
 
-            // Se agrega el departamento de Corte de forma manual, ya que no se encuentra en la base de datos, pero es necesario para el filtro
+            // Se agrega el departamento de Corte de forma manual (id_area 2), ya que no se encuentra en la base de datos de Huasteca (area 3)
             data.push({
                 "id_departamento": 800,
                 "nombre_departamento": "Corte",
-                "id_area": 4
+                "id_area": 2
             });
 
             let tmp = '';
 
-            // El valor por defecto es el departamento 12 (Jornaleros), por eso se marca como selected
+            // Intentar usar el primer departamento de la base de datos como default
+            let defaultDepto = data.length > 0 ? data[0].id_departamento : 11;
+
             data.forEach(element => {
-                tmp += `<option ${element.id_departamento === 12 ? 'selected' : ''} value="${element.id_departamento}">${element.nombre_departamento}</option>`;
+                tmp += `<option ${element.id_departamento === defaultDepto ? 'selected' : ''} value="${element.id_departamento}">${element.nombre_departamento}</option>`;
             });
 
             $('#filtro_departamento').html(tmp);
+
+            // Cargar los puestos del departamento seleccionado por defecto
+            obtenerPuestos(defaultDepto);
 
         }
     });
@@ -304,3 +308,4 @@ function eventoSelectDepartamento() {
         obtenerPuestos(id_departamento);
     });
 }
+

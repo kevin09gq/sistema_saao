@@ -60,8 +60,14 @@ function restoreNomina() {
 
         // Renderizar tabla restaurada
         if (typeof mostrarDatosTabla === 'function') {
-            // Filtrar empleados con id_tipo_puesto 1
-            let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, 7);
+            let id_departamento = parseInt($('#filtro_departamento').val());
+
+            // Si el select aún no tiene valor válido, usar el primer departamento del JSON
+            if (!id_departamento && jsonNominaRelicario.departamentos && jsonNominaRelicario.departamentos.length > 0) {
+                id_departamento = jsonNominaRelicario.departamentos[0].id_departamento;
+            }
+
+            let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, id_departamento);
             mostrarDatosTabla(jsonFiltrado, 1);
         }
 

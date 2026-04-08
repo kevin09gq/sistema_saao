@@ -58,7 +58,7 @@
                         <span class="link-text">Nóminas</span>
                     </a>
                     <ul class="submenu dropdown-menu" aria-labelledby="nominasDropdown">
-                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina/views/nomina.php">40 lbs</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_40lbs/views/nomina_40lbs.php">40 lbs</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_confianza/views/nomina_confianza.php">Confianza</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_relicario/views/nomina_relicario.php">Rancho Relicario</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_pilar/views/nomina_pilar.php">Rancho Pilar</a></li>

@@ -29,7 +29,7 @@ function loadNomina() {
 }
 
 function clearNomina() {
-   try {
+    try {
         localStorage.removeItem('jsonNominaPalmilla');
         window.jsonNominaPalmilla = null;
 
@@ -80,12 +80,17 @@ function restoreNomina() {
         }
 
         // Renderizar tabla restaurada
+        // Renderizar tabla restaurada
         if (typeof mostrarDatosTabla === 'function') {
-            // Filtrar empleados con id_departamento = 14
-            let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaPalmilla, 14);
+            let id_departamento = parseInt($('#filtro_departamento').val());
+
+            // Si el select aún no tiene valor válido, usar el primer departamento del JSON
+            if (!id_departamento && jsonNominaPalmilla.departamentos && jsonNominaPalmilla.departamentos.length > 0) {
+                id_departamento = jsonNominaPalmilla.departamentos[0].id_departamento;
+            }
+
+            let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaPalmilla, id_departamento);
             mostrarDatosTabla(jsonFiltrado, 1);
-        } else {
-            console.warn('[restoreNomina] mostrarDatosTabla no disponible.');
         }
 
         if (typeof actualizarCabeceraNomina === 'function') {

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nómina Relicario</title>
+    <title>Nómina relicario</title>
     <?php
     include "../../config/config.php";
     verificarSesion(); // Proteger esta página
@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="../css/modalCoordinador.css">
     <link rel="stylesheet" href="../css/modalJornaleros.css">
     <link rel="stylesheet" href="../css/conceptos_totales.css">
+    <link rel="stylesheet" href="../css/ticket_manual.css">
 
     <link rel="stylesheet" href="<?= JQUERY_UI_CSS ?>">
 
@@ -38,7 +39,7 @@
     <div class="container-nomina_relicario" id="container-nomina_relicario" hidden>
         <!-- Contenedor tipo navbar para formulario y filtros -->
         <div class="navbar-nomina_relicario">
-            <div class="titulo-nomina_relicario">Procesamiento de Nómina Relicario</div>
+            <div class="titulo-nomina_relicario">Procesamiento de Nómina relicario</div>
             <div class="subtitulo-nomina_relicario">Selecciona los archivos Excel para procesar la información</div>
 
             <form id="form_excel_raya" enctype="multipart/form-data" class="form-nomina-inline-relicario">
@@ -46,13 +47,15 @@
                     <label for="archivo_excel_lista_raya_relicario">
                         <i class="bi bi-file-earmark-excel-fill"></i> Lista de Raya
                     </label>
-                    <input type="file" id="archivo_excel_lista_raya_relicario" name="archivo_excel_lista_raya_relicario" accept=".xls,.xlsx" required>
+                    <input type="file" id="archivo_excel_lista_raya_relicario" name="archivo_excel_lista_raya_relicario"
+                        accept=".xls,.xlsx" required>
                 </div>
                 <div>
                     <label for="archivo_excel_biometrico_relicario">
                         <i class="bi bi-file-earmark-excel-fill"></i> Biometrico
                     </label>
-                    <input type="file" id="archivo_excel_biometrico_relicario" name="archivo_excel_biometrico_relicario" accept=".xls,.xlsx" required>
+                    <input type="file" id="archivo_excel_biometrico_relicario" name="archivo_excel_biometrico_relicario"
+                        accept=".xls,.xlsx" required>
                 </div>
                 <div>
                     <button type="button" id="btn_procesar_nomina_relicario" class="btn-procesar-nomina_relicario">
@@ -64,30 +67,68 @@
     </div>
 
     <!-- Contenedor de Configuración de Valores -->
-    <div class="container mt-5 mb-5" id="config-valores-relicario" hidden>
+    <div class="container py-5" id="config-valores-relicario" hidden>
         <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title text-center mb-4">
-                            <i class="bi bi-gear"></i> Configuración de Valores
-                        </h5>
-                        <div class="mb-3">
-                            <label for="precio_pasaje_relicario" class="form-label">Precio del Pasaje</label>
-                            <input type="number" id="precio_pasaje_relicario" class="form-control" placeholder="Ej. 50.00" step="0.01" min="0">
+            <div class="col-lg-11">
+                <div class="card border-0 shadow-sm">
+                    <div class="row g-0">
+                        <!-- Columna Izquierda: Valores Económicos -->
+                        <div class="col-md-5 bg-light p-4 border-end">
+                            <h6 class="text-uppercase fw-bold text-dark mb-4">Valores Económicos</h6>
+
+                            <div class="mb-4">
+                                <label for="precio_pasaje_relicario" class="form-label">Precio Pasaje</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" id="precio_pasaje_relicario" class="form-control form-control-sm" placeholder="0.00" step="0.01" min="0">
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="pago_tardeada_relicario" class="form-label">Pago Tardeada</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" id="pago_tardeada_relicario" class="form-control form-control-sm" placeholder="0.00" step="0.01" min="0">
+                                </div>
+                            </div>
+
+                            <div class="mb-0">
+                                <label for="pago_comida_relicario" class="form-label">Pago Comida</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" id="pago_comida_relicario" class="form-control form-control-sm" placeholder="0.00" step="0.01" min="0">
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="pago_tardeada_relicario" class="form-label">Pago Tardeada</label>
-                            <input type="number" id="pago_tardeada_relicario" class="form-control" placeholder="Ej. 25.00" step="0.01" min="0">
-                        </div>
-                        <div class="mb-3">
-                            <label for="pago_comida_relicario" class="form-label">Pago Comida</label>
-                            <input type="number" id="pago_comida_relicario" class="form-control" placeholder="Ej. 25.00" step="0.01" min="0">
-                        </div>
-                        <div class="d-grid gap-2">
-                            <button class="btn btn-primary btn-lg" id="btn_config_avanzar_relicario" type="button">
-                                <i class="bi bi-arrow-right"></i> Avanzar
-                            </button>
+
+                        <!-- Columna Derecha: Configuración de Horarios -->
+                        <div class="col-md-7 p-4">
+                            <h6 class="text-uppercase fw-bold text-dark mb-4">Asignación de Horarios</h6>
+
+                            <div class="table-responsive">
+                                <table class="table table-hover table-sm align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="text-start fw-semibold text-secondary">Departamento</th>
+                                            <th class="text-center fw-semibold text-secondary">Horario</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabla-config-horarios">
+                                        <tr>
+                                            <td colspan="2" class="text-center py-4">
+                                                <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                                                <span class="text-muted small">Cargando...</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="mt-4 text-end">
+                                <button class="btn btn-primary" id="btn_config_avanzar_relicario" type="button">
+                                    Procesar Nómina <i class="bi bi-arrow-right-short ms-2"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -95,45 +136,56 @@
         </div>
     </div>
 
+
     <div class="container-tabla-nomina-relicario" id="tabla-nomina-responsive" hidden>
         <div class="header-tabla-relicario">
             <h3 id=nombre_nomina></h3>
             <div class="header-controls-relicario">
                 <span class="sem-info-relicario" id="num_semana"></span>
-                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalCorte" title="Tickes de Corte de Rejas">
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
+                    data-bs-target="#modalCorte" title="Tickes de Corte de Rejas">
                     <i class="bi bi-truck"></i>
                 </button>
-                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_actualizar_biometrico" title="Actualizar Biometrico" aria-label="Actualizar Biometrico">
+                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_actualizar_biometrico"
+                    title="Actualizar Biometrico" aria-label="Actualizar Biometrico">
                     <i class="bi bi-person-badge"></i>
                 </button>
-                <button class="btn btn-outline-primary actualizar-valores" type="button" id="btn_actualizar_valores" title="Actualizar Valores" aria-label="Actualizar Valores pasaje y tardeada">
+                <button class="btn btn-outline-primary actualizar-valores" type="button" id="btn_actualizar_valores"
+                    title="Actualizar Valores" aria-label="Actualizar Valores pasaje y tardeada">
                     <i class="bi bi-gear"></i>
                 </button>
-                <button class="btn btn-outline-primary quitrar-comida-pasaje" type="button" id="btn_quitar_comida_pasaje" title="Quitar Comida y Pasaje" aria-label="Quitar Comida y Pasaje">
+                <button class="btn btn-outline-primary quitrar-comida-pasaje" type="button"
+                    id="btn_quitar_comida_pasaje" title="Quitar Comida y Pasaje" aria-label="Quitar Comida y Pasaje">
                     <i class="bi bi-x-circle"></i>
                 </button>
-                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_establecer_dias_justificados" title="dias justificados" aria-label="dias-justificados">
+                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_establecer_dias_justificados"
+                    title="dias justificados" aria-label="dias-justificados">
                     <i class="bi bi-check-circle"></i>
                 </button>
                 <button class="btn btn-outline-primary" id="btn-seleccionar-empleados" title="Seleccionar empleados">
                     <i class="bi bi-people"></i>
                 </button>
-                <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global" title="Aplicar Tarjeta">
+                <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global"
+                    title="Aplicar Tarjeta">
                     <i class="bi bi-arrow-clockwise"></i>
                 </button>
-                <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta" aria-label="Quitar tarjeta">
+                <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta"
+                    aria-label="Quitar tarjeta">
                     <i class="bi bi-credit-card-2-back"></i>
                 </button>
-                <button class="btn btn-outline-primary btn-suma" type="button" id="btn_conceptos_totales" title="Totales por concepto" aria-label="Totales por concepto">
+                <button class="btn btn-outline-primary btn-suma" type="button" id="btn_conceptos_totales"
+                    title="Totales por concepto" aria-label="Totales por concepto">
                     <i class="bi bi-calculator"></i>
                 </button>
-                <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf" title="Descargar Ticket">
-                    <i class="bi bi-ticket-perforated"></i>
+                <button class="btn btn-outline-danger" id="btn_modal_olvidos_masivos" title="Perdonar olvidos de checador">
+                    <i class="bi bi-clipboard-check"></i>
                 </button>
-                <button class="btn btn-outline-secondary btn-ticket-zebra" id="btn_ticket_manual" title="Descargar Ticket Manual">
-                    <i class="bi bi-ticket-perforated"></i>
+                <button class="btn btn-outline-primary" id="btn_modal_dias_extra" title="Agregar día extra jornaleros">
+                    <i class="bi bi-calendar-plus"></i>
                 </button>
-
+                 <button class="btn btn-outline-secondary" id="btn_abrir_modal_reasignar" title="Reasignar Empleado de Departamento">
+                    <i class="bi bi-person-fill-gear"></i>
+                </button>
             </div>
         </div>
 
@@ -154,7 +206,8 @@
                 <div class="busqueda-container-relicario" id="busqueda-container">
                     <i class="bi bi-search"></i>
                     <input type="text" class="campo-busqueda-relicario" placeholder="Buscar..." id="busqueda-nomina-relicario">
-                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="btn-clear-busqueda" title="Limpiar">
+                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="btn-clear-busqueda"
+                        title="Limpiar">
                         <i class="bi bi-x-circle"></i>
                     </button>
                 </div>
@@ -224,7 +277,8 @@
 
                 </table>
             </div>
-            <ul id="paginacion-nomina" class="pagination my-5" style="margin: 20px 0 0 0; justify-content: center;"></ul>
+            <ul id="paginacion-nomina" class="pagination my-5" style="margin: 20px 0 0 0; justify-content: center;">
+            </ul>
         </div>
 
 
@@ -259,33 +313,41 @@
     </div>
 
     <!-- Menú contextual simple para la tabla -->
-    <div id="context-menu" style="position:absolute;z-index:10000;display:none;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);padding:4px;">
+    <div id="context-menu"
+        style="position:absolute;z-index:10000;display:none;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);padding:4px;">
         <div class="cm-item" data-action="ver" style="padding:6px 12px;cursor:pointer;">Ver detalles</div>
     </div>
     <!-- Menú contextual simple para la tabla de corte -->
-    <div id="context_menu_corte" style="position:absolute;z-index:10000;display:none;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);padding:4px;">
+    <div id="context_menu_corte"
+        style="position:absolute;z-index:10000;display:none;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);padding:4px;">
         <div class="cm_item_corte" data-action="ver" style="padding:6px 12px;cursor:pointer;">🔎​ Ver detalles</div>
     </div>
 
 
     <!-- Incluir los modales -->
-    <?php include "modalCoordinador.php"; ?>
-    <?php include "modalJornaleros.php"; ?>
-    <?php include "modalTipoDia.php"; ?>
-    <?php include "biometricoModal.php"; ?>
-    <?php include "modalSeleccionarEmpleados.php"; ?>
-    <?php include "modalTardeadaPasaje.php"; ?>
-    <?php include "modalDiasInhabiles.php"; ?>
-    <?php include "modalQuitarComidaPasaje.php"; ?>
-    <?php include "modalConceptosTotales.php"; ?>
-    <?php include "modalExportarNomina.php"; ?>
-    <?php include "modalSeleccionarEmpleados.php"; ?>
-    <?php include "modal_ticket_manual.php"; ?>
+    <?php include "modals/modalCoordinador.php"; ?>
+    <?php include "modals/modalJornaleros.php"; ?>
+    <?php include "modals/modalTipoDia.php"; ?>
+    <?php include "modals/biometricoModal.php"; ?>
+    <?php include "modals/modalSeleccionarEmpleados.php"; ?>
+    <?php include "modals/modalTardeadaPasaje.php"; ?>
+    <?php include "modals/modalDiasInhabiles.php"; ?>
+    <?php include "modals/modalQuitarComidaPasaje.php"; ?>
+    <?php include "modals/modalConceptosTotales.php"; ?>
+    <?php include "modals/modalExportarNomina.php"; ?>
+    <?php include "modals/modalSeleccionarEmpleados.php"; ?>
+    <?php include "modals/modalDiasExtra.php"; ?>
+    <?php include "modals/modalOlvidos.php"; ?>
+    <?php include "modals/modalReasignarEmpleado.php"; ?>
+
 
     <!-- Modal para los cortes -->
-    <?php include "modalCorte.php"; ?>
-    <?php include "modalCorteNominaEditar.php"; ?>
-    <?php include "modalCorteEditar.php"; ?>
+    <?php include "modals/modalCorte.php"; ?>
+    <?php include "modals/modalCorteNominaEditar.php"; ?>
+    <?php include "modals/modalCorteEditar.php"; ?>
+
+
+
 
 
 
@@ -298,34 +360,39 @@
     <script src="<?= BOOTSTRAP_JS ?>"></script>
     <!-- Archivo JS específico -->
     <script src="../js/process_excel.js"></script>
+
+    <!-- Archivos JS para funcionalidades adicionales -->
     <script src="../js/showDataTable.js"></script>
     <script src="../js/configComponentes.js"></script>
     <script src="../js/saveGetNomina.js"></script>
-    <script src="../js/storage.js"></script>
     <script src="../js/busquedaFiltrado.js"></script>
+    <script src="../js/storage.js"></script>
     <script src="../js/abrirModal.js"></script>
-    <script src="../js/actualizarBiomtrico.js"></script>
-    <script src="../js/seleccionar_empleados.js"></script>
-    <script src="../js/configModalCoordinador/configModal.js"></script>
+
     <script src="../js/configModalCoordinador/establecerData.js"></script>
+    <script src="../js/configModalCoordinador/configModal.js"></script>
     <script src="../js/configModalCoordinador/editarData.js"></script>
     <script src="../js/configModalCoordinador/newConcepts.js"></script>
     <script src="../js/configModalCoordinador/eventos.js"></script>
     <script src="../js/configModalCoordinador/justificacionCoordinador.js"></script>
+
+    <script src="../js/configModalJornaleros/sueldoSemanal.js"></script>
     <script src="../js/configModalJornaleros/establecerData.js"></script>
     <script src="../js/configModalJornaleros/editarData.js"></script>
     <script src="../js/configModalJornaleros/configModal.js"></script>
     <script src="../js/configModalJornaleros/sueldoSemanal.js"></script>
     <script src="../js/configModalJornaleros/eventos.js"></script>
     <script src="../js/configModalJornaleros/newConcepts.js"></script>
-    <script src="../js/tardeadaPasaje.js"></script>
-    <script src="../js/conceptos_totales.js"></script>
-    <script src="../js/exportarNominaExcel.js"></script>
-    <script src="../js/ticket_manual.js"></script>
-    <script src="../js/ticket_pdf.js"></script>
-    <script src="../js/ticket_seleccion_relicario.js"></script>
+    <script src="../js/configModalJornaleros/agregarDiasTrabajados.js"></script>
 
-    <!-- JS PARA EL CORTE -->
+    <script src="../js/configModales/actualizarBiomtrico.js"></script>
+    <script src="../js/configModales/exportarNominaExcel.js"></script>
+    <script src="../js/configModales/olvidosMasivos.js"></script>
+    <script src="../js/configModales/conceptos_totales.js"></script>
+    <script src="../js/configModales/seleccionar_empleados.js"></script>
+    <script src="../js/configModales/tardeadaPasaje.js"></script>
+    <script src="../js/configModales/reasignarEmpleado.js"></script>
+
     <script src="../js/configModalCorte/configCorte.js"></script>
     <script src="../js/configModalCorte/showTablaCorte.js"></script>
     <script src="../js/configModalCorte/abrirModalDetallesCorte.js"></script>

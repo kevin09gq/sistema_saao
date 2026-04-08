@@ -6,25 +6,56 @@ if (!$conexion) {
     die(json_encode(array("error" => true, "message" => "Error de conexión: " . mysqli_connect_error())));
 }
 
-// Consulta para obtener todos las festividades
-$sql = "SELECT id_festividad, nombre, DATE_FORMAT(fecha, '%d/%m/%Y') AS fecha_vista FROM festividades ORDER BY fecha";
-$resultado = mysqli_query($conexion, $sql);
+$anio = isset($_GET['anio']) ? (int)$_GET['anio'] : null;
 
-// Verificar si hay resultados
-if (!$resultado) {
-    die(json_encode(array("error" => true, "message" => "Error en la consulta: " . mysqli_error($conexion))));
+// Consulta base
+if (!empty($anio)) {
+
+    $sql = "SELECT 
+                id_festividad, 
+                nombre, 
+                DATE_FORMAT(fecha, '%d/%m/%Y') AS fecha_vista 
+            FROM festividades 
+            WHERE YEAR(fecha) = ?
+            ORDER BY fecha";
+
+    $stmt = $conexion->prepare($sql);
+
+    if (!$stmt) {
+        die(json_encode(array("error" => true, "message" => "Error en prepare: " . $conexion->error)));
+    }
+
+    $stmt->bind_param("i", $anio);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+
+} else {
+
+    // Si NO se envía año → traer todo (como ya lo hacías)
+    $sql = "SELECT 
+                id_festividad, 
+                nombre, 
+                DATE_FORMAT(fecha, '%d/%m/%Y') AS fecha_vista 
+            FROM festividades 
+            ORDER BY fecha";
+
+    $resultado = $conexion->query($sql);
+
+    if (!$resultado) {
+        die(json_encode(array("error" => true, "message" => "Error en la consulta: " . $conexion->error)));
+    }
 }
 
-$turnos = array();
+// Arreglo de resultados
+$festividades = array();
 
-// Obtener cada fila como un array asociativo
-while ($fila = mysqli_fetch_assoc($resultado)) {
-    $turnos[] = $fila;
+while ($fila = $resultado->fetch_assoc()) {
+    $festividades[] = $fila;
 }
 
-// Devolver los turnos como JSON
-echo json_encode($turnos);
+// Respuesta JSON
+echo json_encode($festividades, JSON_UNESCAPED_UNICODE);
 
-// Cerrar la conexión
-mysqli_close($conexion);
+// Cerrar conexión
+$conexion->close();
 ?>

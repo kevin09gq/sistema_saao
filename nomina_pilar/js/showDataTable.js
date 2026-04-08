@@ -74,7 +74,7 @@ function mostrarDatosTabla(jsonNominaPilar, pagina = 1) {
 
 
         const fila = `
-            <tr data-clave="${empleado.clave || 'N/A'}" data-id-empresa="${empleado.id_empresa || 1}" data-id-departamento="${empleado.id_departamento || 0}">
+            <tr data-clave="${empleado.clave || 'N/A'}" data-id-empresa="${empleado.id_empresa || 1}" data-id-departamento="${empleado.id_departamento || 0}" data-tipo-horario="${empleado.tipo_horario || 0}">
                 <td>${numeroFila}</td>
                 <td>${empleado.nombre}</td>
                 <td class="text-center"><strong>${parseInt(empleado.dias_trabajados) > 0 ? empleado.dias_trabajados : '<span class="valor-vacio">—</span>'}</strong></td>
@@ -118,8 +118,6 @@ function mostrarDatosTabla(jsonNominaPilar, pagina = 1) {
     // Crear la paginación
     paginarTabla(jsonNominaPilar, todosEmpleados.length, pagina, empleadosPorPagina);
 }
-
-
 
 function paginarTabla(jsonNominaPilar, totalEmpleados, paginaActual, empleadosPorPagina) {
     // Calcular total de páginas

@@ -246,12 +246,6 @@ verificarSesion(); // Proteger esta página
                                             <label for="nombre_departamento" class="form-label">Nombre del Departamento</label>
                                             <input type="text" class="form-control" id="nombre_departamento" name="nombre_departamento" required>
                                         </div>
-                                        <div class="mb-3">
-                                            <label for="id_area_departamento" class="form-label">Área perteneciente</label>
-                                            <select class="form-select" name="id_area_departamento" id="id_area_departamento">
-                                                <!-- Se llenará dinámicamente con las áreas disponibles -->
-                                            </select>
-                                        </div>
                                         <div class="form-actions">
                                             <button type="submit" class="btn btn-success" id="btn-guardar-departamento"><i class="bi bi-save"></i> Guardar</button>
                                             <button type="button" class="btn btn-secondary" id="btn-cancelar-departamento"><i class="bi bi-x-circle"></i> Cancelar</button>
@@ -260,6 +254,69 @@ verificarSesion(); // Proteger esta página
                                 </div>
                             </div>
                         </div>
+
+                        <hr class="m-5">
+
+                        <div class="row">
+                            <div class="col-md-7" id="areas-departamentos-list-container">
+                                <div class="table-container" id="areas-departamentos-table-container">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5><i class="bi bi-list-ul me-2"></i>Áreas y sus Departamentos</h5>
+                                        <div class="search-box-container">
+                                            <input type="text" class="search-box" id="search-areas-departamentos" placeholder="Buscar area...">
+                                        </div>
+                                    </div>
+                                    <div class="table-responsive" id="areas-departamentos-table-responsive">
+                                        <table class="table table-hover" id="tabla-areas-departamentos">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Área</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="areas-departamentos-tbody">
+                                                <!-- Ejemplo de registros -->
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Formulario para relacionar un puesto con un departamento -->
+                            <div class="col-md-5">
+                                <div class="form-container">
+                                    <h5 class="mb-3"><i class="bi bi-plus-circle"></i> Asignar departamentos a areas</h5>
+                                    <form id="departamento_area_form" method="post">
+
+                                        <input type="number" id="area_departamento_id" name="area_departamento_id" hidden>
+
+                                        <div class="mb-3">
+                                            <label for="select_area_departamento" class="form-label">Area</label>
+                                            <select class="form-select" name="select_area_departamento" id="select_area_departamento">
+                                                <!-- Se llenará dinámicamente con las áreas disponibles -->
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="select_departamento_area" class="form-label">Departamento</label>
+                                            <select class="form-select" name="select_departamento_area" id="select_departamento_area">
+                                                <!-- Se llenará dinámicamente con las áreas disponibles -->
+                                            </select>
+                                        </div>
+
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn btn-success" id="btn_guardar_departamento_area"><i class="bi bi-save"></i> Guardar</button>
+                                            <button type="button" class="btn btn-secondary" id="btn_cancelar_departamento_area"><i class="bi bi-x-circle"></i> Cancelar</button>
+
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+
                     </div>
 
                     <!-- NÓMINAS -->
@@ -280,6 +337,7 @@ verificarSesion(); // Proteger esta página
                                                 <tr>
                                                     <th>ID</th>
                                                     <th>Nombre</th>
+                                                    <th>Área</th>
                                                     <th>Acciones</th>
                                                 </tr>
                                             </thead>
@@ -299,6 +357,12 @@ verificarSesion(); // Proteger esta página
                                         <div class="mb-3">
                                             <label for="nombre_nomina" class="form-label">Nombre de la Nómina</label>
                                             <input type="text" class="form-control" id="nombre_nomina" name="nombre_nomina" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="select_area_nomina" class="form-label">Área vinculada</label>
+                                            <select class="form-select" id="select_area_nomina" name="id_area" required>
+                                                <!-- Se llenará dinámicamente -->
+                                            </select>
                                         </div>
                                         <div class="form-actions">
                                             <button type="submit" class="btn btn-success" id="btn-guardar-nomina"><i class="bi bi-save"></i> Guardar</button>
@@ -509,13 +573,18 @@ verificarSesion(); // Proteger esta página
                         </div>
                     </div>
 
-                    <!-- FESTIVIDADES -->
+                   <!-- FESTIVIDADES -->
                     <div class="tab-pane fade" id="festividades" role="tabpanel">
                         <div class="row mt-4">
                             <div class="col-md-7" id="festividades-list-container">
                                 <div class="table-container" id="festividades-table-container">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h5><i class="bi bi-list-ul"></i> Lista de festividades</h5>
+                                        <select class="form-select form-select-lg w-25" id="select_anio_festividad">
+                                            <?php for ($i=2025; $i <= date('Y') + 1; $i++) : ?>
+                                                <option <?= $i == date('Y') ? 'selected' : '' ?> value="<?= $i ?>"><?= $i ?></option>
+                                            <?php endfor; ?>
+                                        </select>
                                         <div class="search-box-container">
                                             <input type="text" class="search-box" id="search-festividades" placeholder="Buscar Festividad...">
                                         </div>
@@ -742,43 +811,43 @@ verificarSesion(); // Proteger esta página
                                                                         </thead>
                                                                         <tbody id="tbody_horarios">
                                                                             <?php for ($i = 1; $i <= 7; $i++): ?>
-                                                                                <tr>
-                                                                                    <td>
-                                                                                        <!-- <input type="text" class="form-control" name="horario_dia[]" placeholder="Día"> -->
-                                                                                        <select class="form-select" name="horario_dia[]">
-                                                                                            <option selected value="">Seleccionar...</option>
+                                                                                    <tr>
+                                                                                        <td>
+                                                                                            <!-- <input type="text" class="form-control" name="horario_dia[]" placeholder="Día"> -->
+                                                                                            <select class="form-select" name="horario_dia[]">
+                                                                                                <option selected value="">Seleccionar...</option>
 
-                                                                                            <?php foreach (DIAS_SEMANA as $dia): ?>
-                                                                                                <option value="<?php echo $dia; ?>"><?php echo $dia; ?></option>
-                                                                                            <?php endforeach; ?>
+                                                                                                <?php foreach (DIAS_SEMANA as $dia): ?>
+                                                                                                        <option value="<?php echo $dia; ?>"><?php echo $dia; ?></option>
+                                                                                                <?php endforeach; ?>
 
-                                                                                        </select>
+                                                                                            </select>
 
-                                                                                    </td>
-                                                                                    <td>
-                                                                                        <input type="time" class="form-control" name="horario_entrada[]" placeholder="Entrada">
-                                                                                    </td>
-                                                                                    <td>
-                                                                                        <input type="time" class="form-control" name="horario_salida[]" placeholder="Salida">
-                                                                                    </td>
-                                                                                    <td class="text-center">
-                                                                                        <div class="d-inline form-check form-switch d-inline-flex align-items-center">
-                                                                                            <input
-                                                                                                class="form-check-input chk-descanso"
-                                                                                                type="checkbox"
-                                                                                                name="horario_descanso[]"
-                                                                                                value="1">
-                                                                                        </div>
-                                                                                    </td>
-                                                                                    <td class="text-center">
+                                                                                        </td>
+                                                                                        <td>
+                                                                                            <input type="time" class="form-control" name="horario_entrada[]" placeholder="Entrada">
+                                                                                        </td>
+                                                                                        <td>
+                                                                                            <input type="time" class="form-control" name="horario_salida[]" placeholder="Salida">
+                                                                                        </td>
+                                                                                        <td class="text-center">
+                                                                                            <div class="d-inline form-check form-switch d-inline-flex align-items-center">
+                                                                                                <input
+                                                                                                    class="form-check-input chk-descanso"
+                                                                                                    type="checkbox"
+                                                                                                    name="horario_descanso[]"
+                                                                                                    value="1">
+                                                                                            </div>
+                                                                                        </td>
+                                                                                        <td class="text-center">
 
-                                                                                        <!-- Botón para limpiar la fila -->
-                                                                                        <button type="button" class="d-inline btn btn-danger btn-sm btn-eliminar-fila" title="Limpiar fila">
-                                                                                            <i class="bi bi-trash"></i>
-                                                                                        </button>
+                                                                                            <!-- Botón para limpiar la fila -->
+                                                                                            <button type="button" class="d-inline btn btn-danger btn-sm btn-eliminar-fila" title="Limpiar fila">
+                                                                                                <i class="bi bi-trash"></i>
+                                                                                            </button>
 
-                                                                                    </td>
-                                                                                </tr>
+                                                                                        </td>
+                                                                                    </tr>
                                                                             <?php endfor; ?>
                                                                         </tbody>
                                                                     </table>
@@ -1017,7 +1086,7 @@ verificarSesion(); // Proteger esta página
             </div>
         </div>
     </div>
-    
+
     <!-- Modal para Asignar Departamentos a Nómina -->
     <div class="modal fade" id="modalAsignarDepartamentos" tabindex="-1" aria-labelledby="lblNombreNominaModal" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -1030,38 +1099,32 @@ verificarSesion(); // Proteger esta página
                 </div>
                 <div class="modal-body">
                     <!-- Formulario para agregar -->
-                    <form id="formAgregarDeptoNomina" class="p-3 bg-light rounded border mb-4 shadow-sm">
-                        <input type="hidden" id="modal_nomina_id" name="modal_nomina_id">
-                        <div class="row gx-3 align-items-end mb-3">
-                            <div class="col-sm-6">
-                                <label for="modal_select_area" class="form-label fw-bold text-secondary mb-1">1. Filtrar por Área</label>
-                                <select class="form-select border-primary-subtle" id="modal_select_area">
-                                    <option value="" selected disabled>Seleccione un área...</option>
-                                    <!-- Se llenará dinámicamente -->
-                                </select>
-                            </div>
-                            <div class="col-sm-6">
-                                <label for="modal_select_departamento" class="form-label fw-bold text-secondary mb-1">2. Elegir Departamento</label>
-                                <select class="form-select border-primary-subtle" id="modal_select_departamento" required disabled>
-                                    <option value="" selected disabled>Primero elija un área...</option>
-                                    <!-- Se llenará dinámicamente -->
-                                </select>
-                            </div>
-                        </div>
-                        <div class="row gx-3">
-                            <div class="col-12 mt-2">
-                                <button type="submit" class="btn btn-success w-100 shadow-sm" id="btn-asignar-depto-modal">
-                                    <i class="bi bi-plus-circle me-1"></i> Confirmar Asignación
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+                                    <form id="formAgregarDeptoNomina" class="p-3 bg-light rounded border mb-4 shadow-sm">
+                                        <input type="hidden" id="modal_nomina_id" name="modal_nomina_id">
+                                        <input type="hidden" id="modal_nomina_area_id" name="modal_nomina_area_id">
+                                        <div class="row gx-3 align-items-end mb-3">
+                                            <div class="col-sm-12">
+                                                <label for="modal_select_departamento" class="form-label fw-bold text-secondary mb-1">Elegir Departamento del Área</label>
+                                                <div class="input-group">
+                                                    <select class="form-select border-primary-subtle" id="modal_select_departamento" required>
+                                                        <option value="" selected disabled>Seleccione un departamento...</option>
+                                                        <!-- Se llenará dinámicamente según el área de la nómina -->
+                                                    </select>
+                                                    <button type="submit" class="btn btn-success shadow-sm" id="btn-asignar-depto-modal">
+                                                        <i class="bi bi-plus-circle me-1"></i> Asignar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
 
                     <!-- Lista de departamentos actuales -->
                     <h6 class="border-bottom pb-2 mb-3 fw-bold text-secondary"><i class="bi bi-tags me-2"></i>Departamentos Asignados</h6>
                     <div id="contenedorDepartamentosAsignados" class="d-flex flex-wrap gap-2 p-2 min-vh-25">
                         <!-- Badges dinámicos -->
-                        <div class="text-center w-100 text-muted"><div class="spinner-border spinner-border-sm" role="status"></div> Cargando...</div>
+                        <div class="text-center w-100 text-muted">
+                            <div class="spinner-border spinner-border-sm" role="status"></div> Cargando...
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer bg-light">
@@ -1071,60 +1134,31 @@ verificarSesion(); // Proteger esta página
         </div>
     </div>
 
-    <!-- Modal para Configurar Roles por Puesto -->
-    <div class="modal fade" id="modalConfigurarRolesPuesto" tabindex="-1" aria-labelledby="lblNombreNominaRolesModal" aria-hidden="true">
+    <!-- Modal para Configurar Roles por Puesto (ELIMINADO POR REESTRUCTURACIÓN) -->
+
+
+    <!-- Modal detalles de departamentos por areas -->
+    <div class="modal fade" id="modal_detalles_area_departamento" tabindex="-1" aria-labelledby="modal_detalles_area_departamento_label" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
-                <div class="modal-header bg-light">
-                    <h5 class="modal-title">
-                        <i class="bi bi-person-badge me-2 text-warning"></i>Roles por Puesto: <strong id="lblNombreNominaRolesModal" class="text-warning"></strong>
-                    </h5>
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="modal_detalles_area_departamento_label">Departamentos del Área: <span id="nombre_area_detalle">prueba</span></h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Formulario para asignar un rol a un puesto -->
-                    <form id="formRelacionRolPuesto" class="p-3 bg-light rounded border mb-4 shadow-sm">
-                        <input type="hidden" id="modal_roles_nomina_id" name="modal_roles_nomina_id">
-                        <div class="row gx-3 align-items-end">
-                            <div class="col-md-5">
-                                <label for="modal_select_puesto_rol" class="form-label fw-bold text-secondary mb-1">Puesto Real</label>
-                                <select class="form-select" id="modal_select_puesto_rol" required>
-                                    <option value="" selected disabled>Seleccione puesto...</option>
-                                    <!-- Dinámico -->
-                                </select>
-                            </div>
-                            <div class="col-md-5">
-                                <label for="modal_select_rol_laboral" class="form-label fw-bold text-secondary mb-1">Rol en Nómina (Tipo Lógico)</label>
-                                <div class="input-group">
-                                    <select class="form-select" id="modal_select_rol_laboral" required>
-                                        <option value="" selected disabled>Seleccione rol...</option>
-                                        <!-- Dinámico -->
-                                    </select>
-                                    <button class="btn btn-outline-secondary" type="button" id="btn-gestionar-catalogo-roles" title="Gestionar catálogo de roles">
-                                        <i class="bi bi-gear"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="col-md-2 mt-3 mt-md-0">
-                                <button type="submit" class="btn btn-warning text-white w-100 shadow-sm">
-                                    <i class="bi bi-check-circle me-1"></i> Mapear
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-
-                    <!-- Mapeo Actual -->
-                    <h6 class="border-bottom pb-2 mb-3 fw-bold text-secondary">
-                        <i class="bi bi-list-check me-2"></i>Configuración de Puestos
-                    </h6>
-                    <div id="contenedorMapeoRolesPuestos" class="p-2 min-vh-25">
-                        <!-- Mapeos dinámicos -->
-                        <div class="text-center w-100 text-muted"><div class="spinner-border spinner-border-sm" role="status"></div> Cargando...</div>
-                    </div>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>DEPARTAMENTO</th>
+                                <th>ACCION</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody_detalles_area_departamento"></tbody>
+                    </table>
                 </div>
-                <div class="modal-footer bg-light justify-content-between">
-                    <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Asocia cada puesto de trabajo a un rol lógico para cálculos de nómina.</small>
-                    <button type="button" class="btn btn-secondary shadow-sm" data-bs-dismiss="modal">Cerrar</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>

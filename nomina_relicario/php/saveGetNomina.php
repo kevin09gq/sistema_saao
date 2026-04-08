@@ -96,7 +96,7 @@ function validarExistenciaNomina($data, $conexion)
     $anio = isset($data['anio']) ? intval($data['anio']) : 0;
     $id_empresa = isset($data['id_empresa']) ? intval($data['id_empresa']) : 1;
 
-    // Consulta simple para verificar existencia (se asume que la tabla usada es nomina_40 o similar)
+    // Consulta simple para verificar existencia 
     $query = "SELECT COUNT(*) AS cnt FROM nomina_relicario WHERE id_empresa = ? AND numero_semana = ? AND anio = ?";
     $stmt = $conexion->prepare($query);
     $stmt->bind_param("iii", $id_empresa, $numero_semana, $anio);
@@ -162,6 +162,9 @@ function obtenerNomina($data, $conexion)
         echo json_encode(['success' => true, 'found' => false]);
     }
 }
+
+
+
 
 
 /**

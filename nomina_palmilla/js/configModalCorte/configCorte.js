@@ -609,6 +609,7 @@ function guardarTicketCorte(folio, nombreCortador, fecha, datosRejas, precio) {
 
     if (!departamento) {
         departamento = {
+            id_departamento: 800,
             nombre: "Corte",
             empleados: []
         };
@@ -1008,6 +1009,7 @@ $(document).on('submit', '#form_corte_nomina', function (e) {
 
     if (!departamento) {
         departamento = {
+            id_departamento: 800,
             nombre: "Corte",
             empleados: []
         };

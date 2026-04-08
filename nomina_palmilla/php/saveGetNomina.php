@@ -142,10 +142,11 @@ function obtenerNomina($data, $conexion)
 
             $nomina['departamentos'][] = [
                 'nombre' => 'Corte',
+                'id_departamento' => 800,
                 'empleados' => $ticketsCorte
             ];
 
-            echo json_encode([
+            echo json_encode([  
                 'success' => true,
                 'found' => true,
                 'nomina' => $nomina

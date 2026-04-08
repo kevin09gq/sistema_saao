@@ -22,14 +22,45 @@ function initComponents() {
 // RECUERDA CAMBIAR container-acceso-huasteca A container-nomina_huasteca
 // CUANDO HAYA EMPLEADOS ASEGURADOS
 // ============================================
+
 function mostrarConfigValores(bandera) {
     // Cerrar cualquier alerta de carga abierta
     Swal.close();
 
     $("#container-acceso-huasteca").attr("hidden", true);
     $("#config-valores-huasteca").removeAttr("hidden");
+    cargarDepartamentosConfig();
     asignarValoresConfig(bandera);
     actualizarCabeceraNomina(jsonNominaHuasteca);
+}
+
+// ============================================
+// CARGAR DEPARTAMENTOS EN LA TABLA DE CONFIGURACIÓN
+// ============================================
+
+function cargarDepartamentosConfig() {
+    if (!jsonNominaHuasteca || !Array.isArray(jsonNominaHuasteca.departamentos)) return;
+
+    let html = '';
+    jsonNominaHuasteca.departamentos.forEach(dept => {
+        html += `
+            <tr>
+                <td class="small">${dept.nombre}</td>
+                <td class="text-center">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="horario_${dept.id_departamento}" id="oficial_${dept.id_departamento}" value="1" checked>
+                        <label class="form-check-label small" for="oficial_${dept.id_departamento}">Oficial</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="horario_${dept.id_departamento}" id="rancho_${dept.id_departamento}" value="2">
+                        <label class="form-check-label small" for="rancho_${dept.id_departamento}">Rancho</label>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+
+    $('#tabla-config-horarios').html(html);
 }
 
 // ============================================
@@ -62,23 +93,101 @@ function asignarValoresConfig(statusRancho = true) {
 
         // Guardar valores de configuración en localStorage
         saveNomina(jsonNominaHuasteca);
+        asignarTiposHorarios();
+        obtenerSalariosHorarios(statusRancho);
 
         $("#config-valores-huasteca").attr("hidden", true);
         $("#tabla-nomina-responsive").removeAttr("hidden");
 
-        if (statusRancho) {
+      
+    });
+}
 
-            // obtenerHorarioRancho es async: llamará calcularSueldoSemanal que refresca la tabla
-            obtenerHorarioRancho();
+// ============================================
+// OBTENER EL VALOR DEL PASAJE Y TARDEADA, ASIGNAR AL JSON
+// ============================================
 
+function asignarTiposHorarios() {
+    if (!jsonNominaHuasteca || !jsonNominaHuasteca.departamentos) return;
 
-        } else {
-            // Sin horarioRancho (nómina restaurada): renderizar tabla directamente
-            //  let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaHuasteca, 8);
-            // mostrarDatosTabla(jsonFiltrado, 1);
+    jsonNominaHuasteca.departamentos.forEach(dept => {
+        // Obtener el valor radio seleccionado para este departamento
+        const valorRadio = parseInt($(`input[name="horario_${dept.id_departamento}"]:checked`).val()) || 1;
+        // Asignar a los departamento el tipo de horario seleccionado
+        dept.tipo_horario = valorRadio;
+
+        // Asignar a todos los empleados del departamento
+        if (Array.isArray(dept.empleados)) {
+            dept.empleados.forEach(emp => {
+                emp.tipo_horario = valorRadio;
+            });
         }
     });
 }
+
+// ============================================
+// OBTENER SALARIOS Y HORARIOS DE LA BD SEGÚN TIPO SELECCIONADO
+// ============================================
+function obtenerSalariosHorarios(statusRancho) {
+    if (!jsonNominaHuasteca || !jsonNominaHuasteca.departamentos) return;
+
+    // Recopilar claves de todos los empleados para la consulta masiva
+    let listado = [];
+    jsonNominaHuasteca.departamentos.forEach(dept => {
+        (dept.empleados || []).forEach(emp => {
+            listado.push({ clave: emp.clave });
+        });
+    });
+
+    if (listado.length === 0) return;
+
+    $.ajax({
+        url: '../php/validarExistenciaEmpleado.php',
+        type: 'POST',
+        data: {
+            case: 'obtenerDatosPorTipoHorario',
+            empleados: listado
+        },
+        dataType: 'json',
+        success: function (response) {
+            if (response.datos) {
+
+                // Actualizar el JSON global con la información real de la BD
+                jsonNominaHuasteca.departamentos.forEach(dept => {
+                    (dept.empleados || []).forEach(emp => {
+                        const dato = response.datos[emp.clave];
+
+                        if (dato) {
+                            // Si es Rancho (2)
+                            if (emp.tipo_horario == 2) {
+                                emp.salario_diario = parseFloat(dato.salario_diario) || 0;
+                            }
+                            // Si es Oficial (1)
+                            else if (emp.tipo_horario == 1) {
+                                emp.horario_oficial = dato.horario_oficial || null;
+                                emp.salario_semanal = parseFloat(dato.salario_semanal) || 0;
+                            }
+                        }
+                    });
+                });
+
+                // Continuar con el flujo original
+                if (statusRancho) {
+                  
+                    obtenerHorarioRancho();
+                } 
+            } else if (response.error) {
+                console.error("Error del servidor:", response.error);
+            }
+        },
+        error: function (err) {
+            console.error("Error al obtener datos por tipo de horario:", err);
+        }
+    });
+}
+
+
+
 
 // ============================================
 // LIMPIAR CAMPOS DE NÓMINA

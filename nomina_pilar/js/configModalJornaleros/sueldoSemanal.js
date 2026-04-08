@@ -53,12 +53,12 @@ function calcularSueldoSemanal(empleado = null) {
             empleadosAProcesar = [empleado];
         }
     } else {
-        // Si no se envía nada, recorrer todos los del departamento 11
+        // Si no se envía nada, recorrer todos los del departamento con tipo_horario 2
         jsonNominaPilar.departamentos.forEach(departamento => {
             if (!departamento.empleados) return;
 
             departamento.empleados.forEach(empleado => {
-                if (parseInt(empleado.id_departamento) === 11) {
+                if (empleado.tipo_horario === 2) {
                     empleadosAProcesar.push(empleado);
                 }
             });
@@ -67,8 +67,8 @@ function calcularSueldoSemanal(empleado = null) {
 
     // === PROCESAR EMPLEADOS ===
     empleadosAProcesar.forEach(empleado => {
-        // Verificar que sea departamento 11 (si es de jsonNominaPilar)
-        if (parseInt(empleado.id_departamento) !== 11) {
+        // Verificar que sea tipo_horario 2
+        if (parseInt(empleado.tipo_horario) !== 2) {
             return;
         }
 
@@ -103,11 +103,13 @@ function calcularSueldoSemanal(empleado = null) {
         }
 
         // === ASIGNAR DÍAS TRABAJADOS ===
-        empleado.dias_trabajados = diasAsistidos;
+        // Sumar días detectados por biometrico + días extra manuales
+        const diasExtra = parseInt(empleado.dias_extra) || 0;
+        empleado.dias_trabajados = diasAsistidos + diasExtra;
 
         // === CALCULAR SUELDO SEMANAL ===
         const salarioDiario = parseFloat(empleado.salario_diario) || 0;
-        const sueldoSemanal = diasAsistidos * salarioDiario;
+        const sueldoSemanal = empleado.dias_trabajados * salarioDiario;
         empleado.salario_semanal = sueldoSemanal === 0 ? 0 : sueldoSemanal.toFixed(2);
 
         // === CALCULAR PASAJE ===
@@ -115,16 +117,18 @@ function calcularSueldoSemanal(empleado = null) {
         let aplicaPasaje = false;
 
 
-        // Solo para empleados del departamento 11 
-        if (parseInt(empleado.id_departamento) === 11) {
+        // Solo para empleados del tipo_horario 2 
+        if (empleado.tipo_horario === 2) {
             const precioPasaje = parseFloat(jsonNominaPilar.precio_pasaje) || 0;
 
             if (empleado.pasaje_override === 'quitar') {
                 pasajeTotal = 0;
+                delete empleado.pasaje_override; // Eliminar la propiedad para limpiar el estado
             } else if (empleado.pasaje_override === 'agregar') {
-                pasajeTotal = (diasAsistidos || 1) * precioPasaje;
+                pasajeTotal = (empleado.dias_trabajados || 1) * precioPasaje;
+                delete empleado.pasaje_override; // Eliminar la propiedad para limpiar el estado
             } else {
-                pasajeTotal = diasAsistidos * precioPasaje;
+                pasajeTotal = empleado.dias_trabajados * precioPasaje;
             }
             aplicaPasaje = true;
         }
@@ -137,16 +141,18 @@ function calcularSueldoSemanal(empleado = null) {
         let comidaTotal = 0;
         let aplicaComida = false;
 
-        // Solo para empleados del departamento 11 con id_tipo_puesto diferente de 3
-        if (parseInt(empleado.id_departamento) === 11) {
+        // Solo para empleados del tipo_horario 2 con id_tipo_puesto diferente de 3
+        if (parseInt(empleado.tipo_horario) === 2) {
             const precioComida = parseFloat(jsonNominaPilar.pago_comida) || 0;
 
             if (empleado.comida_override === 'quitar') {
                 comidaTotal = 0;
+                delete empleado.comida_override; // Eliminar la propiedad para limpiar el estado
             } else if (empleado.comida_override === 'agregar') {
-                comidaTotal = (diasAsistidos || 1) * precioComida;
+                comidaTotal = (empleado.dias_trabajados || 1) * precioComida;
+                delete empleado.comida_override; // Eliminar la propiedad para limpiar el estado
             } else {
-                comidaTotal = diasAsistidos * precioComida;
+                comidaTotal = empleado.dias_trabajados * precioComida;
             }
             aplicaComida = true;
         }
@@ -173,6 +179,7 @@ function calcularSueldoSemanal(empleado = null) {
 
     });
 
+    actualizarCabeceraNomina(jsonNominaPilar);
     // Actualizar la tabla manteniendo el filtrado y paginación actual
     const id_departamento = parseInt($('#filtro_departamento').val());
     const id_puestoEspecial = parseInt($('#filtro_puesto').val());
@@ -184,6 +191,7 @@ function calcularSueldoSemanal(empleado = null) {
     // Mostrar la tabla en la página actual (usar window.paginaActualNomina para acceso global)
 
     mostrarDatosTabla(jsonFiltrado, window.paginaActualNomina || 1);
+    saveNomina(jsonNominaPilar);
 }
 
 

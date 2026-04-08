@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return 'documentos';
         } else if (path.includes('/public/views/generacion_tickets_manuales.php')) {
             return 'documentos';
-        } else if (path.includes('/nomina/views/nomina.php')) {
+        } else if (path.includes('/nomina_40lbs/views/nomina_40lbs.php')) {
             return 'nominas'; // Highlight 'Nóminas' for 40 lbs
         } else if (path.includes('/nomina_confianza/views/nomina_confianza.php')) {
             return 'nominas'; // Highlight 'Nóminas' for Confianza

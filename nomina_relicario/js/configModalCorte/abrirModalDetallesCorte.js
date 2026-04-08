@@ -60,11 +60,11 @@ $(document).on('click', '#context_menu_corte', function (e) {
 });
 
 
+
 /**
+ * ===========================================================
  * INCIALIZAR EL MODAL PARA LOS DETALLES DE LA NOMINA DE CORTE
- * @param {JsonObject} json jsonNominaRelicario de process_excel.js
- * @param {string} nombreEmpleado nombre del empleado para filtrar
- * @returns 
+ * ==========================================================
  */
 function inicializar_modal_corte_nomina_detalles(json, nombreEmpleado) {
     // Obtener el nombre del empleado de la fila seleccionada
@@ -138,7 +138,7 @@ function llenarTabDetalles(nombre, datos) {
     $('#span_sueldo_diario').text(`$${datos.sueldoDiario.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
     $('#span_dias_trabajados').text(datos.diasTrabajados);
     $('#span_total_efectivo').text(`$${datos.totalEfectivo.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
-    $('#badge_nombre_cortador').html(`<i class="bi bi-person-fill me-2"></i>${nombre}`);
+    $('#badge_nombre_cortador').text(nombre);
 
     // Se agrega el nombre del empleado como un parametro data
     $('#btn_borrar_nomina').attr('data-nombre', nombre);
@@ -303,14 +303,6 @@ $(btn_guardar_cambios_nomina_corte).on('click', function (e) {
  * INCIALIZAR EL MODAL PARA LOS DETALLES DE LAS REJAS DE CORTE
  * ===========================================================
  */
-
-/**
- * INCIALIZAR EL MODAL PARA LOS DETALLES DE LAS REJAS DE CORTE
- * @param {JsonObject} json jsonNominaRelicario de process_excel.js
- * @param {string} nombreEmpleado nombre del empleado para filtrar
- * @param {float} precioReja precio de la reja para filtrar los tickets
- * @returns 
- */
 function inicializar_modal_corte_rejas_detalles(json, nombreEmpleado, precioReja) {
     // Obtener el nombre del empleado de la fila seleccionada
     const nombre = nombreEmpleado || String(filaSeleccionada.data('nombre') || '').trim();
@@ -354,7 +346,6 @@ function inicializar_modal_corte_rejas_detalles(json, nombreEmpleado, precioReja
     modal_corte_reja_detalles.show();
 }
 
-
 /**
  * Procesa los datos de rejas del empleado para un precio específico
  * @param {Array} tickets - Array de tickets del empleado filtrados por precio
@@ -380,7 +371,6 @@ function procesarDatosRejas(tickets, precio) {
     };
 }
 
-
 /**
  * Llena el tab de detalles del modal de rejas
  * @param {String} nombre - Nombre del empleado
@@ -391,9 +381,8 @@ function llenarTabDetallesRejas(nombre, datos) {
     $('#span_total_rejas').text(datos.totalRejas.toLocaleString('en-US'));
     $('#span_precio_reja').text(`$${datos.precioReja.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
     $('#span_total_efectivo_reja').text(`$${datos.totalEfectivo.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
-    $('#badge_nombre_cortador_reja').html(`<i class="bi bi-person-fill me-2"></i>${nombre}`);
+    $('#badge_nombre_cortador_reja').text(nombre);
 }
-
 
 /**
  * Llena el tab de tickets de rejas con inputs editables
@@ -418,7 +407,6 @@ function llenarTabTicketsRejas(tickets) {
         </div>
     `);
 }
-
 
 /**
  * Genera el HTML para un ticket individual
@@ -506,7 +494,6 @@ function generarHtmlTicket(ticket, index) {
     `;
 }
 
-
 /**
  * Elimina un ticket completo
  * @param {Number} ticketIndex - Índice del ticket a eliminar
@@ -528,7 +515,6 @@ function eliminarTicket(ticketIndex) {
         }
     });
 }
-
 
 /**
  * Elimina una tabla específica de un ticket
@@ -552,7 +538,6 @@ function eliminarTabla(ticketIndex, tablaIndex) {
         }
     });
 }
-
 
 /**
  * Agrega una nueva tabla a un ticket específico
@@ -652,7 +637,6 @@ function recopilarTicketsDelModal() {
     return tickets;
 }
 
-
 /**
  * Actualiza los tickets de un empleado en el JSON para un precio específico
  * @param {Object} json - El objeto JSON completo
@@ -692,9 +676,11 @@ function actualizarTicketsEmpleado(json, nombreEmpleado, precioOriginal, nuevosT
             if (indexEmpleado > -1) {
                 departamentoCorte.empleados.splice(indexEmpleado, 1);
                 console.log('Empleado eliminado del JSON (sin tickets):', nombreEmpleado);
+                alerta("success", "Empleado eliminado", "Empleado " + nombreEmpleado + " ha sido eliminado (sin tickets).", true);
             }
         } else {
             console.log('Tickets actualizados para:', nombreEmpleado, nuevosTickets);
+            alerta("success", "Empleado actualizado", "Empleado " + nombreEmpleado + " ha sido actualizado.", true);
         }
 
         return true;
@@ -704,7 +690,6 @@ function actualizarTicketsEmpleado(json, nombreEmpleado, precioOriginal, nuevosT
         return false;
     }
 }
-
 
 // Evento para guardar los cambios al hacer click en el botón de guardar de rejas
 $(btn_guardar_cambios_reja_corte).on('click', function (e) {

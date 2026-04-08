@@ -16,12 +16,25 @@ $(document).ready(function () {
     // Escuchar el botón de confirmar
     $(document).on('click', '.btn-confirmar-edicion', function () {
         confirmarEdicionTarjeta($(this));
+         refrescarTabla();
     });
 
     // Permitir guardar con el Enter en el input
     $(document).on('keypress', '.input-edicion-tarjeta', function (e) {
         if (e.which === 13) {
             confirmarEdicionTarjeta($(this).closest('td').find('.btn-confirmar-edicion'));
+        }
+    });
+
+    // Validar en tiempo real que no supere el máximo (tarjeta_copia)
+    $(document).on('input', '.input-edicion-tarjeta', function () {
+        const $input = $(this);
+        const $tr = $input.closest('tr');
+        const maxVal = parseFloat($tr.data('tarjeta-copia')) || 0;
+        let valor = parseFloat($input.val()) || 0;
+
+        if (valor > maxVal) {
+            $input.val(maxVal);
         }
     });
 });
@@ -69,7 +82,14 @@ function confirmarEdicionTarjeta($boton) {
     const $tr = $boton.closest('tr');
     const $celda = $boton.closest('td');
     const claveEmpleado = $tr.data('clave');
-    const nuevoValor = parseFloat($celda.find('.input-edicion-tarjeta').val()) || 0;
+    const maxVal = parseFloat($tr.data('tarjeta-copia')) || 0;
+    
+    let nuevoValor = parseFloat($celda.find('.input-edicion-tarjeta').val()) || 0;
+
+    // Validación final antes de guardar
+    if (nuevoValor > maxVal) {
+        nuevoValor = maxVal;
+    }
 
     // Actualizar en el JSON global
     let encontrado = false;

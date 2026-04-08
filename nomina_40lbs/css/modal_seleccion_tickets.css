@@ -1,0 +1,120 @@
+/* ================================================================
+   ESTILOS PARA MODAL DE SELECCIÓN DE TICKETS - NÓMINA 40LBS
+   ================================================================ */
+
+/* Contenedor de empleados en el modal */
+.empleados-container {
+    background-color: #f8f9fa;
+    border-radius: 0.375rem;
+    border: 1px solid #dee2e6;
+}
+
+/* Items de empleados en la lista */
+.empleado-item-40lbs {
+    padding: 0.75rem 1rem;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.empleado-item-40lbs:last-child {
+    border-bottom: none;
+}
+
+.empleado-item-40lbs:hover {
+    background-color: #e7f1ff;
+}
+
+.empleado-item-40lbs.active {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+}
+
+.empleado-item-40lbs.active .text-muted {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.empleado-item-40lbs.active .badge {
+    opacity: 0.9;
+}
+
+/* Input clearable wrapper */
+.input-clearable-wrapper {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.input-clearable-wrapper .form-control {
+    padding-right: 2.5rem;
+}
+
+.btn-clear-x {
+    position: absolute;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    font-size: 1.25rem;
+    line-height: 1;
+    transition: color 0.2s ease;
+}
+
+.btn-clear-x:hover {
+    color: #495057;
+}
+
+/* Modal dialog */
+#modal_seleccion_tickets_40lbs .modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+#modal_seleccion_tickets_40lbs .modal-header .modal-title {
+    color: #0d6efd;
+    font-weight: 600;
+}
+
+#modal_seleccion_tickets_40lbs .modal-body {
+    min-height: 300px;
+}
+
+#modal_seleccion_tickets_40lbs .badge {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.6rem;
+}
+
+/* Botón de generar tickets deshabilitado */
+#btn_generar_tickets_seleccionados_40lbs:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+/* Contador de seleccionados */
+#contador_seleccionados_40lbs,
+#contador_seleccionados_btn_40lbs {
+    font-weight: 700;
+    background-color: #0d6efd;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+    #modal_seleccion_tickets_40lbs .modal-dialog {
+        margin: 0.5rem;
+    }
+    
+    .empleado-item-40lbs {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    .empleado-item-40lbs .d-flex:last-child {
+        margin-top: 0.5rem;
+        width: 100%;
+    }
+}

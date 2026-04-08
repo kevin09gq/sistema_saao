@@ -19,14 +19,44 @@ function initComponents() {
 function mostrarConfigValores(bandera) {
     $("#container-nomina_relicario").attr("hidden", true);
     $("#config-valores-relicario").removeAttr("hidden");
+
+    // Cargar la tabla de departamentos desde jsonNominaRelicario
+    cargarDepartamentosConfig();
     asignarValoresConfig(bandera);
-    actualizarCabeceraNomina(jsonNominaRelicario);
+}
+
+// ============================================
+// CARGAR DEPARTAMENTOS EN LA TABLA DE CONFIGURACIÓN
+// ============================================
+function cargarDepartamentosConfig() {
+    if (!jsonNominaRelicario || !Array.isArray(jsonNominaRelicario.departamentos)) return;
+
+    let html = '';
+    jsonNominaRelicario.departamentos.forEach(dept => {
+        html += `
+            <tr>
+                <td class="small">${dept.nombre}</td>
+                <td class="text-center">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="horario_${dept.id_departamento}" id="oficial_${dept.id_departamento}" value="1" checked>
+                        <label class="form-check-label small" for="oficial_${dept.id_departamento}">Oficial</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="horario_${dept.id_departamento}" id="rancho_${dept.id_departamento}" value="2">
+                        <label class="form-check-label small" for="rancho_${dept.id_departamento}">Rancho</label>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+
+    $('#tabla-config-horarios').html(html);
 }
 
 // ============================================
 // OBTENER EL VALOR DEL PASAJE Y TARDEADA, ASIGNAR AL JSON
 // ============================================
-function asignarValoresConfig(statusRancho = true) {
+function asignarValoresConfig(statusRancho) {
     $("#btn_config_avanzar_relicario").click(function (e) {
         e.preventDefault();
 
@@ -51,19 +81,114 @@ function asignarValoresConfig(statusRancho = true) {
         jsonNominaRelicario.pago_tardeada = tardeada;
         jsonNominaRelicario.pago_comida = comida;
 
+        // Asignar los tipos de horarios según la tabla
+        asignarTiposHorarios();
+        // Obtener datos dinámicos de la BD (salarios/horarios) antes de seguir
+        obtenerSalariosHorarios(statusRancho);
+
         $("#config-valores-relicario").attr("hidden", true);
         $("#tabla-nomina-responsive").removeAttr("hidden");
 
-        if (statusRancho) {
-            // obtenerHorarioRancho es async: llamará calcularSueldoSemanal que refresca la tabla
-            obtenerHorarioRancho();
-        } else {
-            // Sin horarioRancho (nómina restaurada): renderizar tabla directamente
-            let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, 7);
-            mostrarDatosTabla(jsonFiltrado, 1);
+
+    });
+}
+
+
+// ============================================
+// OBTENER EL VALOR DEL PASAJE Y TARDEADA, ASIGNAR AL JSON
+// ============================================
+
+function asignarTiposHorarios() {
+    if (!jsonNominaRelicario || !jsonNominaRelicario.departamentos) return;
+
+    jsonNominaRelicario.departamentos.forEach(dept => {
+        // Obtener el valor radio seleccionado para este departamento
+        const valorRadio = parseInt($(`input[name="horario_${dept.id_departamento}"]:checked`).val()) || 1;
+        // Asignar a los departamento el tipo de horario seleccionado
+        dept.tipo_horario = valorRadio;
+
+        // Asignar a todos los empleados del departamento
+        if (Array.isArray(dept.empleados)) {
+            dept.empleados.forEach(emp => {
+                emp.tipo_horario = valorRadio;
+            });
+        }
+    });
+
+
+}
+
+
+// ============================================
+// OBTENER SALARIOS Y HORARIOS DE LA BD SEGÚN TIPO SELECCIONADO
+// ============================================
+function obtenerSalariosHorarios(statusRancho) {
+    if (!jsonNominaRelicario || !jsonNominaRelicario.departamentos) return;
+
+    // Recorelicario claves de todos los empleados para la consulta masiva
+    let listado = [];
+    jsonNominaRelicario.departamentos.forEach(dept => {
+        (dept.empleados || []).forEach(emp => {
+            listado.push({ clave: emp.clave });
+        });
+    });
+
+    if (listado.length === 0) return;
+
+    $.ajax({
+        url: '../php/validarExistenciaEmpleado.php',
+        type: 'POST',
+        data: {
+            case: 'obtenerDatosPorTipoHorario',
+            empleados: listado
+        },
+        dataType: 'json',
+        success: function (response) {
+            if (response.datos) {
+
+                // Actualizar el JSON global con la información real de la BD
+                jsonNominaRelicario.departamentos.forEach(dept => {
+                    (dept.empleados || []).forEach(emp => {
+                        const dato = response.datos[emp.clave];
+
+                        if (dato) {
+                            // Si es Rancho (2)
+                            if (emp.tipo_horario == 2) {
+                                emp.salario_diario = parseFloat(dato.salario_diario) || 0;
+                            }
+                            // Si es Oficial (1)
+                            else if (emp.tipo_horario == 1) {
+                                emp.horario_oficial = dato.horario_oficial || null;
+                                emp.salario_semanal = parseFloat(dato.salario_semanal) || 0;
+                            }
+                        }
+                    });
+                });
+
+                // Continuar con el flujo original
+                if (statusRancho) {
+                    // obtenerHorarioRancho es async
+                    obtenerHorarioRancho();
+                } else {
+                    actualizarCabeceraNomina(jsonNominaRelicario);
+                    // Nómina restaurada: Usar la nueva función centralizada en busquedaFiltrado.js
+                    let id_departamento = parseInt($('#filtro_departamento').val());
+                    let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, id_departamento);
+                    mostrarDatosTabla(jsonFiltrado, 1);
+                    saveNomina(jsonNominaRelicario);
+                }
+
+            } else if (response.error) {
+                console.error("Error del servidor:", response.error);
+            }
+        },
+        error: function (err) {
+            console.error("Error al obtener datos por tipo de horario:", err);
         }
     });
 }
+
+
 
 // ============================================
 // LIMPIAR CAMPOS DE NÓMINA
@@ -85,6 +210,7 @@ function limpiarCamposNomina() {
                 clearNomina();
                 $("#container-nomina_relicario").removeAttr("hidden");
                 $("#tabla-nomina-responsive").attr("hidden", true);
+                $('#btn_procesar_nomina_relicario').removeClass('loading').prop('disabled', false);
             }
         });
 
@@ -96,7 +222,7 @@ function limpiarCamposNomina() {
 // ============================================
 // ACTUALIZAR CONCEPTOS Y TARJETA A TODOS LOS EMPLEADOS
 // ============================================
-function updateTarjeta() {
+function updateTarjeta() { 
     $(document).on('click', '#btn_aplicar_copias_global', function (e) {
         e.preventDefault();
 

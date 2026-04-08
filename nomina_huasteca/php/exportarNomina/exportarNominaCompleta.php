@@ -17,6 +17,18 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 $jsonNomina = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['jsonNomina'])) {
     $jsonNomina = json_decode($_POST['jsonNomina'], true);
+
+    // Inyectar id_departamento en cada empleado para filtrar dinámicamente después
+    if (isset($jsonNomina['departamentos'])) {
+        foreach ($jsonNomina['departamentos'] as $idxDepto => $depto) {
+            $idDeptoActual = $depto['id_departamento'] ?? $idxDepto;
+            if (isset($depto['empleados'])) {
+                foreach ($depto['empleados'] as $idxEmp => $emp) {
+                    $jsonNomina['departamentos'][$idxDepto]['empleados'][$idxEmp]['id_departamento'] = $idDeptoActual;
+                }
+            }
+        }
+    }
 }
 
 //=====================
@@ -34,7 +46,7 @@ if ($jsonNomina) {
     $fecha_cierre = restarUnDia($jsonNomina['fecha_cierre']) ?? 'Fecha Cierre';
     $numero_semana = $jsonNomina['numero_semana'] ?? '00';
     $ano = date('Y');
-} 
+}
 
 //=====================
 //  DEFINIR COLUMNAS COMUNES
@@ -44,6 +56,7 @@ $columnas = [
     'N°',
     'CD',
     'NOMBRE',
+    'DIAS TRAB.',
     'SUELDO SEMANAL',
     'PASAJE',
     'COMIDA',
@@ -74,89 +87,92 @@ $columnasAncho = [
     'A' => 12,   // N°
     'B' => 14,   // CD
     'C' => 65,  // NOMBRE
-    'D' => 22,  // SUELDO SEMANAL
-    'E' => 20,  // PASAJE
-    'F' => 20,  // COMIDA
-    'G' => 20,  // EXTRAS
-    'H' => 22,  // TOTAL PERCEPCIONES
-    'I' => 20,  // ISR
-    'J' => 20,  // IMSS
-    'K' => 20,  // INFONAVIT
-    'L' => 22,  // AJUSTES AL SUB
-    'M' => 21,  // AUSENTISMO
-    'N' => 20,  // UNIFORMES
-    'O' => 20,  // PERMISOS
-    'P' => 20,  // RETARDOS
-    'Q' => 20,  // CHECADOR
-    'R' => 22,  // F.A/GAFET/COFIA
-    'S' => 22,  // TOTAL DE DEDUCCIONES
-    'T' => 22,  // NETO A RECIBIR
-    'U' => 22,  // DISPERSION DE TARJETA
-    'V' => 22,  // IMPORTE EN EFECTIVO
-    'W' => 22,  // PRÉSTAMO
-    'X' => 22,  // TOTAL A RECIBIR
-    'Y' => 20,  // REDONDEADO
-    'Z' => 23,  // TOTAL EFECTIVO REDONDEADO
-    'AA' => 25  // FIRMA RECIBIDO
+    'D' => 14,  // DIAS TRAB.
+    'E' => 22,  // SUELDO SEMANAL
+    'F' => 20,  // PASAJE
+    'G' => 20,  // COMIDA
+    'H' => 20,  // EXTRAS
+    'I' => 22,  // TOTAL PERCEPCIONES
+    'J' => 20,  // ISR
+    'K' => 20,  // IMSS
+    'L' => 20,  // INFONAVIT
+    'M' => 22,  // AJUSTES AL SUB
+    'N' => 21,  // AUSENTISMO
+    'O' => 20,  // UNIFORMES
+    'P' => 20,  // PERMISOS
+    'Q' => 20,  // RETARDOS
+    'R' => 20,  // CHECADOR
+    'S' => 22,  // F.A/GAFET/COFIA
+    'T' => 22,  // TOTAL DE DEDUCCIONES
+    'U' => 22,  // NETO A RECIBIR
+    'V' => 22,  // DISPERSION DE TARJETA
+    'W' => 22,  // IMPORTE EN EFECTIVO
+    'X' => 22,  // PRÉSTAMO
+    'Y' => 22,  // TOTAL A RECIBIR
+    'Z' => 20,  // REDONDEADO
+    'AA' => 23, // TOTAL EFECTIVO REDONDEADO
+    'AB' => 25  // FIRMA RECIBIDO
 ];
 
 $tamanioLetraColumnas = [
     'A' => 14,  // N°
     'B' => 14,  // CD
     'C' => 14,  // NOMBRE
-    'D' => 14,  // SUELDO SEMANAL
-    'E' => 14,  // PASAJE
-    'F' => 14,  // COMIDA
-    'G' => 14,  // EXTRAS
-    'H' => 13,  // TOTAL PERCEPCIONES
-    'I' => 14,  // ISR
-    'J' => 14,  // IMSS
-    'K' => 14,  // INFONAVIT
-    'L' => 14,  // AJUSTES AL SUB
-    'M' => 14,  // AUSENTISMO
-    'N' => 14,  // UNIFORMES
-    'O' => 14,  // PERMISOS
-    'P' => 14,  // RETARDOS
-    'Q' => 14,  // CHECADOR
-    'R' => 13,  // F.A/GAFET/COFIA
-    'S' => 13,  // TOTAL DE DEDUCCIONES
-    'T' => 13,  // NETO A RECIBIR
-    'U' => 13,  // DISPERSION DE TARJETA
-    'V' => 13,  // IMPORTE EN EFECTIVO
-    'W' => 14,  // PRÉSTAMO
-    'X' => 13,  // TOTAL A RECIBIR
-    'Y' => 14,  // REDONDEADO
-    'Z' => 13,  // TOTAL EFECTIVO REDONDEADO
-    'AA' => 14  // FIRMA RECIBIDO
+    'D' => 14,  // DIAS TRAB.
+    'E' => 14,  // SUELDO SEMANAL
+    'F' => 14,  // PASAJE
+    'G' => 14,  // COMIDA
+    'H' => 14,  // EXTRAS
+    'I' => 13,  // TOTAL PERCEPCIONES
+    'J' => 14,  // ISR
+    'K' => 14,  // IMSS
+    'L' => 14,  // INFONAVIT
+    'M' => 14,  // AJUSTES AL SUB
+    'N' => 14,  // AUSENTISMO
+    'O' => 14,  // UNIFORMES
+    'P' => 14,  // PERMISOS
+    'Q' => 14,  // RETARDOS
+    'R' => 14,  // CHECADOR
+    'S' => 13,  // F.A/GAFET/COFIA
+    'T' => 13,  // TOTAL DE DEDUCCIONES
+    'U' => 13,  // NETO A RECIBIR
+    'V' => 13,  // DISPERSION DE TARJETA
+    'W' => 13,  // IMPORTE EN EFECTIVO
+    'X' => 14,  // PRÉSTAMO
+    'Y' => 13,  // TOTAL A RECIBIR
+    'Z' => 14,  // REDONDEADO
+    'AA' => 13, // TOTAL EFECTIVO REDONDEADO
+    'AB' => 14  // FIRMA RECIBIDO
 ];
 
 $tamanioLetraFilas = [
     'A' => 14,  // N°
     'B' => 14,  // CD
     'C' => 16,  // NOMBRE
-    'D' => 15,  // SUELDO SEMANAL
-    'E' => 15,  // PASAJE
-    'F' => 15,  // COMIDA
-    'G' => 15,  // EXTRAS
-    'H' => 15,  // TOTAL PERCEPCIONES
-    'I' => 15,  // ISR
-    'J' => 15,  // IMSS
-    'K' => 15,  // INFONAVIT
-    'L' => 15,  // AJUSTES AL SUB
-    'M' => 15,  // AUSENTISMO
-    'N' => 15,  // UNIFORMES
-    'O' => 15,  // PERMISOS
-    'P' => 15,  // RETARDOS
-    'Q' => 15,  // CHECADOR
-    'R' => 15,  // F.A/GAFET/COFIA
-    'S' => 15,  // TOTAL DE DEDUCCIONES
-    'T' => 15,  // NETO A RECIBIR
-    'U' => 15,  // DISPERSION DE TARJETA
-    'V' => 15,  // IMPORTE EN EFECTIVO
-    'W' => 15,  // PRÉSTAMO
-    'X' => 15,  // TOTAL A RECIBIR
-    'Y' => 15,  // REDONDEADO
-    'Z' => 15  // TOTAL EFECTIVO REDONDEADO
+    'D' => 15,  // DIAS TRAB.
+    'E' => 15,  // SUELDO SEMANAL
+    'F' => 15,  // PASAJE
+    'G' => 15,  // COMIDA
+    'H' => 15,  // EXTRAS
+    'I' => 15,  // TOTAL PERCEPCIONES
+    'J' => 15,  // ISR
+    'K' => 15,  // IMSS
+    'L' => 15,  // INFONAVIT
+    'M' => 15,  // AJUSTES AL SUB
+    'N' => 15,  // AUSENTISMO
+    'O' => 15,  // UNIFORMES
+    'P' => 15,  // PERMISOS
+    'Q' => 15,  // RETARDOS
+    'R' => 15,  // CHECADOR
+    'S' => 15,  // F.A/GAFET/COFIA
+    'T' => 15,  // TOTAL DE DEDUCCIONES
+    'U' => 15,  // NETO A RECIBIR
+    'V' => 15,  // DISPERSION DE TARJETA
+    'W' => 15,  // IMPORTE EN EFECTIVO
+    'X' => 15,  // PRÉSTAMO
+    'Y' => 15,  // TOTAL A RECIBIR
+    'Z' => 15,  // REDONDEADO
+    'AA' => 15  // TOTAL EFECTIVO REDONDEADO
 ];
 
 // Columnas para el corte de limon
@@ -197,111 +213,113 @@ $anchos_corte = [
 //  FUNCIÓN PARA CREAR UNA HOJA
 //=====================
 
-function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja) {
+function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja)
+{
     global $jsonNomina, $columnas, $columnasAncho, $tamanioLetraColumnas, $tamanioLetraFilas, $fecha_inicio, $fecha_cierre, $numero_semana, $ano;
-    
-    // Crear una nueva hoja o usar la existente
-    if ($nombreHoja === 'JORNALERO BASE') {
+
+    // Crear una nueva hoja o usar la existente (si el libro está recién creado)
+    if ($spreadsheet->getSheetCount() === 1 && $spreadsheet->getActiveSheet()->getTitle() === 'Worksheet') {
         $sheet = $spreadsheet->getActiveSheet();
     } else {
         $sheet = $spreadsheet->createSheet();
     }
-    
+
     $sheet->setTitle($nombreHoja);
-    
+
     //=====================
     //  TÍTULOS
     //=====================
-    
-    $titulo1 = 'RANCHO LA HUASTECA';
+
+    $titulo1 = 'RANCHO HUASTECA';
     $titulo3 = 'NOMINA DEL ' . strtoupper($fecha_inicio) . ' AL ' . strtoupper($fecha_cierre);
     $titulo4 = 'SEMANA ' . str_pad($numero_semana, 2, '0', STR_PAD_LEFT) . '-' . $ano;
-    
+
     // Agregar los títulos en las primeras filas
     $sheet->setCellValue('A1', $titulo1);
     $sheet->setCellValue('A2', $titulo2);
     $sheet->setCellValue('A3', $titulo3);
     $sheet->setCellValue('A4', $titulo4);
-    
+
     // Mergear las celdas para que los títulos ocupen toda la tabla
-    $sheet->mergeCells('A1:AA1');
-    $sheet->mergeCells('A2:AA2');
-    $sheet->mergeCells('A3:AA3');
-    $sheet->mergeCells('A4:AA4');
-    
-    // Formatear título 1 - RANCHO LA HUASTECA (Purpura, Negrita, Tamaño 24)
+    $sheet->mergeCells('A1:AB1');
+    $sheet->mergeCells('A2:AB2');
+    $sheet->mergeCells('A3:AB3');
+    $sheet->mergeCells('A4:AB4');
+
+    // Formatear título 1 - RANCHO HUASTECA (Purpura, Negrita, Tamaño 24)
     $sheet->getStyle('A1')->getFont()->setBold(true);
     $sheet->getStyle('A1')->getFont()->setSize(24);
     $sheet->getStyle('A1')->getFont()->setColor(new Color('32BA5B'));
-    
+
     // Formatear título 2 (Negrita, Tamaño 20)
     $sheet->getStyle('A2')->getFont()->setBold(true);
     $sheet->getStyle('A2')->getFont()->setSize(20);
     $sheet->getStyle('A2')->getFont()->setColor(new Color('32BA5B'));
-    
+  
+
     // Formatear título 3 - NOMINA (Negrita, Tamaño 14)
     $sheet->getStyle('A3')->getFont()->setBold(true);
     $sheet->getStyle('A3')->getFont()->setSize(14);
-    
+
     // Formatear título 4 - SEMANA (Negrita, Tamaño 14)
     $sheet->getStyle('A4')->getFont()->setBold(true);
     $sheet->getStyle('A4')->getFont()->setSize(14);
-    
+
     // Centrar todos los títulos
     $sheet->getStyle('A1:A4')->getAlignment()->setHorizontal('center');
-    
+
     // Insertar logo a la derecha de los títulos
     $logoPath = '../../../public/img/logo.jpg';
     if (file_exists($logoPath)) {
         $logo = new Drawing();
         $logo->setName('Logo');
-        $logo->setDescription('Logo de Rancho El Relicario');
+        $logo->setDescription('Logo de Rancho Huasteca');
         $logo->setPath($logoPath);
         $logo->setHeight(190); // Altura en píxeles
         $logo->setCoordinates('B1');
         $logo->setOffsetX(10);
         $logo->setWorksheet($sheet);
     }
-    
+
     //=====================
     //  ENCABEZADOS DE LA TABLA
     //=====================
-    
+
     // Agregar los encabezados en la fila 6
     $columnaLetra = 'A';
     foreach ($columnas as $columna) {
         $sheet->setCellValue($columnaLetra . '6', $columna);
         $columnaLetra++;
     }
-    
+
     // Formatear los encabezados (Negrita, Centrados, Tamaño 10, Fondo Rojo, Letra Blanca)
-    $sheet->getStyle('A6:AA6')->getFont()->setBold(true);
-    $sheet->getStyle('A6:AA6')->getFont()->setSize(10);
-    $sheet->getStyle('A6:AA6')->getFont()->setColor(new Color('000000')); // Letra negra
-    $sheet->getStyle('A6:AA6')->getAlignment()->setHorizontal('center');
-    $sheet->getStyle('A6:AA6')->getAlignment()->setVertical('center');
-    $sheet->getStyle('A6:AA6')->getAlignment()->setWrapText(true);
-    
+    $sheet->getStyle('A6:AB6')->getFont()->setBold(true);
+    $sheet->getStyle('A6:AB6')->getFont()->setSize(10);
+    $sheet->getStyle('A6:AB6')->getFont()->setColor(new Color('000000')); // Letra blanca
+    $sheet->getStyle('A6:AB6')->getAlignment()->setHorizontal('center');
+    $sheet->getStyle('A6:AB6')->getAlignment()->setVertical('center');
+    $sheet->getStyle('A6:AB6')->getAlignment()->setWrapText(true);
+
     // Agregar color de fondo rojo a los encabezados
-    $sheet->getStyle('A6:AA6')->getFill()->setFillType('solid');
-    $sheet->getStyle('A6:AA6')->getFill()->getStartColor()->setRGB('32BA5B'); // Rojo
-    
+    $sheet->getStyle('A6:AB6')->getFill()->setFillType('solid');
+    $sheet->getStyle('A6:AB6')->getFill()->getStartColor()->setRGB('32BA5B'); // Rojo
+
     // Ajustar el ancho de las columnas
     foreach ($columnasAncho as $columna => $ancho) {
         $sheet->getColumnDimension($columna)->setWidth($ancho);
     }
-    
+
     // Aplicar tamaño de letra a los encabezados (fila 6)
     foreach ($tamanioLetraColumnas as $columna => $tamanio) {
         $sheet->getStyle($columna . '6')->getFont()->setSize($tamanio);
     }
-    
+
     //=====================
     //  AGREGAR DATOS DE EMPLEADOS
     //=====================
-    
+
     $empleados = [];
-    
+
     if ($jsonNomina && isset($jsonNomina['departamentos'])) {
         foreach ($jsonNomina['departamentos'] as $departamento) {
             if (isset($departamento['empleados'])) {
@@ -313,16 +331,16 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja) {
             }
         }
     }
-    
+
     // Ordenar empleados por nombre (orden ascendente A-Z)
     usort($empleados, function ($a, $b) {
         return strcmp($a['nombre'] ?? '', $b['nombre'] ?? '');
     });
-    
+
     //=====================
     //  VERIFICAR COLUMNAS CON DATOS
     //=====================
-    
+
     $comidaTieneDatos = false;
     $pasajeTieneDatos = false;
     $isrTieneDatos = false;
@@ -335,7 +353,8 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja) {
     $retardosTieneDatos = false;
     $checadorTieneDatos = false;
     $faxGafetCofiaTieneDatos = false;
-    
+    $diasTrabajadosTieneDatos = false;
+
     foreach ($empleados as $empleado) {
         if (($empleado['comida'] ?? 0) != 0) {
             $comidaTieneDatos = true;
@@ -362,6 +381,10 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja) {
             $faxGafetCofiaTieneDatos = true;
         }
 
+        if (($empleado['tipo_horario'] ?? 0) == 2) {
+            $diasTrabajadosTieneDatos = true;
+        }
+
         if (!empty($empleado['conceptos']) && is_array($empleado['conceptos'])) {
             foreach ($empleado['conceptos'] as $concepto) {
                 $codigo = $concepto['codigo'] ?? '';
@@ -375,72 +398,79 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja) {
             }
         }
     }
-    
+
     //=====================
     //  AGREGAR EMPLEADOS A LA HOJA
     //=====================
-    
+
     $numeroFila = 7;
     $numeroEmpleado = 1;
-    
+
     foreach ($empleados as $empleado) {
-        
-        // Agregar número y clave
+
+        // Agregar número, clave, nombre y días trabajados (solo si es tipo_horario 2)
         $sheet->setCellValue('A' . $numeroFila, $numeroEmpleado);
         $sheet->setCellValue('B' . $numeroFila, $empleado['clave'] ?? '');
         $sheet->setCellValue('C' . $numeroFila, $empleado['nombre'] ?? '');
         
+        $tipoHorario = $empleado['tipo_horario'] ?? '';
+        if ($tipoHorario == 2) {
+            $sheet->setCellValue('D' . $numeroFila, $empleado['dias_trabajados'] ?? 0);
+        } else {
+            $sheet->setCellValue('D' . $numeroFila, '');
+        }
+
         //=============================
         //  AGREGAR PERCEPCIONES 
         //=============================
-        
+
         $salarioSemanal = $empleado['salario_semanal'] ?? 0;
         if (!empty($salarioSemanal) && $salarioSemanal != 0) {
-            $sheet->setCellValue('D' . $numeroFila, $salarioSemanal);
-            $sheet->getStyle('D' . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
-        }
-        
-        $pasaje = $empleado['pasaje'] ?? 0;
-        if (!empty($pasaje) && $pasaje != 0) {
-            $sheet->setCellValue('E' . $numeroFila, $pasaje);
+            $sheet->setCellValue('E' . $numeroFila, $salarioSemanal);
             $sheet->getStyle('E' . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
         }
-        
+
+        $pasaje = $empleado['pasaje'] ?? 0;
+        if (!empty($pasaje) && $pasaje != 0) {
+            $sheet->setCellValue('F' . $numeroFila, $pasaje);
+            $sheet->getStyle('F' . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
+        }
+
         if ($comidaTieneDatos) {
             $comida = $empleado['comida'] ?? 0;
             if (!empty($comida) && $comida != 0) {
-                $sheet->setCellValue('F' . $numeroFila, $comida);
-                $sheet->getStyle('F' . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
+                $sheet->setCellValue('G' . $numeroFila, $comida);
+                $sheet->getStyle('G' . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
             }
         }
-        
+
         $sueldoExtraTotal = $empleado['sueldo_extra_total'] ?? 0;
         if (!empty($sueldoExtraTotal) && $sueldoExtraTotal != 0) {
-            $sheet->setCellValue('G' . $numeroFila, $sueldoExtraTotal);
-            $sheet->getStyle('G' . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
+            $sheet->setCellValue('H' . $numeroFila, $sueldoExtraTotal);
+            $sheet->getStyle('H' . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
         }
-        
+
         // TOTAL PERCEPCIONES
-        $columnasParaSumar = ['D', 'E'];
-        if ($comidaTieneDatos) $columnasParaSumar[] = 'F';
-        $columnasParaSumar[] = 'G';
-        
+        $columnasParaSumar = ['E', 'F'];
+        if ($comidaTieneDatos) $columnasParaSumar[] = 'G';
+        $columnasParaSumar[] = 'H';
+
         $primeraColumna = reset($columnasParaSumar);
         $ultimaColumna = end($columnasParaSumar);
-        $sheet->setCellValue('H' . $numeroFila, '=SUM(' . $primeraColumna . $numeroFila . ':' . $ultimaColumna . $numeroFila . ')');
-        $sheet->getStyle('H' . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
-        
+        $sheet->setCellValue('I' . $numeroFila, '=SUM(' . $primeraColumna . $numeroFila . ':' . $ultimaColumna . $numeroFila . ')');
+        $sheet->getStyle('I' . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
+
         //=============================
         //  AGREGAR DEDUCCIONES 
         //=============================
-        
+
         $mapeoConceptos = [
-            '45'  => 'I',   // ISR
-            '52'  => 'J',   // IMSS
-            '16'  => 'K',   // INFONAVIT
-            '107' => 'L',   // AJUSTES AL SUB
+            '45'  => 'J',   // ISR
+            '52'  => 'K',   // IMSS
+            '16'  => 'L',   // INFONAVIT
+            '107' => 'M',   // AJUSTES AL SUB
         ];
-        
+
         if (!empty($empleado['conceptos']) && is_array($empleado['conceptos'])) {
             foreach ($empleado['conceptos'] as $concepto) {
                 $codigo = $concepto['codigo'] ?? null;
@@ -449,7 +479,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja) {
                 if ($codigo === '107' && !$ajustesAlSubTieneDatos) {
                     continue;
                 }
-                
+
                 if (isset($mapeoConceptos[$codigo]) && !empty($resultado) && $resultado != 0) {
                     $columna = $mapeoConceptos[$codigo];
                     $sheet->setCellValue($columna . $numeroFila, $resultado);
@@ -458,172 +488,174 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja) {
                 }
             }
         }
-        
+
         // Descuentos adicionales (AUSENTISMO, PERMISO, RETARDOS, UNIFORMES, CHECADOR, F.A/GAFET/COFIA)
         $inasistencia = $empleado['inasistencia'] ?? 0;
         if (!empty($inasistencia) && $inasistencia != 0) {
-            $sheet->setCellValue('M' . $numeroFila, $inasistencia);
-            $sheet->getStyle('M' . $numeroFila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
-            $sheet->getStyle('M' . $numeroFila)->getFont()->setColor(new Color('FF0000'));
-        }
-        
-        $uniformes = $empleado['uniformes'] ?? 0;
-        if (!empty($uniformes) && $uniformes != 0) {
-            $sheet->setCellValue('N' . $numeroFila, $uniformes);
+            $sheet->setCellValue('N' . $numeroFila, $inasistencia);
             $sheet->getStyle('N' . $numeroFila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
             $sheet->getStyle('N' . $numeroFila)->getFont()->setColor(new Color('FF0000'));
         }
 
-        $permiso = $empleado['permiso'] ?? 0;
-        if (!empty($permiso) && $permiso != 0) {
-            $sheet->setCellValue('O' . $numeroFila, $permiso);
+        $uniformes = $empleado['uniformes'] ?? 0;
+        if (!empty($uniformes) && $uniformes != 0) {
+            $sheet->setCellValue('O' . $numeroFila, $uniformes);
             $sheet->getStyle('O' . $numeroFila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
             $sheet->getStyle('O' . $numeroFila)->getFont()->setColor(new Color('FF0000'));
         }
-        
-        $retardos = $empleado['retardos'] ?? 0;
-        if (!empty($retardos) && $retardos != 0) {
-            $sheet->setCellValue('P' . $numeroFila, $retardos);
+
+        $permiso = $empleado['permiso'] ?? 0;
+        if (!empty($permiso) && $permiso != 0) {
+            $sheet->setCellValue('P' . $numeroFila, $permiso);
             $sheet->getStyle('P' . $numeroFila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
             $sheet->getStyle('P' . $numeroFila)->getFont()->setColor(new Color('FF0000'));
         }
-        
-        $checador = $empleado['checador'] ?? 0;
-        if (!empty($checador) && $checador != 0) {
-            $sheet->setCellValue('Q' . $numeroFila, $checador);
+
+        $retardos = $empleado['retardos'] ?? 0;
+        if (!empty($retardos) && $retardos != 0) {
+            $sheet->setCellValue('Q' . $numeroFila, $retardos);
             $sheet->getStyle('Q' . $numeroFila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
             $sheet->getStyle('Q' . $numeroFila)->getFont()->setColor(new Color('FF0000'));
         }
-        
-        $faxGafetCofia = $empleado['fa_gafet_cofia'] ?? 0;
-        if (!empty($faxGafetCofia) && $faxGafetCofia != 0) {
-            $sheet->setCellValue('R' . $numeroFila, $faxGafetCofia);
+
+        $checador = $empleado['checador'] ?? 0;
+        if (!empty($checador) && $checador != 0) {
+            $sheet->setCellValue('R' . $numeroFila, $checador);
             $sheet->getStyle('R' . $numeroFila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
             $sheet->getStyle('R' . $numeroFila)->getFont()->setColor(new Color('FF0000'));
         }
-        
+
+        $faxGafetCofia = $empleado['fa_gafet_cofia'] ?? 0;
+        if (!empty($faxGafetCofia) && $faxGafetCofia != 0) {
+            $sheet->setCellValue('S' . $numeroFila, $faxGafetCofia);
+            $sheet->getStyle('S' . $numeroFila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
+            $sheet->getStyle('S' . $numeroFila)->getFont()->setColor(new Color('FF0000'));
+        }
+
         // TOTAL DE DEDUCCIONES
-        $sheet->setCellValue('S' . $numeroFila, '=SUM(I' . $numeroFila . ':R' . $numeroFila . ')');
-        $sheet->getStyle('S' . $numeroFila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
-        $sheet->getStyle('S' . $numeroFila)->getFont()->setColor(new Color('FF0000'));
-        
+        $sheet->setCellValue('T' . $numeroFila, '=SUM(J' . $numeroFila . ':S' . $numeroFila . ')');
+        $sheet->getStyle('T' . $numeroFila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
+        $sheet->getStyle('T' . $numeroFila)->getFont()->setColor(new Color('FF0000'));
+
         // NETO A RECIBIR
-        $sheet->setCellValue('T' . $numeroFila, '=SUM(D' . $numeroFila . ':G' . $numeroFila . ')-SUM(I' . $numeroFila . ':R' . $numeroFila . ')');
-        $sheet->getStyle('T' . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
-        
+        $sheet->setCellValue('U' . $numeroFila, '=I' . $numeroFila . '-T' . $numeroFila);
+        $sheet->getStyle('U' . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
+
         // DISPERSION DE TARJETA
         $tarjeta = $empleado['tarjeta'] ?? 0;
         if (!empty($tarjeta) && $tarjeta != 0) {
-            $sheet->setCellValue('U' . $numeroFila, $tarjeta);
-            $sheet->getStyle('U' . $numeroFila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
-            $sheet->getStyle('U' . $numeroFila)->getFont()->setColor(new Color('FF0000'));
+            $sheet->setCellValue('V' . $numeroFila, $tarjeta);
+            $sheet->getStyle('V' . $numeroFila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
+            $sheet->getStyle('V' . $numeroFila)->getFont()->setColor(new Color('FF0000'));
         }
-        
+
         // IMPORTE EN EFECTIVO
-        $sheet->setCellValue('V' . $numeroFila, '=T' . $numeroFila . '-U' . $numeroFila);
-        $sheet->getStyle('V' . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
-        
+        $sheet->setCellValue('W' . $numeroFila, '=U' . $numeroFila . '-V' . $numeroFila);
+        $sheet->getStyle('W' . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
+
         // PRÉSTAMO
         $prestamo = $empleado['prestamo'] ?? 0;
         if (!empty($prestamo) && $prestamo != 0) {
-            $sheet->setCellValue('W' . $numeroFila, $prestamo);
-            $sheet->getStyle('W' . $numeroFila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
-            $sheet->getStyle('W' . $numeroFila)->getFont()->setColor(new Color('FF0000'));
+            $sheet->setCellValue('X' . $numeroFila, $prestamo);
+            $sheet->getStyle('X' . $numeroFila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
+            $sheet->getStyle('X' . $numeroFila)->getFont()->setColor(new Color('FF0000'));
         }
-        
+
         // TOTAL A RECIBIR
-        $sheet->setCellValue('X' . $numeroFila, '=V' . $numeroFila . '-W' . $numeroFila);
-        $sheet->getStyle('X' . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
-        
+        $sheet->setCellValue('Y' . $numeroFila, '=W' . $numeroFila . '-X' . $numeroFila);
+        $sheet->getStyle('Y' . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
+
         // REDONDEADO
-        $sheet->setCellValue('Y' . $numeroFila, '=ROUND(X' . $numeroFila . ',0)-X' . $numeroFila);
-        $sheet->getStyle('Y' . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00;[RED]-$#,##0.00');
-        
+        $sheet->setCellValue('Z' . $numeroFila, '=ROUND(Y' . $numeroFila . ',0)-Y' . $numeroFila);
+        $sheet->getStyle('Z' . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00;[RED]-$#,##0.00');
+
         // TOTAL EFECTIVO REDONDEADO
-        $sheet->setCellValue('Z' . $numeroFila, '=X' . $numeroFila . '+Y' . $numeroFila);
-        $sheet->getStyle('Z' . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
-        
+        $sheet->setCellValue('AA' . $numeroFila, '=Y' . $numeroFila . '+Z' . $numeroFila);
+        $sheet->getStyle('AA' . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
+
         // Alineación
         $sheet->getStyle('A' . $numeroFila . ':B' . $numeroFila)->getAlignment()->setHorizontal('center');
         $sheet->getStyle('A' . $numeroFila . ':B' . $numeroFila)->getAlignment()->setVertical('center');
         $sheet->getStyle('C' . $numeroFila)->getAlignment()->setHorizontal('left');
         $sheet->getStyle('C' . $numeroFila)->getAlignment()->setVertical('center');
-        $sheet->getStyle('D' . $numeroFila . ':Z' . $numeroFila)->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('D' . $numeroFila . ':Z' . $numeroFila)->getAlignment()->setVertical('center');
-        
+        $sheet->getStyle('D' . $numeroFila)->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('D' . $numeroFila)->getAlignment()->setVertical('center');
+        $sheet->getStyle('E' . $numeroFila . ':AB' . $numeroFila)->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('E' . $numeroFila . ':AB' . $numeroFila)->getAlignment()->setVertical('center');
+
         $numeroFila++;
         $numeroEmpleado++;
     }
-    
+
     //=====================
     //  APLICAR FORMATOS A TODAS LAS CELDAS DE DATOS
     //=====================
-    
+
     for ($fila = 7; $fila < $numeroFila; $fila++) {
-        for ($col = 'I'; $col <= 'L'; $col++) {
+        for ($col = 'J'; $col <= 'M'; $col++) {
             $sheet->getStyle($col . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
             $sheet->getStyle($col . $fila)->getFont()->setColor(new Color('FF0000'));
         }
-        
-        for ($col = 'M'; $col <= 'R'; $col++) {
+
+        for ($col = 'N'; $col <= 'S'; $col++) {
             $sheet->getStyle($col . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
             $sheet->getStyle($col . $fila)->getFont()->setColor(new Color('FF0000'));
         }
-        
-        $sheet->getStyle('S' . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
-        $sheet->getStyle('S' . $fila)->getFont()->setColor(new Color('FF0000'));
-        $sheet->getStyle('U' . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
-        $sheet->getStyle('U' . $fila)->getFont()->setColor(new Color('FF0000'));
-        $sheet->getStyle('W' . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
-        $sheet->getStyle('W' . $fila)->getFont()->setColor(new Color('FF0000'));
-        $sheet->getStyle('Y' . $fila)->getNumberFormat()->setFormatCode('$#,##0.00;[RED]-$#,##0.00');
-        
-        foreach (['D', 'E', 'F', 'G', 'H', 'T', 'V', 'X', 'Z'] as $col) {
+
+        $sheet->getStyle('T' . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
+        $sheet->getStyle('T' . $fila)->getFont()->setColor(new Color('FF0000'));
+        $sheet->getStyle('V' . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
+        $sheet->getStyle('V' . $fila)->getFont()->setColor(new Color('FF0000'));
+        $sheet->getStyle('X' . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
+        $sheet->getStyle('X' . $fila)->getFont()->setColor(new Color('FF0000'));
+        $sheet->getStyle('Z' . $fila)->getNumberFormat()->setFormatCode('$#,##0.00;[RED]-$#,##0.00');
+
+        foreach (['E', 'F', 'G', 'H', 'I', 'U', 'W', 'Y', 'AA'] as $col) {
             $sheet->getStyle($col . $fila)->getNumberFormat()->setFormatCode('$#,##0.00');
         }
     }
-    
+
     //=====================
     //  AGREGAR FILA DE TOTALES
     //=====================
-    
+
     $filaTotal = $numeroFila;
-    
+
     $sheet->setCellValue('A' . $filaTotal, 'TOTALES');
     $sheet->getStyle('A' . $filaTotal)->getFont()->setBold(true);
     $sheet->getStyle('A' . $filaTotal)->getAlignment()->setHorizontal('center');
     $sheet->getStyle('A' . $filaTotal)->getAlignment()->setVertical('center');
-    
-    $columnasData = ['D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
-    
+
+    $columnasData = ['E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA'];
+
     foreach ($columnasData as $columna) {
         $rangoSuma = $columna . '7:' . $columna . ($filaTotal - 1);
         $sheet->setCellValue($columna . $filaTotal, '=IF(SUM(' . $rangoSuma . ')=0,"",SUM(' . $rangoSuma . '))');
         $sheet->getStyle($columna . $filaTotal)->getFont()->setBold(true);
         $sheet->getStyle($columna . $filaTotal)->getFont()->setSize(14);
-        
-        if (in_array($columna, ['I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'U', 'W'])) {
+
+        if (in_array($columna, ['J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'V', 'X'])) {
             $sheet->getStyle($columna . $filaTotal)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
             $sheet->getStyle($columna . $filaTotal)->getFont()->setColor(new Color('FF0000'));
-        } elseif ($columna === 'Y') {
+        } elseif ($columna === 'Z') {
             $sheet->getStyle($columna . $filaTotal)->getNumberFormat()->setFormatCode('$#,##0.00;[RED]-$#,##0.00');
         } else {
             $sheet->getStyle($columna . $filaTotal)->getNumberFormat()->setFormatCode('$#,##0.00');
         }
-        
+
         $sheet->getStyle($columna . $filaTotal)->getAlignment()->setHorizontal('center');
         $sheet->getStyle($columna . $filaTotal)->getAlignment()->setVertical('center');
     }
-    
+
     // Altura y color de fondo
     $sheet->getRowDimension($filaTotal)->setRowHeight(25);
-    $sheet->getStyle('A' . $filaTotal . ':Z' . $filaTotal)->getFill()->setFillType('solid');
-    $sheet->getStyle('A' . $filaTotal . ':Z' . $filaTotal)->getFill()->getStartColor()->setRGB('D3D3D3');
-    
+    $sheet->getStyle('A' . $filaTotal . ':AB' . $filaTotal)->getFill()->setFillType('solid');
+    $sheet->getStyle('A' . $filaTotal . ':AB' . $filaTotal)->getFill()->getStartColor()->setRGB('D3D3D3');
+
     //=====================
     //  AGREGAR BORDES
     //=====================
-    
+
     $estiloBordesTabla = [
         'borders' => [
             'allBorders' => [
@@ -632,82 +664,82 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja) {
             ],
         ],
     ];
-    
-    $sheet->getStyle('A6:AA' . $filaTotal)->applyFromArray($estiloBordesTabla);
-    
+
+    $sheet->getStyle('A6:AB' . $filaTotal)->applyFromArray($estiloBordesTabla);
+
     //=====================
     //  OCULTAR COLUMNAS SIN DATOS
     //=====================
-    
+
     if (!$pasajeTieneDatos) {
-        $sheet->getColumnDimension('E')->setVisible(false);
-    }
-    if (!$comidaTieneDatos) {
         $sheet->getColumnDimension('F')->setVisible(false);
     }
-    
-    // Ocultar TOTAL PERCEPCIONES siempre
-    $sheet->getColumnDimension('H')->setVisible(false);
-    
-    if (!$isrTieneDatos) {
-        $sheet->getColumnDimension('I')->setVisible(false);
+    if (!$diasTrabajadosTieneDatos) {
+        $sheet->getColumnDimension('D')->setVisible(false);
     }
-    if (!$imssTieneDatos) {
+    if (!$comidaTieneDatos) {
+        $sheet->getColumnDimension('G')->setVisible(false);
+    }
+    if (!$isrTieneDatos) {
         $sheet->getColumnDimension('J')->setVisible(false);
     }
-    if (!$infonavitTieneDatos) {
+    if (!$imssTieneDatos) {
         $sheet->getColumnDimension('K')->setVisible(false);
     }
-    if (!$ajustesAlSubTieneDatos) {
+    if (!$infonavitTieneDatos) {
         $sheet->getColumnDimension('L')->setVisible(false);
     }
-    if (!$ausentismoTieneDatos) {
+    if (!$ajustesAlSubTieneDatos) {
         $sheet->getColumnDimension('M')->setVisible(false);
     }
-    if (!$uniformesTieneDatos) {
+    if (!$ausentismoTieneDatos) {
         $sheet->getColumnDimension('N')->setVisible(false);
     }
-    if (!$permisoTieneDatos) {
+    if (!$uniformesTieneDatos) {
         $sheet->getColumnDimension('O')->setVisible(false);
     }
-    if (!$retardosTieneDatos) {
+    if (!$permisoTieneDatos) {
         $sheet->getColumnDimension('P')->setVisible(false);
     }
-    if (!$checadorTieneDatos) {
+    if (!$retardosTieneDatos) {
         $sheet->getColumnDimension('Q')->setVisible(false);
     }
-    if (!$faxGafetCofiaTieneDatos) {
+    if (!$checadorTieneDatos) {
         $sheet->getColumnDimension('R')->setVisible(false);
     }
+    if (!$faxGafetCofiaTieneDatos) {
+        $sheet->getColumnDimension('S')->setVisible(false);
+    }
 
-    // Ocultar TOTAL DE DEDUCCIONES siempre
-    $sheet->getColumnDimension('S')->setVisible(false);
-    
+    // Ocultar columnas de totales permanentemente
+    $sheet->getColumnDimension('I')->setVisible(false);
+    $sheet->getColumnDimension('T')->setVisible(false);
+
     //=====================
     //  CONFIGURAR ALTURA DE FILAS Y TAMAÑO DE LETRA
     //=====================
-    
+
     $sheet->getRowDimension(1)->setRowHeight(38);
     $sheet->getRowDimension(2)->setRowHeight(32);
     $sheet->getRowDimension(3)->setRowHeight(32);
     $sheet->getRowDimension(4)->setRowHeight(32);
     $sheet->getRowDimension(5)->setRowHeight(35);
     $sheet->getRowDimension(6)->setRowHeight(45);
-    
+
     $alturaFilas = 48;
-    
+
     for ($fila = 7; $fila < $numeroFila; $fila++) {
         $sheet->getRowDimension($fila)->setRowHeight($alturaFilas);
-        
+
         foreach ($tamanioLetraFilas as $columna => $tamanio) {
             $sheet->getStyle($columna . $fila)->getFont()->setSize($tamanio);
         }
     }
-    
+
     //=====================
     //  CONFIGURACIÓN DE PÁGINA
     //=====================
-    
+
     $sheet->getPageSetup()->setPaperSize(PageSetup::PAPERSIZE_LETTER);
     $sheet->getPageSetup()->setOrientation(PageSetup::ORIENTATION_LANDSCAPE);
     $sheet->getPageMargins()->setLeft(0.5);
@@ -717,7 +749,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja) {
     $sheet->getPageSetup()->setFitToPage(true);
     $sheet->getPageSetup()->setFitToHeight(1);
     $sheet->getPageSetup()->setFitToWidth(1);
-    $sheet->getPageSetup()->setPrintArea('A1:AA' . $filaTotal);
+    $sheet->getPageSetup()->setPrintArea('A1:AB' . $filaTotal);
 }
 
 
@@ -965,7 +997,7 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
     if (file_exists($logoPath)) {
         $logo = new Drawing();
         $logo->setName('Logo');
-        $logo->setDescription('Logo de Rancho El Relicario');
+        $logo->setDescription('Logo de Rancho Huasteca');
         $logo->setPath($logoPath);
         $logo->setHeight(110);
         $logo->setCoordinates('B1');
@@ -1019,8 +1051,6 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
         // Avanzar a la siguiente columna
         $columna++;
     }
-
-
 
     // Formatear los encabezados (Negrita, Centrados, Tamaño 10, Fondo Rojo, Letra Blanca)
     $sheet->getStyle('A6:M6')->getFont()->setBold(true);
@@ -1151,8 +1181,8 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
     //=====================
 
     $filaTotal = $numeroFila;
-    $sheet->setCellValue('A' . $filaTotal, 'TOTALES');
-    $sheet->getStyle('A' . $filaTotal)->applyFromArray([
+    $sheet->setCellValue('C' . $filaTotal, 'TOTALES');
+    $sheet->getStyle('C' . $filaTotal)->applyFromArray([
         'font'      => ['bold' => true, 'size' => 12],
         'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
         'fill'      => ['fillType' => 'solid', 'startColor' => ['rgb' => $colorTotales]],
@@ -1213,7 +1243,7 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
     $sheet->getRowDimension(2)->setRowHeight(28);
     $sheet->getRowDimension(3)->setRowHeight(24);
     $sheet->getRowDimension(4)->setRowHeight(24);
-    $sheet->getRowDimension(5)->setRowHeight(20);
+    $sheet->getRowDimension(5)->setRowHeight(20); // Fila de días
     $sheet->getRowDimension(6)->setRowHeight(40);
 
     for ($f = 7; $f < $numeroFila; $f++) {
@@ -1242,27 +1272,21 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
 //  CREAR LAS DIFERENTES HOJAS
 //=====================
 
-// Jornalero Base
-crearHoja($spreadsheet, 'PERSONAL DE BASE', function($emp) {
-    $id = $emp['id_tipo_puesto'] ?? null;
-    $mostrar = $emp['mostrar'] ?? false;
-    return (($id == 1) && $mostrar);
-}, 'JORNALERO BASE');
+if ($jsonNomina && isset($jsonNomina['departamentos'])) {
+    foreach ($jsonNomina['departamentos'] as $departamento) {
+        $nombreDepto = $departamento['nombre'] ?? 'S/N';
+        $idDepto = $departamento['id_departamento'] ?? null;
 
-// Jornalero Apoyo
-crearHoja($spreadsheet, 'PERSONAL DE APOYO', function($emp) {
-    $id = $emp['id_tipo_puesto'] ?? null;
-    $mostrar = $emp['mostrar'] ?? false;
-    return (($id == 3) && $mostrar);
-}, 'JORNALERO APOYO');
+        // Omitir Corte si ya se maneja aparte al final con su propio formato
+        if (strtoupper($nombreDepto) === 'CORTE') continue;
 
-
-// Coordinador Rancho
-crearHoja($spreadsheet, 'COORDINADORES - RANCHO', function($emp) {
-    $id = $emp['id_tipo_puesto'] ?? null;
-    $mostrar = $emp['mostrar'] ?? false;
-    return (($id == 4) && $mostrar);
-}, 'COORDINADOR RANCHO');
+        crearHoja($spreadsheet, strtoupper($nombreDepto), function ($emp) use ($idDepto) {
+            $idDeptoEmp = $emp['id_departamento'] ?? null;
+            $mostrar = $emp['mostrar'] ?? false;
+            return ($mostrar && $idDeptoEmp == $idDepto);
+        }, substr(strtoupper($nombreDepto), 0, 31));
+    }
+}
 
 
 // =================================================================================================
@@ -1291,7 +1315,7 @@ if ($existeCorteConEmpleados) {
 
 $writer = new Xlsx($spreadsheet);
 
-$filename = 'SEM ' . str_pad($numero_semana, 2, '0', STR_PAD_LEFT) . ' - ' . $ano . ' RANCHO LA HUASTECA NOMINAS COMPLETAS - ' . date('Y-m-d_H-i-s') . '.xlsx';
+$filename = 'SEM ' . str_pad($numero_semana, 2, '0', STR_PAD_LEFT) . ' - ' . $ano . ' RANCHO HUASTECA NOMINAS COMPLETAS - ' . date('Y-m-d_H-i-s') . '.xlsx';
 
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Content-Disposition: attachment; filename="' . $filename . '"');

@@ -118,6 +118,38 @@ function modificarConceptos(empleado) {
 }
 
 /************************************
+ * ACTUALIZAR VALORES DE HISTORIALES EN EL MODAL
+ ************************************/
+
+function actualizarValoresHistorialesEnModal(empleado) {
+    // Validar que exista empleado
+    if (!empleado) {
+        return;
+    }
+
+    // Si no hay historial de retardos o está vacío, poner 0; si no, mostrar el total
+    if (!Array.isArray(empleado.historial_retardos) || empleado.historial_retardos.length === 0) {
+        $('#mod-retardos-coordinador').val(0);
+    } else {
+        $('#mod-retardos-coordinador').val(empleado.retardos || 0);
+    }
+
+    // Si no hay historial de inasistencias o está vacío, poner 0; si no, mostrar el total
+    if (!Array.isArray(empleado.historial_inasistencias) || empleado.historial_inasistencias.length === 0) {
+        $('#mod-inasistencias-coordinador').val(0);
+    } else {
+        $('#mod-inasistencias-coordinador').val(empleado.inasistencia || 0);
+    }
+
+    // Si no hay historial de olvidos o está vacío, poner 0; si no, mostrar el total
+    if (!Array.isArray(empleado.historial_olvidos) || empleado.historial_olvidos.length === 0) {
+        $('#mod-checador-coordinador').val(0);
+    } else {
+        $('#mod-checador-coordinador').val(empleado.checador || 0);
+    }
+}
+
+/************************************
  * MODIFICAR DEDUCCIONES DEL EMPLEADO
  ************************************/
 
@@ -156,22 +188,22 @@ function modificarDeducciones(empleado) {
     if (inasistenciasVacio || inasistencias !== (empleado.inasistencia || 0)) {
         empleado._inasistencia_editado_manual = true;
     }
-
+    
     if (retardosVacio || retardos !== (empleado.retardos || 0)) {
         empleado._retardos_editado_manual = true;
     }
     if (checadorVacio || checador !== (empleado.checador || 0)) {
         empleado._checador_editado_manual = true;
     }
+    
 
-
-    empleado.tarjeta = tarejta;
-    empleado.prestamo = prestamo;
-    empleado.checador = checador;
-    empleado.retardos = retardos;
-    empleado.inasistencia = inasistencias;
-    empleado.uniformes = uniformes;
-    empleado.permiso = permiso;
+    empleado.tarjeta       = tarejta;
+    empleado.prestamo      = prestamo;
+    empleado.checador      = checador;
+    empleado.retardos      = retardos;
+    empleado.inasistencia  = inasistencias;
+    empleado.uniformes     = uniformes;
+    empleado.permiso       = permiso;
     empleado.fa_gafet_cofia = fa_gafet_cofia;
 
     // Guardar estado del redondeo al presionar Guardar
@@ -179,7 +211,7 @@ function modificarDeducciones(empleado) {
     // aquí nos aseguramos de que queden sincronizados correctamente.
     const redondeoActivoGuardar = $('#mod-redondear-sueldo-coordinador').is(':checked');
     empleado.redondeo_activo = redondeoActivoGuardar;
-    empleado.total_cobrar = parseFloat($('#mod-sueldo-a-cobrar-coordinador').val()) || 0;
+    empleado.total_cobrar    = parseFloat($('#mod-sueldo-a-cobrar-coordinador').val()) || 0;
     if (!redondeoActivoGuardar) {
         // Sin redondeo: no hay diferencia
         empleado.redondeo = 0;
@@ -193,35 +225,51 @@ function modificarDeducciones(empleado) {
  * MODIFICAR HORARIO OFICIAL DEL EMPLEADO
  ************************************/
 
-function modificarHorarioOficial(empleado) {
-    // Validar que exista empleado y horario oficial
-    if (!empleado || !Array.isArray(empleado.horario_oficial)) {
+function modificarHorarioOficial(empleado){
+    // Validar que exista empleado 
+    if (!empleado) {
         return;
     }
 
+    // Detectar si se acaba de crear horario_oficial (no existía antes)
+    const horarioNoExistia = !empleado.horario_oficial || !Array.isArray(empleado.horario_oficial);
+    
+    // Si no existe horario_oficial, inicializarlo como array vacío
+    if (horarioNoExistia) {
+        empleado.horario_oficial = [];
+        // Marcar con una bandera para actualizar el modal después de recalcular
+        empleado._horario_oficial_recien_creado = true;
+    }
+    
     // Iterar sobre cada fila de la tabla de horarios
     $('#tbody-horarios-oficiales-coordinadores tr').each(function (index) {
         const $celdas = $(this).find('td');
-
+        
         // Obtener los valores de cada celda
         const dia = $celdas.eq(0).text().trim(); // Día (no editable)
         const entrada = $celdas.eq(1).text().trim(); // Entrada
         const salidaComida = $celdas.eq(2).text().trim(); // Salida Comida
         const entradaComida = $celdas.eq(3).text().trim(); // Entrada Comida
         const salida = $celdas.eq(4).text().trim(); // Salida
-
+        
         // Buscar el horario correspondiente por el nombre del día
-        const horario = empleado.horario_oficial.find(h =>
+        let horario = empleado.horario_oficial.find(h => 
             String(h.dia || '').toUpperCase().trim() === dia.toUpperCase().trim()
         );
-
-        if (horario) {
-            // Actualizar los valores (convertir '-' en vacío)
-            horario.entrada = entrada === '-' ? '' : entrada;
-            horario.salida_comida = salidaComida === '-' ? '' : salidaComida;
-            horario.entrada_comida = entradaComida === '-' ? '' : entradaComida;
-            horario.salida = salida === '-' ? '' : salida;
+        
+        // Si no existe el horario para este día, crearlo
+        if (!horario) {
+            horario = {
+                dia: dia.toUpperCase()
+            };
+            empleado.horario_oficial.push(horario);
         }
+        
+        // Actualizar los valores (convertir '-' en vacío)
+        horario.entrada = entrada === '-' ? '' : entrada;
+        horario.salida_comida = salidaComida === '-' ? '' : salidaComida;
+        horario.entrada_comida = entradaComida === '-' ? '' : entradaComida;
+        horario.salida = salida === '-' ? '' : salida;
     });
 }
 

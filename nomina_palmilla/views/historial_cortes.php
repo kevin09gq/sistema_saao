@@ -22,7 +22,7 @@ verificarSesion();
     <div class="container mt-4">
         
         <div class="header-historial">
-            <h2><i class="bi bi-clock-history me-2"></i> Historial de Cortes de Rejas(Palmilla)</h2>
+            <h2><i class="bi bi-clock-history me-2"></i> Historial de Cortes de Rejas (Huasteca)</h2>
             <a href="nomina_palmilla.php" class="btn btn-light btn-sm text-success fw-bold">
                 <i class="bi bi-arrow-left"></i> Regresar a Nómina
             </a>
@@ -75,7 +75,6 @@ verificarSesion();
         </div>
 
         <div class="row" id="panel_desglose_completo" style="display: none;">
-            <!-- Desglose de Folios -->
             <div class="col-12 mb-4">
                 <div class="table-responsive h-100" id="panel_tabla">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -112,7 +111,7 @@ verificarSesion();
 
     </div>
 
-    <!-- Modal Detalles Bonito -->
+    <!-- Modal Detalles -->
     <div class="modal fade" id="modalDetalleCorte" tabindex="-1" aria-labelledby="modalDetalleCorteLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content" style="border: none; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
@@ -183,12 +182,11 @@ verificarSesion();
             <div class="modal-content" style="border: none; border-radius: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.2);">
                 <div class="modal-header border-bottom-0 pb-0 pt-4 px-4" style="background: linear-gradient(to right, #ffffff, #f8f9fa);">
                     <h4 class="modal-title fw-bold text-dark w-100 d-flex justify-content-between align-items-center" id="modalRankingTablasLabel">
-                        <span><i class="bi bi-trophy-fill text-warning me-2 fs-3" style="filter: drop-shadow(0 2px 4px rgba(255,193,7,.4));"></i> Producción por Tablas</span>
+                        <span><i class="bi bi-trophy-fill text-warning me-2 fs-3"></i> Producción por Tablas</span>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </h4>
                 </div>
                 <div class="modal-body p-0">
-                    <!-- Vista Principal de Ranking -->
                     <div id="vista_ranking_principal">
                         <div class="d-flex justify-content-between align-items-center px-4 py-3 bg-white border-bottom sticky-top" style="z-index: 10;">
                             <span class="text-secondary fw-bold fs-6"><i class="bi bi-sort-down"></i> Ordenar por:</span>
@@ -201,10 +199,10 @@ verificarSesion();
                             <table class="table table-custom-modal table-hover text-center mb-0 w-100">
                                 <thead style="background-color: #e9ecef;">
                                     <tr>
-                                        <th style="width: 15%; border-top-left-radius: 8px;">Top / Lugar</th>
+                                        <th style="width: 15%;">Lugar</th>
                                         <th>Número de Tabla</th>
                                         <th>Rejas Extraídas</th>
-                                        <th style="width: 25%; border-top-right-radius: 8px;">Acciones</th>
+                                        <th style="width: 25%;">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tbody_modal_ranking" class="bg-white">
@@ -214,7 +212,6 @@ verificarSesion();
                         </div>
                     </div>
 
-                    <!-- Vista de Detalles por Tabla -->
                     <div id="vista_ranking_detalles" style="display: none; padding: 25px; padding-bottom: 80px; background-color: #f8f9fa;">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <button class="btn btn-sm btn-white border shadow-sm fw-bold text-secondary" onclick="volverARanking()">
@@ -224,21 +221,15 @@ verificarSesion();
                                 <i class="bi bi-file-earmark-pdf"></i> Exportar Desglose
                             </button>
                         </div>
-                        
-                        <div class="info-card bg-white shadow-sm border-0 mb-4">
-                            <h5 class="fw-bold text-primary mb-0 d-flex align-items-center" id="titulo_detalles_tabla">
-                                <i class="bi bi-table me-2"></i> Detalles de Tabla
-                            </h5>
-                        </div>
-                        
+                        <h5 class="fw-bold text-primary mb-4" id="titulo_detalles_tabla"></h5>
                         <div class="table-custom-modal">
                             <table class="table table-hover text-center mb-0 w-100">
                                 <thead>
                                     <tr>
-                                        <th>Fecha del Corte</th>
+                                        <th>Fecha</th>
                                         <th>Folio</th>
-                                        <th>Cortador / Empleado</th>
-                                        <th class="text-primary head-rejas">Rejas Aportadas</th>
+                                        <th>Cortador</th>
+                                        <th class="text-primary">Rejas</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
@@ -250,7 +241,7 @@ verificarSesion();
                     </div>
                 </div>
                 <div class="modal-footer border-top-0 pt-0 pb-4 pe-4 bg-light">
-                    <button type="button" class="btn btn-secondary px-5 fw-bold rounded-pill shadow-sm" data-bs-dismiss="modal">Cerrar Ventana</button>
+                    <button type="button" class="btn btn-secondary px-5 fw-bold rounded-pill" data-bs-dismiss="modal">Cerrar</button>
                 </div>
             </div>
         </div>

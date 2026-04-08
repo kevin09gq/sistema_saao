@@ -126,6 +126,13 @@ function pintarDashboard(data) {
     document.getElementById('res_total_dinero').innerText = `$${parseFloat(data.total_dinero).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`;
     document.getElementById('res_mejor_tabla').innerText = data.mejor_tabla;
 
+    // Cambiar los títulos de los KPIs
+    const kpiTitles = document.querySelectorAll('.kpi-title');
+    if (kpiTitles.length >= 3) {
+        kpiTitles[1].textContent = 'Gastos de cortes';
+        kpiTitles[2].textContent = 'Sección con más rejas';
+    }
+
     window.rankingTablasActual = data.ranking_tablas || [];
 
     const tbody = document.getElementById('tbody_historial');
@@ -367,13 +374,44 @@ function exportarDesgloseTablaPDF() {
         return;
     }
 
-    generarPDFConLogo(null, foliosAsociados, `Desglose_Tabla_${current_num_tabla_desglose}`);
+    const logoUrl = '../../public/img/palmilla.jpeg';
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const logoBase64 = canvas.toDataURL('image/jpeg');
+        generarPDFConLogo(logoBase64, foliosAsociados, `Desglose_Tabla_${current_num_tabla_desglose}`);
+    };
+    img.onerror = () => {
+        generarPDFConLogo(null, foliosAsociados, `Desglose_Tabla_${current_num_tabla_desglose}`);
+    };
+    img.src = logoUrl;
 }
 
 function exportarPDFUnFolio(index) {
     if (!window.cortesDataActual || !window.cortesDataActual[index]) return;
     const corteSeleccionado = window.cortesDataActual[index];
-    generarPDFConLogo(null, [corteSeleccionado], corteSeleccionado.folio);
+
+    const logoUrl = '../../public/img/palmilla.jpeg';
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const logoBase64 = canvas.toDataURL('image/jpeg');
+        generarPDFConLogo(logoBase64, [corteSeleccionado], corteSeleccionado.folio);
+    };
+    img.onerror = () => {
+        generarPDFConLogo(null, [corteSeleccionado], corteSeleccionado.folio);
+    };
+    img.src = logoUrl;
 }
 
 function exportarPDF() {
@@ -381,7 +419,23 @@ function exportarPDF() {
         Swal.fire('Atención', 'No hay datos para exportar. Realiza una búsqueda primero.', 'info');
         return;
     }
-    generarPDFConLogo(null, window.cortesDataActual);
+
+    const logoUrl = '../../public/img/palmilla.jpeg';
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const logoBase64 = canvas.toDataURL('image/jpeg');
+        generarPDFConLogo(logoBase64, window.cortesDataActual);
+    };
+    img.onerror = () => {
+        generarPDFConLogo(null, window.cortesDataActual);
+    };
+    img.src = logoUrl;
 }
 
 function generarPDFConLogo(logoBase64, datosExportar, folioUnico = null) {
@@ -402,6 +456,8 @@ function generarPDFConLogo(logoBase64, datosExportar, folioUnico = null) {
     const COL_HEADER_TEXT = [27, 94, 32];
     const COL_SUBTEXT = [100, 100, 100];
     const COL_VAL = [30, 30, 50];
+
+    // Logo eliminado por solicitud
 
     // Título principal
     doc.setFontSize(16);
@@ -442,11 +498,8 @@ function generarPDFConLogo(logoBase64, datosExportar, folioUnico = null) {
             });
         }
 
-        const FICHA_H = 50 + (Math.ceil(tablas.length / 3) * 4) + 2; // Altura adaptada sin espacio desperdiciado
+        const FICHA_H = 50 + Math.ceil(tablas.length / 3) * 4;
         if (y + FICHA_H > PAGE_H - 18) { doc.addPage(); y = MARGIN; }
-
-        // Guardar posición inicial para calcular altura real y separación clara
-        const y_inicio = y;
 
         doc.setDrawColor(...COL_ACCENT);
         doc.setLineWidth(0.3);
@@ -498,10 +551,7 @@ function generarPDFConLogo(logoBase64, datosExportar, folioUnico = null) {
             doc.setTextColor(...COL_DARK); doc.setFontSize(7); doc.text(txt, bx + 3, y);
             bx += w + 3;
         });
-        
-        // Calcular final de ficha y agregar separación CLARA entre folios
-        const y_fin_ficha = y_inicio + FICHA_H;
-        y = y_fin_ficha + 15; // 15 puntos de separación garantizada
+        y += 15;
     });
 
     const totalPages = doc.internal.getNumberOfPages();

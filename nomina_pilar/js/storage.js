@@ -60,8 +60,14 @@ function restoreNomina() {
 
         // Renderizar tabla restaurada
         if (typeof mostrarDatosTabla === 'function') {
-            // Filtrar empleados con id_departamento = 8
-            let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaPilar, 8);
+            let id_departamento = parseInt($('#filtro_departamento').val());
+
+            // Si el select aún no tiene valor válido, usar el primer departamento del JSON
+            if (!id_departamento && jsonNominaPilar.departamentos && jsonNominaPilar.departamentos.length > 0) {
+                id_departamento = jsonNominaPilar.departamentos[0].id_departamento;
+            }
+
+            let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaPilar, id_departamento);
             mostrarDatosTabla(jsonFiltrado, 1);
         }
 

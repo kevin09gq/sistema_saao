@@ -596,6 +596,7 @@ $(document).on("submit", "#form_corte", function (e) {
  */
 function guardarTicketCorte(folio, nombreCortador, fecha, datosRejas, precio) {
 
+    // Crear el nuevo ticket con los datos del formulario
     let nuevoTicket = {
         folio,
         fecha,
@@ -603,12 +604,15 @@ function guardarTicketCorte(folio, nombreCortador, fecha, datosRejas, precio) {
         precio_reja: precio
     };
 
+    // Buscar el departamento Corte
     let departamento = jsonNominaPilar.departamentos.find(
         d => d.nombre === "Corte"
     );
 
+    // Si no existe el departamento Corte, crearlo y agregarlo al JSON
     if (!departamento) {
         departamento = {
+            id_departamento: 800, // ID ficticio para Corte
             nombre: "Corte",
             empleados: []
         };

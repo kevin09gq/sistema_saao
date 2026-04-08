@@ -51,14 +51,19 @@ function respuesta(int $code, string $titulo, string $mensaje, string $icono, ar
 /** ============================= FUNCIONES AUXILIARES PARA OBTENER DATOS ============================= */
 
 /**
- * Función para obtener los departamentos que pertenecen a Pilar
+ * Función para obtener los departamentos que pertenecen a Palmilla
  */
 function obtenerDepartamento()
 {
     global $conexion;
 
-    // SQL PARA OBTENER LOS DEPARTAMENTOS QUE PERTENECEN A PILAR
-    $sql = "SELECT * FROM departamentos WHERE id_area = 5";
+    // SQL PARA OBTENER LOS DEPARTAMENTOS ASIGNADOS AL ÁREA DE LA NÓMINA ESPECÍFICA (ID 7 - PALMILLA)
+    $sql = "SELECT d.* 
+            FROM departamentos d 
+            INNER JOIN areas_departamentos ad ON d.id_departamento = ad.id_departamento 
+            INNER JOIN nombre_nominas n ON ad.id_area = n.id_area 
+            WHERE n.id_nomina = 7";
+            
     $stmt = $conexion->prepare($sql);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -73,7 +78,7 @@ function obtenerDepartamento()
 
 
 /**
- * Función para obtener los puestos que pertenecen a Relicario
+ * Función para obtener los puestos que pertenecen a Palmilla
  */
 function obtenerPuesto() {
     global $conexion;

@@ -73,8 +73,11 @@ function validarExistenciaTrabajador()
     }
     $clavesString = implode(',', $valores);
 
-    // Consultar empleados existentes
-    $sql = "SELECT clave_empleado, nombre, ap_paterno, ap_materno, id_empresa FROM info_empleados WHERE clave_empleado IN ($clavesString) AND id_status = 1 AND id_empresa = 1 ";
+        // Consultar empleados existentes + color del puesto especial
+        $sql = "SELECT ie.clave_empleado, ie.nombre, ie.ap_paterno, ie.ap_materno, ie.id_empresa, pe.color_hex AS color_puesto
+            FROM info_empleados ie
+            LEFT JOIN puestos_especiales pe ON pe.id_puestoEspecial = ie.id_puestoEspecial
+            WHERE ie.clave_empleado IN ($clavesString) AND ie.id_status = 1 AND ie.id_empresa = 1";
     $result = mysqli_query($conexion, $sql);
 
     // Procesar resultados
@@ -83,7 +86,8 @@ function validarExistenciaTrabajador()
             $clavesExistentes[] = [
                 'clave' => $row['clave_empleado'],
                 'id_empresa' => $row['id_empresa'],
-                'nombre' => $row['ap_paterno'] . ' ' . $row['ap_materno'] . ' ' . $row['nombre']
+                'nombre' => $row['ap_paterno'] . ' ' . $row['ap_materno'] . ' ' . $row['nombre'],
+                'color_puesto' => $row['color_puesto']
             ];
         }
 
@@ -157,14 +161,16 @@ function obtenerEmpleadosSinSeguro()
         return;
     }
 
-    // Consultar empleados sin seguro
-    $sql = "SELECT clave_empleado, nombre, ap_paterno, ap_materno, id_empresa, id_departamento, biometrico
-            FROM info_empleados
-            WHERE id_status = 1
-            AND id_empresa = 1
-            AND id_departamento IN (4, 5)
-            AND status_nss = 0
-            ORDER BY nombre ASC";
+        // Consultar empleados sin seguro + color del puesto especial
+        $sql = "SELECT ie.clave_empleado, ie.nombre, ie.ap_paterno, ie.ap_materno, ie.id_empresa, ie.id_departamento, ie.biometrico,
+               pe.color_hex AS color_puesto
+            FROM info_empleados ie
+            LEFT JOIN puestos_especiales pe ON pe.id_puestoEspecial = ie.id_puestoEspecial
+            WHERE ie.id_status = 1
+            AND ie.id_empresa = 1
+            AND ie.id_departamento IN (4, 5)
+            AND ie.status_nss = 0
+            ORDER BY ie.nombre ASC";
 
     $result = mysqli_query($conexion, $sql);
 
@@ -179,7 +185,8 @@ function obtenerEmpleadosSinSeguro()
                 'ap_materno' => $row['ap_materno'],
                 'id_empresa' => $row['id_empresa'],
                 'id_departamento' => $row['id_departamento'],
-                'biometrico' => $row['biometrico']
+                'biometrico' => $row['biometrico'],
+                'color_puesto' => $row['color_puesto']
             ];
         }
 
@@ -224,14 +231,16 @@ function validarEmpleadosSinSeguroBiometrico() {
     }
     $biometricosString = implode(',', $valores);
     
-    // Consultar empleados sin seguro que coincidan con biometricos
-    $sql = "SELECT clave_empleado, nombre, ap_paterno, ap_materno, id_empresa, id_departamento, biometrico
-            FROM info_empleados
-            WHERE biometrico IN ($biometricosString)
-            AND id_status = 1
-            AND id_empresa = 1
-            AND id_departamento IN (4, 5)
-            AND status_nss = 0";
+        // Consultar empleados sin seguro que coincidan con biometricos + color del puesto especial
+        $sql = "SELECT ie.clave_empleado, ie.nombre, ie.ap_paterno, ie.ap_materno, ie.id_empresa, ie.id_departamento, ie.biometrico,
+               pe.color_hex AS color_puesto
+            FROM info_empleados ie
+            LEFT JOIN puestos_especiales pe ON pe.id_puestoEspecial = ie.id_puestoEspecial
+            WHERE ie.biometrico IN ($biometricosString)
+            AND ie.id_status = 1
+            AND ie.id_empresa = 1
+            AND ie.id_departamento IN (4, 5)
+            AND ie.status_nss = 0";
     
     $result = mysqli_query($conexion, $sql);
     
@@ -246,7 +255,8 @@ function validarEmpleadosSinSeguroBiometrico() {
                 'ap_materno' => $row['ap_materno'],
                 'id_empresa' => $row['id_empresa'],
                 'id_departamento' => $row['id_departamento'],
-                'biometrico' => $row['biometrico']
+                'biometrico' => $row['biometrico'],
+                'color_puesto' => $row['color_puesto']
             ];
         }
         
@@ -285,12 +295,14 @@ function validarEmpleadosNuevos() {
     }
     $clavesString = implode(',', $valores);
     
-    // Consultar empleados existentes (activos y de la empresa)
-    $sql = "SELECT clave_empleado, nombre, ap_paterno, ap_materno, id_empresa 
-            FROM info_empleados 
-            WHERE clave_empleado IN ($clavesString) 
-            AND id_status = 1 
-            AND id_empresa = 1";
+        // Consultar empleados existentes (activos y de la empresa) + color del puesto especial
+        $sql = "SELECT ie.clave_empleado, ie.nombre, ie.ap_paterno, ie.ap_materno, ie.id_empresa,
+               pe.color_hex AS color_puesto
+            FROM info_empleados ie
+            LEFT JOIN puestos_especiales pe ON pe.id_puestoEspecial = ie.id_puestoEspecial
+            WHERE ie.clave_empleado IN ($clavesString)
+            AND ie.id_status = 1
+            AND ie.id_empresa = 1";
     
     $result = mysqli_query($conexion, $sql);
     
@@ -299,7 +311,8 @@ function validarEmpleadosNuevos() {
             $clavesExistentes[] = [
                 'clave' => $row['clave_empleado'],
                 'id_empresa' => $row['id_empresa'],
-                'nombre' => $row['ap_paterno'] . ' ' . $row['ap_materno'] . ' ' . $row['nombre']
+                'nombre' => $row['ap_paterno'] . ' ' . $row['ap_materno'] . ' ' . $row['nombre'],
+                'color_puesto' => $row['color_puesto']
             ];
         }
         

@@ -188,3 +188,75 @@ body {
         transform: rotate(360deg);
     }
 }
+
+/* Contenedor de Configuración de Valores Estilo Premium */
+#config-valores-pilar .card {
+    border-radius: 15px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+#config-valores-pilar .card-header {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    border-bottom: none;
+}
+
+#config-valores-pilar .form-control:focus {
+    border-color: #10b981;
+    box-shadow: 0 0 0 0.25 rbg(16 185 129 / 25%);
+}
+
+#config-valores-pilar .bg-light-subtle {
+    background-color: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+#config-valores-pilar .btn-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#config-valores-pilar .btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4);
+}
+
+/* Estilo para los checkboxes de departamentos */
+.dept-checkbox-item {
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.dept-checkbox-item:hover {
+    border-color: #10b981;
+    background: #f0fdf4;
+}
+
+.dept-checkbox-item .form-check-input:checked + .form-check-label {
+    color: #059669;
+    font-weight: 600;
+}
+
+.dept-checkbox-item .form-check-input:checked {
+    background-color: #10b981;
+    border-color: #10b981;
+}
+
+/* Scrollbar personalizado para los contenedores de departamentos */
+#checkboxes-horario-oficial::-webkit-scrollbar,
+#checkboxes-comida-pasaje::-webkit-scrollbar {
+    width: 6px;
+}
+
+#checkboxes-horario-oficial::-webkit-scrollbar-thumb,
+#checkboxes-comida-pasaje::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 10px;
+}

@@ -37,7 +37,7 @@ function nombreDia(fecha) {
 
 function recalcularEventosCoordinador(empleado) {
     // Validar que sea coordinador
-    if (!empleado || parseInt(empleado.id_departamento) !== 12) {
+    if (!empleado || empleado.tipo_horario !== 1) {
         return;
     }
 
@@ -79,8 +79,8 @@ function calcularRetardosTodosCoordinadores(jsonNominaHuasteca) {
         if (!Array.isArray(departamento.empleados)) return;
 
         departamento.empleados.forEach(empleado => {
-            // Solo procesar coordinadores (id_departamento === 12)
-            if (parseInt(empleado.id_departamento) !== 12) return;
+            // Solo procesar coordinadores (tipo_horario === 1)
+            if (empleado.tipo_horario !== 1) return;
 
             // Calcular el historial de retardos para este coordinador
             asignarHistorialRetardos(empleado);
@@ -108,8 +108,8 @@ function calcularInasistenciasTodosCoordinadores(jsonNominaHuasteca) {
         if (!Array.isArray(departamento.empleados)) return;
 
         departamento.empleados.forEach(empleado => {
-            // Solo procesar coordinadores (id_departamento === 12)
-            if (parseInt(empleado.id_departamento) !== 12) return;
+            // Solo procesar coordinadores (tipo_horario === 1)
+            if (empleado.tipo_horario !== 1) return;
 
             // Calcular el historial de inasistencias para este coordinador
             asignarHistorialInasistencias(empleado);
@@ -137,8 +137,8 @@ function calcularOlvidosTodosCoordinadores(jsonNominaHuasteca) {
         if (!Array.isArray(departamento.empleados)) return;
 
         departamento.empleados.forEach(empleado => {
-            // Solo procesar coordinadores (id_departamento === 12)
-            if (parseInt(empleado.id_departamento) !== 12) return;
+            // Solo procesar coordinadores (tipo_horario === 1)
+            if (empleado.tipo_horario !== 1) return;
 
             // Calcular el historial de olvidos para este coordinador
             asignarHistorialOlvidos(empleado);

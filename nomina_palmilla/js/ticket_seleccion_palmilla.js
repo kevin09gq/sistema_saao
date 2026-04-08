@@ -146,31 +146,31 @@ function mostrarEmpleados(empleados) {
                 const nombre = empleado.nombre || 'Sin nombre';
                 const departamento = empleado.departamento || 'Sin departamento';
                     
-                // Determinar la clase del badge según el departamento
+                // Determinar la clase del badge según el departamento específico de Palmilla
                 let badgeClass = 'bg-secondary'; // Color por defecto
                 const deptoLower = departamento.toLowerCase();
                     
-                // Colores para Palmilla
+                // Departamentos específicos de Palmilla con colores únicos
                 if (deptoLower.includes('jornalero') || deptoLower.includes('jornal')) {
-                    badgeClass = 'bg-success';
+                    badgeClass = 'bg-success'; // Verde para jornaleros
                 } else if (deptoLower.includes('coordinador') || deptoLower.includes('coordi')) {
-                    badgeClass = 'bg-primary';
+                    badgeClass = 'bg-primary'; // Azul para coordinadores
                 } else if (deptoLower.includes('vivero') || deptoLower.includes('vive')) {
-                    badgeClass = 'bg-warning text-dark';
+                    badgeClass = 'bg-warning text-dark'; // Amarillo para vivero
                 } else if (deptoLower.includes('rancho') || deptoLower.includes('ranch')) {
-                    badgeClass = 'bg-danger';
+                    badgeClass = 'bg-danger'; // Rojo para rancho
                 } else if (deptoLower.includes('apoyo') || deptoLower.includes('apoy')) {
-                    badgeClass = 'bg-info';
+                    badgeClass = 'bg-info'; // Azul claro para apoyo
                 } else if (deptoLower.includes('base') || deptoLower.includes('bas')) {
-                    badgeClass = 'bg-dark';
+                    badgeClass = 'bg-dark'; // Oscuro para base
                 } else if (deptoLower.includes('administracion') || deptoLower.includes('admin')) {
-                    badgeClass = 'bg-primary';
+                    badgeClass = 'bg-primary'; // Azul para administración
                 } else if (deptoLower.includes('produccion') || deptoLower.includes('produc')) {
-                    badgeClass = 'bg-warning text-dark';
+                    badgeClass = 'bg-warning text-dark'; // Amarillo para producción
                 } else if (deptoLower.includes('seguridad') || deptoLower.includes('vigilancia') || deptoLower.includes('intendencia')) {
-                    badgeClass = 'bg-purple';
+                    badgeClass = 'bg-purple'; // Púrpura para seguridad
                 } else if (deptoLower.includes('sin seguro') || deptoLower.includes('sin')) {
-                    badgeClass = 'bg-orange';
+                    badgeClass = 'bg-orange'; // Naranja para sin seguro
                 }
                     
                 const isSelected = empleadosSeleccionados.has(clave);
@@ -292,6 +292,8 @@ function generarTicketsSeleccionados() {
         return empleadosSeleccionados.has(clave);
     });
 
+    console.log('Empleados seleccionados:', empleadosData);
+
     // Preparar datos para el servidor
     const nominaCompleta = JSON.parse(localStorage.getItem('jsonNominaPalmilla') || '{}');
     
@@ -349,6 +351,7 @@ function generarTicketsSeleccionados() {
         error: function(xhr, status, error) {
             Swal.close();
             console.error('Error al generar tickets:', error);
+            console.error('Response:', xhr.responseText);
             
             Swal.fire({
                 icon: 'error',

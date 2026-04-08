@@ -29,7 +29,7 @@ function loadNomina() {
 }
 
 function clearNomina() {
-   try {
+    try {
         localStorage.removeItem('jsonNominaHuasteca');
         window.jsonNominaHuasteca = null;
 
@@ -80,12 +80,17 @@ function restoreNomina() {
         }
 
         // Renderizar tabla restaurada
+        // Renderizar tabla restaurada
         if (typeof mostrarDatosTabla === 'function') {
-            // Filtrar empleados con id_departamento = 12
-            let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaHuasteca, 12);
+            let id_departamento = parseInt($('#filtro_departamento').val());
+
+            // Si el select aún no tiene valor válido, usar el primer departamento del JSON
+            if (!id_departamento && jsonNominaHuasteca.departamentos && jsonNominaHuasteca.departamentos.length > 0) {
+                id_departamento = jsonNominaHuasteca.departamentos[0].id_departamento;
+            }
+
+            let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaHuasteca, id_departamento);
             mostrarDatosTabla(jsonFiltrado, 1);
-        } else {
-            console.warn('[restoreNomina] mostrarDatosTabla no disponible.');
         }
 
         if (typeof actualizarCabeceraNomina === 'function') {

@@ -17,6 +17,7 @@ function mostrarContextMenu() {
         // Obtener datos de la fila
         const clave = filaSeleccionada.data('clave');
         const idTipoPuesto = filaSeleccionada.data('id-tipo-puesto');
+        const tipoHorario = parseInt(filaSeleccionada.data('tipo-horario'));
 
         // Posicionar y mostrar menú
         $menu.css({
@@ -37,11 +38,11 @@ function abrirModal() {
         const accion = $(this).data('action');
         if (accion === 'ver' && filaSeleccionada) {
 
-            // Obtener id_departamento desde la fila seleccionada
-            const idDepartamento = filaSeleccionada.data('id-departamento');
+            // Obtener tipo_horario de la fila seleccionada
+            const tipoHorario = parseInt(filaSeleccionada.data('tipo-horario'));
 
-            // Solo abrir modal si es Coordinador (id_departamento 14)
-            if (idDepartamento === 14) {
+            // Solo abrir modal si es Coordinador (tipo_horario 1)
+            if (tipoHorario === 1) {
                 // Obtener clave e id_empresa del empleado
                 const clave = String(filaSeleccionada.data('clave') || '').trim();
                 const idEmpresa = parseInt(filaSeleccionada.data('id-empresa')) || 1;
@@ -54,8 +55,9 @@ function abrirModal() {
                 } else {
                     console.warn('Empleado no encontrado');
                 }
-            } else if (idDepartamento === 21) {
-                // Si es Jornalero (id_departamento 21)
+            }
+            // Si es tipo_horario 2 (Rancho/Jornalero)
+            else if (tipoHorario === 2) {
                 const clave = String(filaSeleccionada.data('clave') || '').trim();
                 const idEmpresa = parseInt(filaSeleccionada.data('id-empresa')) || 1;
                 const empleadoEncontrado = buscarEmpleado(clave, idEmpresa);
@@ -64,7 +66,6 @@ function abrirModal() {
                 } else {
                     console.warn('Empleado no encontrado');
                 }
-
             }
         }
         $menu.hide();

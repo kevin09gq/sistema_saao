@@ -109,7 +109,6 @@
     color: #1f2937;
 }
 
-
 .table-nomina-relicario td:nth-child(4),
 .table-nomina-relicario td:nth-child(5),
 .table-nomina-relicario td:nth-child(6),
@@ -143,7 +142,6 @@
     /* Opcional: para resaltar el texto */
     font-variant-numeric: tabular-nums;
 }
-
 
 .table-nomina-relicario td:nth-child(20),
 .table-nomina-relicario td:nth-child(22),
@@ -186,7 +184,6 @@
     font-weight: 300;
 }
 
-
 /* Estado visual para sueldo a cobrar negativo */
 .sueldo-negativo {
     background: rgba(239, 68, 68, 0.08) !important;
@@ -207,6 +204,7 @@
 }
 
 
+
 .pagination {
      justify-content: center;
  }
@@ -223,7 +221,6 @@
      color: #fff;
      border-radius: 6px;
  }
-
 
 
 @media (max-width: 768px) {

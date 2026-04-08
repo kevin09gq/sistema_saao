@@ -1,14 +1,12 @@
 jsonNominaPilar = null;
 
-$(document).ready(function () {
 
+$(document).ready(function () {
     processExcelData();
     restoreNomina();
     confirmarsaveNomina();
     limpiarCamposNomina();
     console.log(jsonNominaPilar);
-
-
 });
 
 // PASO 1: Función para procesar los archivos Excel subidos por el usuario y unir los datos 
@@ -66,6 +64,9 @@ function processExcelData(params) {
                 }
 
                 if (typeof validarExistenciaNomina === 'function') {
+                    // LLAMADA DE PRUEBA: Visualizar estructura basada en BD por consola
+                    // testEstructuraBaseDatos(JsonListaRaya);
+
                     validarExistenciaNomina(numeroSemana, anio).then(function (existe) {
 
                         // Verificar si se subió el archivo biométrico (opcional)
@@ -75,6 +76,8 @@ function processExcelData(params) {
                             // Obtener la nómina real desde el servidor
                             getNominaPilar(numeroSemana, anio).then(function (nomina) {
                                 jsonNominaPilar = nomina;
+                                console.log(jsonNominaPilar);
+
                                 //Actualizar Fechas de inicio y cierre
                                 jsonNominaPilar.fecha_inicio = JsonListaRaya.fecha_inicio;
                                 jsonNominaPilar.fecha_cierre = JsonListaRaya.fecha_cierre;
@@ -88,36 +91,14 @@ function processExcelData(params) {
                                 $('#btn_procesar_nomina_pilar').removeClass('loading').prop('disabled', false);
                             });
                         } else {
-
+                            // Ahora siempre usamos la estructura básica de la BD
+                            // Si hay biométrico, pasamos un booleano "true" para indicarlo
                             if (hayBiometrico) {
-                                // Si hay biométrico, validar existencia pero omitir agregar empleados sin seguro por ahora
-                                validarExistenciaTrabajador(JsonListaRaya, true);
-                                procesarBiometrico(form, JsonListaRaya);
-                                //console.log(jsonNominaPilar);
-                                
-                                $('#btn_procesar_nomina_pilar').removeClass('loading').prop('disabled', false);
-                                
-
+                                crearEstructuraJson(JsonListaRaya, true, form);
                             } else {
-                                // Normalizar nombres de departamentos en JsonListaRaya antes de usar
-                                const mapaDepartamentos = {
-                                    'Rancho El Pilar': 'pilar coordinadores',
-                                    'Rancho el pilar Jornaleros': 'pilar jornaleros'
-                                };
-                                JsonListaRaya.departamentos.forEach(function (departamento) {
-                                    if (mapaDepartamentos[departamento.nombre]) {
-                                        departamento.nombre = mapaDepartamentos[departamento.nombre];
-                                    }
-                                });
-
-                                // Si no hay biométrico, validar existencia y sí agregar empleados sin seguro
-                                validarExistenciaTrabajador(JsonListaRaya, false);
-                                // aplicar cambios 
-                                $('#btn_procesar_nomina_pilar').removeClass('loading').prop('disabled', false);
-
+                                crearEstructuraJson(JsonListaRaya, false);
                             }
                         }
-
                     });
 
                 }
@@ -142,20 +123,47 @@ ordenarEmpleadosPorApellido(JsonListaRaya) se ordenan los empleados por nombre d
 jsonNominaPilar = JsonListaRaya asignando el jsonNominaPilar final para ser usado en el proceso de generación de nómina y en la tabla de revisión y edición.;
 */
 
-// PASO 1: Función para obtener las claves de empleados y verificar su existencia en la base de datos
-function validarExistenciaTrabajador(JsonListaRaya, omitirSinSeguro = false) {
-    // Mapeo de nombres de departamentos para normalizar
-    const mapaDepartamentos = {
-        'Rancho El Pilar': 'pilar coordinadores',
-        'Rancho el pilar Jornaleros': 'pilar jornaleros'
-    };
+function crearEstructuraJson(JsonListaRaya, siHayBiometrico = false, form = null) {
+    // 1. Obtener departamentos autorizados para la nómina Pilar (ID 5)
+    $.ajax({
+        url: '../php/validarExistenciaEmpleado.php',
+        type: 'GET',
+        data: {
+            case: 'obtenerDepartamentosNomina',
+            id_nomina: 5
+        },
+        dataType: 'json',
+        success: function (respDepts) {
+            if (!respDepts.departamentos) {
+                console.error("Error al obtener departamentos de la BD:", respDepts.error);
+                return;
+            }
 
-    // Normalizar nombres de departamentos
-    JsonListaRaya.departamentos.forEach(function (departamento) {
-        if (mapaDepartamentos[departamento.nombre]) {
-            departamento.nombre = mapaDepartamentos[departamento.nombre];
+            // 2. Crear nueva estructura base con los departamentos de la BD
+            let estructuraJson = {
+                numero_semana: JsonListaRaya.numero_semana,
+                fecha_inicio: JsonListaRaya.fecha_inicio,
+                fecha_cierre: JsonListaRaya.fecha_cierre,
+                departamentos: respDepts.departamentos.map(d => ({
+                    id_departamento: d.id_departamento,
+                    nombre: d.nombre_departamento,
+                    empleados: []
+                }))
+            };
+
+            // ACA LLAMAMOS A LA VALIDACIÓN
+            // Si hay biométrico (true), omitimos los sin seguro temporalmente
+            validarExistenciaTrabajador(JsonListaRaya, estructuraJson, siHayBiometrico, form);
+        },
+        error: function (err) {
+            console.error("Error al obtener departamentos para prueba:", err);
         }
     });
+
+}
+
+// PASO 1: Función para obtener las claves de empleados y verificar su existencia en la base de datos
+function validarExistenciaTrabajador(JsonListaRaya, estructuraJson = null, siHayBiometrico = false, form = null) {
 
     // Array para almacenar todas las claves de empleados
     var clavesEmpleados = [];
@@ -182,48 +190,52 @@ function validarExistenciaTrabajador(JsonListaRaya, omitirSinSeguro = false) {
 
             // Aquí puedes procesar la respuesta
             if (response.existentes) {
-                // Obtener claves existentes
-                var clavesExistentes = response.existentes.map(emp => emp.clave);
 
-                // Filtrar empleados que existen en BD y actualizar nombres
-                JsonListaRaya.departamentos.forEach(function (departamento) {
-                    departamento.empleados = departamento.empleados.filter(emp => {
-                        if (clavesExistentes.includes(emp.clave)) {
-                            // Buscar el nombre en la BD y sobreescribirlo
-                            var empBD = response.existentes.find(e => e.clave === emp.clave);
-                            if (empBD) {
-                                emp.nombre = empBD.nombre;
-                                emp.salario_semanal = empBD.salario_semanal;
-                                emp.salario_diario = empBD.salario_diario;
-                                emp.id_empresa = empBD.id_empresa;
-                                emp.id_departamento = empBD.id_departamento;
-                                emp.id_puestoEspecial = empBD.id_puestoEspecial;
-                                emp.biometrico = empBD.biometrico;
-                                emp.seguroSocial = true;
-
-                                // Agregar horario_oficial para empleados del departamento 8 (incluso si está vacío)
-                                if (empBD.id_departamento == 8) {
-                                    emp.horario_oficial = empBD.horario_oficial || null;
-                                }
-                            }
-                            return true;
+                // LÓGICA DE UNIÓN: Si hay departametos (Estructura BD), poblarla.
+                if (estructuraJson) {
+                    response.existentes.forEach(function (empBD) {
+                        // Buscar datos financieros en el Excel original
+                        let empExcel = null;
+                        for (let dExcel of JsonListaRaya.departamentos) {
+                            empExcel = dExcel.empleados.find(e => e.clave === empBD.clave);
+                            if (empExcel) break;
                         }
-                        return false;
+
+                        if (empExcel) {
+                            // Crear empleado final combinando BD y Excel
+                            let empleadoFinal = {
+                                clave: empBD.clave,
+                                nombre: empBD.nombre,
+                                id_empresa: empBD.id_empresa,
+                                id_departamento: empBD.id_departamento,
+                                id_puestoEspecial: empBD.id_puestoEspecial,
+                                biometrico: empBD.biometrico,
+                                seguroSocial: true,
+                                tarjeta: empExcel.tarjeta,
+                                conceptos: empExcel.conceptos
+                            };
+
+                            // Meterlo en el departamento correspondiente de estructuraJson
+                            let deptoDestino = estructuraJson.departamentos.find(d => d.id_departamento == empBD.id_departamento);
+                            if (deptoDestino) {
+                                deptoDestino.empleados.push(empleadoFinal);
+                            } else {
+                                console.warn(`Empleado ${empBD.clave} tiene un id_departamento (${empBD.id_departamento}) que no pertenece a esta nómina.`);
+                            }
+                        }
                     });
-                });
 
+                    // Si hay biométrico, seguimos con su procesamiento. Si no, flujo normal sin seguro.
+                    if (siHayBiometrico) {
+                        procesarBiometrico(form, estructuraJson);
+                    } else {
+                        obtenerEmpleadosSinSeguro(estructuraJson);
+                    }
 
-                if (!omitirSinSeguro) {
-
-
-                    // Obtener empleados sin seguro y unirlos al JSON
-                    obtenerJornalerosCoordinadores(JsonListaRaya);
                 }
 
             }
 
-            if (response.no_existentes) {
-            }
         },
         error: function (xhr, status, error) {
             console.error('Error al verificar empleados:', error);
@@ -232,13 +244,13 @@ function validarExistenciaTrabajador(JsonListaRaya, omitirSinSeguro = false) {
     });
 }
 
-// PASO 2: Función para obtener empleados jornaleros y coordinadores (sin seguro)
-function obtenerJornalerosCoordinadores(JsonListaRaya) {
+// PASO 2: Función para obtener empleados de los departamentos que estan relacionado a la nomina pilar (sin seguro)
+function obtenerEmpleadosSinSeguro(estructuraJson = null) {
     $.ajax({
         url: '../php/validarExistenciaEmpleado.php',
         type: 'GET',
         data: {
-            case: 'obtenerJornalerosCoordinadores'
+            case: 'obtenerEmpleadosSinSeguro'
         },
         dataType: 'json',
         success: function (response) {
@@ -250,7 +262,6 @@ function obtenerJornalerosCoordinadores(JsonListaRaya) {
                     var empleado = {
                         clave: empleadoBD.clave,
                         nombre: empleadoBD.nombre + ' ' + empleadoBD.ap_paterno + ' ' + empleadoBD.ap_materno,
-                        salario_diario: empleadoBD.salario_diario,
                         id_empresa: empleadoBD.id_empresa,
                         id_departamento: empleadoBD.id_departamento,
                         id_puestoEspecial: empleadoBD.id_puestoEspecial,
@@ -258,49 +269,30 @@ function obtenerJornalerosCoordinadores(JsonListaRaya) {
                         seguroSocial: false
                     };
 
-                    // Agregar horario_oficial y salario_semanal solo para departamento 6
-                    if (empleadoBD.id_departamento == 8) {
-                        empleado.horario_oficial = empleadoBD.horario_oficial || null;
-                        empleado.salario_semanal = empleadoBD.salario_semanal;
-                    }
 
-                    // Determinar a qué departamento agregar
-                    let nombreDpto = null;
-                    if (empleadoBD.id_departamento == 8) {
-                        nombreDpto = 'pilar coordinadores';
-                    } else if (empleadoBD.id_departamento == 11) {
-                        nombreDpto = 'pilar jornaleros';
-                    }
-
-                    // Si se determina un departamento válido, agregar el empleado
-                    if (nombreDpto && JsonListaRaya && JsonListaRaya.departamentos) {
-                        let dpto = JsonListaRaya.departamentos.find(d => d.nombre === nombreDpto);
-
-                        // Si el departamento no existe, crearlo
-                        if (!dpto) {
-                            dpto = {
-                                nombre: nombreDpto,
-                                empleados: []
-                            };
-                            JsonListaRaya.departamentos.push(dpto);
-                        }
-
-                        // Evitar duplicados
-                        const yaExiste = dpto.empleados.some(e => e.clave === empleado.clave);
-                        if (!yaExiste) {
-                            dpto.empleados.push(empleado);
+                    // Determinar el destino según si usamos la estructura de la BD o la del Excel
+                    if (estructuraJson) {
+                        let dpto = estructuraJson.departamentos.find(d => d.id_departamento == empleadoBD.id_departamento);
+                        if (dpto) {
+                            // Evitar duplicados RECUERDA PONER TAMBIEN POR EL ID EMPRESA
+                            const yaExiste = dpto.empleados.some(e => e.clave === empleado.clave);
+                            if (!yaExiste) {
+                                dpto.empleados.push(empleado);
+                            }
                         }
                     }
-
 
                 });
 
-                asignarPropiedadesEmpleado(JsonListaRaya);
-                ordenarEmpleadosPorNombre(JsonListaRaya);
-                jsonNominaPilar = JsonListaRaya;
+
+
+                asignarPropiedadesEmpleado(estructuraJson);
+                ordenarEmpleadosPorNombre(estructuraJson);
+                jsonNominaPilar = estructuraJson;
+
 
                 console.log(jsonNominaPilar);
-                actualizarCabeceraNomina(jsonNominaPilar);
+                //actualizarCabeceraNomina(jsonNominaPilar);
 
                 // BHL: Llenar tabla de pagos por día cuando se cargue la nómina
                 if (typeof llenar_cuerpo_tabla_pagos_por_dia === 'function') {
@@ -317,8 +309,6 @@ function obtenerJornalerosCoordinadores(JsonListaRaya) {
     });
 }
 
-
-
 /*
 Validacion 2: Sube Lista de Raya y el Biometrico
 Se ejecuta processExcelData() -> se procesa Lista de Raya -> Verificar si hay biometrico (si hay) ->
@@ -331,11 +321,10 @@ obtenerEmpleadosNoUnidos(JsonListaRaya, JsonBiometrico) se obtienen los empleado
 obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) se obtiene de manera especifica a los empleados que no se unieron y no tienen seguro y se unen al jsonNominaPilar->
 asignarPropiedadesEmpleado(jsonNominaPilar) se asignan las propiedades necesarias a los empleados ->
 ordenarEmpleadosPorNombre(jsonNominaPilar) se ordenan los empleados por nombre dentro de cada departamento->
-
 */
 
 // PASO 1: Función encargada de procesar el archivo biométrico subido por el usuario. 
-function procesarBiometrico(form, JsonListaRaya) {
+function procesarBiometrico(form, estructuraJson) {
     var formData2 = new FormData();
     formData2.append('archivo_excel2', form.archivo_excel_biometrico_pilar.files[0]);
 
@@ -349,8 +338,8 @@ function procesarBiometrico(form, JsonListaRaya) {
             try {
                 const JsonBiometrico = JSON.parse(res2);
 
-                jsonNominaPilar = unirJson(JsonListaRaya, JsonBiometrico);              
-                const empleadosNoUnidos = obtenerEmpleadosNoUnidos(JsonListaRaya, JsonBiometrico);                
+                jsonNominaPilar = unirJson(estructuraJson, JsonBiometrico);
+                const empleadosNoUnidos = obtenerEmpleadosNoUnidos(estructuraJson, JsonBiometrico);
                 // Validar empleados sin IMSS solo si hay empleados no unidos
                 if (empleadosNoUnidos && empleadosNoUnidos.length > 0) {
                     obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos);
@@ -368,7 +357,7 @@ function procesarBiometrico(form, JsonListaRaya) {
             } catch (e) {
                 console.error('Error al parsear datos biométricos:', e);
             } finally {
-                $('#btn_procesar_nomina_relicario').removeClass('loading').prop('disabled', false);
+                $('#btn_procesar_nomina_pilar').removeClass('loading').prop('disabled', false);
             }
         },
         error: function (xhr, status, error) {
@@ -434,7 +423,7 @@ function unirJson(json1, json2) {
 }
 
 // PASO 3: Función para obtener empleados del biométrico que no se unieron al JSON de nómina
-function obtenerEmpleadosNoUnidos(JsonListaRaya, JsonBiometrico) {
+function obtenerEmpleadosNoUnidos(estructuraJson, JsonBiometrico) {
     // Si no hay JsonBiometrico o no tiene empleados, retornar array vacío
     if (!JsonBiometrico || !JsonBiometrico.empleados || JsonBiometrico.empleados.length === 0) {
         return [];
@@ -452,8 +441,8 @@ function obtenerEmpleadosNoUnidos(JsonListaRaya, JsonBiometrico) {
 
     // Crear un conjunto de nombres normalizados de JsonListaRaya
     const nombresListaRaya = new Set();
-    if (JsonListaRaya && JsonListaRaya.departamentos) {
-        JsonListaRaya.departamentos.forEach(depto => {
+    if (estructuraJson && estructuraJson.departamentos) {
+        estructuraJson.departamentos.forEach(depto => {
             if (depto.empleados) {
                 depto.empleados.forEach(emp => {
                     nombresListaRaya.add(normalizar(emp.nombre));
@@ -495,7 +484,6 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
                         clave: empleadoBD.clave,
                         nombre: empleadoBD.nombre + ' ' + empleadoBD.ap_paterno + ' ' + empleadoBD.ap_materno,
                         tarjeta: null,
-                        salario_diario: empleadoBD.salario_diario,
                         id_empresa: empleadoBD.id_empresa,
                         id_departamento: empleadoBD.id_departamento,
                         id_puestoEspecial: empleadoBD.id_puestoEspecial,
@@ -505,37 +493,19 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
                         registros: empleadoBiometrico ? (empleadoBiometrico.registros || []) : []
                     };
 
-                    // Agregar horario_oficial y salario_semanal solo para departamento 8
-                    if (empleadoBD.id_departamento == 8) {
-                        empleado.horario_oficial = empleadoBD.horario_oficial || null;
-                        empleado.salario_semanal = empleadoBD.salario_semanal;
-                    }
 
-                    // Determinar a qué departamento agregar
-                    let nombreDpto = null;
-                    if (empleadoBD.id_departamento == 8) {
-                        nombreDpto = 'pilar coordinadores';
-                    } else if (empleadoBD.id_departamento == 11) {
-                        nombreDpto = 'pilar jornaleros';
-                    }
+                    // Buscar el departamento correspondiente usando el ID directamente
+                    if (jsonNominaPilar && jsonNominaPilar.departamentos) {
+                        let dpto = jsonNominaPilar.departamentos.find(d => d.id_departamento == empleadoBD.id_departamento);
 
-                    // Si se determina un departamento válido, agregar el empleado
-                    if (nombreDpto && jsonNominaPilar && jsonNominaPilar.departamentos) {
-                        let dpto = jsonNominaPilar.departamentos.find(d => d.nombre === nombreDpto);
-
-                        // Si el departamento no existe, crearlo
-                        if (!dpto) {
-                            dpto = {
-                                nombre: nombreDpto,
-                                empleados: []
-                            };
-                            jsonNominaPilar.departamentos.push(dpto);
-                        }
-
-                        // Evitar duplicados
-                        const yaExiste = dpto.empleados.some(e => e.clave === empleado.clave);
-                        if (!yaExiste) {
-                            dpto.empleados.push(empleado);
+                        if (dpto) {
+                            // Evitar duplicados
+                            const yaExiste = dpto.empleados.some(e => e.clave === empleado.clave);
+                            if (!yaExiste) {
+                                dpto.empleados.push(empleado);
+                            }
+                        } else {
+                            console.warn(`No se encontró el departamento con ID ${empleadoBD.id_departamento} en la estructura de nómina.`);
                         }
                     }
                 });
@@ -560,9 +530,9 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
                 actualizarCabeceraNomina(jsonNominaPilar);
 
                 // BHL: Llenar tabla de pagos por día cuando se cargue la nómina
-               if (typeof llenar_cuerpo_tabla_pagos_por_dia === 'function') {
-                   llenar_cuerpo_tabla_pagos_por_dia();
-               }
+                if (typeof llenar_cuerpo_tabla_pagos_por_dia === 'function') {
+                    llenar_cuerpo_tabla_pagos_por_dia();
+                }
 
                 mostrarConfigValores(true);
 
@@ -588,35 +558,19 @@ asignarPropiedadesEmpleado(jsonNominaPilar) se asignan las propiedades necesaria
 ordenarEmpleadosPorNombre(jsonNominaPilar) se ordenan los empleados por apellido paterno dentro de cada departamento->
 */
 
-
-// PASO 1: Validar existencia de trabajadores en la BD (se ejecuta al inicio del proceso) 
+// PASO 1: Validar existencia de trabajadores en la BD (se ejecuta al inicio del proceso si la nómina ya existe) 
 function validarExistenciaTrabajadorBD(jsonNominaPilar, JsonListaRaya) {
-    // Mapeo de nombres de departamentos para normalizar
-    const mapaDepartamentos = {
-        'Rancho El Pilar': 'pilar coordinadores',
-        'Rancho el pilar Jornaleros': 'pilar jornaleros'
-    };
-
-    // Normalizar nombres de departamentos en JsonListaRaya
-    JsonListaRaya.departamentos.forEach(function (departamento) {
-        if (mapaDepartamentos[departamento.nombre]) {
-            departamento.nombre = mapaDepartamentos[departamento.nombre];
-        }
-    });
-
-    // Array para almacenar todas las claves de empleados
+    // Array para almacenar todas las claves de empleados que ya tenemos en la BD
     var clavesEmpleados = [];
 
-    // Recorrer todos los departamentos
+    // Recorrer todos los departamentos de la nómina recuperada
     jsonNominaPilar.departamentos.forEach(function (departamento) {
-        // Recorrer todos los empleados de cada departamento
         departamento.empleados.forEach(function (empleado) {
-            // Agregar la clave del empleado al array
             clavesEmpleados.push(empleado.clave);
         });
     });
 
-    //Enviar las claves al servidor con el case
+    // Enviar las claves al servidor para verificar si siguen activos (id_status=1)
     $.ajax({
         url: '../php/validarExistenciaEmpleado.php',
         type: 'POST',
@@ -627,293 +581,245 @@ function validarExistenciaTrabajadorBD(jsonNominaPilar, JsonListaRaya) {
         dataType: 'json',
         success: function (response) {
             if (response.existentes) {
-                // Obtener claves existentes
-                var clavesExistentes = response.existentes.map(emp => emp.clave);
+                // Obtener claves vigentes
+                var clavesExistentes = response.existentes.map(emp => String(emp.clave));
 
-                // Filtrar empleados: solo dejar los que existen en BD (id_status=1 e id_empresa=1)
+                // 2. Filtrar: Solo dejar empleados que siguen vigentes en la BD
                 jsonNominaPilar.departamentos.forEach(function (departamento) {
-
-                    // Si es Corte, no filtrar contra BD
-                    if (departamento.nombre === "Corte") {
-                        return;
-                    }
+                    // Si es Corte, no filtrar contra BD (el flujo de corte es manual)
+                    if (departamento.nombre === "Corte") return;
 
                     departamento.empleados = departamento.empleados.filter(function (empleado) {
                         return clavesExistentes.includes(String(empleado.clave));
                     });
                 });
 
-                // Quitar departamentos vacíos
-                jsonNominaPilar.departamentos = jsonNominaPilar.departamentos.filter(function (departamento) {
-                    return departamento.empleados.length > 0;
-                });
-
-                // Actualizar conceptos_copia y tarjeta_copia con los nuevos datos del Excel
-                // Solo para empleados con seguro social que existan en ambos JSON
+                // 3. Sincronizar: Actualizar conceptos y tarjeta con los nuevos datos del Excel actual
                 jsonNominaPilar.departamentos.forEach(function (departamentoBD) {
                     departamentoBD.empleados.forEach(function (empleadoBD) {
-                        if (!empleadoBD.seguroSocial) return;
-
-                        // Buscar al mismo empleado en el nuevo Excel usando su clave
+                        // Buscar al mismo empleado en el Excel actual usando su clave
                         let empleadoExcel = null;
                         for (let deptoExcel of JsonListaRaya.departamentos) {
-                            empleadoExcel = deptoExcel.empleados.find(e => e.clave === empleadoBD.clave);
+                            empleadoExcel = deptoExcel.empleados.find(e => String(e.clave) === String(empleadoBD.clave));
                             if (empleadoExcel) break;
                         }
-                        if (!empleadoExcel) return;
 
-                        // Actualizar el resultado de cada concepto buscando por código
-                        if (empleadoExcel.conceptos && empleadoExcel.conceptos.length > 0) {
-                            // Si conceptos_copia no existe aún (datos viejos de BD sin esta propiedad), crearla
-                            if (!empleadoBD.conceptos_copia || !Array.isArray(empleadoBD.conceptos_copia)) {
-                                empleadoBD.conceptos_copia = JSON.parse(JSON.stringify(empleadoBD.conceptos || []));
+                        if (empleadoExcel) {
+                            // Actualizar conceptos_copia buscando por código
+                            if (empleadoExcel.conceptos && empleadoExcel.conceptos.length > 0) {
+                                if (!empleadoBD.conceptos_copia || !Array.isArray(empleadoBD.conceptos_copia)) {
+                                    empleadoBD.conceptos_copia = JSON.parse(JSON.stringify(empleadoBD.conceptos || []));
+                                }
+                                empleadoExcel.conceptos.forEach(function (conceptoExcel) {
+                                    const conceptoCopia = empleadoBD.conceptos_copia.find(c => c.codigo === conceptoExcel.codigo);
+                                    if (conceptoCopia) conceptoCopia.resultado = conceptoExcel.resultado;
+                                });
                             }
-                            empleadoExcel.conceptos.forEach(function (conceptoExcel) {
-                                const conceptoCopia = empleadoBD.conceptos_copia.find(c => c.codigo === conceptoExcel.codigo);
-                                if (conceptoCopia) conceptoCopia.resultado = conceptoExcel.resultado;
-                            });
+                            // Actualizar tarjeta_copia con el valor del nuevo Excel
+                            if (empleadoExcel.tarjeta !== undefined) empleadoBD.tarjeta_copia = empleadoExcel.tarjeta;
                         }
-
-                        // Actualizar tarjeta_copia con el valor del nuevo Excel
-                        if (empleadoExcel.tarjeta !== undefined) empleadoBD.tarjeta_copia = empleadoExcel.tarjeta;
                     });
                 });
 
-                // Agregar empleados nuevos del archivo Excel
                 agregarEmpleadosNuevos(jsonNominaPilar, JsonListaRaya);
+
+
             }
         },
         error: function (xhr, status, error) {
-            console.error('Error al verificar empleados:', error);
-            console.error('Respuesta del servidor:', xhr.responseText);
+            console.error('Error al verificar empleados en Validación 3:', error);
+            $('#btn_procesar_nomina_pilar').removeClass('loading').prop('disabled', false);
         }
     });
 }
 
-// PASO 2: Agregar empleados nuevos al jsonNominaPilar (se ejecuta después de validar existencia en la BD) 
-// Esta funcion recibe el jsonNominaPilar actualizado y el JsonListaRaya para identificar nuevos empleados
+
+// PASO 2: Agregar empleados nuevos al jsonNominaPilar
+// Compara el Excel (JsonListaRaya) contra el JSON local y valida en BD los que falten.
 function agregarEmpleadosNuevos(jsonNominaPilar, JsonListaRaya) {
-    // Mapeo de nombres de departamentos para normalizar
-    const mapaDepartamentos = {
-        'Rancho El Pilar': 'pilar coordinadores',
-        'Rancho el pilar Jornaleros': 'pilar jornaleros'
-    };
+    if (!JsonListaRaya || !JsonListaRaya.departamentos) return;
 
-    let empleadosNuevos = [];
+    let empleadosNuevosDetectados = [];
+    let clavesExistentes = new Set();
 
-    // Recopilar todas las claves de empleados guardados
-    let clavesGuardadas = new Set();
-    jsonNominaPilar.departamentos.forEach(function (departamento) {
-        departamento.empleados.forEach(function (empleado) {
-            clavesGuardadas.add(String(empleado.clave));
+    // 1. Mapear claves que ya tenemos en el JSON local
+    jsonNominaPilar.departamentos.forEach(depto => {
+        depto.empleados.forEach(emp => {
+            clavesExistentes.add(String(emp.clave));
         });
     });
 
-    // Buscar empleados nuevos en el archivo Excel
-    JsonListaRaya.departamentos.forEach(function (deptoNuevo) {
-        deptoNuevo.empleados.forEach(function (empleadoNuevo) {
-            if (!clavesGuardadas.has(String(empleadoNuevo.clave))) {
-                // Este es un empleado nuevo
-                empleadosNuevos.push({
-                    empleado: empleadoNuevo,
-                    departamento_origen: deptoNuevo.nombre
-                });
+    // 2. Identificar nuevos candidatos desde el Excel
+    JsonListaRaya.departamentos.forEach(deptoExcel => {
+        deptoExcel.empleados.forEach(empExcel => {
+            if (!clavesExistentes.has(String(empExcel.clave))) {
+                empleadosNuevosDetectados.push(empExcel);
             }
         });
     });
 
-    if (empleadosNuevos.length > 0) {
-        // Extraer las claves de empleados nuevos para validar
-        const clavesNuevas = empleadosNuevos.map(item => item.empleado.clave);
-
-        // Validar empleados nuevos contra la base de datos
-        $.ajax({
-            url: '../php/validarExistenciaEmpleado.php',
-            type: 'POST',
-            data: {
-                claves: clavesNuevas,
-                case: 'validarEmpleadosNuevos'
-            },
-            dataType: 'json',
-            success: function (response) {
-                if (response.existentes && response.existentes.length > 0) {
-                    // Agregar empleados válidos a sus respectivos departamentos
-                    response.existentes.forEach(function (empValido) {
-                        // Encontrar el empleado nuevo completo
-                        const empleadoEncontrado = empleadosNuevos.find(item =>
-                            String(item.empleado.clave) === String(empValido.clave)
-                        );
-
-                        if (empleadoEncontrado) {
-                            // Actualizar nombre con datos de BD
-                            empleadoEncontrado.empleado.nombre = empValido.nombre;
-                            empleadoEncontrado.empleado.salario_diario = empValido.salario_diario;
-                            empleadoEncontrado.empleado.id_empresa = empValido.id_empresa;
-                            empleadoEncontrado.empleado.id_departamento = empValido.id_departamento;
-                            empleadoEncontrado.empleado.id_puestoEspecial = empValido.id_puestoEspecial;
-                            empleadoEncontrado.empleado.biometrico = empValido.biometrico;
-                            empleadoEncontrado.empleado.seguroSocial = true;
-
-                            // Agregar horario_oficial y salario_semanal solo para departamento 8
-                            if (empValido.id_departamento == 8) {
-                                empleadoEncontrado.empleado.horario_oficial = empValido.horario_oficial || null;
-                                empleadoEncontrado.empleado.salario_semanal = empValido.salario_semanal;
-                            }
-
-                            // Buscar o crear departamento destino
-                            let nombreDptoNormalizado = empleadoEncontrado.departamento_origen;
-                            if (mapaDepartamentos[nombreDptoNormalizado]) {
-                                nombreDptoNormalizado = mapaDepartamentos[nombreDptoNormalizado];
-                            }
-
-                            let deptoDestino = jsonNominaPilar.departamentos.find(
-                                depto => depto.nombre === nombreDptoNormalizado
-                            );
-
-                            if (!deptoDestino) {
-                                // Crear departamento si no existe
-                                deptoDestino = {
-                                    nombre: nombreDptoNormalizado,
-                                    empleados: []
-                                };
-                                jsonNominaPilar.departamentos.push(deptoDestino);
-                            }
-
-                            // Agregar empleado al departamento
-                            deptoDestino.empleados.push(empleadoEncontrado.empleado);
-                        }
-                    });
-
-                }
-            },
-            error: function (xhr, status, error) {
-                console.error('Error al validar empleados nuevos:', error);
-            }
-        });
+    if (empleadosNuevosDetectados.length === 0) {
+        verificarEmpleadosSinSeguro(jsonNominaPilar);
+        return;
     }
 
+    const clavesNuevas = empleadosNuevosDetectados.map(e => e.clave);
 
-    // DESPUÉS de agregar empleados nuevos, verificar empleados sin seguro
-    verificarEmpleadosSinSeguro(jsonNominaPilar);
+    // 3. Validar en la BD si estos empleados pertenecen a la nómina (Área y Depto correctos)
+    $.ajax({
+        url: '../php/validarExistenciaEmpleado.php',
+        type: 'POST',
+        data: {
+            claves: clavesNuevas,
+            case: 'validarEmpleadosNuevos'
+        },
+        dataType: 'json',
+        success: function (response) {
+            if (response.existentes && response.existentes.length > 0) {
+
+                response.existentes.forEach(empBD => {
+                    // Buscar el departamento destino en nuestro JSON por id_departamento
+                    let deptoDestino = jsonNominaPilar.departamentos.find(d =>
+                        parseInt(d.id_departamento) === parseInt(empBD.id_departamento)
+                    );
+
+                    if (deptoDestino) {
+                        // Evitar duplicados si el empleado ya existe en el JSON
+                        const yaExiste = deptoDestino.empleados.some(e => String(e.clave) === String(empBD.clave));
+                        if (yaExiste) return;
+
+                        // Buscar el registro original de este empleado en los detectados del Excel para traer tarjeta y conceptos
+                        const empExcel = empleadosNuevosDetectados.find(e => String(e.clave) === String(empBD.clave));
+
+                        // Determinar el tipo de horario heredado del departamento configurado
+                        const tipoHorarioDepto = deptoDestino.tipo_horario !== undefined ? deptoDestino.tipo_horario : 0;
+
+                        // Crear el objeto de empleado con la estructura estándar
+                        const nuevoEmpleado = {
+                            clave: empBD.clave,
+                            nombre: empBD.nombre,
+                            tipo_horario: tipoHorarioDepto,
+                            id_empresa: empBD.id_empresa,
+                            id_departamento: empBD.id_departamento,
+                            id_puestoEspecial: empBD.id_puestoEspecial,
+                            biometrico: empBD.biometrico,
+                            seguroSocial: true,
+                            registros: empExcel ? (empExcel.registros || []) : [],
+                            tarjeta: empExcel ? (empExcel.tarjeta || 0) : 0,
+                            conceptos: empExcel ? (empExcel.conceptos || []) : [],
+                            mostrar: true
+                        };
+
+                        // Si el departamento es de tipo Horario Oficial (1), asignar propiedades adicionales
+                        if (tipoHorarioDepto === 1) {
+                            nuevoEmpleado.salario_semanal = empBD.salario_semanal || 0;
+                            nuevoEmpleado.horario_oficial = empBD.horario_oficial || null;
+                        } else if (tipoHorarioDepto === 2) {
+                            nuevoEmpleado.salario_diario = empBD.salario_diario || 0;
+                        }
+
+                        deptoDestino.empleados.push(nuevoEmpleado);
+
+                    }
+                });
+
+
+            }
+
+            // Paso 3: Lanzar la verificación de empleados sin seguro secuencialmente
+            verificarEmpleadosSinSeguro(jsonNominaPilar);
+        },
+        error: function (xhr, status, error) {
+            console.error('Error en la validación de empleados nuevos:', error);
+        }
+    });
 }
+
 
 //PASO 3: Verificar Y agrega nuevos empleados sin seguro (se ejecuta después de agregar empleados nuevos)
 function verificarEmpleadosSinSeguro(jsonNominaPilar) {
-    // Mapeo de nombres de departamentos para normalizar
-    const mapaDepartamentos = {
-        'Rancho El Pilar': 'pilar coordinadores',
-        'Rancho el pilar Jornaleros': 'pilar jornaleros'
-    };
+    if (!jsonNominaPilar || !jsonNominaPilar.departamentos) return;
 
-    // Normalizar nombres de departamentos
-    jsonNominaPilar.departamentos.forEach(function (departamento) {
-        if (mapaDepartamentos[departamento.nombre]) {
-            departamento.nombre = mapaDepartamentos[departamento.nombre];
-        }
-    });
-
-    // Recopilar todas las claves de empleados en la nómina actual (que representa la lista de raya)
+    // Recopilar todas las claves de empleados en la nómina actual para evitar duplicados
     let clavesNomina = new Set();
     jsonNominaPilar.departamentos.forEach(function (departamento) {
-
         departamento.empleados.forEach(function (empleado) {
             clavesNomina.add(String(empleado.clave));
         });
     });
 
-    // Obtener empleados sin seguro de la base de datos
+    // Obtener empleados sin seguro de la base de datos (Específico para Pilar)
     $.ajax({
         url: '../php/validarExistenciaEmpleado.php',
         type: 'GET',
         data: {
-            case: 'obtenerJornalerosCoordinadores'
+            case: 'obtenerEmpleadosSinSeguroPilar'
         },
         dataType: 'json',
         success: function (response) {
+            if (response.error) {
+                console.error('Error al obtener empleados:', response.error);
+                return;
+            }
+
             if (response.empleados && response.empleados.length > 0) {
-                // Filtrar empleados sin seguro que no están en la nómina actual
-                const empleadosSinSeguro = response.empleados.filter(emp => {
+                // Filtrar empleados que no están ya en la nómina (Set inicial)
+                const empleadosSinSeguroNuevos = response.empleados.filter(emp => {
                     return !clavesNomina.has(String(emp.clave));
                 });
 
 
-                // Agregar empleados sin seguro al departamento
-                empleadosSinSeguro.forEach(function (empSinSeguro) {
-                    const empleado = {
-                        clave: empSinSeguro.clave,
-                        nombre: empSinSeguro.nombre + ' ' + empSinSeguro.ap_paterno + ' ' + empSinSeguro.ap_materno,
-                        salario_diario: empSinSeguro.salario_diario,
-                        id_empresa: empSinSeguro.id_empresa,
-                        id_departamento: empSinSeguro.id_departamento,
-                        id_puestoEspecial: empSinSeguro.id_puestoEspecial,
-                        biometrico: empSinSeguro.biometrico,
-                        seguroSocial: false,
-                    };
+                // Agregar empleados sin seguro al departamento correspondiente
+                empleadosSinSeguroNuevos.forEach(function (empSinSeguro) {
+                    const deptoDestino = jsonNominaPilar.departamentos.find(d =>
+                        parseInt(d.id_departamento) === parseInt(empSinSeguro.id_departamento)
+                    );
 
-                    // Agregar horario_oficial y salario_semanal solo para departamento 8
-                    if (empleado.id_departamento == 8) {
-                        empleado.horario_oficial = empSinSeguro.horario_oficial || null;
-                        empleado.salario_semanal = empSinSeguro.salario_semanal;
-                    }
+                    if (deptoDestino) {
+                        // Doble check directo en el departamento (por si hubo cambios asíncronos)
+                        const yaExiste = deptoDestino.empleados.some(e => String(e.clave) === String(empSinSeguro.clave));
+                        if (yaExiste) return;
 
-                    // Determinar a qué departamento agregar
-                    let nombreDpto = null;
-                    if (empleado.id_departamento == 8) {
-                        nombreDpto = 'pilar coordinadores';
-                    } else if (empleado.id_departamento == 11) {
-                        nombreDpto = 'pilar jornaleros';
-                    }
+                        const tipoHorarioDepto = deptoDestino.tipo_horario !== undefined ? deptoDestino.tipo_horario : 0;
 
-                    // Si se determina un departamento válido, agregar el empleado
-                    if (nombreDpto && jsonNominaPilar && jsonNominaPilar.departamentos) {
-                        let dpto = jsonNominaPilar.departamentos.find(d => d.nombre === nombreDpto);
+                        const nuevoEmpleado = {
+                            clave: empSinSeguro.clave,
+                            nombre: empSinSeguro.nombre + ' ' + empSinSeguro.ap_paterno + ' ' + empSinSeguro.ap_materno,
+                            id_empresa: empSinSeguro.id_empresa,
+                            id_departamento: empSinSeguro.id_departamento,
+                            id_puestoEspecial: empSinSeguro.id_puestoEspecial,
+                            biometrico: empSinSeguro.biometrico,
+                            seguroSocial: false,
+                            tipo_horario: tipoHorarioDepto,
+                            registros: [],
+                            mostrar: true
+                        };
 
-                        // Si el departamento no existe, crearlo
-                        if (!dpto) {
-                            dpto = {
-                                nombre: nombreDpto,
-                                empleados: []
-                            };
-                            jsonNominaPilar.departamentos.push(dpto);
+                        if (tipoHorarioDepto === 1) {
+                            nuevoEmpleado.salario_semanal = empSinSeguro.salario_semanal || 0;
+                            nuevoEmpleado.horario_oficial = empSinSeguro.horario_oficial || null;
+                        } else if (tipoHorarioDepto === 2) {
+                            nuevoEmpleado.salario_diario = empSinSeguro.salario_diario || 0;
                         }
 
-                        // Evitar duplicados
-                        const yaExiste = dpto.empleados.some(e => e.clave === empleado.clave);
-                        if (!yaExiste) {
-                            dpto.empleados.push(empleado);
-                        }
+                        deptoDestino.empleados.push(nuevoEmpleado);
+
                     }
                 });
 
                 asignarPropiedadesEmpleado(jsonNominaPilar);
                 ordenarEmpleadosPorNombre(jsonNominaPilar);
-
-                /* Calcular retardos e inasistencias para todos los coordinadores (departamento 6)
-                if (typeof calcularRetardosTodosCoordinadores === 'function') {
-                    calcularRetardosTodosCoordinadores(jsonNominaPilar);
-                }
-                if (typeof calcularInasistenciasTodosCoordinadores === 'function') {
-                    calcularInasistenciasTodosCoordinadores(jsonNominaPilar);
-                }
-                if (typeof calcularOlvidosTodosCoordinadores === 'function') {
-                    calcularOlvidosTodosCoordinadores(jsonNominaPilar);
-                }*/
-
                 actualizarCabeceraNomina(jsonNominaPilar);
 
-                // BHL: Llenar tabla de pagos por día cuando se cargue la nómina
-                if (typeof llenar_cuerpo_tabla_pagos_por_dia === 'function') {
-                    llenar_cuerpo_tabla_pagos_por_dia();
+                if (typeof initComponents === 'function') {
+                    initComponents();
                 }
 
-                initComponents();
+                saveNomina(jsonNominaPilar);
 
-                // Filtrar empleados con id_tipo_puesto 1
-                let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaPilar, 8);
-
+                let id_departamento = parseInt($('#filtro_departamento').val());
+                let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaPilar, id_departamento);
                 mostrarDatosTabla(jsonFiltrado, 1);
-                console.log(jsonNominaPilar);
-
             }
         },
         error: function (xhr, status, error) {
@@ -921,7 +827,6 @@ function verificarEmpleadosSinSeguro(jsonNominaPilar) {
         }
     });
 }
-
 
 
 
@@ -959,7 +864,7 @@ function asignarPropiedadesEmpleado(jsonNominaPilar) {
               - Si no tiene puesto asignado (null) → Por defecto es Jornalero Base (id_tipo_puesto = 1)
             */
 
-            /* Mapear id_puestoEspecial a id_tipo_jornalero según departamento*/
+            /* Mapear id_puestoEspecial a id_tipo_jornalero según departamento
             if (idDepto === 8) {
                 // Departamento: Coordinadores
                 empleado.id_tipo_puesto = 4; // Coordinador
@@ -967,14 +872,9 @@ function asignarPropiedadesEmpleado(jsonNominaPilar) {
             } else if (idDepto === 11) {
                 // Departamento: Jornaleros
                 empleado.id_tipo_puesto = (idPuesto === 37 || idPuesto === 39) ? 3 : ((idPuesto === 38) ? 2 : 1);
-            }
+            }*/
 
-            // Asignar propiedad pasaje para jornaleros base y vivero
-            if (["11"].includes(empleado.id_departamento)) {
-                empleado.pasaje = empleado.pasaje ?? 0;
-                empleado.comida = empleado.comida ?? 0;
-                empleado.tardeada = empleado.tardeada ?? 0;
-            }
+
 
             // Inicializar registros como array vacío si no existen
             if (!empleado.registros || !Array.isArray(empleado.registros)) {
@@ -983,7 +883,7 @@ function asignarPropiedadesEmpleado(jsonNominaPilar) {
 
             // Agregar o mantener las propiedades necesarias (no sobrescribir si ya vienen de la BD)
 
-            empleado.vacaciones = empleado.vacaciones ?? 0;
+
             empleado.sueldo_extra_total = empleado.sueldo_extra_total ?? 0;
             empleado.retardos = empleado.retardos ?? 0;
             empleado.prestamo = empleado.prestamo ?? 0;
@@ -1026,7 +926,6 @@ function asignarPropiedadesEmpleado(jsonNominaPilar) {
     });
 }
 
-// Función para ordenar empleados por nombre dentro de cada departamento
 function ordenarEmpleadosPorNombre(jsonOrdenado) {
     jsonOrdenado.departamentos.forEach(function (departamento) {
         departamento.empleados.sort(function (a, b) {
@@ -1035,24 +934,6 @@ function ordenarEmpleadosPorNombre(jsonOrdenado) {
     });
 
 }
-
-function inicializarRegistrosVacios(jsonNominaPilar) {
-    if (!jsonNominaPilar || !Array.isArray(jsonNominaPilar.departamentos)) return;
-
-    jsonNominaPilar.departamentos.forEach(departamento => {
-        if (!Array.isArray(departamento.empleados)) return;
-
-        departamento.empleados.forEach(empleado => {
-            // Inicializar registros como array vacío si no existen
-            if (!empleado.registros || !Array.isArray(empleado.registros)) {
-                empleado.registros = [];
-            }
-        });
-    });
-}
-
-
-
 
 
 

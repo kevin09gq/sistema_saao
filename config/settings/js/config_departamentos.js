@@ -1,15 +1,22 @@
 $(document).ready(function () {
     getDepartamentos();
     getObtenerAreasSelect();
+    getObtenerDepartamentosSelect_area();
     agregarDepartamento();
     buscarDepartamento();
     eliminarDepartamento();
     editarDepartamento();
+
+
+    obtener_areas_departamentos();
 });
 
 
 const rutaRaiz = '/sistema_saao/';
-const areasSelect = document.getElementById('id_area_departamento');
+
+const areasSelect = document.getElementById('select_area_departamento');
+const departamentoSelect = document.getElementById('select_departamento_area');
+const modal_detalles_area_departamento = new bootstrap.Modal(document.getElementById('modal_detalles_area_departamento'));
 
 
 // Se Obtienen los departamentos
@@ -27,11 +34,11 @@ function getDepartamentos() {
 
                 departamentos.forEach((element) => {
                     opciones += `
-                                <tr id="departamento-row-${element.id_departamento}" data-id="${element.id_departamento}" data-area="${element.id_area}">
+                                <tr id="departamento-row-${element.id_departamento}" data-id="${element.id_departamento}">
                                     <td>${contador}</td>
                                     <td>${element.nombre_departamento}</td>
                                     <td>
-                                        <button class="btn btn-sm btn-edit btn-edit-departamento" id="btn-edit-departamento-${element.id_departamento}" data-id="${element.id_departamento}" data-area="${element.id_area}" title="Editar"><i class="bi bi-pencil"></i></button>
+                                        <button class="btn btn-sm btn-edit btn-edit-departamento" id="btn-edit-departamento-${element.id_departamento}" data-id="${element.id_departamento}" title="Editar"><i class="bi bi-pencil"></i></button>
                                         <button class="btn btn-sm btn-delete btn-delete-departamento" id="btn-delete-departamento-${element.id_departamento}" data-id="${element.id_departamento}" title="Eliminar"><i class="bi bi-trash"></i></button>
                                     </td>
                                 </tr>   
@@ -72,6 +79,32 @@ function getObtenerAreasSelect() {
     });
 }
 
+// ===========================================================================
+// Se obtienen las áreas para llenar el select del formulario de departamentos
+// ===========================================================================
+function getObtenerDepartamentosSelect_area() {
+    $.ajax({
+        type: "GET",
+        url: rutaRaiz + "public/php/obtenerDepartamentos.php",
+        success: function (response) {
+            if (!response.error) {
+                let departamentos = JSON.parse(response);
+
+                // Limpiar el select antes de llenarlo
+                departamentoSelect.innerHTML = '';
+
+                let temp = `<option value=""selected>Seleccione un departamento</option>`;
+
+                departamentos.forEach(departamento => {
+                    temp += `<option value="${departamento.id_departamento}">${departamento.nombre_departamento}</option>`;
+                });
+
+                departamentoSelect.innerHTML = temp;
+            }
+        }
+    });
+}
+
 // Se agregan los departamentos a la tabla
 function agregarDepartamento() {
     $("#departamentoForm").submit(function (e) {
@@ -79,7 +112,6 @@ function agregarDepartamento() {
 
         let idDepartamento = $("#departamento_id").val().trim();
         let nombreDepartamento = $("#nombre_departamento").val().trim();
-        let idArea = $("#id_area_departamento").val();
         let accion = idDepartamento ? "actualizarDepartamento" : "registrarDepartamento";
 
         if (nombreDepartamento != "") {
@@ -89,7 +121,6 @@ function agregarDepartamento() {
                 data: {
                     accion: accion,
                     id_departamento: idDepartamento,
-                    id_area: idArea,
                     nombre_departamento: nombreDepartamento
                 },
                 success: function (response) {
@@ -98,6 +129,8 @@ function agregarDepartamento() {
                         limpiarYResetearDepartamento();
                         getDepartamentos();
                         getObtenerDepartamentosSelect();
+                        getObtenerDepartamentosSelect_area();
+                        obtener_areas_departamentos();
                         // Actualizar la tabla de departamentos-puestos si existe
                         if (typeof getDepartamentoPuesto === 'function') {
                             getDepartamentoPuesto();
@@ -143,8 +176,14 @@ $("#btn-cancelar-departamento").on("click", function () {
 function limpiarYResetearDepartamento() {
     $("#departamento_id").val('');
     $("#nombre_departamento").val('');
-     $("#id_area_departamento").val('');
+    $("#id_area_departamento").val('');
     $("#btn-guardar-departamento").html('<i class="fas fa-save"></i> Guardar');
+
+
+    $("#area_departamento_id").val('');
+    $("#select_area_departamento").val('');
+    $("#select_departamento_area").val('');
+    $("#btn_guardar_departamento_area").html('<i class="fas fa-save"></i> Guardar');
 }
 
 // Función para buscar departamentos en la tabla
@@ -200,14 +239,14 @@ function eliminarDepartamento() {
                             // Recargar la lista de departamentos
                             getDepartamentos();
                             getObtenerDepartamentosSelect();
-                            
+
                             // Actualizar la tabla de departamentos-puestos si existe
                             if (typeof getDepartamentoPuesto === 'function') {
                                 getDepartamentoPuesto();
                             }
-                            
-                     
-                            
+
+
+
                             // Si existe una función para recargar la tabla de nóminas-departamentos
                             if (typeof cargarDepartamentosDeNomina === 'function') {
                                 // Recargar si existe una nómina seleccionada
@@ -252,18 +291,12 @@ function editarDepartamento() {
     $(document).on("click", ".btn-edit-departamento", function () {
         // Obtener el ID del departamento desde el atributo data-id
         let idDepartamento = $(this).data("id");
-        let idArea = $(this).data("area");
-
-        console.log(idArea);
-        
-
         // Obtener el nombre del departamento (está en la celda anterior a la de los botones)
         let nombreDepartamento = $(this).closest("tr").find("td:eq(1)").text();
 
         // Llenar el formulario con los datos actuales
         $("#departamento_id").val(idDepartamento);
         $("#nombre_departamento").val(nombreDepartamento);
-        $("#id_area_departamento").val(idArea);
 
         // Cambiar el texto del botón de guardar para indicar que se está editando
         $("#btn-guardar-departamento").html('<i class="fas fa-save"></i> Actualizar');
@@ -275,8 +308,216 @@ function editarDepartamento() {
 
 
     });
-
-
-
 }
 
+
+// ===========================================================================
+// RELACION DE DEPARTAMENTOS CON AREAS
+// ===========================================================================
+$(document).on('submit', '#departamento_area_form', function (e) {
+    e.preventDefault();
+
+    let idAreaDepartamento = $("#area_departamento_id").val().trim();
+    let idDepartamento = $("#select_departamento_area").val().trim();
+    let idArea = $("#select_area_departamento").val();
+
+    let accion = idAreaDepartamento ? "actualizarAreaDepartamento" : "registrarAreaDepartamento";
+
+    console.log(idDepartamento);
+    console.log(idArea);
+
+    if (idDepartamento != "" && idArea != "") {
+        $.ajax({
+            type: "POST",
+            url: "../php/configDepartamentos.php",
+            data: {
+                accion: accion,
+                id_departamento: idDepartamento,
+                id_area: idArea,
+                id_area_departamento: idAreaDepartamento
+            },
+            success: function (response) {
+                if (response.trim() == "1") {
+
+                    limpiarYResetearDepartamento();
+                    obtener_areas_departamentos();
+
+                    let mensaje = accion === "registrarAreaDepartamento" ?
+                        "Departamento registrado correctamente" :
+                        "Departamento actualizado correctamente";
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Éxito',
+                        text: mensaje,
+                        confirmButtonColor: '#22c55e'
+                    });
+
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'No se pudo procesar la operación',
+                        confirmButtonColor: '#ef4444'
+                    });
+                }
+            }
+        });
+    } else {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Atención',
+            text: 'Seleccione un departamento y un área para asignar',
+            confirmButtonColor: '#eab308'
+        });
+    }
+
+
+
+});
+
+
+$(document).on('click', '#btn_cancelar_departamento_area', function (e) {
+    e.preventDefault();
+    limpiarYResetearDepartamento();
+});
+
+
+function obtener_areas_departamentos() {
+    $.ajax({
+        type: "GET",
+        url: "../php/configDepartamentos.php",
+        data: { accion: "obtenerAreasDepartamentos" },
+        dataType: "json",
+        success: function (response) {
+
+            let conta = 1;
+            let temp = ``;
+
+            response.forEach(e => {
+                temp += `
+                    <tr>
+                        <td>${conta}</td>
+                        <td>${e.nombre_area}</td>
+                        <td>
+                            <button
+                                class="btn btn-sm btn-edit btn_detalles_area_departamento"
+                                data-area="${e.nombre_area}"
+                                data-departamentos='${JSON.stringify(e.departamentos)}'
+                                title="Ver detalles"><i class="bi bi-eye"></i></button>
+                        </td>
+                    </tr>
+                `;
+                conta++;
+            });
+
+            $("#areas-departamentos-tbody").html(temp);
+        }
+    });
+}
+
+
+$(document).on('click', '.btn_detalles_area_departamento', function (e) {
+    e.preventDefault();
+
+    let departamentos = $(this).data('departamentos');
+    let nombre_area = $(this).data('area');
+    let conta = 1;
+    let temp = ``;
+    $('#tbody_detalles_area_departamento').html('');
+
+    departamentos.forEach(element => {
+        temp += `
+            <tr>
+                <td>${conta}</td>
+                <td>${element.nombre_departamento}</td>
+                <td>
+                    <button
+                        data-area="${element.id_area}"
+                        data-departamento="${element.id_departamento}"
+                        data-id="${element.id_area_departamento}"
+                        class="btn btn-sm btn-primary btn_editar_departamento_area"
+                        title="Editar"><i class="bi bi-pencil"></i></button>
+                    <button
+                        data-id="${element.id_area_departamento}"
+                        data-departamento="${element.nombre_departamento}"
+                        data-area="${nombre_area}"
+                        class="btn btn-sm btn-danger btn_eliminar_departamento_area"
+                        title="Eliminar"><i class="bi bi-trash"></i></button>
+                </td>
+            </tr>
+        `;
+        conta++;
+    });
+
+
+    $('#nombre_area_detalle').html(nombre_area);
+    $('#tbody_detalles_area_departamento').html(temp);
+    // Mostrar el modal
+    modal_detalles_area_departamento.show();
+});
+
+
+$(document).on('click', '.btn_editar_departamento_area', function (e) {
+    e.preventDefault();
+
+    let id_departamento = $(this).data('departamento');
+    let id_area = $(this).data('area');
+    let id_area_departamento = $(this).data('id');
+
+    $('#area_departamento_id').val(id_area_departamento);
+    $('#select_departamento_area').val(id_departamento);
+    $('#select_area_departamento').val(id_area);
+    $('#btn_guardar_departamento_area').html('Actualizar');
+
+    modal_detalles_area_departamento.hide();
+
+});
+
+$(document).on('click', '.btn_eliminar_departamento_area', function (e) {
+    e.preventDefault();
+
+    let nombre_departamento = $(this).data('departamento');
+    let nombre_area = $(this).data('area');
+    let id_area_departamento = $(this).data('id');
+
+    Swal.fire({
+        title: "Eliminar asignación",
+        text: "El departamento '" + nombre_departamento + "' ya no estará asignado al área '" + nombre_area + "'. ¿Desea continuar?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#a70000",
+        cancelButtonColor: "rgb(208, 208, 208)",
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar"
+    }).then((result) => {
+        if (result.isConfirmed) {
+
+            $.ajax({
+                type: "POST",
+                url: "../php/configDepartamentos.php",
+                data: { accion: "eliminarAreasDepartamentos", id_area_departamento: id_area_departamento },
+                success: function (response) {
+                    if (response.trim() == "1") {
+
+                        obtener_areas_departamentos();
+                        modal_detalles_area_departamento.hide();
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Éxito',
+                            text: 'El departamento se ha desvinculado del área correctamente',
+                            confirmButtonColor: '#22c55e'
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'No se pudo procesar la operación',
+                            confirmButtonColor: '#ef4444'
+                        });
+                    }
+                }
+            });
+        }
+    });
+});

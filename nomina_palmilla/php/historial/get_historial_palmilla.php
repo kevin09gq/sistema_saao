@@ -101,7 +101,7 @@ try {
             LEFT JOIN cortes_palmilla_tablas t ON c.id = t.id_corte
             WHERE $where
             GROUP BY c.id
-            ORDER BY c.fecha_corte DESC, c.id DESC
+            ORDER BY c.folio ASC
         ";
         
         $stmt = $conexion->prepare($query_cortes);
@@ -170,4 +170,3 @@ try {
 } catch (Exception $e) {
     echo json_encode(["status" => "error", "message" => $e->getMessage()]);
 }
-?>

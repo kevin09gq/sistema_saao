@@ -1,44 +1,13 @@
 -- Crear Base de Datos
 CREATE DATABASE IF NOT EXISTS sistema_nomina;
+
 USE sistema_nomina;
 
-
 -- =============================
--- TABLAS DE NÓMINAS FLEXIBLES
+-- TABLAS PARA LA EMPRESA, AREAS, DEPARTAMENTOS Y PUESTOS ESPECIALES    
 -- =============================
 
--- Tabla de nombres de nómina
-CREATE TABLE IF NOT EXISTS nombre_nominas (
-  id_nomina INT AUTO_INCREMENT PRIMARY KEY,
-  nombre_nomina VARCHAR(100) NOT NULL
-);
-
--- Relación nómina-departamento (muchos a muchos)
-CREATE TABLE IF NOT EXISTS nomina_departamento (
-  id_nomina_departamento INT AUTO_INCREMENT PRIMARY KEY,
-  id_nomina INT NOT NULL,
-  id_departamento INT NOT NULL,
-  FOREIGN KEY (id_nomina) REFERENCES nombre_nominas(id_nomina) ON UPDATE CASCADE ON DELETE CASCADE,
-  FOREIGN KEY (id_departamento) REFERENCES departamentos(id_departamento) ON UPDATE CASCADE ON DELETE CASCADE
-);
-
--- Tipos lógicos de puesto
-CREATE TABLE IF NOT EXISTS rol_laboral (
-  id_rol_laboral INT AUTO_INCREMENT PRIMARY KEY,
-  nombre_rol VARCHAR(100) NOT NULL
-);
-
--- Relación tipo lógico ↔ puesto real ↔ nómina
-CREATE TABLE IF NOT EXISTS rol_laboral_puesto (
-  id_rol_laboral INT NOT NULL,
-  id_puestoEspecial INT NOT NULL,
-  id_nomina INT NOT NULL,
-  PRIMARY KEY (id_rol_laboral, id_puestoEspecial, id_nomina),
-  FOREIGN KEY (id_rol_laboral) REFERENCES rol_laboral(id_rol_laboral) ON UPDATE CASCADE ON DELETE CASCADE,
-  FOREIGN KEY (id_puestoEspecial) REFERENCES puestos_especiales(id_puestoEspecial) ON UPDATE CASCADE ON DELETE CASCADE,
-  FOREIGN KEY (id_nomina) REFERENCES nombre_nominas(id_nomina) ON UPDATE CASCADE ON DELETE CASCADE
-);
-
+-- Crear tabla empresa
 CREATE TABLE empresa (
     id_empresa INT AUTO_INCREMENT PRIMARY KEY,
     nombre_empresa VARCHAR(150) NOT NULL,
@@ -48,30 +17,50 @@ CREATE TABLE empresa (
     marca_empresa VARCHAR(200) NULL
 );
 
-
-CREATE TABLE IF NOT EXISTS areas (
-  id_area int(11) NOT NULL AUTO_INCREMENT,
-  nombre_area varchar(100) NOT NULL,
-  logo_area varchar(200) DEFAULT NULL,
-  PRIMARY KEY (id_area)
+-- Crear tabla areas
+CREATE TABLE areas (
+    id_area int(11) NOT NULL AUTO_INCREMENT,
+    nombre_area varchar(100) NOT NULL,
+    logo_area varchar(200) DEFAULT NULL,
+    PRIMARY KEY (id_area)
 );
 
-CREATE TABLE IF NOT EXISTS departamentos (
-  id_departamento int(11) NOT NULL AUTO_INCREMENT,
-  nombre_departamento varchar(100) NOT NULL,
-  id_area int(11) DEFAULT NULL,
-  PRIMARY KEY (id_departamento),
-  FOREIGN KEY (id_area) REFERENCES areas(id_area) ON UPDATE CASCADE ON DELETE CASCADE
+-- Crear tabla departamentos
+CREATE TABLE departamentos (
+    id_departamento int(11) NOT NULL AUTO_INCREMENT,
+    nombre_departamento varchar(100) NOT NULL,
+    PRIMARY KEY (id_departamento)    
 );
 
-CREATE TABLE IF NOT EXISTS puestos_especiales (
-  id_puestoEspecial int(11) NOT NULL AUTO_INCREMENT,
-  nombre_puesto varchar(100) NOT NULL,
-  direccion_puesto varchar(200) DEFAULT NULL,
-  color_hex varchar(7) DEFAULT NULL,
-  PRIMARY KEY (id_puestoEspecial)
+-- Crear tabla puestos_especiales
+CREATE TABLE puestos_especiales (
+    id_puestoEspecial int(11) NOT NULL AUTO_INCREMENT,
+    nombre_puesto varchar(100) NOT NULL,
+    direccion_puesto varchar(200) DEFAULT NULL,
+    color_hex varchar(7) DEFAULT NULL,
+    PRIMARY KEY (id_puestoEspecial)
 );
 
+-- Crear tabla relacion areas_departamentos
+CREATE TABLE areas_departamentos (
+    id_area_departamento INT AUTO_INCREMENT PRIMARY KEY,
+    id_area INT NOT NULL,
+    id_departamento INT NOT NULL,
+    FOREIGN KEY (id_area) REFERENCES areas (id_area) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (id_departamento) REFERENCES departamentos (id_departamento) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+-- Crear tabla relacion departamentos_puestos
+CREATE TABLE  departamentos_puestos (
+    id_departamento_puesto int(11) NOT NULL AUTO_INCREMENT,
+    id_departamento int(11) DEFAULT NULL,
+    id_puestoEspecial int(11) DEFAULT NULL,
+    PRIMARY KEY (id_departamento_puesto),
+    FOREIGN KEY (id_departamento) REFERENCES departamentos (id_departamento) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (id_puestoEspecial) REFERENCES puestos_especiales (id_puestoEspecial) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+-- Crear tabla info_ranchos 
 CREATE TABLE info_ranchos (
     id_info_rancho INT AUTO_INCREMENT PRIMARY KEY,
     id_area INT NOT NULL,
@@ -81,25 +70,29 @@ CREATE TABLE info_ranchos (
     REFERENCES areas(id_area) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
--- Esta tabla relaciona departamentos con
--- los puestos
-CREATE TABLE IF NOT EXISTS departamentos_puestos (
-  id_departamento_puesto int(11) NOT NULL AUTO_INCREMENT,
-  id_departamento int(11) DEFAULT NULL,
-  id_puestoEspecial int(11) DEFAULT NULL,
-  PRIMARY KEY (id_departamento_puesto),
-  FOREIGN KEY (id_departamento) REFERENCES departamentos(id_departamento) ON UPDATE CASCADE ON DELETE CASCADE,
-  FOREIGN KEY (id_puestoEspecial) REFERENCES puestos_especiales(id_puestoEspecial) ON UPDATE CASCADE ON DELETE CASCADE
-);
 
+-- =============================
+-- TABLAS DE ADMINISTRACION DE USUARIOS
+-- =============================
+
+-- Crear tabla usuarios
 CREATE TABLE status (
     id_status INT AUTO_INCREMENT PRIMARY KEY,
     nombre_status VARCHAR(50) NOT NULL
 );
 
+-- Crear tabla rol
 CREATE TABLE rol (
     id_rol INT AUTO_INCREMENT PRIMARY KEY,
     nombre_rol VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE info_admin (
+    id_admin INT AUTO_INCREMENT PRIMARY KEY,
+    id_rol INT NOT NULL,
+    correo VARCHAR(100) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    FOREIGN KEY (id_rol) REFERENCES rol(id_rol) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 
@@ -107,22 +100,7 @@ CREATE TABLE rol (
 -- TABLAS DE EMPLEADOS
 -- =============================
 
-CREATE TABLE beneficiarios (
-    id_beneficiario INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    ap_paterno VARCHAR(100),
-    ap_materno VARCHAR(100)
-);
-
-CREATE TABLE contacto_emergencia (
-    id_contacto INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    ap_paterno VARCHAR(100),
-    ap_materno VARCHAR(100),
-    telefono VARCHAR(20),
-    domicilio VARCHAR(900)
-);
-
+-- Crear tabla info_empleados
 CREATE TABLE info_empleados (
     id_empleado INT AUTO_INCREMENT PRIMARY KEY,
     id_rol INT NOT NULL,
@@ -163,27 +141,37 @@ CREATE TABLE info_empleados (
     FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
--- =============================
--- TABLA HISTORIAL DE REINGRESOS/SALIDAS
--- =============================
-CREATE TABLE historial_reingresos (
-    id_historial INT AUTO_INCREMENT PRIMARY KEY,
+-- Crear tabla horarios_oficiales
+CREATE TABLE horarios_oficiales (
+    id_horario INT AUTO_INCREMENT PRIMARY KEY,
     id_empleado INT NOT NULL,
-    fecha_reingreso DATE NOT NULL,
-    fecha_salida DATE NULL,
+    horario_oficial LONGTEXT NOT NULL,
     FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 
-CREATE TABLE empleado_contacto (
-    id_empleado_contacto INT AUTO_INCREMENT PRIMARY KEY,
-    id_empleado INT NOT NULL,
-    id_contacto INT NOT NULL,
-    parentesco VARCHAR(100),
-    FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado) ON UPDATE CASCADE ON DELETE CASCADE,
-    FOREIGN KEY (id_contacto) REFERENCES contacto_emergencia(id_contacto) ON UPDATE CASCADE ON DELETE CASCADE
+-- =============================
+-- TABLAS DE BENEFICIARIOS Y 
+-- CONTACTOS DE EMERGENCIA DEL EMPLEADO
+-- =============================
+
+CREATE TABLE beneficiarios (
+    id_beneficiario INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    ap_paterno VARCHAR(100),
+    ap_materno VARCHAR(100)
 );
 
+CREATE TABLE contacto_emergencia (
+    id_contacto INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    ap_paterno VARCHAR(100),
+    ap_materno VARCHAR(100),
+    telefono VARCHAR(20),
+    domicilio VARCHAR(900)
+);
+
+-- Crear tabla relacion empleado_beneficiario
 CREATE TABLE empleado_beneficiario (
     id_empleado_beneficiario INT AUTO_INCREMENT PRIMARY KEY,
     id_empleado INT NOT NULL,
@@ -194,10 +182,41 @@ CREATE TABLE empleado_beneficiario (
     FOREIGN KEY (id_beneficiario) REFERENCES beneficiarios(id_beneficiario) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
+-- Crear tabla relacion empleado_contacto
+CREATE TABLE empleado_contacto (
+    id_empleado_contacto INT AUTO_INCREMENT PRIMARY KEY,
+    id_empleado INT NOT NULL,
+    id_contacto INT NOT NULL,
+    parentesco VARCHAR(100),
+    FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (id_contacto) REFERENCES contacto_emergencia(id_contacto) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+
+
+-- =============================
+-- TABLA HISTORIAL DE REINGRESOS/SALIDAS
+-- =============================
+
+-- Crear tabla historial_reingresos 
+CREATE TABLE historial_reingresos (
+    id_historial INT AUTO_INCREMENT PRIMARY KEY,
+    id_empleado INT NOT NULL,
+    fecha_reingreso DATE NOT NULL,
+    fecha_salida DATE NULL,
+    FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+-- =============================
+-- TABLA ASIGNACION DE CASILLEROS
+-- =============================
+
+-- Crear tabla casilleros
 CREATE TABLE casilleros (
   num_casillero varchar(50) PRIMARY KEY 
 );
 
+-- Crear tabla empleado_casillero
 CREATE TABLE empleado_casillero (
     id_empleado INT NOT NULL,
     num_casillero VARCHAR(50) NOT NULL,
@@ -207,112 +226,10 @@ CREATE TABLE empleado_casillero (
 
 
 -- =============================
--- TABLAS DE ADMINISTRACIÓN
+-- TABLAS DE TURNOS Y FESTIVIDADES 
 -- =============================
 
-CREATE TABLE info_admin (
-    id_admin INT AUTO_INCREMENT PRIMARY KEY,
-    id_rol INT NOT NULL,
-    correo VARCHAR(100) NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    FOREIGN KEY (id_rol) REFERENCES rol(id_rol) ON UPDATE CASCADE ON DELETE CASCADE
-);
-
--- =============================
--- TABLAS DE NÓMINA 40 LBS
--- =============================
-
-CREATE TABLE nomina (
-  id_nomina_json INT  PRIMARY KEY,
-  id_empresa INT NOT NULL,
-  datos_nomina JSON NOT NULL,
-  id_horario INT,
-  FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa) ON UPDATE CASCADE ON DELETE CASCADE,
-  FOREIGN KEY (id_horario) REFERENCES horarios_oficiales(id_horario) ON UPDATE CASCADE ON DELETE CASCADE
-);
-
-CREATE TABLE horarios_oficiales (
-  id_horario INT  PRIMARY KEY,
-  horario_json JSON NOT NULL
-);
-
-CREATE TABLE tabulador (
-  id_tabulador INT  PRIMARY KEY,
-  id_empresa INT NOT NULL,
-  info_tabulador LONGTEXT NOT NULL,
-  FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
-);
-
-
-CREATE TABLE nomina_40lbs(
-    id_nomina_40lbs INT AUTO_INCREMENT PRIMARY KEY,
-    id_empresa INT NOT NULL,
-    numero_semana INT NOT NULL,
-    nomina_40lbs LONGTEXT NOT NULL,
-    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa) ON UPDATE CASCADE ON DELETE CASCADE
-);
-
-
-
--- =============================
--- TABLAS DE NÓMINA CONFIANZA
--- =============================
-
-CREATE TABLE horarios_oficiales (
-    id_horario INT AUTO_INCREMENT PRIMARY KEY,
-    id_empleado INT NOT NULL,
-    horario_oficial LONGTEXT NOT NULL,
-    FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado) ON UPDATE CASCADE ON DELETE CASCADE
-);
-
-CREATE TABLE nomina_confianza (
-    id_nomina_confianza INT AUTO_INCREMENT PRIMARY KEY,
-    id_empresa INT NOT NULL,
-    anio INT NOT NULL,
-    numero_semana INT NOT NULL,
-    nomina LONGTEXT NOT NULL,
-    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa) ON UPDATE CASCADE ON DELETE CASCADE
-);
-
--- =============================
--- TABLAS DE NÓMINA RELICARIO
--- =============================
-
-CREATE TABLE nomina_relicario (
-    id_nomina_relicario INT AUTO_INCREMENT PRIMARY KEY,
-    id_empresa INT NOT NULL,
-    anio INT NOT NULL,
-    numero_semana INT NOT NULL,
-    nomina_relicario LONGTEXT NOT NULL,
-    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa) ON UPDATE CASCADE ON DELETE CASCADE
-);
-
-CREATE TABLE cortes_relicario (
-  id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  id_nomina INT(11) NOT NULL,
-  nombre_cortador VARCHAR(150) NOT NULL,
-  folio VARCHAR(10) NOT NULL,
-  precio_reja DECIMAL(10,2) NOT NULL,
-  fecha_corte DATE NOT NULL,
-  FOREIGN KEY (id_nomina) 
-    REFERENCES nomina_relicario(id_nomina_relicario)
-    ON UPDATE CASCADE 
-    ON DELETE CASCADE
-);
-
-CREATE TABLE cortes_relicario_tablas (
-  id_corte INT(11) NOT NULL,
-  num_tabla INT(11) NOT NULL,
-  rejas INT(11) NOT NULL,
-  FOREIGN KEY (id_corte) 
-    REFERENCES cortes_relicario(id)
-    ON UPDATE CASCADE 
-    ON DELETE CASCADE
-);
--- =============================
--- TABLAS DE TURNOS Y FESTIVIDADES BHL
--- =============================
-
+-- Crear tabla turnos
 CREATE TABLE turnos (
   id_turno INT PRIMARY KEY AUTO_INCREMENT,
   descripcion VARCHAR (30) NOT NULL,
@@ -321,6 +238,7 @@ CREATE TABLE turnos (
   max DECIMAL(10,2) NOT NULL
 );
 
+-- Crear tabla festividades
 CREATE TABLE festividades (
   id_festividad INT PRIMARY KEY AUTO_INCREMENT,
   nombre VARCHAR (100),
@@ -329,11 +247,9 @@ CREATE TABLE festividades (
   observacion VARCHAR(100) NULL
 );
 
-
 -- ============================
--- Tablas para la AUTORIZACION
+-- TABLA DE AUTORIZACIONES
 -- ============================
-
 
 CREATE TABLE claves_autorizacion (
   id_autorizacion int(11) NOT NULL AUTO_INCREMENT,
@@ -355,13 +271,11 @@ CREATE TABLE historiales_autorizaciones (
 );
 
 
-
-
-
 -- =============================
 -- TABLAS DE PRÉSTAMOS
 -- =============================
 
+-- Crear tabla prestamos
 CREATE TABLE prestamos (
   id_prestamo int(11) NOT NULL AUTO_INCREMENT,
   id_empleado int(11) NOT NULL,
@@ -375,6 +289,7 @@ CREATE TABLE prestamos (
   FOREIGN KEY (id_empleado) REFERENCES info_empleados (id_empleado) ON DELETE CASCADE
 );
 
+-- Crear tabla prestamos_abonos
 CREATE TABLE prestamos_abonos (
   id_abono int(11) NOT NULL AUTO_INCREMENT,
   id_prestamo int(11) NOT NULL,
@@ -388,6 +303,7 @@ CREATE TABLE prestamos_abonos (
   FOREIGN KEY (id_prestamo) REFERENCES prestamos (id_prestamo) ON DELETE CASCADE
 );
 
+-- Crear tabla planes_pagos
 CREATE TABLE planes_pagos (
   id_plan int(11) NOT NULL AUTO_INCREMENT,
   id_prestamo int(11) NOT NULL,
@@ -400,7 +316,7 @@ CREATE TABLE planes_pagos (
   FOREIGN KEY (id_prestamo) REFERENCES prestamos (id_prestamo) ON DELETE CASCADE
 );
 
-
+-- Crear tabla detalle_planes
 CREATE TABLE detalle_planes (
   id_detalle int(11) NOT NULL AUTO_INCREMENT,
   id_plan int(11) NOT NULL,
@@ -412,11 +328,11 @@ CREATE TABLE detalle_planes (
 );
 
 
-
 -- =============================
 -- TABLA DE HORARIOS RELOJ 8 HRS
 -- =============================
 
+-- Crear tabla empleado_horario_reloj
 CREATE TABLE empleado_horario_reloj (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_empleado INT NOT NULL,
@@ -424,6 +340,7 @@ CREATE TABLE empleado_horario_reloj (
     FOREIGN KEY (id_empleado) REFERENCES info_empleados(id_empleado) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
+-- Crear tabla historial_horarios_reloj
 CREATE TABLE historial_biometrico (
   id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
   id_empresa int(11) NOT NULL DEFAULT 1 COMMENT '1=SAAO, 2=SB',
@@ -435,6 +352,7 @@ CREATE TABLE historial_biometrico (
   fecha_registro datetime NOT NULL DEFAULT current_timestamp()
 );
 
+-- Crear tabla historial_incidencias_semanal
 CREATE TABLE historial_incidencias_semanal (
     id INT AUTO_INCREMENT PRIMARY KEY,
     semana VARCHAR(10) NOT NULL,
@@ -449,6 +367,221 @@ CREATE TABLE historial_incidencias_semanal (
     FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
+-- =============================
+-- TABLAS DE NÓMINA DINAMICAS
+-- =============================
+
+-- Una nómina pertenece a una sola área.
+-- De esa área se eligen los departamentos que participan en la nómina.
+CREATE TABLE nombre_nominas (
+  id_nomina INT AUTO_INCREMENT PRIMARY KEY,
+  nombre_nomina VARCHAR(100) NOT NULL,
+  id_area INT NOT NULL,
+  FOREIGN KEY (id_area) REFERENCES areas(id_area) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+-- Departamentos seleccionados del área para participar en la nómina
+CREATE TABLE nomina_departamento (
+  id_nomina_departamento INT AUTO_INCREMENT PRIMARY KEY,
+  id_nomina INT NOT NULL,
+  id_departamento INT NOT NULL,
+  FOREIGN KEY (id_nomina) REFERENCES nombre_nominas(id_nomina) ON UPDATE CASCADE ON DELETE CASCADE,
+  FOREIGN KEY (id_departamento) REFERENCES departamentos(id_departamento) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+-- =============================
+-- TABLAS DE NÓMINA 40 LBS
+-- =============================
+
+-- Crear tabla tabulador
+CREATE TABLE tabulador (
+  id_tabulador INT  PRIMARY KEY,
+  id_empresa INT NOT NULL,
+  info_tabulador LONGTEXT NOT NULL,
+  FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
+);
+
+-- Crear tabla nomina_40lbs
+CREATE TABLE nomina_40lbs(
+    id_nomina_40lbs INT AUTO_INCREMENT PRIMARY KEY,
+    id_empresa INT NOT NULL,
+    anio INT NOT NULL,
+    numero_semana INT NOT NULL,
+    nomina_40lbs LONGTEXT NOT NULL,
+    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+
+-- =============================
+-- TABLAS DE NÓMINA CONFIANZA
+-- =============================
+
+-- Crear tabla nomina_confianza
+CREATE TABLE nomina_confianza (
+    id_nomina_confianza INT AUTO_INCREMENT PRIMARY KEY,
+    id_empresa INT NOT NULL,
+    anio INT NOT NULL,
+    numero_semana INT NOT NULL,
+    nomina LONGTEXT NOT NULL,
+    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+-- =============================
+-- TABLAS DE NÓMINA RELICARIO
+-- =============================
+
+-- Crear tabla nomina_relicario
+CREATE TABLE nomina_relicario (
+    id_nomina_relicario INT AUTO_INCREMENT PRIMARY KEY,
+    id_empresa INT NOT NULL,
+    anio INT NOT NULL,
+    numero_semana INT NOT NULL,
+    nomina_relicario LONGTEXT NOT NULL,
+    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+-- Crear tabla cortes_relicario
+CREATE TABLE cortes_relicario (
+  id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id_nomina INT(11) NOT NULL,
+  nombre_cortador VARCHAR(150) NOT NULL,
+  folio VARCHAR(10) NOT NULL,
+  precio_reja DECIMAL(10,2) NOT NULL,
+  fecha_corte DATE NOT NULL,
+  FOREIGN KEY (id_nomina) 
+    REFERENCES nomina_relicario(id_nomina_relicario)
+    ON UPDATE CASCADE 
+    ON DELETE CASCADE
+);
+
+-- Crear tabla cortes_relicario_tablas
+CREATE TABLE cortes_relicario_tablas (
+  id_corte INT(11) NOT NULL,
+  num_tabla INT(11) NOT NULL,
+  rejas INT(11) NOT NULL,
+  FOREIGN KEY (id_corte) 
+    REFERENCES cortes_relicario(id)
+    ON UPDATE CASCADE 
+    ON DELETE CASCADE
+);
+
+-- =============================
+-- TABLAS DE NÓMINA PILAR
+-- =============================
+
+-- Crear tabla nomina_pilar
+CREATE TABLE nomina_pilar (
+    id_nomina_pilar INT AUTO_INCREMENT PRIMARY KEY,
+    id_empresa INT NOT NULL,
+    anio INT NOT NULL,
+    numero_semana INT NOT NULL,
+    nomina_pilar LONGTEXT NOT NULL,
+    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+-- Crear tabla cortes_pilar
+CREATE TABLE cortes_pilar (
+  id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id_nomina INT(11) NOT NULL,
+  nombre_cortador VARCHAR(150) NOT NULL,
+  folio VARCHAR(10) NOT NULL,
+  precio_reja DECIMAL(10,2) NOT NULL,
+  fecha_corte DATE NOT NULL,
+  FOREIGN KEY (id_nomina) 
+    REFERENCES nomina_pilar(id_nomina_pilar)
+    ON UPDATE CASCADE 
+    ON DELETE CASCADE
+);
+
+-- Crear tabla cortes_pilar_tablas
+CREATE TABLE cortes_pilar_tablas (
+  id_corte INT(11) NOT NULL,
+  num_tabla INT(11) NOT NULL,
+  rejas INT(11) NOT NULL,
+  FOREIGN KEY (id_corte) 
+    REFERENCES cortes_pilar(id)
+    ON UPDATE CASCADE 
+    ON DELETE CASCADE
+);
+
+-- =============================
+-- TABLAS DE NÓMINA HUASTECA
+-- =============================
+
+--- Crear tabla nomina_huasteca
+CREATE TABLE nomina_huasteca (
+    id_nomina_huasteca INT AUTO_INCREMENT PRIMARY KEY,
+    id_empresa INT NOT NULL,
+    anio INT NOT NULL,
+    numero_semana INT NOT NULL,
+    nomina_huasteca LONGTEXT NOT NULL,
+    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+-- Crear tabla cortes_huasteca
+CREATE TABLE cortes_huasteca (
+  id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id_nomina INT(11) NOT NULL,
+  nombre_cortador VARCHAR(150) NOT NULL,
+  folio VARCHAR(10) NOT NULL,
+  precio_reja DECIMAL(10,2) NOT NULL,
+  fecha_corte DATE NOT NULL,
+  FOREIGN KEY (id_nomina) 
+    REFERENCES nomina_huasteca(id_nomina_huasteca)
+    ON UPDATE CASCADE 
+    ON DELETE CASCADE
+);
+
+-- Crear tabla cortes_huasteca_tablas
+CREATE TABLE cortes_huasteca_tablas (
+  id_corte INT(11) NOT NULL,
+  num_tabla INT(11) NOT NULL,
+  rejas INT(11) NOT NULL,
+  FOREIGN KEY (id_corte) 
+    REFERENCES cortes_huasteca(id)
+    ON UPDATE CASCADE 
+    ON DELETE CASCADE
+);
+
+-- =============================
+-- TABLAS DE NÓMINA PALMILLA
+-- =============================
+ 
+ --- Crear tabla nomina_palmilla
+CREATE TABLE nomina_palmilla (
+    id_nomina_palmilla INT AUTO_INCREMENT PRIMARY KEY,
+    id_empresa INT NOT NULL,
+    anio INT NOT NULL,
+    numero_semana INT NOT NULL,
+    nomina_palmilla LONGTEXT NOT NULL,
+    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+-- Crear tabla cortes_palmilla
+CREATE TABLE cortes_palmilla (
+  id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id_nomina INT(11) NOT NULL,
+  nombre_cortador VARCHAR(150) NOT NULL,
+  folio VARCHAR(10) NOT NULL,
+  precio_reja DECIMAL(10,2) NOT NULL,
+  fecha_corte DATE NOT NULL,
+  FOREIGN KEY (id_nomina) 
+    REFERENCES nomina_palmilla(id_nomina_palmilla)
+    ON UPDATE CASCADE 
+    ON DELETE CASCADE
+);
+
+-- Crear tabla cortes_palmilla_tablas
+CREATE TABLE cortes_palmilla_tablas (
+  id_corte INT(11) NOT NULL,
+  num_tabla INT(11) NOT NULL,
+  rejas INT(11) NOT NULL,
+  FOREIGN KEY (id_corte) 
+    REFERENCES cortes_palmilla(id)
+    ON UPDATE CASCADE 
+    ON DELETE CASCADE
+);
+
 
 -- =============================
 -- ISERTAR DATOS
@@ -460,16 +593,6 @@ INSERT INTO status (nombre_status) VALUES ('Activo'), ('Baja');
 -- Insertar roles
 INSERT INTO rol (nombre_rol) VALUES ('admin'), ('empleado');
 
--- Insertar empresas
-INSERT INTO empresa (nombre_empresa) VALUES 
-('Citricos SAAO'),
-('SB citric´s group');
-
--- Insertar tipos de nómina
-INSERT INTO tipos_nomina (nombre_nomina, descripcion) VALUES 
-('Nómina 40 LBS', 'Nómina para empleados de 40 libras'),
-('Nómina Confianza', 'Nómina para empleados de confianza'),
-('Nómina Relicario', 'Nómina para empleados del relicario');
 
 
 -- Procedimiento para crear casilleros del 1 al 300
@@ -491,41 +614,3 @@ CALL crear_casilleros();
 
 
 INSERT INTO tabulador (id_tabulador,id_empresa, info_tabulador) 
-VALUES (
-    1,1,
-    '[
-      {
-        "rango": { "desde": "01:00", "hasta": "20:59" },
-        "minutos": 1259,
-        "sueldo_base": 1350.00,
-        "sueldo_especial": 1550.00,
-        "costo_por_minuto": 1.07
-      },
-      {
-        "rango": { "desde": "21:00", "hasta": "30:59" },
-        "minutos": 1859,
-        "sueldo_base": 1550.00,
-        "sueldo_especial": 1750.00,
-        "costo_por_minuto": 0.83
-      },
-      {
-        "rango": { "desde": "31:00", "hasta": "40:59" },
-        "minutos": 2459,
-        "sueldo_base": 1750.00,
-        "sueldo_especial": 1950.00,
-        "costo_por_minuto": 0.71
-      },
-      {
-        "rango": { "desde": "41:00", "hasta": "48:00" },
-        "minutos": 2880,
-        "sueldo_base": 1952.00,
-        "sueldo_especial": 2152.00,
-        "costo_por_minuto": 0.67
-      },
-      {
-        "rango": { "desde": "48:01", "hasta": "en adelante" },
-        "tipo": "hora_extra",
-        "costo_por_minuto": 1.34
-      }
-    ]'
-);

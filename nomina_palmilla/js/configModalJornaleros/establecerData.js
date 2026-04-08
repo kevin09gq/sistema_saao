@@ -218,6 +218,26 @@ function establecerDiasTrabajadosJornalero(empleado) {
         }
     });
 
+    // --- AGREGAR DÍAS EXTRA MANUALES ---
+    if (Array.isArray(empleado.dias_extra_detalle) && empleado.dias_extra_detalle.length > 0) {
+        const salarioDiario = parseFloat(empleado.salario_diario) || 0;
+        
+        empleado.dias_extra_detalle.forEach(extra => {
+            diasTrabajados++;
+            totalCantidad += salarioDiario;
+            
+            const filaExtra = `
+                <tr class="table-info">
+                    <td>${extra.dia}</td>
+                    <td><span class="badge bg-primary">Día Extra</span></td>
+                    <td>$${salarioDiario.toFixed(2)}</td>
+                    <td class="text-center"><strong>1</strong></td>
+                </tr>
+            `;
+            filas.push(filaExtra);
+        });
+    }
+
     // Si hay filas, agregarlas a la tabla
     if (filas.length > 0) {
         filas.forEach(fila => $('#tbody-dias-trabajados-jornaleros').append(fila));
@@ -392,6 +412,7 @@ function establecerColorBiometricoJornalero(empleado) {
         }
     });
 }
+
 
 
 /************************************

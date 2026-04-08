@@ -214,8 +214,8 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
     $nombreFontSize = strlen($nombreCompleto) > 35 ? 8 : (strlen($nombreCompleto) >= 31 ? 13 : 15);
     $textB(12, 22, $pt($nombreFontSize), $nombreCompleto);
 
-    $deptoFontSize = 15;
-    $text(310, 22, $pt($deptoFontSize), $departamento);
+    $deptoFontSize = 20;
+    $text(310, 17, $pt($deptoFontSize), $departamento);
     $text(551, 22, $pt(17), 'F.Ingr: ' . $fechaIngreso);
     $text(710, 20, $pt(18), 'SEM ' . $semana);
 
@@ -285,7 +285,7 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
 
     $currentY = $y0;
     $row      = 0;
-    $yInicioCeldasContinuacion = 52;
+    $yInicioCeldasContinuacion = 50;
     $tableTop  = $tableTopPrimeraHoja;
 
     // Función inline para fuente según longitud
@@ -300,7 +300,7 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
 
     for ($i = 0; $i < $maxConceptos; $i++) {
         if ($maxConceptos <= 9) {
-            $yCellTop = ($tableTop + ($row * $lh)) + 18;
+            $yCellTop = ($tableTop + ($row * $lh)) + 16;
             if (isset($percepciones[$i])) {
                 $concepto = $percepciones[$i];
                 $fontConcepto = $fontForLabel(strlen($concepto['label']));
@@ -327,10 +327,10 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
                 $pdf->AddPage();
                 $pdf->SetLineWidth($dot(2));
                 $pdf->Rect($dot(10), $dot(10), $dot(812), $dot(386));
-                $textB(18, 24, $pt(20), $clave . ' ' . $nombre);
-                $text(700, 24, $f18, 'SEM ' . $semana);
+                $textB(18, 22, $pt(20), $clave . ' ' . $nombre);
+                $text(700, 22, $f18, 'SEM ' . $semana);
                 $pdf->SetLineWidth($dot(1));
-                $pdf->Line($dot(10), $dot(54), $dot(10 + 812), $dot(54));
+                $pdf->Line($dot(10), $dot(50), $dot(10 + 812), $dot(50));
                 $pdf->Line($dot(286), $dot($tableTop), $dot(286), $dot($tableTop + $alturaContenido));
                 $pdf->Line($dot(700), $dot($tableTop), $dot(700), $dot($tableTop + $alturaContenido));
                 $pdf->SetLineWidth($dot(2));
@@ -344,10 +344,10 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
                 $pdf->AddPage();
                 $pdf->SetLineWidth($dot(2));
                 $pdf->Rect($dot(10), $dot(10), $dot(812), $dot(386));
-                $textB(18, 24, $pt(20), $clave . ' ' . $nombre);
-                $text(700, 24, $f18, 'SEM ' . $semana);
+                $textB(18, 22, $pt(20), $clave . ' ' . $nombre);
+                $text(700, 22, $f18, 'SEM ' . $semana);
                 $pdf->SetLineWidth($dot(1));
-                $pdf->Line($dot(10), $dot(54), $dot(10 + 812), $dot(54));
+                $pdf->Line($dot(10), $dot(50), $dot(10 + 812), $dot(50));
                 $pdf->Line($dot(250), $dot($tableTop), $dot(250), $dot($tableTop + $alturaContenido));
                 $pdf->Line($dot(640), $dot($tableTop), $dot(640), $dot($tableTop + $alturaContenido));
                 $pdf->SetLineWidth($dot(2));
@@ -355,7 +355,7 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
                 $currentY = $tableTop + $textYOffset;
                 $row = 0;
             }
-            $yCellTop = ($tableTop + ($row * $lh)) + 18;
+            $yCellTop = ($tableTop + ($row * $lh)) + 16;
             if (isset($percepciones[$i])) {
                 $concepto = $percepciones[$i];
                 $fontConcepto = $fontForLabel(strlen($concepto['label']));
@@ -434,9 +434,9 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
         if ($yTotales > $maxY) {
             $pdf->AddPage('L', [50.8, 104]);
             $pdf->SetLineWidth($dot(2));
-            $pdf->Rect($dot(10), $dot(12), $dot(812), $dot(386));
-            $textB(18, 24, $pt(20), $clave . ' ' . $nombre);
-            $yTotales = 52;
+            $pdf->Rect($dot(10), $dot(10), $dot(812), $dot(386));
+            $textB(18, 22, $pt(20), $clave . ' ' . $nombre);
+            $yTotales = 50;
         }
         $pdf->SetLineWidth($dot(2));
         $pdf->Line($dot(10), $dot($yTotales), $dot(10 + 812), $dot($yTotales));
@@ -520,7 +520,7 @@ if (count($claves) > 0) {
             FROM info_empleados e
             LEFT JOIN puestos_especiales p ON e.id_puestoEspecial = p.id_puestoEspecial
             LEFT JOIN departamentos d ON e.id_departamento = d.id_departamento
-            WHERE e.clave_empleado IN ($placeholders)";
+            WHERE e.clave_empleado IN ($placeholders) AND d.id_area = 3";
 
     $stmt = mysqli_prepare($conexion, $sql);
     if ($stmt) {

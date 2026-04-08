@@ -80,6 +80,8 @@ function establecerInformacionEmpleado(empleado) {
     // Rellenar los campos del modal con los datos del empleado
     $('#campo-clave-40lbs').text(empleado.clave || '');
     $('#campo-nombre-40lbs').text(empleado.nombre || '');
+    $('#campo-minutos-trabajados-40lbs').text(empleado.minutos_trabajados || '0');
+    $('#campo-minutos-extras-40lbs').text(empleado.minutos_extras_trabajados || '0');
     $('#nombre-empleado-modal').text(empleado.nombre || '');
 }
 

@@ -28,7 +28,7 @@ $idEmpresa = isset($_POST['id_empresa']) ? intval($_POST['id_empresa']) : 1;
 // Departamentos permitidos
 $departamentosPermitidos = [
     'Rancho El Relicario Coordinadores',
-    'Rancho el Relicario Jornaleros' 
+    'Rancho el Relicario Jornaleros ' 
 ];
 
 // Buscar datos generales en las primeras filas
@@ -57,7 +57,7 @@ foreach ($rows as $row) {
                 $departamentos[] = $actualDepto;
             }
             
-            $nombreCompleto = trim($match[1] . ' ' . $match[2]);
+            $nombreCompleto = trim($match[2]);
             
             // Verificar si el departamento está exactamente en la lista permitida
             // Usamos el nombre sin el número (match[2]) para una comparación exacta

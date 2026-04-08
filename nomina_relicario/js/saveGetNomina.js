@@ -25,6 +25,7 @@ function saveNominaRelicario() {
     const departamentoCorte = jsonNominaRelicario.departamentos.find(d => d.nombre === "Corte");
     // Obtener empleados del dep. Corte
     const empleadosCorte = departamentoCorte ? departamentoCorte.empleados : [];
+    
 
 
     // IMPORTANTE: Usar fecha_cierre para determinar el año (NO fecha_inicio)

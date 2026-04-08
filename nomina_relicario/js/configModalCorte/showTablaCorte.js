@@ -36,7 +36,7 @@ function mostrarDatosTablaCorte(jsonNominaRelicario) {
             
             // Generar fila HTML
             const filaHTML = generarFilaTablaCorte(numeroFila, datosFila);
-            $('#tabla-body-corte-relicario').append(filaHTML);
+            $('#tabla-body-nomina-relicario').append(filaHTML);
             
             numeroFila++;
         }

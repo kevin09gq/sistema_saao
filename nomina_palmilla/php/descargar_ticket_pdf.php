@@ -91,7 +91,7 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
         $neto = $totalPercepcionesTemp - $totalDeduccionesTemp;
     }
     
-    // Aplicar redondeo
+    // Aplicar redondeo como en nomina_confianza
     $netoOriginal = $neto;
     $netoRedondeado = redondear($netoOriginal);
     $ajusteRedondeo = round($netoRedondeado - $netoOriginal, 2);
@@ -171,6 +171,7 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
 
     $totalDeduccionesCalculado = 0.0;
     foreach ($deducciones as $d) {
+        // No sumar F.A/GAFET/COFIA
         if (strpos($d['label'], 'F.A/Gafet/Cofia') === 0) continue;
         $totalDeduccionesCalculado += toNumber($d['monto']);
     }
@@ -460,20 +461,31 @@ $data = json_decode($raw, true);
 $empleadosSeleccionados = isset($_POST['empleados_seleccionados']) && $_POST['empleados_seleccionados'] === 'true';
 
 if ($empleadosSeleccionados && isset($_POST['datos_json'])) {
+    // Procesar datos de empleados seleccionados
     $datosSeleccionados = json_decode($_POST['datos_json'], true);
+    
     if (!is_array($datosSeleccionados) || !isset($datosSeleccionados['empleados_seleccionados'])) {
         http_response_code(400);
-        exit('Datos de selección inválidos.');
+        header('Content-Type: text/plain; charset=UTF-8');
+        echo 'Datos de selección inválidos.';
+        exit;
     }
+    
     $empleados = $datosSeleccionados['empleados_seleccionados'];
     $meta = $datosSeleccionados['metadatos'] ?? ['numero_semana' => ''];
 } else {
+    // Procesar solicitud normal (todos los empleados)
     if (!is_array($data) || !isset($data['nomina']) || !is_array($data['nomina'])) {
         http_response_code(400);
-        exit('Solicitud inválida.');
+        header('Content-Type: text/plain; charset=UTF-8');
+        echo 'Solicitud inválida.';
+        exit;
     }
+
     $nomina = $data['nomina'];
     $meta   = $data['meta'] ?? ['numero_semana' => ''];
+
+    // ─── Recolectar empleados de todos los departamentos ─────────────────
     $empleados = [];
     foreach (($nomina['departamentos'] ?? []) as $depto) {
         $nombreDepto = $depto['nombre'] ?? '';
@@ -484,6 +496,7 @@ if ($empleadosSeleccionados && isset($_POST['datos_json'])) {
             }
         }
     }
+
     usort($empleados, function ($a, $b) {
         return strcasecmp((string)($a['nombre'] ?? ''), (string)($b['nombre'] ?? ''));
     });

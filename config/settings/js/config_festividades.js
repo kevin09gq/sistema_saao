@@ -10,9 +10,13 @@ $(document).ready(function () {
 
 // Se Obtienen las áreas
 function getFestividades() {
+
+    const anioActual = $('#select_anio_festividad').val();
+
     $.ajax({
         type: "GET",
         url: rutaRaiz + "public/php/obtenerFestividades.php",
+        data: { anio: anioActual },
         success: function (response) {
             if (!response.error) {
                 let turnos = JSON.parse(response);
@@ -257,3 +261,10 @@ function cancelarFestividad() {
         resetearFormularioFestividades()
     });
 }
+
+
+$(document).on('change', '#select_anio_festividad', function (e) {
+    e.preventDefault();
+    // Recargar la lista de festividades al cambiar el año seleccionado
+    getFestividades();
+});

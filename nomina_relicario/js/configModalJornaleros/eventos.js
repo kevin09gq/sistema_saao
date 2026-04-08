@@ -43,7 +43,7 @@ function diaSemanaRancho(fecha) {
 
 function recalcularEventosJornalero(empleado) {
     // Validar que sea jornalero
-    if (!empleado || parseInt(empleado.id_departamento) !== 7) {
+    if (!empleado || empleado.tipo_horario !== 2) {
         return;
     }
 
@@ -72,8 +72,8 @@ function calcularOlvidosTodosJornaleros(jsonNominaRelicario) {
         if (!Array.isArray(departamento.empleados)) return;
 
         departamento.empleados.forEach(empleado => {
-            // Solo procesar jornaleros (id_departamento === 7)
-            if (parseInt(empleado.id_departamento) !== 7) return;
+            // Solo procesar jornaleros (tipo_horario === 2)
+            if (empleado.tipo_horario !== 2) return;
 
             // Calcular el historial de olvidos para este coordinador
             asignarHistorialOlvidosJornalero(empleado);

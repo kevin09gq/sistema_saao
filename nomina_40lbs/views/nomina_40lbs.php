@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="../css/tablaNomina.css">
     <link rel="stylesheet" href="../css/modal40lbs.css">
     <link rel="stylesheet" href="../css/conceptos_totales.css">
+    <link rel="stylesheet" href="../css/modal_seleccion_tickets.css">
 
     <!-- SweetAlert2 CSS -->
     <script src="<?= SWEETALERT ?>"></script>
@@ -25,10 +26,10 @@
     <?php
     // Incluir el navbar (config.php ya fue incluido en el head)
     include "../../public/views/navbar.php"
-    ?>
+        ?>
 
     <!-- Contenedor principal centrado -->
-    <div class="container-nomina_40lbs" id="container-nomina_40lbs">
+    <div class="container-nomina_40lbs" id="container-nomina_40lbs" hidden>
         <!-- Contenedor tipo navbar para formulario y filtros -->
         <div class="navbar-nomina_40lbs">
             <div class="titulo-nomina_40lbs">Procesamiento de Nómina</div>
@@ -39,13 +40,15 @@
                     <label for="archivo_excel_lista_raya_40lbs">
                         <i class="bi bi-file-earmark-excel-fill"></i> Lista de Raya
                     </label>
-                    <input type="file" id="archivo_excel_lista_raya_40lbs" name="archivo_excel_lista_raya_40lbs" accept=".xls,.xlsx" required>
+                    <input type="file" id="archivo_excel_lista_raya_40lbs" name="archivo_excel_lista_raya_40lbs"
+                        accept=".xls,.xlsx" required>
                 </div>
                 <div>
                     <label for="archivo_excel_biometrico_40lbs">
                         <i class="bi bi-file-earmark-excel-fill"></i> Biometrico
                     </label>
-                    <input type="file" id="archivo_excel_biometrico_40lbs" name="archivo_excel_biometrico_40lbs" accept=".xls,.xlsx" required>
+                    <input type="file" id="archivo_excel_biometrico_40lbs" name="archivo_excel_biometrico_40lbs"
+                        accept=".xls,.xlsx" required>
                 </div>
                 <div>
                     <button type="button" id="btn_procesar_nomina_40lbs" class="btn-procesar-nomina_40lbs">
@@ -61,32 +64,42 @@
             <h3 id=nombre_nomina></h3>
             <div class="header-controls-40lbs">
                 <span class="sem-info-40lbs" id="num_semana"></span>
-                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_actualizar_biometrico" title="Actualizar Biometrico" aria-label="Actualizar Biometrico">
+                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_actualizar_biometrico"
+                    title="Actualizar Biometrico" aria-label="Actualizar Biometrico">
                     <i class="bi bi-person-badge"></i>
                 </button>
-                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_establecer_horario_semanal" title="Establecer Horario Semanal" aria-label="Establecer Horario Semanal">
+                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_establecer_horario_semanal"
+                    title="Establecer Horario Semanal" aria-label="Establecer Horario Semanal">
                     <i class="bi bi-calendar-check"></i>
+                </button>
+                <button class="btn btn-outline-primary" type="button" id="btn_marcajes" title="Ajustar Marcaje">
+                    <i class="bi bi-clock-history"></i>
                 </button>
                 <button class="btn btn-outline-primary" id="btn-seleccionar-empleados" title="Seleccionar empleados">
                     <i class="bi bi-people"></i>
                 </button>
-                <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global" title="Aplicar Tarjeta">
+                <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global"
+                    title="Aplicar Tarjeta">
                     <i class="bi bi-arrow-clockwise"></i>
                 </button>
-                <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta" aria-label="Quitar tarjeta">
+                <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta"
+                    aria-label="Quitar tarjeta">
                     <i class="bi bi-credit-card-2-back"></i>
                 </button>
                 <button class="btn btn-outline-info" id="btn_ver_dispersion" title="Ver Dispersión de Tarjeta">
                     <i class="bi bi-list-columns-reverse"></i>
                 </button>
-                <button class="btn btn-outline-primary btn-suma" type="button" id="btn_conceptos_totales" title="Totales por concepto" aria-label="Totales por concepto">
+                <button class="btn btn-outline-primary btn-suma" type="button" id="btn_conceptos_totales"
+                    title="Totales por concepto" aria-label="Totales por concepto">
                     <i class="bi bi-calculator"></i>
                 </button>
-                <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf" title="Descargar Ticket">
+                <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf"
+                    title="Descargar Todos los Tickets">
                     <i class="bi bi-ticket-perforated"></i>
                 </button>
-                <button class="btn btn-outline-secondary btn-ticket-zebra" id="btn_ticket_manual" title="Descargar Ticket Manual">
-                    <i class="bi bi-ticket-perforated"></i>
+                <button class="btn btn-outline-success btn-ticket-zebra" id="btn_ticket_manual_40lbs"
+                    title="Descargar Tickets Seleccionados">
+                    <i class="bi bi-hand-index"></i>
                 </button>
 
             </div>
@@ -105,7 +118,8 @@
                 <div class="busqueda-container-40lbs" id="busqueda-container">
                     <i class="bi bi-search"></i>
                     <input type="text" class="campo-busqueda-40lbs" placeholder="Buscar..." id="busqueda-nomina-40lbs">
-                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="btn-clear-busqueda" title="Limpiar">
+                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="btn-clear-busqueda"
+                        title="Limpiar">
                         <i class="bi bi-x-circle"></i>
                     </button>
                 </div>
@@ -181,7 +195,8 @@
     </div>
 
     <!-- Menú contextual simple para la tabla -->
-    <div id="context-menu" style="position:absolute;z-index:10000;display:none;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);padding:4px;">
+    <div id="context-menu"
+        style="position:absolute;z-index:10000;display:none;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);padding:4px;">
         <div class="cm-item" data-action="ver" style="padding:6px 12px;cursor:pointer;">Ver detalles</div>
     </div>
 
@@ -194,7 +209,9 @@
     <?php include 'modalSeleccionarEmpleados.php'; ?>
     <?php include 'modalConceptosTotales.php'; ?>
     <?php include 'modalExportarNomina.php'; ?>
+    <?php include 'modal_seleccion_tickets_40lbs.php'; ?>
     <?php include 'dispersionTarjeta.php'; ?>
+    <?php include 'modalMarcajes.php'; ?>
 
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
@@ -216,6 +233,8 @@
     <script src="../js/seleccionar_empleados.js"></script>
     <script src="../js/conceptos_totales.js"></script>
     <script src="../js/exportarNominaExcel.js"></script>
+    <script src="../js/generar_tickets.js"></script>
+    <script src="../js/ticket_seleccion_40lbs.js"></script>
 
     <script src="../js/configModal/establecerData.js"></script>
     <script src="../js/configModal/editarData.js"></script>
@@ -225,8 +244,10 @@
 
     <!-- Dispersion Tarjeta -->
     <script src="../js/configModalDispersionTarjeta/establecerData.js"></script>
-    <script src="../js/configModalDispersionTarjeta/editarData.js"></script>
     <script src="../js/configModalDispersionTarjeta/filtroBusqueda.js"></script>
+
+    <!-- Redondeo Manual -->
+    <script src="../js/marcajes.js"></script>
 
 </body>
 

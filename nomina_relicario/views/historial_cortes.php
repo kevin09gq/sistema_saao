@@ -22,7 +22,7 @@ verificarSesion();
     <div class="container mt-4">
         
         <div class="header-historial">
-            <h2><i class="bi bi-clock-history me-2"></i> Historial de Cortes de Rejas(Relicario)</h2>
+            <h2><i class="bi bi-clock-history me-2"></i> Historial de Cortes de Rejas (Relicario)</h2>
             <a href="nomina_relicario.php" class="btn btn-light btn-sm text-success fw-bold">
                 <i class="bi bi-arrow-left"></i> Regresar a Nómina
             </a>
@@ -112,7 +112,7 @@ verificarSesion();
 
     </div>
 
-    <!-- Modal Detalles Bonito -->
+    <!-- Modal Detalles -->
     <div class="modal fade" id="modalDetalleCorte" tabindex="-1" aria-labelledby="modalDetalleCorteLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content" style="border: none; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
@@ -188,7 +188,6 @@ verificarSesion();
                     </h4>
                 </div>
                 <div class="modal-body p-0">
-                    <!-- Vista Principal de Ranking -->
                     <div id="vista_ranking_principal">
                         <div class="d-flex justify-content-between align-items-center px-4 py-3 bg-white border-bottom sticky-top" style="z-index: 10;">
                             <span class="text-secondary fw-bold fs-6"><i class="bi bi-sort-down"></i> Ordenar por:</span>
@@ -214,7 +213,6 @@ verificarSesion();
                         </div>
                     </div>
 
-                    <!-- Vista de Detalles por Tabla -->
                     <div id="vista_ranking_detalles" style="display: none; padding: 25px; padding-bottom: 80px; background-color: #f8f9fa;">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <button class="btn btn-sm btn-white border shadow-sm fw-bold text-secondary" onclick="volverARanking()">
@@ -261,6 +259,6 @@ verificarSesion();
     <script src="<?= BOOTSTRAP_JS ?>"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-    <script src="../js/historial/historial_v3.js"></script>
+    <script src="../js/historial/historial_relicario.js"></script>
 </body>
 </html>

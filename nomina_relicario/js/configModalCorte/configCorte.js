@@ -24,6 +24,7 @@ $(document).ready(function () {
  * ====================================================================
  */
 
+
 /**
  * Obtiene un rango de fechas entre dos fechas dadas
  * @param {String} inicioStr 
@@ -267,8 +268,8 @@ function alerta(icono, titulo, texto, toast = false) {
  * cuenta dicho rancho
  */
 function obtenerTablasRancho() {
-    // Obtener el id_area del Relicario (siempre es 2)
-    const id_area = 2;
+    // Obtener el id_area del Relicario (siempre es 3)
+    const id_area = 3;
 
     $.ajax({
         type: "GET",
@@ -595,6 +596,7 @@ $(document).on("submit", "#form_corte", function (e) {
  */
 function guardarTicketCorte(folio, nombreCortador, fecha, datosRejas, precio) {
 
+    // Crear el nuevo ticket con los datos del formulario
     let nuevoTicket = {
         folio,
         fecha,
@@ -602,12 +604,15 @@ function guardarTicketCorte(folio, nombreCortador, fecha, datosRejas, precio) {
         precio_reja: precio
     };
 
+    // Buscar el departamento Corte
     let departamento = jsonNominaRelicario.departamentos.find(
         d => d.nombre === "Corte"
     );
 
+    // Si no existe el departamento Corte, crearlo y agregarlo al JSON
     if (!departamento) {
         departamento = {
+            id_departamento: 800, // ID ficticio para Corte
             nombre: "Corte",
             empleados: []
         };
@@ -720,30 +725,6 @@ $(document).on("click", ".btn_limpiar_dia", function (e) {
 /**
  * Evento para copiar el salario diario a todos los días de pago por día
  */
-/*
-$(document).on("click", "#btn_copiar_salario", function (e) {
-    e.preventDefault();
-
-    let salario = $("#salario_diario").val().trim();
-    if (salario === "" || isNaN(salario)) {
-        alerta("info", "Salario diario inválido", "Por favor, ingresa un salario diario válido para copiar");
-        return;
-    }
-
-    // Convertir a número con 2 decimales
-    salario = parseFloat(salario).toFixed(2);
-
-    // Poner el salario en todos los inputs dentro del tbody
-    $("#cuerpo_tabla_pagos_por_dia")
-        .find("tr")
-        .not(":last") // Evita la fila del TOTAL
-        .find('input[type="number"]')
-        .val(salario);
-
-    // Calcular el total después de copiar el salario
-    calcularTotalPagos();
-});*/
-
 $(document).on("click", "#btn_copiar_salario", function (e) {
     e.preventDefault();
 
@@ -865,7 +846,6 @@ $(document).on("click", "#btn_copiar_salario", function (e) {
     // Calcular total
     calcularTotalPagos();
 });
-
 
 
 /**
@@ -1090,7 +1070,7 @@ function obtenerPagosPorDia() {
 
     $("#cuerpo_tabla_pagos_por_dia tr").not(":last").each(function () {
 
-        let dia = $(this).find("td:eq(0)").text().trim(); // recupera el texto del primer td (día)
+        let dia = $(this).find("td:eq(0)").text().trim();
         let valor = parseFloat($(this).find(".pago_del_dia").val());
 
         // Si es NaN o vacío, convertir a 0

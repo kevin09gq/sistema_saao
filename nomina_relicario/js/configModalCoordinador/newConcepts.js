@@ -204,6 +204,11 @@ function mostrarDeduccionesExtras(empleado) {
             </div>
         `;
             $('#contenedor-deducciones-adicionales-coordinador').append(elementoDeduccion);
+
+            // Agregar evento change para actualizar
+            $('#contenedor-deducciones-adicionales-coordinador').find('.deduccion-extra-item').last().find('input').on('change', function () {
+                guardarDeduccionesExtra(empleado);
+            });
         });
     }
 }

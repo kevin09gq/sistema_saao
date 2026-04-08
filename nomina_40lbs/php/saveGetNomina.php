@@ -37,7 +37,7 @@ function guardarNomina($data, $conexion) {
     $actualizar = $data['actualizar'];
 
     // Verificar si ya existe la nómina considerando número de semana y año
-    $query = "SELECT * FROM nomina_40 WHERE numero_semana = ? AND anio = ?";
+    $query = "SELECT * FROM nomina_40lbs WHERE numero_semana = ? AND anio = ?";
     $stmt = $conexion->prepare($query);
     $stmt->bind_param("ii", $numero_semana, $anio);
     $stmt->execute();
@@ -46,7 +46,7 @@ function guardarNomina($data, $conexion) {
     if ($result->num_rows > 0) {
         if ($actualizar) {
             // Actualizar nómina existente
-            $updateQuery = "UPDATE nomina_40 SET nomina_40lbs = ? WHERE id_empresa = ? AND numero_semana = ? AND anio = ?";
+            $updateQuery = "UPDATE nomina_40lbs SET nomina_40lbs = ? WHERE id_empresa = ? AND numero_semana = ? AND anio = ?";
             $updateStmt = $conexion->prepare($updateQuery);
             $updateStmt->bind_param("siii", $nomina, $id_empresa, $numero_semana, $anio);
             if ($updateStmt->execute()) {
@@ -59,7 +59,7 @@ function guardarNomina($data, $conexion) {
         }
     } else {
         // Insertar nueva nómina
-        $insertQuery = "INSERT INTO nomina_40 (id_empresa, numero_semana, anio, nomina_40lbs) VALUES (?, ?, ?, ?)";
+        $insertQuery = "INSERT INTO nomina_40lbs (id_empresa, numero_semana, anio, nomina_40lbs) VALUES (?, ?, ?, ?)";
         $insertStmt = $conexion->prepare($insertQuery);
         $insertStmt->bind_param("iiis", $id_empresa, $numero_semana, $anio, $nomina);
         if ($insertStmt->execute()) {
@@ -75,8 +75,8 @@ function validarExistenciaNomina($data, $conexion) {
     $anio = isset($data['anio']) ? intval($data['anio']) : 0;
     $id_empresa = isset($data['id_empresa']) ? intval($data['id_empresa']) : 1;
 
-    // Consulta simple para verificar existencia (se asume que la tabla usada es nomina_40 o similar)
-    $query = "SELECT COUNT(*) AS cnt FROM nomina_40 WHERE id_empresa = ? AND numero_semana = ? AND anio = ?";
+    // Consulta simple para verificar existencia (se asume que la tabla usada es nomina_40lbs o similar)
+    $query = "SELECT COUNT(*) AS cnt FROM nomina_40lbs WHERE id_empresa = ? AND numero_semana = ? AND anio = ?";
     $stmt = $conexion->prepare($query);
     $stmt->bind_param("iii", $id_empresa, $numero_semana, $anio);
     $stmt->execute();
@@ -92,9 +92,9 @@ function obtenerNomina($data, $conexion) {
     $numero_semana = isset($data['numero_semana']) ? intval($data['numero_semana']) : 0;
     $id_empresa = isset($data['id_empresa']) ? intval($data['id_empresa']) : 1;
 
-    // Usar la tabla `nomina_40` que contiene la columna `anio` según tu esquema
+    // Usar la tabla `nomina_40lbs` que contiene la columna `anio` según tu esquema
     $anio = isset($data['anio']) ? intval($data['anio']) : 0;
-    $query = "SELECT nomina_40lbs FROM nomina_40 WHERE id_empresa = ? AND numero_semana = ? AND anio = ? ORDER BY id_nomina_40lbs DESC LIMIT 1";
+    $query = "SELECT nomina_40lbs FROM nomina_40lbs WHERE id_empresa = ? AND numero_semana = ? AND anio = ? ORDER BY id_nomina_40lbs DESC LIMIT 1";
     $stmt = $conexion->prepare($query);
     if (!$stmt) {
         // Responder con error manejable en JSON en lugar de un 500

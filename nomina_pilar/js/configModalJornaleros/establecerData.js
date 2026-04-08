@@ -59,11 +59,11 @@ function establerDataModalJornalero(empleado) {
 
     // Establecer historial de permisos del empleado en el modal
     establecerHistorialPermisosJornalero(empleado);
-  
+
     // Establecer historial de uniformes del empleado en el modal
     establecerHistorialUniformeJornalero(empleado);
 
-     calcularSueldoACobrarJornalero();
+    calcularSueldoACobrarJornalero();
 
 
     // Mostrar modal usando Bootstrap
@@ -129,6 +129,17 @@ function establecerBiometricoJornalero(empleado) {
         // Agregar fila a la tabla
         $('#tbody-biometrico-jornaleros').append(fila);
     });
+
+    // Mostrar el número total de días trabajados desde la propiedad del empleado
+    const totalDiasTrabajados = empleado.dias_trabajados || 0;
+
+    const filaTotal = `
+        <tr class="fw-bold table-active">
+            <td colspan="3" class="text-end">Días Trabajados (Biométrico):</td>
+            <td class="text-center">${totalDiasTrabajados}</td>
+        </tr>
+    `;
+    $('#tbody-biometrico-jornaleros').append(filaTotal);
 }
 
 /************************************
@@ -203,8 +214,8 @@ function establecerDiasTrabajadosJornalero(empleado) {
             // Agregar fila a la tabla
             filas.push(fila);
         } else {
-             // Crear fila para día no trabajado
-             const fila = `
+            // Crear fila para día no trabajado
+            const fila = `
                 <tr class="text-muted table-light">
                     <td>${nombreDia}</td>
                     <td>${fecha}</td>
@@ -218,10 +229,30 @@ function establecerDiasTrabajadosJornalero(empleado) {
         }
     });
 
+    // --- AGREGAR DÍAS EXTRA MANUALES ---
+    if (Array.isArray(empleado.dias_extra_detalle) && empleado.dias_extra_detalle.length > 0) {
+        const salarioDiario = parseFloat(empleado.salario_diario) || 0;
+
+        empleado.dias_extra_detalle.forEach(extra => {
+            diasTrabajados++;
+            totalCantidad += salarioDiario;
+
+            const filaExtra = `
+                <tr class="table-info">
+                    <td>${extra.dia}</td>
+                    <td><span class="badge bg-primary">Día Extra</span></td>
+                    <td>$${salarioDiario.toFixed(2)}</td>
+                    <td class="text-center"><strong>1</strong></td>
+                </tr>
+            `;
+            filas.push(filaExtra);
+        });
+    }
+
     // Si hay filas, agregarlas a la tabla
     if (filas.length > 0) {
         filas.forEach(fila => $('#tbody-dias-trabajados-jornaleros').append(fila));
-        
+
         // Agregar fila de total
         const filaTotal = `
             <tr class="fw-bold table-active">
@@ -245,11 +276,11 @@ function establecerDiasTrabajadosJornalero(empleado) {
 
 function establecerColorBiometricoJornalero(empleado) {
     if (!empleado) return;
-    
+
     // Validar que exista horarioRancho global
     const horarioRancho = jsonNominaPilar?.horarioRancho;
     if (!Array.isArray(horarioRancho)) return;
-    
+
     // Definir colores y abreviaturas para cada tipo de evento
     const colores = {
         retardo: '#fef3c7',           // Amarillo (retardos)
@@ -257,31 +288,31 @@ function establecerColorBiometricoJornalero(empleado) {
         entrada_temprana: '#dbeafe',  // Azul (entradas tempranas)
         salida_tardia: '#fed7aa',     // Naranja (salidas tardías)
         salida_temprana: '#e5d4f0',   // Gris oscuro (salidas tempranas)
-     
+
     };
-    
+
     const abreviaturas = {
         retardo: 'R',
         olvido: 'O',
         entrada_temprana: 'ET',
         salida_tardia: 'STA',
         salida_temprana: 'STE',
-       
+
     };
-    
+
     // Array de nombres de días SIN acento (para buscar en horarioRancho)
     const diasSemanaRancho = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
 
-    
+
     // Primer paso: identificar la primera y última fila de cada fecha
     const primeraFilaPorFecha = {};
     const ultimaFilaPorFecha = {};
     let fechaAnterior = null;
-    
+
     $('#tbody-biometrico-jornaleros tr').each(function () {
         const $celdas = $(this).find('td');
         const fecha = $celdas.eq(1).text().trim();
-        
+
         if (fecha) {
             if (fecha !== fechaAnterior) {
                 primeraFilaPorFecha[fecha] = this;
@@ -290,21 +321,21 @@ function establecerColorBiometricoJornalero(empleado) {
             ultimaFilaPorFecha[fecha] = this;
         }
     });
-    
+
     // Segundo paso: colorear filas y agregar eventos según eventos
     $('#tbody-biometrico-jornaleros tr').each(function () {
         const $celdas = $(this).find('td');
         const fecha = $celdas.eq(1).text().trim();
         const entrada = $celdas.eq(2).text().trim();
         const salida = $celdas.eq(3).text().trim();
-        
+
         if (!fecha) return;
-        
+
         const eventosEnRegistro = [];
         let colorAplicar = null;
-        
+
         // 1. RETARDOS: solo en la PRIMERA fila de cada fecha
-        if (primeraFilaPorFecha[fecha] === this && 
+        if (primeraFilaPorFecha[fecha] === this &&
             Array.isArray(empleado.historial_retardos)) {
             const tieneRetardo = empleado.historial_retardos.some(r => r.fecha === fecha);
             if (tieneRetardo) {
@@ -312,7 +343,7 @@ function establecerColorBiometricoJornalero(empleado) {
                 eventosEnRegistro.push(abreviaturas.retardo);
             }
         }
-        
+
         // 2. OLVIDOS: solo en registros que NO tienen salida
         if ((salida === '-' || salida === '') &&
             Array.isArray(empleado.historial_olvidos)) {
@@ -322,14 +353,14 @@ function establecerColorBiometricoJornalero(empleado) {
                 eventosEnRegistro.push(abreviaturas.olvido);
             }
         }
-        
+
         // 3. ENTRADAS TEMPRANAS: solo primera fila del día (entrada 45 min antes)
         if (primeraFilaPorFecha[fecha] === this && entrada && entrada !== '-') {
             const [d, m, a] = fecha.split('/');
             const fechaObj = new Date(a, m - 1, d);
             const diaSemana = diasSemanaRancho[fechaObj.getDay()];
             const horario = horarioRancho.find(h => h.dia?.toUpperCase().trim() === diaSemana);
-            
+
             if (horario?.entrada) {
                 const minEntrada = aMinutosJornalero(entrada);
                 const minHorario = aMinutosJornalero(horario.entrada);
@@ -340,14 +371,14 @@ function establecerColorBiometricoJornalero(empleado) {
                 }
             }
         }
-        
+
         // 4. SALIDAS TARDÍAS: solo última fila del día (salida 45 min después)
         if (ultimaFilaPorFecha[fecha] === this && salida && salida !== '-') {
             const [d, m, a] = fecha.split('/');
             const fechaObj = new Date(a, m - 1, d);
             const diaSemana = diasSemanaRancho[fechaObj.getDay()];
             const horario = horarioRancho.find(h => h.dia?.toUpperCase().trim() === diaSemana);
-            
+
             if (horario?.salida) {
                 const minSalida = aMinutosJornalero(salida);
                 const minHorario = aMinutosJornalero(horario.salida);
@@ -358,14 +389,14 @@ function establecerColorBiometricoJornalero(empleado) {
                 }
             }
         }
-        
+
         // 5. SALIDAS TEMPRANAS: solo última fila del día (salida 5 min antes)
         if (ultimaFilaPorFecha[fecha] === this && salida && salida !== '-') {
             const [d, m, a] = fecha.split('/');
             const fechaObj = new Date(a, m - 1, d);
             const diaSemana = diasSemanaRancho[fechaObj.getDay()];
             const horario = horarioRancho.find(h => h.dia?.toUpperCase().trim() === diaSemana);
-            
+
             if (horario?.salida) {
                 const minSalida = aMinutosJornalero(salida);
                 const minHorario = aMinutosJornalero(horario.salida);
@@ -376,13 +407,13 @@ function establecerColorBiometricoJornalero(empleado) {
                 }
             }
         }
-        
+
 
         // Aplicar el color si se encontró un evento
         if (colorAplicar) {
             $(this).css('background-color', colorAplicar);
         }
-        
+
         // Agregar badge cuando hay más de un evento en el registro
         if (eventosEnRegistro.length > 1) {
             const eventosTexto = eventosEnRegistro.join(', ');
@@ -417,7 +448,7 @@ function establecerPercepcionesJornalero(empleado) {
     $('#mod-tardeada-jornalero').val(empleado.tardeada || '');
 
     // Establecer sueldo extra total
-     $('#mod-total-extra-jornalero').val(empleado.sueldo_extra_total || '');
+    $('#mod-total-extra-jornalero').val(empleado.sueldo_extra_total || '');
 
 }
 
@@ -525,7 +556,7 @@ function establecerDeduccionesJornalero(empleado) {
     // Establecer Deducciones extras
     $('#mod-fagafetcofia-jornalero').val(empleado.fa_gafet_cofia || '');
 
-     // Restaurar estado del redondeo (si estaba activo al guardar)
+    // Restaurar estado del redondeo (si estaba activo al guardar)
     const redondeoActivo = empleado.redondeo_activo === true;
     $('#mod-redondear-sueldo-jornalero').prop('checked', redondeoActivo);
     if (redondeoActivo) {

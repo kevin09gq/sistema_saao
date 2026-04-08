@@ -21,6 +21,23 @@ if (isset($_GET['accion']) || isset($_POST['accion'])) {
             actualizarDepartamento();
             break;
 
+
+
+
+        case 'registrarAreaDepartamento':
+            registrarAreaDepartamento();
+            break;
+
+        case 'obtenerAreasDepartamentos':
+            obtenerAreasDepartamentos();
+            break;
+        case 'actualizarAreaDepartamento':
+            actualizarAreaDepartamento();
+            break;
+        case 'eliminarAreasDepartamentos':
+            eliminarAreasDepartamentos();
+            break;
+
         default:
             echo "Acción no reconocida";
     }
@@ -35,7 +52,6 @@ function registrarDepartamento()
 
     if (isset($_POST['nombre_departamento'])) {
         $nombreDepartamento = trim($_POST['nombre_departamento']);
-        $idArea = (isset($_POST['id_area']) && $_POST['id_area'] !== '') ? (int)$_POST['id_area'] : null;
 
         // Verificar que el nombre no esté vacío
         if (empty($nombreDepartamento)) {
@@ -57,14 +73,14 @@ function registrarDepartamento()
         }
 
         // Preparar la consulta para insertar el nuevo departamento
-        $sql = $conexion->prepare("INSERT INTO departamentos (nombre_departamento, id_area) VALUES (?, ?)");
+        $sql = $conexion->prepare("INSERT INTO departamentos (nombre_departamento) VALUES (?)");
 
         if (!$sql) {
             echo "Error en la preparación: " . $conexion->error;
             return;
         }
 
-        $sql->bind_param("si", $nombreDepartamento, $idArea);
+        $sql->bind_param("s", $nombreDepartamento);
 
         // Ejecutar la consulta
         if ($sql->execute()) {
@@ -84,9 +100,8 @@ function actualizarDepartamento()
     global $conexion;
 
     if (isset($_POST['id_departamento']) && isset($_POST['nombre_departamento'])) {
-        $idDepartamento = (int)$_POST['id_departamento'];
+        $idDepartamento = (int) $_POST['id_departamento'];
         $nombreDepartamento = trim($_POST['nombre_departamento']);
-        $idArea = (isset($_POST['id_area']) && $_POST['id_area'] !== '') ? (int)$_POST['id_area'] : null;
 
         // Verificar que el nombre no esté vacío
         if (empty($nombreDepartamento)) {
@@ -108,14 +123,14 @@ function actualizarDepartamento()
         }
 
         // Preparar la consulta para actualizar el departamento
-        $sql = $conexion->prepare("UPDATE departamentos SET nombre_departamento = ?, id_area = ? WHERE id_departamento = ?");
+        $sql = $conexion->prepare("UPDATE departamentos SET nombre_departamento = ? WHERE id_departamento = ?");
 
         if (!$sql) {
             echo "Error en la preparación: " . $conexion->error;
             return;
         }
 
-        $sql->bind_param("sii", $nombreDepartamento, $idArea, $idDepartamento);
+        $sql->bind_param("si", $nombreDepartamento, $idDepartamento);
 
         // Ejecutar la consulta
         if ($sql->execute()) {
@@ -130,14 +145,12 @@ function actualizarDepartamento()
     }
 }
 
-
-
 function eliminarDepartamento()
 {
     global $conexion;
 
     if (isset($_POST['id_departamento'])) {
-        $idDepartamento = (int)$_POST['id_departamento'];
+        $idDepartamento = (int) $_POST['id_departamento'];
 
         // Iniciar transacción para asegurar que todas las operaciones se completen o ninguna
         $conexion->begin_transaction();
@@ -192,5 +205,249 @@ function eliminarDepartamento()
         }
     } else {
         echo "2"; // No se recibió el ID del departamento
+    }
+}
+
+
+// Función para registrar la asignación de un departamento a un área
+function registrarAreaDepartamento()
+{
+    global $conexion;
+
+    if (isset($_POST['id_area']) && isset($_POST['id_departamento'])) {
+
+        // Limpiar espacios
+        $idArea = trim($_POST['id_area']);
+        $idDepartamento = trim($_POST['id_departamento']);
+
+        // Validar que no estén vacíos
+        if (empty($idArea) || empty($idDepartamento)) {
+            echo "0"; // Datos vacíos
+            return;
+        }
+
+        // Verificar si ya existe la relación
+        $checkSql = "SELECT COUNT(*) as count 
+                     FROM areas_departamentos 
+                     WHERE id_area = ? AND id_departamento = ?";
+
+        $checkStmt = $conexion->prepare($checkSql);
+
+        if (!$checkStmt) {
+            echo "Error en la preparación: " . $conexion->error;
+            return;
+        }
+
+        $checkStmt->bind_param("ii", $idArea, $idDepartamento);
+        $checkStmt->execute();
+        $result = $checkStmt->get_result();
+        $row = $result->fetch_assoc();
+        $checkStmt->close();
+
+        if ($row['count'] > 0) {
+            echo "3"; // Ya existe
+            return;
+        }
+
+        /**
+         * Tabla intermedia entre áreas y departamentos
+         */
+
+        // Insertar relación
+        $sql = $conexion->prepare(
+            "INSERT INTO areas_departamentos (id_area, id_departamento) VALUES (?, ?)"
+        );
+
+        if (!$sql) {
+            echo "Error en la preparación: " . $conexion->error;
+            return;
+        }
+
+        $sql->bind_param("ii", $idArea, $idDepartamento);
+
+        if ($sql->execute()) {
+            echo "1"; // Éxito
+        } else {
+            echo "2"; // Error al ejecutar
+        }
+
+        $sql->close();
+
+    } else {
+        echo "2"; // No llegaron los datos
+    }
+}
+
+// Función para obtener las áreas con sus departamentos asociados
+function obtenerAreasDepartamentos()
+{
+    global $conexion;
+
+    $sql = "SELECT 
+                ad.id_area_departamento,
+                a.id_area,
+                a.nombre_area,
+                d.id_departamento,
+                d.nombre_departamento
+            FROM areas a
+            INNER JOIN areas_departamentos ad 
+                ON a.id_area = ad.id_area
+            INNER JOIN departamentos d 
+                ON d.id_departamento = ad.id_departamento
+            ORDER BY a.id_area";
+
+    $query = $conexion->query($sql);
+
+    if (!$query) {
+        echo json_encode(["error" => "Ocurrió un error: " . $conexion->error]);
+        return;
+    }
+
+    $arreglo = array();
+
+    while ($row = $query->fetch_assoc()) {
+
+        $idArea = $row['id_area'];
+
+        // Crear el área si no existe
+        if (!isset($arreglo[$idArea])) {
+            $arreglo[$idArea] = array(
+                "nombre_area" => $row['nombre_area'],
+                "departamentos" => array()
+            );
+        }
+
+        // Agregar departamento
+        $arreglo[$idArea]["departamentos"][] = array(
+            "id_area_departamento" => $row['id_area_departamento'],
+            "id_departamento" => $row['id_departamento'],
+            "id_area" => $row['id_area'],
+            "nombre_departamento" => $row['nombre_departamento'],
+            "nombre_area" => $row['nombre_area']
+        );
+    }
+
+    // Reindexar para JSON limpio
+    $arreglo = array_values($arreglo);
+
+    // Respuesta en JSON
+    echo json_encode($arreglo, JSON_UNESCAPED_UNICODE);
+}
+
+function actualizarAreaDepartamento()
+{
+    global $conexion;
+
+    if (
+        isset($_POST['id_area']) &&
+        isset($_POST['id_departamento']) &&
+        isset($_POST['id_area_departamento'])
+    ) {
+
+        $idArea = (int) $_POST['id_area'];
+        $idDepartamento = (int) $_POST['id_departamento'];
+        $id = (int) $_POST['id_area_departamento'];
+
+        // Validar que no estén vacíos
+        if (empty($idArea) || empty($idDepartamento) || empty($id)) {
+            echo "0"; // Datos vacíos
+            return;
+        }
+
+        // Verificar duplicado (excepto el actual)
+        $checkSql = "SELECT COUNT(*) as count 
+                     FROM areas_departamentos 
+                     WHERE id_area = ? 
+                     AND id_departamento = ? 
+                     AND id_area_departamento != ?";
+
+        $checkStmt = $conexion->prepare($checkSql);
+
+        if (!$checkStmt) {
+            echo "Error en la preparación: " . $conexion->error;
+            return;
+        }
+
+        $checkStmt->bind_param("iii", $idArea, $idDepartamento, $id);
+        $checkStmt->execute();
+        $result = $checkStmt->get_result();
+        $row = $result->fetch_assoc();
+        $checkStmt->close();
+
+        if ($row['count'] > 0) {
+            echo "3"; // Ya existe esa relación
+            return;
+        }
+
+        // Actualizar relación
+        $sql = $conexion->prepare(
+            "UPDATE areas_departamentos 
+             SET id_area = ?, id_departamento = ? 
+             WHERE id_area_departamento = ?"
+        );
+
+        if (!$sql) {
+            echo "Error en la preparación: " . $conexion->error;
+            return;
+        }
+
+        $sql->bind_param("iii", $idArea, $idDepartamento, $id);
+
+        if ($sql->execute()) {
+            echo "1"; // Éxito
+        } else {
+            echo "2"; // Error al ejecutar
+        }
+
+        $sql->close();
+
+    } else {
+        echo "2"; // Faltan datos
+    }
+}
+
+function eliminarAreasDepartamentos()
+{
+    global $conexion;
+
+    if (isset($_POST['id_area_departamento'])) {
+
+        $id = (int) $_POST['id_area_departamento'];
+
+        // Validar que no esté vacío
+        if (empty($id)) {
+            echo "0"; // ID vacío
+            return;
+        }
+
+        // Preparar DELETE
+        $sql = $conexion->prepare(
+            "DELETE FROM areas_departamentos WHERE id_area_departamento = ?"
+        );
+
+        if (!$sql) {
+            echo "Error en la preparación: " . $conexion->error;
+            return;
+        }
+
+        $sql->bind_param("i", $id);
+
+        // Ejecutar
+        if ($sql->execute()) {
+
+            if ($sql->affected_rows > 0) {
+                echo "1"; // Eliminado correctamente
+            } else {
+                echo "3"; // No existe el registro
+            }
+
+        } else {
+            echo "2"; // Error al ejecutar
+        }
+
+        $sql->close();
+
+    } else {
+        echo "2"; // No se recibió el ID
     }
 }

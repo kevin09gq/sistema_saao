@@ -4,7 +4,7 @@
  ************************************/
 
 function obtenerHorarioRancho(empleado = null) {
-    // Obtener el id_area del Relicario (siempre es 2)
+    // Obtener el id_area del Relicario (siempre es 3)
     const id_area = 2;
 
     $.ajax({
@@ -53,12 +53,12 @@ function calcularSueldoSemanal(empleado = null) {
             empleadosAProcesar = [empleado];
         }
     } else {
-        // Si no se envía nada, recorrer todos los del departamento 7
+        // Si no se envía nada, recorrer todos los del departamento con tipo_horario 2
         jsonNominaRelicario.departamentos.forEach(departamento => {
             if (!departamento.empleados) return;
 
             departamento.empleados.forEach(empleado => {
-                if (parseInt(empleado.id_departamento) === 7) {
+                if (empleado.tipo_horario === 2) {
                     empleadosAProcesar.push(empleado);
                 }
             });
@@ -67,8 +67,8 @@ function calcularSueldoSemanal(empleado = null) {
 
     // === PROCESAR EMPLEADOS ===
     empleadosAProcesar.forEach(empleado => {
-        // Verificar que sea departamento 7 (si es de jsonNominaRelicario)
-        if (parseInt(empleado.id_departamento) !== 7) {
+        // Verificar que sea tipo_horario 2
+        if (parseInt(empleado.tipo_horario) !== 2) {
             return;
         }
 
@@ -103,28 +103,32 @@ function calcularSueldoSemanal(empleado = null) {
         }
 
         // === ASIGNAR DÍAS TRABAJADOS ===
-        empleado.dias_trabajados = diasAsistidos;
+        // Sumar días detectados por biometrico + días extra manuales
+        const diasExtra = parseInt(empleado.dias_extra) || 0;
+        empleado.dias_trabajados = diasAsistidos + diasExtra;
 
         // === CALCULAR SUELDO SEMANAL ===
         const salarioDiario = parseFloat(empleado.salario_diario) || 0;
-        const sueldoSemanal = diasAsistidos * salarioDiario;
+        const sueldoSemanal = empleado.dias_trabajados * salarioDiario;
         empleado.salario_semanal = sueldoSemanal === 0 ? 0 : sueldoSemanal.toFixed(2);
 
         // === CALCULAR PASAJE ===
         let pasajeTotal = 0;
         let aplicaPasaje = false;
 
-        // Solo para empleados del departamento 7 con id_tipo_puesto diferente de 3
-        if (parseInt(empleado.id_departamento) === 7 && parseInt(empleado.id_tipo_puesto) !== 3) {
+
+        // Solo para empleados del tipo_horario 2 
+        if (empleado.tipo_horario === 2) {
             const precioPasaje = parseFloat(jsonNominaRelicario.precio_pasaje) || 0;
-            
+
             if (empleado.pasaje_override === 'quitar') {
                 pasajeTotal = 0;
+                delete empleado.pasaje_override; // Eliminar la propiedad para limpiar el estado
             } else if (empleado.pasaje_override === 'agregar') {
-                // Si es agregar, aplicamos el pasaje calculado o forzamos el de un día si no tiene asistencia
-                pasajeTotal = (diasAsistidos || 1) * precioPasaje;
+                pasajeTotal = (empleado.dias_trabajados || 1) * precioPasaje;
+                delete empleado.pasaje_override; // Eliminar la propiedad para limpiar el estado
             } else {
-                pasajeTotal = diasAsistidos * precioPasaje;
+                pasajeTotal = empleado.dias_trabajados * precioPasaje;
             }
             aplicaPasaje = true;
         }
@@ -137,16 +141,18 @@ function calcularSueldoSemanal(empleado = null) {
         let comidaTotal = 0;
         let aplicaComida = false;
 
-        // Solo para empleados del departamento 7 con id_tipo_puesto diferente de 3
-        if (parseInt(empleado.id_departamento) === 7 && parseInt(empleado.id_tipo_puesto) !== 3) {
+        // Solo para empleados del tipo_horario 2 con id_tipo_puesto diferente de 3
+        if (parseInt(empleado.tipo_horario) === 2) {
             const precioComida = parseFloat(jsonNominaRelicario.pago_comida) || 0;
-            
+
             if (empleado.comida_override === 'quitar') {
                 comidaTotal = 0;
+                delete empleado.comida_override; // Eliminar la propiedad para limpiar el estado
             } else if (empleado.comida_override === 'agregar') {
-                comidaTotal = (diasAsistidos || 1) * precioComida;
+                comidaTotal = (empleado.dias_trabajados || 1) * precioComida;
+                delete empleado.comida_override; // Eliminar la propiedad para limpiar el estado
             } else {
-                comidaTotal = diasAsistidos * precioComida;
+                comidaTotal = empleado.dias_trabajados * precioComida;
             }
             aplicaComida = true;
         }
@@ -171,9 +177,9 @@ function calcularSueldoSemanal(empleado = null) {
             empleado.sueldo_extra_total = parseFloat(empleado.tardeada) || 0;
         }
 
-
     });
 
+    actualizarCabeceraNomina(jsonNominaRelicario);
     // Actualizar la tabla manteniendo el filtrado y paginación actual
     const id_departamento = parseInt($('#filtro_departamento').val());
     const id_puestoEspecial = parseInt($('#filtro_puesto').val());
@@ -185,6 +191,7 @@ function calcularSueldoSemanal(empleado = null) {
     // Mostrar la tabla en la página actual (usar window.paginaActualNomina para acceso global)
 
     mostrarDatosTabla(jsonFiltrado, window.paginaActualNomina || 1);
+    saveNomina(jsonNominaRelicario);
 }
 
 

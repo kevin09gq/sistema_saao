@@ -8,6 +8,121 @@ aplicarTotalHistorial();
 
 
 // ========================================
+// ACTUALIZAR HISTORIAL DE RETARDOS EN TIEMPO REAL
+// ========================================
+function actualizarHistorialRetardosEnTiempoReal() {
+    const empleado = objEmpleadoCoordinador.getEmpleado();
+    
+    // Validar que exista empleado
+    if (!empleado) {
+        return;
+    }
+
+    // Iterara sobre cada fila de la tabla de horarios y actualizar el objeto empleado
+    $('#tbody-horarios-oficiales-coordinadores tr').each(function () {
+        const $celdas = $(this).find('td');
+        
+        // Obtener los valores de cada celda
+        const dia = $celdas.eq(0).text().trim(); // Día (no editable)
+        const entrada = $celdas.eq(1).text().trim(); // Entrada
+        const salidaComida = $celdas.eq(2).text().trim(); // Salida Comida
+        const entradaComida = $celdas.eq(3).text().trim(); // Entrada Comida
+        const salida = $celdas.eq(4).text().trim(); // Salida
+        
+        // Buscar el horario correspondiente por el nombre del día
+        let horario = empleado.horario_oficial.find(h => 
+            String(h.dia || '').toUpperCase().trim() === dia.toUpperCase().trim()
+        );
+        
+        // Si no existe el horario para este día, crearlo
+        if (!horario) {
+            horario = {
+                dia: dia.toUpperCase()
+            };
+            empleado.horario_oficial.push(horario);
+        }
+        
+        // Actualizar los valores (convertir '-' en vacío)
+        horario.entrada = entrada === '-' ? '' : entrada;
+        horario.salida_comida = salidaComida === '-' ? '' : salidaComida;
+        horario.entrada_comida = entradaComida === '-' ? '' : entradaComida;
+        horario.salida = salida === '-' ? '' : salida;
+    });
+    
+    // Recalcular el historial de retardos basado en el nuevo horario
+    asignarHistorialRetardos(empleado);
+    
+    // Recalcular el total de retardos
+    asignarTotalRetardosCoordinador(empleado, false);
+    
+    // Actualizar el campo del modal con el nuevo total
+    $('#mod-retardos-coordinador').val(empleado.retardos || 0);
+
+    // Establecer el historial de retardos actualizado en el modal
+    establecerHistorialRetardos(empleado);
+    
+    // Recalcular el sueldo a cobrar si fue afectado
+    calcularSueldoACobrar();
+}
+
+// ========================================
+// ACTUALIZAR HISTORIAL DE INASISTENCIAS EN TIEMPO REAL
+// ========================================
+function actualizarHistorialInasistenciasEnTiempoReal() {
+    const empleado = objEmpleadoCoordinador.getEmpleado();
+    
+    // Validar que exista empleado
+    if (!empleado) {
+        return;
+    }
+
+    // Iterar sobre cada fila de la tabla de horarios y actualizar el objeto empleado
+    $('#tbody-horarios-oficiales-coordinadores tr').each(function () {
+        const $celdas = $(this).find('td');
+        
+        // Obtener los valores de cada celda
+        const dia = $celdas.eq(0).text().trim(); // Día (no editable)
+        const entrada = $celdas.eq(1).text().trim(); // Entrada
+        const salidaComida = $celdas.eq(2).text().trim(); // Salida Comida
+        const entradaComida = $celdas.eq(3).text().trim(); // Entrada Comida
+        const salida = $celdas.eq(4).text().trim(); // Salida
+        
+        // Buscar el horario correspondiente por el nombre del día
+        let horario = empleado.horario_oficial.find(h => 
+            String(h.dia || '').toUpperCase().trim() === dia.toUpperCase().trim()
+        );
+        
+        // Si no existe el horario para este día, crearlo
+        if (!horario) {
+            horario = {
+                dia: dia.toUpperCase()
+            };
+            empleado.horario_oficial.push(horario);
+        }
+        
+        // Actualizar los valores (convertir '-' en vacío)
+        horario.entrada = entrada === '-' ? '' : entrada;
+        horario.salida_comida = salidaComida === '-' ? '' : salidaComida;
+        horario.entrada_comida = entradaComida === '-' ? '' : entradaComida;
+        horario.salida = salida === '-' ? '' : salida;
+    });
+    
+    // Recalcular el historial de inasistencias basado en el nuevo horario
+    asignarHistorialInasistencias(empleado);
+    
+    // Recalcular el total de inasistencias
+    asignarTotalInasistenciasCoordinador(empleado, false);
+
+    establecerHistorialInasistencias(empleado);
+    
+    // Actualizar el campo del modal con el nuevo total
+    $('#mod-inasistencias-coordinador').val(empleado.inasistencia || 0);
+    
+    // Recalcular el sueldo a cobrar si fue afectado
+    calcularSueldoACobrar();
+}
+
+// ========================================
 // ALTERNAR ENTRE TABLAS: BIOMÉTRICO Y HORARIOS OFICIALES
 // ========================================
 function alternarTablas() {
@@ -77,6 +192,11 @@ function editarHorariosOficiales() {
         $input.on('blur', function () {
             const nuevoValor = $(this).val() || '-';
             $(this).parent('td').text(nuevoValor);
+            
+            // Actualizar historial de retardos en tiempo real
+            actualizarHistorialRetardosEnTiempoReal();
+            // Actualizar historial de inasistencias en tiempo real
+            actualizarHistorialInasistenciasEnTiempoReal();
         });
 
         // Guardar valor al presionar Enter
@@ -101,8 +221,14 @@ function eliminarHorarioOficial() {
         $fila.find('td').eq(2).text('-'); // salida_comida
         $fila.find('td').eq(3).text('-'); // entrada_comida
         $fila.find('td').eq(4).text('-'); // salida
+        
+        // Actualizar historial de retardos en tiempo real
+        actualizarHistorialRetardosEnTiempoReal();
+        // Actualizar historial de inasistencias en tiempo real
+        actualizarHistorialInasistenciasEnTiempoReal();
     });
 }
+
 // ========================================
 // COPIAR HORARIOS A TODAS LAS FILAS (LUNES A SÁBADO)
 // ========================================
@@ -126,7 +252,10 @@ function copiarHorariosATodos() {
             $celdas.eq(4).text(salida || '-');
         });
 
-
+        // Actualizar historial de retardos en tiempo real
+        actualizarHistorialRetardosEnTiempoReal();
+        // Actualizar historial de inasistencias en tiempo real
+        actualizarHistorialInasistenciasEnTiempoReal();
     });
 }
 

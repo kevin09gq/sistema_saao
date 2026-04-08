@@ -41,16 +41,16 @@ body {
     border-radius: 10px;
     padding: 20px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    border-left: 5px solid #4caf50;
+    border-left: 5px solid #48bb78;
     display: flex;
     flex-direction: column;
 }
 
-.kpi-box.success { border-left-color: #1b5e20; }
-.kpi-box.warning { border-left-color: #ffc107; }
+.kpi-box.success { border-left-color: #2f855a; }
+.kpi-box.warning { border-left-color: #ecc94b; }
 
 .kpi-title {
-    color: #6c757d;
+    color: #4a5568;
     font-size: 0.9rem;
     text-transform: uppercase;
     font-weight: 600;
@@ -60,7 +60,7 @@ body {
 .kpi-value {
     font-size: 1.8rem;
     font-weight: 700;
-    color: #2c3e50;
+    color: #2d3748;
 }
 
 .table-responsive {
@@ -76,27 +76,27 @@ table.dataTable {
 }
 
 table.dataTable th {
-    background-color: #f8f9fa;
-    color: #495057;
+    background-color: #f7fafc;
+    color: #4a5568;
     font-weight: 600;
     padding: 12px;
-    border-bottom: 2px solid #dee2e6;
+    border-bottom: 2px solid #e2e8f0;
     text-align: left;
 }
 
 table.dataTable td {
     padding: 12px;
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 1px solid #e2e8f0;
     vertical-align: middle;
 }
 
 table.dataTable tr:hover {
-    background-color: #f8f9fa;
+    background-color: #f7fafc;
 }
 
 .badge-tabla {
-    background-color: #e8f5e9;
-    color: #2e7d32;
+    background-color: #edf2f7;
+    color: #2d3748;
     padding: 4px 8px;
     border-radius: 4px;
     font-size: 0.85rem;
@@ -105,9 +105,9 @@ table.dataTable tr:hover {
     margin-bottom: 4px;
 }
 
-/* Estilos bonitos para Modal */
+/* Modal Detalles Estilo Palmilla */
 .modal-detalles-header {
-    background: linear-gradient(135deg, #1b5e20 0%, #4caf50 100%);
+    background: linear-gradient(135deg, #1b5e20 0%, #48bb78 100%);
     color: white;
     border-bottom: none;
     padding: 20px;
@@ -118,18 +118,18 @@ table.dataTable tr:hover {
     letter-spacing: 0.5px;
 }
 .info-card {
-    background-color: #f8f9fa;
+    background-color: #f7fafc;
     border-radius: 8px;
     padding: 15px;
     margin-bottom: 20px;
-    border: 1px solid #e9ecef;
+    border: 1px solid #e2e8f0;
 }
 .info-card-item {
     margin-bottom: 8px;
     font-size: 0.95rem;
 }
 .info-card-item strong {
-    color: #495057;
+    color: #4a5568;
     display: inline-block;
     width: 80px;
 }
@@ -139,14 +139,14 @@ table.dataTable tr:hover {
     padding: 15px 10px;
     text-align: center;
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    border: 1px solid #e9ecef;
+    border: 1px solid #e2e8f0;
     transition: transform 0.2s;
 }
 .kpi-mini-card:hover {
     transform: translateY(-3px);
 }
 .kpi-mini-title {
-    color: #6c757d;
+    color: #718096;
     font-size: 0.8rem;
     text-transform: uppercase;
     font-weight: 700;
@@ -156,15 +156,15 @@ table.dataTable tr:hover {
     font-size: 1.4rem;
     font-weight: 800;
 }
-.val-primary { color: #1b5e20; }
-.val-success { color: #2e7d32; }
-.val-dark { color: #212529; }
+.val-primary { color: #38a169; }
+.val-success { color: #2f855a; }
+.val-dark { color: #1a202c; }
 
 .table-custom-modal {
     background: white;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    border: 1px solid #e9ecef;
+    border: 1px solid #e2e8f0;
     margin-bottom: 0;
 }
 .table-custom-modal thead th:first-child {
@@ -174,32 +174,31 @@ table.dataTable tr:hover {
     border-top-right-radius: 8px;
 }
 .table-custom-modal thead {
-    background-color: #f1f3f5;
-    color: #495057;
+    background-color: #edf2f7;
+    color: #4a5568;
 }
 .table-custom-modal th {
     font-weight: 600;
     text-transform: uppercase;
     font-size: 0.85rem;
     padding: 12px;
-    border-bottom: 2px solid #dee2e6;
+    border-bottom: 2px solid #e2e8f0;
 }
 .table-custom-modal td {
     vertical-align: middle;
     padding: 12px;
-    border-bottom: 1px solid #f1f3f5;
+    border-bottom: 1px solid #edf2f7;
 }
 .table-custom-modal tbody tr:hover {
-    background-color: #f8f9fa;
+    background-color: #f7fafc;
 }
 
-/* Ajuste para múltiples modales superpuestos */
 #modalDetalleCorte {
     z-index: 1060 !important;
 }
 .modal-backdrop {
-    z-index: 1050; /* Default */
+    z-index: 1050;
 }
 .modal-backdrop ~ .modal-backdrop {
-    z-index: 1059 !important; /* Si hay un segundo backdrop, ponerlo antes del modal detalles */
+    z-index: 1059 !important;
 }

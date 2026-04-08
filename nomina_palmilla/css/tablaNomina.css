@@ -204,6 +204,7 @@
 }
 
 
+
 .pagination {
      justify-content: center;
  }
@@ -220,7 +221,6 @@
      color: #fff;
      border-radius: 6px;
  }
-
 
 
 @media (max-width: 768px) {

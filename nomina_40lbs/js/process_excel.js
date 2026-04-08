@@ -3,14 +3,16 @@ jsonNomina40lbs = null;
 
 
 $(document).ready(function () {
-    $("#container-nomina_40lbs").addClass("hidden");
-
     processExcelData();
-    restoreNomina();
+    
+    // Si no se logra restaurar una nómina previa, mostrar el contenedor de carga
+    if (!restoreNomina()) {
+        $("#container-nomina_40lbs").removeAttr("hidden");
+    }
+
     confirmarsaveNomina();
     limpiarCamposNomina();
     console.log(jsonNomina40lbs);
-
 });
 
 
@@ -32,8 +34,10 @@ function processExcelData(params) {
         // El backend (`leerListaRaya.php`) espera el campo 'archivo_excel'
         formData1.append('archivo_excel', form.archivo_excel_lista_raya_40lbs.files[0]);
 
-        // Mostrar indicador de carga
+        // Mostrar indicador de carga y OCULTAR el contenedor de carga
         $(this).addClass('loading').prop('disabled', true);
+       
+
 
         $.ajax({
             url: '../php/leerListaRaya.php',
@@ -175,6 +179,7 @@ function validarExistenciaTrabajador(JsonListaRaya, omitirSinSeguro = false) {
                             if (empBD) {
                                 emp.nombre = empBD.nombre;
                                 emp.id_empresa = empBD.id_empresa;
+                                emp.color_puesto = empBD.color_puesto ?? null;
                             }
                             return true;
                         }
@@ -234,7 +239,8 @@ function obtenerEmpleadosSinSS(JsonListaRaya) {
                         nombre: empleadoBD.ap_paterno + ' ' + empleadoBD.ap_materno + ' ' + empleadoBD.nombre,
                         tarjeta: null,
                         id_empresa: empleadoBD.id_empresa,
-                        id_departamento: parseInt(empleadoBD.id_departamento)
+                        id_departamento: parseInt(empleadoBD.id_departamento),
+                        color_puesto: empleadoBD.color_puesto ?? null
 
                     };
                     departamentoSinSeguro.empleados.push(empleado);
@@ -467,6 +473,7 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
                         tarjeta: null,
                         id_empresa: empleadoBD.id_empresa,
                         id_departamento: parseInt(empleadoBD.id_departamento),
+                        color_puesto: empleadoBD.color_puesto ?? null,
                         // Establecer registros del biometrico si existen
                         registros: empleadoBiometrico ? (empleadoBiometrico.registros || []) : []
                     };
@@ -651,6 +658,7 @@ function agregarEmpleadosNuevos(jsonNomina40lbs, JsonListaRaya) {
                             // Actualizar nombre con datos de BD
                             empleadoEncontrado.empleado.nombre = empValido.nombre;
                             empleadoEncontrado.empleado.id_empresa = empValido.id_empresa;
+                            empleadoEncontrado.empleado.color_puesto = empValido.color_puesto ?? null;
 
                             // Buscar o crear departamento destino
                             let deptoDestino = jsonNomina40lbs.departamentos.find(
@@ -731,7 +739,8 @@ function verificarEmpleadosSinSeguro(jsonNomina40lbs) {
                         nombre: empSinSeguro.ap_paterno + ' ' + empSinSeguro.ap_materno + ' ' + empSinSeguro.nombre,
                         tarjeta: null,
                         id_empresa: empSinSeguro.id_empresa,
-                        id_departamento: parseInt(empSinSeguro.id_departamento)
+                        id_departamento: parseInt(empSinSeguro.id_departamento),
+                        color_puesto: empSinSeguro.color_puesto ?? null
                     };
 
                     // Solo agregar si no existe ya en el departamento
@@ -824,6 +833,7 @@ function asignarPropiedadesEmpleado(jsonNomina40lbs) {
                 empleado.bono_antiguedad = empleado.bono_antiguedad ?? 0;
                 empleado.actividades_especiales = empleado.actividades_especiales ?? 0;
                 empleado.puesto = empleado.puesto ?? '';
+                empleado.color_puesto = empleado.color_puesto ?? null;
                 empleado.sueldo_extra_total = empleado.sueldo_extra_total ?? 0;
                 empleado.prestamo = empleado.prestamo ?? 0;
                 empleado.permiso = empleado.permiso ?? 0;

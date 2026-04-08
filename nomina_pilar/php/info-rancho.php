@@ -57,8 +57,13 @@ function obtenerDepartamento()
 {
     global $conexion;
 
-    // SQL PARA OBTENER LOS DEPARTAMENTOS QUE PERTENECEN A PILAR
-    $sql = "SELECT * FROM departamentos WHERE id_area = 3";
+    // SQL PARA OBTENER LOS DEPARTAMENTOS ASIGNADOS AL ÁREA DE LA NÓMINA ESPECÍFICA (ID 5 - PILAR)
+    $sql = "SELECT d.id_departamento, d.nombre_departamento
+            FROM departamentos d
+            INNER JOIN nomina_departamento nd ON d.id_departamento = nd.id_departamento
+            WHERE nd.id_nomina = 5
+            ORDER BY d.nombre_departamento ASC";
+            
     $stmt = $conexion->prepare($sql);
     $stmt->execute();
     $result = $stmt->get_result();

@@ -73,6 +73,18 @@
                             <i class="bi bi-file-earmark-zip text-dark fs-4"></i>
                         </div>
                     </button>
+
+                    <!-- Dispersión Tarjeta -->
+                    <button type="button" class="list-group-item list-group-item-action btn-export-tipo" id="btn-export-dispersion-tarjeta">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1 text-success">
+                                    <i class="bi bi-credit-card"></i> Dispersión Tarjeta
+                                </h6>
+                            </div>
+                            <i class="bi bi-file-earmark-spreadsheet text-success fs-4"></i>
+                        </div>
+                    </button>
                 </div>
             </div>
             <div class="modal-footer">

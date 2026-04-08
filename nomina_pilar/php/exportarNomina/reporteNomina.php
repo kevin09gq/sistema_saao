@@ -140,25 +140,19 @@ $tituloNomina = 'NÓMINA DEL ' . obtenerTituloPeriodo($fecha_inicio, $fecha_cier
 $jsonNominaStr = $_POST['jsonNomina'] ?? '{}';
 $datosNomina = json_decode($jsonNominaStr, true);
 
-// Filtrar empleados del jsonNominaPilar
-$empleadosJornaleroBase = [];
-$empleadosJornalerosApoyo = [];
-$empleadosCoordinadoresRancho = [];
+// Agrupar empleados por departamento (todos los que tengan mostrar = true)
+$empleadosPorDepartamento = [];
 if (isset($datosNomina['departamentos']) && is_array($datosNomina['departamentos'])) {
     foreach ($datosNomina['departamentos'] as $depto) {
-        if (
-            isset($depto['nombre']) &&
-            isset($depto['empleados']) && is_array($depto['empleados'])
-        ) {
+        $nombreDepto = isset($depto['nombre']) ? strtoupper(trim($depto['nombre'])) : 'SIN DEPARTAMENTO';
+        if (!isset($empleadosPorDepartamento[$nombreDepto])) {
+            $empleadosPorDepartamento[$nombreDepto] = [];
+        }
+        if (isset($depto['empleados']) && is_array($depto['empleados'])) {
             foreach ($depto['empleados'] as $empleado) {
-                if (isset($empleado['mostrar']) ? $empleado['mostrar'] : false) {
-                    if (isset($empleado['id_tipo_puesto']) && $empleado['id_tipo_puesto'] == 1) {
-                        $empleadosJornaleroBase[] = $empleado;
-                    } elseif (isset($empleado['id_tipo_puesto']) && $empleado['id_tipo_puesto'] == 3) {
-                        $empleadosJornalerosApoyo[] = $empleado;
-                    } elseif (isset($empleado['id_tipo_puesto']) && $empleado['id_tipo_puesto'] == 4) {
-                        $empleadosCoordinadoresRancho[] = $empleado;
-                    }
+                $mostrar = isset($empleado['mostrar']) ? $empleado['mostrar'] : true;
+                if ($mostrar) {
+                    $empleadosPorDepartamento[$nombreDepto][] = $empleado;
                 }
             }
         }
@@ -182,11 +176,18 @@ $pdf->SetAutoPageBreak(TRUE, 15);
 //=====================================
 // VARIABLES PARA RESUMEN GENERAL
 //=====================================
-$resumenPorTipo = [
-    'JORNALERO BASE' => ['count' => 0, 'neto' => 0, 'percepciones' => 0, 'deducciones' => 0, 'percepciones_detalle' => [], 'deducciones_detalle' => []],
-    'JORNALEROS DE APOYO' => ['count' => 0, 'neto' => 0, 'percepciones' => 0, 'deducciones' => 0, 'percepciones_detalle' => [], 'deducciones_detalle' => []],
-    'COORDINADORES RANCHO' => ['count' => 0, 'neto' => 0, 'percepciones' => 0, 'deducciones' => 0, 'percepciones_detalle' => [], 'deducciones_detalle' => []],
-];
+// Inicializar resumen dinámico por departamento
+$resumenPorTipo = [];
+foreach ($empleadosPorDepartamento as $nombreDepto => $empleados) {
+    $resumenPorTipo[$nombreDepto] = [
+        'count' => 0,
+        'neto' => 0,
+        'percepciones' => 0,
+        'deducciones' => 0,
+        'percepciones_detalle' => [],
+        'deducciones_detalle' => []
+    ];
+}
 $totalGeneralPercepciones = 0;
 $totalGeneralDeducciones = 0;
 $totalGeneralNetoRedondeado = 0;
@@ -205,19 +206,13 @@ function formatoMoneda($monto)
 // MOSTRAR EMPLEADOS DE JORNALERO BASE
 //=====================================
 
-// Combinar todos los arreglos con etiqueta de tipo
+// Aplanar empleados por departamento con etiqueta _tipo = nombre del departamento
 $empleadosPorTipo = [];
-foreach ($empleadosJornaleroBase as $emp) {
-    $emp['_tipo'] = 'JORNALERO BASE';
-    $empleadosPorTipo[] = $emp;
-}
-foreach ($empleadosJornalerosApoyo as $emp) {
-    $emp['_tipo'] = 'JORNALEROS DE APOYO';
-    $empleadosPorTipo[] = $emp;
-}
-foreach ($empleadosCoordinadoresRancho as $emp) {
-    $emp['_tipo'] = 'COORDINADORES RANCHO';
-    $empleadosPorTipo[] = $emp;
+foreach ($empleadosPorDepartamento as $nombreDepto => $empleados) {
+    foreach ($empleados as $emp) {
+        $emp['_tipo'] = $nombreDepto;
+        $empleadosPorTipo[] = $emp;
+    }
 }
 
 $contador = 1;

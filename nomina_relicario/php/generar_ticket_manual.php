@@ -58,9 +58,10 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
     $infonavit   = toNumber($emp['infonavit']    ?? 0);
     $permiso     = toNumber($emp['permiso']      ?? 0);
     $inasistencia = toNumber($emp['inasistencia'] ?? 0);
-    $uniformes   = toNumber($emp['uniformes']    ?? 0);
+    $uniformes   = toNumber($emp['uniforme']     ?? ($emp['uniformes'] ?? 0));
     $checador    = toNumber($emp['checador']     ?? 0);
     $prestamo    = toNumber($emp['prestamo']     ?? 0);
+    $tarjeta     = toNumber($emp['tarjeta']      ?? 0);
 
     // Deducciones adicionales del formulario
     $deduccionesAdicionales = [];
@@ -81,7 +82,7 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
     }
 
     $totalDeduccionesTemp = $retardos + $isr + $imssDed + $ajusteSub + $infonavit
-                          + $permiso + $inasistencia + $uniformes + $checador + $prestamo;
+                          + $permiso + $inasistencia + $uniformes + $checador + $prestamo + $tarjeta;
     foreach ($deduccionesAdicionales as $da) {
         $totalDeduccionesTemp += toNumber($da['monto'] ?? 0);
     }
@@ -131,6 +132,7 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
     if ($uniformes  > 0) $deducciones[] = ['label' => 'Uniforme',      'monto' => $uniformes];
     if ($checador   > 0) $deducciones[] = ['label' => 'Checador',      'monto' => $checador];
     if ($prestamo   > 0) $deducciones[] = ['label' => 'Préstamo',      'monto' => $prestamo];
+    if ($tarjeta    > 0) $deducciones[] = ['label' => 'Tarjeta',       'monto' => $tarjeta];
 
     foreach ($deduccionesAdicionales as $da) {
         $deducciones[] = $da;
@@ -289,7 +291,7 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
                 $pdf->AddPage();
                 $pdf->SetLineWidth($dot(2));
                 $pdf->Rect($dot(10), $dot(10), $dot(812), $dot(386));
-                $textB(18, 22, $pt(20), $clave . ' ' . $nombre . ' - Continuación');
+                $textB(18, 22, $pt(20), $clave . ' ' . $nombre);
                 $text(700, 22, $f18, 'SEM ' . $semana);
                 $pdf->SetLineWidth($dot(1));
                 $pdf->Line($dot(10), $dot(50), $dot(10 + 812), $dot(50));
@@ -306,7 +308,7 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
                 $pdf->AddPage();
                 $pdf->SetLineWidth($dot(2));
                 $pdf->Rect($dot(10), $dot(10), $dot(812), $dot(386));
-                $textB(18, 22, $pt(20), $clave . ' ' . $nombre . ' - Continuación');
+                $textB(18, 22, $pt(20), $clave . ' ' . $nombre);
                 $text(700, 22, $f18, 'SEM ' . $semana);
                 $pdf->SetLineWidth($dot(1));
                 $pdf->Line($dot(10), $dot(50), $dot(10 + 812), $dot(50));
@@ -446,9 +448,10 @@ $emp = [
     'infonavit'            => toNumber($data['infonavit']         ?? 0),
     'permiso'              => toNumber($data['permiso']           ?? 0),
     'inasistencia'         => toNumber($data['inasistencia']      ?? 0),
-    'uniformes'            => toNumber($data['uniforme']          ?? ($data['uniformes'] ?? 0)),
+    'uniforme'             => toNumber($data['uniforme']          ?? ($data['uniformes'] ?? 0)),
     'checador'             => toNumber($data['checador']          ?? 0),
     'prestamo'             => toNumber($data['prestamo']          ?? 0),
+    'tarjeta'              => toNumber($data['tarjeta']           ?? 0),
     'conceptos'            => $data['conceptos']                  ?? [],
 ];
 
