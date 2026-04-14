@@ -337,7 +337,8 @@ function asignarHistorialInasistencias(empleado) {
         // Si no hay registro pero tenía horario, es inasistencia
         if (!tieneRegistro) {
             const nombreDelDia = diasNormales[diasSemana.indexOf(diaSemana)];
-            const descuentoPorInasistencia = parseFloat(empleado.salario_diario) || 0;
+            const salarioSemanal = parseFloat(empleado.salario_semanal) || 0;
+            const descuentoPorInasistencia = salarioSemanal / 7;
 
             nuevoHistorial.push({
                 dia: nombreDelDia,

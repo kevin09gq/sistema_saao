@@ -78,10 +78,10 @@
 
     
      jsonNomina40lbs.departamentos.forEach(depto => {
-         if (!depto || !Array.isArray(depto.empleados)) return;
+         // Solo procesar departamentos habilitados para edición (Dinámico)
+         if (!depto || depto.editar !== true || !Array.isArray(depto.empleados)) return;
+
          depto.empleados.forEach(emp => {
-             // Igual que en actualizarBiomtrico.js: solo deptos 4 y 5
-             if (emp?.id_departamento !== 4 && emp?.id_departamento !== 5) return;
              // Respetar flag de ocultamiento si existe
              if (emp?.mostrar === false) return;
              empleados.push({

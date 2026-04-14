@@ -78,7 +78,8 @@ function getRowClass(tipo, emp) {
     if (t === 'incapacidad') return 'table-primary';
     if (t === 'vacaciones') return 'table-success';
     if (t === 'descanso') return 'table-warning';
-    if (t === 'sin_horario' || t === 'sin_turno') return 'table-warning';
+    // if (t === 'dia_festivo') return 'table-info';
+    if (t === 'sin_horario' || t === 'sin_turno') return 'table-no-horario';
     
     // if (emp?.incapacidades) return 'table-primary';
     // if (emp?.vacaciones) return 'table-success';

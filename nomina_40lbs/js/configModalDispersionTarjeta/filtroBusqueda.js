@@ -5,17 +5,18 @@
 function obtenerTodosLosEmpleadosFiltrados() {
     let empleados = [];
     jsonNomina40lbs.departamentos.forEach(depto => {
-        if (depto.nombre !== 'Sin Seguro') {
-            depto.empleados.forEach(emp => {
-                if (emp.mostrar !== false) {
-                    // Guardamos el nombre del departamento en el objeto para facilitar el filtrado posterior
-                    empleados.push({
-                        ...emp,
-                        nombre_departamento: depto.nombre
-                    });
-                }
-            });
-        }
+        // Solo departamentos habilitados para edición (Dinámico)
+        depto.empleados.forEach(emp => {
+            // Solo mostrar empleados con seguro social y marcados para mostrar
+            if (emp.seguroSocial === true) {
+                // Guardamos el nombre del departamento en el objeto para facilitar el filtrado posterior
+                empleados.push({
+                    ...emp,
+                    nombre_departamento: depto.nombre
+                });
+            }
+        });
+
     });
     return empleados;
 }
@@ -25,19 +26,26 @@ function cargarDepartamentosEnSelect() {
     $select.empty();
     $select.append('<option value="todos">Todos los departamentos</option>');
 
+    // Obtener lista única de departamentos que tienen al menos un empleado con seguro social
+    const deptosConSeguro = new Set();
     jsonNomina40lbs.departamentos.forEach(depto => {
-        if (depto.nombre !== 'Sin Seguro') {
-            $select.append(`<option value="${depto.nombre}">${depto.nombre}</option>`);
+        const tieneInsured = depto.empleados.some(emp => emp.seguroSocial === true);
+        if (tieneInsured) {
+            deptosConSeguro.add(depto.nombre);
         }
+    });
+
+    deptosConSeguro.forEach(nombreDepto => {
+        $select.append(`<option value="${nombreDepto}">${nombreDepto}</option>`);
     });
 }
 
-$(document).on('change', '#filtro-departamento-tarjeta', function() {
+$(document).on('change', '#filtro-departamento-tarjeta', function () {
     const departamentoSeleccionado = $(this).val();
-    
+
     // Obtener todos los empleados inicialmente disponibles
     const todosLosEmpleados = obtenerTodosLosEmpleadosFiltrados();
-    
+
     // Filtrar por el departamento seleccionado si no es "todos"
     let empleadosFiltrados;
     if (departamentoSeleccionado === 'todos') {
@@ -45,7 +53,7 @@ $(document).on('change', '#filtro-departamento-tarjeta', function() {
     } else {
         empleadosFiltrados = todosLosEmpleados.filter(emp => emp.nombre_departamento === departamentoSeleccionado);
     }
-    
+
     // Volver a renderizar la tabla con los resultados filtrados
     renderizarTablaTarjeta(empleadosFiltrados);
 });

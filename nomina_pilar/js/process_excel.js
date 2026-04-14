@@ -20,10 +20,6 @@ function processExcelData(params) {
 
         // 1. Enviar el primer archivo Excel (Lista de Raya)
         var formData1 = new FormData();
-        if (!form.archivo_excel_lista_raya_pilar || form.archivo_excel_lista_raya_pilar.files.length === 0) {
-            alert('Selecciona el archivo Lista de Raya.');
-            return;
-        }
         // El backend (`leerListaRaya.php`) espera el campo 'archivo_excel'
         formData1.append('archivo_excel', form.archivo_excel_lista_raya_pilar.files[0]);
 
@@ -134,8 +130,16 @@ function crearEstructuraJson(JsonListaRaya, siHayBiometrico = false, form = null
         },
         dataType: 'json',
         success: function (respDepts) {
-            if (!respDepts.departamentos) {
+            if (!respDepts.departamentos || respDepts.departamentos.length === 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Sin departamentos!',
+                    text: 'No se encontraron departamentos asignados a esta nómina en la base de datos.',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Entendido'
+                });
                 console.error("Error al obtener departamentos de la BD:", respDepts.error);
+                $('#btn_procesar_nomina_relicario').removeClass('loading').prop('disabled', false);
                 return;
             }
 
@@ -156,7 +160,15 @@ function crearEstructuraJson(JsonListaRaya, siHayBiometrico = false, form = null
             validarExistenciaTrabajador(JsonListaRaya, estructuraJson, siHayBiometrico, form);
         },
         error: function (err) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de servidor',
+                text: 'Hubo un problema al consultar los departamentos. Inténtalo de nuevo.',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
             console.error("Error al obtener departamentos para prueba:", err);
+            $('#btn_procesar_nomina_relicario').removeClass('loading').prop('disabled', false);
         }
     });
 
@@ -352,8 +364,6 @@ function procesarBiometrico(form, estructuraJson) {
                 }
 
 
-
-
             } catch (e) {
                 console.error('Error al parsear datos biométricos:', e);
             } finally {
@@ -511,22 +521,7 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
                 });
                 asignarPropiedadesEmpleado(jsonNominaPilar);
                 ordenarEmpleadosPorNombre(jsonNominaPilar);
-                // Calcular retardos e inasistencias para todos los coordinadores (departamento 8)
-                if (typeof calcularRetardosTodosCoordinadores === 'function') {
-                    calcularRetardosTodosCoordinadores(jsonNominaPilar);
-                }
-                if (typeof calcularInasistenciasTodosCoordinadores === 'function') {
-                    calcularInasistenciasTodosCoordinadores(jsonNominaPilar);
-                }
-                if (typeof calcularOlvidosTodosCoordinadores === 'function') {
-                    calcularOlvidosTodosCoordinadores(jsonNominaPilar);
-                }
-                if (typeof calcularOlvidosTodosJornaleros === 'function') {
-                    calcularOlvidosTodosJornaleros(jsonNominaPilar);
-                }
-                if (typeof calcularRetardosTodosJornaleros === 'function') {
-                    calcularRetardosTodosJornaleros(jsonNominaPilar);
-                }
+                
                 actualizarCabeceraNomina(jsonNominaPilar);
 
                 // BHL: Llenar tabla de pagos por día cuando se cargue la nómina

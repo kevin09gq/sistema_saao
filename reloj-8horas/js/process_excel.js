@@ -269,6 +269,13 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
         }));
     }
 
+    // ============================================================
+    // VERIFICAR SI EL HORARIO USA LA NUEVA CLAVE 'descanso'
+    // Si algún día del horario tiene descanso definido, usar esa lógica
+    // Si no, usar DOMINGO como descanso por defecto (compatibilidad)
+    // ============================================================
+    const horarioTieneClaveDescanso = Array.isArray(horario) && horario.some(h => h.descanso !== undefined);
+
     // Función para obtener el turno según el día de la semana
     const obtenerTurnoPorDia = (fecha) => {
         const diasSemanaES = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
@@ -279,28 +286,43 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
         if (Array.isArray(horario) && horario.length > 0) {
             const turnoDelDia = horario.find(h => h.dia.toUpperCase() === nombreDia);
             if (turnoDelDia) {
-                // Verificar si tiene un evento especial (descanso o día festivo)
+                // ============================================================
+                // NUEVA LÓGICA: Verificar clave 'descanso' del horario
+                // Si descanso === "1", ese día es día de descanso
+                // ============================================================
+                if (turnoDelDia.descanso === "1" || turnoDelDia.descanso === 1) {
+                    return {
+                        hora_inicio: null,
+                        hora_fin: null,
+                        salida_comida: null,
+                        entrada_comida: null,
+                        tiene_comida: false,
+                        evento: 'descanso'
+                    };
+                }
+
+                // Verificar si tiene un evento especial (descanso o día festivo) - para horarios variables
                 if (turnoDelDia.evento === 'descanso') {
-                    return { 
-                        hora_inicio: null, 
-                        hora_fin: null, 
-                        salida_comida: null, 
-                        entrada_comida: null, 
+                    return {
+                        hora_inicio: null,
+                        hora_fin: null,
+                        salida_comida: null,
+                        entrada_comida: null,
                         tiene_comida: false,
                         evento: 'descanso'
                     };
                 }
                 if (turnoDelDia.evento === 'dia_festivo') {
-                    return { 
-                        hora_inicio: null, 
-                        hora_fin: null, 
-                        salida_comida: null, 
-                        entrada_comida: null, 
+                    return {
+                        hora_inicio: null,
+                        hora_fin: null,
+                        salida_comida: null,
+                        entrada_comida: null,
                         tiene_comida: false,
                         evento: 'dia_festivo'
                     };
                 }
-                
+
                 // Si el horario tiene entrada y salida vacías o null, es día de descanso
                 const entrada = turnoDelDia.entrada && turnoDelDia.entrada.trim() !== '' ? turnoDelDia.entrada : null;
                 const salida = turnoDelDia.salida && turnoDelDia.salida.trim() !== '' ? turnoDelDia.salida : null;
@@ -485,17 +507,17 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
         const fin = normalizarHora(turno.hora_fin);
         const minInicio = horaAMinutos(inicio);
         const minFin = horaAMinutos(fin);
-        
+
         let comidaSalida = null, comidaEntrada = null;
         let minComidaSalida = null, minComidaEntrada = null;
-        
+
         if (tieneComida) {
             comidaSalida = normalizarHora(turno.salida_comida);
             comidaEntrada = normalizarHora(turno.entrada_comida);
             minComidaSalida = horaAMinutos(comidaSalida);
             minComidaEntrada = horaAMinutos(comidaEntrada);
         }
-        
+
         const resultado = {
             caso: '',
             descripcion: '',
@@ -508,7 +530,7 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
             observaciones: [],
             requiereAtencion: false
         };
-        
+
         // ============================================================
         // CASO E: 0 marcas - Sin asistencia o olvido total
         // ============================================================
@@ -519,14 +541,14 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
             resultado.requiereAtencion = true;
             return resultado;
         }
-        
+
         // ============================================================
         // CASO D: 1 marca - Olvido parcial
         // ============================================================
         if (numMarcas === 1) {
             const marca = todasLasMarcas[0];
             const puntoMedio = tieneComida ? minComidaSalida : Math.floor((minInicio + minFin) / 2);
-            
+
             if (marca.minutos <= minInicio + 90) {
                 resultado.caso = 'D-15';
                 resultado.descripcion = 'Solo entrada inicial';
@@ -560,14 +582,14 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
             resultado.requiereAtencion = true;
             return resultado;
         }
-        
+
         // ============================================================
         // CASO C: 2 marcas
         // ============================================================
         if (numMarcas === 2) {
             const primera = todasLasMarcas[0];
             const segunda = todasLasMarcas[1];
-            
+
             if (!tieneComida) {
                 // Sin comida: 2 marcas es lo ideal
                 resultado.caso = 'A-IDEAL';
@@ -576,7 +598,7 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                 resultado.marcasClasificadas.salida = segunda;
                 return resultado;
             }
-            
+
             // Con comida: 2 marcas es incompleto
             // C-10: Solo entrada y salida final (sin comidas)
             if (primera.minutos <= minInicio + 60 && segunda.minutos >= minFin - 60) {
@@ -588,7 +610,7 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                 resultado.requiereAtencion = true;
                 return resultado;
             }
-            
+
             // C-11: Solo comidas (omitieron E1 y S2)
             if (primera.minutos >= minComidaSalida - 30 && primera.minutos <= minComidaSalida + 30 &&
                 segunda.minutos >= minComidaEntrada - 30 && segunda.minutos <= minComidaEntrada + 60) {
@@ -600,9 +622,9 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                 resultado.requiereAtencion = true;
                 return resultado;
             }
-            
+
             // C-12: Entrada y salida a comer (se fue después de comer)
-            if (primera.minutos <= minInicio + 60 && 
+            if (primera.minutos <= minInicio + 60 &&
                 segunda.minutos >= minComidaSalida - 30 && segunda.minutos <= minComidaSalida + 60) {
                 resultado.caso = 'C-12';
                 resultado.descripcion = 'Entrada y salida a comer (no regresó)';
@@ -612,9 +634,9 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                 resultado.requiereAtencion = true;
                 return resultado;
             }
-            
+
             // C-13: Entrada y entrada después de comer
-            if (primera.minutos <= minInicio + 60 && 
+            if (primera.minutos <= minInicio + 60 &&
                 segunda.minutos >= minComidaEntrada - 30 && segunda.minutos <= minComidaEntrada + 60) {
                 resultado.caso = 'C-13';
                 resultado.descripcion = 'Entrada y regreso de comida (faltan salidas)';
@@ -624,22 +646,22 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                 resultado.requiereAtencion = true;
                 return resultado;
             }
-            
+
             // Fallback: clasificar por distancia
             resultado.caso = 'C-XX';
             resultado.descripcion = '2 marcas no clasificables claramente';
             resultado.observaciones.push('MARCAJE INCOMPLETO');
             resultado.requiereAtencion = true;
-            
+
             const dist1Entrada = Math.abs(primera.minutos - minInicio);
             const dist2Salida = Math.abs(segunda.minutos - minFin);
-            
+
             if (dist1Entrada < 90) resultado.marcasClasificadas.entrada = primera;
             if (dist2Salida < 90) resultado.marcasClasificadas.salida = segunda;
-            
+
             return resultado;
         }
-        
+
         // ============================================================
         // CASO B: 3 marcas (falta 1)
         // ============================================================
@@ -648,9 +670,9 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
             const m2 = todasLasMarcas[1];
             const m3 = todasLasMarcas[2];
             const puntoMedioComida = Math.floor((minComidaSalida + minComidaEntrada) / 2);
-            
+
             // B-5: Sin salida a comer (E1 → E2 → S2)
-            if (m1.minutos <= minInicio + 60 && 
+            if (m1.minutos <= minInicio + 60 &&
                 m2.minutos >= minComidaEntrada - 30 && m2.minutos <= minComidaEntrada + 60 &&
                 m3.minutos >= minFin - 60) {
                 resultado.caso = 'B-5';
@@ -662,9 +684,9 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                 resultado.requiereAtencion = true;
                 return resultado;
             }
-            
+
             // B-6: Sin entrada después de comer (E1 → S1 → S2)
-            if (m1.minutos <= minInicio + 60 && 
+            if (m1.minutos <= minInicio + 60 &&
                 m2.minutos >= minComidaSalida - 30 && m2.minutos <= minComidaSalida + 30 &&
                 m3.minutos >= minFin - 60) {
                 resultado.caso = 'B-6';
@@ -676,9 +698,9 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                 resultado.requiereAtencion = true;
                 return resultado;
             }
-            
+
             // B-7: Sin salida final (E1 → S1 → E2)
-            if (m1.minutos <= minInicio + 60 && 
+            if (m1.minutos <= minInicio + 60 &&
                 m2.minutos >= minComidaSalida - 30 && m2.minutos <= minComidaSalida + 30 &&
                 m3.minutos >= minComidaEntrada - 30 && m3.minutos <= minComidaEntrada + 60) {
                 resultado.caso = 'B-7';
@@ -690,7 +712,7 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                 resultado.requiereAtencion = true;
                 return resultado;
             }
-            
+
             // B-8: Sin entrada inicial (S1 → E2 → S2)
             if (m1.minutos >= minComidaSalida - 30 && m1.minutos <= minComidaSalida + 30 &&
                 m2.minutos >= minComidaEntrada - 30 && m2.minutos <= minComidaEntrada + 60 &&
@@ -704,13 +726,13 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                 resultado.requiereAtencion = true;
                 return resultado;
             }
-            
+
             // Clasificación genérica para 3 marcas
             resultado.caso = 'B-XX';
             resultado.descripcion = '3 marcas - falta 1';
             resultado.observaciones.push('MARCAJE INCOMPLETO');
             resultado.requiereAtencion = true;
-            
+
             if (m1.minutos <= minComidaSalida - 30) {
                 resultado.marcasClasificadas.entrada = m1;
                 if (m2.minutos <= puntoMedioComida) {
@@ -725,10 +747,10 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                     resultado.marcasClasificadas.salida = m3;
                 }
             }
-            
+
             return resultado;
         }
-        
+
         // ============================================================
         // CASO A: 4 marcas (ideal con comida)
         // ============================================================
@@ -739,11 +761,11 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
             resultado.marcasClasificadas.salidaComida = todasLasMarcas[1];
             resultado.marcasClasificadas.entradaComida = todasLasMarcas[2];
             resultado.marcasClasificadas.salida = todasLasMarcas[3];
-            
+
             const m1 = todasLasMarcas[0].minutos;
             const m2 = todasLasMarcas[1].minutos;
             const m3 = todasLasMarcas[2].minutos;
-            
+
             // A-2: Orden invertido en comidas (E1 → E2 → S1 → S2)
             if (m2 > m3) {
                 resultado.caso = 'A-2';
@@ -753,7 +775,7 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                 resultado.observaciones.push('COMIDAS EN ORDEN INVERTIDO');
                 resultado.requiereAtencion = true;
             }
-            
+
             // A-4: Intervalos anómalos (comida muy corta)
             const duracionComidaReal = m3 - m2;
             if (duracionComidaReal < 10) {
@@ -762,10 +784,10 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                 resultado.observaciones.push('COMIDA ANÓMALA');
                 resultado.requiereAtencion = true;
             }
-            
+
             return resultado;
         }
-        
+
         // ============================================================
         // CASO F: 5+ marcas (extras)
         // ============================================================
@@ -774,20 +796,20 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
             resultado.descripcion = `${numMarcas} marcas (extras detectadas)`;
             resultado.observaciones.push('MARCAS DUPLICADAS O EXTRAS');
             resultado.requiereAtencion = true;
-            
+
             resultado.marcasClasificadas.entrada = todasLasMarcas[0];
             resultado.marcasClasificadas.salida = todasLasMarcas[numMarcas - 1];
-            
+
             if (tieneComida) {
                 const puntoMedioComida = Math.floor((minComidaSalida + minComidaEntrada) / 2);
                 let mejorSalidaComida = null, mejorEntradaComida = null;
                 let distSC = Infinity, distEC = Infinity;
-                
+
                 for (let i = 1; i < numMarcas - 1; i++) {
                     const m = todasLasMarcas[i];
                     const dSC = Math.abs(m.minutos - minComidaSalida);
                     const dEC = Math.abs(m.minutos - minComidaEntrada);
-                    
+
                     if (dSC < distSC && m.minutos <= puntoMedioComida) {
                         distSC = dSC;
                         mejorSalidaComida = m;
@@ -797,20 +819,20 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                         mejorEntradaComida = m;
                     }
                 }
-                
+
                 resultado.marcasClasificadas.salidaComida = mejorSalidaComida;
                 resultado.marcasClasificadas.entradaComida = mejorEntradaComida;
             }
-            
+
             return resultado;
         }
-        
+
         // Fallback
         resultado.caso = 'X-XX';
         resultado.descripcion = 'Caso no clasificado';
         resultado.observaciones.push('REVISAR MANUALMENTE');
         resultado.requiereAtencion = true;
-        
+
         return resultado;
     }
 
@@ -821,12 +843,12 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
         const anomalias = [];
         const minInicio = horaAMinutos(normalizarHora(turno.hora_inicio));
         const minFin = horaAMinutos(normalizarHora(turno.hora_fin));
-        
+
         const entrada = marcasClasificadas.entrada;
         const salida = marcasClasificadas.salida;
         const salidaComida = marcasClasificadas.salidaComida;
         const entradaComida = marcasClasificadas.entradaComida;
-        
+
         // G-23: Jornada demasiado corta (menos de 4 horas trabajadas)
         if (entrada && salida) {
             const duracionReal = salida.minutos - entrada.minutos;
@@ -835,16 +857,16 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                 tiempoComida = entradaComida.minutos - salidaComida.minutos;
             }
             const trabajoNeto = duracionReal - tiempoComida;
-            
+
             if (trabajoNeto < 240 && trabajoNeto > 0) {
                 anomalias.push({
                     tipo: 'G-23',
                     descripcion: 'JORNADA CORTA',
-                    detalle: `Solo ${Math.floor(trabajoNeto/60)}h ${trabajoNeto%60}m trabajadas`
+                    detalle: `Solo ${Math.floor(trabajoNeto / 60)}h ${trabajoNeto % 60}m trabajadas`
                 });
             }
         }
-        
+
         // G-24: Jornada demasiado larga (más de 12 horas)
         if (entrada && salida) {
             const duracionTotal = salida.minutos - entrada.minutos;
@@ -852,18 +874,18 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                 anomalias.push({
                     tipo: 'G-24',
                     descripcion: 'JORNADA MUY LARGA',
-                    detalle: `${Math.floor(duracionTotal/60)}h ${duracionTotal%60}m (posible error)`
+                    detalle: `${Math.floor(duracionTotal / 60)}h ${duracionTotal % 60}m (posible error)`
                 });
             }
         }
-        
+
         // G-25: Comidas muy cortas o muy largas
         if (tieneComida && salidaComida && entradaComida) {
             const duracionComida = entradaComida.minutos - salidaComida.minutos;
             const minComidaEntradaEsp = horaAMinutos(normalizarHora(turno.entrada_comida));
             const minComidaSalidaEsp = horaAMinutos(normalizarHora(turno.salida_comida));
             const duracionComidaEsperada = minComidaEntradaEsp - minComidaSalidaEsp;
-            
+
             if (duracionComida < 10) {
                 anomalias.push({
                     tipo: 'G-25',
@@ -871,16 +893,16 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                     detalle: `Solo ${duracionComida} minutos`
                 });
             }
-            
+
             if (duracionComida > duracionComidaEsperada * 2) {
                 anomalias.push({
                     tipo: 'G-25B',
                     descripcion: 'COMIDA MUY LARGA',
-                    detalle: `${Math.floor(duracionComida/60)}h ${duracionComida%60}m`
+                    detalle: `${Math.floor(duracionComida / 60)}h ${duracionComida % 60}m`
                 });
             }
         }
-        
+
         return anomalias;
     }
 
@@ -893,20 +915,20 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
         // ENTRADA: Generar entre -13 y 0 minutos antes de la hora oficial
         // Ejemplo: para horario 8:00, el rango es 7:47 - 8:00
         entrada: { min: -13, max: 0 },
-        
+
         // SALIDA COMIDA: Generar entre -5 y 0 minutos antes de la hora oficial
         salida_comida: { min: -5, max: 0 },
-        
+
         // SALIDA COMIDA TARDE: Si salió tarde, generar entre 0 y +3 minutos
         salida_comida_tarde: { min: 0, max: 3 },
-        
+
         // ENTRADA COMIDA: Se calcula para asegurar mínimo 57 min de comida
         // El rango es -3 a 0 minutos ANTES de la hora oficial
         entrada_comida: { min: -3, max: 0 },
-        
+
         // SALIDA FINAL: SIEMPRE generar entre 0 y +7 minutos después de la hora oficial
         salida: { min: 0, max: 7 },
-        
+
         // Duración mínima de comida en minutos (57 min para 1 hora, 117 min para 2 horas)
         // Se calcula como: duración_oficial - 3 minutos
         MINUTOS_MENOS_COMIDA: 3
@@ -919,14 +941,14 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
     const RANGOS_CONSERVAR = {
         // ENTRADA: Conservar si está entre -5 y +infinito (tarde siempre se conserva)
         entrada: { min: -5, max: Infinity },
-        
+
         // SALIDA COMIDA: Conservar si salió antes o cerca de la hora (hasta +5 min)
         salida_comida: { min: -Infinity, max: 5 },
-        
+
         // ENTRADA COMIDA: Conservar si regresó tarde (conviene a la empresa)
         // o si está dentro de -3 min de la hora oficial
         entrada_comida: { min: -3, max: Infinity },
-        
+
         // SALIDA FINAL: Nunca se conserva, siempre se genera entre 0 y +7
         salida: { min: 0, max: 7 }
     };
@@ -941,13 +963,13 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
         const tieneComida = turno.tiene_comida === true;
 
         const seedBase = `${empleado.id_empleado || empleado.clave || empleado.nombre}|${fecha}`;
-        
+
         // ============================================================
         // ENTRADA AL TRABAJO: Generar entre -5 y 0 minutos
         // Ejemplo: Para entrada 8:00 → generar entre 7:55 y 8:00
         // ============================================================
         const e1 = jitterHora(inicio, REGLAS_GENERACION.entrada.min, REGLAS_GENERACION.entrada.max, `${seedBase}|E1`);
-        
+
         // ============================================================
         // SALIDA FINAL: SIEMPRE entre 0 y +7 minutos
         // Ejemplo: Para salida 17:00 → generar entre 17:00 y 17:07
@@ -970,18 +992,18 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
         // ============================================================
         const comidaSalidaBase = normalizarHora(turno.salida_comida);
         const comidaEntradaBase = normalizarHora(turno.entrada_comida);
-        
+
         const minComidaSalida = horaAMinutos(comidaSalidaBase);
         const minComidaEntrada = horaAMinutos(comidaEntradaBase);
         const duracionComidaOficial = minComidaEntrada - minComidaSalida;
         const duracionComidaMinima = duracionComidaOficial - REGLAS_GENERACION.MINUTOS_MENOS_COMIDA;
-        
+
         // ============================================================
         // SALIDA A COMIDA: Generar entre -5 y 0 minutos
         // Ejemplo: Para comida 13:00 → generar entre 12:55 y 13:00
         // ============================================================
         const s1 = jitterHora(comidaSalidaBase, REGLAS_GENERACION.salida_comida.min, REGLAS_GENERACION.salida_comida.max, `${seedBase}|S1`);
-        
+
         // ============================================================
         // ENTRADA DE COMIDA: Calcular para asegurar mínimo 57 min de comida
         // Partimos de S1 real y sumamos la duración mínima
@@ -990,14 +1012,14 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
         // ============================================================
         const minSalidaComidaReal = horaAMinutos(s1);
         const minEntradaComidaMinima = minSalidaComidaReal + duracionComidaMinima;
-        
+
         // La entrada de comida debe ser al menos minEntradaComidaMinima
         // pero también cerca de la hora oficial (entre -3 y 0 min antes)
         const minEntradaComidaOficialMenos3 = minComidaEntrada + REGLAS_GENERACION.entrada_comida.min;
-        
+
         // Usar el mayor entre: (S1 + duración mínima) y (hora oficial - 3 min)
         const minEntradaComidaBase = Math.max(minEntradaComidaMinima, minEntradaComidaOficialMenos3);
-        
+
         // Agregar pequeña variación (0 a +3 min)
         const variacionE2 = hashString(`${seedBase}|E2_VAR`) % 4; // 0 a 3
         const e2 = minutosAHora(minEntradaComidaBase + variacionE2);
@@ -1047,50 +1069,50 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
     // ============================================================
     function ajustarRegistrosSiExcedenMaximo(registros, maxHorasTurno, seedKey, horaFinTurno = null) {
         if (!registros || registros.length === 0) return registros;
-        
+
         const TOLERANCIA_MINUTOS = 15; // 15 minutos de tolerancia sobre el máximo
         const maxMinutosPermitidos = (maxHorasTurno * 60) + TOLERANCIA_MINUTOS;
-        
+
         // Calcular tiempo trabajado actual
         let minutosTrabajados = 0;
         const pares = []; // Guardar pares entrada/salida con sus índices
-        
+
         for (let i = 0; i < registros.length; i++) {
             if (registros[i].tipo === 'entrada' && i + 1 < registros.length && registros[i + 1].tipo === 'salida') {
                 const e = horaAMinutos(registros[i].hora);
                 const s = horaAMinutos(registros[i + 1].hora);
                 let duracion = s >= e ? (s - e) : ((24 * 60) - e + s);
                 minutosTrabajados += duracion;
-                pares.push({ 
-                    idxEntrada: i, 
-                    idxSalida: i + 1, 
-                    minEntrada: e, 
-                    minSalida: s, 
-                    duracion: duracion 
+                pares.push({
+                    idxEntrada: i,
+                    idxSalida: i + 1,
+                    minEntrada: e,
+                    minSalida: s,
+                    duracion: duracion
                 });
                 i++;
             }
         }
-        
+
         // Si no excede el máximo permitido, no hacer nada
         if (minutosTrabajados <= maxMinutosPermitidos) {
             return registros;
         }
-        
+
         // El tiempo excede el máximo - esto indica un problema con los datos
         // En lugar de mover la salida antes de la hora oficial, simplemente
         // dejamos la salida en el rango permitido (0 a +7) y marcamos como advertencia
         // La salida ya fue generada correctamente en el rango 0 a +7
         // No modificamos la hora, solo agregamos una nota
-        
+
         if (pares.length > 0) {
             const ultimoPar = pares[pares.length - 1];
             const idxSalidaFinal = ultimoPar.idxSalida;
-            
+
             // Mantener la hora pero actualizar la observación
             registros[idxSalidaFinal].observacion = registros[idxSalidaFinal].observacion + ' [TIEMPO EXCEDE MÁXIMO]';
         }
-        
+
         return registros;
     }
 
@@ -1118,6 +1140,73 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
         (empleado.registros || []).some(r => r.entrada || r.salida);
 
     // ============================================================
+    // PRE-ANÁLISIS: Para empleados CON biométricos pero con días sin registro
+    // Determina qué días sin registro deben ser INASISTENCIA vs ASISTENCIA GENERADA
+    // 
+    // Lógica: Si RRHH dice que el empleado tiene N ausencias (dias_ausencias = N):
+    //   - Los primeros N días laborables sin biométrico = INASISTENCIA
+    //   - El resto de días laborables sin biométrico = GENERAR ASISTENCIA
+    // 
+    // Ejemplo: dias_ausencias = 2, hay 3 días sin biométrico
+    //   → 2 primeros días = inasistencia, 1 día = generar asistencia
+    // ============================================================
+    const fechasGenerarAsistencia = new Set();
+    const fechasAusenciaSinBiometrico = new Set();
+
+    if (tieneRegistrosBiometricos) {
+        // 1. Identificar TODOS los días laborables SIN registro biométrico
+        const diasLaborablesSinBiometrico = [];
+
+        diasSemana.forEach(dia => {
+            // Obtener turno del día para verificar si es descanso
+            const turnoDelDia = obtenerTurnoPorDia(dia.fecha);
+
+            // Excluir días de descanso según horario (o DOMINGO si no tiene clave descanso)
+            if (turnoDelDia.evento === 'descanso') return;
+            if (!horarioTieneClaveDescanso && dia.esDomingo) return;
+
+            // Excluir días festivos (a menos que sea vigilancia y tenga registros)
+            if (festivosSet.has(dia.fecha) && !esVigilancia) return;
+
+            // Excluir días con eventos especiales (festivo desde horario variable)
+            if (turnoDelDia.evento === 'dia_festivo') return;
+
+            // Excluir días NO laborables según horario
+            const esLaborable = turnoDelDia.hora_inicio && turnoDelDia.hora_fin;
+            if (!esLaborable) return;
+
+            // Verificar si tiene registro biométrico este día
+            const registrosDelDia = registrosMap[dia.fecha] || [];
+            const tieneBiometricoEsteDia = registrosDelDia.length > 0 &&
+                registrosDelDia.some(r => r.entrada || r.salida);
+
+            // Si NO tiene biométrico, agregar a la lista
+            if (!tieneBiometricoEsteDia) {
+                diasLaborablesSinBiometrico.push(dia.fecha);
+            }
+        });
+
+        // 2. Determinar cuántos días se deben generar como asistencia
+        // Si hay más días sin biométrico que ausencias reportadas, la diferencia se genera
+        const totalDiasSinBiometrico = diasLaborablesSinBiometrico.length;
+        const ausenciasReportadas = diasAusenciasRestantes;
+
+        // Los primeros N días (donde N = ausencias) serán inasistencias
+        // Los restantes se generan como asistencia
+        const diasAGenerar = totalDiasSinBiometrico - ausenciasReportadas;
+
+        if (diasAGenerar > 0) {
+            // Los ÚLTIMOS días sin biométrico se generan (los primeros son las ausencias)
+            // Así los primeros N = ausencias serán inasistencias
+            const diasParaGenerar = diasLaborablesSinBiometrico.slice(ausenciasReportadas);
+            diasParaGenerar.forEach(fecha => fechasGenerarAsistencia.add(fecha));
+
+            console.log(`[PRE-ANÁLISIS] ${empleado.nombre}: ${totalDiasSinBiometrico} días sin biométrico, ${ausenciasReportadas} ausencias.`);
+            console.log(`  → Se generarán ${diasAGenerar} días como asistencia: ${diasParaGenerar.join(', ')}`);
+        }
+    }
+
+    // ============================================================
     // PRE-PROCESAMIENTO: Buscar el turno de un día laborable válido
     // Prioridad: VIERNES > JUEVES > MIERCOLES > MARTES > LUNES
     // Esto sirve para rellenar sábado/domingo que no tienen horario
@@ -1140,6 +1229,37 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                 }
             }
         }
+    }
+
+    // ============================================================
+    // EMPLEADO SIN BIOMÉTRICO: reservar ausencias en días laborables
+    // Selección pseudoaleatoria (estable) para no sesgar siempre al primer día
+    // ============================================================
+    if (!tieneRegistrosBiometricos && diasAusenciasRestantes > 0) {
+        const diasLaborablesSinBiometrico = [];
+
+        diasSemana.forEach(dia => {
+            const turnoDelDia = obtenerTurnoPorDia(dia.fecha);
+
+            if (turnoDelDia.evento === 'descanso') return;
+            if (!horarioTieneClaveDescanso && dia.esDomingo) return;
+            if (festivosSet.has(dia.fecha) && !esVigilancia) return;
+            if (turnoDelDia.evento === 'dia_festivo') return;
+
+            const esLaborable = turnoDelDia.hora_inicio && turnoDelDia.hora_fin;
+            if (!esLaborable) return;
+
+            diasLaborablesSinBiometrico.push(dia.fecha);
+        });
+
+        const seedBase = `${empleado.id_empleado || empleado.clave || empleado.nombre}`;
+        const fechasSeleccionadas = diasLaborablesSinBiometrico
+            .map(fecha => ({ fecha, peso: hashString(`${seedBase}|${fecha}|AUSENCIA`) }))
+            .sort((a, b) => a.peso - b.peso)
+            .slice(0, diasAusenciasRestantes)
+            .map(x => x.fecha);
+
+        fechasSeleccionadas.forEach(fecha => fechasAusenciaSinBiometrico.add(fecha));
     }
 
     diasSemana.forEach(dia => {
@@ -1168,13 +1288,13 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
             });
             return;
         }
-        
+
         if (turno.evento === 'dia_festivo') {
             // Para día festivo desde horario variable, verificar si tiene registros
             const registrosDelDiaFestivo = registrosMap[dia.fecha] || [];
             const tieneRegistrosEnFestivo = registrosDelDiaFestivo.length > 0 &&
                 registrosDelDiaFestivo.some(r => r.entrada || r.salida);
-            
+
             if (!tieneRegistrosEnFestivo) {
                 // No trabajó el día festivo
                 resultados.push({
@@ -1194,8 +1314,17 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
             console.log(`[FESTIVO HORARIO VARIABLE] ${empleado.nombre} trabajó el día festivo ${dia.fecha}`);
         }
 
-        // REGLA 1: DOMINGOS son SIEMPRE descanso para TODOS (sin excepciones)
-        if (dia.esDomingo) {
+        // ============================================================
+        // REGLA 1: DÍAS DE DESCANSO según el horario del empleado
+        // ============================================================
+        // Si el horario tiene la clave 'descanso' → usar esa lógica
+        // Si NO tiene la clave 'descanso' → usar DOMINGO por defecto (compatibilidad)
+        const turnoParaDescanso = obtenerTurnoPorDia(dia.fecha);
+        const esDescansoSegunHorario = turnoParaDescanso.evento === 'descanso';
+        const esDescansoDefault = !horarioTieneClaveDescanso && dia.esDomingo;
+        
+        if (esDescansoSegunHorario || esDescansoDefault) {
+            const observacion = esDescansoSegunHorario ? "DÍA DE DESCANSO" : "DOMINGO (DESCANSO)";
             resultados.push({
                 fecha: dia.fecha,
                 tipo: "descanso",
@@ -1203,8 +1332,8 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                 trabajado_minutos: 0,
                 trabajado_hhmm: '00:00',
                 trabajado_decimal: 0,
-                observacion_dia: "DOMINGO (DESCANSO)",
-                tipo_turno: ultimoTurnoValido.tipo_turno, // Usar el turno del último día laborable
+                observacion_dia: observacion,
+                tipo_turno: ultimoTurnoValido.tipo_turno,
                 max_horas: ultimoTurnoValido.max_horas
             });
             return;
@@ -1220,7 +1349,7 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                 const registrosDelDiaFestivo = registrosMap[dia.fecha] || [];
                 const tieneRegistrosEnFestivo = registrosDelDiaFestivo.length > 0 &&
                     registrosDelDiaFestivo.some(r => r.entrada || r.salida);
-                
+
                 if (tieneRegistrosEnFestivo) {
                     // Vigilancia CON registros en día festivo → procesar como día normal
                     // No retornar aquí, dejar que continúe el procesamiento normal
@@ -1308,32 +1437,9 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
             return;
         }
 
-        // ================================================================
-        // REGLA 3.5: Empleado SIN registros biométricos (no dado de alta en reloj)
-        // pero SÍ tiene horario definido → auto-generar según dias_trabajados
-        // ================================================================
-        if (!tieneRegistrosBiometricos && diasProcesados < diasTrabajadosRestantes) {
-            diasProcesados++;
-            const registrosDia = construirRegistrosDia(turno, dia.fecha, 'SIN BIOMÉTRICO');
-            const trabajo = calcularTrabajoDesdeRegistros(registrosDia, infoTurnoDia.max_horas);
-            resultados.push({
-                fecha: dia.fecha,
-                tipo: "asistencia",
-                registros: registrosDia,
-                trabajado_minutos: trabajo.minutos,
-                trabajado_hhmm: trabajo.hhmm,
-                trabajado_decimal: trabajo.decimal,
-                observacion_dia: "SIN REGISTRO EN RELOJ",
-                tipo_turno: infoTurnoDia.tipo_turno,
-                max_horas: infoTurnoDia.max_horas
-            });
-            return;
-        }
-
-        // Si no tiene registros biométricos y ya se completaron dias_trabajados
-        // → Asignar vacaciones, incapacidades, ausencias o descanso según corresponda
+        // Si no tiene registros biométricos
+        // → Prioridad: vacaciones > incapacidades > ausencias reservadas > asistencia > ausencia pendiente > descanso
         if (!tieneRegistrosBiometricos) {
-            // Prioridad: vacaciones > incapacidades > ausencias > descanso
             if (vacacionesProcesadas < diasVacacionesRestantes) {
                 vacacionesProcesadas++;
                 resultados.push({
@@ -1366,6 +1472,41 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                 return;
             }
 
+            if (fechasAusenciaSinBiometrico.has(dia.fecha) && ausenciasProcesadas < diasAusenciasRestantes) {
+                ausenciasProcesadas++;
+                resultados.push({
+                    fecha: dia.fecha,
+                    tipo: "ausencia",
+                    registros: [],
+                    trabajado_minutos: 0,
+                    trabajado_hhmm: '00:00',
+                    trabajado_decimal: 0,
+                    observacion_dia: "AUSENCIA",
+                    tipo_turno: infoTurnoDia.tipo_turno,
+                    max_horas: infoTurnoDia.max_horas
+                });
+                return;
+            }
+
+            if (diasProcesados < diasTrabajadosRestantes) {
+                diasProcesados++;
+                const registrosDia = construirRegistrosDia(turno, dia.fecha, 'SIN BIOMÉTRICO');
+                const trabajo = calcularTrabajoDesdeRegistros(registrosDia, infoTurnoDia.max_horas);
+                resultados.push({
+                    fecha: dia.fecha,
+                    tipo: "asistencia",
+                    registros: registrosDia,
+                    trabajado_minutos: trabajo.minutos,
+                    trabajado_hhmm: trabajo.hhmm,
+                    trabajado_decimal: trabajo.decimal,
+                    observacion_dia: "SIN REGISTRO EN RELOJ",
+                    tipo_turno: infoTurnoDia.tipo_turno,
+                    max_horas: infoTurnoDia.max_horas
+                });
+                return;
+            }
+
+            // Fallback: si quedan ausencias pendientes por falta de días seleccionados
             if (ausenciasProcesadas < diasAusenciasRestantes) {
                 ausenciasProcesadas++;
                 resultados.push({
@@ -1631,14 +1772,14 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                     const m1 = todasLasMarcas[0];
                     const m2 = todasLasMarcas[1];
                     const m3 = todasLasMarcas[2];
-                    
+
                     // Punto medio entre salida e entrada de comida
                     const puntoMedioComida = Math.floor((minComidaSalida + minComidaEntrada) / 2);
 
                     // Primera marca es entrada si está antes de la hora de salida a comida
                     if (m1.minutos <= minComidaSalida - 30) {
                         marcaEntrada = m1;
-                        
+
                         // Segunda marca: ¿salida comida o entrada comida?
                         if (m2.minutos <= puntoMedioComida) {
                             // m2 está antes del punto medio → es salida comida
@@ -1779,7 +1920,7 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                 const minEntradaComidaEsperada = horaAMinutos(comidaEntrada);
                 const duracionComidaOficial = minEntradaComidaEsperada - minSalidaComidaEsperada;
                 const duracionComidaMinima = duracionComidaOficial - REGLAS_GENERACION.MINUTOS_MENOS_COMIDA; // ej: 60 - 3 = 57 min
-                
+
                 // ============================================================
                 // SALIDA A COMIDA
                 // - TEMPRANO → CONSERVAR (conviene: trabajó menos)
@@ -1788,7 +1929,7 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                 // ============================================================
                 if (marcaSalidaComida) {
                     const minMarcaSalidaComida = marcaSalidaComida.minutos;
-                    
+
                     if (minMarcaSalidaComida < minSalidaComidaEsperada) {
                         // Salió ANTES de su hora (ej: 12:45 para comida 13:00)
                         // → CONSERVAR: Le conviene a la empresa (trabajó menos)
@@ -1818,22 +1959,22 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                 // ============================================================
                 if (marcaEntradaComida) {
                     const minMarcaEntradaComida = marcaEntradaComida.minutos;
-                    
+
                     // Calcular duración real de la comida basada en la salida a comida
                     const salidaComidaReal = base[1] ? horaAMinutos(base[1].hora) : minSalidaComidaEsperada;
                     const duracionComidaReal = minMarcaEntradaComida - salidaComidaReal;
-                    
+
                     // Límite inferior: -3 minutos antes de la hora oficial
                     const limiteRangoEntradaComida = minEntradaComidaEsperada + REGLAS_GENERACION.entrada_comida.min;
-                    
+
                     if (minMarcaEntradaComida > minEntradaComidaEsperada) {
                         // Regresó TARDE (ej: 14:15 para entrada comida 14:00)
                         // → CONSERVAR: Le conviene a la empresa (no paga esos minutos)
                         const minutosTarde = minMarcaEntradaComida - minEntradaComidaEsperada;
-                        base[2] = { 
-                            tipo: 'entrada', 
-                            hora: marcaEntradaComida.hora, 
-                            observacion: `RETARDO COMIDA (+${minutosTarde} min)` 
+                        base[2] = {
+                            tipo: 'entrada',
+                            hora: marcaEntradaComida.hora,
+                            observacion: `RETARDO COMIDA (+${minutosTarde} min)`
                         };
                     } else if (minMarcaEntradaComida >= limiteRangoEntradaComida && duracionComidaReal >= duracionComidaMinima) {
                         // Regresó dentro del rango (-3 a 0 min) Y la comida duró al menos 57 min
@@ -1845,7 +1986,7 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                         const minEntradaComidaMinima = salidaComidaReal + duracionComidaMinima;
                         const minEntradaComidaGenerada = Math.max(minEntradaComidaMinima, limiteRangoEntradaComida);
                         const variacion = hashString(`${seedKey}|E2_ADJ`) % 4; // 0 a 3 min de variación
-                        
+
                         base[2] = {
                             tipo: 'entrada',
                             hora: minutosAHora(minEntradaComidaGenerada + variacion),
@@ -1866,14 +2007,14 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
                 const minMarcaSalida = marcaSalida.minutos;
                 const limiteInferior = minFin + REGLAS_GENERACION.salida.min; // ej: 17:00 + 0 = 17:00
                 const limiteSuperior = minFin + REGLAS_GENERACION.salida.max; // ej: 17:00 + 7 = 17:07
-                
+
                 if (minMarcaSalida >= limiteInferior && minMarcaSalida <= limiteSuperior) {
                     // Salió DENTRO del rango permitido (17:00 a 17:07)
                     // → CONSERVAR: Está OK
-                    base[indiceSalidaFinal] = { 
-                        tipo: 'salida', 
-                        hora: marcaSalida.hora, 
-                        observacion: 'BIOMÉTRICO' 
+                    base[indiceSalidaFinal] = {
+                        tipo: 'salida',
+                        hora: marcaSalida.hora,
+                        observacion: 'BIOMÉTRICO'
                     };
                 } else if (minMarcaSalida < limiteInferior) {
                     // Salió ANTES de la hora oficial (ej: 16:50 para salida 17:00)
@@ -1909,10 +2050,10 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
             // ============================================================
             const incidencia = clasificarIncidenciaMarcajes(todasLasMarcas, turno, tieneComida);
             const anomalias = validarHorariosAnomalos(incidencia.marcasClasificadas, turno, tieneComida);
-            
+
             // Generar observación del día basada en la incidencia detectada
             let observacionDia = "OK";
-            
+
             if (incidencia.caso === 'A-1' || incidencia.caso === 'A-IDEAL') {
                 // Caso ideal: todas las marcas correctas
                 observacionDia = "MARCAJE COMPLETO";
@@ -1926,7 +2067,7 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
             } else {
                 observacionDia = "OK/PARCIAL";
             }
-            
+
             // Agregar anomalías de horario si existen
             if (anomalias.length > 0) {
                 const anomaliasStr = anomalias.map(a => `[${a.tipo}] ${a.descripcion}`).join('; ');
@@ -1951,31 +2092,35 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
         }
 
         // REGLA 5: Si NO tiene registro biométrico este día específico
-        // NUEVA LÓGICA: Si dias_ausencias === 0, RRHH indicó que no tuvo ausencias
-        // → Auto-generar registros en lugar de marcar inasistencia
+        // El empleado SÍ está dado de alta en el reloj (tieneRegistrosBiometricos = true)
+        // pero este día no checó.
+        // 
+        // Lógica basada en dias_ausencias de RRHH:
+        //   - Si el día está en fechasGenerarAsistencia → GENERAR como asistencia (RRHH dice que sí trabajó)
+        //   - Si NO está en fechasGenerarAsistencia → marcar como inasistencia
         if (!tieneRegistroBiometrico) {
-            const diasAusenciasRestantes = empleado.dias_ausencias || 0;
-            
-            if (diasAusenciasRestantes === 0 && diasProcesados < diasTrabajadosRestantes) {
-                // RRHH indicó 0 ausencias → auto-generar registro
-                diasProcesados++;
-                const registrosDia = construirRegistrosDia(turno, dia.fecha, 'REGISTRO GENERADO');
-                const trabajo = calcularTrabajoDesdeRegistros(registrosDia, infoTurnoDia.max_horas);
+            // ¿Este día debe generarse como asistencia según pre-análisis?
+            if (fechasGenerarAsistencia.has(dia.fecha)) {
+                // GENERAR ASISTENCIA: RRHH indica que no es ausencia, generar el día
+                // IMPORTANTE: usar 'turno' (de obtenerTurnoPorDia) que tiene hora_inicio/hora_fin
+                // NO usar 'infoTurnoDia' que solo tiene tipo_turno/max_horas
+                const registrosGenerados = construirRegistrosDia(turno, dia.fecha, 'GENERADO-RRHH');
+                const trabajo = calcularTrabajoDesdeRegistros(registrosGenerados, infoTurnoDia.max_horas);
                 resultados.push({
                     fecha: dia.fecha,
                     tipo: "asistencia",
-                    registros: registrosDia,
+                    registros: registrosGenerados,
                     trabajado_minutos: trabajo.minutos,
                     trabajado_hhmm: trabajo.hhmm,
                     trabajado_decimal: trabajo.decimal,
-                    observacion_dia: "SIN CHECADA (0 AUSENCIAS RRHH)",
+                    observacion_dia: "GENERADO - SIN CHECADOR (AVALADO POR RRHH)",
                     tipo_turno: infoTurnoDia.tipo_turno,
                     max_horas: infoTurnoDia.max_horas
                 });
                 return;
             }
-            
-            // Si tiene ausencias pendientes o ya completó dias_trabajados → inasistencia
+
+            // Marcar como inasistencia
             resultados.push({
                 fecha: dia.fecha,
                 tipo: "inasistencia",
@@ -1991,65 +2136,17 @@ function procesarRegistrosEmpleado(empleado, diasSemana, esDeptoEspecial = false
         }
 
         // REGLA 6: Tiene registro biométrico pero ya se completaron dias_trabajados
-        // → Asignar vacaciones, incapacidades, ausencias o descanso según corresponda
-        // Prioridad: vacaciones > incapacidades > ausencias > descanso
-        if (vacacionesProcesadas < diasVacacionesRestantes) {
-            vacacionesProcesadas++;
-            resultados.push({
-                fecha: dia.fecha,
-                tipo: "vacaciones",
-                registros: [],
-                trabajado_minutos: 0,
-                trabajado_hhmm: '00:00',
-                trabajado_decimal: 0,
-                observacion_dia: "VACACIONES",
-                tipo_turno: infoTurnoDia.tipo_turno,
-                max_horas: infoTurnoDia.max_horas
-            });
-            return;
-        }
-
-        if (incapacidadesProcesadas < diasIncapacidadesRestantes) {
-            incapacidadesProcesadas++;
-            resultados.push({
-                fecha: dia.fecha,
-                tipo: "incapacidad",
-                registros: [],
-                trabajado_minutos: 0,
-                trabajado_hhmm: '00:00',
-                trabajado_decimal: 0,
-                observacion_dia: "INCAPACIDAD",
-                tipo_turno: infoTurnoDia.tipo_turno,
-                max_horas: infoTurnoDia.max_horas
-            });
-            return;
-        }
-
-        if (ausenciasProcesadas < diasAusenciasRestantes) {
-            ausenciasProcesadas++;
-            resultados.push({
-                fecha: dia.fecha,
-                tipo: "ausencia",
-                registros: [],
-                trabajado_minutos: 0,
-                trabajado_hhmm: '00:00',
-                trabajado_decimal: 0,
-                observacion_dia: "AUSENCIA",
-                tipo_turno: infoTurnoDia.tipo_turno,
-                max_horas: infoTurnoDia.max_horas
-            });
-            return;
-        }
-
-        // Si no hay más eventos, es descanso
+        // Para empleados CON biométrico: NO auto-asignar vacaciones/incapacidades
+        // El usuario las asignará manualmente desde el modal de incidencias
+        // Marcar como inasistencia (pendiente de asignación manual)
         resultados.push({
             fecha: dia.fecha,
-            tipo: "descanso",
+            tipo: "inasistencia",
             registros: [],
             trabajado_minutos: 0,
             trabajado_hhmm: '00:00',
             trabajado_decimal: 0,
-            observacion_dia: "DÍA DE DESCANSO",
+            observacion_dia: "SIN REGISTRO BIOMÉTRICO",
             tipo_turno: infoTurnoDia.tipo_turno,
             max_horas: infoTurnoDia.max_horas
         });
@@ -2197,10 +2294,13 @@ function processExcelData() {
         const form = $('#form_excel')[0];
 
         // =====================================================
-        // Validar archivos OBLIGATORIOS (Lista de Raya y Central)
+        // Validar archivos: Lista de Raya obligatoria y al menos
+        // un biométrico entre Central y Ranchos
         // =====================================================
         const fileListaRaya = form.archivo_excel.files[0];
         const fileBiometricoCentral = form.archivo_excel2.files[0];
+        const biometricosRanchos = [];
+        const inputsRanchos = document.querySelectorAll('.input-biometrico-rancho');
 
         if (!fileListaRaya) {
             mostrar_alerta("Datos incompletos", "Debes seleccionar el archivo de Lista de Raya", "warning");
@@ -2208,8 +2308,22 @@ function processExcelData() {
             return;
         }
 
-        if (!fileBiometricoCentral) {
-            mostrar_alerta("Datos incompletos", "Debes seleccionar el archivo del Biométrico Central", "warning");
+        for (const input of inputsRanchos) {
+            if (input.files && input.files.length > 0) {
+                const nombreRancho = input.dataset.rancho || input.name;
+                const fieldName = input.name;
+
+                biometricosRanchos.push({
+                    input,
+                    nombre: nombreRancho,
+                    fieldName,
+                    file: input.files[0]
+                });
+            }
+        }
+
+        if (!fileBiometricoCentral && biometricosRanchos.length === 0) {
+            mostrar_alerta("Datos incompletos", "Debes seleccionar al menos un biométrico: Central o alguno de los Ranchos", "warning");
             quitar_icono_carga();
             return;
         }
@@ -2231,72 +2345,70 @@ function processExcelData() {
             });
 
             // =====================================================
-            // 2. Procesar Biométrico Central (OBLIGATORIO)
+            // 2. Procesar Biométrico Central (OPCIONAL)
             // =====================================================
-            const formDataCentral = new FormData();
-            formDataCentral.append('archivo_excel2', fileBiometricoCentral);
+            let JsonBiometricoCentral = null;
+            if (fileBiometricoCentral) {
+                const formDataCentral = new FormData();
+                formDataCentral.append('archivo_excel2', fileBiometricoCentral);
 
-            const JsonBiometricoCentral = await $.ajax({
-                url: '../php/leer_biometrico_central.php',
-                type: 'POST',
-                data: formDataCentral,
-                dataType: 'json',
-                processData: false,
-                contentType: false
-            });
+                JsonBiometricoCentral = await $.ajax({
+                    url: '../php/leer_biometrico_central.php',
+                    type: 'POST',
+                    data: formDataCentral,
+                    dataType: 'json',
+                    processData: false,
+                    contentType: false
+                });
 
-            // console.log("Biometrico Central", JsonBiometricoCentral);
+                // console.log("Biometrico Central", JsonBiometricoCentral);
+            }
 
             // =====================================================
             // 3. Procesar Biométricos de Ranchos (OPCIONALES)
             //    Detecta dinámicamente cuáles inputs tienen archivos
             // =====================================================
-            const biometricosRanchos = [];
-            const inputsRanchos = document.querySelectorAll('.input-biometrico-rancho');
+            for (const biometricoRancho of biometricosRanchos) {
+                const { nombre, fieldName, file } = biometricoRancho;
 
-            for (const input of inputsRanchos) {
-                if (input.files && input.files.length > 0) {
-                    const nombreRancho = input.dataset.rancho || input.name;
-                    const fieldName = input.name;
+                // console.log(`Procesando biométrico de rancho: ${nombre}`);
 
-                    // console.log(`Procesando biométrico de rancho: ${nombreRancho}`);
+                const formDataRancho = new FormData();
+                formDataRancho.append(fieldName, file);
+                formDataRancho.append('field_name', fieldName);
 
-                    const formDataRancho = new FormData();
-                    formDataRancho.append(fieldName, input.files[0]);
-                    formDataRancho.append('field_name', fieldName);
+                try {
+                    const jsonRancho = await $.ajax({
+                        url: '../php/leer_biometrico_generico.php',
+                        type: 'POST',
+                        data: formDataRancho,
+                        dataType: 'json',
+                        processData: false,
+                        contentType: false
+                    });
 
-                    try {
-                        const jsonRancho = await $.ajax({
-                            url: '../php/leer_biometrico_generico.php',
-                            type: 'POST',
-                            data: formDataRancho,
-                            dataType: 'json',
-                            processData: false,
-                            contentType: false
-                        });
-
-                        if (jsonRancho && !jsonRancho.error) {
-                            biometricosRanchos.push({
-                                nombre: nombreRancho,
-                                datos: jsonRancho
-                            });
-                            // console.log(`Biométrico ${nombreRancho} procesado:`, jsonRancho);
-                        } else if (jsonRancho.error) {
-                            console.warn(`Error en biométrico ${nombreRancho}:`, jsonRancho.error);
-                        }
-                    } catch (errorRancho) {
-                        console.warn(`No se pudo procesar biométrico de ${nombreRancho}:`, errorRancho);
-                        // Continuar con los demás ranchos
+                    if (jsonRancho && !jsonRancho.error) {
+                        biometricoRancho.datos = jsonRancho;
+                        // console.log(`Biométrico ${nombre} procesado:`, jsonRancho);
+                    } else if (jsonRancho.error) {
+                        console.warn(`Error en biométrico ${nombre}:`, jsonRancho.error);
                     }
+                } catch (errorRancho) {
+                    console.warn(`No se pudo procesar biométrico de ${nombre}:`, errorRancho);
+                    // Continuar con los demás ranchos
                 }
             }
+
+            const biometricosRanchosProcesados = biometricosRanchos
+                .filter(b => b.datos)
+                .map(b => ({ nombre: b.nombre, datos: b.datos }));
 
             // console.log(`Total de biométricos de ranchos procesados: ${biometricosRanchos.length}`);
 
             // =====================================================
             // 4. Unir todos los JSONs
             // =====================================================
-            const JsonUnido = await unirJson(JsonListaRaya, JsonBiometricoCentral, biometricosRanchos);
+            const JsonUnido = await unirJson(JsonListaRaya, JsonBiometricoCentral, biometricosRanchosProcesados);
 
             // console.log("JSON Unido:", JsonUnido);
 

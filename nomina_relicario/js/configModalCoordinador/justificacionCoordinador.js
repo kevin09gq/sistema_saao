@@ -90,6 +90,93 @@ function mostrarModalDiasInhabiles() {
         guardarJustificacionGeneralCoordinadores();
         $('#modal-dias-inhabiles').modal('hide');
     });
+
+    // Eliminar días inhabiles para TODOS los coordinadores
+    $(document).on('click', '#btn-eliminar-dia-inhabil-general', function () {
+        const diaSemana = $('#select-dia-semana').val();
+        if (!diaSemana) {
+            Swal.fire({ icon: 'warning', title: 'Selecciona un día', text: 'Por favor selecciona el día de la semana que deseas limpiar.' });
+            return;
+        }
+
+        Swal.fire({
+            title: '¿Eliminar justificación general?',
+            text: `Se eliminará la justificación del día ${diaSemana} para TODOS los coordinadores.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                eliminarJustificacionGeneralCoordinadores();
+                $('#modal-dias-inhabiles').modal('hide');
+                Swal.fire('Eliminado', 'Las justificaciones han sido removidas.', 'success');
+            }
+        });
+    });
+}
+
+// ========================================
+// ELIMINAR JUSTIFICACIÓN GENERAL PARA TODOS LOS COORDINADORES
+// ========================================
+
+function eliminarJustificacionGeneralCoordinadores() {
+    // Obtener valores del modal
+    const diaSemana = $('#select-dia-semana').val().trim();
+
+    // Validar que se haya seleccionado día
+    if (!diaSemana) return;
+
+    // Validar que exista jsonNominaRelicario
+    if (!jsonNominaRelicario || !Array.isArray(jsonNominaRelicario.departamentos)) return;
+
+    // Iterar sobre todos los departamentos
+    jsonNominaRelicario.departamentos.forEach(departamento => {
+        if (!Array.isArray(departamento.empleados)) return;
+
+        // Iterar sobre todos los empleados
+        departamento.empleados.forEach(empleado => {
+            // Solo procesar coordinadores (tipo_horario === 1)
+            if (empleado.tipo_horario !== 1) return;
+
+            // 1. Si tiene días justificados, filtrar el que coincide
+            if (Array.isArray(empleado.dias_justificados)) {
+                empleado.dias_justificados = empleado.dias_justificados.filter(
+                    justif => justif.dia !== diaSemana
+                );
+
+                // 2. Si no quedan días, eliminar la propiedad
+                if (empleado.dias_justificados.length === 0) {
+                    delete empleado.dias_justificados;
+                }
+
+                // 3. Recalcular inasistencias
+                if (typeof asignarHistorialInasistencias === 'function') {
+                    asignarHistorialInasistencias(empleado);
+                }
+                if (typeof asignarTotalInasistenciasCoordinador === 'function') {
+                    asignarTotalInasistenciasCoordinador(empleado, true);
+                }
+            }
+        });
+    });
+
+    // Limpiar campos del modal
+    $('#select-dia-semana').val('');
+    $('#select-tipo-dias').val('');
+
+    // Aplicar filtros actuales para refrescar la tabla
+    const id_departamento = parseInt($('#filtro_departamento').val());
+    const id_puestoEspecial = parseInt($('#filtro_puesto').val());
+
+    let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, id_departamento);
+    jsonFiltrado = filtrarEmpleadosPorPuesto(jsonFiltrado, id_puestoEspecial);
+
+    if (typeof mostrarDatosTabla === 'function') {
+        mostrarDatosTabla(jsonFiltrado, window.paginaActualNomina || 1);
+    }
 }
 
 // ========================================

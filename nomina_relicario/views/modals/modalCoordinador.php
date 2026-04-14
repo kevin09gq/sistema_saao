@@ -181,7 +181,7 @@
                                     <div class="evento-card olvido-checador" id="olvidos-checador-card-coordinadores">
                                         <div class="evento-header">
                                             <i class="bi bi-exclamation-triangle"></i>
-                                            <span>Olvidos del Checador</span>
+                                            <span>Biometrico</span>
                                         </div>
                                         <div class="evento-content" id="olvidos-checador-coordinadores">
 
@@ -215,7 +215,7 @@
                                     <div class="evento-card falta" id="inasistencias-card-coordinadores">
                                         <div class="evento-header">
                                             <i class="bi bi-x-circle"></i>
-                                            <span>Inasistencias</span>
+                                            <span>Ausentismo</span>
                                         </div>
                                         <div class="evento-content" id="inasistencias-content-coordinadores">
 
@@ -392,7 +392,7 @@
                                             <input type="number" step="0.01" class="form-control mod-input-rojo" id="mod-prestamo-coordinador" value="" placeholder="0.00">
                                         </div>
                                         <div class="col-md-4 d-flex flex-column">
-                                            <label class="form-label fw-semibold">Checador ($)</label>
+                                            <label class="form-label fw-semibold">Biometrico ($)</label>
                                             <div class="input-group">
                                                 <input type="number" step="0.01" class="form-control mod-input-rojo" id="mod-checador-coordinador" value="" placeholder="0.00">
 

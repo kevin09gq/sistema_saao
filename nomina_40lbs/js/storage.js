@@ -1,7 +1,7 @@
 // Funciones simples y fáciles de entender para Local Storage
 // Guardar automáticamente antes de recargar la página
 // Solo guardar si jsonNomina40lbs tiene datos válidos (evita re-grabar después de un clear)
-window.addEventListener('beforeunload', function() {
+window.addEventListener('beforeunload', function () {
     if (jsonNomina40lbs && Array.isArray(jsonNomina40lbs.departamentos) && jsonNomina40lbs.departamentos.length > 0) {
         saveNomina(jsonNomina40lbs);
     }
@@ -57,18 +57,14 @@ function restoreNomina() {
 
         // Renderizar tabla restaurada
         if (typeof mostrarDatosTabla === 'function') {
-            if (typeof filtrarEmpleadosPorDepartamento === 'function') {
-                const jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNomina40lbs, 4);
-                mostrarDatosTabla(jsonFiltrado, 1);
-            } else {
-                mostrarDatosTabla(jsonNomina40lbs, 1);
-            }
+            poblarSelectDepartamentos(jsonNomina40lbs); // Poblar el select dinámico
+            refrescarTabla(); // Usar la lógica dinámica en lugar de ID estático
         }
         actualizarCabeceraNomina(jsonNomina40lbs);
 
         return true;
     } catch (err) {
-        
+
         return false;
     }
 }

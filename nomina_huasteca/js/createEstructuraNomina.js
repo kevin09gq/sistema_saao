@@ -73,8 +73,10 @@ function obtenerDepartamentosNomina(jsonNominaHuasteca) {
                 // Una vez cargados los departamentos, obtener los empleados
                 obtenerEmpleadosSinSeguro(jsonNominaHuasteca);
 
-            } else {
+            } else if (response.departamentos && response.departamentos.length === 0) {
                 Swal.fire('Atención', 'No se encontraron departamentos asociados a esta nómina.', 'warning');
+            } else {
+                Swal.fire('Error', 'No se recibieron datos de departamentos del servidor.', 'error');
             }
         },
         error: function (xhr, status, error) {
@@ -137,10 +139,13 @@ function obtenerEmpleadosSinSeguro(jsonNominaHuasteca) {
                     llenar_cuerpo_tabla_pagos_por_dia();
                 }
 
+            } else {
+                Swal.fire('Atención', 'No se encontraron empleados sin seguro para cargar en la nómina.', 'info');
             }
         },
         error: function (xhr, status, error) {
             console.error('Error al obtener empleados sin seguro:', error);
+            Swal.fire('Error', 'Error al obtener empleados sin seguro: ' + error, 'error');
         }
     });
 }
@@ -344,10 +349,13 @@ function verificarEmpleadosSinSeguro(jsonNominaHuasteca) {
                     llenar_cuerpo_tabla_pagos_por_dia();
                 }
 
+            } else {
+                Swal.fire('Atención', 'No hay empleados sin seguro adicionales para agregar a la nómina.', 'info');
             }
         },
         error: function (xhr, status, error) {
             console.error('Error al obtener empleados sin seguro:', error);
+            Swal.fire('Error', 'Error al obtener empleados sin seguro: ' + error, 'error');
         }
     });
 }

@@ -53,8 +53,19 @@ function restarUnDia($fecha)
 //=====================
 
 $jsonNomina = null;
+$idDeptoSeleccionado = null;
+$nombreDeptoSeleccionado = 'NÓMINA';
+$seguroSocialSeleccionado = true;
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['jsonNomina'])) {
     $jsonNomina = json_decode($_POST['jsonNomina'], true);
+    
+    // Capturar parámetros dinámicos de filtrado
+    $idDeptoSeleccionado = $_POST['id_departamento'] ?? null;
+    $nombreDeptoSeleccionado = $_POST['nombre_departamento'] ?? 'NÓMINA';
+    
+    // Convertir seguroSocial a booleano (AJAX lo envía como string "true"/"false")
+    $seguroSocialSeleccionado = filter_var($_POST['seguroSocial'] ?? true, FILTER_VALIDATE_BOOLEAN);
 }
 
 //=====================
@@ -67,8 +78,9 @@ $sheet = $spreadsheet->getActiveSheet();
 // Aplicar fuente Arial como predeterminada para toda la hoja
 $spreadsheet->getDefaultStyle()->getFont()->setName('Arial');
 
-// Establecer el nombre de la pestaña
-$sheet->setTitle('10 LBS SSS');
+// Establecer el nombre de la pestaña (Pestaña dinámica según depto y seguro)
+$tipoSuffix = $seguroSocialSeleccionado ? 'CSS' : 'SSS';
+$sheet->setTitle(substr($nombreDeptoSeleccionado, 0, 25) . " $tipoSuffix");
 
 
 //=====================
@@ -86,7 +98,7 @@ if ($jsonNomina) {
     $ano = date('Y');
 }
 
-$titulo1 = 'PRODUCCION 10 LIBRAS';
+$titulo1 = strtoupper($nombreDeptoSeleccionado);
 $titulo2 = 'CITRICOS SAAO S.A DE C.V';
 $titulo3 = 'NOMINA DEL ' . strtoupper($fecha_inicio) . ' AL ' . strtoupper($fecha_cierre);
 $titulo4 = 'SEMANA ' . (isset($jsonNomina['numero_semana']) ? str_pad($jsonNomina['numero_semana'], 2, '0', STR_PAD_LEFT) : '00') . '-' . $ano;
@@ -261,22 +273,23 @@ foreach ($tamanioLetraColumnas as $columna => $tamanio) {
     $sheet->getStyle($columna . '6')->getFont()->setSize($tamanio);
 }
 //=====================
-//  AGREGAR DATOS DE EMPLEADOS 10 LIBRAS CON SEGURO SOCIAL
+//  AGREGAR DATOS DE EMPLEADOS 40 LIBRAS CON SEGURO SOCIAL
 //=====================
 
-// Recopilar empleado con id_departamento = 5  y mostrar = true y seguroSocial = false
-$empleados10Libras = [];
+// Recopilar empleado con id_departamento = 4  y mostrar = true y seguroSocial = true
+$empleados40Libras = [];
 
 if ($jsonNomina && isset($jsonNomina['departamentos'])) {
     foreach ($jsonNomina['departamentos'] as $departamento) {
         if (isset($departamento['empleados'])) {
             foreach ($departamento['empleados'] as $empleado) {
-                $idDepartamento = $empleado['id_departamento'] ?? null;
+                $idDepartamentoRow = $empleado['id_departamento'] ?? null;
                 $mostrar = $empleado['mostrar'] ?? false;
-                $seguroSocial = $empleado['seguroSocial'] ?? false;
+                $seguroSocialRow = $empleado['seguroSocial'] ?? false;
 
-                if (($idDepartamento == 5) && $mostrar && !$seguroSocial) {
-                    $empleados10Libras[] = $empleado;
+                // FILTRO DINÁMICO: Comparar con el departamento e insurance status seleccionados
+                if ($idDepartamentoRow == $idDeptoSeleccionado && $mostrar && ($seguroSocialRow == $seguroSocialSeleccionado)) {
+                    $empleados40Libras[] = $empleado;
                 }
             }
         }
@@ -284,7 +297,7 @@ if ($jsonNomina && isset($jsonNomina['departamentos'])) {
 }
 
 // Ordenar empleados por nombre (orden ascendente A-Z)
-usort($empleados10Libras, function ($a, $b) {
+usort($empleados40Libras, function ($a, $b) {
     return strcmp($a['nombre'] ?? '', $b['nombre'] ?? '');
 });
 
@@ -307,7 +320,7 @@ $uniformeTieneDatos = false;
 $checadorTieneDatos = false;
 $faxGafetCofiaTieneDatos = false;
 
-foreach ($empleados10Libras as $empleado) {
+foreach ($empleados40Libras as $empleado) {
     if (($empleado['incentivo'] ?? 0) != 0) {
         $incentivoTieneDatos = true;
     }
@@ -352,7 +365,7 @@ foreach ($empleados10Libras as $empleado) {
 $numeroFila = 7;
 $numeroEmpleado = 1;
 
-foreach ($empleados10Libras as $empleado) {
+foreach ($empleados40Libras as $empleado) {
 
     //====================================
     //  AGREGAR INFORMACION DEL EMPLEADO

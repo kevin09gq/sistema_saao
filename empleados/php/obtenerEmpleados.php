@@ -73,6 +73,7 @@ function cargarEmpleados()
         e.status_nss,
         s.id_status, 
         s.nombre_status, 
+        e.id_area,
         d.id_departamento, 
         d.nombre_departamento
         FROM 
@@ -98,7 +99,8 @@ function cargarEmpleados()
             'id_status' => $row['id_status'],
             'nombre_status' => $row['nombre_status'],
             'id_departamento' => $row['id_departamento'],
-            'nombre_departamento' => $row['nombre_departamento']
+            'nombre_departamento' => $row['nombre_departamento'],
+            'id_area' => $row['id_area']
         );
     }
 

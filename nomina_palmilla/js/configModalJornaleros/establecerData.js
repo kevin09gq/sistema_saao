@@ -129,6 +129,17 @@ function establecerBiometricoJornalero(empleado) {
         // Agregar fila a la tabla
         $('#tbody-biometrico-jornaleros').append(fila);
     });
+
+       // Mostrar el número total de días trabajados desde la propiedad del empleado
+    const totalDiasTrabajados = empleado.dias_trabajados || 0;
+
+    const filaTotal = `
+        <tr class="fw-bold table-active">
+            <td colspan="3" class="text-end">Días Trabajados (Biométrico):</td>
+            <td class="text-center">${totalDiasTrabajados}</td>
+        </tr>
+    `;
+    $('#tbody-biometrico-jornaleros').append(filaTotal);
 }
 
 /************************************

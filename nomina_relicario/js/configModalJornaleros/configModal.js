@@ -1,5 +1,11 @@
 alternarTablasJornalero();
 aplicarTotalHistorialJornalero();
+sumasAutomaticasDeduccionesJornalero();
+sumasAutomaticasPercepcionesJornalero();
+sumasAutomaticasConceptosJornalero();
+actualizarConceptosJornalero();
+inicializarSueldoACobrarJornalero();
+agregarDiasTrabajados();
 
 // ========================================
 // ALTERNAR ENTRE TABLAS: BIOMÉTRICO Y DIAS TRABAJADOS
@@ -30,11 +36,99 @@ function alternarTablasJornalero() {
     });
 }
 
+
+// ========================================
+// AGREGAR DIAS TRABAJADOS AL EMPLEADO
+// ========================================
+
+function agregarDiasTrabajados() {
+    // --- AGREGAR DÍA EXTRA INDIVIDUAL ---
+    $(document).on('click', '#btn-agregar-dia-extra-individual', function () {
+        const dia = $('#select-dia-extra-individual').val();
+        const empleado = objEmpleadoJornalero.getEmpleado();
+
+        if (!dia) {
+            Swal.fire({ icon: 'warning', title: 'Selecciona un día', text: 'Por favor selecciona un día de la semana.' });
+            return;
+        }
+
+        if (!empleado) return;
+
+        // Usar función existente para agregar el día
+        if (typeof aumentarDiaExtra === 'function') {
+            aumentarDiaExtra(empleado, dia);
+
+            // Recalcular sueldos y conceptos basados en días trabajados
+            if (typeof calcularSueldoSemanal === 'function') {
+                calcularSueldoSemanal(empleado);
+            }
+
+            // Refrescar la UI del modal
+            if (typeof establecerDiasTrabajadosJornalero === 'function') {
+                establecerDiasTrabajadosJornalero(empleado);
+            }
+            if (typeof establecerPercepcionesJornalero === 'function') {
+                establecerPercepcionesJornalero(empleado);
+            }
+
+            // Recalcular sueldo a cobrar final
+            if (typeof calcularSueldoACobrarJornalero === 'function') {
+                calcularSueldoACobrarJornalero();
+            }
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Día agregado',
+                text: `Se ha agregado ${dia} como día extra.`,
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }
+    });
+
+    // --- LIMPIAR DÍAS EXTRA INDIVIDUALES ---
+    $(document).on('click', '#btn-limpiar-dias-extra-individual', function () {
+        const empleado = objEmpleadoJornalero.getEmpleado();
+        if (!empleado) return;
+
+        Swal.fire({
+            title: '¿Limpiar días extra?',
+            text: "Se eliminarán todos los días extra agregados manualmente para este empleado.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, limpiar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                empleado.dias_extra_detalle = [];
+                empleado.dias_extra = 0;
+
+                if (typeof calcularSueldoSemanal === 'function') {
+                    calcularSueldoSemanal(empleado);
+                }
+                if (typeof establecerDiasTrabajadosJornalero === 'function') {
+                    establecerDiasTrabajadosJornalero(empleado);
+                }
+                if (typeof establecerPercepcionesJornalero === 'function') {
+                    establecerPercepcionesJornalero(empleado);
+                }
+
+                // Recalcular sueldo a cobrar final
+                if (typeof calcularSueldoACobrarJornalero === 'function') {
+                    calcularSueldoACobrarJornalero();
+                }
+
+                Swal.fire('Limpiado', 'Los días extra han sido eliminados.', 'success');
+            }
+        });
+    });
+}
+
 // ========================================
 // SUMAS AUTOMATICAS PERCEPCIONES EXTRA
 // ========================================
-
-sumasAutomaticasPercepcionesJornalero();
 
 function sumasAutomaticasPercepcionesJornalero() {
 
@@ -85,7 +179,6 @@ function calcularTotalExtra(empleado) {
 // SUMAS AUTOMATICAS DEDUCCIONES EXTRA
 // ========================================
 
-sumasAutomaticasDeduccionesJornalero();
 
 function sumasAutomaticasDeduccionesJornalero() {
 
@@ -111,8 +204,6 @@ function calcularTotalDeduccionesEnTiempoRealJornalero() {
 // ========================================
 // SUMAS AUTOMATICAS CONCEPTOS
 // ========================================
-
-sumasAutomaticasConceptosJornalero();
 
 function sumasAutomaticasConceptosJornalero() {
     // Evento cuando cambia un concepto (ISR, IMSS, INFONAVIT, AJUSTES)
@@ -140,7 +231,6 @@ function calcularTotalConceptosEnTiempoRealJornalero() {
 // ========================================
 // ACTUALIZAR CONCEPTOS ISR, IMSS, INFONAVIT AJUSTE AL SUB, TARJETA DEL EMPLEADO CON LOS VALORES DEL MODAL
 // ========================================
-actualizarConceptosJornalero();
 
 function actualizarConceptosJornalero() {
     $(document).on('click', '#btn-aplicar-isr-jornalero', function () {
@@ -336,8 +426,6 @@ function aplicarTotalHistorialJornalero() {
 // ========================================
 // CALCULAR SUELDO A COBRAR
 // ========================================
-
-inicializarSueldoACobrarJornalero();
 
 // Registra todos los eventos que deben disparar el recálculo del sueldo a cobrar
 function inicializarSueldoACobrarJornalero() {

@@ -80,7 +80,8 @@
                                 <label for="precio_pasaje_relicario" class="form-label">Precio Pasaje</label>
                                 <div class="input-group">
                                     <span class="input-group-text">$</span>
-                                    <input type="number" id="precio_pasaje_relicario" class="form-control form-control-sm" placeholder="0.00" step="0.01" min="0">
+                                    <input type="number" id="precio_pasaje_relicario"
+                                        class="form-control form-control-sm" placeholder="0.00" step="0.01" min="0">
                                 </div>
                             </div>
 
@@ -88,7 +89,8 @@
                                 <label for="pago_tardeada_relicario" class="form-label">Pago Tardeada</label>
                                 <div class="input-group">
                                     <span class="input-group-text">$</span>
-                                    <input type="number" id="pago_tardeada_relicario" class="form-control form-control-sm" placeholder="0.00" step="0.01" min="0">
+                                    <input type="number" id="pago_tardeada_relicario"
+                                        class="form-control form-control-sm" placeholder="0.00" step="0.01" min="0">
                                 </div>
                             </div>
 
@@ -96,7 +98,8 @@
                                 <label for="pago_comida_relicario" class="form-label">Pago Comida</label>
                                 <div class="input-group">
                                     <span class="input-group-text">$</span>
-                                    <input type="number" id="pago_comida_relicario" class="form-control form-control-sm" placeholder="0.00" step="0.01" min="0">
+                                    <input type="number" id="pago_comida_relicario" class="form-control form-control-sm"
+                                        placeholder="0.00" step="0.01" min="0">
                                 </div>
                             </div>
                         </div>
@@ -177,13 +180,22 @@
                     title="Totales por concepto" aria-label="Totales por concepto">
                     <i class="bi bi-calculator"></i>
                 </button>
-                <button class="btn btn-outline-danger" id="btn_modal_olvidos_masivos" title="Perdonar olvidos de checador">
+                <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf" title="Descargar Ticket">
+                    <i class="bi bi-ticket-perforated"></i>
+                </button>
+                <button class="btn btn-outline-secondary btn-ticket-zebra" id="btn_ticket_manual"
+                    title="Descargar Ticket Manual">
+                    <i class="bi bi-ticket-perforated"></i>
+                </button>
+                <button class="btn btn-outline-danger" id="btn_modal_olvidos_masivos"
+                    title="Perdonar olvidos de checador">
                     <i class="bi bi-clipboard-check"></i>
                 </button>
                 <button class="btn btn-outline-primary" id="btn_modal_dias_extra" title="Agregar día extra jornaleros">
                     <i class="bi bi-calendar-plus"></i>
                 </button>
-                 <button class="btn btn-outline-secondary" id="btn_abrir_modal_reasignar" title="Reasignar Empleado de Departamento">
+                <button class="btn btn-outline-secondary" id="btn_abrir_modal_reasignar"
+                    title="Reasignar Empleado de Departamento">
                     <i class="bi bi-person-fill-gear"></i>
                 </button>
             </div>
@@ -205,7 +217,8 @@
 
                 <div class="busqueda-container-relicario" id="busqueda-container">
                     <i class="bi bi-search"></i>
-                    <input type="text" class="campo-busqueda-relicario" placeholder="Buscar..." id="busqueda-nomina-relicario">
+                    <input type="text" class="campo-busqueda-relicario" placeholder="Buscar..."
+                        id="busqueda-nomina-relicario">
                     <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="btn-clear-busqueda"
                         title="Limpiar">
                         <i class="bi bi-x-circle"></i>
@@ -255,7 +268,7 @@
                             <th rowspan="2">PERMISO</th>
                             <th rowspan="2">RETARDOS</th>
                             <th rowspan="2">UNIFORMES</th>
-                            <th rowspan="2">CHECADOR</th>
+                            <th rowspan="2">BIOMETRICO</th>
                             <th rowspan="2">F.A/GAFET/COFIA</th>
                             <th rowspan="2">TOTAL DE <br> DEDUCCIONES</th>
                             <th rowspan="2">NETO A RECIBIR</th>
@@ -340,6 +353,9 @@
     <?php include "modals/modalOlvidos.php"; ?>
     <?php include "modals/modalReasignarEmpleado.php"; ?>
 
+    <?php include "modals/modal_seleccion_tickets_relicario.php"; ?>
+    <?php include "modals/modal_ticket_manual_relicario.php"; ?>
+
 
     <!-- Modal para los cortes -->
     <?php include "modals/modalCorte.php"; ?>
@@ -396,6 +412,9 @@
     <script src="../js/configModalCorte/configCorte.js"></script>
     <script src="../js/configModalCorte/showTablaCorte.js"></script>
     <script src="../js/configModalCorte/abrirModalDetallesCorte.js"></script>
+
+    <script src="../js/ticket_pdf.js"></script>
+    <script src="../js/ticket_seleccion_relicario.js"></script>
 
 
 

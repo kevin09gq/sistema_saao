@@ -50,12 +50,12 @@ verificarSesion();
                     <input type="file" id="file_lista_raya" name="archivo_excel" accept=".xls,.xlsx" required>
                 </div>
 
-                <!-- BIOMETRICO DE LA CENTRAL (OBLIGATORIO) -->
+                <!-- BIOMETRICO DE LA CENTRAL (OPCIONAL) -->
                 <div>
                     <label for="archivo_excel2">
-                        <i class="bi bi-file-earmark-excel-fill"></i> Biometrico Empaque <span class="text-danger">*</span>
+                        <i class="bi bi-file-earmark-excel-fill"></i> Biometrico Empaque
                     </label>
-                    <input type="file" id="archivo_biometrico_central" name="archivo_excel2" accept=".xls,.xlsx" required>
+                    <input type="file" id="archivo_biometrico_central" name="archivo_excel2" accept=".xls,.xlsx">
                 </div>
 
                 <!-- ============================================= -->
@@ -115,64 +115,74 @@ verificarSesion();
                 </div>
 
             </form>
-
         </div>
     </div>
 
     <!-- Tabla -->
     <div class="container-tabla-nomina" id="tabla-reloj-responsive" hidden>
+
         <div class="header-tabla">
-            <h3 id="titulo_reloj">Este es un nombre temporal largo</h3>
+            <h3 id="titulo_reloj">TITULO_TEMPORAL</h3>
             <div class="header-controls">
-                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#horariosModal">
+
+                <button type="button" class="btn btn-sm btn-outline-info fw-bold" data-bs-toggle="modal" data-bs-target="#modalIncidencias">
+                    <i class="bi bi-calendar-check-fill me-2"></i>Incidencias
+                </button>
+
+                <button type="button" class="btn btn-sm btn-outline-primary fw-bold" data-bs-toggle="modal" data-bs-target="#horariosModal">
                     <i class="bi bi-clock-history me-2"></i>Horarios Variables
                 </button>
-                <span class="sem-info" id="num_semana"></span>
+                <span class="badge text-bg-success fs-6" id="num_semana"></span>
             </div>
+
         </div>
 
-        <!-- Controles de filtro y búsqueda -->
-        <div class="controles-tabla">
-            <div class="filtros-container">
-                <select class="filtro-departamento" name="departamentos" id="departamentos-reloj">
-                    <!-- Aqui van los departamentos -->
-                </select>
-                <select class="filtro-departamento" name="puestos" id="puestos-reloj">
-                    <!-- Aqui van los departamentos -->
-                </select>
-                <div class="busqueda-container" id="busqueda-container">
-                    <i class="bi bi-search"></i>
-                    <input type="text" class="campo-busqueda" placeholder="Buscar..." id="campo-busqueda">
-                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="btn-clear-busqueda" title="Limpiar">
-                        <i class="bi bi-x-circle"></i>
-                    </button>
-                </div>
-            </div>
+        <div class="d-flex justify-content-end mx-4 mt-3">
             <!-- Botones de exportación -->
             <div class="export-buttons">
-                <button class="btn btn-success fw-bold" id="btn_export_excel" title="Exportar a Excel">
+                <button class="btn btn-sm btn-success fw-bold" id="btn_export_excel" title="Exportar a Excel">
                     <i class="bi bi-file-earmark-excel"></i>
                     Excel
                 </button>
-                <button class="btn btn-danger fw-bold" id="btn_export_pdf" title="Exportar a PDF">
+                <button class="btn btn-sm btn-danger fw-bold" id="btn_export_pdf" title="Exportar a PDF">
                     <i class="bi bi-file-earmark-pdf"></i>
                     PDF
                 </button>
 
-                <button type="button" class="btn btn-warning fw-bold" id="btn_guardar_historial" data-bs-toggle="modal" data-bs-target="#modalGuardarHistorial">
+                <button type="button" class="btn btn-sm btn-warning fw-bold" id="btn_guardar_historial" data-bs-toggle="modal" data-bs-target="#modalGuardarHistorial">
                     <i class="bi bi-bookmark-fill me-2"></i>
                     Guardar Progreso
                 </button>
 
-                
-                <button class="btn btn-primary fw-bold" id="btn_guardar_datos">
+
+                <button class="btn btn-sm btn-primary fw-bold" id="btn_guardar_datos">
                     <i class="bi bi-floppy me-2"></i>
-                    Guardar datos
+                    Guardar incidencias
                 </button>
-                <button class="btn btn-secondary fw-bold" id="btn_limpiar_datos">
+                <button class="btn btn-sm btn-secondary fw-bold" id="btn_limpiar_datos">
                     <i class="bi bi-trash me-2"></i>
                     Limpiar
                 </button>
+            </div>
+        </div>
+
+        <!-- Controles de filtro y búsqueda -->
+        <div class="row g-2 my-3 px-3">
+            <div class="col-12 col-md-2">
+                <select class="form-select shadow-sm" name="departamentos" id="departamentos-reloj">
+                    <!-- Aqui van los departamentos -->
+                </select>
+            </div>
+            <div class="col-12 col-md-2">
+                <select class="form-select shadow-sm" name="puestos" id="puestos-reloj">
+                    <!-- Aqui van los departamentos -->
+                </select>
+            </div>
+            <div class="col-12 col-md-2">
+                <div class="input-group mb-3 shadow-sm">
+                    <input type="text" class="form-control" placeholder="Buscar..." id="campo-busqueda">
+                    <button class="btn btn-outline-secondary" type="button" id="btn-clear-busqueda"><i class="bi bi-x-circle"></i></button>
+                </div>
             </div>
         </div>
 
@@ -193,6 +203,7 @@ verificarSesion();
     <?php include 'eventos_variables_modal.php'; ?>
     <?php include 'modal_guardar_historial.php'; ?>
     <?php include 'modal_cargar_historial.php'; ?>
+    <?php include 'modal_incidencias.php'; ?>
 
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
@@ -211,9 +222,10 @@ verificarSesion();
 
     <script src="../js/generar_pdf.js"></script>
     <script src="../js/generar_excel.js"></script>
-    
+
     <script src="../js/guardar_historial.js"></script>
     <script src="../js/cargar_historial.js"></script>
+    <script src="../js/incidencias.js"></script>
 
 
 

@@ -267,10 +267,16 @@ function guardarInasistenciaManual() {
         const empleado = objEmpleadoCoordinador.getEmpleado();
         if (!empleado) return;
 
-        // Obtener valores del formulario
+       // Obtener valores del formulario
         const dia = $('#select-dia-inasistencia-coordinador').val().trim();
-        const descuento = parseFloat($('#input-descuento-inasistencia-coordinador').val()) || 0;
+        let descuento = parseFloat($('#input-descuento-inasistencia-coordinador').val()) || 0;
 
+        // Si el descuento es 0 o vacío, calcularlo automáticamente como salario_semanal / 7
+        if (descuento === 0) {
+            const salarioSemanal = parseFloat(empleado.salario_semanal) || 0;
+            descuento = salarioSemanal / 7;
+        }
+        
         if (!dia) {
             Swal.fire({
                 icon: 'warning',

@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fecha_ingreso = $_POST['fecha_ingreso'] ?? null;
     $id_departamento = $_POST['id_departamento'] ?? null;
 
-    $horario_fijo = $_POST['horario_fijo']; // Agregue esto BHL
+    $horario_fijo = $_POST['horario_fijo'] ?? 0; // Agregue esto BHL
 
     // Nuevos campos agregados
     $fecha_nacimiento = $_POST['fecha_nacimiento'] ?? null;

@@ -54,11 +54,6 @@ foreach ($rows as $row) {
                 'empleados' => []
             ];
             
-            //   Verificar si es el departamento de Producción 40 Libras o Producción 10 Libras
-            $esProduccion40 = stripos($nombreCompleto, 'PRODUCCION 40 LIBRAS') !== false;
-            $esProduccion10 = stripos($nombreCompleto, 'PRODUCCION 10 LIBRAS') !== false;
-
-            
             $ultimoEmpleadoIdx = null;
             $procesandoEmpleados = false;
             continue;
@@ -79,16 +74,9 @@ foreach ($rows as $row) {
             $empleado = [
                 'clave' => $claveFormateada,
                 'nombre' => $nombreEmpleado,
-                'tarjeta' => null
+                'tarjeta' => null,
+                'conceptos' => []
             ];
-            
-            //   Solo agregar array de conceptos si es Producción 40 Libras o Producción 10 Libras
-            $esProduccion40 = stripos($actualDepto['nombre'], 'PRODUCCION 40 LIBRAS') !== false;
-            $esProduccion10 = stripos($actualDepto['nombre'], 'EMPAQUE 10 LIBRAS') !== false;
-
-            if ($esProduccion40 || $esProduccion10) {
-                $empleado['conceptos'] = [];
-            }
             
             $actualDepto['empleados'][] = $empleado;
             $ultimoEmpleadoIdx = count($actualDepto['empleados']) - 1;
@@ -131,25 +119,20 @@ foreach ($rows as $row) {
         $ultimoEmpleadoIdx = null;
     }
 
-    // Guardar conceptos (SOLO para Producción 40 Libras)
+    // Guardar conceptos
     if (
         $procesandoEmpleados && $actualDepto && $ultimoEmpleadoIdx !== null &&
         isset($row[5]) && isset($row[6]) && isset($row[8])
     ) {
-        $esProduccion40 = stripos($actualDepto['nombre'], 'PRODUCCION 40 LIBRAS') !== false;
-        $esProduccion10 = stripos($actualDepto['nombre'], 'EMPAQUE 10 LIBRAS') !== false;
-        
-        if ($esProduccion40 || $esProduccion10) {
-            $codigoConcepto = trim($row[5]);
-            $nombreConcepto = trim($row[6]);
-            $resultadoConcepto = trim($row[8]);
-            if (in_array($codigoConcepto, ['45', '52', '16'])) {
-                $actualDepto['empleados'][$ultimoEmpleadoIdx]['conceptos'][] = [
-                    'codigo' => $codigoConcepto,
-                    'nombre' => $nombreConcepto,
-                    'resultado' => $resultadoConcepto
-                ];
-            }
+        $codigoConcepto = trim($row[5]);
+        $nombreConcepto = trim($row[6]);
+        $resultadoConcepto = trim($row[8]);
+        if (in_array($codigoConcepto, ['45', '52', '16'])) {
+            $actualDepto['empleados'][$ultimoEmpleadoIdx]['conceptos'][] = [
+                'codigo' => $codigoConcepto,
+                'nombre' => $nombreConcepto,
+                'resultado' => $resultadoConcepto
+            ];
         }
     }
 }

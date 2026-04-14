@@ -59,7 +59,7 @@ function exportarNominaDepartamento() {
 
         console.log(deptoNombre);
         console.log(deptoId);
-        
+
 
         if (deptoNombre == "Corte") {
             tmp_url = '../php/exportarNomina/exportarNominaCorte.php';
@@ -117,7 +117,7 @@ function exportarNominaDepartamento() {
                 var numeroSemana = String(jsonNominaPalmilla.numero_semana).padStart(2, '0');
                 var aniosCierre = jsonNominaPalmilla.fecha_cierre.split('/')[2];
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'SEM ' + numeroSemana + ' - ' + aniosCierre + ' RANCHO LA PALMILLA NOMINAS - ' + deptoNombre.toUpperCase() + ' - ' + timestamp + '.xlsx';
+                link.download = 'SEM ' + numeroSemana + ' - ' + deptoNombre.toUpperCase() + ' - ' + aniosCierre + '.xlsx';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -181,7 +181,7 @@ function exportarNominaCompleta() {
                 var numeroSemana = String(jsonNominaPalmilla.numero_semana).padStart(2, '0');
                 var aniosCierre = jsonNominaPalmilla.fecha_cierre.split('/')[2];
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'SEM ' + numeroSemana + ' - ' + aniosCierre + ' RANCHO LA PALMILLA NOMINAS - COMPLETA - ' + timestamp + '.xlsx';
+                link.download = 'SEM ' + numeroSemana + ' - ' +  'RANCHO LA PALMILLA - ' + aniosCierre + '.xlsx';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);

@@ -30,9 +30,14 @@
           </select>
         </div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" id="btn-guardar-dia-inhabil">Guardar</button>
+      <div class="modal-footer d-flex justify-content-between">
+        <button type="button" class="btn btn-outline-danger btn-sm" id="btn-eliminar-dia-inhabil-general">
+          <i class="bi bi-trash"></i> Eliminar Justificación
+        </button>
+        <div>
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary btn-sm" id="btn-guardar-dia-inhabil">Guardar</button>
+        </div>
       </div>
     </div>
   </div>

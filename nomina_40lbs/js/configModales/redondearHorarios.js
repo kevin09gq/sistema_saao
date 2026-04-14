@@ -22,10 +22,8 @@ function redondearHorarios() {
     jsonNomina40lbs.departamentos.forEach(function (departamento) {
         var nombreDept = departamento.nombre.toLowerCase();
 
-        // Solo procesar los departamentos relevantes
-        if (nombreDept.includes('produccion 40 libras') ||
-            nombreDept.includes('produccion 10 libras') ||
-            nombreDept.includes('sin seguro')) {
+        // Solo procesar los departamentos que tienen habilitada la edición (Dinámico)
+        if (departamento.editar === true) {
 
 
             // Recorrer empleados del departamento
@@ -580,8 +578,8 @@ function imprimirSueldoBasePorHorasTrabajadas(tabulador, empleadosSeleccionados)
     var minDesdeHoraExtra = itemHoraExtra ? convertirHoraAMinutos((itemHoraExtra.rango.desde || '').trim()) : null;
 
     jsonNomina40lbs.departamentos.forEach(function (departamento) {
-        var nombreDept = (departamento.nombre || "").toLowerCase();
-        if (!(nombreDept.includes('produccion 40 libras') || nombreDept.includes('produccion 10 libras') || nombreDept.includes('sin seguro'))) {
+        // Solo procesar los departamentos que tienen habilitada la edición (Dinámico)
+        if (departamento.editar !== true) {
             return;
         }
 

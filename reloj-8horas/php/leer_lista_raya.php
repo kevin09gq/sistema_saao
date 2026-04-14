@@ -37,14 +37,14 @@ if (isset($rows[1])) { // Fila 2 es índice 1
     for ($col = 4; $col <= 8; $col++) {
         if (isset($fila2[$col]) && is_string($fila2[$col]) && trim($fila2[$col]) !== '') {
             $textoEmpresa = trim($fila2[$col]);
-            
+
             if (preg_match('/SB\s+CITRIC/i', $textoEmpresa)) {
                 // Si es SB el id es 2
                 $idEmpresa = 2;
                 $nombreEmpresa = $textoEmpresa;
                 break;
             }
-            
+
             if (preg_match('/CITRICOS\s+SAAO/i', $textoEmpresa)) {
                 // Si es SAAO el id es 1
                 $idEmpresa = 1;
@@ -71,7 +71,7 @@ foreach ($rows as $row) {
 }
 
 foreach ($rows as $row) {
-    
+
     /**
      * =======================
      *  Detectar departamento
@@ -114,7 +114,7 @@ foreach ($rows as $row) {
                 $siguienteFila = $rows[$currentRowIdx + 1];
                 if (isset($siguienteFila[1]) && is_string($siguienteFila[1]) && trim($siguienteFila[1]) !== '') {
                     $puestoEmpleado = trim($siguienteFila[1]);
-                    
+
                     // Agregar al arreglo de puestos si no existe
                     if (!in_array($puestoEmpleado, $puestos)) {
                         $puestos[] = $puestoEmpleado;
@@ -137,11 +137,50 @@ foreach ($rows as $row) {
                 'incapacidades' => false,
                 'dias_incapacidades' => 0,
                 'ausencias' => false,
-                'dias_ausencias' => 0
+                'dias_ausencias' => 0,
+                'baja' => false
             ];
 
             $actualDepto['empleados'][] = $empleado;
             $ultimoEmpleadoIdx = count($actualDepto['empleados']) - 1;
+
+            // Detectar si el empleado tiene Prima de Vacaciones y Aguinaldo
+            $tienePrima = false;
+            $tieneAguinaldo = false;
+
+            // Escanear desde la fila del empleado hacia abajo (puede estar justo debajo o unas filas más abajo)
+            $scanStart = isset($currentRowIdx) ? $currentRowIdx : null;
+            if ($scanStart !== null) {
+                $scanEnd = $scanStart + 15; // revisar hasta 15 filas hacia abajo
+                for ($s = $scanStart; $s <= $scanEnd; $s++) {
+                    if (!isset($rows[$s])) {
+                        break;
+                    }
+                    foreach ($rows[$s] as $c) {
+                        if (!is_string($c)) {
+                            continue;
+                        }
+                        $t = trim($c);
+                        if ($t === '') {
+                            continue;
+                        }
+
+                        if (!$tienePrima && preg_match('/prima\s+de\s+vacaci/iu', $t)) {
+                            $tienePrima = true;
+                        }
+
+                        if (!$tieneAguinaldo && preg_match('/aguinaldo/iu', $t)) {
+                            $tieneAguinaldo = true;
+                        }
+
+                        if ($tienePrima && $tieneAguinaldo) {
+                            $actualDepto['empleados'][$ultimoEmpleadoIdx]['baja'] = true;
+                            break 2; // salimos de ambos bucles
+                        }
+                    }
+                }
+            }
+
             $procesandoEmpleados = true;
             continue;
         }
@@ -180,21 +219,21 @@ foreach ($rows as $row) {
                     $texto = trim($cell);
                     $ultimoIdx = count($actualDepto['empleados']) - 1;
 
-                    if (preg_match('/vacaciones/i', $texto)) {
+                    if (preg_match('/^Vacaciones$/i', $texto)) { // la expresion orginal era /vacaciones/i <-- Esto solo busca la palabra "vacaciones"
                         $actualDepto['empleados'][$ultimoIdx]['vacaciones'] = true;
                         // Buscar el número de días en la siguiente celda
                         if (isset($nextRow[$idx + 1]) && is_numeric($nextRow[$idx + 1])) {
                             $actualDepto['empleados'][$ultimoIdx]['dias_vacaciones'] = (int)$nextRow[$idx + 1];
                         }
                     }
-                    if (preg_match('/incapacidades/i', $texto)) {
+                    if (preg_match('/^Incapacidades$/i', $texto)) {
                         $actualDepto['empleados'][$ultimoIdx]['incapacidades'] = true;
                         // Buscar el número de días en la siguiente celda
                         if (isset($nextRow[$idx + 1]) && is_numeric($nextRow[$idx + 1])) {
                             $actualDepto['empleados'][$ultimoIdx]['dias_incapacidades'] = (int)$nextRow[$idx + 1];
                         }
                     }
-                    if (preg_match('/ausencias/i', $texto)) {
+                    if (preg_match('/^Ausencias$/i', $texto)) {
                         $actualDepto['empleados'][$ultimoIdx]['ausencias'] = true;
                         // Buscar el número de días en la siguiente celda
                         if (isset($nextRow[$idx + 1]) && is_numeric($nextRow[$idx + 1])) {

@@ -115,6 +115,17 @@ function limpiarCamposNomina() {
         }).then((result) => {
             if (result.isConfirmed) {
                 clearNomina();
+                
+                // Limpiar formulario de archivos
+                $('#form_excel_raya')[0].reset();
+                $('#archivo_excel_lista_raya_40lbs').val('');
+                $('#archivo_excel_biometrico_40lbs').val('');
+                
+                // Limpiar paginación
+                $('#paginacion-nomina').empty();
+                paginaActualNomina = 1;
+                
+                // Mostrar contenedor de carga y ocultar tabla
                 $("#container-nomina_40lbs").removeAttr("hidden");
                 $("#tabla-nomina-responsive").attr("hidden", true);
             }

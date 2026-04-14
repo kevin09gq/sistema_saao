@@ -15,12 +15,7 @@ function calcularOlvidosTodosEmpleados(jsonNomina40lbs) {
         return;
     }
 
-    // Solo incluir al departamento de 40 libras, 10 libras y sin seguro
-
-    const departamentosFiltrados = jsonNomina40lbs.departamentos.filter(depto => {
-        const nombreDepto = String(depto.nombre || '').toLowerCase();
-        return nombreDepto.includes('produccion 40 libras') || nombreDepto.includes('produccion 10 libras') || nombreDepto.includes('sin seguro');
-    });
+    const departamentosFiltrados = jsonNomina40lbs.departamentos.filter(depto => depto.editar === true);
 
 
     // Iterar sobre todos los departamentos

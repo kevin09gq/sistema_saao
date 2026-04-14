@@ -172,7 +172,8 @@ $tamanioLetraFilas = [
     'X' => 15,  // PRÉSTAMO
     'Y' => 15,  // TOTAL A RECIBIR
     'Z' => 15,  // REDONDEADO
-    'AA' => 15  // TOTAL EFECTIVO REDONDEADO
+    'AA' => 15, // TOTAL EFECTIVO REDONDEADO
+    'AB' => 15  // FIRMA RECIBIDO
 ];
 
 // Columnas para el corte de limon

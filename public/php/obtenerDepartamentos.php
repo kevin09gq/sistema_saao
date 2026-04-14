@@ -3,13 +3,15 @@ include("../../conexion/conexion.php");
 
 $arreglo = array();
 
-// Si se envía un área → filtrar departamentos relacionados
-if (isset($_POST['id_area']) && !empty($_POST['id_area'])) {
+// Obtener id_area solo desde POST o GET (NO cookies)
+$id_area = $_POST['id_area'] ?? $_GET['id_area'] ?? null;
 
-    // Recibir el ID del área y asegurarse de que sea un número entero
-    $id_area = (int)$_POST['id_area'];
+if (!empty($id_area)) {
 
-    // SQL para obtener departamentos relacionados con el área específica
+    // Asegurar que sea entero
+    $id_area = (int)$id_area;
+
+    // SQL con filtro por área
     $sql = "SELECT DISTINCT
                 d.id_departamento,
                 d.nombre_departamento
@@ -18,21 +20,19 @@ if (isset($_POST['id_area']) && !empty($_POST['id_area'])) {
                 ON d.id_departamento = ad.id_departamento
             WHERE ad.id_area = ?";
 
-    // Preparar la consulta para evitar inyección SQL
     $stmt = $conexion->prepare($sql);
 
-    // Verificar si la preparación fue exitosa
     if (!$stmt) {
         die("Error en prepare: " . $conexion->error);
     }
 
-    // Vincular el parámetro y ejecutar la consulta
     $stmt->bind_param("i", $id_area);
     $stmt->execute();
     $query = $stmt->get_result();
 
 } else {
-    // Si NO hay área → traer TODOS los departamentos
+
+    // Traer todos los departamentos si no se envía id_area
     $sql = "SELECT id_departamento, nombre_departamento FROM departamentos";
     $query = $conexion->query($sql);
 
@@ -41,7 +41,7 @@ if (isset($_POST['id_area']) && !empty($_POST['id_area'])) {
     }
 }
 
-// Armar arreglo
+// Construir arreglo
 while ($row = $query->fetch_object()) {
     $arreglo[] = array(
         "id_departamento" => $row->id_departamento,

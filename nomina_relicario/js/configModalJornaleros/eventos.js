@@ -220,7 +220,7 @@ function mostrarEventosPorEntradaJornalero(empleado, selectorContent, selectorTo
 
             // Sin registro de entrada ni salida
             const sinRegistro = (!r.entrada || r.entrada.trim() === '') &&
-                                 (!r.salida  || r.salida.trim()  === '');
+                (!r.salida || r.salida.trim() === '');
 
             // Solo es inasistencia si: el día tiene horario Y no hay ningún marcaje
             return horarioDia?.entrada && horarioDia.entrada.trim() !== '' && sinRegistro;
@@ -370,7 +370,7 @@ function mostrarOlvidosChecadorJornalero(empleado) {
         if (!reg.fecha) return;
 
         const tieneEntrada = reg.entrada && reg.entrada.trim() !== '' && reg.entrada.trim() !== '-';
-        const tieneSalida  = reg.salida  && reg.salida.trim()  !== '' && reg.salida.trim()  !== '-';
+        const tieneSalida = reg.salida && reg.salida.trim() !== '' && reg.salida.trim() !== '-';
 
         // Olvido: tiene UNO pero NO el otro (registro incompleto)
         if ((tieneEntrada && !tieneSalida) || (!tieneEntrada && tieneSalida)) {

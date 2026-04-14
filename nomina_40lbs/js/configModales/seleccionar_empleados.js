@@ -35,7 +35,8 @@ function cargarListaEmpleados() {
 
     // Recorrer departamentos
     jsonNomina40lbs.departamentos.forEach(departamento => {
-        if (!departamento.empleados || departamento.empleados.length === 0) return;
+        // Solo procesar departamentos habilitados para edición (Dinámico)
+        if (departamento.editar !== true || !departamento.empleados || departamento.empleados.length === 0) return;
 
         // Crear grupo de departamento
         const grupoHTML = `

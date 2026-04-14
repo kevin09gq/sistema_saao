@@ -13,15 +13,23 @@ let empleadosSeleccionados = new Set();
 // Inicializar eventos cuando el DOM esté listo
 $(document).ready(function() {
     // Evento para abrir modal de selección de empleados
-    $('#btn_ticket_manual').on('click', function() {
-        // FORZAR RECARGA desde localStorage para obtener datos actualizados
-        const nominaData = JSON.parse(localStorage.getItem('jsonNominaPalmilla') || '{}');
-        // Actualizar variable global si hay datos más recientes
-        if (nominaData && nominaData.departamentos) {
-            if (typeof window.jsonNominaPalmilla !== 'undefined') {
-                window.jsonNominaPalmilla = nominaData;
+    $('#btn_ticket_seleccion').on('click', function() {
+        // PRIORIZAR la variable global que ya está en memoria y actualizada
+        let nominaData = null;
+        try {
+            if (typeof jsonNominaPalmilla !== 'undefined' && jsonNominaPalmilla) {
+                nominaData = jsonNominaPalmilla;
+            }
+        } catch (e) {}
+
+        // Si por alguna razón no está en memoria, intentar cargar de localStorage
+        if (!nominaData || !nominaData.departamentos) {
+            nominaData = JSON.parse(localStorage.getItem('jsonNominaPalmilla') || '{}');
+            if (nominaData && nominaData.departamentos && typeof jsonNominaPalmilla !== 'undefined') {
+                try { jsonNominaPalmilla = nominaData; } catch(e){}
             }
         }
+
         if (!nominaData || !nominaData.departamentos) {
             Swal.fire({
                 icon: 'warning',
@@ -34,7 +42,7 @@ $(document).ready(function() {
         // Limpiar el campo de búsqueda antes de abrir el modal
         $('#buscar_empleado_ticket').val('');
         
-        cargarEmpleadosParaTickets();
+        cargarEmpleadosParaTickets(nominaData);
         $('#modal_seleccion_tickets').modal('show');
     });
 
@@ -96,11 +104,9 @@ $(document).ready(function() {
 /**
  * Carga todos los empleados de nómina palmilla
  */
-function cargarEmpleadosParaTickets() {
+function cargarEmpleadosParaTickets(nominaData) {
     empleadosParaTickets = [];
     empleadosSeleccionados.clear();
-    
-    const nominaData = JSON.parse(localStorage.getItem('jsonNominaPalmilla') || '{}');
     
     if (!nominaData || !nominaData.departamentos) {
         return;
@@ -112,8 +118,12 @@ function cargarEmpleadosParaTickets() {
         if (depto.empleados && Array.isArray(depto.empleados)) {
             depto.empleados.forEach(emp => {
                 if (emp && typeof emp === 'object') {
+                    // NO CLONAR (...emp), guardar referencia al objeto original
+                    // para que los cambios en la tabla se reflejen aquí también
                     empleadosParaTickets.push({
-                        ...emp,
+                        original: emp,
+                        clave: emp.clave,
+                        nombre: emp.nombre,
                         departamento: nombreDepto,
                         tipo: 'palmilla'
                     });
@@ -146,31 +156,31 @@ function mostrarEmpleados(empleados) {
                 const nombre = empleado.nombre || 'Sin nombre';
                 const departamento = empleado.departamento || 'Sin departamento';
                     
-                // Determinar la clase del badge según el departamento específico de Palmilla
+                // Determinar la clase del badge según el departamento específico
                 let badgeClass = 'bg-secondary'; // Color por defecto
                 const deptoLower = departamento.toLowerCase();
                     
-                // Departamentos específicos de Palmilla con colores únicos
+                // Departamentos específicos con colores únicos
                 if (deptoLower.includes('jornalero') || deptoLower.includes('jornal')) {
-                    badgeClass = 'bg-success'; // Verde para jornaleros
+                    badgeClass = 'bg-success';
                 } else if (deptoLower.includes('coordinador') || deptoLower.includes('coordi')) {
-                    badgeClass = 'bg-primary'; // Azul para coordinadores
+                    badgeClass = 'bg-primary';
                 } else if (deptoLower.includes('vivero') || deptoLower.includes('vive')) {
-                    badgeClass = 'bg-warning text-dark'; // Amarillo para vivero
+                    badgeClass = 'bg-warning text-dark';
                 } else if (deptoLower.includes('rancho') || deptoLower.includes('ranch')) {
-                    badgeClass = 'bg-danger'; // Rojo para rancho
+                    badgeClass = 'bg-danger';
                 } else if (deptoLower.includes('apoyo') || deptoLower.includes('apoy')) {
-                    badgeClass = 'bg-info'; // Azul claro para apoyo
+                    badgeClass = 'bg-info';
                 } else if (deptoLower.includes('base') || deptoLower.includes('bas')) {
-                    badgeClass = 'bg-dark'; // Oscuro para base
+                    badgeClass = 'bg-dark';
                 } else if (deptoLower.includes('administracion') || deptoLower.includes('admin')) {
-                    badgeClass = 'bg-primary'; // Azul para administración
+                    badgeClass = 'bg-primary';
                 } else if (deptoLower.includes('produccion') || deptoLower.includes('produc')) {
-                    badgeClass = 'bg-warning text-dark'; // Amarillo para producción
+                    badgeClass = 'bg-warning text-dark';
                 } else if (deptoLower.includes('seguridad') || deptoLower.includes('vigilancia') || deptoLower.includes('intendencia')) {
-                    badgeClass = 'bg-purple'; // Púrpura para seguridad
+                    badgeClass = 'bg-purple';
                 } else if (deptoLower.includes('sin seguro') || deptoLower.includes('sin')) {
-                    badgeClass = 'bg-orange'; // Naranja para sin seguro
+                    badgeClass = 'bg-orange';
                 }
                     
                 const isSelected = empleadosSeleccionados.has(clave);
@@ -193,84 +203,123 @@ function mostrarEmpleados(empleados) {
     `;
         
     container.html(listaHtml);
-        
-    // Agregar estilos para badges personalizados
-    if (!$('#custom-styles-tickets').length) {
-        $('head').append(`
-            <style id="custom-styles-tickets">
-                .bg-purple { background-color: #6f42c1 !important; color: white !important; }
-                .bg-orange { background-color: #fd7e14 !important; color: white !important; }
-                .list-group-item.active { background-color: #0d6efd; border-color: #0d6efd; }
-            </style>
-        `);
+}
+
+/**
+ * Filtrar empleados en tiempo real
+ */
+function filtrarEmpleados() {
+    const query = $(this).val().toLowerCase().trim();
+    
+    // Mostrar/ocultar el botón de limpiar
+    if (query !== '') {
+        $('#btn_limpiar_busqueda').css('display', 'flex');
+    } else {
+        $('#btn_limpiar_busqueda').hide();
     }
     
-    actualizarContadores();
+    // Si la búsqueda está vacía, mostrar todos
+    if (query === '') {
+        mostrarEmpleados(empleadosParaTickets);
+        return;
+    }
+    
+    // Filtrar por nombre o clave
+    const filtrados = empleadosParaTickets.filter(emp => {
+        const nombre = (emp.nombre || '').toLowerCase();
+        const clave = String(emp.clave || emp.id || '');
+        const depto = (emp.departamento || '').toLowerCase();
+        
+        return nombre.includes(query) || clave.includes(query) || depto.includes(query);
+    });
+    
+    mostrarEmpleados(filtrados);
 }
 
 /**
  * Seleccionar todos los empleados visibles
  */
 function seleccionarTodosEmpleados() {
-    $('.empleado-item:visible').each(function() {
+    // Si hay búsqueda activa, seleccionar solo los visibles
+    const query = $('#buscar_empleado_ticket').val().toLowerCase().trim();
+    
+    if (query === '') {
+        empleadosParaTickets.forEach(emp => {
+            empleadosSeleccionados.add(String(emp.clave || emp.id));
+        });
+    } else {
+        empleadosParaTickets.forEach(emp => {
+            const nombre = (emp.nombre || '').toLowerCase();
+            const clave = String(emp.clave || emp.id || '');
+            const depto = (emp.departamento || '').toLowerCase();
+            
+            if (nombre.includes(query) || clave.includes(query) || depto.includes(query)) {
+                empleadosSeleccionados.add(String(emp.clave || emp.id));
+            }
+        });
+    }
+    
+    actualizarVistaSeleccion();
+}
+
+/**
+ * Deseleccionar todos los empleados visibles
+ */
+function deseleccionarTodosEmpleados() {
+    const query = $('#buscar_empleado_ticket').val().toLowerCase().trim();
+    
+    if (query === '') {
+        empleadosSeleccionados.clear();
+    } else {
+        empleadosParaTickets.forEach(emp => {
+            const nombre = (emp.nombre || '').toLowerCase();
+            const clave = String(emp.clave || emp.id || '');
+            const depto = (emp.departamento || '').toLowerCase();
+            
+            if (nombre.includes(query) || clave.includes(query) || depto.includes(query)) {
+                empleadosSeleccionados.delete(String(emp.clave || emp.id));
+            }
+        });
+    }
+    
+    actualizarVistaSeleccion();
+}
+
+/**
+ * Actualiza la vista según el Set de seleccionados
+ */
+function actualizarVistaSeleccion() {
+    $('.empleado-item').each(function() {
         const clave = String($(this).data('clave'));
-        empleadosSeleccionados.add(clave);
-        $(this).addClass('active');
-        $(this).find('input[type="checkbox"]').prop('checked', true);
+        const checkbox = $(this).find('input[type="checkbox"]');
+        
+        if (empleadosSeleccionados.has(clave)) {
+            $(this).addClass('active');
+            checkbox.prop('checked', true);
+        } else {
+            $(this).removeClass('active');
+            checkbox.prop('checked', false);
+        }
     });
     
     actualizarContadores();
 }
 
 /**
- * Deseleccionar todos los empleados
- */
-function deseleccionarTodosEmpleados() {
-    empleadosSeleccionados.clear();
-    $('.empleado-item').removeClass('active');
-    $('.empleado-item input[type="checkbox"]').prop('checked', false);
-    
-    actualizarContadores();
-}
-
-/**
- * Limpiar el campo de búsqueda
- */
-function limpiarCampoBusqueda() {
-    $('#buscar_empleado_ticket').val('');
-    // Mostrar todos los empleados al limpiar
-    $('.empleado-item').removeClass('d-none').show();
-}
-
-/**
- * Filtrar empleados por texto de búsqueda
- */
-function filtrarEmpleados() {
-    const filtro = $('#buscar_empleado_ticket').val().toLowerCase().trim();
-    const $items = $('.empleado-item');
-    if (filtro === '') {
-        $items.removeClass('d-none').show();
-    } else {
-        $items.each(function() {
-            const $item = $(this);
-            const nombre = $item.data('nombre') || '';
-            const texto = $item.text().toLowerCase();
-            if (nombre.includes(filtro) || texto.includes(filtro)) {
-                $item.removeClass('d-none').show();
-            } else {
-                $item.addClass('d-none').hide();
-            }
-        });
-    }
-}
-
-/**
- * Actualizar contadores de empleados seleccionados
+ * Actualizar contadores de selección
  */
 function actualizarContadores() {
-    const count = empleadosSeleccionados.size;
-    $('#contador_seleccionados').text(count);
-    $('#contador_seleccionados_btn').text(count);
+    const total = empleadosSeleccionados.size;
+    $('#contador_seleccionados').text(total);
+    $('#contador_seleccionados_btn').text(total);
+}
+
+/**
+ * Limpiar campo de búsqueda
+ */
+function limpiarCampoBusqueda() {
+    $('#buscar_empleado_ticket').val('').trigger('input');
+    $(this).hide();
 }
 
 /**
@@ -281,83 +330,91 @@ function generarTicketsSeleccionados() {
         Swal.fire({
             icon: 'warning',
             title: 'Sin selección',
-            text: 'Por favor selecciona al menos un empleado.'
+            text: 'Por favor, selecciona al menos un empleado para generar tickets.'
         });
         return;
     }
-
-    // Obtener datos completos de empleados seleccionados
-    const empleadosData = empleadosParaTickets.filter(emp => {
-        const clave = String(emp.clave || emp.id || '');
-        return empleadosSeleccionados.has(clave);
-    });
-
-    console.log('Empleados seleccionados:', empleadosData);
-
-    // Preparar datos para el servidor
-    const nominaCompleta = JSON.parse(localStorage.getItem('jsonNominaPalmilla') || '{}');
     
-    const datosParaTickets = {
-        empleados_seleccionados: empleadosData,
-        metadatos: nominaCompleta
-    };
+    // Intentar obtener la variable global más reciente
+    let nominaData = null;
+    try {
+        if (typeof jsonNominaPalmilla !== 'undefined' && jsonNominaPalmilla) {
+            nominaData = jsonNominaPalmilla;
+        }
+    } catch (e) {}
+    
+    if (!nominaData) {
+        nominaData = JSON.parse(localStorage.getItem('jsonNominaPalmilla') || '{}');
+    }
 
-    // Mostrar loading
-    Swal.fire({
-        title: 'Generando tickets...',
-        text: `Procesando ${empleadosData.length} empleado(s)`,
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
+    const seleccionados = [];
+    
+    // Obtener los datos más recientes de los empleados seleccionados
+    empleadosParaTickets.forEach(item => {
+        const clave = String(item.clave || (item.original ? item.original.clave : ''));
+        if (empleadosSeleccionados.has(clave)) {
+            // Aseguramos que usamos la referencia original que se actualiza con la tabla
+            const empActualizado = item.original;
+            if (empActualizado) {
+                // Añadir departamento al objeto para el PDF
+                empActualizado.departamento = item.departamento;
+                seleccionados.push(empActualizado);
+            }
         }
     });
-
-    // Enviar al servidor
+    
+    if (seleccionados.length === 0) return;
+    
+    // Mostrar cargando
+    const btnOriginalHtml = $(this).html();
+    $(this).prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Generando...');
+    
+    // Preparar datos para enviar
+    const dataEnviar = {
+        seleccion: true,
+        empleados: seleccionados,
+        meta: {
+            numero_semana: nominaData.numero_semana || ''
+        }
+    };
+    
+    // Enviar por AJAX como JSON raw body (más robusto para datos grandes)
     $.ajax({
         url: '../php/descargar_ticket_pdf.php',
-        method: 'POST',
-        data: {
-            datos_json: JSON.stringify(datosParaTickets),
-            empleados_seleccionados: true
-        },
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(dataEnviar),
         xhrFields: {
             responseType: 'blob'
         },
-        success: function(data, status, xhr) {
-            Swal.close();
+        success: function(blob, status, xhr) {
+            if (!(blob instanceof Blob)) {
+                Swal.fire('Error', 'El servidor no devolvió un archivo PDF válido.', 'error');
+                $('#btn_generar_tickets_seleccionados').prop('disabled', false).html(btnOriginalHtml);
+                return;
+            }
             
-            // Crear URL del blob y descargar
-            const blob = new Blob([data], { type: 'application/pdf' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.style.display = 'none';
             a.href = url;
-            a.download = `tickets_palmilla_seleccionados_${new Date().getTime()}.pdf`;
+            a.download = 'tickets_seleccionados.pdf';
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
-
-            Swal.fire({
-                icon: 'success',
-                title: '¡Tickets generados!',
-                text: `Se generaron ${empleadosData.length} ticket(s) exitosamente.`
-            });
-
-            // Cerrar modal y limpiar selecciones
+            
+            $('#btn_generar_tickets_seleccionados').prop('disabled', false).html(btnOriginalHtml);
             $('#modal_seleccion_tickets').modal('hide');
-            empleadosSeleccionados.clear();
-        },
-        error: function(xhr, status, error) {
-            Swal.close();
-            console.error('Error al generar tickets:', error);
-            console.error('Response:', xhr.responseText);
             
             Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error al generar los tickets. Por favor, intenta de nuevo.'
+                icon: 'success',
+                title: 'Tickets generados',
+                text: 'Se han generado los tickets correctamente.'
             });
+        },
+        error: function() {
+            Swal.fire('Error', 'Error al generar el PDF. Por favor, intenta nuevamente.', 'error');
+            $('#btn_generar_tickets_seleccionados').prop('disabled', false).html(btnOriginalHtml);
         }
     });
 }

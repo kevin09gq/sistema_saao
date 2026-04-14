@@ -116,7 +116,7 @@ function exportarNominaDepartamento() {
                 var numeroSemana = String(jsonNominaRelicario.numero_semana).padStart(2, '0');
                 var aniosCierre = jsonNominaRelicario.fecha_cierre.split('/')[2];
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'SEM ' + numeroSemana + ' - ' + aniosCierre + ' RANCHO RELICARIO NOMINAS - ' + deptoNombre.toUpperCase() + ' - ' + timestamp + '.xlsx';
+                link.download = 'SEM ' + numeroSemana + ' - '  +  deptoNombre.toUpperCase() + ' - ' + aniosCierre + '.xlsx';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -180,8 +180,8 @@ function exportarNominaCompleta() {
                 var numeroSemana = String(jsonNominaRelicario.numero_semana).padStart(2, '0');
                 var aniosCierre = jsonNominaRelicario.fecha_cierre.split('/')[2];
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'SEM ' + numeroSemana + ' - ' + aniosCierre + ' RANCHO RELICARIO NOMINAS - COMPLETA - ' + timestamp + '.xlsx';
-                document.body.appendChild(link);
+              link.download = 'SEM ' + numeroSemana + ' - ' +  'RANCHO RELICARIO - ' + aniosCierre + '.xlsx';
+                  document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
                 URL.revokeObjectURL(url);

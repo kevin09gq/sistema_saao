@@ -56,7 +56,7 @@
                                 </button>
 
                                 <button type="button" class="btn btn-outline-primary mini-tab-registros" id="btn-biometrico-redondeado-40lbs">
-                                    <i class="bi bi-clock-history"></i> Horarios Oficial
+                                    <i class="bi bi-clock-history"></i> Biometrico Redondeado
                                 </button>
                             </div>
                         </div>
@@ -70,7 +70,7 @@
                                         <th>Fecha</th>
                                         <th>Entrada</th>
                                         <th>Salida</th>
-                                        <th>Acción</th>
+                                      
                                     </tr>
                                 </thead>
                                 <tbody id="tbody-biometrico-40lbs">
@@ -94,7 +94,7 @@
                                         <th>Hrs <br> Comida</th>
                                         <th>Min <br> Trabajados</th>
                                         <th>Hrs <br> Trabajados</th>
-                                        <th>Acción</th>
+                                      
 
                                     </tr>
                                 </thead>
@@ -201,7 +201,7 @@
                                     <div class="evento-card falta" id="inasistencias-card-40lbs">
                                         <div class="evento-header">
                                             <i class="bi bi-x-circle"></i>
-                                            <span>Inasistencias</span>
+                                            <span>Ausentismo</span>
                                         </div>
                                         <div class="evento-content" id="inasistencias-content-40lbs">
 
@@ -451,7 +451,7 @@
                                         <!-- Sección de Inasistencias -->
                                         <div class="row mb-3">
                                             <div class="col-md-4 mb-2">
-                                                <label class="form-label fw-semibold">Inasistencias($)</label>
+                                                <label class="form-label fw-semibold">Ausentismo($)</label>
                                                 <div class="input-group">
                                                     <input type="number" step="0.01" class="form-control mod-input-rojo" id="mod-inasistencias-40lbs" value="" placeholder="0.00">
                                                     <button type="button" class="btn btn-outline-secondary" id="btn-calcular-inasistencias-40lbs" title="Calcular desde historial">
@@ -465,7 +465,7 @@
                                         <div class="row mb-3">
                                             <div class="col-12">
                                                 <h6 class="fw-semibold text-info mb-3">
-                                                    <i class="bi bi-calendar-x"></i> Historial de Inasistencias por Día
+                                                    <i class="bi bi-calendar-x"></i> Historial de Ausentismo por Día
                                                 </h6>
 
                                                 <!-- Formulario para agregar inasistencia manual -->

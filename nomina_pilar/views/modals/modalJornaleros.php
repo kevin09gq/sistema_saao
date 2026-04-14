@@ -70,8 +70,38 @@
                         <!-- Tabla de Registros BD -->
                         <div class="table-container" id="tabla-dias-trabajados-jornaleros" hidden>
 
-
-                            <table class="custom-table">
+                            <!-- Formulario para agregar día extra manual -->
+                            <div class="card bg-light mb-3 border-primary">
+                                <div class="card-body p-2">
+                                    <div class="row g-2 align-items-end">
+                                        <div class="col-md-5">
+                                            <label class="form-label fw-semibold small mb-1">
+                                                <i class="bi bi-calendar-plus text-primary"></i> Agregar Día Extra
+                                            </label>
+                                            <select class="form-select form-select-sm" id="select-dia-extra-individual">
+                                                <option value="">Seleccionar día...</option>
+                                                <option value="Lunes">Lunes</option>
+                                                <option value="Martes">Martes</option>
+                                                <option value="Miércoles">Miércoles</option>
+                                                <option value="Jueves">Jueves</option>
+                                                <option value="Viernes">Viernes</option>
+                                                <option value="Sábado">Sábado</option>
+                                                <option value="Domingo">Domingo</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <button type="button" class="btn btn-primary btn-sm w-100" id="btn-agregar-dia-extra-individual">
+                                                <i class="bi bi-plus-circle"></i> Agregar Día
+                                            </button>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <button type="button" class="btn btn-outline-danger btn-sm w-100" id="btn-limpiar-dias-extra-individual">
+                                                <i class="bi bi-trash"></i> Limpiar Extras
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>                            <table class="custom-table">
                                 <thead>
                                     <tr>
                                         <th>Día</th>
@@ -149,7 +179,7 @@
                                     <div class="evento-card olvido-checador" id="olvidos-checador-card-jornaleros">
                                         <div class="evento-header">
                                             <i class="bi bi-exclamation-triangle"></i>
-                                            <span>Olvidos del Checador</span>
+                                            <span>Biometrico</span>
                                         </div>
                                         <div class="evento-content" id="olvidos-checador-jornaleros">
 
@@ -394,7 +424,7 @@
                                     </div>
 
                                     <div class="col-md-4 d-flex flex-column">
-                                        <label class="form-label fw-semibold">Checador ($)</label>
+                                        <label class="form-label fw-semibold">Biometrico ($)</label>
                                         <div class="input-group">
                                             <input type="number" step="0.01" class="form-control mod-input-rojo" id="mod-checador-jornalero" value="" placeholder="0.00">
 

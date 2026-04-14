@@ -60,6 +60,10 @@ verificarSesion();
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
 
             <div class="d-flex align-items-center gap-2">
+
+                <select class="form-select me-2" id="filtroArea" style="max-width: 200px;">
+                    <!-- Opciones dinámicas -->
+                </select>
                 <select class="form-select me-2" id="filtroDepartamento" style="min-width:200px;">
                     <!-- Opciones dinámicas -->
                 </select>

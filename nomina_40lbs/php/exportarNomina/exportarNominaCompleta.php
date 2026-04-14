@@ -315,26 +315,54 @@ function crearHoja($spreadsheet, $titulo1, $titulo2, $filtroEmpleados, $nombreHo
     $pm->setLeft(0.5)->setRight(0.5)->setTop(0.5)->setBottom(0.5);
 }
 
-// Crear las 4 hojas
-crearHoja($spreadsheet, 'PRODUCCION 40 LIBRAS', 'CITRICOS SAAO S.A DE C.V', 
-    fn($e) => (($e['id_departamento'] ?? 0) == 4 && ($e['mostrar'] ?? true) && ($e['seguroSocial'] ?? false)), 
-    '40 LBS CSS', true);
+// Crear las hojas dinámicamente según los departamentos del JSON
+$esPrimeraHoja = true;
 
-crearHoja($spreadsheet, 'PRODUCCION 40 LIBRAS', 'CITRICOS SAAO S.A DE C.V', 
-    fn($e) => (($e['id_departamento'] ?? 0) == 4 && ($e['mostrar'] ?? true) && !($e['seguroSocial'] ?? false)), 
-    '40 LBS SSS');
+if ($jsonNomina && isset($jsonNomina['departamentos'])) {
+    foreach ($jsonNomina['departamentos'] as $depto) {
+        // Solo procesar si el departamento tiene la propiedad editar: true
+        if (!isset($depto['editar']) || $depto['editar'] !== true) continue;
 
-crearHoja($spreadsheet, 'PRODUCCION 10 LIBRAS', 'CITRICOS SAAO S.A DE C.V', 
-    fn($e) => (($e['id_departamento'] ?? 0) == 5 && ($e['mostrar'] ?? true) && ($e['seguroSocial'] ?? false)), 
-    '10 LBS CSS');
+        $idDepto = $depto['id_departamento'] ?? $depto['nombre'];
+        $nombreDepto = $depto['nombre'];
 
-crearHoja($spreadsheet, 'PRODUCCION 10 LIBRAS', 'CITRICOS SAAO S.A DE C.V', 
-    fn($e) => (($e['id_departamento'] ?? 0) == 5 && ($e['mostrar'] ?? true) && !($e['seguroSocial'] ?? false)), 
-    '10 LBS SSS');
+        // Verificar si hay empleados CSS y SSS para este depto
+        $hayCSS = false;
+        $haySSS = false;
+
+        foreach ($depto['empleados'] ?? [] as $emp) {
+            if ($emp['mostrar'] ?? true) {
+                if ($emp['seguroSocial'] ?? false) $hayCSS = true;
+                else $haySSS = true;
+            }
+        }
+
+        // 1. Crear Hoja CSS si aplica
+        if ($hayCSS) {
+            crearHoja($spreadsheet, strtoupper($nombreDepto), 'CITRICOS SAAO S.A DE C.V', 
+                fn($e) => (($e['id_departamento'] ?? $e['nombre']) == $idDepto && ($e['mostrar'] ?? true) && ($e['seguroSocial'] ?? false)), 
+                substr($nombreDepto, 0, 20) . ' CSS', $esPrimeraHoja);
+            $esPrimeraHoja = false;
+        }
+
+        // 2. Crear Hoja SSS si aplica
+        if ($haySSS) {
+            crearHoja($spreadsheet, strtoupper($nombreDepto), 'CITRICOS SAAO S.A DE C.V', 
+                fn($e) => (($e['id_departamento'] ?? $e['nombre']) == $idDepto && ($e['mostrar'] ?? true) && !($e['seguroSocial'] ?? false)), 
+                substr($nombreDepto, 0, 20) . ' SSS', $esPrimeraHoja);
+            $esPrimeraHoja = false;
+        }
+    }
+}
+
+// Si no se creó ninguna hoja (ej. json vacío), crear una por defecto para evitar errores
+if ($esPrimeraHoja) {
+    $spreadsheet->getActiveSheet()->setTitle('VACÍO');
+}
 
 // Descargar
 $writer = new Xlsx($spreadsheet);
-$filename = 'Nomina_Completa_40_10_Lbs_' . date('Y-m-d_H-i-s') . '.xlsx';
+$filename = 'NOMINA_COMPLETA_SEM_' . ($numero_semana ?? '00') . '_' . date('Y-m-d_H-i-s') . '.xlsx';
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Content-Disposition: attachment; filename="' . $filename . '"');
 header('Cache-Control: no-cache, no-store, must-revalidate');

@@ -169,6 +169,22 @@ function obtenerSalariosHorarios(statusRancho) {
                 if (statusRancho) {
                     // obtenerHorarioRancho es async
                     obtenerHorarioRancho();
+                    // Calcular retardos e inasistencias para todos los coordinadores (departamento 8)
+                    if (typeof calcularRetardosTodosCoordinadores === 'function') {
+                        calcularRetardosTodosCoordinadores(jsonNominaPilar);
+                    }
+                    if (typeof calcularInasistenciasTodosCoordinadores === 'function') {
+                        calcularInasistenciasTodosCoordinadores(jsonNominaPilar);
+                    }
+                    if (typeof calcularOlvidosTodosCoordinadores === 'function') {
+                        calcularOlvidosTodosCoordinadores(jsonNominaPilar);
+                    }
+                    if (typeof calcularOlvidosTodosJornaleros === 'function') {
+                        calcularOlvidosTodosJornaleros(jsonNominaPilar);
+                    }
+                    if (typeof calcularRetardosTodosJornaleros === 'function') {
+                        calcularRetardosTodosJornaleros(jsonNominaPilar);
+                    }
                 } else {
                     actualizarCabeceraNomina(jsonNominaPilar);
                     // Nómina restaurada: Usar la nueva función centralizada en busquedaFiltrado.js
@@ -222,7 +238,7 @@ function limpiarCamposNomina() {
 // ============================================
 // ACTUALIZAR CONCEPTOS Y TARJETA A TODOS LOS EMPLEADOS
 // ============================================
-function updateTarjeta() { 
+function updateTarjeta() {
     $(document).on('click', '#btn_aplicar_copias_global', function (e) {
         e.preventDefault();
 

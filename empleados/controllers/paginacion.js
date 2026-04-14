@@ -4,6 +4,7 @@ let empleadosPorPagina = 5; // Número de empleados por página
 // Variable para la página actual
 let paginaActual = 1;
 let filtroDepartamento = "0"; // 0 = Todos
+let filtroArea = "0"; // 0 = Todos
 let busquedaActual = "";
 let filtroEstado = "Todos"; // 'Todos', 'Activo', 'Baja'
 let ordenActual = "nombre_asc"; // Por defecto ordenar por nombre ascendente
@@ -16,8 +17,23 @@ function setEmpleadosData(data) {
     renderTablaEmpleados();
 }
 
-function setFiltroDepartamento(idDepartamento) {
+function setFiltroArea(idArea, idDepartamento) {
+    filtroArea = idArea;
     filtroDepartamento = idDepartamento;
+
+    console.log("El area es " + filtroArea + " y el departamento es " + filtroDepartamento);
+
+    paginaActual = 1;
+    renderTablaEmpleados();
+}
+
+function setFiltroDepartamento(idDepartamento, idArea) {
+    filtroDepartamento = idDepartamento;
+    filtroArea = idArea;
+
+    console.log("El area es " + filtroArea + " y el departamento es " + filtroDepartamento);
+
+
     paginaActual = 1;
     renderTablaEmpleados();
 }
@@ -43,8 +59,8 @@ function setOrden(orden) {
 function ordenarEmpleados(empleados) {
     // Crear una copia para no modificar el array original
     let empleadosOrdenados = [...empleados];
-    
-    switch(ordenActual) {
+
+    switch (ordenActual) {
         case "nombre_asc":
             empleadosOrdenados.sort((a, b) => {
                 const nombreA = (a.nombre + " " + a.ap_paterno + " " + a.ap_materno).toLowerCase();
@@ -73,24 +89,33 @@ function ordenarEmpleados(empleados) {
                 return nombreA.localeCompare(nombreB);
             });
     }
-    
+
     return empleadosOrdenados;
 }
 
 function renderTablaEmpleados() {
-    // Filtrar por departamento
     let filtrados = empleadosData;
+
+    // Filtrar por área
+    if (filtroArea !== "0") {
+        filtrados = empleadosData.filter(emp => String(emp.id_area) === String(filtroArea));
+    }
+    // Filtrar por departamentos
     if (filtroDepartamento === "1000") {
         // Filtrar empleados sin seguro (IMSS vacío o status_nss inactivo)
-        filtrados = empleadosData.filter(emp => {
-            const sinIMSS = !emp.imss || emp.imss === "" || emp.imss === null;
+        filtrados = filtrados.filter(emp => {
+            // const sinIMSS = !emp.imss || emp.imss === "" || emp.imss === null;
             const nssInactivo = emp.status_nss === 0 || emp.status_nss === '0' || emp.status_nss === false;
-            return sinIMSS || nssInactivo;
+            return nssInactivo;
         });
     } else if (filtroDepartamento !== "0") {
         // Filtrar por departamento específico
-        filtrados = empleadosData.filter(emp => String(emp.id_departamento) === String(filtroDepartamento));
+        filtrados = filtrados.filter(emp => String(emp.id_departamento) === String(filtroDepartamento));
     }
+
+    console.log("Filtrados 1: ", filtrados);
+    
+
     // Filtrar por estado
     if (filtroEstado !== "Todos") {
         filtrados = filtrados.filter(emp => {
@@ -110,7 +135,7 @@ function renderTablaEmpleados() {
             return texto.includes(busquedaActual);
         });
     }
-    
+
     // Ordenar los empleados filtrados
     filtrados = ordenarEmpleados(filtrados);
 
@@ -125,10 +150,10 @@ function renderTablaEmpleados() {
         if (nssCambios.hasOwnProperty(emp.id_empleado)) {
             statusNss = nssCambios[emp.id_empleado];
         }
-        
+
         // Verificar si el IMSS está vacío o es null para deshabilitar el switch
         const imssVacio = !emp.imss || emp.imss === "" || emp.imss === null;
-        
+
         datos += `
             <tr>
                 <td>
@@ -172,38 +197,38 @@ function renderPaginacion(totalFiltrados) {
     paginacionHtml += `<li class="page-item${paginaActual === 1 ? ' disabled' : ''}">
         <a class="page-link" href="#" onclick="cambiarPagina(${paginaActual - 1}); return false;">&laquo;</a>
     </li>`;
-    
+
     // Determinar qué números de página mostrar
     const paginasVisibles = 5; // Número de páginas a mostrar además de la primera y última
     const paginas = [];
-    
+
     // Siempre agregar la primera página
     paginas.push(1);
-    
+
     // Calcular el rango alrededor de la página actual
-    const inicio = Math.max(2, paginaActual - Math.floor(paginasVisibles/2));
+    const inicio = Math.max(2, paginaActual - Math.floor(paginasVisibles / 2));
     const fin = Math.min(totalPaginas - 1, inicio + paginasVisibles - 1);
-    
+
     // Agregar ellipsis después de la página 1 si es necesario
     if (inicio > 2) {
         paginas.push('...');
     }
-    
+
     // Agregar páginas del rango calculado
     for (let i = inicio; i <= fin; i++) {
         paginas.push(i);
     }
-    
+
     // Agregar ellipsis antes de la última página si es necesario
     if (fin < totalPaginas - 1) {
         paginas.push('...');
     }
-    
+
     // Siempre agregar la última página si hay más de una página
     if (totalPaginas > 1) {
         paginas.push(totalPaginas);
     }
-    
+
     // Generar HTML para cada número de página o ellipsis
     paginas.forEach(pagina => {
         if (pagina === '...') {
@@ -226,15 +251,18 @@ function renderPaginacion(totalFiltrados) {
 function cambiarPagina(nuevaPagina) {
     // Filtrar por departamento, estado y búsqueda para saber el total de páginas
     let filtrados = empleadosData;
+    if (filtroArea !== "0") {
+        filtrados = filtrados.filter(emp => String(emp.id_area) === String(filtroArea));
+    }
     if (filtroDepartamento === "1000") {
         // Misma lógica que en renderTablaEmpleados: Sin Seguro = IMSS vacío o NSS inactivo
-        filtrados = empleadosData.filter(emp => {
+        filtrados = filtrados.filter(emp => {
             const sinIMSS = !emp.imss || emp.imss === "" || emp.imss === null;
             const nssInactivo = emp.status_nss === 0 || emp.status_nss === '0' || emp.status_nss === false;
             return sinIMSS || nssInactivo;
         });
     } else if (filtroDepartamento !== "0") {
-        filtrados = empleadosData.filter(emp => String(emp.id_departamento) === String(filtroDepartamento));
+        filtrados = filtrados.filter(emp => String(emp.id_departamento) === String(filtroDepartamento));
     }
     if (filtroEstado !== "Todos") {
         filtrados = filtrados.filter(emp => emp.nombre_status === filtroEstado);
@@ -259,15 +287,18 @@ function cambiarPagina(nuevaPagina) {
 function paginacionStatus(empleadosData) {
     // Verificar si la página actual sigue siendo válida
     let filtrados = empleadosData;
+    if (filtroArea !== "0") {
+        filtrados = filtrados.filter(emp => String(emp.id_area) === String(filtroArea));
+    }
     if (filtroDepartamento === "1000") {
         // Misma lógica que en renderTablaEmpleados/cambiarPagina: Sin Seguro = IMSS vacío o NSS inactivo
-        filtrados = empleadosData.filter(emp => {
+        filtrados = filtrados.filter(emp => {
             const sinIMSS = !emp.imss || emp.imss === "" || emp.imss === null;
             const nssInactivo = emp.status_nss === 0 || emp.status_nss === '0' || emp.status_nss === false;
             return sinIMSS || nssInactivo;
         });
     } else if (filtroDepartamento !== "0") {
-        filtrados = empleadosData.filter(emp => String(emp.id_departamento) === String(filtroDepartamento));
+        filtrados = filtrados.filter(emp => String(emp.id_departamento) === String(filtroDepartamento));
     }
     if (filtroEstado !== "Todos") {
         filtrados = filtrados.filter(emp => emp.nombre_status === filtroEstado);

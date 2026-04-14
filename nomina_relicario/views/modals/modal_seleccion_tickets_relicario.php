@@ -1,11 +1,11 @@
-<!-- Modal para selección de empleados para tickets -->
+<!-- Modal para selección de empleados para tickets - Relicario -->
 <link rel="stylesheet" href="../css/modal_seleccion_tickets.css">
 <div class="modal fade" id="modal_seleccion_tickets" tabindex="-1" aria-labelledby="modal_seleccion_tickets_label" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="modal_seleccion_tickets_label">
-                    <i class="bi bi-person-check"></i> Seleccionar Empleados para Tickets
+                    <i class="bi bi-person-check"></i> Seleccionar Empleados para Tickets (Relicario)
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>

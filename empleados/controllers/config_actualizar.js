@@ -6,8 +6,10 @@ $(document).ready(function () {
     const $tab_horarios = $("#tab-horarios");
 
     getDepartamentos();
+    getAreas();
     obtenerDatosEmpleados();
     departamentoSeleccionado();
+    areaSeleccionada();
     filtrosBusqueda();
     setValoresModal();
     initOrdenamiento();
@@ -254,9 +256,9 @@ $(document).ready(function () {
     // ===================================================
 
     // Cuando se selecciona un área en el modal
-    $(document).on('change', '#modal_area', function() {
+    $(document).on('change', '#modal_area', function () {
         const idArea = $(this).val();
-        
+
         if (idArea && idArea !== "0") {
             // Cargar departamentos filtrados por área
             obtenerDepartamentosModal(idArea);
@@ -270,9 +272,9 @@ $(document).ready(function () {
     });
 
     // Cuando se selecciona un departamento en el modal
-    $(document).on('change', '#modal_departamento', function() {
+    $(document).on('change', '#modal_departamento', function () {
         const idDepartamento = $(this).val();
-        
+
         if (idDepartamento && idDepartamento !== "0") {
             // Cargar puestos filtrados por departamento
             obtenerPuestosModal(idDepartamento);
@@ -282,15 +284,39 @@ $(document).ready(function () {
         }
     });
 
+    /**
+     * Obtener áreas para el filtro principal
+     */
+    function getAreas() {
+        $.ajax({
+            type: "GET",
+            url: rutaRaiz + "public/php/obtenerAreas.php",
+            success: function (response) {
+                if (!response.error) {
+                    let areas = JSON.parse(response);
+                    let opciones = `<option value=\"0\">Seleccionar Area</option>`;
+                    areas.forEach((element) => {
+                        opciones += `
+                        <option value=\"${element.id_area}\">${element.nombre_area}</option> `;
+                    });
+                    $("#filtroArea").html(opciones);
+
+                }
+
+            }
+        });
+    }
+
     // Se Obtienen los departamentos para el filtro principal
-    function getDepartamentos() {
+    function getDepartamentos(id_area = null) {
         $.ajax({
             type: "GET",
             url: rutaRaiz + "public/php/obtenerDepartamentos.php",
+            data: { id_area: id_area },
             success: function (response) {
                 if (!response.error) {
                     let departamentos = JSON.parse(response);
-                    let opciones = `<option value=\"0\">Todos</option>
+                    let opciones = `<option value=\"0\">Seleccionar Departamento</option>
                                     <option value=\"1000\">Sin Seguro</option>`;
                     departamentos.forEach((element) => {
                         opciones += `
@@ -334,6 +360,10 @@ $(document).ready(function () {
             },
             dataType: "json",
             success: function (empleados) {
+
+                console.log(empleados);
+                
+
                 setEmpleadosData(empleados);
             },
             error: function (xhr, status, error) {
@@ -342,12 +372,30 @@ $(document).ready(function () {
         });
     }
 
+
+    function areaSeleccionada() {
+        $('#filtroArea').change(function (e) { 
+            e.preventDefault();
+            let idArea = $(this).val();
+            let idDepartamento = $("#filtroDepartamento").val(); // Obtener el departamento seleccionado para mantener el filtro
+            // Filtrar departamentos del select
+            getDepartamentos(idArea);
+            // Filtrar la tabla de acuerdo al area
+            setFiltroArea(idArea, "0");
+            // Limpia la barra de busqueda
+            $("#buscadorEmpleado").val("");
+            setBusqueda(""); // Resetea búsqueda
+        });
+    }
+
     function departamentoSeleccionado() {
         // Si quieres recargar empleados al cambiar el filtro de departamento:
         $("#filtroDepartamento").on("change", function () {
 
+            let idArea = $("#filtroArea").val(); // Obtener el área seleccionada para mantener el filtro
+            let idDepartamento = $(this).val();
 
-            setFiltroDepartamento($(this).val());
+            setFiltroDepartamento(idDepartamento, idArea);
             $("#buscadorEmpleado").val(""); // Opcional: limpia el buscador al cambiar departamento
             setBusqueda(""); // Resetea búsqueda
         });
@@ -794,7 +842,7 @@ $(document).ready(function () {
                                 });
 
                                 $("#modal_area").html(opciones);
-                                
+
                                 // Seleccionar el área del empleado
                                 if (!idArea || idArea === "0") {
                                     $("#modal_area").val("0");
@@ -821,7 +869,7 @@ $(document).ready(function () {
                                     });
 
                                     $("#modal_departamento").html(opciones);
-                                    
+
                                     // Seleccionar el departamento del empleado
                                     if (!idDepartamento || idDepartamento === "0") {
                                         $("#modal_departamento").val("0");
@@ -859,7 +907,7 @@ $(document).ready(function () {
                                     });
 
                                     $("#modal_puesto").html(opciones);
-                                    
+
                                     // Seleccionar el puesto del empleado
                                     if (!idPuesto || idPuesto === "0") {
                                         $("#modal_puesto").val("0");

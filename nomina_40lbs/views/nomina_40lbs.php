@@ -89,6 +89,10 @@
                 <button class="btn btn-outline-info" id="btn_ver_dispersion" title="Ver Dispersión de Tarjeta">
                     <i class="bi bi-list-columns-reverse"></i>
                 </button>
+                <button class="btn btn-outline-danger" id="btn_modal_olvidos_masivos"
+                    title="Perdonar olvidos de checador">
+                    <i class="bi bi-clipboard-check"></i>
+                </button>
                 <button class="btn btn-outline-primary btn-suma" type="button" id="btn_conceptos_totales"
                     title="Totales por concepto" aria-label="Totales por concepto">
                     <i class="bi bi-calculator"></i>
@@ -109,10 +113,7 @@
         <div class="controles-tabla-40lbs">
             <div class="filtros-container-40lbs">
                 <select class="filtro-departamento-40lbs" id="filtro-departamento">
-                    <option value="1">40 Libras CSS</option>
-                    <option value="2">40 Libras SSS</option>
-                    <option value="3">10 Libras CSS</option>
-                    <option value="4">10 Libras SSS</option>
+                    <!-- Se poblará dinámicamente -->
                 </select>
 
                 <div class="busqueda-container-40lbs" id="busqueda-container">
@@ -142,10 +143,6 @@
                 <button class="btn btn-outline-warning" id="btn_limpiar_datos" title="Subir Nuevamente">
                     <i class="bi bi-trash"></i> Subir Nuevamente
                 </button>
-                <button class="btn btn-outline-info" id="btnReasignarDepartamento" title="Reasignar Departamentos">
-                    <i class="bi bi-arrow-left-right"></i> Reasignar
-                </button>
-
 
             </div>
         </div>
@@ -203,15 +200,17 @@
 
     <!-- Incluir el modal -->
 
-    <?php include 'modal40lbs.php'; ?>
-    <?php include 'modalHorarios.php'; ?>
-    <?php include 'biometricoModal.php'; ?>
-    <?php include 'modalSeleccionarEmpleados.php'; ?>
-    <?php include 'modalConceptosTotales.php'; ?>
-    <?php include 'modalExportarNomina.php'; ?>
-    <?php include 'modal_seleccion_tickets_40lbs.php'; ?>
-    <?php include 'dispersionTarjeta.php'; ?>
-    <?php include 'modalMarcajes.php'; ?>
+    <?php include 'modals/modalOlvidos.php'; ?>
+    <?php include 'modals/modal40lbs.php'; ?>
+    <?php include 'modals/modalHorarios.php'; ?>
+    <?php include 'modals/biometricoModal.php'; ?>
+    <?php include 'modals/modalSeleccionarEmpleados.php'; ?>
+    <?php include 'modals/modalConceptosTotales.php'; ?>
+    <?php include 'modals/modalExportarNomina.php'; ?>
+    <?php include 'modals/modal_seleccion_tickets_40lbs.php'; ?>
+    <?php include 'modals/dispersionTarjeta.php'; ?>
+    <?php include 'modals/modalMarcajes.php'; ?>
+    
 
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
@@ -220,21 +219,25 @@
     <!-- Bootstrap JS -->
     <script src="<?= BOOTSTRAP_JS ?>"></script>
     <!-- Archivo JS específico -->
-    <script src="../js/process_excel.js"></script>
+    <script src="../js/test.js"></script>
+    <script src="../js/saveGetNomina.js"></script>
     <script src="../js/configComponentes.js"></script>
     <script src="../js/showDataTable.js"></script>
     <script src="../js/storage.js"></script>
-    <script src="../js/saveGetNomina.js"></script>
-    <script src="../js/horariosSemanales.js"></script>
-    <script src="../js/redondearHorarios.js"></script>
+
     <script src="../js/filtroBusqueda.js"></script>
     <script src="../js/abrirModal.js"></script>
-    <script src="../js/actualizarBiomtrico.js"></script>
-    <script src="../js/seleccionar_empleados.js"></script>
-    <script src="../js/conceptos_totales.js"></script>
-    <script src="../js/exportarNominaExcel.js"></script>
     <script src="../js/generar_tickets.js"></script>
     <script src="../js/ticket_seleccion_40lbs.js"></script>
+
+    <script src="../js/configModales/exportarNominaExcel.js"></script>
+    <script src="../js/configModales/seleccionar_empleados.js"></script>
+    <script src="../js/configModales/conceptos_totales.js"></script>
+    <script src="../js/configModales/actualizarBiomtrico.js"></script>
+    <script src="../js/configModales/horariosSemanales.js"></script>
+    <script src="../js/configModales/redondearHorarios.js"></script>
+    <script src="../js/configModales/marcajes.js"></script>
+    <script src="../js/configModales/olvidosMasivos.js"></script>
 
     <script src="../js/configModal/establecerData.js"></script>
     <script src="../js/configModal/editarData.js"></script>
@@ -245,9 +248,8 @@
     <!-- Dispersion Tarjeta -->
     <script src="../js/configModalDispersionTarjeta/establecerData.js"></script>
     <script src="../js/configModalDispersionTarjeta/filtroBusqueda.js"></script>
+    <script src="../js/configModalDispersionTarjeta/editarData.js"></script>
 
-    <!-- Redondeo Manual -->
-    <script src="../js/marcajes.js"></script>
 
 </body>
 

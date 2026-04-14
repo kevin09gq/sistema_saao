@@ -62,7 +62,7 @@ function establerDataModal(empleado) {
     mostrarRetardos(empleado);
     mostrarInasistencias(empleado);
     mostrarOlvidosChecador(empleado);
-    
+
 
     calcularSueldoACobrar();
 
@@ -113,7 +113,7 @@ function establecerBiometrico(empleado) {
                 <td>${registro.fecha}</td>
                 <td>${registro.entrada || '-'}</td>
                 <td>${registro.salida || '-'}</td>
-                <td><button class="btn btn-sm btn-outline-secondary">Editar</button></td>
+               
             </tr>
         `;
 
@@ -286,7 +286,6 @@ function establecerBiomtricoRedondeado(empleado) {
                 <td class="text-center">${registro.horas_comida || '-'}</td>
                 <td class="text-center">${registro.minutos_trabajados || '-'}</td>
                 <td class="text-center">${registro.horas_trabajadas || '-'}</td>
-                <td class="text-center"><button class="btn btn-sm btn-outline-secondary">Editar</button></td>
             </tr>
         `;
 
@@ -429,7 +428,7 @@ function establecerDeducciones(empleado) {
     // Restaurar estado del redondeo (si estaba activo al guardar)
     const redondeoActivo = empleado.redondeo_activo === true;
     $('#mod-redondear-sueldo-40lbs').prop('checked', redondeoActivo);
- 
+
 }
 
 /************************************

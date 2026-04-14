@@ -31,21 +31,21 @@ function listarEmpleados() {
     }
 
     jsonNomina40lbs.departamentos.forEach(depto => {
+        // Solo procesar departamentos habilitados para edición (Dinámico)
+        if (depto.editar !== true) return;
+
         if (!Array.isArray(depto.empleados)) return;
+
         depto.empleados.forEach(emp => {
-            if (emp.id_departamento === 4 || emp.id_departamento === 5) {
-                if (emp.mostrar === false) return; // omitir
-                const item = `
+            if (emp.mostrar === false) return; // omitir opcional
+
+            const item = `
                 <label class="list-group-item">
                     <input type="checkbox" class="form-check-input me-2" data-empresa="${emp.id_empresa}" value="${emp.clave}">
                     ${emp.nombre} <small class="text-muted">(${emp.clave})</small>
                 </label>
             `;
-                $('#lista-empleados-biometrico').append(item);
-            } else {
-                return;
-            }
-
+            $('#lista-empleados-biometrico').append(item);
         });
     });
 }
@@ -171,7 +171,10 @@ function subirBiometrico() {
                             redondearRegistrosEmpleado(emp, horariosPorDia);
                         }
 
-                        // 2) Recalcular olvidos (historial + total)
+                        // 2) Resetear y recalcular olvidos (historial + total)
+                        delete emp.historial_olvidos;
+                        delete emp._checador_editado_manual;
+                        
                         if (typeof asignarHistorialOlvidos === 'function') {
                             asignarHistorialOlvidos(emp);
                         }

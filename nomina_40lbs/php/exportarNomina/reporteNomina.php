@@ -128,31 +128,30 @@ $datosNomina = json_decode($jsonNominaStr, true);
 $tituloNomina = 'NÓMINA DEL ' . obtenerTituloPeriodo($fecha_inicio, $fecha_cierre);
 
 //=====================================
-// CLASIFICACIÓN DE GRUPOS
+// CLASIFICACIÓN DE GRUPOS DINÁMICA
 //=====================================
 
-$grupos = [
-    'PRODUCCIÓN 40 LBS (CSS)' => [],
-    'PRODUCCIÓN 40 LBS (SSS)' => [],
-    'PRODUCCIÓN 10 LBS (CSS)' => [],
-    'PRODUCCIÓN 10 LBS (SSS)' => []
-];
+$grupos = [];
 
 if (isset($datosNomina['departamentos']) && is_array($datosNomina['departamentos'])) {
     foreach ($datosNomina['departamentos'] as $depto) {
+        // Solo procesar departamentos oficiales (editar: true)
+        if (!isset($depto['editar']) || $depto['editar'] !== true) continue;
+
+        $nombreDepto = strtoupper($depto['nombre']);
+
         foreach ($depto['empleados'] ?? [] as $emp) {
             if (!($emp['mostrar'] ?? true)) continue;
 
-            $idDep = $emp['id_departamento'] ?? 0;
             $ss = $emp['seguroSocial'] ?? false;
+            $suffix = $ss ? '(CSS)' : '(SSS)';
+            $nombreGrupo = "{$nombreDepto} {$suffix}";
 
-            if ($idDep == 4) {
-                $nombreGrupo = $ss ? 'PRODUCCIÓN 40 LBS (CSS)' : 'PRODUCCIÓN 40 LBS (SSS)';
-            } elseif ($idDep == 5) {
-                $nombreGrupo = $ss ? 'PRODUCCIÓN 10 LBS (CSS)' : 'PRODUCCIÓN 10 LBS (SSS)';
-            } else {
-                continue;
+            // Inicializar grupo si no existe
+            if (!isset($grupos[$nombreGrupo])) {
+                $grupos[$nombreGrupo] = [];
             }
+
             $grupos[$nombreGrupo][] = $emp;
         }
     }
@@ -166,7 +165,7 @@ $pdf = new PDFEncabezado('P', 'mm', 'A4', true, 'UTF-8', false);
 $pdf->setDatosNomina($tituloNomina, $numero_semana, $fecha_cierre);
 $pdf->SetCreator('SAAO');
 $pdf->SetAuthor('SAAO');
-$pdf->SetTitle('Reporte Contable de Nómina - 40 LBS');
+$pdf->SetTitle('Reporte Contable de Nómina');
 $pdf->SetMargins(10, 50, 10);
 $pdf->SetHeaderMargin(10);
 $pdf->SetFooterMargin(10);

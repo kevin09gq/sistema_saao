@@ -1,7 +1,19 @@
 <?php
 
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/error_log.txt');
+
 require_once __DIR__ . '/../../conexion/conexion.php';
 require_once __DIR__ . '/../../vendor/autoload.php';
+require_once __DIR__ . '/../../vendor/tecnickcom/tcpdf/tcpdf.php';
+
+if (!isset($conexion)) {
+    http_response_code(500);
+    echo "Error de conexión: No se encontró la variable \$conexion.";
+    exit;
+}
 
 function toNumber($v) {
     if ($v === null) return 0.0;
@@ -26,7 +38,7 @@ function safeText($s) {
     return $s;
 }
 
-function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
+function renderTicketPdf($pdf, $emp, $extra, $meta) {
     $nombre     = safeText($emp['nombre'] ?? '');
     $clave      = safeText($emp['clave'] ?? '');
 
@@ -91,7 +103,7 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
         $neto = $totalPercepcionesTemp - $totalDeduccionesTemp;
     }
     
-    // Aplicar redondeo como en nomina_confianza
+    // Aplicar redondeo
     $netoOriginal = $neto;
     $netoRedondeado = redondear($netoOriginal);
     $ajusteRedondeo = round($netoRedondeado - $netoOriginal, 2);
@@ -153,7 +165,7 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
     if ($inasistencia > 0) $deducciones[] = ['label' => 'Ausentismo', 'monto' => $inasistencia];
     if ($uniformes > 0) $deducciones[] = ['label' => 'Uniformes',    'monto' => $uniformes];
     if ($checador  > 0) $deducciones[] = ['label' => 'Checador',     'monto' => $checador];
-    // Agregar deducciones extra individuales excepto F.A/GAFET/COFIA
+    // Agregar deducciones extra individuales
     if (is_array($emp['deducciones_extra'] ?? null)) {
         foreach ($emp['deducciones_extra'] as $ded_extra) {
             $nombreDeduccion = safeText($ded_extra['nombre'] ?? '');
@@ -171,7 +183,6 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
 
     $totalDeduccionesCalculado = 0.0;
     foreach ($deducciones as $d) {
-        // No sumar F.A/GAFET/COFIA
         if (strpos($d['label'], 'F.A/Gafet/Cofia') === 0) continue;
         $totalDeduccionesCalculado += toNumber($d['monto']);
     }
@@ -214,8 +225,8 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
     $nombreFontSize = strlen($nombreCompleto) > 35 ? 8 : (strlen($nombreCompleto) >= 31 ? 13 : 15);
     $textB(12, 22, $pt($nombreFontSize), $nombreCompleto);
 
-    $deptoFontSize = 20;
-    $text(310, 17, $pt($deptoFontSize), $departamento);
+   $deptoFontSize = 15;
+    $text(310, 22, $pt($deptoFontSize), $departamento);
     $text(551, 22, $pt(17), 'F.Ingr: ' . $fechaIngreso);
     $text(710, 20, $pt(18), 'SEM ' . $semana);
 
@@ -240,7 +251,10 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
     $pdf->Line($dot(10), $dot(70), $dot(10 + 812), $dot(70));
 
     $f20 = $pt(20);
-    $textB(100, 78, $f20, 'PERCEPCIONES');
+    $diasTrabajados = safeText($emp['dias_trabajados'] ?? '0');
+    $textB(13, 77, $pt(13), 'Días laborados: ');
+    $textB(118, 75, $pt(17), $diasTrabajados);
+    $textB(150, 78, $f20, 'PERCEPCIONES');
     $textB(520, 78, $f20, 'DEDUCCIONES');
 
     $pdf->SetLineWidth($dot(1));
@@ -457,28 +471,21 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
 $raw  = file_get_contents('php://input');
 $data = json_decode($raw, true);
 
-// Verificar si es una solicitud de empleados seleccionados
-$empleadosSeleccionados = isset($_POST['empleados_seleccionados']) && $_POST['empleados_seleccionados'] === 'true';
+if (!$data) {
+    http_response_code(400);
+    echo 'Solicitud inválida: No se recibieron datos JSON.';
+    exit;
+}
 
-if ($empleadosSeleccionados && isset($_POST['datos_json'])) {
-    // Procesar datos de empleados seleccionados
-    $datosSeleccionados = json_decode($_POST['datos_json'], true);
-    
-    if (!is_array($datosSeleccionados) || !isset($datosSeleccionados['empleados_seleccionados'])) {
-        http_response_code(400);
-        header('Content-Type: text/plain; charset=UTF-8');
-        echo 'Datos de selección inválidos.';
-        exit;
-    }
-    
-    $empleados = $datosSeleccionados['empleados_seleccionados'];
-    $meta = $datosSeleccionados['metadatos'] ?? ['numero_semana' => ''];
+// Determinar si es una selección individual o el proceso normal
+if (isset($data['seleccion']) && $data['seleccion'] === true) {
+    $empleados = $data['empleados'] ?? [];
+    $meta = $data['meta'] ?? ['numero_semana' => ''];
 } else {
-    // Procesar solicitud normal (todos los empleados)
-    if (!is_array($data) || !isset($data['nomina']) || !is_array($data['nomina'])) {
+    // Procesar solicitud normal (todos los empleados o filtrados)
+    if (!isset($data['nomina']) || !is_array($data['nomina'])) {
         http_response_code(400);
-        header('Content-Type: text/plain; charset=UTF-8');
-        echo 'Solicitud inválida.';
+        echo 'Solicitud inválida: Estructura de nómina no encontrada.';
         exit;
     }
 
@@ -496,85 +503,66 @@ if ($empleadosSeleccionados && isset($_POST['datos_json'])) {
             }
         }
     }
-
-    usort($empleados, function ($a, $b) {
-        return strcasecmp((string)($a['nombre'] ?? ''), (string)($b['nombre'] ?? ''));
-    });
 }
 
-// ─── Consultar info adicional desde BD ───────────────────────────────
-$claves = [];
-foreach ($empleados as $e) {
-    if (isset($e['clave']) && $e['clave'] !== '') {
-        $claves[] = $e['clave'];
-    }
-}
-$claves = array_values(array_unique(array_filter($claves)));
-
-$extraMap = [];
-if (count($claves) > 0) {
-    $placeholders = implode(',', array_fill(0, count($claves), '?'));
-    $sql = "SELECT e.clave_empleado, e.imss, e.rfc_empleado, e.fecha_ingreso,
-                   e.salario_diario, e.salario_semanal,
-                   p.nombre_puesto, d.nombre_departamento
-            FROM info_empleados e
-            LEFT JOIN puestos_especiales p ON e.id_puestoEspecial = p.id_puestoEspecial
-            LEFT JOIN departamentos d ON e.id_departamento = d.id_departamento
-            WHERE e.clave_empleado IN ($placeholders) AND d.id_area = 3";
-
-    $stmt = mysqli_prepare($conexion, $sql);
-    if ($stmt) {
-        $types  = str_repeat('s', count($claves));
-        $params = [&$types];
-        foreach ($claves as $k => $v) {
-            $params[] = &$claves[$k];
-        }
-        call_user_func_array([$stmt, 'bind_param'], $params);
-        mysqli_stmt_execute($stmt);
-        $res = mysqli_stmt_get_result($stmt);
-        if ($res) {
-            while ($row = mysqli_fetch_assoc($res)) {
-                $extraMap[$row['clave_empleado']] = [
-                    'imss'              => $row['imss'] ?? '',
-                    'rfc_empleado'      => $row['rfc_empleado'] ?? '',
-                    'fecha_ingreso'     => $row['fecha_ingreso'] ?? '',
-                    'nombre_puesto'     => $row['nombre_puesto'] ?? '',
-                    'salario_diario'    => $row['salario_diario'] ?? 0,
-                    'salario_semanal'   => $row['salario_semanal'] ?? 0,
-                    'nombre_departamento' => $row['nombre_departamento'] ?? ''
-                ];
-            }
-        }
-        mysqli_stmt_close($stmt);
-    }
+// ─── Generar el PDF ──────────────────────────────────────────────────
+if (empty($empleados)) {
+    http_response_code(400);
+    echo 'No hay empleados para generar tickets.';
+    exit;
 }
 
-// ─── Generar PDF ─────────────────────────────────────────────────────
-$pdf = new TCPDF('L', 'mm', [50.8, 104], true, 'UTF-8', false);
-$pdf->SetCreator('Sistema SAAO');
-$pdf->SetAuthor('Sistema SAAO');
-$pdf->SetTitle('Tickets Relicario');
-$pdf->SetSubject('Tickets Nómina Relicario');
+// Crear PDF (Formato continuo 4x2 pulgadas por ticket)
+$pdf = new \TCPDF('L', 'mm', [50.8, 104], true, 'UTF-8', false);
+$pdf->SetCreator('SISTEMA SAAO');
+$pdf->SetAuthor('SISTEMA SAAO');
+$pdf->SetTitle('Tickets de Nómina Relicario');
+$pdf->SetMargins(0, 0, 0);
+$pdf->SetAutoPageBreak(false, 0);
 $pdf->setPrintHeader(false);
 $pdf->setPrintFooter(false);
-$pdf->SetAutoPageBreak(false, 0);
-$pdf->SetMargins(0, 0, 0);
-$pdf->SetFont('helvetica', '', 8);
 
 foreach ($empleados as $emp) {
-    $pdf->AddPage('L', [50.8, 104]);
-    $clave = $emp['clave'] ?? '';
-    $extra = ($clave !== '' && isset($extraMap[$clave])) ? $extraMap[$clave] : [];
+    $clave = (string)($emp['clave'] ?? '');
+    
+    // Obtener datos extras de la BD si es necesario
+    $extra = [
+        'nombre_puesto'  => $emp['puesto'] ?? '',
+        'fecha_ingreso'  => $emp['fecha_ingreso'] ?? '',
+        'salario_semanal' => $emp['salario_semanal'] ?? 0,
+        'salario_diario'  => $emp['salario_diario'] ?? 0
+    ];
+
+    if ($clave !== '') {
+        $sql = "SELECT p.nombre_puesto, e.fecha_ingreso, e.salario_semanal, e.salario_diario 
+                FROM info_empleados e 
+                JOIN puestos_especiales p ON e.id_puestoEspecial = p.id_puestoEspecial 
+                WHERE e.clave_empleado = ?";
+        $stmt = $conexion->prepare($sql);
+        $stmt->bind_param("s", $clave);
+        $stmt->execute();
+        $stmt->bind_result($nombre_puesto, $fecha_ingreso, $salario_semanal, $salario_diario);
+        if ($stmt->fetch()) {
+            $extra = [
+                'nombre_puesto'  => $nombre_puesto,
+                'fecha_ingreso'  => $fecha_ingreso,
+                'salario_semanal' => $salario_semanal,
+                'salario_diario'  => $salario_diario
+            ];
+        }
+        $stmt->close();
+    }
+
+    $pdf->AddPage();
     renderTicketPdf($pdf, $emp, $extra, $meta);
 }
 
-$sem      = $meta['numero_semana'] ? ('_sem_' . preg_replace('/[^0-9A-Za-z_-]/', '', (string)$meta['numero_semana'])) : '';
-$filename = 'tickets_relicario' . $sem . '.pdf';
-
-if (function_exists('ob_get_length') && ob_get_length()) {
-    @ob_end_clean();
-}
+// Limpiar cualquier salida previa que pueda corromper el PDF
+if (ob_get_length()) ob_clean();
 
 header('Content-Type: application/pdf');
-header('Content-Disposition: attachment; filename="' . $filename . '"');
-$pdf->Output($filename, 'D');
+header('Content-Disposition: attachment; filename="tickets_relicario.pdf"');
+header('Cache-Control: private, max-age=0, must-revalidate');
+header('Pragma: public');
+
+echo $pdf->Output('tickets_relicario.pdf', 'S');

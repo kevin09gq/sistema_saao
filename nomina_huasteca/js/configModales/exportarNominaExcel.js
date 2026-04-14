@@ -117,7 +117,7 @@ function exportarNominaDepartamento() {
                 var numeroSemana = String(jsonNominaHuasteca.numero_semana).padStart(2, '0');
                 var aniosCierre = jsonNominaHuasteca.fecha_cierre.split('/')[2];
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'SEM ' + numeroSemana + ' - ' + aniosCierre + ' RANCHO EL HUASTECA NOMINAS - ' + deptoNombre.toUpperCase() + ' - ' + timestamp + '.xlsx';
+                link.download = 'SEM ' + numeroSemana + ' - '  +  deptoNombre.toUpperCase() + ' - ' + aniosCierre + '.xlsx';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -181,7 +181,7 @@ function exportarNominaCompleta() {
                 var numeroSemana = String(jsonNominaHuasteca.numero_semana).padStart(2, '0');
                 var aniosCierre = jsonNominaHuasteca.fecha_cierre.split('/')[2];
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'SEM ' + numeroSemana + ' - ' + aniosCierre + ' RANCHO EL HUASTECA NOMINAS - COMPLETA - ' + timestamp + '.xlsx';
+                link.download = 'SEM ' + numeroSemana + ' - ' +  'RANCHO LA HUASTECA - ' + aniosCierre + '.xlsx';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);

@@ -269,8 +269,13 @@ function guardarInasistenciaManual() {
 
         // Obtener valores del formulario
         const dia = $('#select-dia-inasistencia-coordinador').val().trim();
-        const descuento = parseFloat($('#input-descuento-inasistencia-coordinador').val()) || 0;
+        let descuento = parseFloat($('#input-descuento-inasistencia-coordinador').val()) || 0;
 
+        // Si el descuento es 0 o vacío, calcularlo automáticamente como salario_semanal / 7
+        if (descuento === 0) {
+            const salarioSemanal = parseFloat(empleado.salario_semanal) || 0;
+            descuento = salarioSemanal / 7;
+        }
         if (!dia) {
             Swal.fire({
                 icon: 'warning',
@@ -316,8 +321,8 @@ function guardarInasistenciaManual() {
                     // Solo manuales: activar flag y limpiar automáticas
                     empleado.ignorar_inasistencias_automaticas = true;
                     // eliminamos manuales_editado_manual para que no interfiera si existe uno previo en otro modulo
-                    empleado._inasistencia_editado_manual = true; 
-                    
+                    empleado._inasistencia_editado_manual = true;
+
                     finalizarGuardadoInasistencia(empleado, dia, descuento);
                 }
             });
@@ -341,7 +346,7 @@ function finalizarGuardadoInasistencia(empleado, dia, descuento) {
     // Recalcular inasistencias (llamará a asignarHistorialInasistencias en eventos.js, 
     // la cual ya modificamos para respetar ignorar_inasistencias_automaticas)
     asignarHistorialInasistencias(empleado);
-    
+
     // Calcular total actual respetando el flag de ignorar automáticas
     const totalInasistencias = empleado.historial_inasistencias.reduce((sum, i) => {
         if (i.tipo === 'automatico' && empleado.ignorar_inasistencias_automaticas) {
@@ -349,7 +354,7 @@ function finalizarGuardadoInasistencia(empleado, dia, descuento) {
         }
         return sum + (parseFloat(i.descuento_inasistencia) || 0);
     }, 0);
-    
+
     $('#mod-inasistencias-coordinador').val(totalInasistencias.toFixed(2));
     empleado.inasistencia = totalInasistencias;
 
@@ -365,7 +370,7 @@ function finalizarGuardadoInasistencia(empleado, dia, descuento) {
 // Función para eliminar inasistencia manual del historial
 function eliminarInasistenciaManual() {
     const $contenedor = $('#contenedor-historial-inasistencias-coordinador');
-    
+
     // Delegación de eventos para eliminar inasistencias manuales
     $contenedor.on('click', '.btn-eliminar-inasistencia-manual', function () {
         const empleado = objEmpleadoCoordinador.getEmpleado();
@@ -408,7 +413,7 @@ function eliminarInasistenciaManual() {
 // Función para editar el descuento de un olvido en el historial
 function editarOlvidoChecador() {
     const $contenedor = $('#contenedor-historial-olvidos');
-    
+
     $contenedor.off('click', '.btn-editar-olvido');
     $contenedor.on('click', '.btn-editar-olvido', function () {
         const empleado = objEmpleadoCoordinador.getEmpleado();
@@ -418,7 +423,7 @@ function editarOlvidoChecador() {
         const olvido = empleado.historial_olvidos[indice];
         const fila = $(this).closest('tr');
         const celdaDescuento = fila.find('td').eq(2);
-        
+
         const valor = parseFloat(olvido.descuento_olvido).toFixed(2);
         const htmlEditable = `
             <div class="d-flex gap-2">
@@ -427,18 +432,18 @@ function editarOlvidoChecador() {
                 <button type="button" class="btn btn-sm btn-danger btn-cancelar-olvido" title="Cancelar"><i class="bi bi-x"></i></button>
             </div>
         `;
-        
+
         celdaDescuento.html(htmlEditable);
         const inputNuevo = celdaDescuento.find('.input-editar-olvido');
         inputNuevo.focus().select();
-        
+
         // Botón confirmar
-        celdaDescuento.find('.btn-confirmar-olvido').on('click', function() {
+        celdaDescuento.find('.btn-confirmar-olvido').on('click', function () {
             guardarDescuentoOlvido(inputNuevo, olvido, empleado);
         });
-        
+
         // Botón cancelar
-        celdaDescuento.find('.btn-cancelar-olvido').on('click', function() {
+        celdaDescuento.find('.btn-cancelar-olvido').on('click', function () {
             establecerHistorialChecador(empleado);
         });
     });
@@ -467,7 +472,7 @@ function guardarDescuentoOlvido(inputElement, olvidoObject, empleadoObject) {
     // Marcar el registro como editado manualmente
     olvidoObject.editado = true;
 
-    const total = empleadoObject.historial_olvidos.reduce((suma, item) => 
+    const total = empleadoObject.historial_olvidos.reduce((suma, item) =>
         suma + (parseFloat(item.descuento_olvido) || 0), 0);
 
     empleadoObject.checador = total;
@@ -489,7 +494,7 @@ editarOlvidoChecador();
 // Función para editar tolerancia y descuento por minuto de un retardo
 function editarRetardoChecador() {
     const contenedor = $('#contenedor-historial-retardos');
-    
+
     contenedor.off('click', '.btn-editar-retardo');
     contenedor.on('click', '.btn-editar-retardo', function () {
         const empleado = objEmpleadoCoordinador.getEmpleado();
@@ -501,17 +506,17 @@ function editarRetardoChecador() {
         const celdaTolerancia = fila.find('td').eq(3);
         const celdaDescuentoMinuto = fila.find('td').eq(4);
         const celdaDescuento = fila.find('td').eq(5);
-        
+
         const toleranciaActual = parseFloat(retardo.tolerancia).toFixed(2);
         const descuentoMinutoActual = parseFloat(retardo.descuento_por_minuto).toFixed(2);
-        
+
         // Celda para tolerancia
         const htmlTolerancia = `
             <div class="d-flex gap-1">
                 <input type="number" step="0.01" class="form-control form-control-sm input-tolerancia" value="${toleranciaActual}" min="0">
             </div>
         `;
-        
+
         // Celda para descuento por minuto
         const htmlDescuentoMinuto = `
             <div class="d-flex gap-2 align-items-center">
@@ -520,14 +525,14 @@ function editarRetardoChecador() {
                 <button type="button" class="btn btn-sm btn-danger btn-cancelar-retardo" title="Cancelar"><i class="bi bi-x"></i></button>
             </div>
         `;
-        
+
         celdaTolerancia.html(htmlTolerancia);
         celdaDescuentoMinuto.html(htmlDescuentoMinuto);
-        
+
         const inputTolerancia = celdaTolerancia.find('.input-tolerancia');
         const inputDescuentoMinuto = celdaDescuentoMinuto.find('.input-descuento-minuto');
         inputTolerancia.focus();
-        
+
         // Función para recalcular el descuento en tiempo real
         function recalcularDescuentoTiempoReal() {
             const tol = parseFloat(inputTolerancia.val()) || 0;
@@ -536,20 +541,20 @@ function editarRetardoChecador() {
             const nuevoDescuento = minutosAjustados * desc;
             celdaDescuento.html(`$${nuevoDescuento.toFixed(2)}`);
         }
-        
+
         // Recalcular cuando el usuario cambia tolerancia
         inputTolerancia.on('input', recalcularDescuentoTiempoReal);
-        
+
         // Recalcular cuando el usuario cambia descuento por minuto
         inputDescuentoMinuto.on('input', recalcularDescuentoTiempoReal);
-        
+
         // Botón confirmar
-        celdaDescuentoMinuto.find('.btn-confirmar-retardo').on('click', function() {
+        celdaDescuentoMinuto.find('.btn-confirmar-retardo').on('click', function () {
             guardarRetardoEditado(inputTolerancia, inputDescuentoMinuto, retardo, empleado);
         });
-        
+
         // Botón cancelar
-        celdaDescuentoMinuto.find('.btn-cancelar-retardo').on('click', function() {
+        celdaDescuentoMinuto.find('.btn-cancelar-retardo').on('click', function () {
             establecerHistorialRetardos(empleado);
         });
     });
@@ -588,7 +593,7 @@ function guardarRetardoEditado(inputTolerancia, inputDescuentoMinuto, retardoObj
     retardoObject.editado = true;
 
     // Recalcular total de retardos
-    const total = empleadoObject.historial_retardos.reduce((suma, item) => 
+    const total = empleadoObject.historial_retardos.reduce((suma, item) =>
         suma + (parseFloat(item.total_descontado) || 0), 0);
 
     empleadoObject.retardos = total;
@@ -652,7 +657,7 @@ function guardarPermisoManual() {
             minutos_permiso: minutos,
             costo_por_minuto: costoMinuto,
             descuento_permiso: descuento,
-           
+
         });
 
         // Limpiar formulario
@@ -679,7 +684,7 @@ function guardarPermisoManual() {
 // Función para eliminar permiso manual del historial
 function eliminarPermisoManual() {
     const $contenedor = $('#contenedor-historial-permisos-coordinador');
-    
+
     // Delegación de eventos para eliminar permisos manuales
     $contenedor.on('click', '.btn-eliminar-permiso-manual', function () {
         const empleado = objEmpleadoCoordinador.getEmpleado();
@@ -717,7 +722,7 @@ eliminarPermisoManual();
 
 // Función para guardar uniforme manual en el historial
 function guardarUniformeManual() {
-    $("#btn-agregar-uniforme-coordinador").click(function(e) {
+    $("#btn-agregar-uniforme-coordinador").click(function (e) {
         e.preventDefault();
         const empleado = objEmpleadoCoordinador.getEmpleado();
         if (!empleado) return;
@@ -756,17 +761,17 @@ function guardarUniformeManual() {
 // Función para eliminar uniforme manual del historial
 function eliminarUniformeManual() {
     const $contenedor = $('#contenedor-historial-uniforme-coordinador');
-    $contenedor.on('click', '.btn-eliminar-uniforme-manual', function() {
+    $contenedor.on('click', '.btn-eliminar-uniforme-manual', function () {
         const empleado = objEmpleadoCoordinador.getEmpleado();
         if (!empleado) return;
         const index = $(this).data('index');
-        empleado.historial_uniforme.splice(index,1);
+        empleado.historial_uniforme.splice(index, 1);
         const total = empleado.historial_uniforme.reduce((s, u) => s + (parseInt(u.cantidad) || 0), 0);
         $('#mod-uniforme-coordinador').val(total);
         empleado.uniformes = total;
         establecerHistorialUniforme(empleado);
         calcularSueldoACobrar();
-        
+
     });
 }
 

@@ -9,7 +9,7 @@ $(document).ready(function () {
         // Obtener los datos filtrados actuales según el departamento y puesto seleccionados
         let id_departamento = parseInt($('#filtro_departamento').val() || '7');
         let id_puestoEspecial = parseInt($('#filtro_puesto').val() || '-1');
-
+        
         // Aplicar los mismos filtros que se usan para mostrar la tabla
         let datosFiltrados = filtrarEmpleadosPorDepartamento(jsonNominaHuasteca, id_departamento);
         if (id_puestoEspecial !== -1) {
@@ -30,7 +30,7 @@ $(document).ready(function () {
         // Mostrar mensaje informativo
         let nombreDepartamento = $('#filtro_departamento option:selected').text();
         let nombrePuesto = $('#filtro_puesto').val() === '-1' ? 'Todos los puestos' : $('#filtro_puesto option:selected').text();
-
+        
         Swal.fire({
             title: 'Generando tickets',
             html: `Departamento: <strong>${nombreDepartamento}</strong><br>Puesto: <strong>${nombrePuesto}</strong><br>Empleados: <strong>${totalEmpleados}</strong>`,

@@ -37,10 +37,10 @@ function calcularYMostrarTotales() {
 
     const empleadosVisibles = [];
     jsonNomina40lbs.departamentos.forEach(departamento => {
-        const empleadosFiltrados = departamento.empleados.filter(emp => 
-            emp.mostrar !== false && 
-            (emp.id_departamento === 4 || emp.id_departamento === 5)
-        );
+        // Solo considerar departamentos habilitados para edición (Dinámico)
+        if (departamento.editar !== true) return;
+
+        const empleadosFiltrados = departamento.empleados.filter(emp => emp.mostrar !== false);
         empleadosVisibles.push(...empleadosFiltrados);
     });
 

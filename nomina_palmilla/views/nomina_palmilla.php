@@ -263,7 +263,7 @@
                 <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf" title="Descargar Ticket">
                     <i class="bi bi-ticket-perforated"></i>
                 </button>
-                <button class="btn btn-outline-secondary btn-ticket-zebra" id="btn_ticket_manual"
+                <button class="btn btn-outline-secondary btn-ticket-zebra" id="btn_ticket_seleccion"
                     title="Descargar Ticket Manual">
                     <i class="bi bi-ticket-perforated"></i>
                 </button>
@@ -348,7 +348,7 @@
                             <th rowspan="2">PERMISO</th>
                             <th rowspan="2">RETARDOS</th>
                             <th rowspan="2">UNIFORMES</th>
-                            <th rowspan="2">CHECADOR</th>
+                            <th rowspan="2">BIOMETRICO</th>
                             <th rowspan="2">F.A/GAFET/COFIA</th>
                             <th rowspan="2">TOTAL DE <br> DEDUCCIONES</th>
                             <th rowspan="2">NETO A RECIBIR</th>

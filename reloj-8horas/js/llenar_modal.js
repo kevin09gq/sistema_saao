@@ -650,6 +650,11 @@ $(document).ready(function () {
             }));
         }
 
+        // ============================================================
+        // VERIFICAR SI EL HORARIO USA LA NUEVA CLAVE 'descanso'
+        // ============================================================
+        const horarioTieneClaveDescanso = Array.isArray(horario) && horario.some(h => h.descanso !== undefined);
+
         // Funciones auxiliares
         const obtenerTurnoPorDia = (fecha) => {
             const diasSemanaES = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
@@ -659,7 +664,21 @@ $(document).ready(function () {
 
             const turnoDelDia = horario.find(h => h.dia.toUpperCase() === nombreDia);
             if (turnoDelDia) {
-                // Verificar si tiene un evento especial (descanso o día festivo)
+                // ============================================================
+                // NUEVA LÓGICA: Verificar clave 'descanso' del horario
+                // ============================================================
+                if (turnoDelDia.descanso === "1" || turnoDelDia.descanso === 1) {
+                    return {
+                        hora_inicio: null,
+                        hora_fin: null,
+                        salida_comida: null,
+                        entrada_comida: null,
+                        tiene_comida: false,
+                        evento: 'descanso'
+                    };
+                }
+
+                // Verificar si tiene un evento especial (descanso o día festivo) - horarios variables
                 if (turnoDelDia.evento === 'descanso') {
                     return {
                         hora_inicio: null,
@@ -1025,9 +1044,113 @@ $(document).ready(function () {
         let incapacidadesProcesadas = 0;
         let ausenciasProcesadas = 0;
 
+        // ============================================================
+        // VERIFICAR SI EL EMPLEADO TIENE REGISTROS BIOMÉTRICOS
+        // ============================================================
+        const tieneRegistrosBiometricos = (empleado.registros || []).length > 0 &&
+            (empleado.registros || []).some(r => r.entrada || r.salida);
+
+        // ============================================================
+        // PRE-ANÁLISIS: Para empleados CON biométricos pero con días sin registro
+        // Determina qué días sin registro deben ser INASISTENCIA vs ASISTENCIA GENERADA
+        // ============================================================
+        const fechasGenerarAsistencia = new Set();
+        const fechasAusenciaSinBiometrico = new Set();
+        
+        if (tieneRegistrosBiometricos) {
+            const diasLaborablesSinBiometrico = [];
+            
+            diasSemana.forEach(dia => {
+                // Obtener turno del día para verificar si es descanso
+                const turnoDelDia = obtenerTurnoPorDia(dia.fecha);
+
+                // Excluir días de descanso según horario (o DOMINGO si no tiene clave descanso)
+                if (turnoDelDia.evento === 'descanso') return;
+                if (!horarioTieneClaveDescanso && dia.esDomingo) return;
+
+                // Excluir días festivos
+                if (festivosSet.has(dia.fecha) && !esVigilancia) return;
+                if (turnoDelDia.evento === 'dia_festivo') return;
+                
+                const esLaborable = turnoDelDia.hora_inicio && turnoDelDia.hora_fin;
+                if (!esLaborable) return;
+                
+                const registrosDelDia = registrosMap[dia.fecha] || [];
+                const tieneBiometricoEsteDia = registrosDelDia.length > 0 &&
+                    registrosDelDia.some(r => r.entrada || r.salida);
+                
+                if (!tieneBiometricoEsteDia) {
+                    diasLaborablesSinBiometrico.push(dia.fecha);
+                }
+            });
+            
+            const totalDiasSinBiometrico = diasLaborablesSinBiometrico.length;
+            const ausenciasReportadas = diasAusenciasRestantes;
+            const diasAGenerar = totalDiasSinBiometrico - ausenciasReportadas;
+            
+            if (diasAGenerar > 0) {
+                const diasParaGenerar = diasLaborablesSinBiometrico.slice(ausenciasReportadas);
+                diasParaGenerar.forEach(fecha => fechasGenerarAsistencia.add(fecha));
+            }
+        }
+
+        // ============================================================
+        // EMPLEADO SIN BIOMÉTRICO: reservar ausencias en días laborables
+        // Selección pseudoaleatoria (estable)
+        // ============================================================
+        if (!tieneRegistrosBiometricos && diasAusenciasRestantes > 0) {
+            const diasLaborablesSinBiometrico = [];
+
+            diasSemana.forEach(dia => {
+                const turnoDelDia = obtenerTurnoPorDia(dia.fecha);
+
+                if (turnoDelDia.evento === 'descanso') return;
+                if (!horarioTieneClaveDescanso && dia.esDomingo) return;
+                if (festivosSet.has(dia.fecha) && !esVigilancia) return;
+                if (turnoDelDia.evento === 'dia_festivo') return;
+
+                const esLaborable = turnoDelDia.hora_inicio && turnoDelDia.hora_fin;
+                if (!esLaborable) return;
+
+                diasLaborablesSinBiometrico.push(dia.fecha);
+            });
+
+            const seedBase = `${empleado.id_empleado || empleado.clave || empleado.nombre}`;
+            const fechasSeleccionadas = diasLaborablesSinBiometrico
+                .map(fecha => ({ fecha, peso: hashString(`${seedBase}|${fecha}|AUSENCIA`) }))
+                .sort((a, b) => a.peso - b.peso)
+                .slice(0, diasAusenciasRestantes)
+                .map(x => x.fecha);
+
+            fechasSeleccionadas.forEach(fecha => fechasAusenciaSinBiometrico.add(fecha));
+        }
+
         diasSemana.forEach(dia => {
-            // Domingos siempre descanso
-            if (dia.esDomingo) {
+            // Obtener turno del día PRIMERO para detectar descanso según horario
+            const turno = obtenerTurnoPorDia(dia.fecha);
+            const esLaborable = turno.hora_inicio && turno.hora_fin;
+
+            const tipoTurno = esLaborable ? `DIURNA(${turno.hora_inicio}-${turno.hora_fin})` : 'N/A';
+            const maxHoras = esLaborable ? 8 : 0;
+
+            // DESCANSO: por evento de horario variable o por clave descanso:"1"
+            if (turno.evento === 'descanso') {
+                resultados.push({
+                    fecha: dia.fecha,
+                    tipo: "descanso",
+                    registros: [],
+                    trabajado_minutos: 0,
+                    trabajado_hhmm: '00:00',
+                    trabajado_decimal: 0,
+                    observacion_dia: "DESCANSO",
+                    tipo_turno: "N/A",
+                    max_horas: 0
+                });
+                return;
+            }
+
+            // DESCANSO por DOMINGO (solo si el horario NO tiene clave descanso)
+            if (!horarioTieneClaveDescanso && dia.esDomingo) {
                 resultados.push({
                     fecha: dia.fecha,
                     tipo: "descanso",
@@ -1085,31 +1208,9 @@ $(document).ready(function () {
                 }
             }
 
-            const turno = obtenerTurnoPorDia(dia.fecha);
-            const esLaborable = turno.hora_inicio && turno.hora_fin;
-
-            const tipoTurno = esLaborable ? `DIURNA(${turno.hora_inicio}-${turno.hora_fin})` : 'N/A';
-            const maxHoras = esLaborable ? 8 : 0;
-
             const registrosDelDia = registrosMap[dia.fecha] || [];
             const tieneRegistroBiometrico = registrosDelDia.length > 0 &&
                 registrosDelDia.some(r => r.entrada || r.salida);
-
-            // Verificar si el turno tiene un EVENTO especial (desde horarios variables)
-            if (turno.evento === 'descanso') {
-                resultados.push({
-                    fecha: dia.fecha,
-                    tipo: "descanso",
-                    registros: [],
-                    trabajado_minutos: 0,
-                    trabajado_hhmm: '00:00',
-                    trabajado_decimal: 0,
-                    observacion_dia: "DESCANSO (HORARIO VARIABLE)",
-                    tipo_turno: "N/A",
-                    max_horas: 0
-                });
-                return;
-            }
 
             if (turno.evento === 'dia_festivo') {
                 if (!tieneRegistroBiometrico) {
@@ -1130,7 +1231,7 @@ $(document).ready(function () {
             }
 
             // Días NO laborables según horario → no_laboro (no es descanso ni ausencia)
-            // Solo el DOMINGO es "descanso" oficial
+            // Los descansos ya se manejaron arriba (por clave descanso o domingo por defecto)
             if (!esLaborable) {
                 resultados.push({
                     fecha: dia.fecha,
@@ -1190,16 +1291,62 @@ $(document).ready(function () {
                 return;
             }
 
-            // Sin registro biométrico del día
-            // NUEVA LÓGICA: Si dias_ausencias === 0, RRHH indicó que no tuvo ausencias
-            // → Auto-generar registros en lugar de marcar inasistencia
-            if (!tieneRegistroBiometrico) {
-                const diasAusenciasRestantes = empleado.dias_ausencias || 0;
-                
-                if (diasAusenciasRestantes === 0 && diasProcesados < diasTrabajadosRestantes) {
-                    // RRHH indicó 0 ausencias → auto-generar registro
+            // Empleado SIN biométrico:
+            // Prioridad: vacaciones > incapacidades > ausencias reservadas > asistencia > ausencia pendiente > descanso
+            if (!tieneRegistrosBiometricos) {
+                if (vacacionesProcesadas < diasVacacionesRestantes) {
+                    vacacionesProcesadas++;
+                    resultados.push({
+                        fecha: dia.fecha,
+                        tipo: "vacaciones",
+                        registros: [],
+                        trabajado_minutos: 0,
+                        trabajado_hhmm: '00:00',
+                        trabajado_decimal: 0,
+                        observacion_dia: "VACACIONES",
+                        tipo_turno: tipoTurno,
+                        max_horas: maxHoras
+                    });
+                    return;
+                }
+
+                if (incapacidadesProcesadas < diasIncapacidadesRestantes) {
+                    incapacidadesProcesadas++;
+                    resultados.push({
+                        fecha: dia.fecha,
+                        tipo: "incapacidad",
+                        registros: [],
+                        trabajado_minutos: 0,
+                        trabajado_hhmm: '00:00',
+                        trabajado_decimal: 0,
+                        observacion_dia: "INCAPACIDAD",
+                        tipo_turno: tipoTurno,
+                        max_horas: maxHoras
+                    });
+                    return;
+                }
+
+                if (fechasAusenciaSinBiometrico.has(dia.fecha) && ausenciasProcesadas < diasAusenciasRestantes) {
+                    ausenciasProcesadas++;
+                    resultados.push({
+                        fecha: dia.fecha,
+                        tipo: "ausencia",
+                        registros: [],
+                        trabajado_minutos: 0,
+                        trabajado_hhmm: '00:00',
+                        trabajado_decimal: 0,
+                        observacion_dia: "AUSENCIA",
+                        tipo_turno: tipoTurno,
+                        max_horas: maxHoras
+                    });
+                    return;
+                }
+
+                if (diasProcesados < diasTrabajadosRestantes) {
                     diasProcesados++;
-                    const registrosDia = construirRegistrosDia(turno, dia.fecha, 'REGISTRO GENERADO');
+                    const registrosDia = construirRegistrosDia(turno, dia.fecha, 'SIN BIOMÉTRICO');
+                    const seedKey = `${empleado.id_empleado || empleado.clave}|${dia.fecha}`;
+                    ajustarRegistrosSiExcedenMaximo(registrosDia, maxHoras, seedKey);
                     const trabajo = calcularTrabajoDesdeRegistros(registrosDia, maxHoras);
                     resultados.push({
                         fecha: dia.fecha,
@@ -1208,14 +1355,67 @@ $(document).ready(function () {
                         trabajado_minutos: trabajo.minutos,
                         trabajado_hhmm: trabajo.hhmm,
                         trabajado_decimal: trabajo.decimal,
-                        observacion_dia: "SIN CHECADA (0 AUSENCIAS RRHH)",
+                        observacion_dia: "SIN REGISTRO EN RELOJ",
+                        tipo_turno: tipoTurno,
+                        max_horas: maxHoras
+                    });
+                    return;
+                }
+
+                if (ausenciasProcesadas < diasAusenciasRestantes) {
+                    ausenciasProcesadas++;
+                    resultados.push({
+                        fecha: dia.fecha,
+                        tipo: "ausencia",
+                        registros: [],
+                        trabajado_minutos: 0,
+                        trabajado_hhmm: '00:00',
+                        trabajado_decimal: 0,
+                        observacion_dia: "AUSENCIA",
+                        tipo_turno: tipoTurno,
+                        max_horas: maxHoras
+                    });
+                    return;
+                }
+
+                resultados.push({
+                    fecha: dia.fecha,
+                    tipo: "descanso",
+                    registros: [],
+                    trabajado_minutos: 0,
+                    trabajado_hhmm: '00:00',
+                    trabajado_decimal: 0,
+                    observacion_dia: "DÍA DE DESCANSO",
+                    tipo_turno: tipoTurno,
+                    max_horas: maxHoras
+                });
+                return;
+            }
+
+            // Sin registro biométrico del día
+            // El empleado SÍ está en el biométrico pero este día no checó
+            if (!tieneRegistroBiometrico) {
+                // ¿Este día debe generarse como asistencia según pre-análisis?
+                // IMPORTANTE: usar 'turno' (de obtenerTurnoPorDia) que tiene hora_inicio/hora_fin
+                if (fechasGenerarAsistencia.has(dia.fecha)) {
+                    const registrosDia = construirRegistrosDia(turno, dia.fecha, 'GENERADO-RRHH');
+                    const seedKey = `${empleado.id_empleado || empleado.clave}|${dia.fecha}`;
+                    ajustarRegistrosSiExcedenMaximo(registrosDia, maxHoras, seedKey);
+                    const trabajo = calcularTrabajoDesdeRegistros(registrosDia, maxHoras);
+                    resultados.push({
+                        fecha: dia.fecha,
+                        tipo: "asistencia",
+                        registros: registrosDia,
+                        trabajado_minutos: trabajo.minutos,
+                        trabajado_hhmm: trabajo.hhmm,
+                        trabajado_decimal: trabajo.decimal,
+                        observacion_dia: "GENERADO - SIN CHECADOR (AVALADO POR RRHH)",
                         tipo_turno: tipoTurno,
                         max_horas: maxHoras
                     });
                     return;
                 }
                 
-                // Si tiene ausencias pendientes o ya completó dias_trabajados → inasistencia
                 resultados.push({
                     fecha: dia.fecha,
                     tipo: "inasistencia",
@@ -1230,64 +1430,17 @@ $(document).ready(function () {
                 return;
             }
 
-            // Días restantes → Asignar vacaciones, incapacidades, ausencias o descanso
-            // Prioridad: vacaciones > incapacidades > ausencias > descanso
-            if (vacacionesProcesadas < diasVacacionesRestantes) {
-                vacacionesProcesadas++;
-                resultados.push({
-                    fecha: dia.fecha,
-                    tipo: "vacaciones",
-                    registros: [],
-                    trabajado_minutos: 0,
-                    trabajado_hhmm: '00:00',
-                    trabajado_decimal: 0,
-                    observacion_dia: "VACACIONES",
-                    tipo_turno: tipoTurno,
-                    max_horas: maxHoras
-                });
-                return;
-            }
-
-            if (incapacidadesProcesadas < diasIncapacidadesRestantes) {
-                incapacidadesProcesadas++;
-                resultados.push({
-                    fecha: dia.fecha,
-                    tipo: "incapacidad",
-                    registros: [],
-                    trabajado_minutos: 0,
-                    trabajado_hhmm: '00:00',
-                    trabajado_decimal: 0,
-                    observacion_dia: "INCAPACIDAD",
-                    tipo_turno: tipoTurno,
-                    max_horas: maxHoras
-                });
-                return;
-            }
-
-            if (ausenciasProcesadas < diasAusenciasRestantes) {
-                ausenciasProcesadas++;
-                resultados.push({
-                    fecha: dia.fecha,
-                    tipo: "ausencia",
-                    registros: [],
-                    trabajado_minutos: 0,
-                    trabajado_hhmm: '00:00',
-                    trabajado_decimal: 0,
-                    observacion_dia: "AUSENCIA",
-                    tipo_turno: tipoTurno,
-                    max_horas: maxHoras
-                });
-                return;
-            }
-
+            // Días restantes para empleados CON biométrico:
+            // NO auto-asignar vacaciones/incapacidades
+            // El usuario las asignará manualmente desde el modal de incidencias
             resultados.push({
                 fecha: dia.fecha,
-                tipo: "descanso",
+                tipo: "inasistencia",
                 registros: [],
                 trabajado_minutos: 0,
                 trabajado_hhmm: '00:00',
                 trabajado_decimal: 0,
-                observacion_dia: "DÍA DE DESCANSO",
+                observacion_dia: "SIN REGISTRO BIOMÉTRICO",
                 tipo_turno: tipoTurno,
                 max_horas: maxHoras
             });

@@ -116,7 +116,7 @@ function exportarNominaDepartamento() {
                 var numeroSemana = String(jsonNominaPilar.numero_semana).padStart(2, '0');
                 var aniosCierre = jsonNominaPilar.fecha_cierre.split('/')[2];
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'SEM ' + numeroSemana + ' - ' + aniosCierre + ' RANCHO EL PILAR NOMINAS - ' + deptoNombre.toUpperCase() + ' - ' + timestamp + '.xlsx';
+                link.download = 'SEM ' + numeroSemana + ' - ' + deptoNombre.toUpperCase() + ' - ' + aniosCierre + '.xlsx';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -180,7 +180,7 @@ function exportarNominaCompleta() {
                 var numeroSemana = String(jsonNominaPilar.numero_semana).padStart(2, '0');
                 var aniosCierre = jsonNominaPilar.fecha_cierre.split('/')[2];
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'SEM ' + numeroSemana + ' - ' + aniosCierre + ' RANCHO EL PILAR NOMINAS - COMPLETA - ' + timestamp + '.xlsx';
+                link.download = 'SEM ' + numeroSemana + ' - ' + 'RANCHO PILAR - ' + aniosCierre + '.xlsx';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);

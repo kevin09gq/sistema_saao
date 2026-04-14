@@ -1,11 +1,11 @@
-# Documentación de Incidencias de Marcajes
+# Documentación de Marcajes
 
 ## Resumen
-Este documento describe los casos de incidencias de marcajes que el sistema identifica y cómo los procesa.
+Este documento describe los casos de marcajes que el sistema identifica y cómo los procesa.
 
 ---
 
-## Categorías de Incidencias
+## Categorías de Casos
 
 ### **A. Casos con 4 marcas (ideal con comida)**
 

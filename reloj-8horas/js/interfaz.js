@@ -102,9 +102,9 @@ $(document).ready(function () {
         if (t === 'vacaciones') return '#027d00ff';
         if (t === 'descanso') return '#FCFF00';
         if (t === 'dia_festivo') return '#00FFFF';
-        
+
         if (t === 'sin_horario') return '#ffb300ff';
-        
+
         // no_laboro = día sin horario asignado (no es descanso ni ausencia)
         if (t === 'no_laboro') return '';
 
@@ -344,7 +344,7 @@ $(document).ready(function () {
                         <td></td>
                     </tr>
                 `);
-                
+
                 // Segunda fila solo si tiene E2 o S2 (turno con comida)
                 if (e2 || s2) {
                     $tbody.append(`
@@ -382,7 +382,7 @@ $(document).ready(function () {
                 `);
             }
 
-            
+
         });
 
         // Filas de resumen como en la imagen
@@ -477,7 +477,7 @@ $(document).ready(function () {
         if (!options || !options.preservePage) {
             STATE.page = 1;
         }
-        
+
         render();
     });
 

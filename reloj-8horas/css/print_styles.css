@@ -203,6 +203,21 @@ body {
     print-color-adjust: exact;
 }
 
+.table-info {
+    background-color: #00d9ff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+.table-no-horario {
+    background-color: #ffb300ff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+
+
+
 .firmas-wrapper {
     margin-top: 2rem;
     display: flex;

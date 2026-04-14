@@ -181,7 +181,7 @@
                                     <div class="evento-card olvido-checador" id="olvidos-checador-card-coordinadores">
                                         <div class="evento-header">
                                             <i class="bi bi-exclamation-triangle"></i>
-                                            <span>Olvidos del Checador</span>
+                                            <span>Biometrico</span>
                                         </div>
                                         <div class="evento-content" id="olvidos-checador-coordinadores">
 
@@ -215,7 +215,7 @@
                                     <div class="evento-card falta" id="inasistencias-card-coordinadores">
                                         <div class="evento-header">
                                             <i class="bi bi-x-circle"></i>
-                                            <span>Inasistencias</span>
+                                            <span>Ausentismo</span>
                                         </div>
                                         <div class="evento-content" id="inasistencias-content-coordinadores">
 

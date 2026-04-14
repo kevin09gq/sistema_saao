@@ -110,7 +110,7 @@ function mostrarDatosTabla(jsonNomina40lbs, pagina = 1) {
                 <td>${formatearValor(empleado.prestamo || 0, true)}</td> <!-- PRÉSTAMO -->
 
                 <!-- TOTAL A RECIBIR -->
-                <td>$${formatearValor(totalARecibir || 0)}</td>
+                <td>${formatearValor(totalARecibir || 0)}</td>
 
                 <!-- REDONDEADO -->
                 <td class="${parseFloat(empleado.redondeo) < 0 ? 'redondeo-negativo' : 'redondeo-positivo'}">${formatearValor(empleado.redondeo || 0)}</td>
@@ -173,8 +173,8 @@ function paginarTabla(jsonNomina40lbs, totalEmpleados, paginaActual, empleadosPo
     });
 }
 
-// Función para filtrar empleados por id_departamento, seguroSocial y término de búsqueda
-function filtrarEmpleadosPorDepartamento(jsonNomina, idDepartamento, seguroSocial = true, busqueda = '') {
+// Función para filtrar empleados por departamento (ID o Nombre), seguroSocial y término de búsqueda
+function filtrarEmpleadosPorDepartamento(jsonNomina, filtroDepto, seguroSocial = true, busqueda = '') {
     let jsonFiltrado = {
         departamentos: []
     };
@@ -187,18 +187,20 @@ function filtrarEmpleadosPorDepartamento(jsonNomina, idDepartamento, seguroSocia
 
     if (jsonNomina && jsonNomina.departamentos) {
         jsonNomina.departamentos.forEach(depto => {
-            let empleadosFiltrados = depto.empleados.filter(emp => {
-                // 1. Filtrar por id_departamento
-                if (idDepartamento !== null && emp.id_departamento !== idDepartamento) {
-                    return false;
-                }
+            // 1. Filtrar por departamento (si no es 'all')
+            if (filtroDepto !== null && filtroDepto !== 'all') {
+                const matchId = depto.id_departamento && String(depto.id_departamento) === String(filtroDepto);
+                const matchNombre = depto.nombre && String(depto.nombre) === String(filtroDepto);
+                if (!matchId && !matchNombre) return;
+            }
 
+            let empleadosFiltrados = depto.empleados.filter(emp => {
                 // 2. Filtrar por seguroSocial
                 if (seguroSocial !== null && emp.seguroSocial !== seguroSocial) {
                     return false;
                 }
 
-                // 3. Filtrar por búsqueda de nombre (si existe término)
+                // 3. Filtrar por búsqueda de nombre
                 if (terminoBusqueda !== '') {
                     const nombreNormalizado = normalizar(emp.nombre);
                     if (!nombreNormalizado.includes(terminoBusqueda)) {
@@ -209,13 +211,11 @@ function filtrarEmpleadosPorDepartamento(jsonNomina, idDepartamento, seguroSocia
                 return true;
             });
 
-            let deptoFiltrado = {
-                nombre: depto.nombre,
-                empleados: empleadosFiltrados
-            };
-
-            if (deptoFiltrado.empleados.length > 0) {
-                jsonFiltrado.departamentos.push(deptoFiltrado);
+            if (empleadosFiltrados.length > 0) {
+                jsonFiltrado.departamentos.push({
+                    ...depto,
+                    empleados: empleadosFiltrados
+                });
             }
         });
     }
@@ -224,33 +224,55 @@ function filtrarEmpleadosPorDepartamento(jsonNomina, idDepartamento, seguroSocia
 }
 
 function refrescarTabla() {
-    const valorSelect = $('#filtro-departamento').val() || '1';
-    let idDepartamento = null;
+    const valorSelect = $('#filtro-departamento').val() || 'all|all';
+    let filtroDepto = 'all';
     let seguroSocial = null;
 
-    // Mapear valor del select a parámetros de filtro
-    if (valorSelect === '1') {
-        idDepartamento = 4;
-        seguroSocial = true;
-    } else if (valorSelect === '2') {
-        idDepartamento = 4;
-        seguroSocial = false;
-    } else if (valorSelect === '3') {
-        idDepartamento = 5;
-        seguroSocial = true;
-    } else if (valorSelect === '4') {
-        idDepartamento = 5;
-        seguroSocial = false;
+    if (valorSelect !== 'all|all') {
+        const partes = valorSelect.split('|');
+        filtroDepto = partes[0];
+        seguroSocial = partes[1] === 'true';
     }
 
     // Obtener término de búsqueda actual
     const busqueda = $('#busqueda-nomina-40lbs').val() || '';
 
     // Aplicar filtro y mostrar tabla con página actual
-    const jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNomina40lbs, idDepartamento, seguroSocial, busqueda);
+    const jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNomina40lbs, filtroDepto, seguroSocial, busqueda);
     mostrarDatosTabla(jsonFiltrado, paginaActualNomina);
 }
 
+function poblarSelectDepartamentos(json) {
+    if (!json || !json.departamentos) return;
+
+    const $select = $('#filtro-departamento');
+    const valorActual = $select.val();
+    $select.empty();
+
+    // Organizar departamentos por tipo de empleados que contienen y agregar directamente como opciones
+    json.departamentos.forEach(depto => {
+        // Solo mostrar departamentos con la propiedad editar: true
+        if (depto.editar !== true) return;
+
+        const id = depto.id_departamento || depto.nombre;
+        const nombre = depto.nombre;
+
+        const tieneConSeguro = depto.empleados.some(emp => emp.seguroSocial === true);
+        const tieneSinSeguro = depto.empleados.some(emp => emp.seguroSocial === false);
+
+        if (tieneConSeguro) {
+            $select.append(`<option value="${id}|true">${nombre} CSS</option>`);
+        }
+        if (tieneSinSeguro) {
+            $select.append(`<option value="${id}|false">${nombre} SSS</option>`);
+        }
+    });
+
+    // Restaurar valor previo si es posible
+    if (valorActual && $select.find(`option[value="${valorActual}"]`).length > 0) {
+        $select.val(valorActual);
+    }
+}
 function calcularTotalPercepciones(empleado) {
     const sueldoNeto = parseFloat(empleado.sueldo_neto || 0);
     const extras = parseFloat(empleado.sueldo_extra_total || 0);

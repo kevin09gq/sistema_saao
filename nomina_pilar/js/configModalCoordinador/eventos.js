@@ -176,8 +176,8 @@ function asignarHistorialRetardos(empleado) {
         if (!r || !r.fecha) return;
         const fechaNormalizada = String(r.fecha).trim();
         // Preservar tolerancia (incluso si es 0)
-        const tolerancia = r.tolerancia !== undefined && r.tolerancia !== null && r.tolerancia !== '' 
-            ? parseFloat(r.tolerancia) 
+        const tolerancia = r.tolerancia !== undefined && r.tolerancia !== null && r.tolerancia !== ''
+            ? parseFloat(r.tolerancia)
             : 0;
         // Preservar descuento_por_minuto (incluso si es 0)
         const descuentoMinuto = r.descuento_por_minuto !== undefined && r.descuento_por_minuto !== null && r.descuento_por_minuto !== ''
@@ -337,7 +337,8 @@ function asignarHistorialInasistencias(empleado) {
         // Si no hay registro pero tenía horario, es inasistencia
         if (!tieneRegistro) {
             const nombreDelDia = diasNormales[diasSemana.indexOf(diaSemana)];
-            const descuentoPorInasistencia = parseFloat(empleado.salario_diario) || 0;
+            const salarioSemanal = parseFloat(empleado.salario_semanal) || 0;
+            const descuentoPorInasistencia = salarioSemanal / 7;
 
             nuevoHistorial.push({
                 dia: nombreDelDia,

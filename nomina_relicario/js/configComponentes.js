@@ -169,6 +169,21 @@ function obtenerSalariosHorarios(statusRancho) {
                 if (statusRancho) {
                     // obtenerHorarioRancho es async
                     obtenerHorarioRancho();
+                    if (typeof calcularRetardosTodosCoordinadores === 'function') {
+                        calcularRetardosTodosCoordinadores(jsonNominaRelicario);
+                    }
+                    if (typeof calcularInasistenciasTodosCoordinadores === 'function') {
+                        calcularInasistenciasTodosCoordinadores(jsonNominaRelicario);
+                    }
+                    if (typeof calcularOlvidosTodosCoordinadores === 'function') {
+                        calcularOlvidosTodosCoordinadores(jsonNominaRelicario);
+                    }
+                    if (typeof calcularOlvidosTodosJornaleros === 'function') {
+                        calcularOlvidosTodosJornaleros(jsonNominaRelicario);
+                    }
+                    if (typeof calcularRetardosTodosJornaleros === 'function') {
+                        calcularRetardosTodosJornaleros(jsonNominaRelicario);
+                    }
                 } else {
                     actualizarCabeceraNomina(jsonNominaRelicario);
                     // Nómina restaurada: Usar la nueva función centralizada en busquedaFiltrado.js
@@ -222,7 +237,7 @@ function limpiarCamposNomina() {
 // ============================================
 // ACTUALIZAR CONCEPTOS Y TARJETA A TODOS LOS EMPLEADOS
 // ============================================
-function updateTarjeta() { 
+function updateTarjeta() {
     $(document).on('click', '#btn_aplicar_copias_global', function (e) {
         e.preventDefault();
 

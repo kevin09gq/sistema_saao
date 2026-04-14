@@ -307,11 +307,6 @@ function generarTicketsSeleccionados() {
     // Preparar datos para el servidor - Usar la variable global actualizada
     const nominaCompleta = window.jsonNominaRelicario;
     
-    const datosParaTickets = {
-        empleados_seleccionados: empleadosData,
-        metadatos: nominaCompleta
-    };
-
     // Mostrar loading
     Swal.fire({
         title: 'Generando tickets...',
@@ -326,10 +321,12 @@ function generarTicketsSeleccionados() {
     $.ajax({
         url: '../php/descargar_ticket_pdf.php',
         method: 'POST',
-        data: {
-            datos_json: JSON.stringify(datosParaTickets),
-            empleados_seleccionados: true
-        },
+        contentType: 'application/json',
+        data: JSON.stringify({
+            seleccion: true,
+            empleados: empleadosData,
+            meta: nominaCompleta
+        }),
         xhrFields: {
             responseType: 'blob'
         },

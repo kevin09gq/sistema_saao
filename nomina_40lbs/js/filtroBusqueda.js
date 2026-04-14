@@ -1,6 +1,11 @@
 
 filtrarEmpleados();
 
+/**************************************
+ * FUNCIONES DE FILTRADO DE EMPLEADOS
+ **************************************/
+ 
+
 function filtrarEmpleados() {
     // Evento cuando cambia el departamento
     $('#filtro-departamento').on('change', function () {
@@ -19,12 +24,101 @@ function filtrarEmpleados() {
     });
 }
 
-/**
- * Función centralizada que lee todos los filtros activos 
- * (departamento y búsqueda) y actualiza la tabla.
- */
+/**************************************
+ *  POBRAR SELECT DEPARTAMENTOS ASIGNADOS A LA NOMINA
+ **************************************/
+
+function poblarSelectDepartamentos(json) {
+    if (!json || !json.departamentos) return;
+
+    const $select = $('#filtro-departamento');
+    const valorActual = $select.val();
+    $select.empty();
+
+    // Organizar departamentos por tipo de empleados que contienen y agregar directamente como opciones
+    json.departamentos.forEach(depto => {
+        // Solo mostrar departamentos con la propiedad editar: true
+        if (depto.editar !== true) return;
+
+        const id = depto.id_departamento || depto.nombre;
+        const nombre = depto.nombre;
+
+        const tieneConSeguro = depto.empleados.some(emp => emp.seguroSocial === true);
+        const tieneSinSeguro = depto.empleados.some(emp => emp.seguroSocial === false);
+
+        if (tieneConSeguro) {
+            $select.append(`<option value="${id}|true">${nombre} CSS</option>`);
+        }
+        if (tieneSinSeguro) {
+            $select.append(`<option value="${id}|false">${nombre} SSS</option>`);
+        }
+    });
+
+    // Restaurar valor previo si es posible
+    if (valorActual && $select.find(`option[value="${valorActual}"]`).length > 0) {
+        $select.val(valorActual);
+    }
+}
+
+/**************************************
+ * OBTIENE UN JSON FILTRADO DE EMPLEADOS DE ACUERDO AL DEPARTAMENTO SELECCIONADO Y BÚSQUEDA
+ **************************************/
+
+function filtrarEmpleadosPorDepartamento(jsonNomina, filtroDepto, seguroSocial = true, busqueda = '') {
+    let jsonFiltrado = {
+        departamentos: []
+    };
+
+    const normalizar = (texto) => {
+        return String(texto || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    };
+
+    const terminoBusqueda = normalizar(busqueda);
+
+    if (jsonNomina && jsonNomina.departamentos) {
+        jsonNomina.departamentos.forEach(depto => {
+            // 1. Filtrar por departamento (si no es 'all')
+            if (filtroDepto !== null && filtroDepto !== 'all') {
+                const matchId = depto.id_departamento && String(depto.id_departamento) === String(filtroDepto);
+                const matchNombre = depto.nombre && String(depto.nombre) === String(filtroDepto);
+                if (!matchId && !matchNombre) return;
+            }
+
+            let empleadosFiltrados = depto.empleados.filter(emp => {
+                // 2. Filtrar por seguroSocial
+                if (seguroSocial !== null && emp.seguroSocial !== seguroSocial) {
+                    return false;
+                }
+
+                // 3. Filtrar por búsqueda de nombre
+                if (terminoBusqueda !== '') {
+                    const nombreNormalizado = normalizar(emp.nombre);
+                    if (!nombreNormalizado.includes(terminoBusqueda)) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            if (empleadosFiltrados.length > 0) {
+                jsonFiltrado.departamentos.push({
+                    ...depto,
+                    empleados: empleadosFiltrados
+                });
+            }
+        });
+    }
+
+    return jsonFiltrado;
+}
+
+/**************************************
+ *  FUNCIONES MUESTRA EMPLEADOS DE ACUERDO AL DEPARTAMENTO SELECCIONADO Y BÚSQUEDA 
+ **************************************/
+
 function aplicarFiltros() {
-    const valorSelect = $('#filtro-departamento').val();
+    const valorSelect = $('#filtro-departamento').val() || 'all|all';
     const busqueda = $('#busqueda-nomina-40lbs').val() || '';
 
     // Si no hay JSON de nómina, no hacer nada
@@ -32,22 +126,14 @@ function aplicarFiltros() {
         return;
     }
 
-    // Mapear el valor del select a id_departamento y seguroSocial
-    let idDepartamento = null;
+    // Mapear el valor del select a filtroDepto y seguroSocial
+    let filtroDepto = 'all';
     let seguroSocial = null;
 
-    if (valorSelect === '1') {
-        idDepartamento = 4;
-        seguroSocial = true;
-    } else if (valorSelect === '2') {
-        idDepartamento = 4;
-        seguroSocial = false;
-    } else if (valorSelect === '3') {
-        idDepartamento = 5;
-        seguroSocial = true;
-    } else if (valorSelect === '4') {
-        idDepartamento = 5;
-        seguroSocial = false;
+    if (valorSelect !== 'all|all') {
+        const partes = valorSelect.split('|');
+        filtroDepto = partes[0];
+        seguroSocial = partes[1] === 'true';
     }
 
     // Reiniciar a la página 1 al filtrar
@@ -56,9 +142,28 @@ function aplicarFiltros() {
     }
 
     // Filtrar usando la función extendida en showDataTable.js
-    const jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNomina40lbs, idDepartamento, seguroSocial, busqueda);
+    const jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNomina40lbs, filtroDepto, seguroSocial, busqueda);
 
     // Mostrar datos en la tabla
     mostrarDatosTabla(jsonFiltrado, 1);
 }
 
+
+function refrescarTabla() {
+    const valorSelect = $('#filtro-departamento').val() || 'all|all';
+    let filtroDepto = 'all';
+    let seguroSocial = null;
+
+    if (valorSelect !== 'all|all') {
+        const partes = valorSelect.split('|');
+        filtroDepto = partes[0];
+        seguroSocial = partes[1] === 'true';
+    }
+
+    // Obtener término de búsqueda actual
+    const busqueda = $('#busqueda-nomina-40lbs').val() || '';
+
+    // Aplicar filtro y mostrar tabla con página actual
+    const jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNomina40lbs, filtroDepto, seguroSocial, busqueda);
+    mostrarDatosTabla(jsonFiltrado, paginaActualNomina);
+}

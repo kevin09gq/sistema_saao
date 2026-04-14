@@ -167,10 +167,7 @@
                 </button>
                 <button class="btn btn-outline-primary" id="btn-seleccionar-empleados" title="Seleccionar empleados">
                     <i class="bi bi-people"></i>
-                </button>
-                <button class="btn btn-outline-secondary" id="btn_abrir_modal_reasignar" title="Reasignar Empleado de Departamento">
-                    <i class="bi bi-person-fill-gear"></i>
-                </button>
+                </button> 
                 <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global"
                     title="Aplicar Tarjeta">
                     <i class="bi bi-arrow-clockwise"></i>
@@ -183,12 +180,22 @@
                     title="Totales por concepto" aria-label="Totales por concepto">
                     <i class="bi bi-calculator"></i>
                 </button>
+                  <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf" title="Descargar Ticket">
+                    <i class="bi bi-ticket-perforated"></i>
+                </button>
+                <button class="btn btn-outline-secondary btn-ticket-zebra" id="btn_ticket_manual"
+                    title="Descargar Ticket Manual">
+                    <i class="bi bi-ticket-perforated"></i>
+                </button>
                 <button class="btn btn-outline-danger" id="btn_modal_olvidos_masivos"
                     title="Perdonar olvidos de checador">
                     <i class="bi bi-clipboard-check"></i>
                 </button>
                 <button class="btn btn-outline-primary" id="btn_modal_dias_extra" title="Agregar día extra jornaleros">
                     <i class="bi bi-calendar-plus"></i>
+                </button>
+                 <button class="btn btn-outline-secondary" id="btn_abrir_modal_reasignar" title="Reasignar Empleado de Departamento">
+                    <i class="bi bi-person-fill-gear"></i>
                 </button>
             </div>
         </div>
@@ -259,7 +266,7 @@
                             <th rowspan="2">PERMISO</th>
                             <th rowspan="2">RETARDOS</th>
                             <th rowspan="2">UNIFORMES</th>
-                            <th rowspan="2">CHECADOR</th>
+                            <th rowspan="2">BIOMETRICO</th>
                             <th rowspan="2">F.A/GAFET/COFIA</th>
                             <th rowspan="2">TOTAL DE <br> DEDUCCIONES</th>
                             <th rowspan="2">NETO A RECIBIR</th>
@@ -342,7 +349,7 @@
     <?php include "modals/modalSeleccionarEmpleados.php"; ?>
 
     <?php include "modals/modal_seleccion_tickets_pilar.php"; ?>
-    <?php include "modals/modal_ticket_manual_pilar.php"; ?>
+   
     <?php include "modals/modalDiasExtra.php"; ?>
     <?php include "modals/modalOlvidos.php"; ?>
     <?php include "modals/modalReasignarEmpleado.php"; ?>
