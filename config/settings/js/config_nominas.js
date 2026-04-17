@@ -10,6 +10,11 @@ $(document).ready(function () {
 
     // Eventos del modal
     iniciarModalAsignacion();
+
+    // Actualizar texto del color en el modal de asignación
+    $(document).on("change", "#modal_color_departamento", function () {
+        $("#modal_color_text").text($(this).val().toUpperCase());
+    });
 });
 
 // ==========================================
@@ -74,12 +79,12 @@ function cargarAreasFormSelect() {
 function registrarNomina() {
     $("#nominaForm").submit(function (e) {
         e.preventDefault();
-        
+
         let idNomina = $("#nomina_id").val().trim();
         let nombreNomina = $("#nombre_nomina").val().trim();
         let idArea = $("#select_area_nomina").val();
         let accion = idNomina ? "actualizarNomina" : "registrarNomina";
-        
+
         if (nombreNomina != "" && idArea != null) {
             $.ajax({
                 type: "POST",
@@ -94,7 +99,7 @@ function registrarNomina() {
                     if (response.trim() == "1") {
                         resetearFormularioNomina();
                         getNominas();
-                        
+
                         let mensaje = accion === "registrarNomina" ? "Nómina registrada" : "Nómina actualizada";
                         Swal.fire({ icon: 'success', title: 'Éxito', text: mensaje, confirmButtonColor: '#22c55e' });
                     } else if (response.trim() == "3") {
@@ -149,18 +154,21 @@ function editarNomina() {
         let idNomina = $(this).data("id");
         let nombreNomina = $(this).closest("tr").find("td:eq(1)").text();
         let idArea = $(this).data("area-id");
-        
+        let colorNomina = $(this).data("color") || "#FF0000";
+
         $("#nomina_id").val(idNomina);
         $("#nombre_nomina").val(nombreNomina);
         $("#select_area_nomina").val(idArea);
+        $("#color_nomina").val(colorNomina);
+        $("#color_nomina_text").text(colorNomina.toUpperCase());
         $("#btn-guardar-nomina").html('<i class="bi bi-save"></i> Actualizar');
     });
 }
 
 function buscarNominas() {
-    $("#search-nominas").on("keyup", function() {
+    $("#search-nominas").on("keyup", function () {
         let valor = $(this).val().toLowerCase();
-        $("#nominas-tbody tr").filter(function() {
+        $("#nominas-tbody tr").filter(function () {
             let rowText = $(this).find("td:eq(1)").text() + " " + $(this).find("td:eq(2)").text();
             $(this).toggle(rowText.toLowerCase().indexOf(valor) > -1);
         });
@@ -196,21 +204,21 @@ function iniciarModalAsignacion() {
         $("#lblNombreNominaModal").text(nombreNomina);
         $("#modal_nomina_id").val(idNomina);
         $("#modal_nomina_area_id").val(idArea);
-        
+
         // Cargar departamentos del área de la nómina
         cargarDepartamentosPorAreaModal(idArea);
         cargarDepartamentosAsignados(idNomina);
-        
+
         $("#modalAsignarDepartamentos").modal("show");
     });
 
     // Formulario de agregar un departamento a la nómina del modal actual
     $("#formAgregarDeptoNomina").submit(function (e) {
         e.preventDefault();
-        
+
         let idNomina = $("#modal_nomina_id").val();
         let idDepartamento = $("#modal_select_departamento").val();
-        
+
         if (idNomina && idDepartamento) {
             $.ajax({
                 type: "POST",
@@ -218,7 +226,8 @@ function iniciarModalAsignacion() {
                 data: {
                     accion: "registrarNominaDepartamento",
                     id_nomina: idNomina,
-                    id_departamento: idDepartamento
+                    id_departamento: idDepartamento,
+                    color_depto_nomina: $("#modal_color_departamento").val()
                 },
                 success: function (response) {
                     if (response.trim() == "1") {
@@ -270,7 +279,7 @@ function iniciarModalAsignacion() {
 
 function cargarDepartamentosAsignados(idNomina) {
     $("#contenedorDepartamentosAsignados").html('<div class="text-center w-100 text-muted py-3"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Cargando departamentos...</div>');
-    
+
     $.ajax({
         type: "GET",
         url: "../php/configNominas.php",
@@ -286,10 +295,13 @@ function cargarDepartamentosAsignados(idNomina) {
                 if (deptos.length > 0) {
                     deptos.forEach(depto => {
                         badges += `
-                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle px-3 py-2" style="font-weight: 500; font-size: 0.9rem;">
-                            ${depto.nombre_departamento} 
-                            <i class="bi bi-x-circle ms-2 cursor-pointer fw-bold btn-delete-nd-modal" data-id="${depto.id_nomina_departamento}" title="Quitar departamento" style="cursor: pointer; font-size: 1.1rem; vertical-align: middle;"></i>
-                        </span>`;
+                        <div class="badge shadow-sm d-flex align-items-center p-0 overflow-hidden border" style="background-color: white; border-color: ${depto.color_depto_nomina || '#FF0000'} !important; min-width: 120px;">
+                            <div style="background-color: ${depto.color_depto_nomina || '#FF0000'}; width: 10px; height: 35px;"></div>
+                            <span class="px-2 text-dark fw-semibold flex-grow-1">${depto.nombre_departamento}</span>
+                            <button class="btn btn-sm btn-link text-danger p-1 me-1 btn-delete-nd-modal" data-id="${depto.id_nomina_departamento}" title="Quitar departamento">
+                                <i class="bi bi-x-circle-fill"></i>
+                            </button>
+                        </div>`;
                     });
                 } else {
                     badges = `<div class="text-center w-100 text-muted fst-italic py-3">No hay departamentos asignados a esta nómina.</div>`;

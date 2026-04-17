@@ -126,7 +126,7 @@ function obtenerDepartamentosPorNomina() {
     if(isset($_GET['id_nomina'])) {
         $idNomina = (int)$_GET['id_nomina'];
 
-        $sql = $conexion->prepare("SELECT nd.id_nomina_departamento, d.nombre_departamento 
+        $sql = $conexion->prepare("SELECT nd.id_nomina_departamento, d.nombre_departamento, nd.color_depto_nomina 
                                    FROM nomina_departamento nd
                                    INNER JOIN departamentos d ON nd.id_departamento = d.id_departamento
                                    WHERE nd.id_nomina = ?
@@ -150,6 +150,7 @@ function registrarNominaDepartamento() {
     if (isset($_POST['id_nomina']) && isset($_POST['id_departamento'])) {
         $idNomina = (int)$_POST['id_nomina'];
         $idDepto = (int)$_POST['id_departamento'];
+        $colorDepto = $_POST['color_depto_nomina'] ?? '#FF0000';
 
         $sqlCheck = $conexion->prepare("SELECT COUNT(*) as c FROM nomina_departamento WHERE id_nomina = ? AND id_departamento = ?");
         $sqlCheck->bind_param("ii", $idNomina, $idDepto);
@@ -157,8 +158,8 @@ function registrarNominaDepartamento() {
         $res = $sqlCheck->get_result()->fetch_assoc();
         if ($res['c'] > 0) { echo "3"; return; }
 
-        $sql = $conexion->prepare("INSERT INTO nomina_departamento (id_nomina, id_departamento) VALUES (?, ?)");
-        $sql->bind_param("ii", $idNomina, $idDepto);
+        $sql = $conexion->prepare("INSERT INTO nomina_departamento (id_nomina, id_departamento, color_depto_nomina) VALUES (?, ?, ?)");
+        $sql->bind_param("iis", $idNomina, $idDepto, $colorDepto);
         if ($sql->execute()) echo "1"; else echo "2";
     }
 }

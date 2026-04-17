@@ -385,6 +385,7 @@ CREATE TABLE nomina_departamento (
   id_nomina_departamento INT AUTO_INCREMENT PRIMARY KEY,
   id_nomina INT NOT NULL,
   id_departamento INT NOT NULL,
+  color_depto_nomina VARCHAR(7) DEFAULT '#FF0000',
   FOREIGN KEY (id_nomina) REFERENCES nombre_nominas(id_nomina) ON UPDATE CASCADE ON DELETE CASCADE,
   FOREIGN KEY (id_departamento) REFERENCES departamentos(id_departamento) ON UPDATE CASCADE ON DELETE CASCADE
 );

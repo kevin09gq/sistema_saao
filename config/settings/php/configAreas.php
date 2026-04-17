@@ -10,7 +10,7 @@ if (isset($_GET['accion']) || isset($_POST['accion'])) {
 
     switch ($accion) {
 
-        // ÁREAS
+            // ÁREAS
         case 'obtenerInfoArea':
             obtenerInfoArea();
             break;
@@ -30,11 +30,33 @@ if (isset($_GET['accion']) || isset($_POST['accion'])) {
             eliminarImagenArea();
             break;
 
+        case 'registrarAreaDepartamento':
+            registrarAreaDepartamento();
+            break;
+        case 'eliminarAreasDepartamentos':
+            eliminarAreasDepartamentos();
+            break;
+
         default:
             echo "Acción no reconocida";
     }
 } else {
     echo "No se especificó ninguna acción";
+}
+
+// ======================
+// FUNCION PARA RESPONDER
+// ======================
+function respuesta(int $code, string $titulo, string $mensaje, string $icono, array $data)
+{
+    http_response_code($code);
+    header('Content-Type: application/json');
+    echo json_encode([
+        "titulo"  => $titulo,
+        "mensaje" => $mensaje,
+        "icono"   => $icono,
+        "data"    => $data
+    ], JSON_UNESCAPED_UNICODE);
 }
 
 
@@ -429,5 +451,124 @@ function eliminarImagenArea()
         $stmt->close();
     } else {
         echo "0";
+    }
+}
+
+
+/**
+ * RELACION DE AREAS Y DEPARTAMENTOS
+ */
+
+// Función para registrar la asignación de un departamento a un área
+function registrarAreaDepartamento()
+{
+    global $conexion;
+
+    if (isset($_POST['id_area']) && isset($_POST['id_departamento'])) {
+
+        // Limpiar espacios
+        $idArea = trim($_POST['id_area']);
+        $idDepartamento = trim($_POST['id_departamento']);
+
+        // Validar que no estén vacíos
+        if (empty($idArea) || empty($idDepartamento)) {
+            respuesta(400, "Datos incompletos", "El ID del área y el ID del departamento son requeridos.", "error", []);
+            return;
+        }
+
+        // Verificar si ya existe la relación
+        $checkSql = "SELECT COUNT(*) as count 
+                     FROM areas_departamentos 
+                     WHERE id_area = ? AND id_departamento = ?";
+
+        $checkStmt = $conexion->prepare($checkSql);
+
+        if (!$checkStmt) {
+            respuesta(500, "Error del servidor", "Error el preparar consulta: " . $conexion->error, "error", []);
+            return;
+        }
+
+        $checkStmt->bind_param("ii", $idArea, $idDepartamento);
+        $checkStmt->execute();
+        $result = $checkStmt->get_result();
+        $row = $result->fetch_assoc();
+        $checkStmt->close();
+
+        if ($row['count'] > 0) {
+            respuesta(200, "Relación existente", "El departamento ya está asignado a esta área.", "warning", []);
+            return;
+        }
+
+        /**
+         * Tabla intermedia entre áreas y departamentos
+         */
+
+        // Insertar relación
+        $sql = $conexion->prepare(
+            "INSERT INTO areas_departamentos (id_area, id_departamento) VALUES (?, ?)"
+        );
+
+        if (!$sql) {
+            respuesta(500, "Error del servidor", "Error al preparar la consulta: " . $conexion->error, "error", []);
+            return;
+        }
+
+        $sql->bind_param("ii", $idArea, $idDepartamento);
+
+        if ($sql->execute()) {
+            respuesta(200, "Relación registrada", "El departamento ha sido asignado a esta área.", "success", []);
+        } else {
+            respuesta(500, "Error del servidor", "Error al ejecutar la consulta: " . $conexion->error, "error", []);
+        }
+
+        $sql->close();
+    } else {
+        respuesta(400, "Datos incompletos", "El ID del área y el ID del departamento son requeridos.", "error", []);
+    }
+}
+
+// Función para eliminar la asignación de un departamento a un área
+function eliminarAreasDepartamentos()
+{
+    global $conexion;
+
+    if (isset($_POST['id_area']) && isset($_POST['id_departamento'])) {
+
+        $idArea = (int) $_POST['id_area'];
+        $idDepartamento = (int) $_POST['id_departamento'];
+
+        // Validar que no esté vacío
+        if (empty($idArea) || empty($idDepartamento)) {
+            respuesta(400, "Datos incompletos", "El ID del área y el ID del departamento son requeridos.", "error", []);
+            return;
+        }
+
+        // Preparar DELETE
+        $sql = $conexion->prepare(
+            "DELETE FROM areas_departamentos WHERE id_area = ? AND id_departamento = ?"
+        );
+
+        if (!$sql) {
+            respuesta(500, "Error del servidor", "Error en la preparación: " . $conexion->error, "error", []);
+            return;
+        }
+
+        $sql->bind_param("ii", $idArea, $idDepartamento);
+
+        // Ejecutar
+        if ($sql->execute()) {
+
+            if ($sql->affected_rows > 0) {
+                respuesta(200, "Relación eliminada", "El departamento ha sido desasignado de esta área.", "success", []);
+            } else {
+                respuesta(404, "Relación no encontrada", "No se encontró la relación entre el departamento y el área.", "warning", []);
+            }
+        } else {
+            respuesta(500, "Error del servidor", "Error al ejecutar la consulta: " . $conexion->error, "error", []);
+        }
+
+        $sql->close();
+    } else {
+        respuesta(400, "Datos incompletos", "El ID del área y el ID del departamento son requeridos.", "error", []);
     }
 }

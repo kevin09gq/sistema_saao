@@ -10,7 +10,7 @@ if (isset($_GET['accion']) || isset($_POST['accion'])) {
 
     switch ($accion) {
 
-        // PUESTOS
+            // PUESTOS
         case 'registrarPuesto':
             registrarPuesto();
             break;
@@ -25,12 +25,9 @@ if (isset($_GET['accion']) || isset($_POST['accion'])) {
             break;
 
 
-        // DEPARTAMENTOS-PUESTOS
+            // DEPARTAMENTOS-PUESTOS
         case 'registrarDepartamentoPuesto':
             registrarDepartamentoPuesto();
-            break;
-        case 'actualizarDepartamentoPuesto':
-            actualizarDepartamentoPuesto();
             break;
         case 'eliminarDepartamentoPuesto':
             eliminarDepartamentoPuesto();
@@ -41,6 +38,21 @@ if (isset($_GET['accion']) || isset($_POST['accion'])) {
     }
 } else {
     echo "No se especificó ninguna acción";
+}
+
+// ======================
+// FUNCION PARA RESPONDER
+// ======================
+function respuesta(int $code, string $titulo, string $mensaje, string $icono, array $data)
+{
+    http_response_code($code);
+    header('Content-Type: application/json');
+    echo json_encode([
+        "titulo"  => $titulo,
+        "mensaje" => $mensaje,
+        "icono"   => $icono,
+        "data"    => $data
+    ], JSON_UNESCAPED_UNICODE);
 }
 
 function registrarPuesto()
@@ -287,7 +299,7 @@ function registrarDepartamentoPuesto()
 
         // Verificar que el nombre no esté vacío después de eliminar espacios
         if (empty($idPuesto) or empty($idDepartamento)) {
-            echo "0"; // El nombre está vacío
+            respuesta(400, "Datos incompletos", "El ID del área y el ID del departamento son requeridos.", "error", []);
             return;
         }
 
@@ -296,7 +308,7 @@ function registrarDepartamentoPuesto()
         $checkStmt = $conexion->prepare($checkSql);
 
         if (!$checkStmt) {
-            echo "Error en la preparación: " . $conexion->error;
+           respuesta(500, "Error de servidor", "Error en la preparación: " . $conexion->error, "error", []);
             return;
         }
 
@@ -307,7 +319,7 @@ function registrarDepartamentoPuesto()
         $checkStmt->close();
 
         if ($row['count'] > 0) {
-            echo "3"; // Relación ya existe
+            respuesta(400, "Relación existente", "La relación entre el área y el departamento ya existe.", "error", []);
             return;
         }
 
@@ -320,7 +332,7 @@ function registrarDepartamentoPuesto()
         $sql = $conexion->prepare("INSERT INTO departamentos_puestos (id_departamento, id_puestoEspecial) VALUES (?, ?)");
 
         if (!$sql) {
-            echo "Error en la preparación: " . $conexion->error;
+            respuesta(500, "Error de servidor", "Error en la preparación: " . $conexion->error, "error", []);
             return;
         }
 
@@ -328,75 +340,15 @@ function registrarDepartamentoPuesto()
 
         // Ejecutar la consulta y verificar si fue exitosa
         if ($sql->execute()) {
-            echo "1"; // Éxito
+            respuesta(200, "Éxito", "La relación fue registrada correctamente.", "success", []);
         } else {
-            echo "2"; // Error al ejecutar
+            respuesta(500, "Error de servidor", "Error al ejecutar la consulta: " . $conexion->error, "error", []);
         }
 
         // Cerrar la declaración
         $sql->close();
     } else {
-        echo "2"; // No se recibió el nombre del puesto
-    }
-}
-
-function actualizarDepartamentoPuesto()
-{
-    global $conexion;
-
-    if (isset($_POST['id_puesto']) && isset($_POST['id_departamento']) && isset($_POST['id_departamento_puesto'])) {
-
-        $idPuesto = (int)$_POST['id_puesto'];
-        $idDepartamento = (int)$_POST['id_departamento'];
-        $id = (int)$_POST['id_departamento_puesto'];
-
-        // Verificar que los IDs no estén vacíos
-        if (empty($idPuesto) or empty($idDepartamento) or empty($id)) {
-            echo "0"; // Datos vacíos
-            return;
-        }
-
-        // Verificar si ya existe otra relación con los mismos datos (excepto el actual)
-        $checkSql = "SELECT COUNT(*) as count FROM departamentos_puestos WHERE id_departamento = ? AND id_puestoEspecial = ? AND id_departamento_puesto != ?";
-        $checkStmt = $conexion->prepare($checkSql);
-
-        if (!$checkStmt) {
-            echo "Error en la preparación: " . $conexion->error;
-            return;
-        }
-
-        $checkStmt->bind_param("iii", $idDepartamento, $idPuesto, $id);
-        $checkStmt->execute();
-        $result = $checkStmt->get_result();
-        $row = $result->fetch_assoc();
-        $checkStmt->close();
-
-        if ($row['count'] > 0) {
-            echo "3"; // Relación ya existe
-            return;
-        }
-
-        // Preparar la consulta para actualizar el puesto
-        $sql = $conexion->prepare("UPDATE departamentos_puestos SET id_puestoEspecial = ?, id_departamento = ? WHERE id_departamento_puesto = ?");
-
-        if (!$sql) {
-            echo "Error en la preparación: " . $conexion->error;
-            return;
-        }
-
-        $sql->bind_param("iii", $idPuesto, $idDepartamento, $id);
-
-        // Ejecutar la consulta y verificar si fue exitosa
-        if ($sql->execute()) {
-            echo "1"; // Éxito
-        } else {
-            echo "2"; // Error al ejecutar
-        }
-
-        // Cerrar la declaración
-        $sql->close();
-    } else {
-        echo "2"; // No se recibieron todos los datos necesarios
+        respuesta(400, "Datos incompletos", "El ID del área y el ID del departamento son requeridos.", "error", []);
     }
 }
 
@@ -404,42 +356,81 @@ function eliminarDepartamentoPuesto()
 {
     global $conexion;
 
-    if (isset($_POST['id_departamento_puesto'])) {
+    if (isset($_POST['id_departamento']) && isset($_POST['id_puesto'])) {
 
-        $idDepartamentoPuesto = (int)$_POST['id_departamento_puesto'];
+        $id_departamento = (int)$_POST['id_departamento'];
+        $id_puesto = (int)$_POST['id_puesto'];
 
-        // Iniciar transacción para asegurar que ambas operaciones se completen o ninguna
+        // Iniciar transacción
         $conexion->begin_transaction();
 
         try {
 
-            // Ahora eliminamos el puesto
-            $deleteSql = "DELETE FROM departamentos_puestos WHERE id_departamento_puesto = ?";
+            // Eliminar relación por ambos IDs
+            $deleteSql = "DELETE FROM departamentos_puestos 
+                          WHERE id_departamento = ? 
+                          AND id_puestoEspecial = ?";
+
             $deleteStmt = $conexion->prepare($deleteSql);
 
             if (!$deleteStmt) {
                 throw new Exception("Error al preparar la eliminación: " . $conexion->error);
             }
 
-            $deleteStmt->bind_param("i", $idDepartamentoPuesto);
-            $deleteResult = $deleteStmt->execute();
+            $deleteStmt->bind_param("ii", $id_departamento, $id_puesto);
+
+            if (!$deleteStmt->execute()) {
+                throw new Exception("Error al ejecutar la eliminación: " . $deleteStmt->error);
+            }
+
+            $filasAfectadas = $deleteStmt->affected_rows;
+
             $deleteStmt->close();
 
-            if ($deleteResult) {
-                // Confirmar la transacción
+            if ($filasAfectadas > 0) {
                 $conexion->commit();
-                echo "1"; // Éxito
+
+                respuesta(
+                    200,
+                    "Éxito",
+                    "Relación eliminada correctamente",
+                    "success",
+                    []
+                );
+
             } else {
-                // Revertir la transacción
                 $conexion->rollback();
-                echo "2"; // Error al eliminar
+
+                respuesta(
+                    404,
+                    "No encontrado",
+                    "No se encontró la relación a eliminar",
+                    "warning",
+                    []
+                );
             }
+
         } catch (Exception $e) {
-            // Revertir la transacción en caso de error
+
             $conexion->rollback();
-            echo "Error: " . $e->getMessage();
+
+            respuesta(
+                500,
+                "Error",
+                $e->getMessage(),
+                "error",
+                []
+            );
         }
+
     } else {
-        echo "2"; // No se recibió el ID del departamento_puesto
+
+        respuesta(
+            400,
+            "Datos incompletos",
+            "Se requieren id_departamento e id_puesto",
+            "warning",
+            []
+        );
     }
 }
