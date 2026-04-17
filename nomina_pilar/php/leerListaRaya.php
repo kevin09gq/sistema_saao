@@ -22,15 +22,6 @@ $numeroSemana = null;
 $fechaInicio = null;
 $fechaCierre = null;
 
-// Obtener id_empresa del POST (opcional, por defecto 1)
-$idEmpresa = isset($_POST['id_empresa']) ? intval($_POST['id_empresa']) : 1;
-
-// Departamentos permitidos
-$departamentosPermitidos = [
-    'Rancho El Pilar',
-    'Rancho el pilar Jornaleros' 
-];
-
 // Buscar datos generales en las primeras filas
 foreach ($rows as $row) {
     // Buscar número de semana
@@ -58,27 +49,10 @@ foreach ($rows as $row) {
             }
             
             $nombreCompleto = trim($match[2]);
-            
-            // Verificar si el departamento está exactamente en la lista permitida
-            // Usamos el nombre sin el número (match[2]) para una comparación exacta
-            $departamentoPermitido = false;
-            $nombreDeptoSolo = trim($match[2]);
-            foreach ($departamentosPermitidos as $deptoPermitido) {
-                if (strcasecmp($nombreDeptoSolo, $deptoPermitido) === 0) {
-                    $departamentoPermitido = true;
-                    break;
-                }
-            }
-            
-            // Solo procesar si está permitido
-            if ($departamentoPermitido) {
-                $actualDepto = [
-                    'nombre' => $nombreCompleto,
-                    'empleados' => []
-                ];
-            } else {
-                $actualDepto = null;
-            }
+            $actualDepto = [
+                'nombre' => $nombreCompleto,
+                'empleados' => []
+            ];
             
             $ultimoEmpleadoIdx = null;
             $procesandoEmpleados = false;
@@ -99,7 +73,7 @@ foreach ($rows as $row) {
             
             $empleado = [
                 'clave' => $claveFormateada,
-                'id_empresa' => $idEmpresa,
+                'nombre' => $nombreEmpleado,
                 'tarjeta' => null,
                 'conceptos' => []
             ];
@@ -145,7 +119,7 @@ foreach ($rows as $row) {
         $ultimoEmpleadoIdx = null;
     }
 
-    // Guardar conceptos (para todos los departamentos)
+    // Guardar conceptos
     if (
         $procesandoEmpleados && $actualDepto && $ultimoEmpleadoIdx !== null &&
         isset($row[5]) && isset($row[6]) && isset($row[8])
@@ -153,7 +127,7 @@ foreach ($rows as $row) {
         $codigoConcepto = trim($row[5]);
         $nombreConcepto = trim($row[6]);
         $resultadoConcepto = trim($row[8]);
-        if (in_array($codigoConcepto, ['45', '52', '16', '107'])) {
+        if (in_array($codigoConcepto, ['45', '52', '16'])) {
             $actualDepto['empleados'][$ultimoEmpleadoIdx]['conceptos'][] = [
                 'codigo' => $codigoConcepto,
                 'nombre' => $nombreConcepto,

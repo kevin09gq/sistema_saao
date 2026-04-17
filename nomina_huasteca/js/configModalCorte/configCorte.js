@@ -65,8 +65,8 @@ function obtenerRangoFechas(inicioStr, finStr) {
     let fin = parseFecha(finStr);
 
     // Quitar un día tanto al inicio como al fin
-    inicio = moverDias(inicio, -1);
-    fin = moverDias(fin, -1);
+    inicio = moverDias(inicio, 0);
+    fin = moverDias(fin, 0);
 
     const resultado = [];
     let actual = new Date(inicio);

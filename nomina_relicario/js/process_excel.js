@@ -367,11 +367,11 @@ function procesarBiometrico(form, estructuraJson) {
                 // Se pasa un callback para ejecutar los cálculos DESPUÉS de que el AJAX interno termine.
                 if (empleadosNoUnidos && empleadosNoUnidos.length > 0) {
                     obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos, function () {
-                       
+
                     });
                 } else {
                     // No hay empleados sin seguro: ejecutar cálculos de inmediato
-                  
+
                 }
 
             } catch (e) {
@@ -531,7 +531,7 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
                 asignarPropiedadesEmpleado(jsonNominaRelicario);
                 ordenarEmpleadosPorNombre(jsonNominaRelicario);
                 // Calcular retardos e inasistencias para todos los coordinadores (departamento 8)
-               
+
                 actualizarCabeceraNomina(jsonNominaRelicario);
 
                 // BHL: Llenar tabla de pagos por día cuando se cargue la nómina
@@ -541,7 +541,7 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
 
                 mostrarConfigValores(true);
 
-                
+
 
                 console.log(jsonNominaRelicario);
 
@@ -666,8 +666,7 @@ function agregarEmpleadosNuevos(jsonNominaRelicario, JsonListaRaya) {
     });
 
     if (empleadosNuevosDetectados.length === 0) {
-
-        return;
+        verificarEmpleadosSinSeguro(jsonNominaRelicario);
     }
 
     const clavesNuevas = empleadosNuevosDetectados.map(e => e.clave);

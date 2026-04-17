@@ -626,7 +626,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja)
     $sheet->getStyle('A' . $filaTotal)->getAlignment()->setHorizontal('center');
     $sheet->getStyle('A' . $filaTotal)->getAlignment()->setVertical('center');
 
-    $columnasData = ['E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA'];
+    $columnasData = ['D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA'];
 
     foreach ($columnasData as $columna) {
         $rangoSuma = $columna . '7:' . $columna . ($filaTotal - 1);
@@ -634,7 +634,9 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja)
         $sheet->getStyle($columna . $filaTotal)->getFont()->setBold(true);
         $sheet->getStyle($columna . $filaTotal)->getFont()->setSize(14);
 
-        if (in_array($columna, ['J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'V', 'X'])) {
+        if ($columna === 'D') {
+            $sheet->getStyle($columna . $filaTotal)->getNumberFormat()->setFormatCode('0');
+        } elseif (in_array($columna, ['J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'V', 'X'])) {
             $sheet->getStyle($columna . $filaTotal)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
             $sheet->getStyle($columna . $filaTotal)->getFont()->setColor(new Color('FF0000'));
         } elseif ($columna === 'Z') {

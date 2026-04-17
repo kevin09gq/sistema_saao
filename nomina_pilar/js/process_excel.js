@@ -655,7 +655,7 @@ function agregarEmpleadosNuevos(jsonNominaPilar, JsonListaRaya) {
 
     if (empleadosNuevosDetectados.length === 0) {
         verificarEmpleadosSinSeguro(jsonNominaPilar);
-        return;
+       
     }
 
     const clavesNuevas = empleadosNuevosDetectados.map(e => e.clave);

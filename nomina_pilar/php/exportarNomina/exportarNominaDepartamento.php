@@ -645,8 +645,8 @@ $sheet->getStyle('A' . $filaTotal)->getFont()->setBold(true);
 $sheet->getStyle('A' . $filaTotal)->getAlignment()->setHorizontal('center');
 $sheet->getStyle('A' . $filaTotal)->getAlignment()->setVertical('center');
 
-// Agregar fórmulas SUM para cada columna de datos (E a AA)
-$columnasData = ['E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA'];
+// Agregar fórmulas SUM para cada columna de datos (D a AA)
+$columnasData = ['D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA'];
 
 foreach ($columnasData as $columna) {
     $rangoSuma = $columna . '7:' . $columna . ($filaTotal - 1);
@@ -655,7 +655,10 @@ foreach ($columnasData as $columna) {
     $sheet->getStyle($columna . $filaTotal)->getFont()->setSize(14);
     
     // Aplicar formato de moneda según la columna
-    if (in_array($columna, ['J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'V', 'X'])) {
+    if ($columna === 'D') {
+        // Formato entero para DIAS TRAB.
+        $sheet->getStyle($columna . $filaTotal)->getNumberFormat()->setFormatCode('0');
+    } elseif (in_array($columna, ['J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'V', 'X'])) {
         // Formato rojo con signo negativo
         $sheet->getStyle($columna . $filaTotal)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
         $sheet->getStyle($columna . $filaTotal)->getFont()->setColor(new Color('FF0000'));
