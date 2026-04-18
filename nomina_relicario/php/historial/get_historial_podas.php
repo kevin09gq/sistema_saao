@@ -94,10 +94,20 @@ try {
             SELECT 
                 p.id_poda, p.nombre_empleado, p.fecha_creacion,
                 n.numero_semana as sem_poda, n.anio as anio_poda, n.nomina_relicario,
-                SUM(m.arboles_podados) as total_arboles,
-                SUM(m.monto) as total_monto,
-                SUM(CASE WHEN m.es_extra = 1 THEN m.monto ELSE 0 END) as total_extras,
-                SUM(CASE WHEN m.es_extra = 0 THEN m.monto ELSE 0 END) as suma_pago_por_arbol,
+                SUM(CASE WHEN m.es_extra = 0 THEN IFNULL(m.arboles_podados, 0) ELSE 0 END) as total_arboles,
+                SUM(CASE WHEN m.es_extra = 0 THEN (IFNULL(m.arboles_podados, 0) * IFNULL(m.monto, 0)) ELSE 0 END) as total_podas,
+                SUM(CASE WHEN m.es_extra = 1 THEN IFNULL(m.monto, 0) ELSE 0 END) as total_extras,
+                SUM(
+                    CASE
+                        WHEN m.es_extra = 0 THEN (IFNULL(m.arboles_podados, 0) * IFNULL(m.monto, 0))
+                        ELSE IFNULL(m.monto, 0)
+                    END
+                ) as total_monto,
+                (SELECT m2.monto
+                 FROM podas_movimientos_relicario m2
+                 WHERE m2.id_poda = p.id_poda AND m2.es_extra = 0
+                 ORDER BY m2.fecha ASC, m2.id_movimiento ASC
+                 LIMIT 1) as pago_por_arbol,
                 (SELECT m3.concepto FROM podas_movimientos_relicario m3 WHERE m3.id_poda = p.id_poda AND m3.es_extra = 1 LIMIT 1) as concepto_extra,
                 COUNT(m.id_movimiento) as dias_registrados
             FROM podas_relicario p

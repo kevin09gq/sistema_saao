@@ -2,6 +2,19 @@ let filtrosData = {};
 let tabActual = 'poda';
 let lastResponseData = null;
 
+function configurarDropdownAccionesSoloUnoAbierto() {
+    document.addEventListener('show.bs.dropdown', (event) => {
+        const dropdownActual = event.target;
+        const togglesAbiertos = document.querySelectorAll('.tb-action-dropdown [data-bs-toggle="dropdown"][aria-expanded="true"]');
+
+        togglesAbiertos.forEach((toggle) => {
+            if (dropdownActual.contains(toggle)) return;
+            if (typeof bootstrap === 'undefined' || !bootstrap.Dropdown) return;
+            bootstrap.Dropdown.getOrCreateInstance(toggle).hide();
+        });
+    });
+}
+
 // Función para formatear fecha de YYYY-MM-DD a YYYY-MMM-DD
 function formatearFecha(fecha) {
     if (!fecha) return fecha;
@@ -23,6 +36,7 @@ function formatearFecha(fecha) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    configurarDropdownAccionesSoloUnoAbierto();
     cargarFiltrosIniciales();
 
     document.getElementById('filtro_anio').addEventListener('change', actualizarMeses);
@@ -225,15 +239,17 @@ function pintarDashboard(data) {
         const tieneArboles = parseInt(p.total_arboles) > 0;
         const tieneExtras = parseFloat(p.total_extras) > 0;
 
-        // Obtener suma del pago por árbol de todos los movimientos de poda
-        let pagoPorArbol = parseFloat(p.suma_pago_por_arbol || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 });
-        
-        // Total real es la suma de todos los montos
-        let totalReal = parseFloat(p.suma_pago_por_arbol || 0) + parseFloat(p.total_extras || 0);
+        // Pago por árbol (valor guardado) para mostrar en la tabla resumen
+        const pagoPorArbol = parseFloat(p.pago_por_arbol || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 });
+
+        // Totales reales (PODA = arboles*monto; EXTRAS = monto)
+        const totalPodas = parseFloat(p.total_podas || 0);
+        const totalExtras = parseFloat(p.total_extras || 0);
 
         if (tabActual === 'general') {
             tabTotalArboles += parseInt(p.total_arboles || 0);
-            tabTotalDinero += parseFloat(p.suma_pago_por_arbol || 0) + parseFloat(p.total_extras || 0);
+            const totalReal = totalPodas + totalExtras;
+            tabTotalDinero += totalReal;
 
             tbody.innerHTML += `
                 <tr>
@@ -250,7 +266,8 @@ function pintarDashboard(data) {
             if (!tieneArboles) return; // Ocultar si NO es poda (solo tiene extras)
 
             tabTotalArboles += parseInt(p.total_arboles || 0);
-            tabTotalDinero += parseFloat(p.suma_pago_por_arbol || 0);
+            const totalReal = totalPodas;
+            tabTotalDinero += totalReal;
 
             tbody.innerHTML += `
                 <tr>
@@ -265,7 +282,7 @@ function pintarDashboard(data) {
         } else {
             if (!tieneExtras) return; // Ocultar si NO tiene extras
 
-            tabTotalDinero += parseFloat(p.total_extras || 0);
+            tabTotalDinero += totalExtras;
 
             tbody.innerHTML += `
                 <tr>
@@ -283,6 +300,15 @@ function pintarDashboard(data) {
     // Actualizar KPIs con los totales de la TAB
     document.getElementById('res_total_arboles').innerText = tabTotalArboles.toLocaleString();
     document.getElementById('res_total_dinero').innerText = `$${tabTotalDinero.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`;
+
+    // Cambiar título del KPI de dinero según la tab activa
+    const kpiDineroBox = document.getElementById('res_total_dinero').closest('.kpi-box');
+    const kpiDineroTitle = kpiDineroBox.querySelector('.kpi-title');
+    if (tabActual === 'poda') {
+        kpiDineroTitle.innerText = 'Inversión Total en Podas';
+    } else if (tabActual === 'extras') {
+        kpiDineroTitle.innerText = 'Inversión en Extras';
+    }
 
     // Mostrar/ocultar KPI de árboles según tab
     const kpiArbolesBox = document.getElementById('res_total_arboles').closest('.kpi-box');
@@ -339,11 +365,11 @@ function abrirDetallesPoda(index, desdeRanking = false) {
     // Header dinámico del modal - Total es la suma de pago_por_arbol + extras
     let totalModal = 0;
     if (tabActual === 'poda') {
-        totalModal = parseFloat(poda.suma_pago_por_arbol || 0);
+        totalModal = parseFloat(poda.total_podas || 0);
     } else if (tabActual === 'extras') {
         totalModal = parseFloat(poda.total_extras || 0);
     } else {
-        totalModal = parseFloat(poda.suma_pago_por_arbol || 0) + parseFloat(poda.total_extras || 0);
+        totalModal = parseFloat(poda.total_podas || 0) + parseFloat(poda.total_extras || 0);
     }
 
     document.getElementById('det_total').innerText = `$${totalModal.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`;

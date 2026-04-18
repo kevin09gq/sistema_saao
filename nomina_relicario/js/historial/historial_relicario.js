@@ -1,6 +1,20 @@
 let filtrosData = {};
 
+function configurarDropdownAccionesSoloUnoAbierto() {
+    document.addEventListener('show.bs.dropdown', (event) => {
+        const dropdownActual = event.target;
+        const togglesAbiertos = document.querySelectorAll('.tb-action-dropdown [data-bs-toggle="dropdown"][aria-expanded="true"]');
+
+        togglesAbiertos.forEach((toggle) => {
+            if (dropdownActual.contains(toggle)) return;
+            if (typeof bootstrap === 'undefined' || !bootstrap.Dropdown) return;
+            bootstrap.Dropdown.getOrCreateInstance(toggle).hide();
+        });
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    configurarDropdownAccionesSoloUnoAbierto();
     cargarFiltrosIniciales();
 
     document.getElementById('filtro_anio').addEventListener('change', actualizarMeses);

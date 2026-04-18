@@ -203,3 +203,16 @@ table.dataTable tr:hover {
 .modal-backdrop ~ .modal-backdrop {
     z-index: 1059 !important; /* Si hay un segundo backdrop, ponerlo antes del modal detalles */
 }
+
+/*
+  En navbar_styles.css se habilitó abrir dropdowns con hover en escritorio.
+  Para los 3 puntitos de acciones en tabla, queremos SOLO click.
+*/
+@media (min-width: 992px) {
+    .tb-action-dropdown:hover > .dropdown-menu:not(.show) {
+        display: none !important;
+    }
+    .tb-action-dropdown > .dropdown-menu.show {
+        display: block !important;
+    }
+}
