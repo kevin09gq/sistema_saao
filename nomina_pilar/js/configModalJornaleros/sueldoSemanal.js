@@ -103,9 +103,14 @@ function calcularSueldoSemanal(empleado = null) {
         }
 
         // === ASIGNAR DÍAS TRABAJADOS ===
-        // Sumar días detectados por biometrico + días extra manuales
+        // Sumar días detectados por biometrico + días extra manuales - días de descuento
         const diasExtra = parseInt(empleado.dias_extra) || 0;
-        empleado.dias_trabajados = diasAsistidos + diasExtra;
+        const diasMenos = parseInt(empleado.dias_menos) || 0;
+        empleado.dias_trabajados = (diasAsistidos + diasExtra) - diasMenos;
+
+        // Evitar días negativos
+        if (empleado.dias_trabajados < 0) empleado.dias_trabajados = 0;
+
 
         // === CALCULAR SUELDO SEMANAL ===
         const salarioDiario = parseFloat(empleado.salario_diario) || 0;
@@ -180,17 +185,9 @@ function calcularSueldoSemanal(empleado = null) {
     });
 
     actualizarCabeceraNomina(jsonNominaPilar);
-    // Actualizar la tabla manteniendo el filtrado y paginación actual
-    const id_departamento = parseInt($('#filtro_departamento').val());
-    const id_puestoEspecial = parseInt($('#filtro_puesto').val());
-
-    // Aplicar los mismos filtros que están activos
-    let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaPilar, id_departamento);
-    jsonFiltrado = filtrarEmpleadosPorPuesto(jsonFiltrado, id_puestoEspecial);
-
-    // Mostrar la tabla en la página actual (usar window.paginaActualNomina para acceso global)
-
-    mostrarDatosTabla(jsonFiltrado, window.paginaActualNomina || 1);
+    if (typeof aplicarFiltrosActuales === 'function') {
+        aplicarFiltrosActuales();
+    }
     saveNomina(jsonNominaPilar);
 }
 

@@ -2,6 +2,10 @@ if (typeof paginaActualNomina === 'undefined') {
     var paginaActualNomina = 1;
 }
 
+//=======================================
+// MOSTRAR DATOS EN LA TABLA DE LA NÓMINA DE 40 LIBRAS
+//=======================================
+
 function mostrarDatosTabla(jsonNomina40lbs, pagina = 1) {
     const empleadosPorPagina = 7;
 
@@ -123,11 +127,20 @@ function mostrarDatosTabla(jsonNomina40lbs, pagina = 1) {
         $('#tabla-nomina-body-40lbs').append(fila);
     });
 
+     // Agregar fila de totales si es la última página
+    const totalPaginas = Math.ceil(todosEmpleados.length / empleadosPorPagina);
+    if (pagina === totalPaginas && todosEmpleados.length > 0) {
+        const filaTotal = generarFilaTotalesDepartamento(todosEmpleados);
+        $('#tabla-nomina-body-40lbs').append(filaTotal);
+    }
+
     // Crear la paginación
     paginarTabla(jsonNomina40lbs, todosEmpleados.length, pagina, empleadosPorPagina);
 }
 
-
+//=======================================
+// PAGINA LA TABLA DE LA NÓMINA DE 40 LIBRAS
+//=======================================
 
 function paginarTabla(jsonNomina40lbs, totalEmpleados, paginaActual, empleadosPorPagina) {
     // Calcular total de páginas
@@ -173,106 +186,10 @@ function paginarTabla(jsonNomina40lbs, totalEmpleados, paginaActual, empleadosPo
     });
 }
 
-// Función para filtrar empleados por departamento (ID o Nombre), seguroSocial y término de búsqueda
-function filtrarEmpleadosPorDepartamento(jsonNomina, filtroDepto, seguroSocial = true, busqueda = '') {
-    let jsonFiltrado = {
-        departamentos: []
-    };
+//=======================================
+// CALCULA TOTAL DE PERCEPCIONES DEL EMPLEADO PARA MOSTRAR EN LA TABLA
+//=======================================
 
-    const normalizar = (texto) => {
-        return String(texto || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-    };
-
-    const terminoBusqueda = normalizar(busqueda);
-
-    if (jsonNomina && jsonNomina.departamentos) {
-        jsonNomina.departamentos.forEach(depto => {
-            // 1. Filtrar por departamento (si no es 'all')
-            if (filtroDepto !== null && filtroDepto !== 'all') {
-                const matchId = depto.id_departamento && String(depto.id_departamento) === String(filtroDepto);
-                const matchNombre = depto.nombre && String(depto.nombre) === String(filtroDepto);
-                if (!matchId && !matchNombre) return;
-            }
-
-            let empleadosFiltrados = depto.empleados.filter(emp => {
-                // 2. Filtrar por seguroSocial
-                if (seguroSocial !== null && emp.seguroSocial !== seguroSocial) {
-                    return false;
-                }
-
-                // 3. Filtrar por búsqueda de nombre
-                if (terminoBusqueda !== '') {
-                    const nombreNormalizado = normalizar(emp.nombre);
-                    if (!nombreNormalizado.includes(terminoBusqueda)) {
-                        return false;
-                    }
-                }
-
-                return true;
-            });
-
-            if (empleadosFiltrados.length > 0) {
-                jsonFiltrado.departamentos.push({
-                    ...depto,
-                    empleados: empleadosFiltrados
-                });
-            }
-        });
-    }
-
-    return jsonFiltrado;
-}
-
-function refrescarTabla() {
-    const valorSelect = $('#filtro-departamento').val() || 'all|all';
-    let filtroDepto = 'all';
-    let seguroSocial = null;
-
-    if (valorSelect !== 'all|all') {
-        const partes = valorSelect.split('|');
-        filtroDepto = partes[0];
-        seguroSocial = partes[1] === 'true';
-    }
-
-    // Obtener término de búsqueda actual
-    const busqueda = $('#busqueda-nomina-40lbs').val() || '';
-
-    // Aplicar filtro y mostrar tabla con página actual
-    const jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNomina40lbs, filtroDepto, seguroSocial, busqueda);
-    mostrarDatosTabla(jsonFiltrado, paginaActualNomina);
-}
-
-function poblarSelectDepartamentos(json) {
-    if (!json || !json.departamentos) return;
-
-    const $select = $('#filtro-departamento');
-    const valorActual = $select.val();
-    $select.empty();
-
-    // Organizar departamentos por tipo de empleados que contienen y agregar directamente como opciones
-    json.departamentos.forEach(depto => {
-        // Solo mostrar departamentos con la propiedad editar: true
-        if (depto.editar !== true) return;
-
-        const id = depto.id_departamento || depto.nombre;
-        const nombre = depto.nombre;
-
-        const tieneConSeguro = depto.empleados.some(emp => emp.seguroSocial === true);
-        const tieneSinSeguro = depto.empleados.some(emp => emp.seguroSocial === false);
-
-        if (tieneConSeguro) {
-            $select.append(`<option value="${id}|true">${nombre} CSS</option>`);
-        }
-        if (tieneSinSeguro) {
-            $select.append(`<option value="${id}|false">${nombre} SSS</option>`);
-        }
-    });
-
-    // Restaurar valor previo si es posible
-    if (valorActual && $select.find(`option[value="${valorActual}"]`).length > 0) {
-        $select.val(valorActual);
-    }
-}
 function calcularTotalPercepciones(empleado) {
     const sueldoNeto = parseFloat(empleado.sueldo_neto || 0);
     const extras = parseFloat(empleado.sueldo_extra_total || 0);
@@ -280,7 +197,10 @@ function calcularTotalPercepciones(empleado) {
     return (sueldoNeto + extras + incentivo);
 }
 
-// Función para calcular Total Deducciones
+//=======================================
+// CALCULA TOTAL DE DEDUCCIONES DEL EMPLEADO PARA MOSTRAR EN LA TABLA
+//=======================================
+
 function calcularTotalDeducciones(empleado) {
     // Función auxiliar para buscar concepto
     const buscarConcepto = (codigo) => {
@@ -306,6 +226,10 @@ function calcularTotalDeducciones(empleado) {
     return total.toFixed(2);
 }
 
+//=======================================
+// CALCULA TOTAL A COBRAR DEL EMPLEADO PARA MOSTRAR EN LA TABLA
+//=======================================
+
 function calcularTotalCobrar(empleado) {
     const percepciones = parseFloat(calcularTotalPercepciones(empleado)) || 0;
     const deducciones = parseFloat(calcularTotalDeducciones(empleado)) || 0;
@@ -328,3 +252,133 @@ function calcularTotalCobrar(empleado) {
 }
 
 
+//=======================================
+// AGREGAR AL FINAL DE LA TABLA LA FILA DE TOTALES POR CONCEPTOS
+//=======================================
+
+function generarFilaTotalesDepartamento(empleados) {
+    // Inicializar objeto para almacenar totales
+    const totales = {
+        sueldoNeto: 0,
+        incentivo: 0,
+        extras: 0,
+        totalPercepciones: 0,
+        isr: 0,
+        imss: 0,
+        infonavit: 0,
+        ajustes: 0,
+        inasistencias: 0,
+        permiso: 0,
+        uniformes: 0,
+        checador: 0,
+        faGafetCofia: 0,
+        totalDeducciones: 0,
+        netoRecibir: 0,
+        tarjeta: 0,
+        importeEfectivo: 0,
+        prestamo: 0,
+        totalRecibir: 0,
+        redondeo: 0,
+        totalCobrar: 0
+    };
+
+    // Función auxiliar para buscar concepto en un empleado
+    const buscarConceptoEmpleado = (empleado, codigo) => {
+        if (!Array.isArray(empleado.conceptos)) return 0;
+        const concepto = empleado.conceptos.find(c => String(c.codigo) === String(codigo));
+        return concepto ? (parseFloat(concepto.resultado) || 0) : 0;
+    };
+
+    // Iterar sobre todos los empleados y acumular los totales
+    empleados.forEach(empleado => {
+        // Sumar componentes de percepciones (columnas específicas de 40lbs)
+        totales.sueldoNeto += parseFloat(empleado.sueldo_neto) || 0;
+        totales.incentivo += parseFloat(empleado.incentivo) || 0;
+        totales.extras += parseFloat(empleado.sueldo_extra_total) || 0;
+
+        // Calcular y sumar total percepciones
+        const percepcionesEmpleado = calcularTotalPercepciones(empleado);
+        totales.totalPercepciones += parseFloat(percepcionesEmpleado) || 0;
+
+        // Sumar conceptos (deducciones)
+        totales.isr += buscarConceptoEmpleado(empleado, '45');
+        totales.imss += buscarConceptoEmpleado(empleado, '52');
+        totales.infonavit += buscarConceptoEmpleado(empleado, '16');
+        totales.ajustes += buscarConceptoEmpleado(empleado, '107');
+
+        // Sumar deducciones individuales (sin retardos en 40lbs)
+        totales.inasistencias += parseFloat(empleado.inasistencia) || 0;
+        totales.permiso += parseFloat(empleado.permiso) || 0;
+        totales.uniformes += parseFloat(empleado.uniformes) || 0;
+        totales.checador += parseFloat(empleado.checador) || 0;
+        totales.faGafetCofia += parseFloat(empleado.fa_gafet_cofia) || 0;
+
+        // Calcular y sumar total deducciones
+        const deduccionesEmpleado = calcularTotalDeducciones(empleado);
+        totales.totalDeducciones += parseFloat(deduccionesEmpleado) || 0;
+
+        // Sumar tarjeta y calcular importe en efectivo
+        totales.tarjeta += parseFloat(empleado.tarjeta) || 0;
+
+        // Sumar prestamos
+        totales.prestamo += parseFloat(empleado.prestamo) || 0;
+
+        // Sumar redondeado y total cobrar
+        totales.redondeo += parseFloat(empleado.redondeo) || 0;
+        const totalCobrar = parseFloat(calcularTotalCobrar(empleado)) || 0;
+        totales.totalCobrar += totalCobrar;
+    });
+
+    // Calcular valores derivados
+    totales.netoRecibir = totales.totalPercepciones - totales.totalDeducciones;
+    totales.importeEfectivo = totales.netoRecibir - totales.tarjeta;
+    totales.totalRecibir = totales.importeEfectivo - totales.prestamo;
+
+    // Función para formatear valores en la fila de totales
+    const formatearTotalValor = (valor, alwaysNegative = false) => {
+        const num = parseFloat(valor) || 0;
+        if (num === 0) return '<span class="valor-vacio">—</span>';
+        const abs = Math.abs(num).toFixed(2);
+        const mostrarNegativo = (num < 0) || (alwaysNegative && num >= 0);
+        if (mostrarNegativo) {
+            return `<span class="valor-negativo">-${abs}</span>`;
+        }
+        return abs;
+    };
+
+    // Generar fila HTML de totales con estilo distintivo (adaptada para columnas de 40lbs)
+    const filaTotal = `
+        <tr style="background-color: #e8f4f8; font-weight: bold; border-top: 2px solid #333;">
+            <td style="text-align: center;">-</td>
+            <td style="text-align: right;">TOTAL</td>
+            <td>${formatearTotalValor(totales.sueldoNeto)}</td> <!-- SUELDO NETO -->
+            <td>${formatearTotalValor(totales.incentivo)}</td> <!-- INCENTIVO -->
+            <td>${formatearTotalValor(totales.extras)}</td> <!-- EXTRAS -->
+            <td>${formatearTotalValor(totales.totalPercepciones)}</td> <!-- TOTAL PERCEPCIONES -->
+            
+            <!-- Deducciones totales por concepto -->
+            <td>${formatearTotalValor(totales.isr, true)}</td> <!-- ISR -->
+            <td>${formatearTotalValor(totales.imss, true)}</td> <!-- IMSS -->
+            <td>${formatearTotalValor(totales.infonavit, true)}</td> <!-- INFONAVIT -->
+            <td>${formatearTotalValor(totales.ajustes, true)}</td> <!-- AJUSTES AL SUB -->
+            
+            <td>${formatearTotalValor(totales.inasistencias, true)}</td> <!-- AUSENTISMO -->
+            <td>${formatearTotalValor(totales.permiso, true)}</td> <!-- PERMISO -->
+            <td>${formatearTotalValor(totales.uniformes, true)}</td> <!-- UNIFORMES -->
+            <td>${formatearTotalValor(totales.checador, true)}</td> <!-- CHECADOR -->
+            <td>${formatearTotalValor(totales.faGafetCofia, true)}</td> <!-- F.A/GAFET/COFIA -->
+            
+            <td>${formatearTotalValor(totales.totalDeducciones, true)}</td> <!-- TOTAL DEDUCCIONES -->
+            <td>${formatearTotalValor(totales.netoRecibir)}</td> <!-- NETO A RECIBIR -->
+            <td>${formatearTotalValor(totales.tarjeta, true)}</td> <!-- DISPERSION DE TARJETA -->
+            <td>${formatearTotalValor(totales.importeEfectivo)}</td> <!-- IMPORTE EN EFECTIVO -->
+            <td>${formatearTotalValor(totales.prestamo, true)}</td> <!-- PRÉSTAMO -->
+            <td>${formatearTotalValor(totales.totalRecibir)}</td> <!-- TOTAL A RECIBIR -->
+            
+            <td class="${totales.redondeo < 0 ? 'redondeo-negativo' : 'redondeo-positivo'}">${formatearTotalValor(totales.redondeo)}</td> <!-- REDONDEADO -->
+            <td><strong>${formatearTotalValor(totales.totalCobrar)}</strong></td> <!-- TOTAL EFECTIVO REDONDEADO -->
+        </tr>
+    `;
+
+    return filaTotal;
+}

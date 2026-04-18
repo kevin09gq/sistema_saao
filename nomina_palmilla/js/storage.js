@@ -80,13 +80,26 @@ function restoreNomina() {
         }
 
         // Renderizar tabla restaurada
-        // Renderizar tabla restaurada
         if (typeof mostrarDatosTabla === 'function') {
             let id_departamento = parseInt($('#filtro_departamento').val());
 
             // Si el select aún no tiene valor válido, usar el primer departamento del JSON
             if (!id_departamento && jsonNominaPalmilla.departamentos && jsonNominaPalmilla.departamentos.length > 0) {
                 id_departamento = jsonNominaPalmilla.departamentos[0].id_departamento;
+            }
+
+            // Lógica para ocultar columnas (Modo Confianza)
+            const depaObjeto = jsonNominaPalmilla.departamentos.find(d => 
+                d.empleados && d.empleados.some(e => e.id_departamento == id_departamento)
+            );
+            
+            if (depaObjeto) {
+                const primerEmpleado = depaObjeto.empleados.find(e => e.id_departamento == id_departamento);
+                if (primerEmpleado && parseInt(primerEmpleado.tipo_horario) === 1) {
+                    $('#tabla-nomina-container-palmilla').addClass('modo-confianza');
+                } else {
+                    $('#tabla-nomina-container-palmilla').removeClass('modo-confianza');
+                }
             }
 
             let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaPalmilla, id_departamento);

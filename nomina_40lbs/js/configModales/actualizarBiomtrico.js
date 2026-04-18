@@ -2,6 +2,10 @@
 abrirModalBiometrico();
 subirBiometrico(); // inicializar listener del botón siguiente
 
+//=======================================
+// ABRE EL MODAL DEL BIOMÉTRICO 
+//=======================================
+
 function abrirModalBiometrico() {
     $("#btn_actualizar_biometrico").click(function (e) {
         e.preventDefault();
@@ -21,6 +25,10 @@ function abrirModalBiometrico() {
         inicializarSelectoresToolBiometrico(); // activar botones de seleccionar/deseleccionar
     });
 }
+
+//=======================================
+// LISTAR EMPLEADOS EN EL MODAL (CON CHECKBOX) + BÚSQUEDA
+//=======================================
 
 function listarEmpleados() {
     // vaciar lista
@@ -50,6 +58,10 @@ function listarEmpleados() {
     });
 }
 
+//=======================================
+// BUSCADOR DE EMPLEADOS EN EL MODAL
+//=======================================
+
 function buscarEmpleados() {
     // asocia el evento keyup al input de búsqueda
     $('#buscar-empleado-biometrico').on('keyup', function () {
@@ -62,7 +74,7 @@ function buscarEmpleados() {
 }
 
 // ========================================
-// SELECCIONAR/DESELECCIONAR TODOS
+// FUNCIONES PARA INICIALIZAR BOTONES DE SELECCIONAR/DESELECCIONAR TODO EN EL MODAL
 // ========================================
 
 function inicializarSelectoresToolBiometrico() {
@@ -77,21 +89,33 @@ function inicializarSelectoresToolBiometrico() {
     });
 }
 
+//=======================================
+// FUNCION PARA SELECCIONAR TODOS LOS CHECKBOXES DEL LOS EMPLEADOS
+//=======================================
+
 function seleccionarTodosBiometrico() {
     // Seleccionar solo los checkboxes visibles (después de filtrar con búsqueda)
     $('#lista-empleados-biometrico .list-group-item:visible input[type="checkbox"]').prop('checked', true);
 }
+
+//=======================================
+// FUNCION PARA DESSELECCIONAR TODOS LOS CHECKBOXES DEL LOS EMPLEADOS
+//=======================================
 
 function deseleccionarTodosBiometrico() {
     // Deseleccionar todos los checkboxes visibles
     $('#lista-empleados-biometrico .list-group-item:visible input[type="checkbox"]').prop('checked', false);
 }
 
+//=======================================
+// FUNCION PARA SUBIR EL ARCHIVO BIOMÉTRICO Y PROCESARLO
+//=======================================
+
 function subirBiometrico() {
     // manejar clic en siguiente para mostrar el input de archivo
     $(document).on('click', '#btn-siguiente-biometrico', function () {
         const boton = $(this);
-        const listaOculta = $('#lista-empleados-biometrico').is(':hidden');
+        const listaOculta = $('#lista-empleados-biometrico').is(':hidden') || $('#seccion-seleccion-biometrico').is(':hidden');
 
         // FASE 1: Mostrar interfaz de archivo
         if (!listaOculta) {
@@ -103,11 +127,16 @@ function subirBiometrico() {
             }
 
             // ocultar controles anteriores
-            $('#lista-empleados-biometrico').hide();
-            $('#buscar-empleado-biometrico').closest('.mb-3').hide();
+            if ($('#seccion-seleccion-biometrico').length > 0) {
+                $('#seccion-seleccion-biometrico').hide();
+            } else {
+                $('#lista-empleados-biometrico').hide();
+                $('#buscar-empleado-biometrico').closest('.mb-3').hide();
+            }
+            
             // mostrar sección de archivo
             $('#seccion-archivo-biometrico').show();
-            boton.text('Procesar archivo');
+            boton.html('<span>Procesar archivo</span> <i class="bi bi-gear-fill ms-2"></i>');
             return;
         }
 
@@ -223,9 +252,17 @@ function subirBiometrico() {
             }
         });
     });
+
+    // --- ACCIÓN BOTÓN REGRESAR ---
+    $(document).on('click', '#btn-regresar-biometrico', function () {
+        resetearModalBiometrico();
+    });
 }
 
-// Helper: buscar empleado por clave en la nómina
+//=======================================
+// FUNCION PARA OBTENER EMPLEADO POR CLAVE Y EMPRESA (para actualizar registros del biométrico)
+//=======================================
+
 function obtenerEmpleadoPorClave(clave, id_empresa) {
     if (!jsonNomina40lbs || !Array.isArray(jsonNomina40lbs.departamentos)) {
         return null;
@@ -241,7 +278,10 @@ function obtenerEmpleadoPorClave(clave, id_empresa) {
     return null;
 }
 
-// Unir registros de biométrico solo con empleados seleccionados
+//=======================================
+// FUNCION PARA UNIR LOS REGISTROS DEL BIOMÉTRICO SOLO CON LOS EMPLEADOS SELECCIONADOS EN EL MODAL
+//=======================================
+
 function unirBiometricoConSeleccionados(jsonNomina40lbs, JsonBiometrico, clavesSeleccionadas) {
     // Normalizar nombres para comparación exacta (mismo algoritmo que process_excel.js)
     const normalizar = s => s
@@ -284,18 +324,30 @@ function unirBiometricoConSeleccionados(jsonNomina40lbs, JsonBiometrico, clavesS
     }
 }
 
-// Resetear modal a estado inicial
+//=======================================
+// FUNCION PARA RESETEAR EL MODAL A SU ESTADO INICIAL (LISTA VISIBLE, ARCHIVO OCULTO, ETC) AL ABRIRLO O CERRARLO
+//=======================================
+
 function resetearModalBiometrico() {
-    // Mostrar lista y búsqueda
-    $('#lista-empleados-biometrico').show();
-    $('#buscar-empleado-biometrico').closest('.mb-3').show();
+    // Usar IDs de sección optimizados si existen
+    if ($('#seccion-seleccion-biometrico').length > 0) {
+        $('#seccion-seleccion-biometrico').show();
+    } else {
+        // Fallback
+        $('#lista-empleados-biometrico').show();
+        $('#buscar-empleado-biometrico').closest('.mb-3').show();
+    }
+
     // Ocultar sección de archivo
     $('#seccion-archivo-biometrico').hide();
-    // Limpiar búsqueda
+    
+    // Limpiar búsqueda y archivo
     $('#buscar-empleado-biometrico').val('');
-    // Mostrar todos los items
-    $('#lista-empleados-biometrico .list-group-item').show();
-    // Botón vuelve a "Siguiente"
-    $('#btn-siguiente-biometrico').text('Siguiente');
-}
+    $('#archivo-biometrico-modal').val('');
 
+    // Mostrar todos los items de la lista
+    $('#lista-empleados-biometrico .list-group-item').show();
+
+    // Botón vuelve a "Siguiente"
+    $('#btn-siguiente-biometrico').html('<span>Siguiente</span> <i class="bi bi-arrow-right ms-2"></i>');
+}

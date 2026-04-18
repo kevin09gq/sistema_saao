@@ -74,9 +74,9 @@
                             <div class="card bg-light mb-3 border-primary">
                                 <div class="card-body p-2">
                                     <div class="row g-2 align-items-end">
-                                        <div class="col-md-5">
+                                        <div class="col-md-4">
                                             <label class="form-label fw-semibold small mb-1">
-                                                <i class="bi bi-calendar-plus text-primary"></i> Agregar Día Extra
+                                                <i class="bi bi-calendar-plus text-primary"></i> Gestionar Días
                                             </label>
                                             <select class="form-select form-select-sm" id="select-dia-extra-individual">
                                                 <option value="">Seleccionar día...</option>
@@ -89,9 +89,14 @@
                                                 <option value="Domingo">Domingo</option>
                                             </select>
                                         </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <button type="button" class="btn btn-primary btn-sm w-100" id="btn-agregar-dia-extra-individual">
-                                                <i class="bi bi-plus-circle"></i> Agregar Día
+                                                <i class="bi bi-plus-circle"></i> Agregar
+                                            </button>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <button type="button" class="btn btn-warning btn-sm w-100 text-dark" id="btn-restar-dia-extra-individual">
+                                                <i class="bi bi-dash-circle"></i> Restar
                                             </button>
                                         </div>
                                         <div class="col-md-3">
@@ -627,7 +632,10 @@
                 </div>
             </div>
             <div class="modal-footer d-flex justify-content-between">
-                <span class="badge bg-success fs-6 p-2" id="nombre-jornalero-modal"></span>
+                <div>
+                   <span class="badge bg-success fs-6 p-2" id="nombre-jornalero-modal"></span>
+                   <span class="badge bg-primary fs-6 p-2 ms-2" id="dias-trabajados-modal-footer">Días Trabajados: 0</span>
+                </div>
 
                 <div>
                     <button type="button"

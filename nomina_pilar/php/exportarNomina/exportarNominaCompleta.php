@@ -190,6 +190,7 @@ $encabezados_corte = [
     'K' => 'TOTAL REJAS', // Solo para el concepto REJA: suma de rejas por día
     'L' => 'PRECIO POR REJA', // Solo para el concepto REJA: precio por reja
     'M' => 'TOTAL EFECTIVO', // Para NOMINA: suma de pagos por día; para REJA: Total Rejas * Precio por Reja
+    'N' => 'FIRMA DE RECIBIDO' // Columna para la firma al recibir el corte de limón
 ];
 
 // Ancho de columnas para el corte de limon
@@ -207,6 +208,7 @@ $anchos_corte = [
     'K' => 14,  // TOTAL REJAS
     'L' => 16,  // PRECIO POR REJA
     'M' => 16,  // TOTAL EFECTIVO
+    'N' => 20   // FIRMA
 ];
 
 //=====================
@@ -981,11 +983,11 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
     $sheet->setCellValue('A3', $titulo3);
     $sheet->setCellValue('A4', $titulo4);
 
-    // Columnas A–M (13 columnas)
-    $sheet->mergeCells('A1:M1');
-    $sheet->mergeCells('A2:M2');
-    $sheet->mergeCells('A3:M3');
-    $sheet->mergeCells('A4:M4');
+    // Columnas A–N (14 columnas)
+    $sheet->mergeCells('A1:N1');
+    $sheet->mergeCells('A2:N2');
+    $sheet->mergeCells('A3:N3');
+    $sheet->mergeCells('A4:N4');
 
     $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(24)->getColor()->setRGB('7030A0');
     $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(20);
@@ -1054,16 +1056,16 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
     }
 
     // Formatear los encabezados (Negrita, Centrados, Tamaño 10, Fondo Rojo, Letra Blanca)
-    $sheet->getStyle('A6:M6')->getFont()->setBold(true);
-    $sheet->getStyle('A6:M6')->getFont()->setSize(10);
-    $sheet->getStyle('A6:M6')->getFont()->setColor(new Color('000000')); // Letra blanca
-    $sheet->getStyle('A6:M6')->getAlignment()->setHorizontal('center');
-    $sheet->getStyle('A6:M6')->getAlignment()->setVertical('center');
-    $sheet->getStyle('A6:M6')->getAlignment()->setWrapText(true); // Ajustar texto
+    $sheet->getStyle('A6:N6')->getFont()->setBold(true);
+    $sheet->getStyle('A6:N6')->getFont()->setSize(10);
+    $sheet->getStyle('A6:N6')->getFont()->setColor(new Color('000000')); // Letra blanca
+    $sheet->getStyle('A6:N6')->getAlignment()->setHorizontal('center');
+    $sheet->getStyle('A6:N6')->getAlignment()->setVertical('center');
+    $sheet->getStyle('A6:N6')->getAlignment()->setWrapText(true); // Ajustar texto
 
     // Agregar color de fondo rojo a los encabezados
-    $sheet->getStyle('A6:M6')->getFill()->setFillType('solid');
-    $sheet->getStyle('A6:M6')->getFill()->getStartColor()->setRGB('E5C8E6'); // Rojo
+    $sheet->getStyle('A6:N6')->getFill()->setFillType('solid');
+    $sheet->getStyle('A6:N6')->getFill()->getStartColor()->setRGB('E5C8E6'); // Rojo
 
     // Ajustar el ancho de las columnas
     foreach ($anchos_corte as $col => $ancho) {
@@ -1228,7 +1230,7 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
     //=====================
     //  BORDES
     //=====================
-    $sheet->getStyle('A6:M' . $filaTotal)->applyFromArray([
+    $sheet->getStyle('A6:N' . $filaTotal)->applyFromArray([
         'borders' => [
             'allBorders' => [
                 'borderStyle' => Border::BORDER_THIN,
@@ -1263,7 +1265,7 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
     $sheet->getPageSetup()->setFitToPage(true);
     $sheet->getPageSetup()->setFitToHeight(0);
     $sheet->getPageSetup()->setFitToWidth(1);
-    $sheet->getPageSetup()->setPrintArea('A1:M' . $filaTotal);
+    $sheet->getPageSetup()->setPrintArea('A1:N' . $filaTotal);
 }
 
 
@@ -1275,17 +1277,39 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
 
 if ($jsonNomina && isset($jsonNomina['departamentos'])) {
     foreach ($jsonNomina['departamentos'] as $departamento) {
+
         $nombreDepto = $departamento['nombre'] ?? 'S/N';
-        $idDepto = $departamento['id_departamento'] ?? null;
+        $idDepto     = $departamento['id_departamento'] ?? null;
 
-        // Omitir Corte si ya se maneja aparte al final con su propio formato
+        // Omitir Corte y Poda
         if (strtoupper($nombreDepto) === 'CORTE') continue;
+        if (strtoupper($nombreDepto) === 'PODA') continue;
 
-        crearHoja($spreadsheet, strtoupper($nombreDepto), function ($emp) use ($idDepto) {
+        // Omitir departamentos si la clave empleado NO EXISTE
+        if (!isset($departamento['empleados']) || !is_array($departamento['empleados']) || empty($departamento['empleados'])) continue;
+
+        // Filtrar empleados que no tienen el campo 'mostrar' en true o cuyo 'id_departamento' no coincide con el departamento actual
+        $empleadosValidos = array_filter($departamento['empleados'], function ($emp) use ($idDepto) {
             $idDeptoEmp = $emp['id_departamento'] ?? null;
-            $mostrar = $emp['mostrar'] ?? false;
+            $mostrar    = $emp['mostrar'] ?? false;
+
             return ($mostrar && $idDeptoEmp == $idDepto);
-        }, substr(strtoupper($nombreDepto), 0, 31));
+        });
+
+        // Si no hay empleados válidos, no crear la hoja
+        if (empty($empleadosValidos)) continue;
+
+        // Crear hoja solo si hay datos
+        crearHoja(
+            $spreadsheet,
+            strtoupper($nombreDepto),
+            function ($emp) use ($idDepto) {
+                $idDeptoEmp = $emp['id_departamento'] ?? null;
+                $mostrar    = $emp['mostrar'] ?? false;
+                return ($mostrar && $idDeptoEmp == $idDepto);
+            },
+            substr(strtoupper($nombreDepto), 0, 31)
+        );
     }
 }
 

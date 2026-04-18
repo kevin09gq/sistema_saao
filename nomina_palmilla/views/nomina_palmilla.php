@@ -34,7 +34,7 @@
     <?php
     // Incluir el navbar (config.php ya fue incluido en el head)
     include "../../public/views/navbar.php"
-    ?>
+        ?>
 
     <!-- Contenedor principal centrado -->
     <div class="container-nomina_palmilla" id="container-nomina_palmilla" hidden>
@@ -164,7 +164,8 @@
                                 <label for="precio_pasaje_palmilla" class="form-label">Precio Pasaje</label>
                                 <div class="input-group">
                                     <span class="input-group-text">$</span>
-                                    <input type="number" id="precio_pasaje_palmilla" class="form-control form-control-sm" placeholder="0.00" step="0.01" min="0">
+                                    <input type="number" id="precio_pasaje_palmilla"
+                                        class="form-control form-control-sm" placeholder="0.00" step="0.01" min="0">
                                 </div>
                             </div>
 
@@ -172,7 +173,8 @@
                                 <label for="pago_tardeada_palmilla" class="form-label">Pago Tardeada</label>
                                 <div class="input-group">
                                     <span class="input-group-text">$</span>
-                                    <input type="number" id="pago_tardeada_palmilla" class="form-control form-control-sm" placeholder="0.00" step="0.01" min="0">
+                                    <input type="number" id="pago_tardeada_palmilla"
+                                        class="form-control form-control-sm" placeholder="0.00" step="0.01" min="0">
                                 </div>
                             </div>
 
@@ -180,7 +182,8 @@
                                 <label for="pago_comida_palmilla" class="form-label">Pago Comida</label>
                                 <div class="input-group">
                                     <span class="input-group-text">$</span>
-                                    <input type="number" id="pago_comida_palmilla" class="form-control form-control-sm" placeholder="0.00" step="0.01" min="0">
+                                    <input type="number" id="pago_comida_palmilla" class="form-control form-control-sm"
+                                        placeholder="0.00" step="0.01" min="0">
                                 </div>
                             </div>
                         </div>
@@ -221,63 +224,80 @@
     </div>
 
     <div class="container-tabla-nomina-palmilla" id="tabla-nomina-responsive" hidden>
-        <div class="header-tabla-palmilla">
-            <h3 id=nombre_nomina></h3>
-            <div class="header-controls-palmilla">
+         <div class="header-tabla-palmilla">
+            <div class="header-titulo-semana">
+                <h3 id=nombre_nomina></h3>
                 <span class="sem-info-palmilla" id="num_semana"></span>
-                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
-                    data-bs-target="#modalCorte" title="Tickes de Corte de Rejas">
-                    <i class="bi bi-truck"></i>
-                </button>
-                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_actualizar_biometrico"
-                    title="Actualizar Biometrico" aria-label="Actualizar Biometrico">
-                    <i class="bi bi-person-badge"></i>
-                </button>
-                <button class="btn btn-outline-primary actualizar-valores" type="button" id="btn_actualizar_valores"
-                    title="Actualizar Valores" aria-label="Actualizar Valores pasaje y tardeada">
-                    <i class="bi bi-gear"></i>
-                </button>
-                <button class="btn btn-outline-primary quitrar-comida-pasaje" type="button"
-                    id="btn_quitar_comida_pasaje" title="Quitar Comida y Pasaje" aria-label="Quitar Comida y Pasaje">
-                    <i class="bi bi-x-circle"></i>
-                </button>
-                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_establecer_dias_justificados"
-                    title="dias justificados" aria-label="dias-justificados">
-                    <i class="bi bi-check-circle"></i>
-                </button>
-                <button class="btn btn-outline-primary" id="btn-seleccionar-empleados" title="Seleccionar empleados">
-                    <i class="bi bi-people"></i>
-                </button>
-                <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global"
-                    title="Aplicar Tarjeta">
-                    <i class="bi bi-arrow-clockwise"></i>
-                </button>
-                <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta"
-                    aria-label="Quitar tarjeta">
-                    <i class="bi bi-credit-card-2-back"></i>
-                </button>
-                <button class="btn btn-outline-primary btn-suma" type="button" id="btn_conceptos_totales"
-                    title="Totales por concepto" aria-label="Totales por concepto">
-                    <i class="bi bi-calculator"></i>
-                </button>
-                <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf" title="Descargar Ticket">
-                    <i class="bi bi-ticket-perforated"></i>
-                </button>
-                <button class="btn btn-outline-secondary btn-ticket-zebra" id="btn_ticket_seleccion"
-                    title="Descargar Ticket Manual">
-                    <i class="bi bi-ticket-perforated"></i>
-                </button>
-                <button class="btn btn-outline-danger" id="btn_modal_olvidos_masivos" title="Perdonar olvidos de checador">
-                    <i class="bi bi-clipboard-check"></i>
-                </button>
-                <button class="btn btn-outline-primary" id="btn_modal_dias_extra" title="Agregar día extra jornaleros">
-                    <i class="bi bi-calendar-plus"></i>
-                </button>
-                </button>
-                <button class="btn btn-outline-secondary" id="btn_abrir_modal_reasignar" title="Reasignar Empleado de Departamento">
-                    <i class="bi bi-person-fill-gear"></i>
-                </button>
+            </div>
+            <div class="header-controls-palmilla">
+                <!-- Grupo 1: Servicios -->
+                <div class="btn-group-palmilla btn-group-servicios">
+                    <button type="button" class="btn btn-outline-primary" title="Tickes de Poda de Árboles" id="btn_modal_poda">
+                        <i class="bi bi-scissors"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
+                        data-bs-target="#modalCorte" title="Tickes de Corte de Rejas">
+                        <i class="bi bi-truck"></i>
+                    </button>
 
+                </div>
+
+                <!-- Grupo 2: Configuración -->
+                <div class="btn-group-palmilla btn-group-config">
+                    <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_actualizar_biometrico"
+                        title="Actualizar Biometrico" aria-label="Actualizar Biometrico">
+                        <i class="bi bi-person-badge"></i>
+                    </button>
+                    <button class="btn btn-outline-primary actualizar-valores" type="button" id="btn_actualizar_valores"
+                        title="Actualizar Valores" aria-label="Actualizar Valores pasaje y tardeada">
+                        <i class="bi bi-gear"></i>
+                    </button>
+                    <button class="btn btn-outline-primary quitrar-comida-pasaje" type="button"
+                        id="btn_quitar_comida_pasaje" title="Quitar Comida y Pasaje" aria-label="Quitar Comida y Pasaje">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                    <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_establecer_dias_justificados"
+                        title="dias justificados" aria-label="dias-justificados">
+                        <i class="bi bi-check-circle"></i>
+                    </button>
+                    <button class="btn btn-outline-primary" id="btn-seleccionar-empleados" title="Seleccionar empleados">
+                        <i class="bi bi-people"></i>
+                    </button>
+                    <button class="btn btn-outline-primary" id="btn_modal_dias_extra" title="Agregar día extra jornaleros">
+                        <i class="bi bi-calendar-plus"></i>
+                    </button>
+                    <button class="btn btn-outline-danger" id="btn_modal_olvidos_masivos"
+                        title="Perdonar olvidos de checador">
+                        <i class="bi bi-clipboard-check"></i>
+                    </button>
+                </div>
+
+                <!-- Grupo 3: Procesamiento -->
+                <div class="btn-group-palmilla btn-group-procesamiento">
+                    <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global"
+                        title="Aplicar Tarjeta">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                    <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta"
+                        aria-label="Quitar tarjeta">
+                        <i class="bi bi-credit-card-2-back"></i>
+                    </button>
+                    <button class="btn btn-outline-primary btn-suma" type="button" id="btn_conceptos_totales"
+                        title="Totales por concepto" aria-label="Totales por concepto">
+                        <i class="bi bi-calculator"></i>
+                    </button>
+                    <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf" title="Descargar Ticket">
+                        <i class="bi bi-ticket-perforated"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary btn-ticket-zebra" id="btn_ticket_seleccion"
+                        title="Descargar Ticket Manual">
+                        <i class="bi bi-ticket-perforated"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary" id="btn_abrir_modal_reasignar"
+                        title="Reasignar Empleado de Departamento">
+                        <i class="bi bi-person-fill-gear"></i>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -334,10 +354,10 @@
                         <tr>
                             <th rowspan="2">#</th>
                             <th rowspan="2"> NOMBRE </th>
-                            <th rowspan="2">DÍAS <br> TRAB.</th>
+                            <th rowspan="2" class="col-jornalero">DÍAS <br> TRAB.</th>
                             <th rowspan="2">SUELDO <br> SEMANAL</th>
-                            <th rowspan="2">PASAJE</th>
-                            <th rowspan="2">COMIDA</th>
+                            <th rowspan="2" class="col-jornalero">PASAJE</th>
+                            <th rowspan="2" class="col-jornalero">COMIDA</th>
                             <th rowspan="2">EXTRAS</th>
                             <th rowspan="2">Total Percepciones</th>
                             <th rowspan="2">ISR</th>
@@ -430,7 +450,7 @@
     <?php include "modals/modal_seleccion_tickets_palmilla.php"; ?>
     <?php include "modals/modalDiasExtra.php"; ?>
     <?php include "modals/modalOlvidos.php"; ?>
-     <?php include "modals/modalReasignarEmpleado.php"; ?>
+    <?php include "modals/modalReasignarEmpleado.php"; ?>
 
     <!-- Modal para los cortes -->
     <?php include "modals/modalCorte.php"; ?>

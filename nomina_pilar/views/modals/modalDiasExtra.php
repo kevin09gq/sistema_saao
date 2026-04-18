@@ -59,6 +59,9 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning text-dark" id="btn-quitar-dia-extra">
+                    <i class="bi bi-dash-circle me-1"></i> Quitar (-1 Día)
+                </button>
                 <button type="button" class="btn btn-primary" id="btn-aplicar-dia-extra">
                     <i class="bi bi-check-circle me-1"></i> Aplicar (+1 Día)
                 </button>

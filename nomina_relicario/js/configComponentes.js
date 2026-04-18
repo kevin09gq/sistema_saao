@@ -187,9 +187,15 @@ function obtenerSalariosHorarios(statusRancho) {
                 } else {
                     actualizarCabeceraNomina(jsonNominaRelicario);
                     // Nómina restaurada: Usar la nueva función centralizada en busquedaFiltrado.js
-                    let id_departamento = parseInt($('#filtro_departamento').val());
-                    let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, id_departamento);
-                    mostrarDatosTabla(jsonFiltrado, 1);
+                    // que maneja automáticamente el ocultamiento de columnas
+                    if (typeof aplicarFiltrosActuales === 'function') {
+                        aplicarFiltrosActuales();
+                    } else {
+                        // Fallback por seguridad
+                        let id_departamento = parseInt($('#filtro_departamento').val());
+                        let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, id_departamento);
+                        mostrarDatosTabla(jsonFiltrado, 1);
+                    }
                     saveNomina(jsonNominaRelicario);
                 }
 

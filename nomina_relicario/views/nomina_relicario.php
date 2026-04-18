@@ -142,62 +142,79 @@
 
     <div class="container-tabla-nomina-relicario" id="tabla-nomina-responsive" hidden>
         <div class="header-tabla-relicario">
-            <h3 id=nombre_nomina></h3>
-            <div class="header-controls-relicario">
+            <div class="header-titulo-semana">
+                <h3 id=nombre_nomina></h3>
                 <span class="sem-info-relicario" id="num_semana"></span>
-                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
-                    data-bs-target="#modalCorte" title="Tickes de Corte de Rejas">
-                    <i class="bi bi-truck"></i>
-                </button>
-                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_actualizar_biometrico"
-                    title="Actualizar Biometrico" aria-label="Actualizar Biometrico">
-                    <i class="bi bi-person-badge"></i>
-                </button>
-                <button class="btn btn-outline-primary actualizar-valores" type="button" id="btn_actualizar_valores"
-                    title="Actualizar Valores" aria-label="Actualizar Valores pasaje y tardeada">
-                    <i class="bi bi-gear"></i>
-                </button>
-                <button class="btn btn-outline-primary quitrar-comida-pasaje" type="button"
-                    id="btn_quitar_comida_pasaje" title="Quitar Comida y Pasaje" aria-label="Quitar Comida y Pasaje">
-                    <i class="bi bi-x-circle"></i>
-                </button>
-                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_establecer_dias_justificados"
-                    title="dias justificados" aria-label="dias-justificados">
-                    <i class="bi bi-check-circle"></i>
-                </button>
-                <button class="btn btn-outline-primary" id="btn-seleccionar-empleados" title="Seleccionar empleados">
-                    <i class="bi bi-people"></i>
-                </button>
-                <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global"
-                    title="Aplicar Tarjeta">
-                    <i class="bi bi-arrow-clockwise"></i>
-                </button>
-                <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta"
-                    aria-label="Quitar tarjeta">
-                    <i class="bi bi-credit-card-2-back"></i>
-                </button>
-                <button class="btn btn-outline-primary btn-suma" type="button" id="btn_conceptos_totales"
-                    title="Totales por concepto" aria-label="Totales por concepto">
-                    <i class="bi bi-calculator"></i>
-                </button>
-                <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf" title="Descargar Ticket">
-                    <i class="bi bi-ticket-perforated"></i>
-                </button>
-                <button class="btn btn-outline-secondary btn-ticket-zebra" id="btn_ticket_manual"
-                    title="Descargar Ticket Manual">
-                    <i class="bi bi-ticket-perforated"></i>
-                </button>
-                <button class="btn btn-outline-danger" id="btn_modal_olvidos_masivos"
-                    title="Perdonar olvidos de checador">
-                    <i class="bi bi-clipboard-check"></i>
-                </button>
-                <button class="btn btn-outline-primary" id="btn_modal_dias_extra" title="Agregar día extra jornaleros">
-                    <i class="bi bi-calendar-plus"></i>
-                </button>
-                <button class="btn btn-outline-secondary" id="btn_abrir_modal_reasignar"
-                    title="Reasignar Empleado de Departamento">
-                    <i class="bi bi-person-fill-gear"></i>
-                </button>
+            </div>
+            <div class="header-controls-relicario">
+                <!-- Grupo 1: Servicios -->
+                <div class="btn-group-relicario btn-group-servicios">
+                    <button type="button" class="btn btn-outline-primary" title="Tickes de Poda de Árboles" id="btn_modal_poda">
+                        <i class="bi bi-scissors"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
+                        data-bs-target="#modalCorte" title="Tickes de Corte de Rejas">
+                        <i class="bi bi-truck"></i>
+                    </button>
+
+                </div>
+
+                <!-- Grupo 2: Configuración -->
+                <div class="btn-group-relicario btn-group-config">
+                    <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_actualizar_biometrico"
+                        title="Actualizar Biometrico" aria-label="Actualizar Biometrico">
+                        <i class="bi bi-person-badge"></i>
+                    </button>
+                    <button class="btn btn-outline-primary actualizar-valores" type="button" id="btn_actualizar_valores"
+                        title="Actualizar Valores" aria-label="Actualizar Valores pasaje y tardeada">
+                        <i class="bi bi-gear"></i>
+                    </button>
+                    <button class="btn btn-outline-primary quitrar-comida-pasaje" type="button"
+                        id="btn_quitar_comida_pasaje" title="Quitar Comida y Pasaje" aria-label="Quitar Comida y Pasaje">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                    <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_establecer_dias_justificados"
+                        title="dias justificados" aria-label="dias-justificados">
+                        <i class="bi bi-check-circle"></i>
+                    </button>
+                    <button class="btn btn-outline-primary" id="btn-seleccionar-empleados" title="Seleccionar empleados">
+                        <i class="bi bi-people"></i>
+                    </button>
+                    <button class="btn btn-outline-primary" id="btn_modal_dias_extra" title="Agregar día extra jornaleros">
+                        <i class="bi bi-calendar-plus"></i>
+                    </button>
+                    <button class="btn btn-outline-danger" id="btn_modal_olvidos_masivos"
+                        title="Perdonar olvidos de checador">
+                        <i class="bi bi-clipboard-check"></i>
+                    </button>
+                </div>
+
+                <!-- Grupo 3: Procesamiento -->
+                <div class="btn-group-relicario btn-group-procesamiento">
+                    <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global"
+                        title="Aplicar Tarjeta">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                    <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta"
+                        aria-label="Quitar tarjeta">
+                        <i class="bi bi-credit-card-2-back"></i>
+                    </button>
+                    <button class="btn btn-outline-primary btn-suma" type="button" id="btn_conceptos_totales"
+                        title="Totales por concepto" aria-label="Totales por concepto">
+                        <i class="bi bi-calculator"></i>
+                    </button>
+                    <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf" title="Descargar Ticket">
+                        <i class="bi bi-ticket-perforated"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary btn-ticket-zebra" id="btn_ticket_manual"
+                        title="Descargar Ticket Manual">
+                        <i class="bi bi-ticket-perforated"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary" id="btn_abrir_modal_reasignar"
+                        title="Reasignar Empleado de Departamento">
+                        <i class="bi bi-person-fill-gear"></i>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -210,7 +227,7 @@
                 </select>
 
                 <select class="filtro-departamento-relicario" id="filtro_puesto">
-                    <!-- Departamento -->
+                    <!-- Puestos -->
                 </select>
 
 
@@ -254,10 +271,10 @@
                         <tr>
                             <th rowspan="2">#</th>
                             <th rowspan="2"> NOMBRE </th>
-                            <th rowspan="2">DÍAS <br> TRAB.</th>
+                            <th rowspan="2" class="col-jornalero">DÍAS <br> TRAB.</th>
                             <th rowspan="2">SUELDO <br> SEMANAL</th>
-                            <th rowspan="2">PASAJE</th>
-                            <th rowspan="2">COMIDA</th>
+                            <th rowspan="2" class="col-jornalero">PASAJE</th>
+                            <th rowspan="2" class="col-jornalero">COMIDA</th>
                             <th rowspan="2">EXTRAS</th>
                             <th rowspan="2">Total Percepciones</th>
                             <th rowspan="2">ISR</th>
@@ -323,6 +340,34 @@
             </div>
         </div>
 
+        <div id="tabla_poda_container" class="tabla-nomina-container-relicario-corte" hidden>
+            <div class="table-responsive-relicario-corte">
+                <table class="table-nomina-relicario-corte" id="tabla_poda">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">#</th>
+                            <th rowspan="2">NOMBRE</th>
+                            <th rowspan="2">CONCEPTO</th>
+                            <th rowspan="2">V</th>
+                            <th rowspan="2">SA</th>
+                            <th rowspan="2">DO</th>
+                            <th rowspan="2">L</th>
+                            <th rowspan="2">MA</th>
+                            <th rowspan="2">MI</th>
+                            <th rowspan="2">J</th>
+                            <th rowspan="2">TOTAL<br>ARBOLES</th>
+                            <th rowspan="2">PAGO</th>
+                            <th rowspan="2">TOTAL<br>EFECTIVO</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla_body_poda">
+                        <!-- Filas de la tabla se generarán dinámicamente -->
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+
     </div>
 
     <!-- Menú contextual simple para la tabla -->
@@ -334,6 +379,11 @@
     <div id="context_menu_corte"
         style="position:absolute;z-index:10000;display:none;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);padding:4px;">
         <div class="cm_item_corte" data-action="ver" style="padding:6px 12px;cursor:pointer;">🔎​ Ver detalles</div>
+    </div>
+    <!-- Menú contextual simple para la tabla de poda -->
+    <div id="context_menu_poda"
+        style="position:absolute;z-index:10000;display:none;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);padding:4px;">
+        <div class="cm_item_poda" data-action="ver" style="padding:6px 12px;cursor:pointer;">🔎​ Ver detalles</div>
     </div>
 
 
@@ -361,6 +411,11 @@
     <?php include "modals/modalCorte.php"; ?>
     <?php include "modals/modalCorteNominaEditar.php"; ?>
     <?php include "modals/modalCorteEditar.php"; ?>
+
+    <!-- Modal para la poda -->
+    <?php include __DIR__ . "/modals/modalPoda.php"; ?>
+    <?php include __DIR__ . "/modals/modalPodaDetalles.php"; ?>
+    <?php include __DIR__ . "/modals/modalPodaDetallesExtra.php"; ?>
 
 
 
@@ -415,6 +470,10 @@
 
     <script src="../js/ticket_pdf.js"></script>
     <script src="../js/ticket_seleccion_relicario.js"></script>
+
+    <script src="../js/configModalPoda/config_poda.js"></script>
+    <script src="../js/configModalPoda/tabla_poda.js"></script>
+    <script src="../js/configModalPoda/detalles_modal.js"></script>
 
 
 

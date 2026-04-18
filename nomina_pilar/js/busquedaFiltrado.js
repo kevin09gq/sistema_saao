@@ -92,6 +92,20 @@ function seleccionarDepartamento() {
             // Se oculta la tabla de corte
             $("#tabla-corte-container-pilar").prop("hidden", true);
 
+            // Determinar si es un departamento de administrativos (tipo_horario 1)
+            const depaObjeto = jsonNominaPilar.departamentos.find(d => 
+                d.empleados && d.empleados.some(e => e.id_departamento == id_departamento)
+            );
+            
+            if (depaObjeto) {
+                const primerEmpleado = depaObjeto.empleados.find(e => e.id_departamento == id_departamento);
+                if (primerEmpleado && parseInt(primerEmpleado.tipo_horario) === 1) {
+                    $('#tabla-nomina-container-pilar').addClass('modo-confianza');
+                } else {
+                    $('#tabla-nomina-container-pilar').removeClass('modo-confianza');
+                }
+            }
+
             // Filtrar el JSON por el departamento seleccionado
             let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaPilar, id_departamento);
             obtenerPuestos(id_departamento);
@@ -172,6 +186,20 @@ function aplicarFiltrosActuales() {
         window.paginaActualNomina = 1; // Resetear a página 1 en búsqueda
     } else {
         $('#paginacion-nomina').show(); // Con paginación normal
+    }
+
+    // Determinar si es un departamento de administrativos (tipo_horario 1)
+    const depaObjeto = jsonNominaPilar.departamentos.find(d => 
+        d.empleados && d.empleados.some(e => e.id_departamento == id_departamento)
+    );
+    
+    if (depaObjeto) {
+        const primerEmpleado = depaObjeto.empleados.find(e => e.id_departamento == id_departamento);
+        if (primerEmpleado && parseInt(primerEmpleado.tipo_horario) === 1) {
+            $('#tabla-nomina-container-pilar').addClass('modo-confianza');
+        } else {
+            $('#tabla-nomina-container-pilar').removeClass('modo-confianza');
+        }
     }
 
     // Mostrar los resultados

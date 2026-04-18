@@ -86,7 +86,7 @@ function subirBiometrico() {
     // manejar clic en siguiente para mostrar el input de archivo
     $(document).on('click', '#btn-siguiente-biometrico', function () {
         const boton = $(this);
-        const listaOculta = $('#lista-empleados-biometrico').is(':hidden');
+        const listaOculta = $('#lista-empleados-biometrico').is(':hidden') || $('#seccion-seleccion-biometrico').is(':hidden');
 
         // FASE 1: Mostrar interfaz de archivo
         if (!listaOculta) {
@@ -98,11 +98,16 @@ function subirBiometrico() {
             }
 
             // ocultar controles anteriores
-            $('#lista-empleados-biometrico').hide();
-            $('#buscar-empleado-biometrico').closest('.mb-3').hide();
+            if ($('#seccion-seleccion-biometrico').length > 0) {
+                $('#seccion-seleccion-biometrico').hide();
+            } else {
+                $('#lista-empleados-biometrico').hide();
+                $('#buscar-empleado-biometrico').closest('.mb-3').hide();
+            }
+            
             // mostrar sección de archivo
             $('#seccion-archivo-biometrico').show();
-            boton.text('Procesar archivo');
+            boton.html('<span>Procesar archivo</span> <i class="bi bi-gear-fill ms-2"></i>');
             return;
         }
 
@@ -184,6 +189,11 @@ function subirBiometrico() {
             }
         });
     });
+
+    // --- ACCIÓN BOTÓN REGRESAR ---
+    $(document).on('click', '#btn-regresar-biometrico', function () {
+        resetearModalBiometrico();
+    });
 }
 
 // Helper: buscar empleado por clave en la nómina
@@ -226,7 +236,7 @@ function unirBiometricoConSeleccionados(jsonNominaConfianza, JsonBiometrico, cla
     // Parámetro 'clavesSeleccionadas' es array de objetos {clave,id_empresa}
     const seleccionadosSet = new Set(clavesSeleccionadas.map(o => String(o.clave) + '|' + String(o.id_empresa)));
 
-    // Recorrer departamentos y actualizar SOLO empleados seleccionados
+    // Recorrer departamentos and actualizar SOLO empleados seleccionados
     if (jsonNominaConfianza && jsonNominaConfianza.departamentos) {
         jsonNominaConfianza.departamentos.forEach(depto => {
             if (depto.empleados) {
@@ -247,16 +257,25 @@ function unirBiometricoConSeleccionados(jsonNominaConfianza, JsonBiometrico, cla
 
 // Resetear modal a estado inicial
 function resetearModalBiometrico() {
-    // Mostrar lista y búsqueda
-    $('#lista-empleados-biometrico').show();
-    $('#buscar-empleado-biometrico').closest('.mb-3').show();
+    // Usar IDs de sección optimizados si existen
+    if ($('#seccion-seleccion-biometrico').length > 0) {
+        $('#seccion-seleccion-biometrico').show();
+    } else {
+        // Fallback
+        $('#lista-empleados-biometrico').show();
+        $('#buscar-empleado-biometrico').closest('.mb-3').show();
+    }
+
     // Ocultar sección de archivo
     $('#seccion-archivo-biometrico').hide();
-    // Limpiar búsqueda
+    
+    // Limpiar búsqueda y archivo
     $('#buscar-empleado-biometrico').val('');
-    // Mostrar todos los items
-    $('#lista-empleados-biometrico .list-group-item').show();
-    // Botón vuelve a "Siguiente"
-    $('#btn-siguiente-biometrico').text('Siguiente');
-}
+    $('#archivo-biometrico-modal').val('');
 
+    // Mostrar todos los items de la lista
+    $('#lista-empleados-biometrico .list-group-item').show();
+
+    // Botón vuelve a "Siguiente"
+    $('#btn-siguiente-biometrico').html('<span>Siguiente</span> <i class="bi bi-arrow-right ms-2"></i>');
+}

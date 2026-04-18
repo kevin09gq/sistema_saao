@@ -18,14 +18,17 @@ function confirmarsaveNomina() {
 function saveNominaRelicario() {
 
     // Quitar el departamento "Corte" del objeto global para no guardarlo en la nómina (se procesa aparte)
-    const jsonData = { ...jsonNominaRelicario, departamentos: jsonNominaRelicario.departamentos.filter(d => d.nombre !== "Corte") };
+    const jsonData = { ...jsonNominaRelicario, departamentos: jsonNominaRelicario.departamentos.filter(d => d.nombre !== "Corte" && d.nombre !== "Poda") };
     const numeroSemana = jsonData.numero_semana;
 
     // Obtener el dep Corte por separado
     const departamentoCorte = jsonNominaRelicario.departamentos.find(d => d.nombre === "Corte");
-    // Obtener empleados del dep. Corte
     const empleadosCorte = departamentoCorte ? departamentoCorte.empleados : [];
-    
+
+    // Obtener el dep Poda por separado
+    const departamentoPoda = jsonNominaRelicario.departamentos.find(d => d.nombre === "Poda");
+    const empleadosPoda = departamentoPoda ? departamentoPoda.empleados : [];
+
 
 
     // IMPORTANTE: Usar fecha_cierre para determinar el año (NO fecha_inicio)
@@ -59,6 +62,7 @@ function saveNominaRelicario() {
             anio: anio,
             nomina: JSON.stringify(jsonData),
             corte: JSON.stringify(empleadosCorte), // Enviar solo los empleados del departamento de Corte
+            poda: JSON.stringify(empleadosPoda), // Enviar solo los empleados del departamento de Poda
             actualizar: true,
             case: 'guardarNominaRelicario' // Agregar el caso para identificar la función en el servidor
         }),

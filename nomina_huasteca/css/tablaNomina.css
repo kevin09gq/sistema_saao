@@ -240,5 +240,10 @@
 
 }
 
+/* OCULTAR COLUMNAS DE JORNALERO (MODO CONFIANZA) */
+#tabla-nomina-container-huasteca.modo-confianza .col-jornalero {
+    display: none !important;
+}
+
 
 

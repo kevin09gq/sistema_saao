@@ -466,6 +466,33 @@ CREATE TABLE cortes_relicario_tablas (
     ON DELETE CASCADE
 );
 
+-- Tabla principal: podas_relicario
+CREATE TABLE podas_relicario (
+    id_poda INT AUTO_INCREMENT PRIMARY KEY,
+    id_nomina INT NOT NULL,
+    nombre_empleado VARCHAR(150) NOT NULL,
+    fecha_creacion DATETIME NOT NULL,
+    FOREIGN KEY (id_nomina)
+        REFERENCES nomina_relicario (id_nomina_relicario)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
+
+-- Tabla de movimientos: podas_movimientos_relicario
+CREATE TABLE podas_movimientos_relicario (
+    id_movimiento INT AUTO_INCREMENT PRIMARY KEY,
+    id_poda INT NOT NULL,
+    concepto VARCHAR(150) DEFAULT 'PODA',
+    fecha DATE NOT NULL,
+    arboles_podados INT NOT NULL,
+    monto DECIMAL(10,2) NOT NULL,
+    es_extra BOOLEAN DEFAULT 0,
+    FOREIGN KEY (id_poda)
+        REFERENCES podas_relicario (id_poda)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
+
 -- =============================
 -- TABLAS DE NÓMINA PILAR
 -- =============================

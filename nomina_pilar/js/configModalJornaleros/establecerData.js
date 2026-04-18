@@ -82,6 +82,8 @@ function establecerInformacionEmpleadoJornalero(empleado) {
     $('#campo-nombre-jornaleros').text(empleado.nombre || '');
     $('#nombre-jornalero-modal').text(empleado.nombre || '');
 
+    // Mostrar los días trabajados en el footer del modal
+    $('#dias-trabajados-modal-footer').text(`Días Trabajados: ${empleado.dias_trabajados || 0}`);
 }
 
 /************************************
@@ -248,6 +250,27 @@ function establecerDiasTrabajadosJornalero(empleado) {
             filas.push(filaExtra);
         });
     }
+    
+    // --- RESTAR DÍAS (DESCUENTOS) ---
+    if (Array.isArray(empleado.dias_menos_detalle) && empleado.dias_menos_detalle.length > 0) {
+        const salarioDiario = parseFloat(empleado.salario_diario) || 0;
+
+        empleado.dias_menos_detalle.forEach(menos => {
+            diasTrabajados--;
+            totalCantidad -= salarioDiario;
+
+            const filaMenos = `
+                <tr class="table-danger">
+                    <td>${menos.dia}</td>
+                    <td><span class="badge bg-danger">Descuento</span></td>
+                    <td>-$${salarioDiario.toFixed(2)}</td>
+                    <td class="text-center"><strong>-1</strong></td>
+                </tr>
+            `;
+            filas.push(filaMenos);
+        });
+    }
+
 
     // Si hay filas, agregarlas a la tabla
     if (filas.length > 0) {
@@ -262,6 +285,10 @@ function establecerDiasTrabajadosJornalero(empleado) {
             </tr>
         `;
         $('#tbody-dias-trabajados-jornaleros').append(filaTotal);
+
+        // Actualizar también el contador en el footer del modal para consistencia
+        // (ID: dias-trabajados-modal-footer)
+        $('#dias-trabajados-modal-footer').text(`Días Trabajados: ${diasTrabajados}`);
     } else {
         const filaVacia = `
             <tr>

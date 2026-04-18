@@ -7,6 +7,9 @@ let filaSeleccionada = null;
 mostrarContextMenu();
 abrirModal();
 
+//=======================================
+// MUESTRA EL CONTEX MENU AL HACER CLICK DERECHO EN LA FILA DE LA TABLA
+//=======================================
 
 function mostrarContextMenu() {
     // Click derecho en fila de la tabla
@@ -26,6 +29,10 @@ function mostrarContextMenu() {
         $menu.hide();
     });
 }
+
+//=======================================
+// ABRE EL MODAL CON LOS DATOS DEL EMPLEADO SELECCIONADO EN LA FILA DE LA TABLA
+//=======================================
 
 function abrirModal() {
     // Acciones del menú contextual
@@ -52,7 +59,10 @@ function abrirModal() {
     });
 }
 
-// Función para buscar empleado por clave e id_empresa
+//=======================================
+// BUSCA AL EMPLEADO EN EL JSON DE NÓMINA USANDO CLAVE E ID_EMPRESA
+//=======================================
+
 function buscarEmpleado(clave, idEmpresa) {
     if (!jsonNomina40lbs || !jsonNomina40lbs.departamentos) {
         return null;

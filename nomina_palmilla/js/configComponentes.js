@@ -1,5 +1,6 @@
 quitarTarjeta();
 updateTarjeta();
+moverModales(); 
 
 
 // ============================================
@@ -99,7 +100,7 @@ function asignarValoresConfig(statusRancho = true) {
         $("#config-valores-palmilla").attr("hidden", true);
         $("#tabla-nomina-responsive").removeAttr("hidden");
 
-      
+
     });
 }
 
@@ -173,9 +174,22 @@ function obtenerSalariosHorarios(statusRancho) {
 
                 // Continuar con el flujo original
                 if (statusRancho) {
-                  
+
                     obtenerHorarioRancho();
-                } 
+                } else {
+                    actualizarCabeceraNomina(jsonNominaPalmilla);
+                    // Nómina restaurada: Usar la nueva función centralizada en busquedaFiltrado.js
+                    // que maneja automáticamente el ocultamiento de columnas
+                    if (typeof aplicarFiltrosActuales === 'function') {
+                        aplicarFiltrosActuales();
+                    } else {
+                        // Fallback por seguridad
+                        let id_departamento = parseInt($('#filtro_departamento').val());
+                        let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaPalmilla, id_departamento);
+                        mostrarDatosTabla(jsonFiltrado, 1);
+                    }
+                    saveNomina(jsonNominaPalmilla);
+                }
             } else if (response.error) {
                 console.error("Error del servidor:", response.error);
             }
@@ -408,4 +422,11 @@ function actualizarCabeceraNomina(json) {
 
     $('#nombre_nomina').text(nombreNomina);
     $('#num_semana').text(`SEM ${json.numero_semana}`);
+}
+
+function moverModales() {
+    // Mover el modal de configuración de valores al body para evitar problemas de z-index
+    $(".modal-dialog").draggable({
+        handle: ".modal-header"
+    });
 }

@@ -461,13 +461,13 @@ function generarPDFConLogo(logoBase64, datosExportar, folioUnico = null) {
     const CONTENT_W = PAGE_W - MARGIN * 2;
 
     const COL_DARK = [90, 60, 120]; // tono oscuro derivado del acento
-    const COL_ACCENT = [194, 158, 240]; // color solicitado
+    const COL_ACCENT = [181, 6, 0]; // color solicitado (rojo)
     const COL_GREEN = [120, 90, 180]; // tono armónico
     const COL_LIGHT = [235, 225, 250]; // fondo suave
     const COL_WHITE = [255, 255, 255];
     const COL_GRAY = [108, 117, 125];
     const COL_BG = [245, 238, 252]; // fondo general
-    const COL_BORDER = [194, 158, 240]; // igual que acento
+    const COL_BORDER = [181, 6, 0]; // igual que acento (rojo)
     // ...existing code...
 
     const anio = document.getElementById('filtro_anio').value || 'Todos';
@@ -490,12 +490,12 @@ function generarPDFConLogo(logoBase64, datosExportar, folioUnico = null) {
 
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...COL_HEADER_TEXT);
+    doc.setTextColor(0, 0, 0); // Negro
     doc.text('Reportes de Rejas Cortes', PAGE_W / 2, 13, { align: 'center' });
 
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...COL_HEADER_TEXT);
+    doc.setTextColor(0, 0, 0); // Negro
     doc.text('Rancho Relicario', PAGE_W / 2, 19, { align: 'center' });
 
     // Fecha
@@ -532,7 +532,11 @@ function generarPDFConLogo(logoBase64, datosExportar, folioUnico = null) {
         const numChips = tablas.length;
         const chipsPerLine = Math.floor((CONTENT_W - 6) / 85); // Aprox 85 ancho por chip
         const numLines = Math.max(1, Math.ceil(numChips / chipsPerLine));
-        const FICHA_H_APPROX = 50 + (numLines * 6) + 2; // Adaptarse al número de líneas reales
+        // Reducir el espacio extra en blanco para varias líneas de chips
+        let FICHA_H_APPROX = 50 + (numLines * 6) + 2;
+        if (numLines > 1) {
+            FICHA_H_APPROX -= 8; // Reduce el espacio extra si hay más de una línea
+        }
         if (y + FICHA_H_APPROX > PAGE_H - 18) {
             doc.addPage();
             y = MARGIN;
@@ -595,7 +599,7 @@ function generarPDFConLogo(logoBase64, datosExportar, folioUnico = null) {
         doc.setTextColor(...COL_LABEL);
         doc.text('Gastos cortes:', MARGIN + 3, y);
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(...COL_GREEN);
+        doc.setTextColor(0, 0, 0); // Valor en negro
         doc.setFontSize(10);
         doc.text(`$${ganancia.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`, MARGIN + 3 + doc.getTextWidth('Gastos cortes:') + 8, y);
         y += 7;
@@ -621,14 +625,14 @@ function generarPDFConLogo(logoBase64, datosExportar, folioUnico = null) {
                 y += 10; 
             }
 
-            doc.setFillColor(...COL_LIGHT);
-            doc.setDrawColor(...COL_ACCENT);
+            doc.setFillColor(255, 255, 255); // Fondo blanco
+            doc.setDrawColor(...COL_ACCENT); // Borde rojo
             doc.setLineWidth(0.2);
             doc.roundedRect(bx, y - 4, chipW, 6.5, 1.5, 1.5, 'FD'); 
 
             doc.setFontSize(7);
             doc.setFont('helvetica', 'bold');
-            doc.setTextColor(...COL_DARK);
+            doc.setTextColor(...COL_ACCENT); // Letras rojas
             doc.text(chipLabel, bx + 3, y);
 
             bx += chipW + 4; 

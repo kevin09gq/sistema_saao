@@ -2,6 +2,7 @@
 abrirModalDiasExtra();
 filtrarEmpleadosExtra();
 aplicarDiasExtraEmpleado();
+quitarDiaExtraEmpleado();
 
 //=====================================
 // ABRIR MODAL DIAS EXTRA
@@ -139,6 +140,52 @@ function aplicarDiasExtraEmpleado() {
 }
 
 //=====================================
+// QUITAR DÍAS EXTRA A LOS EMPLEADOS SELECCIONADOS
+//=====================================
+
+function quitarDiaExtraEmpleado() {
+    // Quitar Días (Descuento)
+    $(document).on('click', '#btn-quitar-dia-extra', function () {
+        const seleccionados = obtenerEmpleadosSeleccionadosExtra();
+        const diaSeleccionado = $('#select-dia-semana-extra').val();
+        
+        if (seleccionados.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Sin selección',
+                text: 'Por favor, selecciona al menos un empleado.'
+            });
+            return;
+        }
+
+        // Aplicar el descuento a cada uno
+        seleccionados.forEach(emp => {
+            disminuirDiaExtra(emp, diaSeleccionado);
+            // Recalcular su sueldo y otros conceptos
+            if (typeof calcularSueldoSemanal === 'function') {
+                calcularSueldoSemanal(emp);
+            }
+        });
+
+        // Guardar cambios globalmente
+        if (typeof saveNomina === 'function') {
+            saveNomina(jsonNominaPilar);
+        }
+
+        Swal.fire({
+            icon: 'success',
+            title: 'Días restados',
+            text: `Se ha restado ${diaSeleccionado} a ${seleccionados.length} empleados.`,
+            timer: 2000,
+            showConfirmButton: false
+        });
+
+        // Cerrar modal
+        bootstrap.Modal.getInstance(document.getElementById('modal-dias-extra')).hide();
+    });
+}
+
+//=====================================
 // OBTENER EMPLEADOS SELECCIONADOS
 //=====================================
 
@@ -183,4 +230,25 @@ function aumentarDiaExtra(persona, dia) {
     
     // Sincronizar el contador antiguo por compatibilidad
     persona.dias_extra = persona.dias_extra_detalle.length;
+}
+//=====================================
+// DISMINUIR DÍA EXTRA (DESCUENTO)
+//=====================================
+
+function disminuirDiaExtra(persona, dia) {
+    if (!persona || !dia) return;
+    
+    // Inicializar arreglo detallado si no existe
+    if (!Array.isArray(persona.dias_menos_detalle)) {
+        persona.dias_menos_detalle = [];
+    }
+    
+    // Agregar el día de descuento al arreglo
+    persona.dias_menos_detalle.push({
+        dia: dia,
+        fecha: "Descuento" // Etiqueta para identificar en la tabla
+    });
+    
+    // Sincronizar el contador
+    persona.dias_menos = persona.dias_menos_detalle.length;
 }

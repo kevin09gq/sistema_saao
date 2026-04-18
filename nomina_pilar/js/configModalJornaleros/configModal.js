@@ -77,6 +77,50 @@ function agregarDiasTrabajados() {
         }
     });
 
+    // --- RESTAR DÍA EXTRA INDIVIDUAL ---
+    $(document).on('click', '#btn-restar-dia-extra-individual', function () {
+        const dia = $('#select-dia-extra-individual').val();
+        const empleado = objEmpleadoJornalero.getEmpleado();
+
+        if (!dia) {
+            Swal.fire({ icon: 'warning', title: 'Selecciona un día', text: 'Por favor selecciona un día de la semana.' });
+            return;
+        }
+
+        if (!empleado) return;
+
+        // Usar función existente para restar el día
+        if (typeof disminuirDiaExtra === 'function') {
+            disminuirDiaExtra(empleado, dia);
+
+            // Recalcular sueldos y conceptos basados en días trabajados
+            if (typeof calcularSueldoSemanal === 'function') {
+                calcularSueldoSemanal(empleado);
+            }
+
+            // Refrescar la UI del modal
+            if (typeof establecerDiasTrabajadosJornalero === 'function') {
+                establecerDiasTrabajadosJornalero(empleado);
+            }
+            if (typeof establecerPercepcionesJornalero === 'function') {
+                establecerPercepcionesJornalero(empleado);
+            }
+
+            // Recalcular sueldo a cobrar final
+            if (typeof calcularSueldoACobrarJornalero === 'function') {
+                calcularSueldoACobrarJornalero();
+            }
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Día restado',
+                text: `Se ha restado ${dia} de los días trabajados.`,
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }
+    });
+
     // --- LIMPIAR DÍAS EXTRA INDIVIDUALES ---
     $(document).on('click', '#btn-limpiar-dias-extra-individual', function () {
         const empleado = objEmpleadoJornalero.getEmpleado();
@@ -95,6 +139,8 @@ function agregarDiasTrabajados() {
             if (result.isConfirmed) {
                 empleado.dias_extra_detalle = [];
                 empleado.dias_extra = 0;
+                empleado.dias_menos_detalle = [];
+                empleado.dias_menos = 0;
 
                 if (typeof calcularSueldoSemanal === 'function') {
                     calcularSueldoSemanal(empleado);

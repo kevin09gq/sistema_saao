@@ -67,6 +67,20 @@ function restoreNomina() {
                 id_departamento = jsonNominaPilar.departamentos[0].id_departamento;
             }
 
+            // Lógica para ocultar columnas (Modo Confianza)
+            const depaObjeto = jsonNominaPilar.departamentos.find(d => 
+                d.empleados && d.empleados.some(e => e.id_departamento == id_departamento)
+            );
+            
+            if (depaObjeto) {
+                const primerEmpleado = depaObjeto.empleados.find(e => e.id_departamento == id_departamento);
+                if (primerEmpleado && parseInt(primerEmpleado.tipo_horario) === 1) {
+                    $('#tabla-nomina-container-pilar').addClass('modo-confianza');
+                } else {
+                    $('#tabla-nomina-container-pilar').removeClass('modo-confianza');
+                }
+            }
+
             let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaPilar, id_departamento);
             mostrarDatosTabla(jsonFiltrado, 1);
         }

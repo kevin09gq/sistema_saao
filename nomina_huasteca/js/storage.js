@@ -7,6 +7,9 @@ window.addEventListener('beforeunload', function () {
     }
 });
 
+//=======================================
+// GUARDA LA NOMINA EN LOCAL STORAGE
+//=======================================
 
 function saveNomina(jsonNominaHuasteca) {
     try {
@@ -18,6 +21,10 @@ function saveNomina(jsonNominaHuasteca) {
     }
 }
 
+//=======================================
+// CARGA LA NOMINA DESDE LOCAL STORAGE
+//=======================================
+
 function loadNomina() {
     try {
         const str = localStorage.getItem('jsonNominaHuasteca');
@@ -27,6 +34,10 @@ function loadNomina() {
         return null;
     }
 }
+
+//=======================================
+// LIMPIA LA NOMINA DE LOCAL STORAGE Y DE LA VARIABLE GLOBAL
+//=======================================
 
 function clearNomina() {
     try {
@@ -47,6 +58,9 @@ function clearNomina() {
     }
 }
 
+//=======================================
+// RESTAURA LA NOMINA DESDE LOCAL STORAGE Y ACTUALIZA LA VISTA
+//=======================================
 
 // Restaura la nómina desde localStorage y actualiza la vista si las funciones UI están disponibles
 function restoreNomina() {
@@ -80,13 +94,26 @@ function restoreNomina() {
         }
 
         // Renderizar tabla restaurada
-        // Renderizar tabla restaurada
         if (typeof mostrarDatosTabla === 'function') {
             let id_departamento = parseInt($('#filtro_departamento').val());
 
             // Si el select aún no tiene valor válido, usar el primer departamento del JSON
             if (!id_departamento && jsonNominaHuasteca.departamentos && jsonNominaHuasteca.departamentos.length > 0) {
                 id_departamento = jsonNominaHuasteca.departamentos[0].id_departamento;
+            }
+
+            // Lógica para ocultar columnas (Modo Confianza)
+            const depaObjeto = jsonNominaHuasteca.departamentos.find(d => 
+                d.empleados && d.empleados.some(e => e.id_departamento == id_departamento)
+            );
+            
+            if (depaObjeto) {
+                const primerEmpleado = depaObjeto.empleados.find(e => e.id_departamento == id_departamento);
+                if (primerEmpleado && parseInt(primerEmpleado.tipo_horario) === 1) {
+                    $('#tabla-nomina-container-huasteca').addClass('modo-confianza');
+                } else {
+                    $('#tabla-nomina-container-huasteca').removeClass('modo-confianza');
+                }
             }
 
             let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaHuasteca, id_departamento);

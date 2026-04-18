@@ -268,8 +268,8 @@ function alerta(icono, titulo, texto, toast = false) {
  * cuenta dicho rancho
  */
 function obtenerTablasRancho() {
-    // Obtener el id_area del Palmilla (siempre es 4)
-    const id_area = 4;
+    // Obtener el id_area del Palmilla (siempre es 5)
+    const id_area = 5;
 
     $.ajax({
         type: "GET",

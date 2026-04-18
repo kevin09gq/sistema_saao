@@ -6,6 +6,14 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 20px;
+}
+
+.header-titulo-semana {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    justify-content: flex-start;
 }
 
 .header-tabla-huasteca h3 {
@@ -18,8 +26,24 @@
 .header-controls-huasteca {
     display: flex;
     align-items: center;
-    gap: 15px;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: flex-end;
 }
+
+/* Grupos de botones */
+.btn-group-huasteca {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 8px;
+    border-right: 1px solid #e5e7eb;
+}
+
+.btn-group-huasteca:last-child {
+    border-right: none;
+}
+
 
 .sem-info-huasteca {
     background: #10b981;
@@ -209,12 +233,29 @@
 
 
 /* Responsive design */
+@media (max-width: 1200px) {
+    .header-controls-huasteca {
+        gap: 10px;
+    }
+
+    .btn-group-huasteca {
+        padding: 0 6px;
+        gap: 6px;
+    }
+}
+
 @media (max-width: 768px) {
     .header-tabla-huasteca {
-        padding: 10px 15px;
+        padding: 15px 15px;
         flex-direction: column;
-        gap: 10px;
-        text-align: center;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .header-titulo-semana {
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
     }
 
     .header-tabla-huasteca h3 {
@@ -223,8 +264,23 @@
 
     .header-controls-huasteca {
         flex-wrap: wrap;
-        justify-content: center;
-        gap: 10px;
+        gap: 8px;
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .btn-group-huasteca {
+        padding: 0 6px;
+        gap: 6px;
+        border-right: none !important;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 8px;
+        margin-bottom: 8px;
+        width: 100%;
+    }
+
+    .btn-group-huasteca:last-child {
+        border-bottom: none;
     }
 
     .container-tabla-nomina-huasteca {
@@ -284,6 +340,5 @@
     .campo-busqueda-huasteca {
         padding: 8px 12px 8px 40px;
     }
-
 
 }

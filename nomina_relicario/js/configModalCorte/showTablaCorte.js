@@ -7,6 +7,7 @@ function mostrarDatosTablaCorte(jsonNominaRelicario) {
 
     // Si no existe el departamento de corte, no mostrar nada
     if (!departamentoCorte || !departamentoCorte.empleados) {
+        $('#tabla-body-corte-relicario').html('<tr><td colspan="13">No se encontraron datos para mostrar.</td></tr>');
         return;
     }
 
@@ -22,22 +23,22 @@ function mostrarDatosTablaCorte(jsonNominaRelicario) {
             Object.keys(ticketsPorPrecio).forEach(precio => {
                 const tickets = ticketsPorPrecio[precio];
                 const datosFila = procesarTicketsParaFila(empleado.nombre, empleado.concepto, tickets, parseFloat(precio));
-                
+
                 // Generar fila HTML
                 const filaHTML = generarFilaTablaCorte(numeroFila, datosFila);
                 $('#tabla-body-corte-relicario').append(filaHTML);
-                
+
                 numeroFila++;
             });
 
         } else if (empleado.concepto === "NOMINA") {
             // Procesar empleados con concepto NOMINA
             const datosFila = procesarNominaParaFila(empleado.nombre, empleado.concepto, empleado.nomina);
-            
+
             // Generar fila HTML
             const filaHTML = generarFilaTablaCorte(numeroFila, datosFila);
-            $('#tabla-body-nomina-relicario').append(filaHTML);
-            
+            $('#tabla-body-corte-relicario').append(filaHTML);
+
             numeroFila++;
         }
     });
@@ -50,17 +51,17 @@ function mostrarDatosTablaCorte(jsonNominaRelicario) {
  */
 function agruparTicketsPorPrecio(tickets) {
     const ticketsPorPrecio = {};
-    
+
     tickets.forEach(ticket => {
         const precio = ticket.precio_reja.toString();
-        
+
         if (!ticketsPorPrecio[precio]) {
             ticketsPorPrecio[precio] = [];
         }
-        
+
         ticketsPorPrecio[precio].push(ticket);
     });
-    
+
     return ticketsPorPrecio;
 }
 
@@ -89,15 +90,15 @@ function procesarTicketsParaFila(nombreEmpleado, concepto, tickets, precio) {
     // Procesar cada ticket
     tickets.forEach(ticket => {
         const diaSemana = obtenerDiaSemanaCorte(ticket.fecha);
-        
+
         // Sumar todas las rejas de todas las tablas de este ticket
         const rejasTicket = ticket.datosRejas.reduce((suma, tabla) => suma + tabla.cantidad, 0);
-        
+
         // Agregar al día correspondiente
         if (rejasPorDia.hasOwnProperty(diaSemana)) {
             rejasPorDia[diaSemana] += rejasTicket;
         }
-        
+
         totalRejas += rejasTicket;
     });
 
@@ -145,12 +146,12 @@ function procesarNominaParaFila(nombreEmpleado, concepto, nomina) {
     nomina.forEach(diaPago => {
         const dia = diaPago.dia.toUpperCase();
         const pago = parseFloat(diaPago.pago) || 0;
-        
+
         // Agregar al día correspondiente
         if (pagosPorDia.hasOwnProperty(dia)) {
             pagosPorDia[dia] = pago;
         }
-        
+
         totalEfectivo += pago;
     });
 
@@ -211,7 +212,7 @@ function generarFilaTablaCorte(numeroFila, datos) {
 function obtenerDiaSemanaCorte(fechaStr) {
     // Dividir la fecha para evitar problemas de zona horaria
     const [año, mes, dia] = fechaStr.split('-').map(Number);
-    
+
     // Crear objeto Date (mes -1 porque Date cuenta los meses desde 0)
     let fecha = new Date(año, mes - 1, dia);
 

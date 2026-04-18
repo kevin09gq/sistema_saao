@@ -1,5 +1,6 @@
 quitarTarjeta();
 updateTarjeta();
+moverModales();
 
 // ============================================
 // FUNCIONES DE INICIALIZACIÓN Y CONFIGURACIÓN DE COMPONENTES
@@ -188,9 +189,10 @@ function obtenerSalariosHorarios(statusRancho) {
                 } else {
                     actualizarCabeceraNomina(jsonNominaPilar);
                     // Nómina restaurada: Usar la nueva función centralizada en busquedaFiltrado.js
-                    let id_departamento = parseInt($('#filtro_departamento').val());
-                    let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaPilar, id_departamento);
-                    mostrarDatosTabla(jsonFiltrado, 1);
+                    // que maneja automáticamente el ocultamiento de columnas
+                    if (typeof aplicarFiltrosActuales === 'function') {
+                        aplicarFiltrosActuales();
+                    } 
                     saveNomina(jsonNominaPilar);
                 }
 
@@ -418,4 +420,12 @@ function actualizarCabeceraNomina(json) {
 
     $('#nombre_nomina').text(nombreNomina);
     $('#num_semana').text(`SEM ${json.numero_semana}`);
+}
+
+
+function moverModales() {
+    // Mover el modal de configuración de valores al body para evitar problemas de z-index
+    $(".modal-dialog").draggable({
+        handle: ".modal-header"
+    });
 }

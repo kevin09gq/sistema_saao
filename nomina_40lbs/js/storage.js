@@ -7,6 +7,9 @@ window.addEventListener('beforeunload', function () {
     }
 });
 
+//=======================================
+// GUARDA LA NOMINA EN LOCAL STORAGE
+//=======================================
 
 function saveNomina(jsonNomina40lbs) {
     try {
@@ -18,6 +21,10 @@ function saveNomina(jsonNomina40lbs) {
     }
 }
 
+//=======================================
+// CARGA LA NOMINA DESDE LOCAL STORAGE
+//=======================================
+
 function loadNomina() {
     try {
         const str = localStorage.getItem('jsonNomina40lbs');
@@ -27,6 +34,10 @@ function loadNomina() {
         return null;
     }
 }
+
+//=======================================
+// LIMPIA LA NOMINA DE LOCAL STORAGE Y DE LA VARIABLE GLOBAL
+//=======================================
 
 function clearNomina() {
     try {
@@ -41,6 +52,10 @@ function clearNomina() {
     }
 }
 
+
+//=======================================
+// RESTAURA LA NOMINA DESDE LOCAL STORAGE Y ACTUALIZA LA VISTA
+//=======================================
 
 // Restaura la nómina desde localStorage y actualiza la vista si las funciones UI están disponibles
 function restoreNomina() {

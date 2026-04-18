@@ -3,25 +3,29 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
-    scrollbar-color: rgba(0,0,0,0.35) rgba(0,0,0,0.05);
+    scrollbar-color: rgba(0, 0, 0, 0.35) rgba(0, 0, 0, 0.05);
 }
 
 
 /* WebKit (Chrome, Edge, Safari) - scroll horizontal más delgado */
 #tabla-nomina-container-palmilla .table-responsive-palmilla::-webkit-scrollbar {
-    height: 8px; /* ajustar si quieres más/menos */
+    height: 8px;
+    /* ajustar si quieres más/menos */
 }
+
 #tabla-nomina-container-palmilla .table-responsive-palmilla::-webkit-scrollbar-track {
-    background: rgba(0,0,0,0.03);
+    background: rgba(0, 0, 0, 0.03);
     border-radius: 8px;
 }
+
 #tabla-nomina-container-palmilla .table-responsive-palmilla::-webkit-scrollbar-thumb {
-    background: rgba(0,0,0,0.25);
+    background: rgba(0, 0, 0, 0.25);
     border-radius: 8px;
     min-height: 20px;
 }
+
 #tabla-nomina-container-palmilla .table-responsive-palmilla::-webkit-scrollbar-thumb:hover {
-    background: rgba(0,0,0,0.35);
+    background: rgba(0, 0, 0, 0.35);
 }
 
 /* Estilo general para el contenedor de la tabla */
@@ -113,7 +117,7 @@
 .table-nomina-palmilla td:nth-child(5),
 .table-nomina-palmilla td:nth-child(6),
 .table-nomina-palmilla td:nth-child(7),
-.table-nomina-palmilla td:nth-child(8){
+.table-nomina-palmilla td:nth-child(8) {
     color: #10b981;
     font-weight: 600;
     background: rgba(16, 185, 129, 0.05);
@@ -145,9 +149,8 @@
 
 .table-nomina-palmilla td:nth-child(20),
 .table-nomina-palmilla td:nth-child(22),
-.table-nomina-palmilla td:nth-child(24)
- {
-   
+.table-nomina-palmilla td:nth-child(24) {
+
     color: #000000;
     font-weight: 700;
     border-radius: 6px;
@@ -172,6 +175,7 @@
     user-select: none;
     pointer-events: none;
 }
+
 /* Celdas vacías con estilo sutil */
 .table-nomina-palmilla td:empty {
     background: #f9fafb;
@@ -198,6 +202,7 @@
     color: #ef4444;
     font-weight: 700;
 }
+
 .redondeo-positivo {
     color: #000000;
     font-weight: 700;
@@ -206,21 +211,21 @@
 
 
 .pagination {
-     justify-content: center;
- }
+    justify-content: center;
+}
 
- .pagination .page-link {
-     color: #22c55e;
-     border: none;
-     background: none;
-     font-weight: 500;
- }
+.pagination .page-link {
+    color: #22c55e;
+    border: none;
+    background: none;
+    font-weight: 500;
+}
 
- .pagination .active .page-link {
-     background: #22c55e;
-     color: #fff;
-     border-radius: 6px;
- }
+.pagination .active .page-link {
+    background: #22c55e;
+    color: #fff;
+    border-radius: 6px;
+}
 
 
 @media (max-width: 768px) {
@@ -240,5 +245,7 @@
 
 }
 
-
-
+/* OCULTAR COLUMNAS DE JORNALERO (MODO CONFIANZA) */
+#tabla-nomina-container-palmilla.modo-confianza .col-jornalero {
+    display: none !important;
+}

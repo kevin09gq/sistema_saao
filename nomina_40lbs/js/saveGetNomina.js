@@ -1,3 +1,7 @@
+//=======================================
+// FUNCION PARA CONFIRMAR GUARDADO DE NÓMINA ANTES DE ENVIAR DATOS AL SERVIDOR
+//=======================================
+
 function confirmarsaveNomina() {
   $('#btn_guardar_nomina_40lbs').on('click', function () {
         Swal.fire({
@@ -14,6 +18,10 @@ function confirmarsaveNomina() {
         });
     });
 }
+
+//=======================================
+// GUARDAR NÓMINA EN LA BASE DE DATOS O ACTUALIZAR SI YA EXISTE 
+//=======================================
 
 function saveNomina40lbs(){
 
@@ -100,6 +108,10 @@ function saveNomina40lbs(){
 
 }
 
+//=======================================
+// VALIDA SI EXISTE NÓMINA EN LA BASE DE DATOS PARA LA SEMANA Y AÑO SELECCIONADOS ANTES DE GUARDAR
+//=======================================
+
 function validarExistenciaNomina(numeroSemana, anio) {
     // Versión simplificada: devuelve una Promise que resuelve a true/false
     return $.ajax({
@@ -120,6 +132,10 @@ function validarExistenciaNomina(numeroSemana, anio) {
         return false;
     });
 }
+
+//=======================================
+// OBTINER NÓMINA DE LA BASE DE DATOS PARA LA SEMANA Y AÑO SELECCIONADOS 
+//=======================================
 
 function getNomina40lbs(numeroSemana, anio) {
     // Devuelve una Promise que resuelve con el objeto de nómina o null si no existe/error

@@ -282,7 +282,7 @@ $sheet->mergeCells('A2:N2');
 $sheet->mergeCells('A3:N3');
 $sheet->mergeCells('A4:N4');
 
-$sheet->getStyle('A1')->getFont()->setBold(true)->setSize(24)->getColor()->setRGB('7030A0');
+$sheet->getStyle('A1')->getFont()->setBold(true)->setSize(24)->getColor()->setRGB('BAA59C');
 $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(20);
 $sheet->getStyle('A3')->getFont()->setBold(true)->setSize(14);
 $sheet->getStyle('A4')->getFont()->setBold(true)->setSize(14);
@@ -380,7 +380,7 @@ $sheet->getStyle('A6:N6')->getAlignment()->setWrapText(true); // Ajustar texto
 
 // Agregar color de fondo rojo a los encabezados
 $sheet->getStyle('A6:N6')->getFill()->setFillType('solid');
-$sheet->getStyle('A6:N6')->getFill()->getStartColor()->setRGB('E5C8E6'); // Rojo
+$sheet->getStyle('A6:N6')->getFill()->getStartColor()->setRGB('C9C5C3'); // Rojo
 
 // Ancho de columnas
 $anchos = [

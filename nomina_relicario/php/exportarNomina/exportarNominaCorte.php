@@ -226,6 +226,17 @@ if ($jsonNomina && isset($jsonNomina['departamentos'])) {
 }
 
 
+// ==========================
+// COLORES PARA USAR
+// ==========================
+$color_primario = 'FF0000';  // Color primario Rojo
+$color_negro    = '000000';  // Color negro
+$color_blanco   = 'FFFFFF';  // Color blanco
+$colorConcepto  = 'F2F2F2';  // fondo columna CONCEPTO GRIS CLARO
+$colorNomina    = 'FFD6D6';  // fondo filas NOMINA
+$colorDias      = 'D5F5E3';  // verde claro para columnas de días (REJA)
+$colorTotales   = 'E0E0E0';  // rojo claro para columnas de totales
+
 
 //=====================
 //  CONFIGURACIÓN INICIAL
@@ -270,6 +281,7 @@ $titulo2 = 'REJAS DE CORTE DE LIMON';
 $titulo3 = 'NOMINA DEL ' . strtoupper($fecha_inicio) . ' AL ' . strtoupper($fecha_cierre);
 $titulo4 = 'SEMANA ' . (isset($jsonNomina['numero_semana']) ? str_pad($jsonNomina['numero_semana'], 2, '0', STR_PAD_LEFT) : '00') . ' - ' . $ano;
 
+// Imprimir títulos en las filas 1 a 4, columna A
 $sheet->setCellValue('A1', $titulo1);
 $sheet->setCellValue('A2', $titulo2);
 $sheet->setCellValue('A3', $titulo3);
@@ -281,7 +293,8 @@ $sheet->mergeCells('A2:N2');
 $sheet->mergeCells('A3:N3');
 $sheet->mergeCells('A4:N4');
 
-$sheet->getStyle('A1')->getFont()->setBold(true)->setSize(24)->getColor()->setRGB('7030A0');
+// Estilos para los titulos
+$sheet->getStyle('A1')->getFont()->setBold(true)->setSize(24)->getColor()->setRGB($color_primario);
 $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(20);
 $sheet->getStyle('A3')->getFont()->setBold(true)->setSize(14);
 $sheet->getStyle('A4')->getFont()->setBold(true)->setSize(14);
@@ -369,17 +382,17 @@ foreach ($encabezados as $col => $titulo) {
     $sheet->setCellValue($col . '6', $titulo);
 }
 
-// Formatear los encabezados (Negrita, Centrados, Tamaño 10, Fondo Rojo, Letra Blanca)
+// Formatear los encabezados (Negrita, Centrados, Tamaño 12, Fondo Rojo, Letra Blanca)
 $sheet->getStyle('A6:N6')->getFont()->setBold(true);
-$sheet->getStyle('A6:N6')->getFont()->setSize(10);
-$sheet->getStyle('A6:N6')->getFont()->setColor(new Color('000000')); // Letra NEGRA
+$sheet->getStyle('A6:N6')->getFont()->setSize(12);
+$sheet->getStyle('A6:N6')->getFont()->setColor(new Color($color_blanco)); // Letra BLANCA
 $sheet->getStyle('A6:N6')->getAlignment()->setHorizontal('center');
 $sheet->getStyle('A6:N6')->getAlignment()->setVertical('center');
 $sheet->getStyle('A6:N6')->getAlignment()->setWrapText(true); // Ajustar texto
 
 // Agregar color de fondo rojo a los encabezados
 $sheet->getStyle('A6:N6')->getFill()->setFillType('solid');
-$sheet->getStyle('A6:N6')->getFill()->getStartColor()->setRGB('E5C8E6'); // Rojo
+$sheet->getStyle('A6:N6')->getFill()->getStartColor()->setRGB($color_primario); // Rojo
 
 // Ancho de columnas
 $anchos = [
@@ -412,12 +425,6 @@ $numeroFila     = 7;
 $numeroEmpleado = 1;   // Contador para la columna N° (A)
 $filasReja      = [];  // Guardar índices de filas REJA para los totales
 
-// Colores para estilo visual
-$colorConcepto = 'F2F2F2';  // fondo columna CONCEPTO GRIS CLARO
-$colorNomina   = 'FFD6D6';  // fondo filas NOMINA
-$colorDias     = 'D5F5E3';  // verde claro para columnas de días (REJA)
-$colorTotales  = 'E0E0E0';  // rojo claro para columnas de totales
-
 
 foreach ($filasCorte as $fila) {
     $esNomina = $fila['tipoConcepto'] === 'NOMINA';
@@ -440,7 +447,7 @@ foreach ($filasCorte as $fila) {
     // CONCEPTO — fondo gris siempre
     $sheet->setCellValue('C' . $numeroFila, $fila['concepto']);
     $sheet->getStyle('C' . $numeroFila)->applyFromArray([
-        'font' => ['bold' => true, 'color' => ['rgb' => '000000']],
+        'font' => ['bold' => true, 'color' => ['rgb' => $color_negro]],
         'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => $colorConcepto]],
     ]);
 
@@ -572,7 +579,7 @@ $sheet->getStyle('A6:N' . $filaTotal)->applyFromArray([
     'borders' => [
         'allBorders' => [
             'borderStyle' => Border::BORDER_THIN,
-            'color'       => ['rgb' => '000000'],
+            'color'       => ['rgb' => $color_negro],
         ],
     ],
 ]);

@@ -595,6 +595,8 @@ function validarExistenciaTrabajadorBD(jsonNominaRelicario, JsonListaRaya) {
                 jsonNominaRelicario.departamentos.forEach(function (departamento) {
                     // Si es Corte, no filtrar contra BD (el flujo de corte es manual)
                     if (departamento.nombre === "Corte") return;
+                    // Si es Poda, no filtrar contra BD (el flujo de Poda es manual)
+                    if (departamento.nombre === "Poda") return;
 
                     departamento.empleados = departamento.empleados.filter(function (empleado) {
                         return clavesExistentes.includes(String(empleado.clave));
@@ -781,7 +783,7 @@ function verificarEmpleadosSinSeguro(jsonNominaRelicario) {
                         parseInt(d.id_departamento) === parseInt(empSinSeguro.id_departamento)
                     );
 
-                    if (deptoDestino) {
+                    if (deptoDestino && deptoDestino.nombre !== "Corte" && deptoDestino.nombre !== "Poda") {
                         // Doble check directo en el departamento (por si hubo cambios asíncronos)
                         const yaExiste = deptoDestino.empleados.some(e => String(e.clave) === String(empSinSeguro.clave));
                         if (yaExiste) return;
@@ -854,7 +856,8 @@ function asignarPropiedadesEmpleado(jsonNominaRelicario) {
     jsonNominaRelicario.departamentos.forEach(departamento => {
         if (!Array.isArray(departamento.empleados)) return;
 
-
+        // Saltar departamentos específicos que no requieren esto
+        if (departamento.nombre === "Corte" || departamento.nombre === "Poda") return;
 
         // Recorrer todos los empleados de cada departamento
         departamento.empleados.forEach(empleado => {

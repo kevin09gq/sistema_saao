@@ -14,6 +14,44 @@ verificarSesion();
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <script src="<?= SWEETALERT ?>"></script>
     <link href="../css/historial_cortes.css" rel="stylesheet">
+
+    <style>
+        /* Estilos para el selector de tipo de nómina */
+        .nomina-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .btn-selector {
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-selector.active {
+            background: linear-gradient(135deg, #2e8b57 0%, #4caf50 100%);
+            color: white;
+            border: 2px solid #2e8b57;
+        }
+
+        .btn-selector.inactive {
+            background-color: white;
+            color: #6c757d;
+            border: 2px solid #dee2e6;
+        }
+
+        .btn-selector:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+    </style>
 </head>
 
 <body>
@@ -22,9 +60,19 @@ verificarSesion();
     <div class="container mt-4">
         
         <div class="header-historial">
-            <h2><i class="bi bi-clock-history me-2"></i> Historial de Cortes de Rejas (Relicario)</h2>
+            <h2><i class="bi bi-clock-history me-2"></i> Historial de Nóminas (Relicario)</h2>
             <a href="nomina_relicario.php" class="btn btn-light btn-sm text-success fw-bold">
                 <i class="bi bi-arrow-left"></i> Regresar a Nómina
+            </a>
+        </div>
+
+        <!-- SELECTOR DE TIPO DE NÓMINA -->
+        <div class="nomina-selector">
+            <a href="historial_cortes.php" class="btn-selector active">
+                <i class="bi bi-truck"></i> Nómina de Corte
+            </a>
+            <a href="historial_podas.php" class="btn-selector inactive">
+                <i class="bi bi-scissors"></i> Nómina de Poda
             </a>
         </div>
 

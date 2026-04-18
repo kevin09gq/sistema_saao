@@ -67,6 +67,20 @@ function restoreNomina() {
                 id_departamento = jsonNominaRelicario.departamentos[0].id_departamento;
             }
 
+            // Lógica para ocultar columnas (Modo Confianza)
+            const depaObjeto = jsonNominaRelicario.departamentos.find(d => 
+                d.empleados && d.empleados.some(e => e.id_departamento == id_departamento)
+            );
+            
+            if (depaObjeto) {
+                const primerEmpleado = depaObjeto.empleados.find(e => e.id_departamento == id_departamento);
+                if (primerEmpleado && parseInt(primerEmpleado.tipo_horario) === 1) {
+                    $('#tabla-nomina-container-relicario').addClass('modo-confianza');
+                } else {
+                    $('#tabla-nomina-container-relicario').removeClass('modo-confianza');
+                }
+            }
+
             let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, id_departamento);
             mostrarDatosTabla(jsonFiltrado, 1);
         }

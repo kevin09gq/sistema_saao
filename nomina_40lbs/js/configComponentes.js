@@ -1,6 +1,10 @@
 updateTarjeta();
 quitarTarjeta();
 
+//=======================================
+// OCULTAR CONTENEDOR DE CARGA DE ARCHIVO PARA MOSTRAR LA TABLA DE NÓMINA
+//=======================================
+
 function initComponents() {
     $("#container-nomina_40lbs").attr("hidden", true);
 
@@ -100,6 +104,10 @@ function quitarTarjeta() {
     });
 }
 
+//=======================================
+// LIMPIAR CAMPOS DE NÓMINA Y REINICIAR ESTADO
+//=======================================
+
 function limpiarCamposNomina() {
     $("#btn_limpiar_datos").click(function (e) {
         e.preventDefault();
@@ -138,7 +146,10 @@ function limpiarCamposNomina() {
 
 
 
-// Función para actualizar la cabecera de la nómina
+//=======================================
+// ACTUALIZAR CABECERA DE NÓMINA CON FECHAS Y NÚMERO DE SEMANA
+//=======================================
+
 function actualizarCabeceraNomina(json) {
     if (!json) return;
 

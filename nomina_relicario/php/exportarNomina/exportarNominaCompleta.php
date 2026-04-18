@@ -31,6 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['jsonNomina'])) {
     }
 }
 
+
 //=====================
 //  CONFIGURACIÓN INICIAL
 //=====================
@@ -52,6 +53,7 @@ if ($jsonNomina) {
 //  DEFINIR COLUMNAS COMUNES
 //=====================
 
+// Nominas normales
 $columnas = [
     'N°',
     'CD',
@@ -176,7 +178,8 @@ $tamanioLetraFilas = [
     'AB' => 15  // FIRMA RECIBIDO
 ];
 
-// Columnas para el corte de limon
+
+// Nomina del corte
 $encabezados_corte = [
     'A' => 'N°', // Número consecutivo
     'B' => 'NOMBRE', // Nombre del empleado
@@ -193,7 +196,6 @@ $encabezados_corte = [
     'M' => 'TOTAL EFECTIVO', // Para NOMINA: suma de pagos por día; para REJA: Total Rejas * Precio por Reja
 ];
 
-// Ancho de columnas para el corte de limon
 $anchos_corte = [
     'A' => 10,   // N°
     'B' => 38,  // NOMBRE
@@ -209,6 +211,43 @@ $anchos_corte = [
     'L' => 16,  // PRECIO POR REJA
     'M' => 16,  // TOTAL EFECTIVO
 ];
+
+// Nomina de Poda
+$encabezados_poda = [
+    'A' => 'N°', // Número consecutivo
+    'B' => 'NOMBRE', // Nombre del empleado
+    'C' => 'CONCEPTO', // NOMINA o REJA
+    'D' => 'V', // Viernes
+    'E' => 'SA', // Sábado
+    'F' => 'DO', // Domingo
+    'G' => 'L', // Lunes
+    'H' => 'MA', // Martes
+    'I' => 'MI', // Miércoles
+    'J' => 'J', // Jueves
+    'K' => 'TOTAL ARBOLES', // Solo para el concepto REJA: suma de rejas por día
+    'L' => 'PAGO POR ARBOL', // Solo para el concepto REJA: precio por reja
+    'M' => 'TOTAL EFECTIVO', // Para NOMINA: suma de pagos por día; para REJA: Total Rejas * Precio por Reja
+    'N' => 'FIRMA DE RECIBIDO',
+];
+
+$anchos_poda = [
+    'A' => 5,   // N°
+    'B' => 38,  // NOMBRE
+    'C' => 25,  // CONCEPTO
+    'D' => 10,  // V
+    'E' => 10,  // SA
+    'F' => 10,  // DO
+    'G' => 10,  // L
+    'H' => 10,  // MA
+    'I' => 10,  // MI
+    'J' => 10,  // J
+    'K' => 14,  // TOTAL ARBOLES
+    'L' => 13,  // PAGO POR ARBOL
+    'M' => 16,  // TOTAL EFECTIVO
+    'N' => 20,  // FIRMA
+];
+
+
 
 //=====================
 //  FUNCIÓN PARA CREAR UNA HOJA
@@ -255,7 +294,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja)
     // Formatear título 2 (Negrita, Tamaño 20)
     $sheet->getStyle('A2')->getFont()->setBold(true);
     $sheet->getStyle('A2')->getFont()->setSize(20);
-  
+
 
     // Formatear título 3 - NOMINA (Negrita, Tamaño 14)
     $sheet->getStyle('A3')->getFont()->setBold(true);
@@ -412,7 +451,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja)
         $sheet->setCellValue('A' . $numeroFila, $numeroEmpleado);
         $sheet->setCellValue('B' . $numeroFila, $empleado['clave'] ?? '');
         $sheet->setCellValue('C' . $numeroFila, $empleado['nombre'] ?? '');
-        
+
         $tipoHorario = $empleado['tipo_horario'] ?? '';
         if ($tipoHorario == 2) {
             $sheet->setCellValue('D' . $numeroFila, $empleado['dias_trabajados'] ?? 0);
@@ -626,7 +665,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja)
     $sheet->getStyle('A' . $filaTotal)->getAlignment()->setHorizontal('center');
     $sheet->getStyle('A' . $filaTotal)->getAlignment()->setVertical('center');
 
-    $columnasData = ['D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA'];
+    $columnasData = ['E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA'];
 
     foreach ($columnasData as $columna) {
         $rangoSuma = $columna . '7:' . $columna . ($filaTotal - 1);
@@ -634,9 +673,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja)
         $sheet->getStyle($columna . $filaTotal)->getFont()->setBold(true);
         $sheet->getStyle($columna . $filaTotal)->getFont()->setSize(14);
 
-        if ($columna === 'D') {
-            $sheet->getStyle($columna . $filaTotal)->getNumberFormat()->setFormatCode('0');
-        } elseif (in_array($columna, ['J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'V', 'X'])) {
+        if (in_array($columna, ['J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'V', 'X'])) {
             $sheet->getStyle($columna . $filaTotal)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
             $sheet->getStyle($columna . $filaTotal)->getFont()->setColor(new Color('FF0000'));
         } elseif ($columna === 'Z') {
@@ -926,14 +963,27 @@ function rangoDeFechas($fechaInicio, $fechaFin)
     return $resultado;
 }
 
-
-
-// ========================================
-// FUNCION PARA CREAR HOJA DE CORTE (REJAS)
-// ========================================
+/**
+ * Función para crear la hoja de corte
+ * @param Spreadsheet $spreadsheet El objeto de la hoja de cálculo
+ * @param String $titulo2 El título específico para esta hoja (ejemplo: "REJAS DE CORTE DE LIMON")
+ * @param Array $jsonNomina El arreglo con la información de nómina, incluyendo departamentos, empleados, tickets y nómina
+ * @param String $nombreHoja El nombre que se le dará a la hoja (ejemplo: "PODA")
+ */
 function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
 {
     global $jsonNomina, $encabezados_corte, $anchos_corte, $fecha_inicio, $fecha_cierre, $numero_semana, $ano;
+
+    // ==========================
+    // COLORES PARA USAR
+    // ==========================
+    $color_primario = 'FF0000';  // Color primario Rojo
+    $color_negro    = '000000';  // Color negro
+    $color_blanco   = 'FFFFFF';  // Color blanco
+    $colorConcepto  = 'F2F2F2';  // fondo columna CONCEPTO GRIS CLARO
+    $colorNomina    = 'FFD6D6';  // fondo filas NOMINA
+    $colorDias      = 'D5F5E3';  // verde claro para columnas de días (REJA)
+    $colorTotales   = 'E0E0E0';  // rojo claro para columnas de totales
 
     //=====================
     //  PROCESAR FILAS DEL DEPARTAMENTO CORTE
@@ -982,13 +1032,14 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
     $sheet->setCellValue('A3', $titulo3);
     $sheet->setCellValue('A4', $titulo4);
 
-    // Columnas A–M (13 columnas)
-    $sheet->mergeCells('A1:M1');
-    $sheet->mergeCells('A2:M2');
-    $sheet->mergeCells('A3:M3');
-    $sheet->mergeCells('A4:M4');
+    // Columnas A–N (14 columnas)
+    $sheet->mergeCells('A1:N1');
+    $sheet->mergeCells('A2:N2');
+    $sheet->mergeCells('A3:N3');
+    $sheet->mergeCells('A4:N4');
 
-    $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(24)->getColor()->setRGB('7030A0');
+    // Estilos para los títulos
+    $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(24)->getColor()->setRGB($color_primario);
     $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(20);
     $sheet->getStyle('A3')->getFont()->setBold(true)->setSize(14);
     $sheet->getStyle('A4')->getFont()->setBold(true)->setSize(14);
@@ -1045,7 +1096,7 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => Border::BORDER_THIN,
-                    'color' => ['argb' => '000000'],
+                    'color' => ['argb' => $color_negro],
                 ],
             ],
         ]);
@@ -1054,17 +1105,17 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
         $columna++;
     }
 
-    // Formatear los encabezados (Negrita, Centrados, Tamaño 10, Fondo Rojo, Letra Blanca)
-    $sheet->getStyle('A6:M6')->getFont()->setBold(true);
-    $sheet->getStyle('A6:M6')->getFont()->setSize(10);
-    $sheet->getStyle('A6:M6')->getFont()->setColor(new Color('000000')); // Letra blanca
-    $sheet->getStyle('A6:M6')->getAlignment()->setHorizontal('center');
-    $sheet->getStyle('A6:M6')->getAlignment()->setVertical('center');
-    $sheet->getStyle('A6:M6')->getAlignment()->setWrapText(true); // Ajustar texto
+    // Formatear los encabezados (Negrita, Centrados, Tamaño 12, Fondo Rojo, Letra Blanca)
+    $sheet->getStyle('A6:N6')->getFont()->setBold(true);
+    $sheet->getStyle('A6:N6')->getFont()->setSize(12);
+    $sheet->getStyle('A6:N6')->getFont()->setColor(new Color($color_blanco)); // Letra blanca
+    $sheet->getStyle('A6:N6')->getAlignment()->setHorizontal('center');
+    $sheet->getStyle('A6:N6')->getAlignment()->setVertical('center');
+    $sheet->getStyle('A6:N6')->getAlignment()->setWrapText(true); // Ajustar texto
 
     // Agregar color de fondo rojo a los encabezados
-    $sheet->getStyle('A6:M6')->getFill()->setFillType('solid');
-    $sheet->getStyle('A6:M6')->getFill()->getStartColor()->setRGB('E5C8E6'); // Rojo
+    $sheet->getStyle('A6:N6')->getFill()->setFillType('solid');
+    $sheet->getStyle('A6:N6')->getFill()->getStartColor()->setRGB($color_primario); // Rojo
 
     // Ajustar el ancho de las columnas
     foreach ($anchos_corte as $col => $ancho) {
@@ -1078,12 +1129,6 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
     $numeroFila     = 7;
     $numeroEmpleado = 1;   // Contador para la columna N° (A)
     $filasReja      = [];  // Guardar índices de filas REJA para los totales
-
-    // Colores para estilo visual
-    $colorConcepto = 'F2F2F2';  // fondo columna CONCEPTO GRIS CLARO
-    $colorNomina   = 'FFD6D6';  // fondo filas NOMINA
-    $colorDias     = 'D5F5E3';  // verde claro para columnas de días (REJA)
-    $colorTotales  = 'F2F2F2';  // rojo claro para columnas de totales
 
 
     foreach ($filasCorte as $fila) {
@@ -1107,7 +1152,7 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
         // CONCEPTO — fondo gris siempre
         $sheet->setCellValue('C' . $numeroFila, $fila['concepto']);
         $sheet->getStyle('C' . $numeroFila)->applyFromArray([
-            'font' => ['bold' => true, 'color' => ['rgb' => '000000']],
+            'font' => ['bold' => true, 'color' => ['rgb' => $color_negro]],
             'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => $colorConcepto]],
         ]);
 
@@ -1168,10 +1213,10 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
         // Alineación de la fila
         $sheet->getStyle('A' . $numeroFila)->getAlignment()->setHorizontal('center')->setVertical('center');
         $sheet->getStyle('B' . $numeroFila)->getAlignment()->setHorizontal('left')->setVertical('center');
-        $sheet->getStyle('C' . $numeroFila . ':M' . $numeroFila)->getAlignment()->setHorizontal('center')->setVertical('center');
+        $sheet->getStyle('C' . $numeroFila . ':N' . $numeroFila)->getAlignment()->setHorizontal('center')->setVertical('center');
 
         // Tamaño de letra de la fila
-        $sheet->getStyle('A' . $numeroFila . ':M' . $numeroFila)->getFont()->setSize(12);
+        $sheet->getStyle('A' . $numeroFila . ':N' . $numeroFila)->getFont()->setSize(12);
         $sheet->getStyle('B' . $numeroFila)->getFont()->setSize(13);
 
         $numeroFila++;
@@ -1191,7 +1236,7 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
     ]);
 
     // Aplicar fondo gris a toda la fila de totales
-    $sheet->getStyle('A' . $filaTotal . ':M' . $filaTotal)->getFill()
+    $sheet->getStyle('A' . $filaTotal . ':N' . $filaTotal)->getFill()
         ->setFillType('solid')->getStartColor()->setRGB($colorTotales);
 
     // Columnas D-J (días): Dejar vacías (no sumar, no tiene sentido mezclar rejas con dinero)
@@ -1229,11 +1274,11 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
     //=====================
     //  BORDES
     //=====================
-    $sheet->getStyle('A6:M' . $filaTotal)->applyFromArray([
+    $sheet->getStyle('A6:N' . $filaTotal)->applyFromArray([
         'borders' => [
             'allBorders' => [
                 'borderStyle' => Border::BORDER_THIN,
-                'color'       => ['rgb' => '000000'],
+                'color'       => ['rgb' => $color_negro],
             ],
         ],
     ]);
@@ -1264,29 +1309,648 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
     $sheet->getPageSetup()->setFitToPage(true);
     $sheet->getPageSetup()->setFitToHeight(0);
     $sheet->getPageSetup()->setFitToWidth(1);
-    $sheet->getPageSetup()->setPrintArea('A1:M' . $filaTotal);
+    $sheet->getPageSetup()->setPrintArea('A1:N' . $filaTotal);
+}
+
+
+
+/**
+ * ====================================================================================================
+ * FUNCIONES AUXILIARES PARA LA PODA DE LOS ARBOLES
+ * ====================================================================================================
+ */
+
+/**
+ * Convierte una fecha en formato 'DD/MM/AAA' a timestamp
+ */
+function fechaATimestamp($fecha)
+{
+    $meses = [
+        "Ene" => 1,
+        "Feb" => 2,
+        "Mar" => 3,
+        "Abr" => 4,
+        "May" => 5,
+        "Jun" => 6,
+        "Jul" => 7,
+        "Ago" => 8,
+        "Sep" => 9,
+        "Oct" => 10,
+        "Nov" => 11,
+        "Dic" => 12
+    ];
+
+    list($dia, $mesAbrev, $anio) = explode("/", $fecha);
+    $mesNum = $meses[$mesAbrev];
+    return mktime(0, 0, 0, $mesNum, (int)$dia, (int)$anio);
+}
+
+/**
+ * Verifica si una fecha (YYYY-MM-DD) está dentro del rango
+ */
+function estaEnRango($fechaStr, $fechaInicio, $fechaFin)
+{
+    [$anio, $mes, $dia] = array_map('intval', explode('-', $fechaStr));
+    $fechaMovimiento = mktime(0, 0, 0, $mes, $dia, $anio);
+
+    // Convertir fechas DD/MM/AAA a timestamps
+    $meses = [
+        "Ene" => 1,
+        "Feb" => 2,
+        "Mar" => 3,
+        "Abr" => 4,
+        "May" => 5,
+        "Jun" => 6,
+        "Jul" => 7,
+        "Ago" => 8,
+        "Sep" => 9,
+        "Oct" => 10,
+        "Nov" => 11,
+        "Dic" => 12
+    ];
+
+    list($diaIni, $mesAbrevIni, $anioIni) = explode("/", $fechaInicio);
+    $mesNumIni = $meses[$mesAbrevIni];
+    $timestampInicio = mktime(0, 0, 0, $mesNumIni, (int)$diaIni, (int)$anioIni);
+
+    list($diaFin, $mesAbrevFin, $anioFin) = explode("/", $fechaFin);
+    $mesNumFin = $meses[$mesAbrevFin];
+    $timestampFin = mktime(0, 0, 0, $mesNumFin, (int)$diaFin, (int)$anioFin);
+
+    return $fechaMovimiento >= $timestampInicio && $fechaMovimiento <= $timestampFin;
+}
+
+/**
+ * Obtiene el nombre del día de la semana en español a partir de una fecha 'YYYY-MM-DD'
+ */
+function obtenerDiaSemanaPoda(string $fechaStr): string
+{
+    [$anio, $mes, $dia] = array_map('intval', explode('-', $fechaStr));
+    $timestamp = mktime(0, 0, 0, $mes, $dia, $anio);
+    $dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
+    return $dias[(int)date('w', $timestamp)];
+}
+
+/**
+ * Agrupa los movimientos por concepto + monto, marcando extras si estan fuera del rango
+ */
+function agruparMovimientosPoda(array $movimientos, $fechaInicio, $fechaFin): array
+{
+    $agrupados = [];
+
+    foreach ($movimientos as $mov) {
+        $concepto = $mov['concepto'] ?? '';
+        $monto = (string)($mov['monto'] ?? 0);
+        $fecha = $mov['fecha'] ?? '';
+
+        // Verificar si está fuera del rango
+        $esExtra = !estaEnRango($fecha, $fechaInicio, $fechaFin);
+
+        // Si es extra, agregar día al concepto: "E. CONCEPTO (DÍA)"
+        if ($esExtra) {
+            $dia = (int)explode('-', $fecha)[2];
+            $concepto = "E. " . $concepto . " (" . $dia . ")";
+        }
+
+        $clave = $concepto . '_' . $monto;
+
+        $agrupados[$clave][] = $mov;
+    }
+
+    return $agrupados;
+}
+
+/**
+ * Procesa un grupo de movimientos (misma clave) y genera una fila
+ */
+function procesarMovimientosParaFila(string $nombre, string $concepto, array $movimientosGrupo, float $monto): array
+{
+    $valoresPorDia = [
+        'VIERNES' => 0,
+        'SABADO' => 0,
+        'DOMINGO' => 0,
+        'LUNES' => 0,
+        'MARTES' => 0,
+        'MIERCOLES' => 0,
+        'JUEVES' => 0
+    ];
+
+    $totalArboles = 0;
+    $totalEfectivo = 0;
+
+    // Verificar si es PODA (puede tener prefijo "E. ")
+    $esPoda = strpos($concepto, 'PODA') !== false;
+
+    foreach ($movimientosGrupo as $mov) {
+
+        $dia = obtenerDiaSemanaPoda($mov['fecha']); // puedes reutilizarla
+
+        if (!array_key_exists($dia, $valoresPorDia)) continue;
+
+        // PODA
+        if ($esPoda) {
+
+            $arboles = intval($mov['arboles_podados'] ?? 0);
+
+            $valoresPorDia[$dia] += $arboles;
+            $totalArboles += $arboles;
+            $totalEfectivo += ($arboles * $monto);
+        }
+        // EXTRAS
+        else {
+
+            $valor = floatval($mov['monto'] ?? 0);
+
+            $valoresPorDia[$dia] += $valor;
+            $totalEfectivo += $valor;
+        }
+    }
+
+    return [
+        'nombre'           => $nombre,
+        'concepto'         => $concepto,
+        'viernes'          => $valoresPorDia['VIERNES'],
+        'sabado'           => $valoresPorDia['SABADO'],
+        'domingo'          => $valoresPorDia['DOMINGO'],
+        'lunes'            => $valoresPorDia['LUNES'],
+        'martes'           => $valoresPorDia['MARTES'],
+        'miercoles'        => $valoresPorDia['MIERCOLES'],
+        'jueves'           => $valoresPorDia['JUEVES'],
+        'total_arboles'    => $esPoda ? $totalArboles : 0,
+        'precio'           => $esPoda ? $monto : 0,
+        'total_efectivo'   => $totalEfectivo,
+        'tipoConcepto'     => $esPoda ? 'PODA' : 'EXTRA'
+    ];
+}
+
+/**
+ * Verifica si el texto contiene un numero entre parentesi. Ejemplo: "E. PODA (30)" o "E. EXTRAS (15)"
+ * Si lo tiene signfica que es un dia extra fuera del rango
+ * @param String $texto El texto a verificar
+ * @return Bool Retorna true si el texto contiene un número entre paréntesis, false en caso contrario
+ */
+function esDiaExtra($texto)
+{
+    // Expresión regular: busca un número dentro de paréntesis
+    return preg_match('/\(\d+\)/', $texto) === 1;
+}
+
+/**
+ * Función para crear la hoja de poda
+ * @param Spreadsheet $spreadsheet El objeto de la hoja de cálculo
+ * @param String $titulo2 El título específico para esta hoja (ejemplo: "REJAS DE CORTE DE LIMON")
+ * @param Array $jsonNomina El arreglo con la información de nómina, incluyendo departamentos, empleados, tickets y nómina
+ * @param String $nombreHoja El nombre que se le dará a la hoja (ejemplo: "PODA")
+ */
+function crearHojaPoda($spreadsheet, $titulo2, $jsonNomina, $nombreHoja = 'PODA')
+{
+    global $jsonNomina, $encabezados_poda, $anchos_poda, $fecha_inicio, $fecha_cierre, $numero_semana, $ano;
+
+    // ==========================
+    // COLORES PARA USAR
+    // ==========================
+    $color_primario = 'FF0000';  // Color primario Rojo
+    $color_negro    = '000000';  // Color negro
+    $color_blanco   = 'FFFFFF';  // Color blanco
+    $colorConcepto  = 'F2F2F2';  // fondo columna CONCEPTO GRIS CLARO
+    $colorNomina    = 'FFD6D6';  // fondo filas NOMINA
+    $colorDias      = 'D5F5E3';  // verde claro para columnas de días (REJA)
+    $colorTotales   = 'E0E0E0';  // rojo claro para columnas de totales
+    $color_rojo_claro   = 'FFE8E8';  // rojo claro para columnas de totales
+
+
+    //=====================
+    //  PROCESAR FILAS DEL DEPARTAMENTO PODA
+    //=====================
+
+    $filasPoda = [];
+
+    if ($jsonNomina && isset($jsonNomina['departamentos'])) {
+
+        foreach ($jsonNomina['departamentos'] as $departamento) {
+
+            // Omitir departamentos que no sean PODA
+            if (($departamento['nombre'] ?? '') !== 'Poda') continue;
+
+            // Recorrer empleados del departamento PODA
+            foreach ($departamento['empleados'] ?? [] as $empleado) {
+
+                // Obtener nombre y movimientos del empleado
+                $nombre = $empleado['nombre'] ?? '';
+                $movimientos = $empleado['movimientos'] ?? [];
+
+                // Si no hay movimientos, saltar al siguiente empleado
+                if (empty($movimientos)) continue;
+
+                // Agrupar movimientos por concepto+monto para generar filas combinadas
+                $grupos = agruparMovimientosPoda($movimientos, $fecha_inicio, $fecha_cierre);
+
+                // Procesar cada grupo para generar una fila en el Excel
+                $filasEmpleado = [];
+
+                // Cada grupo representa un concepto+monto específico (ejemplo: PODA a $50, E. PODA (30) a $50, EXTRAS a $200, etc.)
+                foreach ($grupos as $clave => $grupo) {
+
+                    // La clave es "CONCEPTO_MONTO", extraer el monto al final
+                    $partes = explode('_', $clave);
+                    $monto = array_pop($partes);
+                    $concepto = implode('_', $partes); // Reconstruir concepto por si tiene guiones bajos
+                    $monto = floatval($monto);
+
+                    // Generar fila para este grupo de movimientos
+                    $fila = procesarMovimientosParaFila($nombre, $concepto, $grupo, $monto);
+                    // Agregar la fila al array de filas del empleado
+                    $filasEmpleado[] = $fila;
+                }
+
+                // ORDEN: primero PODA normales, luego E. PODA, luego EXTRAS normales, luego E. EXTRAS
+                usort($filasEmpleado, function ($a, $b) {
+                    $esAExtra = strpos($a['concepto'], 'E.') === 0;
+                    $esBExtra = strpos($b['concepto'], 'E.') === 0;
+
+                    // Mismo tipo de concepto
+                    if ($a['tipoConcepto'] === $b['tipoConcepto']) {
+                        // Si ambos son extras (E.), mantener orden natural
+                        if ($esAExtra && $esBExtra) return 0;
+                        // Si uno es extra (E.) y otro no, el que no es extra va primero
+                        if ($esAExtra !== $esBExtra) return $esAExtra ? 1 : -1;
+                        return 0;
+                    }
+
+                    // Diferente tipo: PODA va antes que EXTRA
+                    return ($a['tipoConcepto'] === 'PODA') ? -1 : 1;
+                });
+
+                // Agregar al resultado final
+                $filasPoda = array_merge($filasPoda, $filasEmpleado);
+            }
+        }
+    }
+
+    // Crear una nueva hoja o usar la existente
+    if ($nombreHoja === 'JORNALERO BASE') {
+        $sheet = $spreadsheet->getActiveSheet();
+    } else {
+        $sheet = $spreadsheet->createSheet();
+    }
+
+    $sheet->setTitle($nombreHoja);
+
+
+    // =======================================================
+    // PONER LOS TITULOS, LOGO Y ESTILSO DE LOS ENCABEZADOS
+    // =======================================================
+
+    $titulo1 = 'RANCHO RELICARIO';
+    // $titulo2 = 'PODA DE ARBOLES';
+    $titulo3 = 'NOMINA DEL ' . strtoupper($fecha_inicio) . ' AL ' . strtoupper($fecha_cierre);
+    $titulo4 = 'SEMANA ' . (isset($jsonNomina['numero_semana']) ? str_pad($jsonNomina['numero_semana'], 2, '0', STR_PAD_LEFT) : '00') . ' - ' . $ano;
+
+    $sheet->setCellValue('A1', $titulo1);
+    $sheet->setCellValue('A2', $titulo2);
+    $sheet->setCellValue('A3', $titulo3);
+    $sheet->setCellValue('A4', $titulo4);
+
+    // Columnas A–M (13 columnas)
+    $sheet->mergeCells('A1:N1');
+    $sheet->mergeCells('A2:N2');
+    $sheet->mergeCells('A3:N3');
+    $sheet->mergeCells('A4:N4');
+
+    $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(24)->getColor()->setRGB($color_primario);
+    $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(20);
+    $sheet->getStyle('A3')->getFont()->setBold(true)->setSize(14);
+    $sheet->getStyle('A4')->getFont()->setBold(true)->setSize(14);
+    $sheet->getStyle('A1:A4')->getAlignment()->setHorizontal('center');
+
+    // Logo
+    $logoPath = __DIR__ . '/../../../public/img/logo.jpg';
+    if (file_exists($logoPath)) {
+        $logo = new Drawing();
+        $logo->setName('Logo');
+        $logo->setDescription('Logo de Rancho El Relicario');
+        $logo->setPath($logoPath);
+        $logo->setHeight(110);
+        $logo->setCoordinates('B1');
+        $logo->setOffsetX(10);
+        $logo->setWorksheet($sheet);
+    }
+
+    // ==============================================================
+    // FILA DE LOS DIAS DE LA SEMANA (fila 5 de las columna D a la J)
+    // ==============================================================
+
+    // Generar rango de fechas entre fecha_inicio y fecha_cierre
+    $fechas = rangoDeFechas($fecha_inicio, $fecha_cierre);
+
+    // Fila donde quieres imprimir
+    $fila = 5;
+
+    // Columna de inicio
+    $columnaInicio = 'D';
+
+    // Recorremos las fechas y las imprimimos
+    $columna = $columnaInicio;
+
+    // Imprimir solo el día (DD) de cada fecha en las columnas D a J
+    foreach ($fechas as $fecha) {
+        // Extraer solo el día (ejemplo: "05" de "05/Ene/2026")
+        $dia = explode("/", $fecha)[0];
+
+        // Escribir en la celda
+        $sheet->setCellValue($columna . $fila, $dia);
+
+        // Estilos para el rango D5:J5
+        $sheet->getStyle('D5:J5')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('D5:J5')->getAlignment()->setVertical('center');
+
+        // Aplicar estilo: centrado y borde negro
+        $sheet->getStyle($columna . $fila)->applyFromArray([
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color' => ['argb' => '000000'],
+                ],
+            ],
+        ]);
+
+        // Avanzar a la siguiente columna
+        $columna++;
+    }
+
+    //=====================
+    //  ENCABEZADOS DE LA TABLA (fila 6)
+    //=====================
+    foreach ($encabezados_poda as $col => $titulo) {
+        $sheet->setCellValue($col . '6', $titulo);
+    }
+
+    // Formatear los encabezados (Negrita, Centrados, Tamaño 10, Fondo Rojo, Letra Blanca)
+    $sheet->getStyle('A6:N6')->getFont()->setBold(true);
+    $sheet->getStyle('A6:N6')->getFont()->setSize(12);
+    $sheet->getStyle('A6:N6')->getFont()->setColor(new Color($color_negro)); // Letra NEGRA
+    $sheet->getStyle('A6:N6')->getAlignment()->setHorizontal('center');
+    $sheet->getStyle('A6:N6')->getAlignment()->setVertical('center');
+    $sheet->getStyle('A6:N6')->getAlignment()->setWrapText(true); // Ajustar texto
+
+    // Agregar color de fondo rojo a los encabezados
+    $sheet->getStyle('A6:N6')->getFill()->setFillType('solid');
+    $sheet->getStyle('A6:N6')->getFill()->getStartColor()->setRGB($color_primario); // Rojo
+
+    // Ancho de columnas
+    foreach ($anchos_poda as $col => $ancho) {
+        $sheet->getColumnDimension($col)->setWidth($ancho);
+    }
+
+
+
+    //=====================
+    //  AGREGAR FILAS DE DATOS
+    //=====================
+
+    $numeroFila     = 7;
+    $numeroEmpleado = 1;
+    $nombre_tmp = '';
+
+    foreach ($filasPoda as $fila) {
+
+        $esPoda  = $fila['tipoConcepto'] === 'PODA';
+        $esExtra = $fila['tipoConcepto'] === 'EXTRA';
+
+        // =========================
+        // A → NÚMERO
+        // =========================
+
+        if ($nombre_tmp == '') {
+            $sheet->setCellValue('A' . $numeroFila, $numeroEmpleado);
+            $nombre_tmp = $fila['nombre'];
+        } else if ($nombre_tmp == $fila['nombre']) {
+            $sheet->setCellValue('A' . $numeroFila, '');
+        } else {
+            $numeroEmpleado++;
+            $sheet->setCellValue('A' . $numeroFila, $numeroEmpleado);
+            $nombre_tmp = $fila['nombre'];
+        }
+
+        // =========================
+        // B → NOMBRE
+        // =========================
+        $sheet->setCellValue('B' . $numeroFila, $fila['nombre']);
+
+        // =========================
+        // C → CONCEPTO
+        // =========================
+        $sheet->setCellValue('C' . $numeroFila, $fila['concepto']);
+        $sheet->getStyle('C' . $numeroFila)->getFont()->setBold(true);
+        $sheet->getStyle('C' . $numeroFila)->getFill()->setFillType('solid');
+        $sheet->getStyle('C' . $numeroFila)->getFill()->getStartColor()->setRGB($colorConcepto);
+
+        // Si el concepto es un dia extra, aplicar un color rojo claro a las columnas D a M de esa fila
+        if (esDiaExtra($fila['concepto'])) {
+            $sheet->getStyle('D' . $numeroFila . ':M' . $numeroFila)->getFill()->setFillType('solid');
+            $sheet->getStyle('D' . $numeroFila . ':M' . $numeroFila)->getFill()->getStartColor()->setRGB($color_rojo_claro);
+        }
+
+        // =========================
+        // D → J (DÍAS)
+        // =========================
+        $diasCols = [
+            'D' => 'viernes',
+            'E' => 'sabado',
+            'F' => 'domingo',
+            'G' => 'lunes',
+            'H' => 'martes',
+            'I' => 'miercoles',
+            'J' => 'jueves',
+        ];
+
+        foreach ($diasCols as $col => $campo) {
+
+            $valor = $fila[$campo] ?? 0;
+
+            $sheet->setCellValue($col . $numeroFila, $valor);
+
+            // FORMATO SEGÚN TIPO
+            if ($esPoda) {
+                // Entero (árboles)
+                $sheet->getStyle($col . $numeroFila)
+                    ->getNumberFormat()
+                    ->setFormatCode('#,##0;-#,##0;;');
+            } else {
+                // Moneda (extras)
+                $sheet->getStyle($col . $numeroFila)
+                    ->getNumberFormat()
+                    ->setFormatCode('$#,##0.00;-$#,##0.00;;');
+            }
+        }
+
+        // =========================
+        // K → TOTAL ÁRBOLES
+        // =========================
+        if ($esPoda) {
+            $sheet->setCellValue('K' . $numeroFila, '=SUM(D' . $numeroFila . ':J' . $numeroFila . ')');
+        } else {
+            $sheet->setCellValue('K' . $numeroFila, '');
+        }
+        $sheet->getStyle('K' . $numeroFila)
+            ->getNumberFormat()
+            ->setFormatCode('#,##0');
+
+        // =========================
+        // L → PAGO POR ÁRBOL
+        // =========================
+        if ($esPoda) {
+            $sheet->setCellValue('L' . $numeroFila, $fila['precio']);
+            $sheet->getStyle('L' . $numeroFila)
+                ->getNumberFormat()
+                ->setFormatCode('$#,##0.00');
+        } else {
+            $sheet->setCellValue('L' . $numeroFila, '');
+        }
+
+        // =========================
+        // M → TOTAL EFECTIVO
+        // =========================
+        if ($esPoda) {
+            // K * L
+            $sheet->setCellValue('M' . $numeroFila, '=K' . $numeroFila . '*L' . $numeroFila);
+        } else {
+            // SUMA D-J
+            $sheet->setCellValue('M' . $numeroFila, '=SUM(D' . $numeroFila . ':J' . $numeroFila . ')');
+        }
+
+        $sheet->getStyle('M' . $numeroFila)->applyFromArray([
+            'font' => ['bold' => true],
+            'numberFormat' => ['formatCode' => '$#,##0.00'],
+        ]);
+
+        // =========================
+        // N → FIRMA
+        // =========================
+        $sheet->setCellValue('N' . $numeroFila, '');
+
+        // =========================
+        // ALINEACIÓN
+        // =========================
+        $sheet->getStyle('A' . $numeroFila)
+            ->getAlignment()->setHorizontal('center')->setVertical('center');
+
+        $sheet->getStyle('B' . $numeroFila)
+            ->getAlignment()->setHorizontal('left')->setVertical('center');
+
+        $sheet->getStyle('C' . $numeroFila . ':N' . $numeroFila)
+            ->getAlignment()->setHorizontal('center')->setVertical('center');
+
+        // =========================
+        // TAMAÑO DE LETRA
+        // =========================
+        $sheet->getStyle('A' . $numeroFila . ':N' . $numeroFila)
+            ->getFont()->setSize(12);
+
+        $sheet->getStyle('B' . $numeroFila)
+            ->getFont()->setSize(13);
+
+        // =========================
+        // SIGUIENTE FILA
+        // =========================
+        $numeroFila++;
+        // $numeroEmpleado++;
+    }
+
+
+    //=====================
+    //  FILA DE TOTALES
+    //=====================
+    $filaTotal = $numeroFila - 1;
+
+
+    //=====================
+    //  BORDES
+    //=====================
+    $sheet->getStyle('A6:N' . $filaTotal)->applyFromArray([
+        'borders' => [
+            'allBorders' => [
+                'borderStyle' => Border::BORDER_THIN,
+                'color'       => ['rgb' => $color_negro],
+            ],
+        ],
+    ]);
+
+
+    //=====================
+    //  ALTURA DE FILAS Y TAMAÑO
+    //=====================
+
+    $sheet->getRowDimension(1)->setRowHeight(38);
+    $sheet->getRowDimension(2)->setRowHeight(28);
+    $sheet->getRowDimension(3)->setRowHeight(24);
+    $sheet->getRowDimension(4)->setRowHeight(24);
+    $sheet->getRowDimension(5)->setRowHeight(20);
+    $sheet->getRowDimension(6)->setRowHeight(40);
+
+    for ($f = 7; $f < $numeroFila; $f++) {
+        $sheet->getRowDimension($f)->setRowHeight(32);
+    }
+
+
+    //=====================
+    //  CONFIGURACIÓN DE PÁGINA
+    //=====================
+
+    $sheet->getPageSetup()->setPaperSize(PageSetup::PAPERSIZE_LETTER);
+    $sheet->getPageSetup()->setOrientation(PageSetup::ORIENTATION_LANDSCAPE);
+    $sheet->getPageMargins()->setLeft(0.4);
+    $sheet->getPageMargins()->setRight(0.4);
+    $sheet->getPageMargins()->setTop(0.4);
+    $sheet->getPageMargins()->setBottom(0.4);
+    $sheet->getPageSetup()->setFitToPage(true);
+    $sheet->getPageSetup()->setFitToHeight(0);
+    $sheet->getPageSetup()->setFitToWidth(1);
+    $sheet->getPageSetup()->setPrintArea('A1:N' . $filaTotal);
 }
 
 
 
 
-//=====================
+//==================================================================================================
 //  CREAR LAS DIFERENTES HOJAS
-//=====================
+//==================================================================================================
 
 if ($jsonNomina && isset($jsonNomina['departamentos'])) {
     foreach ($jsonNomina['departamentos'] as $departamento) {
+
         $nombreDepto = $departamento['nombre'] ?? 'S/N';
-        $idDepto = $departamento['id_departamento'] ?? null;
+        $idDepto     = $departamento['id_departamento'] ?? null;
 
-        // Omitir Corte si ya se maneja aparte al final con su propio formato
+        // Omitir Corte y Poda
         if (strtoupper($nombreDepto) === 'CORTE') continue;
+        if (strtoupper($nombreDepto) === 'PODA') continue;
 
-        crearHoja($spreadsheet, strtoupper($nombreDepto), function ($emp) use ($idDepto) {
+        // Omitir departamentos si la clave empleado NO EXISTE
+        if (!isset($departamento['empleados']) || !is_array($departamento['empleados']) || empty($departamento['empleados'])) continue;
+
+        // Filtrar empleados que no tienen el campo 'mostrar' en true o cuyo 'id_departamento' no coincide con el departamento actual
+        $empleadosValidos = array_filter($departamento['empleados'], function ($emp) use ($idDepto) {
             $idDeptoEmp = $emp['id_departamento'] ?? null;
-            $mostrar = $emp['mostrar'] ?? false;
+            $mostrar    = $emp['mostrar'] ?? false;
+
             return ($mostrar && $idDeptoEmp == $idDepto);
-        }, substr(strtoupper($nombreDepto), 0, 31));
+        });
+
+        // Si no hay empleados válidos, no crear la hoja
+        if (empty($empleadosValidos)) continue;
+
+        // Crear hoja solo si hay datos
+        crearHoja(
+            $spreadsheet,
+            strtoupper($nombreDepto),
+            function ($emp) use ($idDepto) {
+                $idDeptoEmp = $emp['id_departamento'] ?? null;
+                $mostrar    = $emp['mostrar'] ?? false;
+                return ($mostrar && $idDeptoEmp == $idDepto);
+            },
+            substr(strtoupper($nombreDepto), 0, 31)
+        );
     }
 }
 
@@ -1308,6 +1972,26 @@ if ($jsonNomina && isset($jsonNomina['departamentos'])) {
 
 if ($existeCorteConEmpleados) {
     crearHojaCorte($spreadsheet, 'REJAS DE CORTE DE LIMON', $jsonNomina, 'CORTE');
+}
+
+
+// =================================================================================================
+// IDENTIFICAR QUE EXISTE EL DEPARTAMENTO DE PODA Y QUE TENGA EMPLEADOS PARA CREAR LA HOJA DE PODA
+// =================================================================================================
+
+// Poda de Árboles
+$existePodaConEmpleados = false;
+
+if ($jsonNomina && isset($jsonNomina['departamentos'])) {
+    $poda = array_filter(
+        $jsonNomina['departamentos'],
+        fn($d) => ($d['nombre'] ?? '') === 'Poda' && !empty($d['empleados'])
+    );
+    $existePodaConEmpleados = !empty($poda);
+}
+
+if ($existePodaConEmpleados) {
+    crearHojaPoda($spreadsheet, 'PODA DE ARBOLES', $jsonNomina, 'PODA');
 }
 
 
