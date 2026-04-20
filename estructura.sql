@@ -376,7 +376,7 @@ CREATE TABLE historial_incidencias_semanal (
 CREATE TABLE nombre_nominas (
   id_nomina INT AUTO_INCREMENT PRIMARY KEY,
   nombre_nomina VARCHAR(100) NOT NULL,
-  id_area INT NOT NULL,
+  id_area INT NULL,
   FOREIGN KEY (id_area) REFERENCES areas(id_area) ON UPDATE CASCADE ON DELETE CASCADE
 );
 

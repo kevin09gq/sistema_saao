@@ -36,8 +36,7 @@ verificarSesion(); // Proteger esta página
                 <!-- Pestañas de navegación -->
                 <div class="row row-cols-1 row-cols-md-5 g-2" id="configTabs" role="tablist">
                     <div class="col">
-                        <div class="card nav-link active" id="areas-tab"
-                            data-bs-toggle="tab" data-bs-target="#areas"
+                        <div class="card nav-link active" id="areas-tab" data-bs-toggle="tab" data-bs-target="#areas"
                             role="tab" aria-controls="areas" aria-selected="true">
                             <div class="card-body p-1">
                                 <h6 class="card-title my-0"><i class="bi bi-diagram-3"></i> Áreas</h6>
@@ -46,9 +45,9 @@ verificarSesion(); // Proteger esta página
                     </div>
 
                     <div class="col">
-                        <div class="card nav-link" id="departamentos-tab"
-                            data-bs-toggle="tab" data-bs-target="#departamentos"
-                            role="tab" aria-controls="departamentos" aria-selected="false">
+                        <div class="card nav-link" id="departamentos-tab" data-bs-toggle="tab"
+                            data-bs-target="#departamentos" role="tab" aria-controls="departamentos"
+                            aria-selected="false">
                             <div class="card-body p-1">
                                 <h6 class="card-title my-0"><i class="bi bi-building"></i> Departamentos</h6>
                             </div>
@@ -56,8 +55,7 @@ verificarSesion(); // Proteger esta página
                     </div>
 
                     <div class="col">
-                        <div class="card nav-link" id="nominas-tab"
-                            data-bs-toggle="tab" data-bs-target="#nominas"
+                        <div class="card nav-link" id="nominas-tab" data-bs-toggle="tab" data-bs-target="#nominas"
                             role="tab" aria-controls="nominas" aria-selected="false">
                             <div class="card-body p-1">
                                 <h6 class="card-title my-0"><i class="bi bi-wallet2"></i> Nóminas</h6>
@@ -66,8 +64,7 @@ verificarSesion(); // Proteger esta página
                     </div>
 
                     <div class="col">
-                        <div class="card nav-link" id="puestos-tab"
-                            data-bs-toggle="tab" data-bs-target="#puestos"
+                        <div class="card nav-link" id="puestos-tab" data-bs-toggle="tab" data-bs-target="#puestos"
                             role="tab" aria-controls="puestos" aria-selected="false">
                             <div class="card-body p-1">
                                 <h6 class="card-title my-0"><i class="bi bi-briefcase"></i> Puestos</h6>
@@ -76,8 +73,7 @@ verificarSesion(); // Proteger esta página
                     </div>
 
                     <div class="col">
-                        <div class="card nav-link" id="turnos-tab"
-                            data-bs-toggle="tab" data-bs-target="#turnos"
+                        <div class="card nav-link" id="turnos-tab" data-bs-toggle="tab" data-bs-target="#turnos"
                             role="tab" aria-controls="turnos" aria-selected="false">
                             <div class="card-body p-1">
                                 <h6 class="card-title my-0"><i class="bi bi-clock-history"></i> Turnos</h6>
@@ -86,9 +82,9 @@ verificarSesion(); // Proteger esta página
                     </div>
 
                     <div class="col">
-                        <div class="card nav-link" id="festividades-tab"
-                            data-bs-toggle="tab" data-bs-target="#festividades"
-                            role="tab" aria-controls="festividades" aria-selected="false">
+                        <div class="card nav-link" id="festividades-tab" data-bs-toggle="tab"
+                            data-bs-target="#festividades" role="tab" aria-controls="festividades"
+                            aria-selected="false">
                             <div class="card-body p-1">
                                 <h6 class="card-title my-0"><i class="bi bi-calendar-date"></i> Festividades</h6>
                             </div>
@@ -96,8 +92,7 @@ verificarSesion(); // Proteger esta página
                     </div>
 
                     <div class="col">
-                        <div class="card nav-link" id="empresas-tab"
-                            data-bs-toggle="tab" data-bs-target="#empresas"
+                        <div class="card nav-link" id="empresas-tab" data-bs-toggle="tab" data-bs-target="#empresas"
                             role="tab" aria-controls="empresas" aria-selected="false">
                             <div class="card-body p-1">
                                 <h6 class="card-title my-0"><i class="bi bi-building-fill"></i> Empresas</h6>
@@ -106,8 +101,7 @@ verificarSesion(); // Proteger esta página
                     </div>
 
                     <div class="col">
-                        <div class="card nav-link" id="ranchos-tab"
-                            data-bs-toggle="tab" data-bs-target="#ranchos"
+                        <div class="card nav-link" id="ranchos-tab" data-bs-toggle="tab" data-bs-target="#ranchos"
                             role="tab" aria-controls="ranchos" aria-selected="false">
                             <div class="card-body p-1">
                                 <h6 class="card-title my-0"><i class="bi bi-leaf-fill me-2"></i>Ranchos</h6>
@@ -116,8 +110,7 @@ verificarSesion(); // Proteger esta página
                     </div>
 
                     <div class="col">
-                        <div class="card nav-link" id="tabulador-tab"
-                            data-bs-toggle="tab" data-bs-target="#tabulador"
+                        <div class="card nav-link" id="tabulador-tab" data-bs-toggle="tab" data-bs-target="#tabulador"
                             role="tab" aria-controls="tabulador" aria-selected="false">
                             <div class="card-body p-1">
                                 <h6 class="card-title my-0"><i class="bi bi-table"></i> Tabulador</h6>
@@ -126,8 +119,7 @@ verificarSesion(); // Proteger esta página
                     </div>
 
                     <div class="col">
-                        <div class="card nav-link" id="usuario-tab"
-                            data-bs-toggle="tab" data-bs-target="#usuario"
+                        <div class="card nav-link" id="usuario-tab" data-bs-toggle="tab" data-bs-target="#usuario"
                             role="tab" aria-controls="usuario" aria-selected="false">
                             <div class="card-body p-1">
                                 <h6 class="card-title my-0"><i class="bi bi-person-gear"></i> Usuario</h6>
@@ -136,9 +128,9 @@ verificarSesion(); // Proteger esta página
                     </div>
 
                     <div class="col">
-                        <div class="card nav-link" id="exportar-importar-tab"
-                            data-bs-toggle="tab" data-bs-target="#exportar-importar"
-                            role="tab" aria-controls="exportar-importar" aria-selected="false">
+                        <div class="card nav-link" id="exportar-importar-tab" data-bs-toggle="tab"
+                            data-bs-target="#exportar-importar" role="tab" aria-controls="exportar-importar"
+                            aria-selected="false">
                             <div class="card-body p-1">
                                 <h6 class="card-title my-0"><i class="bi bi-database"></i> Exportar/Importar</h6>
                             </div>
@@ -157,7 +149,8 @@ verificarSesion(); // Proteger esta página
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h5><i class="bi bi-list-ul"></i> Lista de Áreas</h5>
                                         <div class="search-box-container">
-                                            <input type="text" class="search-box" id="search-areas" placeholder="Buscar área...">
+                                            <input type="text" class="search-box" id="search-areas"
+                                                placeholder="Buscar área...">
                                         </div>
                                     </div>
                                     <div class="table-responsive" id="areas-table-responsive">
@@ -184,22 +177,32 @@ verificarSesion(); // Proteger esta página
                                         <input type="hidden" id="area_id" name="area_id">
                                         <div class="mb-3">
                                             <label for="nombre_area" class="form-label">Nombre del Área</label>
-                                            <input type="text" class="form-control" id="nombre_area" name="nombre_area" required>
+                                            <input type="text" class="form-control" id="nombre_area" name="nombre_area"
+                                                required>
                                         </div>
                                         <div class="mb-3">
                                             <label for="imagen_area" class="form-label">Imagen del Área</label>
                                             <div class="image-upload-container" id="imagen-area-container">
-                                                <div class="current-image-preview mb-2" id="area-image-preview" style="display: none;">
-                                                    <img id="preview_imagen_area" src="" alt="Vista previa" class="img-thumbnail" style="max-height: 150px;">
-                                                    <button type="button" class="btn btn-sm btn-danger remove-image" id="btn-remove-area-image" data-area-id="" data-target="imagen_area" style="display:inline-block;"><i class="bi bi-x-circle"></i> Quitar</button>
+                                                <div class="current-image-preview mb-2" id="area-image-preview"
+                                                    style="display: none;">
+                                                    <img id="preview_imagen_area" src="" alt="Vista previa"
+                                                        class="img-thumbnail" style="max-height: 150px;">
+                                                    <button type="button" class="btn btn-sm btn-danger remove-image"
+                                                        id="btn-remove-area-image" data-area-id=""
+                                                        data-target="imagen_area" style="display:inline-block;"><i
+                                                            class="bi bi-x-circle"></i> Quitar</button>
                                                 </div>
-                                                <input type="file" class="form-control" id="imagen_area" name="imagen_area" accept="image/*">
-                                                <small class="form-text text-muted">Formatos permitidos: JPG, PNG. Tamaño máximo: 2MB</small>
+                                                <input type="file" class="form-control" id="imagen_area"
+                                                    name="imagen_area" accept="image/*">
+                                                <small class="form-text text-muted">Formatos permitidos: JPG, PNG.
+                                                    Tamaño máximo: 2MB</small>
                                             </div>
                                         </div>
                                         <div class="form-actions">
-                                            <button type="submit" class="btn btn-success" id="btn-guardar-area"><i class="bi bi-save"></i> Guardar</button>
-                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-area"><i class="bi bi-x-circle"></i> Cancelar</button>
+                                            <button type="submit" class="btn btn-success" id="btn-guardar-area"><i
+                                                    class="bi bi-save"></i> Guardar</button>
+                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-area"><i
+                                                    class="bi bi-x-circle"></i> Cancelar</button>
                                         </div>
                                     </form>
                                 </div>
@@ -216,7 +219,8 @@ verificarSesion(); // Proteger esta página
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h5><i class="bi bi-list-ul"></i> Lista de Departamentos</h5>
                                         <div class="search-box-container">
-                                            <input type="text" class="search-box" id="search-departamentos" placeholder="Buscar departamento...">
+                                            <input type="text" class="search-box" id="search-departamentos"
+                                                placeholder="Buscar departamento...">
                                         </div>
                                     </div>
                                     <div class="table-responsive" id="departamentos-table-responsive">
@@ -243,12 +247,18 @@ verificarSesion(); // Proteger esta página
                                     <form id="departamentoForm">
                                         <input type="hidden" id="departamento_id" name="departamento_id">
                                         <div class="mb-3">
-                                            <label for="nombre_departamento" class="form-label">Nombre del Departamento</label>
-                                            <input type="text" class="form-control" id="nombre_departamento" name="nombre_departamento" required>
+                                            <label for="nombre_departamento" class="form-label">Nombre del
+                                                Departamento</label>
+                                            <input type="text" class="form-control" id="nombre_departamento"
+                                                name="nombre_departamento" required>
                                         </div>
                                         <div class="form-actions">
-                                            <button type="submit" class="btn btn-success" id="btn-guardar-departamento"><i class="bi bi-save"></i> Guardar</button>
-                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-departamento"><i class="bi bi-x-circle"></i> Cancelar</button>
+                                            <button type="submit" class="btn btn-success"
+                                                id="btn-guardar-departamento"><i class="bi bi-save"></i>
+                                                Guardar</button>
+                                            <button type="button" class="btn btn-secondary"
+                                                id="btn-cancelar-departamento"><i class="bi bi-x-circle"></i>
+                                                Cancelar</button>
                                         </div>
                                     </form>
                                 </div>
@@ -265,7 +275,8 @@ verificarSesion(); // Proteger esta página
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h5><i class="bi bi-list-ul"></i> Tipos de Nómina</h5>
                                         <div class="search-box-container">
-                                            <input type="text" class="search-box" id="search-nominas" placeholder="Buscar nómina...">
+                                            <input type="text" class="search-box" id="search-nominas"
+                                                placeholder="Buscar nómina...">
                                         </div>
                                     </div>
                                     <div class="table-responsive" id="nominas-table-responsive">
@@ -287,13 +298,17 @@ verificarSesion(); // Proteger esta página
                             </div>
                             <!-- Formulario Nombre de Nómina -->
                             <div class="col-md-5">
-                                <div class="form-container">
-                                    <h5 class="mb-3"><i class="bi bi-plus-circle"></i> Agregar Nómina</h5>
+                                <div class="alert alert-primary mb-0 shadow-sm" id="alert-select-nomina">
+                                    <i class="bi bi-info-circle me-2"></i> Seleccione una nómina de la tabla para editarla.
+                                </div>
+                                <div class="form-container" style="display: none;" id="form-update-nomina-container">
+                                    <h5 class="mb-3 text-primary"><i class="bi bi-pencil-square"></i> Modificar Nómina</h5>
                                     <form id="nominaForm">
-                                        <input type="hidden" id="nomina_id" name="nomina_id">
+                                        <input type="hidden" id="nomina_id" name="nomina_id" required>
                                         <div class="mb-3">
                                             <label for="nombre_nomina" class="form-label">Nombre de la Nómina</label>
-                                            <input type="text" class="form-control" id="nombre_nomina" name="nombre_nomina" required>
+                                            <input type="text" class="form-control" id="nombre_nomina"
+                                                name="nombre_nomina" required>
                                         </div>
                                         <div class="mb-3">
                                             <label for="select_area_nomina" class="form-label">Área vinculada</label>
@@ -302,8 +317,10 @@ verificarSesion(); // Proteger esta página
                                             </select>
                                         </div>
                                         <div class="form-actions">
-                                            <button type="submit" class="btn btn-success" id="btn-guardar-nomina"><i class="bi bi-save"></i> Guardar</button>
-                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-nomina"><i class="bi bi-x-circle"></i> Cancelar</button>
+                                            <button type="submit" class="btn btn-primary" id="btn-guardar-nomina"><i
+                                                    class="bi bi-save"></i> Actualizar</button>
+                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-nomina"><i
+                                                    class="bi bi-x-circle"></i> Cancelar</button>
                                         </div>
                                     </form>
                                 </div>
@@ -322,7 +339,8 @@ verificarSesion(); // Proteger esta página
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h5><i class="bi bi-list-ul"></i> Lista de Puestos</h5>
                                         <div class="search-box-container">
-                                            <input type="text" class="search-box" id="search-puestos" placeholder="Buscar puesto...">
+                                            <input type="text" class="search-box" id="search-puestos"
+                                                placeholder="Buscar puesto...">
                                         </div>
                                     </div>
                                     <div class="table-responsive" id="puestos-table-responsive">
@@ -350,24 +368,32 @@ verificarSesion(); // Proteger esta página
                                         <input type="hidden" id="puesto_id" name="puesto_id">
                                         <div class="mb-3">
                                             <label for="nombre_puesto" class="form-label">Nombre del Puesto</label>
-                                            <input type="text" class="form-control" id="nombre_puesto" name="nombre_puesto" required>
+                                            <input type="text" class="form-control" id="nombre_puesto"
+                                                name="nombre_puesto" required>
                                         </div>
                                         <div class="mb-3">
-                                            <label for="direccion_puesto" class="form-label">Dirección del Puesto</label>
-                                            <input type="text" class="form-control" id="direccion_puesto" name="direccion_puesto">
+                                            <label for="direccion_puesto" class="form-label">Dirección del
+                                                Puesto</label>
+                                            <input type="text" class="form-control" id="direccion_puesto"
+                                                name="direccion_puesto">
                                         </div>
                                         <div class="mb-3">
                                             <label for="color_hex" class="form-label">Color (Hexadecimal)</label>
                                             <div class="d-flex align-items-center gap-2">
-                                                <input type="color" class="form-control form-control-color" id="color_picker" value="#000000" title="Elige un color">
-                                                <input type="text" class="form-control" id="color_hex" name="color_hex" placeholder="#000000" maxlength="7">
+                                                <input type="color" class="form-control form-control-color"
+                                                    id="color_picker" value="#000000" title="Elige un color">
+                                                <input type="text" class="form-control" id="color_hex" name="color_hex"
+                                                    placeholder="#000000" maxlength="7">
                                             </div>
-                                            <small class="text-muted">Formato #RRGGBB. Puedes elegir con el selector o escribir el valor.</small>
+                                            <small class="text-muted">Formato #RRGGBB. Puedes elegir con el selector o
+                                                escribir el valor.</small>
                                         </div>
 
                                         <div class="form-actions">
-                                            <button type="submit" class="btn btn-success" id="btn-guardar-puesto"><i class="bi bi-save"></i> Guardar</button>
-                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-puesto"><i class="bi bi-x-circle"></i> Cancelar</button>
+                                            <button type="submit" class="btn btn-success" id="btn-guardar-puesto"><i
+                                                    class="bi bi-save"></i> Guardar</button>
+                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-puesto"><i
+                                                    class="bi bi-x-circle"></i> Cancelar</button>
 
                                         </div>
                                     </form>
@@ -386,7 +412,8 @@ verificarSesion(); // Proteger esta página
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h5><i class="bi bi-list-ul"></i> Lista de Turnos</h5>
                                         <div class="search-box-container">
-                                            <input type="text" class="search-box" id="search-turnos" placeholder="Buscar Turno...">
+                                            <input type="text" class="search-box" id="search-turnos"
+                                                placeholder="Buscar Turno...">
                                         </div>
                                     </div>
                                     <div class="table-responsive" id="turnos-table-responsive">
@@ -439,8 +466,10 @@ verificarSesion(); // Proteger esta página
 
 
                                         <div class="form-actions">
-                                            <button type="submit" class="btn btn-success" id="btn-guardar-turno"><i class="bi bi-save"></i> Guardar</button>
-                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-turno"><i class="bi bi-x-circle"></i> Cancelar</button>
+                                            <button type="submit" class="btn btn-success" id="btn-guardar-turno"><i
+                                                    class="bi bi-save"></i> Guardar</button>
+                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-turno"><i
+                                                    class="bi bi-x-circle"></i> Cancelar</button>
                                         </div>
                                     </form>
                                 </div>
@@ -456,12 +485,14 @@ verificarSesion(); // Proteger esta página
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h5><i class="bi bi-list-ul"></i> Lista de festividades</h5>
                                         <select class="form-select form-select-lg w-25" id="select_anio_festividad">
-                                            <?php for ($i = 2025; $i <= date('Y') + 1; $i++) : ?>
-                                                <option <?= $i == date('Y') ? 'selected' : '' ?> value="<?= $i ?>"><?= $i ?></option>
+                                            <?php for ($i = 2025; $i <= date('Y') + 1; $i++): ?>
+                                                <option <?= $i == date('Y') ? 'selected' : '' ?> value="<?= $i ?>"><?= $i ?>
+                                                </option>
                                             <?php endfor; ?>
                                         </select>
                                         <div class="search-box-container">
-                                            <input type="text" class="search-box" id="search-festividades" placeholder="Buscar Festividad...">
+                                            <input type="text" class="search-box" id="search-festividades"
+                                                placeholder="Buscar Festividad...">
                                         </div>
                                     </div>
                                     <div class="table-responsive" id="festividades-table-responsive">
@@ -490,12 +521,14 @@ verificarSesion(); // Proteger esta página
 
                                         <div class="mb-3">
                                             <label for="nombre_festividad" class="form-label">Nombre festividad</label>
-                                            <input type="text" class="form-control" id="nombre_festividad" name="nombre_festividad" required>
+                                            <input type="text" class="form-control" id="nombre_festividad"
+                                                name="nombre_festividad" required>
                                         </div>
 
                                         <div class="mb-3">
                                             <label for="fecha_festividad" class="form-label">Fecha festividad</label>
-                                            <input type="date" class="form-control" id="fecha_festividad" name="fecha_festividad" required>
+                                            <input type="date" class="form-control" id="fecha_festividad"
+                                                name="fecha_festividad" required>
                                         </div>
 
                                         <div class="mb-3">
@@ -509,13 +542,17 @@ verificarSesion(); // Proteger esta página
 
                                         <div class="mb-3">
                                             <label for="observacion" class="form-label">Observación</label>
-                                            <input type="text" class="form-control" id="observacion" name="observacion" max="100">
+                                            <input type="text" class="form-control" id="observacion" name="observacion"
+                                                max="100">
                                         </div>
 
 
                                         <div class="form-actions">
-                                            <button type="submit" class="btn btn-success" id="btn-guardar-festividad"><i class="bi bi-save"></i> Guardar</button>
-                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-festividad"><i class="bi bi-x-circle"></i> Cancelar</button>
+                                            <button type="submit" class="btn btn-success" id="btn-guardar-festividad"><i
+                                                    class="bi bi-save"></i> Guardar</button>
+                                            <button type="button" class="btn btn-secondary"
+                                                id="btn-cancelar-festividad"><i class="bi bi-x-circle"></i>
+                                                Cancelar</button>
                                         </div>
                                     </form>
                                 </div>
@@ -531,7 +568,8 @@ verificarSesion(); // Proteger esta página
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h5><i class="bi bi-list-ul"></i> Lista de Empresas</h5>
                                         <div class="search-box-container">
-                                            <input type="text" class="search-box" id="search-empresas" placeholder="Buscar empresa...">
+                                            <input type="text" class="search-box" id="search-empresas"
+                                                placeholder="Buscar empresa...">
                                         </div>
                                     </div>
                                     <div class="table-responsive" id="empresas-table-responsive">
@@ -557,7 +595,8 @@ verificarSesion(); // Proteger esta página
                                         <input type="hidden" id="empresa_id" name="empresa_id">
                                         <div class="mb-3">
                                             <label for="nombre_empresa" class="form-label">Nombre de la Empresa</label>
-                                            <input type="text" class="form-control" id="nombre_empresa" name="nombre_empresa" required>
+                                            <input type="text" class="form-control" id="nombre_empresa"
+                                                name="nombre_empresa" required>
                                         </div>
                                         <div class="mb-3">
                                             <label for="rfc_empresa" class="form-label">RFC de la Empresa</label>
@@ -565,22 +604,30 @@ verificarSesion(); // Proteger esta página
                                         </div>
                                         <div class="mb-3">
                                             <label for="domicilio_fiscal" class="form-label">Domicilio Fiscal</label>
-                                            <input type="text" class="form-control" id="domicilio_fiscal" name="domicilio_fiscal">
+                                            <input type="text" class="form-control" id="domicilio_fiscal"
+                                                name="domicilio_fiscal">
                                         </div>
                                         <div class="mb-3">
                                             <label for="logo_empresa" class="form-label">Logo de la Empresa</label>
                                             <div class="image-upload-container">
                                                 <div class="current-image-preview mb-2" style="display: none;">
-                                                    <img id="preview_logo_empresa" src="" alt="Vista previa" class="img-thumbnail" style="max-height: 150px;">
-                                                    <button type="button" class="btn btn-sm btn-danger remove-image" id="btn-remove-empresa-image" data-target="logo_empresa"><i class="bi bi-x-circle"></i> Quitar</button>
+                                                    <img id="preview_logo_empresa" src="" alt="Vista previa"
+                                                        class="img-thumbnail" style="max-height: 150px;">
+                                                    <button type="button" class="btn btn-sm btn-danger remove-image"
+                                                        id="btn-remove-empresa-image" data-target="logo_empresa"><i
+                                                            class="bi bi-x-circle"></i> Quitar</button>
                                                 </div>
-                                                <input type="file" class="form-control" id="logo_empresa" name="logo_empresa" accept="image/*">
-                                                <small class="form-text text-muted">Formatos permitidos: JPG, PNG. Tamaño máximo: 2MB</small>
+                                                <input type="file" class="form-control" id="logo_empresa"
+                                                    name="logo_empresa" accept="image/*">
+                                                <small class="form-text text-muted">Formatos permitidos: JPG, PNG.
+                                                    Tamaño máximo: 2MB</small>
                                             </div>
                                         </div>
                                         <div class="form-actions">
-                                            <button type="submit" class="btn btn-success" id="btn-guardar-empresa"><i class="bi bi-save"></i> Guardar</button>
-                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-empresa"><i class="bi bi-x-circle"></i> Cancelar</button>
+                                            <button type="submit" class="btn btn-success" id="btn-guardar-empresa"><i
+                                                    class="bi bi-save"></i> Guardar</button>
+                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-empresa"><i
+                                                    class="bi bi-x-circle"></i> Cancelar</button>
                                         </div>
                                     </form>
                                 </div>
@@ -597,7 +644,8 @@ verificarSesion(); // Proteger esta página
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h5><i class="bi bi-list-ul me-2"></i>Información de los ranchos</h5>
                                         <div class="search-box-container">
-                                            <input type="text" class="search-box" id="search-ranchos" placeholder="Buscar Ranchos...">
+                                            <input type="text" class="search-box" id="search-ranchos"
+                                                placeholder="Buscar Ranchos...">
                                         </div>
                                     </div>
                                     <div class="table-responsive" id="ranchos-table-responsive">
@@ -635,22 +683,27 @@ verificarSesion(); // Proteger esta página
 
                                             <div class="col-12 col-md-6 mb-3">
                                                 <label for="num_arboles" class="form-label">Num. Tablas</label>
-                                                <input type="number" class="form-control" name="num_arboles" id="num_arboles" placeholder="Número de tablas">
+                                                <input type="number" class="form-control" name="num_arboles"
+                                                    id="num_arboles" placeholder="Número de tablas">
                                             </div>
                                             <div class="col-12 col-md-6 mb-3">
 
                                                 <label class="form-label">&nbsp;</label><br>
-                                                <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#modalHorarioJornaleros">
+                                                <button type="button" class="btn btn-primary w-100"
+                                                    data-bs-toggle="modal" data-bs-target="#modalHorarioJornaleros">
                                                     <i class="bi bi-calendar3 me-2"></i>Horario jornalero
                                                 </button>
 
                                                 <!-- Modal para asignar el horario al jornalero -->
-                                                <div class="modal fade" id="modalHorarioJornaleros" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                                <div class="modal fade" id="modalHorarioJornaleros" tabindex="-1"
+                                                    aria-labelledby="exampleModalLabel" aria-hidden="true">
                                                     <div class="modal-dialog modal-xl">
                                                         <div class="modal-content">
                                                             <div class="modal-header">
-                                                                <h1 class="modal-title fs-5" id="exampleModalLabel">Horario de Jornalero</h1>
-                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                <h1 class="modal-title fs-5" id="exampleModalLabel">
+                                                                    Horario de Jornalero</h1>
+                                                                <button type="button" class="btn-close"
+                                                                    data-bs-dismiss="modal" aria-label="Close"></button>
                                                             </div>
                                                             <div class="modal-body">
                                                                 <div class="table-responsive">
@@ -659,16 +712,27 @@ verificarSesion(); // Proteger esta página
                                                                     <div class="mb-4">
                                                                         <div class="row g-2">
                                                                             <div class="col-12 col-md-4">
-                                                                                <label class="form-label" for="ref_entrada">Entrada</label>
-                                                                                <input type="time" id="ref_entrada" class="form-control" placeholder="Entrada">
+                                                                                <label class="form-label"
+                                                                                    for="ref_entrada">Entrada</label>
+                                                                                <input type="time" id="ref_entrada"
+                                                                                    class="form-control"
+                                                                                    placeholder="Entrada">
                                                                             </div>
                                                                             <div class="col-12 col-md-4">
-                                                                                <label class="form-label" for="ref_salida">Salida</label>
-                                                                                <input type="time" id="ref_salida" class="form-control" placeholder="Salida">
+                                                                                <label class="form-label"
+                                                                                    for="ref_salida">Salida</label>
+                                                                                <input type="time" id="ref_salida"
+                                                                                    class="form-control"
+                                                                                    placeholder="Salida">
                                                                             </div>
                                                                             <div class="col-auto">
-                                                                                <label class="form-label" for="btnCopiarHorarios">&ensp;</label><br>
-                                                                                <button type="button" id="btnCopiarHorarios" class="btn btn-outline-primary my-auto" title="Copiar horarios"><i class="bi bi-copy"></i></button>
+                                                                                <label class="form-label"
+                                                                                    for="btnCopiarHorarios">&ensp;</label><br>
+                                                                                <button type="button"
+                                                                                    id="btnCopiarHorarios"
+                                                                                    class="btn btn-outline-primary my-auto"
+                                                                                    title="Copiar horarios"><i
+                                                                                        class="bi bi-copy"></i></button>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -689,24 +753,35 @@ verificarSesion(); // Proteger esta página
                                                                                 <tr>
                                                                                     <td>
                                                                                         <!-- <input type="text" class="form-control" name="horario_dia[]" placeholder="Día"> -->
-                                                                                        <select class="form-select" name="horario_dia[]">
-                                                                                            <option selected value="">Seleccionar...</option>
+                                                                                        <select class="form-select"
+                                                                                            name="horario_dia[]">
+                                                                                            <option selected value="">
+                                                                                                Seleccionar...</option>
 
                                                                                             <?php foreach (DIAS_SEMANA as $dia): ?>
-                                                                                                <option value="<?php echo $dia; ?>"><?php echo $dia; ?></option>
+                                                                                                <option
+                                                                                                    value="<?php echo $dia; ?>">
+                                                                                                    <?php echo $dia; ?></option>
                                                                                             <?php endforeach; ?>
 
                                                                                         </select>
 
                                                                                     </td>
                                                                                     <td>
-                                                                                        <input type="time" class="form-control" name="horario_entrada[]" placeholder="Entrada">
+                                                                                        <input type="time"
+                                                                                            class="form-control"
+                                                                                            name="horario_entrada[]"
+                                                                                            placeholder="Entrada">
                                                                                     </td>
                                                                                     <td>
-                                                                                        <input type="time" class="form-control" name="horario_salida[]" placeholder="Salida">
+                                                                                        <input type="time"
+                                                                                            class="form-control"
+                                                                                            name="horario_salida[]"
+                                                                                            placeholder="Salida">
                                                                                     </td>
                                                                                     <td class="text-center">
-                                                                                        <div class="d-inline form-check form-switch d-inline-flex align-items-center">
+                                                                                        <div
+                                                                                            class="d-inline form-check form-switch d-inline-flex align-items-center">
                                                                                             <input
                                                                                                 class="form-check-input chk-descanso"
                                                                                                 type="checkbox"
@@ -717,7 +792,9 @@ verificarSesion(); // Proteger esta página
                                                                                     <td class="text-center">
 
                                                                                         <!-- Botón para limpiar la fila -->
-                                                                                        <button type="button" class="d-inline btn btn-danger btn-sm btn-eliminar-fila" title="Limpiar fila">
+                                                                                        <button type="button"
+                                                                                            class="d-inline btn btn-danger btn-sm btn-eliminar-fila"
+                                                                                            title="Limpiar fila">
                                                                                             <i class="bi bi-trash"></i>
                                                                                         </button>
 
@@ -739,8 +816,10 @@ verificarSesion(); // Proteger esta página
 
 
                                         <div class="form-actions">
-                                            <button type="submit" class="btn btn-success" id="btn-guardar-rancho">Guardar</button>
-                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-rancho" onclick="resetearFormulario()">Cancelar</button>
+                                            <button type="submit" class="btn btn-success"
+                                                id="btn-guardar-rancho">Guardar</button>
+                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-rancho"
+                                                onclick="resetearFormulario()">Cancelar</button>
                                         </div>
                                     </form>
                                 </div>
@@ -755,7 +834,8 @@ verificarSesion(); // Proteger esta página
                             <div class="col-12">
                                 <div class="table-container">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h5 class="mb-0 text-center"><i class="bi bi-table"></i> Tabulador de Costos</h5>
+                                        <h5 class="mb-0 text-center"><i class="bi bi-table"></i> Tabulador de Costos
+                                        </h5>
                                         <div>
                                             <button type="button" class="btn btn-primary me-2" id="btn-agregar-fila">
                                                 <i class="bi bi-plus-circle"></i> Agregar Fila
@@ -813,11 +893,14 @@ verificarSesion(); // Proteger esta página
                             <div class="col-md-6">
                                 <div class="form-container">
                                     <h5 class="mb-3"><i class="bi bi-upload"></i> Importar Base de Datos</h5>
-                                    <form id="importarBDForm" action="../php/importar_bd.php" method="POST" enctype="multipart/form-data">
+                                    <form id="importarBDForm" action="../php/importar_bd.php" method="POST"
+                                        enctype="multipart/form-data">
                                         <div class="mb-3">
                                             <label for="archivo_bd" class="form-label">Archivo SQL</label>
-                                            <input type="file" class="form-control" id="archivo_bd" name="archivo_bd" accept=".sql" required>
-                                            <small class="form-text text-muted">Seleccione un archivo .sql para importar.</small>
+                                            <input type="file" class="form-control" id="archivo_bd" name="archivo_bd"
+                                                accept=".sql" required>
+                                            <small class="form-text text-muted">Seleccione un archivo .sql para
+                                                importar.</small>
                                         </div>
                                         <div class="form-actions">
                                             <button type="submit" class="btn btn-success" id="btn-importar-bd">
@@ -835,29 +918,36 @@ verificarSesion(); // Proteger esta página
                         <div class="d-flex justify-content-center align-items-center" style="min-height: 60vh;">
                             <div class="card shadow-lg border-0" style="width: 100%; max-width: 500px;">
                                 <div class="card-header bg-success text-white text-center">
-                                    <h5 class="mb-0"><i class="bi bi-person-gear"></i> Editar Información de Usuario</h5>
+                                    <h5 class="mb-0"><i class="bi bi-person-gear"></i> Editar Información de Usuario
+                                    </h5>
                                 </div>
                                 <div class="card-body">
                                     <form id="formUsuario">
                                         <div class="mb-4">
                                             <label for="correo" class="form-label">Correo Electrónico</label>
-                                            <input type="email" class="form-control" id="correo" name="correo" placeholder="usuario@ejemplo.com" required>
+                                            <input type="email" class="form-control" id="correo" name="correo"
+                                                placeholder="usuario@ejemplo.com" required>
                                         </div>
                                         <div class="mb-4">
                                             <label for="password_actual" class="form-label">Contraseña Actual</label>
                                             <div class="input-group">
-                                                <input type="password" class="form-control" id="password_actual" name="password_actual" placeholder="••••••••" required>
-                                                <button class="btn btn-outline-secondary" type="button" id="togglePasswordActual">
+                                                <input type="password" class="form-control" id="password_actual"
+                                                    name="password_actual" placeholder="••••••••" required>
+                                                <button class="btn btn-outline-secondary" type="button"
+                                                    id="togglePasswordActual">
                                                     <i class="bi bi-eye"></i>
                                                 </button>
                                             </div>
-                                            <small class="text-muted">Ingresa tu contraseña actual para confirmar los cambios.</small>
+                                            <small class="text-muted">Ingresa tu contraseña actual para confirmar los
+                                                cambios.</small>
                                         </div>
                                         <div class="mb-4">
                                             <label for="password_nueva" class="form-label">Nueva Contraseña</label>
                                             <div class="input-group">
-                                                <input type="password" class="form-control" id="password_nueva" name="password_nueva" placeholder="••••••••">
-                                                <button class="btn btn-outline-secondary" type="button" id="togglePasswordNueva">
+                                                <input type="password" class="form-control" id="password_nueva"
+                                                    name="password_nueva" placeholder="••••••••">
+                                                <button class="btn btn-outline-secondary" type="button"
+                                                    id="togglePasswordNueva">
                                                     <i class="bi bi-eye"></i>
                                                 </button>
                                             </div>
@@ -892,7 +982,8 @@ verificarSesion(); // Proteger esta página
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center">
-                    <img id="modalAreaImage" src="" alt="Imagen del área" class="img-fluid rounded shadow-sm" style="max-height: 400px;">
+                    <img id="modalAreaImage" src="" alt="Imagen del área" class="img-fluid rounded shadow-sm"
+                        style="max-height: 400px;">
                 </div>
                 <div class="modal-footer">
                     <p id="modalAreaFooter" class="text-muted small w-100 text-center mb-0"></p>
@@ -903,7 +994,8 @@ verificarSesion(); // Proteger esta página
     </div>
 
     <!-- Modal para mostrar el logo de la empresa -->
-    <div class="modal fade" id="modalEmpresaLogo" tabindex="-1" aria-labelledby="modalEmpresaLogoTitle" aria-hidden="true">
+    <div class="modal fade" id="modalEmpresaLogo" tabindex="-1" aria-labelledby="modalEmpresaLogoTitle"
+        aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -911,7 +1003,8 @@ verificarSesion(); // Proteger esta página
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
                 <div class="modal-body text-center">
-                    <img id="modalEmpresaLogoImage" src="" alt="Logo de la empresa" class="img-fluid rounded shadow-sm" style="max-height: 400px; display: none;">
+                    <img id="modalEmpresaLogoImage" src="" alt="Logo de la empresa" class="img-fluid rounded shadow-sm"
+                        style="max-height: 400px; display: none;">
                     <p id="modalEmpresaLogoFooter" class="text-muted small w-100 text-center mb-0"></p>
                 </div>
                 <div class="modal-footer">
@@ -922,7 +1015,8 @@ verificarSesion(); // Proteger esta página
     </div>
 
     <!-- Modal para ver los detalles de la información del rancho -->
-    <div class="modal fade" id="modalInfoRancho" tabindex="-1" aria-labelledby="modalInfoRanchoLabel" aria-hidden="true">
+    <div class="modal fade" id="modalInfoRancho" tabindex="-1" aria-labelledby="modalInfoRanchoLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
@@ -963,12 +1057,14 @@ verificarSesion(); // Proteger esta página
     </div>
 
     <!-- Modal para Asignar Departamentos a Nómina -->
-    <div class="modal fade" id="modalAsignarDepartamentos" tabindex="-1" aria-labelledby="lblNombreNominaModal" aria-hidden="true">
+    <div class="modal fade" id="modalAsignarDepartamentos" tabindex="-1" aria-labelledby="lblNombreNominaModal"
+        aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-light">
                     <h5 class="modal-title">
-                        <i class="bi bi-diagram-3 me-2 text-primary"></i>Departamentos en Nómina: <strong id="lblNombreNominaModal" class="text-primary"></strong>
+                        <i class="bi bi-diagram-3 me-2 text-primary"></i>Departamentos en Nómina: <strong
+                            id="lblNombreNominaModal" class="text-primary"></strong>
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -979,21 +1075,28 @@ verificarSesion(); // Proteger esta página
                         <input type="hidden" id="modal_nomina_area_id" name="modal_nomina_area_id">
                         <div class="row gx-3 align-items-end mb-3">
                             <div class="col-sm-7">
-                                <label for="modal_select_departamento" class="form-label fw-bold text-secondary mb-1">Elegir Departamento del Área</label>
-                                <select class="form-select border-primary-subtle" id="modal_select_departamento" required>
+                                <label for="modal_select_departamento"
+                                    class="form-label fw-bold text-secondary mb-1">Elegir Departamento del Área</label>
+                                <select class="form-select border-primary-subtle" id="modal_select_departamento"
+                                    required>
                                     <option value="" selected disabled>Seleccione un departamento...</option>
                                     <!-- Se llenará dinámicamente -->
                                 </select>
                             </div>
                             <div class="col-sm-3">
-                                <label for="modal_color_departamento" class="form-label fw-bold text-secondary mb-1">Color Reporte</label>
-                                <div class="d-flex align-items-center gap-2 bg-white border rounded px-2" style="height: 38px;">
-                                    <input type="color" class="form-control-color border-0 bg-transparent p-0" id="modal_color_departamento" value="#FF0000" title="Elegir color" style="width: 30px; height: 30px;">
+                                <label for="modal_color_departamento"
+                                    class="form-label fw-bold text-secondary mb-1">Color Reporte</label>
+                                <div class="d-flex align-items-center gap-2 bg-white border rounded px-2"
+                                    style="height: 38px;">
+                                    <input type="color" class="form-control-color border-0 bg-transparent p-0"
+                                        id="modal_color_departamento" value="#FF0000" title="Elegir color"
+                                        style="width: 30px; height: 30px;">
                                     <span class="small text-muted" id="modal_color_text">#FF0000</span>
                                 </div>
                             </div>
                             <div class="col-sm-2">
-                                <button type="submit" class="btn btn-success w-100 shadow-sm" id="btn-asignar-depto-modal">
+                                <button type="submit" class="btn btn-success w-100 shadow-sm"
+                                    id="btn-asignar-depto-modal">
                                     <i class="bi bi-plus-circle"></i>
                                 </button>
                             </div>
@@ -1001,7 +1104,8 @@ verificarSesion(); // Proteger esta página
                     </form>
 
                     <!-- Lista de departamentos actuales -->
-                    <h6 class="border-bottom pb-2 mb-3 fw-bold text-secondary"><i class="bi bi-tags me-2"></i>Departamentos Asignados</h6>
+                    <h6 class="border-bottom pb-2 mb-3 fw-bold text-secondary"><i
+                            class="bi bi-tags me-2"></i>Departamentos Asignados</h6>
                     <div id="contenedorDepartamentosAsignados" class="d-flex flex-wrap gap-2 p-2 min-vh-25">
                         <!-- Badges dinámicos -->
                         <div class="text-center w-100 text-muted">
@@ -1010,7 +1114,8 @@ verificarSesion(); // Proteger esta página
                     </div>
                 </div>
                 <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary shadow-sm" data-bs-dismiss="modal">Cerrar ventana</button>
+                    <button type="button" class="btn btn-secondary shadow-sm" data-bs-dismiss="modal">Cerrar
+                        ventana</button>
                 </div>
             </div>
         </div>
@@ -1021,11 +1126,13 @@ verificarSesion(); // Proteger esta página
 
 
     <!-- NUEVO MODAL PARA LOS DETALLES DE AREA Y SUS DEPARTAMENTOS -->
-    <div class="modal fade" id="modal_departamentos_area" tabindex="-1" aria-labelledby="modal_departamentos_area_label" aria-hidden="true">
+    <div class="modal fade" id="modal_departamentos_area" tabindex="-1" aria-labelledby="modal_departamentos_area_label"
+        aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="modal_departamentos_area_label">Departamentos del Área: <span id="nombre_area_detalle_dep">prueba</span></h1>
+                    <h1 class="modal-title fs-5" id="modal_departamentos_area_label">Departamentos del Área: <span
+                            id="nombre_area_detalle_dep">prueba</span></h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -1035,8 +1142,10 @@ verificarSesion(); // Proteger esta página
                     <div class="mb-2">
                         <label class="form-label">Seleccionar departamentos</label>
                         <div class="input-group mb-3">
-                            <select class="form-select" name="select_dep_area" id="select_dep_area" aria-describedby="btn_agregar_dep_area"></select>
-                            <button class="btn btn-outline-success" type="button" id="btn_agregar_dep_area"><i class="bi bi-diagram-3-fill me-2"></i>Asignar</button>
+                            <select class="form-select" name="select_dep_area" id="select_dep_area"
+                                aria-describedby="btn_agregar_dep_area"></select>
+                            <button class="btn btn-outline-success" type="button" id="btn_agregar_dep_area"><i
+                                    class="bi bi-diagram-3-fill me-2"></i>Asignar</button>
                         </div>
                         <input type="number" id="id_area_modal_dep" hidden>
                     </div>
@@ -1059,11 +1168,13 @@ verificarSesion(); // Proteger esta página
     </div>
 
     <!-- NUEVO MODAL PARA LOS DETALLES POR DEPARTAMENTO Y SUS AREAS -->
-    <div class="modal fade" id="modal_area_departamento" tabindex="-1" aria-labelledby="modal_area_departamento_label" aria-hidden="true">
+    <div class="modal fade" id="modal_area_departamento" tabindex="-1" aria-labelledby="modal_area_departamento_label"
+        aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="modal_area_departamento_label">Áreas del Departamento: <span id="nombre_depa_area">prueba</span></h1>
+                    <h1 class="modal-title fs-5" id="modal_area_departamento_label">Áreas del Departamento: <span
+                            id="nombre_depa_area">prueba</span></h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -1073,8 +1184,10 @@ verificarSesion(); // Proteger esta página
                     <div class="mb-2">
                         <label class="form-label">Seleccionar áreas</label>
                         <div class="input-group mb-3">
-                            <select class="form-select" name="select_area_dep" id="select_area_dep" aria-describedby="btn_agregar_area_dep"></select>
-                            <button class="btn btn-outline-success" type="button" id="btn_agregar_area_dep"><i class="bi bi-diagram-3-fill me-2"></i>Asignar</button>
+                            <select class="form-select" name="select_area_dep" id="select_area_dep"
+                                aria-describedby="btn_agregar_area_dep"></select>
+                            <button class="btn btn-outline-success" type="button" id="btn_agregar_area_dep"><i
+                                    class="bi bi-diagram-3-fill me-2"></i>Asignar</button>
                         </div>
                         <input type="number" id="id_departamento_modal_area" hidden>
                     </div>
@@ -1097,11 +1210,13 @@ verificarSesion(); // Proteger esta página
     </div>
 
     <!-- NUEVO MODAL PARA LOS DETALLES LOS PUESTOS POR DEPARTAMENTO -->
-    <div class="modal fade" id="modal_departamento_puestos" tabindex="-1" aria-labelledby="modal_departamento_puestos_label" aria-hidden="true">
+    <div class="modal fade" id="modal_departamento_puestos" tabindex="-1"
+        aria-labelledby="modal_departamento_puestos_label" aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="modal_departamento_puestos_label">Puestos del Departamento: <span class="badge text-bg-success fs-5" id="nombre_depa_puestos">prueba</span></h1>
+                    <h1 class="modal-title fs-5" id="modal_departamento_puestos_label">Puestos del Departamento: <span
+                            class="badge text-bg-success fs-5" id="nombre_depa_puestos">prueba</span></h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -1111,8 +1226,10 @@ verificarSesion(); // Proteger esta página
                     <div class="mb-2">
                         <label class="form-label">Seleccionar puesto</label>
                         <div class="input-group mb-3">
-                            <select class="form-select" name="select_puesto_departamento" id="select_puesto_departamento" aria-describedby="btn_agregar_puesto_dep"></select>
-                            <button class="btn btn-outline-success" type="button" id="btn_agregar_puesto_dep"><i class="bi bi-diagram-3-fill me-2"></i>Asignar</button>
+                            <select class="form-select" name="select_puesto_departamento"
+                                id="select_puesto_departamento" aria-describedby="btn_agregar_puesto_dep"></select>
+                            <button class="btn btn-outline-success" type="button" id="btn_agregar_puesto_dep"><i
+                                    class="bi bi-diagram-3-fill me-2"></i>Asignar</button>
                         </div>
                         <input type="number" id="id_departamento_modal_puesto" hidden>
                     </div>
@@ -1135,11 +1252,13 @@ verificarSesion(); // Proteger esta página
     </div>
 
     <!-- NUEVO MODAL PARA VER LOS DEPARTAMENTOS ASIGNADOS A UN PUESTO -->
-    <div class="modal fade" id="modal_departamentos_puesto" tabindex="-1" aria-labelledby="modal_departamentos_puesto_label" aria-hidden="true">
+    <div class="modal fade" id="modal_departamentos_puesto" tabindex="-1"
+        aria-labelledby="modal_departamentos_puesto_label" aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="modal_departamentos_puesto_label">Departamentos del Puesto: <span class="badge text-bg-success fs-5" id="nombre_puesto_modal">prueba</span></h1>
+                    <h1 class="modal-title fs-5" id="modal_departamentos_puesto_label">Departamentos del Puesto: <span
+                            class="badge text-bg-success fs-5" id="nombre_puesto_modal">prueba</span></h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -1149,8 +1268,10 @@ verificarSesion(); // Proteger esta página
                     <div class="mb-2">
                         <label class="form-label">Seleccionar departamento</label>
                         <div class="input-group mb-3">
-                            <select class="form-select" name="select_depa_puesto" id="select_depa_puesto" aria-describedby="btn_agregar_depa_puesto"></select>
-                            <button class="btn btn-outline-success" type="button" id="btn_agregar_depa_puesto"><i class="bi bi-diagram-3-fill me-2"></i>Asignar</button>
+                            <select class="form-select" name="select_depa_puesto" id="select_depa_puesto"
+                                aria-describedby="btn_agregar_depa_puesto"></select>
+                            <button class="btn btn-outline-success" type="button" id="btn_agregar_depa_puesto"><i
+                                    class="bi bi-diagram-3-fill me-2"></i>Asignar</button>
                         </div>
                         <input type="number" id="id_puesto_modal" hidden>
                     </div>
@@ -1172,7 +1293,7 @@ verificarSesion(); // Proteger esta página
         </div>
     </div>
 
-    
+
 
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>

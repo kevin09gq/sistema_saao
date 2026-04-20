@@ -160,45 +160,48 @@ function eliminarDepartamento()
     if (isset($_POST['id_departamento'])) {
         $idDepartamento = (int) $_POST['id_departamento'];
 
-        // Iniciar transacción para asegurar que todas las operaciones se completen o ninguna
         $conexion->begin_transaction();
 
         try {
-            // Primero actualizar info_empleados para establecer id_departamento como NULL
-            $updateSql = "UPDATE info_empleados SET id_departamento = NULL WHERE id_departamento = ?";
+            // 1. Actualizar info_empleados para establecer id_departamento como NULL y evitar borrado en cascada
+            $updateSql = "UPDATE info_empleados SET id_departamento = NULL, id_puestoEspecial = NULL WHERE id_departamento = ?";
             $updateStmt = $conexion->prepare($updateSql);
-
-            if (!$updateStmt) {
-                throw new Exception("Error al preparar la actualización de info_empleados: " . $conexion->error);
-            }
-
+            if (!$updateStmt) throw new Exception("Error al preparar la actualización de info_empleados: " . $conexion->error);
             $updateStmt->bind_param("i", $idDepartamento);
             $updateStmt->execute();
             $updateStmt->close();
 
-            // Luego eliminar relaciones en departamentos_puestos
+            // 2. Eliminar relaciones en departamentos_puestos
             $deleteSql = "DELETE FROM departamentos_puestos WHERE id_departamento = ?";
             $deleteStmt = $conexion->prepare($deleteSql);
-
-            if (!$deleteStmt) {
-                throw new Exception("Error al preparar la eliminación de departamentos_puestos: " . $conexion->error);
-            }
-
+            if (!$deleteStmt) throw new Exception("Error al preparar la eliminación de departamentos_puestos: " . $conexion->error);
             $deleteStmt->bind_param("i", $idDepartamento);
             $deleteStmt->execute();
             $deleteStmt->close();
 
-            // Finalmente eliminar el departamento
-            $deleteSql = "DELETE FROM departamentos WHERE id_departamento = ?";
-            $deleteStmt = $conexion->prepare($deleteSql);
+            // 3. Eliminar relaciones en areas_departamentos
+            $deleteSql2 = "DELETE FROM areas_departamentos WHERE id_departamento = ?";
+            $deleteStmt2 = $conexion->prepare($deleteSql2);
+            if (!$deleteStmt2) throw new Exception("Error al preparar la eliminación de areas_departamentos: " . $conexion->error);
+            $deleteStmt2->bind_param("i", $idDepartamento);
+            $deleteStmt2->execute();
+            $deleteStmt2->close();
 
-            if (!$deleteStmt) {
-                throw new Exception("Error al preparar la eliminación del departamento: " . $conexion->error);
-            }
+            // 4. Eliminar relaciones en nomina_departamento
+            $deleteSql3 = "DELETE FROM nomina_departamento WHERE id_departamento = ?";
+            $deleteStmt3 = $conexion->prepare($deleteSql3);
+            if (!$deleteStmt3) throw new Exception("Error al preparar la eliminación de nomina_departamento: " . $conexion->error);
+            $deleteStmt3->bind_param("i", $idDepartamento);
+            $deleteStmt3->execute();
+            $deleteStmt3->close();
 
-            $deleteStmt->bind_param("i", $idDepartamento);
-            $deleteResult = $deleteStmt->execute();
-            $deleteStmt->close();
+            // 5. Finalmente eliminar el departamento
+            $deleteSql4 = "DELETE FROM departamentos WHERE id_departamento = ?";
+            $deleteStmt4 = $conexion->prepare($deleteSql4);
+            if (!$deleteStmt4) throw new Exception("Error al preparar la eliminación del departamento: " . $conexion->error);
+            $deleteStmt4->bind_param("i", $idDepartamento);
+            $deleteResult = $deleteStmt4->execute();
+            $deleteStmt4->close();
 
             if ($deleteResult) {
                 $conexion->commit();
@@ -297,37 +300,50 @@ function eliminarAreasDepartamentos()
         $idArea = (int) $_POST['id_area'];
         $idDepartamento = (int) $_POST['id_departamento'];
 
-        // Validar que no esté vacío
         if (empty($idArea) || empty($idDepartamento)) {
             respuesta(400, "Datos incompletos", "El ID del área y el ID del departamento son requeridos.", "error", []);
             return;
         }
 
-        // Preparar DELETE
-        $sql = $conexion->prepare(
-            "DELETE FROM areas_departamentos WHERE id_area = ? AND id_departamento = ?"
-        );
+        $conexion->begin_transaction();
 
-        if (!$sql) {
-            respuesta(500, "Error del servidor", "Error en la preparación: " . $conexion->error, "error", []);
-            return;
-        }
-
-        $sql->bind_param("ii", $idArea, $idDepartamento);
-
-        // Ejecutar
-        if ($sql->execute()) {
-
-            if ($sql->affected_rows > 0) {
-                respuesta(200, "Relación eliminada", "El departamento ha sido desasignado de esta área.", "success", []);
-            } else {
-                respuesta(404, "Relación no encontrada", "No se encontró la relación entre el departamento y el área.", "warning", []);
+        try {
+            // 1. Quitar a los empleados de esa área su asignación a este departamento
+            $sqlEmp = $conexion->prepare("UPDATE info_empleados SET id_departamento = NULL, id_puestoEspecial = NULL WHERE  id_departamento = ?");
+            if ($sqlEmp) {
+                $sqlEmp->bind_param("i", $idDepartamento);
+                $sqlEmp->execute();
+                $sqlEmp->close();
             }
-        } else {
-            respuesta(500, "Error del servidor", "Error al ejecutar la consulta: " . $conexion->error, "error", []);
-        }
 
-        $sql->close();
+            // 2. Eliminar al departamento de las nóminas de esta área
+            $sqlNom = $conexion->prepare("DELETE FROM nomina_departamento WHERE id_departamento = ? AND id_nomina IN (SELECT id_nomina FROM nombre_nominas WHERE id_area = ?)");
+            if ($sqlNom) {
+                $sqlNom->bind_param("ii", $idDepartamento, $idArea);
+                $sqlNom->execute();
+                $sqlNom->close();
+            }
+
+            // 3. Eliminar la relación de areas_departamentos
+            $sql = $conexion->prepare("DELETE FROM areas_departamentos WHERE id_area = ? AND id_departamento = ?");
+            if (!$sql) throw new Exception("Error en la preparación: " . $conexion->error);
+            
+            $sql->bind_param("ii", $idArea, $idDepartamento);
+            $sql->execute();
+            
+            if ($sql->affected_rows > 0) {
+                $conexion->commit();
+                respuesta(200, "Relación eliminada", "El departamento ha sido desasignado de esta área y de sus nóminas.", "success", []);
+            } else {
+                $conexion->rollback();
+                respuesta(404, "Relación no encontrada", "No se encontró la relación principal entre el departamento y el área.", "warning", []);
+            }
+            $sql->close();
+
+        } catch (Exception $e) {
+            $conexion->rollback();
+            respuesta(500, "Error del servidor", "Error al ejecutar la consulta: " . $e->getMessage(), "error", []);
+        }
     } else {
         respuesta(400, "Datos incompletos", "El ID del área y el ID del departamento son requeridos.", "error", []);
     }

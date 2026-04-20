@@ -135,12 +135,10 @@ function eliminarPuesto()
     if (isset($_POST['id_puesto'])) {
         $idPuesto = (int)$_POST['id_puesto'];
 
-        // Iniciar transacción para asegurar que ambas operaciones se completen o ninguna
         $conexion->begin_transaction();
 
         try {
-            // Primero actualizamos la tabla info_empleados para establecer id_puestoEspecial como NULL
-            // para los empleados que tienen este puesto
+            // 1. Quitar la asignación del puesto a los empleados para evitar que sean eliminados en cascada
             $updateSql = "UPDATE info_empleados SET id_puestoEspecial = NULL WHERE id_puestoEspecial = ?";
             $updateStmt = $conexion->prepare($updateSql);
 
@@ -152,7 +150,7 @@ function eliminarPuesto()
             $updateStmt->execute();
             $updateStmt->close();
 
-            // Luego eliminamos las relaciones en departamentos_puestos
+            // 2. Eliminar las relaciones de este puesto con todos los departamentos
             $deleteSql = "DELETE FROM departamentos_puestos WHERE id_puestoEspecial = ?";
             $deleteStmt = $conexion->prepare($deleteSql);
 
@@ -164,29 +162,26 @@ function eliminarPuesto()
             $deleteStmt->execute();
             $deleteStmt->close();
 
-            // Finalmente eliminamos el puesto
-            $deleteSql = "DELETE FROM puestos_especiales WHERE id_puestoEspecial = ?";
-            $deleteStmt = $conexion->prepare($deleteSql);
+            // 3. Finalmente eliminar el puesto en sí
+            $deleteSql2 = "DELETE FROM puestos_especiales WHERE id_puestoEspecial = ?";
+            $deleteStmt2 = $conexion->prepare($deleteSql2);
 
-            if (!$deleteStmt) {
+            if (!$deleteStmt2) {
                 throw new Exception("Error al preparar la eliminación: " . $conexion->error);
             }
 
-            $deleteStmt->bind_param("i", $idPuesto);
-            $deleteResult = $deleteStmt->execute();
-            $deleteStmt->close();
+            $deleteStmt2->bind_param("i", $idPuesto);
+            $deleteResult = $deleteStmt2->execute();
+            $deleteStmt2->close();
 
             if ($deleteResult) {
-                // Confirmar la transacción
                 $conexion->commit();
                 echo "1"; // Éxito
             } else {
-                // Revertir la transacción
                 $conexion->rollback();
                 echo "2"; // Error al eliminar
             }
         } catch (Exception $e) {
-            // Revertir la transacción en caso de error
             $conexion->rollback();
             echo "Error: " . $e->getMessage();
         }
@@ -361,15 +356,24 @@ function eliminarDepartamentoPuesto()
         $id_departamento = (int)$_POST['id_departamento'];
         $id_puesto = (int)$_POST['id_puesto'];
 
-        // Iniciar transacción
+        if (empty($id_departamento) || empty($id_puesto)) {
+            respuesta(400, "Datos incompletos", "El ID del departamento y el ID del puesto son requeridos.", "warning", []);
+            return;
+        }
+
         $conexion->begin_transaction();
 
         try {
+            // 1. Quitar a los empleados de este departamento la asignación de este puesto especial
+            $updateEmp = $conexion->prepare("UPDATE info_empleados SET id_puestoEspecial = NULL WHERE id_departamento = ? AND id_puestoEspecial = ?");
+            if ($updateEmp) {
+                $updateEmp->bind_param("ii", $id_departamento, $id_puesto);
+                $updateEmp->execute();
+                $updateEmp->close();
+            }
 
-            // Eliminar relación por ambos IDs
-            $deleteSql = "DELETE FROM departamentos_puestos 
-                          WHERE id_departamento = ? 
-                          AND id_puestoEspecial = ?";
+            // 2. Eliminar la relación organizativa departamiento-puesto
+            $deleteSql = "DELETE FROM departamentos_puestos WHERE id_departamento = ? AND id_puestoEspecial = ?";
 
             $deleteStmt = $conexion->prepare($deleteSql);
 
@@ -389,48 +393,18 @@ function eliminarDepartamentoPuesto()
 
             if ($filasAfectadas > 0) {
                 $conexion->commit();
-
-                respuesta(
-                    200,
-                    "Éxito",
-                    "Relación eliminada correctamente",
-                    "success",
-                    []
-                );
-
+                respuesta(200, "Éxito", "Relación eliminada correctamente.", "success", []);
             } else {
                 $conexion->rollback();
-
-                respuesta(
-                    404,
-                    "No encontrado",
-                    "No se encontró la relación a eliminar",
-                    "warning",
-                    []
-                );
+                respuesta(404, "No encontrado", "No se encontró la relación a eliminar.", "warning", []);
             }
 
         } catch (Exception $e) {
-
             $conexion->rollback();
-
-            respuesta(
-                500,
-                "Error",
-                $e->getMessage(),
-                "error",
-                []
-            );
+            respuesta(500, "Error del servidor", $e->getMessage(), "error", []);
         }
 
     } else {
-
-        respuesta(
-            400,
-            "Datos incompletos",
-            "Se requieren id_departamento e id_puesto",
-            "warning",
-            []
-        );
+        respuesta(400, "Datos incompletos", "Se requieren id_departamento e id_puesto.", "warning", []);
     }
 }

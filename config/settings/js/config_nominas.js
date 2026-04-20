@@ -1,8 +1,7 @@
 $(document).ready(function () {
     // Inicializar submódulo de Tipos de Nómina
     getNominas();
-    registrarNomina();
-    eliminarNomina();
+    actualizarNominaForm();
     editarNomina();
     buscarNominas();
     cancelarNomina();
@@ -47,9 +46,7 @@ function getNominas() {
                                     data-id="${element.id_nomina}" 
                                     data-area-id="${element.id_area}"
                                     title="Editar"><i class="bi bi-pencil"></i></button>
-                                <button class="btn btn-sm btn-delete btn-delete-nomina" 
-                                    data-id="${element.id_nomina}" 
-                                    title="Eliminar"><i class="bi bi-trash"></i></button>
+
                             </td>
                         </tr>   
                     `;
@@ -76,21 +73,20 @@ function cargarAreasFormSelect() {
     });
 }
 
-function registrarNomina() {
+function actualizarNominaForm() {
     $("#nominaForm").submit(function (e) {
         e.preventDefault();
 
         let idNomina = $("#nomina_id").val().trim();
         let nombreNomina = $("#nombre_nomina").val().trim();
         let idArea = $("#select_area_nomina").val();
-        let accion = idNomina ? "actualizarNomina" : "registrarNomina";
 
-        if (nombreNomina != "" && idArea != null) {
+        if (idNomina && nombreNomina != "" && idArea != null) {
             $.ajax({
                 type: "POST",
                 url: "../php/configNominas.php",
                 data: {
-                    accion: accion,
+                    accion: "actualizarNomina",
                     nomina_id: idNomina,
                     nombre_nomina: nombreNomina,
                     id_area: idArea
@@ -100,8 +96,7 @@ function registrarNomina() {
                         resetearFormularioNomina();
                         getNominas();
 
-                        let mensaje = accion === "registrarNomina" ? "Nómina registrada" : "Nómina actualizada";
-                        Swal.fire({ icon: 'success', title: 'Éxito', text: mensaje, confirmButtonColor: '#22c55e' });
+                        Swal.fire({ icon: 'success', title: 'Éxito', text: 'Nómina actualizada correctamente', confirmButtonColor: '#22c55e' });
                     } else if (response.trim() == "3") {
                         Swal.fire({ icon: 'warning', title: 'Atención', text: 'El nombre de nómina ya existe' });
                     } else {
@@ -110,42 +105,8 @@ function registrarNomina() {
                 }
             });
         } else {
-            Swal.fire({ icon: 'warning', title: 'Atención', text: 'Complete todos los campos' });
+            Swal.fire({ icon: 'warning', title: 'Atención', text: 'Debe seleccionar una nómina válida para actualizar' });
         }
-    });
-}
-
-function eliminarNomina() {
-    $(document).on("click", ".btn-delete-nomina", function () {
-        let idNomina = $(this).data("id");
-        let nombreNomina = $(this).closest("tr").find("td:eq(1)").text();
-
-        Swal.fire({
-            title: '¿Eliminar nómina?',
-            text: '¿Seguro que deseas eliminar la nómina "' + nombreNomina + '"? Esto eliminará todos los departamentos asignados.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#ef4444',
-            cancelButtonColor: '#64748b'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    type: "POST",
-                    url: "../php/configNominas.php",
-                    data: { accion: "eliminarNomina", id_nomina: idNomina },
-                    success: function (response) {
-                        if (response.trim() == "1") {
-                            Swal.fire({ icon: 'success', title: 'Eliminado', text: 'Nómina eliminada', confirmButtonColor: '#22c55e' });
-                            getNominas();
-                        } else {
-                            Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo eliminar' });
-                        }
-                    }
-                });
-            }
-        });
     });
 }
 
@@ -162,6 +123,10 @@ function editarNomina() {
         $("#color_nomina").val(colorNomina);
         $("#color_nomina_text").text(colorNomina.toUpperCase());
         $("#btn-guardar-nomina").html('<i class="bi bi-save"></i> Actualizar');
+        
+        // Transición de la Interfaz
+        $("#alert-select-nomina").hide();
+        $("#form-update-nomina-container").slideDown();
     });
 }
 
@@ -182,10 +147,13 @@ function cancelarNomina() {
 }
 
 function resetearFormularioNomina() {
-    $("#nomina_id").val('');
-    $("#nombre_nomina").val('');
-    $("#select_area_nomina").val('');
-    $("#btn-guardar-nomina").html('<i class="bi bi-save"></i> Guardar');
+    // Escondemos el form y mostramos la alerta inicial
+    $("#form-update-nomina-container").slideUp(200, function() {
+        $("#alert-select-nomina").fadeIn();
+        $("#nomina_id").val('');
+        $("#nombre_nomina").val('');
+        $("#select_area_nomina").val('');
+    });
 }
 
 
