@@ -325,22 +325,33 @@ verificarSesion();
             <div class="section-title">
               <span class="icon">👥</span>
               <h3>Beneficiarios del Empleado</h3>
+              <button type="button" id="btnAgregarBeneficiario" class="btn btn-outline-primary btn-sm ms-auto">
+                <i class="bi bi-plus-circle me-1"></i> Agregar Beneficiario
+              </button>
             </div>
-            <div class="row">
-              <div class="col-12 col-md-6">
-                <label class="form-label">Nombre del Beneficiario</label>
-                <input type="text" id="beneficiarioNombre" class="form-control form-control-sm" placeholder="Nombre completo" />
-              </div>
-              <div class="col-12 col-md-3">
-                <label class="form-label">Parentesco</label>
-                <input type="text" id="beneficiarioParentesco" class="form-control form-control-sm" placeholder="Ej: Hijo(a)" />
-              </div>
-              <div class="col-12 col-md-3">
-                <label class="form-label">Porcentaje</label>
-                <input type="text" id="beneficiarioPorcentaje" class="form-control form-control-sm" placeholder="Ej: 50" />
-                <div class="form-text">Estos datos son solo para este documento; no se guardan en la base de datos.</div>
+            <div id="beneficiariosContainer">
+              <!-- Las filas de beneficiarios se agregarán aquí dinámicamente -->
+              <div class="beneficiario-row row mb-3 align-items-end" data-index="0">
+                <div class="col-12 col-md-5">
+                  <label class="form-label">Nombre del Beneficiario</label>
+                  <input type="text" name="beneficiario_nombre[]" class="form-control form-control-sm beneficiario-nombre" placeholder="Nombre completo" />
+                </div>
+                <div class="col-12 col-md-3">
+                  <label class="form-label">Parentesco</label>
+                  <input type="text" name="beneficiario_parentesco[]" class="form-control form-control-sm beneficiario-parentesco" placeholder="Ej: Hijo(a)" />
+                </div>
+                <div class="col-12 col-md-2">
+                  <label class="form-label">Porcentaje</label>
+                  <input type="text" name="beneficiario_porcentaje[]" class="form-control form-control-sm beneficiario-porcentaje" placeholder="Ej: 50" />
+                </div>
+                <div class="col-12 col-md-2">
+                  <button type="button" class="btn btn-outline-danger btn-sm btn-remove-beneficiario w-100" style="display: none;">
+                    <i class="bi bi-trash"></i> Quitar
+                  </button>
+                </div>
               </div>
             </div>
+            <div class="form-text mt-2">Máximo 5 beneficiarios. Estos datos son solo para este documento; no se guardan en la base de datos.</div>
           </div>
 
           <!-- Botón de previsualización -->

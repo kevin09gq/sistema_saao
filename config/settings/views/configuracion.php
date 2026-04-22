@@ -915,50 +915,65 @@ verificarSesion(); // Proteger esta página
 
                     <!-- USUARIO -->
                     <div class="tab-pane fade" id="usuario" role="tabpanel">
-                        <div class="d-flex justify-content-center align-items-center" style="min-height: 60vh;">
-                            <div class="card shadow-lg border-0" style="width: 100%; max-width: 500px;">
+                        <div class="d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+                            <div class="card border-0 shadow-lg" style="width: 100%; max-width: 420px;">
                                 <div class="card-header bg-success text-white text-center">
-                                    <h5 class="mb-0"><i class="bi bi-person-gear"></i> Editar Información de Usuario
+                                    <h5 class="mb-0">
+                                        <i class="bi bi-person-circle fs-4"></i>
                                     </h5>
                                 </div>
                                 <div class="card-body">
                                     <form id="formUsuario">
                                         <div class="mb-4">
-                                            <label for="correo" class="form-label">Correo Electrónico</label>
-                                            <input type="email" class="form-control" id="correo" name="correo"
-                                                placeholder="usuario@ejemplo.com" required>
+                                            <label for="correo" class="form-label">
+                                                <i class="bi bi-envelope"></i> Correo Electrónico
+                                            </label>
+                                            <input type="email" class="form-control shadow-sm" id="correo" name="correo"
+                                                placeholder="ejemplo@correo.com" required>
                                         </div>
+
                                         <div class="mb-4">
-                                            <label for="password_actual" class="form-label">Contraseña Actual</label>
-                                            <div class="input-group">
+                                            <label for="password_actual" class="form-label">
+                                                <i class="bi bi-shield-lock"></i> Contraseña Actual
+                                            </label>
+                                            <div class="input-group shadow-sm">
                                                 <input type="password" class="form-control" id="password_actual"
-                                                    name="password_actual" placeholder="••••••••" required>
+                                                    name="password_actual" placeholder="Tu contraseña actual" required>
                                                 <button class="btn btn-outline-secondary" type="button"
                                                     id="togglePasswordActual">
                                                     <i class="bi bi-eye"></i>
                                                 </button>
                                             </div>
-                                            <small class="text-muted">Ingresa tu contraseña actual para confirmar los
-                                                cambios.</small>
+                                            <small class="text-muted">
+                                                <i class="bi bi-info-circle"></i> Necesaria para confirmar cualquier cambio.
+                                            </small>
                                         </div>
+
                                         <div class="mb-4">
-                                            <label for="password_nueva" class="form-label">Nueva Contraseña</label>
-                                            <div class="input-group">
+                                            <label for="password_nueva" class="form-label">
+                                                <i class="bi bi-key"></i> Nueva Contraseña
+                                            </label>
+                                            <div class="input-group shadow-sm">
                                                 <input type="password" class="form-control" id="password_nueva"
-                                                    name="password_nueva" placeholder="••••••••">
+                                                    name="password_nueva" placeholder="Mínimo 8 caracteres">
                                                 <button class="btn btn-outline-secondary" type="button"
                                                     id="togglePasswordNueva">
                                                     <i class="bi bi-eye"></i>
                                                 </button>
                                             </div>
-                                            <small class="text-muted">Dejar en blanco si no deseas cambiarla.</small>
+                                            <small class="text-muted">
+                                                <i class="bi bi-lightbulb"></i> Dejar vacío si solo deseas actualizar tu correo.
+                                            </small>
                                         </div>
-                                        <div class="d-grid gap-2">
-                                            <button type="submit" class="btn btn-success">
-                                                <i class="bi bi-save"></i> Guardar Cambios
+
+                                        <hr class="my-4 opacity-50">
+
+                                        <div class="d-grid gap-3">
+                                            <button type="submit" class="btn btn-success d-flex justify-content-center align-items-center">
+                                                <i class="bi bi-check2-circle fs-5 me-2"></i> Actualizar Información
                                             </button>
-                                            <button type="reset" class="btn btn-secondary">
-                                                <i class="bi bi-x-circle"></i> Cancelar
+                                            <button type="reset" class="btn btn-secondary d-flex justify-content-center align-items-center" id="btn-cancelar-usuario">
+                                                <i class="bi bi-arrow-counterclockwise me-2"></i> Restaurar Campos
                                             </button>
                                         </div>
                                     </form>

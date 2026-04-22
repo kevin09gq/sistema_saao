@@ -214,6 +214,7 @@
 
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
+    <script src="<?= JQUERY_UI_JS ?>"></script>
     <!-- Plugin Inputmask -->
     <script src="<?= JQUERY_INPUTMASK ?>"></script>
     <!-- Bootstrap JS -->

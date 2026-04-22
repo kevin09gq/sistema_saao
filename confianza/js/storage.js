@@ -1,13 +1,10 @@
 // Funciones simples y fáciles de entender para Local Storage
 // Guardar automáticamente antes de recargar la página
-// Solo guardar si jsonNominaConfianza tiene datos válidos (evita re-grabar después de un clear)
-window.addEventListener('beforeunload', function () {
-    if (jsonNominaConfianza && Array.isArray(jsonNominaConfianza.departamentos) && jsonNominaConfianza.departamentos.length > 0) {
+window.addEventListener('beforeunload', function() {
+    if (typeof jsonNominaConfianza !== 'undefined' && jsonNominaConfianza) {
         saveNomina(jsonNominaConfianza);
     }
 });
-
-
 function saveNomina(jsonNominaConfianza) {
     try {
         const str = JSON.stringify(jsonNominaConfianza);
@@ -31,16 +28,19 @@ function loadNomina() {
 function clearNomina() {
     try {
         localStorage.removeItem('jsonNominaConfianza');
-        // También limpiar la variable global para evitar que se vuelva a guardar en beforeunload
-        if (typeof window !== 'undefined') {
-            window.jsonNominaConfianza = null;
-        }
         return true;
     } catch (err) {
         return false;
     }
 }
 
+// Helper simple: guarda la variable global `jsonNominaConfianza` si existe
+function autosaveNomina() {
+    if (typeof jsonNominaConfianza !== 'undefined' && jsonNominaConfianza) {
+        return saveNomina(jsonNominaConfianza);
+    }
+    return false;
+}
 
 // Restaura la nómina desde localStorage y actualiza la vista si las funciones UI están disponibles
 function restoreNomina() {
@@ -51,19 +51,28 @@ function restoreNomina() {
         // Poner la variable global para que el resto del código la use
         jsonNominaConfianza = stored;
 
-        if (typeof initComponents === 'function') {
-            initComponents();
-        }  
-
-        // Renderizar tabla restaurada
-        if (typeof aplicarFiltrosConfianza === 'function') {
-            aplicarFiltrosConfianza();
+        // Asegurar que existan las propiedades necesarias si la función está disponible
+        if (typeof asignarPropiedadesEmpleado === 'function') {
+            asignarPropiedadesEmpleado(jsonNominaConfianza);
         }
-        actualizarCabeceraNomina(jsonNominaConfianza);
+
+        // Mostrar la UI existente sólo si las funciones están definidas
+        if (typeof setInitialVisibility === 'function') {
+            setInitialVisibility();
+        }
+        if (typeof obtenerDepartamentosPermitidos === 'function') {
+            obtenerDepartamentosPermitidos();
+        }
+        if (typeof mostrarDatosTabla === 'function') {
+            mostrarDatosTabla(jsonNominaConfianza);
+        }
+        if (typeof actualizarCabeceraNomina === 'function') {
+            actualizarCabeceraNomina(jsonNominaConfianza);
+        }
 
         return true;
     } catch (err) {
-
+        
         return false;
     }
 }

@@ -27,12 +27,18 @@ document.addEventListener('DOMContentLoaded', function() {
         if (path.includes('/index.php') || path === '/' || path === '/sistema_saao/' || path === '/sistema_saao') {
             return 'inicio';
         } else if (path.includes('/gafetes/')) {
-            return 'gafetes';
+            return 'documentos';
         } else if (path.includes('/contratos/contratos.php')) {
-            return 'contratos';
+            return 'documentos';
         } else if (path.includes('/prestamos/views/index.php')) {
             return 'documentos';
         } else if (path.includes('/public/views/generacion_tickets_manuales.php')) {
+            return 'documentos';
+        }else if (path.includes('/reloj-8horas/views/reloj.php')) {
+            return 'documentos';
+        }else if (path.includes('/reloj-8horas/views/historial.php')) {
+            return 'documentos';
+        }else if(path.includes('/aguinaldo/views/aguinaldo.php')) {
             return 'documentos';
         } else if (path.includes('/nomina_40lbs/views/nomina_40lbs.php')) {
             return 'nominas'; // Highlight 'Nóminas' for 40 lbs
@@ -49,9 +55,11 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (path.includes('/historial_cortes.php')) {
             return 'nominas'; // Highlight 'Nóminas' for any Historial Cortes
         } else if (path.includes('/empleados/views/form_registro.php')) {
-            return 'empleados_registro';
-        } else if (path.includes('/empleados/')) {
             return 'empleados';
+        } else if (path.includes('/empleados/views/form_actualizar_empleado.php')) {
+            return 'empleados';
+        }else if(path.includes('claves_autorizacion/views/autorizacion.php')) {   
+            return 'empleados'; 
         } else if (path.includes('/config/settings/views/configuracion.php')) {
             return 'configuracion';
         }

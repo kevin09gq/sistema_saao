@@ -388,34 +388,34 @@
 
 
     <!-- Incluir los modales -->
-    <?php include "modals/modalCoordinador.php"; ?>
-    <?php include "modals/modalJornaleros.php"; ?>
-    <?php include "modals/modalTipoDia.php"; ?>
-    <?php include "modals/biometricoModal.php"; ?>
-    <?php include "modals/modalSeleccionarEmpleados.php"; ?>
-    <?php include "modals/modalTardeadaPasaje.php"; ?>
-    <?php include "modals/modalDiasInhabiles.php"; ?>
-    <?php include "modals/modalQuitarComidaPasaje.php"; ?>
-    <?php include "modals/modalConceptosTotales.php"; ?>
-    <?php include "modals/modalExportarNomina.php"; ?>
-    <?php include "modals/modalSeleccionarEmpleados.php"; ?>
-    <?php include "modals/modalDiasExtra.php"; ?>
-    <?php include "modals/modalOlvidos.php"; ?>
-    <?php include "modals/modalReasignarEmpleado.php"; ?>
+    <?php include "modalsNomina/modalCoordinador.php"; ?>
+    <?php include "modalsNomina/modalJornaleros.php"; ?>
+    <?php include "modalsNomina/modalTipoDia.php"; ?>
+    <?php include "modalsNomina/biometricoModal.php"; ?>
+    <?php include "modalsNomina/modalSeleccionarEmpleados.php"; ?>
+    <?php include "modalsNomina/modalTardeadaPasaje.php"; ?>
+    <?php include "modalsNomina/modalDiasInhabiles.php"; ?>
+    <?php include "modalsNomina/modalQuitarComidaPasaje.php"; ?>
+    <?php include "modalsNomina/modalConceptosTotales.php"; ?>
+    <?php include "modalsNomina/modalExportarNomina.php"; ?>
+    <?php include "modalsNomina/modalSeleccionarEmpleados.php"; ?>
+    <?php include "modalsNomina/modalDiasExtra.php"; ?>
+    <?php include "modalsNomina/modalOlvidos.php"; ?>
+    <?php include "modalsNomina/modalReasignarEmpleado.php"; ?>
 
-    <?php include "modals/modal_seleccion_tickets_relicario.php"; ?>
-    <?php include "modals/modal_ticket_manual_relicario.php"; ?>
+    <?php include "modalsNomina/modal_seleccion_tickets_relicario.php"; ?>
+    <?php include "modalsNomina/modal_ticket_manual_relicario.php"; ?>
 
 
     <!-- Modal para los cortes -->
-    <?php include "modals/modalCorte.php"; ?>
-    <?php include "modals/modalCorteNominaEditar.php"; ?>
-    <?php include "modals/modalCorteEditar.php"; ?>
+    <?php include "modalsCorte/modalCorte.php"; ?>
+    <?php include "modalsCorte/modalCorteNominaEditar.php"; ?>
+    <?php include "modalsCorte/modalCorteEditar.php"; ?>
 
     <!-- Modal para la poda -->
-    <?php include __DIR__ . "/modals/modalPoda.php"; ?>
-    <?php include __DIR__ . "/modals/modalPodaDetalles.php"; ?>
-    <?php include __DIR__ . "/modals/modalPodaDetallesExtra.php"; ?>
+    <?php include __DIR__ . "/modalsPoda/modalPoda.php"; ?>
+    <?php include __DIR__ . "/modalsPoda/modalPodaDetalles.php"; ?>
+    <?php include __DIR__ . "/modalsPoda/modalPodaDetallesExtra.php"; ?>
 
 
 

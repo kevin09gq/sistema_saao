@@ -1,6 +1,9 @@
+moverModales();
 updateTarjeta();
 quitarTarjeta();
 limpiarCamposNomina();
+
+
 
 function initComponents() {
     $("#container-nomina_confianza").attr("hidden", true);
@@ -207,3 +210,11 @@ function actualizarCabeceraNomina(json) {
     $('#num_semana').text(`SEM ${json.numero_semana}`);
 }
 
+
+
+function moverModales() {
+    // Mover el modal de configuración de valores al body para evitar problemas de z-index
+    $(".modal-dialog").draggable({
+        handle: ".modal-header"
+    });
+}

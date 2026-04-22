@@ -1,5 +1,6 @@
 updateTarjeta();
 quitarTarjeta();
+moverModales();
 
 //=======================================
 // OCULTAR CONTENEDOR DE CARGA DE ARCHIVO PARA MOSTRAR LA TABLA DE NÓMINA
@@ -217,3 +218,10 @@ function actualizarCabeceraNomina(json) {
     $('#num_semana').text(`SEM ${json.numero_semana}`);
 }
 
+
+function moverModales() {
+    // Mover el modal de configuración de valores al body para evitar problemas de z-index
+    $(".modal-dialog").draggable({
+        handle: ".modal-header"
+    });
+}

@@ -1905,7 +1905,7 @@ $(document).ready(function () {
                          "<span class='dato-gafete-frente' style='color:" + colorTextoDatos + ";text-align:left !important;font-size:" + fontSize + " !important;line-height:0.9 !important;'>" + departamento + "</span></div>" +
                         "<div style=\"position:absolute;top:" + topClave + ";left:0cm;font-size:" + fontSize + " !important;text-align:left;\"><strong style='color:" + colorTextoDatos + ";font-size:" + fontSize + " !important;'>Clave:</strong> " +
                          "<span class='dato-gafete-frente' style='color:" + colorTextoDatos + ";'>" + empleado.clave_empleado + "</span></div>" +
-                        "<div style=\"position:absolute;top:4.8cm;right:-1.8cm;font-size:8.6pt !important;text-align:left;\"><strong style='color:" + colorTextoDatos + ";font-size:8.6pt!important;'>Sexo:</strong> " +
+                        "<div style=\"position:absolute;top:5.1cm;right:-1.8cm;font-size:8.6pt !important;text-align:left;\"><strong style='color:" + colorTextoDatos + ";font-size:8.6pt!important;'>Sexo:</strong> " +
                          "<span class='dato-gafete-frente' style='color:" + colorTextoDatos + ";'>" + (empleado.sexo ? empleado.sexo : 'N/A') + "</span></div>" +
                         "<div style=\"position:absolute;top:" + topBiometrico + ";left:0cm;font-size:" + fontSize + " !important;text-align:left;white-space:nowrap;\"><strong style='color:" + colorTextoDatos + ";font-size:" + fontSize + " !important;display:inline;'>Biométrico:</strong> " +
                          "<span class='dato-gafete-frente' style='color:" + colorTextoDatos + ";display:inline;'>" + (empleado.biometrico ? empleado.biometrico : 'N/A') + "</span></div>";
@@ -2753,11 +2753,8 @@ $(document).ready(function () {
         cargarFotoEmpleado(empleado);
     }
 
-    // Función para cargar los dropdowns del modal
-    function cargarDropdownsModal(empleado) {
-        // Cargar departamentos
-        $.ajax({
-            type: "GET",
+    function cargarDepartamentosModalGafetes(idArea, idDepartamentoSeleccionar) {
+        let ajaxConfig = {
             url: "../public/php/obtenerDepartamentos.php",
             success: function (response) {
                 let departamentos = JSON.parse(response);
@@ -2768,14 +2765,29 @@ $(document).ready(function () {
                 });
 
                 $("#modal_departamento").html(opciones);
-                if (!empleado.id_departamento || empleado.id_departamento === "0") {
-                    $("#modal_departamento").val("0");
+
+                const idDepto = String(idDepartamentoSeleccionar || "0");
+                if (idDepto !== "0" && $("#modal_departamento option[value='" + idDepto + "']").length) {
+                    $("#modal_departamento").val(idDepto);
                 } else {
-                    $("#modal_departamento").val(empleado.id_departamento);
+                    $("#modal_departamento").val("0");
                 }
             }
-        });
+        };
 
+        const idA = String(idArea || "0");
+        if (idA !== "0") {
+            ajaxConfig.type = "POST";
+            ajaxConfig.data = { id_area: idA };
+        } else {
+            ajaxConfig.type = "GET";
+        }
+
+        $.ajax(ajaxConfig);
+    }
+
+    // Función para cargar los dropdowns del modal
+    function cargarDropdownsModal(empleado) {
         // Cargar empresas
         $.ajax({
             type: "GET",
@@ -2810,11 +2822,13 @@ $(document).ready(function () {
                 });
 
                 $("#modal_area").html(opciones);
-                if (!empleado.id_area || empleado.id_area === "0") {
-                    $("#modal_area").val("0");
-                } else {
-                    $("#modal_area").val(empleado.id_area);
-                }
+                const idAreaSel = String(empleado.id_area || "0");
+                $("#modal_area").val(idAreaSel !== "0" ? idAreaSel : "0");
+
+                cargarDepartamentosModalGafetes(
+                    $("#modal_area").val() || "0",
+                    empleado.id_departamento || "0"
+                );
             }
         });
 
@@ -2839,6 +2853,13 @@ $(document).ready(function () {
             }
         });
     }
+
+    $(document)
+        .off('change.gafetes_area_departamentos', '#modal_area')
+        .on('change.gafetes_area_departamentos', '#modal_area', function () {
+            const idArea = String($(this).val() || "0");
+            cargarDepartamentosModalGafetes(idArea, "0");
+        });
 
     // Función para resaltar campos inválidos con efecto profesional
     function resaltarCampoInvalido(campoId) {

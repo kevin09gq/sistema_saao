@@ -13,14 +13,11 @@
   const btnGuardarHtml = document.getElementById('btnGuardarHtml');
   const btnDescargarWord = document.getElementById('btnDescargarWord');
   // Beneficiarios UI
-  const selectBeneficiario = document.getElementById('selectBeneficiario');
-  const beneficiarioNombreInput = document.getElementById('beneficiarioNombre');
-  const beneficiarioParentescoInput = document.getElementById('beneficiarioParentesco');
-  const beneficiarioPorcentajeInput = document.getElementById('beneficiarioPorcentaje');
+  const beneficiariosContainer = document.getElementById('beneficiariosContainer');
+  const btnAgregarBeneficiario = document.getElementById('btnAgregarBeneficiario');
 
   let plantillaActual = null; // {nombre, contenido}
   let empleadoSeleccionado = null; // objeto detalle empleado
-  let beneficiarioSeleccionado = null; // {id_beneficiario, nombre_completo, parentesco, porcentaje}
 
   // Utilidades de formato de fecha
   const MESES_ES = [
@@ -663,6 +660,16 @@
     llenarCampo('nombreEmpresa', datos.nombre_empresa || '');
     llenarCampo('rfcEmpresa', datos.rfc_empresa || '');
     llenarCampo('domicilioFiscal', datos.domicilio_fiscal || '');
+
+    // Datos de salario (nuevos campos en el formulario moderno)
+    if (datos.salario_semanal) {
+      llenarCampo('salarioSemanal', datos.salario_semanal);
+      // Si el campo "sueldo" existe, llenarlo también con el semanal por defecto
+      llenarCampo('sueldo', `$${datos.salario_semanal}`);
+    }
+    if (datos.salario_diario) {
+      llenarCampo('salarioDiario', `$${datos.salario_diario}`);
+    }
   }
 
   function nombreCompletoBeneficiario(b) {
@@ -672,86 +679,79 @@
   }
 
   function poblarBeneficiarios(datos) {
-    // Limpiar select/inputs si existen
-    if (selectBeneficiario) selectBeneficiario.innerHTML = '<option value="">-- Sin beneficiario --</option>';
-    beneficiarioSeleccionado = null;
-    if (beneficiarioNombreInput) beneficiarioNombreInput.value = '';
-    if (beneficiarioParentescoInput) beneficiarioParentescoInput.value = '';
-    if (beneficiarioPorcentajeInput) beneficiarioPorcentajeInput.value = '';
+    // Limpiar contenedor de beneficiarios
+    if (!beneficiariosContainer) return;
+    beneficiariosContainer.innerHTML = '';
 
     const lista = (datos && Array.isArray(datos.beneficiarios)) ? datos.beneficiarios.slice(0, 5) : [];
-    if (lista.length === 0) return;
-
-    // Agregar opciones al select si existe
-    if (selectBeneficiario) {
-      lista.forEach((b, idx) => {
-        const opt = document.createElement('option');
-        opt.value = String(b.id_beneficiario);
-        const txtPct = (b.porcentaje != null && b.porcentaje !== '') ? ` - ${b.porcentaje}%` : '';
-        opt.textContent = `${nombreCompletoBeneficiario(b)}${b.parentesco ? ' (' + b.parentesco + ')' : ''}${txtPct}`;
-        // Guardar datos en dataset
-        opt.dataset.nombre = nombreCompletoBeneficiario(b);
-        opt.dataset.parentesco = b.parentesco || '';
-        opt.dataset.porcentaje = (b.porcentaje != null && b.porcentaje !== '') ? String(b.porcentaje) : '';
-        selectBeneficiario.appendChild(opt);
-      });
-    }
-
-    // Preseleccionar el primero
-    if (selectBeneficiario && selectBeneficiario.options.length > 1) {
-      selectBeneficiario.selectedIndex = 1; // primera opción real
-      actualizarCamposBeneficiarioDesdeSelect();
-    } else if (!selectBeneficiario) {
-      // Si no hay select en la UI, rellenar directamente los inputs con el primer beneficiario
-      const b0 = lista[0];
-      if (b0) {
-        const nombre = nombreCompletoBeneficiario(b0);
-        const parentesco = b0.parentesco || '';
-        const porcentaje = (b0.porcentaje != null && b0.porcentaje !== '') ? String(b0.porcentaje) : '';
-        if (beneficiarioNombreInput) beneficiarioNombreInput.value = nombre;
-        if (beneficiarioParentescoInput) beneficiarioParentescoInput.value = parentesco;
-        if (beneficiarioPorcentajeInput) beneficiarioPorcentajeInput.value = porcentaje ? (porcentaje + '%') : '';
-      }
-    }
-
-    // Renderizar lista visual de beneficiarios (máx. 5)
-    const listaUi = document.getElementById('beneficiariosLista');
-    if (listaUi) {
-      listaUi.innerHTML = '';
-      lista.forEach((b, i) => {
-        const li = document.createElement('div');
-        li.className = 'list-group-item d-flex justify-content-between align-items-center';
-        const nombre = nombreCompletoBeneficiario(b);
-        const parentesco = b.parentesco || '';
-        const pct = (b.porcentaje != null && b.porcentaje !== '') ? `${b.porcentaje}%` : '';
-        li.innerHTML = `<span>${i + 1}. ${nombre}</span><span class="text-muted">${parentesco}${pct ? ' · ' + pct : ''}</span>`;
-        listaUi.appendChild(li);
-      });
-    }
-  }
-
-  function actualizarCamposBeneficiarioDesdeSelect() {
-    if (!selectBeneficiario) return;
-    const opt = selectBeneficiario.selectedOptions && selectBeneficiario.selectedOptions[0];
-    if (!opt || !opt.value) {
-      beneficiarioSeleccionado = null;
-      if (beneficiarioNombreInput) beneficiarioNombreInput.value = '';
-      if (beneficiarioParentescoInput) beneficiarioParentescoInput.value = '';
-      if (beneficiarioPorcentajeInput) beneficiarioPorcentajeInput.value = '';
+    
+    if (lista.length === 0) {
+      // Si no hay beneficiarios, agregar una fila vacía
+      agregarFilaBeneficiario();
       return;
     }
-    const nombre = opt.dataset.nombre || opt.textContent || '';
-    const parentesco = opt.dataset.parentesco || '';
-    const porcentaje = opt.dataset.porcentaje || '';
-    beneficiarioSeleccionado = {
-      id_beneficiario: parseInt(opt.value, 10),
-      nombre,
-      parentesco,
-      porcentaje
-    };
-    if (beneficiarioNombreInput) beneficiarioNombreInput.value = nombre;
-    if (beneficiarioParentescoInput) beneficiarioParentescoInput.value = parentesco;
-    if (beneficiarioPorcentajeInput) beneficiarioPorcentajeInput.value = porcentaje ? (porcentaje + '%') : '';
+
+    // Agregar una fila por cada beneficiario de la BD
+    lista.forEach((b, idx) => {
+      const nombre = nombreCompletoBeneficiario(b);
+      const parentesco = b.parentesco || '';
+      const porcentaje = (b.porcentaje != null && b.porcentaje !== '') ? String(b.porcentaje) : '';
+      agregarFilaBeneficiario(nombre, parentesco, porcentaje);
+    });
+  }
+
+  function agregarFilaBeneficiario(nombre = '', parentesco = '', porcentaje = '') {
+    if (!beneficiariosContainer) return;
+    
+    const rows = beneficiariosContainer.querySelectorAll('.beneficiario-row');
+    if (rows.length >= 5) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Límite alcanzado',
+        text: 'Solo se pueden agregar hasta 5 beneficiarios.'
+      });
+      return;
+    }
+
+    const index = rows.length;
+    const row = document.createElement('div');
+    row.className = 'beneficiario-row row mb-3 align-items-end';
+    row.dataset.index = index;
+    
+    row.innerHTML = `
+      <div class="col-12 col-md-5">
+        <label class="form-label">Nombre del Beneficiario</label>
+        <input type="text" name="beneficiario_nombre[]" class="form-control form-control-sm beneficiario-nombre" placeholder="Nombre completo" value="${nombre}" />
+      </div>
+      <div class="col-12 col-md-3">
+        <label class="form-label">Parentesco</label>
+        <input type="text" name="beneficiario_parentesco[]" class="form-control form-control-sm beneficiario-parentesco" placeholder="Ej: Hijo(a)" value="${parentesco}" />
+      </div>
+      <div class="col-12 col-md-2">
+        <label class="form-label">Porcentaje</label>
+        <input type="text" name="beneficiario_porcentaje[]" class="form-control form-control-sm beneficiario-porcentaje" placeholder="Ej: 50" value="${porcentaje}" />
+      </div>
+      <div class="col-12 col-md-2">
+        <button type="button" class="btn btn-outline-danger btn-sm btn-remove-beneficiario w-100">
+          <i class="bi bi-trash"></i> Quitar
+        </button>
+      </div>
+    `;
+
+    beneficiariosContainer.appendChild(row);
+    actualizarBotonesEliminarBeneficiario();
+  }
+
+  function actualizarBotonesEliminarBeneficiario() {
+    if (!beneficiariosContainer) return;
+    const rows = beneficiariosContainer.querySelectorAll('.beneficiario-row');
+    rows.forEach(row => {
+      const btn = row.querySelector('.btn-remove-beneficiario');
+      if (btn) {
+        // Mostrar botón eliminar solo si hay más de una fila
+        btn.style.display = rows.length > 1 ? 'block' : 'none';
+      }
+    });
   }
 
   // Recopilar datos del formulario
@@ -888,11 +888,25 @@
       document.getElementById('sabadoEntrada').value,
       document.getElementById('sabadoSalida').value
     );
-    // Beneficiario seleccionado (si hay). Edición local, no persiste en BD
-    datos.beneficiario_id = selectBeneficiario ? (selectBeneficiario.value || '') : '';
-    datos.beneficiario_nombre = beneficiarioNombreInput ? (beneficiarioNombreInput.value || '') : '';
-    datos.beneficiario_parentesco = beneficiarioParentescoInput ? (beneficiarioParentescoInput.value || '') : '';
-    datos.beneficiario_porcentaje = beneficiarioPorcentajeInput ? (beneficiarioPorcentajeInput.value || '').replace('%','').trim() : '';
+
+    // Recopilar lista de beneficiarios desde las filas dinámicas
+    datos.beneficiarios = [];
+    if (beneficiariosContainer) {
+      const rows = beneficiariosContainer.querySelectorAll('.beneficiario-row');
+      rows.forEach(row => {
+        const nombre = row.querySelector('.beneficiario-nombre').value;
+        const parentesco = row.querySelector('.beneficiario-parentesco').value;
+        const porcentaje = row.querySelector('.beneficiario-porcentaje').value.replace('%', '').trim();
+        
+        if (nombre || parentesco || porcentaje) {
+          datos.beneficiarios.push({
+            nombre: nombre,
+            parentesco: parentesco,
+            porcentaje: porcentaje
+          });
+        }
+      });
+    }
 
     return datos;
   }
@@ -1059,32 +1073,7 @@
 
     // Beneficiarios: reemplazo secuencial por ocurrencia (hasta 5). Soporta punto o guion.
     {
-      let lista = [];
-      if (empleadoSeleccionado && Array.isArray(empleadoSeleccionado.beneficiarios)) {
-        lista = empleadoSeleccionado.beneficiarios.slice(0, 5).map(b => ({
-          id: b.id_beneficiario,
-          nombre: nombreCompletoBeneficiario(b),
-          parentesco: b.parentesco || '',
-          porcentaje: (b.porcentaje != null && b.porcentaje !== '') ? String(b.porcentaje) : ''
-        }));
-      }
-
-      // Aplicar ediciones locales del formulario sobre la salida (sin tocar BD)
-      // Si el usuario edita los campos, mostramos SOLO ese beneficiario editado para evitar duplicados.
-      const hayEdicionLocal = (
-        (datos.beneficiario_nombre && datos.beneficiario_nombre.trim() !== '') ||
-        (datos.beneficiario_parentesco && datos.beneficiario_parentesco.trim() !== '') ||
-        (datos.beneficiario_porcentaje && String(datos.beneficiario_porcentaje).trim() !== '')
-      );
-      if (hayEdicionLocal) {
-        const nuevo = {
-          id: null,
-          nombre: datos.beneficiario_nombre || '',
-          parentesco: datos.beneficiario_parentesco || '',
-          porcentaje: datos.beneficiario_porcentaje || ''
-        };
-        lista = [nuevo];
-      }
+      let lista = (datos && Array.isArray(datos.beneficiarios)) ? datos.beneficiarios : [];
 
       let idxNombre = 0;
       let idxPar = 0;
@@ -1549,9 +1538,25 @@
       });
     }
 
-    if (selectBeneficiario) {
-      selectBeneficiario.addEventListener('change', () => {
-        actualizarCamposBeneficiarioDesdeSelect();
+    // Gestión de beneficiarios dinámicos
+    if (btnAgregarBeneficiario) {
+      btnAgregarBeneficiario.addEventListener('click', (e) => {
+        e.preventDefault();
+        agregarFilaBeneficiario();
+      });
+    }
+
+    if (beneficiariosContainer) {
+      beneficiariosContainer.addEventListener('click', (e) => {
+        const btnRemove = e.target.closest('.btn-remove-beneficiario');
+        if (btnRemove) {
+          e.preventDefault();
+          const row = btnRemove.closest('.beneficiario-row');
+          if (row) {
+            row.remove();
+            actualizarBotonesEliminarBeneficiario();
+          }
+        }
       });
     }
 

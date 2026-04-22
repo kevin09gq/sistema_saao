@@ -121,18 +121,24 @@ $(document).ready(function() {
     $('#btn_modo_semana').on('click', function() {
         modoHistorial = 'semana';
         $('#contenedor_semana').show();
+        $('#semana_paginacion').show();
         $('#contenedor_persona').hide();
+        $('#contenedor_persona_table').hide();
+        $('#persona_paginacion').hide();
         $('#filtros_semana_bar').show();
-        $('#btn_modo_semana').css({ background: '#f9fafb' });
-        $('#btn_modo_persona').css({ background: '#fff' });
+        $('.mode-selector .btn').removeClass('active');
+        $(this).addClass('active');
     });
     $('#btn_modo_persona').on('click', function() {
         modoHistorial = 'persona';
         $('#contenedor_semana').hide();
+        $('#semana_paginacion').hide();
         $('#contenedor_persona').show();
+        $('#contenedor_persona_table').show();
+        $('#persona_paginacion').show();
         $('#filtros_semana_bar').hide();
-        $('#btn_modo_persona').css({ background: '#f9fafb' });
-        $('#btn_modo_semana').css({ background: '#fff' });
+        $('.mode-selector .btn').removeClass('active');
+        $(this).addClass('active');
         
         // Cargar empresas para el filtro de persona
         cargarEmpresas().then(() => {
@@ -627,11 +633,11 @@ function renderPersonaTabla(datos) {
             const nombreCompleto = emp.nombre_completo || emp.nombre;
             const fila = `
                 <tr>
-                    <td>${nombreCompleto}</td>
-                    <td><span class="badge badge-azul">${emp.vacaciones}</span></td>
-                    <td><span class="badge badge-morado">${emp.ausencias}</span></td>
-                    <td><span class="badge badge-gris">${emp.incapacidades}</span></td>
-                    <td><span class="badge badge-negro">${emp.dias_trabajados}</span></td>
+                    <td class="text-start ps-4 fw-bold">${nombreCompleto}</td>
+                    <td class="text-vacaciones">${emp.vacaciones}</td>
+                    <td class="text-ausencias">${emp.ausencias}</td>
+                    <td class="text-incapacidades">${emp.incapacidades}</td>
+                    <td class="text-pagados">${emp.dias_trabajados}</td>
                 </tr>
             `;
             tbody.append(fila);
@@ -659,20 +665,32 @@ function renderPersonaTabla(datos) {
         });
     }
 
-    // Renderizar controles de paginación
+    // Renderizar controles de paginación (Estilo Bootstrap)
     paginacionDiv.empty();
     if (totalPaginas > 1) {
-        const btnPrev = $('<button type="button">&lt;</button>').prop('disabled', paginaActual === 1).css({padding:'6px 12px',border:'1px solid #ccc',borderRadius:'4px',background:'#fff',cursor:paginaActual===1?'not-allowed':'pointer',fontWeight:'bold'});
-        const btnNext = $('<button type="button">&gt;</button>').prop('disabled', paginaActual === totalPaginas).css({padding:'6px 12px',border:'1px solid #ccc',borderRadius:'4px',background:'#fff',cursor:paginaActual===totalPaginas?'not-allowed':'pointer',fontWeight:'bold'});
-        btnPrev.on('click',function(){ if(paginaActual>1){ window.personaPaginaActual = paginaActual-1; renderPersonaTabla(historialPersonaDatos||[]); }});
-        btnNext.on('click',function(){ if(paginaActual<totalPaginas){ window.personaPaginaActual = paginaActual+1; renderPersonaTabla(historialPersonaDatos||[]); }});
-        paginacionDiv.append(btnPrev);
-        for(let i=1;i<=totalPaginas;i++){
-            const btn = $('<button type="button"></button>').text(i).css({padding:'6px 12px',border:'1px solid #ccc',borderRadius:'4px',background:i===paginaActual?'#3b82f6':'#fff',color:i===paginaActual?'#fff':'#000',fontWeight:i===paginaActual?'bold':'normal',cursor:'pointer'});
-            if(i!==paginaActual){ btn.on('click',function(){ window.personaPaginaActual = i; renderPersonaTabla(historialPersonaDatos||[]); }); }
-            paginacionDiv.append(btn);
+        const ul = $('<ul class="pagination"></ul>');
+        
+        // Botón Anterior
+        const liPrev = $(`<li class="page-item ${paginaActual === 1 ? 'disabled' : ''}"></li>`);
+        const aPrev = $('<a class="page-link" href="javascript:void(0)">&lt;</a>');
+        aPrev.on('click', function() { if(paginaActual > 1) { window.personaPaginaActual = paginaActual - 1; renderPersonaTabla(historialPersonaDatos||[]); }});
+        ul.append(liPrev.append(aPrev));
+
+        // Números de Página
+        for (let i = 1; i <= totalPaginas; i++) {
+            const li = $(`<li class="page-item ${i === paginaActual ? 'active' : ''}"></li>`);
+            const a = $(`<a class="page-link" href="javascript:void(0)">${i}</a>`);
+            a.on('click', function() { window.personaPaginaActual = i; renderPersonaTabla(historialPersonaDatos||[]); });
+            ul.append(li.append(a));
         }
-        paginacionDiv.append(btnNext);
+
+        // Botón Siguiente
+        const liNext = $(`<li class="page-item ${paginaActual === totalPaginas ? 'disabled' : ''}"></li>`);
+        const aNext = $('<a class="page-link" href="javascript:void(0)">&gt;</a>');
+        aNext.on('click', function() { if(paginaActual < totalPaginas) { window.personaPaginaActual = paginaActual + 1; renderPersonaTabla(historialPersonaDatos||[]); }});
+        ul.append(liNext.append(aNext));
+
+        paginacionDiv.append(ul);
     }
 
     // Listeners para alternar orden al hacer clic en encabezado
@@ -812,24 +830,24 @@ function ordenarModalDetalleSemana(campo, orden = null) {
         tbody.html(`<tr><td colspan="2">No hay empleados con ${spec.header} en esta semana</td></tr>`);
         return;
     }
-    datosOrdenados.forEach((emp) => {
-        const nombreCompleto = emp.nombre_completo || emp.nombre;
-        let fila = `<tr><td>${nombreCompleto}</td>`;
-        if (modalColumnaActual) {
-            const spec = obtenerEspecificacionColumna(modalColumnaActual);
-            const valor = parseInt(emp[modalColumnaActual] || 0);
-            fila += `<td><span class="badge ${spec.badge}">${valor}</span></td>`;
-        } else {
-            fila += `
-                <td><span class="badge badge-azul">${emp.vacaciones}</span></td>
-                <td><span class="badge badge-morado">${emp.ausencias}</span></td>
-                <td><span class="badge badge-gris">${emp.incapacidades}</span></td>
-                <td><span class="badge badge-negro">${emp.dias_trabajados}</span></td>
-            `;
-        }
-        fila += `</tr>`;
-        tbody.append(fila);
-    });
+        datosOrdenados.forEach((emp) => {
+            const nombreCompleto = emp.nombre_completo || emp.nombre;
+            let fila = `<tr><td class="text-start ps-3 fw-bold">${nombreCompleto}</td>`;
+            if (modalColumnaActual) {
+                const spec = obtenerEspecificacionColumna(modalColumnaActual);
+                const valor = parseInt(emp[modalColumnaActual] || 0);
+                fila += `<td class="${spec.badge}">${valor}</td>`;
+            } else {
+                fila += `
+                    <td class="text-vacaciones">${emp.vacaciones}</td>
+                    <td class="text-ausencias">${emp.ausencias}</td>
+                    <td class="text-incapacidades">${emp.incapacidades}</td>
+                    <td class="text-pagados">${emp.dias_trabajados}</td>
+                `;
+            }
+            fila += `</tr>`;
+            tbody.append(fila);
+        });
 }
 
 function cerrarModalDetalle() {
@@ -886,12 +904,12 @@ function mostrarHistorial(datos) {
     // Renderizar solo las semanas de la página actual
     semanasPagina.forEach(function(registro) {
         const fila = `
-            <tr data-semana="${registro.semana}" data-anio="${registro.anio}">
-                <td><strong>Semana ${registro.semana} / ${registro.anio}</strong></td>
-                <td><span class="badge badge-azul">${registro.vacaciones}</span></td>
-                <td><span class="badge badge-morado">${registro.ausencias}</span></td>
-                <td><span class="badge badge-gris">${registro.incapacidades}</span></td>
-                <td><span class="badge badge-negro">${registro.dias_trabajados}</span></td>
+            <tr data-semana="${registro.semana}" data-anio="${registro.anio}" style="cursor: pointer;" title="Clic derecho para más opciones">
+                <td class="fw-bold text-start ps-4">Semana ${registro.semana} / ${registro.anio}</td>
+                <td class="text-vacaciones">${registro.vacaciones}</td>
+                <td class="text-ausencias">${registro.ausencias}</td>
+                <td class="text-incapacidades">${registro.incapacidades}</td>
+                <td class="text-pagados">${registro.dias_trabajados}</td>
             </tr>
         `;
         tbody.append(fila);
@@ -899,30 +917,42 @@ function mostrarHistorial(datos) {
 
     // Fila de totales
     const filaTotal = `
-        <tr style="background:#f3f4f6;font-weight:600;">
-            <td style="text-align:right;">Total:</td>
-            <td><span class="badge badge-azul">${totalVacaciones}</span></td>
-            <td><span class="badge badge-morado">${totalAusencias}</span></td>
-            <td><span class="badge badge-gris">${totalIncapacidades}</span></td>
-            <td><span class="badge badge-negro">${totalDiasPagados}</span></td>
+        <tr class="table-secondary fw-bold border-top">
+            <td class="text-end pe-4">Resumen Total:</td>
+            <td class="text-vacaciones">${totalVacaciones}</td>
+            <td class="text-ausencias">${totalAusencias}</td>
+            <td class="text-incapacidades">${totalIncapacidades}</td>
+            <td class="text-pagados">${totalDiasPagados}</td>
         </tr>
     `;
     tbody.append(filaTotal);
 
-    // Renderizar controles de paginación
+    // Renderizar controles de paginación (Estilo Bootstrap)
     paginacionDiv.empty();
     if (totalPaginas > 1) {
-        const btnPrev = $('<button type="button">&lt;</button>').prop('disabled', paginaActual === 1).css({padding:'6px 12px',border:'1px solid #ccc',borderRadius:'4px',background:'#fff',cursor:paginaActual===1?'not-allowed':'pointer',fontWeight:'bold'});
-        const btnNext = $('<button type="button">&gt;</button>').prop('disabled', paginaActual === totalPaginas).css({padding:'6px 12px',border:'1px solid #ccc',borderRadius:'4px',background:'#fff',cursor:paginaActual===totalPaginas?'not-allowed':'pointer',fontWeight:'bold'});
-        btnPrev.on('click',function(){ if(paginaActual>1){ window.semanaPaginaActual = paginaActual-1; filtrarHistorial(); }});
-        btnNext.on('click',function(){ if(paginaActual<totalPaginas){ window.semanaPaginaActual = paginaActual+1; filtrarHistorial(); }});
-        paginacionDiv.append(btnPrev);
-        for(let i=1;i<=totalPaginas;i++){
-            const btn = $('<button type="button"></button>').text(i).css({padding:'6px 12px',border:'1px solid #ccc',borderRadius:'4px',background:i===paginaActual?'#3b82f6':'#fff',color:i===paginaActual?'#fff':'#000',fontWeight:i===paginaActual?'bold':'normal',cursor:'pointer'});
-            if(i!==paginaActual){ btn.on('click',function(){ window.semanaPaginaActual = i; filtrarHistorial(); }); }
-            paginacionDiv.append(btn);
+        const ul = $('<ul class="pagination"></ul>');
+        
+        // Botón Anterior
+        const liPrev = $(`<li class="page-item ${paginaActual === 1 ? 'disabled' : ''}"></li>`);
+        const aPrev = $('<a class="page-link" href="javascript:void(0)">&lt;</a>');
+        aPrev.on('click', function() { if(paginaActual > 1) { window.semanaPaginaActual = paginaActual - 1; filtrarHistorial(); }});
+        ul.append(liPrev.append(aPrev));
+
+        // Números de Página
+        for (let i = 1; i <= totalPaginas; i++) {
+            const li = $(`<li class="page-item ${i === paginaActual ? 'active' : ''}"></li>`);
+            const a = $(`<a class="page-link" href="javascript:void(0)">${i}</a>`);
+            a.on('click', function() { window.semanaPaginaActual = i; filtrarHistorial(); });
+            ul.append(li.append(a));
         }
-        paginacionDiv.append(btnNext);
+
+        // Botón Siguiente
+        const liNext = $(`<li class="page-item ${paginaActual === totalPaginas ? 'disabled' : ''}"></li>`);
+        const aNext = $('<a class="page-link" href="javascript:void(0)">&gt;</a>');
+        aNext.on('click', function() { if(paginaActual < totalPaginas) { window.semanaPaginaActual = paginaActual + 1; filtrarHistorial(); }});
+        ul.append(liNext.append(aNext));
+
+        paginacionDiv.append(ul);
     }
 }
 
@@ -968,15 +998,15 @@ function renderizarEncabezadoModal() {
 function obtenerEspecificacionColumna(col) {
     switch (col) {
         case 'vacaciones':
-            return { header: 'Vacaciones', badge: 'badge-azul', colClass: 'col-azul' };
+            return { header: 'Vacaciones', badge: 'text-vacaciones', colClass: '' };
         case 'ausencias':
-            return { header: 'Ausencias', badge: 'badge-morado', colClass: 'col-morado' };
+            return { header: 'Ausencias', badge: 'text-ausencias', colClass: '' };
         case 'incapacidades':
-            return { header: 'Incapacidades', badge: 'badge-gris', colClass: 'col-gris' };
+            return { header: 'Incapacidades', badge: 'text-incapacidades', colClass: '' };
         case 'dias_trabajados':
-            return { header: 'Días Pagados', badge: 'badge-negro', colClass: 'col-negro' };
+            return { header: 'Días Pagados', badge: 'text-pagados', colClass: '' };
         default:
-            return { header: col, badge: 'badge', colClass: '' };
+            return { header: col, badge: '', colClass: '' };
     }
 }
 

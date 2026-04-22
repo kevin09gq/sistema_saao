@@ -1,24 +1,31 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nómina</title>
+    <title>Nomina Confianza</title>
     <?php
     include "../../config/config.php";
     verificarSesion(); // Proteger esta página
     ?>
+
+    <!-- Estilos de Bootstrap y Bootstrap Icons -->
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
-
+    <!-- Estilos personalizados -->
     <link rel="stylesheet" href="../css/nomina_confianza.css">
-    <link rel="stylesheet" href="../css/encabezados.css">
-    <link rel="stylesheet" href="../css/tablaNomina.css">
-    <link rel="stylesheet" href="../css/modalConfianza.css">
+    <link rel="stylesheet" href="../css/conceptsModal.css">
+    <link rel="stylesheet" href="../css/prestamosModal.css">
     <link rel="stylesheet" href="../css/conceptos_totales.css">
+    <link rel="stylesheet" href="../css/ticket_manual_confianza.css">
     <!-- SweetAlert2 CSS -->
     <script src="<?= SWEETALERT ?>"></script>
+
+    <style>
+
+    </style>
+
 </head>
 
 <body>
@@ -28,35 +35,33 @@
     ?>
 
     <!-- Contenedor principal centrado -->
-    <div class="container-nomina_confianza" id="container-nomina_confianza" hidden>
+    <div class="container-nomina" id="container-nomina" hidden>
         <!-- Contenedor tipo navbar para formulario y filtros -->
-        <div class="navbar-nomina_confianza">
-            <div class="titulo-nomina_confianza">Procesamiento de Nómina</div>
-            <div class="subtitulo-nomina_confianza">Selecciona los archivos Excel para procesar la información</div>
+        <div class="navbar-nomina">
+            <div class="titulo-nomina">Procesamiento de Nómina de Confianza</div>
+            <div class="subtitulo-nomina">Selecciona los archivos Excel para procesar la información</div>
 
-            <form id="form_excel_raya" enctype="multipart/form-data" class="form-nomina-inline-confianza">
+            <form id="form_excel" enctype="multipart/form-data" class="form-nomina-inline">
                 <div>
-                    <label for="archivo_excel_lista_raya_saao">
-                        <i class="bi bi-file-earmark-excel-fill"></i> Lista de Raya
+                    <label for="archivo_excel">
+                        <i class="bi bi-file-earmark-excel-fill"></i> Lista de Raya Citricos SAAO
                     </label>
-                    <input type="file" id="archivo_excel_lista_raya_saao" name="archivo_excel_lista_raya_saao"
-                        accept=".xls,.xlsx" required>
+                    <input type="file" id="file_lista_raya" name="archivo_excel" accept=".xls,.xlsx" required>
                 </div>
                 <div>
-                    <label for="archivo_excel_lista_raya_sbgroup">
+                    <label for="archivo_excel3">
                         <i class="bi bi-file-earmark-excel-fill"></i> Lista de Raya SB Group <span class="text-muted"></span>
                     </label>
-                    <input type="file" id="archivo_excel_lista_raya_sbgroup" name="archivo_excel_lista_raya_sbgroup" accept=".xls,.xlsx">
+                    <input type="file" id="file_lista_raya2" name="archivo_excel3" accept=".xls,.xlsx">
                 </div>
                 <div>
-                    <label for="archivo_excel_biometrico_confianza">
-                        <i class="bi bi-file-earmark-excel-fill"></i> Biometrico
+                    <label for="archivo_excel2">
+                        <i class="bi bi-file-earmark-excel-fill"></i> Biometrico <span class="text-muted">(Opcional)</span>
                     </label>
-                    <input type="file" id="archivo_excel_biometrico_confianza" name="archivo_excel_biometrico_confianza"
-                        accept=".xls,.xlsx" required>
+                    <input type="file" id="archivo_biometrico" name="archivo_excel2" accept=".xls,.xlsx">
                 </div>
                 <div>
-                    <button type="button" id="btn_procesar_nomina_confianza" class="btn-procesar-nomina_confianza">
+                    <button type="button" id="btn_procesar_archivos" class="btn btn-primary">
                         <i class="bi bi-arrow-repeat"></i> Procesar
                     </button>
                 </div>
@@ -64,72 +69,57 @@
         </div>
     </div>
 
-    <div class="container-tabla-nomina-confianza" id="tabla-nomina-responsive" hidden>
-        <div class="header-tabla-confianza">
+    <div class="container-tabla-nomina" id="tabla-nomina-responsive" hidden>
+        <div class="header-tabla">
             <h3 id=nombre_nomina></h3>
-            <div class="header-controls-confianza">
-                <span class="sem-info-confianza" id="num_semana"></span>
-                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_actualizar_biometrico"
-                    title="Actualizar Biometrico" aria-label="Actualizar Biometrico">
-                    <i class="bi bi-person-badge"></i>
-                </button>
-                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_add_horario_variable"
-                    title="Establecer Horario Variable" aria-label="Establecer Horario Variable">
-                    <i class="bi bi-calendar-check"></i>
+            <div class="header-controls">
+                <span class="sem-info" id="num_semana"></span>
+                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_actualizar_horarios" title="Actualizar horarios" aria-label="Actualizar Biometrico">
+                    <i class="bi bi-clock"></i>
                 </button>
                 <button class="btn btn-outline-primary" id="btn-seleccionar-empleados" title="Seleccionar empleados">
                     <i class="bi bi-people"></i>
                 </button>
-                <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global"
-                    title="Aplicar Tarjeta">
+                <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global" title="Aplicar Tarjeta">
                     <i class="bi bi-arrow-clockwise"></i>
                 </button>
-                <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta"
-                    aria-label="Quitar tarjeta">
-                    <i class="bi bi-credit-card-2-back"></i>
-                </button>
-                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_establecer_dias_justificados"
-                    title="dias justificados" aria-label="dias-justificados">
-                    <i class="bi bi-check-circle"></i>
-                </button>
-                <button class="btn btn-outline-danger" id="btn_modal_olvidos_masivos"
-                    title="Perdonar olvidos de checador">
-                    <i class="bi bi-clipboard-check"></i>
-                </button>
-                <button class="btn btn-outline-primary btn-suma" type="button" id="btn_conceptos_totales"
-                    title="Totales por concepto" aria-label="Totales por concepto">
+                <button class="btn btn-outline-primary btn-suma" type="button" id="btn_conceptos_totales" title="Totales por concepto" aria-label="Totales por concepto">
                     <i class="bi bi-calculator"></i>
                 </button>
-                <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf"
-                    title="Descargar Todos los Tickets">
+                <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf" title="Descargar Ticket">
                     <i class="bi bi-ticket-perforated"></i>
                 </button>
-                <button class="btn btn-outline-success btn-ticket-zebra" id="btn_ticket_manual_confianza"
-                    title="Descargar Tickets Seleccionados">
-                    <i class="bi bi-hand-index"></i>
+                <button class="btn btn-outline-secondary btn-ticket-zebra" id="btn_ticket_manual" title="Descargar Ticket Manual">
+                    <i class="bi bi-ticket-perforated"></i>
                 </button>
- <button class="btn btn-outline-secondary" id="btn_abrir_modal_reasignar"
-                    title="Reasignar Empleado de Departamento">
-                    <i class="bi bi-person-fill-gear"></i>
+                <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta" aria-label="Quitar tarjeta">
+                    <i class="bi bi-credit-card-2-back"></i>
                 </button>
+                <button class="btn btn-outline-dark btn-add-horario-variable" id="btn_add_horario_variable" title="Agregar horario variable" aria-label="Agregar horario variable">
+                    <i class="bi bi-calendar-plus"></i>
+                </button>
+                <button class="btn btn-outline-secondary btn-dias-inhabiles" id="btn_dias_inhabiles" title="Dias inhabiles" aria-label="Dias inhabiles">
+                    <i class="bi bi-calendar-minus"></i>
+                </button>
+
+
             </div>
         </div>
 
         <!-- Controles de filtro y búsqueda -->
-        <div class="controles-tabla-confianza">
-            <div class="filtros-container-confianza">
-                <select class="filtro-departamento-confianza" id="filtro-departamento">
-                    <!-- Se poblará dinámicamente -->
+        <div class="controles-tabla">
+            <div class="filtros-container">
+                <select class="filtro-departamento" id="filtro-departamento">
                 </select>
 
-                <select class="filtro-empresa-confianza" id="filtro-empresa">
-                    <!-- Se poblará dinámicamente -->
+                <select class="filtro-departamento" id="filtro-empresa">
                 </select>
-                <div class="busqueda-container-confianza" id="busqueda-container">
+
+
+                <div class="busqueda-container" id="busqueda-container">
                     <i class="bi bi-search"></i>
-                    <input type="text" class="campo-busqueda-confianza" placeholder="Buscar..." id="busqueda-nomina-confianza">
-                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="btn-clear-busqueda"
-                        title="Limpiar">
+                    <input type="text" class="campo-busqueda" placeholder="Buscar..." id="busqueda-nomina-confianza">
+                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="btn-clear-busqueda" title="Limpiar">
                         <i class="bi bi-x-circle"></i>
                     </button>
                 </div>
@@ -138,7 +128,7 @@
 
 
             <!-- Botones de exportación -->
-            <div class="export-buttons-confianza">
+            <div class="export-buttons">
                 <button class="btn btn-outline-success me-2" id="btn_export_excel" title="Exportar a Excel">
                     <i class="bi bi-file-earmark-excel"></i> Excel
                 </button>
@@ -152,13 +142,17 @@
                 <button class="btn btn-outline-warning" id="btn_limpiar_datos" title="Subir Nuevamente">
                     <i class="bi bi-trash"></i> Subir Nuevamente
                 </button>
+                <button class="btn btn-outline-info" id="btnReasignarDepartamento" title="Reasignar Departamentos">
+                    <i class="bi bi-arrow-left-right"></i> Reasignar
+                </button>
+
 
             </div>
         </div>
 
-        <div id="tabla-nomina-container-confianza" class="tabla-nomina-container-confianza">
-            <div class="table-responsive-confianza">
-                <table class="table-nomina-confianza" id="tabla-nomina">
+        <div id="tabla-nomina-container">
+            <div class="table-responsive">
+                <table class="table-nomina" id="tabla-nomina">
                     <thead>
                         <tr>
                             <th rowspan="2">#</th>
@@ -187,8 +181,7 @@
 
                         </tr>
                     </thead>
-                    <tbody id="tabla-nomina-body-confianza">
-                        <!-- Filas de la tabla se generarán dinámicamente -->
+                    <tbody id="tabla-nomina-body">
 
 
 
@@ -201,57 +194,52 @@
     </div>
 
     <!-- Menú contextual simple para la tabla -->
-    <div id="context-menu"
-        style="position:absolute;z-index:10000;display:none;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);padding:4px;">
+    <div id="context-menu" style="position:absolute;z-index:10000;display:none;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);padding:4px;">
         <div class="cm-item" data-action="ver" style="padding:6px 12px;cursor:pointer;">Ver detalles</div>
     </div>
 
+    <!-- Modal de detalles (incluir plantilla) -->
+    <?php include 'conceptsModal.php'; ?>
+    <?php include 'modalTipoDia.php'; ?>
+    <?php include 'modalPrestamos.php'; ?>
+    <?php include 'modalSeleccionarEmpleados.php'; ?>
+    <?php include 'modalConceptosTotales.php'; ?>
+    <?php include 'modalExportExcel.php'; ?>
+    <?php include 'modal_seleccion_tickets_confianza.php'; ?>
+    <?php include 'modalReasignarDepartamento.php'; ?>
+    <?php include 'modalHorarioVariable.php'; ?>
+    <?php include 'modalEmpleadosSinHorarioOficial.php'; ?>
+    <?php include 'modalDiasInhabiles.php'; ?>
 
-    <!-- Incluir el modal -->
-
-    <?php include 'modals/modalConfianza.php'; ?>
-    <?php include 'modals/modalDiasInhabiles.php'; ?>
-    <?php include 'modals/modalTipoDia.php'; ?>
-    <?php include 'modals/biometricoModal.php'; ?>
-    <?php include 'modals/modalSeleccionarEmpleados.php'; ?>
-    <?php include 'modals/modalHorarioVariable.php'; ?>
-    <?php include 'modals/modalDiasInhabiles.php'; ?>
-    <?php include 'modals/modalOlvidos.php'; ?>
-    <?php include 'modals/modalConceptosTotales.php'; ?>
-    <?php include 'modals/modalExportarNomina.php'; ?>
-     <?php include 'modals/modalReasignarEmpleado.php'; ?>
 
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
-    <!-- Plugin Inputmask -->
-    <script src="<?= JQUERY_INPUTMASK ?>"></script>
     <!-- Bootstrap JS -->
     <script src="<?= BOOTSTRAP_JS ?>"></script>
-    <!-- Archivo JS específico -->
+
+    <!-- Script personalizado -->
 
     <script src="../js/storage.js"></script>
-    <script src="../js/saveGetNomina.js"></script>
-    <script src="../js/showDataTable.js"></script>
-    <script src="../js/configComponentes.js"></script>
-    <script src="../js/filtroBusqueda.js"></script>
     <script src="../js/process_excel.js"></script>
-    <script src="../js/abrirModal.js"></script>
-
-
-    <script src="../js/configModal/establecerData.js"></script>
-    <script src="../js/configModal/configModal.js"></script>
-    <script src="../js/configModal/editarData.js"></script>
-    <script src="../js/configModal/eventos.js"></script>
-    <script src="../js/configModal/newConcepts.js"></script>
-    <script src="../js/configModal/justificacionEmpleados.js"></script>
-    <script src="../js/configModal/horarioVariable.js"></script>
-
-    <script src="../js/configModales/actualizarBiomtrico.js"></script>
-    <script src="../js/configModales/seleccionar_empleados.js"></script>
-    <script src="../js/configModales/olvidosMasivos.js"></script>
-    <script src="../js/configModales/conceptos_totales.js"></script>
-    <script src="../js/configModales/exportarNominaExcel.js"></script>
-    <script src="../js/configModales/reasignarEmpleado.js"></script>
+    <script src="../js/showDataTable.js"></script>
+    <script src="../js/filtrado.js"></script>
+    <script src="../js/config_modal_concepts.js"></script>
+    <script src="../js/establecer_data.js"></script>
+    <script src="../js/newConcepts.js"></script>
+    <script src="../js/editarConcepts.js"></script>
+    <script src="../js/eventos.js"></script>
+    <script src="../js/permisosUniformes.js"></script>
+    <script src="../js/saveNominaConfianza.js"></script>
+    <script src="../js/export_nomina_excel.js"></script>
+    <script src="../js/seleccionar_empleados.js"></script>
+    <script src="../js/conceptos_totales.js"></script>
+    <script src="../js/export_encabezado_pdf.js"></script>
+    <script src="../js/ticket_pdf.js"></script>
+    <!-- Eliminar tarjeta: asigna 0 a la propiedad tarjeta de todos los empleados -->
+    <script src="../js/eliminarTarjeta.js"></script>
+    <script src="../js/ticket_seleccion_confianza.js"></script>
+    <script src="../js/reasignarDepartamento.js"></script>
+    <script src="../js/marcajes.js"></script>
 
 </body>
 

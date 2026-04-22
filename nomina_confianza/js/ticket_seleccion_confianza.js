@@ -1,173 +1,90 @@
-/**
- * ================================================================
- * MÓDULO DE SELECCIÓN DE EMPLEADOS PARA TICKETS - NÓMINA CONFIANZA
- * ================================================================
- * Maneja la selección manual de empleados para generar tickets PDF
- * ================================================================
- */
+let empleadosParaTicketsConfianza = [];
+let empleadosSeleccionadosConfianza = new Set();
 
-// Variables globales para el modal de selección
-let empleadosParaTickets = [];
-let empleadosSeleccionados = new Set();
-
-// Inicializar eventos cuando el DOM esté listo
-$(document).ready(function() {
-    // Evento para abrir modal de selección de empleados
-    $('#btn_ticket_manual').on('click', function() {
-        // FORZAR RECARGA desde localStorage para obtener datos actualizados
-        const nominaData = JSON.parse(localStorage.getItem('jsonNominaConfianza') || '{}');
-        // Actualizar variable global si hay datos más recientes
-        if (nominaData && nominaData.departamentos) {
-            if (typeof window.jsonNominaConfianza !== 'undefined') {
-                window.jsonNominaConfianza = nominaData;
-            }
-        }
-        if (!nominaData || !nominaData.departamentos) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Sin datos',
-                text: 'No hay datos de nómina cargados. Primero procesa los archivos.'
-            });
-            return;
-        }
-        cargarEmpleadosParaTickets();
-        $('#modal_seleccion_tickets').modal('show');
-    });
-
-    // Accesibilidad: forzar aria-hidden correcto en el modal
-    $('#modal_seleccion_tickets').on('shown.bs.modal', function () {
-        $(this).attr('aria-hidden', 'false');
-    });
-    $('#modal_seleccion_tickets').on('hidden.bs.modal', function () {
-        $(this).attr('aria-hidden', 'true');
-    });
-
-    // Eventos del modal - usar delegación de eventos para elementos dinámicos
-    $('#btn_seleccionar_todos_tickets').on('click', seleccionarTodosEmpleados);
-    $('#btn_deseleccionar_todos_tickets').on('click', deseleccionarTodosEmpleados);
-    $(document).on('input', '#buscar_empleado_ticket', filtrarEmpleados);
-    $('#btn_generar_tickets_seleccionados').on('click', generarTicketsSeleccionados);
-    $(document).on('click', '#btn_limpiar_busqueda', limpiarCampoBusqueda);
-
-    // Evento para seleccionar empleado individual
-    $(document).on('click', '.empleado-item', function(e) {
-        // Evitar que el click en el checkbox dispare el evento dos veces
-        if ($(e.target).is('input[type="checkbox"]')) {
-            return;
-        }
-        
-        const clave = String($(this).data('clave')); // Normalizar como string
-        const checkbox = $(this).find('input[type="checkbox"]');
-        
-        if (empleadosSeleccionados.has(clave)) {
-            empleadosSeleccionados.delete(clave);
-            $(this).removeClass('active');
-            checkbox.prop('checked', false);
-        } else {
-            empleadosSeleccionados.add(clave);
-            $(this).addClass('active');
-            checkbox.prop('checked', true);
-        }
-        
-        actualizarContadores();
-    });
-    
-    // Evento para el checkbox directamente
-    $(document).on('change', '.empleado-item input[type="checkbox"]', function() {
-        const listItem = $(this).closest('.list-group-item');
-        const clave = String(listItem.data('clave'));
-        
-        if ($(this).is(':checked')) {
-            empleadosSeleccionados.add(clave);
-            listItem.addClass('active');
-        } else {
-            empleadosSeleccionados.delete(clave);
-            listItem.removeClass('active');
-        }
-        
-        actualizarContadores();
-    });
-});
-
-/**
- * Carga todos los empleados de nómina de confianza
- */
-function cargarEmpleadosParaTickets() {
-    empleadosParaTickets = [];
-    empleadosSeleccionados.clear();
-    
-    const nominaData = JSON.parse(localStorage.getItem('jsonNominaConfianza') || '{}');
-    
-    if (!nominaData || !nominaData.departamentos) {
-        return;
-    }
-
-    //
-
-    // Procesar todos los departamentos de nómina de confianza
-    nominaData.departamentos.forEach(depto => {
-        const nombreDepto = depto.nombre || '';
-        //
-        if (depto.empleados && Array.isArray(depto.empleados)) {
-            depto.empleados.forEach(emp => {
-                if (emp && typeof emp === 'object') {
-                    empleadosParaTickets.push({
-                        ...emp,
-                        departamento: nombreDepto,
-                        tipo: 'confianza'
-                    });
-                }
-            });
-        }
-    });
-
-    //
-    mostrarEmpleados(empleadosParaTickets);
+function claveCompuestaTicket(emp, deptoNombre) {
+    const clave = String(emp?.clave || '').trim();
+    const idEmpresa = String(emp?.id_empresa ?? '1').trim() || '1';
+    const esSinSeguro = String(deptoNombre || '').toLowerCase().trim() === 'sin seguro';
+    return `${idEmpresa}|${esSinSeguro ? 'SS' : 'N'}|${clave}`;
 }
 
-/**
- * Mostrar empleados en el modal
- */
-function mostrarEmpleados(empleados) {
-    const container = $('#lista_empleados_tickets');
-    container.empty();
-    
+function obtenerNombreEmpresaPorId(idEmpresa) {
+    const v = String(idEmpresa ?? '').trim();
+    const $sel = $('#filtro-empresa');
+    if (!$sel.length) return '';
+    const $opt = $sel.find(`option[value="${v}"]`);
+    return $opt.length ? String($opt.text() || '').trim() : '';
+}
+
+function obtenerNominaConfianzaGlobal() {
+    if (window.jsonNominaConfianza && Array.isArray(window.jsonNominaConfianza.departamentos)) return window.jsonNominaConfianza;
+    if (typeof jsonNominaConfianza !== 'undefined' && jsonNominaConfianza && Array.isArray(jsonNominaConfianza.departamentos)) return jsonNominaConfianza;
+    return null;
+}
+
+function cargarEmpleadosParaTicketsConfianza() {
+    empleadosParaTicketsConfianza = [];
+    empleadosSeleccionadosConfianza.clear();
+
+    const pool = (typeof obtenerTodosEmpleadosConfianza === 'function') ? obtenerTodosEmpleadosConfianza() : [];
+    pool.forEach(({ emp, deptoNombre }) => {
+        if (!emp || typeof emp !== 'object') return;
+        empleadosParaTicketsConfianza.push({
+            original: emp,
+            clave: emp.clave,
+            nombre: emp.nombre,
+            departamento: String(deptoNombre || ''),
+            id: claveCompuestaTicket(emp, deptoNombre)
+        });
+    });
+
+    mostrarEmpleadosTicketsConfianza(empleadosParaTicketsConfianza);
+    actualizarContadoresTicketsConfianza();
+}
+
+function mostrarEmpleadosTicketsConfianza(empleados) {
+    const $container = $('#lista_empleados_tickets');
+    $container.empty();
+
     if (!empleados || empleados.length === 0) {
-        container.html('<div class="col-12"><div class="alert alert-info text-center">No se encontraron empleados</div></div>');
+        $container.html('<div class="col-12"><div class="alert alert-info text-center">No se encontraron empleados</div></div>');
         return;
     }
-    
-    // Crear lista simple en lugar de tarjetas
+
     const listaHtml = `
         <div class="list-group">
-            ${empleados.map(empleado => {
-                // Normalizar clave como string para comparación consistente
-                const clave = String(empleado.clave || empleado.id || Math.random());
-                const nombre = empleado.nombre || 'Sin nombre';
-                const departamento = empleado.departamento || 'Sin departamento';
-                    
-                // Determinar la clase del badge según el departamento
-                let badgeClass = 'bg-primary';
+            ${empleados.map(item => {
+                const clave = String(item.id || '');
+                const nombre = String(item.nombre || '').trim() || 'Sin nombre';
+                const departamento = String(item.departamento || '').trim() || 'Sin departamento';
+                const idEmpresa = (item.original && item.original.id_empresa !== undefined) ? item.original.id_empresa : 1;
+                const empresaTxt = obtenerNombreEmpresaPorId(idEmpresa);
+                const esSinSeguro = departamento.toLowerCase().trim() === 'sin seguro';
+                const claveBase = String(item.clave || '').trim();
+                const claveMostrar = esSinSeguro ? `SS/${claveBase}` : claveBase;
+
+                let badgeClass = 'bg-secondary';
                 const deptoLower = departamento.toLowerCase();
-                    
-                if (deptoLower.includes('administracion')) {
-                    badgeClass = 'bg-primary';
-                } else if (deptoLower.includes('produccion')) {
-                    badgeClass = 'bg-warning text-dark';
+                if (deptoLower.includes('administracion') || deptoLower.includes('administración') || deptoLower.includes('admin')) {
+                    badgeClass = 'departamento-badge departamento-administracion';
+                } else if (deptoLower.includes('produccion') || deptoLower.includes('producción') || deptoLower.includes('produc')) {
+                    badgeClass = 'departamento-badge departamento-produccion';
                 } else if (deptoLower.includes('seguridad') || deptoLower.includes('vigilancia') || deptoLower.includes('intendencia')) {
-                    badgeClass = 'bg-purple';
+                    badgeClass = 'departamento-badge departamento-seguridad';
                 } else if (deptoLower.includes('sin seguro')) {
-                    badgeClass = 'bg-orange';
+                    badgeClass = 'departamento-badge departamento-sin-seguro';
                 }
-                    
-                const isSelected = empleadosSeleccionados.has(clave);
-                const itemClass = isSelected ? 'list-group-item list-group-item-action active d-flex justify-content-between align-items-center' : 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
-                    
+
+                const isSelected = empleadosSeleccionadosConfianza.has(clave);
+                const itemClass = isSelected
+                    ? 'list-group-item list-group-item-action active d-flex justify-content-between align-items-center'
+                    : 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
+
                 return `
                     <div class="${itemClass} empleado-item" data-clave="${clave}" data-nombre="${nombre.toLowerCase()}" style="cursor: pointer;">
                         <div>
                             <div class="fw-bold">${nombre}</div>
-                            <small class="text-muted">Clave: ${clave}</small>
+                            <small class="text-muted">Clave: ${claveMostrar}${empresaTxt ? ` | Empresa: ${empresaTxt}` : ''}</small>
                         </div>
                         <div class="d-flex align-items-center gap-2">
                             <span class="badge ${badgeClass} rounded-pill">${departamento}</span>
@@ -178,171 +95,200 @@ function mostrarEmpleados(empleados) {
             }).join('')}
         </div>
     `;
-        
-    container.html(listaHtml);
-        
-    // Agregar estilos para badges personalizados
-    if (!$('#custom-styles-tickets').length) {
-        $('head').append(`
-            <style id="custom-styles-tickets">
-                .bg-purple { background-color: #6f42c1 !important; color: white !important; }
-                .bg-orange { background-color: #fd7e14 !important; color: white !important; }
-                .list-group-item.active { background-color: #0d6efd; border-color: #0d6efd; }
-            </style>
-        `);
-    }
-    
-    actualizarContadores();
+
+    $container.html(listaHtml);
 }
 
-/**
- * Seleccionar todos los empleados visibles
- */
-function seleccionarTodosEmpleados() {
-    $('.empleado-item:visible').each(function() {
-        const clave = String($(this).data('clave'));
-        empleadosSeleccionados.add(clave);
-        $(this).addClass('active');
-        $(this).find('input[type="checkbox"]').prop('checked', true);
-    });
-    
-    actualizarContadores();
-}
-
-/**
- * Deseleccionar todos los empleados
- */
-function deseleccionarTodosEmpleados() {
-    empleadosSeleccionados.clear();
-    $('.empleado-item').removeClass('active');
-    $('.empleado-item input[type="checkbox"]').prop('checked', false);
-    
-    actualizarContadores();
-}
-
-/**
- * Limpiar el campo de búsqueda
- */
-function limpiarCampoBusqueda() {
-    $('#buscar_empleado_ticket').val('').trigger('input').focus();
-}
-
-/**
- * Filtrar empleados por texto de búsqueda
- */
-function filtrarEmpleados() {
-    const filtro = $('#buscar_empleado_ticket').val().toLowerCase().trim();
-    const $items = $('.empleado-item');
-    if (filtro === '') {
-        $items.removeClass('d-none').show();
-    } else {
-        $items.each(function() {
-            const $item = $(this);
-            const nombre = $item.data('nombre') || '';
-            const texto = $item.text().toLowerCase();
-            if (nombre.includes(filtro) || texto.includes(filtro)) {
-                $item.removeClass('d-none').show();
-            } else {
-                $item.addClass('d-none').hide();
-            }
-        });
-    }
-}
-
-/**
- * Actualizar contadores de empleados seleccionados
- */
-function actualizarContadores() {
-    const count = empleadosSeleccionados.size;
+function actualizarContadoresTicketsConfianza() {
+    const count = empleadosSeleccionadosConfianza.size;
     $('#contador_seleccionados').text(count);
     $('#contador_seleccionados_btn').text(count);
+    $('#btn_generar_tickets_seleccionados').prop('disabled', count === 0);
 }
 
-/**
- * Generar tickets para empleados seleccionados
- */
-function generarTicketsSeleccionados() {
-    if (empleadosSeleccionados.size === 0) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Sin selección',
-            text: 'Por favor selecciona al menos un empleado.'
-        });
+function filtrarEmpleadosTicketsConfianza() {
+    const query = String($('#buscar_empleado_ticket').val() || '').toLowerCase().trim();
+
+    if (query !== '') {
+        $('#btn_limpiar_busqueda').css('display', 'flex');
+    } else {
+        $('#btn_limpiar_busqueda').hide();
+    }
+
+    if (query === '') {
+        mostrarEmpleadosTicketsConfianza(empleadosParaTicketsConfianza);
         return;
     }
 
-    // Obtener datos completos de empleados seleccionados
-    const empleadosData = empleadosParaTickets.filter(emp => {
-        const clave = String(emp.clave || emp.id || '');
-        return empleadosSeleccionados.has(clave);
+    const filtrados = empleadosParaTicketsConfianza.filter(emp => {
+        const nombre = String(emp.nombre || '').toLowerCase();
+        const claveBase = String(emp.clave || '');
+        const depto = String(emp.departamento || '').toLowerCase();
+        return nombre.includes(query) || claveBase.includes(query) || depto.includes(query);
     });
 
-    console.log('Empleados seleccionados:', empleadosData);
+    mostrarEmpleadosTicketsConfianza(filtrados);
+}
 
-    // Preparar datos para el servidor
-    const nominaCompleta = JSON.parse(localStorage.getItem('jsonNominaConfianza') || '{}');
-    
-    const datosParaTickets = {
-        empleados_seleccionados: empleadosData,
-        metadatos: nominaCompleta
-    };
+function limpiarCampoBusquedaTicketsConfianza() {
+    $('#buscar_empleado_ticket').val('').trigger('input');
+    $('#btn_limpiar_busqueda').hide();
+}
 
-    // Mostrar loading
+async function generarTicketsSeleccionadosConfianza() {
+    if (empleadosSeleccionadosConfianza.size === 0) return;
+
+    const seleccionados = [];
+    empleadosParaTicketsConfianza.forEach(item => {
+        if (empleadosSeleccionadosConfianza.has(item.id)) {
+            const copia = JSON.parse(JSON.stringify(item.original || {}));
+            copia.departamento = String(item.departamento || '').trim();
+            if (String(copia.departamento).toLowerCase().trim() === 'sin seguro') {
+                copia.sin_seguro_ticket = true;
+            }
+            if (copia.id_empresa === undefined || copia.id_empresa === null || copia.id_empresa === '') {
+                copia.id_empresa = 1;
+            }
+            seleccionados.push({ emp: copia, deptoNombre: copia.departamento });
+        }
+    });
+
+    if (seleccionados.length === 0) return;
+
+    const nominaParaEnviar = (typeof construirNominaParaTicketsConfianza === 'function')
+        ? construirNominaParaTicketsConfianza(seleccionados)
+        : null;
+
+    if (!nominaParaEnviar) return;
+
+    $('#modal_seleccion_tickets').modal('hide');
+
     Swal.fire({
         title: 'Generando tickets...',
-        text: `Procesando ${empleadosData.length} empleado(s)`,
+        html: `Empleados: <strong>${seleccionados.length}</strong>`,
+        icon: 'info',
         allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
+        didOpen: () => Swal.showLoading()
     });
 
-    // Enviar al servidor
-    $.ajax({
-        url: '../php/descargar_ticket_pdf.php',
-        method: 'POST',
-        data: {
-            datos_json: JSON.stringify(datosParaTickets),
-            empleados_seleccionados: true
-        },
-        xhrFields: {
-            responseType: 'blob'
-        },
-        success: function(data, status, xhr) {
-            Swal.close();
-            
-            // Crear URL del blob y descargar
-            const blob = new Blob([data], { type: 'application/pdf' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = `tickets_confianza_seleccionados_${new Date().getTime()}.pdf`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
+    try {
+        const response = await fetch('../php/descargar_ticket_pdf.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+            body: JSON.stringify({ nomina: nominaParaEnviar, filename_prefix: 'tickets_confianza_seleccion' })
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const blob = await response.blob();
+        if (!(blob instanceof Blob) || blob.size === 0) throw new Error('PDF vacío');
 
-            Swal.fire({
-                icon: 'success',
-                title: '¡Tickets generados!',
-                text: `Se generaron ${empleadosData.length} ticket(s) exitosamente.`
-            });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `tickets_confianza_seleccion_${seleccionados.length}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
 
-            // Cerrar modal y limpiar selecciones
-            $('#modal_seleccion_tickets').modal('hide');
-            empleadosSeleccionados.clear();
-        },
-        error: function(xhr, status, error) {
-            Swal.close();
-            console.error('Error al generar tickets:', error);
-            console.error('Response:', xhr.responseText);
-            
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error al generar los tickets. Por favor, intenta de nuevo.'
+        Swal.fire({ icon: 'success', title: 'Listo', text: 'Tickets generados correctamente', timer: 1500, showConfirmButton: false });
+    } catch (e) {
+        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron generar los tickets.' });
+    }
+}
+
+$(document).ready(function () {
+    const $btnAbrir = $('#btn_ticket_manual_confianza');
+    $btnAbrir.on('click', function () {
+        const nomina = obtenerNominaConfianzaGlobal();
+        if (!nomina || !Array.isArray(nomina.departamentos)) {
+            Swal.fire({ icon: 'warning', title: 'Sin datos', text: 'No hay datos de nómina cargados.' });
+            return;
+        }
+        cargarEmpleadosParaTicketsConfianza();
+        $('#modal_seleccion_tickets').modal('show');
+    });
+
+    $('#btn_seleccionar_todos_tickets').on('click', function () {
+        const query = String($('#buscar_empleado_ticket').val() || '').toLowerCase().trim();
+        if (query === '') {
+            empleadosParaTicketsConfianza.forEach(emp => empleadosSeleccionadosConfianza.add(String(emp.id)));
+        } else {
+            empleadosParaTicketsConfianza.forEach(emp => {
+                const nombre = String(emp.nombre || '').toLowerCase();
+                const claveBase = String(emp.clave || '');
+                const depto = String(emp.departamento || '').toLowerCase();
+                if (nombre.includes(query) || claveBase.includes(query) || depto.includes(query)) {
+                    empleadosSeleccionadosConfianza.add(String(emp.id));
+                }
             });
         }
+        actualizarVistaSeleccionTicketsConfianza();
     });
+
+    $('#btn_deseleccionar_todos_tickets').on('click', function () {
+        const query = String($('#buscar_empleado_ticket').val() || '').toLowerCase().trim();
+        if (query === '') {
+            empleadosSeleccionadosConfianza.clear();
+        } else {
+            empleadosParaTicketsConfianza.forEach(emp => {
+                const nombre = String(emp.nombre || '').toLowerCase();
+                const claveBase = String(emp.clave || '');
+                const depto = String(emp.departamento || '').toLowerCase();
+                if (nombre.includes(query) || claveBase.includes(query) || depto.includes(query)) {
+                    empleadosSeleccionadosConfianza.delete(String(emp.id));
+                }
+            });
+        }
+        actualizarVistaSeleccionTicketsConfianza();
+    });
+
+    $(document).on('click', '.empleado-item', function (e) {
+        if ($(e.target).is('input[type="checkbox"]')) return;
+        const id = String($(this).data('clave') || '');
+        if (id === '') return;
+        const $chk = $(this).find('input[type="checkbox"]');
+        if (empleadosSeleccionadosConfianza.has(id)) {
+            empleadosSeleccionadosConfianza.delete(id);
+            $(this).removeClass('active');
+            $chk.prop('checked', false);
+        } else {
+            empleadosSeleccionadosConfianza.add(id);
+            $(this).addClass('active');
+            $chk.prop('checked', true);
+        }
+        actualizarContadoresTicketsConfianza();
+    });
+
+    $(document).on('change', '.empleado-item input[type="checkbox"]', function () {
+        const $it = $(this).closest('.empleado-item');
+        const id = String($it.data('clave') || '');
+        if (id === '') return;
+        if ($(this).is(':checked')) {
+            empleadosSeleccionadosConfianza.add(id);
+            $it.addClass('active');
+        } else {
+            empleadosSeleccionadosConfianza.delete(id);
+            $it.removeClass('active');
+        }
+        actualizarContadoresTicketsConfianza();
+    });
+
+    $(document).on('input', '#buscar_empleado_ticket', filtrarEmpleadosTicketsConfianza);
+    $('#btn_limpiar_busqueda').on('click', limpiarCampoBusquedaTicketsConfianza);
+    $('#btn_generar_tickets_seleccionados').on('click', generarTicketsSeleccionadosConfianza);
+});
+
+function actualizarVistaSeleccionTicketsConfianza() {
+    $('.empleado-item').each(function () {
+        const id = String($(this).data('clave') || '');
+        const checkbox = $(this).find('input[type="checkbox"]');
+        if (id !== '' && empleadosSeleccionadosConfianza.has(id)) {
+            $(this).addClass('active');
+            checkbox.prop('checked', true);
+        } else {
+            $(this).removeClass('active');
+            checkbox.prop('checked', false);
+        }
+    });
+    actualizarContadoresTicketsConfianza();
 }

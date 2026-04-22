@@ -41,6 +41,7 @@
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/gafetes/gafetes.php">Gafetes</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/contratos/contratos.php">Contratos</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/prestamos/views/index.php">Prestamos</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/aguinaldo/views/aguinaldo.php">Aguinaldos</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/public/views/generacion_tickets_manuales.php">Tickets Manuales</a></li>
                         <li class="dropdown-submenu">
                             <a class="dropdown-item dropdown-toggle" href="#">Reloj 8 Horas</a>

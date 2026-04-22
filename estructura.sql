@@ -327,6 +327,17 @@ CREATE TABLE detalle_planes (
   CONSTRAINT detalle_planes_chk_1 CHECK (json_valid(detalle))
 );
 
+-- =============================
+-- TABLA DE AGUINALDOS
+-- =============================
+
+
+CREATE TABLE aguinaldos (
+  id_aguinaldo INT NOT NULL,
+  jsonAguinaldo LONGTEXT NOT NULL,
+  anio INT NOT NULL,
+  fecha_creacion DATETIME NOT NULL
+) ;
 
 -- =============================
 -- TABLA DE HORARIOS RELOJ 8 HRS
