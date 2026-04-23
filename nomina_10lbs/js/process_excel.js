@@ -1,26 +1,26 @@
 // Variables Globales
-jsonNomina40lbs = null;
+jsonNomina10lbs = null;
 
 
 $(document).ready(function () {
 
     processExcelData();
 
-    // Si no se logra restaurar una nómina previa, mostrar el contenedor de carga
+    /* Si no se logra restaurar una nómina previa, mostrar el contenedor de carga
     if (!restoreNomina()) {
-        $("#container-nomina_40lbs").removeAttr("hidden");
-    }
+        $("#container-nomina_10lbs").removeAttr("hidden");
+    }*/
 
     confirmarsaveNomina();
-    limpiarCamposNomina();
-    console.log(jsonNomina40lbs);
+    // limpiarCamposNomina();
+    console.log(jsonNomina10lbs);
 
 });
 
 // PASO 1: Función para procesar los archivos Excel subidos por el usuario y unir los datos 
 function processExcelData(params) {
 
-    $('#btn_procesar_nomina_40lbs').on('click', function (e) {
+    $('#btn_procesar_nomina_10lbs').on('click', function (e) {
         e.preventDefault();
 
         var $form = $('#form_excel_raya');
@@ -28,12 +28,12 @@ function processExcelData(params) {
 
         // 1. Enviar el primer archivo Excel (Lista de Raya)
         var formData1 = new FormData();
-        if (!form.archivo_excel_lista_raya_40lbs || form.archivo_excel_lista_raya_40lbs.files.length === 0) {
+        if (!form.archivo_excel_lista_raya_10lbs || form.archivo_excel_lista_raya_10lbs.files.length === 0) {
             alert('Selecciona el archivo Lista de Raya.');
             return;
         }
         // El backend (`leerListaRaya.php`) espera el campo 'archivo_excel'
-        formData1.append('archivo_excel', form.archivo_excel_lista_raya_40lbs.files[0]);
+        formData1.append('archivo_excel', form.archivo_excel_lista_raya_10lbs.files[0]);
 
         // Mostrar indicador de carga y OCULTAR el contenedor de carga
         $(this).addClass('loading').prop('disabled', true);
@@ -77,27 +77,24 @@ function processExcelData(params) {
                     validarExistenciaNomina(numeroSemana, anio).then(function (existe) {
                         if (existe) {
                             // Obtener la nómina real desde el servidor
-                            getNomina40lbs(numeroSemana, anio).then(function (nomina) {
-                                jsonNomina40lbs = nomina;
-                                validarExistenciaTrabajadorBD(jsonNomina40lbs, jsonListaRaya);
+                            getNomina10lbs(numeroSemana, anio).then(function (nomina) {
+                                jsonNomina10lbs = nomina;
+                                validarExistenciaTrabajadorBD(jsonNomina10lbs, jsonListaRaya);
 
 
-                                $('#btn_procesar_nomina_40lbs').removeClass('loading').prop('disabled', false);
+                                $('#btn_procesar_nomina_10lbs').removeClass('loading').prop('disabled', false);
                             }).catch(function (err) {
                                 console.error('Error al obtener nómina desde servidor:', err);
-                                $('#btn_procesar_nomina_40lbs').removeClass('loading').prop('disabled', false);
+                                $('#btn_procesar_nomina_10lbs').removeClass('loading').prop('disabled', false);
                             });
 
                         } else {
                             // Verificar si se subió el archivo biométrico (opcional)
-                            const hayBiometrico = form.archivo_excel_biometrico_40lbs && form.archivo_excel_biometrico_40lbs.files.length > 0;
+                            const hayBiometrico = form.archivo_excel_biometrico_10lbs && form.archivo_excel_biometrico_10lbs.files.length > 0;
 
                             if (hayBiometrico) {
                                 // Si hay biométrico, validar existencia pero omitir agregar empleados sin seguro por ahora
-                                // validarExistenciaTrabajador(jsonListaRaya, true);
-                                //procesarBiometrico(form, jsonListaRaya);
                                 crearEstructuraJson(jsonListaRaya, true, form);
-
 
                             } else {
                                 // Si no hay biométrico, validar existencia y sí agregar empleados sin seguro
@@ -105,13 +102,13 @@ function processExcelData(params) {
                                 crearEstructuraJson(jsonListaRaya, false, form);
 
                                 // aplicar cambios 
-                                $('#btn_procesar_nomina_40lbs').removeClass('loading').prop('disabled', false);
+                                $('#btn_procesar_nomina_10lbs').removeClass('loading').prop('disabled', false);
 
                             }
                         }
                     }).catch(function (err) {
                         console.error('Error verificando existencia de nómina:', err);
-                        $('#btn_procesar_nomina_40lbs').removeClass('loading').prop('disabled', false);
+                        $('#btn_procesar_nomina_10lbs').removeClass('loading').prop('disabled', false);
                     });
                 }
 
@@ -131,10 +128,10 @@ function processExcelData(params) {
 Se ejecuta processExcelData() -> se procesa Lista de Raya -> Verificar si hay biometrico (no hay) ->
 validarExistenciaTrabajador(JsonListaRaya) para detectar si las claves estan en la BD, una vez obtenida
 la respuesta del servidor se quedan los empleados que estan y se eliminan los que no se encontraron del jsonListaRaya->
-obtenerEmpleadosSinSS(JsonListaRaya) se obtiene de manera general a los empleados que no tienen seguro y se unen al jsonNomina40lbs->
+obtenerEmpleadosSinSS(JsonListaRaya) se obtiene de manera general a los empleados que no tienen seguro y se unen al jsonNomina10lbs->
 asignarPropiedadesEmpleado(JsonListaRaya) se asignan las propiedades necesarias a los empleados del departamento 40 y 10 libras y sin seguro->
 ordenarEmpleadosPorApellido(JsonListaRaya) se ordenan los empleados por apellido paterno dentro de cada departamento->
-jsonNomina40lbs = JsonListaRaya asignando el jsonNomina40lbs ;
+jsonNomina10lbs = JsonListaRaya asignando el jsonNomina10lbs ;
 */
 
 
@@ -143,12 +140,14 @@ function crearEstructuraJson(jsonListaRaya, siHayBiometrico, form) {
     $.ajax({
         url: '../php/validarExistenciaEmpleado.php',
         type: 'GET',
+        cache: false,
         data: {
             case: 'obtenerDepartamentosNomina',
-            id_nomina: 1
+            id_nomina: 2 // ID de nómina para 10lbs
         },
         dataType: 'json',
         success: function (respDepts) {
+
             if (!respDepts.departamentos || respDepts.departamentos.length === 0) {
                 Swal.fire({
                     icon: 'error',
@@ -158,7 +157,7 @@ function crearEstructuraJson(jsonListaRaya, siHayBiometrico, form) {
                     confirmButtonText: 'Entendido'
                 });
                 console.error("Error al obtener departamentos de la BD:", respDepts.error);
-                $('#btn_procesar_nomina_40lbs').removeClass('loading').prop('disabled', false);
+                $('#btn_procesar_nomina_10lbs').removeClass('loading').prop('disabled', false);
                 return;
             }
 
@@ -170,13 +169,16 @@ function crearEstructuraJson(jsonListaRaya, siHayBiometrico, form) {
                 departamentos: respDepts.departamentos.map(d => ({
                     id_departamento: d.id_departamento,
                     nombre: d.nombre_departamento,
-                    editar: true,
                     empleados: []
                 }))
             };
 
+
             // CORRECCIÓN: Pasamos el JSON original para que encuentre las claves
             validarExistenciaTrabajador(jsonListaRaya, estructuraJson, siHayBiometrico, form);
+
+            // IMPORTANTE: Quitar carga solo si NO falló la validación inicial
+            $('#btn_procesar_nomina_10lbs').removeClass('loading').prop('disabled', false);
         },
         error: function (err) {
             Swal.fire({
@@ -187,7 +189,7 @@ function crearEstructuraJson(jsonListaRaya, siHayBiometrico, form) {
                 confirmButtonText: 'Entendido'
             });
             console.error("Error al obtener departamentos para prueba:", err);
-            $('#btn_procesar_nomina_40lbs').removeClass('loading').prop('disabled', false);
+            $('#btn_procesar_nomina_10lbs').removeClass('loading').prop('disabled', false);
         }
     });
 
@@ -210,7 +212,7 @@ function validarExistenciaTrabajador(jsonListaRaya, estructuraJson, siHayBiometr
     //Enviar las claves al servidor con el case
     if (clavesEmpleados.length === 0) {
         console.warn("No se encontraron claves de empleados para validar.");
-        $('#btn_procesar_nomina_40lbs').removeClass('loading').prop('disabled', false);
+        $('#btn_procesar_nomina_10lbs').removeClass('loading').prop('disabled', false);
         return;
     }
 
@@ -266,44 +268,7 @@ function validarExistenciaTrabajador(jsonListaRaya, estructuraJson, siHayBiometr
                         }
                     });
 
-                    // FASE 2: Unir empleados residuales del Excel (no unidos en Fase 1) PARA LA PARTE DE TARJETA
-                    // Solo se incluyen empleados que SÍ existen en la BD (excluye no_existentes)
-                    jsonListaRaya.departamentos.forEach(function (deptoExcel) {
-                        // Filtrar empleados: no unidos aún Y validados en BD (existentes)
-                        let empleadosRestantes = deptoExcel.empleados.filter(e =>
-                            !clavesUnidas.has(String(e.clave)) && clavesExistentes.has(String(e.clave))
-                        );
 
-                        if (empleadosRestantes.length > 0) {
-                            // Buscar si ya existe un departamento con este nombre en estructuraJson
-                            let deptoResidual = estructuraJson.departamentos.find(d =>
-                                d.nombre.trim().toUpperCase() === deptoExcel.nombre.trim().toUpperCase()
-                            );
-
-                            if (!deptoResidual) {
-                                // Si no existe, creamos el departamento con el nombre del Excel
-                                deptoResidual = {
-                                    nombre: deptoExcel.nombre,
-                                    empleados: []
-                                };
-                                estructuraJson.departamentos.push(deptoResidual);
-                            }
-
-                            // Agregar los empleados restantes
-                            empleadosRestantes.forEach(emp => {
-                                if (!clavesUnidas.has(String(emp.clave))) {
-                                    // Separar conceptos para no incluirlos en la unión residual
-                                    const { conceptos, ...empSinConceptos } = emp;
-
-                                    deptoResidual.empleados.push({
-                                        ...empSinConceptos,
-                                        seguroSocial: true
-                                    });
-                                    clavesUnidas.add(String(emp.clave));
-                                }
-                            });
-                        }
-                    });
 
                     // Limpiar departamentos oficiales que hayan quedado vacíos
                     estructuraJson.departamentos = estructuraJson.departamentos.filter(d => d.empleados.length > 0);
@@ -329,7 +294,7 @@ function validarExistenciaTrabajador(jsonListaRaya, estructuraJson, siHayBiometr
         error: function (xhr, status, error) {
             console.error('Error al verificar empleados:', error);
             console.error('Respuesta del servidor:', xhr.responseText);
-            $('#btn_procesar_nomina_40lbs').removeClass('loading').prop('disabled', false);
+            $('#btn_procesar_nomina_10lbs').removeClass('loading').prop('disabled', false);
         }
     });
 }
@@ -345,22 +310,10 @@ function obtenerEmpleadosSinSeguro(estructuraJson) {
         dataType: 'json',
         success: function (response) {
             if (response.empleados && response.empleados.length > 0) {
-                // Evitar duplicidad: Obtener claves de empleados ya agregados (desde Excel)
-                let clavesExistentes = new Set();
-                estructuraJson.departamentos.forEach(d => {
-                    if (d.empleados) {
-                        d.empleados.forEach(e => clavesExistentes.add(String(e.clave).trim()));
-                    }
-                });
+
 
                 // Convertir empleados de BD a estructura del JSON y unirlos a sus departamentos correspondientes
                 response.empleados.forEach(function (empleadoBD) {
-                    const claveBD = String(empleadoBD.clave).trim();
-
-                    // SI EL EMPLEADO YA ESTÁ EN EL JSON (Viene del Excel), NO SE AGREGA DE NUEVO
-                    if (clavesExistentes.has(claveBD)) {
-                        return; // Saltar a la siguiente iteración
-                    }
 
                     var empleado = {
                         clave: empleadoBD.clave,
@@ -372,6 +325,8 @@ function obtenerEmpleadosSinSeguro(estructuraJson) {
                         seguroSocial: false // Estos empleados no tienen seguro
                     };
 
+                    // Buscar el departamento adecuado en la estructura
+                    // Determinar el destino según si usamos la estructura de la BD o la del Excel
                     if (estructuraJson) {
                         let dpto = estructuraJson.departamentos.find(d => d.id_departamento == empleadoBD.id_departamento);
                         if (dpto) {
@@ -384,16 +339,14 @@ function obtenerEmpleadosSinSeguro(estructuraJson) {
                     }
                 });
 
-                jsonNomina40lbs = estructuraJson;
-                asignarPropiedadesEmpleado(jsonNomina40lbs);
-                ordenarEmpleadosPorApellido(jsonNomina40lbs);
-                poblarSelectDepartamentos(jsonNomina40lbs); // Poblar el select dinámico
-                actualizarCabeceraNomina(jsonNomina40lbs);
+                jsonNomina10lbs = estructuraJson;
+                asignarPropiedadesEmpleado(jsonNomina10lbs);
+                ordenarEmpleadosPorApellido(jsonNomina10lbs);
+                poblarSelectDepartamentos(jsonNomina10lbs); // Poblar el select dinámico
+                actualizarCabeceraNomina(jsonNomina10lbs);
                 refrescarTabla(); // Mostrar la tabla automáticamente con el primer filtro
                 initComponents();
-                console.log(jsonNomina40lbs);
-
-
+                console.log(jsonNomina10lbs);
             }
         },
         error: function (xhr, status, error) {
@@ -411,15 +364,15 @@ no se ejecuta obtenerEmpleadosSinSS(JsonListaRaya) por el parametro true ->
 se ejecuta procesarBiometrico(form, JsonListaRaya) -> se procesa el biometrico ->
 unirJson(JsonListaRaya, JsonBiometrico) se unen los registros del biometrico al jsonListaRaya->
 obtenerEmpleadosNoUnidos(JsonListaRaya, JsonBiometrico) se obtienen los empleados del biometrico que no se unieron al jsonListaRaya ->
-obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) se obtiene de manera especifica a los empleados que no se unieron y no tienen seguro y se unen al jsonNomina40lbs->
-asignarPropiedadesEmpleado(jsonNomina40lbs) se asignan las propiedades necesarias a los empleados del departamento 40 y 10 libras y sin seguro->
-ordenarEmpleadosPorApellido(jsonNomina40lbs) se ordenan los empleados por apellido paterno dentro de cada departamento->
+obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) se obtiene de manera especifica a los empleados que no se unieron y no tienen seguro y se unen al jsonNomina10lbs->
+asignarPropiedadesEmpleado(jsonNomina10lbs) se asignan las propiedades necesarias a los empleados del departamento 40 y 10 libras y sin seguro->
+ordenarEmpleadosPorApellido(jsonNomina10lbs) se ordenan los empleados por apellido paterno dentro de cada departamento->
 */
 
 // PASO 1: Función encargada de procesar el archivo biométrico subido por el usuario. 
 function procesarBiometrico(form, estructuraJson) {
     var formData2 = new FormData();
-    formData2.append('archivo_excel2', form.archivo_excel_biometrico_40lbs.files[0]);
+    formData2.append('archivo_excel2', form.archivo_excel_biometrico_10lbs.files[0]);
 
     $.ajax({
         url: '../php/leerBiometrico.php',
@@ -431,8 +384,7 @@ function procesarBiometrico(form, estructuraJson) {
             try {
                 const jsonBiometrico = JSON.parse(res2);
 
-                jsonNomina40lbs = unirJson(estructuraJson, jsonBiometrico);
-                console.log(jsonNomina40lbs);
+                jsonNomina10lbs = unirJson(estructuraJson, jsonBiometrico);
 
                 const empleadosNoUnidos = obtenerEmpleadosNoUnidos(estructuraJson, jsonBiometrico);
                 // Validar empleados sin IMSS solo si hay empleados no unidos
@@ -444,7 +396,7 @@ function procesarBiometrico(form, estructuraJson) {
             } catch (e) {
                 console.error('Error al parsear datos biométricos:', e);
             } finally {
-                $('#btn_procesar_nomina_40lbs').removeClass('loading').prop('disabled', false);
+                $('#btn_procesar_nomina_10lbs').removeClass('loading').prop('disabled', false);
             }
         },
         error: function (xhr, status, error) {
@@ -458,17 +410,17 @@ function procesarBiometrico(form, estructuraJson) {
 // PASO 2: Función para unir los registros del biométrico al JSON de nómina
 function unirJson(json1, json2) {
 
-    // Si json2 no existe o no tiene empleados, inicializar registros sólo en departamentos que se pueden editar
+    // Si json2 no existe o no tiene empleados, inicializar registros 
     if (!json2 || !json2.empleados || json2.empleados.length === 0) {
         if (json1 && json1.departamentos) {
             json1.departamentos.forEach(depto => {
-                if (depto.editar === true) {
-                    if (depto.empleados) {
-                        depto.empleados.forEach(emp1 => {
-                            if (!emp1.registros || !Array.isArray(emp1.registros)) emp1.registros = [];
-                        });
-                    }
+
+                if (depto.empleados) {
+                    depto.empleados.forEach(emp1 => {
+                        if (!emp1.registros || !Array.isArray(emp1.registros)) emp1.registros = [];
+                    });
                 }
+
             });
         }
         return json1;
@@ -491,10 +443,10 @@ function unirJson(json1, json2) {
         });
     }
 
-    // Recorre únicamente los departamentos con editar:true y aplica la unión de registros
+    // Recorre únicamente los departamentos  y aplica la unión de registros
     if (json1 && json1.departamentos) {
         json1.departamentos.forEach(depto => {
-            if (depto.editar !== true) return; // saltar otros departamentos
+
 
             if (depto.empleados) {
                 depto.empleados.forEach(emp1 => {
@@ -566,7 +518,6 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
         },
         dataType: 'json',
         success: function (response) {
-            console.log('Empleados sin seguro del biometrico:', response);
 
             if (response.empleados && response.empleados.length > 0) {
                 // Integrar empleados del biométrico en sus departamentos oficiales
@@ -586,27 +537,34 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
                         registros: empleadoBiometrico ? (empleadoBiometrico.registros || []) : []
                     };
 
-                    if (estructuraJson) {
-                        let dpto = estructuraJson.departamentos.find(d => d.id_departamento == empleadoBD.id_departamento);
+                    // Buscar el departamento correspondiente usando el ID directamente
+                    if (jsonNomina10lbs && jsonNomina10lbs.departamentos) {
+                        let dpto = jsonNomina10lbs.departamentos.find(d => d.id_departamento == empleadoBD.id_departamento);
+
                         if (dpto) {
-                            // Evitar duplicados RECUERDA PONER TAMBIEN POR EL ID EMPRESA
+                            // Evitar duplicados
                             const yaExiste = dpto.empleados.some(e => e.clave === empleado.clave);
                             if (!yaExiste) {
                                 dpto.empleados.push(empleado);
                             }
+
+                        } else {
+                            console.warn(`No se encontró el departamento con ID ${empleadoBD.id_departamento} en la estructura de nómina.`);
                         }
                     }
                 });
 
                 // Finalizar actualización de propiedades y ordenamiento
-                asignarPropiedadesEmpleado(jsonNomina40lbs);
-                ordenarEmpleadosPorApellido(jsonNomina40lbs);
-                calcularOlvidosTodosEmpleados(jsonNomina40lbs);
-                poblarSelectDepartamentos(jsonNomina40lbs); // Poblar el select dinámico
-                actualizarCabeceraNomina(jsonNomina40lbs);
+                asignarPropiedadesEmpleado(jsonNomina10lbs);
+                ordenarEmpleadosPorApellido(jsonNomina10lbs);
+                //calcularOlvidosTodosEmpleados(jsonNomina10lbs);
+                poblarSelectDepartamentos(jsonNomina10lbs); // Poblar el select dinámico
+                actualizarCabeceraNomina(jsonNomina10lbs);
                 refrescarTabla(); // Mostrar la tabla automáticamente con el primer filtro
                 initComponents();
-                console.log(jsonNomina40lbs);
+
+                console.log(jsonNomina10lbs);
+
 
             }
         },
@@ -620,22 +578,22 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
 /*
 Validacion 3: Sube Lista de Raya y la informacion se guarda en la base de datos
 Se ejecuta processExcelData() -> se procesa Lista de Raya -> se verifica si ya hay informacion guardada en la BD ->
-se ejecuta validarExistenciaTrabajadorBD(JsonNomina40lbs, JsonListaRaya) para obtener la informacion guardada previamente ->
+se ejecuta validarExistenciaTrabajadorBD(JsonNomina10lbs, JsonListaRaya) para obtener la informacion guardada previamente ->
 una vez obtenida la respuesta del servidor se combinan los datos del archivo actual con los datos guardados ->
 se ejecutan funciones para agregar empleados nuevos que esten en el archivo actual pero no en los datos guardados ->
-se ejecuta verificarEmpleadosSinSeguro(JsonNomina40lbs) para identificar empleados que estan en la BD pero no en la lista de raya (sin seguro) ->
-asignarPropiedadesEmpleado(jsonNomina40lbs) se asignan las propiedades necesarias a los empleados del departamento 40 y 10 libras y sin seguro->
-ordenarEmpleadosPorApellido(jsonNomina40lbs) se ordenan los empleados por apellido paterno dentro de cada departamento->
+se ejecuta verificarEmpleadosSinSeguro(JsonNomina10lbs) para identificar empleados que estan en la BD pero no en la lista de raya (sin seguro) ->
+asignarPropiedadesEmpleado(jsonNomina10lbs) se asignan las propiedades necesarias a los empleados del departamento 40 y 10 libras y sin seguro->
+ordenarEmpleadosPorApellido(jsonNomina10lbs) se ordenan los empleados por apellido paterno dentro de cada departamento->
 */
 
 
 // PASO 1: Validar existencia de trabajadores en la BD (se ejecuta al inicio del proceso) 
-function validarExistenciaTrabajadorBD(JsonNomina40lbs, JsonListaRaya) {
+function validarExistenciaTrabajadorBD(JsonNomina10lbs, JsonListaRaya) {
     // Array para almacenar todas las claves de empleados
     var clavesEmpleados = [];
 
     // Recorrer todos los departamentos
-    JsonNomina40lbs.departamentos.forEach(function (departamento) {
+    JsonNomina10lbs.departamentos.forEach(function (departamento) {
         // Recorrer todos los empleados de cada departamento
         departamento.empleados.forEach(function (empleado) {
             // Agregar la clave del empleado al array
@@ -658,22 +616,20 @@ function validarExistenciaTrabajadorBD(JsonNomina40lbs, JsonListaRaya) {
                 var clavesExistentes = response.existentes.map(emp => emp.clave);
 
                 // Filtrar empleados: solo dejar los que existen en BD (id_status=1 e id_empresa=1)
-                JsonNomina40lbs.departamentos.forEach(function (departamento) {
+                JsonNomina10lbs.departamentos.forEach(function (departamento) {
                     departamento.empleados = departamento.empleados.filter(function (empleado) {
                         return clavesExistentes.includes(String(empleado.clave));
                     });
                 });
 
                 // Quitar departamentos vacíos
-                JsonNomina40lbs.departamentos = JsonNomina40lbs.departamentos.filter(function (departamento) {
+                JsonNomina10lbs.departamentos = JsonNomina10lbs.departamentos.filter(function (departamento) {
                     return departamento.empleados.length > 0;
                 });
 
                 // Actualizar conceptos_copia y tarjeta_copia con los nuevos datos del Excel
                 // Solo para empleados con seguro social que existan en ambos JSON
-                JsonNomina40lbs.departamentos.forEach(function (departamentoBD) {
-                    if (departamentoBD.editar !== true) return;
-
+                JsonNomina10lbs.departamentos.forEach(function (departamentoBD) {
                     departamentoBD.empleados.forEach(function (empleadoBD) {
                         if (!empleadoBD.seguroSocial) return;
 
@@ -703,7 +659,7 @@ function validarExistenciaTrabajadorBD(JsonNomina40lbs, JsonListaRaya) {
                 });
 
                 // Agregar empleados nuevos del archivo Excel
-                agregarEmpleadosNuevos(JsonNomina40lbs, JsonListaRaya);
+                agregarEmpleadosNuevos(JsonNomina10lbs, JsonListaRaya);
             }
         },
         error: function (xhr, status, error) {
@@ -713,126 +669,99 @@ function validarExistenciaTrabajadorBD(JsonNomina40lbs, JsonListaRaya) {
     });
 }
 
-// PASO 2: Agregar empleados nuevos al jsonNomina40lbs (se ejecuta después de validar existencia en la BD) 
-// Esta funcion recibe el jsonNomina40lbs actualizado y el JsonListaRaya para identificar nuevos empleados
-function agregarEmpleadosNuevos(jsonNomina40lbs, JsonListaRaya) {
-    let empleadosNuevos = [];
+// PASO 2: Agregar empleados nuevos al jsonNomina10lbs (se ejecuta después de validar existencia en la BD) 
+// Esta funcion recibe el jsonNomina10lbs actualizado y el JsonListaRaya para identificar nuevos empleados
+function agregarEmpleadosNuevos(jsonNomina10lbs, jsonListaRaya) {
+    if (!jsonListaRaya || !jsonListaRaya.departamentos) return;
 
-    // Recopilar todas las claves de empleados guardados
-    let clavesGuardadas = new Set();
-    jsonNomina40lbs.departamentos.forEach(function (departamento) {
-        departamento.empleados.forEach(function (empleado) {
-            clavesGuardadas.add(String(empleado.clave));
+    let empleadosNuevosDetectados = [];
+    let clavesExistentes = new Set();
+
+    // 1. Mapear claves que ya tenemos en el JSON local
+    jsonNomina10lbs.departamentos.forEach(depto => {
+        depto.empleados.forEach(emp => {
+            clavesExistentes.add(String(emp.clave));
         });
     });
 
-    // Buscar empleados nuevos en el archivo Excel
-    JsonListaRaya.departamentos.forEach(function (deptoNuevo) {
-        deptoNuevo.empleados.forEach(function (empleadoNuevo) {
-            if (!clavesGuardadas.has(String(empleadoNuevo.clave))) {
-                // Este es un empleado nuevo
-                empleadosNuevos.push({
-                    empleado: empleadoNuevo,
-                    departamento_origen: deptoNuevo.nombre
-                });
+    // 2. Identificar nuevos candidatos desde el Excel
+    jsonListaRaya.departamentos.forEach(deptoExcel => {
+        deptoExcel.empleados.forEach(empExcel => {
+            if (!clavesExistentes.has(String(empExcel.clave))) {
+                empleadosNuevosDetectados.push(empExcel);
             }
         });
     });
 
-    if (empleadosNuevos.length > 0) {
-        // Extraer las claves de empleados nuevos para validar
-        const clavesNuevas = empleadosNuevos.map(item => item.empleado.clave);
-
-        // Validar empleados nuevos contra la base de datos
-        $.ajax({
-            url: '../php/validarExistenciaEmpleado.php',
-            type: 'POST',
-            data: {
-                claves: clavesNuevas,
-                case: 'validarEmpleadosNuevos'
-            },
-            dataType: 'json',
-            success: function (response) {
-                if (response.existentes && response.existentes.length > 0) {
-                    // Agregar empleados válidos a sus respectivos departamentos
-                    response.existentes.forEach(function (empValido) {
-                        // Encontrar el empleado nuevo completo
-                        const empleadoEncontrado = empleadosNuevos.find(item =>
-                            String(item.empleado.clave) === String(empValido.clave)
-                        );
-
-                        if (empleadoEncontrado) {
-                            // Actualizar datos básicos (Nombre siempre se actualiza desde BD)
-                            empleadoEncontrado.empleado.nombre = empValido.nombre;
-                            empleadoEncontrado.empleado.seguroSocial = true; // Por venir de Lista de Raya
-
-                            // LÓGICA HÍBRIDA DE ASIGNACIÓN:
-                            let deptoDestino = null;
-
-                            // 1. Fase 1: Intentar buscar por ID (Departamentos Oficiales)
-                            if (empValido.id_departamento) {
-                                deptoDestino = jsonNomina40lbs.departamentos.find(depto =>
-                                    depto.id_departamento && parseInt(depto.id_departamento) === parseInt(empValido.id_departamento)
-                                );
-
-                                if (deptoDestino) {
-                                    // Si entra en Fase 1, asignamos propiedades oficiales de BD
-                                    empleadoEncontrado.empleado.id_empresa = empValido.id_empresa;
-                                    empleadoEncontrado.empleado.id_departamento = empValido.id_departamento;
-                                    empleadoEncontrado.empleado.color_puesto = empValido.color_puesto ?? null;
-                                    empleadoEncontrado.empleado.biometrico = empValido.biometrico ?? null;
-                                }
-                            }
-
-                            // 2. Fase 2: Si no hay match por ID, intentar por Nombre (Departamentos Residuales)
-                            if (!deptoDestino) {
-                                // Quitar conceptos si entra en Fase 2 (Residual)
-                                delete empleadoEncontrado.empleado.conceptos;
-
-                                deptoDestino = jsonNomina40lbs.departamentos.find(depto =>
-                                    depto.nombre && depto.nombre.trim().toUpperCase() === empleadoEncontrado.departamento_origen.trim().toUpperCase()
-                                );
-
-                                if (!deptoDestino) {
-                                    // 3. Si tampoco existe por nombre, crearlo (Caso Adriana - Sin ID y sin editar: true)
-                                    deptoDestino = {
-                                        nombre: empleadoEncontrado.departamento_origen,
-                                        empleados: []
-                                    };
-                                    jsonNomina40lbs.departamentos.push(deptoDestino);
-                                }
-                            }
-
-                            // Agregar empleado al departamento encontrado o creado
-                            deptoDestino.empleados.push(empleadoEncontrado.empleado);
-                        }
-                    });
-
-                    // DESPUÉS de agregar todos, verificar empleados sin seguro
-                    verificarEmpleadosSinSeguro(jsonNomina40lbs);
-                    console.log(jsonNomina40lbs);
-
-                } else {
-                    // Si no hubo existentes válidos en BD, aún así revisar sin seguro y refrescar UI
-                    verificarEmpleadosSinSeguro(jsonNomina40lbs);
-                }
-            },
-            error: function (xhr, status, error) {
-                console.error('Error al validar empleados nuevos:', error);
-                verificarEmpleadosSinSeguro(jsonNomina40lbs);
-            }
-        });
-    } else {
-        // Si no hay empleados nuevos en el Excel, directamente revisar sin seguro
-        verificarEmpleadosSinSeguro(jsonNomina40lbs);
+    if (empleadosNuevosDetectados.length === 0) {
+        verificarEmpleadosSinSeguro(jsonNomina10lbs);
     }
+
+    const clavesNuevas = empleadosNuevosDetectados.map(e => e.clave);
+
+    // 3. Validar en la BD si estos empleados pertenecen a la nómina (Área y Depto correctos)
+    $.ajax({
+        url: '../php/validarExistenciaEmpleado.php',
+        type: 'POST',
+        data: {
+            claves: clavesNuevas,
+            case: 'validarEmpleadosNuevos'
+        },
+        dataType: 'json',
+        success: function (response) {
+            if (response.existentes && response.existentes.length > 0) {
+
+                response.existentes.forEach(empBD => {
+                    // Buscar el departamento destino en nuestro JSON por id_departamento
+                    let deptoDestino = jsonNomina10lbs.departamentos.find(d =>
+                        parseInt(d.id_departamento) === parseInt(empBD.id_departamento)
+                    );
+
+                    if (deptoDestino) {
+                        // Evitar duplicados si el empleado ya existe en el JSON
+                        const yaExiste = deptoDestino.empleados.some(e => String(e.clave) === String(empBD.clave));
+                        if (yaExiste) return;
+
+                        // Buscar el registro original de este empleado en los detectados del Excel para traer tarjeta y conceptos
+                        const empExcel = empleadosNuevosDetectados.find(e => String(e.clave) === String(empBD.clave));
+
+
+                        // Crear el objeto de empleado con la estructura estándar
+                        const nuevoEmpleado = {
+                            clave: empBD.clave,
+                            nombre: empBD.nombre,
+                            id_empresa: empBD.id_empresa,
+                            id_departamento: empBD.id_departamento,
+                            biometrico: empBD.biometrico,
+                            color_puesto: empBD.color_puesto ?? null,
+                            seguroSocial: true,
+                            tarjeta: empExcel ? (empExcel.tarjeta || 0) : 0,
+                            conceptos: empExcel ? (empExcel.conceptos || []) : [],
+                            
+                        };
+
+                        deptoDestino.empleados.push(nuevoEmpleado);
+
+                    }
+                });
+
+
+            }
+
+            // Paso 3: Lanzar la verificación de empleados sin seguro secuencialmente
+            verificarEmpleadosSinSeguro(jsonNomina10lbs);
+        },
+        error: function (xhr, status, error) {
+            console.error('Error en la validación de empleados nuevos:', error);
+        }
+    });
 }
 
 
-function verificarEmpleadosSinSeguro(jsonNomina40lbs) {
+function verificarEmpleadosSinSeguro(jsonNomina10lbs) {
     // Recopilar todas las claves de empleados en la nómina actual
     let clavesNomina = new Set();
-    jsonNomina40lbs.departamentos.forEach(function (departamento) {
+    jsonNomina10lbs.departamentos.forEach(function (departamento) {
         departamento.empleados.forEach(function (empleado) {
             clavesNomina.add(String(empleado.clave || "").trim());
         });
@@ -859,7 +788,7 @@ function verificarEmpleadosSinSeguro(jsonNomina40lbs) {
                     const idDepto = parseInt(empSinSeguro.id_departamento);
 
                     // Buscar departamento destino en la nómina por ID
-                    let deptoDestino = jsonNomina40lbs.departamentos.find(d =>
+                    let deptoDestino = jsonNomina10lbs.departamentos.find(d =>
                         d.id_departamento && parseInt(d.id_departamento) === idDepto
                     );
 
@@ -887,22 +816,22 @@ function verificarEmpleadosSinSeguro(jsonNomina40lbs) {
             }
 
             // FINALIZACIÓN: Asignar propiedades, ordenar, guardar y refrescar UI
-            asignarPropiedadesEmpleado(jsonNomina40lbs);
-            ordenarEmpleadosPorApellido(jsonNomina40lbs);
-            initComponents();
+            asignarPropiedadesEmpleado(jsonNomina10lbs);
+            ordenarEmpleadosPorApellido(jsonNomina10lbs);
+             initComponents();
 
-            if (typeof saveNomina === 'function') {
-                saveNomina(jsonNomina40lbs);
-            }
+          /*  if (typeof saveNomina === 'function') {
+                saveNomina(jsonNomina10lbs);
+            }*/
 
-            actualizarCabeceraNomina(jsonNomina40lbs);
-            poblarSelectDepartamentos(jsonNomina40lbs);
+            actualizarCabeceraNomina(jsonNomina10lbs);
+            poblarSelectDepartamentos(jsonNomina10lbs);
             refrescarTabla();
         },
         error: function (xhr, status, error) {
             console.error('Error al obtener empleados sin seguro:', error);
             // Intentar finalizar incluso con error en este paso
-            poblarSelectDepartamentos(jsonNomina40lbs);
+            poblarSelectDepartamentos(jsonNomina10lbs);
             refrescarTabla();
         }
     });
@@ -915,11 +844,11 @@ function verificarEmpleadosSinSeguro(jsonNomina40lbs) {
 // FUNCIONES AUXILIARES
 
 // Función para asignar propiedades necesarias a empleados de departamentos específicos
-function asignarPropiedadesEmpleado(jsonNomina40lbs) {
-    if (!jsonNomina40lbs || !Array.isArray(jsonNomina40lbs.departamentos)) return;
+function asignarPropiedadesEmpleado(jsonNomina10lbs) {
+    if (!jsonNomina10lbs || !Array.isArray(jsonNomina10lbs.departamentos)) return;
 
     // Recorrer todos los departamentos
-    jsonNomina40lbs.departamentos.forEach(departamento => {
+    jsonNomina10lbs.departamentos.forEach(departamento => {
         if (!Array.isArray(departamento.empleados)) return;
 
         departamento.empleados.forEach(empleado => {
@@ -935,46 +864,40 @@ function asignarPropiedadesEmpleado(jsonNomina40lbs) {
                 empleado.tarjeta_copia = empleado.tarjeta;
             }
 
-            // --- PROPIEDADES DE NÓMINA (Solo para departamentos con editar: true) ---
-            if (departamento.editar === true) {
-                // Inicializar registros como array vacío si no existen
-                if (!empleado.registros || !Array.isArray(empleado.registros)) {
-                    empleado.registros = [];
+            // --- PROPIEDADES DE NÓMINA ---
+
+            // Inicializar registros como array vacío si no existen
+            if (!empleado.registros || !Array.isArray(empleado.registros)) {
+                empleado.registros = [];
+            }
+
+            // Agregar o mantener las propiedades necesarias (no sobrescribir si ya vienen de la BD)
+            empleado.sueldo_neto = empleado.sueldo_neto ?? 0;
+            empleado.color_puesto = empleado.color_puesto ?? null;
+            empleado.sueldo_extra_total = empleado.sueldo_extra_total ?? 0;
+            empleado.prestamo = empleado.prestamo ?? 0;
+            empleado.permiso = empleado.permiso ?? 0;
+            empleado.inasistencia = empleado.inasistencia ?? 0;
+            empleado.uniformes = empleado.uniformes ?? 0;
+            empleado.checador = empleado.checador ?? 0;
+            empleado.fa_gafet_cofia = empleado.fa_gafet_cofia ?? 0;
+            empleado.total_cobrar = empleado.total_cobrar ?? 0;
+            empleado.redondeo = empleado.redondeo ?? 0;
+            empleado.redondeo_activo = empleado.redondeo_activo ?? false;
+
+            // Crear array de conceptos solo si tiene seguro social
+            if (empleado.seguroSocial) {
+                if (!empleado.conceptos || !Array.isArray(empleado.conceptos)) {
+                    empleado.conceptos = [
+                        { codigo: "45", resultado: '' },   // ISR
+                        { codigo: "52", resultado: '' },   // IMSS
+                        { codigo: "16", resultado: '' },   // Infonavit
+                        { codigo: "107", resultado: '' }   // Ajuste al Sub
+                    ];
                 }
-
-                // Agregar o mantener las propiedades necesarias (no sobrescribir si ya vienen de la BD)
-                empleado.sueldo_neto = empleado.sueldo_neto ?? 0;
-                empleado.incentivo = empleado.incentivo ?? 0;
-                empleado.horas_extra = empleado.horas_extra ?? 0;
-                empleado.bono_antiguedad = empleado.bono_antiguedad ?? 0;
-                empleado.actividades_especiales = empleado.actividades_especiales ?? 0;
-                empleado.color_puesto = empleado.color_puesto ?? null;
-                empleado.sueldo_extra_total = empleado.sueldo_extra_total ?? 0;
-                empleado.prestamo = empleado.prestamo ?? 0;
-                empleado.permiso = empleado.permiso ?? 0;
-                empleado.inasistencia = empleado.inasistencia ?? 0;
-                empleado.uniformes = empleado.uniformes ?? 0;
-                empleado.checador = empleado.checador ?? 0;
-                empleado.fa_gafet_cofia = empleado.fa_gafet_cofia ?? 0;
-                empleado.total_cobrar = empleado.total_cobrar ?? 0;
-                empleado.id_empresa = empleado.id_empresa ?? null;
-                empleado.redondeo = empleado.redondeo ?? 0;
-                empleado.redondeo_activo = empleado.redondeo_activo ?? false;
-
-                // Crear array de conceptos solo si tiene seguro social
-                if (empleado.seguroSocial) {
-                    if (!empleado.conceptos || !Array.isArray(empleado.conceptos)) {
-                        empleado.conceptos = [
-                            { codigo: "45", resultado: '' },   // ISR
-                            { codigo: "52", resultado: '' },   // IMSS
-                            { codigo: "16", resultado: '' },   // Infonavit
-                            { codigo: "107", resultado: '' }   // Ajuste al Sub
-                        ];
-                    }
-                    // Crear copias solo si NO existen ya (para no pisar las actualizadas en Validación 3)
-                    if (!empleado.conceptos_copia || !Array.isArray(empleado.conceptos_copia)) {
-                        empleado.conceptos_copia = JSON.parse(JSON.stringify(empleado.conceptos));
-                    }
+                // Crear copias solo si NO existen ya (para no pisar las actualizadas en Validación 3)
+                if (!empleado.conceptos_copia || !Array.isArray(empleado.conceptos_copia)) {
+                    empleado.conceptos_copia = JSON.parse(JSON.stringify(empleado.conceptos));
                 }
             }
         });

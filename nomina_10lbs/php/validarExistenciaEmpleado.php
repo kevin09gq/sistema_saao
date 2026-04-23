@@ -1,6 +1,14 @@
 <?php
 require_once '../../conexion/conexion.php';
 
+// Evitar que warnings/avisos rompan el JSON de respuesta
+ini_set('display_errors', 0);
+error_reporting(0);
+
+// Forzar cabecera JSON
+header('Content-Type: application/json; charset=UTF-8');
+
+
 switch ($_SERVER['REQUEST_METHOD']) {
     case 'POST':
         // Verificar que se enviaron las claves
@@ -86,7 +94,12 @@ function validarExistenciaTrabajador()
     $sql = "SELECT ie.clave_empleado, ie.nombre, ie.ap_paterno, ie.ap_materno, ie.id_departamento, ie.biometrico, ie.id_empresa, pe.color_hex AS color_puesto
             FROM info_empleados ie
             LEFT JOIN puestos_especiales pe ON pe.id_puestoEspecial = ie.id_puestoEspecial
-            WHERE ie.clave_empleado IN ($clavesString) AND ie.id_status = 1 AND ie.id_empresa = 1";
+            WHERE ie.clave_empleado IN ($clavesString) 
+            AND ie.id_status = 1 
+            AND ie.id_empresa = 1
+            AND ie.id_area = (SELECT n.id_area FROM nombre_nominas n WHERE n.id_nomina = 2)
+            AND ie.id_departamento IN (SELECT nd.id_departamento FROM nomina_departamento nd WHERE nd.id_nomina = 2)";
+
     $result = mysqli_query($conexion, $sql);
 
     // Procesar resultados
@@ -134,8 +147,8 @@ function obtenerEmpleadosSinSeguro()
             LEFT JOIN puestos_especiales pe ON pe.id_puestoEspecial = ie.id_puestoEspecial
             WHERE ie.id_status = 1 
             AND ie.id_empresa = 1
-            AND ie.id_area = (SELECT n.id_area FROM nombre_nominas n WHERE n.id_nomina = 1)
-            AND ie.id_departamento IN (SELECT nd.id_departamento FROM nomina_departamento nd WHERE nd.id_nomina = 1)
+            AND ie.id_area = (SELECT n.id_area FROM nombre_nominas n WHERE n.id_nomina = 2)
+            AND ie.id_departamento IN (SELECT nd.id_departamento FROM nomina_departamento nd WHERE nd.id_nomina = 2)
             AND ie.status_nss = 0";
 
     $result = mysqli_query($conexion, $sql);
@@ -149,7 +162,6 @@ function obtenerEmpleadosSinSeguro()
                 'nombre' => $row['ap_paterno'] . ' ' . $row['ap_materno'] . ' ' . $row['nombre'],
                 'id_empresa' => $row['id_empresa'],
                 'id_departamento' => $row['id_departamento'],
-                'nombre_departamento' => $row['nombre_departamento'] ?? "Sin Departamento",
                 'biometrico' => $row['biometrico'],
                 'color_puesto' => $row['color_puesto']
             ];
@@ -210,8 +222,8 @@ function validarEmpleadosSinSeguroBiometrico()
             LEFT JOIN puestos_especiales pe ON pe.id_puestoEspecial = ie.id_puestoEspecial
             WHERE ie.id_status = 1 
             AND ie.id_empresa = 1
-            AND ie.id_area = (SELECT n.id_area FROM nombre_nominas n WHERE n.id_nomina = 1)
-            AND ie.id_departamento IN (SELECT nd.id_departamento FROM nomina_departamento nd WHERE nd.id_nomina = 1)
+            AND ie.id_area = (SELECT n.id_area FROM nombre_nominas n WHERE n.id_nomina = 2)
+            AND ie.id_departamento IN (SELECT nd.id_departamento FROM nomina_departamento nd WHERE nd.id_nomina = 2)
             AND ie.status_nss = 0";
 
     $result = mysqli_query($conexion, $sql);
@@ -225,7 +237,6 @@ function validarEmpleadosSinSeguroBiometrico()
                 'nombre' => $row['ap_paterno'] . ' ' . $row['ap_materno'] . ' ' . $row['nombre'],
                 'id_empresa' => $row['id_empresa'],
                 'id_departamento' => $row['id_departamento'],
-                'nombre_departamento' => $row['nombre_departamento'] ?? "Sin Departamento",
                 'biometrico' => $row['biometrico'],
                 'color_puesto' => $row['color_puesto']
             ];
@@ -326,7 +337,12 @@ function validarEmpleadosNuevos()
     $sql = "SELECT ie.clave_empleado, ie.nombre, ie.ap_paterno, ie.ap_materno, ie.id_departamento, ie.biometrico, ie.id_empresa, pe.color_hex AS color_puesto
             FROM info_empleados ie
             LEFT JOIN puestos_especiales pe ON pe.id_puestoEspecial = ie.id_puestoEspecial
-            WHERE ie.clave_empleado IN ($clavesString) AND ie.id_status = 1 AND ie.id_empresa = 1";
+            WHERE ie.clave_empleado IN ($clavesString) 
+            AND ie.id_status = 1 
+            AND ie.id_empresa = 1
+            AND ie.id_area = (SELECT n.id_area FROM nombre_nominas n WHERE n.id_nomina = 2)
+            AND ie.id_departamento IN (SELECT nd.id_departamento FROM nomina_departamento nd WHERE nd.id_nomina = 2)";
+
 
     $result = mysqli_query($conexion, $sql);
 
@@ -363,8 +379,8 @@ function obtenerDepartamentosNomina()
 {
     global $conexion;
 
-    // Obtener id_nomina del query string (default 4 para Relicario)
-    $idNomina = isset($_GET['id_nomina']) ? intval($_GET['id_nomina']) : 4;
+    // Obtener id_nomina del query string (default 4 para 10lbs)
+    $idNomina = isset($_GET['id_nomina']) ? intval($_GET['id_nomina']) : 2;
 
     // Verificar conexión
     if (!$conexion) {
@@ -419,12 +435,10 @@ function obtenerDepartamentosNomina()
             ];
         }
 
-        echo json_encode([
-            'departamentos' => $departamentos
-        ], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['departamentos' => $departamentos], JSON_UNESCAPED_UNICODE);
     } else {
         echo json_encode([
-            'error' => 'Error en la consulta: ' . mysqli_error($conexion),
+            'error' => 'Error al obtener resultados: ' . mysqli_error($conexion),
             'departamentos' => []
         ]);
     }

@@ -425,6 +425,19 @@ CREATE TABLE nomina_40lbs(
 
 
 -- =============================
+-- TABLAS DE NÓMINA 40 LBS
+-- =============================
+
+CREATE TABLE nomina_10lbs(
+    id_nomina_10lbs INT AUTO_INCREMENT PRIMARY KEY,
+    id_empresa INT NOT NULL,
+    anio INT NOT NULL,
+    numero_semana INT NOT NULL,
+    nomina_10lbs LONGTEXT NOT NULL,
+    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+-- =============================
 -- TABLAS DE NÓMINA CONFIANZA
 -- =============================
 
