@@ -6,13 +6,13 @@ $(document).ready(function () {
 
     processExcelData();
 
-    /* Si no se logra restaurar una nómina previa, mostrar el contenedor de carga
+    // Si no se logra restaurar una nómina previa, mostrar el contenedor de carga
     if (!restoreNomina()) {
         $("#container-nomina_10lbs").removeAttr("hidden");
-    }*/
+    }
 
     confirmarsaveNomina();
-    // limpiarCamposNomina();
+    limpiarCamposNomina();
     console.log(jsonNomina10lbs);
 
 });

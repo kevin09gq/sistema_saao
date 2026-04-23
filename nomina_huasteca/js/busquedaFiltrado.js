@@ -24,11 +24,18 @@ function obtenerDepartamentos() {
             const data = response.data;
 
             // Se agrega el departamento de Corte de forma manual (id_area 2), ya que no se encuentra en la base de datos de Huasteca (area 3)
-            data.push({
-                "id_departamento": 800,
-                "nombre_departamento": "Corte",
-                "id_area": 2
-            });
+            data.push(
+                {
+                    "id_departamento": 800,
+                    "nombre_departamento": "Corte",
+                    "id_area": 2
+                },
+                {
+                    "id_departamento": 801,
+                    "nombre_departamento": "Poda",
+                    "id_area": 2
+                }
+            );
 
             let tmp = '';
 
@@ -86,39 +93,55 @@ function seleccionarDepartamento() {
 
         let id_departamento = parseInt($(this).val());
 
-        if (id_departamento !== 800) {
-            // Se muestra la tabla de nomina normal
-            $("#tabla-nomina-container-huasteca").prop("hidden", false);
-            // Se oculta la tabla de corte
-            $("#tabla-corte-container-huasteca").prop("hidden", true);
+        switch (id_departamento) {
+            case 800:
+                // Se oculta la tabla de nomina normal
+                $("#tabla-nomina-container-huasteca").prop("hidden", true);
+                // Se oculta la tabla de Poda
+                $("#tabla_poda_container").prop("hidden", true);
+                // Se muestra la tabla de corte
+                $("#tabla-corte-container-huasteca").prop("hidden", false);
+                mostrarDatosTablaCorte(jsonNominaHuasteca);
+                break;
 
-            // Determinar si es un departamento de administrativos (tipo_horario 1)
-            const depaObjeto = jsonNominaHuasteca.departamentos.find(d => 
-                d.empleados && d.empleados.some(e => e.id_departamento == id_departamento)
-            );
-            
-            if (depaObjeto) {
-                const primerEmpleado = depaObjeto.empleados.find(e => e.id_departamento == id_departamento);
-                if (primerEmpleado && parseInt(primerEmpleado.tipo_horario) === 1) {
-                    $('#tabla-nomina-container-huasteca').addClass('modo-confianza');
-                } else {
-                    $('#tabla-nomina-container-huasteca').removeClass('modo-confianza');
+            case 801:
+                // Se oculta la tabla de nomina normal
+                $("#tabla-nomina-container-huasteca").prop("hidden", true);
+                // Se oculta la tabla de corte
+                $("#tabla-corte-container-huasteca").prop("hidden", true);
+                // Se muestra la tabla de Poda
+                $("#tabla_poda_container").prop("hidden", false);
+                mostrarDatosTablaPoda(jsonNominaHuasteca);
+                break;
+
+            default:
+                // Se muestra la tabla de nomina normal
+                $("#tabla-nomina-container-huasteca").prop("hidden", false);
+                // Se oculta la tabla de corte
+                $("#tabla-corte-container-huasteca").prop("hidden", true);
+                // Se oculta la tabla de Poda
+                $("#tabla_poda_container").prop("hidden", true);
+
+                // Determinar si es un departamento de administrativos (tipo_horario 1)
+                const depaObjeto = jsonNominaHuasteca.departamentos.find(d =>
+                    d.empleados && d.empleados.some(e => e.id_departamento == id_departamento)
+                );
+
+                if (depaObjeto) {
+                    const primerEmpleado = depaObjeto.empleados.find(e => e.id_departamento == id_departamento);
+                    if (primerEmpleado && parseInt(primerEmpleado.tipo_horario) === 1) {
+                        $('#tabla-nomina-container-huasteca').addClass('modo-confianza');
+                    } else {
+                        $('#tabla-nomina-container-huasteca').removeClass('modo-confianza');
+                    }
                 }
-            }
 
-            // Filtrar el JSON por el departamento seleccionado
-            let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaHuasteca, id_departamento);
-            obtenerPuestos(id_departamento);
-            window.paginaActualNomina = 1; // Resetear a página 1
-            mostrarDatosTabla(jsonFiltrado);
-        } else {
-            // Se oculta la tabla de nomina normal
-            $("#tabla-nomina-container-huasteca").prop("hidden", true);
-            // Se muestra la tabla de corte
-            $("#tabla-corte-container-huasteca").prop("hidden", false);
-
-            mostrarDatosTablaCorte(jsonNominaHuasteca);
-
+                // Filtrar el JSON por el departamento seleccionado
+                let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaHuasteca, id_departamento);
+                obtenerPuestos(id_departamento);
+                window.paginaActualNomina = 1; // Resetear a página 1
+                mostrarDatosTabla(jsonFiltrado);
+                break;
         }
 
     });
@@ -189,10 +212,10 @@ function aplicarFiltrosActuales() {
     }
 
     // Determinar si es un departamento de administrativos (tipo_horario 1)
-    const depaObjeto = jsonNominaHuasteca.departamentos.find(d => 
+    const depaObjeto = jsonNominaHuasteca.departamentos.find(d =>
         d.empleados && d.empleados.some(e => e.id_departamento == id_departamento)
     );
-    
+
     if (depaObjeto) {
         const primerEmpleado = depaObjeto.empleados.find(e => e.id_departamento == id_departamento);
         if (primerEmpleado && parseInt(primerEmpleado.tipo_horario) === 1) {

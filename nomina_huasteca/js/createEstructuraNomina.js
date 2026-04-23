@@ -236,6 +236,9 @@ function validarExistenciaTrabajadorBD(jsonNominaHuasteca) {
                         return;
                     }
 
+                    // Si es Poda, no filtrar contra BD (el flujo de Poda es manual)
+                    if (departamento.nombre === "Poda") return;
+
                     departamento.empleados = departamento.empleados.filter(function (empleado) {
                         return clavesExistentes.includes(String(empleado.clave));
                     });

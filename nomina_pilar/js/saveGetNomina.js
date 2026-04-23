@@ -23,9 +23,12 @@ function saveNominaPilar() {
 
     // Obtener el dep Corte por separado
     const departamentoCorte = jsonNominaPilar.departamentos.find(d => d.nombre === "Corte");
-    // Obtener empleados del dep. Corte
     const empleadosCorte = departamentoCorte ? departamentoCorte.empleados : [];
-    
+
+    // Obtener el dep Poda por separado
+    const departamentoPoda = jsonNominaPilar.departamentos.find(d => d.nombre === "Poda");
+    const empleadosPoda = departamentoPoda ? departamentoPoda.empleados : [];
+
 
 
     // IMPORTANTE: Usar fecha_cierre para determinar el año (NO fecha_inicio)
@@ -59,6 +62,7 @@ function saveNominaPilar() {
             anio: anio,
             nomina: JSON.stringify(jsonData),
             corte: JSON.stringify(empleadosCorte), // Enviar solo los empleados del departamento de Corte
+            poda: JSON.stringify(empleadosPoda), // Enviar solo los empleados del departamento de Poda
             actualizar: true,
             case: 'guardarNominaPilar' // Agregar el caso para identificar la función en el servidor
         }),

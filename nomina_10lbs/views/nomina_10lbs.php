@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="../css/tablaNomina.css">
     <link rel="stylesheet" href="../css/modal10lbs.css">
     <link rel="stylesheet" href="../css/conceptos_totales.css">
- 
+
 
     <!-- SweetAlert2 CSS -->
     <script src="<?= SWEETALERT ?>"></script>
@@ -26,10 +26,10 @@
     <?php
     // Incluir el navbar (config.php ya fue incluido en el head)
     include "../../public/views/navbar.php"
-        ?>
+    ?>
 
     <!-- Contenedor principal centrado -->
-    <div class="container-nomina_10lbs" id="container-nomina_10lbs">
+    <div class="container-nomina_10lbs" id="container-nomina_10lbs" hidden>
         <!-- Contenedor tipo navbar para formulario y filtros -->
         <div class="navbar-nomina_10lbs">
             <div class="titulo-nomina_10lbs">Procesamiento de Nómina</div>
@@ -213,10 +213,7 @@
     <script src="../js/configComponentes.js"></script>
     <script src="../js/showDataTable.js"></script>
     <script src="../js/filtroBusqueda.js"></script>
-
-
-
-
+    <script src="../js/storage.js"></script>
 
 </body>
 

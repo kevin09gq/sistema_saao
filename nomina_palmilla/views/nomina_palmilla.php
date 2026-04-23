@@ -34,7 +34,7 @@
     <?php
     // Incluir el navbar (config.php ya fue incluido en el head)
     include "../../public/views/navbar.php"
-        ?>
+    ?>
 
     <!-- Contenedor principal centrado -->
     <div class="container-nomina_palmilla" id="container-nomina_palmilla" hidden>
@@ -224,7 +224,7 @@
     </div>
 
     <div class="container-tabla-nomina-palmilla" id="tabla-nomina-responsive" hidden>
-         <div class="header-tabla-palmilla">
+        <div class="header-tabla-palmilla">
             <div class="header-titulo-semana">
                 <h3 id=nombre_nomina></h3>
                 <span class="sem-info-palmilla" id="num_semana"></span>
@@ -423,6 +423,34 @@
             </div>
         </div>
 
+        <div id="tabla_poda_container" class="tabla-nomina-container-palmilla-corte" hidden>
+            <div class="table-responsive-palmilla-corte">
+                <table class="table-nomina-palmilla-corte" id="tabla_poda">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">#</th>
+                            <th rowspan="2">NOMBRE</th>
+                            <th rowspan="2">CONCEPTO</th>
+                            <th rowspan="2">V</th>
+                            <th rowspan="2">SA</th>
+                            <th rowspan="2">DO</th>
+                            <th rowspan="2">L</th>
+                            <th rowspan="2">MA</th>
+                            <th rowspan="2">MI</th>
+                            <th rowspan="2">J</th>
+                            <th rowspan="2">TOTAL<br>ARBOLES</th>
+                            <th rowspan="2">PAGO</th>
+                            <th rowspan="2">TOTAL<br>EFECTIVO</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla_body_poda">
+                        <!-- Filas de la tabla se generarán dinámicamente -->
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+
     </div>
 
     <!-- Menú contextual simple para la tabla -->
@@ -434,6 +462,11 @@
     <div id="context_menu_corte"
         style="position:absolute;z-index:10000;display:none;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);padding:4px;">
         <div class="cm_item_corte" data-action="ver" style="padding:6px 12px;cursor:pointer;">🔎​ Ver detalles</div>
+    </div>
+    <!-- Menú contextual simple para la tabla de poda -->
+    <div id="context_menu_poda"
+        style="position:absolute;z-index:10000;display:none;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);padding:4px;">
+        <div class="cm_item_poda" data-action="ver" style="padding:6px 12px;cursor:pointer;">🔎​ Ver detalles</div>
     </div>
 
     <!-- Incluir los modales -->
@@ -456,6 +489,11 @@
     <?php include "modals/modalCorte.php"; ?>
     <?php include "modals/modalCorteNominaEditar.php"; ?>
     <?php include "modals/modalCorteEditar.php"; ?>
+
+    <!-- Modal para la poda -->
+    <?php include __DIR__ . "/modalsPoda/modalPoda.php"; ?>
+    <?php include __DIR__ . "/modalsPoda/modalPodaDetalles.php"; ?>
+    <?php include __DIR__ . "/modalsPoda/modalPodaDetallesExtra.php"; ?>
 
 
 
@@ -510,6 +548,10 @@
     <script src="../js/configModalCorte/configCorte.js"></script>
     <script src="../js/configModalCorte/showTablaCorte.js"></script>
     <script src="../js/configModalCorte/abrirModalDetallesCorte.js"></script>
+
+    <script src="../js/configModalPoda/config_poda.js"></script>
+    <script src="../js/configModalPoda/tabla_poda.js"></script>
+    <script src="../js/configModalPoda/detalles_modal.js"></script>
 
 
 </body>

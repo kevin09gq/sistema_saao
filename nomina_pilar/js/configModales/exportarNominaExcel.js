@@ -24,7 +24,7 @@ function cargarDepartamentosExportar() {
 
     jsonNominaPilar.departamentos.forEach(depto => {
         // Omitir el departamento de Corte porque es una opción estática fuera de esta lista
-        if (depto.nombre.toUpperCase() === 'CORTE') return;
+        if (depto.nombre.toUpperCase() === 'CORTE' || depto.nombre.toUpperCase() === 'PODA') return;
 
         const btnHtml = `
        
@@ -60,10 +60,16 @@ function exportarNominaDepartamento() {
         let tmp_url = "";
 
 
-        if (deptoNombre == "Corte") {
-            tmp_url = '../php/exportarNomina/exportarNominaCorte.php';
-        } else {
-            tmp_url = '../php/exportarNomina/exportarNominaDepartamento.php';
+        switch (deptoNombre) {
+            case "Corte":
+                tmp_url = '../php/exportarNomina/exportarNominaCorte.php';
+                break;
+            case "Poda":
+                tmp_url = '../php/exportarNomina/exportarNominaPoda.php';
+                break;
+            default:
+                tmp_url = '../php/exportarNomina/exportarNominaDepartamento.php';
+                break;
         }
 
         // Validar que jsonNominaPilar exista

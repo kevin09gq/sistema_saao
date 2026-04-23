@@ -583,6 +583,8 @@ function validarExistenciaTrabajadorBD(jsonNominaPilar, JsonListaRaya) {
                 jsonNominaPilar.departamentos.forEach(function (departamento) {
                     // Si es Corte, no filtrar contra BD (el flujo de corte es manual)
                     if (departamento.nombre === "Corte") return;
+                      // Si es Poda, no filtrar contra BD (el flujo de Poda es manual)
+                    if (departamento.nombre === "Poda") return;
 
                     departamento.empleados = departamento.empleados.filter(function (empleado) {
                         return clavesExistentes.includes(String(empleado.clave));

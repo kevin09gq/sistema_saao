@@ -26,45 +26,63 @@ $(document).ready(function () {
 
 
 /**
- * Obtiene un rango de fechas entre dos fechas dadas
- * @param {String} inicioStr 
- * @param {String} finStr 
+ * Obtiene un rango de fechas entre dos fechas
+ * @param {String} inicioStr Fecha de inicio
+ * @param {String} finStr Fecha de cierre
+ * @param {Boolean} formatoCorto (true = 10/Ene/2026, false = 2026-01-10)
  * @returns 
  */
-function obtenerRangoFechas(inicioStr, finStr) {
+function obtenerRangoFechas(inicioStr, finStr, formatoCorto = true) {
     const meses = {
         Ene: 0, Feb: 1, Mar: 2, Abr: 3, May: 4, Jun: 5,
         Jul: 6, Ago: 7, Sep: 8, Oct: 9, Nov: 10, Dic: 11
     };
 
-    const mesesInv = Object.keys(meses); // ["Ene","Feb",...]
+    const mesesInv = Object.keys(meses);
 
-    // Función para convertir "12/Ene/2026" a Date
-    function parseFecha(str) {
+    // Convertir "12/Ene/2026" a Date (LOCAL)
+    function parseFechaCorta(str) {
         const [dia, mesAbrev, anio] = str.split("/");
-        return new Date(anio, meses[mesAbrev], dia);
+        return new Date(Number(anio), meses[mesAbrev], Number(dia));
     }
 
-    // Función para formatear Date a "12/Ene/2026"
-    function formatearFecha(date) {
+    // Convertir "2026-01-12" a Date (LOCAL, sin UTC)
+    function parseFechaISO(str) {
+        const [anio, mes, dia] = str.split("-");
+        return new Date(Number(anio), Number(mes) - 1, Number(dia));
+    }
+
+    // Formato corto: "12/Ene/2026"
+    function formatearFechaCorta(date) {
         const dia = date.getDate();
         const mesAbrev = mesesInv[date.getMonth()];
         const anio = date.getFullYear();
         return `${dia}/${mesAbrev}/${anio}`;
     }
 
-    // Función para dar o quitar dias a una fecha
+    // Formato ISO: "2026-01-12"
+    function formatearFechaISO(date) {
+        const anio = date.getFullYear();
+        const mes = String(date.getMonth() + 1).padStart(2, '0');
+        const dia = String(date.getDate()).padStart(2, '0');
+        return `${anio}-${mes}-${dia}`;
+    }
+
     function moverDias(fecha, dias) {
         const nueva = new Date(fecha);
         nueva.setDate(nueva.getDate() + dias);
         return nueva;
     }
 
-    // Convertir las fechas de inicio y fin a objetos Date
-    let inicio = parseFecha(inicioStr);
-    let fin = parseFecha(finStr);
+    // Detectar formato de entrada automáticamente
+    function esFormatoISO(str) {
+        return str.includes("-");
+    }
 
-    // Quitar un día tanto al inicio como al fin
+    let inicio = esFormatoISO(inicioStr) ? parseFechaISO(inicioStr) : parseFechaCorta(inicioStr);
+    let fin = esFormatoISO(finStr) ? parseFechaISO(finStr) : parseFechaCorta(finStr);
+
+    // Mantengo tu lógica original (restar 1 día)
     inicio = moverDias(inicio, 0);
     fin = moverDias(fin, 0);
 
@@ -72,7 +90,11 @@ function obtenerRangoFechas(inicioStr, finStr) {
     let actual = new Date(inicio);
 
     while (actual <= fin) {
-        resultado.push(formatearFecha(actual));
+        resultado.push(
+            formatoCorto
+                ? formatearFechaCorta(actual)
+                : formatearFechaISO(actual)
+        );
         actual.setDate(actual.getDate() + 1);
     }
 

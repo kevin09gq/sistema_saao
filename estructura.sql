@@ -547,13 +547,40 @@ CREATE TABLE cortes_pilar (
 
 -- Crear tabla cortes_pilar_tablas
 CREATE TABLE cortes_pilar_tablas (
-  id_corte INT(11) NOT NULL,
-  num_tabla INT(11) NOT NULL,
-  rejas INT(11) NOT NULL,
+  id_corte INT NOT NULL,
+  num_tabla INT NOT NULL,
+  rejas INT NOT NULL,
   FOREIGN KEY (id_corte) 
     REFERENCES cortes_pilar(id)
     ON UPDATE CASCADE 
     ON DELETE CASCADE
+);
+
+-- Tabla principal: podas_pilar
+CREATE TABLE podas_pilar (
+    id_poda INT AUTO_INCREMENT PRIMARY KEY,
+    id_nomina INT NOT NULL,
+    nombre_empleado VARCHAR(150) NOT NULL,
+    fecha_creacion DATETIME NOT NULL,
+    FOREIGN KEY (id_nomina)
+        REFERENCES nomina_pilar (id_nomina_pilar)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
+
+-- Tabla de movimientos: podas_movimientos_pilar
+CREATE TABLE podas_movimientos_pilar (
+    id_movimiento INT AUTO_INCREMENT PRIMARY KEY,
+    id_poda INT NOT NULL,
+    concepto VARCHAR(150) DEFAULT 'PODA',
+    fecha DATE NOT NULL,
+    arboles_podados INT NOT NULL,
+    monto DECIMAL(10,2) NOT NULL,
+    es_extra BOOLEAN DEFAULT 0,
+    FOREIGN KEY (id_poda)
+        REFERENCES podas_pilar (id_poda)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 
 -- =============================
@@ -595,6 +622,31 @@ CREATE TABLE cortes_huasteca_tablas (
     ON DELETE CASCADE
 );
 
+CREATE TABLE podas_huasteca (
+    id_poda INT AUTO_INCREMENT PRIMARY KEY,
+    id_nomina INT NOT NULL,
+    nombre_empleado VARCHAR(150) NOT NULL,
+    fecha_creacion DATETIME NOT NULL,
+    FOREIGN KEY (id_nomina)
+        REFERENCES nomina_huasteca (id_nomina_huasteca)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
+
+-- Tabla de movimientos: podas_movimientos_huasteca
+CREATE TABLE podas_movimientos_huasteca (
+    id_movimiento INT AUTO_INCREMENT PRIMARY KEY,
+    id_poda INT NOT NULL,
+    concepto VARCHAR(150) DEFAULT 'PODA',
+    fecha DATE NOT NULL,
+    arboles_podados INT NOT NULL,
+    monto DECIMAL(10,2) NOT NULL,
+    es_extra BOOLEAN DEFAULT 0,
+    FOREIGN KEY (id_poda)
+        REFERENCES podas_huasteca (id_poda)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
 -- =============================
 -- TABLAS DE NÓMINA PALMILLA
 -- =============================
@@ -634,6 +686,32 @@ CREATE TABLE cortes_palmilla_tablas (
     ON DELETE CASCADE
 );
 
+-- Tabla principal: podas_palmilla
+CREATE TABLE podas_palmilla (
+    id_poda INT AUTO_INCREMENT PRIMARY KEY,
+    id_nomina INT NOT NULL,
+    nombre_empleado VARCHAR(150) NOT NULL,
+    fecha_creacion DATETIME NOT NULL,
+    FOREIGN KEY (id_nomina)
+        REFERENCES nomina_palmilla (id_nomina_palmilla)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
+
+-- Tabla de movimientos: podas_movimientos_palmilla
+CREATE TABLE podas_movimientos_palmilla (
+    id_movimiento INT AUTO_INCREMENT PRIMARY KEY,
+    id_poda INT NOT NULL,
+    concepto VARCHAR(150) DEFAULT 'PODA',
+    fecha DATE NOT NULL,
+    arboles_podados INT NOT NULL,
+    monto DECIMAL(10,2) NOT NULL,
+    es_extra BOOLEAN DEFAULT 0,
+    FOREIGN KEY (id_poda)
+        REFERENCES podas_palmilla (id_poda)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
 
 -- =============================
 -- ISERTAR DATOS

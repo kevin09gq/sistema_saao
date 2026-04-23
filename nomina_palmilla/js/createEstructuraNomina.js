@@ -41,7 +41,7 @@ function crearEstructuraJson() {
             fecha_cierre: formatearFechaNomina($('#fecha_cierre_nomina_palmilla').val()),
             departamentos: []
         };
-    
+
         // Cargar departamentos asociados a la nómina 7
         obtenerDepartamentosNomina(jsonNominaPalmilla);
     });
@@ -68,7 +68,7 @@ function obtenerDepartamentosNomina(jsonNominaPalmilla) {
                     });
                 });
 
-                
+
                 // Una vez cargados los departamentos, obtener los empleados
                 obtenerEmpleadosSinSeguro(jsonNominaPalmilla);
 
@@ -87,7 +87,7 @@ function obtenerDepartamentosNomina(jsonNominaPalmilla) {
 
 // PASO 3: Obtener los empleados sin seguro de la base de datos y agregarlos al departamento correspondiente en la estructura del JSON
 function obtenerEmpleadosSinSeguro(jsonNominaPalmilla) {
-    
+
     $.ajax({
         url: '../php/validarExistenciaEmpleado.php',
         type: 'GET',
@@ -130,7 +130,7 @@ function obtenerEmpleadosSinSeguro(jsonNominaPalmilla) {
                 asignarPropiedadesEmpleado(jsonNominaPalmilla);
                 ordenarEmpleadosPorNombre(jsonNominaPalmilla);
                 inicializarRegistrosVacios(jsonNominaPalmilla);
-                
+
                 // Guardar explícitamente al crear para asegurar persistencia
                 saveNomina(jsonNominaPalmilla);
                 mostrarConfigValores(true);
@@ -236,6 +236,8 @@ function validarExistenciaTrabajadorBD(jsonNominaPalmilla) {
                     if (departamento.nombre === "Corte") {
                         return;
                     }
+                    // Si es Poda, no filtrar contra BD (el flujo de Poda es manual)
+                    if (departamento.nombre === "Poda") return;
 
                     departamento.empleados = departamento.empleados.filter(function (empleado) {
                         return clavesExistentes.includes(String(empleado.clave));

@@ -24,7 +24,7 @@ function cargarDepartamentosExportar() {
 
     jsonNominaHuasteca.departamentos.forEach(depto => {
         // Omitir el departamento de Corte porque es una opción estática fuera de esta lista
-        if (depto.nombre.toUpperCase() === 'CORTE') return;
+        if (depto.nombre.toUpperCase() === 'CORTE' || depto.nombre.toUpperCase() === 'PODA') return;
 
         const btnHtml = `
        
@@ -59,12 +59,18 @@ function exportarNominaDepartamento() {
 
         console.log(deptoNombre);
         console.log(deptoId);
-        
 
-        if (deptoNombre == "Corte") {
-            tmp_url = '../php/exportarNomina/exportarNominaCorte.php';
-        } else {
-            tmp_url = '../php/exportarNomina/exportarNominaDepartamento.php';
+
+        switch (deptoNombre) {
+            case "Corte":
+                tmp_url = '../php/exportarNomina/exportarNominaCorte.php';
+                break;
+            case "Poda":
+                tmp_url = '../php/exportarNomina/exportarNominaPoda.php';
+                break;
+            default:
+                tmp_url = '../php/exportarNomina/exportarNominaDepartamento.php';
+                break;
         }
 
         // Validar que jsonNominaHuasteca exista
@@ -117,7 +123,7 @@ function exportarNominaDepartamento() {
                 var numeroSemana = String(jsonNominaHuasteca.numero_semana).padStart(2, '0');
                 var aniosCierre = jsonNominaHuasteca.fecha_cierre.split('/')[2];
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'SEM ' + numeroSemana + ' - '  +  deptoNombre.toUpperCase() + ' - ' + aniosCierre + '.xlsx';
+                link.download = 'SEM ' + numeroSemana + ' - ' + deptoNombre.toUpperCase() + ' - ' + aniosCierre + '.xlsx';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -181,7 +187,7 @@ function exportarNominaCompleta() {
                 var numeroSemana = String(jsonNominaHuasteca.numero_semana).padStart(2, '0');
                 var aniosCierre = jsonNominaHuasteca.fecha_cierre.split('/')[2];
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'SEM ' + numeroSemana + ' - ' +  'RANCHO LA HUASTECA - ' + aniosCierre + '.xlsx';
+                link.download = 'SEM ' + numeroSemana + ' - ' + 'RANCHO LA HUASTECA - ' + aniosCierre + '.xlsx';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
