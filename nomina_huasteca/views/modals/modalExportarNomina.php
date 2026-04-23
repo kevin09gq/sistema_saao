@@ -30,6 +30,18 @@
                         </div>
                     </button>
 
+                      <!-- Poda de arboles -->
+                    <button type="button" class="list-group-item list-group-item-action border-success" id="btn-export-corte" data-nombre="Poda" data-id="801">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1 text-success fw-bold">
+                                    <i class="bi bi-leaf-fill"></i> Podas de Árboles
+                                </h6>
+                            </div>
+                            <i class="bi bi-file-earmark-spreadsheet text-success fs-4"></i>
+                        </div>
+                    </button>
+
                     <!-- Nómina Completa (Estático) -->
                     <button type="button" class="list-group-item list-group-item-action border-primary" id="btn-export-nomina-completa">
                         <div class="d-flex justify-content-between align-items-center">

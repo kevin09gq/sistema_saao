@@ -23,10 +23,13 @@ function saveNominaHuasteca() {
     const jsonData = { ...jsonNominaHuasteca, departamentos: jsonNominaHuasteca.departamentos.filter(d => d.nombre !== "Corte") };
     const numeroSemana = jsonData.numero_semana;
 
-    // Obtener el dep Corte por separado
+      // Obtener el dep Corte por separado
     const departamentoCorte = jsonNominaHuasteca.departamentos.find(d => d.nombre === "Corte");
-    // Obtener empleados del dep. Corte
     const empleadosCorte = departamentoCorte ? departamentoCorte.empleados : [];
+
+    // Obtener el dep Poda por separado
+    const departamentoPoda = jsonNominaHuasteca.departamentos.find(d => d.nombre === "Poda");
+    const empleadosPoda = departamentoPoda ? departamentoPoda.empleados : [];
 
 
 
@@ -61,6 +64,7 @@ function saveNominaHuasteca() {
             anio: anio,
             nomina: JSON.stringify(jsonData),
             corte: JSON.stringify(empleadosCorte), // Enviar solo los empleados del departamento de Corte
+            poda: JSON.stringify(empleadosPoda), // Enviar solo los empleados del departamento de Poda
             actualizar: true,
             case: 'guardarNominaHuasteca' // Agregar el caso para identificar la función en el servidor
         }),
