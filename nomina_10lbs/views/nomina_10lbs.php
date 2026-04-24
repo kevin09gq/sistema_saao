@@ -72,8 +72,8 @@
                     title="Establecer Horario Semanal" aria-label="Establecer Horario Semanal">
                     <i class="bi bi-calendar-check"></i>
                 </button>
-                <button class="btn btn-outline-primary" type="button" id="btn_marcajes" title="Ajustar Marcaje">
-                    <i class="bi bi-clock-history"></i>
+                <button class="btn btn-outline-primary" type="button" id="btn_precios_cajas" title="Ajustar Precios de Cajas">
+                    <i class="bi bi-box"></i>
                 </button>
                 <button class="btn btn-outline-primary" id="btn-seleccionar-empleados" title="Seleccionar empleados">
                     <i class="bi bi-people"></i>
@@ -85,9 +85,6 @@
                 <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta"
                     aria-label="Quitar tarjeta">
                     <i class="bi bi-credit-card-2-back"></i>
-                </button>
-                <button class="btn btn-outline-info" id="btn_ver_dispersion" title="Ver Dispersión de Tarjeta">
-                    <i class="bi bi-list-columns-reverse"></i>
                 </button>
                 <button class="btn btn-outline-danger" id="btn_modal_olvidos_masivos"
                     title="Perdonar olvidos de checador">
@@ -180,8 +177,6 @@
                     <tbody id="tabla-nomina-body-10lbs">
                         <!-- Filas de la tabla se generarán dinámicamente -->
 
-
-
                     </tbody>
 
                 </table>
@@ -198,6 +193,10 @@
 
 
     <!-- Incluir el modal -->
+    <?php include 'modals/modal10lbs.php'; ?>
+    <?php include 'modals/modalPrecioCajas.php'; ?>
+    <?php include 'modals/modalHorarios.php'; ?>
+    <?php include 'modals/biometricoModal.php'; ?>
 
 
     <!-- jQuery -->
@@ -214,6 +213,18 @@
     <script src="../js/showDataTable.js"></script>
     <script src="../js/filtroBusqueda.js"></script>
     <script src="../js/storage.js"></script>
+    <script src="../js/abrirModal.js"></script>
+
+    <script src="../js/configModales/horariosSemanales.js"></script>
+    <script src="../js/configModales/preciosCajas.js"></script>
+    <script src="../js/configModales/actualizarBiomtrico.js"></script>
+
+    <script src="../js/configModal/establecerData.js"></script>
+    <script src="../js/configModal/editarData.js"></script>
+    <script src="../js/configModal/eventos.js"></script>
+    <script src="../js/configModal/configModal.js"></script>
+    <script src="../js/configModal/newConcepts.js"></script>
+    <script src="../js/configModal/agregarCajasEmpacadas.js"></script>
 
 </body>
 

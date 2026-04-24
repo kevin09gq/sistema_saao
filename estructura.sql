@@ -438,6 +438,17 @@ CREATE TABLE nomina_10lbs(
 );
 
 -- =============================
+-- TABLA DE PRECIOS DE CAJAS
+-- =============================
+CREATE TABLE precios_cajas (
+    id_precio_caja INT AUTO_INCREMENT PRIMARY KEY,
+    tipo ENUM('CALIBRE', 'PESO') NOT NULL,
+    valor VARCHAR(50) NOT NULL,
+    precio DECIMAL(10,2) NOT NULL,
+    color_hex VARCHAR(7)
+);
+
+-- =============================
 -- TABLAS DE NÓMINA CONFIANZA
 -- =============================
 
@@ -647,6 +658,7 @@ CREATE TABLE podas_movimientos_huasteca (
         ON UPDATE CASCADE
         ON DELETE CASCADE
 );
+
 -- =============================
 -- TABLAS DE NÓMINA PALMILLA
 -- =============================

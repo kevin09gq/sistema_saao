@@ -87,8 +87,8 @@ function renderizarListaOlvidos(diaSeleccionado) {
                             </thead>
                             <tbody>
                                 ${empleadosConOlvido.map(emp => {
-                const olvido = emp.historial_olvidos.find(o => normalizar(o.dia) === diaSeleccionadoNorm);
-                return `
+                                    const olvido = emp.historial_olvidos.find(o => normalizar(o.dia) === diaSeleccionadoNorm);
+                                        return `
                                         <tr class="fila-empleado-olvido">
                                             <td>
                                                 <input class="form-check-input check-emp-olvido" type="checkbox" 
@@ -101,7 +101,7 @@ function renderizarListaOlvidos(diaSeleccionado) {
                                             <td class="text-end text-danger fw-bold">$${parseFloat(olvido.descuento_olvido).toFixed(2)}</td>
                                         </tr>
                                     `;
-            }).join('')}
+                                }).join('')}
                             </tbody>
                         </table>
                     </div>

@@ -166,13 +166,13 @@ function crearEstructuraJson(jsonListaRaya, siHayBiometrico, form) {
                 numero_semana: jsonListaRaya.numero_semana,
                 fecha_inicio: jsonListaRaya.fecha_inicio,
                 fecha_cierre: jsonListaRaya.fecha_cierre,
+                precio_cajas: [],
                 departamentos: respDepts.departamentos.map(d => ({
                     id_departamento: d.id_departamento,
                     nombre: d.nombre_departamento,
                     empleados: []
                 }))
             };
-
 
             // CORRECCIÓN: Pasamos el JSON original para que encuentre las claves
             validarExistenciaTrabajador(jsonListaRaya, estructuraJson, siHayBiometrico, form);
@@ -342,6 +342,7 @@ function obtenerEmpleadosSinSeguro(estructuraJson) {
                 jsonNomina10lbs = estructuraJson;
                 asignarPropiedadesEmpleado(jsonNomina10lbs);
                 ordenarEmpleadosPorApellido(jsonNomina10lbs);
+                cargarPreciosCajasJson(jsonNomina10lbs); // Cargar los precios de las cajas desde la BD al JSON
                 poblarSelectDepartamentos(jsonNomina10lbs); // Poblar el select dinámico
                 actualizarCabeceraNomina(jsonNomina10lbs);
                 refrescarTabla(); // Mostrar la tabla automáticamente con el primer filtro
@@ -557,7 +558,8 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
                 // Finalizar actualización de propiedades y ordenamiento
                 asignarPropiedadesEmpleado(jsonNomina10lbs);
                 ordenarEmpleadosPorApellido(jsonNomina10lbs);
-                //calcularOlvidosTodosEmpleados(jsonNomina10lbs);
+                cargarPreciosCajasJson(jsonNomina10lbs);
+                calcularOlvidosTodosEmpleados(jsonNomina10lbs);
                 poblarSelectDepartamentos(jsonNomina10lbs); // Poblar el select dinámico
                 actualizarCabeceraNomina(jsonNomina10lbs);
                 refrescarTabla(); // Mostrar la tabla automáticamente con el primer filtro
@@ -658,6 +660,12 @@ function validarExistenciaTrabajadorBD(JsonNomina10lbs, JsonListaRaya) {
                     });
                 });
 
+                // Cargar/Actualizar precios de cajas al restaurar nómina
+                if (typeof cargarPreciosCajasJson === 'function') {
+                    jsonNomina10lbs = JsonNomina10lbs;
+                    cargarPreciosCajasJson();
+                }
+
                 // Agregar empleados nuevos del archivo Excel
                 agregarEmpleadosNuevos(JsonNomina10lbs, JsonListaRaya);
             }
@@ -737,7 +745,7 @@ function agregarEmpleadosNuevos(jsonNomina10lbs, jsonListaRaya) {
                             seguroSocial: true,
                             tarjeta: empExcel ? (empExcel.tarjeta || 0) : 0,
                             conceptos: empExcel ? (empExcel.conceptos || []) : [],
-                            
+
                         };
 
                         deptoDestino.empleados.push(nuevoEmpleado);
@@ -818,11 +826,11 @@ function verificarEmpleadosSinSeguro(jsonNomina10lbs) {
             // FINALIZACIÓN: Asignar propiedades, ordenar, guardar y refrescar UI
             asignarPropiedadesEmpleado(jsonNomina10lbs);
             ordenarEmpleadosPorApellido(jsonNomina10lbs);
-             initComponents();
+            initComponents();
 
-          /*  if (typeof saveNomina === 'function') {
-                saveNomina(jsonNomina10lbs);
-            }*/
+            /*  if (typeof saveNomina === 'function') {
+                  saveNomina(jsonNomina10lbs);
+              }*/
 
             actualizarCabeceraNomina(jsonNomina10lbs);
             poblarSelectDepartamentos(jsonNomina10lbs);

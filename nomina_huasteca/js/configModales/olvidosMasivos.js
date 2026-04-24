@@ -46,6 +46,10 @@ function renderizarListaOlvidos(diaSeleccionado) {
 
     if (!jsonNominaHuasteca || !jsonNominaHuasteca.departamentos) return;
 
+    // Helper para normalizar strings (quitar acentos y pasar a minúsculas)
+    const normalizar = s => (s || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+    const diaSeleccionadoNorm = normalizar(diaSeleccionado);
+
     jsonNominaHuasteca.departamentos.forEach(depto => {
         // Filtrar empleados del departamento que tengan olvido ese día
         const empleadosConOlvido = depto.empleados.filter(emp => {
@@ -53,7 +57,7 @@ function renderizarListaOlvidos(diaSeleccionado) {
 
             // Buscar si tiene un olvido el día seleccionado con descuento mayor a 0
             return emp.historial_olvidos.some(o =>
-                o.dia?.toLowerCase().trim() === diaSeleccionado.toLowerCase().trim() &&
+                normalizar(o.dia) === diaSeleccionadoNorm &&
                 parseFloat(o.descuento_olvido) > 0
             );
         });
@@ -64,16 +68,16 @@ function renderizarListaOlvidos(diaSeleccionado) {
             // Crear encabezado de departamento
             const htmlDepto = `
                 <div class="seccion-departamento-olvido mb-4">
-                    <div class="dept-header">
-                        <span class="fw-bold text-uppercase"><i class="bi bi-building"></i> ${depto.nombre}</span>
+                    <div class="dept-header d-flex justify-content-between align-items-center bg-light p-2 border-start border-4 border-danger">
+                        <span class="fw-bold text-uppercase small"><i class="bi bi-building"></i> ${depto.nombre}</span>
                         <div class="form-check m-0">
-                            <input class="form-check-input check-dept-group" type="checkbox" data-depto="${depto.id_departamento}" id="check-depto-${depto.id_departamento}">
-                            <label class="form-check-label small fw-semibold" for="check-depto-${depto.id_departamento}">Seleccionar Todo</label>
+                            <input class="form-check-input check-dept-group" type="checkbox" data-depto="${depto.id_departamento || depto.nombre}" id="check-depto-${depto.id_departamento || depto.nombre}">
+                            <label class="form-check-label small fw-semibold" for="check-depto-${depto.id_departamento || depto.nombre}">Seleccionar Todo</label>
                         </div>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-sm table-hover align-middle mb-0">
-                            <thead class="table-light">
+                            <thead class="table-light text-uppercase" style="font-size: 0.75rem;">
                                 <tr>
                                     <th width="40"></th>
                                     <th width="100">Clave</th>
@@ -83,13 +87,13 @@ function renderizarListaOlvidos(diaSeleccionado) {
                             </thead>
                             <tbody>
                                 ${empleadosConOlvido.map(emp => {
-                const olvido = emp.historial_olvidos.find(o => o.dia?.toLowerCase().trim() === diaSeleccionado.toLowerCase().trim());
-                return `
+                                    const olvido = emp.historial_olvidos.find(o => normalizar(o.dia) === diaSeleccionadoNorm);
+                                        return `
                                         <tr class="fila-empleado-olvido">
                                             <td>
                                                 <input class="form-check-input check-emp-olvido" type="checkbox" 
                                                     value="${emp.clave}" 
-                                                    data-depto="${depto.id_departamento}"
+                                                    data-depto="${depto.id_departamento || depto.nombre}"
                                                     data-id-empresa="${emp.id_empresa}">
                                             </td>
                                             <td><span class="badge bg-light text-dark border">${emp.clave}</span></td>
@@ -97,7 +101,7 @@ function renderizarListaOlvidos(diaSeleccionado) {
                                             <td class="text-end text-danger fw-bold">$${parseFloat(olvido.descuento_olvido).toFixed(2)}</td>
                                         </tr>
                                     `;
-            }).join('')}
+                                }).join('')}
                             </tbody>
                         </table>
                     </div>
@@ -125,8 +129,6 @@ function renderizarListaOlvidos(diaSeleccionado) {
 
 function aplicarPerdonOlvidos() {
     $(document).on('click', '#btn-aplicar-perdon-olvidos', function () {
-
-
         const seleccionados = $('.check-emp-olvido:checked');
         const diaSeleccionado = $('#select-dia-olvido-masivo').val();
 
@@ -134,6 +136,10 @@ function aplicarPerdonOlvidos() {
             Swal.fire('Atención', 'Por favor selecciona al menos un empleado.', 'warning');
             return;
         }
+
+        // Helper para normalizar
+        const normalizar = s => (s || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+        const diaSeleccionadoNorm = normalizar(diaSeleccionado);
 
         Swal.fire({
             title: '¿Confirmar perdón?',
@@ -156,27 +162,33 @@ function aplicarPerdonOlvidos() {
                         const emp = depto.empleados.find(e => String(e.clave) === String(clave) && String(e.id_empresa) === String(idEmpresa));
 
                         if (emp && Array.isArray(emp.historial_olvidos)) {
-                            const olvido = emp.historial_olvidos.find(o => o.dia?.toLowerCase().trim() === diaSeleccionado.toLowerCase().trim());
+                            const olvido = emp.historial_olvidos.find(o => normalizar(o.dia) === diaSeleccionadoNorm);
 
                             if (olvido) {
                                 olvido.descuento_olvido = 0;
                                 olvido.editado = true;
 
                                 // Recalcular sus totales
+                                if (typeof asignarTotalOlvidosCoordinador === 'function') {
+                                    asignarTotalOlvidosCoordinador(emp, true);
+                                }
                                 if (typeof asignarTotalOlvidosJornalero === 'function') {
                                     asignarTotalOlvidosJornalero(emp, true);
                                 }
-                                if (typeof calcularSueldoSemanal === 'function') {
-                                    calcularSueldoSemanal(emp);
-                                }
+
                                 procesados++;
                             }
                         }
                     });
                 });
 
-                // Guardar cambios y cerrar
-                saveNomina(jsonNominaHuasteca);
+                // Guardar cambios, refrescar tabla y cerrar
+                if (typeof saveNomina === 'function') {
+                    saveNomina(jsonNominaHuasteca);
+                }
+                // Actualizar la tabla manteniendo la paginación actual
+               aplicarFiltrosActuales();
+
                 $('#modal-olvidos-masivos').modal('hide');
 
                 Swal.fire({

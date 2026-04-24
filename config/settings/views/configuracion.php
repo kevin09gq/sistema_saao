@@ -136,6 +136,15 @@ verificarSesion(); // Proteger esta página
                             </div>
                         </div>
                     </div>
+
+                    <div class="col">
+                        <div class="card nav-link" id="precios-cajas-tab" data-bs-toggle="tab" data-bs-target="#precios-cajas"
+                            role="tab" aria-controls="precios-cajas" aria-selected="false">
+                            <div class="card-body p-1">
+                                <h6 class="card-title my-0"><i class="bi bi-tag-fill"></i> Precios Cajas</h6>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Contenido de las pestañas -->
@@ -981,6 +990,85 @@ verificarSesion(); // Proteger esta página
                             </div>
                         </div>
                     </div>
+
+                    <!-- PRECIOS CAJAS -->
+                    <div class="tab-pane fade" id="precios-cajas" role="tabpanel">
+                        <div class="row mt-4">
+                            <div class="col-md-7">
+                                <div class="table-container">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5><i class="bi bi-list-ul"></i> Lista de Precios</h5>
+                                        <div class="search-box-container">
+                                            <input type="text" class="search-box" id="search-precios"
+                                                placeholder="Buscar precio...">
+                                        </div>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover" id="tabla-precios">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Tipo</th>
+                                                    <th>Color</th>
+                                                    <th>Valor</th>
+                                                    <th>Precio</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="precios-tbody">
+                                                <!-- Se cargará dinámicamente -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="form-container">
+                                    <h5 class="mb-3"><i class="bi bi-plus-circle"></i> Agregar Precio</h5>
+                                    <form id="precioCajaForm">
+                                        <input type="hidden" id="precio_id" name="precio_id">
+                                        
+                                        <div class="mb-3">
+                                            <label for="tipo_precio" class="form-label">Tipo de Clasificación</label>
+                                            <select class="form-select" name="tipo_precio" id="tipo_precio" required>
+                                                <option value="CALIBRE" selected>CALIBRE</option>
+                                                <option value="PESO">PESO</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="valor_caja" class="form-label">Valor (Ej. 14:2 o 40 lbs)</label>
+                                            <input type="text" class="form-control" id="valor_caja" name="valor_caja" required>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="precio_caja" class="form-label">Precio por Caja ($)</label>
+                                            <input type="number" class="form-control" id="precio_caja" name="precio_caja" step="0.01" min="0" required>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="color_hex_caja" class="form-label">Color (Hexadecimal)</label>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <input type="color" class="form-control form-control-color"
+                                                    id="color_picker_caja" value="#000000" title="Elige un color">
+                                                <input type="text" class="form-control" id="color_hex_caja" name="color_hex"
+                                                    placeholder="#000000" maxlength="7" value="#000000">
+                                            </div>
+                                            <small class="text-muted">Formato #RRGGBB. Puedes elegir con el selector o
+                                                escribir el valor.</small>
+                                        </div>
+
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn btn-success" id="btn-guardar-precio"><i
+                                                    class="bi bi-save"></i> Guardar</button>
+                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-precio"><i
+                                                    class="bi bi-x-circle"></i> Cancelar</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1330,6 +1418,7 @@ verificarSesion(); // Proteger esta página
     <script src="../js/obtener_tabulador.js"></script>
     <script src="../js/config_tabulador.js"></script>
     <script src="../js/edit_credenciales.js"></script>
+    <script src="../js/config_precios_cajas.js"></script>
     <script src="../../../nomina/js/rangos_horas.js"></script>
     <script src="../../../public/js/validaciones.js"></script>
 

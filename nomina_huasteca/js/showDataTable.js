@@ -1,3 +1,25 @@
+/**
+ * Formatea un valor numérico como moneda mexicana (MXN)
+ * @param {number|string} valor - El valor a formatear
+ * @param {boolean} alwaysNegative - Si es true, añade un signo negativo aunque sea positivo
+ * @returns {string} HTML con el valor formateado
+ */
+function formatearMonedaMXN(valor, alwaysNegative = false) {
+    const num = parseFloat(valor) || 0;
+    if (num === 0) return '<span class="valor-vacio">—</span>';
+
+    const absFormateado = new Intl.NumberFormat('es-MX', {
+        style: 'currency',
+        currency: 'MXN'
+    }).format(Math.abs(num));
+
+    const mostrarNegativo = (num < 0) || (alwaysNegative && num >= 0);
+    if (mostrarNegativo) {
+        return `<span class="valor-negativo">-${absFormateado}</span>`;
+    }
+    return absFormateado;
+}
+
 function mostrarDatosTabla(jsonNominaHuasteca, pagina = 1) {
     const empleadosPorPagina = 7;
 
@@ -39,18 +61,8 @@ function mostrarDatosTabla(jsonNominaHuasteca, pagina = 1) {
         };
         
 
-        // Función para formatear valores (mostrar — si es 0.00)
-        // alwaysNegative: si true, forzar visualmente el signo negativo aunque el valor sea positivo
-        const formatearValor = (valor, alwaysNegative = false) => {
-            const num = parseFloat(valor) || 0;
-            if (num === 0) return '<span class="valor-vacio">—</span>';
-            const abs = Math.abs(num).toFixed(2);
-            const mostrarNegativo = (num < 0) || (alwaysNegative && num >= 0);
-            if (mostrarNegativo) {
-                return `<span class="valor-negativo">-${abs}</span>`;
-            }
-            return abs;
-        };
+        // Usar la función auxiliar global para formatear valores
+        const formatearValor = (valor, alwaysNegative = false) => formatearMonedaMXN(valor, alwaysNegative);
 
         // Calcular Total Percepciones
         const totalPercepciones = calcularTotalPercepciones(empleado);
@@ -86,10 +98,10 @@ function mostrarDatosTabla(jsonNominaHuasteca, pagina = 1) {
                 <td>${formatearValor(totalPercepciones)}</td>             
 
                 <!-- Deducciones individuales -->
-                <td></td> <!-- ISR -->
-                <td></td> <!-- IMSS -->
-                <td></td> <!-- INFONAVIT -->
-                <td></td> <!-- AJUSTES AL SUB -->
+                <td>${formatearValor(buscarConcepto('45'), true)}</td> <!-- ISR -->
+                <td>${formatearValor(buscarConcepto('52'), true)}</td> <!-- IMSS -->
+                <td>${formatearValor(buscarConcepto('16'), true)}</td> <!-- INFONAVIT -->
+                <td>${formatearValor(buscarConcepto('107'), true)}</td> <!-- AJUSTES AL SUB -->
 
                 <td>${formatearValor(empleado.inasistencia || 0, true)}</td> <!-- AUSENTISMO -->
                 <td>${formatearValor(empleado.permiso || 0, true)}</td> <!-- PERMISO -->
@@ -322,17 +334,8 @@ function generarFilaTotalesDepartamento(empleados) {
     totales.importeEfectivo = totales.netoRecibir - totales.tarjeta;
     totales.totalRecibir = totales.importeEfectivo - totales.prestamo;
 
-    // Función para formatear valores en la fila de totales
-    const formatearTotalValor = (valor, alwaysNegative = false) => {
-        const num = parseFloat(valor) || 0;
-        if (num === 0) return '<span class="valor-vacio">—</span>';
-        const abs = Math.abs(num).toFixed(2);
-        const mostrarNegativo = (num < 0) || (alwaysNegative && num >= 0);
-        if (mostrarNegativo) {
-            return `<span class="valor-negativo">-${abs}</span>`;
-        }
-        return abs;
-    };
+    // Usar la función auxiliar global para formatear valores en la fila de totales
+    const formatearTotalValor = (valor, alwaysNegative = false) => formatearMonedaMXN(valor, alwaysNegative);
 
     // Generar fila HTML de totales con estilo distintivo
     const filaTotal = `
