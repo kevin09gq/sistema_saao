@@ -6,7 +6,8 @@
  */
 function formatearMonedaMXN(valor, alwaysNegative = false) {
     const num = parseFloat(valor) || 0;
-    if (num === 0) return '<span class="valor-vacio">—</span>';
+    // Si el valor es efectivamente 0 (o muy cercano), mostrar guion
+    if (Math.abs(num) < 0.01) return '<span class="valor-vacio">—</span>';
 
     const absFormateado = new Intl.NumberFormat('es-MX', {
         style: 'currency',
@@ -59,7 +60,7 @@ function mostrarDatosTabla(jsonNominaHuasteca, pagina = 1) {
             }
             return '0.00';
         };
-        
+
 
         // Usar la función auxiliar global para formatear valores
         const formatearValor = (valor, alwaysNegative = false) => formatearMonedaMXN(valor, alwaysNegative);
@@ -68,7 +69,7 @@ function mostrarDatosTabla(jsonNominaHuasteca, pagina = 1) {
         const totalPercepciones = calcularTotalPercepciones(empleado);
 
         // Calcular Total Deducciones
-       const totalDeducciones = calcularTotalDeducciones(empleado);
+        const totalDeducciones = calcularTotalDeducciones(empleado);
 
         // Calcular Neto a Recibir 
         const totalNetoRecibir = (parseFloat(totalPercepciones) - parseFloat(totalDeducciones)).toFixed(2);

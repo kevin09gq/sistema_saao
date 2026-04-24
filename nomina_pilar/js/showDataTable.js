@@ -6,7 +6,8 @@
  */
 function formatearMonedaMXN(valor, alwaysNegative = false) {
     const num = parseFloat(valor) || 0;
-    if (num === 0) return '<span class="valor-vacio">—</span>';
+    // Si el valor es efectivamente 0 (o muy cercano), mostrar guion
+    if (Math.abs(num) < 0.01) return '<span class="valor-vacio">—</span>';
 
     const absFormateado = new Intl.NumberFormat('es-MX', {
         style: 'currency',

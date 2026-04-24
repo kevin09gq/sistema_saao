@@ -2,9 +2,28 @@ if (typeof paginaActualNomina === 'undefined') {
     var paginaActualNomina = 1;
 }
 
-//=======================================
-// MOSTRAR DATOS EN LA TABLA DE LA NÓMINA DE 40 LIBRAS
-//=======================================
+/**
+ * Formatea un valor numérico como moneda mexicana (MXN)
+ * @param {number|string} valor - El valor a formatear
+ * @param {boolean} alwaysNegative - Si es true, añade un signo negativo aunque sea positivo
+ * @returns {string} HTML con el valor formateado
+ */
+function formatearMonedaMXN(valor, alwaysNegative = false) {
+    const num = parseFloat(valor) || 0;
+    // Si el valor es efectivamente 0 (o muy cercano), mostrar guion
+    if (Math.abs(num) < 0.01) return '<span class="valor-vacio">—</span>';
+
+    const absFormateado = new Intl.NumberFormat('es-MX', {
+        style: 'currency',
+        currency: 'MXN'
+    }).format(Math.abs(num));
+
+    const mostrarNegativo = (num < 0) || (alwaysNegative && num >= 0);
+    if (mostrarNegativo) {
+        return `<span class="valor-negativo">-${absFormateado}</span>`;
+    }
+    return absFormateado;
+}
 
 function mostrarDatosTabla(jsonNomina40lbs, pagina = 1) {
     const empleadosPorPagina = 7;
@@ -52,18 +71,8 @@ function mostrarDatosTabla(jsonNomina40lbs, pagina = 1) {
             return '0.00';
         };
 
-        // Función para formatear valores (mostrar — si es 0.00)
-        // alwaysNegative: si true, forzar visualmente el signo negativo aunque el valor sea positivo
-        const formatearValor = (valor, alwaysNegative = false) => {
-            const num = parseFloat(valor) || 0;
-            if (num === 0) return '<span class="valor-vacio">—</span>';
-            const abs = Math.abs(num).toFixed(2);
-            const mostrarNegativo = (num < 0) || (alwaysNegative && num >= 0);
-            if (mostrarNegativo) {
-                return `<span class="valor-negativo">-${abs}</span>`;
-            }
-            return abs;
-        };
+        // Usar la función auxiliar global para formatear valores
+        const formatearValor = (valor, alwaysNegative = false) => formatearMonedaMXN(valor, alwaysNegative);
 
         // Calcular Total Percepciones
         const totalPercepciones = calcularTotalPercepciones(empleado);
@@ -127,7 +136,7 @@ function mostrarDatosTabla(jsonNomina40lbs, pagina = 1) {
         $('#tabla-nomina-body-40lbs').append(fila);
     });
 
-     // Agregar fila de totales si es la última página
+    // Agregar fila de totales si es la última página
     const totalPaginas = Math.ceil(todosEmpleados.length / empleadosPorPagina);
     if (pagina === totalPaginas && todosEmpleados.length > 0) {
         const filaTotal = generarFilaTotalesDepartamento(todosEmpleados);
@@ -334,17 +343,8 @@ function generarFilaTotalesDepartamento(empleados) {
     totales.importeEfectivo = totales.netoRecibir - totales.tarjeta;
     totales.totalRecibir = totales.importeEfectivo - totales.prestamo;
 
-    // Función para formatear valores en la fila de totales
-    const formatearTotalValor = (valor, alwaysNegative = false) => {
-        const num = parseFloat(valor) || 0;
-        if (num === 0) return '<span class="valor-vacio">—</span>';
-        const abs = Math.abs(num).toFixed(2);
-        const mostrarNegativo = (num < 0) || (alwaysNegative && num >= 0);
-        if (mostrarNegativo) {
-            return `<span class="valor-negativo">-${abs}</span>`;
-        }
-        return abs;
-    };
+    // Usar la función auxiliar global para formatear valores en la fila de totales
+    const formatearTotalValor = (valor, alwaysNegative = false) => formatearMonedaMXN(valor, alwaysNegative);
 
     // Generar fila HTML de totales con estilo distintivo (adaptada para columnas de 40lbs)
     const filaTotal = `

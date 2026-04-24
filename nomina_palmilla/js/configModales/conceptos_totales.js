@@ -3,7 +3,7 @@ const PERCEPCIONES = [
     { nombre: 'Sueldo Semanal', propiedad: 'salario_semanal' },
     { nombre: 'Pasaje', propiedad: 'pasaje' },
     { nombre: 'Comida', propiedad: 'comida' },
-    { nombre: 'Extras', propiedad: 'sueldo_extra_total' } 
+    { nombre: 'Extras', propiedad: 'sueldo_extra_total' }
 ];
 
 const DEDUCCIONES = [
@@ -20,8 +20,8 @@ const DEDUCCIONES = [
     { nombre: 'Tarjeta', propiedad: 'tarjeta' }
 ];
 
-$(document).ready(function() {
-    $('#btn_conceptos_totales').on('click', function() {
+$(document).ready(function () {
+    $('#btn_conceptos_totales').on('click', function () {
         calcularYMostrarTotales();
         $('#modalConceptosTotales').modal('show');
     });
@@ -117,7 +117,7 @@ function renderizarConceptos(contenedorId, conceptos) {
     for (const [nombre, datos] of Object.entries(conceptos)) {
         const collapseId = `collapse-${contenedorId}-${index}`;
         const headingId = `heading-${contenedorId}-${index}`;
-        const empleadosHtml = datos.empleados.length > 0 
+        const empleadosHtml = datos.empleados.length > 0
             ? datos.empleados.map((emp, idx) => `
                 <tr>
                     <td>${idx + 1}</td>

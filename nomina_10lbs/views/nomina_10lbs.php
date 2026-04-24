@@ -197,6 +197,9 @@
     <?php include 'modals/modalPrecioCajas.php'; ?>
     <?php include 'modals/modalHorarios.php'; ?>
     <?php include 'modals/biometricoModal.php'; ?>
+    <?php include 'modals/modalSeleccionarEmpleados.php'; ?>
+    <?php include 'modals/modalOlvidos.php'; ?>
+    <?php include 'modals/modalConceptosTotales.php'; ?>
 
 
     <!-- jQuery -->
@@ -218,6 +221,9 @@
     <script src="../js/configModales/horariosSemanales.js"></script>
     <script src="../js/configModales/preciosCajas.js"></script>
     <script src="../js/configModales/actualizarBiomtrico.js"></script>
+    <script src="../js/configModales/seleccionar_empleados.js"></script>
+    <script src="../js/configModales/olvidosMasivos.js"></script>
+    <script src="../js/configModales/conceptos_totales.js"></script>
 
     <script src="../js/configModal/establecerData.js"></script>
     <script src="../js/configModal/editarData.js"></script>
