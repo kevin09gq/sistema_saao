@@ -3,7 +3,7 @@
  * @param {number|string} valor - El valor a formatear
  * @returns {string} Valor formateado con símbolo $ y comas
  */
-function formatearMonedaMXN(valor) {
+function formatearMonedaMXNModales(valor) {
     const num = parseFloat(valor) || 0;
     return new Intl.NumberFormat('es-MX', {
         style: 'currency',
@@ -111,9 +111,9 @@ function calcularYMostrarTotales() {
     const totalNetoGeneral = totalPercepcionesGeneral - totalDeduccionesGeneral;
 
     // Mostrar totales generales
-    $('#total-percepciones-general').text(formatearMonedaMXN(totalPercepcionesGeneral));
-    $('#total-deducciones-general').text(formatearMonedaMXN(totalDeduccionesGeneral));
-    $('#total-neto-general').text(formatearMonedaMXN(Math.round(totalNetoGeneral)));
+    $('#total-percepciones-general').text(formatearMonedaMXNModales(totalPercepcionesGeneral));
+    $('#total-deducciones-general').text(formatearMonedaMXNModales(totalDeduccionesGeneral));
+    $('#total-neto-general').text(formatearMonedaMXNModales(Math.round(totalNetoGeneral)));
 
     // Renderizar datos
     renderizarConceptos('percepciones-accordion', percepciones);
@@ -133,7 +133,7 @@ function renderizarConceptos(contenedorId, conceptos) {
                 <tr>
                     <td>${idx + 1}</td>
                     <td>${emp.nombre}</td>
-                    <td class="text-end">${formatearMonedaMXN(emp.monto)}</td>
+                    <td class="text-end">${formatearMonedaMXNModales(emp.monto)}</td>
                 </tr>
             `).join('')
             : '<tr><td colspan="3" class="text-center text-muted">Sin movimientos</td></tr>';
@@ -144,7 +144,7 @@ function renderizarConceptos(contenedorId, conceptos) {
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
                             data-bs-target="#${collapseId}" aria-expanded="false" aria-controls="${collapseId}">
                         <span class="concept-title"><strong>${nombre}</strong></span>
-                        <span class="badge bg-primary">${formatearMonedaMXN(datos.total)}</span>
+                        <span class="badge bg-primary">${formatearMonedaMXNModales(datos.total)}</span>
                         <span class="badge bg-secondary">${datos.empleados.length} persona(s)</span>
                     </button>
                 </h2>

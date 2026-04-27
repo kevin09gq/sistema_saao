@@ -6,11 +6,14 @@ function mostrarDatosTablaCorte(jsonNominaPalmilla) {
     $('#tabla-body-corte-palmilla').empty();
 
     // Si no existe el departamento de corte, no mostrar nada
-    if (!departamentoCorte || !departamentoCorte.empleados) {
+    if (!departamentoCorte || !departamentoCorte.empleados || departamentoCorte.empleados.length === 0) {
+        $('#tabla-body-corte-palmilla').html('<tr><td colspan="13">No se encontraron datos para mostrar.</td></tr>');
         return;
     }
 
     let numeroFila = 1;
+    // Array para almacenar todos los datos de las filas (para calcular totales después)
+    let todasLasFilas = [];
 
     // Procesar cada empleado
     departamentoCorte.empleados.forEach(empleado => {
@@ -22,25 +25,37 @@ function mostrarDatosTablaCorte(jsonNominaPalmilla) {
             Object.keys(ticketsPorPrecio).forEach(precio => {
                 const tickets = ticketsPorPrecio[precio];
                 const datosFila = procesarTicketsParaFila(empleado.nombre, empleado.concepto, tickets, parseFloat(precio));
-                
+
                 // Generar fila HTML
                 const filaHTML = generarFilaTablaCorte(numeroFila, datosFila);
                 $('#tabla-body-corte-palmilla').append(filaHTML);
-                
+
+                // Guardar datos de la fila para calcular totales
+                todasLasFilas.push(datosFila);
+
                 numeroFila++;
             });
 
         } else if (empleado.concepto === "NOMINA") {
             // Procesar empleados con concepto NOMINA
             const datosFila = procesarNominaParaFila(empleado.nombre, empleado.concepto, empleado.nomina);
-            
+
             // Generar fila HTML
             const filaHTML = generarFilaTablaCorte(numeroFila, datosFila);
             $('#tabla-body-corte-palmilla').append(filaHTML);
-            
+
+            // Guardar datos de la fila para calcular totales
+            todasLasFilas.push(datosFila);
+
             numeroFila++;
         }
     });
+
+    // Agregar fila de totales si hay filas en la tabla
+    if (todasLasFilas.length > 0) {
+        const filaTotal = generarFilaTotalesCorte(todasLasFilas);
+        $('#tabla-body-corte-palmilla').append(filaTotal);
+    }
 }
 
 /**
@@ -50,17 +65,17 @@ function mostrarDatosTablaCorte(jsonNominaPalmilla) {
  */
 function agruparTicketsPorPrecio(tickets) {
     const ticketsPorPrecio = {};
-    
+
     tickets.forEach(ticket => {
         const precio = ticket.precio_reja.toString();
-        
+
         if (!ticketsPorPrecio[precio]) {
             ticketsPorPrecio[precio] = [];
         }
-        
+
         ticketsPorPrecio[precio].push(ticket);
     });
-    
+
     return ticketsPorPrecio;
 }
 
@@ -89,15 +104,15 @@ function procesarTicketsParaFila(nombreEmpleado, concepto, tickets, precio) {
     // Procesar cada ticket
     tickets.forEach(ticket => {
         const diaSemana = obtenerDiaSemanaCorte(ticket.fecha);
-        
+
         // Sumar todas las rejas de todas las tablas de este ticket
         const rejasTicket = ticket.datosRejas.reduce((suma, tabla) => suma + tabla.cantidad, 0);
-        
+
         // Agregar al día correspondiente
         if (rejasPorDia.hasOwnProperty(diaSemana)) {
             rejasPorDia[diaSemana] += rejasTicket;
         }
-        
+
         totalRejas += rejasTicket;
     });
 
@@ -145,12 +160,12 @@ function procesarNominaParaFila(nombreEmpleado, concepto, nomina) {
     nomina.forEach(diaPago => {
         const dia = diaPago.dia.toUpperCase();
         const pago = parseFloat(diaPago.pago) || 0;
-        
+
         // Agregar al día correspondiente
         if (pagosPorDia.hasOwnProperty(dia)) {
             pagosPorDia[dia] = pago;
         }
-        
+
         totalEfectivo += pago;
     });
 
@@ -211,7 +226,7 @@ function generarFilaTablaCorte(numeroFila, datos) {
 function obtenerDiaSemanaCorte(fechaStr) {
     // Dividir la fecha para evitar problemas de zona horaria
     const [año, mes, dia] = fechaStr.split('-').map(Number);
-    
+
     // Crear objeto Date (mes -1 porque Date cuenta los meses desde 0)
     let fecha = new Date(año, mes - 1, dia);
 
@@ -223,4 +238,51 @@ function obtenerDiaSemanaCorte(fechaStr) {
 
     // Devolver el nombre del día
     return dias[indice];
+}
+
+/**
+ * Función que calcula y genera la fila de totales para la tabla
+ * de corte. Solo suma las columnas TOTAL REJAS y TOTAL EFECTIVO,
+ * las demás columnas quedan vacías.
+ * @param {Array} filas - Array de objetos con los datos de cada fila (incluyendo tipoConcepto, totalRejas y totalEfectivo)
+ * @returns {String} HTML de la fila de totales
+ */
+function generarFilaTotalesCorte(filas) {
+    // Inicializar totales
+    let totalRejas = 0;
+    let totalEfectivo = 0;
+
+    // Sumar todos los valores de total rejas y total efectivo
+    filas.forEach(fila => {
+        // Solo sumar rejas si es concepto REJA
+        if (fila.tipoConcepto === 'REJA' && fila.totalRejas !== null) {
+            totalRejas += fila.totalRejas;
+        }
+
+        // Sumar siempre el total efectivo
+        if (fila.totalEfectivo !== null) {
+            totalEfectivo += fila.totalEfectivo;
+        }
+    });
+
+    // Generar fila HTML de totales con estilo distintivo
+    const filaTotal = `
+        <tr style="background-color: #e8f4f8; font-weight: bold; border-top: 2px solid #333;">
+            <td style="text-align: center;">-</td>
+            <td style="text-align: center;">---</td>
+            <td style="text-align: center;">TOTAL</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><strong>${totalRejas}</strong></td>
+            <td></td>
+            <td><strong>$${totalEfectivo.toFixed(2)}</strong></td>
+        </tr>
+    `;
+
+    return filaTotal;
 }

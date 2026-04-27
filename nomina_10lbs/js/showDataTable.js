@@ -20,6 +20,7 @@ function formatearMonedaMXN(valor, alwaysNegative = false) {
     return absFormateado;
 }
 
+
 //=======================================
 // MOSTRAR DATOS EN LA TABLA DE LA NÓMINA DE 10 LIBRAS
 //=======================================

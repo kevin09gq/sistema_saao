@@ -200,6 +200,7 @@
     <?php include 'modals/modalSeleccionarEmpleados.php'; ?>
     <?php include 'modals/modalOlvidos.php'; ?>
     <?php include 'modals/modalConceptosTotales.php'; ?>
+    <?php include 'modals/modalExportarNomina.php'; ?>
 
 
     <!-- jQuery -->
@@ -224,7 +225,7 @@
     <script src="../js/configModales/seleccionar_empleados.js"></script>
     <script src="../js/configModales/olvidosMasivos.js"></script>
     <script src="../js/configModales/conceptos_totales.js"></script>
-
+    <script src="../js/configModales/exportarNominaExcel.js"></script>
     <script src="../js/configModal/establecerData.js"></script>
     <script src="../js/configModal/editarData.js"></script>
     <script src="../js/configModal/eventos.js"></script>

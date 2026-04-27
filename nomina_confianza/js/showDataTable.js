@@ -353,4 +353,3 @@ function generarFilaTotalesDepartamento(empleados) {
     return filaTotal;
 }
 
-

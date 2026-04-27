@@ -25,13 +25,15 @@ function mostrarDatosTablaPoda(json) {
     $('#tabla_body_poda').empty();
 
     // Si no existe el departamento de poda, no mostrar nada
-    if (!departamentoPoda || !departamentoPoda.empleados) {
-         $('#tabla_body_poda').html('<tr><td colspan="13">No se encontraron datos para mostrar.</td></tr>');
+    if (!departamentoPoda || !departamentoPoda.empleados || departamentoPoda.empleados.length === 0) {
+        $('#tabla_body_poda').html('<tr><td colspan="13">No se encontraron datos para mostrar.</td></tr>');
         return;
     }
 
     let numeroFila = 1;
     const filas = [];
+    // Array para almacenar los datos de todas las filas (para calcular totales)
+    const datosFilas = [];
 
     // Procesar cada empleado del departamento de Poda
     departamentoPoda.empleados.forEach(emp => {
@@ -41,13 +43,17 @@ function mostrarDatosTablaPoda(json) {
         // Procesar movimientos de PODA agrupados por monto
         const gruposPoda = agruparMovimientosConceptoPoda(movimientosPoda);
         gruposPoda.forEach(grupo => {
-            filas.push(crearFilaPoda(emp.nombre, grupo, numeroFila++));
+            const filaObjeto = crearFilaPoda(emp.nombre, grupo, numeroFila++);
+            filas.push(filaObjeto.html);
+            datosFilas.push(filaObjeto.datos);
         });
 
         // Procesar movimientos extras agrupados por concepto y monto
         const gruposExtras = agruparMovimientosExtras(movimientosExtras);
         gruposExtras.forEach(grupo => {
-            filas.push(crearFilaExtra(emp.nombre, grupo, numeroFila++));
+            const filaObjeto = crearFilaExtra(emp.nombre, grupo, numeroFila++);
+            filas.push(filaObjeto.html);
+            datosFilas.push(filaObjeto.datos);
         });
     });
 
@@ -55,6 +61,12 @@ function mostrarDatosTablaPoda(json) {
     filas.forEach(fila => {
         $('#tabla_body_poda').append(fila);
     });
+
+    // Agregar fila de totales si hay filas en la tabla
+    if (datosFilas.length > 0) {
+        const filaTotal = generarFilaTotalesPoda(datosFilas);
+        $('#tabla_body_poda').append(filaTotal);
+    }
 }
 
 /**
@@ -64,7 +76,7 @@ function mostrarDatosTablaPoda(json) {
  */
 function agruparMovimientosConceptoPoda(movimientos) {
     const mapa = {};
-    
+
     movimientos.forEach(mov => {
         const monto = mov.monto;
         if (!mapa[monto]) {
@@ -86,7 +98,7 @@ function agruparMovimientosConceptoPoda(movimientos) {
  */
 function agruparMovimientosExtras(movimientos) {
     const mapa = {};
-    
+
     movimientos.forEach(mov => {
         const clave = `${mov.concepto}|${mov.monto}`;
         if (!mapa[clave]) {
@@ -107,7 +119,7 @@ function agruparMovimientosExtras(movimientos) {
  * @param {String} nombreEmpleado Nombre del empleado
  * @param {Object} grupo Grupo con {monto, movimientos}
  * @param {Number} numeroFila Número de fila para identificación
- * @returns {String} HTML de la fila
+ * @returns {Object} Objeto con propiedades {html: String, datos: Object}
  */
 function crearFilaPoda(nombreEmpleado, grupo, numeroFila) {
     const diasArray = new Array(7).fill(null); // [V, SA, DO, L, MA, MI, J]
@@ -136,7 +148,14 @@ function crearFilaPoda(nombreEmpleado, grupo, numeroFila) {
         `<td class="text-center">${totalEfectivo.toFixed(2)}</td>`
     ];
 
-    return `<tr data-concepto="PODA" data-nombre="${nombreEmpleado}" data-monto="${grupo.monto}">${celdas.join('')}</tr>`;
+    return {
+        html: `<tr data-concepto="PODA" data-nombre="${nombreEmpleado}" data-monto="${grupo.monto}">${celdas.join('')}</tr>`,
+        datos: {
+            concepto: 'PODA',
+            totalArboles: totalArboles,
+            totalEfectivo: totalEfectivo
+        }
+    };
 }
 
 /**
@@ -144,7 +163,7 @@ function crearFilaPoda(nombreEmpleado, grupo, numeroFila) {
  * @param {String} nombreEmpleado Nombre del empleado
  * @param {Object} grupo Grupo con {concepto, monto, movimientos}
  * @param {Number} numeroFila Número de fila para identificación
- * @returns {String} HTML de la fila
+ * @returns {Object} Objeto con propiedades {html: String, datos: Object}
  */
 function crearFilaExtra(nombreEmpleado, grupo, numeroFila) {
     const diasArray = new Array(7).fill(null); // [V, SA, DO, L, MA, MI, J]
@@ -171,7 +190,14 @@ function crearFilaExtra(nombreEmpleado, grupo, numeroFila) {
         `<td class="text-center">${totalEfectivo.toFixed(2)}</td>`
     ];
 
-    return `<tr data-concepto="${grupo.concepto}" data-nombre="${nombreEmpleado}" data-monto="${grupo.monto}">${celdas.join('')}</tr>`;
+    return {
+        html: `<tr data-concepto="${grupo.concepto}" data-nombre="${nombreEmpleado}" data-monto="${grupo.monto}">${celdas.join('')}</tr>`,
+        datos: {
+            concepto: grupo.concepto,
+            totalArboles: null, // Las extras no tienen árboles
+            totalEfectivo: totalEfectivo
+        }
+    };
 }
 
 /**
@@ -181,9 +207,9 @@ function crearFilaExtra(nombreEmpleado, grupo, numeroFila) {
  */
 function obtenerDiaSemanaPoda(fecha) {
     const dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
-    
+
     let fechaObj;
-    
+
     // Si es un string, parsearlo manualmente para evitar problemas de zona horaria
     if (typeof fecha === 'string') {
         // Formato esperado: YYYY-MM-DD
@@ -199,12 +225,59 @@ function obtenerDiaSemanaPoda(fecha) {
     } else {
         fechaObj = fecha;
     }
-    
+
     // Verificar si es un objeto Date válido
     if (!(fechaObj instanceof Date) || isNaN(fechaObj.getTime())) {
         console.error('Fecha inválida:', fecha);
         return null;
     }
-    
+
     return dias[fechaObj.getDay()];
+}
+
+/**
+ * Función que calcula y genera la fila de totales para la tabla
+ * de poda. Suma los árboles y el efectivo de todas las filas,
+ * considerando tanto conceptos PODA como extras.
+ * @param {Array} datosFilas Array de objetos con datos de cada fila (concepto, totalArboles, totalEfectivo)
+ * @returns {String} HTML de la fila de totales
+ */
+function generarFilaTotalesPoda(datosFilas) {
+    // Inicializar totales
+    let totalArboles = 0;
+    let totalEfectivo = 0;
+
+    // Sumar todos los valores de árboles y efectivo
+    datosFilas.forEach(fila => {
+        // Sumar árboles si la fila tiene ese valor (no es null)
+        if (fila.totalArboles !== null && fila.totalArboles !== undefined) {
+            totalArboles += fila.totalArboles;
+        }
+
+        // Sumar siempre el total efectivo
+        if (fila.totalEfectivo !== null && fila.totalEfectivo !== undefined) {
+            totalEfectivo += fila.totalEfectivo;
+        }
+    });
+
+    // Generar fila HTML de totales con estilo distintivo
+    const filaTotal = `
+        <tr style="background-color: #e8f4f8; font-weight: bold; border-top: 2px solid #333;">
+            <td style="text-align: center;">-</td>
+            <td style="text-align: center;">---</td>
+            <td style="text-align: center;">TOTAL</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td class="text-center"><strong>${totalArboles}</strong></td>
+            <td></td>
+            <td class="text-center"><strong>$${totalEfectivo.toFixed(2)}</strong></td>
+        </tr>
+    `;
+
+    return filaTotal;
 }

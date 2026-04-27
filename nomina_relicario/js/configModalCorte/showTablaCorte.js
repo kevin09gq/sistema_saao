@@ -6,12 +6,14 @@ function mostrarDatosTablaCorte(jsonNominaRelicario) {
     $('#tabla-body-corte-relicario').empty();
 
     // Si no existe el departamento de corte, no mostrar nada
-    if (!departamentoCorte || !departamentoCorte.empleados) {
+    if (!departamentoCorte || !departamentoCorte.empleados || departamentoCorte.empleados.length === 0) {
         $('#tabla-body-corte-relicario').html('<tr><td colspan="13">No se encontraron datos para mostrar.</td></tr>');
         return;
     }
 
     let numeroFila = 1;
+    // Array para almacenar todos los datos de las filas (para calcular totales después)
+    let todasLasFilas = [];
 
     // Procesar cada empleado
     departamentoCorte.empleados.forEach(empleado => {
@@ -27,6 +29,9 @@ function mostrarDatosTablaCorte(jsonNominaRelicario) {
                 // Generar fila HTML
                 const filaHTML = generarFilaTablaCorte(numeroFila, datosFila);
                 $('#tabla-body-corte-relicario').append(filaHTML);
+                
+                // Guardar datos de la fila para calcular totales
+                todasLasFilas.push(datosFila);
 
                 numeroFila++;
             });
@@ -38,10 +43,19 @@ function mostrarDatosTablaCorte(jsonNominaRelicario) {
             // Generar fila HTML
             const filaHTML = generarFilaTablaCorte(numeroFila, datosFila);
             $('#tabla-body-corte-relicario').append(filaHTML);
+            
+            // Guardar datos de la fila para calcular totales
+            todasLasFilas.push(datosFila);
 
             numeroFila++;
         }
     });
+
+    // Agregar fila de totales si hay filas en la tabla
+    if (todasLasFilas.length > 0) {
+        const filaTotal = generarFilaTotalesCorte(todasLasFilas);
+        $('#tabla-body-corte-relicario').append(filaTotal);
+    }
 }
 
 /**
@@ -224,4 +238,51 @@ function obtenerDiaSemanaCorte(fechaStr) {
 
     // Devolver el nombre del día
     return dias[indice];
+}
+
+/**
+ * Función que calcula y genera la fila de totales para la tabla
+ * de corte. Solo suma las columnas TOTAL REJAS y TOTAL EFECTIVO,
+ * las demás columnas quedan vacías.
+ * @param {Array} filas - Array de objetos con los datos de cada fila (incluyendo tipoConcepto, totalRejas y totalEfectivo)
+ * @returns {String} HTML de la fila de totales
+ */
+function generarFilaTotalesCorte(filas) {
+    // Inicializar totales
+    let totalRejas = 0;
+    let totalEfectivo = 0;
+
+    // Sumar todos los valores de total rejas y total efectivo
+    filas.forEach(fila => {
+        // Solo sumar rejas si es concepto REJA
+        if (fila.tipoConcepto === 'REJA' && fila.totalRejas !== null) {
+            totalRejas += fila.totalRejas;
+        }
+
+        // Sumar siempre el total efectivo
+        if (fila.totalEfectivo !== null) {
+            totalEfectivo += fila.totalEfectivo;
+        }
+    });
+
+    // Generar fila HTML de totales con estilo distintivo
+    const filaTotal = `
+        <tr style="background-color: #e8f4f8; font-weight: bold; border-top: 2px solid #333;">
+            <td style="text-align: center;">-</td>
+            <td style="text-align: center;">---</td>
+            <td style="text-align: center;">TOTAL</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><strong>${totalRejas}</strong></td>
+            <td></td>
+            <td><strong>$${totalEfectivo.toFixed(2)}</strong></td>
+        </tr>
+    `;
+
+    return filaTotal;
 }
