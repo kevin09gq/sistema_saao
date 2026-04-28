@@ -282,7 +282,7 @@ function obtenerDepartamentosNomina()
     }
 
     // Consultar departamentos asociados directamente a la nómina
-    $sql = "SELECT d.id_departamento, d.nombre_departamento
+    $sql = "SELECT d.id_departamento, d.nombre_departamento, nd.color_depto_nomina
             FROM departamentos d
             INNER JOIN nomina_departamento nd ON d.id_departamento = nd.id_departamento
             WHERE nd.id_nomina = ?
@@ -321,7 +321,8 @@ function obtenerDepartamentosNomina()
         while ($row = mysqli_fetch_assoc($result)) {
             $departamentos[] = [
                 'id_departamento' => intval($row['id_departamento']),
-                'nombre_departamento' => $row['nombre_departamento']
+                'nombre_departamento' => $row['nombre_departamento'],
+                'color_depto_nomina' => $row['color_depto_nomina']
             ];
         }
 

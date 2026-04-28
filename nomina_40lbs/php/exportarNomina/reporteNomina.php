@@ -165,7 +165,7 @@ $pdf = new PDFEncabezado('P', 'mm', 'A4', true, 'UTF-8', false);
 $pdf->setDatosNomina($tituloNomina, $numero_semana, $fecha_cierre);
 $pdf->SetCreator('SAAO');
 $pdf->SetAuthor('SAAO');
-$pdf->SetTitle('Reporte Contable de Nómina');
+$pdf->SetTitle('Reporte Contable de Nómina 40LBS');
 $pdf->SetMargins(10, 50, 10);
 $pdf->SetHeaderMargin(10);
 $pdf->SetFooterMargin(10);
@@ -247,15 +247,15 @@ foreach ($grupos as $nombreGrupo => $empleados) {
         if (($emp['permiso'] ?? 0) != 0) $d['Permiso'] = (float)$emp['permiso'];
         if (($emp['uniforme'] ?? 0) != 0) $d['Uniforme'] = (float)$emp['uniforme'];
         if (($emp['checador'] ?? 0) != 0) $d['Biométrico'] = (float)$emp['checador'];
-        if (($emp['fa_gafet_cofia'] ?? 0) != 0) $d['Fa/Gafet/Cofia'] = (float)$emp['fa_gafet_cofia'];
         if (($emp['tarjeta'] ?? 0) != 0) $d['Tarjeta'] = (float)$emp['tarjeta'];
         if (($emp['prestamo'] ?? 0) != 0) $d['Préstamo'] = (float)$emp['prestamo'];
-        
         $extrasDDetalle = [];
         foreach ($emp['deducciones_extra'] ?? [] as $ex) {
             if (($ex['cantidad'] ?? 0) != 0) $extrasDDetalle[$ex['nombre']] = (float)$ex['cantidad'];
         }
-        if (!empty($extrasDDetalle)) $d['Deducciones Extras Total'] = array_sum($extrasDDetalle);
+        
+        $totalExtras = array_sum($extrasDDetalle);
+        if ($totalExtras != 0) $d['F.A/Gafet/Cofia'] = $totalExtras;
 
         $totalDeduccionesEmpleado = array_sum($d);
 
@@ -303,7 +303,7 @@ foreach ($grupos as $nombreGrupo => $empleados) {
             $pdf->Cell(60, 6, $con, 0, 0, 'L');
             $pdf->SetFont('dejavusansmono', '', 9);
             $pdf->Cell(30, 6, formatoMoneda($mon), 0, 1, 'R');
-            if ($con === 'Deducciones Extras Total' && !empty($extrasDDetalle)) {
+            if ($con === 'F.A/Gafet/Cofia' && !empty($extrasDDetalle)) {
                 $pdf->SetFont('dejavusans', 'I', 8);
                 foreach ($extrasDDetalle as $en => $ev) {
                     $pdf->SetX(110);

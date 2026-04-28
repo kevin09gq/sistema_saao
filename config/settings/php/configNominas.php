@@ -27,6 +27,9 @@ if (isset($_GET['accion']) || isset($_POST['accion'])) {
         case 'eliminarNominaDepartamento':
             eliminarNominaDepartamento();
             break;
+        case 'actualizarColorNominaDepartamento':
+            actualizarColorNominaDepartamento();
+            break;
 
         case 'obtenerAreas':
             obtenerAreas();
@@ -176,6 +179,22 @@ function eliminarNominaDepartamento()
         $idRel = (int) $_POST['id_relacion'];
         $sql = $conexion->prepare("DELETE FROM nomina_departamento WHERE id_nomina_departamento = ?");
         $sql->bind_param("i", $idRel);
+        if ($sql->execute())
+            echo "1";
+        else
+            echo "2";
+    }
+}
+
+function actualizarColorNominaDepartamento()
+{
+    global $conexion;
+    if (isset($_POST['id_relacion']) && isset($_POST['color'])) {
+        $idRel = (int) $_POST['id_relacion'];
+        $color = trim($_POST['color']);
+
+        $sql = $conexion->prepare("UPDATE nomina_departamento SET color_depto_nomina = ? WHERE id_nomina_departamento = ?");
+        $sql->bind_param("si", $color, $idRel);
         if ($sql->execute())
             echo "1";
         else

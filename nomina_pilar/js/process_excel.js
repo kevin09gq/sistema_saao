@@ -151,6 +151,7 @@ function crearEstructuraJson(JsonListaRaya, siHayBiometrico = false, form = null
                 departamentos: respDepts.departamentos.map(d => ({
                     id_departamento: d.id_departamento,
                     nombre: d.nombre_departamento,
+                    color_depto_nomina: d.color_depto_nomina || '#E5C8E6', // Valor por defecto si no viene de la BD E5C8E6
                     empleados: []
                 }))
             };

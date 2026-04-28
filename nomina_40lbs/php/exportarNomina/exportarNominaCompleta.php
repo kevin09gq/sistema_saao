@@ -38,6 +38,29 @@ function restarUnDia($fecha)
     return $date->format("d") . "/" . $mesAbrevNuevo . "/" . $date->format("Y");
 }
 
+/**
+ * Determina si un color de fondo es oscuro o claro y devuelve el color de texto adecuado (blanco o negro).
+ */
+function obtenerColorContraste($hexColor)
+{
+    // Eliminar el # si existe
+    $hexColor = str_replace('#', '', $hexColor);
+
+    // Si el color no es válido, por defecto blanco
+    if (strlen($hexColor) != 6) return '000000';
+
+    // Convertir hex a RGB
+    $r = hexdec(substr($hexColor, 0, 2));
+    $g = hexdec(substr($hexColor, 2, 2));
+    $b = hexdec(substr($hexColor, 4, 2));
+
+    // Calcular el brillo (Fórmula YIQ)
+    // El umbral de 128 (la mitad de 255) determina si el fondo es claro u oscuro
+    $yiq = (($r * 299) + ($g * 587) + ($b * 114)) / 1000;
+
+    return ($yiq >= 128) ? '000000' : 'FFFFFF';
+}
+
 //=====================
 //  RECIBIR DATOS DEL JSON
 //=====================
@@ -101,9 +124,12 @@ $tamanioLetraFilas = [
 //  FUNCIÓN PARA CREAR UNA HOJA
 //=====================
 
-function crearHoja($spreadsheet, $titulo1, $titulo2, $filtroEmpleados, $nombreHoja, $esPrimera = false)
+function crearHoja($spreadsheet, $titulo1, $titulo2, $filtroEmpleados, $nombreHoja, $colorExcel = 'F5EB1B', $esPrimera = false)
 {
     global $jsonNomina, $columnas, $columnasAncho, $tamanioLetraColumnas, $tamanioLetraFilas, $fecha_inicio, $fecha_cierre, $numero_semana, $ano;
+
+    $colorExcel = str_replace('#', '', $colorExcel);
+    $textColor = obtenerColorContraste($colorExcel);
 
     if ($esPrimera) {
         $sheet = $spreadsheet->getActiveSheet();
@@ -155,9 +181,9 @@ function crearHoja($spreadsheet, $titulo1, $titulo2, $filtroEmpleados, $nombreHo
     }
 
     $sheet->getStyle('A6:Y6')->applyFromArray([
-        'font' => ['bold' => true, 'size' => 10, 'color' => ['rgb' => '000000']],
+        'font' => ['bold' => true, 'size' => 10, 'color' => ['rgb' => $textColor]],
         'alignment' => ['horizontal' => 'center', 'vertical' => 'center', 'wrapText' => true],
-        'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => 'F5EB1B']] // Amarillo usuario
+        'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => $colorExcel]]
     ]);
 
     foreach ($columnasAncho as $c => $w) $sheet->getColumnDimension($c)->setWidth($w);
@@ -341,7 +367,7 @@ if ($jsonNomina && isset($jsonNomina['departamentos'])) {
         if ($hayCSS) {
             crearHoja($spreadsheet, strtoupper($nombreDepto), 'CITRICOS SAAO S.A DE C.V', 
                 fn($e) => (($e['id_departamento'] ?? $e['nombre']) == $idDepto && ($e['mostrar'] ?? true) && ($e['seguroSocial'] ?? false)), 
-                substr($nombreDepto, 0, 20) . ' CSS', $esPrimeraHoja);
+                substr($nombreDepto, 0, 20) . ' CSS', ($depto['color_depto_nomina'] ?? 'F5EB1B'), $esPrimeraHoja);
             $esPrimeraHoja = false;
         }
 
@@ -349,7 +375,7 @@ if ($jsonNomina && isset($jsonNomina['departamentos'])) {
         if ($haySSS) {
             crearHoja($spreadsheet, strtoupper($nombreDepto), 'CITRICOS SAAO S.A DE C.V', 
                 fn($e) => (($e['id_departamento'] ?? $e['nombre']) == $idDepto && ($e['mostrar'] ?? true) && !($e['seguroSocial'] ?? false)), 
-                substr($nombreDepto, 0, 20) . ' SSS', $esPrimeraHoja);
+                substr($nombreDepto, 0, 20) . ' SSS', ($depto['color_depto_nomina'] ?? 'F5EB1B'), $esPrimeraHoja);
             $esPrimeraHoja = false;
         }
     }

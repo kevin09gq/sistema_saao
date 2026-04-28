@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nómina</title>
+    <title>Nómina 10LBS</title>
     <?php
     include "../../config/config.php";
     verificarSesion(); // Proteger esta página
@@ -158,10 +158,10 @@
                             <th rowspan="2">IMSS</th>
                             <th rowspan="2">INFONAVIT</th>
                             <th rowspan="2">AJUSTES <br> AL SUB</th>
-                            <th rowspan="2">AUSENTISMO</th>
+                            <th rowspan="2" class="d-none">AUSENTISMO</th>
                             <th rowspan="2">PERMISO</th>
                             <th rowspan="2">UNIFORMES</th>
-                            <th rowspan="2">CHECADOR</th>
+                            <th rowspan="2">BIOMETRICO</th>
                             <th rowspan="2">F.A/GAFET/COFIA</th>
                             <th rowspan="2">TOTAL DE <br> DEDUCCIONES</th>
                             <th rowspan="2">NETO A RECIBIR</th>

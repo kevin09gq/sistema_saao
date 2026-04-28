@@ -174,7 +174,7 @@ function nominaCompleta() {
                 var numeroSemana = String(jsonNomina10lbs.numero_semana).padStart(2, '0');
                 var aniosCierre = jsonNomina10lbs.fecha_cierre.split('/')[2];
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'NOMINA_COMPLETA_SEM_' + numeroSemana + '_' + aniosCierre + '_' + timestamp + '.xlsx';
+                link.download = 'NOMINA_10LBS_SEM_' + numeroSemana + '_' + aniosCierre + '_' + timestamp + '.xlsx';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -219,7 +219,7 @@ function reporteNominaPdf() {
                 var url = URL.createObjectURL(blob);
                 link.href = url;
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'REPORTE_NOMINA_40LBS_' + timestamp + '.pdf';
+                link.download = 'REPORTE_NOMINA_10LBS_' + timestamp + '.pdf';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -292,7 +292,6 @@ function exportarDispersionTarjeta() {
 
     jsonNomina10lbs.departamentos.forEach(depto => {
         // Solo validar departamentos marcados para edición
-        if (depto.editar !== true) return;
 
         depto.empleados.forEach(emp => {
             if (Number(emp.total_cobrar) < 0) {

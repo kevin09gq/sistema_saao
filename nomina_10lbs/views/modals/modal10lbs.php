@@ -323,7 +323,7 @@
 
                                  
                                         <!-- Sección de Inasistencias -->
-                                        <div class="row mb-3">
+                                        <div class="row mb-3" hidden>
                                             <div class="col-md-4 mb-2">
                                                 <label class="form-label fw-semibold">Ausentismo($)</label>
                                                 <div class="input-group">
@@ -336,7 +336,7 @@
                                         </div>
 
                                         <!-- Historial Detallado de Inasistencias -->
-                                        <div class="row mb-3">
+                                        <div class="row mb-3" hidden>
                                             <div class="col-12">
                                                 <h6 class="fw-semibold text-info mb-3">
                                                     <i class="bi bi-calendar-x"></i> Historial de Ausentismo por Día

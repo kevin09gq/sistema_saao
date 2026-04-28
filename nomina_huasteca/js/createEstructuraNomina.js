@@ -64,6 +64,7 @@ function obtenerDepartamentosNomina(jsonNominaHuasteca) {
                     jsonNominaHuasteca.departamentos.push({
                         id_departamento: dpto.id_departamento,
                         nombre: dpto.nombre_departamento,
+                        color_depto_nomina: dpto.color_depto_nomina || '#32BA5B', // Valor por defecto si no viene del servidor 32BA5B
                         empleados: []
                     });
                 });

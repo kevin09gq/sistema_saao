@@ -26,7 +26,6 @@ const DEDUCCIONES = [
     { nombre: 'Inasistencias', propiedad: 'inasistencia' },
     { nombre: 'Uniformes', propiedad: 'uniformes' },
     { nombre: 'Checador', propiedad: 'checador' },
-    { nombre: 'F.A/Gafet/Cofia', propiedad: 'fa_gafet_cofia' },
     { nombre: 'Préstamo', propiedad: 'prestamo' },
     { nombre: 'Tarjeta', propiedad: 'tarjeta' }
 ];
@@ -115,7 +114,7 @@ function calcularYMostrarTotales() {
             });
 
             if (totalExtrasEmpleado > 0) {
-                const clave = 'Otras Deducciones';
+                const clave = 'F.A/Gafet/Cofia';
                 if (!deducciones[clave]) {
                     deducciones[clave] = { total: 0, empleados: [] };
                 }

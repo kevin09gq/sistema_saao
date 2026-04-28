@@ -250,9 +250,12 @@ $anchos_poda = [
 //  FUNCIÓN PARA CREAR UNA HOJA
 //=====================
 
-function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja)
+function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $colorExcel = 'C9C5C3')
 {
     global $jsonNomina, $columnas, $columnasAncho, $tamanioLetraColumnas, $tamanioLetraFilas, $fecha_inicio, $fecha_cierre, $numero_semana, $ano;
+
+    $colorExcel = str_replace('#', '', $colorExcel);
+    $textColor = obtenerColorContraste($colorExcel);
 
     // Crear una nueva hoja o usar la existente (si el libro está recién creado)
     if ($spreadsheet->getSheetCount() === 1 && $spreadsheet->getActiveSheet()->getTitle() === 'Worksheet') {
@@ -329,17 +332,17 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja)
         $columnaLetra++;
     }
 
-    // Formatear los encabezados (Negrita, Centrados, Tamaño 10, Fondo Rojo, Letra Blanca)
+    // Formatear los encabezados (Negrita, Centrados, Tamaño 10, Fondo Dinámico, Letra de Contraste)
     $sheet->getStyle('A6:AB6')->getFont()->setBold(true);
     $sheet->getStyle('A6:AB6')->getFont()->setSize(10);
-    $sheet->getStyle('A6:AB6')->getFont()->setColor(new Color('000000')); // Letra blanca
+    $sheet->getStyle('A6:AB6')->getFont()->setColor(new Color($textColor));
     $sheet->getStyle('A6:AB6')->getAlignment()->setHorizontal('center');
     $sheet->getStyle('A6:AB6')->getAlignment()->setVertical('center');
     $sheet->getStyle('A6:AB6')->getAlignment()->setWrapText(true);
 
-    // Agregar color de fondo rojo a los encabezados
+    // Agregar color de fondo dinámico a los encabezados
     $sheet->getStyle('A6:AB6')->getFill()->setFillType('solid');
-    $sheet->getStyle('A6:AB6')->getFill()->getStartColor()->setRGB('C9C5C3'); // Rojo
+    $sheet->getStyle('A6:AB6')->getFill()->getStartColor()->setRGB($colorExcel);
 
     // Ajustar el ancho de las columnas
     foreach ($columnasAncho as $columna => $ancho) {
@@ -916,6 +919,29 @@ function restarUnDia($fecha)
 
     // Formatear resultado
     return $date->format("d") . "/" . $mesAbrevNuevo . "/" . $date->format("Y");
+}
+
+/**
+ * Determina si un color de fondo es oscuro o claro y devuelve el color de texto adecuado (blanco o negro).
+ */
+function obtenerColorContraste($hexColor)
+{
+    // Eliminar el # si existe
+    $hexColor = str_replace('#', '', $hexColor);
+
+    // Si el color no es válido, por defecto blanco
+    if (strlen($hexColor) != 6) return '000000';
+
+    // Convertir hex a RGB
+    $r = hexdec(substr($hexColor, 0, 2));
+    $g = hexdec(substr($hexColor, 2, 2));
+    $b = hexdec(substr($hexColor, 4, 2));
+
+    // Calcular el brillo (Fórmula YIQ)
+    // El umbral de 128 (la mitad de 255) determina si el fondo es claro u oscuro
+    $yiq = (($r * 299) + ($g * 587) + ($b * 114)) / 1000;
+
+    return ($yiq >= 128) ? '000000' : 'FFFFFF';
 }
 
 /**
@@ -1934,7 +1960,8 @@ if ($jsonNomina && isset($jsonNomina['departamentos'])) {
                 $mostrar    = $emp['mostrar'] ?? false;
                 return ($mostrar && $idDeptoEmp == $idDepto);
             },
-            substr(strtoupper($nombreDepto), 0, 31)
+            substr(strtoupper($nombreDepto), 0, 31),
+            ($departamento['color_depto_nomina'] ?? 'C9C5C3')
         );
     }
 }

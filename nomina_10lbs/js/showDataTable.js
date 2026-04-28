@@ -109,7 +109,7 @@ function mostrarDatosTabla(jsonNomina10lbs, pagina = 1) {
                 <td>${formatearValor(buscarConcepto('16'), true)}</td> <!-- INFONAVIT -->
                 <td>${formatearValor(buscarConcepto('107'), true)}</td> <!-- AJUSTES AL SUB -->
 
-                <td>${formatearValor(empleado.inasistencia || 0, true)}</td> <!-- AUSENTISMO -->
+                <td class="d-none">${formatearValor(empleado.inasistencia || 0, true)}</td> <!-- AUSENTISMO -->
                 <td>${formatearValor(empleado.permiso || 0, true)}</td> <!-- PERMISO -->
                 <td>${formatearValor(empleado.uniformes || 0, true)}</td> <!-- UNIFORMES -->
                 <td>${formatearValor(empleado.checador || 0, true)}</td> <!-- CHECADOR -->
@@ -357,7 +357,7 @@ function generarFilaTotalesDepartamento(empleados) {
             <td>${formatearTotalValor(totales.infonavit, true)}</td> <!-- INFONAVIT -->
             <td>${formatearTotalValor(totales.ajustes, true)}</td> <!-- AJUSTES AL SUB -->
             
-            <td>${formatearTotalValor(totales.inasistencias, true)}</td> <!-- AUSENTISMO -->
+            <td class="d-none">${formatearTotalValor(totales.inasistencias, true)}</td> <!-- AUSENTISMO -->
             <td>${formatearTotalValor(totales.permiso, true)}</td> <!-- PERMISO -->
             <td>${formatearTotalValor(totales.uniformes, true)}</td> <!-- UNIFORMES -->
             <td>${formatearTotalValor(totales.checador, true)}</td> <!-- CHECADOR -->

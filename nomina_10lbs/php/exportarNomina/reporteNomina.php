@@ -13,7 +13,7 @@ class PDFEncabezado extends TCPDF
 {
     private $tituloNomina;
     private $numeroSemana;
-    private $fechaCierre;
+    private $fechaCierre; 
 
     public function setDatosNomina($titulo, $semana, $fecha)
     {
@@ -135,9 +135,7 @@ $grupos = [];
 
 if (isset($datosNomina['departamentos']) && is_array($datosNomina['departamentos'])) {
     foreach ($datosNomina['departamentos'] as $depto) {
-        // Solo procesar departamentos oficiales (editar: true)
-        if (!isset($depto['editar']) || $depto['editar'] !== true) continue;
-
+       
         $nombreDepto = strtoupper($depto['nombre']);
 
         foreach ($depto['empleados'] ?? [] as $emp) {
@@ -165,7 +163,7 @@ $pdf = new PDFEncabezado('P', 'mm', 'A4', true, 'UTF-8', false);
 $pdf->setDatosNomina($tituloNomina, $numero_semana, $fecha_cierre);
 $pdf->SetCreator('SAAO');
 $pdf->SetAuthor('SAAO');
-$pdf->SetTitle('Reporte Contable de Nómina');
+$pdf->SetTitle('Reporte Contable de Nómina 10LBS');
 $pdf->SetMargins(10, 50, 10);
 $pdf->SetHeaderMargin(10);
 $pdf->SetFooterMargin(10);
@@ -213,13 +211,7 @@ foreach ($grupos as $nombreGrupo => $empleados) {
 
         // --- PERCEPCIONES ---
         $p = ['Sueldo Base/Neto' => (float)($emp['sueldo_neto'] ?? 0)];
-        if (($emp['incentivo'] ?? 0) != 0) $p['Incentivo'] = (float)$emp['incentivo'];
-        
         $extrasDetalle = [];
-        if (($emp['horas_extra'] ?? 0) != 0) $extrasDetalle['Horas Extra'] = (float)$emp['horas_extra'];
-        if (($emp['bono_antiguedad'] ?? 0) != 0) $extrasDetalle['Bono Antigüedad'] = (float)$emp['bono_antiguedad'];
-        if (($emp['actividades_especiales'] ?? 0) != 0) $extrasDetalle['Actividades Especiales'] = (float)$emp['actividades_especiales'];
-        if (($emp['puesto'] ?? 0) != 0) $extrasDetalle['Concepto Puesto'] = (float)$emp['puesto'];
         foreach ($emp['percepciones_extra'] ?? [] as $extra) {
             if (($extra['cantidad'] ?? 0) != 0) $extrasDetalle[$extra['nombre']] = (float)$extra['cantidad'];
         }
@@ -247,15 +239,15 @@ foreach ($grupos as $nombreGrupo => $empleados) {
         if (($emp['permiso'] ?? 0) != 0) $d['Permiso'] = (float)$emp['permiso'];
         if (($emp['uniforme'] ?? 0) != 0) $d['Uniforme'] = (float)$emp['uniforme'];
         if (($emp['checador'] ?? 0) != 0) $d['Biométrico'] = (float)$emp['checador'];
-        if (($emp['fa_gafet_cofia'] ?? 0) != 0) $d['Fa/Gafet/Cofia'] = (float)$emp['fa_gafet_cofia'];
         if (($emp['tarjeta'] ?? 0) != 0) $d['Tarjeta'] = (float)$emp['tarjeta'];
         if (($emp['prestamo'] ?? 0) != 0) $d['Préstamo'] = (float)$emp['prestamo'];
-        
         $extrasDDetalle = [];
         foreach ($emp['deducciones_extra'] ?? [] as $ex) {
             if (($ex['cantidad'] ?? 0) != 0) $extrasDDetalle[$ex['nombre']] = (float)$ex['cantidad'];
         }
-        if (!empty($extrasDDetalle)) $d['Deducciones Extras Total'] = array_sum($extrasDDetalle);
+        
+        $totalExtras = array_sum($extrasDDetalle);
+        if ($totalExtras != 0) $d['Fa/Gafet/Cofia'] = $totalExtras;
 
         $totalDeduccionesEmpleado = array_sum($d);
 
@@ -303,7 +295,7 @@ foreach ($grupos as $nombreGrupo => $empleados) {
             $pdf->Cell(60, 6, $con, 0, 0, 'L');
             $pdf->SetFont('dejavusansmono', '', 9);
             $pdf->Cell(30, 6, formatoMoneda($mon), 0, 1, 'R');
-            if ($con === 'Deducciones Extras Total' && !empty($extrasDDetalle)) {
+            if ($con === 'Fa/Gafet/Cofia' && !empty($extrasDDetalle)) {
                 $pdf->SetFont('dejavusans', 'I', 8);
                 foreach ($extrasDDetalle as $en => $ev) {
                     $pdf->SetX(110);
@@ -506,42 +498,6 @@ if ($contadorEmpleados > 0) {
         }
     }
 
-    //=====================================
-    // PÁGINA FINAL: HORARIO SEMANAL
-    //=====================================
-    if (isset($datosNomina['horarios_semanales']) && !empty($datosNomina['horarios_semanales'])) {
-        $pdf->AddPage();
-        $pdf->SetFont('helvetica', 'B', 16);
-        $pdf->Cell(0, 12, 'HORARIO SEMANAL DE TRABAJO', 0, 1, 'C');
-        $pdf->Ln(10);
-
-        // Encabezados de tabla
-        $pdf->SetFont('helvetica', 'B', 11);
-        $pdf->SetFillColor(240, 240, 240);
-        $pdf->Cell(40, 10, 'DÍA', 1, 0, 'C', true);
-        $pdf->Cell(35, 10, 'ENTRADA', 1, 0, 'C', true);
-        $pdf->Cell(40, 10, 'SALIDA COMIDA', 1, 0, 'C', true);
-        $pdf->Cell(40, 10, 'ENTRADA COMIDA', 1, 0, 'C', true);
-        $pdf->Cell(35, 10, 'SALIDA', 1, 1, 'C', true);
-
-        // Definir orden de la semana (Viernes a Jueves)
-        $diasFijos = ['Viernes', 'Sábado', 'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves'];
-        $horariosIndexados = [];
-        foreach ($datosNomina['horarios_semanales'] as $h) {
-            $horariosIndexados[$h['dia']] = $h;
-        }
-
-        $pdf->SetFont('dejavusans', '', 10);
-        foreach ($diasFijos as $dia) {
-            $h = isset($horariosIndexados[$dia]) ? $horariosIndexados[$dia] : null;
-
-            $pdf->Cell(40, 8, $dia, 1, 0, 'L');
-            $pdf->Cell(35, 8, ($h && !empty($h['entrada']) ? $h['entrada'] : '-'), 1, 0, 'C');
-            $pdf->Cell(40, 8, ($h && !empty($h['entrada_comida']) ? $h['entrada_comida'] : '-'), 1, 0, 'C');
-            $pdf->Cell(40, 8, ($h && !empty($h['termino_comida']) ? $h['termino_comida'] : '-'), 1, 0, 'C');
-            $pdf->Cell(35, 8, ($h && !empty($h['salida']) ? $h['salida'] : '-'), 1, 1, 'C');
-        }
-    }
 }
 
 // Descarga

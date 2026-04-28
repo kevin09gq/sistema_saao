@@ -26,7 +26,7 @@ function poblarOpcionesExportar(json) {
     json.departamentos.forEach(depto => {
         // Solo mostrar departamentos con la propiedad editar: true
         if (depto.editar !== true) return;
-        
+
         const nombre = depto.nombre;
         const idDepto = depto.id_departamento || depto.nombre;
 
@@ -119,7 +119,7 @@ function exportarPorDepartamento() {
                 var anio = jsonNomina40lbs.fecha_cierre.split('/')[2];
                 var tipoSuffix = esSeguroSocial ? 'CSS' : 'SSS';
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                
+
                 link.download = `SEM ${numeroSemana} - ${anio} - ${nombreDepto} ${tipoSuffix} - ${timestamp}.xlsx`;
                 document.body.appendChild(link);
                 link.click();
@@ -288,7 +288,7 @@ function exportarDispersionTarjeta() {
     });
 }
 
- function validarEmpleadosNegativos() {
+function validarEmpleadosNegativos() {
     if (!jsonNomina40lbs || !jsonNomina40lbs.departamentos) return false;
 
     let nombresNegativos = [];
@@ -305,7 +305,7 @@ function exportarDispersionTarjeta() {
     });
 
     if (nombresNegativos.length > 0) {
-         Swal.fire({
+        Swal.fire({
             icon: 'error',
             title: 'No se puede exportar la nómina',
             html: `

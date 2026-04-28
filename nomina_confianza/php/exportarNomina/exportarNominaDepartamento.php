@@ -48,6 +48,29 @@ function restarUnDia($fecha)
     return $date->format("d") . "/" . $mesAbrevNuevo . "/" . $date->format("Y");
 }
 
+/**
+ * Determina si un color de fondo es oscuro o claro y devuelve el color de texto adecuado (blanco o negro).
+ */
+function obtenerColorContraste($hexColor)
+{
+    // Eliminar el # si existe
+    $hexColor = str_replace('#', '', $hexColor);
+
+    // Si el color no es válido, por defecto blanco
+    if (strlen($hexColor) != 6) return '000000';
+
+    // Convertir hex a RGB
+    $r = hexdec(substr($hexColor, 0, 2));
+    $g = hexdec(substr($hexColor, 2, 2));
+    $b = hexdec(substr($hexColor, 4, 2));
+
+    // Calcular el brillo (Fórmula YIQ)
+    // El umbral de 128 (la mitad de 255) determina si el fondo es claro u oscuro
+    $yiq = (($r * 299) + ($g * 587) + ($b * 114)) / 1000;
+
+    return ($yiq >= 128) ? '000000' : 'FFFFFF';
+}
+
 //=====================
 //  RECIBIR DATOS DEL JSON
 //=====================
@@ -66,8 +89,8 @@ $nombreEmpresaTarget = $_POST['empresaNombre'] ?? '';
 $colorExcel = $_POST['colorExcel'] ?? 'FF0000';
 $colorExcel = str_replace('#', '', $colorExcel);
 
-$textColor = $_POST['textColor'] ?? 'FFFFFF';
-$textColor = str_replace('#', '', $textColor);
+// Detectar automáticamente el color de texto según el contraste
+$textColor = obtenerColorContraste($colorExcel);
 
 //=====================
 //  CONFIGURACIÓN INICIAL

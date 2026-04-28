@@ -14,6 +14,32 @@ $(document).ready(function () {
     $(document).on("change", "#modal_color_departamento", function () {
         $("#modal_color_text").text($(this).val().toUpperCase());
     });
+
+    // Actualizar color de un departamento ya asignado
+    $(document).on("change", ".btn-update-color-nd", function () {
+        let idRelacion = $(this).data("id");
+        let nuevoColor = $(this).val();
+        let $badge = $(this).closest(".badge");
+
+        $.ajax({
+            type: "POST",
+            url: "../php/configNominas.php",
+            data: {
+                accion: "actualizarColorNominaDepartamento",
+                id_relacion: idRelacion,
+                color: nuevoColor
+            },
+            success: function (response) {
+                if (response.trim() == "1") {
+                    $badge.css("border-color", nuevoColor + " !important");
+                    // No hace falta recargar todo, solo actualizar el visual si se desea, 
+                    // pero el input ya cambió su propio color.
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo actualizar el color' });
+                }
+            }
+        });
+    });
 });
 
 // ==========================================
@@ -264,8 +290,12 @@ function cargarDepartamentosAsignados(idNomina) {
                     deptos.forEach(depto => {
                         badges += `
                         <div class="badge shadow-sm d-flex align-items-center p-0 overflow-hidden border" style="background-color: white; border-color: ${depto.color_depto_nomina || '#FF0000'} !important; min-width: 120px;">
-                            <div style="background-color: ${depto.color_depto_nomina || '#FF0000'}; width: 10px; height: 35px;"></div>
-                            <span class="px-2 text-dark fw-semibold flex-grow-1">${depto.nombre_departamento}</span>
+                            <input type="color" class="btn-update-color-nd border-0 p-0" 
+                                data-id="${depto.id_nomina_departamento}" 
+                                value="${depto.color_depto_nomina || '#FF0000'}" 
+                                title="Cambiar color"
+                                style="width: 15px; height: 35px; cursor: pointer;">
+                            <span class="px-2 text-dark fw-semibold flex-grow-1 text-start">${depto.nombre_departamento}</span>
                             <button class="btn btn-sm btn-link text-danger p-1 me-1 btn-delete-nd-modal" data-id="${depto.id_nomina_departamento}" title="Quitar departamento">
                                 <i class="bi bi-x-circle-fill"></i>
                             </button>

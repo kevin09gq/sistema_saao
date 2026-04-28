@@ -64,6 +64,7 @@ function obtenerDepartamentosNomina(jsonNominaPalmilla) {
                     jsonNominaPalmilla.departamentos.push({
                         id_departamento: dpto.id_departamento,
                         nombre: dpto.nombre_departamento,
+                        color_depto_nomina: dpto.color_depto_nomina || '#C9C5C3', // Valor por defecto si no viene del servidor C9C5C3
                         empleados: []
                     });
                 });

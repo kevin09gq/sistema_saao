@@ -188,16 +188,16 @@ function crearHoja($spreadsheet, $deptoData, $targetEmpresaId, $filtroEmpleados,
     $nombreDepto = $deptoData['nombre'] ?? 'DEPARTAMENTO';
     $colorExcel = $deptoData['color_reporte'] ?? 'FF0000';
     $colorExcel = str_replace('#', '', $colorExcel);
-    $textColor = 'FFFFFF'; // Por defecto blanco para fondo rojo
-
     $nombreEmpresaTarget = 'CITRICOS SAAO';
 
     // Ajustar colores y nombres según la empresa target
     if ($targetEmpresaId == 2) {
         $nombreEmpresaTarget = 'SB CITRIC´S GROUP';
         $colorExcel = 'A9D08E';
-        $textColor = '000000';
     }
+    
+    // Detectar automáticamente el color de texto según el contraste
+    $textColor = obtenerColorContraste($colorExcel);
 
     // Crear una nueva hoja o usar la existente (si el libro está recién creado)
     if ($spreadsheet->getSheetCount() === 1 && $spreadsheet->getActiveSheet()->getTitle() === 'Worksheet') {
@@ -792,6 +792,29 @@ function restarUnDia($fecha)
 
     // Formatear resultado
     return $date->format("d") . "/" . $mesAbrevNuevo . "/" . $date->format("Y");
+}
+
+/**
+ * Determina si un color de fondo es oscuro o claro y devuelve el color de texto adecuado (blanco o negro).
+ */
+function obtenerColorContraste($hexColor)
+{
+    // Eliminar el # si existe
+    $hexColor = str_replace('#', '', $hexColor);
+
+    // Si el color no es válido, por defecto blanco
+    if (strlen($hexColor) != 6) return '000000';
+
+    // Convertir hex a RGB
+    $r = hexdec(substr($hexColor, 0, 2));
+    $g = hexdec(substr($hexColor, 2, 2));
+    $b = hexdec(substr($hexColor, 4, 2));
+
+    // Calcular el brillo (Fórmula YIQ)
+    // El umbral de 128 (la mitad de 255) determina si el fondo es claro u oscuro
+    $yiq = (($r * 299) + ($g * 587) + ($b * 114)) / 1000;
+
+    return ($yiq >= 128) ? '000000' : 'FFFFFF';
 }
 
 

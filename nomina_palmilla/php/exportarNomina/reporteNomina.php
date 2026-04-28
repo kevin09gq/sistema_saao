@@ -167,7 +167,7 @@ $pdf = new PDFEncabezado('P', 'mm', 'A4', true, 'UTF-8', false);
 $pdf->setDatosNomina($tituloNomina, $numero_semana, $fecha_cierre);
 $pdf->SetCreator('SAAO');
 $pdf->SetAuthor('SAAO');
-$pdf->SetTitle('Reporte Contable de Nómina de Confianza');
+$pdf->SetTitle('Reporte Contable de Nómina Palmilla');
 $pdf->SetMargins(10, 50, 10);
 $pdf->SetHeaderMargin(10);
 $pdf->SetFooterMargin(10);

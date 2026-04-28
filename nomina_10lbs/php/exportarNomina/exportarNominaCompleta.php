@@ -65,45 +65,29 @@ if ($jsonNomina) {
 }
 
 //=====================
-//  DEFINIR COLUMNAS COMUNES (Personalizado para 40lbs)
+//  FUNCIONES AUXILIARES
 //=====================
 
-$columnas = [
-    'N°', 'CD', 'NOMBRE', 'SUELDO NETO', 'INCENTIVO', 'EXTRAS', 'TOTAL PERCEPCIONES',
-    'ISR', 'IMSS', 'INFONAVIT', 'AJUSTES AL SUB', 'AUSENTISMO', 'PERMISOS', 'UNIFORMES',
-    'BIOMETRICO', 'F.A/GAFET/COFIA', 'TOTAL DE DEDUCCIONES', 'NETO A RECIBIR',
-    'DISPERSION DE TARJETA', 'IMPORTE EN EFECTIVO', 'PRÉSTAMO', 'TOTAL A RECIBIR',
-    'REDONDEADO', 'TOTAL EFECTIVO REDONDEADO', 'FIRMA RECIBIDO'
-];
-
-$columnasAncho = [
-    'A' => 12, 'B' => 14, 'C' => 65, 'D' => 22, 'E' => 20, 'F' => 20, 'G' => 22,
-    'H' => 20, 'I' => 20, 'J' => 20, 'K' => 22, 'L' => 21, 'M' => 20, 'N' => 20,
-    'O' => 20, 'P' => 22, 'Q' => 22, 'R' => 22, 'S' => 22, 'T' => 22, 'U' => 22,
-    'V' => 22, 'W' => 20, 'X' => 23, 'Y' => 25
-];
-
-$tamanioLetraColumnas = [
-    'A' => 14, 'B' => 14, 'C' => 14, 'D' => 14, 'E' => 14, 'F' => 14, 'G' => 13,
-    'H' => 14, 'I' => 14, 'J' => 14, 'K' => 14, 'L' => 14, 'M' => 14, 'N' => 14,
-    'O' => 14, 'P' => 13, 'Q' => 13, 'R' => 13, 'S' => 13, 'T' => 13, 'U' => 14,
-    'V' => 13, 'W' => 14, 'X' => 13, 'Y' => 14
-];
-
-$tamanioLetraFilas = [
-    'A' => 14, 'B' => 14, 'C' => 16, 'D' => 15, 'E' => 15, 'F' => 15, 'G' => 15,
-    'H' => 15, 'I' => 15, 'J' => 15, 'K' => 15, 'L' => 15, 'M' => 15, 'N' => 15,
-    'O' => 15, 'P' => 15, 'Q' => 15, 'R' => 15, 'S' => 15, 'T' => 15, 'U' => 15,
-    'V' => 15, 'W' => 15, 'X' => 15
-];
+/**
+ * Determina si el color de fuente debe ser blanco o negro basándose en la luminancia del fondo.
+ */
+function obtenerColorContraste($hexColor)
+{
+    if (strlen($hexColor) !== 6) return '000000';
+    $r = hexdec(substr($hexColor, 0, 2));
+    $g = hexdec(substr($hexColor, 2, 2));
+    $b = hexdec(substr($hexColor, 4, 2));
+    $luminancia = ($r * 0.299 + $g * 0.587 + $b * 0.114) / 255;
+    return ($luminancia < 0.5) ? 'FFFFFF' : '000000';
+}
 
 //=====================
 //  FUNCIÓN PARA CREAR UNA HOJA
 //=====================
 
-function crearHoja($spreadsheet, $titulo1, $titulo2, $filtroEmpleados, $nombreHoja, $esPrimera = false)
+function crearHoja($spreadsheet, $depto, $filtroEmpleados, $nombreHoja, $esPrimera = false)
 {
-    global $jsonNomina, $columnas, $columnasAncho, $tamanioLetraColumnas, $tamanioLetraFilas, $fecha_inicio, $fecha_cierre, $numero_semana, $ano;
+    global $jsonNomina, $fecha_inicio, $fecha_cierre, $numero_semana, $ano;
 
     if ($esPrimera) {
         $sheet = $spreadsheet->getActiveSheet();
@@ -113,33 +97,149 @@ function crearHoja($spreadsheet, $titulo1, $titulo2, $filtroEmpleados, $nombreHo
 
     $sheet->setTitle($nombreHoja);
 
-    $titulo3 = 'NOMINA DEL ' . strtoupper($fecha_inicio) . ' AL ' . strtoupper($fecha_cierre);
-    $titulo4 = 'SEMANA ' . str_pad($numero_semana, 2, '0', STR_PAD_LEFT) . '-' . $ano;
+    // Extraer color del depto
+    $colorDepto = 'F5EB1B';
+    $colorFuenteEnc = '000000';
+    if (!empty($depto['color_reporte'])) {
+        $colorDepto = ltrim($depto['color_reporte'], '#');
+        $colorFuenteEnc = obtenerColorContraste($colorDepto);
+    }
 
-    $sheet->setCellValue('A1', $titulo1);
-    $sheet->setCellValue('A2', $titulo2);
-    $sheet->setCellValue('A3', $titulo3);
-    $sheet->setCellValue('A4', $titulo4);
+    // Extraer cajas con utilidad
+    $precioCajasUtilidad = [];
+    if (isset($jsonNomina['precio_cajas'])) {
+        foreach ($jsonNomina['precio_cajas'] as $caja) {
+            if (($caja['utilidad'] ?? false) === true) $precioCajasUtilidad[] = $caja;
+        }
+    }
 
-    // Mergear celdas A-Y (25 columnas)
-    $sheet->mergeCells('A1:Y1');
-    $sheet->mergeCells('A2:Y2');
-    $sheet->mergeCells('A3:Y3');
-    $sheet->mergeCells('A4:Y4');
+    // Configuración días empaque
+    $diasConfig = [
+        ['abrv' => 'V', 'nombre' => 'Viernes'], ['abrv' => 'S', 'nombre' => 'Sábado'],
+        ['abrv' => 'D', 'nombre' => 'Domingo'], ['abrv' => 'L', 'nombre' => 'Lunes'],
+        ['abrv' => 'M', 'nombre' => 'Martes'], ['abrv' => 'MI', 'nombre' => 'Miércoles'],
+        ['abrv' => 'J', 'nombre' => 'Jueves']
+    ];
 
-    // Estilos de títulos (Verde preferido por el usuario: 179C1E)
-    $verdeUsuario = '179C1E';
-    $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(24)->setColor(new Color($verdeUsuario));
-    $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(20)->setColor(new Color($verdeUsuario));
+    // Filtrar y ordenar empleados para esta hoja
+    $empleados = [];
+    foreach ($depto['empleados'] ?? [] as $emp) {
+        if ($filtroEmpleados($emp)) $empleados[] = $emp;
+    }
+    usort($empleados, fn($a, $b) => strcmp($a['nombre'] ?? '', $b['nombre'] ?? ''));
+
+    // Identificar días con producción real para este grupo
+    $diasProduccion = [];
+    foreach ($empleados as $emp) {
+        foreach ($emp['historial_empaque'] ?? [] as $hist) {
+            if (($hist['cantidad'] ?? 0) > 0) $diasProduccion[$hist['dia']] = true;
+        }
+    }
+
+    $diasAMostrar = [];
+    foreach ($diasConfig as $dc) {
+        if (isset($diasProduccion[$dc['nombre']])) $diasAMostrar[] = $dc;
+    }
+
+    // Columnas Fijas
+    $colIniciales = ['N°', 'CD', 'NOMBRE'];
+    $colFinales = [
+        'SUELDO NETO', 'EXTRAS', 'TOTAL PERCEPCIONES', 'ISR', 'IMSS', 'INFONAVIT',
+        'AJUSTES AL SUB', 'PERMISOS', 'UNIFORMES', 'BIOMETRICO', 'F.A/GAFET/COFIA',
+        'TOTAL DE DEDUCCIONES', 'NETO A RECIBIR', 'DISPERSION DE TARJETA', 'IMPORTE EN EFECTIVO',
+        'PRÉSTAMO', 'TOTAL A RECIBIR', 'REDONDEADO', 'TOTAL EFECTIVO REDONDEADO', 'FIRMA RECIBIDO'
+    ];
+
+    $mapeo = [];
+    $colIdx = 1;
+
+    // 1. Iniciales
+    foreach ($colIniciales as $name) {
+        $letra = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIdx);
+        $mapeo[$name] = $letra;
+        $sheet->mergeCells($letra . '7:' . $letra . '8');
+        $sheet->setCellValue($letra . '7', $name);
+        $colIdx++;
+    }
+
+    // 2. Empaque Diario
+    $inicioEmpaque = $colIdx;
+    foreach ($diasAMostrar as $dia) {
+        $colIni = $colIdx;
+        foreach ($precioCajasUtilidad as $caja) {
+            $letra = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIdx);
+            $sheet->setCellValue($letra . '8', (int)$caja['precio']);
+            if (!empty($caja['color']) && $caja['color'] !== '#000000') {
+                $fnd = ltrim($caja['color'], '#');
+                $fnt = obtenerColorContraste($fnd);
+                $sheet->getStyle($letra . '8')->getFill()->setFillType('solid')->getStartColor()->setRGB($fnd);
+                $sheet->getStyle($letra . '8')->getFont()->setColor(new Color($fnt));
+            }
+            $colIdx++;
+        }
+        $letraIni = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIni);
+        $letraFin = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIdx - 1);
+        $sheet->mergeCells($letraIni . '7:' . $letraFin . '7');
+        $sheet->setCellValue($letraIni . '7', $dia['abrv']);
+    }
+    $finEmpaque = $colIdx - 1;
+
+    // 3. Resumen Empaque
+    $inicioResumen = $colIdx;
+    $columnasResumenCajas = [];
+    foreach ($precioCajasUtilidad as $caja) {
+        $letraTot = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIdx);
+        $sheet->setCellValue($letraTot . '7', 'TOTAL DE CAJAS');
+        $sheet->setCellValue($letraTot . '8', (int)$caja['precio']);
+        if (!empty($caja['color']) && $caja['color'] !== '#000000') {
+            $fnd = ltrim($caja['color'], '#');
+            $sheet->getStyle($letraTot . '7:' . $letraTot . '8')->getFill()->setFillType('solid')->getStartColor()->setRGB($fnd);
+            $sheet->getStyle($letraTot . '7:' . $letraTot . '8')->getFont()->setColor(new Color(obtenerColorContraste($fnd)));
+        }
+        $colIdx++;
+
+        $letraPre = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIdx);
+        $sheet->mergeCells($letraPre . '7:' . $letraPre . '8');
+        $sheet->setCellValue($letraPre . '7', 'PRECIO UNITARIO');
+        $sheet->getStyle($letraPre . '7:' . $letraPre . '8')->getFill()->setFillType('solid')->getStartColor()->setRGB('FFFF00');
+        
+        $columnasResumenCajas[] = ['total' => $letraTot, 'precio' => $letraPre];
+        $colIdx++;
+    }
+    $finResumen = $colIdx - 1;
+
+    // 4. Finales
+    foreach ($colFinales as $name) {
+        $letra = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIdx);
+        $mapeo[$name] = $letra;
+        $sheet->mergeCells($letra . '7:' . $letra . '8');
+        $sheet->setCellValue($letra . '7', $name);
+        $colIdx++;
+    }
+
+    $ultimaLetra = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIdx - 1);
+
+    // Títulos
+    $sheet->setCellValue('A1', strtoupper($depto['nombre']));
+    $sheet->setCellValue('A2', 'CITRICOS SAAO S.A DE C.V');
+    $sheet->setCellValue('A3', 'NOMINA DEL ' . strtoupper($fecha_inicio) . ' AL ' . strtoupper($fecha_cierre));
+    $sheet->setCellValue('A4', 'SEMANA ' . str_pad($numero_semana, 2, '0', STR_PAD_LEFT) . '-' . $ano);
+    $sheet->mergeCells('A1:' . $ultimaLetra . '1');
+    $sheet->mergeCells('A2:' . $ultimaLetra . '2');
+    $sheet->mergeCells('A3:' . $ultimaLetra . '3');
+    $sheet->mergeCells('A4:' . $ultimaLetra . '4');
+    $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(24)->setColor(new Color($colorDepto));
+    $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(20)->setColor(new Color($colorDepto));
     $sheet->getStyle('A3')->getFont()->setBold(true)->setSize(14);
     $sheet->getStyle('A4')->getFont()->setBold(true)->setSize(14);
-    $sheet->getStyle('A1:A4')->getAlignment()->setHorizontal('center')->setVertical('center');
+    $sheet->getStyle('A1:' . $ultimaLetra . '4')->getAlignment()->setHorizontal('center')->setVertical('center');
 
     // Logo
     $logoPath = '../../../public/img/logo.jpg';
     if (file_exists($logoPath)) {
         $logo = new Drawing();
         $logo->setName('Logo');
+        $logo->setDescription('Logo de Rancho El Relicario');
         $logo->setPath($logoPath);
         $logo->setHeight(190);
         $logo->setCoordinates('B1');
@@ -147,50 +247,38 @@ function crearHoja($spreadsheet, $titulo1, $titulo2, $filtroEmpleados, $nombreHo
         $logo->setWorksheet($sheet);
     }
 
-    // Encabezados
-    $col = 'A';
-    foreach ($columnas as $encabezado) {
-        $sheet->setCellValue($col . '6', $encabezado);
-        $col++;
-    }
-
-    $sheet->getStyle('A6:Y6')->applyFromArray([
-        'font' => ['bold' => true, 'size' => 10, 'color' => ['rgb' => '000000']],
+    // Estilo Encabezados
+    $rangoEnc = 'A7:' . $ultimaLetra . '8';
+    $sheet->getStyle($rangoEnc)->applyFromArray([
+        'font' => ['bold' => true, 'size' => 14, 'color' => ['rgb' => $colorFuenteEnc]],
         'alignment' => ['horizontal' => 'center', 'vertical' => 'center', 'wrapText' => true],
-        'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => 'F5EB1B']] // Amarillo usuario
+        'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => $colorDepto]]
     ]);
 
-    foreach ($columnasAncho as $c => $w) $sheet->getColumnDimension($c)->setWidth($w);
-    foreach ($tamanioLetraColumnas as $c => $s) $sheet->getStyle($c . '6')->getFont()->setSize($s);
+    // Alturas de fila para títulos y encabezados
+    $sheet->getRowDimension(1)->setRowHeight(38);
+    $sheet->getRowDimension(2)->setRowHeight(32);
+    $sheet->getRowDimension(3)->setRowHeight(32);
+    $sheet->getRowDimension(4)->setRowHeight(32);
+    $sheet->getRowDimension(7)->setRowHeight(35);
+    $sheet->getRowDimension(8)->setRowHeight(45);
 
-    // Filtrar y ordenar empleados
-    $empleados = [];
-    if ($jsonNomina && isset($jsonNomina['departamentos'])) {
-        foreach ($jsonNomina['departamentos'] as $depto) {
-            foreach ($depto['empleados'] ?? [] as $emp) {
-                if ($filtroEmpleados($emp)) $empleados[] = $emp;
-            }
-        }
-    }
-    usort($empleados, fn($a, $b) => strcmp($a['nombre'] ?? '', $b['nombre'] ?? ''));
+    // Anchos
+    foreach ($colIniciales as $n) $sheet->getColumnDimension($mapeo[$n])->setWidth(($n == 'NOMBRE') ? 65 : 12);
+    for ($i = $inicioEmpaque; $i <= $finEmpaque; $i++) $sheet->getColumnDimension(\PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($i))->setWidth(8);
+    for ($i = $inicioResumen; $i <= $finResumen; $i++) $sheet->getColumnDimension(\PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($i))->setWidth(15);
+    foreach ($colFinales as $n) $sheet->getColumnDimension($mapeo[$n])->setWidth(($n == 'FIRMA RECIBIDO') ? 28 : 20);
 
-    // Banderas de visibilidad
-    $flags = [
-        'incentivo' => false, 'isr' => false, 'imss' => false, 'infonavit' => false,
-        'ajustes' => false, 'ausentismo' => false, 'permiso' => false, 'uniforme' => false,
-        'checador' => false, 'fa_gafet_cofia' => false
-    ];
-
+    // Banderas visibilidad deducciones
+    $flags = ['isr' => false, 'imss' => false, 'infonavit' => false, 'ajustes' => false, 'permiso' => false, 'uniforme' => false, 'checador' => false, 'fa' => false];
     foreach ($empleados as $emp) {
-        if (($emp['incentivo'] ?? 0) != 0) $flags['incentivo'] = true;
-        if (($emp['inasistencia'] ?? 0) != 0) $flags['ausentismo'] = true;
         if (($emp['permiso'] ?? 0) != 0) $flags['permiso'] = true;
         if (($emp['uniforme'] ?? 0) != 0) $flags['uniforme'] = true;
         if (($emp['checador'] ?? 0) != 0) $flags['checador'] = true;
-        if (($emp['fa_gafet_cofia'] ?? 0) != 0) $flags['fa_gafet_cofia'] = true;
-
+        if (($emp['fa_gafet_cofia'] ?? 0) != 0) $flags['fa'] = true;
         foreach ($emp['conceptos'] ?? [] as $c) {
-            if (($c['resultado'] ?? 0) != 0) {
+            $r = $c['resultado'] ?? 0;
+            if ($r != 0) {
                 if ($c['codigo'] == '45') $flags['isr'] = true;
                 if ($c['codigo'] == '52') $flags['imss'] = true;
                 if ($c['codigo'] == '16') $flags['infonavit'] = true;
@@ -199,120 +287,148 @@ function crearHoja($spreadsheet, $titulo1, $titulo2, $filtroEmpleados, $nombreHo
         }
     }
 
-    // Insertar datos
-    $row = 7;
+    // Insertar Datos
+    $row = 9;
     $idx = 1;
     foreach ($empleados as $emp) {
-        $sheet->setCellValue('A' . $row, $idx++);
-        $sheet->setCellValue('B' . $row, $emp['clave'] ?? '');
-        $sheet->setCellValue('C' . $row, $emp['nombre'] ?? '');
+        $sheet->setCellValue($mapeo['N°'] . $row, $idx++);
+        $sheet->setCellValue($mapeo['CD'] . $row, $emp['clave'] ?? '');
+        $sheet->setCellValue($mapeo['NOMBRE'] . $row, $emp['nombre'] ?? '');
 
-        // Percepciones
-        if (($emp['sueldo_neto'] ?? 0) != 0) $sheet->setCellValue('D' . $row, $emp['sueldo_neto']);
-        if (($emp['incentivo'] ?? 0) != 0) $sheet->setCellValue('E' . $row, $emp['incentivo']);
-        if (($emp['sueldo_extra_total'] ?? 0) != 0) $sheet->setCellValue('F' . $row, $emp['sueldo_extra_total']);
-        $sheet->setCellValue('G' . $row, '=SUM(D' . $row . ':F' . $row . ')');
-
-        // Conceptos
-        $mapeoConceptos = ['45' => 'H', '52' => 'I', '16' => 'J', '107' => 'K'];
-        foreach ($emp['conceptos'] ?? [] as $c) {
-            if (isset($mapeoConceptos[$c['codigo']]) && ($c['resultado'] ?? 0) != 0) {
-                $sheet->setCellValue($mapeoConceptos[$c['codigo']] . $row, $c['resultado']);
+        // Empaque Diario
+        $colEmp = $inicioEmpaque;
+        foreach ($diasAMostrar as $dia) {
+            foreach ($precioCajasUtilidad as $caja) {
+                $letra = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colEmp);
+                $cant = 0;
+                foreach ($emp['historial_empaque'] ?? [] as $h) {
+                    if ($h['dia'] === $dia['nombre'] && $h['tipo'] === $caja['valor']) {
+                        $cant = $h['cantidad']; break;
+                    }
+                }
+                if ($cant > 0) $sheet->setCellValue($letra . $row, $cant);
+                if (!empty($caja['color']) && $caja['color'] !== '#000000') {
+                    $sheet->getStyle($letra . $row)->getFill()->setFillType('solid')->getStartColor()->setRGB(ltrim($caja['color'], '#'));
+                }
+                $colEmp++;
             }
         }
 
-        // Deducciones
-        if (($emp['inasistencia'] ?? 0) != 0) $sheet->setCellValue('L' . $row, $emp['inasistencia']);
-        if (($emp['permiso'] ?? 0) != 0) $sheet->setCellValue('M' . $row, $emp['permiso']);
-        if (($emp['uniforme'] ?? 0) != 0) $sheet->setCellValue('N' . $row, $emp['uniforme']);
-        if (($emp['checador'] ?? 0) != 0) $sheet->setCellValue('O' . $row, $emp['checador']);
-        if (($emp['fa_gafet_cofia'] ?? 0) != 0) $sheet->setCellValue('P' . $row, $emp['fa_gafet_cofia']);
-
-        $sheet->setCellValue('Q' . $row, '=SUM(H' . $row . ':P' . $row . ')');
-        $sheet->setCellValue('R' . $row, '=G' . $row . '-Q' . $row);
-
-        if (($emp['tarjeta'] ?? 0) != 0) $sheet->setCellValue('S' . $row, $emp['tarjeta']);
-        $sheet->setCellValue('T' . $row, '=R' . $row . '-S' . $row);
-
-        if (($emp['prestamo'] ?? 0) != 0) $sheet->setCellValue('U' . $row, $emp['prestamo']);
-        $sheet->setCellValue('V' . $row, '=T' . $row . '-U' . $row);
-
-        $sheet->setCellValue('W' . $row, '=ROUND(V' . $row . ',0)-V' . $row);
-        $sheet->setCellValue('X' . $row, '=V' . $row . '+W' . $row);
-
-        // Formato moneda y colores
-        $sheet->getStyle('D' . $row . ':X' . $row)->getNumberFormat()->setFormatCode('$#,##0.00');
-        foreach (['H','I','J','K','L','M','N','O','P','Q','S','U'] as $c) {
-            $sheet->getStyle($c . $row)->getFont()->setColor(new Color('FF0000'));
-            $sheet->getStyle($c . $row)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
+        // Resumen y Sueldo Neto
+        $colRes = $inicioResumen;
+        $partesNeto = [];
+        foreach ($precioCajasUtilidad as $caja) {
+            $letraTot = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colRes);
+            $letraPre = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colRes + 1);
+            $totCajas = 0;
+            foreach ($emp['historial_empaque'] ?? [] as $h) {
+                if ($h['tipo'] === $caja['valor']) $totCajas += $h['cantidad'];
+            }
+            $sheet->setCellValue($letraTot . $row, $totCajas);
+            $sheet->setCellValue($letraPre . $row, $caja['precio']);
+            if (!empty($caja['color']) && $caja['color'] !== '#000000') {
+                $sheet->getStyle($letraTot . $row)->getFill()->setFillType('solid')->getStartColor()->setRGB(ltrim($caja['color'], '#'));
+            }
+            $partesNeto[] = "($letraTot$row*$letraPre$row)";
+            $colRes += 2;
         }
-        $sheet->getStyle('W' . $row)->getNumberFormat()->setFormatCode('$#,##0.00;[RED]-$#,##0.00');
 
-        $sheet->getStyle('A' . $row . ':Y' . $row)->getAlignment()->setVertical('center');
-        $sheet->getStyle('A' . $row . ':B' . $row)->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('D' . $row . ':X' . $row)->getAlignment()->setHorizontal('center');
+        $sheet->setCellValue($mapeo['SUELDO NETO'] . $row, !empty($partesNeto) ? '=' . implode('+', $partesNeto) : 0);
+        if (($emp['sueldo_extra_total'] ?? 0) != 0) $sheet->setCellValue($mapeo['EXTRAS'] . $row, $emp['sueldo_extra_total']);
+        $sheet->setCellValue($mapeo['TOTAL PERCEPCIONES'] . $row, "=SUM(" . $mapeo['SUELDO NETO'] . "$row:" . $mapeo['EXTRAS'] . "$row)");
+
+        // Deducciones
+        $mapC = ['45' => 'ISR', '52' => 'IMSS', '16' => 'INFONAVIT', '107' => 'AJUSTES AL SUB'];
+        foreach ($emp['conceptos'] ?? [] as $c) {
+            if (isset($mapC[$c['codigo']])) $sheet->setCellValue($mapeo[$mapC[$c['codigo']]] . $row, $c['resultado']);
+        }
+        if (($emp['permiso'] ?? 0) != 0) $sheet->setCellValue($mapeo['PERMISOS'] . $row, $emp['permiso']);
+        if (($emp['uniforme'] ?? 0) != 0) $sheet->setCellValue($mapeo['UNIFORMES'] . $row, $emp['uniforme']);
+        if (($emp['checador'] ?? 0) != 0) $sheet->setCellValue($mapeo['BIOMETRICO'] . $row, $emp['checador']);
+        if (($emp['fa_gafet_cofia'] ?? 0) != 0) $sheet->setCellValue($mapeo['F.A/GAFET/COFIA'] . $row, $emp['fa_gafet_cofia']);
+
+        $sheet->setCellValue($mapeo['TOTAL DE DEDUCCIONES'] . $row, "=SUM(" . $mapeo['ISR'] . "$row:" . $mapeo['F.A/GAFET/COFIA'] . "$row)");
+        $sheet->setCellValue($mapeo['NETO A RECIBIR'] . $row, "=" . $mapeo['TOTAL PERCEPCIONES'] . "$row-" . $mapeo['TOTAL DE DEDUCCIONES'] . "$row");
+        if (($emp['tarjeta'] ?? 0) != 0) $sheet->setCellValue($mapeo['DISPERSION DE TARJETA'] . $row, $emp['tarjeta']);
+        $sheet->setCellValue($mapeo['IMPORTE EN EFECTIVO'] . $row, "=" . $mapeo['NETO A RECIBIR'] . "$row-" . $mapeo['DISPERSION DE TARJETA'] . "$row");
+        if (($emp['prestamo'] ?? 0) != 0) $sheet->setCellValue($mapeo['PRÉSTAMO'] . $row, $emp['prestamo']);
+        $sheet->setCellValue($mapeo['TOTAL A RECIBIR'] . $row, "=" . $mapeo['IMPORTE EN EFECTIVO'] . "$row-" . $mapeo['PRÉSTAMO'] . "$row");
+        $sheet->setCellValue($mapeo['REDONDEADO'] . $row, "=ROUND(" . $mapeo['TOTAL A RECIBIR'] . "$row,0)-" . $mapeo['TOTAL A RECIBIR'] . "$row");
+        $sheet->setCellValue($mapeo['TOTAL EFECTIVO REDONDEADO'] . $row, "=" . $mapeo['TOTAL A RECIBIR'] . "$row+" . $mapeo['REDONDEADO'] . "$row");
+
+        // Formatos de alineación (Centrar todo excepto NOMBRE)
+        $sheet->getStyle('A' . $row . ':' . $ultimaLetra . $row)->getAlignment()->setHorizontal('center')->setVertical('center');
+        $sheet->getStyle($mapeo['NOMBRE'] . $row)->getAlignment()->setHorizontal('left');
+
+        $colsMoneda = ['SUELDO NETO', 'EXTRAS', 'TOTAL PERCEPCIONES', 'NETO A RECIBIR', 'IMPORTE EN EFECTIVO', 'TOTAL A RECIBIR', 'TOTAL EFECTIVO REDONDEADO'];
+        foreach($colsMoneda as $m) $sheet->getStyle($mapeo[$m].$row)->getNumberFormat()->setFormatCode('$#,##0.00');
+        
+        $colsDed = ['ISR', 'IMSS', 'INFONAVIT', 'AJUSTES AL SUB', 'PERMISOS', 'UNIFORMES', 'BIOMETRICO', 'F.A/GAFET/COFIA', 'TOTAL DE DEDUCCIONES', 'DISPERSION DE TARJETA', 'PRÉSTAMO'];
+        foreach($colsDed as $d) {
+            $sheet->getStyle($mapeo[$d].$row)->getFont()->setColor(new Color('FF0000'));
+            $sheet->getStyle($mapeo[$d].$row)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
+        }
+        $sheet->getStyle($mapeo['REDONDEADO'].$row)->getNumberFormat()->setFormatCode('$#,##0.00;[RED]-$#,##0.00');
+
+        $sheet->getRowDimension($row)->setRowHeight(48);
+        $sheet->getStyle('A'.$row.':'.$mapeo['NOMBRE'].$row)->getFont()->setSize(15);
+        $sheet->getStyle($mapeo['NOMBRE'].$row)->getFont()->setSize(16);
+
+        // Tamaño 18 después de NOMBRE (Columna D en adelante)
+        $letraDespuesNombre = 'D';
+        $sheet->getStyle($letraDespuesNombre . $row . ':' . $ultimaLetra . $row)->getFont()->setSize(18);
 
         $row++;
     }
 
-    // Fila de Totales
-    $filaTotal = $row;
-    $sheet->setCellValue('A' . $filaTotal, 'TOTALES');
-    $sheet->getStyle('A' . $filaTotal)->getFont()->setBold(true);
-    $colsTotales = ['D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X'];
-    foreach ($colsTotales as $c) {
-        $sheet->setCellValue($c . $filaTotal, '=SUM(' . $c . '7:' . $c . ($filaTotal - 1) . ')');
-        $sheet->getStyle($c . $filaTotal)->getFont()->setBold(true)->setSize(14);
-        if (in_array($c, ['H','I','J','K','L','M','N','O','P','Q','S','U'])) {
-            $sheet->getStyle($c . $filaTotal)->getFont()->setColor(new Color('FF0000'));
-            $sheet->getStyle($c . $filaTotal)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
-        } elseif ($c === 'W') {
-            $sheet->getStyle($c . $filaTotal)->getNumberFormat()->setFormatCode('$#,##0.00;[RED]-$#,##0.00');
+    // Totales
+    $filaTot = $row;
+    $sheet->setCellValue('A' . $filaTot, 'TOTALES');
+    $sheet->getStyle('A' . $filaTot)->getFont()->setBold(true)->setSize(14);
+    
+    $colsASumar = array_merge($colFinales);
+    unset($colsASumar[array_search('FIRMA RECIBIDO', $colsASumar)]);
+    foreach ($colsASumar as $n) {
+        $l = $mapeo[$n];
+        $sheet->setCellValue($l . $filaTot, "=IF(SUM($l" . "9:$l" . ($filaTot-1) . ")=0,\"\",SUM($l" . "9:$l" . ($filaTot-1) . "))");
+        $sheet->getStyle($l . $filaTot)->getFont()->setBold(true)->setSize(18);
+        if (in_array($n, ['ISR', 'IMSS', 'INFONAVIT', 'AJUSTES AL SUB', 'PERMISOS', 'UNIFORMES', 'BIOMETRICO', 'F.A/GAFET/COFIA', 'TOTAL DE DEDUCCIONES', 'DISPERSION DE TARJETA', 'PRÉSTAMO'])) {
+            $sheet->getStyle($l . $filaTot)->getFont()->setColor(new Color('FF0000'));
+            $sheet->getStyle($l . $filaTot)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
+        } elseif ($n === 'REDONDEADO') {
+            $sheet->getStyle($l . $filaTot)->getNumberFormat()->setFormatCode('$#,##0.00;[RED]-$#,##0.00');
         } else {
-            $sheet->getStyle($c . $filaTotal)->getNumberFormat()->setFormatCode('$#,##0.00');
+            $sheet->getStyle($l . $filaTot)->getNumberFormat()->setFormatCode('$#,##0.00');
         }
-        $sheet->getStyle($c . $filaTotal)->getAlignment()->setHorizontal('center')->setVertical('center');
     }
-    $sheet->getStyle('A' . $filaTotal . ':X' . $filaTotal)->getFill()->setFillType('solid')->getStartColor()->setRGB('D3D3D3');
-
-    // Bordes
-    $sheet->getStyle('A6:Y' . $filaTotal)->applyFromArray([
-        'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '000000']]]
-    ]);
-
-    // Visibilidad
-    if (!$flags['incentivo']) $sheet->getColumnDimension('E')->setVisible(false);
-    if (!$flags['isr']) $sheet->getColumnDimension('H')->setVisible(false);
-    if (!$flags['imss']) $sheet->getColumnDimension('I')->setVisible(false);
-    if (!$flags['infonavit']) $sheet->getColumnDimension('J')->setVisible(false);
-    if (!$flags['ajustes']) $sheet->getColumnDimension('K')->setVisible(false);
-    if (!$flags['ausentismo']) $sheet->getColumnDimension('L')->setVisible(false);
-    if (!$flags['permiso']) $sheet->getColumnDimension('M')->setVisible(false);
-    if (!$flags['uniforme']) $sheet->getColumnDimension('N')->setVisible(false);
-    if (!$flags['checador']) $sheet->getColumnDimension('O')->setVisible(false);
-    if (!$flags['fa_gafet_cofia']) $sheet->getColumnDimension('P')->setVisible(false);
-    $sheet->getColumnDimension('G')->setVisible(false);
-    $sheet->getColumnDimension('Q')->setVisible(false);
-
-    // Alturas de filla
-    $sheet->getRowDimension(1)->setRowHeight(38);
-    $sheet->getRowDimension(2)->setRowHeight(32);
-    $sheet->getRowDimension(3)->setRowHeight(32);
-    $sheet->getRowDimension(4)->setRowHeight(32);
-    $sheet->getRowDimension(5)->setRowHeight(35);
-    $sheet->getRowDimension(6)->setRowHeight(45);
-    for ($i = 7; $i < $row; $i++) {
-        $sheet->getRowDimension($i)->setRowHeight(48);
-        foreach ($tamanioLetraFilas as $c => $s) $sheet->getStyle($c . $i)->getFont()->setSize($s);
+    for ($i = $inicioEmpaque; $i <= $finResumen; $i += (($i >= $inicioResumen) ? 2 : 1)) {
+        $l = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($i);
+        $sheet->setCellValue($l . $filaTot, "=IF(SUM($l" . "9:$l" . ($filaTot-1) . ")=0,\"\",SUM($l" . "9:$l" . ($filaTot-1) . "))");
+        $sheet->getStyle($l . $filaTot)->getFont()->setBold(true)->setSize(18);
     }
+    $sheet->getStyle('A' . $filaTot . ':' . $ultimaLetra . $filaTot)->getFill()->setFillType('solid')->getStartColor()->setRGB('D3D3D3');
+    $sheet->getStyle('A' . $filaTot . ':' . $ultimaLetra . $filaTot)->getAlignment()->setHorizontal('center')->setVertical('center');
+    $sheet->getStyle('A7:' . $ultimaLetra . $filaTot)->applyFromArray(['borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '000000']]]]);
 
-    // Configuración página
+    // Visibilidad Final
+    if (!$flags['isr']) $sheet->getColumnDimension($mapeo['ISR'])->setVisible(false);
+    if (!$flags['imss']) $sheet->getColumnDimension($mapeo['IMSS'])->setVisible(false);
+    if (!$flags['infonavit']) $sheet->getColumnDimension($mapeo['INFONAVIT'])->setVisible(false);
+    if (!$flags['ajustes']) $sheet->getColumnDimension($mapeo['AJUSTES AL SUB'])->setVisible(false);
+    if (!$flags['permiso']) $sheet->getColumnDimension($mapeo['PERMISOS'])->setVisible(false);
+    if (!$flags['uniforme']) $sheet->getColumnDimension($mapeo['UNIFORMES'])->setVisible(false);
+    if (!$flags['checador']) $sheet->getColumnDimension($mapeo['BIOMETRICO'])->setVisible(false);
+    if (!$flags['fa']) $sheet->getColumnDimension($mapeo['F.A/GAFET/COFIA'])->setVisible(false);
+
+    // Ocultar siempre Total Percepciones y Total Deducciones
+    $sheet->getColumnDimension($mapeo['TOTAL PERCEPCIONES'])->setVisible(false);
+    $sheet->getColumnDimension($mapeo['TOTAL DE DEDUCCIONES'])->setVisible(false);
+
+    // Margenes
     $ps = $sheet->getPageSetup();
     $ps->setPaperSize(PageSetup::PAPERSIZE_LETTER)->setOrientation(PageSetup::ORIENTATION_LANDSCAPE);
     $ps->setFitToPage(true)->setFitToHeight(1)->setFitToWidth(1);
-    $ps->setPrintArea('A1:Y' . $filaTotal);
-    $pm = $sheet->getPageMargins();
-    $pm->setLeft(0.5)->setRight(0.5)->setTop(0.5)->setBottom(0.5);
+    $ps->setPrintArea('A1:' . $ultimaLetra . $filaTot);
 }
 
 // Crear las hojas dinámicamente según los departamentos del JSON
@@ -320,9 +436,6 @@ $esPrimeraHoja = true;
 
 if ($jsonNomina && isset($jsonNomina['departamentos'])) {
     foreach ($jsonNomina['departamentos'] as $depto) {
-        // Solo procesar si el departamento tiene la propiedad editar: true
-        if (!isset($depto['editar']) || $depto['editar'] !== true) continue;
-
         $idDepto = $depto['id_departamento'] ?? $depto['nombre'];
         $nombreDepto = $depto['nombre'];
 
@@ -339,7 +452,7 @@ if ($jsonNomina && isset($jsonNomina['departamentos'])) {
 
         // 1. Crear Hoja CSS si aplica
         if ($hayCSS) {
-            crearHoja($spreadsheet, strtoupper($nombreDepto), 'CITRICOS SAAO S.A DE C.V', 
+            crearHoja($spreadsheet, $depto,
                 fn($e) => (($e['id_departamento'] ?? $e['nombre']) == $idDepto && ($e['mostrar'] ?? true) && ($e['seguroSocial'] ?? false)), 
                 substr($nombreDepto, 0, 20) . ' CSS', $esPrimeraHoja);
             $esPrimeraHoja = false;
@@ -347,7 +460,7 @@ if ($jsonNomina && isset($jsonNomina['departamentos'])) {
 
         // 2. Crear Hoja SSS si aplica
         if ($haySSS) {
-            crearHoja($spreadsheet, strtoupper($nombreDepto), 'CITRICOS SAAO S.A DE C.V', 
+            crearHoja($spreadsheet, $depto,
                 fn($e) => (($e['id_departamento'] ?? $e['nombre']) == $idDepto && ($e['mostrar'] ?? true) && !($e['seguroSocial'] ?? false)), 
                 substr($nombreDepto, 0, 20) . ' SSS', $esPrimeraHoja);
             $esPrimeraHoja = false;

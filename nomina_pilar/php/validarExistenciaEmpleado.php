@@ -32,7 +32,6 @@ switch ($_SERVER['REQUEST_METHOD']) {
             validarEmpleadosNuevos();
         } else if ($_POST['case'] === 'obtenerDatosPorTipoHorario') {
             obtenerDatosPorTipoHorario();
-        
         } else {
             echo json_encode([
                 'error' => 'Case no válido',
@@ -68,7 +67,8 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
 // PASO 1: VALIDA AL EMPLEADO POR CLAVE SI EXISTEN EN EL SISTEMA, EMPLEADOS CON SEGURO 
 
-function validarExistenciaTrabajador(){
+function validarExistenciaTrabajador()
+{
     global $conexion;
 
     // Obtener las claves
@@ -414,7 +414,7 @@ function validarEmpleadosNuevos()
                 'clave' => $row['clave_empleado'],
                 'id_empresa' => $row['id_empresa'],
                 'nombre' => $row['nombre'] . ' ' . $row['ap_paterno'] . ' ' . $row['ap_materno'],
-                 'salario_semanal' => $row['salario_semanal'],
+                'salario_semanal' => $row['salario_semanal'],
                 'salario_diario' => $row['salario_diario'],
                 'horario_oficial' => json_decode($row['horario_oficial'], true) ?: $row['horario_oficial'],
                 'biometrico' => $row['biometrico'],
@@ -507,7 +507,7 @@ function obtenerDepartamentosNomina()
     }
 
     // Consultar departamentos asociados al área de la nómina
-    $sql = "  SELECT d.id_departamento, d.nombre_departamento
+    $sql = "SELECT d.id_departamento, d.nombre_departamento, nd.color_depto_nomina
             FROM departamentos d
             INNER JOIN nomina_departamento nd ON d.id_departamento = nd.id_departamento
             WHERE nd.id_nomina = ?
@@ -546,7 +546,8 @@ function obtenerDepartamentosNomina()
         while ($row = mysqli_fetch_assoc($result)) {
             $departamentos[] = [
                 'id_departamento' => intval($row['id_departamento']),
-                'nombre_departamento' => $row['nombre_departamento']
+                'nombre_departamento' => $row['nombre_departamento'],
+                'color_depto_nomina' => $row['color_depto_nomina']
             ];
         }
 
@@ -562,9 +563,3 @@ function obtenerDepartamentosNomina()
 
     mysqli_stmt_close($stmt);
 }
-
-
-
-
-
-

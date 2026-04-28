@@ -48,6 +48,29 @@ function restarUnDia($fecha)
     return $date->format("d") . "/" . $mesAbrevNuevo . "/" . $date->format("Y");
 }
 
+/**
+ * Determina si un color de fondo es oscuro o claro y devuelve el color de texto adecuado (blanco o negro).
+ */
+function obtenerColorContraste($hexColor)
+{
+    // Eliminar el # si existe
+    $hexColor = str_replace('#', '', $hexColor);
+
+    // Si el color no es válido, por defecto blanco
+    if (strlen($hexColor) != 6) return '000000';
+
+    // Convertir hex a RGB
+    $r = hexdec(substr($hexColor, 0, 2));
+    $g = hexdec(substr($hexColor, 2, 2));
+    $b = hexdec(substr($hexColor, 4, 2));
+
+    // Calcular el brillo (Fórmula YIQ)
+    // El umbral de 128 (la mitad de 255) determina si el fondo es claro u oscuro
+    $yiq = (($r * 299) + ($g * 587) + ($b * 114)) / 1000;
+
+    return ($yiq >= 128) ? '000000' : 'FFFFFF';
+}
+
 //=====================
 //  RECIBIR DATOS DEL JSON
 //=====================
@@ -67,6 +90,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['jsonNomina'])) {
     // Convertir seguroSocial a booleano (AJAX lo envía como string "true"/"false")
     $seguroSocialSeleccionado = filter_var($_POST['seguroSocial'] ?? true, FILTER_VALIDATE_BOOLEAN);
 }
+
+// Obtener el color del departamento desde el JSON
+$colorExcel = 'F5EB1B'; // Amarillo por defecto
+if ($jsonNomina && isset($jsonNomina['departamentos'])) {
+    foreach ($jsonNomina['departamentos'] as $depto) {
+        if ($depto['id_departamento'] == $idDeptoSeleccionado) {
+            $colorExcel = $depto['color_depto_nomina'] ?? 'F5EB1B';
+            break;
+        }
+    }
+}
+$colorExcel = str_replace('#', '', $colorExcel);
+$textColor = obtenerColorContraste($colorExcel);
 
 //=====================
 //  CONFIGURACIÓN INICIAL
@@ -189,17 +225,17 @@ foreach ($columnas as $columna) {
     $columnaLetra++;
 }
 
-// Formatear los encabezados (Negrita, Centrados, Tamaño 10, Fondo Purpura, Letra Negra)
+// Formatear los encabezados (Negrita, Centrados, Tamaño 10, Fondo Dinámico, Letra de Contraste)
 $sheet->getStyle('A6:Y6')->getFont()->setBold(true);
 $sheet->getStyle('A6:Y6')->getFont()->setSize(10);
-$sheet->getStyle('A6:Y6')->getFont()->setColor(new Color('000000')); // Letra negra
+$sheet->getStyle('A6:Y6')->getFont()->setColor(new Color($textColor));
 $sheet->getStyle('A6:Y6')->getAlignment()->setHorizontal('center');
 $sheet->getStyle('A6:Y6')->getAlignment()->setVertical('center');
 $sheet->getStyle('A6:Y6')->getAlignment()->setWrapText(true); // Ajustar texto
 
-// Agregar color de fondo rojo a los encabezados
+// Agregar color de fondo a los encabezados
 $sheet->getStyle('A6:Y6')->getFill()->setFillType('solid');
-$sheet->getStyle('A6:Y6')->getFill()->getStartColor()->setRGB('F5EB1B'); // purpura
+$sheet->getStyle('A6:Y6')->getFill()->getStartColor()->setRGB($colorExcel);
 
 // Ajustar el ancho de las columnas para mejor visualización
 $columnasAncho = [
