@@ -470,8 +470,12 @@ body {
     border: 1px solid var(--tm-gray-200);
     border-radius: var(--tm-radius);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    max-height: 250px;
-    overflow-y: auto;
+    max-height: 250px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    pointer-events: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
     z-index: 1050;
     display: none;
     margin-top: 4px;

@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="../css/tablaNomina.css">
     <link rel="stylesheet" href="../css/modal10lbs.css">
     <link rel="stylesheet" href="../css/conceptos_totales.css">
+    <link rel="stylesheet" href="../css/modal_seleccion_tickets.css">
 
 
     <!-- SweetAlert2 CSS -->
@@ -201,6 +202,7 @@
     <?php include 'modals/modalOlvidos.php'; ?>
     <?php include 'modals/modalConceptosTotales.php'; ?>
     <?php include 'modals/modalExportarNomina.php'; ?>
+    <?php include 'modals/modal_seleccion_tickets_10lbs.php'; ?>
 
 
     <!-- jQuery -->
@@ -218,6 +220,8 @@
     <script src="../js/filtroBusqueda.js"></script>
     <script src="../js/storage.js"></script>
     <script src="../js/abrirModal.js"></script>
+    <script src="../js/ticket_pdf.js"></script>
+    <script src="../js/ticket_seleccion_10lbs.js"></script>
 
     <script src="../js/configModales/horariosSemanales.js"></script>
     <script src="../js/configModales/preciosCajas.js"></script>
@@ -226,12 +230,14 @@
     <script src="../js/configModales/olvidosMasivos.js"></script>
     <script src="../js/configModales/conceptos_totales.js"></script>
     <script src="../js/configModales/exportarNominaExcel.js"></script>
+
     <script src="../js/configModal/establecerData.js"></script>
     <script src="../js/configModal/editarData.js"></script>
     <script src="../js/configModal/eventos.js"></script>
     <script src="../js/configModal/configModal.js"></script>
     <script src="../js/configModal/newConcepts.js"></script>
     <script src="../js/configModal/agregarCajasEmpacadas.js"></script>
+
 
 </body>
 

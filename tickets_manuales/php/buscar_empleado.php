@@ -21,6 +21,7 @@ try {
         // Encontrar una palabra clave para buscar en nombre_nominas
         $palabraClave = "";
         switch($nominaSel) {
+            case 'nomina_10lbs': $palabraClave = "%10%"; break;
             case 'nomina_40lbs': $palabraClave = "%40%"; break;
             case 'nomina_huasteca': $palabraClave = "%Huasteca%"; break;
             case 'nomina_palmilla': $palabraClave = "%Palmilla%"; break;

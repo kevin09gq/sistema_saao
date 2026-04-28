@@ -1,5 +1,22 @@
 $(document).ready(function() {
     const configNominas = {
+        nomina_10lbs: {
+            percepciones: [
+                { nombre: 'Sueldo neto', id: 'sueldo_base', tipo: 'number', paso: '0.01' },
+            ],
+            deducciones: [
+                { nombre: 'ISR', id: 'isr', codigo: '45', tipo: 'number', paso: '0.01' },
+                { nombre: 'IMSS', id: 'imss', codigo: '52', tipo: 'number', paso: '0.01' },
+                { nombre: 'Infonavit', id: 'infonavit', codigo: '16', tipo: 'number', paso: '0.01' },
+                { nombre: 'Ajuste al Sub', id: 'ajuste_sub', codigo: '107', tipo: 'number', paso: '0.01' },
+                { nombre: 'Permiso', id: 'permiso', tipo: 'number', paso: '0.01' },
+                { nombre: 'Ausentismo', id: 'inasistencia', tipo: 'number', paso: '0.01' },
+                { nombre: 'Uniforme', id: 'uniformes', tipo: 'number', paso: '0.01' },
+                { nombre: 'Biometrico', id: 'checador', tipo: 'number', paso: '0.01' },
+                { nombre: 'Préstamo', id: 'prestamo', tipo: 'number', paso: '0.01' },
+                { nombre: 'Tarjeta', id: 'tarjeta', tipo: 'number', paso: '0.01' }
+            ]
+        },
         nomina_40lbs: {
             percepciones: [
                 { nombre: 'Sueldo Neto', id: 'sueldo_neto', tipo: 'number', paso: '0.01' },
@@ -15,9 +32,9 @@ $(document).ready(function() {
                 { nombre: 'Ajuste al Sub', id: 'ajuste_sub', codigo: '107', tipo: 'number', paso: '0.01' },
                 { nombre: 'Infonavit', id: 'infonavit', codigo: '16', tipo: 'number', paso: '0.01' },
                 { nombre: 'Permiso', id: 'permiso', tipo: 'number', paso: '0.01' },
-                { nombre: 'Inasistencias', id: 'inasistencia', tipo: 'number', paso: '0.01' },
-                { nombre: 'Uniformes', id: 'uniformes', tipo: 'number', paso: '0.01' },
-                { nombre: 'Checador', id: 'checador', tipo: 'number', paso: '0.01' },
+                { nombre: 'Ausentismo', id: 'inasistencia', tipo: 'number', paso: '0.01' },
+                { nombre: 'Uniforme', id: 'uniformes', tipo: 'number', paso: '0.01' },
+                { nombre: 'Biometrico', id: 'checador', tipo: 'number', paso: '0.01' },
                 { nombre: 'Préstamo', id: 'prestamo', tipo: 'number', paso: '0.01' },
                 { nombre: 'Tarjeta', id: 'tarjeta', tipo: 'number', paso: '0.01' }
             ]
@@ -30,9 +47,9 @@ $(document).ready(function() {
             deducciones: [
                 { nombre: 'Retardos', id: 'retardos', tipo: 'number', paso: '0.01' },
                 { nombre: 'Permiso', id: 'permiso', tipo: 'number', paso: '0.01' },
-                { nombre: 'Inasistencias', id: 'inasistencia', tipo: 'number', paso: '0.01' },
-                { nombre: 'Uniformes', id: 'uniformes', tipo: 'number', paso: '0.01' },
-                { nombre: 'Checador', id: 'checador', tipo: 'number', paso: '0.01' },
+                { nombre: 'Ausentismo', id: 'inasistencia', tipo: 'number', paso: '0.01' },
+                { nombre: 'Uniforme', id: 'uniformes', tipo: 'number', paso: '0.01' },
+                { nombre: 'Biometrico', id: 'checador', tipo: 'number', paso: '0.01' },
                 { nombre: 'Préstamo', id: 'prestamo', tipo: 'number', paso: '0.01' },
                 { nombre: 'Tarjeta', id: 'tarjeta', tipo: 'number', paso: '0.01' }
             ]
@@ -45,9 +62,9 @@ $(document).ready(function() {
             deducciones: [
                 { nombre: 'Retardos', id: 'retardos', tipo: 'number', paso: '0.01' },
                 { nombre: 'Permiso', id: 'permiso', tipo: 'number', paso: '0.01' },
-                { nombre: 'Inasistencias', id: 'inasistencia', tipo: 'number', paso: '0.01' },
-                { nombre: 'Uniformes', id: 'uniformes', tipo: 'number', paso: '0.01' },
-                { nombre: 'Checador', id: 'checador', tipo: 'number', paso: '0.01' },
+                { nombre: 'Ausentismo', id: 'inasistencia', tipo: 'number', paso: '0.01' },
+                { nombre: 'Uniforme', id: 'uniformes', tipo: 'number', paso: '0.01' },
+                { nombre: 'Biometrico', id: 'checador', tipo: 'number', paso: '0.01' },
                 { nombre: 'Préstamo', id: 'prestamo', tipo: 'number', paso: '0.01' },
                 { nombre: 'Tarjeta', id: 'tarjeta', tipo: 'number', paso: '0.01' }
             ]
@@ -60,9 +77,9 @@ $(document).ready(function() {
             deducciones: [
                 { nombre: 'Retardos', id: 'retardos', tipo: 'number', paso: '0.01' },
                 { nombre: 'Permiso', id: 'permiso', tipo: 'number', paso: '0.01' },
-                { nombre: 'Inasistencias', id: 'inasistencia', tipo: 'number', paso: '0.01' },
-                { nombre: 'Uniformes', id: 'uniformes', tipo: 'number', paso: '0.01' },
-                { nombre: 'Checador', id: 'checador', tipo: 'number', paso: '0.01' },
+                { nombre: 'Ausentismo', id: 'inasistencia', tipo: 'number', paso: '0.01' },
+                { nombre: 'Uniforme', id: 'uniformes', tipo: 'number', paso: '0.01' },
+                { nombre: 'Biometrico', id: 'checador', tipo: 'number', paso: '0.01' },
                 { nombre: 'Préstamo', id: 'prestamo', tipo: 'number', paso: '0.01' },
                 { nombre: 'Tarjeta', id: 'tarjeta', tipo: 'number', paso: '0.01' }
             ]
@@ -79,9 +96,9 @@ $(document).ready(function() {
                 { nombre: 'Ajuste al Sub', id: 'ajuste_sub', codigo: '107', tipo: 'number', paso: '0.01' },
                 { nombre: 'Infonavit', id: 'infonavit', codigo: '16', tipo: 'number', paso: '0.01' },
                 { nombre: 'Permiso', id: 'permiso', tipo: 'number', paso: '0.01' },
-                { nombre: 'Inasistencias', id: 'inasistencia', tipo: 'number', paso: '0.01' },
-                { nombre: 'Uniformes', id: 'uniformes', tipo: 'number', paso: '0.01' },
-                { nombre: 'Checador', id: 'checador', tipo: 'number', paso: '0.01' },
+                { nombre: 'Ausentismo', id: 'inasistencia', tipo: 'number', paso: '0.01' },
+                { nombre: 'Uniforme', id: 'uniformes', tipo: 'number', paso: '0.01' },
+                { nombre: 'Biometrico', id: 'checador', tipo: 'number', paso: '0.01' },
                 { nombre: 'Préstamo', id: 'prestamo', tipo: 'number', paso: '0.01' },
                 { nombre: 'Tarjeta', id: 'tarjeta', tipo: 'number', paso: '0.01' }
             ]
@@ -98,9 +115,9 @@ $(document).ready(function() {
                 { nombre: 'Ajuste al Sub', id: 'ajuste_sub', codigo: '107', tipo: 'number', paso: '0.01' },
                 { nombre: 'Infonavit', id: 'infonavit', codigo: '16', tipo: 'number', paso: '0.01' },
                 { nombre: 'Permiso', id: 'permiso', tipo: 'number', paso: '0.01' },
-                { nombre: 'Inasistencias', id: 'inasistencia', tipo: 'number', paso: '0.01' },
-                { nombre: 'Uniformes', id: 'uniformes', tipo: 'number', paso: '0.01' },
-                { nombre: 'Checador', id: 'checador', tipo: 'number', paso: '0.01' },
+                { nombre: 'Ausentismo', id: 'inasistencia', tipo: 'number', paso: '0.01' },
+                { nombre: 'Uniforme', id: 'uniformes', tipo: 'number', paso: '0.01' },
+                { nombre: 'Biometrico', id: 'checador', tipo: 'number', paso: '0.01' },
                 { nombre: 'Préstamo', id: 'prestamo', tipo: 'number', paso: '0.01' },
                 { nombre: 'Tarjeta', id: 'tarjeta', tipo: 'number', paso: '0.01' }
             ]
@@ -142,6 +159,11 @@ $(document).ready(function() {
         if ($('#suggestionsNombre').length === 0) {
             $('#inputNombre').after('<div id="suggestionsNombre" class="tm-suggestions"></div>');
         }
+
+        $(document).off('wheel.tmSuggestions touchmove.tmSuggestions mousedown.tmSuggestions', '.tm-suggestions')
+            .on('wheel.tmSuggestions touchmove.tmSuggestions mousedown.tmSuggestions', '.tm-suggestions', function(e) {
+                e.stopPropagation();
+            });
 
         let timeoutBusquedaClave = null;
         let timeoutBusquedaNombre = null;
@@ -455,6 +477,7 @@ $(document).ready(function() {
         // Determinar el archivo PHP a llamar
         let archivoPHP = '';
         switch(nominaSeleccionada) {
+            case 'nomina_10lbs': archivoPHP = 'descargar_10lbs.php'; break;
             case 'nomina_40lbs': archivoPHP = 'descargar_40lbs.php'; break;
             case 'nomina_huasteca': archivoPHP = 'descargar_huasteca.php'; break;
             case 'nomina_palmilla': archivoPHP = 'descargar_palmilla.php'; break;

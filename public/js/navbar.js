@@ -1,10 +1,10 @@
 // Navbar functionality and interactions
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Navbar active state management
     function initializeNavbar() {
         // Get current page identifier
         const currentPage = getCurrentPage();
-        
+
         // Set active class on the appropriate nav link
         const navLinks = document.querySelectorAll('.nav-link[data-page]');
         navLinks.forEach(link => {
@@ -12,14 +12,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 link.classList.add('active');
             }
         });
-        
+
         // Force reflow to ensure styles are applied
         const navbar = document.querySelector('.navbar-custom');
         if (navbar) {
             navbar.offsetHeight; // Trigger reflow
         }
     }
-    
+
     // Function to determine current page
     function getCurrentPage() {
         const path = window.location.pathname;
@@ -32,16 +32,18 @@ document.addEventListener('DOMContentLoaded', function() {
             return 'documentos';
         } else if (path.includes('/prestamos/views/index.php')) {
             return 'documentos';
-        } else if (path.includes('/public/views/generacion_tickets_manuales.php')) {
+        } else if (path.includes('/tickets_manuales/views/tickets_manuales.php')) {
             return 'documentos';
-        }else if (path.includes('/reloj-8horas/views/reloj.php')) {
+        } else if (path.includes('/reloj-8horas/views/reloj.php')) {
             return 'documentos';
-        }else if (path.includes('/reloj-8horas/views/historial.php')) {
+        } else if (path.includes('/reloj-8horas/views/historial.php')) {
             return 'documentos';
-        }else if(path.includes('/aguinaldo/views/aguinaldo.php')) {
+        } else if (path.includes('/aguinaldo/views/aguinaldo.php')) {
             return 'documentos';
         } else if (path.includes('/nomina_40lbs/views/nomina_40lbs.php')) {
             return 'nominas'; // Highlight 'Nóminas' for 40 lbs
+        } else if (path.includes('/nomina_10lbs/views/nomina_10lbs.php')) {
+            return 'nominas'; // Highlight 'Nóminas' for 10 lbs
         } else if (path.includes('/nomina_confianza/views/nomina_confianza.php')) {
             return 'nominas'; // Highlight 'Nóminas' for Confianza
         } else if (path.includes('/nomina_relicario/views/nomina_relicario.php')) {
@@ -58,15 +60,15 @@ document.addEventListener('DOMContentLoaded', function() {
             return 'empleados';
         } else if (path.includes('/empleados/views/form_actualizar_empleado.php')) {
             return 'empleados';
-        }else if(path.includes('claves_autorizacion/views/autorizacion.php')) {   
-            return 'empleados'; 
+        } else if (path.includes('claves_autorizacion/views/autorizacion.php')) {
+            return 'empleados';
         } else if (path.includes('/config/settings/views/configuracion.php')) {
             return 'configuracion';
         }
 
         return 'inicio'; // default
     }
-    
+
     // Add scrolled class on scroll for shadow effect
     function handleScroll() {
         const navbar = document.querySelector('.navbar-custom');
@@ -78,48 +80,48 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
-    
+
     // Handle navbar link hover effects
     function handleHoverEffects() {
         const navLinks = document.querySelectorAll('.nav-link');
         navLinks.forEach(link => {
             // Mouse enter event
-            link.addEventListener('mouseenter', function() {
+            link.addEventListener('mouseenter', function () {
                 this.classList.add('hover');
             });
-            
+
             // Mouse leave event
-            link.addEventListener('mouseleave', function() {
+            link.addEventListener('mouseleave', function () {
                 this.classList.remove('hover');
             });
-            
+
             // Focus event for accessibility
-            link.addEventListener('focus', function() {
+            link.addEventListener('focus', function () {
                 this.classList.add('hover');
             });
-            
+
             // Blur event for accessibility
-            link.addEventListener('blur', function() {
+            link.addEventListener('blur', function () {
                 this.classList.remove('hover');
             });
         });
     }
-    
+
     // Initialize navbar
     initializeNavbar();
-    
+
     // Add scroll event listener
     window.addEventListener('scroll', handleScroll);
-    
+
     // Handle hover effects
     handleHoverEffects();
-    
+
     // Handle logout button click
     const btnSalir = document.querySelector('.btn-salir');
     if (btnSalir) {
-        btnSalir.addEventListener('click', function(e) {
+        btnSalir.addEventListener('click', function (e) {
             e.preventDefault();
-            
+
             // Mostrar confirmación con SweetAlert2
             Swal.fire({
                 title: '¿Cerrar sesión?',
@@ -138,9 +140,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-    
+
     // Reinitialize on window resize for responsive behavior
-    window.addEventListener('resize', function() {
+    window.addEventListener('resize', function () {
         handleHoverEffects();
     });
 });

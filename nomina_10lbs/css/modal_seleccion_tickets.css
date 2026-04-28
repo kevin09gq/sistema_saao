@@ -1,0 +1,125 @@
+/* Estilos para el modal de selección de tickets - 10 Libras */
+
+.empleado-card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.empleado-card:hover {
+    border-color: #0d6efd;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.empleado-card.selected {
+    border-color: #0d6efd;
+    background-color: #e7f3ff;
+}
+
+.empleado-card .form-check-input {
+    pointer-events: none;
+}
+
+.departamento-badge {
+    font-size: 0.75rem;
+    padding: 2px 6px;
+}
+
+.departamento-40 {
+    background-color: #dc3545;
+    color: white;
+}
+
+.departamento-10 {
+    background-color: #198754;
+    color: white;
+}
+
+.departamento-sin-seguro {
+    background-color: #fd7e14;
+    color: white;
+}
+
+.departamento-administracion {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.departamento-produccion {
+    background-color: #ffc107;
+    color: black;
+}
+
+.departamento-seguridad {
+    background-color: #6f42c1;
+    color: white;
+}
+
+.empleado-nombre {
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.empleado-clave {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+/* Estilos mejorados para el botón de limpieza dentro del input */
+.position-relative {
+    position: relative !important;
+}
+
+.input-con-boton {
+    padding-right: 40px !important;
+}
+
+.btn-clear-inside {
+    position: absolute !important;
+    right: 12px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #6c757d !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    z-index: 10 !important;
+    width: 24px !important;
+    height: 24px !important;
+    border-radius: 50% !important;
+    display: none; /* Se controla con jQuery .show() / .hide() */
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s ease !important;
+    outline: none !important;
+    line-height: 1 !important;
+}
+
+.btn-clear-inside:hover {
+    background-color: rgba(0, 0, 0, 0.05) !important;
+    color: #dc3545 !important; /* Rojo al pasar el mouse */
+}
+
+.btn-clear-inside i {
+    font-size: 1.2rem !important;
+    line-height: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Ajustar bordes redondeados */
+.input-group > :not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback) {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.input-group:not(.has-validation) > :not(:last-child):not(.dropdown-toggle):not(.dropdown-menu):not(.form-floating) {
+    border-top-right-radius: 0.375rem;
+    border-bottom-right-radius: 0.375rem;
+}

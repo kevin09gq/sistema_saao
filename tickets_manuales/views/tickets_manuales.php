@@ -39,6 +39,7 @@
                 <div class="tm-card-body">
                     <select id="selectorNomina" class="tm-select">
                         <option value="">-- Seleccione el tipo de nómina --</option>
+                        <option value="nomina_10lbs">🧺 Nómina 10 Libras</option>
                         <option value="nomina_40lbs">📦 Nómina 40 Libras</option>
                         <option value="nomina_huasteca">🏔️ Nómina Huasteca</option>
                         <option value="nomina_palmilla">🌴 Nómina Palmilla</option>
