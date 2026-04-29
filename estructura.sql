@@ -425,7 +425,7 @@ CREATE TABLE nomina_40lbs(
 
 
 -- =============================
--- TABLAS DE NÓMINA 40 LBS
+-- TABLAS DE NÓMINA 10 LBS
 -- =============================
 
 CREATE TABLE nomina_10lbs(
@@ -442,7 +442,7 @@ CREATE TABLE nomina_10lbs(
 -- =============================
 CREATE TABLE precios_cajas (
     id_precio_caja INT AUTO_INCREMENT PRIMARY KEY,
-    tipo ENUM('CALIBRE', 'PESO') NOT NULL,
+    tipo ENUM('NUMERO_DE_BOLSA', 'PESO') NOT NULL,
     valor VARCHAR(50) NOT NULL,
     precio DECIMAL(10,2) NOT NULL,
     color_hex VARCHAR(7)

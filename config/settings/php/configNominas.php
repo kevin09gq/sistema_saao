@@ -1,5 +1,6 @@
 <?php
-include("../../../conexion/conexion.php");
+// Usar la conexión existente
+require_once __DIR__ . '/../../../conexion/conexion.php';
 
 if (!$conexion) {
     die("Error de conexión: " . mysqli_connect_error());

@@ -27,6 +27,8 @@ switch ($_SERVER['REQUEST_METHOD']) {
             validarExistenciaTrabajadorBD();
         } else if ($_POST['case'] === 'validarEmpleadosNuevos') {
             validarEmpleadosNuevos();
+        } else if ($_POST['case'] === 'obtenerSalarioSemanal') {
+            obtenerSalarioSemanal();
         } else {
             echo json_encode([
                 'error' => 'Case no válido',
@@ -431,4 +433,35 @@ function obtenerDepartamentosNomina()
     }
 
     mysqli_stmt_close($stmt);
+}
+
+// OBTENER SALARIO SEMANAL DE LOS EMPLEADOS PARA SUELDO BASE
+function obtenerSalarioSemanal()
+{
+    global $conexion;
+
+    if (!isset($_POST['claves']) || !is_array($_POST['claves'])) {
+        echo json_encode(['error' => 'No se recibieron claves']);
+        return;
+    }
+
+    $claves = $_POST['claves'];
+    $valores = [];
+    foreach ($claves as $clave) {
+        $valores[] = "'" . mysqli_real_escape_string($conexion, $clave) . "'";
+    }
+    $clavesString = implode(',', $valores);
+
+    $sql = "SELECT clave_empleado, salario_semanal FROM info_empleados WHERE clave_empleado IN ($clavesString) AND id_status = 1 AND id_empresa = 1";
+    $result = mysqli_query($conexion, $sql);
+
+    $salarios = [];
+    if ($result) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $salarios[$row['clave_empleado']] = $row['salario_semanal'];
+        }
+        echo json_encode(['salarios' => $salarios]);
+    } else {
+        echo json_encode(['error' => mysqli_error($conexion)]);
+    }
 }

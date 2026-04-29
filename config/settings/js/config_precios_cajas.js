@@ -23,7 +23,7 @@ function getPrecios() {
                     contenido += `
                         <tr id="precio-row-${element.id_precio_caja}">
                             <td>${contador}</td>
-                            <td><span class="badge ${element.tipo === 'CALIBRE' ? 'bg-primary' : 'bg-info'}">${element.tipo}</span></td>
+                            <td><span class="badge ${element.tipo === 'NUMERO_DE_BOLSA' ? 'bg-primary' : 'bg-info'}">${element.tipo}</span></td>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
                                     <div style="width: 20px; height: 20px; border-radius: 50%; background-color: ${element.color_hex}; border: 1px solid #ddd;"></div>

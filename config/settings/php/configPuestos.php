@@ -1,5 +1,6 @@
 <?php
-include("../../../conexion/conexion.php");
+// Usar la conexión existente
+require_once __DIR__ . '/../../../conexion/conexion.php';
 
 // Verificar si la conexión a la base de datos es válida
 if (!$conexion) {

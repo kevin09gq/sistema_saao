@@ -1,5 +1,6 @@
 <?php
-include("../../../conexion/conexion.php");
+// Usar la conexión existente
+require_once __DIR__ . '/../../../conexion/conexion.php';
 
 header('Content-Type: application/json');
 

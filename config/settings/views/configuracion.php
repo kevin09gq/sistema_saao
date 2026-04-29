@@ -1031,7 +1031,7 @@ verificarSesion(); // Proteger esta página
                                         <div class="mb-3">
                                             <label for="tipo_precio" class="form-label">Tipo de Clasificación</label>
                                             <select class="form-select" name="tipo_precio" id="tipo_precio" required>
-                                                <option value="CALIBRE" selected>CALIBRE</option>
+                                                <option value="NUMERO_DE_BOLSA" selected>NUMERO DE BOLSA</option>
                                                 <option value="PESO">PESO</option>
                                             </select>
                                         </div>

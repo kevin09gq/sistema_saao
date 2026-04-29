@@ -438,7 +438,7 @@ function procesarBiometrico(form, estructuraJson) {
                 const empleadosNoUnidos = obtenerEmpleadosNoUnidos(estructuraJson, jsonBiometrico);
                 // Validar empleados sin IMSS solo si hay empleados no unidos
                 if (empleadosNoUnidos && empleadosNoUnidos.length > 0) {
-                    obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos);
+                    obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos, estructuraJson);
 
                 }
 
@@ -554,7 +554,7 @@ function obtenerEmpleadosNoUnidos(estructuraJson, JsonBiometrico) {
 }
 
 // PASO 4: Función para obtener empleados sin seguro del biométrico y unirlos al JSON de nómina
-function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
+function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos, estructuraJson) {
 
     const biometricos = empleadosNoUnidos.map(emp => emp.id_biometrico);
 
@@ -600,6 +600,7 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
                 });
 
                 // Finalizar actualización de propiedades y ordenamiento
+                jsonNomina40lbs = estructuraJson;
                 asignarPropiedadesEmpleado(jsonNomina40lbs);
                 ordenarEmpleadosPorApellido(jsonNomina40lbs);
                 calcularOlvidosTodosEmpleados(jsonNomina40lbs);

@@ -68,6 +68,10 @@
                     title="Actualizar Biometrico" aria-label="Actualizar Biometrico">
                     <i class="bi bi-person-badge"></i>
                 </button>
+                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_sueldo_base"
+                    title="Actualizar Sueldo Base" aria-label="Actualizar Sueldo Base">
+                    <i class="bi bi-currency-dollar"></i>
+                </button>
                 <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_establecer_horario_semanal"
                     title="Establecer Horario Semanal" aria-label="Establecer Horario Semanal">
                     <i class="bi bi-calendar-check"></i>
@@ -201,6 +205,7 @@
     <!-- Incluir el modal -->
 
     <?php include 'modals/modalOlvidos.php'; ?>
+    <?php include 'modals/modalSueldoBase.php'; ?>
     <?php include 'modals/modal40lbs.php'; ?>
     <?php include 'modals/modalHorarios.php'; ?>
     <?php include 'modals/biometricoModal.php'; ?>
@@ -210,6 +215,7 @@
     <?php include 'modals/modal_seleccion_tickets_40lbs.php'; ?>
     <?php include 'modals/dispersionTarjeta.php'; ?>
     <?php include 'modals/modalMarcajes.php'; ?>
+    
     
 
     <!-- jQuery -->
@@ -239,6 +245,7 @@
     <script src="../js/configModales/redondearHorarios.js"></script>
     <script src="../js/configModales/marcajes.js"></script>
     <script src="../js/configModales/olvidosMasivos.js"></script>
+    <script src="../js/configModales/sueldoBase.js"></script>
 
     <script src="../js/configModal/establecerData.js"></script>
     <script src="../js/configModal/editarData.js"></script>

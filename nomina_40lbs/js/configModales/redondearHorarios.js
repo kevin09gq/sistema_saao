@@ -25,7 +25,6 @@ function redondearHorarios() {
         // Solo procesar los departamentos que tienen habilitada la edición (Dinámico)
         if (departamento.editar === true) {
 
-
             // Recorrer empleados del departamento
             departamento.empleados.forEach(function (empleado) {
                 // Verificar que el empleado tenga registros biométricos
@@ -42,14 +41,12 @@ function redondearHorarios() {
 
 // Función para redondear los registros de un empleado específico
 function redondearRegistrosEmpleado(empleado, horariosPorDia) {
-    console.log('Empleado:', empleado.nombre);
-    console.log('Registros originales:', empleado.registros);
-    
+
     // Crear la propiedad biometrico_redondeado si no existe
     if (!empleado.biometrico_redondeado) {
         empleado.biometrico_redondeado = [];
     }
-    
+
     // Limpiar registros redondeados existentes
     empleado.biometrico_redondeado = [];
 
@@ -115,63 +112,63 @@ function redondearRegistrosEmpleado(empleado, horariosPorDia) {
                         salida: "00:00"
                     };
                 } else {
-                // DATOS DEL REGISTRO BIOMÉTRICO DEL EMPLEADO
-                // Tomamos la primera entrada y la última salida del día detectada en el biométrico
-                var horaEntradaRegistro = registrosDelDia[0].entrada;
-                var ultimoRegistro = registrosDelDia[registrosDelDia.length - 1];
-                var horaSalidaRegistro = ultimoRegistro.salida;
+                    // DATOS DEL REGISTRO BIOMÉTRICO DEL EMPLEADO
+                    // Tomamos la primera entrada y la última salida del día detectada en el biométrico
+                    var horaEntradaRegistro = registrosDelDia[0].entrada;
+                    var ultimoRegistro = registrosDelDia[registrosDelDia.length - 1];
+                    var horaSalidaRegistro = ultimoRegistro.salida;
 
-                // DATOS DEL HORARIO SEMANAL CONFIGURADO
-                var horarioSemanal = horariosPorDia[diaSemana];      // Horario completo del día (desde configuración)
+                    // DATOS DEL HORARIO SEMANAL CONFIGURADO
+                    var horarioSemanal = horariosPorDia[diaSemana];      // Horario completo del día (desde configuración)
 
-                // VERIFICAR SI ES JORNADA CON UN SOLO REGISTRO (sin comida)
-                // Si solo hay 1 registro, significa que no hubo comida → siempre jornada interrumpida
-                if (registrosDelDia.length === 1) {
+                    // VERIFICAR SI ES JORNADA CON UN SOLO REGISTRO (sin comida)
+                    // Si solo hay 1 registro, significa que no hubo comida → siempre jornada interrumpida
+                    if (registrosDelDia.length === 1) {
 
-                    var resultadoInterrumpido = {
-                        entrada: procesarFaltaEntrada(horaEntradaRegistro, horarioSemanal.entrada),
-                        entrada_comida: "00:00",   // No hay comida - valor nulo
-                        termino_comida: "00:00",   // No hay comida - valor nulo
-                        salida: procesarFaltaSalida(horaSalidaRegistro, horarioSemanal.salida) // Procesa salida con tolerancia
-                    };
-
-                    resultadoFinal = resultadoInterrumpido;
-                } else {
-                    // VERIFICAR SI EL HORARIO OFICIAL CONTEMPLA COMIDA
-                    // Si el horario oficial no tiene comida (00:00), siempre es jornada interrumpida
-                    var entradaComidaSemanal = (horarioSemanal.entrada_comida || "").trim();
-                    var terminoComidaSemanal = (horarioSemanal.termino_comida || "").trim();
-                    var sinComida = (
-                        entradaComidaSemanal === "" ||
-                        terminoComidaSemanal === "" ||
-                        entradaComidaSemanal === "00:00" ||
-                        terminoComidaSemanal === "00:00" ||
-                        convertirHoraAMinutos(entradaComidaSemanal) === 0 ||
-                        convertirHoraAMinutos(terminoComidaSemanal) === 0
-                    );
-
-                    if (sinComida) {
-
-                        var resultadoSinComida = {
+                        var resultadoInterrumpido = {
                             entrada: procesarFaltaEntrada(horaEntradaRegistro, horarioSemanal.entrada),
-                            entrada_comida: "00:00",   // Horario oficial no contempla comida
-                            termino_comida: "00:00",   // Horario oficial no contempla comida
-                            salida: procesarFaltaSalida(horaSalidaRegistro, horarioSemanal.salida) // Procesa salida normal
+                            entrada_comida: "00:00",   // No hay comida - valor nulo
+                            termino_comida: "00:00",   // No hay comida - valor nulo
+                            salida: procesarFaltaSalida(horaSalidaRegistro, horarioSemanal.salida) // Procesa salida con tolerancia
                         };
 
-                        resultadoFinal = resultadoSinComida;
+                        resultadoFinal = resultadoInterrumpido;
                     } else {
-                        // CUANDO HAY 2+ REGISTROS Y HORARIO CON COMIDA: PROCESAR COMO JORNADA COMPLETA CON COMIDA
+                        // VERIFICAR SI EL HORARIO OFICIAL CONTEMPLA COMIDA
+                        // Si el horario oficial no tiene comida (00:00), siempre es jornada interrumpida
+                        var entradaComidaSemanal = (horarioSemanal.entrada_comida || "").trim();
+                        var terminoComidaSemanal = (horarioSemanal.termino_comida || "").trim();
+                        var sinComida = (
+                            entradaComidaSemanal === "" ||
+                            terminoComidaSemanal === "" ||
+                            entradaComidaSemanal === "00:00" ||
+                            terminoComidaSemanal === "00:00" ||
+                            convertirHoraAMinutos(entradaComidaSemanal) === 0 ||
+                            convertirHoraAMinutos(terminoComidaSemanal) === 0
+                        );
 
-                        // EJECUCIÓN DE CASOS NORMALES (1, 2, 3, 4, 6, 7, 8, 9): Jornada completa con comida
-                        // Origen de datos: procesarJornadaNormal() llama internamente a:
-                        //   - procesarFaltaEntrada() -> procesarRetardoEntrada() (CASOS 1 y 3)
-                        //   - procesarFaltaSalida() -> procesarSalidaAnticipada() (CASOS 2 y 4)
-                        //   - procesarFaltaSalidaComida() -> procesarSalidaComidaAnticipada() (CASOS 6 y 8)
-                        //   - procesarFaltaRegresoComida() -> procesarRegresoComidaTarde() (CASOS 7 y 9)
-                        resultadoFinal = procesarJornadaNormal(registrosDelDia, horarioSemanal, horaEntradaRegistro);
+                        if (sinComida) {
+
+                            var resultadoSinComida = {
+                                entrada: procesarFaltaEntrada(horaEntradaRegistro, horarioSemanal.entrada),
+                                entrada_comida: "00:00",   // Horario oficial no contempla comida
+                                termino_comida: "00:00",   // Horario oficial no contempla comida
+                                salida: procesarFaltaSalida(horaSalidaRegistro, horarioSemanal.salida) // Procesa salida normal
+                            };
+
+                            resultadoFinal = resultadoSinComida;
+                        } else {
+                            // CUANDO HAY 2+ REGISTROS Y HORARIO CON COMIDA: PROCESAR COMO JORNADA COMPLETA CON COMIDA
+
+                            // EJECUCIÓN DE CASOS NORMALES (1, 2, 3, 4, 6, 7, 8, 9): Jornada completa con comida
+                            // Origen de datos: procesarJornadaNormal() llama internamente a:
+                            //   - procesarFaltaEntrada() -> procesarRetardoEntrada() (CASOS 1 y 3)
+                            //   - procesarFaltaSalida() -> procesarSalidaAnticipada() (CASOS 2 y 4)
+                            //   - procesarFaltaSalidaComida() -> procesarSalidaComidaAnticipada() (CASOS 6 y 8)
+                            //   - procesarFaltaRegresoComida() -> procesarRegresoComidaTarde() (CASOS 7 y 9)
+                            resultadoFinal = procesarJornadaNormal(registrosDelDia, horarioSemanal, horaEntradaRegistro);
+                        }
                     }
-                }
                 }
 
 
@@ -222,7 +219,6 @@ function redondearRegistrosEmpleado(empleado, horariosPorDia) {
         return diasSemana.indexOf(a.dia) - diasSemana.indexOf(b.dia);
     });
 
-    console.log('Registros redondeados:', empleado.biometrico_redondeado);
 }
 
 // ========================================
@@ -295,10 +291,10 @@ function procesarJornadaInterrumpida(horaEntradaRegistro, horaSalidaRegistro, ho
     var minutosSalidaRegistro = convertirHoraAMinutos(horaSalidaRegistro);           // Convertir hora real a minutos
     var minutosEntradaComidaSemanal = convertirHoraAMinutos(horarioSemanal.entrada_comida); // Convertir hora comida programada a minutos
 
-   
+
     if (minutosSalidaRegistro <= minutosEntradaComidaSemanal) {
         // Si salió antes o exactamente a la hora de comida: jornada interrumpida
-         var entradaProcesada = procesarFaltaEntrada(horaEntradaRegistro, horarioSemanal.entrada);
+        var entradaProcesada = procesarFaltaEntrada(horaEntradaRegistro, horarioSemanal.entrada);
 
         var resultado = {
             entrada: entradaProcesada, // Procesa entrada (puede ser autocompletada)
@@ -509,7 +505,6 @@ function getTabulador(empleadosFiltro) {
         dataType: 'json',
         success: function (datos) {
             jsonTabulador = datos;
-            console.log("Tabulador recibido:", jsonTabulador);
             // Pasa el filtro: si vino vacío recalcula todos, si vino con empleados solo esos
             imprimirSueldoBasePorHorasTrabajadas(jsonTabulador, empleadosFiltro || null);
             refrescarTabla();
@@ -531,7 +526,7 @@ function obtenerRangoTabuladorPorHorasTrabajadas(horasTrabajadasHHMM, tabulador)
     // Buscar el rango NO hora_extra cuyo "desde" sea el más alto pero <= minutos trabajados
     for (var i = 0; i < tabulador.length; i++) {
         var item = tabulador[i];
-        
+
         // Saltar items sin rango o con tipo hora_extra
         if (!item || !item.rango || item.tipo === 'hora_extra') {
             continue;
@@ -543,7 +538,7 @@ function obtenerRangoTabuladorPorHorasTrabajadas(horasTrabajadasHHMM, tabulador)
         }
 
         var minDesde = convertirHoraAMinutos(desdeStr);
-        
+
         // Buscar el rango con el "desde" más alto que sea <= a las horas trabajadas
         if (minutosEmpleado >= minDesde && minDesde > maxMinDesde) {
             maxMinDesde = minDesde;
@@ -598,24 +593,26 @@ function imprimirSueldoBasePorHorasTrabajadas(tabulador, empleadosSeleccionados)
 
             var minutosEmpleado = convertirHoraAMinutos(horas);
 
-            var rango = obtenerRangoTabuladorPorHorasTrabajadas(horas, tabulador);
-            if (rango) {
-                empleado.sueldo_neto = rango.sueldo_base;
-                console.log('Tabulador =>', empleado.nombre, 'horas_trabajadas:', horas, 'sueldo_base:', rango.sueldo_base);
+            // ✅ FILTRO: Si el empleado tiene sueldo_base: true, NO sobreescribir con el tabulador
+            if (empleado.sueldo_base === true) {
+                // Se mantiene el sueldo_neto establecido manualmente/desde BD
             } else {
-                empleado.sueldo_neto = 0;
-                console.log('Tabulador =>', empleado.nombre, 'horas_trabajadas:', horas, 'sueldo_base: NO ENCONTRADO');
+                var rango = obtenerRangoTabuladorPorHorasTrabajadas(horas, tabulador);
+                if (rango) {
+                    empleado.sueldo_neto = rango.sueldo_base;
+                } else {
+                    empleado.sueldo_neto = 0;
+                }
             }
 
             if (itemHoraExtra && minDesdeHoraExtra !== null && minutosEmpleado > minDesdeHoraExtra) {
                 var minutosExtra = Math.max(0, minutosEmpleado - minDesdeHoraExtra);
                 var costo = parseFloat(itemHoraExtra.costo_por_minuto) || 0;
                 var pagoExtra = minutosExtra * costo;
-                
+
                 empleado.horas_extra = pagoExtra.toFixed(2);
                 empleado.minutos_extras_trabajados = minutosExtra; // Guardar minutos adicionales
 
-                console.log('Hora extra =>', empleado.nombre, 'minutos_extra:', minutosExtra, 'costo_por_minuto:', costo, 'pago_extra:', pagoExtra);
             } else {
                 empleado.horas_extra = 0;
                 empleado.minutos_extras_trabajados = 0;
