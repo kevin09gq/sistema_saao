@@ -69,9 +69,18 @@ class PDFEncabezado extends TCPDF
 function mesEnLetras($mes)
 {
     $meses = [
-        'Ene' => 'ENERO', 'Feb' => 'FEBRERO', 'Mar' => 'MARZO', 'Abr' => 'ABRIL',
-        'May' => 'MAYO', 'Jun' => 'JUNIO', 'Jul' => 'JULIO', 'Ago' => 'AGOSTO',
-        'Sep' => 'SEPTIEMBRE', 'Oct' => 'OCTUBRE', 'Nov' => 'NOVIEMBRE', 'Dic' => 'DICIEMBRE'
+        'Ene' => 'ENERO',
+        'Feb' => 'FEBRERO',
+        'Mar' => 'MARZO',
+        'Abr' => 'ABRIL',
+        'May' => 'MAYO',
+        'Jun' => 'JUNIO',
+        'Jul' => 'JULIO',
+        'Ago' => 'AGOSTO',
+        'Sep' => 'SEPTIEMBRE',
+        'Oct' => 'OCTUBRE',
+        'Nov' => 'NOVIEMBRE',
+        'Dic' => 'DICIEMBRE'
     ];
     return isset($meses[$mes]) ? $meses[$mes] : strtoupper($mes);
 }
@@ -79,7 +88,8 @@ function mesEnLetras($mes)
 function formatearFechaNomina($fecha)
 {
     $partes = explode('/', $fecha);
-    if (count($partes) !== 3) return $fecha;
+    if (count($partes) !== 3)
+        return $fecha;
 
     $dia = ltrim($partes[0], '0');
     $mes = mesEnLetras($partes[1]);
@@ -90,7 +100,8 @@ function formatearFechaNomina($fecha)
 
 function obtenerTituloPeriodo($fecha_inicio, $fecha_cierre)
 {
-    if (!$fecha_inicio || !$fecha_cierre) return '[PERIODO]';
+    if (!$fecha_inicio || !$fecha_cierre)
+        return '[PERIODO]';
 
     $partes_inicio = explode('/', $fecha_inicio);
     $partes_cierre = explode('/', $fecha_cierre);
@@ -110,9 +121,10 @@ function obtenerTituloPeriodo($fecha_inicio, $fecha_cierre)
 
 function formatoMoneda($monto)
 {
-    if ($monto == 0) return '$0.00';
+    if ($monto == 0)
+        return '$0.00';
     $prefijo = $monto < 0 ? '$-' : '$';
-    return $prefijo . number_format(abs((float)$monto), 2, '.', ',');
+    return $prefijo . number_format(abs((float) $monto), 2, '.', ',');
 }
 
 //=====================================
@@ -136,12 +148,14 @@ $grupos = [];
 if (isset($datosNomina['departamentos']) && is_array($datosNomina['departamentos'])) {
     foreach ($datosNomina['departamentos'] as $depto) {
         // Solo procesar departamentos oficiales (editar: true)
-        if (!isset($depto['editar']) || $depto['editar'] !== true) continue;
+        if (!isset($depto['editar']) || $depto['editar'] !== true)
+            continue;
 
         $nombreDepto = strtoupper($depto['nombre']);
 
         foreach ($depto['empleados'] ?? [] as $emp) {
-            if (!($emp['mostrar'] ?? true)) continue;
+            if (!($emp['mostrar'] ?? true))
+                continue;
 
             $ss = $emp['seguroSocial'] ?? false;
             $suffix = $ss ? '(CSS)' : '(SSS)';
@@ -174,7 +188,8 @@ $pdf->SetAutoPageBreak(TRUE, 15);
 // Variables de Resumen 
 $resumenPorTipo = [];
 foreach ($grupos as $n => $l) {
-    if (empty($l)) continue;
+    if (empty($l))
+        continue;
     $resumenPorTipo[$n] = ['count' => 0, 'neto' => 0, 'percepciones' => 0, 'deducciones' => 0, 'percepciones_detalle' => [], 'deducciones_detalle' => []];
 }
 
@@ -188,7 +203,8 @@ $contadorEmpleados = 0;
 //=====================================
 
 foreach ($grupos as $nombreGrupo => $empleados) {
-    if (empty($empleados)) continue;
+    if (empty($empleados))
+        continue;
 
     usort($empleados, fn($a, $b) => strcmp($a['nombre'] ?? '', $b['nombre'] ?? ''));
 
@@ -201,7 +217,8 @@ foreach ($grupos as $nombreGrupo => $empleados) {
 
     foreach ($empleados as $idx => $emp) {
         // Nueva página para cada empleado después del primero
-        if ($idx > 0) $pdf->AddPage();
+        if ($idx > 0)
+            $pdf->AddPage();
 
         $nom = strtoupper($emp['nombre'] ?? '');
         $clave = $emp['clave'] ?? 'N/A';
@@ -212,16 +229,22 @@ foreach ($grupos as $nombreGrupo => $empleados) {
         $pdf->Ln(2);
 
         // --- PERCEPCIONES ---
-        $p = ['Sueldo Base/Neto' => (float)($emp['sueldo_neto'] ?? 0)];
-        if (($emp['incentivo'] ?? 0) != 0) $p['Incentivo'] = (float)$emp['incentivo'];
-        
+        $p = ['Sueldo Base/Neto' => (float) ($emp['sueldo_neto'] ?? 0)];
+        if (($emp['incentivo'] ?? 0) != 0)
+            $p['Incentivo'] = (float) $emp['incentivo'];
+
         $extrasDetalle = [];
-        if (($emp['horas_extra'] ?? 0) != 0) $extrasDetalle['Horas Extra'] = (float)$emp['horas_extra'];
-        if (($emp['bono_antiguedad'] ?? 0) != 0) $extrasDetalle['Bono Antigüedad'] = (float)$emp['bono_antiguedad'];
-        if (($emp['actividades_especiales'] ?? 0) != 0) $extrasDetalle['Actividades Especiales'] = (float)$emp['actividades_especiales'];
-        if (($emp['puesto'] ?? 0) != 0) $extrasDetalle['Concepto Puesto'] = (float)$emp['puesto'];
+        if (($emp['horas_extra'] ?? 0) != 0)
+            $extrasDetalle['Horas Extra'] = (float) $emp['horas_extra'];
+        if (($emp['bono_antiguedad'] ?? 0) != 0)
+            $extrasDetalle['Bono Antigüedad'] = (float) $emp['bono_antiguedad'];
+        if (($emp['actividades_especiales'] ?? 0) != 0)
+            $extrasDetalle['Actividades Especiales'] = (float) $emp['actividades_especiales'];
+        if (($emp['puesto'] ?? 0) != 0)
+            $extrasDetalle['Concepto Puesto'] = (float) $emp['puesto'];
         foreach ($emp['percepciones_extra'] ?? [] as $extra) {
-            if (($extra['cantidad'] ?? 0) != 0) $extrasDetalle[$extra['nombre']] = (float)$extra['cantidad'];
+            if (($extra['cantidad'] ?? 0) != 0)
+                $extrasDetalle[$extra['nombre']] = (float) $extra['cantidad'];
         }
 
         if (!empty($extrasDetalle)) {
@@ -234,28 +257,45 @@ foreach ($grupos as $nombreGrupo => $empleados) {
         // --- DEDUCCIONES ---
         $d = [];
         foreach ($emp['conceptos'] ?? [] as $c) {
-            $m = (float)($c['resultado'] ?? 0);
-            if ($m <= 0) continue;
+            $m = (float) ($c['resultado'] ?? 0);
+            if ($m <= 0)
+                continue;
             switch ($c['codigo']) {
-                case '45': $d['ISR'] = $m; break;
-                case '52': $d['IMSS'] = $m; break;
-                case '16': $d['Infonavit'] = $m; break;
-                case '107': $d['Ajuste al SUB'] = $m; break;
+                case '45':
+                    $d['ISR'] = $m;
+                    break;
+                case '52':
+                    $d['IMSS'] = $m;
+                    break;
+                case '16':
+                    $d['Infonavit'] = $m;
+                    break;
+                case '107':
+                    $d['Ajuste al SUB'] = $m;
+                    break;
             }
         }
-        if (($emp['inasistencia'] ?? 0) != 0) $d['Inasistencia'] = (float)$emp['inasistencia'];
-        if (($emp['permiso'] ?? 0) != 0) $d['Permiso'] = (float)$emp['permiso'];
-        if (($emp['uniforme'] ?? 0) != 0) $d['Uniforme'] = (float)$emp['uniforme'];
-        if (($emp['checador'] ?? 0) != 0) $d['Biométrico'] = (float)$emp['checador'];
-        if (($emp['tarjeta'] ?? 0) != 0) $d['Tarjeta'] = (float)$emp['tarjeta'];
-        if (($emp['prestamo'] ?? 0) != 0) $d['Préstamo'] = (float)$emp['prestamo'];
+        if (($emp['inasistencia'] ?? 0) != 0)
+            $d['Inasistencia'] = (float) $emp['inasistencia'];
+        if (($emp['permiso'] ?? 0) != 0)
+            $d['Permiso'] = (float) $emp['permiso'];
+        if (($emp['uniforme'] ?? 0) != 0)
+            $d['Uniforme'] = (float) $emp['uniforme'];
+        if (($emp['checador'] ?? 0) != 0)
+            $d['Biométrico'] = (float) $emp['checador'];
+        if (($emp['tarjeta'] ?? 0) != 0)
+            $d['Tarjeta'] = (float) $emp['tarjeta'];
+        if (($emp['prestamo'] ?? 0) != 0)
+            $d['Préstamo'] = (float) $emp['prestamo'];
         $extrasDDetalle = [];
         foreach ($emp['deducciones_extra'] ?? [] as $ex) {
-            if (($ex['cantidad'] ?? 0) != 0) $extrasDDetalle[$ex['nombre']] = (float)$ex['cantidad'];
+            if (($ex['cantidad'] ?? 0) != 0)
+                $extrasDDetalle[$ex['nombre']] = (float) $ex['cantidad'];
         }
-        
+
         $totalExtras = array_sum($extrasDDetalle);
-        if ($totalExtras != 0) $d['F.A/Gafet/Cofia'] = $totalExtras;
+        if ($totalExtras != 0)
+            $d['F.A/Gafet/Cofia'] = $totalExtras;
 
         $totalDeduccionesEmpleado = array_sum($d);
 
@@ -312,9 +352,11 @@ foreach ($grupos as $nombreGrupo => $empleados) {
                 }
             }
         }
-        $pdf->Ln(2); $pdf->SetX(110);
+        $pdf->Ln(2);
+        $pdf->SetX(110);
         $pdf->Line(110, $pdf->GetY(), 200, $pdf->GetY());
-        $pdf->SetX(110); $pdf->SetFont('helvetica', 'B', 11);
+        $pdf->SetX(110);
+        $pdf->SetFont('helvetica', 'B', 11);
         $pdf->Cell(60, 7, 'Total Deducciones', 0, 0, 'R');
         $pdf->Cell(30, 7, formatoMoneda($totalDeduccionesEmpleado), 0, 1, 'R');
         $altDer = $pdf->GetY() - $inicioY;
@@ -323,7 +365,7 @@ foreach ($grupos as $nombreGrupo => $empleados) {
 
         // NETO
         $sueldoNeto = $totalPercepcionesEmpleado - $totalDeduccionesEmpleado;
-        $redondeo = (float)($emp['redondeo'] ?? 0);
+        $redondeo = (float) ($emp['redondeo'] ?? 0);
         $sueldoRedondeado = $sueldoNeto + $redondeo;
 
         $pdf->SetLineWidth(0.1);
@@ -343,12 +385,15 @@ foreach ($grupos as $nombreGrupo => $empleados) {
         }
 
         $pdf->SetFillColor(250, 250, 250);
-        if ($sueldoRedondeado >= 0) $pdf->SetTextColor(0, 100, 0); else $pdf->SetTextColor(200, 0, 0);
+        if ($sueldoRedondeado >= 0)
+            $pdf->SetTextColor(0, 100, 0);
+        else
+            $pdf->SetTextColor(200, 0, 0);
         $pdf->SetFont('helvetica', 'B', 12);
         $pdf->Cell(130, 10, 'NETO A PAGAR', 0, 0, 'R', true);
         $pdf->SetFont('dejavusansmono', 'B', 12);
         $pdf->Cell(60, 10, formatoMoneda($sueldoRedondeado), 0, 1, 'R', true);
-        $pdf->SetTextColor(0,0,0);
+        $pdf->SetTextColor(0, 0, 0);
         $pdf->Line(10, $pdf->GetY(), 200, $pdf->GetY());
 
         // Acumular Totales por Grupo
@@ -358,25 +403,29 @@ foreach ($grupos as $nombreGrupo => $empleados) {
         $resumenPorTipo[$nombreGrupo]['deducciones'] += $totalDeduccionesEmpleado;
 
         foreach ($p as $k => $v) {
-            if (!isset($resumenPorTipo[$nombreGrupo]['percepciones_detalle'][$k])) $resumenPorTipo[$nombreGrupo]['percepciones_detalle'][$k] = 0;
+            if (!isset($resumenPorTipo[$nombreGrupo]['percepciones_detalle'][$k]))
+                $resumenPorTipo[$nombreGrupo]['percepciones_detalle'][$k] = 0;
             $resumenPorTipo[$nombreGrupo]['percepciones_detalle'][$k] += $v;
         }
         if (!empty($extrasDetalle)) {
             foreach ($extrasDetalle as $en => $ev) {
                 $subK = "   • {$en}";
-                if (!isset($resumenPorTipo[$nombreGrupo]['percepciones_detalle'][$subK])) $resumenPorTipo[$nombreGrupo]['percepciones_detalle'][$subK] = 0;
+                if (!isset($resumenPorTipo[$nombreGrupo]['percepciones_detalle'][$subK]))
+                    $resumenPorTipo[$nombreGrupo]['percepciones_detalle'][$subK] = 0;
                 $resumenPorTipo[$nombreGrupo]['percepciones_detalle'][$subK] += $ev;
             }
         }
 
         foreach ($d as $k => $v) {
-            if (!isset($resumenPorTipo[$nombreGrupo]['deducciones_detalle'][$k])) $resumenPorTipo[$nombreGrupo]['deducciones_detalle'][$k] = 0;
+            if (!isset($resumenPorTipo[$nombreGrupo]['deducciones_detalle'][$k]))
+                $resumenPorTipo[$nombreGrupo]['deducciones_detalle'][$k] = 0;
             $resumenPorTipo[$nombreGrupo]['deducciones_detalle'][$k] += $v;
         }
         if (!empty($extrasDDetalle)) {
             foreach ($extrasDDetalle as $en => $ev) {
                 $subK = "   • {$en}";
-                if (!isset($resumenPorTipo[$nombreGrupo]['deducciones_detalle'][$subK])) $resumenPorTipo[$nombreGrupo]['deducciones_detalle'][$subK] = 0;
+                if (!isset($resumenPorTipo[$nombreGrupo]['deducciones_detalle'][$subK]))
+                    $resumenPorTipo[$nombreGrupo]['deducciones_detalle'][$subK] = 0;
                 $resumenPorTipo[$nombreGrupo]['deducciones_detalle'][$subK] += $ev;
             }
         }
@@ -436,7 +485,10 @@ if ($contadorEmpleados > 0) {
     $pdf->Line(10, $pdf->GetY(), 200, $pdf->GetY());
     $pdf->Ln(3);
 
-    if ($totalGeneralNetoRedondeado >= 0) $pdf->SetTextColor(0, 100, 0); else $pdf->SetTextColor(200, 0, 0);
+    if ($totalGeneralNetoRedondeado >= 0)
+        $pdf->SetTextColor(0, 100, 0);
+    else
+        $pdf->SetTextColor(200, 0, 0);
     $pdf->SetFillColor(250, 250, 250);
     $pdf->SetFont('helvetica', 'B', 12);
     $pdf->Cell(100, 10, 'TOTAL NETO A PAGAR GENERAL', 0, 0, 'L', true);
@@ -545,7 +597,8 @@ if ($contadorEmpleados > 0) {
 }
 
 // Descarga
-if (ob_get_length()) ob_end_clean();
+if (ob_get_length())
+    ob_end_clean();
 header('Content-Type: application/pdf');
 header('Content-Disposition: attachment; filename="REPORTE_NOMINA_40LBS_' . date('Ymd_His') . '.pdf"');
 $pdf->Output('REPORTE_NOMINA_40LBS_' . date('Ymd_His') . '.pdf', 'D');

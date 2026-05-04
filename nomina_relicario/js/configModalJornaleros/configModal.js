@@ -481,7 +481,7 @@ function aplicarTotalHistorialJornalero() {
 function inicializarSueldoACobrarJornalero() {
 
     // Escuchar cambios directos en sueldo semanal
-    $(document).on('input', '#mod-sueldo-semanal-jornalero, #mod-pasaje-jornalero', calcularSueldoACobrarJornalero);
+    $(document).on('input', '#mod-sueldo-semanal-jornalero, #mod-comida-jornalero, #mod-pasaje-jornalero', calcularSueldoACobrarJornalero);
 
     // Escuchar cambios en todas las deducciones editables
     $(document).on('input',

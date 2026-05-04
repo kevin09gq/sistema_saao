@@ -149,7 +149,7 @@ function editarNomina() {
         $("#color_nomina").val(colorNomina);
         $("#color_nomina_text").text(colorNomina.toUpperCase());
         $("#btn-guardar-nomina").html('<i class="bi bi-save"></i> Actualizar');
-        
+
         // Transición de la Interfaz
         $("#alert-select-nomina").hide();
         $("#form-update-nomina-container").slideDown();
@@ -174,7 +174,7 @@ function cancelarNomina() {
 
 function resetearFormularioNomina() {
     // Escondemos el form y mostramos la alerta inicial
-    $("#form-update-nomina-container").slideUp(200, function() {
+    $("#form-update-nomina-container").slideUp(200, function () {
         $("#alert-select-nomina").fadeIn();
         $("#nomina_id").val('');
         $("#nombre_nomina").val('');
@@ -200,6 +200,7 @@ function iniciarModalAsignacion() {
         $("#modal_nomina_area_id").val(idArea);
 
         // Cargar departamentos del área de la nómina
+        cargarEmpresasModal();
         cargarDepartamentosPorAreaModal(idArea);
         cargarDepartamentosAsignados(idNomina);
 
@@ -212,8 +213,9 @@ function iniciarModalAsignacion() {
 
         let idNomina = $("#modal_nomina_id").val();
         let idDepartamento = $("#modal_select_departamento").val();
+        let idEmpresa = $("#modal_select_empresa").val();
 
-        if (idNomina && idDepartamento) {
+        if (idNomina && idDepartamento && idEmpresa) {
             $.ajax({
                 type: "POST",
                 url: "../php/configNominas.php",
@@ -221,6 +223,7 @@ function iniciarModalAsignacion() {
                     accion: "registrarNominaDepartamento",
                     id_nomina: idNomina,
                     id_departamento: idDepartamento,
+                    id_empresa: idEmpresa,
                     color_depto_nomina: $("#modal_color_departamento").val()
                 },
                 success: function (response) {
@@ -295,7 +298,7 @@ function cargarDepartamentosAsignados(idNomina) {
                                 value="${depto.color_depto_nomina || '#FF0000'}" 
                                 title="Cambiar color"
                                 style="width: 15px; height: 35px; cursor: pointer;">
-                            <span class="px-2 text-dark fw-semibold flex-grow-1 text-start">${depto.nombre_departamento}</span>
+                            <span class="px-2 text-dark fw-semibold flex-grow-1 text-start">${depto.nombre_departamento} <small class="text-muted">(${depto.nombre_empresa})</small></span>
                             <button class="btn btn-sm btn-link text-danger p-1 me-1 btn-delete-nd-modal" data-id="${depto.id_nomina_departamento}" title="Quitar departamento">
                                 <i class="bi bi-x-circle-fill"></i>
                             </button>
@@ -330,6 +333,26 @@ function cargarDepartamentosPorAreaModal(idArea) {
                 $("#modal_select_departamento").html(opciones).prop('disabled', false);
             } catch (e) {
                 console.log("Error al procesar departamentos por área.");
+            }
+        }
+    });
+}
+
+function cargarEmpresasModal() {
+    $("#modal_select_empresa").html('<option value="" selected disabled>Cargando...</option>').prop('disabled', true);
+    $.ajax({
+        type: "GET",
+        url: "../../../public/php/obtenerEmpresa.php",
+        success: function (response) {
+            try {
+                let empresas = JSON.parse(response);
+                let opciones = `<option value="" selected disabled>Elegir empresa...</option>`;
+                empresas.forEach(e => {
+                    opciones += `<option value="${e.id_empresa}">${e.nombre_empresa}</option>`;
+                });
+                $("#modal_select_empresa").html(opciones).prop('disabled', false);
+            } catch (e) {
+                console.error("Error al cargar empresas", e);
             }
         }
     });

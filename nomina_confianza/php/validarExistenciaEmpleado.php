@@ -386,8 +386,8 @@ function obtenerDepartamentosNomina()
         return;
     }
 
-    // Consultar departamentos y el color específico para esta nómina
-    $sql = "SELECT d.id_departamento, d.nombre_departamento, nd.color_depto_nomina
+    // Consultar departamentos y el color específico para esta nómina (incluyendo id_empresa)
+    $sql = "SELECT d.id_departamento, d.nombre_departamento, nd.color_depto_nomina, nd.id_empresa
             FROM departamentos d
             INNER JOIN nomina_departamento nd ON d.id_departamento = nd.id_departamento
             WHERE nd.id_nomina = ?
@@ -416,19 +416,30 @@ function obtenerDepartamentosNomina()
 
     $result = mysqli_stmt_get_result($stmt);
 
-    $departamentos = [];
+    $departamentosMap = [];
     
     if ($result) {
         while ($row = mysqli_fetch_assoc($result)) {
-            $departamentos[] = [
-                'id_departamento' => intval($row['id_departamento']),
-                'nombre_departamento' => $row['nombre_departamento'],
-                'color_reporte' => $row['color_depto_nomina'] ?? '#FF0000'
+            $idDepto = intval($row['id_departamento']);
+            
+            // Si el departamento aún no está en el mapa, lo inicializamos
+            if (!isset($departamentosMap[$idDepto])) {
+                $departamentosMap[$idDepto] = [
+                    'id_departamento' => $idDepto,
+                    'nombre_departamento' => $row['nombre_departamento'],
+                    'color_reporte' => []
+                ];
+            }
+            
+            // Agregamos la configuración de color para esta empresa específica
+            $departamentosMap[$idDepto]['color_reporte'][] = [
+                'id_empresa' => intval($row['id_empresa']),
+                'color' => $row['color_depto_nomina'] ?? '#FF0000'
             ];
         }
 
         echo json_encode([
-            'departamentos' => $departamentos
+            'departamentos' => array_values($departamentosMap)
         ], JSON_UNESCAPED_UNICODE);
     } else {
         echo json_encode([

@@ -80,8 +80,12 @@ function establecerInformacionEmpleado(empleado) {
     // Rellenar los campos del modal con los datos del empleado
     $('#campo-clave-40lbs').text(empleado.clave || '');
     $('#campo-nombre-40lbs').text(empleado.nombre || '');
-    $('#campo-minutos-trabajados-40lbs').text(empleado.minutos_trabajados || '0');
-    $('#campo-minutos-extras-40lbs').text(empleado.minutos_extras_trabajados || '0');
+    
+    // Si tiene sueldo base, mostrar guión ya que no se calculan minutos por redondeo
+    const esSueldoBase = empleado.sueldo_base === true;
+    $('#campo-minutos-trabajados-40lbs').text(esSueldoBase ? '-' : (empleado.minutos_trabajados || '0'));
+    $('#campo-minutos-extras-40lbs').text(esSueldoBase ? '-' : (empleado.minutos_extras_trabajados || '0'));
+    
     $('#nombre-empleado-modal').text(empleado.nombre || '');
 }
 
@@ -162,10 +166,14 @@ function establecerColorBiometrico(empleado) {
         }
     });
 
-    // Obtener horarios semanales globales para comparaciones (si están disponibles)
+    // Obtener horarios para comparaciones (Prioridad: oficial si es sueldo base, sino semanal global)
     const horariosPorDia = {};
-    if (window.jsonNomina40lbs && Array.isArray(window.jsonNomina40lbs.horarios_semanales)) {
-        window.jsonNomina40lbs.horarios_semanales.forEach(h => {
+    const fuenteHorarios = (empleado.sueldo_base === true && Array.isArray(empleado.horario_oficial)) 
+        ? empleado.horario_oficial 
+        : (window.jsonNomina40lbs ? window.jsonNomina40lbs.horarios_semanales : null);
+
+    if (Array.isArray(fuenteHorarios)) {
+        fuenteHorarios.forEach(h => {
             horariosPorDia[normalizarDia(h.dia)] = h;
         });
     }
@@ -261,37 +269,28 @@ function establecerColorBiometrico(empleado) {
 /************************************
  * ESTABLECER BIOMÉTRICO REDONDEADO DEL EMPLEADO
  ************************************/
-function establecerBiomtricoRedondeado(empleado) {
-    // Si no hay empleado o no tiene biometrico_redondeado, salir
-    if (!empleado || !empleado.biometrico_redondeado || !Array.isArray(empleado.biometrico_redondeado)) {
-        return;
-    }
+function establecerBiomtricoRedondeado(emp) {
+    if (!emp) return;
+    const isBase = emp.sueldo_base === true;
+    const datos = isBase ? (emp.horario_oficial || []) : (emp.biometrico_redondeado || []);
+    
+    $('#btn-biometrico-redondeado-40lbs').html(isBase ? '<i class="bi bi-calendar3"></i> Horario Oficial' : '<i class="bi bi-clock-history"></i> Biometrico Redondeado');
+    $('#tabla-biometrico-redondeado th:nth-child(n+6)').toggle(!isBase);
 
-    // Limpiar la tabla
-    $('#tbody-biometrico-redondeado-40lbs').empty();
-
-    // Iterar sobre los registros de biometrico redondeado
-    empleado.biometrico_redondeado.forEach(registro => {
-        // Capitalizar el nombre del día (viernes -> Viernes)
-        const nombreDia = registro.dia.charAt(0).toUpperCase() + registro.dia.slice(1);
-
-        // Crear fila con los datos
-        const fila = `
-            <tr>
-                <td class="text-center">${nombreDia}</td>
-                <td class="text-center">${registro.entrada || '-'}</td>
-                <td class="text-center">${registro.termino_comida || '-'}</td>
-                <td class="text-center">${registro.entrada_comida || '-'}</td>
-                <td class="text-center">${registro.salida || '-'}</td>
-                <td class="text-center">${registro.horas_comida || '-'}</td>
-                <td class="text-center">${registro.minutos_trabajados || '-'}</td>
-                <td class="text-center">${registro.horas_trabajadas || '-'}</td>
-            </tr>
-        `;
-
-        // Agregar fila a la tabla
-        $('#tbody-biometrico-redondeado-40lbs').append(fila);
-    });
+    $('#tbody-biometrico-redondeado-40lbs').html(datos.map(reg => `
+        <tr>
+            <td class="text-center">${String(reg.dia || '').charAt(0).toUpperCase() + String(reg.dia || '').slice(1).toLowerCase()}</td>
+            <td class="text-center">${reg.entrada || '-'}</td>
+            <td class="text-center">${isBase ? (reg.salida_comida || '-') : (reg.entrada_comida || '-')}</td>
+            <td class="text-center">${isBase ? (reg.entrada_comida || '-') : (reg.termino_comida || '-')}</td>
+            <td class="text-center">${reg.salida || '-'}</td>
+            ${isBase ? '' : `
+                <td class="text-center">${reg.horas_comida || '-'}</td>
+                <td class="text-center">${reg.minutos_trabajados || '-'}</td>
+                <td class="text-center">${reg.horas_trabajadas || '-'}</td>
+            `}
+        </tr>
+    `).join(''));
 }
 
 
@@ -502,24 +501,27 @@ function establecerHistorialInasistencias(empleado) {
                 </tr>
             </thead>
             <tbody>
-                ${empleado.historial_inasistencias.map((inasistencia, index) => `
-                    <tr>
-                        <td>${inasistencia.dia}</td>
-                        <td>$${parseFloat(inasistencia.descuento_inasistencia).toFixed(2)}</td>
-                        <td><span class="badge ${inasistencia.tipo === 'manual' ? 'bg-info' : 'bg-secondary'}">${inasistencia.tipo === 'manual' ? 'Manual' : 'Automática'}</span></td>
-                        <td>
-                            ${inasistencia.tipo === 'manual' ? `<button type="button" class="btn btn-sm btn-danger btn-eliminar-inasistencia-manual" data-index="${index}"><i class="bi bi-trash"></i></button>` : '<span class="text-muted">-</span>'}
-                        </td>
-                    </tr>
-                `).join('')}
+                ${empleado.historial_inasistencias.map((inasistencia, index) => {
+                    const esAutoIgnorada = inasistencia.tipo === 'automatico' && empleado.ignorar_inasistencias_automaticas;
+                    return `
+                        <tr class="${esAutoIgnorada ? 'opacity-50 text-decoration-line-through' : ''}">
+                            <td>${inasistencia.dia}</td>
+                            <td>$${parseFloat(inasistencia.descuento_inasistencia).toFixed(2)}</td>
+                            <td>
+                                <span class="badge ${inasistencia.tipo === 'manual' ? 'bg-info' : 'bg-secondary'}">${inasistencia.tipo === 'manual' ? 'Manual' : 'Automática'}</span>
+                                ${esAutoIgnorada ? '<span class="badge bg-warning text-dark ms-1">Ignorada</span>' : ''}
+                            </td>
+                            <td>
+                                ${inasistencia.tipo === 'manual' ? `<button type="button" class="btn btn-sm btn-danger btn-eliminar-inasistencia-manual" data-index="${index}"><i class="bi bi-trash"></i></button>` : '<span class="text-muted">-</span>'}
+                            </td>
+                        </tr>
+                    `;
+                }).join('')}
             </tbody>
         </table>
     `;
 
     $contenedor.html(html);
-
-    // Agregar evento para eliminar inasistencias manuales
-
 }
 
 function establecerHistorialPermisos(empleado) {

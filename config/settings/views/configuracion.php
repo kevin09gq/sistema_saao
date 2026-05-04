@@ -138,8 +138,9 @@ verificarSesion(); // Proteger esta página
                     </div>
 
                     <div class="col">
-                        <div class="card nav-link" id="precios-cajas-tab" data-bs-toggle="tab" data-bs-target="#precios-cajas"
-                            role="tab" aria-controls="precios-cajas" aria-selected="false">
+                        <div class="card nav-link" id="precios-cajas-tab" data-bs-toggle="tab"
+                            data-bs-target="#precios-cajas" role="tab" aria-controls="precios-cajas"
+                            aria-selected="false">
                             <div class="card-body p-1">
                                 <h6 class="card-title my-0"><i class="bi bi-tag-fill"></i> Precios Cajas</h6>
                             </div>
@@ -308,10 +309,12 @@ verificarSesion(); // Proteger esta página
                             <!-- Formulario Nombre de Nómina -->
                             <div class="col-md-5">
                                 <div class="alert alert-primary mb-0 shadow-sm" id="alert-select-nomina">
-                                    <i class="bi bi-info-circle me-2"></i> Seleccione una nómina de la tabla para editarla.
+                                    <i class="bi bi-info-circle me-2"></i> Seleccione una nómina de la tabla para
+                                    editarla.
                                 </div>
                                 <div class="form-container" style="display: none;" id="form-update-nomina-container">
-                                    <h5 class="mb-3 text-primary"><i class="bi bi-pencil-square"></i> Modificar Nómina</h5>
+                                    <h5 class="mb-3 text-primary"><i class="bi bi-pencil-square"></i> Modificar Nómina
+                                    </h5>
                                     <form id="nominaForm">
                                         <input type="hidden" id="nomina_id" name="nomina_id" required>
                                         <div class="mb-3">
@@ -770,7 +773,8 @@ verificarSesion(); // Proteger esta página
                                                                                             <?php foreach (DIAS_SEMANA as $dia): ?>
                                                                                                 <option
                                                                                                     value="<?php echo $dia; ?>">
-                                                                                                    <?php echo $dia; ?></option>
+                                                                                                    <?php echo $dia; ?>
+                                                                                                </option>
                                                                                             <?php endforeach; ?>
 
                                                                                         </select>
@@ -954,7 +958,8 @@ verificarSesion(); // Proteger esta página
                                                 </button>
                                             </div>
                                             <small class="text-muted">
-                                                <i class="bi bi-info-circle"></i> Necesaria para confirmar cualquier cambio.
+                                                <i class="bi bi-info-circle"></i> Necesaria para confirmar cualquier
+                                                cambio.
                                             </small>
                                         </div>
 
@@ -971,17 +976,21 @@ verificarSesion(); // Proteger esta página
                                                 </button>
                                             </div>
                                             <small class="text-muted">
-                                                <i class="bi bi-lightbulb"></i> Dejar vacío si solo deseas actualizar tu correo.
+                                                <i class="bi bi-lightbulb"></i> Dejar vacío si solo deseas actualizar tu
+                                                correo.
                                             </small>
                                         </div>
 
                                         <hr class="my-4 opacity-50">
 
                                         <div class="d-grid gap-3">
-                                            <button type="submit" class="btn btn-success d-flex justify-content-center align-items-center">
+                                            <button type="submit"
+                                                class="btn btn-success d-flex justify-content-center align-items-center">
                                                 <i class="bi bi-check2-circle fs-5 me-2"></i> Actualizar Información
                                             </button>
-                                            <button type="reset" class="btn btn-secondary d-flex justify-content-center align-items-center" id="btn-cancelar-usuario">
+                                            <button type="reset"
+                                                class="btn btn-secondary d-flex justify-content-center align-items-center"
+                                                id="btn-cancelar-usuario">
                                                 <i class="bi bi-arrow-counterclockwise me-2"></i> Restaurar Campos
                                             </button>
                                         </div>
@@ -1027,7 +1036,7 @@ verificarSesion(); // Proteger esta página
                                     <h5 class="mb-3"><i class="bi bi-plus-circle"></i> Agregar Precio</h5>
                                     <form id="precioCajaForm">
                                         <input type="hidden" id="precio_id" name="precio_id">
-                                        
+
                                         <div class="mb-3">
                                             <label for="tipo_precio" class="form-label">Tipo de Clasificación</label>
                                             <select class="form-select" name="tipo_precio" id="tipo_precio" required>
@@ -1038,12 +1047,14 @@ verificarSesion(); // Proteger esta página
 
                                         <div class="mb-3">
                                             <label for="valor_caja" class="form-label">Valor (Ej. 14:2 o 40 lbs)</label>
-                                            <input type="text" class="form-control" id="valor_caja" name="valor_caja" required>
+                                            <input type="text" class="form-control" id="valor_caja" name="valor_caja"
+                                                required>
                                         </div>
 
                                         <div class="mb-3">
                                             <label for="precio_caja" class="form-label">Precio por Caja ($)</label>
-                                            <input type="number" class="form-control" id="precio_caja" name="precio_caja" step="0.01" min="0" required>
+                                            <input type="number" class="form-control" id="precio_caja"
+                                                name="precio_caja" step="0.01" min="0" required>
                                         </div>
 
                                         <div class="mb-3">
@@ -1051,8 +1062,9 @@ verificarSesion(); // Proteger esta página
                                             <div class="d-flex align-items-center gap-2">
                                                 <input type="color" class="form-control form-control-color"
                                                     id="color_picker_caja" value="#000000" title="Elige un color">
-                                                <input type="text" class="form-control" id="color_hex_caja" name="color_hex"
-                                                    placeholder="#000000" maxlength="7" value="#000000">
+                                                <input type="text" class="form-control" id="color_hex_caja"
+                                                    name="color_hex" placeholder="#000000" maxlength="7"
+                                                    value="#000000">
                                             </div>
                                             <small class="text-muted">Formato #RRGGBB. Puedes elegir con el selector o
                                                 escribir el valor.</small>
@@ -1177,18 +1189,24 @@ verificarSesion(); // Proteger esta página
                         <input type="hidden" id="modal_nomina_id" name="modal_nomina_id">
                         <input type="hidden" id="modal_nomina_area_id" name="modal_nomina_area_id">
                         <div class="row gx-3 align-items-end mb-3">
-                            <div class="col-sm-7">
+                            <div class="col-sm-4">
+                                <label for="modal_select_empresa"
+                                    class="form-label fw-bold text-secondary mb-1">Empresa</label>
+                                <select class="form-select border-primary-subtle" id="modal_select_empresa" required>
+                                    <option value="" selected disabled>Cargando empresas...</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-4">
                                 <label for="modal_select_departamento"
-                                    class="form-label fw-bold text-secondary mb-1">Elegir Departamento del Área</label>
-                                <select class="form-select border-primary-subtle" id="modal_select_departamento"
-                                    required>
+                                    class="form-label fw-bold text-secondary mb-1">Departamento del Área</label>
+                                <select class="form-select border-primary-subtle" id="modal_select_departamento" required>
                                     <option value="" selected disabled>Seleccione un departamento...</option>
                                     <!-- Se llenará dinámicamente -->
                                 </select>
                             </div>
-                            <div class="col-sm-3">
+                            <div class="col-sm-2">
                                 <label for="modal_color_departamento"
-                                    class="form-label fw-bold text-secondary mb-1">Color Reporte</label>
+                                    class="form-label fw-bold text-secondary mb-1">Color</label>
                                 <div class="d-flex align-items-center gap-2 bg-white border rounded px-2"
                                     style="height: 38px;">
                                     <input type="color" class="form-control-color border-0 bg-transparent p-0"

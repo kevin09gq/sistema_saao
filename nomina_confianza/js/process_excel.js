@@ -7,14 +7,14 @@ $(document).ready(function () {
     cargarSelectsConfianza().then(function () {
         if (!restoreNomina()) {
             $("#container-nomina_confianza").removeAttr("hidden");
-              
+
         }
-         console.log(jsonNominaConfianza);
+        console.log(jsonNominaConfianza);
     });
     processExcelData();
     confirmarsaveNomina();
-      
-  
+
+
 
 });
 
@@ -195,17 +195,24 @@ function crearEstructuraJson(jsonListaRaya, siHayBiometrico = false, form = null
                 return;
             }
 
-            // 2. Crear nueva estructura base con los departamentos de la BD
+            // 2. Agrupar departamentos por ID para unificar los empleados de distintas empresas
+            let departamentosUnificados = [];
+
+            respDepts.departamentos.forEach(deptoBD => {
+                // Como el PHP ya unifica por departamento, simplemente mapeamos los datos
+                departamentosUnificados.push({
+                    id_departamento: deptoBD.id_departamento,
+                    nombre: deptoBD.nombre_departamento,
+                    color_reporte: deptoBD.color_reporte || [], // El PHP ya envía el array de colores por empresa
+                    empleados: []
+                });
+            });
+
             let estructuraJson = {
                 numero_semana: jsonListaRaya.numero_semana,
                 fecha_inicio: jsonListaRaya.fecha_inicio,
                 fecha_cierre: jsonListaRaya.fecha_cierre,
-                departamentos: respDepts.departamentos.map(d => ({
-                    id_departamento: d.id_departamento,
-                    nombre: d.nombre_departamento,
-                    color_reporte: d.color_reporte || '#FF0000',
-                    empleados: []
-                }))
+                departamentos: departamentosUnificados
             };
 
 

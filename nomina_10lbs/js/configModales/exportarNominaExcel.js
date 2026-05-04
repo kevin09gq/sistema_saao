@@ -92,6 +92,12 @@ function exportarPorDepartamento() {
             }
         });
 
+        // Identificar la empresa asociada a este departamento en el JSON
+        const deptoInfo = jsonNomina10lbs.departamentos.find(d => d.id_departamento == idDepto);
+        const idEmpresa = deptoInfo && deptoInfo.color_reporte && deptoInfo.color_reporte.length > 0 
+            ? deptoInfo.color_reporte[0].id_empresa 
+            : 1;
+
         // Enviar datos al PHP genérico
         $.ajax({
             url: '../php/exportarNomina/exportarNominaDepartamento.php',
@@ -100,7 +106,8 @@ function exportarPorDepartamento() {
                 jsonNomina: JSON.stringify(jsonNomina10lbs),
                 id_departamento: idDepto,
                 nombre_departamento: nombreDepto,
-                seguroSocial: esSeguroSocial
+                seguroSocial: esSeguroSocial,
+                id_empresa: idEmpresa
             },
             xhrFields: {
                 responseType: 'blob'

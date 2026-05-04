@@ -167,7 +167,6 @@ function modificarDeducciones(empleado) {
 
     // Marcar si fueron editados manualmente
     // Si el input está vacío O si el valor cambió, marcar flag para proteger
-
     const checadorVacio = $('#mod-checador-40lbs').val() === '';
     const inasistenciasVacio = $('#mod-inasistencias-40lbs').val() === '';
 

@@ -2,46 +2,80 @@ abrirModalExportarExcel();
 exportarNominaDepartamento();
 exportarNominaCompleta();
 reporteNominaPdf();
+let mapaEmpresas = null;
+
+/**
+ * Función para obtener los nombres de las empresas desde la base de datos.
+ * Utiliza un caché (mapaEmpresas) para no repetir la consulta cada vez que se abre el modal.
+ */
+async function obtenerNombresEmpresas() {
+    if (mapaEmpresas) return mapaEmpresas; // Si ya tenemos los nombres, los devolvemos de inmediato
+
+    try {
+        const response = await $.ajax({
+            url: '../../public/php/obtenerEmpresa.php',
+            type: 'GET',
+            dataType: 'json'
+        });
+
+        mapaEmpresas = {};
+        if (Array.isArray(response)) {
+            response.forEach(emp => {
+                mapaEmpresas[emp.id_empresa] = emp.nombre_empresa;
+            });
+        }
+        return mapaEmpresas;
+    } catch (error) {
+        console.error('Error al obtener nombres de empresas:', error);
+        // Fallback: Nombres por defecto en caso de que falle la conexión
+        return { 1: 'Citricos Saao', 2: 'SB citric´s group' };
+    }
+}
 
 function abrirModalExportarExcel() {
-    $(document).on('click', '#btn_export_excel', function (e) {
+    $(document).on('click', '#btn_export_excel', async function (e) {
         e.preventDefault();
 
         // Cargar los departamentos dinámicamente antes de mostrar
-        cargarDepartamentosExportar();
+        await cargarDepartamentosExportar();
         $('#modalExportarNomina').modal('show');
     });
 }
 
-function cargarDepartamentosExportar() {
+/**
+ * Genera dinámicamente los botones en el modal de exportación.
+ * Crea un botón por cada combinación de Departamento y Empresa detectada en el JSON.
+ */
+async function cargarDepartamentosExportar() {
     const container = $('#contenedor-opciones-exportar');
-    container.empty();
+    container.empty(); // Limpiamos el contenedor antes de empezar
 
+    // Verificamos que existan datos cargados en la nómina
     if (!jsonNominaConfianza || !Array.isArray(jsonNominaConfianza.departamentos)) {
         container.html('<div class="alert alert-warning small">No hay departamentos disponibles</div>');
         return;
     }
 
-    // Mapeo de nombres de empresas
-    const empresasMap = {
-        1: 'Citricos Saao',
-        2: 'SB citric´s group'
-    };
+    // Obtenemos los nombres reales de las empresas de la base de datos
+    const empresasMap = await obtenerNombresEmpresas();
 
+    // Recorremos cada departamento que unificamos previamente en process_excel.js
     jsonNominaConfianza.departamentos.forEach(depto => {
-        // Encontrar empresas únicas que tienen empleados en este departamento
-        const empresasEnDepto = new Set();
-        (depto.empleados || []).forEach(emp => {
-            if (emp.mostrar !== false && emp.id_empresa) {
-                empresasEnDepto.add(Number(emp.id_empresa));
-            }
-        });
+        
+        /**
+         * listaConfiguraciones es un arreglo que contiene el color y el id_empresa.
+         * Ejemplo: [{id_empresa: 1, color: '#pink'}, {id_empresa: 2, color: '#green'}]
+         * Esto nos permite saber en cuántas empresas está este departamento y qué color usa cada una.
+         */
+        const listaConfiguraciones = Array.isArray(depto.color_reporte) ? depto.color_reporte : [];
 
-        // Generar un botón por cada combinación de Departamento - Empresa
-        empresasEnDepto.forEach(idEmpresa => {
+        // Generamos un botón por cada empresa que tenga este departamento asignado
+        listaConfiguraciones.forEach(config => {
+            const idEmpresa = Number(config.id_empresa);
             const nombreEmpresa = empresasMap[idEmpresa] || 'Empresa ' + idEmpresa;
-            const nombreCompleto = `${depto.nombre} - ${nombreEmpresa}`;
+            const nombreBoton = `${depto.nombre} - ${nombreEmpresa}`;
 
+            // Creamos el HTML del botón con sus datos (ID Depto, ID Empresa, etc.)
             const btnHtml = `
                 <button type="button" class="list-group-item list-group-item-action border-success btn-export-corte-especifico"   
                     data-depto-id="${depto.id_departamento}" 
@@ -51,7 +85,7 @@ function cargarDepartamentosExportar() {
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="mb-1 text-success fw-bold">
-                                    <i class="bi bi-building"></i> ${nombreCompleto}
+                                    <i class="bi bi-building"></i> ${nombreBoton}
                                 </h6>
                             </div>
                             <i class="bi bi-file-earmark-spreadsheet text-success fs-4"></i>
@@ -62,8 +96,9 @@ function cargarDepartamentosExportar() {
         });
     });
 
+    // Mensaje de respaldo si no se encontró nada para mostrar
     if (container.children().length === 0) {
-        container.html('<div class="alert alert-info small text-center">No hay departamentos con empleados para exportar</div>');
+        container.html('<div class="alert alert-info small text-center">No hay departamentos configurados para exportar</div>');
     }
 }
 
@@ -94,14 +129,21 @@ function exportarNominaDepartamento() {
 
         // Obtener el color del departamento desde el JSON
         const deptoObj = jsonNominaConfianza.departamentos.find(d => d.id_departamento == deptoId);
-        let colorExcel = deptoObj ? (deptoObj.color_reporte || '#FF0000') : '#FF0000';
-
-        // Excepción de color para SB Group (id_empresa: 2)
-        let textColor = '#FFFFFF'; // Blanco por defecto
-        if (empresaId == 2) {
-            colorExcel = '#A9D08E'; // Verde institucional de la imagen
-            textColor = '#000000'; // Negro para mejor contraste
+        let colorExcel = '#FF0000';
+        
+        if (deptoObj && deptoObj.color_reporte) {
+            if (Array.isArray(deptoObj.color_reporte)) {
+                // Buscar el color que corresponde a la empresa seleccionada
+                const configColor = deptoObj.color_reporte.find(c => c.id_empresa == empresaId);
+                colorExcel = configColor ? configColor.color : deptoObj.color_reporte[0].color;
+            } else {
+                colorExcel = deptoObj.color_reporte;
+            }
         }
+
+        // Ya no necesitamos la excepción manual para SB Group porque el color 
+        // ahora viene correctamente de la configuración dinámica.
+        let textColor = '#FFFFFF'; // Color de texto por defecto
 
         $.ajax({
             url: tmp_url,
@@ -153,7 +195,7 @@ function exportarNominaCompleta() {
         }
 
         // Validar que no haya empleados negativos
-       // if (validarEmpleadosNegativos()) return;
+        // if (validarEmpleadosNegativos()) return;
 
         // Mostrar alerta de carga
         Swal.fire({
@@ -172,7 +214,8 @@ function exportarNominaCompleta() {
             url: '../php/exportarNomina/exportarNominaCompleta.php',
             type: 'POST',
             data: {
-                jsonNomina: JSON.stringify(jsonNominaConfianza)
+                jsonNomina: JSON.stringify(jsonNominaConfianza),
+                mapaEmpresas: JSON.stringify(mapaEmpresas)
             },
             xhrFields: {
                 responseType: 'blob'
@@ -215,7 +258,7 @@ function reporteNominaPdf() {
             return;
         }
 
-       // if (validarEmpleadosNegativos()) return;
+        // if (validarEmpleadosNegativos()) return;
 
         $.ajax({
             url: '../php/exportarNomina/reporteNomina.php',

@@ -82,13 +82,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['jsonNomina'])) {
 
 $idDeptoTarget = $_POST['deptoId'] ?? null;
 $nombreDeptoTarget = $_POST['deptoNombre'] ?? 'DEPARTAMENTO';
+$idEmpresaSeleccionada = $_POST['id_empresa'] ?? null;
 
 // Obtener el color del departamento desde el JSON
 $colorExcel = 'C9C5C3'; // Color por defecto para Palmilla
 if ($jsonNomina && isset($jsonNomina['departamentos'])) {
     foreach ($jsonNomina['departamentos'] as $depto) {
         if ($depto['id_departamento'] == $idDeptoTarget) {
-            $colorExcel = $depto['color_depto_nomina'] ?? 'C9C5C3';
+            // Buscamos el color en el nuevo formato de arreglo color_reporte
+            if (!empty($depto['color_reporte']) && is_array($depto['color_reporte'])) {
+                $colorEncontrado = null;
+                
+                // Si tenemos una empresa seleccionada, buscamos su color específico
+                if ($idEmpresaSeleccionada) {
+                    foreach ($depto['color_reporte'] as $configColor) {
+                        if ($configColor['id_empresa'] == $idEmpresaSeleccionada) {
+                            $colorEncontrado = $configColor['color'];
+                            break;
+                        }
+                    }
+                }
+                
+                // Si no se encontró o no se envió empresa, tomar el primero disponible
+                if (!$colorEncontrado) {
+                    $colorEncontrado = $depto['color_reporte'][0]['color'] ?? null;
+                }
+
+                if ($colorEncontrado) {
+                    $colorExcel = $colorEncontrado;
+                }
+            } 
+            // Fallback para el formato anterior (string plano o la clave vieja)
+            else if (!empty($depto['color_depto_nomina'])) {
+                $colorExcel = $depto['color_depto_nomina'];
+            }
             break;
         }
     }

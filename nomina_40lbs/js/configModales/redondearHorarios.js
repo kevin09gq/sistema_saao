@@ -27,11 +27,14 @@ function redondearHorarios() {
 
             // Recorrer empleados del departamento
             departamento.empleados.forEach(function (empleado) {
+                // ✅ FILTRO: Si el empleado tiene sueldo_base, NO redondear sus horarios ni crear biometrico_redondeado
+                if (empleado.sueldo_base === true) {
+                    return; // Saltar este empleado
+                }
+
                 // Verificar que el empleado tenga registros biométricos
                 if (empleado.registros && empleado.registros.length > 0) {
                     redondearRegistrosEmpleado(empleado, horariosPorDia);
-
-
                 }
             });
         }

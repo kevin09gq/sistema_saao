@@ -269,8 +269,8 @@ function obtenerDepartamentosNomina()
 {
     global $conexion;
 
-    // Obtener id_nomina del query string (default 5 para Pilar)
-    $idNomina = isset($_GET['id_nomina']) ? intval($_GET['id_nomina']) : 7;
+    // Obtener id_nomina del query string
+    $idNomina = isset($_GET['id_nomina']) ? intval($_GET['id_nomina']) : 3;
 
     // Verificar conexión
     if (!$conexion) {
@@ -281,14 +281,13 @@ function obtenerDepartamentosNomina()
         return;
     }
 
-    // Consultar departamentos asociados directamente a la nómina
-    $sql = "SELECT d.id_departamento, d.nombre_departamento, nd.color_depto_nomina
+    // Consultar departamentos y el color específico para esta nómina (incluyendo id_empresa)
+    $sql = "SELECT d.id_departamento, d.nombre_departamento, nd.color_depto_nomina, nd.id_empresa
             FROM departamentos d
             INNER JOIN nomina_departamento nd ON d.id_departamento = nd.id_departamento
             WHERE nd.id_nomina = ?
             ORDER BY d.nombre_departamento ASC";
 
-    // Preparar la sentencia
     $stmt = mysqli_prepare($conexion, $sql);
 
     if (!$stmt) {
@@ -299,10 +298,8 @@ function obtenerDepartamentosNomina()
         return;
     }
 
-    // Vincular parámetros
     mysqli_stmt_bind_param($stmt, "i", $idNomina);
 
-    // Ejecutar la consulta
     if (!mysqli_stmt_execute($stmt)) {
         echo json_encode([
             'error' => 'Error al ejecutar la consulta: ' . mysqli_stmt_error($stmt),
@@ -312,22 +309,32 @@ function obtenerDepartamentosNomina()
         return;
     }
 
-    // Obtener resultados
     $result = mysqli_stmt_get_result($stmt);
 
-    // Procesar resultados
-    $departamentos = [];
+    $departamentosMap = [];
+
     if ($result) {
         while ($row = mysqli_fetch_assoc($result)) {
-            $departamentos[] = [
-                'id_departamento' => intval($row['id_departamento']),
-                'nombre_departamento' => $row['nombre_departamento'],
-                'color_depto_nomina' => $row['color_depto_nomina']
+            $idDepto = intval($row['id_departamento']);
+
+            // Si el departamento aún no está en el mapa, lo inicializamos
+            if (!isset($departamentosMap[$idDepto])) {
+                $departamentosMap[$idDepto] = [
+                    'id_departamento' => $idDepto,
+                    'nombre_departamento' => $row['nombre_departamento'],
+                    'color_reporte' => []
+                ];
+            }
+
+            // Agregamos la configuración de color para esta empresa específica
+            $departamentosMap[$idDepto]['color_reporte'][] = [
+                'id_empresa' => intval($row['id_empresa']),
+                'color' => $row['color_depto_nomina'] ?? '#FF0000'
             ];
         }
 
         echo json_encode([
-            'departamentos' => $departamentos
+            'departamentos' => array_values($departamentosMap)
         ], JSON_UNESCAPED_UNICODE);
     } else {
         echo json_encode([

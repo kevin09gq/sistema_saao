@@ -43,13 +43,6 @@ function calcularYMostrarTotales() {
         return;
     }
 
-    const empleadosVisibles = [];
-    jsonNomina10lbs.departamentos.forEach(departamento => {
-    
-        const empleadosFiltrados = departamento.empleados.filter(emp => emp.mostrar !== false);
-        empleadosVisibles.push(...empleadosFiltrados);
-    });
-
     // Inicializar estructuras de datos
     const percepciones = {};
     const deducciones = {};
@@ -57,72 +50,87 @@ function calcularYMostrarTotales() {
     let totalDeduccionesGeneral = 0;
 
     // Inicializar todos los conceptos con cero
-    PERCEPCIONES.forEach(p => percepciones[p.nombre] = { total: 0, empleados: [] });
-    DEDUCCIONES.forEach(d => deducciones[d.nombre] = { total: 0, empleados: [] });
+    PERCEPCIONES.forEach(p => percepciones[p.nombre] = { total: 0, departamentos: {} });
+    DEDUCCIONES.forEach(d => deducciones[d.nombre] = { total: 0, departamentos: {} });
 
-    // Calcular totales
-    empleadosVisibles.forEach(empleado => {
-        // Procesar percepciones fijas
-        PERCEPCIONES.forEach(perc => {
-            const valor = parseFloat(empleado[perc.propiedad]) || 0;
-            if (valor > 0) {
-                percepciones[perc.nombre].total += valor;
-                percepciones[perc.nombre].empleados.push({ nombre: empleado.nombre, monto: valor });
-                totalPercepcionesGeneral += valor;
-            }
-        });
+    /**
+     * Helper para agregar montos a la estructura agrupada
+     */
+    const agregarAlConcepto = (coleccion, nombreConcepto, deptoNombre, empleado, monto) => {
+        if (!coleccion[nombreConcepto]) {
+            coleccion[nombreConcepto] = { total: 0, departamentos: {} };
+        }
+        coleccion[nombreConcepto].total += monto;
 
-        // Procesar percepciones adicionales (dinámicas) - Agrupadas en 'Otras Percepciones'
-        if (Array.isArray(empleado.percepciones_extra) && empleado.percepciones_extra.length > 0) {
-            let totalExtrasEmpleado = 0;
-            empleado.percepciones_extra.forEach(extra => {
-                totalExtrasEmpleado += parseFloat(extra.cantidad) || 0;
-            });
-
-            if (totalExtrasEmpleado > 0) {
-                const clave = 'Otras Percepciones';
-                if (!percepciones[clave]) {
-                    percepciones[clave] = { total: 0, empleados: [] };
-                }
-                percepciones[clave].total += totalExtrasEmpleado;
-                percepciones[clave].empleados.push({ nombre: empleado.nombre, monto: totalExtrasEmpleado });
-                totalPercepcionesGeneral += totalExtrasEmpleado;
-            }
+        if (!coleccion[nombreConcepto].departamentos[deptoNombre]) {
+            coleccion[nombreConcepto].departamentos[deptoNombre] = {
+                total: 0,
+                conSeguro: { total: 0, empleados: [] },
+                sinSeguro: { total: 0, empleados: [] }
+            };
         }
 
-        // Procesar deducciones fijas
-        DEDUCCIONES.forEach(dedu => {
-            let valor = 0;
-            if (dedu.propiedad) {
-                valor = parseFloat(empleado[dedu.propiedad]) || 0;
-            } else if (dedu.codigo) {
-                const concepto = (empleado.conceptos || []).find(c => String(c.codigo) === String(dedu.codigo));
-                valor = concepto ? (parseFloat(concepto.resultado) || 0) : 0;
-            }
-            if (valor > 0) {
-                deducciones[dedu.nombre].total += valor;
-                deducciones[dedu.nombre].empleados.push({ nombre: empleado.nombre, monto: valor });
-                totalDeduccionesGeneral += valor;
-            }
-        });
+        const depto = coleccion[nombreConcepto].departamentos[deptoNombre];
+        depto.total += monto;
 
-        // Procesar deducciones adicionales (dinámicas) - Agrupadas en 'Otras Deducciones'
-        if (Array.isArray(empleado.deducciones_extra) && empleado.deducciones_extra.length > 0) {
-            let totalExtrasEmpleado = 0;
-            empleado.deducciones_extra.forEach(extra => {
-                totalExtrasEmpleado += parseFloat(extra.cantidad) || 0;
+        const grupo = (empleado.seguroSocial === true) ? depto.conSeguro : depto.sinSeguro;
+        grupo.total += monto;
+        grupo.empleados.push({ nombre: empleado.nombre, monto: monto });
+    };
+
+    // Calcular totales agrupados por departamento e IMSS
+    jsonNomina10lbs.departamentos.forEach(departamento => {
+        const deptoNombre = departamento.nombre;
+
+        departamento.empleados.forEach(empleado => {
+            if (empleado.mostrar === false) return;
+
+            // Procesar percepciones fijas
+            PERCEPCIONES.forEach(perc => {
+                const valor = parseFloat(empleado[perc.propiedad]) || 0;
+                if (valor > 0) {
+                    agregarAlConcepto(percepciones, perc.nombre, deptoNombre, empleado, valor);
+                    totalPercepcionesGeneral += valor;
+                }
             });
 
-            if (totalExtrasEmpleado > 0) {
-                const clave = 'F.A/Gafet/Cofia';
-                if (!deducciones[clave]) {
-                    deducciones[clave] = { total: 0, empleados: [] };
-                }
-                deducciones[clave].total += totalExtrasEmpleado;
-                deducciones[clave].empleados.push({ nombre: empleado.nombre, monto: totalExtrasEmpleado });
-                totalDeduccionesGeneral += totalExtrasEmpleado;
+            // Procesar percepciones adicionales
+            if (Array.isArray(empleado.percepciones_extra)) {
+                empleado.percepciones_extra.forEach(extra => {
+                    const valor = parseFloat(extra.cantidad) || 0;
+                    if (valor > 0) {
+                        agregarAlConcepto(percepciones, 'Otras Percepciones', deptoNombre, empleado, valor);
+                        totalPercepcionesGeneral += valor;
+                    }
+                });
             }
-        }
+
+            // Procesar deducciones fijas
+            DEDUCCIONES.forEach(dedu => {
+                let valor = 0;
+                if (dedu.propiedad) {
+                    valor = parseFloat(empleado[dedu.propiedad]) || 0;
+                } else if (dedu.codigo) {
+                    const concepto = (empleado.conceptos || []).find(c => String(c.codigo) === String(dedu.codigo));
+                    valor = concepto ? (parseFloat(concepto.resultado) || 0) : 0;
+                }
+                if (valor > 0) {
+                    agregarAlConcepto(deducciones, dedu.nombre, deptoNombre, empleado, valor);
+                    totalDeduccionesGeneral += valor;
+                }
+            });
+
+            // Procesar deducciones adicionales
+            if (Array.isArray(empleado.deducciones_extra)) {
+                empleado.deducciones_extra.forEach(extra => {
+                    const valor = parseFloat(extra.cantidad) || 0;
+                    if (valor > 0) {
+                        agregarAlConcepto(deducciones, 'F.A/Gafet/Cofia', deptoNombre, empleado, valor);
+                        totalDeduccionesGeneral += valor;
+                    }
+                });
+            }
+        });
     });
 
     const totalNetoGeneral = totalPercepcionesGeneral - totalDeduccionesGeneral;
@@ -145,15 +153,54 @@ function renderizarConceptos(contenedorId, conceptos) {
     for (const [nombre, datos] of Object.entries(conceptos)) {
         const collapseId = `collapse-${contenedorId}-${index}`;
         const headingId = `heading-${contenedorId}-${index}`;
-        const empleadosHtml = datos.empleados.length > 0 
-            ? datos.empleados.map((emp, idx) => `
-                <tr>
-                    <td>${idx + 1}</td>
-                    <td>${emp.nombre}</td>
-                    <td class="text-end">${formatearMonedaMXNModales(emp.monto)}</td>
-                </tr>
-            `).join('')
-            : '<tr><td colspan="3" class="text-center text-muted">Sin movimientos</td></tr>';
+
+        let totalPersonas = 0;
+        let filasHtml = '';
+
+        const deptosEntradas = Object.entries(datos.departamentos);
+
+        if (deptosEntradas.length > 0) {
+            deptosEntradas.forEach(([deptoNombre, deptoDatos]) => {
+                totalPersonas += (deptoDatos.conSeguro.empleados.length + deptoDatos.sinSeguro.empleados.length);
+
+                // Fila de subtotal por departamento
+                filasHtml += `
+                    <tr class="table-light">
+                        <td colspan="2"><span class="badge bg-secondary me-2">DEPTO</span> <strong>${deptoNombre}</strong></td>
+                        <td class="text-end text-primary"><strong>${formatearMonedaMXNModales(deptoDatos.total)}</strong></td>
+                    </tr>
+                `;
+
+                // Helper para renderizar subgrupos de IMSS
+                const renderGrupo = (titulo, grupo, iconClass, tableClass) => {
+                    if (grupo.empleados.length === 0) return '';
+                    let html = `
+                        <tr class="${tableClass} bg-opacity-10" style="font-size: 0.85rem;">
+                            <td colspan="2" class="ps-4">
+                                <i class="${iconClass}"></i> <strong>${titulo}</strong>
+                            </td>
+                            <td class="text-end"><strong>${formatearMonedaMXNModales(grupo.total)}</strong></td>
+                        </tr>
+                    `;
+                    grupo.empleados.forEach((emp, idx) => {
+                        html += `
+                            <tr>
+                                <td class="ps-5 text-muted" style="width:40px">${idx + 1}</td>
+                                <td class="ps-3">${emp.nombre}</td>
+                                <td class="text-end">${formatearMonedaMXNModales(emp.monto)}</td>
+                            </tr>
+                        `;
+                    });
+                    return html;
+                };
+
+                // Renderizar Con Seguro y Sin Seguro
+                filasHtml += renderGrupo('CON SEGURO', deptoDatos.conSeguro, 'bi bi-shield-check text-success', 'table-success');
+                filasHtml += renderGrupo('SIN SEGURO', deptoDatos.sinSeguro, 'bi bi-shield-x text-danger', 'table-danger');
+            });
+        } else {
+            filasHtml = '<tr><td colspan="3" class="text-center text-muted py-3">Sin movimientos</td></tr>';
+        }
 
         const item = `
             <div class="accordion-item">
@@ -162,23 +209,25 @@ function renderizarConceptos(contenedorId, conceptos) {
                             data-bs-target="#${collapseId}" aria-expanded="false" aria-controls="${collapseId}">
                         <span class="concept-title"><strong>${nombre}</strong></span>
                         <span class="badge bg-primary">${formatearMonedaMXNModales(datos.total)}</span>
-                        <span class="badge bg-secondary">${datos.empleados.length} persona(s)</span>
+                        <span class="badge bg-secondary">${totalPersonas} persona(s)</span>
                     </button>
                 </h2>
                 <div id="${collapseId}" class="accordion-collapse collapse" aria-labelledby="${headingId}">
-                    <div class="accordion-body p-2">
-                        <table class="table table-sm mb-0">
-                            <thead>
-                                <tr>
-                                    <th style="width:40px">#</th>
-                                    <th>Empleado</th>
-                                    <th class="text-end" style="width:120px">Monto</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${empleadosHtml}
-                            </tbody>
-                        </table>
+                    <div class="accordion-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th class="ps-3" style="width:40px">#</th>
+                                        <th>Empleado / Departamento</th>
+                                        <th class="text-end" style="width:140px">Monto</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${filasHtml}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>

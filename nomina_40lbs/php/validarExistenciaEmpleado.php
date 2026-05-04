@@ -52,7 +52,6 @@ switch ($_SERVER['REQUEST_METHOD']) {
         echo json_encode(['error' => 'Método no permitido']);
         break;
 }
-
 //================================================== 
 // VALICDACION 1:
 // CUANDO EL USUARIO SUBE SOLO LA LISTA DE RAYA 
@@ -88,7 +87,11 @@ function validarExistenciaTrabajador()
     $sql = "SELECT ie.clave_empleado, ie.nombre, ie.ap_paterno, ie.ap_materno, ie.id_departamento, ie.biometrico, ie.id_empresa, pe.color_hex AS color_puesto
             FROM info_empleados ie
             LEFT JOIN puestos_especiales pe ON pe.id_puestoEspecial = ie.id_puestoEspecial
-            WHERE ie.clave_empleado IN ($clavesString) AND ie.id_status = 1 AND ie.id_empresa = 1";
+            WHERE ie.clave_empleado IN ($clavesString) 
+            AND ie.id_status = 1 
+            AND ie.id_area = (SELECT n.id_area FROM nombre_nominas n WHERE n.id_nomina = 1)
+            AND ie.id_departamento IN (SELECT nd.id_departamento FROM nomina_departamento nd WHERE nd.id_nomina = 1)
+            AND ie.id_empresa = 1";
     $result = mysqli_query($conexion, $sql);
 
     // Procesar resultados
@@ -277,7 +280,13 @@ function validarExistenciaTrabajadorBD()
     $clavesString = implode(',', $valores);
 
     // Consultar empleados existentes (activos y de la empresa)
-    $sql = "SELECT clave_empleado FROM info_empleados WHERE clave_empleado IN ($clavesString) AND id_status = 1 AND id_empresa = 1";
+    $sql = "SELECT clave_empleado FROM info_empleados ie
+            WHERE clave_empleado IN ($clavesString) 
+            AND id_status = 1 
+            AND id_empresa = 1
+            AND ie.id_area = (SELECT n.id_area FROM nombre_nominas n WHERE n.id_nomina = 1)
+            AND ie.id_departamento IN (SELECT nd.id_departamento FROM nomina_departamento nd WHERE nd.id_nomina = 1)
+            ";
     $result = mysqli_query($conexion, $sql);
 
     if ($result) {
@@ -328,7 +337,11 @@ function validarEmpleadosNuevos()
     $sql = "SELECT ie.clave_empleado, ie.nombre, ie.ap_paterno, ie.ap_materno, ie.id_departamento, ie.biometrico, ie.id_empresa, pe.color_hex AS color_puesto
             FROM info_empleados ie
             LEFT JOIN puestos_especiales pe ON pe.id_puestoEspecial = ie.id_puestoEspecial
-            WHERE ie.clave_empleado IN ($clavesString) AND ie.id_status = 1 AND ie.id_empresa = 1";
+            WHERE ie.clave_empleado IN ($clavesString) 
+            AND ie.id_status = 1 
+            AND ie.id_empresa = 1
+            AND ie.id_area = (SELECT n.id_area FROM nombre_nominas n WHERE n.id_nomina = 1)
+            AND ie.id_departamento IN (SELECT nd.id_departamento FROM nomina_departamento nd WHERE nd.id_nomina = 1)";
 
     $result = mysqli_query($conexion, $sql);
 
@@ -358,15 +371,15 @@ function validarEmpleadosNuevos()
 
 //================================================== 
 // FUNCION AUXILIAR 
-// OBTIENE DEPARTAMENTOS RELACIONADOS A LA NÓMINA PILAR
+// OBTIENE DEPARTAMENTOS RELACIONADOS A LA NÓMINA 40 LBS
 //=================================================
 
 function obtenerDepartamentosNomina()
 {
     global $conexion;
 
-    // Obtener id_nomina del query string (default 4 para Relicario)
-    $idNomina = isset($_GET['id_nomina']) ? intval($_GET['id_nomina']) : 4;
+    // Obtener id_nomina del query string
+    $idNomina = isset($_GET['id_nomina']) ? intval($_GET['id_nomina']) : 1;
 
     // Verificar conexión
     if (!$conexion) {
@@ -377,14 +390,13 @@ function obtenerDepartamentosNomina()
         return;
     }
 
-    // Consultar departamentos asociados al área de la nómina
-    $sql = "SELECT d.id_departamento, d.nombre_departamento, nd.color_depto_nomina
+    // Consultar departamentos y el color específico para esta nómina (incluyendo id_empresa)
+    $sql = "SELECT d.id_departamento, d.nombre_departamento, nd.color_depto_nomina, nd.id_empresa
             FROM departamentos d
             INNER JOIN nomina_departamento nd ON d.id_departamento = nd.id_departamento
             WHERE nd.id_nomina = ?
             ORDER BY d.nombre_departamento ASC";
 
-    // Preparar la sentencia
     $stmt = mysqli_prepare($conexion, $sql);
 
     if (!$stmt) {
@@ -395,10 +407,8 @@ function obtenerDepartamentosNomina()
         return;
     }
 
-    // Vincular parámetros
     mysqli_stmt_bind_param($stmt, "i", $idNomina);
 
-    // Ejecutar la consulta
     if (!mysqli_stmt_execute($stmt)) {
         echo json_encode([
             'error' => 'Error al ejecutar la consulta: ' . mysqli_stmt_error($stmt),
@@ -408,22 +418,32 @@ function obtenerDepartamentosNomina()
         return;
     }
 
-    // Obtener resultados
     $result = mysqli_stmt_get_result($stmt);
 
-    // Procesar resultados
-    $departamentos = [];
+    $departamentosMap = [];
+
     if ($result) {
         while ($row = mysqli_fetch_assoc($result)) {
-            $departamentos[] = [
-                'id_departamento' => intval($row['id_departamento']),
-                'nombre_departamento' => $row['nombre_departamento'],
-                'color_depto_nomina' => $row['color_depto_nomina']
+            $idDepto = intval($row['id_departamento']);
+
+            // Si el departamento aún no está en el mapa, lo inicializamos
+            if (!isset($departamentosMap[$idDepto])) {
+                $departamentosMap[$idDepto] = [
+                    'id_departamento' => $idDepto,
+                    'nombre_departamento' => $row['nombre_departamento'],
+                    'color_reporte' => []
+                ];
+            }
+
+            // Agregamos la configuración de color para esta empresa específica
+            $departamentosMap[$idDepto]['color_reporte'][] = [
+                'id_empresa' => intval($row['id_empresa']),
+                'color' => $row['color_depto_nomina'] ?? '#FF0000'
             ];
         }
 
         echo json_encode([
-            'departamentos' => $departamentos
+            'departamentos' => array_values($departamentosMap)
         ], JSON_UNESCAPED_UNICODE);
     } else {
         echo json_encode([
@@ -452,13 +472,25 @@ function obtenerSalarioSemanal()
     }
     $clavesString = implode(',', $valores);
 
-    $sql = "SELECT clave_empleado, salario_semanal FROM info_empleados WHERE clave_empleado IN ($clavesString) AND id_status = 1 AND id_empresa = 1";
+    // Consulta para obtener salario semanal y el horario oficial desde la tabla horarios_oficiales
+    $sql = "SELECT ie.clave_empleado, ie.salario_semanal, ho.horario_oficial 
+            FROM info_empleados ie 
+            LEFT JOIN horarios_oficiales ho ON ie.id_empleado = ho.id_empleado
+            WHERE ie.clave_empleado IN ($clavesString) 
+            AND ie.id_status = 1
+            AND ie.id_empresa = 1 
+            AND ie.id_area = (SELECT n.id_area FROM nombre_nominas n WHERE n.id_nomina = 1)
+            AND ie.id_departamento IN (SELECT nd.id_departamento FROM nomina_departamento nd WHERE nd.id_nomina = 1)";
+            
     $result = mysqli_query($conexion, $sql);
 
     $salarios = [];
     if ($result) {
         while ($row = mysqli_fetch_assoc($result)) {
-            $salarios[$row['clave_empleado']] = $row['salario_semanal'];
+            $salarios[$row['clave_empleado']] = [
+                'salario_semanal' => $row['salario_semanal'],
+                'horario_oficial' => json_decode($row['horario_oficial'], true) ?: $row['horario_oficial']
+            ];
         }
         echo json_encode(['salarios' => $salarios]);
     } else {

@@ -162,18 +162,25 @@ function crearEstructuraJson(jsonListaRaya, siHayBiometrico, form) {
                 return;
             }
 
-            // 2. Crear nueva estructura base con los departamentos de la BD
+            // 2. Agrupar departamentos por ID para unificar los empleados de distintas empresas
+            let departamentosUnificados = [];
+
+            respDepts.departamentos.forEach(deptoBD => {
+                // Como el PHP ya unifica por departamento, simplemente mapeamos los datos
+                departamentosUnificados.push({
+                    id_departamento: deptoBD.id_departamento,
+                    nombre: deptoBD.nombre_departamento,
+                    color_reporte: deptoBD.color_reporte || [], // El PHP ya envía el array de colores por empresa
+                    editar: true,
+                    empleados: []
+                });
+            });
+
             let estructuraJson = {
                 numero_semana: jsonListaRaya.numero_semana,
                 fecha_inicio: jsonListaRaya.fecha_inicio,
                 fecha_cierre: jsonListaRaya.fecha_cierre,
-                departamentos: respDepts.departamentos.map(d => ({
-                    id_departamento: d.id_departamento,
-                    nombre: d.nombre_departamento,
-                    color_depto_nomina: d.color_depto_nomina,
-                    editar: true,
-                    empleados: []
-                }))
+                departamentos: departamentosUnificados
             };
 
             // CORRECCIÓN: Pasamos el JSON original para que encuentre las claves
@@ -264,45 +271,6 @@ function validarExistenciaTrabajador(jsonListaRaya, estructuraJson, siHayBiometr
                                 deptoDestino.empleados.push(empleadoFinal);
                                 clavesUnidas.add(String(empBD.clave)); // Marcamos como unido
                             }
-                        }
-                    });
-
-                    // FASE 2: Unir empleados residuales del Excel (no unidos en Fase 1) PARA LA PARTE DE TARJETA
-                    // Solo se incluyen empleados que SÍ existen en la BD (excluye no_existentes)
-                    jsonListaRaya.departamentos.forEach(function (deptoExcel) {
-                        // Filtrar empleados: no unidos aún Y validados en BD (existentes)
-                        let empleadosRestantes = deptoExcel.empleados.filter(e =>
-                            !clavesUnidas.has(String(e.clave)) && clavesExistentes.has(String(e.clave))
-                        );
-
-                        if (empleadosRestantes.length > 0) {
-                            // Buscar si ya existe un departamento con este nombre en estructuraJson
-                            let deptoResidual = estructuraJson.departamentos.find(d =>
-                                d.nombre.trim().toUpperCase() === deptoExcel.nombre.trim().toUpperCase()
-                            );
-
-                            if (!deptoResidual) {
-                                // Si no existe, creamos el departamento con el nombre del Excel
-                                deptoResidual = {
-                                    nombre: deptoExcel.nombre,
-                                    empleados: []
-                                };
-                                estructuraJson.departamentos.push(deptoResidual);
-                            }
-
-                            // Agregar los empleados restantes
-                            empleadosRestantes.forEach(emp => {
-                                if (!clavesUnidas.has(String(emp.clave))) {
-                                    // Separar conceptos para no incluirlos en la unión residual
-                                    const { conceptos, ...empSinConceptos } = emp;
-
-                                    deptoResidual.empleados.push({
-                                        ...empSinConceptos,
-                                        seguroSocial: true
-                                    });
-                                    clavesUnidas.add(String(emp.clave));
-                                }
-                            });
                         }
                     });
 
@@ -786,27 +754,13 @@ function agregarEmpleadosNuevos(jsonNomina40lbs, JsonListaRaya) {
                                 }
                             }
 
-                            // 2. Fase 2: Si no hay match por ID, intentar por Nombre (Departamentos Residuales)
-                            if (!deptoDestino) {
-                                // Quitar conceptos si entra en Fase 2 (Residual)
-                                delete empleadoEncontrado.empleado.conceptos;
-
-                                deptoDestino = jsonNomina40lbs.departamentos.find(depto =>
-                                    depto.nombre && depto.nombre.trim().toUpperCase() === empleadoEncontrado.departamento_origen.trim().toUpperCase()
-                                );
-
-                                if (!deptoDestino) {
-                                    // 3. Si tampoco existe por nombre, crearlo (Caso Adriana - Sin ID y sin editar: true)
-                                    deptoDestino = {
-                                        nombre: empleadoEncontrado.departamento_origen,
-                                        empleados: []
-                                    };
-                                    jsonNomina40lbs.departamentos.push(deptoDestino);
-                                }
-                            }
-
+                  
                             // Agregar empleado al departamento encontrado o creado
-                            deptoDestino.empleados.push(empleadoEncontrado.empleado);
+                            if (deptoDestino) {
+                                deptoDestino.empleados.push(empleadoEncontrado.empleado);
+                            } else {
+                                console.warn(`No se pudo encontrar el departamento oficial para el empleado ${empleadoEncontrado.empleado.clave}. El departamento ID ${empValido.id_departamento} no pertenece a esta nómina.`);
+                            }
                         }
                     });
 

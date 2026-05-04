@@ -153,17 +153,24 @@ function crearEstructuraJson(JsonListaRaya, siHayBiometrico = false, form = null
                 return;
             }
 
-            // 2. Crear nueva estructura base con los departamentos de la BD
+            // 2. Agrupar departamentos por ID para unificar los empleados de distintas empresas
+            let departamentosUnificados = [];
+
+            respDepts.departamentos.forEach(deptoBD => {
+                // Como el PHP ya unifica por departamento, simplemente mapeamos los datos
+                departamentosUnificados.push({
+                    id_departamento: deptoBD.id_departamento,
+                    nombre: deptoBD.nombre_departamento,
+                    color_reporte: deptoBD.color_reporte || [], // El PHP ya envía el array de colores por empresa
+                    empleados: []
+                });
+            });
+
             let estructuraJson = {
                 numero_semana: JsonListaRaya.numero_semana,
                 fecha_inicio: JsonListaRaya.fecha_inicio,
                 fecha_cierre: JsonListaRaya.fecha_cierre,
-                departamentos: respDepts.departamentos.map(d => ({
-                    id_departamento: d.id_departamento,
-                    nombre: d.nombre_departamento,
-                    color_depto_nomina: d.color_depto_nomina || '#FF0000', // Valor por defecto si no viene de la BD FF0000
-                    empleados: []
-                }))
+                departamentos: departamentosUnificados
             };
 
             // ACA LLAMAMOS A LA VALIDACIÓN
@@ -568,9 +575,7 @@ ordenarEmpleadosPorNombre(jsonNominaRelicario) se ordenan los empleados por apel
 
 // PASO 1: Validar existencia de trabajadores en la BD (se ejecuta al inicio del proceso si la nómina ya existe) 
 function validarExistenciaTrabajadorBD(jsonNominaRelicario, JsonListaRaya) {
-    // Array para almacenar todas las claves de empleados que ya tenemos en la BD
-    var clavesEmpleados = [];
-
+    // Array para almacenar todas las claves de empleados que ya tenemos en     // Filtrar por cláves Y que el empleado pertenezca al área y departamentos de la nómina 4
     // Recorrer todos los departamentos de la nómina recuperada
     jsonNominaRelicario.departamentos.forEach(function (departamento) {
         departamento.empleados.forEach(function (empleado) {
@@ -758,6 +763,7 @@ function verificarEmpleadosSinSeguro(jsonNominaRelicario) {
     });
 
     // Obtener empleados sin seguro de la base de datos (Específico para Relicario)
+    // Obtener empleados sin seguro que pertenecen al área y departamentos de la nómina 4
     $.ajax({
         url: '../php/validarExistenciaEmpleado.php',
         type: 'GET',

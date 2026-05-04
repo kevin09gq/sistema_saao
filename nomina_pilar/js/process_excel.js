@@ -143,17 +143,24 @@ function crearEstructuraJson(JsonListaRaya, siHayBiometrico = false, form = null
                 return;
             }
 
-            // 2. Crear nueva estructura base con los departamentos de la BD
+            // 2. Agrupar departamentos por ID para unificar los empleados de distintas empresas
+            let departamentosUnificados = [];
+
+            respDepts.departamentos.forEach(deptoBD => {
+                // Como el PHP ya unifica por departamento, simplemente mapeamos los datos
+                departamentosUnificados.push({
+                    id_departamento: deptoBD.id_departamento,
+                    nombre: deptoBD.nombre_departamento,
+                    color_reporte: deptoBD.color_reporte || [], // El PHP ya envía el array de colores por empresa
+                    empleados: []
+                });
+            });
+
             let estructuraJson = {
                 numero_semana: JsonListaRaya.numero_semana,
                 fecha_inicio: JsonListaRaya.fecha_inicio,
                 fecha_cierre: JsonListaRaya.fecha_cierre,
-                departamentos: respDepts.departamentos.map(d => ({
-                    id_departamento: d.id_departamento,
-                    nombre: d.nombre_departamento,
-                    color_depto_nomina: d.color_depto_nomina || '#E5C8E6', // Valor por defecto si no viene de la BD E5C8E6
-                    empleados: []
-                }))
+                departamentos: departamentosUnificados
             };
 
             // ACA LLAMAMOS A LA VALIDACIÓN

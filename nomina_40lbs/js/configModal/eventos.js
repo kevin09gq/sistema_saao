@@ -107,6 +107,82 @@ function asignarHistorialOlvidos(empleado) {
     empleado.historial_olvidos = nuevoHistorial;
 }
 
+function asignarHistorialInasistencias(empleado) {
+    // Validaciones básicas: Solo procesar si tiene sueldo_base habilitado y cuenta con horario oficial
+    if (!empleado || empleado.sueldo_base !== true || !Array.isArray(empleado.registros) || !Array.isArray(empleado.horario_oficial)) {
+        return;
+    }
+
+    // Inicializar historial si no existe
+    if (!Array.isArray(empleado.historial_inasistencias)) {
+        empleado.historial_inasistencias = [];
+    }
+
+    // Preservar inasistencias manuales (tipo = 'manual')
+    const inasistenciasManuales = empleado.historial_inasistencias.filter(i =>
+        i && i.tipo === 'manual'
+    );
+
+    // Crear nuevo historial comenzando con las manuales
+    const nuevoHistorial = [...inasistenciasManuales];
+
+    const diasSemana = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
+    const diasNormales = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+    // Crear mapa de fechas con registros agrupadas por día de la semana
+    const registrosPorDiaSemana = {};
+    empleado.registros.forEach(reg => {
+        if (!reg.fecha) return;
+
+        const [dia, mes, anio] = reg.fecha.split('/').map(x => parseInt(x.trim()));
+        const fechaObj = new Date(anio, mes - 1, dia);
+        const diaSemana = diasSemana[fechaObj.getDay()];
+
+        if (!registrosPorDiaSemana[diaSemana]) {
+            registrosPorDiaSemana[diaSemana] = [];
+        }
+        registrosPorDiaSemana[diaSemana].push(reg);
+    });
+
+    // Procesar cada día del horario oficial
+    empleado.horario_oficial.forEach(horario => {
+        const diaSemana = String(horario.dia || '').toUpperCase().trim();
+
+        // Si el día no tiene entrada definida, no es laborable
+        if (!horario.entrada || horario.entrada === '') return;
+
+        // Si tiene días justificados (vacaciones, descanso, etc.), saltar
+        const estaJustificado = Array.isArray(empleado.dias_justificados) &&
+            empleado.dias_justificados.some(j => j.dia.toUpperCase().trim() === diaSemana);
+        if (estaJustificado) {
+            return;
+        }
+
+        // Verificar si hay registros para este día de la semana
+        const registrosDia = registrosPorDiaSemana[diaSemana] || [];
+        const tieneRegistro = registrosDia.some(reg =>
+            (reg.entrada && reg.entrada.trim() !== '') ||
+            (reg.salida && reg.salida.trim() !== '')
+        );
+
+        // Si no hay registro pero tenía horario, es inasistencia
+        if (!tieneRegistro) {
+            const nombreDelDia = diasNormales[diasSemana.indexOf(diaSemana)];
+            const salarioSemanal = parseFloat(empleado.sueldo_neto) || 0;
+            const descuentoPorInasistencia = salarioSemanal / 7;
+
+            nuevoHistorial.push({
+                dia: nombreDelDia,
+                descuento_inasistencia: descuentoPorInasistencia.toFixed(2),
+                tipo: 'automatico'
+            });
+        }
+    });
+
+    // Reemplazar historial completo (mantiene manuales + agrega automáticas)
+    empleado.historial_inasistencias = nuevoHistorial;
+}
+
 
 // ========================================
 // ASIGNAR EL TOTAL DE LOS EVENTOS A LAS PROPIEDADES CORRESPONDIENTES DEL EMPLEADO
@@ -134,6 +210,30 @@ function asignarTotalOlvidos(empleado, force = false) {
     empleado.checador = totalDescontado;
 }
 
+function asignarTotalInasistencias(empleado, force = false) {
+    // Validar que tenga sueldo_base habilitado y exista el historial de inasistencias
+    if (!empleado || empleado.sueldo_base !== true || !Array.isArray(empleado.historial_inasistencias)) {
+        return;
+    }
+
+    // Si fue editado manualmente y no es force, respetar la edición manual
+    if (empleado._inasistencia_editado_manual && !force) {
+        return;
+    }
+
+    // Contar total de inasistencias y sumar descuentos
+    let totalDescontado = 0;
+    empleado.historial_inasistencias.forEach(inasistencia => {
+        // Si el usuario eligió ignorar automáticas, no las sumamos al total
+        if (inasistencia.tipo === 'automatico' && empleado.ignorar_inasistencias_automaticas === true) {
+            return;
+        }
+        totalDescontado += parseFloat(inasistencia.descuento_inasistencia) || 0;
+    });
+
+    // Asignar totales a propiedades del empleado
+    empleado.inasistencia = totalDescontado.toFixed(2);
+}
 
 
 // ========================================
@@ -151,9 +251,17 @@ function mostrarEventosPorCampo(empleado, selectorContent, selectorTotal, filtro
 
     // Crear mapa de horarios por día (normalizado) para fácil acceso
     const horariosPorDia = {};
-    jsonNomina40lbs.horarios_semanales.forEach(horario => {
-        horariosPorDia[normalizarDia(horario.dia)] = horario;
-    });
+    
+    // Prioridad: Usar horario oficial del empleado si tiene sueldo base, de lo contrario usar el semanal global
+    const fuenteHorarios = (empleado.sueldo_base === true && Array.isArray(empleado.horario_oficial)) 
+        ? empleado.horario_oficial 
+        : jsonNomina40lbs.horarios_semanales;
+
+    if (Array.isArray(fuenteHorarios)) {
+        fuenteHorarios.forEach(horario => {
+            horariosPorDia[normalizarDia(horario.dia)] = horario;
+        });
+    }
 
     const esEntrada = tipo === 'entrada';
     const campo = esEntrada ? 'entrada' : 'salida';
@@ -249,11 +357,17 @@ function mostrarInasistencias(empleado) {
     const inicio = new Date(a1, m1 - 1, d1);
     const fin = new Date(a2, m2 - 1, d2);
 
-    // Crear mapa de horarios normalizados
+    // Crear mapa de horarios normalizados: Prioridad al horario oficial si es sueldo base
     const horariosPorDia = {};
-    jsonNomina40lbs.horarios_semanales.forEach(h => {
-        horariosPorDia[normalizarDia(h.dia)] = h;
-    });
+    const fuenteHorarios = (empleado.sueldo_base === true && Array.isArray(empleado.horario_oficial)) 
+        ? empleado.horario_oficial 
+        : jsonNomina40lbs.horarios_semanales;
+
+    if (Array.isArray(fuenteHorarios)) {
+        fuenteHorarios.forEach(h => {
+            horariosPorDia[normalizarDia(h.dia)] = h;
+        });
+    }
 
     const inasistencias = [];
     const fecha = new Date(inicio);

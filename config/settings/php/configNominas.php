@@ -103,7 +103,7 @@ function actualizarNomina()
             $sql->execute();
 
             // Si el área cambió, eliminar los departamentos asignados a la nómina
-            if ($oldIdArea != $idArea) { 
+            if ($oldIdArea != $idArea) {
                 $sqlDel = $conexion->prepare("DELETE FROM nomina_departamento WHERE id_nomina = ?");
                 $sqlDel->bind_param("i", $idNomina);
                 $sqlDel->execute();
@@ -128,11 +128,12 @@ function obtenerDepartamentosPorNomina()
     if (isset($_GET['id_nomina'])) {
         $idNomina = (int) $_GET['id_nomina'];
 
-        $sql = $conexion->prepare("SELECT nd.id_nomina_departamento, d.nombre_departamento, nd.color_depto_nomina 
+        $sql = $conexion->prepare("SELECT nd.id_nomina_departamento, d.nombre_departamento, e.nombre_empresa, nd.color_depto_nomina 
                                    FROM nomina_departamento nd
                                    INNER JOIN departamentos d ON nd.id_departamento = d.id_departamento
+                                   INNER JOIN empresa e ON nd.id_empresa = e.id_empresa
                                    WHERE nd.id_nomina = ?
-                                   ORDER BY d.nombre_departamento ASC");
+                                   ORDER BY e.nombre_empresa ASC, d.nombre_departamento ASC");
         $sql->bind_param("i", $idNomina);
         $sql->execute();
         $result = $sql->get_result();
@@ -150,13 +151,14 @@ function obtenerDepartamentosPorNomina()
 function registrarNominaDepartamento()
 {
     global $conexion;
-    if (isset($_POST['id_nomina']) && isset($_POST['id_departamento'])) {
+    if (isset($_POST['id_nomina']) && isset($_POST['id_departamento']) && isset($_POST['id_empresa'])) {
         $idNomina = (int) $_POST['id_nomina'];
         $idDepto = (int) $_POST['id_departamento'];
+        $idEmpresa = (int) $_POST['id_empresa'];
         $colorDepto = $_POST['color_depto_nomina'] ?? '#FF0000';
 
-        $sqlCheck = $conexion->prepare("SELECT COUNT(*) as c FROM nomina_departamento WHERE id_nomina = ? AND id_departamento = ?");
-        $sqlCheck->bind_param("ii", $idNomina, $idDepto);
+        $sqlCheck = $conexion->prepare("SELECT COUNT(*) as c FROM nomina_departamento WHERE id_nomina = ? AND id_departamento = ? AND id_empresa = ?");
+        $sqlCheck->bind_param("iii", $idNomina, $idDepto, $idEmpresa);
         $sqlCheck->execute();
         $res = $sqlCheck->get_result()->fetch_assoc();
         if ($res['c'] > 0) {
@@ -164,8 +166,8 @@ function registrarNominaDepartamento()
             return;
         }
 
-        $sql = $conexion->prepare("INSERT INTO nomina_departamento (id_nomina, id_departamento, color_depto_nomina) VALUES (?, ?, ?)");
-        $sql->bind_param("iis", $idNomina, $idDepto, $colorDepto);
+        $sql = $conexion->prepare("INSERT INTO nomina_departamento (id_nomina, id_departamento, id_empresa, color_depto_nomina) VALUES (?, ?, ?, ?)");
+        $sql->bind_param("iiis", $idNomina, $idDepto, $idEmpresa, $colorDepto);
         if ($sql->execute())
             echo "1";
         else

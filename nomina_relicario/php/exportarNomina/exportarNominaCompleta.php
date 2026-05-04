@@ -1966,6 +1966,14 @@ if ($jsonNomina && isset($jsonNomina['departamentos'])) {
         // Si no hay empleados válidos, no crear la hoja
         if (empty($empleadosValidos)) continue;
 
+        // Determinar el color del departamento (nuevo formato arreglo o fallback al anterior)
+        $colorDepto = 'FF0000';
+        if (!empty($departamento['color_reporte']) && is_array($departamento['color_reporte'])) {
+            $colorDepto = $departamento['color_reporte'][0]['color'] ?? 'FF0000';
+        } else if (!empty($departamento['color_depto_nomina'])) {
+            $colorDepto = $departamento['color_depto_nomina'];
+        }
+
         // Crear hoja solo si hay datos
         crearHoja(
             $spreadsheet,
@@ -1976,7 +1984,7 @@ if ($jsonNomina && isset($jsonNomina['departamentos'])) {
                 return ($mostrar && $idDeptoEmp == $idDepto);
             },
             substr(strtoupper($nombreDepto), 0, 31),
-            ($departamento['color_depto_nomina'] ?? 'FF0000')
+            $colorDepto
         );
     }
 }

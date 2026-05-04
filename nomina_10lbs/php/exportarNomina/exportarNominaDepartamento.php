@@ -87,6 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['jsonNomina'])) {
 
     // Convertir seguroSocial a booleano (AJAX lo envía como string "true"/"false")
     $seguroSocialSeleccionado = filter_var($_POST['seguroSocial'] ?? true, FILTER_VALIDATE_BOOLEAN);
+    $idEmpresaSeleccionada = $_POST['id_empresa'] ?? null;
 }
 
 //=====================
@@ -99,8 +100,32 @@ $colorFuenteEncabezado = '000000'; // Negro por defecto
 if ($jsonNomina && isset($jsonNomina['departamentos'])) {
     foreach ($jsonNomina['departamentos'] as $departamento) {
         if ($departamento['id_departamento'] == $idDeptoSeleccionado) {
-            if (!empty($departamento['color_reporte'])) {
-                // Quitar el '#' si existe
+            // Buscamos el color en el arreglo color_reporte
+            if (!empty($departamento['color_reporte']) && is_array($departamento['color_reporte'])) {
+                $colorEncontrado = null;
+                
+                // Si tenemos una empresa seleccionada, buscamos su color específico
+                if ($idEmpresaSeleccionada) {
+                    foreach ($departamento['color_reporte'] as $configColor) {
+                        if ($configColor['id_empresa'] == $idEmpresaSeleccionada) {
+                            $colorEncontrado = $configColor['color'];
+                            break;
+                        }
+                    }
+                }
+                
+                // Si no se encontró o no se envió empresa, tomar el primero disponible
+                if (!$colorEncontrado) {
+                    $colorEncontrado = $departamento['color_reporte'][0]['color'] ?? null;
+                }
+
+                if ($colorEncontrado) {
+                    $colorReporte = ltrim($colorEncontrado, '#');
+                    $colorFuenteEncabezado = obtenerColorContraste($colorReporte);
+                }
+            } 
+            // Fallback para el formato anterior (string plano)
+            else if (!empty($departamento['color_reporte']) && is_string($departamento['color_reporte'])) {
                 $colorReporte = ltrim($departamento['color_reporte'], '#');
                 $colorFuenteEncabezado = obtenerColorContraste($colorReporte);
             }

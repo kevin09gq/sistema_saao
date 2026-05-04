@@ -75,13 +75,22 @@ function exportarPorDepartamento() {
         const nombreDepto = $btn.data('nombre');
         const esSeguroSocial = $btn.hasClass('btn-export-departamento-css'); // Determinar tipo por clase
 
+        // Determinar id_empresa buscando en el JSON (para obtener el color correcto en el backend)
+        let idEmpresa = 1;
+        if (jsonNomina40lbs && jsonNomina40lbs.departamentos) {
+            const deptoObj = jsonNomina40lbs.departamentos.find(d => d.id_departamento == idDepto);
+            if (deptoObj && deptoObj.color_reporte && deptoObj.color_reporte.length > 0) {
+                idEmpresa = deptoObj.color_reporte[0].id_empresa;
+            }
+        }
+
         // Validar que jsonNomina40lbs exista
         if (!jsonNomina40lbs) {
             alert('No hay datos de nómina para exportar. Por favor, procesa los datos primero.');
             return;
         }
 
-        if (validarEmpleadosNegativos()) return;
+        //if (validarEmpleadosNegativos()) return;
 
         // Mostrar alerta de carga
         Swal.fire({
@@ -103,6 +112,7 @@ function exportarPorDepartamento() {
                 jsonNomina: JSON.stringify(jsonNomina40lbs),
                 id_departamento: idDepto,
                 nombre_departamento: nombreDepto,
+                id_empresa: idEmpresa,
                 seguroSocial: esSeguroSocial
             },
             xhrFields: {
@@ -144,7 +154,7 @@ function nominaCompleta() {
             alert('No hay datos de nómina para exportar. Por favor, procesa los datos primero.');
             return;
         }
-        if (validarEmpleadosNegativos()) return;
+        //if (validarEmpleadosNegativos()) return;
 
         // Mostrar alerta de carga
         Swal.fire({

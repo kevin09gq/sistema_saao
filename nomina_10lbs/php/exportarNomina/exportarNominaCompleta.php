@@ -101,8 +101,18 @@ function crearHoja($spreadsheet, $depto, $filtroEmpleados, $nombreHoja, $esPrime
     $colorDepto = 'F5EB1B';
     $colorFuenteEnc = '000000';
     if (!empty($depto['color_reporte'])) {
-        $colorDepto = ltrim($depto['color_reporte'], '#');
-        $colorFuenteEnc = obtenerColorContraste($colorDepto);
+        $colorEncontrado = null;
+        if (is_array($depto['color_reporte'])) {
+            // Para la nómina completa tomamos el primer color definido como representativo
+            $colorEncontrado = $depto['color_reporte'][0]['color'] ?? null;
+        } else {
+            $colorEncontrado = $depto['color_reporte'];
+        }
+        
+        if ($colorEncontrado) {
+            $colorDepto = ltrim($colorEncontrado, '#');
+            $colorFuenteEnc = obtenerColorContraste($colorDepto);
+        }
     }
 
     // Extraer cajas con utilidad

@@ -10,6 +10,12 @@ use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 
+// Obtener nombres de empresas desde el POST (enviado por JS para evitar reconexión)
+$mapaEmpresas = [];
+if (isset($_POST['mapaEmpresas'])) {
+    $mapaEmpresas = json_decode($_POST['mapaEmpresas'], true);
+}
+
 //=====================
 //  RECIBIR DATOS DEL JSON
 //=====================
@@ -183,18 +189,35 @@ $tamanioLetraFilas = [
 
 function crearHoja($spreadsheet, $deptoData, $targetEmpresaId, $filtroEmpleados, $nombreHoja)
 {
-    global $jsonNomina, $columnas, $columnasAncho, $tamanioLetraColumnas, $tamanioLetraFilas, $fecha_inicio, $fecha_cierre, $numero_semana, $ano;
+    global $jsonNomina, $mapaEmpresas, $columnas, $columnasAncho, $tamanioLetraColumnas, $tamanioLetraFilas, $fecha_inicio, $fecha_cierre, $numero_semana, $ano;
 
     $nombreDepto = $deptoData['nombre'] ?? 'DEPARTAMENTO';
-    $colorExcel = $deptoData['color_reporte'] ?? 'FF0000';
-    $colorExcel = str_replace('#', '', $colorExcel);
-    $nombreEmpresaTarget = 'CITRICOS SAAO';
+    $colorExcel = 'FF0000'; // Color por defecto
+    $nombreEmpresaTarget = $mapaEmpresas[$targetEmpresaId] ?? 'EMPRESA ' . $targetEmpresaId;
 
-    // Ajustar colores y nombres según la empresa target
-    if ($targetEmpresaId == 2) {
-        $nombreEmpresaTarget = 'SB CITRIC´S GROUP';
-        $colorExcel = 'A9D08E';
+    // Lógica dinámica para seleccionar el color del reporte
+    if (isset($deptoData['color_reporte'])) {
+        if (is_array($deptoData['color_reporte'])) {
+            $encontrado = false;
+            // Buscamos si existe un color específico para la empresa actual
+            foreach ($deptoData['color_reporte'] as $c) {
+                if ($c['id_empresa'] == $targetEmpresaId) {
+                    $colorExcel = $c['color'];
+                    $encontrado = true;
+                    break;
+                }
+            }
+            // Si no hay color específico para esta empresa, usamos el primero de la lista
+            if (!$encontrado && !empty($deptoData['color_reporte'])) {
+                $colorExcel = $deptoData['color_reporte'][0]['color'];
+            }
+        } else {
+            $colorExcel = $deptoData['color_reporte'];
+        }
     }
+
+    // Limpiamos el formato hexadecimal para la librería Excel
+    $colorExcel = str_replace('#', '', $colorExcel);
     
     // Detectar automáticamente el color de texto según el contraste
     $textColor = obtenerColorContraste($colorExcel);
@@ -827,17 +850,19 @@ function obtenerColorContraste($hexColor)
 //=====================
 //  CREAR LAS DIFERENTES HOJAS
 //=====================
+//  BUCLE PRINCIPAL: CREAR UNA HOJA POR CADA COMBINACIÓN DE DEPTO Y EMPRESA
+//=====================
 
 if ($jsonNomina && isset($jsonNomina['departamentos'])) {
     foreach ($jsonNomina['departamentos'] as $departamento) {
         $nombreDepto = $departamento['nombre'] ?? 'S/N';
         $idDepto = $departamento['id_departamento'] ?? null;
 
-        // Omitir Corte por completo
+        // Saltamos el departamento 'CORTE' ya que no se incluye en este reporte
         if (strtoupper($nombreDepto) === 'CORTE')
             continue;
 
-        // Identificar empresas únicas que tienen empleados en este departamento
+        // Paso 1: Identificar qué empresas tienen empleados activos en este departamento
         $empresasEnDepto = [];
         if (isset($departamento['empleados'])) {
             foreach ($departamento['empleados'] as $emp) {
@@ -846,25 +871,24 @@ if ($jsonNomina && isset($jsonNomina['departamentos'])) {
                 }
             }
         }
+        // Eliminamos duplicados para tener una lista única de empresas por departamento
         $empresasEnDepto = array_unique($empresasEnDepto);
 
-        // Si no hay empleados, no crear hoja
+        // Si no hay empleados que mostrar en este depto, no generamos la hoja
         if (empty($empresasEnDepto))
             continue;
 
-        $totalEmpresas = count($empresasEnDepto);
-
+        // Paso 2: Por cada empresa encontrada, creamos una pestaña individual en el Excel
         foreach ($empresasEnDepto as $idEmpresa) {
-            if ($totalEmpresas > 1) {
-                // Si hay más de una empresa, añadir sufijo descriptivo
-                $aliasEmpresa = ($idEmpresa == 2) ? 'SB GROUP' : 'CITRICOS';
-                $nombreHoja = substr(strtoupper($nombreDepto), 0, 20) . ' - ' . $aliasEmpresa;
-            } else {
-                // Si es una sola empresa, usar solo el nombre del departamento
-                $nombreHoja = substr(strtoupper($nombreDepto), 0, 31);
-            }
+            $nombreEmpresaFull = $mapaEmpresas[$idEmpresa] ?? 'EMP ' . $idEmpresa;
+            
+            // Generamos el nombre de la pestaña: "DEPARTAMENTO - EMPRESA"
+            $nombreHoja = mb_strtoupper($nombreDepto . ' - ' . $nombreEmpresaFull, 'UTF-8');
+            $nombreHoja = mb_substr($nombreHoja, 0, 31, 'UTF-8'); // Límite de 31 caracteres para pestañas de Excel
 
+            // Llamamos a la función que dibuja toda la estructura de la hoja
             crearHoja($spreadsheet, $departamento, $idEmpresa, function ($emp) use ($idDepto, $idEmpresa) {
+                // Filtro dinámico: Solo incluir empleados de este departamento Y de esta empresa
                 $idDeptoEmp = $emp['id_departamento'] ?? null;
                 $idEmpresaEmp = $emp['id_empresa'] ?? null;
                 $mostrar = $emp['mostrar'] ?? false;

@@ -189,18 +189,29 @@ function subirBiometrico() {
                         empleadosSeleccionados.push(emp); // guardar referencia del empleado
 
                         // Actualizar Datos del empleado con registros del biométrico
-
-                        // 1) Redondear horarios/registros del empleado
-                        if (typeof redondearRegistrosEmpleado === 'function' && Array.isArray(jsonNomina40lbs?.horarios_semanales)) {
-                            const horariosPorDia = {};
-                            jsonNomina40lbs.horarios_semanales.forEach(h => {
-                                if (!h || !h.dia) return;
-                                horariosPorDia[String(h.dia).toLowerCase()] = h;
-                            });
-                            redondearRegistrosEmpleado(emp, horariosPorDia);
+                        if (emp.sueldo_base === true) {
+                            // --- LÓGICA PARA SUELDO BASE ---
+                            // 1) Recalcular inasistencias (historial + total) basándose en horario oficial
+                            if (typeof asignarHistorialInasistencias === 'function') {
+                                asignarHistorialInasistencias(emp);
+                            }
+                            if (typeof asignarTotalInasistencias === 'function') {
+                                asignarTotalInasistencias(emp, true);
+                            }
+                        } else {
+                            // --- LÓGICA NORMAL (POR HORAS) ---
+                            // 1) Redondear horarios/registros del empleado
+                            if (typeof redondearRegistrosEmpleado === 'function' && Array.isArray(jsonNomina40lbs?.horarios_semanales)) {
+                                const horariosPorDia = {};
+                                jsonNomina40lbs.horarios_semanales.forEach(h => {
+                                    if (!h || !h.dia) return;
+                                    horariosPorDia[String(h.dia).toLowerCase()] = h;
+                                });
+                                redondearRegistrosEmpleado(emp, horariosPorDia);
+                            }
                         }
 
-                        // 2) Resetear y recalcular olvidos (historial + total)
+                        // 2) Resetear y recalcular olvidos (historial + total) - Aplica para ambos
                         delete emp.historial_olvidos;
                         delete emp._checador_editado_manual;
                         

@@ -100,6 +100,11 @@ function exportarNominaDepartamento() {
             }
         });
 
+        // Identificar la empresa asociada a este departamento en el JSON
+        const idEmpresa = departamento && departamento.color_reporte && departamento.color_reporte.length > 0 
+            ? departamento.color_reporte[0].id_empresa 
+            : 1;
+
         // Enviar el jsonNominaPalmilla al servidor PHP mediante POST
         $.ajax({
             url: tmp_url,
@@ -107,7 +112,8 @@ function exportarNominaDepartamento() {
             data: {
                 jsonNomina: JSON.stringify(jsonNominaPalmilla),
                 deptoId: deptoId,
-                deptoNombre: deptoNombre
+                deptoNombre: deptoNombre,
+                id_empresa: idEmpresa
             },
             xhrFields: {
                 responseType: 'blob'

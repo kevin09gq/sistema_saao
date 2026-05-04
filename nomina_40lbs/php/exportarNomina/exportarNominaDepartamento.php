@@ -42,7 +42,7 @@ function restarUnDia($fecha)
     $date->modify("-1 day");
 
     // Buscar la abreviatura del mes resultante
-    $mesAbrevNuevo = array_search((int)$date->format("m"), $meses);
+    $mesAbrevNuevo = array_search((int) $date->format("m"), $meses);
 
     // Formatear resultado
     return $date->format("d") . "/" . $mesAbrevNuevo . "/" . $date->format("Y");
@@ -57,7 +57,8 @@ function obtenerColorContraste($hexColor)
     $hexColor = str_replace('#', '', $hexColor);
 
     // Si el color no es válido, por defecto blanco
-    if (strlen($hexColor) != 6) return '000000';
+    if (strlen($hexColor) != 6)
+        return '000000';
 
     // Convertir hex a RGB
     $r = hexdec(substr($hexColor, 0, 2));
@@ -82,21 +83,35 @@ $seguroSocialSeleccionado = true;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['jsonNomina'])) {
     $jsonNomina = json_decode($_POST['jsonNomina'], true);
-    
+
     // Capturar parámetros dinámicos de filtrado
     $idDeptoSeleccionado = $_POST['id_departamento'] ?? null;
     $nombreDeptoSeleccionado = $_POST['nombre_departamento'] ?? 'NÓMINA';
-    
+
     // Convertir seguroSocial a booleano (AJAX lo envía como string "true"/"false")
     $seguroSocialSeleccionado = filter_var($_POST['seguroSocial'] ?? true, FILTER_VALIDATE_BOOLEAN);
 }
 
-// Obtener el color del departamento desde el JSON
+// Obtener el color del departamento desde el JSON (buscando en el nuevo formato color_reporte)
 $colorExcel = 'F5EB1B'; // Amarillo por defecto
+$idEmpresaSeleccionada = $_POST['id_empresa'] ?? null;
+
 if ($jsonNomina && isset($jsonNomina['departamentos'])) {
     foreach ($jsonNomina['departamentos'] as $depto) {
         if ($depto['id_departamento'] == $idDeptoSeleccionado) {
-            $colorExcel = $depto['color_depto_nomina'] ?? 'F5EB1B';
+            // Si existe el nuevo formato de arreglo de colores por empresa
+            if (isset($depto['color_reporte']) && is_array($depto['color_reporte'])) {
+                foreach ($depto['color_reporte'] as $config) {
+                    // Si no se especificó empresa, tomamos la primera. Si se especificó, buscamos el match.
+                    if (!$idEmpresaSeleccionada || $config['id_empresa'] == $idEmpresaSeleccionada) {
+                        $colorExcel = $config['color'] ?? 'F5EB1B';
+                        break;
+                    }
+                }
+            } else {
+                // Fallback por si el JSON aún tiene el campo plano anterior
+                $colorExcel = $depto['color_depto_nomina'] ?? 'F5EB1B';
+            }
             break;
         }
     }
@@ -450,9 +465,9 @@ foreach ($empleados40Libras as $empleado) {
 
     // Mapeo de códigos de conceptos a columnas
     $mapeoConceptos = [
-        '45'  => 'H',   // ISR
-        '52'  => 'I',   // IMSS
-        '16'  => 'J',   // INFONAVIT
+        '45' => 'H',   // ISR
+        '52' => 'I',   // IMSS
+        '16' => 'J',   // INFONAVIT
         '107' => 'K',   // AJUSTES AL SUB
     ];
 
