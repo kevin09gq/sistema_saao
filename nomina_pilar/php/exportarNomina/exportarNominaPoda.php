@@ -29,7 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['jsonNomina'])) {
 // ==========================
 // COLORES PARA USAR
 // ==========================
-$color_primario = 'E5C8E6';  // Color primario Rojo
+$color_primario = 'E5C8E6';  // Color primario
+$color_secundario = '7030A0';  // Color secundario
 $color_negro    = '000000';  // Color negro
 $color_blanco   = 'FFFFFF';  // Color blanco
 $colorConcepto  = 'F2F2F2';  // fondo columna CONCEPTO GRIS CLARO
@@ -445,7 +446,7 @@ $sheet->mergeCells('A2:N2');
 $sheet->mergeCells('A3:N3');
 $sheet->mergeCells('A4:N4');
 
-$sheet->getStyle('A1')->getFont()->setBold(true)->setSize(24)->getColor()->setRGB($color_primario);
+$sheet->getStyle('A1')->getFont()->setBold(true)->setSize(24)->getColor()->setRGB($color_secundario); // Título 1 con color secundario
 $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(20);
 $sheet->getStyle('A3')->getFont()->setBold(true)->setSize(14);
 $sheet->getStyle('A4')->getFont()->setBold(true)->setSize(14);
@@ -533,10 +534,10 @@ foreach ($encabezados as $col => $titulo) {
     $sheet->setCellValue($col . '6', $titulo);
 }
 
-// Formatear los encabezados (Negrita, Centrados, Tamaño 12, Fondo Rojo, Letra Blanca)
+// Formatear los encabezados (Negrita, Centrados, Tamaño 12, Fondo Rojo, Letra Negra)
 $sheet->getStyle('A6:N6')->getFont()->setBold(true);
 $sheet->getStyle('A6:N6')->getFont()->setSize(12);
-$sheet->getStyle('A6:N6')->getFont()->setColor(new Color($color_blanco)); // Letra BLANCA
+$sheet->getStyle('A6:N6')->getFont()->setColor(new Color($color_negro)); // Letra NEGRA
 $sheet->getStyle('A6:N6')->getAlignment()->setHorizontal('center');
 $sheet->getStyle('A6:N6')->getAlignment()->setVertical('center');
 $sheet->getStyle('A6:N6')->getAlignment()->setWrapText(true); // Ajustar texto
@@ -727,7 +728,60 @@ foreach ($filasPoda as $fila) {
 //  FILA DE TOTALES
 //=====================
 
-$filaTotal = $numeroFila - 1;
+$filaTotal = $numeroFila;
+
+// Escribir "TOTALES" en la columna C de la fila de totales
+$sheet->setCellValue('C' . $filaTotal, 'TOTALES');
+$sheet->getStyle('C' . $filaTotal)->applyFromArray([
+    'font'      => ['bold' => true, 'size' => 12],
+    'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
+    'fill'      => ['fillType' => 'solid', 'startColor' => ['rgb' => $colorTotales]],
+]);
+
+// Aplicar fondo gris a toda la fila de totales
+$sheet->getStyle('A' . $filaTotal . ':N' . $filaTotal)->getFill()
+    ->setFillType('solid')->getStartColor()->setRGB($colorTotales);
+
+// Columnas D-J (días): Dejar vacías (no sumar, no tiene sentido mezclar Poda con extras)
+
+// Columna K (TOTAL ARBOLES): Solo sumar filas PODA
+if (!empty($filasPoda)) {
+    $primeraFila = min($filasPoda);
+    $ultimaFila  = max($filasPoda);
+
+    // Construir fórmula SUM solo para filas PODA (si hay múltiples no contiguas, usar SUM directo)
+    // $sheet->setCellValue('K' . $filaTotal, '=SUM(K' . $primeraFila . ':K' . $ultimaFila . ')');
+
+    // Pero esto suma incluidas las NOMINA. Mejor usar SUMIF
+    // SUMIF busca en una columna (C) el valor 'PODA' y suma los correspondientes en K
+    // IMPORTANTE: usar "*PODA*" para incluir tanto "PODA" como "E. PODA (30)" y similares
+    $sheet->setCellValue(
+        'K' . $filaTotal,
+        '=SUMIF(C7:C' . ($filaTotal - 1) . ',"*PODA*",K7:K' . ($filaTotal - 1) . ')'
+    );
+
+    // Formato para el total de árboles
+    $sheet->getStyle('K' . $filaTotal)->applyFromArray([
+        'font'      => ['bold' => true, 'size' => 12],
+        'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
+    ]);
+    // Formato de número sin decimales para el total de árboles
+    $sheet->getStyle('K' . $filaTotal)->getNumberFormat()->setFormatCode('#,##0');
+}
+
+// Columna L (PRECIO POR ARBOL): SE QUEDA VACIA
+
+// Columna M (TOTAL EFECTIVO): Sumar TODO (PODA + EXTRAS)
+$sheet->setCellValue('M' . $filaTotal, '=SUM(M7:M' . ($filaTotal - 1) . ')');
+// Formato para el total efectivo
+$sheet->getStyle('M' . $filaTotal)->applyFromArray([
+    'font'      => ['bold' => true, 'size' => 12],
+    'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
+]);
+// Formato de número con símbolo de peso para el total efectivo
+$sheet->getStyle('M' . $filaTotal)->getNumberFormat()->setFormatCode('$#,##0.00');
+
+$sheet->getRowDimension($filaTotal)->setRowHeight(25);
 
 
 //=====================

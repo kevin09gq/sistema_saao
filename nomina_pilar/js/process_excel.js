@@ -529,7 +529,7 @@ function obtenerEmpleadosSinSeguroBiometrico(empleadosNoUnidos) {
                 });
                 asignarPropiedadesEmpleado(jsonNominaPilar);
                 ordenarEmpleadosPorNombre(jsonNominaPilar);
-                
+
                 actualizarCabeceraNomina(jsonNominaPilar);
 
                 // BHL: Llenar tabla de pagos por día cuando se cargue la nómina
@@ -591,7 +591,7 @@ function validarExistenciaTrabajadorBD(jsonNominaPilar, JsonListaRaya) {
                 jsonNominaPilar.departamentos.forEach(function (departamento) {
                     // Si es Corte, no filtrar contra BD (el flujo de corte es manual)
                     if (departamento.nombre === "Corte") return;
-                      // Si es Poda, no filtrar contra BD (el flujo de Poda es manual)
+                    // Si es Poda, no filtrar contra BD (el flujo de Poda es manual)
                     if (departamento.nombre === "Poda") return;
 
                     departamento.empleados = departamento.empleados.filter(function (empleado) {
@@ -665,7 +665,7 @@ function agregarEmpleadosNuevos(jsonNominaPilar, JsonListaRaya) {
 
     if (empleadosNuevosDetectados.length === 0) {
         verificarEmpleadosSinSeguro(jsonNominaPilar);
-       
+
     }
 
     const clavesNuevas = empleadosNuevosDetectados.map(e => e.clave);
@@ -926,7 +926,10 @@ function asignarPropiedadesEmpleado(jsonNominaPilar) {
                 empleado.mostrar = true;
             }
 
-
+            // Calcular total a cobrar (esto persistirá el valor en el empleado)
+            if (typeof calcularTotalCobrar === 'function') {
+                calcularTotalCobrar(empleado);
+            }
         });
     });
 }

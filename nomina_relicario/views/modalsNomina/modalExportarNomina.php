@@ -1,6 +1,6 @@
 <!-- Modal para Exportar Nómina -->
 <div class="modal fade" id="modalExportarNomina" tabindex="-1" aria-labelledby="modalExportarNominaLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="modalExportarNominaLabel">
@@ -19,38 +19,46 @@
 
                 <div class="list-group shadow-sm">
                     <!-- Corte Rejas de Limón (Estático) -->
-                    <button type="button" class="list-group-item list-group-item-action border-success" id="btn-export-corte" data-nombre="Corte" data-id="800">
+                    <button type="button" class="list-group-item list-group-item-action" style="border-left: 4px solid #10b981;" id="btn-export-corte" data-nombre="Corte" data-id="800">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="mb-1 text-success fw-bold">
+                                <h6 class="mb-1 fw-bold text-success">
                                     <i class="bi bi-leaf-fill"></i> Corte Rejas de Limón
                                 </h6>
                             </div>
-                            <i class="bi bi-file-earmark-spreadsheet text-success fs-4"></i>
+                            <i class="bi bi-file-earmark-spreadsheet fs-4 text-success"></i>
                         </div>
                     </button>
 
                     <!-- Poda de arboles -->
-                    <button type="button" class="list-group-item list-group-item-action border-success" id="btn-export-corte" data-nombre="Poda" data-id="801">
+                    <button type="button" class="list-group-item list-group-item-action" style="border-left: 4px solid #10b981;" id="btn-export-corte" data-nombre="Poda" data-id="801">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="mb-1 text-success fw-bold">
+                                <h6 class="mb-1 fw-bold text-success">
                                     <i class="bi bi-leaf-fill"></i> Podas de Árboles
                                 </h6>
                             </div>
-                            <i class="bi bi-file-earmark-spreadsheet text-success fs-4"></i>
+                            <i class="bi bi-file-earmark-spreadsheet fs-4 text-success"></i>
                         </div>
                     </button>
 
                     <!-- Nómina Completa (Estático) -->
-                    <button type="button" class="list-group-item list-group-item-action border-primary" id="btn-export-nomina-completa">
+                    <button type="button" class="list-group-item list-group-item-action" style="border-left: 4px solid #0d6efd;" id="btn-export-nomina-completa">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="mb-1 text-primary fw-bold">
-                                    <i class="bi bi-collection"></i> Nomina Completa
+                                <h6 class="mb-1 fw-bold text-primary">
+                                    <i class="bi bi-folder"></i> Nomina Completa
                                 </h6>
                             </div>
-                            <i class="bi bi-file-earmark-zip text-primary fs-4"></i>
+                            <i class="bi bi-file-earmark-text fs-4 text-primary"></i>
+                        </div>
+                    </button>
+                    <button type="button" class="list-group-item list-group-item-action btn-export-tipo" style="border-left: 4px solid #10b981;" id="btn-export-dispersion-tarjeta">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1 fw-bold text-success"><i class="bi bi-credit-card"></i> Dispersión Tarjeta</h6>
+                            </div>
+                            <i class="bi bi-file-earmark-spreadsheet fs-4 text-success"></i>
                         </div>
                     </button>
                 </div>

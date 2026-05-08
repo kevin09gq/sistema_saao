@@ -2,6 +2,7 @@ abrirModalExportarExcel();
 exportarNominaDepartamento();
 exportarNominaCompleta();
 reporteNominaPdf();
+exportarDispersionTarjeta();    
 let mapaEmpresas = null;
 
 /**
@@ -77,18 +78,18 @@ async function cargarDepartamentosExportar() {
 
             // Creamos el HTML del botón con sus datos (ID Depto, ID Empresa, etc.)
             const btnHtml = `
-                <button type="button" class="list-group-item list-group-item-action border-success btn-export-corte-especifico"   
+                <button type="button" class="list-group-item list-group-item-action btn-export-corte-especifico" style="border-left: 4px solid #6c757d;"   
                     data-depto-id="${depto.id_departamento}" 
                     data-depto-nombre="${depto.nombre}"
                     data-empresa-id="${idEmpresa}"
                     data-empresa-nombre="${nombreEmpresa}">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="mb-1 text-success fw-bold">
+                                <h6 class="mb-1 fw-bold" style="color: #6c757d;">
                                     <i class="bi bi-building"></i> ${nombreBoton}
                                 </h6>
                             </div>
-                            <i class="bi bi-file-earmark-spreadsheet text-success fs-4"></i>
+                            <i class="bi bi-file-earmark-spreadsheet fs-4" style="color: #6c757d;"></i>
                         </div>
                 </button>
             `;
@@ -292,6 +293,58 @@ function reporteNominaPdf() {
         });
     });
 }
+
+function exportarDispersionTarjeta() {
+    $("#btn-export-dispersion-tarjeta").click(function (e) {
+        e.preventDefault();
+
+        if (!jsonNominaConfianza) {
+            alert('No hay datos de nómina para exportar. Por favor, procesa los datos primero.');
+            return;
+        }
+
+        Swal.fire({
+            title: 'Generando Dispersión...',
+            html: 'Por favor espera mientras se genera el archivo Excel.',
+            icon: 'info',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        $.ajax({
+            url: '../php/exportarNomina/exportarDispersionTarjeta.php',
+            type: 'POST',
+            data: {
+                jsonNomina: JSON.stringify(jsonNominaConfianza)
+            },
+            xhrFields: {
+                responseType: 'blob'
+            },
+            success: function (blob) {
+                Swal.close();
+                var link = document.createElement('a');
+                var url = URL.createObjectURL(blob);
+                link.href = url;
+                var numeroSemana = String(jsonNominaConfianza.numero_semana).padStart(2, '0');
+                var anio = jsonNominaConfianza.fecha_cierre.split('/')[2];
+                link.download = 'DISPERSION_TARJETA_SEM_' + numeroSemana + '_' + anio + '.xlsx';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            },
+            error: function (xhr, status, error) {
+                Swal.close();
+                console.error('Error al descargar el Excel:', error);
+                alert('No se pudo generar el archivo de dispersión.');
+            }
+        });
+    });
+}
+
 
 function validarEmpleadosNegativos() {
 

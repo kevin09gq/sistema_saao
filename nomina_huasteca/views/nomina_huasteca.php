@@ -221,7 +221,7 @@
     </div>
 
     <div class="container-tabla-nomina-huasteca" id="tabla-nomina-responsive" hidden>
-         <div class="header-tabla-huasteca">
+        <div class="header-tabla-huasteca">
             <div class="header-titulo-semana">
                 <h3 id=nombre_nomina></h3>
                 <span class="sem-info-huasteca" id="num_semana"></span>
@@ -254,10 +254,10 @@
                         <i class="bi bi-x-circle"></i>
                     </button>
                     <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_establecer_dias_justificados"
-                        title="dias justificados" aria-label="dias-justificados">
+                        title="Justificar Días" aria-label="dias-justificados">
                         <i class="bi bi-check-circle"></i>
                     </button>
-                    <button class="btn btn-outline-primary" id="btn-seleccionar-empleados" title="Seleccionar empleados">
+                    <button class="btn btn-outline-primary" id="btn-seleccionar-empleados" title="Ocultar/Mostrar Empleados">
                         <i class="bi bi-people"></i>
                     </button>
                     <button class="btn btn-outline-primary" id="btn_modal_dias_extra" title="Agregar día extra jornaleros">
@@ -275,9 +275,17 @@
                         title="Aplicar Tarjeta">
                         <i class="bi bi-arrow-clockwise"></i>
                     </button>
+                    <button class="btn btn-outline-success" type="button" id="btn_redondear_sueldos"
+                        title="Redondear Sueldos Masivo" aria-label="Redondear Sueldos Masivo">
+                        <i class="bi bi-arrow-repeat"></i>
+                    </button>
                     <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta"
                         aria-label="Quitar tarjeta">
                         <i class="bi bi-credit-card-2-back"></i>
+                    </button>
+                    <button class="btn btn-outline-primary" id="btn_add_percepciones_deducciones"
+                        title="Agregar Percepciones/Deducciones Extras" aria-label="Agregar Percepciones/Deducciones Extras">
+                        <i class="bi bi-patch-plus"></i>
                     </button>
                     <button class="btn btn-outline-primary btn-suma" type="button" id="btn_conceptos_totales"
                         title="Totales por concepto" aria-label="Totales por concepto">
@@ -291,7 +299,7 @@
                         <i class="bi bi-ticket-perforated"></i>
                     </button>
                     <button class="btn btn-outline-secondary" id="btn_abrir_modal_reasignar"
-                        title="Reasignar Empleado de Departamento">
+                        title="Reasignar Departamento al Empleado" aria-label="Reasignar Departamento al Empleado">
                         <i class="bi bi-person-fill-gear"></i>
                     </button>
                 </div>
@@ -482,11 +490,13 @@
     <?php include "modals/modalDiasExtra.php"; ?>
     <?php include "modals/modalOlvidos.php"; ?>
     <?php include "modals/modalReasignarEmpleado.php"; ?>
+    <?php include "modals/modalRedondeoSueldos.php"; ?>
+    <?php include "modals/addPercepcionesDeducciones.php"; ?>
 
     <!-- Modal para los cortes -->
-    <?php include "modals/modalCorte.php"; ?>
-    <?php include "modals/modalCorteNominaEditar.php"; ?>
-    <?php include "modals/modalCorteEditar.php"; ?>
+    <?php include __DIR__ . "/modalsCorte/modalCorte.php"; ?>
+    <?php include __DIR__ . "/modalsCorte/modalCorteNominaEditar.php"; ?>
+    <?php include __DIR__ . "/modalsCorte/modalCorteEditar.php"; ?>
 
     <!-- Modal para la poda -->
     <?php include __DIR__ . "/modalsPoda/modalPoda.php"; ?>
@@ -519,16 +529,17 @@
     <script src="../js/configModales/olvidosMasivos.js"></script>
     <script src="../js/configModales/exportarNominaExcel.js"></script>
     <script src="../js/configModales/reasignarEmpleado.js"></script>
-   
-   
+    <script src="../js/configModales/redondearSueldos.js"></script>
+    <script src="../js/configModales/addPercepcionesDeducciones.js"></script>
+
     <script src="../js/configModalCoordinador/establecerData.js"></script>
     <script src="../js/configModalCoordinador/configModal.js"></script>
     <script src="../js/configModalCoordinador/editarData.js"></script>
     <script src="../js/configModalCoordinador/newConcepts.js"></script>
     <script src="../js/configModalCoordinador/eventos.js"></script>
     <script src="../js/configModalCoordinador/justificacionCoordinador.js"></script>
-    
-     <script src="../js/configModalJornaleros/sueldoSemanal.js"></script>
+
+    <script src="../js/configModalJornaleros/sueldoSemanal.js"></script>
     <script src="../js/configModalJornaleros/establecerData.js"></script>
     <script src="../js/configModalJornaleros/editarData.js"></script>
     <script src="../js/configModalJornaleros/configModal.js"></script>

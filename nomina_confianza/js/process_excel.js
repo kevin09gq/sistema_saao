@@ -893,6 +893,10 @@ function asignarPropiedadesEmpleado(jsonNominaConfianza) {
                 empleado.mostrar = true;
             }
 
+            // Calcular total a cobrar (esto persistirá el valor en el empleado)
+            if (typeof calcularTotalCobrar === 'function') {
+                calcularTotalCobrar(empleado);
+            }
 
         });
     });

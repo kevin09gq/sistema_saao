@@ -66,52 +66,78 @@
 
     <div class="container-tabla-nomina-confianza" id="tabla-nomina-responsive" hidden>
         <div class="header-tabla-confianza">
-            <h3 id=nombre_nomina></h3>
-            <div class="header-controls-confianza">
+            <div class="header-titulo-semana">
+                <h3 id=nombre_nomina></h3>
                 <span class="sem-info-confianza" id="num_semana"></span>
-                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_actualizar_biometrico"
-                    title="Actualizar Biometrico" aria-label="Actualizar Biometrico">
-                    <i class="bi bi-person-badge"></i>
-                </button>
-                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_add_horario_variable"
-                    title="Establecer Horario Variable" aria-label="Establecer Horario Variable">
-                    <i class="bi bi-calendar-check"></i>
-                </button>
-                <button class="btn btn-outline-primary" id="btn-seleccionar-empleados" title="Seleccionar empleados">
-                    <i class="bi bi-people"></i>
-                </button>
-                <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global"
-                    title="Aplicar Tarjeta">
-                    <i class="bi bi-arrow-clockwise"></i>
-                </button>
-                <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta"
-                    aria-label="Quitar tarjeta">
-                    <i class="bi bi-credit-card-2-back"></i>
-                </button>
-                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_establecer_dias_justificados"
-                    title="dias justificados" aria-label="dias-justificados">
-                    <i class="bi bi-check-circle"></i>
-                </button>
-                <button class="btn btn-outline-danger" id="btn_modal_olvidos_masivos"
-                    title="Perdonar olvidos de checador">
-                    <i class="bi bi-clipboard-check"></i>
-                </button>
-                <button class="btn btn-outline-primary btn-suma" type="button" id="btn_conceptos_totales"
-                    title="Totales por concepto" aria-label="Totales por concepto">
-                    <i class="bi bi-calculator"></i>
-                </button>
-                <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf"
-                    title="Descargar Todos los Tickets">
-                    <i class="bi bi-ticket-perforated"></i>
-                </button>
-                <button class="btn btn-outline-success btn-ticket-zebra" id="btn_ticket_manual_confianza"
-                    title="Descargar Tickets Seleccionados">
-                    <i class="bi bi-hand-index"></i>
-                </button>
- <button class="btn btn-outline-secondary" id="btn_abrir_modal_reasignar"
-                    title="Reasignar Empleado de Departamento">
-                    <i class="bi bi-person-fill-gear"></i>
-                </button>
+            </div>
+            <div class="header-controls-confianza">
+                <!-- Grupo 1: Servicios -->
+                <div class="btn-group-confianza btn-group-servicios">
+                    <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_add_horario_variable"
+                        title="Establecer Horario Variable" aria-label="Establecer Horario Variable">
+                        <i class="bi bi-calendar-check"></i>
+                    </button>
+                    <button class="btn btn-outline-primary" type="button" id="btn_marcajes" title="Ajustar Marcaje">
+                        <i class="bi bi-clock-history"></i>
+                    </button>
+                    <button class="btn btn-outline-primary" id="btn-seleccionar-empleados" title="Seleccionar empleados">
+                        <i class="bi bi-people"></i>
+                    </button>
+
+                    <button class="btn btn-outline-secondary" id="btn_abrir_modal_reasignar"
+                        title="Reasignar Empleado de Departamento">
+                        <i class="bi bi-person-fill-gear"></i>
+                    </button>
+                </div>
+
+                <!-- Grupo 2: Configuración -->
+                <div class="btn-group-confianza btn-group-config">
+                    <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_actualizar_biometrico"
+                        title="Actualizar Biometrico" aria-label="Actualizar Biometrico">
+                        <i class="bi bi-person-badge"></i>
+                    </button>
+                    <button class="btn btn-outline-danger" id="btn_modal_olvidos_masivos"
+                        title="Perdonar olvidos de checador">
+                        <i class="bi bi-clipboard-check"></i>
+                    </button>
+                    <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_establecer_dias_justificados"
+                        title="dias justificados" aria-label="dias-justificados">
+                        <i class="bi bi-check-circle"></i>
+                    </button>
+
+                    <button class="btn btn-outline-info" id="btn_ver_dispersion" title="Ver Dispersión de Tarjeta">
+                        <i class="bi bi-list-columns-reverse"></i>
+                    </button>
+
+                </div>
+
+                <!-- Grupo 3: Procesamiento -->
+                <div class="btn-group-confianza btn-group-procesamiento">
+                    <button class="btn btn-outline-success" type="button" id="btn_redondear_sueldos"
+                        title="Redondear Sueldos Masivo" aria-label="Redondear Sueldos Masivo">
+                        <i class="bi bi-arrow-repeat"></i>
+                    </button>
+                    <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global"
+                        title="Aplicar Tarjeta">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                    <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta"
+                        aria-label="Quitar tarjeta">
+                        <i class="bi bi-credit-card-2-back"></i>
+                    </button>
+                    <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf"
+                        title="Descargar Todos los Tickets">
+                        <i class="bi bi-ticket-perforated"></i>
+                    </button>
+                    <button class="btn btn-outline-success btn-ticket-zebra" id="btn_ticket_manual_confianza"
+                        title="Descargar Tickets Seleccionados">
+                        <i class="bi bi-hand-index"></i>
+                    </button>
+                    <button class="btn btn-outline-primary btn-suma" type="button" id="btn_conceptos_totales"
+                        title="Totales por concepto" aria-label="Totales por concepto">
+                        <i class="bi bi-calculator"></i>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -220,7 +246,9 @@
     <?php include 'modals/modalConceptosTotales.php'; ?>
     <?php include 'modals/modal_seleccion_tickets_confianza.php'; ?>
     <?php include 'modals/modalExportarNomina.php'; ?>
-     <?php include 'modals/modalReasignarEmpleado.php'; ?>
+    <?php include 'modals/modalReasignarEmpleado.php'; ?>
+    <?php include 'modals/modalRedondeoSueldos.php'; ?>
+    <?php include 'modals/dispersionTarjeta.php'; ?>
 
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
@@ -254,9 +282,17 @@
     <script src="../js/configModales/conceptos_totales.js"></script>
     <script src="../js/configModales/exportarNominaExcel.js"></script>
     <script src="../js/configModales/reasignarEmpleado.js"></script>
+    <script src="../js/configModales/redondearSueldos.js"></script>
 
     <script src="../js/ticket_pdf.js"></script>
     <script src="../js/ticket_seleccion_confianza.js"></script>
+
+    <!-- Dispersion Tarjeta -->
+    <script src="../js/configModalDispersionTarjeta/establecerData.js"></script>
+    <script src="../js/configModalDispersionTarjeta/filtroBusqueda.js"></script>
+    <script src="../js/configModalDispersionTarjeta/editarData.js"></script>
+
+
 
 </body>
 

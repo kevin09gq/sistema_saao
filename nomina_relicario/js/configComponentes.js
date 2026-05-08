@@ -161,6 +161,11 @@ function obtenerSalariosHorarios(statusRancho) {
                                 emp.horario_oficial = dato.horario_oficial || null;
                                 emp.salario_semanal = parseFloat(dato.salario_semanal) || 0;
                             }
+
+                            // Recalcular el total a cobrar con los nuevos sueldos
+                            if (typeof calcularTotalCobrar === 'function') {
+                                calcularTotalCobrar(emp);
+                            }
                         }
                     });
                 });

@@ -162,6 +162,11 @@ function obtenerSalariosHorarios(statusRancho) {
                                 emp.horario_oficial = dato.horario_oficial || null;
                                 emp.salario_semanal = parseFloat(dato.salario_semanal) || 0;
                             }
+
+                            // Recalcular el total a cobrar con los nuevos sueldos
+                            if (typeof calcularTotalCobrar === 'function') {
+                                calcularTotalCobrar(emp);
+                            }
                         }
                     });
                 });
@@ -192,7 +197,7 @@ function obtenerSalariosHorarios(statusRancho) {
                     // que maneja automáticamente el ocultamiento de columnas
                     if (typeof aplicarFiltrosActuales === 'function') {
                         aplicarFiltrosActuales();
-                    } 
+                    }
                     saveNomina(jsonNominaPilar);
                 }
 
@@ -324,6 +329,7 @@ function quitarTarjeta() {
                     if (!Array.isArray(departamento.empleados)) return;
                     departamento.empleados.forEach(empleado => {
                         empleado.tarjeta = 0; // asignación directa, sencillo y claro
+                        
                     });
                 });
 

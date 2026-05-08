@@ -6,6 +6,14 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 20px;
+}
+
+.header-titulo-semana {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    justify-content: flex-start;
 }
 
 .header-tabla-confianza h3 {
@@ -18,8 +26,24 @@
 .header-controls-confianza {
     display: flex;
     align-items: center;
-    gap: 15px;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: flex-end;
 }
+
+/* Grupos de botones */
+.btn-group-confianza {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 8px;
+    border-right: 1px solid #e5e7eb;
+}
+
+.btn-group-confianza:last-child {
+    border-right: none;
+}
+
 
 .sem-info-confianza {
     background: #10b981;
@@ -62,7 +86,8 @@
 
 
 /* Filtro de departamento mejorado */
-.filtro-departamento-confianza, .filtro-empresa-confianza {
+.filtro-departamento-confianza,
+.filtro-empresa-confianza {
     background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
     border: 2px solid #e2e8f0;
     border-radius: 8px;
@@ -83,14 +108,16 @@
     ;
 }
 
-.filtro-departamento-confianza:hover, .filtro-empresa-confianza:hover {
+.filtro-departamento-confianza:hover,
+.filtro-empresa-confianza:hover {
     border-color: #10b981;
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
     background: linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%);
 }
 
-.filtro-departamento-confianza:focus, .filtro-empresa-confianza:focus {
+.filtro-departamento-confianza:focus,
+.filtro-empresa-confianza:focus {
     outline: none;
     border-color: #10b981;
     box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1), 0 4px 12px rgba(16, 185, 129, 0.15);
@@ -196,7 +223,7 @@
     /* por encima del input */
 }
 
-#btn-clear-busqueda:hover{
+#btn-clear-busqueda:hover {
     color: #ef4444;
 }
 
@@ -209,12 +236,29 @@
 
 
 /* Responsive design */
+@media (max-width: 1200px) {
+    .header-controls-confianza {
+        gap: 10px;
+    }
+
+    .btn-group-confianza {
+        padding: 0 6px;
+        gap: 6px;
+    }
+}
+
 @media (max-width: 768px) {
     .header-tabla-confianza {
-        padding: 10px 15px;
+        padding: 15px 15px;
         flex-direction: column;
-        gap: 10px;
-        text-align: center;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .header-titulo-semana {
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
     }
 
     .header-tabla-confianza h3 {
@@ -223,8 +267,23 @@
 
     .header-controls-confianza {
         flex-wrap: wrap;
-        justify-content: center;
-        gap: 10px;
+        gap: 8px;
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .btn-group-confianza {
+        padding: 0 6px;
+        gap: 6px;
+        border-right: none !important;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 8px;
+        margin-bottom: 8px;
+        width: 100%;
+    }
+
+    .btn-group-confianza:last-child {
+        border-bottom: none;
     }
 
     .container-tabla-nomina-confianza {
@@ -251,7 +310,7 @@
         padding: 10px 14px 10px 44px;
     }
 
-      .export-buttons-confianza {
+    .export-buttons-confianza {
         flex-direction: column;
         gap: 8px;
         width: 100%;
@@ -270,7 +329,7 @@
         font-size: 13px;
         border-radius: 8px;
     }
-    
+
     .busqueda-container-confianza i {
         left: 14px;
         font-size: 14px;
@@ -280,10 +339,9 @@
         padding: 8px 32px 8px 12px;
     }
 
-    
+
     .campo-busqueda-confianza {
         padding: 8px 12px 8px 40px;
     }
-
 
 }

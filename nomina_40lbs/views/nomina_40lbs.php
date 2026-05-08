@@ -26,7 +26,7 @@
     <?php
     // Incluir el navbar (config.php ya fue incluido en el head)
     include "../../public/views/navbar.php"
-        ?>
+    ?>
 
     <!-- Contenedor principal centrado -->
     <div class="container-nomina_40lbs" id="container-nomina_40lbs" hidden>
@@ -61,58 +61,74 @@
 
     <div class="container-tabla-nomina-40lbs" id="tabla-nomina-responsive" hidden>
         <div class="header-tabla-40lbs">
-            <h3 id=nombre_nomina></h3>
-            <div class="header-controls-40lbs">
+            <div class="header-titulo-semana">
+                <h3 id=nombre_nomina></h3>
                 <span class="sem-info-40lbs" id="num_semana"></span>
-                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_actualizar_biometrico"
-                    title="Actualizar Biometrico" aria-label="Actualizar Biometrico">
-                    <i class="bi bi-person-badge"></i>
-                </button>
-                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_sueldo_base"
-                    title="Actualizar Sueldo Base" aria-label="Actualizar Sueldo Base">
-                    <i class="bi bi-currency-dollar"></i>
-                </button>
-                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_establecer_horario_semanal"
-                    title="Establecer Horario Semanal" aria-label="Establecer Horario Semanal">
-                    <i class="bi bi-calendar-check"></i>
-                </button>
-                <button class="btn btn-outline-primary" type="button" id="btn_marcajes" title="Ajustar Marcaje">
-                    <i class="bi bi-clock-history"></i>
-                </button>
-                <button class="btn btn-outline-primary" id="btn-seleccionar-empleados" title="Seleccionar empleados">
-                    <i class="bi bi-people"></i>
-                </button>
-                <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global"
-                    title="Aplicar Tarjeta">
-                    <i class="bi bi-arrow-clockwise"></i>
-                </button>
-                <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta"
-                    aria-label="Quitar tarjeta">
-                    <i class="bi bi-credit-card-2-back"></i>
-                </button>
-                <button class="btn btn-outline-info" id="btn_ver_dispersion" title="Ver Dispersión de Tarjeta">
-                    <i class="bi bi-list-columns-reverse"></i>
-                </button>
-                <button class="btn btn-outline-danger" id="btn_modal_olvidos_masivos"
-                    title="Perdonar olvidos de checador">
-                    <i class="bi bi-clipboard-check"></i>
-                </button>
-                <button class="btn btn-outline-primary btn-suma" type="button" id="btn_conceptos_totales"
-                    title="Totales por concepto" aria-label="Totales por concepto">
-                    <i class="bi bi-calculator"></i>
-                </button>
-                <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf"
-                    title="Descargar Todos los Tickets">
-                    <i class="bi bi-ticket-perforated"></i>
-                </button>
-                <button class="btn btn-outline-success btn-ticket-zebra" id="btn_ticket_manual_40lbs"
-                    title="Descargar Tickets Seleccionados">
-                    <i class="bi bi-hand-index"></i>
-                </button>
+            </div>
+            <div class="header-controls-40lbs">
+                <!-- Grupo 1: Servicios -->
+                <div class="btn-group-40lbs btn-group-servicios">
+                    <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_establecer_horario_semanal"
+                        title="Establecer Horario Semanal" aria-label="Establecer Horario Semanal">
+                        <i class="bi bi-calendar-check"></i>
+                    </button>
+                    <button class="btn btn-outline-primary" type="button" id="btn_marcajes" title="Ajustar Marcaje">
+                        <i class="bi bi-clock-history"></i>
+                    </button>
+                    <button class="btn btn-outline-primary" id="btn-seleccionar-empleados" title="Seleccionar empleados">
+                        <i class="bi bi-people"></i>
+                    </button>
+                </div>
 
+                <!-- Grupo 2: Configuración -->
+                <div class="btn-group-40lbs btn-group-config">
+                    <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_actualizar_biometrico"
+                        title="Actualizar Biometrico" aria-label="Actualizar Biometrico">
+                        <i class="bi bi-person-badge"></i>
+                    </button>
+                    <button class="btn btn-outline-danger" id="btn_modal_olvidos_masivos"
+                        title="Perdonar olvidos de checador">
+                        <i class="bi bi-clipboard-check"></i>
+                    </button>
+                    <button class="btn btn-outline-info" id="btn_ver_dispersion" title="Ver Dispersión de Tarjeta">
+                        <i class="bi bi-list-columns-reverse"></i>
+                    </button>
+
+                </div>
+
+                <!-- Grupo 3: Procesamiento -->
+                <div class="btn-group-40lbs btn-group-procesamiento">
+                    <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_sueldo_base"
+                        title="Actualizar Sueldo Base" aria-label="Actualizar Sueldo Base">
+                        <i class="bi bi-currency-dollar"></i>
+                    </button>
+                    <button class="btn btn-outline-success" type="button" id="btn_redondear_sueldos"
+                        title="Redondear Sueldos Masivo" aria-label="Redondear Sueldos Masivo">
+                        <i class="bi bi-arrow-repeat"></i>
+                    </button>
+                    <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global"
+                        title="Aplicar Tarjeta">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                    <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta"
+                        aria-label="Quitar tarjeta">
+                        <i class="bi bi-credit-card-2-back"></i>
+                    </button>
+                    <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf"
+                        title="Descargar Todos los Tickets">
+                        <i class="bi bi-ticket-perforated"></i>
+                    </button>
+                    <button class="btn btn-outline-success btn-ticket-zebra" id="btn_ticket_manual_40lbs"
+                        title="Descargar Tickets Seleccionados">
+                        <i class="bi bi-hand-index"></i>
+                    </button>
+                    <button class="btn btn-outline-primary btn-suma" type="button" id="btn_conceptos_totales"
+                        title="Totales por concepto" aria-label="Totales por concepto">
+                        <i class="bi bi-calculator"></i>
+                    </button>
+                </div>
             </div>
         </div>
-
         <!-- Controles de filtro y búsqueda -->
         <div class="controles-tabla-40lbs">
             <div class="filtros-container-40lbs">
@@ -203,7 +219,7 @@
 
 
     <!-- Incluir el modal -->
-
+    <?php include 'modals/modalRedondeoSueldos.php'; ?>
     <?php include 'modals/modalOlvidos.php'; ?>
     <?php include 'modals/modalSueldoBase.php'; ?>
     <?php include 'modals/modal40lbs.php'; ?>
@@ -215,8 +231,8 @@
     <?php include 'modals/modal_seleccion_tickets_40lbs.php'; ?>
     <?php include 'modals/dispersionTarjeta.php'; ?>
     <?php include 'modals/modalMarcajes.php'; ?>
-    
-    
+
+
 
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
@@ -246,6 +262,7 @@
     <script src="../js/configModales/marcajes.js"></script>
     <script src="../js/configModales/olvidosMasivos.js"></script>
     <script src="../js/configModales/sueldoBase.js"></script>
+    <script src="../js/configModales/redondearSueldos.js"></script>
 
     <script src="../js/configModal/establecerData.js"></script>
     <script src="../js/configModal/editarData.js"></script>

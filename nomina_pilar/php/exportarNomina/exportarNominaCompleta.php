@@ -250,12 +250,9 @@ $anchos_poda = [
 //  FUNCIÓN PARA CREAR UNA HOJA
 //=====================
 
-function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $colorExcel = 'E5C8E6')
+function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja)
 {
     global $jsonNomina, $columnas, $columnasAncho, $tamanioLetraColumnas, $tamanioLetraFilas, $fecha_inicio, $fecha_cierre, $numero_semana, $ano;
-
-    $colorExcel = str_replace('#', '', $colorExcel);
-    $textColor = obtenerColorContraste($colorExcel);
 
     // Crear una nueva hoja o usar la existente (si el libro está recién creado)
     if ($spreadsheet->getSheetCount() === 1 && $spreadsheet->getActiveSheet()->getTitle() === 'Worksheet') {
@@ -331,17 +328,17 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
         $columnaLetra++;
     }
 
-    // Formatear los encabezados (Negrita, Centrados, Tamaño 10, Fondo Dinámico, Letra de Contraste)
+    // Formatear los encabezados (Negrita, Centrados, Tamaño 10, Fondo Rojo, Letra Blanca)
     $sheet->getStyle('A6:AB6')->getFont()->setBold(true);
     $sheet->getStyle('A6:AB6')->getFont()->setSize(10);
-    $sheet->getStyle('A6:AB6')->getFont()->setColor(new Color($textColor));
+    $sheet->getStyle('A6:AB6')->getFont()->setColor(new Color('000000')); // Letra negra
     $sheet->getStyle('A6:AB6')->getAlignment()->setHorizontal('center');
     $sheet->getStyle('A6:AB6')->getAlignment()->setVertical('center');
     $sheet->getStyle('A6:AB6')->getAlignment()->setWrapText(true);
 
-    // Agregar color de fondo dinámico a los encabezados
+    // Agregar color de fondo rojo a los encabezados
     $sheet->getStyle('A6:AB6')->getFill()->setFillType('solid');
-    $sheet->getStyle('A6:AB6')->getFill()->getStartColor()->setRGB($colorExcel);
+    $sheet->getStyle('A6:AB6')->getFill()->getStartColor()->setRGB('E5C8E6'); // Rojo
 
     // Ajustar el ancho de las columnas
     foreach ($columnasAncho as $columna => $ancho) {
@@ -451,7 +448,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
         $sheet->setCellValue('A' . $numeroFila, $numeroEmpleado);
         $sheet->setCellValue('B' . $numeroFila, $empleado['clave'] ?? '');
         $sheet->setCellValue('C' . $numeroFila, $empleado['nombre'] ?? '');
-        
+
         $tipoHorario = $empleado['tipo_horario'] ?? '';
         if ($tipoHorario == 2) {
             $sheet->setCellValue('D' . $numeroFila, $empleado['dias_trabajados'] ?? 0);
@@ -918,29 +915,6 @@ function restarUnDia($fecha)
 
     // Formatear resultado
     return $date->format("d") . "/" . $mesAbrevNuevo . "/" . $date->format("Y");
-}
-
-/**
- * Determina si un color de fondo es oscuro o claro y devuelve el color de texto adecuado (blanco o negro).
- */
-function obtenerColorContraste($hexColor)
-{
-    // Eliminar el # si existe
-    $hexColor = str_replace('#', '', $hexColor);
-
-    // Si el color no es válido, por defecto blanco
-    if (strlen($hexColor) != 6) return '000000';
-
-    // Convertir hex a RGB
-    $r = hexdec(substr($hexColor, 0, 2));
-    $g = hexdec(substr($hexColor, 2, 2));
-    $b = hexdec(substr($hexColor, 4, 2));
-
-    // Calcular el brillo (Fórmula YIQ)
-    // El umbral de 128 (la mitad de 255) determina si el fondo es claro u oscuro
-    $yiq = (($r * 299) + ($g * 587) + ($b * 114)) / 1000;
-
-    return ($yiq >= 128) ? '000000' : 'FFFFFF';
 }
 
 /**
@@ -1520,12 +1494,11 @@ function crearHojaPoda($spreadsheet, $titulo2, $jsonNomina, $nombreHoja = 'PODA'
     // ==========================
     // COLORES PARA USAR
     // ==========================
-    $color_primario = 'E5C8E6';  // Color primario Rojo
+    $color_primario = 'E5C8E6';  // Color primario
+    $color_secundario = '7030A0';  // Color secundario
     $color_negro    = '000000';  // Color negro
     $color_blanco   = 'FFFFFF';  // Color blanco
     $colorConcepto  = 'F2F2F2';  // fondo columna CONCEPTO GRIS CLARO
-    $colorNomina    = 'FFD6D6';  // fondo filas NOMINA
-    $colorDias      = 'D5F5E3';  // verde claro para columnas de días (REJA)
     $colorTotales   = 'E0E0E0';  // rojo claro para columnas de totales
     $color_rojo_claro   = 'FFE8E8';  // rojo claro para columnas de totales
 
@@ -1612,7 +1585,7 @@ function crearHojaPoda($spreadsheet, $titulo2, $jsonNomina, $nombreHoja = 'PODA'
     // PONER LOS TITULOS, LOGO Y ESTILSO DE LOS ENCABEZADOS
     // =======================================================
 
-    $titulo1 = 'RANCHO PILAR';
+    $titulo1 = 'RANCHO EL PILAR';
     // $titulo2 = 'PODA DE ARBOLES';
     $titulo3 = 'NOMINA DEL ' . strtoupper($fecha_inicio) . ' AL ' . strtoupper($fecha_cierre);
     $titulo4 = 'SEMANA ' . (isset($jsonNomina['numero_semana']) ? str_pad($jsonNomina['numero_semana'], 2, '0', STR_PAD_LEFT) : '00') . ' - ' . $ano;
@@ -1628,7 +1601,7 @@ function crearHojaPoda($spreadsheet, $titulo2, $jsonNomina, $nombreHoja = 'PODA'
     $sheet->mergeCells('A3:N3');
     $sheet->mergeCells('A4:N4');
 
-    $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(24)->getColor()->setRGB($color_primario);
+    $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(24)->getColor()->setRGB($color_secundario);
     $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(20);
     $sheet->getStyle('A3')->getFont()->setBold(true)->setSize(14);
     $sheet->getStyle('A4')->getFont()->setBold(true)->setSize(14);
@@ -1872,7 +1845,60 @@ function crearHojaPoda($spreadsheet, $titulo2, $jsonNomina, $nombreHoja = 'PODA'
     //=====================
     //  FILA DE TOTALES
     //=====================
-    $filaTotal = $numeroFila - 1;
+    $filaTotal = $numeroFila;
+
+    // Escribir "TOTALES" en la columna C de la fila de totales
+    $sheet->setCellValue('C' . $filaTotal, 'TOTALES');
+    $sheet->getStyle('C' . $filaTotal)->applyFromArray([
+        'font'      => ['bold' => true, 'size' => 12],
+        'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
+        'fill'      => ['fillType' => 'solid', 'startColor' => ['rgb' => $colorTotales]],
+    ]);
+
+    // Aplicar fondo gris a toda la fila de totales
+    $sheet->getStyle('A' . $filaTotal . ':N' . $filaTotal)->getFill()
+        ->setFillType('solid')->getStartColor()->setRGB($colorTotales);
+
+    // Columnas D-J (días): Dejar vacías (no sumar, no tiene sentido mezclar Poda con extras)
+
+    // Columna K (TOTAL ARBOLES): Solo sumar filas PODA
+    if (!empty($filasPoda)) {
+        $primeraFila = min($filasPoda);
+        $ultimaFila  = max($filasPoda);
+
+        // Construir fórmula SUM solo para filas PODA (si hay múltiples no contiguas, usar SUM directo)
+        // $sheet->setCellValue('K' . $filaTotal, '=SUM(K' . $primeraFila . ':K' . $ultimaFila . ')');
+
+        // Pero esto suma incluidas las NOMINA. Mejor usar SUMIF
+        // SUMIF busca en una columna (C) el valor 'PODA' y suma los correspondientes en K
+        // IMPORTANTE: usar "*PODA*" para incluir tanto "PODA" como "E. PODA (30)" y similares
+        $sheet->setCellValue(
+            'K' . $filaTotal,
+            '=SUMIF(C7:C' . ($filaTotal - 1) . ',"*PODA*",K7:K' . ($filaTotal - 1) . ')'
+        );
+
+        // Formato para el total de árboles
+        $sheet->getStyle('K' . $filaTotal)->applyFromArray([
+            'font'      => ['bold' => true, 'size' => 12],
+            'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
+        ]);
+        // Formato de número sin decimales para el total de árboles
+        $sheet->getStyle('K' . $filaTotal)->getNumberFormat()->setFormatCode('#,##0');
+    }
+
+    // Columna L (PRECIO POR ARBOL): SE QUEDA VACIA
+
+    // Columna M (TOTAL EFECTIVO): Sumar TODO (PODA + EXTRAS)
+    $sheet->setCellValue('M' . $filaTotal, '=SUM(M7:M' . ($filaTotal - 1) . ')');
+    // Formato para el total efectivo
+    $sheet->getStyle('M' . $filaTotal)->applyFromArray([
+        'font'      => ['bold' => true, 'size' => 12],
+        'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
+    ]);
+    // Formato de número con símbolo de peso para el total efectivo
+    $sheet->getStyle('M' . $filaTotal)->getNumberFormat()->setFormatCode('$#,##0.00');
+
+    $sheet->getRowDimension($filaTotal)->setRowHeight(25);
 
 
     //=====================
@@ -1951,14 +1977,6 @@ if ($jsonNomina && isset($jsonNomina['departamentos'])) {
         // Si no hay empleados válidos, no crear la hoja
         if (empty($empleadosValidos)) continue;
 
-        // Determinar el color del departamento (nuevo formato arreglo o fallback al anterior)
-        $colorDepto = 'E5C8E6';
-        if (!empty($departamento['color_reporte']) && is_array($departamento['color_reporte'])) {
-            $colorDepto = $departamento['color_reporte'][0]['color'] ?? 'E5C8E6';
-        } else if (!empty($departamento['color_depto_nomina'])) {
-            $colorDepto = $departamento['color_depto_nomina'];
-        }
-
         // Crear hoja solo si hay datos
         crearHoja(
             $spreadsheet,
@@ -1968,8 +1986,7 @@ if ($jsonNomina && isset($jsonNomina['departamentos'])) {
                 $mostrar    = $emp['mostrar'] ?? false;
                 return ($mostrar && $idDeptoEmp == $idDepto);
             },
-            substr(strtoupper($nombreDepto), 0, 31),
-            $colorDepto
+            substr(strtoupper($nombreDepto), 0, 31)
         );
     }
 }

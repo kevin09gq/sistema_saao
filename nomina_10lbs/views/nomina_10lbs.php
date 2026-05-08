@@ -62,48 +62,73 @@
 
     <div class="container-tabla-nomina-10lbs" id="tabla-nomina-responsive" hidden>
         <div class="header-tabla-10lbs">
-            <h3 id=nombre_nomina></h3>
-            <div class="header-controls-10lbs">
+            <div class="header-titulo-semana">
+                <h3 id=nombre_nomina></h3>
                 <span class="sem-info-10lbs" id="num_semana"></span>
-                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_actualizar_biometrico"
-                    title="Actualizar Biometrico" aria-label="Actualizar Biometrico">
-                    <i class="bi bi-person-badge"></i>
-                </button>
-                <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_establecer_horario_semanal"
-                    title="Establecer Horario Semanal" aria-label="Establecer Horario Semanal">
-                    <i class="bi bi-calendar-check"></i>
-                </button>
-                <button class="btn btn-outline-primary" type="button" id="btn_precios_cajas" title="Ajustar Precios de Cajas">
-                    <i class="bi bi-box"></i>
-                </button>
-                <button class="btn btn-outline-primary" id="btn-seleccionar-empleados" title="Seleccionar empleados">
-                    <i class="bi bi-people"></i>
-                </button>
-                <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global"
-                    title="Aplicar Tarjeta">
-                    <i class="bi bi-arrow-clockwise"></i>
-                </button>
-                <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta"
-                    aria-label="Quitar tarjeta">
-                    <i class="bi bi-credit-card-2-back"></i>
-                </button>
-                <button class="btn btn-outline-danger" id="btn_modal_olvidos_masivos"
-                    title="Perdonar olvidos de checador">
-                    <i class="bi bi-clipboard-check"></i>
-                </button>
-                <button class="btn btn-outline-primary btn-suma" type="button" id="btn_conceptos_totales"
-                    title="Totales por concepto" aria-label="Totales por concepto">
-                    <i class="bi bi-calculator"></i>
-                </button>
-                <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf"
-                    title="Descargar Todos los Tickets">
-                    <i class="bi bi-ticket-perforated"></i>
-                </button>
-                <button class="btn btn-outline-success btn-ticket-zebra" id="btn_ticket_manual_10lbs"
-                    title="Descargar Tickets Seleccionados">
-                    <i class="bi bi-hand-index"></i>
-                </button>
+            </div>
+            <div class="header-controls-10lbs">
+                <!-- Grupo 1: Servicios -->
+                <div class="btn-group-10lbs btn-group-servicios">
 
+                    <button class="btn btn-outline-primary" id="btn-seleccionar-empleados" title="Seleccionar empleados">
+                        <i class="bi bi-people"></i>
+                    </button>
+                    <button class="btn btn-outline-primary" type="button" id="btn_precios_cajas" title="Ajustar Precios de Cajas">
+                        <i class="bi bi-box"></i>
+                    </button>
+                    <button class="btn btn-outline-primary" type="button" id="btn_cajas_general" title="Captura General de Cajas">
+                        <i class="bi bi-grid-3x3-gap"></i>
+                    </button>
+                </div>
+
+                <!-- Grupo 2: Configuración -->
+                <div class="btn-group-10lbs btn-group-config">
+                    <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_actualizar_biometrico"
+                        title="Actualizar Biometrico" aria-label="Actualizar Biometrico">
+                        <i class="bi bi-person-badge"></i>
+                    </button>
+                    <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_establecer_horario_semanal"
+                        title="Establecer Horario Semanal" aria-label="Establecer Horario Semanal">
+                        <i class="bi bi-calendar-check"></i>
+                    </button>
+                    <button class="btn btn-outline-danger" id="btn_modal_olvidos_masivos"
+                        title="Perdonar olvidos de checador">
+                        <i class="bi bi-clipboard-check"></i>
+                    </button>
+                    <button class="btn btn-outline-info" id="btn_ver_dispersion" title="Ver Dispersión de Tarjeta">
+                        <i class="bi bi-list-columns-reverse"></i>
+                    </button>
+
+
+                </div>
+
+                <!-- Grupo 3: Procesamiento -->
+                <div class="btn-group-10lbs btn-group-procesamiento">
+                    <button class="btn btn-outline-success" type="button" id="btn_redondear_sueldos"
+                        title="Redondear Sueldos Masivo" aria-label="Redondear Sueldos Masivo">
+                        <i class="bi bi-arrow-repeat"></i>
+                    </button>
+                    <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global"
+                        title="Aplicar Tarjeta">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                    <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta"
+                        aria-label="Quitar tarjeta">
+                        <i class="bi bi-credit-card-2-back"></i>
+                    </button>
+                    <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf"
+                        title="Descargar Todos los Tickets">
+                        <i class="bi bi-ticket-perforated"></i>
+                    </button>
+                    <button class="btn btn-outline-success btn-ticket-zebra" id="btn_ticket_manual_10lbs"
+                        title="Descargar Tickets Seleccionados">
+                        <i class="bi bi-hand-index"></i>
+                    </button>
+                    <button class="btn btn-outline-primary btn-suma" type="button" id="btn_conceptos_totales"
+                        title="Totales por concepto" aria-label="Totales por concepto">
+                        <i class="bi bi-calculator"></i>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -203,6 +228,10 @@
     <?php include 'modals/modalConceptosTotales.php'; ?>
     <?php include 'modals/modalExportarNomina.php'; ?>
     <?php include 'modals/modal_seleccion_tickets_10lbs.php'; ?>
+    <?php include 'modals/modalRedondeoSueldos.php'; ?>
+    <?php include 'modals/modalCajasEmpacadas.php'; ?>
+    <?php include 'modals/dispersionTarjeta.php'; ?>
+    
 
 
     <!-- jQuery -->
@@ -230,6 +259,8 @@
     <script src="../js/configModales/olvidosMasivos.js"></script>
     <script src="../js/configModales/conceptos_totales.js"></script>
     <script src="../js/configModales/exportarNominaExcel.js"></script>
+    <script src="../js/configModales/redondearSueldos.js"></script>
+    <script src="../js/configModales/cajasEmpacadas.js"></script>
 
     <script src="../js/configModal/establecerData.js"></script>
     <script src="../js/configModal/editarData.js"></script>
@@ -238,6 +269,11 @@
     <script src="../js/configModal/newConcepts.js"></script>
     <script src="../js/configModal/agregarCajasEmpacadas.js"></script>
 
+
+    <!-- Dispersion Tarjeta -->
+    <script src="../js/configModalDispersionTarjeta/establecerData.js"></script>
+    <script src="../js/configModalDispersionTarjeta/filtroBusqueda.js"></script>
+    <script src="../js/configModalDispersionTarjeta/editarData.js"></script>
 
 </body>
 

@@ -30,64 +30,21 @@ if (!$jsonNomina) {
 //=====================
 
 $spreadsheet = new Spreadsheet();
-$sheet = $spreadsheet->getActiveSheet();
 $spreadsheet->getDefaultStyle()->getFont()->setName('Arial');
-$sheet->setTitle('DISPERSIÓN TARJETA');
 
-//=====================
-//  ENCABEZADOS DE CABECERA (Títulos)
-//=====================
+// Eliminar la hoja por defecto (la usaremos o la quitaremos al final)
+$spreadsheet->removeSheetByIndex(0);
 
 $numeroSemana = isset($jsonNomina['numero_semana']) ? str_pad($jsonNomina['numero_semana'], 2, '0', STR_PAD_LEFT) : '00';
 $anio = isset($jsonNomina['fecha_cierre']) ? explode('/', $jsonNomina['fecha_cierre'])[2] : date('Y');
-
-// Título 1 - DISPERSIÓN DE TARJETA
-$sheet->setCellValue('C1', 'DISPERSIÓN DE TARJETA');
-$sheet->mergeCells('C1:E1');
-$sheet->getStyle('C1')->getFont()->setBold(true)->setSize(20)->setColor(new Color('179C1E'));
-$sheet->getStyle('C1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-
-// Título 2 - CITRICOS SAAO S.A DE C.V
-$sheet->setCellValue('C2', 'CITRICOS SAAO S.A DE C.V');
-$sheet->mergeCells('C2:E2');
-$sheet->getStyle('C2')->getFont()->setBold(true)->setSize(16)->setColor(new Color('179C1E'));
-$sheet->getStyle('C2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-
-// Título 3 - SEMANA XX-YYYY
-$sheet->setCellValue('C3', "SEMANA $numeroSemana-$anio");
-$sheet->mergeCells('C3:E3');
-$sheet->getStyle('C3')->getFont()->setBold(true)->setSize(14);
-$sheet->getStyle('C3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-
-// Insertar logo
 $logoPath = '../../../public/img/logo.jpg';
-if (file_exists($logoPath)) {
-    $logo = new Drawing();
-    $logo->setName('Logo');
-    $logo->setDescription('Logo Citricos Saao');
-    $logo->setPath($logoPath);
-    $logo->setHeight(90);
-    $logo->setCoordinates('A1');
-    $logo->setWorksheet($sheet);
-}
 
-//=====================
-//  ENCABEZADOS DE LA TABLA
-//=====================
-
-$filaCabecera = 5;
-$sheet->setCellValue('A' . $filaCabecera, '#');
-$sheet->setCellValue('B' . $filaCabecera, 'CLAVE');
-$sheet->setCellValue('C' . $filaCabecera, 'NOMBRE');
-$sheet->setCellValue('D' . $filaCabecera, 'TARJETA');
-$sheet->setCellValue('E' . $filaCabecera, 'DEPARTAMENTO');
-
-// Estilo de cabecera
+// Estilo de cabecera de tabla
 $estiloCabecera = [
     'font' => [
         'bold' => true,
         'color' => ['rgb' => 'FFFFFF'],
-        'size' => 12,
+        'size' => 11,
     ],
     'alignment' => [
         'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -104,108 +61,149 @@ $estiloCabecera = [
         ],
     ],
 ];
-$sheet->getStyle('A5:E5')->applyFromArray($estiloCabecera);
-$sheet->getRowDimension(5)->setRowHeight(35);
 
-// Configurar anchos de columna
-$sheet->getColumnDimension('A')->setWidth(7);
-$sheet->getColumnDimension('B')->setWidth(10);
-$sheet->getColumnDimension('C')->setWidth(45);
-$sheet->getColumnDimension('D')->setWidth(15);
-$sheet->getColumnDimension('E')->setWidth(40);
-
-//=====================
-//  LLENAR DATOS
-//=====================
-
-$fila = 6;
-$contador = 1;
-
-if (isset($jsonNomina['departamentos'])) {
+if (isset($jsonNomina['departamentos']) && is_array($jsonNomina['departamentos'])) {
     foreach ($jsonNomina['departamentos'] as $departamento) {
-        $nombreDepto = $departamento['nombre'];
-        
-        // Excluir el departamento "Sin seguro"
+        $nombreDepto = $departamento['nombre'] ?? 'SIN NOMBRE';
+
+        // Excluir departamentos sin seguro si aplica
         if (stripos($nombreDepto, 'Sin seguro') !== false) {
             continue;
         }
 
-        foreach ($departamento['empleados'] as $empleado) {
-            // Solo exportar si tiene tarjeta o si es relevante para dispersión
-            $montoTarjeta = isset($empleado['tarjeta']) ? (float)$empleado['tarjeta'] : 0;
-            
+        // Filtrar empleados con tarjeta (monto > 0)
+        $empleadosConTarjeta = array_filter($departamento['empleados'] ?? [], function ($e) {
+            return (isset($e['tarjeta']) && (float) $e['tarjeta'] > 0);
+        });
+
+        // Si el departamento no tiene empleados con tarjeta, no creamos la hoja
+        if (empty($empleadosConTarjeta)) {
+            continue;
+        }
+
+        // Crear nueva hoja
+        $sheet = $spreadsheet->createSheet();
+
+        // Sanitizar nombre de la hoja (máx 31 caracteres, sin caracteres prohibidos)
+        $tituloHoja = substr($nombreDepto, 0, 31);
+        $tituloHoja = str_replace(['*', ':', '/', '\\', '?', '[', ']'], '', $tituloHoja);
+        $sheet->setTitle($tituloHoja);
+
+        // --- DISEÑO DE CABECERA EN CADA HOJA ---
+
+        // Logo
+        if (file_exists($logoPath)) {
+            $logo = new Drawing();
+            $logo->setName('Logo');
+            $logo->setPath($logoPath);
+            $logo->setHeight(70);
+            $logo->setCoordinates('A1');
+            $logo->setWorksheet($sheet);
+        }
+
+        // Títulos
+        $sheet->setCellValue('B1', 'DISPERSIÓN DE TARJETA');
+        $sheet->mergeCells('B1:D1');
+        $sheet->getStyle('B1')->getFont()->setBold(true)->setSize(20)->setColor(new Color('179C1E'));
+        $sheet->getStyle('B1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        $sheet->setCellValue('B2', 'CITRICOS SAAO S.A DE C.V');
+        $sheet->mergeCells('B2:D2');
+        $sheet->getStyle('B2')->getFont()->setBold(true)->setSize(18)->setColor(new Color('179C1E'));
+        $sheet->getStyle('B2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        $sheet->setCellValue('B3', "SEMANA $numeroSemana-$anio");
+        $sheet->mergeCells('B3:D3');
+        $sheet->getStyle('B3')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('B3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        $sheet->setCellValue('B4', $nombreDepto);
+        $sheet->mergeCells('B4:D4');
+        $sheet->getStyle('B4')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('B4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        // Encabezados de tabla
+        $filaCabecera = 6;
+        $sheet->setCellValue('A' . $filaCabecera, '#');
+        $sheet->setCellValue('B' . $filaCabecera, 'CLAVE');
+        $sheet->setCellValue('C' . $filaCabecera, 'NOMBRE');
+        $sheet->setCellValue('D' . $filaCabecera, 'TARJETA');
+
+        $sheet->getStyle('A6:D6')->applyFromArray($estiloCabecera);
+        $sheet->getRowDimension(6)->setRowHeight(30);
+
+        // Anchos de columna
+        $sheet->getColumnDimension('A')->setWidth(6);
+        $sheet->getColumnDimension('B')->setWidth(10);
+        $sheet->getColumnDimension('C')->setWidth(40);
+        $sheet->getColumnDimension('D')->setWidth(15);
+
+        // --- LLENAR DATOS ---
+        $fila = 7;
+        $contador = 1;
+        $totalDepto = 0;
+
+        foreach ($empleadosConTarjeta as $empleado) {
+            $montoTarjeta = (float) ($empleado['tarjeta'] ?? 0);
+            $totalDepto += $montoTarjeta;
+
             $sheet->setCellValue('A' . $fila, $contador);
             $sheet->setCellValueExplicit('B' . $fila, $empleado['clave'] ?? '', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
             $sheet->setCellValue('C' . $fila, $empleado['nombre'] ?? '');
             $sheet->setCellValue('D' . $fila, $montoTarjeta);
-            $sheet->setCellValue('E' . $fila, $nombreDepto);
 
-            // Formato de moneda para la tarjeta
+            // Estilos de celda
             $sheet->getStyle('D' . $fila)->getNumberFormat()->setFormatCode('$#,##0.00');
-            
-            // Alineación: Todo centrado verticalmente
-            $sheet->getStyle("A$fila:E$fila")->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
-            
-            // Centrado horizontal para todas las columnas excepto el Nombre (C)
+            $sheet->getStyle("A$fila:D$fila")->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
             $sheet->getStyle("A$fila:B$fila")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle("D$fila:E$fila")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            
-            // Bordes
-            $sheet->getStyle('A' . $fila . ':E' . $fila)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-            
-            // Altura de fila
-            $sheet->getRowDimension($fila)->setRowHeight(40);
+            $sheet->getStyle('D' . $fila)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("A$fila:D$fila")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+            $sheet->getRowDimension($fila)->setRowHeight(30);
 
             $fila++;
             $contador++;
         }
+
+        // --- FILA DE TOTALES POR DEPARTAMENTO ---
+        $filaTotal = $fila;
+        $sheet->setCellValue('C' . $filaTotal, 'TOTAL DEPARTAMENTO:');
+        $sheet->getStyle('C' . $filaTotal)->getFont()->setBold(true);
+        $sheet->getStyle('C' . $filaTotal)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+
+        $sheet->setCellValue('D' . $filaTotal, $totalDepto);
+        $sheet->getStyle('D' . $filaTotal)->getFont()->setBold(true);
+        $sheet->getStyle('D' . $filaTotal)->getNumberFormat()->setFormatCode('$#,##0.00');
+        $sheet->getStyle('D' . $filaTotal)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        $sheet->getStyle("A$filaTotal:D$filaTotal")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+        $sheet->getStyle("A$filaTotal:D$filaTotal")->getFill()->setFillType(Fill::FILL_SOLID);
+        $sheet->getStyle("A$filaTotal:D$filaTotal")->getFill()->getStartColor()->setRGB('E9E9E9');
+        $sheet->getRowDimension($filaTotal)->setRowHeight(35);
+
+        // --- CONFIGURACIÓN DE IMPRESIÓN ---
+        $sheet->getPageSetup()->setPaperSize(PageSetup::PAPERSIZE_LETTER);
+        $sheet->getPageSetup()->setOrientation(PageSetup::ORIENTATION_PORTRAIT);
+        $sheet->getPageSetup()->setHorizontalCentered(true);
+        $sheet->getPageSetup()->setVerticalCentered(false);
+        $sheet->getPageMargins()->setTop(0.5);
+        $sheet->getPageMargins()->setBottom(0.5);
+        $sheet->getPageMargins()->setLeft(0.5);
+        $sheet->getPageMargins()->setRight(0.5);
+        $sheet->getPageSetup()->setFitToPage(true);
+        $sheet->getPageSetup()->setFitToWidth(1);
+        $sheet->getPageSetup()->setFitToHeight(0);
     }
 }
 
-//=====================
-//  FILA DE TOTALES
-//=====================
+// Si no se creó ninguna hoja (porque no había empleados con tarjeta), crear una vacía para que no de error
+if ($spreadsheet->getSheetCount() === 0) {
+    $sheet = $spreadsheet->createSheet();
+    $sheet->setTitle('SIN DATOS');
+    $sheet->setCellValue('A1', 'No hay empleados con dispersión de tarjeta en esta nómina.');
+}
 
-$filaTotal = $fila;
-$rangoSuma = 'D6:D' . ($fila - 1);
-
-// Etiqueta TOTAL en la columna C
-$sheet->setCellValue('C' . $filaTotal, 'TOTAL GENERAL:');
-$sheet->getStyle('C' . $filaTotal)->getFont()->setBold(true);
-$sheet->getStyle('C' . $filaTotal)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-
-// Fórmula SUM en la columna D
-$sheet->setCellValue('D' . $filaTotal, "=SUM($rangoSuma)");
-$sheet->getStyle('D' . $filaTotal)->getFont()->setBold(true);
-$sheet->getStyle('D' . $filaTotal)->getNumberFormat()->setFormatCode('$#,##0.00');
-$sheet->getStyle('D' . $filaTotal)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-
-// Aplicar bordes a la fila de totales e incrementar altura
-$sheet->getRowDimension($filaTotal)->setRowHeight(45);
-$sheet->getStyle("A$filaTotal:E$filaTotal")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-$sheet->getStyle("A$filaTotal:E$filaTotal")->getFill()->setFillType(Fill::FILL_SOLID);
-$sheet->getStyle("A$filaTotal:E$filaTotal")->getFill()->getStartColor()->setRGB('E9E9E9'); // Gris claro
-
-//=====================
-//  CONFIGURACIÓN DE PÁGINA PARA IMPRESIÓN
-//=====================
-
-// Establecer tamaño Carta (Letter)
-$sheet->getPageSetup()->setPaperSize(PageSetup::PAPERSIZE_LETTER);
-
-// Orientación horizontal (Landscape)
-$sheet->getPageSetup()->setOrientation(PageSetup::ORIENTATION_LANDSCAPE);
-
-// Ajustar márgenes (en pulgadas, 0.5 = 1.27cm)
-$sheet->getPageMargins()->setTop(0.5);
-$sheet->getPageMargins()->setBottom(0.5);
-$sheet->getPageMargins()->setLeft(0.5);
-$sheet->getPageMargins()->setRight(0.5);
-
-// Ajustar escala para que quepa en el ancho de la página
-$sheet->getPageSetup()->setFitToPage(true);
-$sheet->getPageSetup()->setFitToWidth(1);
-$sheet->getPageSetup()->setFitToHeight(0); // 0 significa que se puede extender en varias páginas hacia abajo
+// Establecer la primera hoja como activa
+$spreadsheet->setActiveSheetIndex(0);
 
 //=====================
 //  DESCARGAR ARCHIVO

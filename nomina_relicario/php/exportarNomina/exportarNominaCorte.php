@@ -229,7 +229,7 @@ if ($jsonNomina && isset($jsonNomina['departamentos'])) {
 // ==========================
 // COLORES PARA USAR
 // ==========================
-$color_primario = 'FF0000';  // Color primario Rojo
+$color_primario = 'B50600';  // Color primario Rojo
 $color_negro    = '000000';  // Color negro
 $color_blanco   = 'FFFFFF';  // Color blanco
 $colorConcepto  = 'F2F2F2';  // fondo columna CONCEPTO GRIS CLARO

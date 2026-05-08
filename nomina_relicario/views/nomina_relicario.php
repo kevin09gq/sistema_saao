@@ -149,7 +149,8 @@
             <div class="header-controls-relicario">
                 <!-- Grupo 1: Servicios -->
                 <div class="btn-group-relicario btn-group-servicios">
-                    <button type="button" class="btn btn-outline-primary" title="Tickes de Poda de Árboles" id="btn_modal_poda">
+                    <button type="button" class="btn btn-outline-primary" title="Tickes de Poda de Árboles"
+                        id="btn_modal_poda">
                         <i class="bi bi-scissors"></i>
                     </button>
                     <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
@@ -170,22 +171,28 @@
                         <i class="bi bi-gear"></i>
                     </button>
                     <button class="btn btn-outline-primary quitrar-comida-pasaje" type="button"
-                        id="btn_quitar_comida_pasaje" title="Quitar Comida y Pasaje" aria-label="Quitar Comida y Pasaje">
+                        id="btn_quitar_comida_pasaje" title="Quitar Comida y Pasaje"
+                        aria-label="Quitar Comida y Pasaje">
                         <i class="bi bi-x-circle"></i>
                     </button>
-                    <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_establecer_dias_justificados"
-                        title="dias justificados" aria-label="dias-justificados">
+                    <button class="btn btn-outline-primary btn-horarios" type="button"
+                        id="btn_establecer_dias_justificados" title="Justificar Días" aria-label="dias-justificados">
                         <i class="bi bi-check-circle"></i>
                     </button>
-                    <button class="btn btn-outline-primary" id="btn-seleccionar-empleados" title="Seleccionar empleados">
+                    <button class="btn btn-outline-primary" id="btn-seleccionar-empleados"
+                        title="Ocultar/Mostrar Empleados">
                         <i class="bi bi-people"></i>
                     </button>
-                    <button class="btn btn-outline-primary" id="btn_modal_dias_extra" title="Agregar día extra jornaleros">
+                    <button class="btn btn-outline-primary" id="btn_modal_dias_extra"
+                        title="Agregar día extra jornaleros">
                         <i class="bi bi-calendar-plus"></i>
                     </button>
                     <button class="btn btn-outline-danger" id="btn_modal_olvidos_masivos"
                         title="Perdonar olvidos de checador">
                         <i class="bi bi-clipboard-check"></i>
+                    </button>
+                    <button class="btn btn-outline-info" id="btn_ver_dispersion" title="Ver Dispersión de Tarjeta">
+                        <i class="bi bi-list-columns-reverse"></i>
                     </button>
                 </div>
 
@@ -195,15 +202,24 @@
                         title="Aplicar Tarjeta">
                         <i class="bi bi-arrow-clockwise"></i>
                     </button>
-                    <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta"
-                        aria-label="Quitar tarjeta">
+                    <button class="btn btn-outline-success" type="button" id="btn_redondear_sueldos"
+                        title="Redondear Sueldos" aria-label="Redondear Sueldos">
+                        <i class="bi bi-arrow-repeat"></i>
+                    </button>
+                    <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta"
+                        title="Quitar tarjeta" aria-label="Quitar tarjeta">
                         <i class="bi bi-credit-card-2-back"></i>
+                    </button>
+                    <button class="btn btn-outline-primary" id="btn_add_percepciones_deducciones"
+                        title="Agregar Percepciones/Deducciones Extras">
+                        <i class="bi bi-patch-plus"></i>
                     </button>
                     <button class="btn btn-outline-primary btn-suma" type="button" id="btn_conceptos_totales"
                         title="Totales por concepto" aria-label="Totales por concepto">
                         <i class="bi bi-calculator"></i>
                     </button>
-                    <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf" title="Descargar Ticket">
+                    <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf"
+                        title="Descargar Ticket">
                         <i class="bi bi-ticket-perforated"></i>
                     </button>
                     <button class="btn btn-outline-secondary btn-ticket-zebra" id="btn_ticket_manual"
@@ -211,7 +227,7 @@
                         <i class="bi bi-ticket-perforated"></i>
                     </button>
                     <button class="btn btn-outline-secondary" id="btn_abrir_modal_reasignar"
-                        title="Reasignar Empleado de Departamento">
+                        title="Reasignar Departamento al Empleado">
                         <i class="bi bi-person-fill-gear"></i>
                     </button>
                 </div>
@@ -387,6 +403,19 @@
     </div>
 
 
+    
+    <!-- Modal para los cortes -->
+    <?php include "modalsCorte/modalCorte.php"; ?>
+    <?php include "modalsCorte/modalCorteNominaEditar.php"; ?>
+    <?php include "modalsCorte/modalCorteEditar.php"; ?>
+
+    <!-- Modal para la poda -->
+    <?php include __DIR__ . "/modalsPoda/modalPoda.php"; ?>
+    <?php include __DIR__ . "/modalsPoda/modalPodaDetalles.php"; ?>
+    <?php include __DIR__ . "/modalsPoda/modalPodaDetallesExtra.php"; ?>
+
+
+
     <!-- Incluir los modales -->
     <?php include "modalsNomina/modalCoordinador.php"; ?>
     <?php include "modalsNomina/modalJornaleros.php"; ?>
@@ -398,24 +427,18 @@
     <?php include "modalsNomina/modalQuitarComidaPasaje.php"; ?>
     <?php include "modalsNomina/modalConceptosTotales.php"; ?>
     <?php include "modalsNomina/modalExportarNomina.php"; ?>
-    <?php include "modalsNomina/modalSeleccionarEmpleados.php"; ?>
     <?php include "modalsNomina/modalDiasExtra.php"; ?>
     <?php include "modalsNomina/modalOlvidos.php"; ?>
     <?php include "modalsNomina/modalReasignarEmpleado.php"; ?>
-
+    <?php include "modalsNomina/modalRedondeoSueldos.php"; ?>
     <?php include "modalsNomina/modal_seleccion_tickets_relicario.php"; ?>
     <?php include "modalsNomina/modal_ticket_manual_relicario.php"; ?>
+    <?php include "modalsNomina/addPercepcionesDeducciones.php"; ?>
+    <?php include "modalsNomina/dispersionTarjeta.php"; ?>
 
-
-    <!-- Modal para los cortes -->
-    <?php include "modalsCorte/modalCorte.php"; ?>
-    <?php include "modalsCorte/modalCorteNominaEditar.php"; ?>
-    <?php include "modalsCorte/modalCorteEditar.php"; ?>
-
-    <!-- Modal para la poda -->
-    <?php include __DIR__ . "/modalsPoda/modalPoda.php"; ?>
-    <?php include __DIR__ . "/modalsPoda/modalPodaDetalles.php"; ?>
-    <?php include __DIR__ . "/modalsPoda/modalPodaDetallesExtra.php"; ?>
+     
+    
+   
 
 
 
@@ -463,6 +486,8 @@
     <script src="../js/configModales/seleccionar_empleados.js"></script>
     <script src="../js/configModales/tardeadaPasaje.js"></script>
     <script src="../js/configModales/reasignarEmpleado.js"></script>
+    <script src="../js/configModales/redondearSueldos.js"></script>
+    <script src="../js/configModales/addPercepcionesDeducciones.js"></script>
 
     <script src="../js/configModalCorte/configCorte.js"></script>
     <script src="../js/configModalCorte/showTablaCorte.js"></script>
@@ -474,6 +499,11 @@
     <script src="../js/configModalPoda/config_poda.js"></script>
     <script src="../js/configModalPoda/tabla_poda.js"></script>
     <script src="../js/configModalPoda/detalles_modal.js"></script>
+
+    <!-- Dispersion Tarjeta -->
+    <script src="../js/configModalDispersionTarjeta/establecerData.js"></script>
+    <script src="../js/configModalDispersionTarjeta/filtroBusqueda.js"></script>
+    <script src="../js/configModalDispersionTarjeta/editarData.js"></script>
 
 
 

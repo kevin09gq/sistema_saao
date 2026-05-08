@@ -16,9 +16,13 @@ function cargarDepartamentos() {
             if (response.success) {
                 const $select = $('#filtro-departamento');
                 $select.empty();
-
+                const vistos = new Set();
+                
                 response.departamentos.forEach(dept => {
-                    $select.append(`<option value="${dept.id_departamento}">${dept.nombre_departamento}</option>`);
+                    if (!vistos.has(dept.nombre_departamento)) {
+                        $select.append(`<option value="${dept.nombre_departamento}">${dept.nombre_departamento}</option>`);
+                        vistos.add(dept.nombre_departamento);
+                    }
                 });
             } else {
                 console.error('Error al cargar departamentos:', response.error);
@@ -64,18 +68,13 @@ function filtrarEmpleadosPorDepartamento(jsonNomina, id_departamento) {
 
     if (jsonNomina && jsonNomina.departamentos) {
         jsonNomina.departamentos.forEach(departamento => {
-            let depaFiltrado = {
+            if (id_departamento !== 'all' && departamento.nombre !== id_departamento) return;
+            
+            jsonFiltrado.departamentos.push({
                 nombre: departamento.nombre,
                 id_departamento: departamento.id_departamento,
-                empleados: departamento.empleados.filter(empleado => {
-                    // Filtrar estrictamente por el ID del departamento seleccionado
-                    return empleado.id_departamento == id_departamento;
-                })
-            }
-
-            if (depaFiltrado.empleados.length > 0) {
-                jsonFiltrado.departamentos.push(depaFiltrado);
-            }
+                empleados: departamento.empleados
+            });
         });
     }
 

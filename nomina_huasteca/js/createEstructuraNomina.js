@@ -134,6 +134,7 @@ function obtenerEmpleadosSinSeguro(jsonNominaHuasteca) {
                 // Guardar explícitamente al crear para asegurar persistencia
                 saveNomina(jsonNominaHuasteca);
                 mostrarConfigValores(true);
+                console.log(jsonNominaHuasteca);
 
                 // BHL: Llenar tabla de pagos por día cuando se cargue la nómina
                 if (typeof llenar_cuerpo_tabla_pagos_por_dia === 'function') {
@@ -457,6 +458,10 @@ function asignarPropiedadesEmpleado(jsonNominaHuasteca) {
                 empleado.mostrar = true;
             }
 
+            // Calcular total a cobrar (esto persistirá el valor en el empleado)
+            if (typeof calcularTotalCobrar === 'function') {
+                calcularTotalCobrar(empleado);
+            }
 
         });
     });

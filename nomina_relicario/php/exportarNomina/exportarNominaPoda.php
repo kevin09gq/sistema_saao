@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['jsonNomina'])) {
 // ==========================
 // COLORES PARA USAR
 // ==========================
-$color_primario = 'FF0000';  // Color primario Rojo
+$color_primario = 'B50600';  // Color primario Rojo
 $color_negro    = '000000';  // Color negro
 $color_blanco   = 'FFFFFF';  // Color blanco
 $colorConcepto  = 'F2F2F2';  // fondo columna CONCEPTO GRIS CLARO
@@ -727,7 +727,60 @@ foreach ($filasPoda as $fila) {
 //  FILA DE TOTALES
 //=====================
 
-$filaTotal = $numeroFila - 1;
+$filaTotal = $numeroFila;
+
+// Escribir "TOTALES" en la columna C de la fila de totales
+$sheet->setCellValue('C' . $filaTotal, 'TOTALES');
+$sheet->getStyle('C' . $filaTotal)->applyFromArray([
+    'font'      => ['bold' => true, 'size' => 12],
+    'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
+    'fill'      => ['fillType' => 'solid', 'startColor' => ['rgb' => $colorTotales]],
+]);
+
+// Aplicar fondo gris a toda la fila de totales
+$sheet->getStyle('A' . $filaTotal . ':N' . $filaTotal)->getFill()
+    ->setFillType('solid')->getStartColor()->setRGB($colorTotales);
+
+// Columnas D-J (días): Dejar vacías (no sumar, no tiene sentido mezclar Poda con extras)
+
+// Columna K (TOTAL ARBOLES): Solo sumar filas PODA
+if (!empty($filasPoda)) {
+    $primeraFila = min($filasPoda);
+    $ultimaFila  = max($filasPoda);
+
+    // Construir fórmula SUM solo para filas PODA (si hay múltiples no contiguas, usar SUM directo)
+    // $sheet->setCellValue('K' . $filaTotal, '=SUM(K' . $primeraFila . ':K' . $ultimaFila . ')');
+
+    // Pero esto suma incluidas las NOMINA. Mejor usar SUMIF
+    // SUMIF busca en una columna (C) el valor 'PODA' y suma los correspondientes en K
+    // IMPORTANTE: usar "*PODA*" para incluir tanto "PODA" como "E. PODA (30)" y similares
+    $sheet->setCellValue(
+        'K' . $filaTotal,
+        '=SUMIF(C7:C' . ($filaTotal - 1) . ',"*PODA*",K7:K' . ($filaTotal - 1) . ')'
+    );
+
+    // Formato para el total de árboles
+    $sheet->getStyle('K' . $filaTotal)->applyFromArray([
+        'font'      => ['bold' => true, 'size' => 12],
+        'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
+    ]);
+    // Formato de número sin decimales para el total de árboles
+    $sheet->getStyle('K' . $filaTotal)->getNumberFormat()->setFormatCode('#,##0');
+}
+
+// Columna L (PRECIO POR ARBOL): SE QUEDA VACIA
+
+// Columna M (TOTAL EFECTIVO): Sumar TODO (PODA + EXTRAS)
+$sheet->setCellValue('M' . $filaTotal, '=SUM(M7:M' . ($filaTotal - 1) . ')');
+// Formato para el total efectivo
+$sheet->getStyle('M' . $filaTotal)->applyFromArray([
+    'font'      => ['bold' => true, 'size' => 12],
+    'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
+]);
+// Formato de número con símbolo de peso para el total efectivo
+$sheet->getStyle('M' . $filaTotal)->getNumberFormat()->setFormatCode('$#,##0.00');
+
+$sheet->getRowDimension($filaTotal)->setRowHeight(25);
 
 
 //=====================

@@ -754,7 +754,7 @@ function agregarEmpleadosNuevos(jsonNomina40lbs, JsonListaRaya) {
                                 }
                             }
 
-                  
+
                             // Agregar empleado al departamento encontrado o creado
                             if (deptoDestino) {
                                 deptoDestino.empleados.push(empleadoEncontrado.empleado);
@@ -931,6 +931,10 @@ function asignarPropiedadesEmpleado(jsonNomina40lbs) {
                     if (!empleado.conceptos_copia || !Array.isArray(empleado.conceptos_copia)) {
                         empleado.conceptos_copia = JSON.parse(JSON.stringify(empleado.conceptos));
                     }
+                }
+                // Calcular total a cobrar (esto persistirá el valor en el empleado)
+                if (typeof calcularTotalCobrar === 'function') {
+                    calcularTotalCobrar(empleado);
                 }
             }
         });

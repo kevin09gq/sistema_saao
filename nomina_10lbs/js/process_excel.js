@@ -916,6 +916,10 @@ function asignarPropiedadesEmpleado(jsonNomina10lbs) {
                     empleado.conceptos_copia = JSON.parse(JSON.stringify(empleado.conceptos));
                 }
             }
+            // Calcular total a cobrar (esto persistirá el valor en el empleado)
+            if (typeof calcularTotalCobrar === 'function') {
+                calcularTotalCobrar(empleado);
+            }
         });
     });
 }

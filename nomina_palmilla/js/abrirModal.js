@@ -67,6 +67,9 @@ function abrirModal() {
                     console.warn('Empleado no encontrado');
                 }
             }
+            else {
+                console.warn('Tipo de horario no reconocido');
+            }
         }
         $menu.hide();
     });

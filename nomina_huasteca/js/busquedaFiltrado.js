@@ -38,17 +38,24 @@ function obtenerDepartamentos() {
             );
 
             let tmp = '';
-
-            // Intentar usar el primer departamento de la base de datos como default
-            let defaultDepto = data.length > 0 ? data[0].id_departamento : 11;
+            
+            // Intentar usar el primer departamento de la nómina cargada como default para que cuadre con la tabla
+            let defaultDepto = (window.jsonNominaHuasteca && window.jsonNominaHuasteca.departamentos && window.jsonNominaHuasteca.departamentos.length > 0) 
+                ? window.jsonNominaHuasteca.departamentos[0].id_departamento 
+                : (data.length > 0 ? data[0].id_departamento : 11);
 
             data.forEach(element => {
-                tmp += `<option ${element.id_departamento === defaultDepto ? 'selected' : ''} value="${element.id_departamento}">${element.nombre_departamento}</option>`;
+                tmp += `<option ${parseInt(element.id_departamento) === parseInt(defaultDepto) ? 'selected' : ''} value="${element.id_departamento}">${element.nombre_departamento}</option>`;
             });
 
             $('#filtro_departamento').html(tmp);
 
-            // Cargar los puestos del departamento seleccionado por defecto
+            // Si la nómina ya está cargada (por restoreNomina), sincronizar la tabla con el select recién poblado
+            if (window.jsonNominaHuasteca && typeof aplicarFiltrosActuales === 'function') {
+                aplicarFiltrosActuales();
+            }
+
+            // Cargar los puestos del departamento seleccionado
             obtenerPuestos(defaultDepto);
 
         }
