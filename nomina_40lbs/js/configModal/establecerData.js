@@ -80,12 +80,12 @@ function establecerInformacionEmpleado(empleado) {
     // Rellenar los campos del modal con los datos del empleado
     $('#campo-clave-40lbs').text(empleado.clave || '');
     $('#campo-nombre-40lbs').text(empleado.nombre || '');
-    
+
     // Si tiene sueldo base, mostrar guión ya que no se calculan minutos por redondeo
     const esSueldoBase = empleado.sueldo_base === true;
     $('#campo-minutos-trabajados-40lbs').text(esSueldoBase ? '-' : (empleado.minutos_trabajados || '0'));
     $('#campo-minutos-extras-40lbs').text(esSueldoBase ? '-' : (empleado.minutos_extras_trabajados || '0'));
-    
+
     $('#nombre-empleado-modal').text(empleado.nombre || '');
 }
 
@@ -168,8 +168,8 @@ function establecerColorBiometrico(empleado) {
 
     // Obtener horarios para comparaciones (Prioridad: oficial si es sueldo base, sino semanal global)
     const horariosPorDia = {};
-    const fuenteHorarios = (empleado.sueldo_base === true && Array.isArray(empleado.horario_oficial)) 
-        ? empleado.horario_oficial 
+    const fuenteHorarios = (empleado.sueldo_base === true && Array.isArray(empleado.horario_oficial))
+        ? empleado.horario_oficial
         : (window.jsonNomina40lbs ? window.jsonNomina40lbs.horarios_semanales : null);
 
     if (Array.isArray(fuenteHorarios)) {
@@ -273,7 +273,7 @@ function establecerBiomtricoRedondeado(emp) {
     if (!emp) return;
     const isBase = emp.sueldo_base === true;
     const datos = isBase ? (emp.horario_oficial || []) : (emp.biometrico_redondeado || []);
-    
+
     $('#btn-biometrico-redondeado-40lbs').html(isBase ? '<i class="bi bi-calendar3"></i> Horario Oficial' : '<i class="bi bi-clock-history"></i> Biometrico Redondeado');
     $('#tabla-biometrico-redondeado th:nth-child(n+6)').toggle(!isBase);
 
@@ -502,8 +502,8 @@ function establecerHistorialInasistencias(empleado) {
             </thead>
             <tbody>
                 ${empleado.historial_inasistencias.map((inasistencia, index) => {
-                    const esAutoIgnorada = inasistencia.tipo === 'automatico' && empleado.ignorar_inasistencias_automaticas;
-                    return `
+        const esAutoIgnorada = inasistencia.tipo === 'automatico' && empleado.ignorar_inasistencias_automaticas;
+        return `
                         <tr class="${esAutoIgnorada ? 'opacity-50 text-decoration-line-through' : ''}">
                             <td>${inasistencia.dia}</td>
                             <td>$${parseFloat(inasistencia.descuento_inasistencia).toFixed(2)}</td>
@@ -516,7 +516,7 @@ function establecerHistorialInasistencias(empleado) {
                             </td>
                         </tr>
                     `;
-                }).join('')}
+    }).join('')}
             </tbody>
         </table>
     `;

@@ -61,6 +61,11 @@ function recalcularEventos(empleado) {
     if (Array.isArray(empleado.historial_olvidos) && empleado.historial_olvidos.length === 0) {
         delete empleado.historial_olvidos;
     }
+
+    // Recalcular el total a cobrar del empleado
+    if (typeof calcularTotalCobrar === 'function') {
+        calcularTotalCobrar(empleado);
+    }
 }
 
 // ========================================
@@ -90,6 +95,11 @@ function calcularRetardosTodos(jsonNominaConfianza) {
             if (Array.isArray(empleado.historial_retardos) && empleado.historial_retardos.length === 0) {
                 delete empleado.historial_retardos;
             }
+
+            // Recalcular el total a cobrar del empleado
+            if (typeof calcularTotalCobrar === 'function') {
+                calcularTotalCobrar(empleado);
+            }
         });
     });
 }
@@ -118,6 +128,11 @@ function calcularInasistenciasTodos(jsonNominaConfianza) {
             if (Array.isArray(empleado.historial_inasistencias) && empleado.historial_inasistencias.length === 0) {
                 delete empleado.historial_inasistencias;
             }
+
+            // Recalcular el total a cobrar del empleado
+            if (typeof calcularTotalCobrar === 'function') {
+                calcularTotalCobrar(empleado);
+            }
         });
     });
 }
@@ -145,6 +160,11 @@ function calcularOlvidosTodos(jsonNominaConfianza) {
             // Limpiar historial si está vacío
             if (Array.isArray(empleado.historial_olvidos) && empleado.historial_olvidos.length === 0) {
                 delete empleado.historial_olvidos;
+            }
+
+            // Recalcular el total a cobrar del empleado
+            if (typeof calcularTotalCobrar === 'function') {
+                calcularTotalCobrar(empleado);
             }
         });
     });
@@ -441,7 +461,7 @@ function asignarTotalRetardos(empleado, force = false) {
     });
 
     // Asignar el total a la propiedad retardos del empleado
-    empleado.retardos = totalDescontado.toFixed(2);
+    empleado.retardos = totalDescontado;
 }
 
 function asignarTotalInasistencias(empleado, force = false) {
@@ -466,7 +486,7 @@ function asignarTotalInasistencias(empleado, force = false) {
     });
 
     // Asignar totales a propiedades del empleado
-    empleado.inasistencia = totalDescontado.toFixed(2);
+    empleado.inasistencia = totalDescontado;
 
 }
 
@@ -490,7 +510,7 @@ function asignarTotalOlvidos(empleado, force = false) {
     });
 
     // Asignar totales a propiedades del empleado
-    empleado.checador = totalDescontado.toFixed(2);
+    empleado.checador = totalDescontado;
 }
 
 

@@ -1,12 +1,14 @@
 <!-- Modal para Captura General de Cajas Empacadas -->
-<div class="modal fade" id="modal-cajas-empacadas-general" tabindex="-1" aria-labelledby="modalCajasEmpacadasLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+<div class="modal fade" id="modal-cajas-empacadas-general" tabindex="-1" aria-labelledby="modalCajasEmpacadasLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="modalCajasEmpacadasLabel">
                     <i class="bi bi-grid-3x3-gap-fill me-2"></i>Captura General de Cajas Empacadas
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
             </div>
             <div class="modal-body p-0">
                 <div class="d-flex flex-column h-100">
@@ -16,13 +18,15 @@
                             <div class="d-flex gap-3 align-items-center">
                                 <div class="input-group input-group-sm" style="width: 250px;">
                                     <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                    <input type="text" id="buscar-empleado-cajas" class="form-control" placeholder="Buscar empleado...">
+                                    <input type="text" id="buscar-empleado-cajas" class="form-control"
+                                        placeholder="Buscar empleado...">
                                 </div>
                             </div>
-                            
+
                             <div class="d-flex align-items-center gap-2">
                                 <span class="fw-bold small">Agregar Día:</span>
-                                <select id="select-agregar-dia" class="form-select form-select-sm" style="width: 150px;">
+                                <select id="select-agregar-dia" class="form-select form-select-sm"
+                                    style="width: 150px;">
                                     <option value="">Seleccionar...</option>
                                     <option value="Viernes">Viernes</option>
                                     <option value="Sábado">Sábado</option>
@@ -35,6 +39,14 @@
                                 <button type="button" class="btn btn-sm btn-primary" id="btn-agregar-dia-tabla">
                                     <i class="bi bi-plus-circle me-1"></i>Agregar
                                 </button>
+                                
+                                <div class="ms-4 px-3 py-2 rounded-3 d-flex align-items-center bg-white border">
+                                    <span class="small fw-bold me-2 text-dark">TOTAL CAJAS:</span>
+                                    <span id="total-general-superior" class="fs-5 fw-bold text-primary">0</span>
+                                    
+                                    <span class="small fw-bold ms-3 me-2 text-dark border-start ps-3">TOTAL DINERO:</span>
+                                    <span id="total-dinero-superior" class="fs-5 fw-bold text-success">$0.00</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -44,9 +56,12 @@
                         <table class="table table-bordered table-hover mb-0 align-middle" id="tabla-general-cajas">
                             <thead class="table-light sticky-top" style="z-index: 1021;">
                                 <tr id="header-fila-dias">
-                                    <th rowspan="2" class="text-center sticky-col-1" style="vertical-align: middle;">#</th>
-                                    <th rowspan="2" class="text-center sticky-col-2" style="vertical-align: middle;">Clave</th>
-                                    <th rowspan="2" class="sticky-col-3" style="vertical-align: middle;">Nombre del Empleado</th>
+                                    <th rowspan="2" class="text-center sticky-col-1" style="vertical-align: middle;">#
+                                    </th>
+                                    <th rowspan="2" class="text-center sticky-col-2" style="vertical-align: middle;">
+                                        Clave</th>
+                                    <th rowspan="2" class="sticky-col-3" style="vertical-align: middle;">Nombre del
+                                        Empleado</th>
                                 </tr>
                                 <tr id="header-fila-tipos">
                                     <!-- Aquí irán los tipos de cajas de cada día -->
@@ -55,6 +70,9 @@
                             <tbody id="tbody-general-cajas">
                                 <!-- Dinámico: Empleados y Inputs -->
                             </tbody>
+                            <tfoot id="tfoot-general-cajas" class="table-light sticky-bottom" style="z-index: 1021;">
+                                <!-- Dinámico: Totales por columna -->
+                            </tfoot>
                         </table>
                     </div>
                 </div>
@@ -77,14 +95,17 @@
         padding: 12px 8px;
         font-weight: 600;
     }
+
     #tabla-general-cajas tbody td {
         padding: 8px 6px;
     }
+
     #tabla-general-cajas tbody td.td-captura {
         padding: 0 !important;
         width: 60px;
         min-width: 60px;
     }
+
     #tabla-general-cajas .input-caja {
         border: none;
         width: 100%;
@@ -93,17 +114,22 @@
         background: transparent;
         transition: background 0.2s;
     }
+
     #tabla-general-cajas .input-caja:focus {
         outline: none;
         background: #fff3cd;
     }
+
     #tabla-general-cajas .input-caja::-webkit-inner-spin-button,
     #tabla-general-cajas .input-caja::-webkit-outer-spin-button {
         -webkit-appearance: none;
         margin: 0;
     }
+
     /* Columnas fijas (Sticky) */
-    .sticky-col-1, .sticky-col-2, .sticky-col-3 {
+    .sticky-col-1,
+    .sticky-col-2,
+    .sticky-col-3 {
         position: sticky !important;
         z-index: 1020;
         background-color: #f8f9fa !important;
@@ -111,22 +137,39 @@
     }
 
     /* Posicionamiento de cada columna fija */
-    .sticky-col-1 { left: 0; min-width: 50px; width: 50px; }
-    .sticky-col-2 { left: 50px; min-width: 80px; width: 80px; }
-    .sticky-col-3 { left: 130px; min-width: 180px; width: 180px; }
+    .sticky-col-1 {
+        left: 0;
+        min-width: 50px;
+        width: 50px;
+    }
+
+    .sticky-col-2 {
+        left: 50px;
+        min-width: 80px;
+        width: 80px;
+    }
+
+    .sticky-col-3 {
+        left: 130px;
+        min-width: 180px;
+        width: 180px;
+    }
 
     /* Ajuste para el hover de las filas */
-    tr:hover .sticky-col-1, 
-    tr:hover .sticky-col-2, 
+    tr:hover .sticky-col-1,
+    tr:hover .sticky-col-2,
     tr:hover .sticky-col-3 {
         background-color: #e9ecef !important;
     }
 
     /* Encabezados oscuros si se prefiere */
-    thead .sticky-col-1, thead .sticky-col-2, thead .sticky-col-3 {
+    thead .sticky-col-1,
+    thead .sticky-col-2,
+    thead .sticky-col-3 {
         background-color: #f1f3f5 !important;
         z-index: 1025;
     }
+
     .input-caja-changed {
         background-color: #d1e7dd !important;
     }

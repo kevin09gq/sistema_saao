@@ -253,7 +253,7 @@ function calcularTotalCobrar(empleado) {
 
     // Calcular y guardar la cantidad redondeada (diferencia entre el valor redondeado y el original)
     empleado.redondeo = empleado.redondeo_activo ? (totalCobrar - totalOriginal) : 0;
-    empleado.total_cobrar = totalCobrar.toFixed(2); // Guardar en el empleado objeto
+    empleado.total_cobrar = parseFloat(totalCobrar.toFixed(2)); // Guardar en el empleado objeto
 
     return totalCobrar.toFixed(2);
 }

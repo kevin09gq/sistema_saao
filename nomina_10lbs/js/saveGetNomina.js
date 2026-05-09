@@ -3,7 +3,7 @@
 //=======================================
 
 function confirmarsaveNomina() {
-  $('#btn_guardar_nomina_10lbs').on('click', function () {
+    $('#btn_guardar_nomina_10lbs').on('click', function () {
         Swal.fire({
             title: '¿Confirmar guardado?',
             text: `¿Está seguro que desea guardar la nómina de la semana ${jsonNomina10lbs.numero_semana}?`,
@@ -23,11 +23,11 @@ function confirmarsaveNomina() {
 // GUARDAR NÓMINA EN LA BASE DE DATOS O ACTUALIZAR SI YA EXISTE 
 //=======================================
 
-function saveNomina10lbs(){
-
+function saveNomina10lbs() {
+    eliminarPropiedades(jsonNomina10lbs);
     const jsonData = jsonNomina10lbs;
     const numeroSemana = jsonData.numero_semana;
-    
+
     // IMPORTANTE: Usar fecha_cierre para determinar el año (NO fecha_inicio)
     // Esto es crítico para semanas que cruzan el cambio de año
     // Ejemplo: Semana 1 del 2026 que va del 27/Dic/2025 al 02/Ene/2026
@@ -48,8 +48,8 @@ function saveNomina10lbs(){
     } else {
         anio = new Date().getFullYear();
     }
-    
-   
+
+
     $.ajax({
         url: '../php/saveGetNomina.php',
         type: 'POST',
@@ -63,7 +63,7 @@ function saveNomina10lbs(){
         }),
         contentType: 'application/json; charset=UTF-8',
         success: function (response, textStatus, xhr) {
-           
+
 
             // Parseo simple y seguro (más conciso)
             let parsed = null;
@@ -158,5 +158,43 @@ function getNomina10lbs(numeroSemana, anio) {
     }).catch(function (err) {
         console.error('getNomina10lbs AJAX failed', err);
         return null;
+    });
+}
+
+//=======================================
+// ELIMINAR PROPIEDADES CON VALOR 0 PARA OPTIMIZAR ALMACENAMIENTO EN BASE DE DATOS
+//=======================================
+
+function eliminarPropiedades(json) {
+    if (!json || !Array.isArray(json.departamentos)) return;
+
+    json.departamentos.forEach(departamento => {
+        if (Array.isArray(departamento.empleados)) {
+            departamento.empleados.forEach(empleado => {
+                // Eliminar propiedades numéricas si son 0
+                if (empleado.sueldo_neto === 0) delete empleado.sueldo_neto;
+                if (empleado.sueldo_extra_total === 0) delete empleado.sueldo_extra_total;
+                if (empleado.prestamo === 0) delete empleado.prestamo;
+                if (empleado.permiso === 0) delete empleado.permiso;
+                if (empleado.inasistencia === 0) delete empleado.inasistencia;
+                if (empleado.uniformes === 0) delete empleado.uniformes;
+                if (empleado.checador === 0) delete empleado.checador;
+                if (empleado.fa_gafet_cofia === 0) delete empleado.fa_gafet_cofia;
+
+
+                // Eliminar arreglos de historial si están vacíos
+                if (Array.isArray(empleado.historial_olvidos) && empleado.historial_olvidos.length === 0) delete empleado.historial_olvidos;
+                if (Array.isArray(empleado.historial_inasistencias) && empleado.historial_inasistencias.length === 0) delete empleado.historial_inasistencias;
+                if (Array.isArray(empleado.historial_permisos) && empleado.historial_permisos.length === 0) delete empleado.historial_permisos;
+                if (Array.isArray(empleado.historial_uniforme) && empleado.historial_uniforme.length === 0) delete empleado.historial_uniforme;
+
+                // Eliminar conceptos extra si están vacíos
+                if (Array.isArray(empleado.percepciones_extra) && empleado.percepciones_extra.length === 0) delete empleado.percepciones_extra;
+                if (Array.isArray(empleado.deducciones_extra) && empleado.deducciones_extra.length === 0) delete empleado.deducciones_extra;
+
+                // Eliminar historial de cajas empacadas
+                if (Array.isArray(empleado.historial_empaque) && empleado.historial_empaque.length === 0) delete empleado.historial_empaque;
+            });
+        }
     });
 }

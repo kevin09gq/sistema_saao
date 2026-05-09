@@ -24,7 +24,7 @@ function calcularOlvidosTodosEmpleados(jsonNomina40lbs) {
         if (!Array.isArray(departamento.empleados)) return;
 
         departamento.empleados.forEach(empleado => {
-            
+
 
             // Calcular el historial de olvidos para este coordinador
             asignarHistorialOlvidos(empleado);
@@ -251,10 +251,10 @@ function mostrarEventosPorCampo(empleado, selectorContent, selectorTotal, filtro
 
     // Crear mapa de horarios por día (normalizado) para fácil acceso
     const horariosPorDia = {};
-    
+
     // Prioridad: Usar horario oficial del empleado si tiene sueldo base, de lo contrario usar el semanal global
-    const fuenteHorarios = (empleado.sueldo_base === true && Array.isArray(empleado.horario_oficial)) 
-        ? empleado.horario_oficial 
+    const fuenteHorarios = (empleado.sueldo_base === true && Array.isArray(empleado.horario_oficial))
+        ? empleado.horario_oficial
         : jsonNomina40lbs.horarios_semanales;
 
     if (Array.isArray(fuenteHorarios)) {
@@ -359,8 +359,8 @@ function mostrarInasistencias(empleado) {
 
     // Crear mapa de horarios normalizados: Prioridad al horario oficial si es sueldo base
     const horariosPorDia = {};
-    const fuenteHorarios = (empleado.sueldo_base === true && Array.isArray(empleado.horario_oficial)) 
-        ? empleado.horario_oficial 
+    const fuenteHorarios = (empleado.sueldo_base === true && Array.isArray(empleado.horario_oficial))
+        ? empleado.horario_oficial
         : jsonNomina40lbs.horarios_semanales;
 
     if (Array.isArray(fuenteHorarios)) {
@@ -377,20 +377,20 @@ function mostrarInasistencias(empleado) {
         const m = (fecha.getMonth() + 1).toString().padStart(2, '0');
         const y = fecha.getFullYear();
         const fechaStr = `${d}/${m}/${y}`;
-        
+
         const diaNormalizado = normalizarDia(nombreDia(fechaStr));
         const horario = horariosPorDia[diaNormalizado];
-        
+
         if (horario?.entrada) {
-            const tieneRegistro = empleado.registros.some(r => 
+            const tieneRegistro = empleado.registros.some(r =>
                 r.fecha === fechaStr && ((r.entrada && r.entrada.trim()) || (r.salida && r.salida.trim()))
             );
-            
+
             if (!tieneRegistro) {
-                inasistencias.push({fecha: fechaStr});
+                inasistencias.push({ fecha: fechaStr });
             }
         }
-        
+
         fecha.setDate(fecha.getDate() + 1);
     }
 

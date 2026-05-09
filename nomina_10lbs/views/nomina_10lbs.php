@@ -76,6 +76,10 @@
                     <button class="btn btn-outline-primary" type="button" id="btn_precios_cajas" title="Ajustar Precios de Cajas">
                         <i class="bi bi-box"></i>
                     </button>
+                    <button class="btn btn-outline-primary" type="button" id="btn_capturar_clientes"
+                        title="Capturar Clientes" aria-label="Capturar Clientes">
+                        <i class="bi bi-people-fill"></i>
+                    </button>
                     <button class="btn btn-outline-primary" type="button" id="btn_cajas_general" title="Captura General de Cajas">
                         <i class="bi bi-grid-3x3-gap"></i>
                     </button>
@@ -229,9 +233,10 @@
     <?php include 'modals/modalExportarNomina.php'; ?>
     <?php include 'modals/modal_seleccion_tickets_10lbs.php'; ?>
     <?php include 'modals/modalRedondeoSueldos.php'; ?>
+    <?php include 'modals/modalCapturarClientes.php'; ?>
     <?php include 'modals/modalCajasEmpacadas.php'; ?>
     <?php include 'modals/dispersionTarjeta.php'; ?>
-    
+
 
 
     <!-- jQuery -->
@@ -260,7 +265,8 @@
     <script src="../js/configModales/conceptos_totales.js"></script>
     <script src="../js/configModales/exportarNominaExcel.js"></script>
     <script src="../js/configModales/redondearSueldos.js"></script>
-    <script src="../js/configModales/cajasEmpacadas.js"></script>
+    <script src="../js/configModales/capturarCajasEmpacadas.js"></script>
+    <script src="../js/configModales/capturarClientes.js"></script>
 
     <script src="../js/configModal/establecerData.js"></script>
     <script src="../js/configModal/editarData.js"></script>

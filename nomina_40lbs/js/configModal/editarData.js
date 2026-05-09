@@ -55,7 +55,7 @@ function modificarPercepciones(empleado) {
     let horasExtras = parseFloat($('#mod-horas-extras-40lbs').val());
     let bonoAntiguedad = parseFloat($('#mod-bono-antiguedad-40lbs').val());
     let actividadesEspciales = parseFloat($('#mod-actividades-especiales-40lbs').val());
-    let puesto = $('#mod-puesto-40lbs').val();
+    let puesto = parseFloat($('#mod-puesto-40lbs').val());
     let sueldoExtraTotal = parseFloat($('#mod-total-extra-40lbs').val());
 
     // Si los valores son NaN o vacíos, establecer como 0
@@ -64,7 +64,7 @@ function modificarPercepciones(empleado) {
     horasExtras = isNaN(horasExtras) ? 0 : horasExtras;
     bonoAntiguedad = isNaN(bonoAntiguedad) ? 0 : bonoAntiguedad;
     actividadesEspciales = isNaN(actividadesEspciales) ? 0 : actividadesEspciales;
-    puesto = isNaN(puesto) ? '' : puesto;
+    puesto = isNaN(puesto) ? 0 : puesto;
     sueldoExtraTotal = isNaN(sueldoExtraTotal) ? 0 : sueldoExtraTotal;
 
     // Establecer los valores en el objeto empleado

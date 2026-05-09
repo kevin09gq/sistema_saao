@@ -855,18 +855,18 @@ function asignarPropiedadesEmpleado(jsonNominaConfianza) {
 
             // Agregar o mantener las propiedades necesarias (no sobrescribir si ya vienen de la BD)
 
-
-            empleado.sueldo_extra_total = empleado.sueldo_extra_total ?? 0;
-            empleado.retardos = empleado.retardos ?? 0;
-            empleado.prestamo = empleado.prestamo ?? 0;
-            empleado.permiso = empleado.permiso ?? 0;
-            empleado.inasistencia = empleado.inasistencia ?? 0;
-            empleado.uniformes = empleado.uniformes ?? 0;
-            empleado.checador = empleado.checador ?? 0;
-            empleado.fa_gafet_cofia = empleado.fa_gafet_cofia ?? 0;
-            empleado.total_cobrar = empleado.total_cobrar ?? 0;
-            empleado.redondeo = empleado.redondeo ?? 0;
-            empleado.redondeo_activo = empleado.redondeo_activo ?? false;
+            empleado.salario_semanal = parseFloat(empleado.salario_semanal) || 0;
+            empleado.sueldo_extra_total = parseFloat(empleado.sueldo_extra_total) || 0;
+            empleado.retardos = parseFloat(empleado.retardos) || 0;
+            empleado.prestamo = parseFloat(empleado.prestamo) || 0;
+            empleado.permiso = parseFloat(empleado.permiso) || 0;
+            empleado.inasistencia = parseFloat(empleado.inasistencia) || 0;
+            empleado.uniformes = parseFloat(empleado.uniformes) || 0;
+            empleado.checador = parseFloat(empleado.checador) || 0;
+            empleado.fa_gafet_cofia = parseFloat(empleado.fa_gafet_cofia) || 0;
+            empleado.total_cobrar = parseFloat(empleado.total_cobrar) || 0;
+            empleado.redondeo = parseFloat(empleado.redondeo) || 0;
+            empleado.redondeo_activo = empleado.redondeo_activo === true || empleado.redondeo_activo === false;
 
 
             // Crear array de conceptos solo si tiene seguro social

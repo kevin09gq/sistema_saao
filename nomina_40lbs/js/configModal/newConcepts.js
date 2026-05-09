@@ -350,7 +350,7 @@ function finalizarGuardadoInasistencia40lbs(empleado, dia, descuento) {
     if (empleado.sueldo_base === true && typeof asignarHistorialInasistencias === 'function') {
         asignarHistorialInasistencias(empleado);
     }
-    
+
     // 4. Recalcular el total (Solo sueldo base usa la función centralizada)
     if (empleado.sueldo_base === true && typeof asignarTotalInasistencias === 'function') {
         asignarTotalInasistencias(empleado, true);
@@ -364,7 +364,7 @@ function finalizarGuardadoInasistencia40lbs(empleado, dia, descuento) {
     const totalMostrado = parseFloat(empleado.inasistencia || 0).toFixed(2);
     $('#mod-inasistencias-40lbs').val(totalMostrado);
     establecerHistorialInasistencias(empleado);
-    
+
     // 6. Recalcular sueldo final
     if (typeof calcularSueldoACobrar === 'function') {
         calcularSueldoACobrar();

@@ -17,6 +17,7 @@ function confirmarsaveNomina() {
 
 function saveNominaConfianza(){
 
+    eliminarPropiedades(jsonNominaConfianza); // Limpieza de propiedades innecesarias antes de enviar al servidor
     const jsonData = jsonNominaConfianza;
     const numeroSemana = jsonData.numero_semana;
     
@@ -100,6 +101,9 @@ function saveNominaConfianza(){
 
 }
 
+//=======================================
+// ELIMINAR PROPIEDADES CON VALOR 0 PARA OPTIMIZAR ALMACENAMIENTO EN BASE DE DATOS
+//=======================================
 
 function validarExistenciaNomina(numeroSemana, anio) {
     // Versión simplificada: devuelve una Promise que resuelve a true/false
@@ -143,5 +147,40 @@ function getNominaConfianza(numeroSemana, anio) {
     }).catch(function (err) {
         console.error('getNominaConfianza AJAX failed', err);
         return null;
+    });
+}
+
+
+function eliminarPropiedades(json) {
+    if (!json || !Array.isArray(json.departamentos)) return;
+
+    json.departamentos.forEach(departamento => {
+        if (Array.isArray(departamento.empleados)) {
+            departamento.empleados.forEach(empleado => {
+                // Eliminar propiedades numéricas si son 0
+                if (empleado.salario_semanal === 0) delete empleado.salario_semanal;
+                if (empleado.sueldo_extra_total === 0) delete empleado.sueldo_extra_total;
+                if (empleado.retardos === 0) delete empleado.retardos;
+                if (empleado.prestamo === 0) delete empleado.prestamo;
+                if (empleado.permiso === 0) delete empleado.permiso;
+                if (empleado.inasistencia === 0) delete empleado.inasistencia;
+                if (empleado.uniformes === 0) delete empleado.uniformes;
+                if (empleado.checador === 0) delete empleado.checador;
+                if (empleado.fa_gafet_cofia === 0) delete empleado.fa_gafet_cofia;
+               
+                // Eliminar arreglos de historial si están vacíos
+                if (Array.isArray(empleado.historial_retardos) && empleado.historial_retardos.length === 0) delete empleado.historial_retardos;
+                if (Array.isArray(empleado.historial_olvidos) && empleado.historial_olvidos.length === 0) delete empleado.historial_olvidos;
+                if (Array.isArray(empleado.historial_inasistencias) && empleado.historial_inasistencias.length === 0) delete empleado.historial_inasistencias;
+                if (Array.isArray(empleado.historial_permisos) && empleado.historial_permisos.length === 0) delete empleado.historial_permisos;
+                if (Array.isArray(empleado.historial_uniforme) && empleado.historial_uniforme.length === 0) delete empleado.historial_uniforme;
+
+                // Eliminar conceptos extra si están vacíos
+                if (Array.isArray(empleado.percepciones_extra) && empleado.percepciones_extra.length === 0) delete empleado.percepciones_extra;
+                if (Array.isArray(empleado.deducciones_extra) && empleado.deducciones_extra.length === 0) delete empleado.deducciones_extra;
+
+             
+            });
+        }
     });
 }

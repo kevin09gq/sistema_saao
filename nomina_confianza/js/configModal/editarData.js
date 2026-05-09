@@ -11,20 +11,20 @@ function editarPropiedades() {
 
         // Si no hay empleado, salir
         if (!empleado) return;
-        
+
         // 1. PRIMERO: Aplicar cambios de horario oficial (si los hay)
         //    Esto es CRÍTICO porque los cálculos de retardos dependen del horario.
         //    Si modificamos el horario después de calcular retardos, los nuevos
         //    retardos generados por el cambio de horario NO se crearán.
         modificarHorarioOficial(empleado);
-        
+
         // 2. SEGUNDO: Recalcular historiales basándose en el horario actualizado.
         //    Los historiales (retardos, inasistencias, olvidos) ahora se generan
         //    con el nuevo horario, creando nuevos registros si es necesario.
         asignarHistorialOlvidos(empleado);
         asignarHistorialRetardos(empleado);
         asignarHistorialInasistencias(empleado);
-        
+
         // 3. TERCERO: Calcular los totales. Con force=false, respeta los flags
         //    de edición manual (_retardos_editado_manual, etc.)
         asignarTotalOlvidos(empleado, false);
@@ -38,7 +38,7 @@ function editarPropiedades() {
             delete empleado._horario_oficial_recien_creado;
         }
 
-       
+
 
         // 4. CUARTO: Aplicar modificaciones del usuario desde el modal.
         //    Ahora, si el usuario editó manualmente una deducción o concepto,
@@ -53,7 +53,7 @@ function editarPropiedades() {
         delete empleado._checador_editado_manual;
         delete empleado._inasistencia_editado_manual;
 
-      
+
         //limpiar modal después de guardar
         limpiarModal();
 
@@ -190,30 +190,30 @@ function modificarDeducciones(empleado) {
     if (inasistenciasVacio || inasistencias !== (empleado.inasistencia || 0)) {
         empleado._inasistencia_editado_manual = true;
     }
-    
+
     if (retardosVacio || retardos !== (empleado.retardos || 0)) {
         empleado._retardos_editado_manual = true;
     }
     if (checadorVacio || checador !== (empleado.checador || 0)) {
         empleado._checador_editado_manual = true;
     }
-    
 
-    empleado.tarjeta       = tarejta.toFixed(2);
-    empleado.prestamo      = prestamo.toFixed(2);
-    empleado.checador      = checador.toFixed(2);
-    empleado.retardos      = retardos.toFixed(2);
-    empleado.inasistencia  = inasistencias.toFixed(2);
-    empleado.uniformes     = uniformes.toFixed(2);
-    empleado.permiso       = permiso.toFixed(2);
-    empleado.fa_gafet_cofia = fa_gafet_cofia.toFixed(2);
+
+    empleado.tarjeta = tarejta;
+    empleado.prestamo = prestamo;
+    empleado.checador = checador;
+    empleado.retardos = retardos;
+    empleado.inasistencia = inasistencias;
+    empleado.uniformes = uniformes;
+    empleado.permiso = permiso;
+    empleado.fa_gafet_cofia = fa_gafet_cofia;
 
     // Guardar estado del redondeo al presionar Guardar
     // Nota: redondeo y total_cobrar ya fueron calculados en tiempo real por aplicarRedondeo(),
     // aquí nos aseguramos de que queden sincronizados correctamente.
     const redondeoActivoGuardar = $('#mod-redondear-sueldo-confianza').is(':checked');
     empleado.redondeo_activo = redondeoActivoGuardar;
-    empleado.total_cobrar    = parseFloat($('#mod-sueldo-a-cobrar-confianza').val()) || 0;
+    empleado.total_cobrar = parseFloat($('#mod-sueldo-a-cobrar-confianza').val()) || 0;
     if (!redondeoActivoGuardar) {
         // Sin redondeo: no hay diferencia
         empleado.redondeo = 0;
@@ -227,7 +227,7 @@ function modificarDeducciones(empleado) {
  * MODIFICAR HORARIO OFICIAL DEL EMPLEADO
  ************************************/
 
-function modificarHorarioOficial(empleado){
+function modificarHorarioOficial(empleado) {
     // Validar que exista empleado 
     if (!empleado) {
         return;
@@ -235,30 +235,30 @@ function modificarHorarioOficial(empleado){
 
     // Detectar si se acaba de crear horario_oficial (no existía antes)
     const horarioNoExistia = !empleado.horario_oficial || !Array.isArray(empleado.horario_oficial);
-    
+
     // Si no existe horario_oficial, inicializarlo como array vacío
     if (horarioNoExistia) {
         empleado.horario_oficial = [];
         // Marcar con una bandera para actualizar el modal después de recalcular
         empleado._horario_oficial_recien_creado = true;
     }
-    
+
     // Iterar sobre cada fila de la tabla de horarios
     $('#tbody-horarios-oficiales-confianza tr').each(function (index) {
         const $celdas = $(this).find('td');
-        
+
         // Obtener los valores de cada celda
         const dia = $celdas.eq(0).text().trim(); // Día (no editable)
         const entrada = $celdas.eq(1).text().trim(); // Entrada
         const salidaComida = $celdas.eq(2).text().trim(); // Salida Comida
         const entradaComida = $celdas.eq(3).text().trim(); // Entrada Comida
         const salida = $celdas.eq(4).text().trim(); // Salida
-        
+
         // Buscar el horario correspondiente por el nombre del día
-        let horario = empleado.horario_oficial.find(h => 
+        let horario = empleado.horario_oficial.find(h =>
             String(h.dia || '').toUpperCase().trim() === dia.toUpperCase().trim()
         );
-        
+
         // Si no existe el horario para este día, crearlo
         if (!horario) {
             horario = {
@@ -266,7 +266,7 @@ function modificarHorarioOficial(empleado){
             };
             empleado.horario_oficial.push(horario);
         }
-        
+
         // Actualizar los valores (convertir '-' en vacío)
         horario.entrada = entrada === '-' ? '' : entrada;
         horario.salida_comida = salidaComida === '-' ? '' : salidaComida;

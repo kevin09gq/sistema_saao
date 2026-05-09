@@ -904,6 +904,7 @@ function asignarPropiedadesEmpleado(jsonNomina40lbs) {
                 empleado.horas_extra = empleado.horas_extra ?? 0;
                 empleado.bono_antiguedad = empleado.bono_antiguedad ?? 0;
                 empleado.actividades_especiales = empleado.actividades_especiales ?? 0;
+                empleado.puesto = empleado.puesto ?? 0;
                 empleado.color_puesto = empleado.color_puesto ?? null;
                 empleado.sueldo_extra_total = empleado.sueldo_extra_total ?? 0;
                 empleado.prestamo = empleado.prestamo ?? 0;
