@@ -543,34 +543,48 @@ function eliminarCasillero(numCasillero) {
                 return;
             }
             
-            // Confirmar la eliminación
-            if (!confirm(`¿Está seguro de eliminar el casillero ${numCasillero}? Esta acción no se puede deshacer.`)) {
-                return;
-            }
-            
-            // Enviar la petición al servidor
-            fetch('php/eliminar_casillero.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `num_casillero=${encodeURIComponent(numCasillero)}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Cerrar el modal y recargar los casilleros
-                    bootstrap.Modal.getInstance(document.getElementById('modalEditarCasillero')).hide();
-                    cargarCasilleros(paginaActual, filtroActual, busquedaActual);
-                    // Mostrar notificación de éxito
-                    mostrarNotificacion('success', 'Casillero eliminado', `El casillero ${numCasillero} ha sido eliminado correctamente`);
-                } else {
-                    throw new Error(data.error || 'Error al eliminar el casillero');
+            // Confirmar la eliminación con SweetAlert2
+            Swal.fire({
+                title: `¿Está seguro de eliminar el casillero ${numCasillero}?`,
+                text: 'Esta acción no se puede deshacer.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                backdrop: false,
+                allowOutsideClick: false,
+                customClass: {
+                    popup: 'swal2-popup-high-zindex'
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                mostrarNotificacion('danger', 'Error', error.message || 'Ocurrió un error al eliminar el casillero');
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Enviar la petición al servidor
+                    fetch('php/eliminar_casillero.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `num_casillero=${encodeURIComponent(numCasillero)}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Cerrar el modal y recargar los casilleros
+                            bootstrap.Modal.getInstance(document.getElementById('modalEditarCasillero')).hide();
+                            cargarCasilleros(paginaActual, filtroActual, busquedaActual);
+                            // Mostrar notificación de éxito
+                            mostrarNotificacion('success', 'Casillero eliminado', `El casillero ${numCasillero} ha sido eliminado correctamente`);
+                        } else {
+                            throw new Error(data.error || 'Error al eliminar el casillero');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        mostrarNotificacion('danger', 'Error', error.message || 'Ocurrió un error al eliminar el casillero');
+                    });
+                }
             });
         })
         .catch(error => {

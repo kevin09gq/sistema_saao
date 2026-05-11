@@ -2,11 +2,28 @@
 header('Content-Type: application/json');
 include("../../conexion/conexion.php");
 
+// Detectar si existe la columna 'colores' en la tabla areas (para evitar romper si aún no se ejecuta el ALTER)
+$tieneColoresEnAreas = false;
+$coloresColumn = $conexion->query("SHOW COLUMNS FROM areas LIKE 'colores'");
+if ($coloresColumn && $coloresColumn->num_rows > 0) {
+    $tieneColoresEnAreas = true;
+}
+
+// Detectar si existe la columna 'colores_texto' (color del texto del nombre en el rectángulo)
+$tieneColoresTextoEnAreas = false;
+$coloresTextoColumn = $conexion->query("SHOW COLUMNS FROM areas LIKE 'colores_texto'");
+if ($coloresTextoColumn && $coloresTextoColumn->num_rows > 0) {
+    $tieneColoresTextoEnAreas = true;
+}
+
 // Obtener el ID del departamento del parámetro GET
 $idDepartamento = isset($_GET['id_departamento']) ? intval($_GET['id_departamento']) : null;
 
 // Construir la consulta SQL
-$sql = "SELECT e.*, d.nombre_departamento, a.nombre_area, emp.nombre_empresa AS nombre_empresa, ec.parentesco as emergencia_parentesco, ce.telefono as emergencia_telefono, ce.domicilio as emergencia_domicilio, ce.nombre as emergencia_nombre, ce.ap_paterno as emergencia_ap_paterno, ce.ap_materno as emergencia_ap_materno, 
+$sql = "SELECT e.*, d.nombre_departamento, a.nombre_area, " .
+    ($tieneColoresEnAreas ? "a.colores AS color_area, " : "NULL AS color_area, ") .
+    ($tieneColoresTextoEnAreas ? "a.colores_texto AS color_texto_area, " : "NULL AS color_texto_area, ") .
+    "emp.nombre_empresa AS nombre_empresa, ec.parentesco as emergencia_parentesco, ce.telefono as emergencia_telefono, ce.domicilio as emergencia_domicilio, ce.nombre as emergencia_nombre, ce.ap_paterno as emergencia_ap_paterno, ce.ap_materno as emergencia_ap_materno, 
         (SELECT GROUP_CONCAT(c.num_casillero) FROM empleado_casillero ec INNER JOIN casilleros c ON ec.num_casillero = c.num_casillero WHERE ec.id_empleado = e.id_empleado) as num_casillero,
         (SELECT MAX(fecha_reingreso) FROM historial_reingresos WHERE id_empleado = e.id_empleado) as fecha_reingreso
         FROM info_empleados e 
@@ -45,6 +62,8 @@ while ($row = $query->fetch_object()) {
         'nombre_departamento' => $row->nombre_departamento,
         'id_area' => $row->id_area,
         'nombre_area' => $row->nombre_area,
+        'color_area' => $row->color_area,
+        'color_texto_area' => $row->color_texto_area,
         'id_empresa' => $row->id_empresa,
         'puesto' => $row->puesto ?? 'No especificado',
         // Verificar si la foto existe en el sistema de archivos

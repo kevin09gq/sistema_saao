@@ -114,12 +114,12 @@ function calcularSueldoSemanal(empleado = null) {
         // === CALCULAR SUELDO SEMANAL ===
         const salarioDiario = parseFloat(empleado.salario_diario) || 0;
         const sueldoSemanal = empleado.dias_trabajados * salarioDiario;
-        empleado.salario_semanal = sueldoSemanal === 0 ? 0 : sueldoSemanal.toFixed(2);
+        empleado.salario_semanal = parseFloat(sueldoSemanal === 0 ? 0 : sueldoSemanal.toFixed(2));
 
         // === CALCULAR PASAJE ===
         let pasajeTotal = 0;
         let aplicaPasaje = false;
-
+        
 
         // Solo para empleados del tipo_horario 2 
         if (empleado.tipo_horario === 2) {
@@ -179,6 +179,11 @@ function calcularSueldoSemanal(empleado = null) {
         } else {
             // Fallback si no está cargado el script del modal
             empleado.sueldo_extra_total = parseFloat(empleado.tardeada) || 0;
+        }
+
+        // IMPORTANTE: Recalcular el total a cobrar con el nuevo sueldo y extras
+        if (typeof calcularTotalCobrar === 'function') {
+            calcularTotalCobrar(empleado);
         }
 
     });

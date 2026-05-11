@@ -6,6 +6,20 @@ if (!$conexion) {
     die(json_encode(array("error" => true, "message" => "Error de conexión: " . mysqli_connect_error())));
 }
 
+// Detectar si existen columnas de colores para no romper si aún no se ejecuta el ALTER
+$tieneColores = false;
+$tieneColoresTexto = false;
+
+$coloresColumn = $conexion->query("SHOW COLUMNS FROM areas LIKE 'colores'");
+if ($coloresColumn && $coloresColumn->num_rows > 0) {
+    $tieneColores = true;
+}
+
+$coloresTextoColumn = $conexion->query("SHOW COLUMNS FROM areas LIKE 'colores_texto'");
+if ($coloresTextoColumn && $coloresTextoColumn->num_rows > 0) {
+    $tieneColoresTexto = true;
+}
+
 // Obtener id_departamento desde POST o GET
 $id_departamento = $_POST['id_departamento'] ?? $_GET['id_departamento'] ?? null;
 
@@ -19,8 +33,10 @@ if (!empty($id_departamento)) {
     $sql = "SELECT DISTINCT
                 a.id_area,
                 a.nombre_area,
-                a.logo_area
-            FROM areas a
+                a.logo_area" .
+                ($tieneColores ? ", a.colores" : "") .
+                ($tieneColoresTexto ? ", a.colores_texto" : "") .
+            "\n            FROM areas a
             INNER JOIN areas_departamentos ad 
                 ON a.id_area = ad.id_area
             WHERE ad.id_departamento = $id_departamento
@@ -29,8 +45,10 @@ if (!empty($id_departamento)) {
 } else {
 
     // Consulta sin filtro (todas las áreas)
-    $sql = "SELECT id_area, nombre_area, logo_area 
-            FROM areas 
+    $sql = "SELECT id_area, nombre_area, logo_area" .
+            ($tieneColores ? ", colores" : "") .
+            ($tieneColoresTexto ? ", colores_texto" : "") .
+            "\n            FROM areas 
             ORDER BY nombre_area";
 }
 

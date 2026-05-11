@@ -841,7 +841,7 @@ $(document).ready(function () {
         ventanaImpresion.document.close();
     }
 
-    // Función para cargar departamentos
+    // Función para cargar departamentos (dropdown)
     function cargarDepartamentos() {
         $.ajax({
             url: '../public/php/obtenerDepartamentos.php',
@@ -849,33 +849,16 @@ $(document).ready(function () {
             dataType: 'json',
             success: function (data) {
                 departamentos = data;
-                const $lista = $('#listaDepartamentos');
+                const $select = $('#filtroDepartamento');
 
-                // Limpiar la lista (excepto el primer elemento "Todos")
-                $lista.find('a:not(:first)').remove();
+                $select.empty();
+                $select.append('<option value="todos">Todos los departamentos</option>');
 
-                // Agregar departamentos a la lista
                 data.forEach(depto => {
-                    $lista.append(`
-                        <a href="#" class="list-group-item list-group-item-action" 
-                           data-departamento="${depto.id_departamento}">
-                            <i class="bi bi-building me-2"></i>${depto.nombre_departamento}
-                        </a>
-                    `);
-                });
-
-                // Evento para filtrar empleados por departamento
-                $lista.find('a').click(function (e) {
-                    e.preventDefault();
-                    const idDepartamento = $(this).data('departamento');
-                    $lista.find('a').removeClass('active');
-                    $(this).addClass('active');
-                    cargarEmpleadosPorDepartamento(idDepartamento);
+                    $select.append(`<option value="${depto.id_departamento}">${depto.nombre_departamento}</option>`);
                 });
             },
             error: function (xhr, status, error) {
-               
-                
                 let errorMessage = 'Error al cargar los departamentos. ';
                 if (xhr.responseText) {
                     try {
@@ -887,11 +870,17 @@ $(document).ready(function () {
                 } else {
                     errorMessage += 'Por favor, intente nuevamente.';
                 }
-                
+
                 alert(errorMessage);
             }
         });
     }
+
+    // Evento para filtrar empleados por departamento desde el select
+    $('#filtroDepartamento').on('change', function () {
+        const idDepartamento = $(this).val() || 'todos';
+        cargarEmpleadosPorDepartamento(idDepartamento);
+    });
 
     // Función para cargar empleados por departamento
     function cargarEmpleadosPorDepartamento(idDepartamento, esCargaGlobal = false) {
@@ -1078,44 +1067,81 @@ $(document).ready(function () {
 
     // Función para obtener el color del área del empleado
     function obtenerColorArea(empleado) {
-        if (!empleado.nombre_area) return '#06320c'; // Color por defecto
-        
-        // Usar el nombre del área tal como viene de la base de datos (con la primera letra mayúscula)
-        const area = empleado.nombre_area;
-        
-        switch (area) {
-            case 'Empaque':
-                return 'rgb(0, 77, 23)'; // COLOR CITRICOS SAAO
-            case 'Rancho Relicario':
-                return 'rgb(181, 6, 0)'; // COLOR RANCHO EL RELICARIO
-            case 'Rancho Pilar':
-                return 'rgb(194, 158, 240)'; // Lila claro
-            case 'Rancho Huasteca':
-                return 'rgb(50, 186, 91)'; // RANCHO LA HUASTECA
-            default:
-                return 'rgb(0, 77, 23)'; // COLOR CITRICOS SAAO por defecto
+        const porDefecto = '#06320c';
+        const colorDb = empleado && empleado.color_area ? String(empleado.color_area).trim() : '';
+        const colorNormalizado = normalizarColorCss(colorDb);
+        return colorNormalizado || porDefecto;
+    }
+
+    function parseColorToRgb(color) {
+        if (!color) return null;
+        const c = String(color).trim();
+
+        const hexMatch = c.match(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
+        if (hexMatch) {
+            let hex = hexMatch[1];
+            if (hex.length === 3) {
+                hex = hex.split('').map(ch => ch + ch).join('');
+            }
+            const r = parseInt(hex.slice(0, 2), 16);
+            const g = parseInt(hex.slice(2, 4), 16);
+            const b = parseInt(hex.slice(4, 6), 16);
+            return { r, g, b };
         }
+
+        const rgbMatch = c.match(/^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/i);
+        if (rgbMatch) {
+            const r = Math.min(255, Math.max(0, parseInt(rgbMatch[1], 10)));
+            const g = Math.min(255, Math.max(0, parseInt(rgbMatch[2], 10)));
+            const b = Math.min(255, Math.max(0, parseInt(rgbMatch[3], 10)));
+            return { r, g, b };
+        }
+
+        return null;
+    }
+
+    function normalizarColorCss(color) {
+        if (!color) return null;
+        const c = String(color).trim();
+        if (c === '') return null;
+        if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(c)) return c;
+
+        const rgb = parseColorToRgb(c);
+        if (rgb) return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+        return null;
+    }
+
+    function oscurecerColor(color, factor = 0.70) {
+        const rgb = parseColorToRgb(color);
+        if (!rgb) return null;
+        const r = Math.max(0, Math.round(rgb.r * (1 - factor)));
+        const g = Math.max(0, Math.round(rgb.g * (1 - factor)));
+        const b = Math.max(0, Math.round(rgb.b * (1 - factor)));
+        return `rgb(${r}, ${g}, ${b})`;
+    }
+
+    function colorContrasteBasico(colorFondo) {
+        const rgb = parseColorToRgb(colorFondo);
+        if (!rgb) return '#FFFFFF';
+        const luminancia = (0.2126 * rgb.r) + (0.7152 * rgb.g) + (0.0722 * rgb.b);
+        return luminancia > 170 ? '#000000' : '#FFFFFF';
     }
 
     // Función para obtener el color del texto de los datos por área
     function obtenerColorTextoDatos(empleado) {
-        if (!empleado.nombre_area) return '#06320c'; // Color por defecto
-        
-        // Usar el nombre del área tal como viene de la base de datos (con la primera letra mayúscula)
-        const area = empleado.nombre_area;
-        
-        switch (area) {
-            case 'Empaque':
-                return '#053010'; // COLOR ESPECÍFICO PARA EMPAQUE
-            case 'Rancho Relicario':
-                return '#540000'; // COLOR RANCHO EL RELICARIO
-            case 'Rancho Pilar':
-                return '#140329'; // Lila claro
-            case 'Rancho Huasteca':
-                return '#0B3617'; // RANCHO LA HUASTECA
-            default:
-                return '#06320c'; // COLOR CITRICOS SAAO por defecto
-        }
+        const porDefecto = '#06320c';
+        const colorArea = obtenerColorArea(empleado);
+        const oscuro = oscurecerColor(colorArea, 0.70);
+        return oscuro || porDefecto;
+    }
+
+    // Color del texto del nombre dentro del rectángulo inferior (configurable por área)
+    function obtenerColorTextoNombreRectangulo(empleado, colorArea) {
+        const fondo = colorArea || obtenerColorArea(empleado);
+        const porDefecto = colorContrasteBasico(fondo);
+        const colorDb = empleado && empleado.color_texto_area ? String(empleado.color_texto_area).trim() : '';
+        const colorNormalizado = normalizarColorCss(colorDb);
+        return colorNormalizado || porDefecto;
     }
 
     // Función para actualizar el contador de empleados seleccionados
@@ -1766,6 +1792,7 @@ $(document).ready(function () {
                 }).join('');
                 const colorArea = obtenerColorArea(empleado);
                 const colorTextoDatos = obtenerColorTextoDatos(empleado);
+                const colorTextoNombreRectangulo = obtenerColorTextoNombreRectangulo(empleado, colorArea);
                 
                 // Obtener logos dinámicos para este empleado
                 const logosDinamicos = obtenerLogosDinamicos(empleado);
@@ -1987,11 +2014,7 @@ $(document).ready(function () {
                             "\">" +
                                     "<div style=\"width:100%;background:" + colorArea + ";border:none;border-radius:4px 4px 0 0;padding:0.1cm 0;text-align:center !important;font-size:" + fontSizeRectangulo + 
                                     " !important;font-weight:bold;letter-spacing:0.5px;white-space:nowrap;overflow:hidden;color:" + 
-                                    (empleado.nombre_area ? 
-                                        (empleado.nombre_area.toLowerCase().includes('huasteca') ? '#082B11' : 
-                                         empleado.nombre_area.toLowerCase().includes('pilar') ? '#201433' : 
-                                         '#fff') 
-                                    : '#fff') + 
+                                    colorTextoNombreRectangulo +
                                     ";position:absolute;bottom:0;left:0;right:0;\">" + empleado.nombre + "</div>" +
                         "</div>" +
                     "</div>"
@@ -2529,46 +2552,29 @@ $(document).ready(function () {
         mostrarAlertaGafete(mensaje, tipo);
     }
 
-    // Función para mostrar alertas específicas de gafetes (mismo estilo que fotos)
+    // Función para mostrar alertas usando SweetAlert2
     function mostrarAlertaGafete(mensaje, tipo = 'info') {
-        const alerta = document.createElement('div');
-        alerta.className = `alerta-gafete alerta-${tipo}`;
-        alerta.innerHTML = `
-            <div class="alerta-content">
-                <i class="bi bi-${tipo === 'warning' ? 'exclamation-triangle-fill' : tipo === 'danger' || tipo === 'error' ? 'x-circle-fill' : 'info-circle-fill'}"></i>
-                <span>${mensaje}</span>
-                <button type="button" class="btn-close-alerta">×</button>
-            </div>
-        `;
+        const iconMap = {
+            'warning': 'warning',
+            'danger': 'error',
+            'error': 'error',
+            'success': 'success',
+            'info': 'info'
+        };
         
-        document.body.appendChild(alerta);
-        
-        // Mostrar con animación
-        setTimeout(() => {
-            alerta.classList.add('show');
-        }, 100);
-        
-        // Configurar botón de cerrar
-        alerta.querySelector('.btn-close-alerta').addEventListener('click', () => {
-            alerta.classList.remove('show');
-            setTimeout(() => {
-                if (alerta.parentNode) {
-                    alerta.parentNode.removeChild(alerta);
-                }
-            }, 300);
-        });
-        
-        // Auto-cerrar después de 5 segundos
-        setTimeout(() => {
-            if (alerta.parentNode) {
-                alerta.classList.remove('show');
-                setTimeout(() => {
-                    if (alerta.parentNode) {
-                        alerta.parentNode.removeChild(alerta);
-                    }
-                }, 300);
+        Swal.fire({
+            icon: iconMap[tipo] || 'info',
+            title: mensaje,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
             }
-        }, 5000);
+        });
     }
     
     // ======================================
@@ -3128,7 +3134,7 @@ $(document).ready(function () {
                 $("#modal_actualizar_empleado").modal("hide");
                 
                 // Recargar la tabla de empleados
-                const departamentoActual = $('#listaDepartamentos .active').data('departamento') || 'todos';
+                const departamentoActual = $('#filtroDepartamento').val() || 'todos';
                 cargarEmpleadosPorDepartamento(departamentoActual);
                 
                 // También recargar todosLosEmpleados para asegurar que los datos estén actualizados
@@ -3176,10 +3182,15 @@ $(document).ready(function () {
     function cargarFotoEmpleado(empleado) {
         const $fotoPreview = $('#foto_preview');
         const $noFotoPreview = $('#no_foto_preview');
+        const $nombreEmpleadoFoto = $('#nombre_empleado_foto');
         
         
         // Store employee data globally for access in other functions
         window.empleadoActual = empleado;
+        
+        // Set the employee's full name
+        const nombreCompleto = `${empleado.nombre_empleado || ''} ${empleado.apellido_paterno_empleado || ''} ${empleado.apellido_materno_empleado || ''}`.trim();
+        $nombreEmpleadoFoto.text(nombreCompleto);
         
         if (empleado.ruta_foto && empleado.ruta_foto.trim() !== '') {
             $fotoPreview.attr('src', empleado.ruta_foto);
@@ -3188,15 +3199,10 @@ $(document).ready(function () {
             $('#btn_eliminar_foto').prop('disabled', false);
         } else {
             $fotoPreview.hide();
-            $noFotoPreview.show();
             $('#btn_eliminar_foto').prop('disabled', true);
         }
     }
 
-    // Event listener para el input de nueva foto
-    $('#nueva_foto').on('change', function(e) {
-        const file = e.target.files[0];
-        
         if (file) {
             // Validar tipo de archivo
             if (!file.type.startsWith('image/')) {
@@ -4053,4 +4059,4 @@ $(document).ready(function () {
     });
     modalInstance.show();
     }
-});
+;

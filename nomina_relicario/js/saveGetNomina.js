@@ -16,6 +16,7 @@ function confirmarsaveNomina() {
 }
 
 function saveNominaRelicario() {
+    eliminarPropiedades(jsonNominaRelicario); // Limpiar propiedades con valor 0 antes de guardar
 
     // Quitar el departamento "Corte" del objeto global para no guardarlo en la nómina (se procesa aparte)
     const jsonData = { ...jsonNominaRelicario, departamentos: jsonNominaRelicario.departamentos.filter(d => d.nombre !== "Corte" && d.nombre !== "Poda") };
@@ -155,5 +156,53 @@ function getNominaRelicario(numeroSemana, anio) {
     }).catch(function (err) {
         console.error('getNominaRelicario AJAX failed', err);
         return null;
+    });
+}
+
+//=======================================
+// ELIMINAR PROPIEDADES CON VALOR 0 PARA OPTIMIZAR ALMACENAMIENTO EN BASE DE DATOS
+//=======================================
+
+function eliminarPropiedades(json) {
+    if (!json || !json.departamentos || !Array.isArray(json.departamentos)) return;
+
+    json.departamentos.forEach(departamento => {
+        if (departamento.empleados && Array.isArray(departamento.empleados)) {
+            departamento.empleados.forEach(empleado => {
+
+                // Verificamos y eliminamos individualmente cada propiedad si es 0
+                if (empleado.salario_semanal === 0) delete empleado.salario_semanal;
+                if (empleado.salario_diario === 0) delete empleado.salario_diario;
+                if (empleado.sueldo_extra_total === 0) delete empleado.sueldo_extra_total;
+                if (empleado.retardos === 0) delete empleado.retardos;
+                if (empleado.prestamo === 0) delete empleado.prestamo;
+                if (empleado.permiso === 0) delete empleado.permiso;
+                if (empleado.inasistencia === 0) delete empleado.inasistencia;
+                if (empleado.uniformes === 0) delete empleado.uniformes;
+                if (empleado.checador === 0) delete empleado.checador;
+                if (empleado.fa_gafet_cofia === 0) delete empleado.fa_gafet_cofia;
+                if (empleado.pasaje === 0) delete empleado.pasaje;
+                if (empleado.comida === 0) delete empleado.comida;
+                if (empleado.tardeada === 0) delete empleado.tardeada;
+                if (empleado.dias_extra === 0) delete empleado.dias_extra;
+                if (empleado.dias_menos === 0) delete empleado.dias_menos;
+
+
+                // --- LIMPIEZA DE HISTORIALES Y CONCEPTOS EXTRAS (Si están vacíos) ---
+                if (Array.isArray(empleado.historial_olvidos) && empleado.historial_olvidos.length === 0) delete empleado.historial_olvidos;
+                if (Array.isArray(empleado.historial_inasistencias) && empleado.historial_inasistencias.length === 0) delete empleado.historial_inasistencias;
+                if (Array.isArray(empleado.historial_permisos) && empleado.historial_permisos.length === 0) delete empleado.historial_permisos;
+                if (Array.isArray(empleado.historial_uniforme) && empleado.historial_uniforme.length === 0) delete empleado.historial_uniforme;
+                if (Array.isArray(empleado.historial_retardos) && empleado.historial_retardos.length === 0) delete empleado.historial_retardos;
+                if (Array.isArray(empleado.dias_menos_detalle) && empleado.dias_menos_detalle.length === 0) delete empleado.dias_menos_detalle;
+                if (Array.isArray(empleado.dias_extra_detalle) && empleado.dias_extra_detalle.length === 0) delete empleado.dias_extra_detalle;
+
+                // Limpieza de percepciones y deducciones extras
+                if (Array.isArray(empleado.percepciones_extra) && empleado.percepciones_extra.length === 0) delete empleado.percepciones_extra;
+                if (Array.isArray(empleado.deducciones_extra) && empleado.deducciones_extra.length === 0) delete empleado.deducciones_extra;
+
+
+            });
+        }
     });
 }

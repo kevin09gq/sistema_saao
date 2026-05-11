@@ -18,9 +18,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Intentar acceder a la variable global empleadosSeleccionados del archivo funciones.js
         let empleadosSeleccionadosGlobal = window.empleadosSeleccionados || new Set();
         
-        // Si no está disponible globalmente, obtener desde los checkboxes
+        // Si no está disponible globalmente, obtener desde los checkboxes de SELECCIONAR (.empleado-checkbox)
         if (empleadosSeleccionadosGlobal.size === 0) {
-            const checkboxes = document.querySelectorAll('#tablaEmpleados input[type="checkbox"]:checked');
+            const checkboxes = document.querySelectorAll('#tablaEmpleados .empleado-checkbox:checked');
             
             empleadosSeleccionados = Array.from(checkboxes).map(checkbox => {
                 const fila = checkbox.closest('tr');
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 } else {
                     // Fallback: buscar en la tabla DOM (solo empleados del departamento actual)
-                    const checkbox = document.querySelector(`#tablaEmpleados input[type="checkbox"][value="${id}"]`);
+                    const checkbox = document.querySelector(`#tablaEmpleados .empleado-checkbox[value="${id}"]`);
                     if (checkbox) {
                         const fila = checkbox.closest('tr');
                         const nombre = fila.querySelector('td:nth-child(2)')?.textContent.trim() || 'Sin nombre';
@@ -366,47 +366,29 @@ document.addEventListener('DOMContentLoaded', function() {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
     }
     
-    // Función para mostrar alertas
+    // Función para mostrar alertas usando SweetAlert2
     function mostrarAlerta(mensaje, tipo = 'info') {
-        // Implementación directa de la alerta para evitar problemas de scope
-        const alerta = document.createElement('div');
-        alerta.className = `alerta-gafete alerta-${tipo}`;
-        alerta.innerHTML = `
-            <div class="alerta-content">
-                <i class="bi bi-${tipo === 'warning' ? 'exclamation-triangle-fill' : tipo === 'danger' ? 'x-circle-fill' : 'info-circle-fill'}"></i>
-                <span>${mensaje}</span>
-                <button type="button" class="btn-close-alerta">×</button>
-            </div>
-        `;
+        const iconMap = {
+            'warning': 'warning',
+            'danger': 'error',
+            'error': 'error',
+            'success': 'success',
+            'info': 'info'
+        };
         
-        document.body.appendChild(alerta);
-        
-        // Mostrar con animación
-        setTimeout(() => {
-            alerta.classList.add('show');
-        }, 100);
-        
-        // Configurar botón de cerrar
-        alerta.querySelector('.btn-close-alerta').addEventListener('click', () => {
-            alerta.classList.remove('show');
-            setTimeout(() => {
-                if (alerta.parentNode) {
-                    alerta.parentNode.removeChild(alerta);
-                }
-            }, 300);
-        });
-        
-        // Auto-cerrar después de 5 segundos
-        setTimeout(() => {
-            if (alerta.parentNode) {
-                alerta.classList.remove('show');
-                setTimeout(() => {
-                    if (alerta.parentNode) {
-                        alerta.parentNode.removeChild(alerta);
-                    }
-                }, 300);
+        Swal.fire({
+            icon: iconMap[tipo] || 'info',
+            title: mensaje,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
             }
-        }, 5000);
+        });
     }
     
     // Función para mostrar mensaje de éxito discreto

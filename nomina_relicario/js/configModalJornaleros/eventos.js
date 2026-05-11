@@ -53,6 +53,11 @@ function recalcularEventosJornalero(empleado) {
     if (Array.isArray(empleado.historial_olvidos) && empleado.historial_olvidos.length === 0) {
         delete empleado.historial_olvidos;
     }
+
+    // Recalcular el total a cobrar del empleado
+    if (typeof calcularTotalCobrar === 'function') {
+        calcularTotalCobrar(empleado);
+    }
 }
 
 
@@ -84,6 +89,11 @@ function calcularOlvidosTodosJornaleros(jsonNominaRelicario) {
             // Limpiar historial si está vacío
             if (Array.isArray(empleado.historial_olvidos) && empleado.historial_olvidos.length === 0) {
                 delete empleado.historial_olvidos;
+            }
+
+            // Recalcular el total a cobrar del empleado
+            if (typeof calcularTotalCobrar === 'function') {
+                calcularTotalCobrar(empleado);
             }
         });
     });

@@ -5,9 +5,20 @@ document.addEventListener('DOMContentLoaded', function() {
         // Obtener empleados seleccionados desde la variable global o desde checkboxes
         let empleadosSeleccionados = new Set();
         
-        // Método 1: Intentar acceder a la variable global
-        if (window.empleadosSeleccionados && window.empleadosSeleccionados.size > 0) {
-            // La variable global puede contener strings o integers, normalizamos a integers
+        // Método 1: Primero, usar window.fotoInclusion (la selección de la columna "Foto")
+        if (window.fotoInclusion && Object.keys(window.fotoInclusion).length > 0) {
+            Object.keys(window.fotoInclusion).forEach(id => {
+                if (window.fotoInclusion[id]) { // Si la foto está seleccionada
+                    const numericId = parseInt(id);
+                    if (!isNaN(numericId)) {
+                        empleadosSeleccionados.add(numericId);
+                    }
+                }
+            });
+        }
+        
+        // Método 2: Si no hay selección en fotoInclusion, usar window.empleadosSeleccionados (la columna "Seleccionar")
+        if (empleadosSeleccionados.size === 0 && window.empleadosSeleccionados && window.empleadosSeleccionados.size > 0) {
             window.empleadosSeleccionados.forEach(id => {
                 const numericId = parseInt(id);
                 if (!isNaN(numericId)) {
@@ -16,48 +27,26 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         } 
         
-        // Método 2: Si no hay variable global o está vacía, obtener desde checkboxes directamente
+        // Método 3: Si no hay variables globales, obtener desde checkboxes visibles (último recurso)
         if (empleadosSeleccionados.size === 0) {
-            const checkboxes = document.querySelectorAll('#tablaEmpleados input[type="checkbox"]:checked');
-            checkboxes.forEach((checkbox, index) => {
+            // Primero checar .foto-checkbox
+            const fotoCheckboxes = document.querySelectorAll('.foto-checkbox:checked');
+            fotoCheckboxes.forEach((checkbox, index) => {
                 const value = parseInt(checkbox.value);
                 if (!isNaN(value)) {
                     empleadosSeleccionados.add(value);
                 }
             });
-        }
-        
-        // Método 3: Último intento con jQuery si está disponible
-        if (empleadosSeleccionados.size === 0 && typeof $ !== 'undefined') {
-            const jqueryCheckboxes = $('#tablaEmpleados input[type="checkbox"]:checked');
-            jqueryCheckboxes.each(function(index) {
-                const value = parseInt($(this).val());
-                if (!isNaN(value)) {
-                    empleadosSeleccionados.add(value);
-                }
-            });
-        }
-        
-        // Método 4: Alternativo usando clase específica
-        if (empleadosSeleccionados.size === 0) {
-            const empleadoCheckboxes = document.querySelectorAll('.empleado-checkbox:checked');
-            empleadoCheckboxes.forEach((checkbox, index) => {
-                const value = parseInt(checkbox.value);
-                if (!isNaN(value)) {
-                    empleadosSeleccionados.add(value);
-                }
-            });
-        }
-        
-        // Método 5: Último recurso - buscar por data-id
-        if (empleadosSeleccionados.size === 0) {
-            const dataIdCheckboxes = document.querySelectorAll('input[data-id]:checked');
-            dataIdCheckboxes.forEach((checkbox, index) => {
-                const dataId = parseInt(checkbox.getAttribute('data-id'));
-                if (!isNaN(dataId)) {
-                    empleadosSeleccionados.add(dataId);
-                }
-            });
+            // Si no hay foto-checkboxes, checar .empleado-checkbox
+            if (empleadosSeleccionados.size === 0) {
+                const empleadoCheckboxes = document.querySelectorAll('.empleado-checkbox:checked');
+                empleadoCheckboxes.forEach((checkbox, index) => {
+                    const value = parseInt(checkbox.value);
+                    if (!isNaN(value)) {
+                        empleadosSeleccionados.add(value);
+                    }
+                });
+            }
         }
         
         // Verificar si hay empleados seleccionados
@@ -420,46 +409,29 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(cerrarVentana, 10000);
     }
     
-    // Función para mostrar alertas específicas de fotos
+    // Función para mostrar alertas usando SweetAlert2
     function mostrarAlertaFoto(mensaje, tipo = 'info') {
-        const alerta = document.createElement('div');
-        alerta.className = `alerta-foto alerta-${tipo}`;
-        alerta.innerHTML = `
-            <div class="alerta-content">
-                <i class="bi bi-${tipo === 'warning' ? 'exclamation-triangle-fill' : tipo === 'danger' ? 'x-circle-fill' : 'info-circle-fill'}"></i>
-                <span>${mensaje}</span>
-                <button type="button" class="btn-close-alerta">×</button>
-            </div>
-        `;
+        const iconMap = {
+            'warning': 'warning',
+            'danger': 'error',
+            'error': 'error',
+            'success': 'success',
+            'info': 'info'
+        };
         
-        document.body.appendChild(alerta);
-        
-        // Mostrar con animación
-        setTimeout(() => {
-            alerta.classList.add('show');
-        }, 100);
-        
-        // Configurar botón de cerrar
-        alerta.querySelector('.btn-close-alerta').addEventListener('click', () => {
-            alerta.classList.remove('show');
-            setTimeout(() => {
-                if (alerta.parentNode) {
-                    alerta.parentNode.removeChild(alerta);
-                }
-            }, 300);
-        });
-        
-        // Auto-cerrar después de 5 segundos
-        setTimeout(() => {
-            if (alerta.parentNode) {
-                alerta.classList.remove('show');
-                setTimeout(() => {
-                    if (alerta.parentNode) {
-                        alerta.parentNode.removeChild(alerta);
-                    }
-                }, 300);
+        Swal.fire({
+            icon: iconMap[tipo] || 'info',
+            title: mensaje,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
             }
-        }, 5000);
+        });
     }
     
     // Event listener para el botón

@@ -59,6 +59,47 @@ function respuesta(int $code, string $titulo, string $mensaje, string $icono, ar
     ], JSON_UNESCAPED_UNICODE);
 }
 
+function columnasColoresAreas(): array
+{
+    global $conexion;
+    $tieneColores = false;
+    $tieneColoresTexto = false;
+
+    $col1 = $conexion->query("SHOW COLUMNS FROM areas LIKE 'colores'");
+    if ($col1 && $col1->num_rows > 0) {
+        $tieneColores = true;
+    }
+
+    $col2 = $conexion->query("SHOW COLUMNS FROM areas LIKE 'colores_texto'");
+    if ($col2 && $col2->num_rows > 0) {
+        $tieneColoresTexto = true;
+    }
+
+    return [$tieneColores, $tieneColoresTexto];
+}
+
+function normalizarColorArea($color)
+{
+    $color = trim((string)$color);
+    if ($color === '') return null;
+
+    if (preg_match('/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/', $color)) {
+        return strtoupper($color);
+    }
+
+    if (preg_match('/^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/i', $color, $m)) {
+        $r = (int)$m[1];
+        $g = (int)$m[2];
+        $b = (int)$m[3];
+        if ($r < 0 || $r > 255 || $g < 0 || $g > 255 || $b < 0 || $b > 255) {
+            return false;
+        }
+        return "rgb($r, $g, $b)";
+    }
+
+    return false;
+}
+
 
 // Función para obtener la información completa de un área específica
 function obtenerInfoArea()
@@ -69,7 +110,11 @@ function obtenerInfoArea()
         $idArea = (int)$_POST['id_area'];
 
         // Preparar la consulta para obtener la información del área
-        $sql = "SELECT id_area, nombre_area, logo_area FROM areas WHERE id_area = ?";
+        [$tieneColores, $tieneColoresTexto] = columnasColoresAreas();
+        $sql = "SELECT id_area, nombre_area, logo_area" .
+            ($tieneColores ? ", colores" : "") .
+            ($tieneColoresTexto ? ", colores_texto" : "") .
+            " FROM areas WHERE id_area = ?";
         $stmt = $conexion->prepare($sql);
 
         if (!$stmt) {
@@ -217,6 +262,51 @@ function registrarArea()
 
         // Ejecutar la consulta y verificar si fue exitosa
         if ($sql->execute()) {
+            // Guardar colores si existen columnas
+            [$tieneColores, $tieneColoresTexto] = columnasColoresAreas();
+            if ($tieneColores || $tieneColoresTexto) {
+                $idNueva = (int)$conexion->insert_id;
+                $colorFondo = normalizarColorArea($_POST['colores'] ?? '');
+                $colorTexto = normalizarColorArea($_POST['colores_texto'] ?? '');
+
+                if ($colorFondo === false || $colorTexto === false) {
+                    echo "1";
+                    $sql->close();
+                    return;
+                }
+
+                $set = [];
+                $types = '';
+                $params = [];
+
+                if ($tieneColores) {
+                    $set[] = "colores = ?";
+                    $types .= 's';
+                    $params[] = $colorFondo;
+                }
+                if ($tieneColoresTexto) {
+                    $set[] = "colores_texto = ?";
+                    $types .= 's';
+                    $params[] = $colorTexto;
+                }
+
+                if (count($set) > 0) {
+                    $types .= 'i';
+                    $params[] = $idNueva;
+                    $upd = $conexion->prepare("UPDATE areas SET " . implode(', ', $set) . " WHERE id_area = ?");
+                    if ($upd) {
+                        $bind = [];
+                        $bind[] = $types;
+                        foreach ($params as $k => $v) {
+                            $bind[] = &$params[$k];
+                        }
+                        call_user_func_array([$upd, 'bind_param'], $bind);
+                        $upd->execute();
+                        $upd->close();
+                    }
+                }
+            }
+
             echo "1"; // Éxito
         } else {
             echo "2"; // Error al ejecutar
@@ -322,6 +412,46 @@ function actualizarArea()
 
         // Ejecutar la consulta y verificar si fue exitosa
         if ($sql->execute()) {
+            // Guardar colores si existen columnas
+            [$tieneColores, $tieneColoresTexto] = columnasColoresAreas();
+            if ($tieneColores || $tieneColoresTexto) {
+                $colorFondo = normalizarColorArea($_POST['colores'] ?? '');
+                $colorTexto = normalizarColorArea($_POST['colores_texto'] ?? '');
+
+                if ($colorFondo !== false && $colorTexto !== false) {
+                    $set = [];
+                    $types = '';
+                    $params = [];
+
+                    if ($tieneColores) {
+                        $set[] = "colores = ?";
+                        $types .= 's';
+                        $params[] = $colorFondo;
+                    }
+                    if ($tieneColoresTexto) {
+                        $set[] = "colores_texto = ?";
+                        $types .= 's';
+                        $params[] = $colorTexto;
+                    }
+
+                    if (count($set) > 0) {
+                        $types .= 'i';
+                        $params[] = $idArea;
+                        $upd = $conexion->prepare("UPDATE areas SET " . implode(', ', $set) . " WHERE id_area = ?");
+                        if ($upd) {
+                            $bind = [];
+                            $bind[] = $types;
+                            foreach ($params as $k => $v) {
+                                $bind[] = &$params[$k];
+                            }
+                            call_user_func_array([$upd, 'bind_param'], $bind);
+                            $upd->execute();
+                            $upd->close();
+                        }
+                    }
+                }
+            }
+
             echo "1"; // Éxito
         } else {
             echo "2"; // Error al ejecutar

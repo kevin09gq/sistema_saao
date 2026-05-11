@@ -53,6 +53,11 @@ function recalcularEventosJornalero(empleado) {
     if (Array.isArray(empleado.historial_olvidos) && empleado.historial_olvidos.length === 0) {
         delete empleado.historial_olvidos;
     }
+
+    // Recalcular el total a cobrar del empleado
+    if (typeof calcularTotalCobrar === 'function') {
+        calcularTotalCobrar(empleado);
+    }
 }
 
 
@@ -84,6 +89,11 @@ function calcularOlvidosTodosJornaleros(jsonNominaPilar) {
             // Limpiar historial si está vacío
             if (Array.isArray(empleado.historial_olvidos) && empleado.historial_olvidos.length === 0) {
                 delete empleado.historial_olvidos;
+            }
+
+            // Recalcular el total a cobrar del empleado
+            if (typeof calcularTotalCobrar === 'function') {
+                calcularTotalCobrar(empleado);
             }
         });
     });
@@ -220,7 +230,7 @@ function mostrarEventosPorEntradaJornalero(empleado, selectorContent, selectorTo
 
             // Sin registro de entrada ni salida
             const sinRegistro = (!r.entrada || r.entrada.trim() === '') &&
-                                 (!r.salida  || r.salida.trim()  === '');
+                (!r.salida || r.salida.trim() === '');
 
             // Solo es inasistencia si: el día tiene horario Y no hay ningún marcaje
             return horarioDia?.entrada && horarioDia.entrada.trim() !== '' && sinRegistro;
@@ -370,7 +380,7 @@ function mostrarOlvidosChecadorJornalero(empleado) {
         if (!reg.fecha) return;
 
         const tieneEntrada = reg.entrada && reg.entrada.trim() !== '' && reg.entrada.trim() !== '-';
-        const tieneSalida  = reg.salida  && reg.salida.trim()  !== '' && reg.salida.trim()  !== '-';
+        const tieneSalida = reg.salida && reg.salida.trim() !== '' && reg.salida.trim() !== '-';
 
         // Olvido: tiene UNO pero NO el otro (registro incompleto)
         if ((tieneEntrada && !tieneSalida) || (!tieneEntrada && tieneSalida)) {

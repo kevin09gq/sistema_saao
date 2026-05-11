@@ -717,10 +717,10 @@ function agregarEmpleadosNuevos(jsonNominaPilar, JsonListaRaya) {
 
                         // Si el departamento es de tipo Horario Oficial (1), asignar propiedades adicionales
                         if (tipoHorarioDepto === 1) {
-                            nuevoEmpleado.salario_semanal = empBD.salario_semanal || 0;
+                            nuevoEmpleado.salario_semanal =parseFloat(empBD.salario_semanal) || 0;
                             nuevoEmpleado.horario_oficial = empBD.horario_oficial || null;
                         } else if (tipoHorarioDepto === 2) {
-                            nuevoEmpleado.salario_diario = empBD.salario_diario || 0;
+                            nuevoEmpleado.salario_diario = parseFloat(empBD.salario_diario) || 0;
                         }
 
                         deptoDestino.empleados.push(nuevoEmpleado);

@@ -577,6 +577,7 @@ ordenarEmpleadosPorNombre(jsonNominaRelicario) se ordenan los empleados por apel
 function validarExistenciaTrabajadorBD(jsonNominaRelicario, JsonListaRaya) {
     // Array para almacenar todas las claves de empleados que ya tenemos en     // Filtrar por cláves Y que el empleado pertenezca al área y departamentos de la nómina 4
     // Recorrer todos los departamentos de la nómina recuperada
+    var clavesEmpleados = [];
     jsonNominaRelicario.departamentos.forEach(function (departamento) {
         departamento.empleados.forEach(function (empleado) {
             clavesEmpleados.push(empleado.clave);
@@ -726,10 +727,10 @@ function agregarEmpleadosNuevos(jsonNominaRelicario, JsonListaRaya) {
 
                         // Si el departamento es de tipo Horario Oficial (1), asignar propiedades adicionales
                         if (tipoHorarioDepto === 1) {
-                            nuevoEmpleado.salario_semanal = empBD.salario_semanal || 0;
+                            nuevoEmpleado.salario_semanal = parseFloat(empBD.salario_semanal) || 0;
                             nuevoEmpleado.horario_oficial = empBD.horario_oficial || null;
                         } else if (tipoHorarioDepto === 2) {
-                            nuevoEmpleado.salario_diario = empBD.salario_diario || 0;
+                            nuevoEmpleado.salario_diario = parseFloat(empBD.salario_diario) || 0;
                         }
 
                         deptoDestino.empleados.push(nuevoEmpleado);

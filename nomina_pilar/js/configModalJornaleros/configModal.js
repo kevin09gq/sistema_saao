@@ -211,7 +211,7 @@ function calcularTotalExtra(empleado) {
         });
     }
 
-    empleado.sueldo_extra_total = total.toFixed(2);
+    empleado.sueldo_extra_total = parseFloat(total.toFixed(2));
 }
 
 // ========================================

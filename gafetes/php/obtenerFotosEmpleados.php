@@ -95,7 +95,7 @@ try {
             $nombresEmpleadosSinFoto[] = $nombreCompleto . ' (' . $empleado['clave_empleado'] . ')';
         }
         
-        $respuesta['message'] = 'Los siguientes empleados no tienen foto asignada: ' . implode(', ', $nombresEmpleadosSinFoto);
+        $respuesta['message'] = 'Algunos empleados seleccionados no tienen foto asignada. Por favor, suba las fotos faltantes.';
         echo json_encode($respuesta);
         exit;
     }

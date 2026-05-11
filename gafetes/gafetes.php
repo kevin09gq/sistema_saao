@@ -14,12 +14,13 @@ verificarSesion();
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <link rel="stylesheet" href="css/estilos.css">
+    <link rel="stylesheet" href="../nomina/styles/nomina_styles.css">
     <link rel="stylesheet" href="css/casillero.css">
     <link rel="stylesheet" href="css/subir-fotos.css">
     <link rel="stylesheet" href="css/logos-gafetes.css">
     <link rel="stylesheet" href="css/confirmacion.css">
     <link rel="stylesheet" href="../public/styles/main.css">
-    
+   
     <!-- SweetAlert2 CSS -->
     <script src="<?= SWEETALERT ?>"></script>
     
@@ -85,6 +86,48 @@ verificarSesion();
             border-color: #0d6efd;
             transition: all 0.3s ease;
         }
+
+        /* Compactación (tipo nómina, sin recortes a la derecha) */
+        .container-tabla-nomina {
+            margin: 12px;
+        }
+
+        .header-tabla {
+            padding: 10px 12px;
+        }
+
+        .header-controls {
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .controles-tabla {
+            padding: 6px 12px;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filtros-container {
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .export-buttons {
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        #tablaEmpleados th,
+        #tablaEmpleados td {
+            padding: 6px 8px;
+            font-size: 11px;
+        }
+
+        #tablaEmpleados thead th {
+            font-size: 10px;
+        }
     </style>
 </head>
 
@@ -94,142 +137,115 @@ verificarSesion();
     include "../public/views/navbar.php";
     ?>
 
-    <div class="container mt-4">
-        <h2 class="text-center mb-4">Generador de Gafetes</h2>
-        
-        <!-- Offcanvas Departamentos -->
-        <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasDepartamentos" aria-labelledby="offcanvasDepartamentosLabel">
-            <div class="offcanvas-header">
-                <h5 class="offcanvas-title" id="offcanvasDepartamentosLabel"><i class="bi bi-building me-2"></i>Departamentos</h5>
-                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    <div class="container-tabla-nomina">
+        <div class="header-tabla">
+            <div>
+                <h3 class="m-0" style="font-weight: 700;">Generador de Gafetes</h3>
+                <div class="subtitulo-nomina" style="margin: 6px 0 0 0; font-size: 13px;">Selecciona empleados, genera gafetes y administra fotos</div>
             </div>
-            <div class="offcanvas-body">
-                <div class="list-group" id="listaDepartamentos">
-                    <a href="#" class="list-group-item list-group-item-action active" data-departamento="todos">
-                        <i class="bi bi-people-fill me-2"></i>Todos los empleados
-                    </a>
-                    <!-- Los departamentos se cargarán aquí dinámicamente -->
-                </div>
+            <div class="header-controls">
+                <button class="btn btn-outline-primary btn-lg-header" type="button" id="generarGafetes" title="Generar Gafetes">
+                    <i class="bi bi-person-vcard"></i>
+                </button>
+                <button class="btn btn-outline-primary btn-lg-header" type="button" id="generarFoto" title="Generar Foto">
+                    <i class="bi bi-camera-fill"></i>
+                </button>
+                 <button class="btn btn-outline-primary btn-lg-header" type="button" id="btnCasillero" title="Casillero">
+                    <i class="bi bi-box-seam"></i>
+                </button>
+                <button class="btn btn-outline-info btn-lg-header" type="button" id="subirFotos" data-bs-toggle="modal" data-bs-target="#modalSubirFotos" title="Subir fotos">
+                    <i class="bi bi-cloud-upload"></i>
+                </button>
+                <button class="btn btn-outline-primary btn-lg-header" type="button" id="actualizarLogos" data-bs-toggle="modal" data-bs-target="#modalActualizarLogos" title="Actualizar logos">
+                    <i class="bi bi-images"></i>
+                </button>
+                <button class="btn btn-outline-primary btn-lg-header" type="button" id="limpiarFotos" title="Limpiar fotos">
+                    <i class="bi bi-trash3"></i>
+                </button>
+                <button class="btn btn-outline-primary btn-lg-header" type="button" id="btnConfigColoresAreas" data-bs-toggle="modal" data-bs-target="#modalColoresAreas" title="Colores por área">
+                    <i class="bi bi-palette-fill"></i>
+                </button>
             </div>
         </div>
 
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <!-- Encabezado con título y búsqueda -->
-                    <div class="card-header bg-success text-white">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <h5 class="card-title mb-0">Empleados</h5>
-                            <div class="d-flex align-items-center gap-2">
-                                <button class="btn btn-outline-light btn-sm d-flex align-items-center" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDepartamentos" aria-controls="offcanvasDepartamentos">
-                                    <i class="bi bi-filter-right me-1"></i> Departamentos
-                                </button>
-                                <div class="input-group input-group-sm filtro-estado">
-                                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-ui-checks"></i></span>
-                                    <select id="filtroEstadoGafete" class="form-select border-start-0">
-                                        <option value="todos">Todos</option>
-                                        <option value="vigente">Vigentes</option>
-                                        <option value="expirado">Expirados</option>
-                                        <option value="proximo">Próximo a vencer</option>
-                                        <option value="sin_fecha">Sin fecha</option>
-                                    </select>
-                                </div>
-                                <button class="btn btn-outline-light btn-sm d-flex align-items-center" type="button" id="limpiarFiltroEstadoBtn" title="Limpiar filtro">
-                                    <i class="bi bi-eraser-fill me-1"></i> Limpiar
-                                </button>
-                                <div class="input-group input-group-sm position-relative buscador-empleados">
-                                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
-                                    <input type="text" id="buscadorEmpleados" class="form-control border-start-0 pe-5" placeholder="Buscar empleado...">
-                                    <button class="btn btn-link text-secondary position-absolute end-0 top-50 translate-middle-y border-0 p-0 me-2" 
-                                            type="button" 
-                                            id="limpiarBuscador" 
-                                            title="Limpiar búsqueda">
-                                        <i class="bi bi-x-circle-fill"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        <div class="controles-tabla">
+            <div class="filtros-container">
+                <select class="filtro-departamento" id="filtroDepartamento">
+                    <option value="todos">Todos los departamentos</option>
+                </select>
 
-                    <!-- Barra de acciones -->
-                    <div class="card-header bg-light border-bottom py-2">
-                        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3">
-                            <div>
-                                <span class="text-muted small me-3">Seleccionar empleados:</span>
-                                <div class="btn-group btn-group-sm">
-                                    <button id="seleccionarTodos" class="btn btn-success">
-                                        <i class="bi bi-check2-square"></i> Todos
-                                    </button>
-                                    <button id="deseleccionarTodos" class="btn btn-warning">
-                                        <i class="bi bi-square"></i> Ninguno
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="d-flex flex-wrap gap-2">
-                                <button id="generarGafetes" class="btn btn-warning btn-sm">
-                                    <i class="bi bi-card-checklist"></i> Generar Gafetes
-                                </button>
-                                <button id="generarFoto" class="btn btn-secondary btn-sm">
-                                    <i class="bi bi-camera-fill"></i> Generar Foto
-                                </button>
-                                <button id="subirFotos" class="btn btn-info btn-sm text-white" data-bs-toggle="modal" data-bs-target="#modalSubirFotos">
-                                    <i class="bi bi-cloud-upload"></i> Subir Fotos
-                                </button>
-                                <button id="actualizarLogos" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalActualizarLogos">
-                                    <i class="bi bi-images"></i> Actualizar Logos
-                                </button>
-                                <button id="limpiarFotos" class="btn btn-outline-danger btn-sm" title="Eliminar fotos no utilizadas">
-                                    <i class="bi bi-trash3"></i> Limpiar Fotos
-                                </button>
-                                <button id="btnCasillero" class="btn btn-info btn-sm text-white" title="Casillero">
-                                    <i class="bi bi-box-seam"></i> Casillero
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover" id="tablaEmpleados">
-                                <thead>
-                                    <tr>
-                                        <th id="sortClave" data-sortable>
-                                            Clave <span class="sort-icon"></span>
-                                        </th>
-                                        <th>Nombre</th>
-                                        <th>Departamento</th>
-                                        <th>Área</th>
-                                        <th>Estado</th>
-                                        <th>IMSS</th>
-                                        <th>Orden Nombre</th>
-                                        <th>Seleccionar</th>
-                                        <th>Foto</th>
-                                        <th>Editar</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="cuerpoTabla">
-                                    <!-- Los empleados se cargarán aquí dinámicamente -->
-                                </tbody>
-                            </table>
-                            <div class="d-flex justify-content-between align-items-center mt-3" id="paginacion">
-                                <div class="text-muted" id="infoPaginacion">
-                                    Mostrando <span id="inicio">0</span> a <span id="fin">0</span> de <span id="total">0</span> empleados
-                                </div>
-                                <nav>
-                                    <ul class="pagination pagination-sm mb-0" id="controlesPaginacion">
-                                        <li class="page-item disabled" id="anteriorPagina">
-                                            <a class="page-link" href="#" tabindex="-1">Anterior</a>
-                                        </li>
-                                        <li class="page-item active"><a class="page-link" href="#" data-pagina="1">1</a></li>
-                                        <li class="page-item" id="siguientePagina">
-                                            <a class="page-link" href="#">Siguiente</a>
-                                        </li>
-                                    </ul>
-                                </nav>
-                            </div>
-                        </div>
-                    </div>
+                <select class="filtro-departamento" id="filtroEstadoGafete">
+                    <option value="todos">Todos</option>
+                    <option value="vigente">Vigentes</option>
+                    <option value="expirado">Expirados</option>
+                    <option value="proximo">Próximo a vencer</option>
+                    <option value="sin_fecha">Sin fecha</option>
+                </select>
+
+                <div class="busqueda-container">
+                    <i class="bi bi-search"></i>
+                    <input type="text" class="campo-busqueda" placeholder="Buscar..." id="buscadorEmpleados">
+                    <button type="button" id="limpiarBuscador" title="Limpiar" style="display:none;">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
                 </div>
+
+                <button class="btn btn-sm btn-outline-secondary" type="button" id="limpiarFiltroEstadoBtn" title="Limpiar filtro" style="display:none;">
+                    <i class="bi bi-eraser-fill"></i>
+                </button>
             </div>
+
+            <div class="export-buttons">
+                <div class="btn-group" role="group" aria-label="Selección">
+                    <button id="seleccionarTodos" class="btn btn-outline-success btn-sm" type="button">
+                        <i class="bi bi-check2-square"></i> Todos
+                    </button>
+                    <button id="deseleccionarTodos" class="btn btn-outline-warning btn-sm" type="button">
+                        <i class="bi bi-square"></i> Ninguno
+                    </button>
+                </div>
+                            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle mb-0" id="tablaEmpleados">
+                <thead class="table-light">
+                    <tr>
+                        <th id="sortClave" data-sortable>
+                            Clave <span class="sort-icon"></span>
+                        </th>
+                        <th>Nombre</th>
+                        <th>Departamento</th>
+                        <th>Área</th>
+                        <th>Estado</th>
+                        <th>IMSS</th>
+                        <th>Orden Nombre</th>
+                        <th>Seleccionar</th>
+                        <th>Foto</th>
+                        <th>Editar</th>
+                    </tr>
+                </thead>
+                <tbody id="cuerpoTabla">
+                    <!-- Los empleados se cargarán aquí dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center p-3" id="paginacion">
+            <div class="text-muted" id="infoPaginacion">
+                Mostrando <span id="inicio">0</span> a <span id="fin">0</span> de <span id="total">0</span> empleados
+            </div>
+            <nav>
+                <ul class="pagination pagination-sm mb-0" id="controlesPaginacion">
+                    <li class="page-item disabled" id="anteriorPagina">
+                        <a class="page-link" href="#" tabindex="-1">Anterior</a>
+                    </li>
+                    <li class="page-item active"><a class="page-link" href="#" data-pagina="1">1</a></li>
+                    <li class="page-item" id="siguientePagina">
+                        <a class="page-link" href="#">Siguiente</a>
+                    </li>
+                </ul>
+            </nav>
         </div>
     </div>
 
@@ -420,10 +436,10 @@ verificarSesion();
 
     <!-- Modal Actualizar Empleado -->
     <div class="modal fade" id="modal_actualizar_empleado" tabindex="-1" aria-labelledby="modalActualizarEmpleadoLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <form id="form_modal_actualizar_empleado">
-                    <div class="modal-header text-white" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);">
+                    <div class="modal-header bg-primary text-white">
                         <h5 class="modal-title" id="modalActualizarEmpleadoLabel">
                             <i class="bi bi-pencil-square"></i> Actualizar Información del Empleado
                         </h5>
@@ -431,20 +447,20 @@ verificarSesion();
                     </div>
                     <div class="modal-body">
                         <!-- Nav tabs -->
-                        <ul class="nav nav-tabs mb-4" id="modalTabs" role="tablist">
+                        <ul class="nav nav-tabs" id="modalTabs" role="tablist">
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link active" id="tab-trabajador" data-bs-toggle="tab" data-bs-target="#tab_trabajador" type="button" role="tab" aria-controls="tab_trabajador" aria-selected="true">
-                                    <i class="bi bi-person-badge"></i> Datos del Trabajador
+                                    Datos del Trabajador
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="tab-foto" data-bs-toggle="tab" data-bs-target="#tab_foto" type="button" role="tab" aria-controls="tab_foto" aria-selected="false">
-                                    <i class="bi bi-camera"></i> Foto del Empleado
+                                    Foto del Empleado
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="tab-emergencia" data-bs-toggle="tab" data-bs-target="#tab_emergencia" type="button" role="tab" aria-controls="tab_emergencia" aria-selected="false">
-                                    <i class="bi bi-exclamation-triangle"></i> Contacto de Emergencia
+                                    Contacto de Emergencia
                                 </button>
                             </li>
                         </ul>
@@ -651,6 +667,10 @@ verificarSesion();
                                                 </h6>
                                             </div>
                                             <div class="card-body text-center">
+                                                <!-- Nombre del empleado en la parte inferior izquierda -->
+                                                <div class="text-start mb-3">
+                                                    <h5 id="nombre_empleado_foto" class="fw-bold text-muted"></h5>
+                                                </div>
                                                 <!-- Vista previa de la foto actual -->
                                                 <div class="mb-4">
                                                     <h6 class="mb-3">Foto Actual</h6>
@@ -885,11 +905,55 @@ verificarSesion();
         </div>
     </div>
 
+    <!-- Modal: Configurar colores por área -->
+    <div class="modal fade" id="modalColoresAreas" tabindex="-1" aria-labelledby="modalColoresAreasLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-secondary text-white">
+                    <h5 class="modal-title" id="modalColoresAreasLabel"><i class="bi bi-palette-fill me-2"></i>Colores por Área</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info mb-3">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        Selecciona un color (paleta) o escribe un valor en formato <strong>#RRGGBB</strong> o <strong>rgb(r,g,b)</strong>.
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle" id="tablaColoresAreas">
+                            <thead>
+                                <tr>
+                                    <th>Área</th>
+                                    <th style="width:90px;">Vista</th>
+                                    <th style="width:260px;">Fondo</th>
+                                    <th style="width:260px;">Texto (nombre)</th>
+                                    <th style="width:110px;">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cuerpoColoresAreas">
+                                <!-- Se carga por JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" id="btnRecargarAreas">
+                        <i class="bi bi-arrow-clockwise"></i> Recargar
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="<?= JQUERY_JS ?>"></script>
     <script src="<?= BOOTSTRAP_JS ?>"></script>
     <script src="js/actualizarLogos.js"></script>
     <script src="js/generarFotos.js?v=<?php echo filemtime(__DIR__ . '/js/generarFotos.js'); ?>"></script>
     <script src="js/funciones.js"></script>
+    <script src="js/configColoresAreas.js?v=<?php echo filemtime(__DIR__ . '/js/configColoresAreas.js'); ?>"></script>
     <script src="js/subirFotos.js"></script>
     <script src="js/casillero.js"></script>
     <script>

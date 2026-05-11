@@ -1,5 +1,70 @@
-/* Estilo para el botón de limpiar búsqueda */
+/* Estilos para el contenedor de búsqueda */
+.busqueda-container {
+    position: relative;
+    flex: 1;
+    max-width: 250px;
+}
+
+.busqueda-container i.bi-search {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #10b981;
+    font-size: 16px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.campo-busqueda {
+    width: 100%;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 8px 48px 8px 48px;
+    font-size: 14px;
+    color: #334155;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    position: relative;
+    z-index: 1;
+}
+
+.campo-busqueda::placeholder {
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+.campo-busqueda:hover {
+    border-color: #10b981;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+.campo-busqueda:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1), 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+/* Botón X dentro del campo de búsqueda */
 #limpiarBuscador {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    font-size: 18px;
+    cursor: pointer;
+    z-index: 3;
     transition: all 0.2s ease-in-out;
     opacity: 0.6;
 }
@@ -7,11 +72,11 @@
 #limpiarBuscador:hover {
     opacity: 1;
     color: #dc3545 !important;
-    transform: scale(1.15);
+    transform: translateY(-50%) scale(1.15);
 }
 
 #limpiarBuscador:active {
-    transform: scale(0.95);
+    transform: translateY(-50%) scale(0.95);
 }
 
 /* Estilo personalizado para el botón de reset IMSS */
@@ -530,32 +595,20 @@ th[data-sort-desc] .sort-icon {
     z-index: 1;
 }
 
-/* Custom button colors for specific functions */
-#generarFoto {
-    background: linear-gradient(135deg, #8e44ad, #9b59b6) !important;
-    border-color: #8e44ad !important;
-    color: white !important;
+/* Botones blancos para Generar Foto y Generar Gafetes */
+#generarFoto, #generarGafetes {
+    background: #ffffff !important;
+    border-color: #dee2e6 !important;
+    color: #495057 !important;
 }
 
-#generarFoto:hover {
-    background: linear-gradient(135deg, #7d3c98, #8e44ad) !important;
-    border-color: #7d3c98 !important;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(142, 68, 173, 0.3) !important;
+#generarFoto:hover, #generarGafetes:hover {
+    background: #f8f9fa !important;
+    border-color: #adb5bd !important;
+    color: #495057 !important;
 }
 
-#actualizarLogos {
-    background: linear-gradient(135deg, #e67e22, #f39c12) !important;
-    border-color: #e67e22 !important;
-    color: white !important;
-}
 
-#actualizarLogos:hover {
-    background: linear-gradient(135deg, #d35400, #e67e22) !important;
-    border-color: #d35400 !important;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(230, 126, 34, 0.3) !important;
-}
 
 /* Ajustes para pantallas pequeñas */
 @media (max-width: 768px) {
@@ -620,7 +673,7 @@ th[data-sort-desc] .sort-icon {
 #tablaEmpleados tbody tr td {
     padding: 12px 15px;
     vertical-align: middle;
-    color: #4a5568;
+    color: #000000;
     border-top: 1px solid #edf2f7;
 }
 
@@ -752,36 +805,6 @@ th[data-sort-desc] .sort-icon {
     transition: all 0.3s ease;
 }
 
-/* Efecto de reflejo para todos los botones principales */
-#generarGafetes, #generarFoto, #subirFotos, #actualizarLogos, #limpiarFotos, #limpiarLogos, #btnCasillero {
-    position: relative !important;
-    overflow: hidden !important;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
-}
-
-#generarGafetes::before, #generarFoto::before, #subirFotos::before, 
-#actualizarLogos::before, #limpiarFotos::before, #limpiarLogos::before, #btnCasillero::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-    transition: left 0.6s;
-    z-index: 1;
-}
-
-#generarGafetes:hover::before, #generarFoto:hover::before, #subirFotos:hover::before,
-#actualizarLogos:hover::before, #limpiarFotos:hover::before, #limpiarLogos:hover::before, #btnCasillero:hover::before {
-    left: 100%;
-}
-
-#generarGafetes:hover, #generarFoto:hover, #subirFotos:hover, 
-#actualizarLogos:hover, #limpiarFotos:hover, #limpiarLogos:hover, #btnCasillero:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-}
 
 /* Efecto de reflejo para botones de selección */
 #seleccionarTodos, #deseleccionarTodos {
@@ -841,374 +864,6 @@ th[data-sort-desc] .sort-icon {
    MODAL ACTUALIZAR EMPLEADO - DISEÑO MEJORADO
    ====================================== */
 
-/* Estilos para el modal de actualización de empleado */
-#modal_actualizar_empleado .modal-content {
-    border: none;
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-}
-
-#modal_actualizar_empleado .modal-header {
-    background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
-    border-bottom: none;
-    padding: 1.5rem;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-}
-
-#modal_actualizar_empleado .modal-header::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-    animation: shimmer 3s infinite;
-}
-
-#modal_actualizar_empleado .modal-title {
-    color: white;
-    font-weight: 600;
-    font-size: 1.4rem;
-    margin: 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    letter-spacing: 0.5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-#modal_actualizar_empleado .modal-title i {
-    font-size: 1.2rem;
-    margin-right: 10px;
-}
-
-#modal_actualizar_empleado .btn-close {
-    filter: invert(1);
-    opacity: 0.8;
-    transition: opacity 0.3s;
-}
-
-#modal_actualizar_empleado .btn-close:hover {
-    opacity: 1;
-    transform: scale(1.1);
-}
-
-#modal_actualizar_empleado .modal-body {
-    padding: 1.5rem;
-    background: #f8fafc;
-}
-
-/* Estilos para las pestañas del modal */
-#modal_actualizar_empleado .nav-tabs {
-    border-bottom: 2px solid #e2e8f0;
-    margin-bottom: 1.5rem;
-    background: white;
-    border-radius: 10px;
-    padding: 0.5rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
-
-#modal_actualizar_empleado .nav-tabs .nav-link {
-    border: none;
-    border-radius: 8px;
-    padding: 0.75rem 1.25rem;
-    font-weight: 600;
-    color: #718096;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-#modal_actualizar_empleado .nav-tabs .nav-link::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transform: translateX(-100%);
-    transition: transform 0.6s;
-}
-
-#modal_actualizar_empleado .nav-tabs .nav-link:hover::before {
-    transform: translateX(100%);
-}
-
-#modal_actualizar_empleado .nav-tabs .nav-link.active {
-    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-    color: white;
-    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
-}
-
-#modal_actualizar_empleado .nav-tabs .nav-link i {
-    margin-right: 8px;
-    font-size: 1.1rem;
-}
-
-/* Estilos para los formularios dentro del modal */
-#modal_actualizar_empleado .form-label {
-    font-weight: 600;
-    color: #2d3748;
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-}
-
-#modal_actualizar_empleado .form-control,
-#modal_actualizar_empleado .form-select {
-    border: 2px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    transition: all 0.3s ease;
-    background: white;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
-}
-
-#modal_actualizar_empleado .form-control:focus,
-#modal_actualizar_empleado .form-select:focus {
-    border-color: #3498db;
-    box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
-    outline: none;
-}
-
-#modal_actualizar_empleado .form-control::placeholder {
-    color: #a0aec0;
-}
-
-#modal_actualizar_empleado .form-control:focus::placeholder {
-    color: transparent;
-}
-
-#modal_actualizar_empleado .form-text {
-    font-size: 0.8rem;
-    color: #718096;
-    margin-top: 0.3rem;
-}
-
-#modal_actualizar_empleado .card {
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-    border: none;
-    margin-bottom: 1.5rem;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-#modal_actualizar_empleado .card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-}
-
-#modal_actualizar_empleado .card-header {
-    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
-    border-bottom: none;
-    padding: 1rem 1.5rem;
-    color: white;
-    font-weight: 600;
-}
-
-#modal_actualizar_empleado .card-header i {
-    margin-right: 8px;
-}
-
-#modal_actualizar_empleado .card-body {
-    padding: 1.5rem;
-}
-
-#modal_actualizar_empleado .img-thumbnail {
-    border-radius: 10px;
-    border: 3px solid #e2e8f0;
-    transition: all 0.3s ease;
-}
-
-#modal_actualizar_empleado .img-thumbnail:hover {
-    border-color: #3498db;
-    transform: scale(1.02);
-}
-
-#modal_actualizar_empleado .btn {
-    border-radius: 8px;
-    padding: 0.65rem 1.25rem;
-    font-weight: 600;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border: none;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-#modal_actualizar_empleado .btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
-}
-
-#modal_actualizar_empleado .btn:hover::before {
-    left: 100%;
-}
-
-#modal_actualizar_empleado .btn-success {
-    background: linear-gradient(135deg, #27ae60 0%, #219653 100%);
-    color: white;
-}
-
-#modal_actualizar_empleado .btn-success:hover {
-    background: linear-gradient(135deg, #219653 0%, #1e7a46 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(39, 174, 96, 0.4);
-}
-
-#modal_actualizar_empleado .btn-danger {
-    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-    color: white;
-}
-
-#modal_actualizar_empleado .btn-danger:hover {
-    background: linear-gradient(135deg, #c0392b 0%, #a5281b 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(231, 76, 60, 0.4);
-}
-
-#modal_actualizar_empleado .btn-primary {
-    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-    color: white;
-}
-
-#modal_actualizar_empleado .btn-primary:hover {
-    background: linear-gradient(135deg, #2980b9 0%, #2573a7 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(52, 152, 219, 0.4);
-}
-
-#modal_actualizar_empleado .btn-secondary {
-    background: linear-gradient(135deg, #7f8c8d 0%, #95a5a6 100%);
-    color: white;
-}
-
-#modal_actualizar_empleado .btn-secondary:hover {
-    background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(127, 140, 141, 0.4);
-}
-
-#modal_actualizar_empleado .modal-footer {
-    padding: 1.25rem 1.5rem;
-    border-top: 1px solid #e2e8f0;
-    background: #f1f5f9;
-    justify-content: flex-end;
-}
-
-#modal_actualizar_empleado .modal-footer .btn {
-    margin-left: 0.75rem;
-    min-width: 120px;
-}
-
-/* Estilos responsivos para el modal */
-@media (max-width: 768px) {
-    #modal_actualizar_empleado .modal-dialog {
-        margin: 1rem;
-        max-width: calc(100% - 2rem);
-    }
-    
-    #modal_actualizar_empleado .modal-header,
-    #modal_actualizar_empleado .modal-body,
-    #modal_actualizar_empleado .modal-footer {
-        padding: 1.25rem;
-    }
-    
-    #modal_actualizar_empleado .nav-tabs .nav-link {
-        padding: 0.6rem 1rem;
-        font-size: 0.9rem;
-    }
-    
-    #modal_actualizar_empleado .form-control,
-    #modal_actualizar_empleado .form-select {
-        padding: 0.65rem 0.9rem;
-    }
-    
-    #modal_actualizar_empleado .card-body {
-        padding: 1.25rem;
-    }
-    
-    #modal_actualizar_empleado .modal-footer .btn {
-        min-width: 100px;
-        padding: 0.6rem 1rem;
-    }
-}
-
-@media (max-width: 576px) {
-    #modal_actualizar_empleado .modal-title {
-        font-size: 1.2rem;
-    }
-    
-    #modal_actualizar_empleado .nav-tabs {
-        flex-direction: column;
-    }
-    
-    #modal_actualizar_empleado .nav-tabs .nav-item {
-        margin-bottom: 0.5rem;
-    }
-    
-    #modal_actualizar_empleado .nav-tabs .nav-link {
-        text-align: center;
-        justify-content: center;
-    }
-    
-    #modal_actualizar_empleado .row > .col-md-4 {
-        margin-bottom: 1rem;
-    }
-    
-    #modal_actualizar_empleado .modal-footer {
-        flex-direction: column;
-    }
-    
-    #modal_actualizar_empleado .modal-footer .btn {
-        width: 100%;
-        margin: 0.3rem 0;
-    }
-}
-
-/* Animaciones */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-#modal_actualizar_empleado .tab-pane {
-    animation: fadeInUp 0.3s ease forwards;
-}
-
-@keyframes shimmer {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
-}
-
-/* Reduce animation intensity for formal design */
-#modalActualizarLogos .modal-header::before,
-#modal_actualizar_empleado .modal-header::before {
-    animation-duration: 6s;
-    opacity: 0.3;
-}
 
 /* ======================================
    MODAL ACTUALIZAR LOGOS - DISEÑO FORMAL
@@ -1678,6 +1333,32 @@ th[data-sort-desc] .sort-icon {
         left: 10px;
         max-width: none;
     }
+}
+
+/* SweetAlert2 con z-index alto para aparecer encima de modales */
+.swal2-popup-high-zindex {
+    z-index: 99999 !important;
+}
+
+.swal2-container {
+    z-index: 99999 !important;
+}
+
+.swal2-backdrop {
+    z-index: 99998 !important;
+}
+
+/* Botones grandes para el header */
+.btn-lg-header {
+    padding: 6px 10px !important;
+    font-size: 0.85rem !important;
+    border-radius: 6px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+}
+
+.btn-lg-header i {
+    font-size: 1rem !important;
 }
 
 /* Título y barra de progreso para alertas de gafete */
@@ -3069,7 +2750,7 @@ th[data-sort-desc] .sort-icon {
 }
 
 #tablaEmpleados td {
-  color: #334155;
+  color: #000000;
 }
 
 /* Select pequeño de orden nombre más limpio */

@@ -8,6 +8,115 @@ $(document).ready(function () {
     cancelarArea(); // 
 });
 
+function clamp255(n) {
+    n = parseInt(n, 10);
+    if (Number.isNaN(n)) return 0;
+    return Math.min(255, Math.max(0, n));
+}
+
+function parseColorToRgb(color) {
+    if (!color) return null;
+    const c = String(color).trim();
+
+    const hexMatch = c.match(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
+    if (hexMatch) {
+        let hex = hexMatch[1];
+        if (hex.length === 3) hex = hex.split('').map(ch => ch + ch).join('');
+        const r = parseInt(hex.slice(0, 2), 16);
+        const g = parseInt(hex.slice(2, 4), 16);
+        const b = parseInt(hex.slice(4, 6), 16);
+        return { r, g, b };
+    }
+
+    const rgbMatch = c.match(/^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/i);
+    if (rgbMatch) {
+        return {
+            r: clamp255(rgbMatch[1]),
+            g: clamp255(rgbMatch[2]),
+            b: clamp255(rgbMatch[3])
+        };
+    }
+
+    return null;
+}
+
+function rgbToHex(rgb) {
+    const toHex = (n) => clamp255(n).toString(16).padStart(2, '0');
+    return `#${toHex(rgb.r)}${toHex(rgb.g)}${toHex(rgb.b)}`.toUpperCase();
+}
+
+function normalizarColorEntrada(color) {
+    const c = String(color ?? '').trim();
+    if (c === '') return '';
+    if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(c)) return c.toUpperCase();
+
+    const rgbMatch = c.match(/^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/i);
+    if (rgbMatch) {
+        const r = clamp255(rgbMatch[1]);
+        const g = clamp255(rgbMatch[2]);
+        const b = clamp255(rgbMatch[3]);
+        return `rgb(${r}, ${g}, ${b})`;
+    }
+
+    return false;
+}
+
+function colorContrasteBasico(colorFondo) {
+    const rgb = parseColorToRgb(colorFondo);
+    if (!rgb) return '#FFFFFF';
+    const luminancia = (0.2126 * rgb.r) + (0.7152 * rgb.g) + (0.0722 * rgb.b);
+    return luminancia > 170 ? '#000000' : '#FFFFFF';
+}
+
+function actualizarPreviewAreaColores() {
+    const fondoRaw = $('#colores').val();
+    const textoRaw = $('#colores_texto').val();
+    const fondoNorm = normalizarColorEntrada(fondoRaw);
+    const textoNorm = normalizarColorEntrada(textoRaw);
+
+    const fondoAplicar = (fondoNorm && fondoNorm !== false) ? fondoNorm : '#06320C';
+    const textoAplicar = (textoNorm && textoNorm !== false) ? textoNorm : colorContrasteBasico(fondoAplicar);
+
+    const $box = $('#preview_area_colores');
+    const $txt = $('#preview_area_texto');
+    if ($box.length) $box.css('background', fondoAplicar || 'transparent');
+    if ($txt.length) $txt.css('color', textoAplicar);
+}
+
+function initColoresAreasForm() {
+    // Fondo: picker -> input texto
+    $('#picker_color_area_fondo').on('input', function () {
+        $('#colores').val(String($(this).val() || '').toUpperCase());
+        actualizarPreviewAreaColores();
+    });
+    // Texto: picker -> input texto
+    $('#picker_color_area_texto').on('input', function () {
+        $('#colores_texto').val(String($(this).val() || '').toUpperCase());
+        actualizarPreviewAreaColores();
+    });
+
+    // Fondo: texto -> picker (si se puede parsear)
+    $('#colores').on('input', function () {
+        const normalizado = normalizarColorEntrada($(this).val());
+        const rgb = normalizado && normalizado !== false ? parseColorToRgb(normalizado) : null;
+        if (rgb) $('#picker_color_area_fondo').val(rgbToHex(rgb));
+        actualizarPreviewAreaColores();
+    });
+    // Texto: texto -> picker (si se puede parsear)
+    $('#colores_texto').on('input', function () {
+        const normalizado = normalizarColorEntrada($(this).val());
+        const rgb = normalizado && normalizado !== false ? parseColorToRgb(normalizado) : null;
+        if (rgb) $('#picker_color_area_texto').val(rgbToHex(rgb));
+        actualizarPreviewAreaColores();
+    });
+}
+
+// Inicializar una sola vez
+$(function () {
+    initColoresAreasForm();
+    actualizarPreviewAreaColores();
+});
+
 
 // Se Obtienen las áreas
 function getAreas() {
@@ -130,6 +239,32 @@ function registrarArea() {
         // Crear un objeto FormData para manejar la carga de archivos
         let formData = new FormData(this);
 
+        // Normalizar/validar colores antes de enviar
+        const colorFondoNorm = normalizarColorEntrada(formData.get('colores'));
+        const colorTextoNorm = normalizarColorEntrada(formData.get('colores_texto'));
+
+        if (colorFondoNorm === false) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Color inválido',
+                text: 'El color de fondo debe ser #RRGGBB/#RGB o rgb(r,g,b).',
+                confirmButtonColor: '#eab308'
+            });
+            return;
+        }
+        if (colorTextoNorm === false) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Color inválido',
+                text: 'El color de texto debe ser #RRGGBB/#RGB o rgb(r,g,b).',
+                confirmButtonColor: '#eab308'
+            });
+            return;
+        }
+
+        formData.set('colores', colorFondoNorm);
+        formData.set('colores_texto', colorTextoNorm);
+
         // Obtener los valores del formulario
         let idArea = $("#area_id").val().trim();
         let nombreArea = $("#nombre_area").val().trim();
@@ -154,7 +289,7 @@ function registrarArea() {
                         // Recargar la lista de áreas
                         getAreas();
 
-                        getObtenerAreasSelect();
+                        //getObtenerAreasSelect();
 
                         // Mostrar mensaje de éxito con SweetAlert2
                         let mensaje = accion === "registrarArea" ?
@@ -223,9 +358,14 @@ function resetearFormulario() {
     $("#area_id").val('');
     $("#nombre_area").val('');
     $("#imagen_area").val('');
+    $("#colores").val('');
+    $("#colores_texto").val('');
+    $("#picker_color_area_fondo").val('#06320C');
+    $("#picker_color_area_texto").val('#FFFFFF');
     $("#preview_imagen_area").attr('src', '');
     $("#area-image-preview").hide();
     $("#btn-guardar-area").html('<i class="fas fa-save"></i> Guardar');
+    actualizarPreviewAreaColores();
 }
 
 function eliminarArea() {
@@ -261,7 +401,7 @@ function eliminarArea() {
                                 confirmButtonColor: '#22c55e'
                             });
                             getAreas();
-                            getObtenerAreasSelect();
+                            //getObtenerAreasSelect();
                             // Actualizar la tabla de departamentos si existe
                             if (typeof getDepartamentos === 'function') {
                                 getDepartamentos();
@@ -329,6 +469,30 @@ function editarArea() {
                     $("#area_id").val(data.id_area);
                     $("#nombre_area").val(data.nombre_area);
 
+                    // Limpiar y establecer colores
+                    const fondo = normalizarColorEntrada(data.colores ?? '');
+                    const texto = normalizarColorEntrada(data.colores_texto ?? '');
+
+                    // Si fondo es vacío o falso, usar valor por defecto
+                    if (fondo === false || fondo === '') {
+                        $("#colores").val('');
+                        $("#picker_color_area_fondo").val('#06320C');
+                    } else {
+                        $("#colores").val(fondo);
+                        const rgbF = parseColorToRgb(fondo);
+                        if (rgbF) $("#picker_color_area_fondo").val(rgbToHex(rgbF));
+                    }
+
+                    // Si texto es vacío o falso, usar valor por defecto
+                    if (texto === false || texto === '') {
+                        $("#colores_texto").val('');
+                        $("#picker_color_area_texto").val('#FFFFFF');
+                    } else {
+                        $("#colores_texto").val(texto);
+                        const rgbT = parseColorToRgb(texto);
+                        if (rgbT) $("#picker_color_area_texto").val(rgbToHex(rgbT));
+                    }
+
                     if (data.logo_area && data.logo_area.trim() !== "") {
                         let rutaImagen = rutaRaiz + "gafetes/logos_area/" + data.logo_area;
                         $("#preview_imagen_area").attr('src', rutaImagen);
@@ -340,6 +504,8 @@ function editarArea() {
                         $("#btn-remove-area-image").hide().data("area-id", ""); // Ocultar botón eliminar imagen
                     }
                     $("#btn-guardar-area").html('<i class="fas fa-save"></i> Actualizar');
+                    // Actualizar preview con los nuevos colores
+                    actualizarPreviewAreaColores();
                 } catch (e) {
                     Swal.fire({
                         icon: 'error',
