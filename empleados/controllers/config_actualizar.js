@@ -362,7 +362,7 @@ $(document).ready(function () {
             success: function (empleados) {
 
                 console.log(empleados);
-                
+
 
                 setEmpleadosData(empleados);
             },
@@ -374,7 +374,7 @@ $(document).ready(function () {
 
 
     function areaSeleccionada() {
-        $('#filtroArea').change(function (e) { 
+        $('#filtroArea').change(function (e) {
             e.preventDefault();
             let idArea = $(this).val();
             let idDepartamento = $("#filtroDepartamento").val(); // Obtener el departamento seleccionado para mantener el filtro
@@ -681,6 +681,7 @@ $(document).ready(function () {
                         let grupoSanguineo = empleado.grupo_sanguineo;
                         let enfermedades = empleado.enfermedades_alergias;
                         let fechaIngreso = empleado.fecha_ingreso;
+                        let fechaIngresoReal = empleado.fecha_ingreso_real;
                         let idDepartamentoEmpleado = empleado.id_departamento;
 
                         // Nuevos campos
@@ -737,7 +738,11 @@ $(document).ready(function () {
                         $("#modal_sexo").val(sexoEmpleado);
                         $("#modal_grupo_sanguineo").val(grupoSanguineo);
                         $("#modal_enfermedades_alergias").val(enfermedades);
+                        // La fecha ingreso es la misma que la imss
                         $("#modal_fecha_ingreso").val(fechaIngreso);
+                        $("#modal_fecha_ingreso_imss").val(fechaIngreso);
+                        // Fecha real
+                        $("#modal_fecha_ingreso_real").val(fechaIngresoReal);
                         // Nuevos campos
                         $("#modal_fecha_nacimiento").val(fechaNacimiento);
                         $("#modal_num_casillero").val(numCasillero);
@@ -1104,6 +1109,7 @@ $(document).ready(function () {
             $("#tab-beneficiarios").removeClass("active");
             $("#tab-horarios").removeClass("active");
             $("#tab-horarios-oficiales").removeClass("active");
+            $("#tab-configuracion").removeClass("active");
 
             // Inicializar el contenido de los tabs
             $("#tab_trabajador").addClass("show active");
@@ -1111,7 +1117,7 @@ $(document).ready(function () {
             $("#tab_reingresos").removeClass("show active");
             $("#tab_beneficiarios").removeClass("show active");
             $("#tab_horarios").removeClass("show active");
-            $("#tab_horarios_oficiales").removeClass("show active");
+            $("#tab_configuracion").removeClass("show active");
 
 
             // Finalmente mostramos el modal
@@ -1143,6 +1149,7 @@ $(document).ready(function () {
         let grupoSanguineo = $("#modal_grupo_sanguineo").val();
         let enfermedades = $("#modal_enfermedades_alergias").val();
         let fechaIngreso = $("#modal_fecha_ingreso").val();
+        let fechaIngresoReal = $("#modal_fecha_ingreso_real").val();
         let idDepartamento = $("#modal_departamento").val();
 
         // Nuevos campos agregados
@@ -1324,6 +1331,7 @@ $(document).ready(function () {
             grupo_sanguineo: grupoSanguineo || "",
             enfermedades_alergias: enfermedades || "",
             fecha_ingreso: fechaIngreso || "",
+            fecha_ingreso_real: fechaIngresoReal || "",
             id_departamento: idDepartamento || "",
 
             // Nuevos campos agregados
@@ -1722,6 +1730,67 @@ $(document).ready(function () {
             $tab_horarios.prop("disabled", true); // deshabilita el tab 
         }
     });
+
+
+
+
+    /**
+     * ===========================================================
+     * CONFIGURACION DE FECHAS DE INGRESO
+    * ============================================================
+     */
+
+    /**
+     * EVENTO PARA MOSTRAR LA SECCIÓN DE CONFIGURACIÓN
+     */
+    $(document).on('click', '#tab-configuracion', function (e) {
+        e.preventDefault();
+        // MOSTRAR SECCION DE ACCESO
+        $('#seccion_acceso').removeClass('d-none');
+        // OCULTAR SECCION DE FECHAS
+        $('#seccion_fechas').addClass('d-none');
+        // LIMPIAR EL CAMPO DE CONTRASEÑA
+        $('#inputPassword').val('');
+    });
+
+    /**
+     * CONTRASEÑA PARA ENTRAR A CONFIGURACIÓN
+     */
+    $(document).on('click', '#btn_acceder_fechas', function (e) {
+        e.preventDefault();
+        // RECUPERAR LA CONTRASEÑA INGRESADA
+        const claveIngresada = $('#inputPassword').val().trim();
+        // VALIDAR LA CONTRASEÑA
+        if (claveIngresada === '12345') {
+            // OCULTAR LA SECCIÓN DE ACCESO
+            $('#seccion_acceso').addClass('d-none');
+            // MOSTRAR LA SECCIÓN DE FECHAS
+            $('#seccion_fechas').removeClass('d-none');
+        } else {
+            Swal.fire({
+                title: 'Acceso denegado',
+                text: 'La contraseña ingresada es incorrecta.',
+                icon: 'error',
+                confirmButtonText: 'Entendido'
+            });
+        }
+    });
+
+
+    /**
+     * EVENTO SI CAMBIA LA FECHA DE INGRESO: modal_fecha_ingreso y modal_fecha_ingreso_imss son las mismas
+     * Si cambia una debe cambiar la otra y viceversa, para mantener consistencia en los datos
+     */
+    $(document).on('change', '#modal_fecha_ingreso', function () {
+        const fecha = $(this).val();
+        $('#modal_fecha_ingreso_imss').val(fecha);
+    });
+
+    $(document).on('change', '#modal_fecha_ingreso_imss', function () {
+        const fecha = $(this).val();
+        $('#modal_fecha_ingreso').val(fecha);
+    });
+
 
 
 });

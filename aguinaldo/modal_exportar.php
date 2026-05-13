@@ -70,19 +70,7 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- SECCIÓN 3: CONFIGURACIÓN DE SALIDA -->
-                <!-- <div class="card border-0 shadow-sm">
-                    <div class="card-body bg-white rounded-3 p-3">
-                        <div class="form-check form-switch d-flex align-items-center justify-content-between p-0">
-                            <div class="ms-0">
-                                <label class="form-check-label fw-bold text-dark d-block" for="check_dividir_hojas">Dividir por hojas</label>
-                                <small class="text-muted">Crear una pestaña independiente por departamento.</small>
-                            </div>
-                            <input class="form-check-input ms-0" type="checkbox" role="switch" id="check_dividir_hojas" name="check_dividir_hojas" style="width: 2.5em; height: 1.25em;">
-                        </div>
-                    </div>
-                </div> -->
+                
             </div>
 
             <!-- Footer -->

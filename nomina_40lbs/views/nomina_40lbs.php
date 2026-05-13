@@ -90,6 +90,10 @@
                         title="Perdonar olvidos de checador">
                         <i class="bi bi-clipboard-check"></i>
                     </button>
+                    <button class="btn btn-outline-primary" id="btn_add_percepciones_deducciones"
+                        title="Agregar Percepciones/Deducciones Extras">
+                        <i class="bi bi-patch-plus"></i>
+                    </button>
                     <button class="btn btn-outline-info" id="btn_ver_dispersion" title="Ver Dispersión de Tarjeta">
                         <i class="bi bi-list-columns-reverse"></i>
                     </button>
@@ -223,14 +227,16 @@
     <?php include 'modals/modalOlvidos.php'; ?>
     <?php include 'modals/modalSueldoBase.php'; ?>
     <?php include 'modals/modal40lbs.php'; ?>
+    <?php include 'modals/addPercepcionesDeducciones.php'; ?>
     <?php include 'modals/modalHorarios.php'; ?>
     <?php include 'modals/biometricoModal.php'; ?>
     <?php include 'modals/modalSeleccionarEmpleados.php'; ?>
     <?php include 'modals/modalConceptosTotales.php'; ?>
     <?php include 'modals/modalExportarNomina.php'; ?>
     <?php include 'modals/modal_seleccion_tickets_40lbs.php'; ?>
-    <?php include 'modals/dispersionTarjeta.php'; ?>
+    <?php include 'modals/dispersionTarjeta.php'; ?>   
     <?php include 'modals/modalMarcajes.php'; ?>
+   
 
 
 
@@ -263,6 +269,8 @@
     <script src="../js/configModales/olvidosMasivos.js"></script>
     <script src="../js/configModales/sueldoBase.js"></script>
     <script src="../js/configModales/redondearSueldos.js"></script>
+    <script src="../js/configModales/addPercepcionesDeducciones.js"></script>
+
 
     <script src="../js/configModal/establecerData.js"></script>
     <script src="../js/configModal/editarData.js"></script>

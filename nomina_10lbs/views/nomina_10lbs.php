@@ -99,6 +99,10 @@
                         title="Perdonar olvidos de checador">
                         <i class="bi bi-clipboard-check"></i>
                     </button>
+                    <button class="btn btn-outline-primary" id="btn_add_percepciones_deducciones"
+                        title="Agregar Percepciones/Deducciones Extras">
+                        <i class="bi bi-patch-plus"></i>
+                    </button>
                     <button class="btn btn-outline-info" id="btn_ver_dispersion" title="Ver Dispersión de Tarjeta">
                         <i class="bi bi-list-columns-reverse"></i>
                     </button>
@@ -227,6 +231,7 @@
     <?php include 'modals/modalPrecioCajas.php'; ?>
     <?php include 'modals/modalHorarios.php'; ?>
     <?php include 'modals/biometricoModal.php'; ?>
+    <?php include 'modals/addPercepcionesDeducciones.php'; ?>
     <?php include 'modals/modalSeleccionarEmpleados.php'; ?>
     <?php include 'modals/modalOlvidos.php'; ?>
     <?php include 'modals/modalConceptosTotales.php'; ?>
@@ -274,6 +279,7 @@
     <script src="../js/configModal/configModal.js"></script>
     <script src="../js/configModal/newConcepts.js"></script>
     <script src="../js/configModal/agregarCajasEmpacadas.js"></script>
+    <script src="../js/configModales/addPercepcionesDeducciones.js"></script>
 
 
     <!-- Dispersion Tarjeta -->

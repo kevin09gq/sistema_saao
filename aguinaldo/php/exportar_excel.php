@@ -73,7 +73,7 @@ $columnas = [
     'NETO PAGAR',
     'REDONDEO',
     'NETO PAGAR REDONDEADO',
-    'FIRMA'
+    'FIRMA RECIBIDO'
 ];
 
 $columnasAncho = [
@@ -149,9 +149,12 @@ $color_secundario = '1E7842'; // Verde oscuro
  *
  * @return void
  */
-function crearHoja(Spreadsheet $spreadsheet, String $titulo2, array $empleados, String $nombreHoja)
+function crearHoja(Spreadsheet $spreadsheet, String $titulo2, array $empleados, String $nombreHoja, String $color = '85C02A')
 {
     global $columnas, $columnasAncho, $tamanioLetraColumnas, $tamanioLetraFilas, $nombre_empresa, $anio, $color_primario, $color_secundario;
+
+    // COLOR DE LA LETRA
+    $color_letra = colorContraste($color);
 
     // Crear una nueva hoja o usar la existente
     if ($nombreHoja === 'NOMBRE TMP') {
@@ -185,12 +188,12 @@ function crearHoja(Spreadsheet $spreadsheet, String $titulo2, array $empleados, 
     // Formatear título 1 - NOMBRE DE LA EMPRESA
     $sheet->getStyle('A1')->getFont()->setBold(true); // Negrita
     $sheet->getStyle('A1')->getFont()->setSize(24); // Tamaño 24
-    $sheet->getStyle('A1')->getFont()->setColor(new Color($color_primario)); // Color verde claro
+    $sheet->getStyle('A1')->getFont()->setColor(new Color($color)); // Color verde claro
 
     // Formatear título 2 - NOMBRE DEL DEPARTAMENTO (Negrita, Tamaño 20)
     $sheet->getStyle('A2')->getFont()->setBold(true);
     $sheet->getStyle('A2')->getFont()->setSize(20);
-    $sheet->getStyle('A2')->getFont()->setColor(new Color($color_secundario));
+    $sheet->getStyle('A2')->getFont()->setColor(new Color($color));
 
     // Formatear título 3 - REFERENCIA DEL REPORTE Y AÑO
     $sheet->getStyle('A3')->getFont()->setBold(true);
@@ -232,14 +235,14 @@ function crearHoja(Spreadsheet $spreadsheet, String $titulo2, array $empleados, 
     // Formatear los encabezados (Negrita, Centrados, Tamaño 10, Fondo Rojo, Letra Blanca)
     $sheet->getStyle('A6:N6')->getFont()->setBold(true);
     $sheet->getStyle('A6:N6')->getFont()->setSize(10);
-    $sheet->getStyle('A6:N6')->getFont()->setColor(new Color('FFFFFF')); // Letra blanca
+    $sheet->getStyle('A6:N6')->getFont()->setColor(new Color($color_letra));
     $sheet->getStyle('A6:N6')->getAlignment()->setHorizontal('center');
     $sheet->getStyle('A6:N6')->getAlignment()->setVertical('center');
     $sheet->getStyle('A6:N6')->getAlignment()->setWrapText(true);
 
     // Agregar color de fondo a los encabezados
     $sheet->getStyle('A6:N6')->getFill()->setFillType('solid');
-    $sheet->getStyle('A6:N6')->getFill()->getStartColor()->setRGB($color_primario);
+    $sheet->getStyle('A6:N6')->getFill()->getStartColor()->setRGB($color);
 
     // Ajustar el ancho de las columnas
     foreach ($columnasAncho as $columna => $ancho) {
@@ -302,7 +305,7 @@ function crearHoja(Spreadsheet $spreadsheet, String $titulo2, array $empleados, 
         } else {
             $sheet->setCellValue(
                 'H' . $numeroFila,
-                '=15/365*F' . $numeroFila . '*E' . $numeroFila
+                '=' . $empleado['dias_pago'] . '/365*F' . $numeroFila . '*E' . $numeroFila
             );
         }
         $sheet->getStyle('H' . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
@@ -322,8 +325,14 @@ function crearHoja(Spreadsheet $spreadsheet, String $titulo2, array $empleados, 
         $sheet->getStyle('K' . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
 
         // Redondeo
-        $sheet->setCellValue('L' . $numeroFila, '=ROUND(K' . $numeroFila . ',0)-K' . $numeroFila); // Las funciones deben ser en ingles
-        $sheet->getStyle('L' . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00;$#,##0.00;;');
+        if ($empleado['aplicar_redondeo']) {
+            $sheet->setCellValue('L' . $numeroFila, '=ROUND(K' . $numeroFila . ',0)-K' . $numeroFila); // Las funciones deben ser en ingles
+        } else {
+            $sheet->setCellValue('L' . $numeroFila, 0); // Las funciones deben ser en ingles
+        }
+        $sheet->getStyle('L' . $numeroFila)
+            ->getNumberFormat()
+            ->setFormatCode('$#,##0.00;[Red]-$#,##0.00;;');
 
         // Neto a pagar redondeado
         $sheet->setCellValue('M' . $numeroFila, '=K' . $numeroFila . '+L' . $numeroFila);
@@ -367,7 +376,49 @@ function crearHoja(Spreadsheet $spreadsheet, String $titulo2, array $empleados, 
     //  AGREGAR FILA DE TOTALES
     //=====================
 
-    $filaTotal = $numeroFila - 1;
+    $filaTotal = $numeroFila;
+    $primera_fila = 7;
+    $ultima_fila = $filaTotal - 1;
+
+    // Agregar la palabra "TOTALES" en la columna C de la fila siguiente al último empleado
+    $sheet->setCellValue('C' . $filaTotal, 'TOTALES');
+    // Poner bold a la palabra "TOTALES"
+    $sheet->getStyle('C' . $filaTotal)->getFont()->setBold(true);
+
+    // Aplicar fondo gris a toda la fila de totales
+    $sheet->getStyle('A' . $filaTotal . ':N' . $filaTotal)->getFill()
+        ->setFillType('solid')->getStartColor()->setRGB('E8E8E8');
+    // TAMAÑO DE LETRA EN LA FILA DE TOTALES
+    $sheet->getStyle('A' . $filaTotal . ':N' . $filaTotal)->getFont()->setSize(16);
+    // Centrar el texto en la fila de totales
+    $sheet->getStyle('A' . $filaTotal . ':N' . $filaTotal)->getAlignment()->setVertical('center');
+    $sheet->getStyle('D' . $filaTotal . ':N' . $filaTotal)->getAlignment()->setHorizontal('center');
+    // Altura de la fila de totales
+    $sheet->getRowDimension($filaTotal)->setRowHeight(46);
+
+    // SUMAR VALORES DE LA COLUMNA H (AGUINALDO)
+    $sheet->setCellValue('H' . $filaTotal, '=SUM(H' . $primera_fila . ':H' . $ultima_fila . ')');
+    $sheet->getStyle('H' . $filaTotal)->getNumberFormat()->setFormatCode('$#,##0.00');
+
+    // SUMAR VALORES DE LA COLUMNA I (ISR)
+    $sheet->setCellValue('I' . $filaTotal, '=SUM(I' . $primera_fila . ':I' . $ultima_fila . ')');
+    $sheet->getStyle('I' . $filaTotal)->getNumberFormat()->setFormatCode('[Red]-$#,##0.00;;');
+
+    // SUMAR VALORES DE LA COLUMNA J (TARJETA)
+    $sheet->setCellValue('J' . $filaTotal, '=SUM(J' . $primera_fila . ':J' . $ultima_fila . ')');
+    $sheet->getStyle('J' . $filaTotal)->getNumberFormat()->setFormatCode('[Red]-$#,##0.00;;');
+
+    // SUMAR VALORES DE LA COLUMNA K (NETO PAGAR)
+    $sheet->setCellValue('K' . $filaTotal, '=SUM(K' . $primera_fila . ':K' . $ultima_fila . ')');
+    $sheet->getStyle('K' . $filaTotal)->getNumberFormat()->setFormatCode('$#,##0.00');
+
+    // SUMAR VALORES DE LA COLUMNA L (REDONDEO)
+    $sheet->setCellValue('L' . $filaTotal, '=SUM(L' . $primera_fila . ':L' . $ultima_fila . ')');
+    $sheet->getStyle('L' . $filaTotal)->getNumberFormat()->setFormatCode('$#,##0.00;;');
+
+    // SUMAR VALORES DE LA COLUMNA M (NETO PAGAR REDONDEADO)
+    $sheet->setCellValue('M' . $filaTotal, '=SUM(M' . $primera_fila . ':M' . $ultima_fila . ')');
+    $sheet->getStyle('M' . $filaTotal)->getNumberFormat()->setFormatCode('$#,##0.00');
 
     //=====================
     //  AGREGAR BORDES
@@ -544,44 +595,84 @@ function quitarAcentosMayusculas($texto)
     return strtoupper($sinAcentos);
 }
 
+/**
+ * Determina el color de texto de contraste
+ * para asegurar legibilidad sobre un fondo de color dado.
+ * @param string $hexColor El color de fondo en formato hexadecimal (ej. "85C02A").
+ * @return string El color de texto recomendado en formato hexadecimal
+ */
+function colorContraste($hexColor)
+{
+    // Eliminar el # si existe
+    $hexColor = str_replace('#', '', $hexColor);
+
+    // Si el color no es válido, por defecto blanco
+    if (strlen($hexColor) != 6) return '000000';
+
+    // Convertir hex a RGB
+    $r = hexdec(substr($hexColor, 0, 2));
+    $g = hexdec(substr($hexColor, 2, 2));
+    $b = hexdec(substr($hexColor, 4, 2));
+
+    // Calcular el brillo (Fórmula YIQ)
+    // El umbral de 128 (la mitad de 255) determina si el fondo es claro u oscuro
+    $yiq = (($r * 299) + ($g * 587) + ($b * 114)) / 1000;
+
+    return ($yiq >= 128) ? '000000' : 'FFFFFF';
+}
 
 
 //=====================
 //  CREAR LAS DIFERENTES HOJAS
 //=====================
 
+// Obtener empleados desde la nueva estructura
+$empleadosData = $jsonAguinaldo['empleados'] ?? [];
+
+
 // 1. Filtrar empleados por id_empresa
 $empleadosFiltrados = array_values(array_filter(
-    $jsonAguinaldo,
-    fn($emp) => ($emp['id_empresa'] ?? null) == $empresa
+    $empleadosData,
+    fn($emp) => ($emp['id_empresa'] ?? null) == $empresa &&
+        ($emp['visible'] ?? false) === true
 ));
 
-// 2. Filtrar empleados por departamentos seleccionados
+
+// 2. Agrupar empleados por departamento
 $empleadosPorDepartamento = [];
 
 foreach ($empleadosFiltrados as $emp) {
     $empleadosPorDepartamento[$emp['id_departamento']][] = $emp;
 }
 
-// 3. Generar las hojas por cada departamento seleccionado
+
+// 3. Generar hojas por departamento
 foreach ($departamentos_seleccionados as $departamento) {
 
-    // Obtener empleados del departamento actual
-    $empleados = $empleadosPorDepartamento[$departamento['id_departamento']] ?? [];
+    // Obtener el ID del departamento para filtrar empleados
+    $idDep = $departamento['id_departamento'];
 
-    // Si no hay empleados, no crear la hoja
+    // Obtener empleados del departamento actual
+    $empleados = $empleadosPorDepartamento[$idDep] ?? [];
+
+    // Si no hay empleados, no crear hoja
     if (empty($empleados)) {
         continue;
     }
 
-    // Crear hoja para el departamento actual
+    // Obtener el color del departamento del primer empleado
+    $colorDepartamento = str_replace('#', '', $empleados[0]['color_departamento'] ?? '85C02A');
+
+    // Crear hoja
     crearHoja(
         $spreadsheet,
         $departamento['nombre_departamento'],
         $empleados,
-        $departamento['nombre_departamento']
+        $departamento['nombre_departamento'],
+        $colorDepartamento
     );
 }
+
 
 // 4. Eliminar hoja vacía por defecto
 if ($spreadsheet->getSheetCount() > 1) {

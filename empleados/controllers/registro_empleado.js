@@ -338,6 +338,7 @@ $(document).ready(function () {
             const grupo_sanguineo = $("#grupo_sanguineo_trabajador").val().trim();
             const enfermedades_alergias = $("#enfermedades_alergias_trabajador").val().trim();
             const fecha_ingreso = $("#fecha_ingreso_trabajador").val();
+            const fecha_ingreso_real = $("#fecha_ingreso_real").val();
             const id_departamento = $("#departamento_trabajador").val();
             const num_casillero = $("#num_casillero").val().trim();
             const biometrico = $("#biometrico").val().trim();
@@ -514,6 +515,7 @@ $(document).ready(function () {
                 grupo_sanguineo: grupo_sanguineo || "",
                 enfermedades_alergias: enfermedades_alergias || "",
                 fecha_ingreso: fecha_ingreso || "",
+                fecha_ingreso_real: fecha_ingreso_real || "",
                 id_departamento: id_departamento || "",
                 num_casillero: num_casillero || "",
                 biometrico: biometrico || "",
@@ -612,7 +614,7 @@ $(document).ready(function () {
         // Limpiar campos de texto
         $("#clave_trabajador, #nombre_trabajador, #apellido_paterno, #apellido_materno").val("");
         $("#domicilio_trabajador, #imss_trabajador, #curp_trabajador, #grupo_sanguineo_trabajador").val("");
-        $("#enfermedades_alergias_trabajador, #fecha_ingreso_trabajador, #num_casillero, #fecha_nacimiento").val("");
+        $("#enfermedades_alergias_trabajador, #fecha_ingreso_trabajador, #fecha_ingreso_real, #fecha_ingreso_imss, #num_casillero, #fecha_nacimiento").val("");
         $("#rfc_trabajador").val("");
 
         // Limpiar campos de salario
@@ -752,6 +754,64 @@ $(document).ready(function () {
                 $(this).find('input[name="horario_oficial_salida[]"]').val(salida);
             }
         });
+    });
+
+
+    // ====================================================================================================================================
+    // ====================================================================================================================================
+    
+    // ============================================================
+    // CONFIGURACION DE FECHAS DE INGRESO
+    // ============================================================
+
+    /**
+     * EVENTO PARA MOSTRAR LA SECCIÓN DE CONFIGURACIÓN
+     */
+    $(document).on('click', '#tab-configuracion', function (e) {
+        e.preventDefault();
+        // MOSTRAR SECCION DE ACCESO
+        $('#seccion_acceso').removeClass('d-none');
+        // OCULTAR SECCION DE FECHAS
+        $('#seccion_fechas').addClass('d-none');
+        // LIMPIAR EL CAMPO DE CONTRASEÑA
+        $('#inputPassword').val('');
+    });
+
+    /**
+     * CONTRASEÑA PARA ENTRAR A CONFIGURACIÓN
+     */
+    $(document).on('click', '#btn_acceder_fechas', function (e) {
+        e.preventDefault();
+        // RECUPERAR LA CONTRASEÑA INGRESADA
+        const claveIngresada = $('#inputPassword').val().trim();
+        // VALIDAR LA CONTRASEÑA
+        if (claveIngresada === '12345') {
+            // OCULTAR LA SECCIÓN DE ACCESO
+            $('#seccion_acceso').addClass('d-none');
+            // MOSTRAR LA SECCIÓN DE FECHAS
+            $('#seccion_fechas').removeClass('d-none');
+        } else {
+            Swal.fire({
+                title: 'Acceso denegado',
+                text: 'La contraseña ingresada es incorrecta.',
+                icon: 'error',
+                confirmButtonText: 'Entendido'
+            });
+        }
+    });
+
+    /**
+     * EVENTO SI CAMBIA LA FECHA DE INGRESO: fecha_ingreso_trabajador y fecha_ingreso_imss son las mismas
+     * Si cambia una debe cambiar la otra y viceversa, para mantener consistencia en los datos
+     */
+    $(document).on('change', '#fecha_ingreso_trabajador', function () {
+        const fecha = $(this).val();
+        $('#fecha_ingreso_imss').val(fecha);
+    });
+
+    $(document).on('change', '#fecha_ingreso_imss', function () {
+        const fecha = $(this).val();
+        $('#fecha_ingreso_trabajador').val(fecha);
     });
 
 });

@@ -145,6 +145,15 @@ verificarSesion(); // Proteger esta página
                             </div>
                         </div>
                     </div>
+
+                    <div class="col">
+                        <div class="card nav-link" id="tablas-lft-tab" data-bs-toggle="tab" data-bs-target="#tablas-lft"
+                            role="tab" aria-controls="tablas-lft" aria-selected="false">
+                            <div class="card-body p-1">
+                                <h6 class="card-title my-0"><i class="bi bi-file-earmark-spreadsheet"></i> Tablas LFT</h6>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Contenido de las pestañas -->
@@ -1089,11 +1098,169 @@ verificarSesion(); // Proteger esta página
                             </div>
                         </div>
                     </div>
+
+                    <!-- TABLAS LFT -->
+                    <div class="tab-pane fade" id="tablas-lft" role="tabpanel">
+                        <div class="row mt-4">
+                            <!-- Lista de Versiones -->
+                            <div class="col-md-7">
+                                <div class="table-container">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5><i class="bi bi-list-ul"></i> Versiones de Ley LFT</h5>
+                                        <div class="search-box-container">
+                                            <input type="text" class="search-box" id="search-versiones-lft"
+                                                placeholder="Buscar versión...">
+                                        </div>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover" id="tabla-versiones-lft">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Nombre</th>
+                                                    <th>Vigencia</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="versiones-lft-tbody">
+                                                <!-- Cargado dinámicamente -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Formulario de Versión -->
+                            <div class="col-md-5">
+                                <div class="form-container">
+                                    <h5 class="mb-3"><i class="bi bi-plus-circle"></i> Configurar Versión</h5>
+                                    <form id="versionLftForm">
+                                        <input type="hidden" id="id_version_vacaciones" name="id_version_vacaciones">
+                                        
+                                        <div class="mb-3">
+                                            <label for="nombre_version" class="form-label">Nombre de la Versión</label>
+                                            <input type="text" class="form-control" id="nombre_version" name="nombre_version" required placeholder="Ej: Reforma 2023">
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="fecha_inicio_vigencia_lft" class="form-label">Inicio Vigencia</label>
+                                                <input type="date" class="form-control" id="fecha_inicio_vigencia_lft" name="fecha_inicio_vigencia" required>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="fecha_fin_vigencia_lft" class="form-label">Fin Vigencia</label>
+                                                <input type="date" class="form-control" id="fecha_fin_vigencia_lft" name="fecha_fin_vigencia">
+                                                <small class="text-muted">Dejar vacío si es la actual.</small>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn btn-success" id="btn-guardar-version-lft"><i
+                                                    class="bi bi-save"></i> Guardar</button>
+                                            <button type="button" class="btn btn-secondary" id="btn-cancelar-version-lft"><i
+                                                    class="bi bi-x-circle"></i> Cancelar</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         <br>
         <br>
+    </div>
+
+    <!-- Modal para configurar Días de Vacaciones por Versión -->
+    <div class="modal fade" id="modal_dias_lft" tabindex="-1" aria-labelledby="modal_dias_lft_label" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal_dias_lft_label">Configurar Días: <span id="nombre_version_dias" class="badge bg-primary"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form_dias_lft" class="mb-4 bg-light p-3 rounded border">
+                        <input type="hidden" id="id_version_dias" name="id_version_vacaciones">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-3">
+                                <label class="form-label small">Año Inicio</label>
+                                <input type="number" class="form-control" name="anios_antiguedad_inicio" required min="1">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small">Año Fin</label>
+                                <input type="number" class="form-control" name="anios_antiguedad_fin" min="1" placeholder="Igual al inicio">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small">Días Vacaciones</label>
+                                <input type="number" class="form-control" name="dias_vacaciones_correspondientes" required min="1">
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-success w-100"><i class="bi bi-plus-circle"></i> Agregar</button>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Rango de Años</th>
+                                    <th>Días</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody_dias_lft"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para configurar Primas Vacacionales por Versión -->
+    <div class="modal fade" id="modal_primas_lft" tabindex="-1" aria-labelledby="modal_primas_lft_label" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal_primas_lft_label">Configurar Primas: <span id="nombre_version_primas" class="badge bg-primary"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form_primas_lft" class="mb-4 bg-light p-3 rounded border">
+                        <input type="hidden" id="id_version_primas" name="id_version_vacaciones">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-3">
+                                <label class="form-label small">Porcentaje (%)</label>
+                                <input type="number" class="form-control" name="porcentaje_prima" required min="1" step="0.01" value="25.00">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small">Inicio Vigencia</label>
+                                <input type="date" class="form-control" name="fecha_inicio_vigencia" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small">Fin Vigencia</label>
+                                <input type="date" class="form-control" name="fecha_fin_vigencia">
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-success w-100"><i class="bi bi-plus-circle"></i> Agregar</button>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Porcentaje</th>
+                                    <th>Vigencia</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody_primas_lft"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Modal para mostrar la imagen del área -->
@@ -1439,6 +1606,7 @@ verificarSesion(); // Proteger esta página
     <script src="../js/config_tabulador.js"></script>
     <script src="../js/edit_credenciales.js"></script>
     <script src="../js/config_precios_cajas.js"></script>
+    <script src="../js/config_tablasLFT.js"></script>
     <script src="../../../nomina/js/rangos_horas.js"></script>
     <script src="../../../public/js/validaciones.js"></script>
 

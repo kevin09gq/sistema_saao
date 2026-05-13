@@ -1,50 +1,163 @@
+// ===============================
+// VARIABLE GLOBAL
+// ===============================
+window.jsonAguinaldo = null;
+
 // Constantes y variables globales
 const RUTA_RAIZ = window.rutaRaiz || '/sistema_saao';
-jsonAguinaldo = null;  // Variable global (sin let/const/var)
 
-// modal de configuraciones
+// RECUPERAR DATOS DE LA URL
+const params = new URLSearchParams(window.location.search);
+// Recuperar el valor de "cv"
+const cv = params.get("cv");
+
+// Modales
+const modal_editar = new bootstrap.Modal(document.getElementById('modal_editar'));
 const modal_configuracion = new bootstrap.Modal(document.getElementById('modal_configuracion'));
 const modal_reporte_excel = new bootstrap.Modal(document.getElementById('modal_reporte_excel'));
-const modal_editar = new bootstrap.Modal(document.getElementById('modal_editar'));
+const modal_empleados_sin_derecho = new bootstrap.Modal(document.getElementById('modal_empleados_sin_derecho'));
+const modal_visibilidad = new bootstrap.Modal(document.getElementById('modal_visibilidad'));
+const modal_redondeos = new bootstrap.Modal(document.getElementById('modal_redondeos'));
+const modal_dispersion_tarjeta = new bootstrap.Modal(document.getElementById('modal_dispersion_tarjeta'));
+const modal_tarjeta = new bootstrap.Modal(document.getElementById('modal_tarjeta'));
 
 // Menu contextual
-const $menu_corte = $('#context_menu');
+const $menu_contexto = $('#context_menu');
 let filaSeleccionada = null; // Variable para almacenar la fila seleccionada en el menú contextual
 
+
+// =============================================================
+// FUNCIONES INCIALES PARA PROCESAR DATOS Y GUARDAR EN STORAGE
+// =============================================================
+
 /**
- * FLUJO GENERAL DE COMO FUNCIONA:
- * 1. Al cargar la pagina, se ejecuta existeAguinaldo(), si existe recupera de la BD y guarda en localStorage.
- * 2. Si no existe, llama a obtener_empleado() para inicializar el nuevo calculo del aguinaldo.
- * 3. En obtener_empleados(), verifica si el jsonAguinaldo ya esta lleno, si lo esta simplemente no hace nada.
- * 4. Si el jsonAguinaldo esta vacio, hace la consulta al servidor, obtiene los empleados y los guarda en jsonAguinaldo.
+ * Función para guardar datos en localStorage
+ * @param {Array} data Información de los empleados
+ * @param {number} anio Año del aguinaldo
+ * @param {number} config Si es 0 no se han cargado archivos excel, si es 1 se han cargado archivos excel
  */
+function setStorage(data, anio, config) {
 
-$(document).ready(function () {
+    const obj = {
+        anio: anio,
+        configuracion: config,
+        empleados: data
+    };
 
-    // 1. Intentar restaurar desde localStorage
-    const restaurado = restoreAguinaldo();
+    localStorage.setItem("aguinaldo", JSON.stringify(obj));
+}
 
-    // existeAguinaldo();
+/**
+ * Función para obtener datos de localStorage
+ * @returns {Array|null} Información de los empleados o null si no hay datos
+ */
+function getStorage() {
+    const data = localStorage.getItem("aguinaldo");
 
-    // 2. Si no hay datos en localStorage, obtener desde servidor
-    if (!restaurado) {
-        existeAguinaldo();
+    if (!data) return null;
+
+    try {
+        const obj = JSON.parse(data);
+        return obj.empleados || null;
+    } catch (e) {
+        console.error("Error parseando storage", e);
+        return null;
     }
+}
 
-    console.log(jsonAguinaldo);
-    
-});
+/**
+ * Función para limpiar datos de localStorage
+ */
+function clearStorage() {
+    localStorage.removeItem("aguinaldo");
+    window.jsonAguinaldo = null;
+}
 
+
+// ===============================
+// ESTADO (CONTROLADO)
+// ===============================
+
+/**
+ * Función para establecer los datos del jsonAguinaldo
+ * @param {Array} data Información de los empleados
+ */
+function setAguinaldo(data) {
+    window.jsonAguinaldo = data || null;
+    syncStorage();
+}
+
+/**
+ * Función para obtener los datos del jsonAguinaldo
+ * @returns {Array} Información de los empleados
+ */
+function getAguinaldo() {
+    return window.jsonAguinaldo;
+}
+
+/**
+ * Función para sincronizar el estado del jsonAguinaldo con localStorage
+ * @returns {void}
+ */
+function syncStorage() {
+    if (!window.jsonAguinaldo) return;
+    setStorage(window.jsonAguinaldo);
+}
+
+
+// =============================================================
+// FUNCIONES COMPLEMENTARIAS PARA MANEJO DE INTERFAZ Y PROCESOS
+// =============================================================
+
+/**
+ * Función para buscar los años ingresados en la base de datos
+ */
+function buscar_anio() {
+    $("#anio").autocomplete({
+        source: function (request, response) {
+            // request.term contiene el valor que el usuario ha ingresado en el input
+            // Se hace la petición AJAX al servidor para obtener los años que coincidan con el término de búsqueda
+            $.ajax({
+                url: "php/aguinaldo.php",
+                type: "GET",
+                data: {
+                    buscar: request.term,
+                    accion: "buscar_anio"
+                },
+                dataType: "json",
+                success: function (result) {
+                    response($.map(result.data, function (item) {
+                        return {
+                            label: item.anio, // lo que se muestra en la lista
+                            value: item.anio  // lo que se coloca en el input
+                        };
+                    }));
+
+                }
+            });
+        },
+        select: function (event, ui) {
+            // Recuperar el valor seleccionado
+            let cadena = ui.item.value;
+            // console.log(cadena);
+            // Mostrar el valor seleccionado en el input
+            $("#anio").val(cadena);
+        },
+        minLength: 1, // empieza a buscar desde 0 caracteres
+        maxLength: 4, // máximo 4 caracteres para el año
+        delay: 0 // sin retraso para mostrar resultados
+    });
+}
 
 /**
  * Función para mostrar alertas usando SweetAlert2
+ * @param {String} icono Iconos: success, error, warning, info, question.
  * @param {String} titulo Titulo prinicipal de la alerta.
  * @param {String} texto Mensaje principal de la alerta.
- * @param {String} icono Iconos: success, error, warning, info, question.
  * @param {Boolean} toast True para mostrar como toast, false para modal tradicional. Valor por defecto: false.
  * @param {Number} tiempo Duración del toast en ms (si toast=true). Valor por defecto: 3000ms.
  */
-function alerta(titulo, texto, icono, toast = false, tiempo = 3000) {
+function alerta(icono, titulo, texto, toast = false, tiempo = 3000) {
     if (toast) {
         const Toast = Swal.mixin({
             toast: true,
@@ -61,239 +174,312 @@ function alerta(titulo, texto, icono, toast = false, tiempo = 3000) {
             icon: icono,
             title: titulo
         });
-        return;
+    } else {
+        // Modal tradicional
+        Swal.fire({
+            title: titulo,
+            text: texto,
+            icon: icono,
+            confirmButtonText: "Entendido"
+        });
     }
-
-    // Modal tradicional
-    Swal.fire({
-        title: titulo,
-        text: texto,
-        icon: icono,
-        confirmButtonText: "Entendido"
-    });
 }
 
 /**
- * Función para verificar si ya existe un cálculo de aguinaldo para el año seleccionado.
+ * Función para mostrar la tabla de resultados del aguinaldo y
+ * Oculta el formulario de ingreso de año y muestra la tabla con los resultados del cálculo del aguinaldo
  */
-function existeAguinaldo() {
-    const anio = $('#anio').val();
+function mostrar_tabla() {
+    // Agregar clase para ocultar el formulario
+    $("#contenedor_formulario").addClass("d-none");
+    // Eliminar clase para mostrar la tabla
+    $("#contenedor_tabla_aguinaldo").removeClass("d-none");
+    // Resetear el formulario para evitar confusiones
+    resetear_formulario();
+}
 
+/**
+ * Funcion para mostrar el formulario de ingreso de año
+ * y ocultar la tabla de resultados del aguinaldo
+ */
+function mostrar_formulario() {
+    // Agregar clase para ocultar la tabla
+    $("#contenedor_tabla_aguinaldo").addClass("d-none");
+    // Eliminar clase para mostrar el formulario
+    $("#contenedor_formulario").removeClass("d-none");
+    // Resetear el formulario para evitar confusiones
+    resetear_formulario();
+    // Limpiar el body de la tabla
+    $('#cuerpo_tabla_aguinaldo').empty();
+}
+
+/**
+ * Función paa resetear el formulario
+ */
+function resetear_formulario() {
+    $("#form_aguinaldo")[0].reset();
+}
+
+
+/**
+ * ================================================================================================
+ * LLENAR DONDE SE HAGA USO DE LOS DEPARTAMENTOS EN LOS MODALES o INTERFAZ
+ * ================================================================================================
+ */
+
+/**
+ * Obtener la lista de departamentos para el filtro
+ */
+function obtener_departamentos() {
     $.ajax({
+        url: RUTA_RAIZ + "/public/php/obtenerDepartamentos.php",
         type: "GET",
-        url: "../php/aguinaldo.php",
-        data: {
-            accion: "existe_aguinaldo",
-            anio: anio
-        },
         dataType: "json",
-        success: function (response) {
-            
-            switch (response.mensaje) {
-                case "existe":
-                    // Si existe, se recupera el cálculo de aguinaldo desde la base de datos
-                    // console.log("Existe registro en la base");
-                    
-                    recuperarAguinaldoBase(response.data);
-                    break;
-                case "no_existe":
-                    // Si no existe, se obtiene la lista de empleados para iniciar el cálculo del aguinaldo
-                    // console.log("No existe registro en la base");
-                    obtener_empleados();
-                    break;
-                default:
-                    console.warn("Respuesta inesperada del servidor:", response);
-                    break;
-            }
+        success: function (data) {
+            // console.log(data);
+            // Llenar el modal de exportación con los departamentos
+            render_exportar_departamentos(ordenarDepartamentos(data));
+
+            // Llenar los select de departamentos principal
+            render_departamentos({
+                selector: "#id_departamento",
+                data: ordenarDepartamentos(data),
+                keepFirstOption: true,
+                selectFirst: false
+            });
+
+            // Llenar los select de departamentos en los modales de visibilidad
+            render_departamentos({
+                selector: "#select_departamento_visibilidad",
+                data: ordenarDepartamentos(data),
+                keepFirstOption: false,
+                selectFirst: true
+            });
+
+            // Llenar los select de departamentos en los modales de redondeos
+            render_departamentos({
+                selector: "#select_departamento_redondeos",
+                data: ordenarDepartamentos(data),
+                keepFirstOption: false,
+                selectFirst: true
+            });
+
+            // Llenar los select de departamentos en los modales de empleados sin derecho a aguinaldo
+            render_departamentos({
+                selector: "#select_departamento_sin_derecho",
+                data: ordenarDepartamentos(data),
+                keepFirstOption: false,
+                selectFirst: true
+            });
+
+            // Llenar los select de departamentos en el modal de dispersión de tarjetas
+            render_departamentos({
+                selector: "#select_departamento_tarjeta",
+                data: ordenarDepartamentos(data),
+                keepFirstOption: false,
+                selectFirst: true
+            });
+
+            // Llenar los select de departamentos en el modal de configuración
+            render_departamentos({
+                selector: "#departamento_configuracion",
+                data: ordenarDepartamentos(data),
+                keepFirstOption: true,
+                selectFirst: true
+            });
+
+
         },
-        error: function (jqXHR, textStatus, errorThrown) {
-            console.error("Error al obtener el aguinaldo:", errorThrown);
-            console.error("Response:", jqXHR.responseText);
-            alerta("Ocurrió un error", "No se pudo cargar el aguinaldo de la BD. Intente recargar la página.", "error");
+        error: function () {
+            console.error("Error al cargar departamentos");
         }
     });
 }
 
 /**
- * Función para recuperar el cálculo de aguinaldo desde la base de datos y llenar el jsonAguinaldo.
+ * Ordenar los departamentos alfabéticamente por su nombre, ignorando mayúsculas y acentos
+ * @param {Array} departamentos Array de departamentos con id_departamento y nombre_departamento
+ * @returns Array de departamentos ordenados alfabéticamente por nombre_departamento
  */
-function recuperarAguinaldoBase(json_base) {
-    // Asignar el resultado a la variable global
-    jsonAguinaldo = json_base;
-
-    // Guardar en localStorage para persistencia
-    saveAguinaldo(jsonAguinaldo);
-
-    // Alerta para el usuario
-    alerta("Aguinaldos recuperados exitosamente.", "", "success", true, 1500);
-
-    // Renderizar tabla con los datos
-    if (typeof llenar_tabla === 'function') {
-        llenar_tabla();
-    }
+function ordenarDepartamentos(departamentos) {
+    return departamentos.sort((a, b) =>
+        a.nombre_departamento.localeCompare(b.nombre_departamento, 'es', {
+            sensitivity: 'base'
+        })
+    );
 }
 
 /**
- * Función para obtener la lista de empleados y llenar el jsonAguinaldo.
+ * Renderizar la lista de departamentos en el modal de exportación
+ * @param {Array} data Array de departamentos con id_departamento y nombre_departamento
  */
-function obtener_empleados() {
-    // console.log("Se ejecuta obtener_empleados");
-    
-    // Si ya hay datos, no volver a hacer la solicitud
-    if (jsonAguinaldo !== null && Array.isArray(jsonAguinaldo) && jsonAguinaldo.length > 0) {
-        // console.log("Los datos ya están cargados:", jsonAguinaldo);
-        return;
+function render_exportar_departamentos(data) {
+    let tmp = ``;
+
+    data.forEach(departamento => {
+        tmp += `
+        <label class="list-group-item list-group-item-action d-flex align-items-center py-3">
+            <input
+                class="form-check-input me-3 mt-0"
+                type="checkbox" 
+                value="${departamento.id_departamento}"
+                id="departamento_${departamento.nombre_departamento}"
+                data-id="${departamento.id_departamento}"
+                data-nombre="${departamento.nombre_departamento}" 
+                name="departamentos_seleccionados[]" checked>
+            <span class="flex-grow-1 fw-medium">${departamento.nombre_departamento}</span>
+        </label>
+        `;
+    });
+
+    $('#contenedor_lista_deptamentos').html(tmp);
+}
+
+/**
+ * Renderiza departamentos en un select
+ * 
+ * @param {Object} config
+ * @param {string} config.selector Selector del select
+ * @param {Array} config.data Lista de departamentos
+ * @param {boolean} [config.keepFirstOption=false] Mantener primera opción existente
+ * @param {boolean} [config.selectFirst=false] Seleccionar automáticamente el primer elemento
+ */
+function render_departamentos({
+    selector,
+    data,
+    keepFirstOption = false,
+    selectFirst = false
+}) {
+
+    const select = $(selector);
+
+    if (keepFirstOption) {
+        select.find("option:not(:first)").remove();
+    } else {
+        select.empty();
     }
 
+    data.forEach((depto, index) => {
+
+        const selected = (selectFirst && index === 0)
+            ? 'selected'
+            : '';
+
+        select.append(`
+            <option ${selected} value="${depto.id_departamento}">
+                ${depto.nombre_departamento}
+            </option>
+        `);
+    });
+}
+
+/**
+ * Función para obtener las empresas
+ */
+function obtener_empresas() {
     $.ajax({
+        url: RUTA_RAIZ + "/public/php/obtenerEmpresas.php",
         type: "GET",
-        url: "../php/obtener_empleados.php",
         dataType: "json",
-        success: function (response) {
-
-            console.log("Obtener empleados: ", response.data);
-            
-
-            // Validar que la respuesta tenga los datos correctos
-            if (response && response.data && Array.isArray(response.data)) {
-                jsonAguinaldo = response.data;
-
-                // console.log("Se recuperaron los empleados");
-
-                jsonAguinaldo.slice(1).forEach(empleado => {
-
-                    // Pasa la fecha_ingreso_real por defecto
-                    if (empleado.usar_fecha_real === 1) {
-                        empleado.tmp_dias_trabajados = diasTrabajados(empleado.fecha_ingreso_real);
-                    } else {
-                        // Si no se usa fecha real, se calcula con fecha de ingreso al IMSS
-                        // Pero primero debe subir la lista de raya y configurarlo desde la configuración
-                        empleado.tmp_dias_trabajados = diasTrabajados(empleado.fecha_ingreso_imss);
-                    }
-
-                    if (empleado.usar_ausencias == 1 && empleado.dias_trabajados > 0) {
-                        empleado.dias_trabajados = empleado.tmp_dias_trabajados - empleado.ausencias;
-                    } else {
-                        empleado.dias_trabajados = empleado.tmp_dias_trabajados;
-                    }
-                
-                    empleado.meses_trabajados = mesesTrabajados(empleado.dias_trabajados);
-
-                    empleado.aguinaldo = calcularAguinaldo(empleado.dias_trabajados, empleado.salario_diario); // si estaba null, ahora se actualiza
-
-                    empleado.neto_pagar = calcularNetoPagar(empleado.aguinaldo, empleado.isr, empleado.tarjeta); // si estaba 0, ahora se actualiza
-
-                });
-
-                console.log("Empleados cargados correctamente:", jsonAguinaldo);
-
-                // Guardar en localStorage para persistencia
-                saveAguinaldo(jsonAguinaldo);
-
-                // Renderizar tabla con los datos
-                if (typeof llenar_tabla === 'function') {
-                    llenar_tabla();
-                }
-
-            } else {
-                console.error("Respuesta del servidor en formato incorrecto:", response);
-                alerta("Error", "Los datos recibidos no tienen el formato esperado.", "error");
-            }
-
+        success: function (data) {
+            // console.log(data);
+            // Llenar el select de empresas de la tabla
+            render_select_empresas(data);
         },
-        error: function (jqXHR, textStatus, errorThrown) {
-            console.error("Error al obtener los empleados:", errorThrown);
-            console.error("Response:", jqXHR.responseText);
-            alerta("Ocurrió un error", "No se pudieron cargar los empleados. Intente recargar la página.", "error");
+        error: function () {
+            console.error("Error al cargar empresas");
         }
     });
 }
 
 /**
- * Calcular los días trabajados de los empleados hasta fin de año.
- * @param {Date} fecha_ingreso Fecha en que el empleado ingresó
- * @param {Number} anio Año de cálculo (ej. 2026)
- * @returns {Number} Número de días trabajados en ese año
+ * Renderizar la lista de empresas en el modal de exportación
+ * @param {Array} data Array de empresas con id_empresa y nombre_empresa
  */
-function diasTrabajados(fecha_ingreso, anio = new Date().getFullYear()) {
+function render_select_empresas(data) {
+    const select = $("#id_empresa");
+    // Mantener la opción por defecto
+    select.find("option:not(:first)").remove();
 
-    if (!fecha_ingreso) {
-        return 0;
-    }
-
-    const fechaIngreso = new Date(fecha_ingreso);
-    const inicioAño = new Date(anio, 0, 1);   // 1 de enero
-    const finAño = new Date(anio, 11, 31);    // 31 de diciembre
-
-    // Si ingresó este año, contamos desde su fecha de ingreso hasta el 31 de diciembre
-    if (fechaIngreso.getFullYear() === anio) {
-        const diferenciaMs = finAño - fechaIngreso;
-        return Math.max(0, Math.floor(diferenciaMs / (1000 * 60 * 60 * 24)) + 1);
-    }
-
-    // Si ingresó en años anteriores, cuenta todo el año completo
-    const diferenciaMs = finAño - inicioAño;
-    return Math.floor(diferenciaMs / (1000 * 60 * 60 * 24)) + 1;
+    data.forEach(function (depto) {
+        select.append(
+            `<option value="${depto.id_empresa}">${depto.nombre_empresa}</option>`
+        );
+    });
 }
-
 
 /**
- * Recibe los días trabajados y devuelve el equivalente en meses (redondeado a 1 decimal)
- * @param {Number} dias_trabajados Número de días trabajados en el año 
+ * Formatear una fecha en el formato DD/MM/YYYY
+ * @param {String} fecha Fecha en formato YYYY-MM-DD
+ * @returns Fecha con el formato DD/MM/YYYY
  */
-function mesesTrabajados(dias_trabajados) {
-    return parseFloat((dias_trabajados / 30.4).toFixed(1));
+function formatearFecha(fecha) {
+    if (!fecha) return "N/A"; // null, undefined, "", 0, etc.
+
+    const meses = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN",
+        "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
+
+    const partes = fecha.split("-");
+
+    // Validación básica del formato
+    if (partes.length !== 3) return "N/A";
+
+    const anio = partes[0];
+    const mesIndex = parseInt(partes[1], 10) - 1;
+    const dia = partes[2];
+
+    // Validar que el mes sea correcto
+    if (mesIndex < 0 || mesIndex > 11) return "N/A";
+
+    const mes = meses[mesIndex];
+
+    return `${dia}/${mes}/${anio}`;
 }
 
+// ===============================
+// INICIALIZACIÓN Y CONTROL DE PROCESOS
+// ===============================
 
 /**
- * Función para calcular el aguinaldo de un empleado
- * @param {Number} dias_trabajados dias que trabajo el empleado en el año
- * @param {Float} salario_diario salario diario del empleado
- * @returns {Float} El monto del aguinaldo calculado
+ * Función para inicializar el estado de jsonAguinaldo al cargar la página
+ * @returns {void}
  */
-function calcularAguinaldo(dias_trabajados, salario_diario) {
-    // Convertir salario_diario a número (puede venir como string desde BD)
-    const sueldoNumerico = parseFloat(salario_diario) || 0;
+function initAguinaldo() {
 
-    if (dias_trabajados < 60) {
-        return -1;
+    // Obtener la lista de departamentos para el filtro
+    obtener_departamentos();
+    // Obtener la lista de empresas para el filtro
+    obtener_empresas();
+    // Obtener los años ingresados en la base de datos para el autocomplete
+    buscar_anio();
+
+    // Intentar cargar datos desde localStorage
+    const data = getStorage();
+
+    if (data) {
+        window.jsonAguinaldo = data;
+        //llenar_tabla(window.jsonAguinaldo);
+        console.log("Datos cargados desde localStorage");
+        // Se llena la tabla con los datos obtenidos del storage
+        llenar_tabla_aguinaldo();
+        // Se muestra la tabla y se oculta el formulario
+        mostrar_tabla();
+    } else {
+        window.jsonAguinaldo = [];
+        console.log("Sin datos en storage");
+        // Se muestra el formulario y se oculta la tabla
+        mostrar_formulario();
     }
-    const aguinaldo = (15 / 365) * dias_trabajados * sueldoNumerico;
-    return parseFloat(aguinaldo.toFixed(2)); // Redondear a 2 decimales
 }
 
 
-/**
- * Calcular el neto a pagar al empleado restando ISR y tarjeta del aguinaldo
- * @param {Float} aguinaldo Calculo del aguinaldo para el empleado
- * @param {Float} isr ISR de impuesto
- * @param {Float} tarjeta Valor del dispersión de tarjeta
- * @returns El monto neto a pagar
- */
-function calcularNetoPagar(aguinaldo, isr, tarjeta) {
-    // Si no tiene derecho a aguinaldo
-    if (aguinaldo === -1) {
-        return 0.00;
-    }
-    // Cálculo normal
-    return parseFloat((aguinaldo - isr - tarjeta).toFixed(2));
-}
+// ===============================
+// Inicialización al cargar la página
+// ===============================
 
-// Informar el usuario sobre el cambio del año
-$(document).on('click', '#anio', function (e) {
-    e.preventDefault();
-    alerta("Si cambias el año y no has guardado los cambios, se perderán.", ".", "info", true, 5000);
-});
 
-// Detectar el cambio del año
-$(document).on('change', '#anio', function (e) {
-    e.preventDefault();
-    // console.log("Cambio de año");
-    // console.log("Limpiando localStorage");
-    clearAguinaldo();
-    // Validar si existe un aguinaldo para el año seleccionado
-    existeAguinaldo();
-    // Validar si ya se cargaron las listas de raya
-    validarEstadoCargaArchivos();
+$(document).ready(function () {
+
+    initAguinaldo();
+
 });

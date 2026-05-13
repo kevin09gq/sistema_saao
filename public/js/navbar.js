@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return 'documentos';
         } else if (path.includes('/reloj-8horas/views/historial.php')) {
             return 'documentos';
-        } else if (path.includes('/aguinaldo/views/aguinaldo.php')) {
+        } else if (path.includes('/aguinaldo/aguinaldo.php')) {
             return 'documentos';
         } else if (path.includes('/nomina_40lbs/views/nomina_40lbs.php')) {
             return 'nominas'; // Highlight 'Nóminas' for 40 lbs

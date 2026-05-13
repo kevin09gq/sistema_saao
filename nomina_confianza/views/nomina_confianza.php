@@ -77,9 +77,6 @@
                         title="Establecer Horario Variable" aria-label="Establecer Horario Variable">
                         <i class="bi bi-calendar-check"></i>
                     </button>
-                    <button class="btn btn-outline-primary" type="button" id="btn_marcajes" title="Ajustar Marcaje">
-                        <i class="bi bi-clock-history"></i>
-                    </button>
                     <button class="btn btn-outline-primary" id="btn-seleccionar-empleados" title="Seleccionar empleados">
                         <i class="bi bi-people"></i>
                     </button>
@@ -104,7 +101,10 @@
                         title="dias justificados" aria-label="dias-justificados">
                         <i class="bi bi-check-circle"></i>
                     </button>
-
+                    <button class="btn btn-outline-primary" id="btn_add_percepciones_deducciones"
+                        title="Agregar Percepciones/Deducciones Extras">
+                        <i class="bi bi-patch-plus"></i>
+                    </button>
                     <button class="btn btn-outline-info" id="btn_ver_dispersion" title="Ver Dispersión de Tarjeta">
                         <i class="bi bi-list-columns-reverse"></i>
                     </button>
@@ -240,6 +240,8 @@
     <?php include 'modals/modalTipoDia.php'; ?>
     <?php include 'modals/biometricoModal.php'; ?>
     <?php include 'modals/modalSeleccionarEmpleados.php'; ?>
+    <?php include 'modals/addPercepcionesDeducciones.php'; ?>
+
     <?php include 'modals/modalHorarioVariable.php'; ?>
     <?php include 'modals/modalDiasInhabiles.php'; ?>
     <?php include 'modals/modalOlvidos.php'; ?>
@@ -249,7 +251,7 @@
     <?php include 'modals/modalReasignarEmpleado.php'; ?>
     <?php include 'modals/modalRedondeoSueldos.php'; ?>
     <?php include 'modals/dispersionTarjeta.php'; ?>
-
+    
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
     <script src="<?= JQUERY_UI_JS ?>"></script>
@@ -283,6 +285,7 @@
     <script src="../js/configModales/exportarNominaExcel.js"></script>
     <script src="../js/configModales/reasignarEmpleado.js"></script>
     <script src="../js/configModales/redondearSueldos.js"></script>
+    <script src="../js/configModales/addPercepcionesDeducciones.js"></script>
 
     <script src="../js/ticket_pdf.js"></script>
     <script src="../js/ticket_seleccion_confianza.js"></script>

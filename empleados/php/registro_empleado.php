@@ -26,6 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $grupo_sanguineo = $_POST['grupo_sanguineo'] ?? null;
         $enfermedades_alergias = $_POST['enfermedades_alergias'] ?? null;
         $fecha_ingreso = $_POST['fecha_ingreso'] ?? null;
+        $fecha_ingreso_real = $_POST['fecha_ingreso_real'] ?? null;
         $id_departamento = $_POST['id_departamento'] ?? null;
         $num_casillero = $_POST['num_casillero'] ?? null;
 
@@ -60,6 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // FORMATEAR FECHAS
         // =============================
         $fecha_ingreso = !empty($fecha_ingreso) ? date('Y-m-d', strtotime($fecha_ingreso)) : null;
+        $fecha_ingreso_real = !empty($fecha_ingreso_real) ? date('Y-m-d', strtotime($fecha_ingreso_real)) : null;
         $fecha_nacimiento = !empty($fecha_nacimiento) ? date('Y-m-d', strtotime($fecha_nacimiento)) : null;
 
         // =============================
@@ -208,9 +210,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "INSERT INTO info_empleados (
                 id_rol, id_status, nombre, ap_paterno, ap_materno, domicilio,
                 imss, curp, sexo, enfermedades_alergias, grupo_sanguineo,
-                fecha_ingreso, fecha_nacimiento, id_departamento, 
+                fecha_ingreso, fecha_ingreso_real, fecha_nacimiento, id_departamento, 
                 id_area, id_puestoEspecial, id_empresa, clave_empleado, salario_semanal, salario_diario, biometrico, telefono_empleado, status_nss, rfc_empleado, estado_civil, horario_fijo
-            ) VALUES (2, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            ) VALUES (2, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         );
 
         if (!$sql) {
@@ -218,7 +220,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $sql->bind_param(
-            "ssssssssssssiiisddssissi", // 20 parámetros
+            "sssssssssssssiiisddssissi", // 20 parámetros
             $nombre,
             $ap_paterno,
             $ap_materno,
@@ -229,6 +231,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $enfermedades_alergias,
             $grupo_sanguineo,
             $fecha_ingreso,
+            $fecha_ingreso_real,
             $fecha_nacimiento,
             $id_departamento,
             $id_area,

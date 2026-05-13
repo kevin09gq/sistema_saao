@@ -1,6 +1,6 @@
 
 // Evemtp ára abrir el modal de exportación
-$('#btn_exportar_excel').click(function (e) {
+$('#btn_reportes').click(function (e) {
     e.preventDefault();
     modal_reporte_excel.show();
 });
@@ -38,7 +38,7 @@ $(document).on('click', '#btn_generar_reporte', function (e) {
     }
 
     // Obtener el año seleccionado por el usuario
-    const anio = $('#anio').val();
+    const anio = window.jsonAguinaldo.anio;
     // Obtener los departamentos seleccionados
     let departamentosSeleccionados = [];
     // Recorrer los checkboxes de departamentos seleccionados y agregar su información al array
@@ -52,7 +52,7 @@ $(document).on('click', '#btn_generar_reporte', function (e) {
 
     // Validar que se haya seleccionado al menos un departamento
     if (departamentosSeleccionados.length == 0) {
-        alerta('Sin departamentos seleccionados', 'Por favor, selecciona al menos un departamento para generar el reporte.', 'warning');
+        alerta('info', 'Departamentos no seleccionados', 'Por favor, selecciona al menos un departamento para generar el reporte.');
         return;
     }
 
@@ -73,10 +73,10 @@ $(document).on('click', '#btn_generar_reporte', function (e) {
 
     // Enviar el jsonAguinaldo al servidor PHP mediante POST
     $.ajax({
-        url: '../php/exportar_excel.php',
+        url: 'php/exportar_excel.php',
         type: 'POST',
         data: {
-            jsonAguinaldo: JSON.stringify(jsonAguinaldo),
+            jsonAguinaldo: JSON.stringify(window.jsonAguinaldo),
             anio: anio,
             departamentos: JSON.stringify(departamentosSeleccionados),
             empresa: empresaSeleccionada

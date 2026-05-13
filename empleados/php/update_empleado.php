@@ -19,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $grupo_sanguineo = $_POST['grupo_sanguineo'] ?? null;
     $enfermedades_alergias = $_POST['enfermedades_alergias'] ?? null;
     $fecha_ingreso = $_POST['fecha_ingreso'] ?? null;
+    $fecha_ingreso_real = $_POST['fecha_ingreso_real'] ?? null;
     $id_departamento = $_POST['id_departamento'] ?? null;
 
     $horario_fijo = $_POST['horario_fijo'] ?? 0; // Agregue esto BHL
@@ -56,6 +57,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $fecha_ingreso = date('Y-m-d', strtotime($fecha_ingreso));
     } else {
         $fecha_ingreso = null;
+    }
+
+    // Convertir fecha real si viene
+    if ($fecha_ingreso_real) {
+        $fecha_ingreso_real = date('Y-m-d', strtotime($fecha_ingreso_real));
+    } else {
+        $fecha_ingreso_real = null;
     }
 
     
@@ -203,6 +211,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             grupo_sanguineo = ?,
             enfermedades_alergias = ?,
             fecha_ingreso = ?,
+            fecha_ingreso_real = ?,
             fecha_nacimiento = ?,
             id_empresa = ?,
             id_area = ?,
@@ -218,7 +227,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         WHERE id_empleado = ?");
 
         $update_empleado->bind_param(
-            "sssssssssssssiiddisssii",
+            "ssssssssssssssiiddisssii",
             $clave_empleado,
             $nombre_empleado,
             $ap_paterno,
@@ -230,6 +239,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $grupo_sanguineo,
             $enfermedades_alergias,
             $fecha_ingreso,
+            $fecha_ingreso_real,
             $fecha_nacimiento,
             $id_empresa,
             $id_area,
@@ -258,6 +268,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             grupo_sanguineo = ?,
             enfermedades_alergias = ?,
             fecha_ingreso = ?,
+            fecha_ingreso_real = ?,
             fecha_nacimiento = ?,
             id_empresa = ?,
             id_area = ?,
@@ -273,7 +284,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         WHERE id_empleado = ?");
 
         $update_empleado->bind_param(
-            "sssssssssssssiiiddisssii",
+            "ssssssssssssssiiiddisssii",
             $clave_empleado,
             $nombre_empleado,
             $ap_paterno,
@@ -285,6 +296,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $grupo_sanguineo,
             $enfermedades_alergias,
             $fecha_ingreso,
+            $fecha_ingreso_real,
             $fecha_nacimiento,
             $id_empresa,
             $id_area,

@@ -67,6 +67,11 @@ verificarSesion();
                                         <i class="bi bi-calendar-check me-2"></i>Horarios Oficiales
                                     </button>
                                 </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="tab-configuracion" data-bs-toggle="tab" data-bs-target="#tab_configuracion" type="button" role="tab" aria-controls="tab_configuracion" aria-selected="false">
+                                        <i class="bi bi-gear-fill"></i>
+                                    </button>
+                                </li>
                             </ul>
 
                             <!-- Tab content -->
@@ -465,6 +470,42 @@ verificarSesion();
                                                 </tbody>
                                             </table>
                                         </div>
+                                    </div>
+                                </div>
+
+                                <!-- Configuración -->
+                                <div class="tab-pane fade" id="tab_configuracion" role="tabpanel" aria-labelledby="tab-configuracion">
+                                    <div class="p-4">
+
+                                        <!-- Sección 1: Acceso (Seguridad) -->
+                                        <div id="seccion_acceso" class="mb-5 pb-4">
+                                            <h5 class="mb-3">Control de Acceso</h5>
+                                            <div class="row g-3 align-items-end">
+                                                <div class="col-md-4">
+                                                    <label for="inputPassword" class="form-label">Contraseña</label>
+                                                    <input type="password" class="form-control" id="inputPassword" placeholder="Ingrese su clave">
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <button type="button" class="btn btn-primary w-100" id="btn_acceder_fechas">Acceder</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Sección 2: Fechas de Ingreso -->
+                                        <div id="seccion_fechas" class="mb-3 d-none">
+                                            <h5 class="mb-3">Registro de Fechas</h5>
+                                            <div class="row g-3">
+                                                <div class="col-md-4">
+                                                    <label for="fecha_ingreso_real" class="form-label">Fecha de ingreso real</label>
+                                                    <input type="date" id="fecha_ingreso_real" class="form-control">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label for="fecha_ingreso_imss" class="form-label">Fecha de ingreso IMSS</label>
+                                                    <input type="date" id="fecha_ingreso_imss" class="form-control">
+                                                </div>
+                                            </div>
+                                        </div>
+
                                     </div>
                                 </div>
 
