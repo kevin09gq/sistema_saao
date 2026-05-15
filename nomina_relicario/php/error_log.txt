@@ -1,0 +1,25 @@
+[15-May-2026 17:27:25 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'e.fecha_ingreso' in 'field list' in C:\xampp\htdocs\sistema_saao\nomina_relicario\php\descargar_ticket_pdf.php:374
+Stack trace:
+#0 C:\xampp\htdocs\sistema_saao\nomina_relicario\php\descargar_ticket_pdf.php(374): mysqli->prepare('SELECT p.nombre...')
+#1 {main}
+  thrown in C:\xampp\htdocs\sistema_saao\nomina_relicario\php\descargar_ticket_pdf.php on line 374
+[15-May-2026 17:27:33 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'e.fecha_ingreso' in 'field list' in C:\xampp\htdocs\sistema_saao\nomina_relicario\php\descargar_ticket_pdf.php:374
+Stack trace:
+#0 C:\xampp\htdocs\sistema_saao\nomina_relicario\php\descargar_ticket_pdf.php(374): mysqli->prepare('SELECT p.nombre...')
+#1 {main}
+  thrown in C:\xampp\htdocs\sistema_saao\nomina_relicario\php\descargar_ticket_pdf.php on line 374
+[15-May-2026 17:27:55 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'e.fecha_ingreso' in 'field list' in C:\xampp\htdocs\sistema_saao\nomina_relicario\php\descargar_ticket_pdf.php:374
+Stack trace:
+#0 C:\xampp\htdocs\sistema_saao\nomina_relicario\php\descargar_ticket_pdf.php(374): mysqli->prepare('SELECT p.nombre...')
+#1 {main}
+  thrown in C:\xampp\htdocs\sistema_saao\nomina_relicario\php\descargar_ticket_pdf.php on line 374
+[15-May-2026 17:28:00 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'e.fecha_ingreso' in 'field list' in C:\xampp\htdocs\sistema_saao\nomina_relicario\php\descargar_ticket_pdf.php:374
+Stack trace:
+#0 C:\xampp\htdocs\sistema_saao\nomina_relicario\php\descargar_ticket_pdf.php(374): mysqli->prepare('SELECT p.nombre...')
+#1 {main}
+  thrown in C:\xampp\htdocs\sistema_saao\nomina_relicario\php\descargar_ticket_pdf.php on line 374
+[15-May-2026 17:28:12 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'e.fecha_ingreso' in 'field list' in C:\xampp\htdocs\sistema_saao\nomina_relicario\php\descargar_ticket_pdf.php:374
+Stack trace:
+#0 C:\xampp\htdocs\sistema_saao\nomina_relicario\php\descargar_ticket_pdf.php(374): mysqli->prepare('SELECT p.nombre...')
+#1 {main}
+  thrown in C:\xampp\htdocs\sistema_saao\nomina_relicario\php\descargar_ticket_pdf.php on line 374

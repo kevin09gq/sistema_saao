@@ -1173,7 +1173,7 @@ verificarSesion(); // Proteger esta página
 
     <!-- Modal para configurar Días de Vacaciones por Versión -->
     <div class="modal fade" id="modal_dias_lft" tabindex="-1" aria-labelledby="modal_dias_lft_label" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="modal_dias_lft_label">Configurar Días: <span id="nombre_version_dias" class="badge bg-primary"></span></h5>
@@ -1219,7 +1219,7 @@ verificarSesion(); // Proteger esta página
 
     <!-- Modal para configurar Primas Vacacionales por Versión -->
     <div class="modal fade" id="modal_primas_lft" tabindex="-1" aria-labelledby="modal_primas_lft_label" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="modal_primas_lft_label">Configurar Primas: <span id="nombre_version_primas" class="badge bg-primary"></span></h5>

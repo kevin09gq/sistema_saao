@@ -119,7 +119,7 @@
                         <i class="bi bi-credit-card-2-back"></i>
                     </button>
                     <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf"
-                        title="Descargar Todos los Tickets">
+                        title="Descargar Tickets">
                         <i class="bi bi-ticket-perforated"></i>
                     </button>
                     <button class="btn btn-outline-success btn-ticket-zebra" id="btn_ticket_manual_40lbs"
@@ -222,6 +222,7 @@
     </div>
 
 
+
     <!-- Incluir el modal -->
     <?php include 'modals/modalRedondeoSueldos.php'; ?>
     <?php include 'modals/modalOlvidos.php'; ?>
@@ -233,6 +234,7 @@
     <?php include 'modals/modalSeleccionarEmpleados.php'; ?>
     <?php include 'modals/modalConceptosTotales.php'; ?>
     <?php include 'modals/modalExportarNomina.php'; ?>
+    <?php include 'modals/modalTicketsEmpleados.php'; ?>
     <?php include 'modals/modal_seleccion_tickets_40lbs.php'; ?>
     <?php include 'modals/dispersionTarjeta.php'; ?>   
     <?php include 'modals/modalMarcajes.php'; ?>

@@ -566,8 +566,8 @@
     }
     
     // Mostrar fecha de ingreso si está disponible
-    if (datos.fecha_ingreso) {
-      llenarCampo('fechaIngreso', datos.fecha_ingreso);
+    if (datos.fecha_alta_empresa) {
+      llenarCampo('fechaIngreso', datos.fecha_alta_empresa);
     }
     
     llenarCampo('curp', datos.curp || '');
@@ -773,7 +773,7 @@
     datos.rfc_empleado = document.getElementById('rfcEmpleado') ? document.getElementById('rfcEmpleado').value : '';
     datos.domicilio_trabajador = document.getElementById('domicilioTrabajador').value;
     // Fecha de ingreso (solo lectura, se obtiene de la base de datos)
-    datos.fecha_ingreso = document.getElementById('fechaIngreso').value;
+    datos.fecha_alta_empresa = document.getElementById('fechaIngreso').value;
     
     // Datos del puesto
     datos.puesto_trabajador = document.getElementById('puestoTrabajador').value;
@@ -1124,7 +1124,7 @@
         `${empleadoSeleccionado.nombre_empleado || ''} ${empleadoSeleccionado.apellido_paterno_empleado || ''} ${empleadoSeleccionado.apellido_materno_empleado || ''}`.trim().toUpperCase());
       html = html.replace(/{{\s*empleado\.curp\s*}}/g, (empleadoSeleccionado.curp || '').toUpperCase());
       html = html.replace(/{{\s*empleado\.fecha_nacimiento\s*}}/g, formatFechaDMY(empleadoSeleccionado.fecha_nacimiento || ''));
-      html = html.replace(/{{\s*empleado\.fecha_ingreso\s*}}/g, formatFechaDMY(empleadoSeleccionado.fecha_ingreso || ''));
+      html = html.replace(/{{\s*empleado\.fecha_alta_empresa\s*}}/g, formatFechaDMY(empleadoSeleccionado.fecha_alta_empresa || ''));
       html = html.replace(/{{\s*empleado\.domicilio\s*}}/g, (empleadoSeleccionado.domicilio_empleado || '').toUpperCase());
       html = html.replace(/{{\s*empleado\.puesto\s*}}/g, (empleadoSeleccionado.nombre_puesto || '').toUpperCase());
       html = html.replace(/{{\s*empleado\.empresa\s*}}/g, (empleadoSeleccionado.nombre_empresa || '').toUpperCase());

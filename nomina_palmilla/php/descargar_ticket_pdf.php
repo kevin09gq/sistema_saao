@@ -38,6 +38,174 @@ function safeText($s) {
     return $s;
 }
 
+function renderTicketCortePdf($pdf, $empleado, $meta) {
+    $nombre = safeText($empleado['nombre'] ?? '');
+    $semana = safeText($meta['numero_semana'] ?? '');
+    
+    // Datos específicos de corte
+    $totalRejas = toNumber($empleado['totalRejas'] ?? 0);
+    $precioReja = toNumber($empleado['precio'] ?? 0);
+    $totalEfectivo = toNumber($empleado['totalEfectivo'] ?? 0);
+
+    // ─── Funciones de dibujo (idénticas a Poda) ─────────────────────
+    $pdf->SetTextColor(0, 0, 0);
+    
+    $dot = function ($d) {
+        return ((float)$d) / 8.0;
+    };
+    $pt = function ($dotH) use ($dot) {
+        $mm = $dot($dotH);
+        return max(4.0, $mm / 0.352777);
+    };
+    
+    $text = function ($xDot, $yDot, $fontPt, $value) use ($pdf, $dot) {
+        $pdf->SetFont('helvetica', '', $fontPt);
+        $pdf->Text($dot($xDot), $dot($yDot), (string)$value);
+    };
+    
+    $textB = function ($xDot, $yDot, $fontPt, $value) use ($pdf, $dot) {
+        $pdf->SetFont('helvetica', 'B', $fontPt);
+        $pdf->Text($dot($xDot), $dot($yDot), (string)$value);
+    };
+
+    // ─── Encabezado ──────────────────────────────────────────────────
+    $pdf->SetLineWidth($dot(2));
+    $pdf->Rect($dot(10), $dot(12), $dot(812), $dot(386));
+    
+    $text(290, 22, $pt(17), $nombre);
+    $text(710, 20, $pt(18), 'SEM ' . $semana);
+    
+    $pdf->SetLineWidth($dot(1));
+    $pdf->Line($dot(10), $dot(42), $dot(10 + 812), $dot(42));
+
+    $text(280, 47, $pt(20), "Tipo de trabajo: Corte De Rejas");
+    $pdf->SetLineWidth($dot(1));
+    $pdf->Line($dot(10), $dot(75), $dot(10 + 812), $dot(75));
+
+    // ─── Celdas tipo Poda ─────────────────────────────────────────────
+    $cellText = function ($xDot, $yDot, $wDot, $hDot, $fontPt, $value, $align = 'L') use ($pdf, $dot) {
+        $pdf->SetFont('helvetica', '', $fontPt);
+        $pdf->SetXY($dot($xDot), $dot($yDot));
+        $pdf->Cell($dot($wDot), $dot($hDot), $value, 1, 0, $align, false, '', 0, false, 'C', 'M');
+    };
+    
+    $fNormal = $pt(16);
+    $fGrande = $pt(22);
+    
+    $xInicio = 10;
+    $yInicio = 100;
+    $anchoEtiqueta = 400;
+    $anchoValor = 412;
+    $altoCelda = 50;
+    $espacioCeldas = 50;
+
+    $cellText($xInicio, $yInicio, $anchoEtiqueta, $altoCelda, $fNormal, 'Total de rejas:', 'L');
+    $cellText($xInicio + $anchoEtiqueta, $yInicio, $anchoValor, $altoCelda, $fGrande, $totalRejas, 'C');
+
+    $cellText($xInicio, $yInicio + $espacioCeldas, $anchoEtiqueta, $altoCelda, $fNormal, 'Precio por reja:', 'L');
+    $cellText($xInicio + $anchoEtiqueta, $yInicio + $espacioCeldas, $anchoValor, $altoCelda, $fGrande, '$' . money($precioReja), 'C');
+
+    $cellText($xInicio, $yInicio + ($espacioCeldas * 2), $anchoEtiqueta, $altoCelda, $fNormal, 'Total efectivo:', 'L');
+    $cellText($xInicio + $anchoEtiqueta, $yInicio + ($espacioCeldas * 2), $anchoValor, $altoCelda, $fGrande, '$' . money($totalEfectivo), 'C');
+
+    $yLineaFinal = $yInicio + ($espacioCeldas * 3) + 20;
+    $pdf->SetLineWidth($dot(2));
+    $pdf->Line($dot(10), $dot($yLineaFinal), $dot(10 + 812), $dot($yLineaFinal));
+    
+    $textB(18, $yLineaFinal + 35, $pt(28), 'TOTAL EFECTIVO');
+    $textB(280, $yLineaFinal + 35, $pt(28), '$');
+    $textB(300, $yLineaFinal + 35, $pt(28), money($totalEfectivo));
+}
+
+function renderTicketPodaPdf($pdf, $empleado, $meta) {
+    $nombre = safeText($empleado['nombre'] ?? '');
+    $semana = safeText($meta['numero_semana'] ?? '');
+    
+    // Datos específicos de poda
+    $totalArboles = toNumber($empleado['totalArboles'] ?? 0);
+    $pagoPorArbol = toNumber($empleado['monto'] ?? 0);
+    $totalEfectivo = toNumber($empleado['totalEfectivo'] ?? 0);
+    
+    // ─── Funciones de dibujo ─────────────────────────────────────────
+    $pdf->SetTextColor(0, 0, 0);
+    
+    $dot = function ($d) {
+        return ((float)$d) / 8.0;
+    };
+    $pt = function ($dotH) use ($dot) {
+        $mm = $dot($dotH);
+        return max(4.0, $mm / 0.352777);
+    };
+    
+    $text = function ($xDot, $yDot, $fontPt, $value) use ($pdf, $dot) {
+        $pdf->SetFont('helvetica', '', $fontPt);
+        $pdf->Text($dot($xDot), $dot($yDot), (string)$value);
+    };
+    
+    $textB = function ($xDot, $yDot, $fontPt, $value) use ($pdf, $dot) {
+        $pdf->SetFont('helvetica', 'B', $fontPt);
+        $pdf->Text($dot($xDot), $dot($yDot), (string)$value);
+    };
+    
+    // ─── Encabezado ──────────────────────────────────────────────────
+    $pdf->SetLineWidth($dot(2));
+    $pdf->Rect($dot(10), $dot(12), $dot(812), $dot(386));
+    
+    // Título principal
+    $text(290, 22, $pt(17), $nombre);
+    $text(710, 20, $pt(18), 'SEM ' . $semana);
+    
+    $pdf->SetLineWidth($dot(1));
+    $pdf->Line($dot(10), $dot(42), $dot(10 + 812), $dot(42));
+    
+    
+    // Tipo de trabajo
+     $text(280, 47, $pt(20), "Tipo de trabajo: Poda De Árboles");
+    $pdf->SetLineWidth($dot(1));
+    $pdf->Line($dot(10), $dot(75), $dot(10 + 812), $dot(75));
+    
+    // ─── Función para dibujar celdas ─────────────────────────────────────
+    $cellText = function ($xDot, $yDot, $wDot, $hDot, $fontPt, $value, $align = 'L') use ($pdf, $dot) {
+        $pdf->SetFont('helvetica', '', $fontPt);
+        $pdf->SetXY($dot($xDot), $dot($yDot));
+        $pdf->Cell($dot($wDot), $dot($hDot), $value, 1, 0, $align, false, '', 0, false, 'C', 'M');
+    };
+    
+    // ─── Tabla de datos en celdas ───────────────────────────────────────
+    $fNormal = $pt(16);
+    $fGrande = $pt(22);
+    
+    // Posiciones y tamaños
+   $xInicio = 10;
+    $yInicio = 100;
+    $anchoEtiqueta = 400;
+    $anchoValor = 412;
+    $altoCelda = 50;
+    $espacioCeldas = 50;
+    
+    // Fila 1: Total árboles podados
+    $cellText($xInicio, $yInicio, $anchoEtiqueta, $altoCelda, $fNormal, 'Total Árboles podados:', 'L');
+    $cellText($xInicio + $anchoEtiqueta, $yInicio, $anchoValor, $altoCelda, $fGrande, $totalArboles, 'C');
+    
+    // Fila 2: Pago por árbol
+    $cellText($xInicio, $yInicio + $espacioCeldas, $anchoEtiqueta, $altoCelda, $fNormal, 'Pago por árbol:', 'L');
+    $cellText($xInicio + $anchoEtiqueta, $yInicio + $espacioCeldas, $anchoValor, $altoCelda, $fGrande, '$' . money($pagoPorArbol), 'C');
+    
+    // Fila 3: Total efectivo
+    $cellText($xInicio, $yInicio + ($espacioCeldas * 2), $anchoEtiqueta, $altoCelda, $fNormal, 'Total efectivo:', 'L');
+    $cellText($xInicio + $anchoEtiqueta, $yInicio + ($espacioCeldas * 2), $anchoValor, $altoCelda, $fGrande, '$' . money($totalEfectivo), 'C');
+    
+    // Línea separadora antes del total final
+    $yLineaFinal = $yInicio + ($espacioCeldas * 3) + 20;
+    $pdf->SetLineWidth($dot(2));
+    $pdf->Line($dot(10), $dot($yLineaFinal), $dot(10 + 812), $dot($yLineaFinal));
+    
+    // Total final como texto plano
+    $textB(18, $yLineaFinal + 35, $pt(28), 'TOTAL EFECTIVO');
+    $textB(280, $yLineaFinal + 35, $pt(28), '$');
+    $textB(300, $yLineaFinal + 35, $pt(28), money($totalEfectivo));
+}
+
 function renderTicketPdf($pdf, $emp, $extra, $meta) {
     $nombre     = safeText($emp['nombre'] ?? '');
     $clave      = safeText($emp['clave'] ?? '');
@@ -227,8 +395,14 @@ function renderTicketPdf($pdf, $emp, $extra, $meta) {
 
     $deptoFontSize = 14;
     $text(310, 22, $pt($deptoFontSize), $departamento);
-    $text(551, 22, $pt(17), 'F.Ingr: ' . $fechaIngreso);
-    $text(710, 20, $pt(18), 'SEM ' . $semana);
+
+    $esSinSeguro = !empty($emp['sin_seguro_ticket']) || 
+                   (isset($emp['seguroSocial']) && $emp['seguroSocial'] === false) || 
+                   stripos($departamento, 'sin seguro') !== false;
+    if (!$esSinSeguro) {
+        $text(551, 22, $pt(17), 'F.Ingr: ' . $fechaIngreso);
+        $text(710, 20, $pt(18), 'SEM ' . $semana);
+    }
 
     $pdf->SetLineWidth($dot(1));
     $pdf->Line($dot(10), $dot(42), $dot(10 + 812), $dot(42));
@@ -481,6 +655,10 @@ if (!$data) {
 if (isset($data['seleccion']) && $data['seleccion'] === true) {
     $empleados = $data['empleados'] ?? [];
     $meta = $data['meta'] ?? ['numero_semana' => ''];
+} elseif (isset($data['empleados']) && is_array($data['empleados'])) {
+    // Payload para tickets Corte/Poda
+    $empleados = $data['empleados'] ?? [];
+    $meta = $data['meta'] ?? ['numero_semana' => ''];
 } else {
     // Procesar solicitud normal (todos los empleados o filtrados)
     if (!isset($data['nomina']) || !is_array($data['nomina'])) {
@@ -523,6 +701,19 @@ $pdf->setPrintHeader(false);
 $pdf->setPrintFooter(false);
 
 foreach ($empleados as $emp) {
+    $depto = safeText($emp['departamento'] ?? '');
+    if ($depto === 'Corte') {
+        $pdf->AddPage();
+        renderTicketCortePdf($pdf, $emp, $meta);
+        continue;
+    }
+    if ($depto === 'Poda') {
+        $pdf->AddPage();
+        renderTicketPodaPdf($pdf, $emp, $meta);
+        continue;
+    }
+
+    // Nómina normal (flujo original)
     $clave = (string)($emp['clave'] ?? '');
     $id_empresa = isset($emp['id_empresa']) ? intval($emp['id_empresa']) : 1;
     

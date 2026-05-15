@@ -257,9 +257,10 @@ function listarDias(id) {
                     html = '<tr><td colspan="3" class="text-center text-muted">No hay rangos configurados</td></tr>';
                 } else {
                     dias.forEach(d => {
+                        let textoRango = d.anios_antiguedad_fin ? `De ${d.anios_antiguedad_inicio} a ${d.anios_antiguedad_fin} años` : `Año ${d.anios_antiguedad_inicio}`;
                         html += `
                             <tr>
-                                <td>De ${d.anios_antiguedad_inicio} a ${d.anios_antiguedad_fin} años</td>
+                                <td>${textoRango}</td>
                                 <td>${d.dias_vacaciones_correspondientes} días</td>
                                 <td>
                                     <button class="btn btn-sm btn-outline-danger" onclick="eliminarDia(${d.id_dias_vacaciones}, ${id})"><i class="bi bi-trash"></i></button>

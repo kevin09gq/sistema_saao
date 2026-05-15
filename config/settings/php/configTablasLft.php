@@ -147,7 +147,7 @@ function guardarDia() {
     global $conexion;
     $id_version = (int)$_POST['id_version_vacaciones'];
     $inicio = (int)$_POST['anios_antiguedad_inicio'];
-    $fin = !empty($_POST['anios_antiguedad_fin']) ? (int)$_POST['anios_antiguedad_fin'] : $inicio;
+    $fin = !empty($_POST['anios_antiguedad_fin']) ? (int)$_POST['anios_antiguedad_fin'] : null;
     $dias = (int)$_POST['dias_vacaciones_correspondientes'];
 
     $stmt = $conexion->prepare("INSERT INTO dias_vacaciones_lft (id_version_vacaciones, anios_antiguedad_inicio, anios_antiguedad_fin, dias_vacaciones_correspondientes) VALUES (?, ?, ?, ?)");

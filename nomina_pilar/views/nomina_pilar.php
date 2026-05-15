@@ -394,6 +394,7 @@
         style="position:absolute;z-index:10000;display:none;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);padding:4px;">
         <div class="cm_item_poda" data-action="ver" style="padding:6px 12px;cursor:pointer;">🔎​ Ver detalles</div>
     </div>
+    
 
     <!-- Modal para los cortes -->
     <?php include __DIR__ . "/modalsCorte/modalCorte.php"; ?>
@@ -423,6 +424,7 @@
     <?php include "modals/modalSeleccionarEmpleados.php"; ?>
     <?php include "modals/modalRedondeoSueldos.php"; ?>
     <?php include "modals/addPercepcionesDeducciones.php"; ?>
+    <?php include "modals/modalTicketsEmpleados.php"; ?>
     <?php include "modals/modal_seleccion_tickets_pilar.php"; ?>
     <?php include "modals/dispersionTarjeta.php"; ?>
 

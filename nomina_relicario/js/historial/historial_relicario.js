@@ -120,6 +120,7 @@ function buscarHistorial() {
             document.getElementById('btn_buscar').disabled = false;
 
             if (res.status === 'success') {
+                window.colorAreaActual = res.data.color_area || '#B50600';
                 pintarDashboard(res.data);
             } else {
                 Swal.fire('Error', res.message, 'error');
@@ -474,14 +475,31 @@ function generarPDFConLogo(logoBase64, datosExportar, folioUnico = null) {
     const MARGIN = 14;
     const CONTENT_W = PAGE_W - MARGIN * 2;
 
+    // Función para convertir hex o rgb string a array [r,g,b]
+    const parseColor = (cStr) => {
+        if (!cStr) return [181, 6, 0];
+        if (cStr.startsWith('#')) {
+            let hex = cStr.substring(1);
+            if (hex.length === 3) hex = hex.split('').map(s => s + s).join('');
+            return [parseInt(hex.substring(0, 2), 16), parseInt(hex.substring(2, 4), 16), parseInt(hex.substring(4, 6), 16)];
+        }
+        if (cStr.startsWith('rgb')) {
+            const m = cStr.match(/\d+/g);
+            if (m && m.length >= 3) return [parseInt(m[0]), parseInt(m[1]), parseInt(m[2])];
+        }
+        return [181, 6, 0];
+    };
+
+    const colorDinamico = parseColor(window.colorAreaActual);
+
     const COL_DARK = [90, 60, 120]; // tono oscuro derivado del acento
-    const COL_ACCENT = [181, 6, 0]; // color solicitado (rojo)
+    const COL_ACCENT = colorDinamico; // color dinámico desde configuración de áreas
     const COL_GREEN = [120, 90, 180]; // tono armónico
     const COL_LIGHT = [235, 225, 250]; // fondo suave
     const COL_WHITE = [255, 255, 255];
     const COL_GRAY = [108, 117, 125];
     const COL_BG = [245, 238, 252]; // fondo general
-    const COL_BORDER = [181, 6, 0]; // igual que acento (rojo)
+    const COL_BORDER = colorDinamico; // igual que acento
     // ...existing code...
 
     const anio = document.getElementById('filtro_anio').value || 'Todos';
@@ -492,7 +510,7 @@ function generarPDFConLogo(logoBase64, datosExportar, folioUnico = null) {
 
     const HEADER_H = 28; 
 
-    const COL_HEADER_TEXT = [90, 60, 120];
+    const COL_HEADER_TEXT = colorDinamico;
     const COL_SUBTEXT = [100, 100, 100]; 
 
     if (logoBase64) {
@@ -504,12 +522,12 @@ function generarPDFConLogo(logoBase64, datosExportar, folioUnico = null) {
 
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(0, 0, 0); // Negro
+    doc.setTextColor(...COL_HEADER_TEXT);
     doc.text('Reportes de Rejas Cortes', PAGE_W / 2, 13, { align: 'center' });
 
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(0, 0, 0); // Negro
+    doc.setTextColor(...COL_HEADER_TEXT);
     doc.text('Rancho Relicario', PAGE_W / 2, 19, { align: 'center' });
 
     // Fecha
@@ -639,14 +657,14 @@ function generarPDFConLogo(logoBase64, datosExportar, folioUnico = null) {
                 y += 10; 
             }
 
-            doc.setFillColor(255, 255, 255); // Fondo blanco
-            doc.setDrawColor(...COL_ACCENT); // Borde rojo
+            doc.setFillColor(255, 255, 255); // Fondo blanco (sin fondo de color)
+            doc.setDrawColor(...COL_ACCENT); // Borde con color de configuración
             doc.setLineWidth(0.2);
             doc.roundedRect(bx, y - 4, chipW, 6.5, 1.5, 1.5, 'FD'); 
 
             doc.setFontSize(7);
             doc.setFont('helvetica', 'bold');
-            doc.setTextColor(...COL_ACCENT); // Letras rojas
+            doc.setTextColor(...COL_ACCENT); // Letras con color de configuración
             doc.text(chipLabel, bx + 3, y);
 
             bx += chipW + 4; 

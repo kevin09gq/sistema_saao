@@ -115,8 +115,8 @@ CREATE TABLE info_empleados (
     enfermedades_alergias VARCHAR(150),
     grupo_sanguineo VARCHAR(5),
     fecha_nacimiento DATE,
-    fecha_ingreso DATE,
-    fecha_ingreso_real DATE,
+    fecha_alta_empresa DATE,
+    fecha_alta_imss DATE,
     ruta_foto VARCHAR(255),
     fecha_creacion DATE,
     fecha_vigencia DATE,
@@ -737,3 +737,35 @@ DELIMITER;
 CALL crear_casilleros ();
 
 INSERT INTO tabulador ( id_tabulador, id_empresa, info_tabulador )
+
+-- Versiones de Tablas de Vacaciones LFT
+
+INSERT INTO dias_vacaciones_lft 
+(id_version_vacaciones, anios_antiguedad_inicio, anios_antiguedad_fin, dias_vacaciones_correspondientes) 
+VALUES 
+(1, 1, NULL, 6),
+(1, 2, NULL, 8),
+(1, 3, NULL, 10),
+(1, 4, NULL, 12),
+(1, 5, 9, 14),
+(1, 10, 14, 16),
+(1, 15, 19, 18),
+(1, 20, 24, 20),
+(1, 25, 29, 22),
+(1, 30, 34, 24);
+
+
+INSERT INTO dias_vacaciones_lft 
+(id_version_vacaciones, anios_antiguedad_inicio, anios_antiguedad_fin, dias_vacaciones_correspondientes) 
+VALUES 
+(2, 1, NULL, 12),
+(2, 2, NULL, 14),
+(2, 3, NULL, 16),
+(2, 4, NULL, 18),
+(2, 5, NULL, 20),
+(2, 6, 10, 22),
+(2, 11, 15, 24),
+(2, 16, 20, 26),
+(2, 21, 25, 28),
+(2, 26, 30, 30),
+(2, 31, 35, 32);

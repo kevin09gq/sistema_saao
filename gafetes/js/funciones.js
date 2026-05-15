@@ -1288,7 +1288,7 @@ $(document).ready(function () {
                         empleadoCache.curp = empleadoFresco.curp;
                         empleadoCache.sexo = empleadoFresco.sexo;
                         empleadoCache.fecha_nacimiento = empleadoFresco.fecha_nacimiento;
-                        empleadoCache.fecha_ingreso = empleadoFresco.fecha_ingreso;
+                        empleadoCache.fecha_alta_empresa = empleadoFresco.fecha_alta_empresa;
                         empleadoCache.fecha_creacion = empleadoFresco.fecha_creacion;
                         empleadoCache.fecha_vigencia = empleadoFresco.fecha_vigencia;
                         empleadoCache.domicilio = empleadoFresco.domicilio;
@@ -2076,7 +2076,7 @@ $(document).ready(function () {
                         "</div>" +
                         "<div style='flex:1;background:" + colorVerdeClaro + ";padding:0.03cm 0.1cm;border-radius:4px; margin-top:0.13cm;'>" +
                             "<div style='font-size:7.7pt !important;font-weight:bold;color:" + colorTextoDatos + ";font-family:Segoe UI Black;line-height:1.2 !important;margin-bottom:0.02cm;white-space:nowrap;'>Fecha de ingreso:</div>" +
-                            "<div style='font-size:7pt !important;color:" + colorTextoDatos + ";line-height:1.2;'>" + (empleado.fecha_reingreso ? formatearFechaYMDaDMY(empleado.fecha_reingreso) : (empleado.fecha_ingreso ? formatearFechaYMDaDMY(empleado.fecha_ingreso) : 'N/A')) + "</div>" +
+                            "<div style='font-size:7pt !important;color:" + colorTextoDatos + ";line-height:1.2;'>" + (empleado.fecha_reingreso ? formatearFechaYMDaDMY(empleado.fecha_reingreso) : (empleado.fecha_alta_empresa ? formatearFechaYMDaDMY(empleado.fecha_alta_empresa) : 'N/A')) + "</div>" +
                         "</div>" +
                     "</div>" +
                     // 6. Contacto de emergencia - Gris claro
@@ -2740,7 +2740,7 @@ $(document).ready(function () {
         })();
         
         $("#modal_enfermedades_alergias").val(empleado.enfermedades_alergias || '');
-        $("#modal_fecha_ingreso").val(empleado.fecha_ingreso || '');
+        $("#modal_fecha_ingreso").val(empleado.fecha_alta_empresa || '');
         $("#modal_fecha_reingreso").val(empleado.ultima_fecha_reingreso || '');
         $("#modal_fecha_nacimiento").val(empleado.fecha_nacimiento || '');
         $("#modal_num_casillero").val(empleado.num_casillero || '');
@@ -2982,7 +2982,7 @@ $(document).ready(function () {
             grupo_sanguineo: $("#modal_grupo_sanguineo").val() || "",
             estado_civil: $("#modal_estado_civil").val() || "",
             enfermedades_alergias: $("#modal_enfermedades_alergias").val() || "",
-            fecha_ingreso: $("#modal_fecha_ingreso").val() || "",
+            fecha_alta_empresa: $("#modal_fecha_ingreso").val() || "",
             fecha_reingreso: $("#modal_fecha_reingreso").val() || "",
             id_departamento: $("#modal_departamento").val() || "",
             fecha_nacimiento: $("#modal_fecha_nacimiento").val() || "",

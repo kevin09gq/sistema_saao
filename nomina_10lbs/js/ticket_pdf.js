@@ -124,6 +124,61 @@ function construirNominaParaTickets10lbs(empleadosConDepto) {
     };
 }
 
+function descargarTickets10lbs($btn, url, iconoDefault, nombreDefault) {
+    const nomina = obtenerNomina10lbsGlobal();
+    if (!nomina || !Array.isArray(nomina.departamentos)) {
+        Swal.fire('Sin datos', 'No hay datos de nómina para generar el PDF.', 'warning');
+        return;
+    }
+
+    const empleadosConDepto = obtenerEmpleadosFiltrados10lbs({ aplicarBusqueda: true });
+    if (empleadosConDepto.length === 0) {
+        Swal.fire('Sin datos', 'No hay empleados para los filtros seleccionados.', 'warning');
+        return;
+    }
+
+    const nominaParaEnviar = construirNominaParaTickets10lbs(empleadosConDepto);
+
+    $btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Generando...');
+
+    $.ajax({
+        url,
+        type: 'POST',
+        contentType: 'application/json; charset=UTF-8',
+        data: JSON.stringify({ nomina: nominaParaEnviar }),
+        xhrFields: { responseType: 'blob' },
+        success: function (blob, status, xhr) {
+            if (!(blob instanceof Blob) || blob.size === 0) {
+                Swal.fire('Error', 'El servidor no devolvió un archivo PDF válido.', 'error');
+                $btn.prop('disabled', false).html(`<i class="bi ${iconoDefault}"></i>`);
+                return;
+            }
+
+            let filename = nombreDefault;
+            const disposition = xhr.getResponseHeader('Content-Disposition');
+            if (disposition && disposition.indexOf('filename=') !== -1) {
+                const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                const matches = filenameRegex.exec(disposition);
+                if (matches && matches[1]) filename = matches[1].replace(/["']/g, '');
+            }
+
+            const urlBlob = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = urlBlob;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(urlBlob);
+            document.body.removeChild(a);
+            $btn.prop('disabled', false).html(`<i class="bi ${iconoDefault}"></i>`);
+        },
+        error: function () {
+            Swal.fire('Error', 'Error al generar el PDF. Por favor, intenta nuevamente.', 'error');
+            $btn.prop('disabled', false).html(`<i class="bi ${iconoDefault}"></i>`);
+        }
+    });
+}
+
 $(document).ready(function () {
     $('#btn_ticket_pdf').on('click', function () {
         const nomina = obtenerNomina10lbsGlobal();
@@ -132,52 +187,24 @@ $(document).ready(function () {
             return;
         }
 
-        const empleadosConDepto = obtenerEmpleadosFiltrados10lbs({ aplicarBusqueda: true });
-        if (empleadosConDepto.length === 0) {
-            Swal.fire('Sin datos', 'No hay empleados para los filtros seleccionados.', 'warning');
-            return;
+        const modalEl = document.getElementById('modalSeleccionTicket');
+        if (modalEl) {
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
         }
+    });
 
-        const nominaParaEnviar = construirNominaParaTickets10lbs(empleadosConDepto);
+    $('#btn_ticket_normal').on('click', function () {
+        const modalEl = document.getElementById('modalSeleccionTicket');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+        descargarTickets10lbs($('#btn_ticket_pdf'), '../php/descargar_ticket_pdf.php', 'bi-ticket-perforated', 'tickets_10lbs.pdf');
+    });
 
-        const $btn = $(this);
-        $btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Generando...');
-
-        $.ajax({
-            url: '../php/descargar_ticket_pdf.php',
-            type: 'POST',
-            contentType: 'application/json; charset=UTF-8',
-            data: JSON.stringify({ nomina: nominaParaEnviar }),
-            xhrFields: { responseType: 'blob' },
-            success: function (blob, status, xhr) {
-                if (!(blob instanceof Blob) || blob.size === 0) {
-                    Swal.fire('Error', 'El servidor no devolvió un archivo PDF válido.', 'error');
-                    $btn.prop('disabled', false).html('<i class="bi bi-ticket-perforated"></i>');
-                    return;
-                }
-
-                let filename = 'tickets_10lbs.pdf';
-                const disposition = xhr.getResponseHeader('Content-Disposition');
-                if (disposition && disposition.indexOf('filename=') !== -1) {
-                    const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-                    const matches = filenameRegex.exec(disposition);
-                    if (matches && matches[1]) filename = matches[1].replace(/["']/g, '');
-                }
-
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
-                $btn.prop('disabled', false).html('<i class="bi bi-ticket-perforated"></i>');
-            },
-            error: function () {
-                Swal.fire('Error', 'Error al generar el PDF. Por favor, intenta nuevamente.', 'error');
-                $btn.prop('disabled', false).html('<i class="bi bi-ticket-perforated"></i>');
-            }
-        });
+    $('#btn_ticket_nombre').on('click', function () {
+        const modalEl = document.getElementById('modalSeleccionTicket');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+        descargarTickets10lbs($('#btn_ticket_pdf'), '../php/descargar_ticket_nombre_pdf.php', 'bi-person-badge', 'tickets_nombre_10lbs.pdf');
     });
 });

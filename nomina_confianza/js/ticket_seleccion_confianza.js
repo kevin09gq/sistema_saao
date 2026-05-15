@@ -17,8 +17,13 @@ function obtenerNombreEmpresaPorId(idEmpresa) {
 }
 
 function obtenerNominaConfianzaGlobal() {
-    if (window.jsonNominaConfianza && Array.isArray(window.jsonNominaConfianza.departamentos)) return window.jsonNominaConfianza;
-    if (typeof jsonNominaConfianza !== 'undefined' && jsonNominaConfianza && Array.isArray(jsonNominaConfianza.departamentos)) return jsonNominaConfianza;
+    if (typeof jsonNominaConfianza !== 'undefined' && jsonNominaConfianza && Array.isArray(jsonNominaConfianza.departamentos)) {
+        if (typeof window !== 'undefined') window.jsonNominaConfianza = jsonNominaConfianza;
+        return jsonNominaConfianza;
+    }
+    if (typeof window !== 'undefined' && window.jsonNominaConfianza && Array.isArray(window.jsonNominaConfianza.departamentos)) {
+        return window.jsonNominaConfianza;
+    }
     return null;
 }
 
@@ -29,13 +34,23 @@ function cargarEmpleadosParaTicketsConfianza() {
     const pool = (typeof obtenerTodosEmpleadosConfianza === 'function') ? obtenerTodosEmpleadosConfianza() : [];
     pool.forEach(({ emp, deptoNombre }) => {
         if (!emp || typeof emp !== 'object') return;
+        const esSinSeguro = String(deptoNombre || '').toLowerCase().trim() === 'sin seguro';
         empleadosParaTicketsConfianza.push({
             original: emp,
             clave: emp.clave,
             nombre: emp.nombre,
             departamento: String(deptoNombre || ''),
-            id: claveCompuestaTicket(emp, deptoNombre)
+            id: claveCompuestaTicket(emp, deptoNombre),
+            esSinSeguro: esSinSeguro
         });
+    });
+
+    // Ordenar: primero con seguro (esSinSeguro = false), luego sin seguro (esSinSeguro = true)
+    empleadosParaTicketsConfianza.sort((a, b) => {
+        if (a.esSinSeguro === b.esSinSeguro) {
+            return String(a.nombre || '').localeCompare(String(b.nombre || ''));
+        }
+        return a.esSinSeguro ? 1 : -1;
     });
 
     mostrarEmpleadosTicketsConfianza(empleadosParaTicketsConfianza);
@@ -103,8 +118,12 @@ function actualizarContadoresTicketsConfianza() {
     const count = empleadosSeleccionadosConfianza.size;
     $('#contador_seleccionados').text(count);
     $('#contador_seleccionados_btn').text(count);
+    $('#contador_seleccionados_btn_nombre').text(count);
     $('#btn_generar_tickets_seleccionados').prop('disabled', count === 0);
+    $('#btn_generar_tickets_nombre_seleccionados').prop('disabled', count === 0);
 }
+
+let filtroSeguroActivoConfianza = 'todos';
 
 function filtrarEmpleadosTicketsConfianza() {
     const query = String($('#buscar_empleado_ticket').val() || '').toLowerCase().trim();
@@ -115,19 +134,28 @@ function filtrarEmpleadosTicketsConfianza() {
         $('#btn_limpiar_busqueda').hide();
     }
 
-    if (query === '') {
-        mostrarEmpleadosTicketsConfianza(empleadosParaTicketsConfianza);
-        return;
-    }
-
     const filtrados = empleadosParaTicketsConfianza.filter(emp => {
-        const nombre = String(emp.nombre || '').toLowerCase();
-        const claveBase = String(emp.clave || '');
-        const depto = String(emp.departamento || '').toLowerCase();
-        return nombre.includes(query) || claveBase.includes(query) || depto.includes(query);
+        // Filtro por texto
+        const coincideQuery = query === '' || 
+            String(emp.nombre || '').toLowerCase().includes(query) || 
+            String(emp.clave || '').toLowerCase().includes(query) || 
+            String(emp.departamento || '').toLowerCase().includes(query);
+        
+        // Filtro por seguro
+        let coincideSeguro = true;
+        if (filtroSeguroActivoConfianza === 'con_seguro') coincideSeguro = !emp.esSinSeguro;
+        else if (filtroSeguroActivoConfianza === 'sin_seguro') coincideSeguro = emp.esSinSeguro;
+
+        return coincideQuery && coincideSeguro;
     });
 
     mostrarEmpleadosTicketsConfianza(filtrados);
+}
+
+function actualizarEstilosFiltrosConfianza() {
+    $('#btn_seleccionar_todos_tickets').toggleClass('active', filtroSeguroActivoConfianza === 'todos');
+    $('#btn_seleccionar_con_seguro_tickets').toggleClass('active', filtroSeguroActivoConfianza === 'con_seguro');
+    $('#btn_seleccionar_sin_seguro_tickets').toggleClass('active', filtroSeguroActivoConfianza === 'sin_seguro');
 }
 
 function limpiarCampoBusquedaTicketsConfianza() {
@@ -196,6 +224,67 @@ async function generarTicketsSeleccionadosConfianza() {
     }
 }
 
+async function generarTicketsNombreSeleccionadosConfianza() {
+    if (empleadosSeleccionadosConfianza.size === 0) return;
+
+    const seleccionados = [];
+    empleadosParaTicketsConfianza.forEach(item => {
+        if (empleadosSeleccionadosConfianza.has(item.id)) {
+            const copia = JSON.parse(JSON.stringify(item.original || {}));
+            copia.departamento = String(item.departamento || '').trim();
+            if (String(copia.departamento).toLowerCase().trim() === 'sin seguro') {
+                copia.sin_seguro_ticket = true;
+            }
+            if (copia.id_empresa === undefined || copia.id_empresa === null || copia.id_empresa === '') {
+                copia.id_empresa = 1;
+            }
+            seleccionados.push({ emp: copia, deptoNombre: copia.departamento });
+        }
+    });
+
+    if (seleccionados.length === 0) return;
+
+    const nominaParaEnviar = (typeof construirNominaParaTicketsConfianza === 'function')
+        ? construirNominaParaTicketsConfianza(seleccionados)
+        : null;
+
+    if (!nominaParaEnviar) return;
+
+    $('#modal_seleccion_tickets').modal('hide');
+
+    Swal.fire({
+        title: 'Generando tickets de nombre...',
+        html: `Empleados: <strong>${seleccionados.length}</strong>`,
+        icon: 'info',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+
+    try {
+        const response = await fetch('../php/descargar_ticket_nombre_pdf.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+            body: JSON.stringify({ nomina: nominaParaEnviar, filename_prefix: 'tickets_nombre_confianza_seleccion' })
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const blob = await response.blob();
+        if (!(blob instanceof Blob) || blob.size === 0) throw new Error('PDF vacío');
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `tickets_nombre_confianza_seleccion_${seleccionados.length}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+
+        Swal.fire({ icon: 'success', title: 'Listo', text: 'Tickets de nombre generados correctamente', timer: 1500, showConfirmButton: false });
+    } catch (e) {
+        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron generar los tickets de nombre.' });
+    }
+}
+
 $(document).ready(function () {
     const $btnAbrir = $('#btn_ticket_manual_confianza');
     $btnAbrir.on('click', function () {
@@ -204,24 +293,48 @@ $(document).ready(function () {
             Swal.fire({ icon: 'warning', title: 'Sin datos', text: 'No hay datos de nómina cargados.' });
             return;
         }
+        filtroSeguroActivoConfianza = 'todos';
+        actualizarEstilosFiltrosConfianza();
         cargarEmpleadosParaTicketsConfianza();
         $('#modal_seleccion_tickets').modal('show');
     });
 
     $('#btn_seleccionar_todos_tickets').on('click', function () {
+        filtroSeguroActivoConfianza = 'todos';
+        actualizarEstilosFiltrosConfianza();
+        filtrarEmpleadosTicketsConfianza();
+    });
+
+    $('#btn_seleccionar_con_seguro_tickets').on('click', function () {
+        filtroSeguroActivoConfianza = 'con_seguro';
+        actualizarEstilosFiltrosConfianza();
+        filtrarEmpleadosTicketsConfianza();
+    });
+
+    $('#btn_seleccionar_sin_seguro_tickets').on('click', function () {
+        filtroSeguroActivoConfianza = 'sin_seguro';
+        actualizarEstilosFiltrosConfianza();
+        filtrarEmpleadosTicketsConfianza();
+    });
+
+    $('#btn_marcar_visibles_tickets').on('click', function () {
         const query = String($('#buscar_empleado_ticket').val() || '').toLowerCase().trim();
-        if (query === '') {
-            empleadosParaTicketsConfianza.forEach(emp => empleadosSeleccionadosConfianza.add(String(emp.id)));
-        } else {
-            empleadosParaTicketsConfianza.forEach(emp => {
-                const nombre = String(emp.nombre || '').toLowerCase();
-                const claveBase = String(emp.clave || '');
-                const depto = String(emp.departamento || '').toLowerCase();
-                if (nombre.includes(query) || claveBase.includes(query) || depto.includes(query)) {
-                    empleadosSeleccionadosConfianza.add(String(emp.id));
-                }
-            });
-        }
+        empleadosParaTicketsConfianza.forEach(emp => {
+            // Verificar si el empleado cumple con el filtro de texto
+            const coincideQuery = query === '' || 
+                String(emp.nombre || '').toLowerCase().includes(query) || 
+                String(emp.clave || '').toLowerCase().includes(query) || 
+                String(emp.departamento || '').toLowerCase().includes(query);
+            
+            // Verificar si el empleado cumple con el filtro de seguro
+            let coincideSeguro = true;
+            if (filtroSeguroActivoConfianza === 'con_seguro') coincideSeguro = !emp.esSinSeguro;
+            else if (filtroSeguroActivoConfianza === 'sin_seguro') coincideSeguro = emp.esSinSeguro;
+
+            if (coincideQuery && coincideSeguro) {
+                empleadosSeleccionadosConfianza.add(String(emp.id));
+            }
+        });
         actualizarVistaSeleccionTicketsConfianza();
     });
 
@@ -276,6 +389,7 @@ $(document).ready(function () {
     $(document).on('input', '#buscar_empleado_ticket', filtrarEmpleadosTicketsConfianza);
     $('#btn_limpiar_busqueda').on('click', limpiarCampoBusquedaTicketsConfianza);
     $('#btn_generar_tickets_seleccionados').on('click', generarTicketsSeleccionadosConfianza);
+    $('#btn_generar_tickets_nombre_seleccionados').on('click', generarTicketsNombreSeleccionadosConfianza);
 });
 
 function actualizarVistaSeleccionTicketsConfianza() {

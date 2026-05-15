@@ -2,419 +2,388 @@
  * ================================================================
  * MÓDULO DE SELECCIÓN DE EMPLEADOS PARA TICKETS - NÓMINA PILAR
  * ================================================================
- * Maneja la selección manual de empleados para generar tickets PDF
- * ================================================================
  */
 
-// Variables globales para el modal de selección
 let empleadosParaTickets = [];
 let empleadosSeleccionados = new Set();
 
-// Inicializar eventos cuando el DOM esté listo
-$(document).ready(function() {
-    // Evento para abrir modal de selección de empleados
-    $('#btn_ticket_seleccion').on('click', function() {
-        // PRIORIZAR la variable global que ya está en memoria y actualizada
-        let nominaData = null;
-        try {
-            if (typeof jsonNominaPilar !== 'undefined' && jsonNominaPilar) {
-                nominaData = jsonNominaPilar;
-            }
-        } catch (e) {}
+let filtroSeguroActivoPilar = 'todos';
 
-        // Si por alguna razón no está en memoria, intentar cargar de localStorage
-        if (!nominaData || !nominaData.departamentos) {
-            nominaData = JSON.parse(localStorage.getItem('jsonNominaPilar') || '{}');
-            if (nominaData && nominaData.departamentos && typeof jsonNominaPilar !== 'undefined') {
-                try { jsonNominaPilar = nominaData; } catch(e){}
-            }
-        }
-
-        if (!nominaData || !nominaData.departamentos) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Sin datos',
-                text: 'No hay datos de nómina cargados. Primero procesa los archivos.'
-            });
-            return;
-        }
-        
-        // Limpiar el campo de búsqueda antes de abrir el modal
-        $('#buscar_empleado_ticket').val('');
-        
-        cargarEmpleadosParaTickets(nominaData);
-        $('#modal_seleccion_tickets').modal('show');
-    });
-
-    // Accesibilidad: forzar aria-hidden correcto en el modal
-    $('#modal_seleccion_tickets').on('shown.bs.modal', function () {
-        $(this).attr('aria-hidden', 'false');
-    });
-    $('#modal_seleccion_tickets').on('hidden.bs.modal', function () {
-        $(this).attr('aria-hidden', 'true');
-    });
-
-    // Eventos del modal - usar delegación de eventos para elementos dinámicos
-    $('#btn_seleccionar_todos_tickets').on('click', seleccionarTodosEmpleados);
-    $('#btn_deseleccionar_todos_tickets').on('click', deseleccionarTodosEmpleados);
-    $(document).on('input', '#buscar_empleado_ticket', filtrarEmpleados);
-    $('#btn_generar_tickets_seleccionados').on('click', generarTicketsSeleccionados);
-    $(document).on('click', '#btn_limpiar_busqueda', limpiarCampoBusqueda);
-
-    // Evento para seleccionar empleado individual
-    $(document).on('click', '.empleado-item', function(e) {
-        // Evitar que el click en el checkbox dispare el evento dos veces
-        if ($(e.target).is('input[type="checkbox"]')) {
-            return;
-        }
-        
-        const clave = String($(this).data('clave')); // Normalizar como string
-        const checkbox = $(this).find('input[type="checkbox"]');
-        
-        if (empleadosSeleccionados.has(clave)) {
-            empleadosSeleccionados.delete(clave);
-            $(this).removeClass('active');
-            checkbox.prop('checked', false);
-        } else {
-            empleadosSeleccionados.add(clave);
-            $(this).addClass('active');
-            checkbox.prop('checked', true);
-        }
-        
-        actualizarContadores();
-    });
-    
-    // Evento para el checkbox directamente
-    $(document).on('change', '.empleado-item input[type="checkbox"]', function() {
-        const listItem = $(this).closest('.list-group-item');
-        const clave = String(listItem.data('clave'));
-        
-        if ($(this).is(':checked')) {
-            empleadosSeleccionados.add(clave);
-            listItem.addClass('active');
-        } else {
-            empleadosSeleccionados.delete(clave);
-            listItem.removeClass('active');
-        }
-        
-        actualizarContadores();
-    });
-});
-
-/**
- * Carga todos los empleados de nómina pilar
- */
-function cargarEmpleadosParaTickets(nominaData) {
-    empleadosParaTickets = [];
-    empleadosSeleccionados.clear();
-    
-    if (!nominaData || !nominaData.departamentos) {
-        return;
-    }
-
-    // Procesar todos los departamentos de nómina pilar
-    nominaData.departamentos.forEach(depto => {
-        const nombreDepto = depto.nombre || '';
-        if (depto.empleados && Array.isArray(depto.empleados)) {
-            depto.empleados.forEach(emp => {
-                if (emp && typeof emp === 'object') {
-                    // NO CLONAR (...emp), guardar referencia al objeto original
-                    // para que los cambios en la tabla se reflejen aquí también
-                    empleadosParaTickets.push({
-                        original: emp,
-                        clave: emp.clave,
-                        nombre: emp.nombre,
-                        departamento: nombreDepto,
-                        tipo: 'pilar'
-                    });
-                }
-            });
-        }
-    });
-
-    mostrarEmpleados(empleadosParaTickets);
-}
-
-/**
- * Mostrar empleados en el modal
- */
-function mostrarEmpleados(empleados) {
-    const container = $('#lista_empleados_tickets');
-    container.empty();
-    
-    if (!empleados || empleados.length === 0) {
-        container.html('<div class="col-12"><div class="alert alert-info text-center">No se encontraron empleados</div></div>');
-        return;
-    }
-    
-    // Crear lista simple en lugar de tarjetas
-    const listaHtml = `
-        <div class="list-group">
-            ${empleados.map(empleado => {
-                // Normalizar clave como string para comparación consistente
-                const clave = String(empleado.clave || empleado.id || Math.random());
-                const nombre = empleado.nombre || 'Sin nombre';
-                const departamento = empleado.departamento || 'Sin departamento';
-                    
-                // Determinar la clase del badge según el departamento específico de Pilar
-                let badgeClass = 'bg-secondary'; // Color por defecto
-                const deptoLower = departamento.toLowerCase();
-                    
-                // Departamentos específicos con colores únicos (adaptados para Pilar)
-                if (deptoLower.includes('jornalero') || deptoLower.includes('jornal')) {
-                    badgeClass = 'bg-success';
-                } else if (deptoLower.includes('coordinador') || deptoLower.includes('coordi')) {
-                    badgeClass = 'bg-primary';
-                } else if (deptoLower.includes('vivero') || deptoLower.includes('vive')) {
-                    badgeClass = 'bg-warning text-dark';
-                } else if (deptoLower.includes('rancho') || deptoLower.includes('ranch')) {
-                    badgeClass = 'bg-danger';
-                } else if (deptoLower.includes('apoyo') || deptoLower.includes('apoy')) {
-                    badgeClass = 'bg-info';
-                } else if (deptoLower.includes('base') || deptoLower.includes('bas')) {
-                    badgeClass = 'bg-dark';
-                } else if (deptoLower.includes('administracion') || deptoLower.includes('admin')) {
-                    badgeClass = 'bg-primary';
-                } else if (deptoLower.includes('produccion') || deptoLower.includes('produc')) {
-                    badgeClass = 'bg-warning text-dark';
-                } else if (deptoLower.includes('seguridad') || deptoLower.includes('vigilancia') || deptoLower.includes('intendencia')) {
-                    badgeClass = 'bg-purple';
-                } else if (deptoLower.includes('sin seguro') || deptoLower.includes('sin')) {
-                    badgeClass = 'bg-orange';
-                }
-                    
-                const isSelected = empleadosSeleccionados.has(clave);
-                const itemClass = isSelected ? 'list-group-item list-group-item-action active d-flex justify-content-between align-items-center' : 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
-                    
-                return `
-                    <div class="${itemClass} empleado-item" data-clave="${clave}" data-nombre="${nombre.toLowerCase()}" style="cursor: pointer;">
-                        <div>
-                            <div class="fw-bold">${nombre}</div>
-                            <small class="text-muted">Clave: ${clave}</small>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="badge ${badgeClass} rounded-pill">${departamento}</span>
-                            <input class="form-check-input" type="checkbox" ${isSelected ? 'checked' : ''}>
-                        </div>
-                    </div>
-                `;
-            }).join('')}
-        </div>
-    `;
-        
-    container.html(listaHtml);
-}
-
-/**
- * Filtrar empleados en tiempo real
- */
-function filtrarEmpleados() {
-    const query = $(this).val().toLowerCase().trim();
+function filtrarEmpleadosPilar() {
+    const query = String($('#buscar_empleado_ticket').val() || '').toLowerCase().trim();
     
     // Mostrar/ocultar el botón de limpiar
-    if (query !== '') {
-        $('#btn_limpiar_busqueda').css('display', 'flex');
-    } else {
-        $('#btn_limpiar_busqueda').hide();
-    }
+    $('#btn_limpiar_busqueda').toggle(query !== '');
     
-    // Si la búsqueda está vacía, mostrar todos
-    if (query === '') {
-        mostrarEmpleados(empleadosParaTickets);
-        return;
-    }
-    
-    // Filtrar por nombre o clave
     const filtrados = empleadosParaTickets.filter(emp => {
+        // Filtro por texto
         const nombre = (emp.nombre || '').toLowerCase();
-        const clave = String(emp.clave || emp.id || '');
+        const clave = String(emp.clave || '');
         const depto = (emp.departamento || '').toLowerCase();
+        const coincideQuery = query === '' || nombre.includes(query) || clave.includes(query) || depto.includes(query);
         
-        return nombre.includes(query) || clave.includes(query) || depto.includes(query);
+        // Filtro por seguro
+        let coincideSeguro = true;
+        if (filtroSeguroActivoPilar === 'con_seguro') coincideSeguro = !emp.esSinSeguro;
+        else if (filtroSeguroActivoPilar === 'sin_seguro') coincideSeguro = emp.esSinSeguro;
+
+        return coincideQuery && coincideSeguro;
     });
     
     mostrarEmpleados(filtrados);
 }
 
-/**
- * Seleccionar todos los empleados visibles
- */
-function seleccionarTodosEmpleados() {
-    // Si hay búsqueda activa, seleccionar solo los visibles
-    const query = $('#buscar_empleado_ticket').val().toLowerCase().trim();
-    
-    if (query === '') {
-        empleadosParaTickets.forEach(emp => {
-            empleadosSeleccionados.add(String(emp.clave || emp.id));
-        });
-    } else {
-        empleadosParaTickets.forEach(emp => {
-            const nombre = (emp.nombre || '').toLowerCase();
-            const clave = String(emp.clave || emp.id || '');
-            const depto = (emp.departamento || '').toLowerCase();
-            
-            if (nombre.includes(query) || clave.includes(query) || depto.includes(query)) {
-                empleadosSeleccionados.add(String(emp.clave || emp.id));
-            }
-        });
-    }
-    
-    actualizarVistaSeleccion();
+function actualizarEstilosFiltrosPilar() {
+    $('#btn_seleccionar_todos_tickets').toggleClass('active', filtroSeguroActivoPilar === 'todos');
+    $('#btn_seleccionar_con_seguro_tickets').toggleClass('active', filtroSeguroActivoPilar === 'con_seguro');
+    $('#btn_seleccionar_sin_seguro_tickets').toggleClass('active', filtroSeguroActivoPilar === 'sin_seguro');
 }
 
-/**
- * Deseleccionar todos los empleados visibles
- */
-function deseleccionarTodosEmpleados() {
-    const query = $('#buscar_empleado_ticket').val().toLowerCase().trim();
-    
-    if (query === '') {
-        empleadosSeleccionados.clear();
-    } else {
-        empleadosParaTickets.forEach(emp => {
-            const nombre = (emp.nombre || '').toLowerCase();
-            const clave = String(emp.clave || emp.id || '');
-            const depto = (emp.departamento || '').toLowerCase();
-            
-            if (nombre.includes(query) || clave.includes(query) || depto.includes(query)) {
-                empleadosSeleccionados.delete(String(emp.clave || emp.id));
-            }
-        });
-    }
-    
-    actualizarVistaSeleccion();
-}
+$(document).ready(function() {
+    $('#btn_ticket_seleccion').on('click', function() {
+        let nominaData = null;
+        try { if (typeof jsonNominaPilar !== 'undefined' && jsonNominaPilar) nominaData = jsonNominaPilar; } catch (e) {}
+        if (!nominaData) nominaData = JSON.parse(localStorage.getItem('jsonNominaPilar') || '{}');
 
-/**
- * Actualiza la vista según el Set de seleccionados
- */
-function actualizarVistaSeleccion() {
-    $('.empleado-item').each(function() {
-        const clave = String($(this).data('clave'));
-        const checkbox = $(this).find('input[type="checkbox"]');
-        
-        if (empleadosSeleccionados.has(clave)) {
-            $(this).addClass('active');
-            checkbox.prop('checked', true);
-        } else {
-            $(this).removeClass('active');
-            checkbox.prop('checked', false);
+        if (!nominaData || !nominaData.departamentos) {
+            Swal.fire({ icon: 'warning', title: 'Sin datos', text: 'No hay datos de nómina cargados.' });
+            return;
         }
+        
+        filtroSeguroActivoPilar = 'todos';
+        actualizarEstilosFiltrosPilar();
+        $('#buscar_empleado_ticket').val('');
+        cargarEmpleadosParaTickets(nominaData);
+        $('#modal_seleccion_tickets').modal('show');
+    });
+
+    $('#btn_seleccionar_todos_tickets').on('click', () => {
+        filtroSeguroActivoPilar = 'todos';
+        actualizarEstilosFiltrosPilar();
+        filtrarEmpleadosPilar();
+    });
+
+    $('#btn_seleccionar_con_seguro_tickets').on('click', () => {
+        filtroSeguroActivoPilar = 'con_seguro';
+        actualizarEstilosFiltrosPilar();
+        filtrarEmpleadosPilar();
+    });
+
+    $('#btn_seleccionar_sin_seguro_tickets').on('click', () => {
+        filtroSeguroActivoPilar = 'sin_seguro';
+        actualizarEstilosFiltrosPilar();
+        filtrarEmpleadosPilar();
+    });
+
+    $('#btn_marcar_visibles_tickets').on('click', function() {
+        const query = String($('#buscar_empleado_ticket').val() || '').toLowerCase().trim();
+        empleadosParaTickets.forEach(emp => {
+            const nombre = (emp.nombre || '').toLowerCase();
+            const clave = String(emp.clave || '');
+            const depto = (emp.departamento || '').toLowerCase();
+            
+            // Filtro por texto
+            const coincideQuery = query === '' || nombre.includes(query) || clave.includes(query) || depto.includes(query);
+            
+            // Filtro por seguro
+            let coincideSeguro = true;
+            if (filtroSeguroActivoPilar === 'con_seguro') coincideSeguro = !emp.esSinSeguro;
+            else if (filtroSeguroActivoPilar === 'sin_seguro') coincideSeguro = emp.esSinSeguro;
+
+            if (coincideQuery && coincideSeguro) {
+                empleadosSeleccionados.add(String(emp.uid));
+            }
+        });
+        actualizarVistaSeleccion();
+    });
+
+    $('#btn_deseleccionar_todos_tickets').on('click', () => {
+        const query = $('#buscar_empleado_ticket').val().toLowerCase().trim();
+        if (query === '') empleadosSeleccionados.clear();
+        else {
+            empleadosParaTickets.forEach(emp => {
+                if ((emp.nombre || '').toLowerCase().includes(query) || String(emp.clave || '').includes(query)) {
+                    empleadosSeleccionados.delete(String(emp.uid));
+                }
+            });
+        }
+        actualizarVistaSeleccion();
+    });
+
+    $(document).on('input', '#buscar_empleado_ticket', filtrarEmpleadosPilar);
+
+    $('#btn_generar_tickets_seleccionados').on('click', generarTicketsSeleccionados);
+    $('#btn_generar_tickets_nombre_seleccionados').on('click', generarTicketsNombreSeleccionados);
+    $(document).on('click', '#btn_limpiar_busqueda', () => $('#buscar_empleado_ticket').val('').trigger('input'));
+
+    $(document).on('click', '.empleado-item', function(e) {
+        if ($(e.target).is('input[type="checkbox"]')) return;
+        const uid = String($(this).data('uid'));
+        if (empleadosSeleccionados.has(uid)) empleadosSeleccionados.delete(uid);
+        else empleadosSeleccionados.add(uid);
+        actualizarVistaSeleccion();
     });
     
+    $(document).on('change', '.empleado-item input[type="checkbox"]', function() {
+        const uid = String($(this).closest('.empleado-item').data('uid'));
+        if ($(this).is(':checked')) empleadosSeleccionados.add(uid);
+        else empleadosSeleccionados.delete(uid);
+        actualizarContadores();
+    });
+});
+
+function cargarEmpleadosParaTickets(nominaData) {
+    empleadosParaTickets = [];
+    empleadosSeleccionados.clear();
+    let counter = 0;
+    nominaData.departamentos.forEach(depto => {
+        if (depto.empleados) {
+            depto.empleados.forEach(emp => {
+                if (!emp || emp.mostrar === false) return;
+                // Crear un UID único para evitar que claves duplicadas o vacías seleccionen a varios
+                const uid = `emp_${counter++}`;
+                const esSinSeguro = (emp?.seguroSocial === false) || String(depto.nombre || '').toLowerCase().includes('sin seguro');
+                empleadosParaTickets.push({ 
+                    uid: uid,
+                    original: emp, 
+                    clave: emp.clave || 'S/C', 
+                    nombre: emp.nombre, 
+                    departamento: depto.nombre,
+                    esSinSeguro: esSinSeguro
+                });
+            });
+        }
+    });
+
+    // Ordenar: primero con seguro (esSinSeguro = false), luego sin seguro (esSinSeguro = true)
+    empleadosParaTickets.sort((a, b) => {
+        if (a.esSinSeguro === b.esSinSeguro) {
+            return String(a.nombre || '').localeCompare(String(b.nombre || ''));
+        }
+        return a.esSinSeguro ? 1 : -1;
+    });
+
+    mostrarEmpleados(empleadosParaTickets);
     actualizarContadores();
 }
 
-/**
- * Actualizar contadores de selección
- */
-function actualizarContadores() {
-    const total = empleadosSeleccionados.size;
-    $('#contador_seleccionados').text(total);
-    $('#contador_seleccionados_btn').text(total);
-}
-
-/**
- * Limpiar campo de búsqueda
- */
-function limpiarCampoBusqueda() {
-    $('#buscar_empleado_ticket').val('').trigger('input');
-    $(this).hide();
-}
-
-/**
- * Generar tickets para empleados seleccionados
- */
-function generarTicketsSeleccionados() {
-    if (empleadosSeleccionados.size === 0) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Sin selección',
-            text: 'Por favor, selecciona al menos un empleado para generar tickets.'
-        });
+function mostrarEmpleados(empleados) {
+    const container = $('#lista_empleados_tickets');
+    container.empty();
+    if (empleados.length === 0) {
+        container.html('<div class="col-12 text-center py-3">No se encontraron empleados</div>');
         return;
     }
     
-    // Intentar obtener la variable global más reciente
-    let nominaData = null;
-    try {
-        if (typeof jsonNominaPilar !== 'undefined' && jsonNominaPilar) {
-            nominaData = jsonNominaPilar;
-        }
-    } catch (e) {}
-    
-    if (!nominaData) {
-        nominaData = JSON.parse(localStorage.getItem('jsonNominaPilar') || '{}');
+    const html = `<div class="list-group w-100">
+        ${empleados.map(emp => {
+            const isSelected = empleadosSeleccionados.has(String(emp.uid));
+            return `<div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center empleado-item ${isSelected ? 'active' : ''}" data-uid="${emp.uid}" data-clave="${emp.clave}">
+                <div>
+                    <div class="fw-bold">${emp.nombre}</div>
+                    <small class="${isSelected ? 'text-white-50' : 'text-muted'}">Clave: ${emp.clave} | ${emp.departamento}</small>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-info rounded-pill">${emp.departamento}</span>
+                    <input class="form-check-input" type="checkbox" ${isSelected ? 'checked' : ''}>
+                </div>
+            </div>`;
+        }).join('')}
+    </div>`;
+    container.html(html);
+}
+
+function actualizarVistaSeleccion() {
+    $('.empleado-item').each(function() {
+        const uid = String($(this).data('uid'));
+        const isSelected = empleadosSeleccionados.has(uid);
+        $(this).toggleClass('active', isSelected);
+        $(this).find('input[type="checkbox"]').prop('checked', isSelected);
+    });
+    actualizarContadores();
+}
+
+function actualizarContadores() {
+    const total = empleadosSeleccionados.size;
+    $('#contador_seleccionados, #contador_seleccionados_btn, #contador_nombre_btn').text(total);
+}
+
+function generarTicketsSeleccionados() {
+    if (empleadosSeleccionados.size === 0) {
+        Swal.fire({ icon: 'warning', title: 'Sin selección', text: 'Selecciona al menos un empleado.' });
+        return;
     }
+    
+    let nominaData = null;
+    try { if (typeof jsonNominaPilar !== 'undefined' && jsonNominaPilar) nominaData = jsonNominaPilar; } catch (e) {}
+    if (!nominaData) nominaData = JSON.parse(localStorage.getItem('jsonNominaPilar') || '{}');
 
     const seleccionados = [];
-    
-    // Obtener los datos más recientes de los empleados seleccionados
     empleadosParaTickets.forEach(item => {
-        const clave = String(item.clave || (item.original ? item.original.clave : ''));
-        if (empleadosSeleccionados.has(clave)) {
-            // Aseguramos que usamos la referencia original que se actualiza con la tabla
-            const empActualizado = item.original;
-            if (empActualizado) {
-                // Añadir departamento al objeto para el PDF
-                empActualizado.departamento = item.departamento;
-                seleccionados.push(empActualizado);
+        if (empleadosSeleccionados.has(String(item.uid))) {
+            const empOriginal = item.original;
+            if (empOriginal && empOriginal.mostrar === false) return;
+            
+            // Crear una copia para no modificar el objeto original en memoria
+            const emp = { ...empOriginal };
+            emp.departamento = item.departamento;
+            if (item.esSinSeguro) emp.sin_seguro_ticket = true;
+
+            // PRE-PROCESAMIENTO PARA CORTE Y PODA SI ES NECESARIO
+            // Si es de corte y tiene el formato raw, lo procesamos para que el backend lo entienda
+            if (item.departamento.toUpperCase() === 'CORTE' && emp.concepto === 'REJA' && emp.tickets) {
+                // Para simplificar la selección, procesamos el primer grupo de tickets o el total
+                // El backend espera totalRejas, precio, totalEfectivo
+                const porPrecio = {};
+                emp.tickets.forEach(t => {
+                    const p = (t.precio_reja ?? 0).toString();
+                    if (!porPrecio[p]) porPrecio[p] = [];
+                    porPrecio[p].push(t);
+                });
+                
+                Object.keys(porPrecio).forEach(p => {
+                    const datos = procesarTicketsParaCorteSimple(emp.nombre, porPrecio[p], parseFloat(p));
+                    datos.departamento = 'Corte';
+                    if (item.esSinSeguro) datos.sin_seguro_ticket = true;
+                    seleccionados.push(datos);
+                });
+            } else if (item.departamento.toUpperCase() === 'PODA' && emp.movimientos) {
+                const movsPoda = emp.movimientos.filter(m => m.concepto === 'PODA');
+                const porMonto = {};
+                movsPoda.forEach(m => {
+                    if (!porMonto[m.monto]) porMonto[m.monto] = [];
+                    porMonto[m.monto].push(m);
+                });
+                Object.keys(porMonto).forEach(m => {
+                    const datos = procesarPodaParaTicketSimple(emp.nombre, porMonto[m], parseFloat(m));
+                    datos.departamento = 'Poda';
+                    if (item.esSinSeguro) datos.sin_seguro_ticket = true;
+                    seleccionados.push(datos);
+                });
+            } else {
+                seleccionados.push(emp);
             }
         }
     });
     
-    if (seleccionados.length === 0) return;
+    const btn = $(this);
+    const original = btn.html();
+    btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i>');
     
-    // Mostrar cargando
-    const btnOriginalHtml = $(this).html();
-    $(this).prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Generando...');
-    
-    // Preparar datos para enviar
-    const dataEnviar = {
-        seleccion: true,
-        empleados: seleccionados,
-        meta: {
-            numero_semana: nominaData.numero_semana || ''
-        }
-    };
-    
-    // Enviar por AJAX como JSON raw body (más robusto para datos grandes)
     $.ajax({
         url: '../php/descargar_ticket_pdf.php',
         type: 'POST',
         contentType: 'application/json',
-        data: JSON.stringify(dataEnviar),
-        xhrFields: {
-            responseType: 'blob'
-        },
-        success: function(blob, status, xhr) {
-            if (!(blob instanceof Blob)) {
-                Swal.fire('Error', 'El servidor no devolvió un archivo PDF válido.', 'error');
-                $('#btn_generar_tickets_seleccionados').prop('disabled', false).html(btnOriginalHtml);
-                return;
+        data: JSON.stringify({ seleccion: true, empleados: seleccionados, meta: { numero_semana: nominaData.numero_semana || '' } }),
+        xhrFields: { responseType: 'blob' },
+        success: function(blob) {
+            if (blob instanceof Blob && blob.size > 0) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'tickets_seleccionados_pilar.pdf';
+                document.body.appendChild(a);
+                a.click();
+                URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                $('#modal_seleccion_tickets').modal('hide');
+                Swal.fire({ icon: 'success', title: 'Tickets generados', timer: 1500, showConfirmButton: false });
             }
-            
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'tickets_seleccionados.pdf';
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-            
-            $('#btn_generar_tickets_seleccionados').prop('disabled', false).html(btnOriginalHtml);
-            $('#modal_seleccion_tickets').modal('hide');
-            
-            Swal.fire({
-                icon: 'success',
-                title: 'Tickets generados',
-                text: 'Se han generado los tickets correctamente.'
-            });
+            btn.prop('disabled', false).html(original);
         },
         error: function() {
-            Swal.fire('Error', 'Error al generar el PDF. Por favor, intenta nuevamente.', 'error');
-            $('#btn_generar_tickets_seleccionados').prop('disabled', false).html(btnOriginalHtml);
+            Swal.fire('Error', 'No se pudo generar el PDF.', 'error');
+            btn.prop('disabled', false).html(original);
         }
     });
+}
+
+function generarTicketsNombreSeleccionados() {
+    if (empleadosSeleccionados.size === 0) {
+        Swal.fire({ icon: 'warning', title: 'Sin selección', text: 'Selecciona al menos un empleado.' });
+        return;
+    }
+    
+    let nominaData = null;
+    try { if (typeof jsonNominaPilar !== 'undefined' && jsonNominaPilar) nominaData = jsonNominaPilar; } catch (e) {}
+    if (!nominaData) nominaData = JSON.parse(localStorage.getItem('jsonNominaPilar') || '{}');
+
+    const seleccionados = [];
+    empleadosParaTickets.forEach(item => {
+        if (empleadosSeleccionados.has(String(item.uid))) {
+            if (item.original && item.original.mostrar === false) return;
+            const empCopia = { ...item.original };
+            if (item.esSinSeguro) empCopia.sin_seguro_ticket = true;
+            seleccionados.push(empCopia);
+        }
+    });
+    
+    const btn = $(this);
+    const original = btn.html();
+    btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i>');
+    
+    $.ajax({
+        url: '../php/descargar_ticket_nombre_pdf.php',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ 
+            nomina: { 
+                departamentos: [{ nombre: 'Selección', empleados: seleccionados }],
+                numero_semana: nominaData.numero_semana || ''
+            } 
+        }),
+        xhrFields: { responseType: 'blob' },
+        success: function(blob) {
+            if (blob instanceof Blob && blob.size > 0) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'tickets_nombre_seleccionados_pilar.pdf';
+                document.body.appendChild(a);
+                a.click();
+                URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                $('#modal_seleccion_tickets').modal('hide');
+                Swal.fire({ icon: 'success', title: 'Tickets de nombre generados', timer: 1500, showConfirmButton: false });
+            }
+            btn.prop('disabled', false).html(original);
+        },
+        error: function() {
+            Swal.fire('Error', 'No se pudo generar el PDF.', 'error');
+            btn.prop('disabled', false).html(original);
+        }
+    });
+}
+
+// Funciones auxiliares duplicadas de ticket_pdf.js para que el modal funcione independiente
+function procesarTicketsParaCorteSimple(nombre, tickets, precio) {
+    const rejas = { viernes: 0, sabado: 0, domingo: 0, lunes: 0, martes: 0, miercoles: 0, jueves: 0 };
+    let total = 0;
+    (tickets || []).forEach(t => {
+        const dia = obtenerDiaSemanaSimple(t.fecha);
+        (t.datosRejas || []).forEach(tr => {
+            if (rejas.hasOwnProperty(dia)) rejas[dia] += tr.cantidad;
+            total += tr.cantidad;
+        });
+    });
+    return { nombre, concepto: 'REJA', ...rejas, totalRejas: total, precio, totalEfectivo: total * precio };
+}
+
+function procesarPodaParaTicketSimple(nombre, movs, monto) {
+    const arb = { viernes: 0, sabado: 0, domingo: 0, lunes: 0, martes: 0, miercoles: 0, jueves: 0 };
+    let total = 0;
+    (movs || []).forEach(m => {
+        const dia = obtenerDiaSemanaSimple(m.fecha);
+        const cant = Number(m.arboles_podados || 0);
+        if (arb.hasOwnProperty(dia)) arb[dia] += cant;
+        total += cant;
+    });
+    return { nombre, concepto: 'PODA', ...arb, totalArboles: total, monto, totalEfectivo: total * monto };
+}
+
+function obtenerDiaSemanaSimple(fechaStr) {
+    if (!fechaStr) return '';
+    const [a, m, d] = fechaStr.split('-').map(Number);
+    const date = new Date(a, m - 1, d);
+    return ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'][date.getDay()];
 }

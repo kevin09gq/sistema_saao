@@ -63,6 +63,35 @@ verificarSesion();
         .kpi-mini-card {
             border-top: 4px solid #28a745;
         }
+
+        /* Estilos para las pestañas (Pills) */
+        .nav-pills .nav-link {
+            color: #64748b;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            margin: 0 2px;
+        }
+
+        .nav-pills .nav-link:hover {
+            background-color: #f1f5f9;
+            color: #28a745;
+        }
+
+        .nav-pills .nav-link.active {
+            background-color: #28a745 !important;
+            color: white !important;
+            box-shadow: 0 4px 6px rgba(40, 167, 69, 0.2);
+        }
+
+        /* Especial para el botón de extras cuando no está activo */
+        #tab-extras:not(.active) {
+            color: #d97706;
+        }
+
+        #tab-extras:not(.active):hover {
+            background-color: #fffbeb;
+            color: #b45309;
+        }
     </style>
 </head>
 
@@ -136,7 +165,12 @@ verificarSesion();
                 <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-2 rounded-3 shadow-sm border">
                     <ul class="nav nav-pills" id="pills-tab" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active fw-bold" id="tab-poda-solo" type="button" onclick="cambiarTab('poda')">
+                            <button class="nav-link active fw-bold" id="tab-general" type="button" onclick="cambiarTab('general')">
+                                <i class="bi bi-grid-fill"></i> Mixto
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-bold" id="tab-poda-solo" type="button" onclick="cambiarTab('poda')">
                                 <i class="bi bi-scissors"></i> Solo Podas
                             </button>
                         </li>
@@ -149,6 +183,9 @@ verificarSesion();
                     <div class="d-flex gap-2">
                         <button class="btn btn-warning btn-sm fw-bold shadow-sm" id="btn_ver_ranking" onclick="abrirModalRanking()">
                             <i class="bi bi-trophy-fill"></i> Ver Ranking
+                        </button>
+                        <button class="btn btn-success btn-sm fw-bold shadow-sm" onclick="exportarExcel()">
+                            <i class="bi bi-file-earmark-excel-fill"></i> Exportar Excel
                         </button>
                         <button class="btn btn-danger btn-sm fw-bold shadow-sm" onclick="exportarPDF()">
                             <i class="bi bi-file-earmark-pdf-fill"></i> Exportar PDF

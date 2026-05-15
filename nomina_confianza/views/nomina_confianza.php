@@ -232,7 +232,6 @@
         <div class="cm-item" data-action="ver" style="padding:6px 12px;cursor:pointer;">Ver detalles</div>
     </div>
 
-
     <!-- Incluir el modal -->
 
     <?php include 'modals/modalConfianza.php'; ?>
@@ -246,6 +245,7 @@
     <?php include 'modals/modalDiasInhabiles.php'; ?>
     <?php include 'modals/modalOlvidos.php'; ?>
     <?php include 'modals/modalConceptosTotales.php'; ?>
+    <?php include 'modals/modalTicketsEmpleados.php'; ?>
     <?php include 'modals/modal_seleccion_tickets_confianza.php'; ?>
     <?php include 'modals/modalExportarNomina.php'; ?>
     <?php include 'modals/modalReasignarEmpleado.php'; ?>

@@ -187,7 +187,11 @@ function renderTicketPdf($pdf, $emp, $extra, $meta) {
     $f18 = $pt(18);
     $f22 = $pt(22);
 
-    $drawPrimeraHoja = function ($alturaContenido) use ($pdf, $dot, $pt, $text, $textB, $departamento, $fechaIngreso, $puesto, $salarioDiario, $sueldoSemanalHeader, $claveMostrar, $nombre, $semana) {
+    $esSinSeguro = !empty($emp['sin_seguro_ticket']) || 
+                   (isset($emp['seguroSocial']) && $emp['seguroSocial'] === false) || 
+                   strpos(strtolower($departamento), 'sin seguro') !== false;
+
+    $drawPrimeraHoja = function ($alturaContenido) use ($pdf, $dot, $pt, $text, $textB, $departamento, $fechaIngreso, $puesto, $salarioDiario, $sueldoSemanalHeader, $claveMostrar, $nombre, $semana, $esSinSeguro) {
         $pdf->SetTextColor(0, 0, 0);
         $pdf->SetLineWidth($dot(2));
         $pdf->Rect($dot(10), $dot(12), $dot(812), $dot(386));
@@ -208,8 +212,12 @@ function renderTicketPdf($pdf, $emp, $extra, $meta) {
             }
         }
         $text(310, 20, $deptoFont, $deptoTexto);
-        $text(515, 20, $pt(18), 'F.Ingr: ' . $fechaIngreso);
-        $text(710, 20, $pt(18), 'SEM ' . $semana);
+        
+        // No mostrar fecha de ingreso ni semana si es sin seguro
+        if (!$esSinSeguro) {
+            $text(515, 20, $pt(18), 'F.Ingr: ' . $fechaIngreso);
+            $text(710, 20, $pt(18), 'SEM ' . $semana);
+        }
 
         $pdf->SetLineWidth($dot(1));
         $pdf->Line($dot(10), $dot(42), $dot(10 + 812), $dot(42));
@@ -245,12 +253,14 @@ function renderTicketPdf($pdf, $emp, $extra, $meta) {
         $pdf->SetLineWidth($dot(1));
     };
 
-    $drawContinuacion = function ($alturaContenido) use ($pdf, $dot, $pt, $text, $textB, $claveMostrar, $nombre, $semana, $yInicioCeldasContinuacion) {
+    $drawContinuacion = function ($alturaContenido) use ($pdf, $dot, $pt, $text, $textB, $claveMostrar, $nombre, $semana, $yInicioCeldasContinuacion, $esSinSeguro) {
         $pdf->SetTextColor(0, 0, 0);
         $pdf->SetLineWidth($dot(2));
         $pdf->Rect($dot(10), $dot(10), $dot(812), $dot(386));
         $textB(18, 22, $pt(20), $claveMostrar . ' ' . $nombre);
-        $text(700, 22, $pt(18), 'SEM ' . $semana);
+        if (!$esSinSeguro) {
+            $text(700, 22, $pt(18), 'SEM ' . $semana);
+        }
         $pdf->SetLineWidth($dot(1));
         $pdf->Line($dot(10), $dot($yInicioCeldasContinuacion), $dot(10 + 812), $dot($yInicioCeldasContinuacion));
 

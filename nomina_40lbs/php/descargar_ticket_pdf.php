@@ -195,6 +195,10 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
     $pdf->SetLineWidth($dot(2));
     $pdf->Rect($dot(10), $dot(12), $dot(812), $dot(386));
 
+    $esSinSeguro = !empty($emp['sin_seguro_ticket']) || 
+                   (isset($emp['seguroSocial']) && $emp['seguroSocial'] === false) || 
+                   stripos($departamento, 'sin seguro') !== false;
+
     // Una sola línea: Clave | Nombre | Departamento | Fecha Ingreso | Semana
     $nombreCompleto = $clave . ' ' . $nombre;
     // Ajustar tamaño de fuente del nombre según longitud
@@ -205,8 +209,10 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
     $deptoFontSize = strlen($departamento) > 18 ? 18 : (strlen($departamento) > 15 ? 18 : 18);
     $text(310, 20, $pt($deptoFontSize), $departamento);
     
-    $text(515, 20, $pt(18), 'F.Ingr: ' . $fechaIngreso);
-    $text(710, 20, $pt(18), 'SEM ' . $semana);
+    if (!$esSinSeguro) {
+        $text(515, 20, $pt(18), 'F.Ingr: ' . $fechaIngreso);
+        $text(710, 20, $pt(18), 'SEM ' . $semana);
+    }
 
     $pdf->SetLineWidth($dot(1));
     $pdf->Line($dot(10), $dot(42), $dot(10 + 812), $dot(42));

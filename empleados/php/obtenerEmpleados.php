@@ -22,7 +22,7 @@ if (isset($_GET['accion']) || isset($_POST['accion'])) {
             if (isset($_POST['id_empleado']) && isset($_POST['id_status'])) {
                 $idEmpleado = $_POST['id_empleado'];
                 $idStatus = $_POST['id_status'];
-                $fechaIngreso = $_POST['fecha_ingreso'] ?? null; // opcional
+                $fechaIngreso = $_POST['fecha_alta_empresa'] ?? null; // opcional
                 cambiarStatus($idEmpleado, $idStatus, $fechaIngreso);
             }
 
@@ -122,8 +122,8 @@ function dataEmpleado($idEmpleado, $idClave)
         e.sexo,
         e.grupo_sanguineo,
         e.enfermedades_alergias,
-        e.fecha_ingreso,
-        e.fecha_ingreso_real,
+        e.fecha_alta_empresa,
+        e.fecha_alta_imss,
         e.fecha_nacimiento,
         (SELECT GROUP_CONCAT(c.num_casillero SEPARATOR ', ') FROM empleado_casillero ec INNER JOIN 
         casilleros c ON ec.num_casillero = c.num_casillero WHERE ec.id_empleado = e.id_empleado) AS num_casillero,
@@ -195,8 +195,8 @@ function dataEmpleado($idEmpleado, $idClave)
             'sexo' => $row['sexo'],
             'grupo_sanguineo' => $row['grupo_sanguineo'],
             'enfermedades_alergias' => $row['enfermedades_alergias'],
-            'fecha_ingreso' => $row['fecha_ingreso'],
-            'fecha_ingreso_real' => $row['fecha_ingreso_real'],
+            'fecha_alta_empresa' => $row['fecha_alta_empresa'],
+            'fecha_alta_imss' => $row['fecha_alta_imss'],
             'fecha_nacimiento' => $row['fecha_nacimiento'],
             'num_casillero' => $row['num_casillero'],
             'ruta_foto' => $row['ruta_foto'],
@@ -313,14 +313,14 @@ function cambiarStatus($idEmpleado, $idStatus, $fechaIngreso = null)
         $resHist = $stmtHist->get_result();
 
         if ($resHist->num_rows === 0) {
-            // No existe historial: usar fecha_ingreso del empleado (preferente la de BD)
-            $stmtFI = $conexion->prepare("SELECT fecha_ingreso FROM info_empleados WHERE id_empleado = ? LIMIT 1");
+            // No existe historial: usar fecha_alta_empresa del empleado (preferente la de BD)
+            $stmtFI = $conexion->prepare("SELECT fecha_alta_empresa FROM info_empleados WHERE id_empleado = ? LIMIT 1");
             $stmtFI->bind_param("i", $idEmpleado);
             $stmtFI->execute();
             $resFI = $stmtFI->get_result();
             $fechaIngresoBD = null;
             if ($rowFI = $resFI->fetch_assoc()) {
-                $fechaIngresoBD = $rowFI['fecha_ingreso'];
+                $fechaIngresoBD = $rowFI['fecha_alta_empresa'];
             }
             $stmtFI->close();
 

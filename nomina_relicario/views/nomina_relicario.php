@@ -432,17 +432,9 @@
     <?php include "modalsNomina/modalReasignarEmpleado.php"; ?>
     <?php include "modalsNomina/modalRedondeoSueldos.php"; ?>
     <?php include "modalsNomina/modal_seleccion_tickets_relicario.php"; ?>
-    <?php include "modalsNomina/modal_ticket_manual_relicario.php"; ?>
+    <?php include "modalsNomina/modalTicketsEmpleados.php"; ?>
     <?php include "modalsNomina/addPercepcionesDeducciones.php"; ?>
     <?php include "modalsNomina/dispersionTarjeta.php"; ?>
-
-     
-    
-   
-
-
-
-
 
 
     <!-- jQuery -->
@@ -504,7 +496,6 @@
     <script src="../js/configModalDispersionTarjeta/establecerData.js"></script>
     <script src="../js/configModalDispersionTarjeta/filtroBusqueda.js"></script>
     <script src="../js/configModalDispersionTarjeta/editarData.js"></script>
-
 
 
 </body>

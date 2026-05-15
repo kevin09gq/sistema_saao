@@ -1,5 +1,5 @@
 let filtrosData = {};
-let tabActual = 'poda';
+let tabActual = 'general';
 let lastResponseData = null;
 
 function configurarDropdownAccionesSoloUnoAbierto() {
@@ -142,6 +142,7 @@ function buscarHistorial() {
 
             if (res.status === 'success') {
                 lastResponseData = res.data;
+                window.colorAreaActual = res.data.color_area || '#B50600';
                 pintarDashboard(res.data);
             } else {
                 Swal.fire('Error', res.message, 'error');
@@ -492,6 +493,53 @@ async function exportarPDF() {
     generarPDFPodas(podasConMovimientos);
 }
 
+function exportarExcel() {
+    if (!window.podasDataActual || window.podasDataActual.length === 0) {
+        Swal.fire('Atención', 'No hay datos para exportar.', 'info');
+        return;
+    }
+
+    const anio = document.getElementById('filtro_anio').value;
+    const mes = document.getElementById('filtro_mes').value;
+    const semana = document.getElementById('filtro_semana').value;
+
+    if (!anio) {
+        Swal.fire('Atención', 'Seleccione una Nómina (Año) válida.', 'warning');
+        return;
+    }
+
+    const params = new URLSearchParams();
+    params.append('anio', anio);
+    params.append('mes', mes || '');
+    params.append('semana', semana || '');
+    params.append('tipo', 'mixto');
+
+    const url = '../php/historial/export_excel_podas.php?' + params.toString();
+    
+    try {
+        Swal.fire({
+            title: 'Descargando Excel...',
+            html: 'Generando archivo de Excel con los datos...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = true;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        setTimeout(() => {
+            Swal.fire('Éxito', 'Excel descargado correctamente.', 'success');
+        }, 500);
+    } catch (err) {
+        console.error(err);
+        Swal.fire('Error', 'No se pudo descargar el Excel.', 'error');
+    }
+}
+
 function exportarPDFUnicaPoda(index) {
     if (!window.podasDataActual || !window.podasDataActual[index]) return;
     const poda = window.podasDataActual[index];
@@ -543,10 +591,27 @@ function generarPDFPodaCorporativo(poda) {
     const MARGIN = 15;
     let y = 15;
 
+    // Función para convertir hex o rgb string a array [r,g,b]
+    const parseColor = (cStr) => {
+        if (!cStr) return [46, 139, 87]; // Verde por defecto para podas
+        if (cStr.startsWith('#')) {
+            let hex = cStr.substring(1);
+            if (hex.length === 3) hex = hex.split('').map(s => s + s).join('');
+            return [parseInt(hex.substring(0, 2), 16), parseInt(hex.substring(2, 4), 16), parseInt(hex.substring(4, 6), 16)];
+        }
+        if (cStr.startsWith('rgb')) {
+            const m = cStr.match(/\d+/g);
+            if (m && m.length >= 3) return [parseInt(m[0]), parseInt(m[1]), parseInt(m[2])];
+        }
+        return [46, 139, 87];
+    };
+
+    const colorDinamico = parseColor(window.colorAreaActual);
+
     // 1. ENCABEZADO CENTRADO
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(16);
-    doc.setTextColor(0, 0, 0);
+    doc.setTextColor(...colorDinamico);
     
     // Título dinámico
     const tituloReporte = tabActual === 'extras' ? 'REPORTE DE PAGOS EXTRAS' : 
@@ -564,7 +629,7 @@ function generarPDFPodaCorporativo(poda) {
     doc.text(`Fecha de emisión: ${new Date().toLocaleDateString('es-MX')}`, PAGE_W / 2, y, { align: 'center' });
     
     y += 8;
-    doc.setDrawColor(0, 0, 0);
+    doc.setDrawColor(...colorDinamico);
     doc.setLineWidth(1);
     doc.line(MARGIN, y, PAGE_W - MARGIN, y);
     y += 10;
@@ -688,10 +753,27 @@ function generarPDFPodas(datos, empleadoIndividual = null) {
     const CONTENT_W = PAGE_W - (MARGIN * 2);
     let y = 15;
 
+    // Función para convertir hex o rgb string a array [r,g,b]
+    const parseColor = (cStr) => {
+        if (!cStr) return [46, 139, 87]; // Verde por defecto para podas
+        if (cStr.startsWith('#')) {
+            let hex = cStr.substring(1);
+            if (hex.length === 3) hex = hex.split('').map(s => s + s).join('');
+            return [parseInt(hex.substring(0, 2), 16), parseInt(hex.substring(2, 4), 16), parseInt(hex.substring(4, 6), 16)];
+        }
+        if (cStr.startsWith('rgb')) {
+            const m = cStr.match(/\d+/g);
+            if (m && m.length >= 3) return [parseInt(m[0]), parseInt(m[1]), parseInt(m[2])];
+        }
+        return [46, 139, 87];
+    };
+
+    const colorDinamico = parseColor(window.colorAreaActual);
+
     // 1. ENCABEZADO CENTRADO
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(16);
-    doc.setTextColor(0, 0, 0);
+    doc.setTextColor(...colorDinamico);
     
     // Título dinámico
     const tituloReporte = tabActual === 'extras' ? 'REPORTE DE PAGOS EXTRAS' : 
@@ -709,7 +791,7 @@ function generarPDFPodas(datos, empleadoIndividual = null) {
     doc.text(`Fecha de emisión: ${new Date().toLocaleDateString('es-MX')}`, PAGE_W / 2, y, { align: 'center' });
     
     y += 8;
-    doc.setDrawColor(0, 0, 0);
+    doc.setDrawColor(...colorDinamico);
     doc.setLineWidth(1);
     doc.line(MARGIN, y, PAGE_W - MARGIN, y);
     y += 10;

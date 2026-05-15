@@ -80,7 +80,7 @@ function dataEmpleadoContratos(mysqli $conexion, int $idEmpleado, string $idClav
         e.sexo,
         e.grupo_sanguineo,
         e.enfermedades_alergias,
-        e.fecha_ingreso,
+        e.fecha_alta_empresa,
         e.fecha_nacimiento,
         (SELECT GROUP_CONCAT(c.num_casillero SEPARATOR ', ') FROM empleado_casillero ec INNER JOIN 
          casilleros c ON ec.num_casillero = c.num_casillero WHERE ec.id_empleado = e.id_empleado) AS num_casillero,
@@ -142,7 +142,7 @@ function dataEmpleadoContratos(mysqli $conexion, int $idEmpleado, string $idClav
             'sexo' => $row['sexo'],
             'grupo_sanguineo' => $row['grupo_sanguineo'],
             'enfermedades_alergias' => $row['enfermedades_alergias'],
-            'fecha_ingreso' => $row['fecha_ingreso'],
+            'fecha_alta_empresa' => $row['fecha_alta_empresa'],
             'fecha_nacimiento' => $row['fecha_nacimiento'],
             'num_casillero' => $row['num_casillero'],
             'ruta_foto' => $row['ruta_foto'],

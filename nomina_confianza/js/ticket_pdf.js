@@ -12,8 +12,13 @@ function obtenerMapaEmpresasDesdeSelect() {
 }
 
 function obtenerNominaConfianzaGlobal() {
-    if (window.jsonNominaConfianza && Array.isArray(window.jsonNominaConfianza.departamentos)) return window.jsonNominaConfianza;
-    if (typeof jsonNominaConfianza !== 'undefined' && jsonNominaConfianza && Array.isArray(jsonNominaConfianza.departamentos)) return jsonNominaConfianza;
+    if (typeof jsonNominaConfianza !== 'undefined' && jsonNominaConfianza && Array.isArray(jsonNominaConfianza.departamentos)) {
+        if (typeof window !== 'undefined') window.jsonNominaConfianza = jsonNominaConfianza;
+        return jsonNominaConfianza;
+    }
+    if (typeof window !== 'undefined' && window.jsonNominaConfianza && Array.isArray(window.jsonNominaConfianza.departamentos)) {
+        return window.jsonNominaConfianza;
+    }
     return null;
 }
 
@@ -22,13 +27,14 @@ function obtenerEmpleadosFiltradosConfianza(opciones = {}) {
     if (!nomina || !Array.isArray(nomina.departamentos)) return [];
 
     const aplicarBusqueda = opciones.aplicarBusqueda === true;
-    const valorDepartamento = String($('#filtro-departamento').val() || '');
+    const valorDepartamento = String($('#filtro-departamento').val() || '').trim();
+    const valorDepartamentoLower = valorDepartamento.toLowerCase();
     const valorEmpresa = String($('#filtro-empresa').val() || '');
     const q = aplicarBusqueda ? String($('#busqueda-nomina-confianza').val() || '').trim().toLowerCase() : '';
 
     let empleados = [];
 
-    if (valorDepartamento === '' || valorDepartamento === '0' || valorDepartamento === 'all') {
+    if (valorDepartamento === '' || valorDepartamento === '0' || valorDepartamentoLower === 'all') {
         nomina.departamentos.forEach(depto => {
             if (!Array.isArray(depto.empleados)) return;
             depto.empleados.forEach(emp => {
@@ -37,7 +43,7 @@ function obtenerEmpleadosFiltradosConfianza(opciones = {}) {
                 }
             });
         });
-    } else if (valorDepartamento === 'sin_seguro') {
+    } else if (valorDepartamentoLower === 'sin_seguro' || valorDepartamentoLower === 'sin seguro') {
         const deptoSinSeguro = nomina.departamentos.find(d => String(d.nombre || '').toLowerCase().trim() === 'sin seguro');
         if (deptoSinSeguro && Array.isArray(deptoSinSeguro.empleados)) {
             deptoSinSeguro.empleados.forEach(emp => {
@@ -47,12 +53,20 @@ function obtenerEmpleadosFiltradosConfianza(opciones = {}) {
             });
         }
     } else {
-        const idDepartamento = Number(valorDepartamento);
         nomina.departamentos.forEach(depto => {
+            const nombreDepto = String(depto.nombre || '').trim();
+            const nombreDeptoLower = nombreDepto.toLowerCase();
+            const deptoCoincidePorNombre = nombreDeptoLower === valorDepartamentoLower;
+            const deptoCoincidePorId = valorDepartamento !== '' &&
+                !Number.isNaN(Number(valorDepartamento)) &&
+                Number(depto.id_departamento) === Number(valorDepartamento);
+
+            if (!deptoCoincidePorNombre && !deptoCoincidePorId) return;
             if (!Array.isArray(depto.empleados)) return;
+
             depto.empleados.forEach(emp => {
-                if (emp && emp.mostrar !== false && Number(emp.id_departamento) === idDepartamento) {
-                    empleados.push({ emp, deptoNombre: String(depto.nombre || '') });
+                if (emp && emp.mostrar !== false) {
+                    empleados.push({ emp, deptoNombre: nombreDepto });
                 }
             });
         });
@@ -125,6 +139,61 @@ function construirNominaParaTicketsConfianza(empleadosConDepto) {
     };
 }
 
+function descargarTicketsConfianza($btn, url, iconoDefault, nombreDefault) {
+    const nomina = obtenerNominaConfianzaGlobal();
+    if (!nomina || !Array.isArray(nomina.departamentos)) {
+        Swal.fire('Sin datos', 'No hay datos de nómina para generar el PDF.', 'warning');
+        return;
+    }
+
+    const empleadosConDepto = obtenerEmpleadosFiltradosConfianza({ aplicarBusqueda: true });
+    if (empleadosConDepto.length === 0) {
+        Swal.fire('Sin datos', 'No hay empleados para los filtros seleccionados.', 'warning');
+        return;
+    }
+
+    const nominaParaEnviar = construirNominaParaTicketsConfianza(empleadosConDepto);
+
+    $btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Generando...');
+
+    $.ajax({
+        url,
+        type: 'POST',
+        contentType: 'application/json; charset=UTF-8',
+        data: JSON.stringify({ nomina: nominaParaEnviar }),
+        xhrFields: { responseType: 'blob' },
+        success: function (blob, status, xhr) {
+            if (!(blob instanceof Blob) || blob.size === 0) {
+                Swal.fire('Error', 'El servidor no devolvió un archivo PDF válido.', 'error');
+                $btn.prop('disabled', false).html(`<i class="bi ${iconoDefault}"></i>`);
+                return;
+            }
+
+            let filename = nombreDefault;
+            const disposition = xhr.getResponseHeader('Content-Disposition');
+            if (disposition && disposition.indexOf('filename=') !== -1) {
+                const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                const matches = filenameRegex.exec(disposition);
+                if (matches && matches[1]) filename = matches[1].replace(/["']/g, '');
+            }
+
+            const urlBlob = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = urlBlob;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(urlBlob);
+            document.body.removeChild(a);
+            $btn.prop('disabled', false).html(`<i class="bi ${iconoDefault}"></i>`);
+        },
+        error: function () {
+            Swal.fire('Error', 'Error al generar el PDF. Por favor, intenta nuevamente.', 'error');
+            $btn.prop('disabled', false).html(`<i class="bi ${iconoDefault}"></i>`);
+        }
+    });
+}
+
 $(document).ready(function () {
     $('#btn_ticket_pdf').on('click', function () {
         const nomina = obtenerNominaConfianzaGlobal();
@@ -133,52 +202,24 @@ $(document).ready(function () {
             return;
         }
 
-        const empleadosConDepto = obtenerEmpleadosFiltradosConfianza({ aplicarBusqueda: true });
-        if (empleadosConDepto.length === 0) {
-            Swal.fire('Sin datos', 'No hay empleados para los filtros seleccionados.', 'warning');
-            return;
+        const modalEl = document.getElementById('modalSeleccionTicket');
+        if (modalEl) {
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
         }
+    });
 
-        const nominaParaEnviar = construirNominaParaTicketsConfianza(empleadosConDepto);
+    $('#btn_ticket_normal').on('click', function () {
+        const modalEl = document.getElementById('modalSeleccionTicket');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+        descargarTicketsConfianza($('#btn_ticket_pdf'), '../php/descargar_ticket_pdf.php', 'bi-ticket-perforated', 'tickets_confianza.pdf');
+    });
 
-        const $btn = $(this);
-        $btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Generando...');
-
-        $.ajax({
-            url: '../php/descargar_ticket_pdf.php',
-            type: 'POST',
-            contentType: 'application/json; charset=UTF-8',
-            data: JSON.stringify({ nomina: nominaParaEnviar }),
-            xhrFields: { responseType: 'blob' },
-            success: function (blob, status, xhr) {
-                if (!(blob instanceof Blob) || blob.size === 0) {
-                    Swal.fire('Error', 'El servidor no devolvió un archivo PDF válido.', 'error');
-                    $btn.prop('disabled', false).html('<i class="bi bi-ticket-perforated"></i>');
-                    return;
-                }
-
-                let filename = 'tickets_confianza.pdf';
-                const disposition = xhr.getResponseHeader('Content-Disposition');
-                if (disposition && disposition.indexOf('filename=') !== -1) {
-                    const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-                    const matches = filenameRegex.exec(disposition);
-                    if (matches && matches[1]) filename = matches[1].replace(/["']/g, '');
-                }
-
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
-                $btn.prop('disabled', false).html('<i class="bi bi-ticket-perforated"></i>');
-            },
-            error: function () {
-                Swal.fire('Error', 'Error al generar el PDF. Por favor, intenta nuevamente.', 'error');
-                $btn.prop('disabled', false).html('<i class="bi bi-ticket-perforated"></i>');
-            }
-        });
+    $('#btn_ticket_nombre').on('click', function () {
+        const modalEl = document.getElementById('modalSeleccionTicket');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+        descargarTicketsConfianza($('#btn_ticket_pdf'), '../php/descargar_ticket_nombre_pdf.php', 'bi-ticket-perforated', 'tickets_nombre_confianza.pdf');
     });
 });

@@ -40,13 +40,23 @@ function cargarEmpleadosParaTickets10lbs() {
     const pool = (typeof obtenerTodosEmpleados10lbs === 'function') ? obtenerTodosEmpleados10lbs() : [];
     pool.forEach(({ emp, deptoNombre }) => {
         if (!emp || typeof emp !== 'object') return;
+        const esSinSeguro = (emp?.seguroSocial === false) || String(deptoNombre || '').toLowerCase().includes('sin seguro');
         empleadosParaTickets10lbs.push({
             original: emp,
             clave: emp.clave,
             nombre: emp.nombre,
             departamento: String(deptoNombre || ''),
-            id: claveCompuestaTicket(emp, deptoNombre)
+            id: claveCompuestaTicket(emp, deptoNombre),
+            esSinSeguro: esSinSeguro
         });
+    });
+
+    // Ordenar: primero con seguro (esSinSeguro = false), luego sin seguro (esSinSeguro = true)
+    empleadosParaTickets10lbs.sort((a, b) => {
+        if (a.esSinSeguro === b.esSinSeguro) {
+            return String(a.nombre || '').localeCompare(String(b.nombre || ''));
+        }
+        return a.esSinSeguro ? 1 : -1;
     });
 
     mostrarEmpleadosTickets10lbs(empleadosParaTickets10lbs);
@@ -117,7 +127,10 @@ function actualizarContadoresTickets10lbs() {
     $('#contador_seleccionados').text(count);
     $('#contador_seleccionados_btn').text(count);
     $('#btn_generar_tickets_seleccionados').prop('disabled', count === 0);
+    $('#btn_generar_tickets_nombre_seleccionados').prop('disabled', count === 0);
 }
+
+let filtroSeguroActivo10lbs = 'todos';
 
 function filtrarEmpleadosTickets10lbs() {
     const query = String($('#buscar_empleado_ticket').val() || '').toLowerCase().trim();
@@ -128,19 +141,28 @@ function filtrarEmpleadosTickets10lbs() {
         $('#btn_limpiar_busqueda').hide();
     }
 
-    if (query === '') {
-        mostrarEmpleadosTickets10lbs(empleadosParaTickets10lbs);
-        return;
-    }
-
     const filtrados = empleadosParaTickets10lbs.filter(emp => {
-        const nombre = String(emp.nombre || '').toLowerCase();
-        const claveBase = String(emp.clave || '');
-        const depto = String(emp.departamento || '').toLowerCase();
-        return nombre.includes(query) || claveBase.includes(query) || depto.includes(query);
+        // Filtro por texto
+        const coincideQuery = query === '' || 
+            String(emp.nombre || '').toLowerCase().includes(query) || 
+            String(emp.clave || '').toLowerCase().includes(query) || 
+            String(emp.departamento || '').toLowerCase().includes(query);
+        
+        // Filtro por seguro
+        let coincideSeguro = true;
+        if (filtroSeguroActivo10lbs === 'con_seguro') coincideSeguro = !emp.esSinSeguro;
+        else if (filtroSeguroActivo10lbs === 'sin_seguro') coincideSeguro = emp.esSinSeguro;
+
+        return coincideQuery && coincideSeguro;
     });
 
     mostrarEmpleadosTickets10lbs(filtrados);
+}
+
+function actualizarEstilosFiltros10lbs() {
+    $('#btn_seleccionar_todos_tickets').toggleClass('active', filtroSeguroActivo10lbs === 'todos');
+    $('#btn_seleccionar_con_seguro_tickets').toggleClass('active', filtroSeguroActivo10lbs === 'con_seguro');
+    $('#btn_seleccionar_sin_seguro_tickets').toggleClass('active', filtroSeguroActivo10lbs === 'sin_seguro');
 }
 
 function limpiarCampoBusquedaTickets10lbs() {
@@ -218,24 +240,48 @@ $(document).ready(function () {
             Swal.fire({ icon: 'warning', title: 'Sin datos', text: 'No hay datos de nómina cargados.' });
             return;
         }
+        filtroSeguroActivo10lbs = 'todos';
+        actualizarEstilosFiltros10lbs();
         cargarEmpleadosParaTickets10lbs();
         $('#modal_seleccion_tickets').modal('show');
     });
 
     $('#btn_seleccionar_todos_tickets').on('click', function () {
+        filtroSeguroActivo10lbs = 'todos';
+        actualizarEstilosFiltros10lbs();
+        filtrarEmpleadosTickets10lbs();
+    });
+
+    $('#btn_seleccionar_con_seguro_tickets').on('click', function () {
+        filtroSeguroActivo10lbs = 'con_seguro';
+        actualizarEstilosFiltros10lbs();
+        filtrarEmpleadosTickets10lbs();
+    });
+
+    $('#btn_seleccionar_sin_seguro_tickets').on('click', function () {
+        filtroSeguroActivo10lbs = 'sin_seguro';
+        actualizarEstilosFiltros10lbs();
+        filtrarEmpleadosTickets10lbs();
+    });
+
+    $('#btn_marcar_visibles_tickets').on('click', function () {
         const query = String($('#buscar_empleado_ticket').val() || '').toLowerCase().trim();
-        if (query === '') {
-            empleadosParaTickets10lbs.forEach(emp => empleadosSeleccionados10lbs.add(String(emp.id)));
-        } else {
-            empleadosParaTickets10lbs.forEach(emp => {
-                const nombre = String(emp.nombre || '').toLowerCase();
-                const claveBase = String(emp.clave || '');
-                const depto = String(emp.departamento || '').toLowerCase();
-                if (nombre.includes(query) || claveBase.includes(query) || depto.includes(query)) {
-                    empleadosSeleccionados10lbs.add(String(emp.id));
-                }
-            });
-        }
+        empleadosParaTickets10lbs.forEach(emp => {
+            // Verificar si el empleado cumple con el filtro de texto
+            const coincideQuery = query === '' || 
+                String(emp.nombre || '').toLowerCase().includes(query) || 
+                String(emp.clave || '').toLowerCase().includes(query) || 
+                String(emp.departamento || '').toLowerCase().includes(query);
+            
+            // Verificar si el empleado cumple con el filtro de seguro
+            let coincideSeguro = true;
+            if (filtroSeguroActivo10lbs === 'con_seguro') coincideSeguro = !emp.esSinSeguro;
+            else if (filtroSeguroActivo10lbs === 'sin_seguro') coincideSeguro = emp.esSinSeguro;
+
+            if (coincideQuery && coincideSeguro) {
+                empleadosSeleccionados10lbs.add(String(emp.id));
+            }
+        });
         actualizarVistaSeleccionTickets10lbs();
     });
 
@@ -290,6 +336,7 @@ $(document).ready(function () {
     $(document).on('input', '#buscar_empleado_ticket', filtrarEmpleadosTickets10lbs);
     $('#btn_limpiar_busqueda').on('click', limpiarCampoBusquedaTickets10lbs);
     $('#btn_generar_tickets_seleccionados').on('click', generarTicketsSeleccionados10lbs);
+    $('#btn_generar_tickets_nombre_seleccionados').on('click', generarTicketsNombreSeleccionados10lbs);
 });
 
 function actualizarVistaSeleccionTickets10lbs() {
@@ -305,4 +352,114 @@ function actualizarVistaSeleccionTickets10lbs() {
         }
     });
     actualizarContadoresTickets10lbs();
+}
+
+function generarTicketsNombreSeleccionados10lbs() {
+    if (empleadosSeleccionados10lbs.size === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Sin selección',
+            text: 'Por favor, selecciona al menos un empleado para generar tickets.'
+        });
+        return;
+    }
+    
+    const nominaData = obtenerNomina10lbsGlobal();
+    if (!nominaData) {
+        Swal.fire('Error', 'No hay datos de nómina disponibles.', 'error');
+        return;
+    }
+
+    const seleccionados = [];
+    
+    // Obtener los datos más recientes de los empleados seleccionados
+    empleadosParaTickets10lbs.forEach(item => {
+        const clave = String(item.id || '');
+        if (empleadosSeleccionados10lbs.has(clave)) {
+            // Aseguramos que usamos la referencia original que se actualiza con la tabla
+            const empActualizado = item.original;
+            if (empActualizado) {
+                // Añadir departamento al objeto para el PDF
+                empActualizado.departamento = item.departamento;
+                seleccionados.push(empActualizado);
+            }
+        }
+    });
+    
+    if (seleccionados.length === 0) return;
+    
+    // Preparar datos en formato de nómina para el endpoint
+    const nominaParaEnviar = construirNominaParaTickets10lbs(seleccionados.map(emp => ({
+        emp,
+        deptoNombre: emp.departamento || ''
+    })));
+    
+    // Mostrar cargando
+    const btnOriginalHtml = $(this).html();
+    $(this).prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Generando...');
+    
+    $('#modal_seleccion_tickets').modal('hide');
+
+    Swal.fire({
+        title: 'Generando tickets de nombre...',
+        html: `Empleados: <strong>${seleccionados.length}</strong>`,
+        icon: 'info',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+    
+    // Enviar por AJAX como JSON raw body
+    $.ajax({
+        url: '../php/descargar_ticket_nombre_pdf.php',
+        type: 'POST',
+        contentType: 'application/json; charset=UTF-8',
+        data: JSON.stringify({ nomina: nominaParaEnviar }),
+        xhrFields: {
+            responseType: 'blob'
+        },
+        success: function(blob, status, xhr) {
+            if (!(blob instanceof Blob)) {
+                Swal.fire('Error', 'El servidor no devolvió un archivo PDF válido.', 'error');
+                $('#btn_generar_tickets_nombre_seleccionados').prop('disabled', false).html(btnOriginalHtml);
+                return;
+            }
+            
+            if (blob.size === 0) {
+                Swal.fire('Error', 'Archivo PDF vacío.', 'error');
+                $('#btn_generar_tickets_nombre_seleccionados').prop('disabled', false).html(btnOriginalHtml);
+                return;
+            }
+            
+            let filename = 'tickets_nombre_seleccionados_10lbs.pdf';
+            const disposition = xhr.getResponseHeader('Content-Disposition');
+            if (disposition && disposition.indexOf('filename=') !== -1) {
+                const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                const matches = filenameRegex.exec(disposition);
+                if (matches && matches[1]) {
+                    filename = matches[1].replace(/["']/g, '');
+                }
+            }
+            
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            $('#btn_generar_tickets_nombre_seleccionados').prop('disabled', false).html(btnOriginalHtml);
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Tickets generados',
+                text: 'Se han generado los tickets de nombre correctamente.'
+            });
+        },
+        error: function() {
+            Swal.fire('Error', 'Error al generar el PDF. Por favor, intenta nuevamente.', 'error');
+            $('#btn_generar_tickets_nombre_seleccionados').prop('disabled', false).html(btnOriginalHtml);
+        }
+    });
 }

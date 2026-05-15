@@ -10,11 +10,23 @@
 let empleadosParaTickets40lbs = [];
 let empleadosSeleccionados40lbs = new Set();
 
+function obtenerNomina40lbsTicketsGlobal() {
+    if (typeof jsonNomina40lbs !== 'undefined' && jsonNomina40lbs && Array.isArray(jsonNomina40lbs.departamentos)) {
+        if (typeof window !== 'undefined') window.jsonNomina40lbs = jsonNomina40lbs;
+        return jsonNomina40lbs;
+    }
+    if (typeof window !== 'undefined' && window.jsonNomina40lbs && Array.isArray(window.jsonNomina40lbs.departamentos)) {
+        return window.jsonNomina40lbs;
+    }
+    return null;
+}
+
 // Inicializar eventos cuando el DOM esté listo
 $(document).ready(function() {
     // Evento para abrir modal de selección de empleados
     $('#btn_ticket_manual_40lbs').on('click', function() {
-        if (!window.jsonNomina40lbs) {
+        const nomina = obtenerNomina40lbsTicketsGlobal();
+        if (!nomina) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Sin datos',
@@ -23,15 +35,57 @@ $(document).ready(function() {
             return;
         }
         
+        filtroSeguroActivo40lbs = 'todos';
+        actualizarEstilosFiltros40lbs();
         cargarEmpleadosParaTickets40lbs();
         $('#modal_seleccion_tickets_40lbs').modal('show');
     });
 
     // Eventos del modal - usar delegación de eventos para elementos dinámicos
-    $('#btn_seleccionar_todos_tickets_40lbs').on('click', seleccionarTodosEmpleados40lbs);
+    $('#btn_filtro_todos_40lbs').on('click', function() {
+        filtroSeguroActivo40lbs = 'todos';
+        actualizarEstilosFiltros40lbs();
+        filtrarEmpleados40lbs();
+    });
+
+    $('#btn_filtro_con_seguro_40lbs').on('click', function() {
+        filtroSeguroActivo40lbs = 'con_seguro';
+        actualizarEstilosFiltros40lbs();
+        filtrarEmpleados40lbs();
+    });
+
+    $('#btn_filtro_sin_seguro_40lbs').on('click', function() {
+        filtroSeguroActivo40lbs = 'sin_seguro';
+        actualizarEstilosFiltros40lbs();
+        filtrarEmpleados40lbs();
+    });
+
+    $('#btn_marcar_visibles_tickets_40lbs').on('click', function() {
+        const query = String($('#buscar_empleado_ticket_40lbs').val() || '').toLowerCase().trim();
+        empleadosParaTickets40lbs.forEach(emp => {
+            const clave = String(emp.clave || '').toLowerCase();
+            const nombre = String(emp.nombre || '').toLowerCase();
+            const depto = String(emp.departamento || '').toLowerCase();
+            
+            // Filtro por texto
+            const coincideQuery = query === '' || clave.includes(query) || nombre.includes(query) || depto.includes(query);
+            
+            // Filtro por seguro
+            let coincideSeguro = true;
+            if (filtroSeguroActivo40lbs === 'con_seguro') coincideSeguro = !emp.esSinSeguro;
+            else if (filtroSeguroActivo40lbs === 'sin_seguro') coincideSeguro = emp.esSinSeguro;
+
+            if (coincideQuery && coincideSeguro) {
+                empleadosSeleccionados40lbs.add(String(emp.clave));
+            }
+        });
+        actualizarVistaSeleccionTickets40lbs();
+    });
+
     $('#btn_deseleccionar_todos_tickets_40lbs').on('click', deseleccionarTodosEmpleados40lbs);
     $(document).on('input', '#buscar_empleado_ticket_40lbs', filtrarEmpleados40lbs);
     $('#btn_generar_tickets_seleccionados_40lbs').on('click', generarTicketsSeleccionados40lbs);
+    $('#btn_generar_tickets_nombre_seleccionados_40lbs').on('click', generarTicketsNombreSeleccionados40lbs);
 
     // Evento para seleccionar empleado individual
     $(document).on('click', '.empleado-item-40lbs', function(e) {
@@ -93,13 +147,14 @@ $(document).ready(function() {
 function cargarEmpleadosParaTickets40lbs() {
     empleadosParaTickets40lbs = [];
     empleadosSeleccionados40lbs.clear();
-    
-    if (!window.jsonNomina40lbs || !window.jsonNomina40lbs.departamentos) {
+
+    const nomina = obtenerNomina40lbsTicketsGlobal();
+    if (!nomina || !nomina.departamentos) {
         return;
     }
 
     // Solo incluir departamentos 40 libras, 10 libras y sin seguro
-    window.jsonNomina40lbs.departamentos.forEach(depto => {
+    nomina.departamentos.forEach(depto => {
         const nombreDepto = (depto.nombre || '').toLowerCase();
         if (
             nombreDepto.includes('40 libras') ||
@@ -108,13 +163,24 @@ function cargarEmpleadosParaTickets40lbs() {
         ) {
             if (depto.empleados && Array.isArray(depto.empleados)) {
                 depto.empleados.forEach(emp => {
+                    if (!emp || emp.mostrar === false) return;
+                    const esSinSeguro = (emp?.seguroSocial === false) || nombreDepto.includes('sin seguro');
                     empleadosParaTickets40lbs.push({
                         ...emp,
                         departamento: depto.nombre || '',
+                        esSinSeguro: esSinSeguro
                     });
                 });
             }
         }
+    });
+
+    // Ordenar: primero con seguro (esSinSeguro = false), luego sin seguro (esSinSeguro = true)
+    empleadosParaTickets40lbs.sort((a, b) => {
+        if (a.esSinSeguro === b.esSinSeguro) {
+            return String(a.nombre || '').localeCompare(String(b.nombre || ''));
+        }
+        return a.esSinSeguro ? 1 : -1;
     });
 
     renderizarListaEmpleados40lbs();
@@ -211,26 +277,65 @@ function deseleccionarTodosEmpleados40lbs() {
 /**
  * Filtra empleados por nombre o clave
  */
+let filtroSeguroActivo40lbs = 'todos';
+
 function filtrarEmpleados40lbs() {
-    const filtro = $('#buscar_empleado_ticket_40lbs').val().toLowerCase().trim();
+    const query = String($('#buscar_empleado_ticket_40lbs').val() || '').toLowerCase().trim();
     
+    // Mostrar/ocultar botón limpiar
+    const btnLimpiar = document.getElementById('limpiar_busqueda_ticket_40lbs');
+    if (btnLimpiar) {
+        btnLimpiar.style.display = query !== '' ? 'flex' : 'none';
+    }
+
     const $items = $('.empleado-item-40lbs');
     
-    if (filtro === '') {
-        $items.removeClass('d-none').show();
-    } else {
-        $items.each(function() {
-            const $item = $(this);
-            const clave = $item.data('clave').toString().toLowerCase();
-            const nombre = $item.find('.fw-bold').text().toLowerCase();
-            
-            if (clave.includes(filtro) || nombre.includes(filtro)) {
-                $item.removeClass('d-none').show();
-            } else {
-                $item.addClass('d-none').hide();
-            }
-        });
-    }
+    $items.each(function() {
+        const $item = $(this);
+        const clave = String($item.data('clave') || '').toLowerCase();
+        const nombre = $item.find('.fw-bold').text().toLowerCase();
+        const depto = $item.find('.badge').text().toLowerCase();
+        
+        // Filtro por texto
+        const coincideQuery = query === '' || clave.includes(query) || nombre.includes(query) || depto.includes(query);
+        
+        // Obtener el empleado de la lista original para verificar seguro
+        const emp = empleadosParaTickets40lbs.find(e => String(e.clave) === String($item.data('clave')));
+        
+        // Filtro por seguro
+        let coincideSeguro = true;
+        if (emp) {
+            if (filtroSeguroActivo40lbs === 'con_seguro') coincideSeguro = !emp.esSinSeguro;
+            else if (filtroSeguroActivo40lbs === 'sin_seguro') coincideSeguro = emp.esSinSeguro;
+        }
+
+        if (coincideQuery && coincideSeguro) {
+            $item.removeClass('d-none').show();
+        } else {
+            $item.addClass('d-none').hide();
+        }
+    });
+}
+
+function actualizarEstilosFiltros40lbs() {
+    $('#btn_filtro_todos_40lbs').toggleClass('active', filtroSeguroActivo40lbs === 'todos');
+    $('#btn_filtro_con_seguro_40lbs').toggleClass('active', filtroSeguroActivo40lbs === 'con_seguro');
+    $('#btn_filtro_sin_seguro_40lbs').toggleClass('active', filtroSeguroActivo40lbs === 'sin_seguro');
+}
+
+function actualizarVistaSeleccionTickets40lbs() {
+    $('.empleado-item-40lbs').each(function () {
+        const clave = String($(this).data('clave') || '');
+        const checkbox = $(this).find('input[type="checkbox"]');
+        if (clave !== '' && empleadosSeleccionados40lbs.has(clave)) {
+            $(this).addClass('active');
+            checkbox.prop('checked', true);
+        } else {
+            $(this).removeClass('active');
+            checkbox.prop('checked', false);
+        }
+    });
+    actualizarContadores40lbs();
 }
 
 /**
@@ -239,10 +344,12 @@ function filtrarEmpleados40lbs() {
 function actualizarContadores40lbs() {
     const count = empleadosSeleccionados40lbs.size;
     $('#contador_seleccionados_40lbs').text(count);
-    $('#contador_seleccionados_btn_40lbs').text(count);
+    $('#contador_seleccionados_btn_nombre_40lbs').text(count);
+    $('#contador_seleccionados_btn_generar_40lbs').text(count);
     
-    // Habilitar/deshabilitar botón según selección
+    // Habilitar/deshabilitar botones según selección
     $('#btn_generar_tickets_seleccionados_40lbs').prop('disabled', count === 0);
+    $('#btn_generar_tickets_nombre_seleccionados_40lbs').prop('disabled', count === 0);
 }
 
 /**
@@ -259,8 +366,8 @@ async function generarTicketsSeleccionados40lbs() {
             return;
         }
 
-        // Validar que haya datos cargados
-        if (typeof jsonNomina40lbs === 'undefined' || !jsonNomina40lbs.departamentos) {
+        const nomina = obtenerNomina40lbsTicketsGlobal();
+        if (!nomina || !nomina.departamentos) {
             Swal.fire({
                 title: 'Error',
                 text: 'No hay datos de nómina cargados. Carga los archivos Excel primero.',
@@ -287,20 +394,23 @@ async function generarTicketsSeleccionados40lbs() {
         const clavesSeleccionadas = Array.from(empleadosSeleccionados40lbs).map(c => String(c));
         // Crear un mapa para agrupar empleados seleccionados por departamento
         const empleadosSeleccionadosDetalles = [];
-        if (window.jsonNomina40lbs && window.jsonNomina40lbs.departamentos) {
-            window.jsonNomina40lbs.departamentos.forEach(depto => {
-                if (depto.empleados && Array.isArray(depto.empleados)) {
-                    depto.empleados.forEach(emp => {
-                        if (clavesSeleccionadas.includes(String(emp.clave || ''))) {
-                            empleadosSeleccionadosDetalles.push({
-                                ...emp,
-                                departamento: depto.nombre || '',
-                                nombre_departamento: depto.nombre || ''
-                            });
-                        }
-                    });
-                }
-            });
+        if (nomina && nomina.departamentos) {
+            nomina.departamentos.forEach(depto => {
+            if (depto.empleados && Array.isArray(depto.empleados)) {
+                depto.empleados.forEach(emp => {
+                    if (emp && emp.mostrar !== false && clavesSeleccionadas.includes(String(emp.clave || ''))) {
+                        const deptoNombre = depto.nombre || '';
+                        const esSinSeguro = (emp?.seguroSocial === false) || deptoNombre.toLowerCase().includes('sin seguro');
+                        empleadosSeleccionadosDetalles.push({
+                            ...emp,
+                            departamento: deptoNombre,
+                            nombre_departamento: deptoNombre,
+                            sin_seguro_ticket: esSinSeguro
+                        });
+                    }
+                });
+            }
+        });
         }
 
         // Agrupar empleados seleccionados por departamento
@@ -315,9 +425,9 @@ async function generarTicketsSeleccionados40lbs() {
 
         // Construir la estructura final de departamentos
         const nomina_para_enviar = {
-            numero_semana: jsonNomina40lbs.numero_semana,
-            fecha_inicio: jsonNomina40lbs.fecha_inicio,
-            fecha_cierre: jsonNomina40lbs.fecha_cierre,
+            numero_semana: nomina.numero_semana,
+            fecha_inicio: nomina.fecha_inicio,
+            fecha_cierre: nomina.fecha_cierre,
             departamentos: Object.entries(departamentosSeleccionados).map(([nombreDepto, empleadosDepto]) => {
                 return {
                     nombre: nombreDepto,
@@ -385,7 +495,8 @@ async function generarTicketsSeleccionados40lbs() {
                             nombre_puesto: emp.nombre_puesto || '',
                             rfc_empleado: emp.rfc || '',
                             imss: emp.imss || '',
-                            fecha_ingreso: emp.fecha_ingreso || ''
+                            fecha_ingreso: emp.fecha_ingreso || '',
+                            sin_seguro_ticket: emp.sin_seguro_ticket || false
                         };
                         return empleado;
                     })
@@ -426,7 +537,7 @@ async function generarTicketsSeleccionados40lbs() {
         const blob = await response.blob();
         
         // Generar nombre de archivo con fecha/semana
-        const numeroSemana = jsonNomina40lbs.numero_semana || 'SEM';
+        const numeroSemana = nomina.numero_semana || 'SEM';
         const ahora = new Date();
         const timestamp = ahora.getTime();
         const nombreArchivo = `tickets_seleccionados_semana_${numeroSemana}_${timestamp}.pdf`;
@@ -460,6 +571,143 @@ async function generarTicketsSeleccionados40lbs() {
             icon: 'error',
             title: 'Error',
             text: 'No se pudieron generar los tickets. Revisa la consola.'
+        });
+    }
+}
+
+/**
+ * Genera tickets PDF con solo el nombre para los empleados seleccionados
+ */
+async function generarTicketsNombreSeleccionados40lbs() {
+    try {
+        if (empleadosSeleccionados40lbs.size === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Sin selección',
+                text: 'Por favor, selecciona al menos un empleado para generar tickets.'
+            });
+            return;
+        }
+
+        const nomina = obtenerNomina40lbsTicketsGlobal();
+        if (!nomina || !nomina.departamentos) {
+            Swal.fire({
+                title: 'Sin datos',
+                text: 'No hay datos de nómina para generar el PDF.',
+                icon: 'warning'
+            });
+            return;
+        }
+        
+        // Ocultar modal
+        $('#modal_seleccion_tickets_40lbs').modal('hide');
+        
+        // Mostrar carga
+        Swal.fire({
+            title: 'Generando tickets de nombre...',
+            html: `Empleados seleccionados: <strong>${empleadosSeleccionados40lbs.size}</strong>`,
+            icon: 'info',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+        
+        // Preparar datos de empleados seleccionados
+        const seleccionados = [];
+        empleadosParaTickets40lbs.forEach(item => {
+            if (empleadosSeleccionados40lbs.has(item.clave)) {
+                seleccionados.push({
+                    clave: item.clave,
+                    nombre: item.nombre,
+                    departamento: item.departamento,
+                    sin_seguro_ticket: item.esSinSeguro || false
+                });
+            }
+        });
+        
+        if (seleccionados.length === 0) return;
+        
+        // Preparar estructura de nómina para enviar
+        const nominaParaEnviar = {
+            numero_semana: nomina.numero_semana,
+            fecha_inicio: nomina.fecha_inicio,
+            fecha_cierre: nomina.fecha_cierre,
+            departamentos: [{
+                nombre: 'Seleccionados',
+                empleados: seleccionados
+            }]
+        };
+        
+        // Enviar solicitud al endpoint de tickets de nombre
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '../php/descargar_ticket_nombre_pdf.php', true);
+        xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+        xhr.responseType = 'blob';
+        
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                try {
+                    const blob = xhr.response;
+                    
+                    // Generar nombre de archivo
+                    const numeroSemana = nomina.numero_semana || 'SEM';
+                    const ahora = new Date();
+                    const timestamp = ahora.getTime();
+                    const nombreArchivo = `tickets_nombre_seleccionados_40lbs_semana_${numeroSemana}_${timestamp}.pdf`;
+                    
+                    // Crear URL y descargar
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = nombreArchivo;
+                    
+                    document.body.appendChild(link);
+                    link.click();
+                    
+                    setTimeout(() => {
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(link);
+                    }, 100);
+                    
+                    Swal.fire({
+                        title: 'Éxito',
+                        text: `Tickets de nombre generados y descargados como ${nombreArchivo}`,
+                        icon: 'success'
+                    });
+                } catch (error) {
+                    console.error('Error al procesar PDF:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Error al procesar el archivo PDF generado.',
+                        icon: 'error'
+                    });
+                }
+            } else {
+                console.error('Error HTTP:', xhr.status);
+                Swal.fire({
+                    title: 'Error',
+                    text: `Error del servidor: ${xhr.status}`,
+                    icon: 'error'
+                });
+            }
+        };
+        
+        xhr.onerror = function() {
+            console.error('Error en la solicitud XML');
+            Swal.fire({
+                title: 'Error',
+                text: 'Error de conexión al servidor.',
+                icon: 'error'
+            });
+        };
+        
+        xhr.send(JSON.stringify({ nomina: nominaParaEnviar }));
+        
+    } catch (error) {
+        console.error('Error generando tickets de nombre:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudieron generar los tickets de nombre. Revisa la consola.'
         });
     }
 }

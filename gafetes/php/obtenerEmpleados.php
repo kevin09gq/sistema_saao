@@ -69,7 +69,7 @@ while ($row = $query->fetch_object()) {
         // Verificar si la foto existe en el sistema de archivos
         'ruta_foto' => (!empty($row->ruta_foto) && (file_exists(__DIR__ . '/../' . $row->ruta_foto) || file_exists(__DIR__ . '/gafetes/' . $row->ruta_foto))) ? $row->ruta_foto : null,
         'sexo' => $row->sexo ?? null,
-        'fecha_ingreso' => $row->fecha_ingreso ?? null,
+        'fecha_alta_empresa' => $row->fecha_alta_empresa ?? null,
         'fecha_nacimiento' => $row->fecha_nacimiento ?? null,
         'fecha_creacion' => $row->fecha_creacion ?? null,
         'fecha_vigencia' => $row->fecha_vigencia ?? null,

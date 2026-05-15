@@ -1,370 +1,433 @@
 /**
  * ================================================================
- * MÓDULO DE SELECCIÓN DE EMPLEADOS PARA TICKETS - NÓMINA PILAR
+ * MÓDULO DE SELECCIÓN DE EMPLEADOS PARA TICKETS - NÓMINA RELICARIO
  * ================================================================
- * Maneja la selección manual de empleados para generar tickets PDF
+ * Rediseñado para manejar desgloses de Corte y Poda
  * ================================================================
  */
 
-// Variables globales para el modal de selección
 let empleadosParaTickets = [];
 let empleadosSeleccionados = new Set();
 
-// Inicializar eventos cuando el DOM esté listo
 $(document).ready(function() {
-    // Evento para abrir modal de selección de empleados
-    $('#btn_ticket_manual').on('click', function() {
-        // PRIORIZAR la variable global que ya está en memoria y actualizada
-        let nominaData = window.jsonNominaRelicario;
+    // Delegación de eventos para abrir modal
+    $(document).on('click', '#btn_ticket_manual', function(e) {
+        e.preventDefault();
         
-        // Si por alguna razón no está en memoria, intentar cargar de localStorage
-        if (!nominaData || !nominaData.departamentos) {
-            nominaData = JSON.parse(localStorage.getItem('jsonNominaRelicario') || '{}');
-            if (nominaData && nominaData.departamentos) {
-                window.jsonNominaRelicario = nominaData;
-            }
+        let nominaData = null;
+        if (typeof jsonNominaRelicario !== 'undefined' && jsonNominaRelicario && jsonNominaRelicario.departamentos) {
+            nominaData = jsonNominaRelicario;
+        } else {
+            const stored = localStorage.getItem('jsonNominaRelicario');
+            if (stored) nominaData = JSON.parse(stored);
         }
 
-        if (!nominaData || !nominaData.departamentos) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Sin datos',
-                text: 'No hay datos de nómina cargados. Primero procesa los archivos.'
-            });
+        if (!nominaData) {
+            Swal.fire('Sin datos', 'No hay datos de nómina cargados.', 'warning');
             return;
         }
         
-        // Limpiar el campo de búsqueda antes de abrir el modal
+        filtroSeguroActivoRelicario = 'todos';
+        actualizarEstilosFiltrosRelicario();
         $('#buscar_empleado_ticket').val('');
+        cargarEmpleadosParaTickets(nominaData);
         
-        cargarEmpleadosParaTickets();
-        $('#modal_seleccion_tickets').modal('show');
+        const modalEl = document.getElementById('modal_seleccion_tickets');
+        if (modalEl) {
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        }
     });
 
-    // Accesibilidad: forzar aria-hidden correcto en el modal
-    $('#modal_seleccion_tickets').on('shown.bs.modal', function () {
-        $(this).attr('aria-hidden', 'false');
-    });
-    $('#modal_seleccion_tickets').on('hidden.bs.modal', function () {
-        $(this).attr('aria-hidden', 'true');
+    // Eventos del modal
+    $('#btn_seleccionar_todos_tickets').on('click', function() {
+        filtroSeguroActivoRelicario = 'todos';
+        actualizarEstilosFiltrosRelicario();
+        $('#buscar_empleado_ticket').trigger('input');
     });
 
-    // Eventos del modal - usar delegación de eventos para elementos dinámicos
-    $('#btn_seleccionar_todos_tickets').on('click', seleccionarTodosEmpleados);
+    $('#btn_seleccionar_con_seguro_tickets').on('click', function() {
+        filtroSeguroActivoRelicario = 'con_seguro';
+        actualizarEstilosFiltrosRelicario();
+        $('#buscar_empleado_ticket').trigger('input');
+    });
+
+    $('#btn_seleccionar_sin_seguro_tickets').on('click', function() {
+        filtroSeguroActivoRelicario = 'sin_seguro';
+        actualizarEstilosFiltrosRelicario();
+        $('#buscar_empleado_ticket').trigger('input');
+    });
+
+    $('#btn_marcar_visibles_tickets').on('click', function() {
+        const query = String($('#buscar_empleado_ticket').val() || '').toLowerCase().trim();
+        empleadosParaTickets.forEach(emp => {
+            const nombre = (emp.nombre || '').toLowerCase();
+            const clave = String(emp.clave || '');
+            const depto = (emp.departamento || '').toLowerCase();
+            
+            // Filtro por texto
+            const coincideQuery = query === '' || nombre.includes(query) || clave.includes(query) || depto.includes(query);
+            
+            // Filtro por seguro
+            let coincideSeguro = true;
+            if (filtroSeguroActivoRelicario === 'con_seguro') coincideSeguro = !emp.esSinSeguro;
+            else if (filtroSeguroActivoRelicario === 'sin_seguro') coincideSeguro = emp.esSinSeguro;
+
+            if (coincideQuery && coincideSeguro) {
+                empleadosSeleccionados.add(String(emp.clave));
+            }
+        });
+        actualizarVistaSeleccion();
+    });
+
     $('#btn_deseleccionar_todos_tickets').on('click', deseleccionarTodosEmpleados);
     $(document).on('input', '#buscar_empleado_ticket', filtrarEmpleados);
     $('#btn_generar_tickets_seleccionados').on('click', generarTicketsSeleccionados);
+    $('#btn_generar_tickets_nombre_seleccionados').on('click', generarTicketsNombreSeleccionados);
     $(document).on('click', '#btn_limpiar_busqueda', limpiarCampoBusqueda);
 
-    // Evento para seleccionar empleado individual
+    // Selección individual
     $(document).on('click', '.empleado-item', function(e) {
-        // Evitar que el click en el checkbox dispare el evento dos veces
-        if ($(e.target).is('input[type="checkbox"]')) {
-            return;
-        }
-        
-        const clave = String($(this).data('clave')); // Normalizar como string
-        const checkbox = $(this).find('input[type="checkbox"]');
-        
-        if (empleadosSeleccionados.has(clave)) {
-            empleadosSeleccionados.delete(clave);
-            $(this).removeClass('active');
-            checkbox.prop('checked', false);
-        } else {
-            empleadosSeleccionados.add(clave);
-            $(this).addClass('active');
-            checkbox.prop('checked', true);
-        }
-        
-        actualizarContadores();
+        if ($(e.target).is('input[type="checkbox"]')) return;
+        const clave = String($(this).data('clave'));
+        toggleSeleccion(clave, $(this));
     });
     
-    // Evento para el checkbox directamente
     $(document).on('change', '.empleado-item input[type="checkbox"]', function() {
-        const listItem = $(this).closest('.list-group-item');
-        const clave = String(listItem.data('clave'));
-        
-        if ($(this).is(':checked')) {
-            empleadosSeleccionados.add(clave);
-            listItem.addClass('active');
-        } else {
-            empleadosSeleccionados.delete(clave);
-            listItem.removeClass('active');
-        }
-        
-        actualizarContadores();
+        const clave = String($(this).closest('.empleado-item').data('clave'));
+        toggleSeleccion(clave, $(this).closest('.empleado-item'), $(this).is(':checked'));
     });
 });
 
-/**
- * Carga todos los empleados de nómina relicario
- */
-function cargarEmpleadosParaTickets() {
+function toggleSeleccion(clave, elemento, forzarEstado = null) {
+    const nuevoEstado = forzarEstado !== null ? forzarEstado : !empleadosSeleccionados.has(clave);
+    
+    if (nuevoEstado) {
+        empleadosSeleccionados.add(clave);
+        elemento.addClass('active');
+        elemento.find('input[type="checkbox"]').prop('checked', true);
+    } else {
+        empleadosSeleccionados.delete(clave);
+        elemento.removeClass('active');
+        elemento.find('input[type="checkbox"]').prop('checked', false);
+    }
+    actualizarContadores();
+}
+
+function cargarEmpleadosParaTickets(nominaData) {
     empleadosParaTickets = [];
     empleadosSeleccionados.clear();
-    
-    // Usar la variable global que ya está actualizada
-    const nominaData = window.jsonNominaRelicario;
-    
-    if (!nominaData || !nominaData.departamentos) {
-        return;
-    }
 
-    // Procesar todos los departamentos de nómina relicario
     nominaData.departamentos.forEach(depto => {
         const nombreDepto = depto.nombre || '';
-        if (depto.empleados && Array.isArray(depto.empleados)) {
-            depto.empleados.forEach(emp => {
-                if (emp && typeof emp === 'object') {
-                    empleadosParaTickets.push({
-                        ...emp,
-                        departamento: nombreDepto,
-                        tipo: 'relicario'
+        if (!depto.empleados) return;
+
+        depto.empleados.forEach(emp => {
+            if (!emp || emp.mostrar === false) return;
+            if (nombreDepto.toUpperCase() === 'CORTE' && emp.concepto === 'REJA' && Array.isArray(emp.tickets)) {
+                // Desglosar por precio de reja
+                const porPrecio = {};
+                emp.tickets.forEach(t => {
+                    const p = (t.precio_reja ?? 0).toString();
+                    if (!porPrecio[p]) porPrecio[p] = [];
+                    porPrecio[p].push(t);
+                });
+
+                Object.keys(porPrecio).forEach(precioStr => {
+                    const tickets = porPrecio[precioStr];
+                    const precio = parseFloat(precioStr);
+                    let totalRejas = 0;
+                    tickets.forEach(t => {
+                        (t.datosRejas || []).forEach(tr => totalRejas += tr.cantidad);
                     });
-                }
-            });
+
+                    const claveUnica = `Corte-${emp.nombre}-${precioStr}`;
+                    empleadosParaTickets.push({
+                        original: { ...emp, clave: claveUnica, totalRejas, precio, totalEfectivo: totalRejas * precio, departamento: 'Corte' },
+                        clave: claveUnica,
+                        nombre: `${emp.nombre} ($${precioStr})`,
+                        departamento: 'Corte'
+                    });
+                });
+            } else if (nombreDepto.toUpperCase() === 'PODA' && Array.isArray(emp.movimientos)) {
+                // Desglosar Poda por monto
+                const movsPoda = emp.movimientos.filter(m => m.concepto === 'PODA');
+                const porMonto = {};
+                movsPoda.forEach(m => {
+                    const p = (m.monto ?? 0).toString();
+                    if (!porMonto[p]) porMonto[p] = [];
+                    porMonto[p].push(m);
+                });
+
+                Object.keys(porMonto).forEach(montoStr => {
+                    const movs = porMonto[montoStr];
+                    const monto = parseFloat(montoStr);
+                    let totalArboles = 0;
+                    movs.forEach(m => totalArboles += Number(m.arboles_podados || 0));
+
+                    const claveUnica = `Poda-${emp.nombre}-${montoStr}`;
+                    empleadosParaTickets.push({
+                        original: { ...emp, clave: claveUnica, totalArboles, monto, totalEfectivo: totalArboles * monto, departamento: 'Poda' },
+                        clave: claveUnica,
+                        nombre: `${emp.nombre} ($${montoStr})`,
+                        departamento: 'Poda'
+                    });
+                });
+
+                // Movimientos extras de Poda
+                const extras = emp.movimientos.filter(m => m.concepto !== 'PODA');
+                extras.forEach((ex, i) => {
+                    const claveUnica = `Poda-Ex-${emp.nombre}-${ex.concepto}-${i}`;
+                    empleadosParaTickets.push({
+                        original: { ...emp, clave: claveUnica, nombre: `${emp.nombre} (${ex.concepto})`, salario_semanal: ex.monto, departamento: ex.concepto },
+                        clave: claveUnica,
+                        nombre: `${emp.nombre} (${ex.concepto})`,
+                        departamento: 'Poda'
+                    });
+                });
+            } else {
+                // Nómina normal
+                const clave = emp.clave || `emp-${emp.nombre}-${Math.random()}`;
+                const esSinSeguro = (emp?.seguroSocial === false) || String(nombreDepto || '').toLowerCase().includes('sin seguro');
+                empleadosParaTickets.push({
+                    original: { ...emp, departamento: nombreDepto },
+                    clave: String(clave),
+                    nombre: emp.nombre,
+                    departamento: nombreDepto,
+                    esSinSeguro: esSinSeguro
+                });
+            }
+        });
+    });
+
+    // Ordenar: primero con seguro (esSinSeguro = false), luego sin seguro (esSinSeguro = true)
+    empleadosParaTickets.sort((a, b) => {
+        const aSin = a.esSinSeguro || false;
+        const bSin = b.esSinSeguro || false;
+        if (aSin === bSin) {
+            return String(a.nombre || '').localeCompare(String(b.nombre || ''));
         }
+        return aSin ? 1 : -1;
     });
 
     mostrarEmpleados(empleadosParaTickets);
+    actualizarContadores();
 }
 
-/**
- * Mostrar empleados en el modal
- */
 function mostrarEmpleados(empleados) {
     const container = $('#lista_empleados_tickets');
     container.empty();
     
-    if (!empleados || empleados.length === 0) {
-        container.html('<div class="col-12"><div class="alert alert-info text-center">No se encontraron empleados</div></div>');
+    if (empleados.length === 0) {
+        container.html('<div class="col-12 text-center py-3">No se encontraron empleados</div>');
         return;
     }
     
-    // Crear lista simple en lugar de tarjetas
-    const listaHtml = `
-        <div class="list-group">
-            ${empleados.map(empleado => {
-                // Normalizar clave como string para comparación consistente
-                const clave = String(empleado.clave || empleado.id || Math.random());
-                const nombre = empleado.nombre || 'Sin nombre';
-                const departamento = empleado.departamento || 'Sin departamento';
-                    
-                // Determinar la clase del badge según el departamento específico de Relicario
-                let badgeClass = 'bg-secondary'; // Color por defecto
-                const deptoLower = departamento.toLowerCase();
-                    
-                // Departamentos específicos con colores únicos (adaptados para Relicario)
-                if (deptoLower.includes('jornalero') || deptoLower.includes('jornal')) {
-                    badgeClass = 'bg-success';
-                } else if (deptoLower.includes('coordinador') || deptoLower.includes('coordi')) {
-                    badgeClass = 'bg-primary';
-                } else if (deptoLower.includes('vivero') || deptoLower.includes('vive')) {
-                    badgeClass = 'bg-warning text-dark';
-                } else if (deptoLower.includes('rancho') || deptoLower.includes('ranch')) {
-                    badgeClass = 'bg-danger';
-                } else if (deptoLower.includes('apoyo') || deptoLower.includes('apoy')) {
-                    badgeClass = 'bg-info';
-                } else if (deptoLower.includes('base') || deptoLower.includes('bas')) {
-                    badgeClass = 'bg-dark';
-                } else if (deptoLower.includes('administracion') || deptoLower.includes('admin')) {
-                    badgeClass = 'bg-primary';
-                } else if (deptoLower.includes('produccion') || deptoLower.includes('produc')) {
-                    badgeClass = 'bg-warning text-dark';
-                } else if (deptoLower.includes('seguridad') || deptoLower.includes('vigilancia') || deptoLower.includes('intendencia')) {
-                    badgeClass = 'bg-purple';
-                } else if (deptoLower.includes('sin seguro') || deptoLower.includes('sin')) {
-                    badgeClass = 'bg-orange';
-                }
-                    
-                const isSelected = empleadosSeleccionados.has(clave);
-                const itemClass = isSelected ? 'list-group-item list-group-item-action active d-flex justify-content-between align-items-center' : 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
-                    
-                return `
-                    <div class="${itemClass} empleado-item" data-clave="${clave}" data-nombre="${nombre.toLowerCase()}" style="cursor: pointer;">
-                        <div>
-                            <div class="fw-bold">${nombre}</div>
-                            <small class="text-muted">Clave: ${clave}</small>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="badge ${badgeClass} rounded-pill">${departamento}</span>
-                            <input class="form-check-input" type="checkbox" ${isSelected ? 'checked' : ''}>
-                        </div>
+    const html = `<div class="list-group w-100">
+        ${empleados.map(emp => {
+            const isSelected = empleadosSeleccionados.has(emp.clave);
+            return `
+                <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center empleado-item ${isSelected ? 'active' : ''}" data-clave="${emp.clave}">
+                    <div>
+                        <div class="fw-bold">${emp.nombre}</div>
+                        <small class="text-muted">${emp.departamento}</small>
                     </div>
-                `;
-            }).join('')}
-        </div>
-    `;
-        
-    container.html(listaHtml);
-        
-    // Agregar estilos para badges personalizados
-    if (!$('#custom-styles-tickets').length) {
-        $('head').append(`
-            <style id="custom-styles-tickets">
-                .bg-purple { background-color: #6f42c1 !important; color: white !important; }
-                .bg-orange { background-color: #fd7e14 !important; color: white !important; }
-                .list-group-item.active { background-color: #0d6efd; border-color: #0d6efd; }
-            </style>
-        `);
+                    <div class="d-flex align-items-center gap-2">
+                        <input class="form-check-input" type="checkbox" ${isSelected ? 'checked' : ''}>
+                    </div>
+                </div>
+            `;
+        }).join('')}
+    </div>`;
+    container.html(html);
+}
+
+let filtroSeguroActivoRelicario = 'todos';
+
+function filtrarEmpleados() {
+    const query = String($(this).val() || '').toLowerCase().trim();
+    
+    // Mostrar/ocultar el botón de limpiar
+    if (query !== '') {
+        $('#btn_limpiar_busqueda').css('display', 'flex');
+    } else {
+        $('#btn_limpiar_busqueda').hide();
     }
     
-    actualizarContadores();
-}
+    const filtrados = empleadosParaTickets.filter(emp => {
+        // Filtro por texto
+        const nombre = (emp.nombre || '').toLowerCase();
+        const clave = String(emp.clave || '');
+        const depto = (emp.departamento || '').toLowerCase();
+        const coincideQuery = query === '' || nombre.includes(query) || clave.includes(query) || depto.includes(query);
+        
+        // Filtro por seguro
+        let coincideSeguro = true;
+        if (filtroSeguroActivoRelicario === 'con_seguro') coincideSeguro = !emp.esSinSeguro;
+        else if (filtroSeguroActivoRelicario === 'sin_seguro') coincideSeguro = emp.esSinSeguro;
 
-/**
- * Seleccionar todos los empleados visibles
- */
-function seleccionarTodosEmpleados() {
-    $('.empleado-item:visible').each(function() {
-        const clave = String($(this).data('clave'));
-        empleadosSeleccionados.add(clave);
-        $(this).addClass('active');
-        $(this).find('input[type="checkbox"]').prop('checked', true);
+        return coincideQuery && coincideSeguro;
     });
     
-    actualizarContadores();
+    mostrarEmpleados(filtrados);
 }
 
-/**
- * Deseleccionar todos los empleados
- */
+function actualizarEstilosFiltrosRelicario() {
+    $('#btn_seleccionar_todos_tickets').toggleClass('active', filtroSeguroActivoRelicario === 'todos');
+    $('#btn_seleccionar_con_seguro_tickets').toggleClass('active', filtroSeguroActivoRelicario === 'con_seguro');
+    $('#btn_seleccionar_sin_seguro_tickets').toggleClass('active', filtroSeguroActivoRelicario === 'sin_seguro');
+}
+
+function seleccionarTodosEmpleados() {
+    const query = $('#buscar_empleado_ticket').val().toLowerCase().trim();
+    empleadosParaTickets.forEach(emp => {
+        if (query === '' || (emp.nombre || '').toLowerCase().includes(query)) {
+            empleadosSeleccionados.add(emp.clave);
+        }
+    });
+    actualizarVistaSeleccion();
+}
+
 function deseleccionarTodosEmpleados() {
-    empleadosSeleccionados.clear();
-    $('.empleado-item').removeClass('active');
-    $('.empleado-item input[type="checkbox"]').prop('checked', false);
-    
-    actualizarContadores();
-}
-
-/**
- * Limpiar el campo de búsqueda
- */
-function limpiarCampoBusqueda() {
-    $('#buscar_empleado_ticket').val('');
-    $('#btn_limpiar_busqueda').hide();
-    // Mostrar todos los empleados al limpiar
-    $('.empleado-item').removeClass('d-none').show();
-}
-
-/**
- * Filtrar empleados por texto de búsqueda
- */
-function filtrarEmpleados() {
-    const filtro = $('#buscar_empleado_ticket').val().toLowerCase().trim();
-    const $btnLimpiar = $('#btn_limpiar_busqueda');
-    const $items = $('.empleado-item');
-    
-    // Mostrar/ocultar botón de limpieza
-    if (filtro === '') {
-        $btnLimpiar.hide();
-        $items.removeClass('d-none').show();
+    const query = $('#buscar_empleado_ticket').val().toLowerCase().trim();
+    if (query === '') {
+        empleadosSeleccionados.clear();
     } else {
-        $btnLimpiar.css('display', 'flex');
-        $items.each(function() {
-            const $item = $(this);
-            const nombre = $item.data('nombre') || '';
-            const texto = $item.text().toLowerCase();
-            if (nombre.includes(filtro) || texto.includes(filtro)) {
-                $item.removeClass('d-none').show();
-            } else {
-                $item.addClass('d-none').hide();
+        empleadosParaTickets.forEach(emp => {
+            if ((emp.nombre || '').toLowerCase().includes(query)) {
+                empleadosSeleccionados.delete(emp.clave);
             }
         });
     }
+    actualizarVistaSeleccion();
 }
 
-/**
- * Actualizar contadores de empleados seleccionados
- */
+function actualizarVistaSeleccion() {
+    $('.empleado-item').each(function() {
+        const clave = String($(this).data('clave'));
+        const isSelected = empleadosSeleccionados.has(clave);
+        $(this).toggleClass('active', isSelected);
+        $(this).find('input[type="checkbox"]').prop('checked', isSelected);
+    });
+    actualizarContadores();
+}
+
 function actualizarContadores() {
-    const count = empleadosSeleccionados.size;
-    $('#contador_seleccionados').text(count);
-    $('#contador_seleccionados_btn').text(count);
+    const total = empleadosSeleccionados.size;
+    $('#contador_seleccionados, #contador_seleccionados_btn, #contador_nombre_btn').text(total);
 }
 
-/**
- * Generar tickets para empleados seleccionados
- */
+function limpiarCampoBusqueda() {
+    $('#buscar_empleado_ticket').val('').trigger('input');
+}
+
 function generarTicketsSeleccionados() {
     if (empleadosSeleccionados.size === 0) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Sin selección',
-            text: 'Por favor selecciona al menos un empleado.'
-        });
+        Swal.fire('Atención', 'Selecciona al menos un empleado.', 'warning');
+        return;
+    }
+    
+    let numSemana = '';
+    try {
+        if (typeof jsonNominaRelicario !== 'undefined') numSemana = jsonNominaRelicario.numero_semana || '';
+    } catch(e){}
+
+    const seleccionados = [];
+    empleadosParaTickets.forEach(item => {
+        if (empleadosSeleccionados.has(item.clave)) {
+            if (item.original && item.original.mostrar === false) return;
+            const empCopia = { ...item.original };
+            if (item.esSinSeguro) empCopia.sin_seguro_ticket = true;
+            seleccionados.push(empCopia);
+        }
+    });
+    
+    const btn = $(this);
+    const original = btn.html();
+    btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Generando...');
+    
+    $.ajax({
+        url: '../php/descargar_ticket_pdf.php',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ 
+            seleccion: true, 
+            empleados: seleccionados, 
+            meta: { numero_semana: numSemana } 
+        }),
+        xhrFields: { responseType: 'blob' },
+        success: function(blob) {
+            if (blob instanceof Blob && blob.size > 0) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'tickets_seleccionados.pdf';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                $('#modal_seleccion_tickets').modal('hide');
+                Swal.fire({ icon: 'success', title: 'Tickets generados', timer: 1500, showConfirmButton: false });
+            }
+            btn.prop('disabled', false).html(original);
+        },
+        error: function() {
+            Swal.fire('Error', 'No se pudo generar el PDF.', 'error');
+            btn.prop('disabled', false).html(original);
+        }
+    });
+}
+
+function generarTicketsNombreSeleccionados() {
+    if (empleadosSeleccionados.size === 0) {
+        Swal.fire('Atención', 'Selecciona al menos un empleado.', 'warning');
         return;
     }
 
-    // Obtener datos completos de empleados seleccionados
-    const empleadosData = empleadosParaTickets.filter(emp => {
-        const clave = String(emp.clave || emp.id || '');
-        return empleadosSeleccionados.has(clave);
-    });
-
-    console.log('Empleados seleccionados:', empleadosData);
-
-    // Preparar datos para el servidor - Usar la variable global actualizada
-    const nominaCompleta = window.jsonNominaRelicario;
-    
-    // Mostrar loading
-    Swal.fire({
-        title: 'Generando tickets...',
-        text: `Procesando ${empleadosData.length} empleado(s)`,
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
+    const seleccionados = [];
+    empleadosParaTickets.forEach(item => {
+        if (empleadosSeleccionados.has(item.clave)) {
+            if (item.original && item.original.mostrar === false) return;
+            const empCopia = { ...item.original };
+            if (item.esSinSeguro) empCopia.sin_seguro_ticket = true;
+            seleccionados.push(empCopia);
         }
     });
 
-    // Enviar al servidor
+    const btn = $(this);
+    const original = btn.html();
+    btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i>');
+
     $.ajax({
-        url: '../php/descargar_ticket_pdf.php',
-        method: 'POST',
+        url: '../php/descargar_ticket_nombre_pdf.php',
+        type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({
-            seleccion: true,
-            empleados: empleadosData,
-            meta: nominaCompleta
+            nomina: {
+                departamentos: [{
+                    nombre: 'Seleccionados',
+                    empleados: seleccionados
+                }]
+            }
         }),
-        xhrFields: {
-            responseType: 'blob'
+        xhrFields: { responseType: 'blob' },
+        success: function(blob) {
+            if (blob instanceof Blob && blob.size > 0) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'tickets_nombre_seleccionados.pdf';
+                document.body.appendChild(a);
+                a.click();
+                URL.revokeObjectURL(url);
+                $('#modal_seleccion_tickets').modal('hide');
+                Swal.fire({ icon: 'success', title: 'Tickets generados', timer: 1500, showConfirmButton: false });
+            }
+            btn.prop('disabled', false).html(original);
         },
-        success: function(data, status, xhr) {
-            Swal.close();
-            
-            // Crear URL del blob y descargar
-            const blob = new Blob([data], { type: 'application/pdf' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = `tickets_relicario_seleccionados_${new Date().getTime()}.pdf`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-
-            Swal.fire({
-                icon: 'success',
-                title: '¡Tickets generados!',
-                text: `Se generaron ${empleadosData.length} ticket(s) exitosamente.`
-            });
-
-            // Cerrar modal y limpiar selecciones
-            $('#modal_seleccion_tickets').modal('hide');
-            empleadosSeleccionados.clear();
-        },
-        error: function(xhr, status, error) {
-            Swal.close();
-            console.error('Error al generar tickets:', error);
-            console.error('Response:', xhr.responseText);
-            
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error al generar los tickets. Por favor, intenta de nuevo.'
-            });
+        error: function() {
+            Swal.fire('Error', 'No se pudo generar el PDF.', 'error');
+            btn.prop('disabled', false).html(original);
         }
     });
 }

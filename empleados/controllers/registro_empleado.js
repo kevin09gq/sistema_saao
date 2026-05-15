@@ -337,8 +337,8 @@ $(document).ready(function () {
             const curp = $("#curp_trabajador").val().trim();
             const grupo_sanguineo = $("#grupo_sanguineo_trabajador").val().trim();
             const enfermedades_alergias = $("#enfermedades_alergias_trabajador").val().trim();
-            const fecha_ingreso = $("#fecha_ingreso_trabajador").val();
-            const fecha_ingreso_real = $("#fecha_ingreso_real").val();
+            const fecha_alta_empresa = $("#fecha_alta_empresa").val();
+            const fecha_alta_imss = $("#fecha_alta_imss").val();
             const id_departamento = $("#departamento_trabajador").val();
             const num_casillero = $("#num_casillero").val().trim();
             const biometrico = $("#biometrico").val().trim();
@@ -514,8 +514,8 @@ $(document).ready(function () {
                 curp: curp || "",
                 grupo_sanguineo: grupo_sanguineo || "",
                 enfermedades_alergias: enfermedades_alergias || "",
-                fecha_ingreso: fecha_ingreso || "",
-                fecha_ingreso_real: fecha_ingreso_real || "",
+                fecha_alta_empresa: fecha_alta_empresa || "",
+                fecha_alta_imss: fecha_alta_imss || "",
                 id_departamento: id_departamento || "",
                 num_casillero: num_casillero || "",
                 biometrico: biometrico || "",
@@ -614,7 +614,7 @@ $(document).ready(function () {
         // Limpiar campos de texto
         $("#clave_trabajador, #nombre_trabajador, #apellido_paterno, #apellido_materno").val("");
         $("#domicilio_trabajador, #imss_trabajador, #curp_trabajador, #grupo_sanguineo_trabajador").val("");
-        $("#enfermedades_alergias_trabajador, #fecha_ingreso_trabajador, #fecha_ingreso_real, #fecha_ingreso_imss, #num_casillero, #fecha_nacimiento").val("");
+        $("#enfermedades_alergias_trabajador, #fecha_alta_empresa, #fecha_alta_imss, #num_casillero, #fecha_nacimiento").val("");
         $("#rfc_trabajador").val("");
 
         // Limpiar campos de salario
@@ -800,18 +800,6 @@ $(document).ready(function () {
         }
     });
 
-    /**
-     * EVENTO SI CAMBIA LA FECHA DE INGRESO: fecha_ingreso_trabajador y fecha_ingreso_imss son las mismas
-     * Si cambia una debe cambiar la otra y viceversa, para mantener consistencia en los datos
-     */
-    $(document).on('change', '#fecha_ingreso_trabajador', function () {
-        const fecha = $(this).val();
-        $('#fecha_ingreso_imss').val(fecha);
-    });
-
-    $(document).on('change', '#fecha_ingreso_imss', function () {
-        const fecha = $(this).val();
-        $('#fecha_ingreso_trabajador').val(fecha);
-    });
+  
 
 });

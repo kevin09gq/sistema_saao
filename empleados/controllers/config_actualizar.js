@@ -361,9 +361,6 @@ $(document).ready(function () {
             dataType: "json",
             success: function (empleados) {
 
-                console.log(empleados);
-
-
                 setEmpleadosData(empleados);
             },
             error: function (xhr, status, error) {
@@ -680,8 +677,8 @@ $(document).ready(function () {
                         let sexoEmpleado = empleado.sexo;
                         let grupoSanguineo = empleado.grupo_sanguineo;
                         let enfermedades = empleado.enfermedades_alergias;
-                        let fechaIngreso = empleado.fecha_ingreso;
-                        let fechaIngresoReal = empleado.fecha_ingreso_real;
+                        let fechaAltaEmpresa = empleado.fecha_alta_empresa;
+                        let fechaAltaImss = empleado.fecha_alta_imss;
                         let idDepartamentoEmpleado = empleado.id_departamento;
 
                         // Nuevos campos
@@ -738,11 +735,10 @@ $(document).ready(function () {
                         $("#modal_sexo").val(sexoEmpleado);
                         $("#modal_grupo_sanguineo").val(grupoSanguineo);
                         $("#modal_enfermedades_alergias").val(enfermedades);
-                        // La fecha ingreso es la misma que la imss
-                        $("#modal_fecha_ingreso").val(fechaIngreso);
-                        $("#modal_fecha_ingreso_imss").val(fechaIngreso);
-                        // Fecha real
-                        $("#modal_fecha_ingreso_real").val(fechaIngresoReal);
+                        // La fecha alta empresa se asigna al input correspondiente
+                        $("#modal_fecha_alta_empresa").val(fechaAltaEmpresa);
+                        // Fecha alta IMSS
+                        $("#modal_fecha_alta_imss").val(fechaAltaImss);
                         // Nuevos campos
                         $("#modal_fecha_nacimiento").val(fechaNacimiento);
                         $("#modal_num_casillero").val(numCasillero);
@@ -1148,8 +1144,8 @@ $(document).ready(function () {
         let sexo = $("#modal_sexo").val();
         let grupoSanguineo = $("#modal_grupo_sanguineo").val();
         let enfermedades = $("#modal_enfermedades_alergias").val();
-        let fechaIngreso = $("#modal_fecha_ingreso").val();
-        let fechaIngresoReal = $("#modal_fecha_ingreso_real").val();
+        let fechaAltaEmpresa = $("#modal_fecha_alta_empresa").val();
+        let fechaAltaImss = $("#modal_fecha_alta_imss").val();
         let idDepartamento = $("#modal_departamento").val();
 
         // Nuevos campos agregados
@@ -1330,8 +1326,8 @@ $(document).ready(function () {
             sexo: sexo,
             grupo_sanguineo: grupoSanguineo || "",
             enfermedades_alergias: enfermedades || "",
-            fecha_ingreso: fechaIngreso || "",
-            fecha_ingreso_real: fechaIngresoReal || "",
+            fecha_alta_empresa: fechaAltaEmpresa || "",
+            fecha_alta_imss: fechaAltaImss || "",
             id_departamento: idDepartamento || "",
 
             // Nuevos campos agregados
@@ -1375,17 +1371,12 @@ $(document).ready(function () {
         // Guardar la página actual antes de actualizar
         const paginaAnterior = paginaActual;
 
-        console.log(datos);
-
 
         $.ajax({
             type: "POST",
             url: "../php/update_empleado.php",
             data: datos,
             success: function (response) {
-
-                console.log(response);
-
 
                 // Actualizar la tabla de empleados
                 $.ajax({
@@ -1427,7 +1418,6 @@ $(document).ready(function () {
 
         let mensaje = idStatus == 1 ? "¿Deseas desactivar a este empleado?" : "¿Deseas activar a este empleado?";
 
-        console.log(idStatus);
 
         Swal.fire({
             title: "Cambiar status",
@@ -1459,9 +1449,6 @@ $(document).ready(function () {
                     url: "../php/obtenerEmpleados.php",
                     data: datos,
                     success: function (response) {
-
-                        console.log(response);
-
 
                         if (response == true) {
                             // Actualizar solo los datos sin cambiar la página actual
@@ -1777,19 +1764,7 @@ $(document).ready(function () {
     });
 
 
-    /**
-     * EVENTO SI CAMBIA LA FECHA DE INGRESO: modal_fecha_ingreso y modal_fecha_ingreso_imss son las mismas
-     * Si cambia una debe cambiar la otra y viceversa, para mantener consistencia en los datos
-     */
-    $(document).on('change', '#modal_fecha_ingreso', function () {
-        const fecha = $(this).val();
-        $('#modal_fecha_ingreso_imss').val(fecha);
-    });
 
-    $(document).on('change', '#modal_fecha_ingreso_imss', function () {
-        const fecha = $(this).val();
-        $('#modal_fecha_ingreso').val(fecha);
-    });
 
 
 

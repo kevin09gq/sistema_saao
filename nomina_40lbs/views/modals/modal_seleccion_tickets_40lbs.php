@@ -10,13 +10,30 @@
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <div class="d-flex gap-2 mb-3">
-                        <button type="button" class="btn btn-sm btn-outline-primary" id="btn_seleccionar_todos_tickets_40lbs">
-                            <i class="bi bi-check2-all"></i> Seleccionar Todos
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary" id="btn_deseleccionar_todos_tickets_40lbs">
-                            <i class="bi bi-x-square"></i> Deseleccionar Todos
-                        </button>
+                    <div class="mb-2">
+                        <small class="text-muted fw-bold">Filtros:</small>
+                        <div class="d-flex gap-2 mt-1">
+                            <button type="button" class="btn btn-sm btn-outline-primary active" id="btn_filtro_todos_40lbs">
+                                <i class="bi bi-people"></i> Ver Todos
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-success" id="btn_filtro_con_seguro_40lbs">
+                                <i class="bi bi-shield-check"></i> Con Seguro
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-warning text-dark" id="btn_filtro_sin_seguro_40lbs">
+                                <i class="bi bi-shield-exclamation"></i> Sin Seguro
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted fw-bold">Acciones:</small>
+                        <div class="d-flex gap-2 mt-1">
+                            <button type="button" class="btn btn-sm btn-outline-info" id="btn_marcar_visibles_tickets_40lbs">
+                                <i class="bi bi-check-all"></i> Seleccionar Visibles
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="btn_deseleccionar_todos_tickets_40lbs">
+                                <i class="bi bi-x-square"></i> Ninguno
+                            </button>
+                        </div>
                     </div>
                     <div class="input-clearable-wrapper mb-3">
                         <span class="input-group-text">
@@ -43,8 +60,11 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-outline-secondary" id="btn_generar_tickets_nombre_seleccionados_40lbs">
+                    <i class="bi bi-person-badge"></i> Ticket Nombre (<span id="contador_seleccionados_btn_nombre_40lbs">0</span>)
+                </button>
                 <button type="button" class="btn btn-primary" id="btn_generar_tickets_seleccionados_40lbs">
-                    <i class="bi bi-download"></i> Generar Tickets (<span id="contador_seleccionados_btn_40lbs">0</span>)
+                    <i class="bi bi-download"></i> Generar Tickets (<span id="contador_seleccionados_btn_generar_40lbs">0</span>)
                 </button>
             </div>
         </div>

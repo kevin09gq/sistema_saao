@@ -203,3 +203,16 @@ table.dataTable tr:hover {
 .modal-backdrop ~ .modal-backdrop {
     z-index: 1059 !important; /* Si hay un segundo backdrop, ponerlo antes del modal detalles */
 }
+
+/* 
+  Asegurar que el dropdown de acciones solo se abra al hacer clic.
+  Incrementamos la especificidad para ganar a los estilos globales del navbar.
+*/
+@media (min-width: 992px) {
+    body .tb-action-dropdown:hover > .dropdown-menu:not(.show) {
+        display: none !important;
+    }
+    body .tb-action-dropdown > .dropdown-menu.show {
+        display: block !important;
+    }
+}

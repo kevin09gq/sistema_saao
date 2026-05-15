@@ -25,8 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $curp = $_POST['curp'] ?? null;
         $grupo_sanguineo = $_POST['grupo_sanguineo'] ?? null;
         $enfermedades_alergias = $_POST['enfermedades_alergias'] ?? null;
-        $fecha_ingreso = $_POST['fecha_ingreso'] ?? null;
-        $fecha_ingreso_real = $_POST['fecha_ingreso_real'] ?? null;
+        $fecha_alta_empresa = $_POST['fecha_alta_empresa'] ?? null;
+        $fecha_alta_imss = $_POST['fecha_alta_imss'] ?? null;
         $id_departamento = $_POST['id_departamento'] ?? null;
         $num_casillero = $_POST['num_casillero'] ?? null;
 
@@ -60,8 +60,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // =============================
         // FORMATEAR FECHAS
         // =============================
-        $fecha_ingreso = !empty($fecha_ingreso) ? date('Y-m-d', strtotime($fecha_ingreso)) : null;
-        $fecha_ingreso_real = !empty($fecha_ingreso_real) ? date('Y-m-d', strtotime($fecha_ingreso_real)) : null;
+        $fecha_alta_empresa = !empty($fecha_alta_empresa) ? date('Y-m-d', strtotime($fecha_alta_empresa)) : null;
+        $fecha_alta_imss = !empty($fecha_alta_imss) ? date('Y-m-d', strtotime($fecha_alta_imss)) : null;
         $fecha_nacimiento = !empty($fecha_nacimiento) ? date('Y-m-d', strtotime($fecha_nacimiento)) : null;
 
         // =============================
@@ -210,7 +210,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "INSERT INTO info_empleados (
                 id_rol, id_status, nombre, ap_paterno, ap_materno, domicilio,
                 imss, curp, sexo, enfermedades_alergias, grupo_sanguineo,
-                fecha_ingreso, fecha_ingreso_real, fecha_nacimiento, id_departamento, 
+                fecha_alta_empresa, fecha_alta_imss, fecha_nacimiento, id_departamento, 
                 id_area, id_puestoEspecial, id_empresa, clave_empleado, salario_semanal, salario_diario, biometrico, telefono_empleado, status_nss, rfc_empleado, estado_civil, horario_fijo
             ) VALUES (2, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         );
@@ -230,8 +230,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sexo,
             $enfermedades_alergias,
             $grupo_sanguineo,
-            $fecha_ingreso,
-            $fecha_ingreso_real,
+            $fecha_alta_empresa,
+            $fecha_alta_imss,
             $fecha_nacimiento,
             $id_departamento,
             $id_area,

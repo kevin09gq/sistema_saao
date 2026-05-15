@@ -124,10 +124,10 @@
                         aria-label="Quitar tarjeta">
                         <i class="bi bi-credit-card-2-back"></i>
                     </button>
-                    <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf"
-                        title="Descargar Todos los Tickets">
-                        <i class="bi bi-ticket-perforated"></i>
-                    </button>
+                     <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf"
+                    title="Descargar Tickets">
+                    <i class="bi bi-ticket-perforated"></i>
+                </button>
                     <button class="btn btn-outline-success btn-ticket-zebra" id="btn_ticket_manual_10lbs"
                         title="Descargar Tickets Seleccionados">
                         <i class="bi bi-hand-index"></i>
@@ -236,6 +236,7 @@
     <?php include 'modals/modalOlvidos.php'; ?>
     <?php include 'modals/modalConceptosTotales.php'; ?>
     <?php include 'modals/modalExportarNomina.php'; ?>
+    <?php include 'modals/modalTicketsEmpleados.php'; ?>
     <?php include 'modals/modal_seleccion_tickets_10lbs.php'; ?>
     <?php include 'modals/modalRedondeoSueldos.php'; ?>
     <?php include 'modals/modalCapturarClientes.php'; ?>

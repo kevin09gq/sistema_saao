@@ -477,6 +477,7 @@
         <div class="cm_item_poda" data-action="ver" style="padding:6px 12px;cursor:pointer;">🔎​ Ver detalles</div>
     </div>
 
+ 
     <!-- Incluir los modales -->
     <?php include "modals/modalCoordinador.php"; ?>
     <?php include "modals/modalJornaleros.php"; ?>
@@ -488,6 +489,7 @@
     <?php include "modals/modalDiasInhabiles.php"; ?>
     <?php include "modals/modalTipoDia.php"; ?>
     <?php include "modals/modalExportarNomina.php"; ?>
+     <?php include "modals/modalTicketsEmpleados.php"; ?>
     <?php include "modals/modal_seleccion_tickets_palmilla.php"; ?>
     <?php include "modals/modalDiasExtra.php"; ?>
     <?php include "modals/modalOlvidos.php"; ?>
@@ -504,8 +506,6 @@
     <?php include __DIR__ . "/modalsPoda/modalPoda.php"; ?>
     <?php include __DIR__ . "/modalsPoda/modalPodaDetalles.php"; ?>
     <?php include __DIR__ . "/modalsPoda/modalPodaDetallesExtra.php"; ?>
-
-
 
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>

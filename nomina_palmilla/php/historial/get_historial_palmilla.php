@@ -72,6 +72,22 @@ try {
         $filtro_mes = isset($_POST['mes']) ? $_POST['mes'] : '';
         $filtro_semana = isset($_POST['semana']) ? $_POST['semana'] : '';
 
+        // Obtener el color del área de Palmilla (ID 7)
+        $color_area = '#004D17'; // Color por defecto (verde institucional)
+        $query_color = "
+            SELECT a.colores 
+            FROM areas a
+            INNER JOIN nombre_nominas n ON a.id_area = n.id_area
+            WHERE n.id_nomina = 7
+            LIMIT 1
+        ";
+        $res_color = $conexion->query($query_color);
+        if ($res_color && $row_color = $res_color->fetch_assoc()) {
+            if (!empty($row_color['colores'])) {
+                $color_area = $row_color['colores'];
+            }
+        }
+
         $params_types = "";
         $params_values = [];
         $where_clauses = ["1=1"];
@@ -159,7 +175,8 @@ try {
                 "ranking_tablas" => $ranking,
                 "total_rejas" => $total_rejas,
                 "total_dinero" => $total_dinero,
-                "mejor_tabla" => $mejor_tabla ? "Tabla " . $mejor_tabla['num_tabla'] . " (" . $mejor_tabla['total'] . " rejas)" : "Sin datos"
+                "mejor_tabla" => $mejor_tabla ? "Tabla " . $mejor_tabla['num_tabla'] . " (" . $mejor_tabla['total'] . " rejas)" : "Sin datos",
+                "color_area" => $color_area
             ]
         ]);
         exit();

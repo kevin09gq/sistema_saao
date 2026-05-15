@@ -18,8 +18,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $curp = $_POST['curp'] ?? null;
     $grupo_sanguineo = $_POST['grupo_sanguineo'] ?? null;
     $enfermedades_alergias = $_POST['enfermedades_alergias'] ?? null;
-    $fecha_ingreso = $_POST['fecha_ingreso'] ?? null;
-    $fecha_ingreso_real = $_POST['fecha_ingreso_real'] ?? null;
+    $fecha_alta_empresa = $_POST['fecha_alta_empresa'] ?? null;
+    $fecha_alta_imss = $_POST['fecha_alta_imss'] ?? null;
     $id_departamento = $_POST['id_departamento'] ?? null;
 
     $horario_fijo = $_POST['horario_fijo'] ?? 0; // Agregue esto BHL
@@ -53,17 +53,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $telefono_empleado = (empty($telefono_empleado) || $telefono_empleado === "0") ? null : $telefono_empleado;
 
     // Convertir fecha si viene
-    if ($fecha_ingreso) {
-        $fecha_ingreso = date('Y-m-d', strtotime($fecha_ingreso));
+    if ($fecha_alta_empresa) {
+        $fecha_alta_empresa = date('Y-m-d', strtotime($fecha_alta_empresa));
     } else {
-        $fecha_ingreso = null;
+        $fecha_alta_empresa = null;
     }
-
+    
     // Convertir fecha real si viene
-    if ($fecha_ingreso_real) {
-        $fecha_ingreso_real = date('Y-m-d', strtotime($fecha_ingreso_real));
+    if ($fecha_alta_imss) {
+        $fecha_alta_imss = date('Y-m-d', strtotime($fecha_alta_imss));
     } else {
-        $fecha_ingreso_real = null;
+        $fecha_alta_imss = null;
     }
 
     
@@ -210,8 +210,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             sexo = ?,
             grupo_sanguineo = ?,
             enfermedades_alergias = ?,
-            fecha_ingreso = ?,
-            fecha_ingreso_real = ?,
+            fecha_alta_empresa = ?,
+            fecha_alta_imss = ?,
             fecha_nacimiento = ?,
             id_empresa = ?,
             id_area = ?,
@@ -238,8 +238,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sexo,
             $grupo_sanguineo,
             $enfermedades_alergias,
-            $fecha_ingreso,
-            $fecha_ingreso_real,
+            $fecha_alta_empresa,
+            $fecha_alta_imss,
             $fecha_nacimiento,
             $id_empresa,
             $id_area,
@@ -267,8 +267,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             sexo = ?,
             grupo_sanguineo = ?,
             enfermedades_alergias = ?,
-            fecha_ingreso = ?,
-            fecha_ingreso_real = ?,
+            fecha_alta_empresa = ?,
+            fecha_alta_imss = ?,
             fecha_nacimiento = ?,
             id_empresa = ?,
             id_area = ?,
@@ -295,8 +295,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sexo,
             $grupo_sanguineo,
             $enfermedades_alergias,
-            $fecha_ingreso,
-            $fecha_ingreso_real,
+            $fecha_alta_empresa,
+            $fecha_alta_imss,
             $fecha_nacimiento,
             $id_empresa,
             $id_area,

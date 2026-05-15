@@ -11,13 +11,30 @@
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <div class="d-flex gap-2 mb-3">
-                        <button type="button" class="btn btn-sm btn-outline-primary" id="btn_seleccionar_todos_tickets">
-                            <i class="bi bi-check2-all"></i> Seleccionar Todos
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary" id="btn_deseleccionar_todos_tickets">
-                            <i class="bi bi-x-square"></i> Deseleccionar Todos
-                        </button>
+                    <div class="mb-2">
+                        <small class="text-muted fw-bold">Filtros:</small>
+                        <div class="d-flex gap-2 mt-1">
+                            <button type="button" class="btn btn-sm btn-outline-primary active" id="btn_seleccionar_todos_tickets">
+                                <i class="bi bi-people"></i> Ver Todos
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-success" id="btn_seleccionar_con_seguro_tickets">
+                                <i class="bi bi-shield-check"></i> Con Seguro
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-warning text-dark" id="btn_seleccionar_sin_seguro_tickets">
+                                <i class="bi bi-shield-exclamation"></i> Sin Seguro
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted fw-bold">Acciones:</small>
+                        <div class="d-flex gap-2 mt-1">
+                            <button type="button" class="btn btn-sm btn-outline-info" id="btn_marcar_visibles_tickets">
+                                <i class="bi bi-check-all"></i> Seleccionar Visibles
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="btn_deseleccionar_todos_tickets">
+                                <i class="bi bi-x-square"></i> Ninguno
+                            </button>
+                        </div>
                     </div>
                     <div class="position-relative w-100" style="display: flex; align-items: center;">
                         <i class="bi bi-search position-absolute text-muted" style="left: 15px; z-index: 5; pointer-events: none;"></i>
@@ -42,6 +59,9 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-outline-secondary" id="btn_generar_tickets_nombre_seleccionados">
+                    <i class="bi bi-person-badge"></i> Ticket Nombre (<span id="contador_seleccionados_btn">0</span>)
+                </button>
                 <button type="button" class="btn btn-primary" id="btn_generar_tickets_seleccionados">
                     <i class="bi bi-download"></i> Generar Tickets (<span id="contador_seleccionados_btn">0</span>)
                 </button>

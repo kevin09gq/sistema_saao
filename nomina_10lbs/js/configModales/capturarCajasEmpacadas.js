@@ -19,6 +19,9 @@ $(document).ready(function () {
         const busqueda = $(this).val().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
         $("#tbody-general-cajas tr").each(function () {
+            // Ignorar filas de encabezado de grupo en la búsqueda
+            if ($(this).hasClass('group-header')) return;
+
             const nombre = $(this).find("td.sticky-col-3").text().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             const clave = $(this).find("td.sticky-col-2").text().toLowerCase();
 
@@ -28,8 +31,50 @@ $(document).ready(function () {
                 $(this).hide();
             }
         });
+
+        // Mostrar/Ocultar encabezados de grupo según si tienen elementos visibles
+        actualizarVisibilidadHeaders();
     });
 });
+
+/**
+ * Función auxiliar para obtener la lista de empleados agrupada por Seguro Social
+ * (Asegura que el orden sea consistente en todas las funciones del modal)
+ */
+function obtenerListaEmpleadosCajas() {
+    if (!jsonNomina10lbs || !jsonNomina10lbs.departamentos) return [];
+    
+    let conSeguro = [];
+    let sinSeguro = [];
+    
+    jsonNomina10lbs.departamentos.forEach(depto => {
+        if (!depto.empleados) return;
+        depto.empleados.forEach(emp => {
+            if (emp.seguroSocial === true) conSeguro.push(emp);
+            else sinSeguro.push(emp);
+        });
+    });
+    
+    return conSeguro.concat(sinSeguro);
+}
+
+/**
+ * Oculta los encabezados de grupo si no hay empleados visibles debajo de ellos
+ */
+function actualizarVisibilidadHeaders() {
+    $(".group-header").each(function() {
+        let hasVisible = false;
+        let next = $(this).next();
+        while(next.length && !next.hasClass('group-header')) {
+            if(next.is(':visible')) {
+                hasVisible = true;
+                break;
+            }
+            next = next.next();
+        }
+        $(this).toggle(hasVisible);
+    });
+}
 
 let diasAgregados = []; // Para no repetir días
 
@@ -48,22 +93,54 @@ function abrirModalCajasGeneral() {
     $("#header-fila-dias th:gt(2)").remove();
     $("#header-fila-tipos").empty();
 
-    // 1. Obtener empleados
-    let empleados10lbs = [];
-    jsonNomina10lbs.departamentos.forEach(depto => {
-        empleados10lbs = empleados10lbs.concat(depto.empleados);
-    });
+    // 1. Obtener empleados agrupados (Con Seguro -> Sin Seguro)
+    const empleados10lbs = obtenerListaEmpleadosCajas();
 
     // 2. Limpiar y llenar tabla con empleados
     $("#tbody-general-cajas").empty();
+    
+    let yaRenderizadoSinSeguro = false;
+
+    // Encabezado inicial si hay empleados con seguro
+    if (empleados10lbs.length > 0 && empleados10lbs[0].seguroSocial) {
+        $("#tbody-general-cajas").append(`
+            <tr class="group-header" style="background-color: #e7f1ff !important;">
+                <td colspan="3" class="ps-3 py-2 fw-bold text-primary">
+                    <i class="bi bi-shield-check me-2"></i>EMPLEADOS CON SEGURO
+                </td>
+            </tr>
+        `);
+    }
+
     empleados10lbs.forEach((emp, index) => {
+        // Separador para empleados sin seguro
+        if (!emp.seguroSocial && !yaRenderizadoSinSeguro) {
+            $("#tbody-general-cajas").append(`
+                <tr class="group-header" style="background-color: #fff5f5 !important;">
+                    <td colspan="3" class="ps-3 py-2 fw-bold text-danger border-top">
+                        <i class="bi bi-shield-x me-2"></i>EMPLEADOS SIN SEGURO
+                    </td>
+                </tr>
+            `);
+            yaRenderizadoSinSeguro = true;
+        }
+
+        const badgeSeguro = emp.seguroSocial 
+            ? '<span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-2" style="font-size: 0.65rem;">IMSS</span>' 
+            : '<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle ms-2" style="font-size: 0.65rem;">S/S</span>';
+
         $("#tbody-general-cajas").append(`
             <tr data-emp-idx="${index}">
                 <td class="text-center fw-bold text-muted sticky-col-1">${index + 1}</td>
                 <td class="text-center sticky-col-2">
                     <span class="badge rounded-pill bg-light text-dark border px-2 py-1">${emp.clave}</span>
                 </td>
-                <td class="ps-3 sticky-col-3">${emp.nombre}</td>
+                <td class="ps-3 sticky-col-3">
+                    <div class="d-flex align-items-center justify-content-between pe-3">
+                        <span>${emp.nombre}</span>
+                        ${badgeSeguro}
+                    </div>
+                </td>
             </tr>
         `);
     });
@@ -105,8 +182,7 @@ function agregarDiaTabla(diaManual) {
     diasAgregados.push(dia);
 
     const tipos = (jsonNomina10lbs.precio_cajas || []).filter(c => c.utilidad === true);
-    let empleados = [];
-    jsonNomina10lbs.departamentos.forEach(d => empleados = empleados.concat(d.empleados));
+    const empleados = obtenerListaEmpleadosCajas();
 
     // 1. Cabecera del Día
     $("#header-fila-dias").append(`
@@ -129,6 +205,8 @@ function agregarDiaTabla(diaManual) {
 
     // 3. Celdas de Inputs (Poblar con datos si existen)
     $("#tbody-general-cajas tr").each(function () {
+        if ($(this).hasClass('group-header')) return; // Saltar encabezados
+
         const empIdx = $(this).data("emp-idx");
         const emp = empleados[empIdx];
 
@@ -172,7 +250,7 @@ function actualizarEstructuraFooter() {
 
     let fila = `
         <tr>
-            <th colspan="3" class="text-end pe-3 sticky-col-1" style="background-color: #f1f3f5 !important;">TOTALES:</th>
+            <th colspan="3" class="text-end pe-3 sticky-col-1" style="background-color: #f1f3f5 !important; border-top: 2px solid #dee2e6;">TOTALES:</th>
     `;
 
     diasAgregados.forEach(dia => {
@@ -267,9 +345,8 @@ function actualizarValoresTotales() {
 //========================================
 
 function guardarCambiosCajasGeneral() {
-    // 1. Obtener la lista de empleados (misma lógica que al abrir)
-    let empleados = [];
-    jsonNomina10lbs.departamentos.forEach(d => empleados = empleados.concat(d.empleados));
+    // 1. Obtener la lista de empleados (usando la misma lógica de ordenamiento)
+    const empleados = obtenerListaEmpleadosCajas();
 
     // 2. Recorrer todos los inputs de la tabla
     $(".input-caja").each(function () {

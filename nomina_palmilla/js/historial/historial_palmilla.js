@@ -1,7 +1,75 @@
 let filtrosData = {};
+
+let pdfAccentColorPalmilla = [76, 175, 80];
+
+function configurarDropdownAccionesSoloUnoAbierto() {
+    document.addEventListener('show.bs.dropdown', (event) => {
+        const dropdownActual = event.target;
+        const togglesAbiertos = document.querySelectorAll('.tb-action-dropdown [data-bs-toggle="dropdown"][aria-expanded="true"]');
+
+        togglesAbiertos.forEach((toggle) => {
+            if (dropdownActual.contains(toggle)) return;
+            if (typeof bootstrap === 'undefined' || !bootstrap.Dropdown) return;
+            bootstrap.Dropdown.getOrCreateInstance(toggle).hide();
+        });
+    });
+}
+
+function clamp255Palmilla(n) {
+    n = parseInt(n, 10);
+    if (Number.isNaN(n)) return 0;
+    return Math.min(255, Math.max(0, n));
+}
+
+function parseColorToRgbPalmilla(color) {
+    if (!color) return null;
+    const c = String(color).trim();
+
+    const hexMatch = c.match(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
+    if (hexMatch) {
+        let hex = hexMatch[1];
+        if (hex.length === 3) hex = hex.split('').map(ch => ch + ch).join('');
+        return {
+            r: parseInt(hex.slice(0, 2), 16),
+            g: parseInt(hex.slice(2, 4), 16),
+            b: parseInt(hex.slice(4, 6), 16)
+        };
+    }
+
+    const rgbMatch = c.match(/^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/i);
+    if (rgbMatch) {
+        return {
+            r: clamp255Palmilla(rgbMatch[1]),
+            g: clamp255Palmilla(rgbMatch[2]),
+            b: clamp255Palmilla(rgbMatch[3])
+        };
+    }
+
+    return null;
+}
+
+async function cargarColorAreaPalmillaParaPDF() {
+    try {
+        const resp = await fetch('../../public/php/obtenerAreas.php', { method: 'GET' });
+        const data = await resp.json();
+        if (!Array.isArray(data)) return;
+
+        const area = data.find(a => String(a.nombre_area || '').trim().toLowerCase() === 'rancho palmilla');
+        if (!area) return;
+
+        const rgb = parseColorToRgbPalmilla(area.colores);
+        if (!rgb) return;
+
+        pdfAccentColorPalmilla = [rgb.r, rgb.g, rgb.b];
+    } catch (e) {
+        // fallback al color actual
+    }
+}
 let current_num_tabla_desglose = null;
 
 document.addEventListener('DOMContentLoaded', () => {
+    configurarDropdownAccionesSoloUnoAbierto();
+    cargarColorAreaPalmillaParaPDF();
     cargarFiltrosIniciales();
 
     document.getElementById('filtro_anio').addEventListener('change', actualizarMeses);
@@ -106,6 +174,7 @@ function buscarHistorial() {
             document.getElementById('btn_buscar').disabled = false;
 
             if (res.status === 'success') {
+                window.colorAreaActual = res.data.color_area || '#004D17';
                 pintarDashboard(res.data);
             } else {
                 Swal.fire('Error', res.message, 'error');
@@ -447,13 +516,30 @@ function generarPDFConLogo(logoBase64, datosExportar, folioUnico = null) {
     const MARGIN = 14;
     const CONTENT_W = PAGE_W - MARGIN * 2;
 
-    const COL_DARK = [27, 94, 32];
-    const COL_ACCENT = [76, 175, 80];
-    const COL_GREEN = [46, 125, 50];
+    // Función para convertir hex o rgb string a array [r,g,b]
+    const parseColor = (cStr) => {
+        if (!cStr) return [27, 94, 32]; // Verde institucional por defecto
+        if (cStr.startsWith('#')) {
+            let hex = cStr.substring(1);
+            if (hex.length === 3) hex = hex.split('').map(s => s + s).join('');
+            return [parseInt(hex.substring(0, 2), 16), parseInt(hex.substring(2, 4), 16), parseInt(hex.substring(4, 6), 16)];
+        }
+        if (cStr.startsWith('rgb')) {
+            const m = cStr.match(/\d+/g);
+            if (m && m.length >= 3) return [parseInt(m[0]), parseInt(m[1]), parseInt(m[2])];
+        }
+        return [27, 94, 32];
+    };
+
+    const colorDinamico = parseColor(window.colorAreaActual);
+
+    const COL_DARK = [Math.max(0, colorDinamico[0] - 20), Math.max(0, colorDinamico[1] - 20), Math.max(0, colorDinamico[2] - 20)];
+    const COL_ACCENT = colorDinamico;
+    const COL_GREEN = colorDinamico;
     const COL_LIGHT = [232, 245, 233];
     const COL_WHITE = [255, 255, 255];
     const COL_GRAY = [108, 117, 125];
-    const COL_HEADER_TEXT = [27, 94, 32];
+    const COL_HEADER_TEXT = colorDinamico;
     const COL_SUBTEXT = [100, 100, 100];
     const COL_VAL = [30, 30, 50];
 
@@ -533,7 +619,8 @@ function generarPDFConLogo(logoBase64, datosExportar, folioUnico = null) {
 
         doc.setFont('helvetica', 'bold'); doc.setTextColor(...COL_GRAY); doc.setFontSize(9);
         doc.text('Gastos cortes:', MARGIN + 3, y);
-        doc.setTextColor(...COL_GREEN); doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0); // Valor en negro solicitado
+        doc.setFontSize(10);
         doc.text(`$${parseFloat(c.dinero_generado).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`, MARGIN + 3 + doc.getTextWidth('Gastos cortes:') + 8, y);
         y += 6;
 
@@ -547,8 +634,12 @@ function generarPDFConLogo(logoBase64, datosExportar, folioUnico = null) {
             const txt = `${t.tabla}: ${t.rejas}`;
             const w = doc.getTextWidth(txt) + 6;
             if (bx + w > PAGE_W - MARGIN - 3) { bx = MARGIN + 3; y += 8; }
-            doc.setFillColor(...COL_LIGHT); doc.roundedRect(bx, y - 4, w, 6, 1, 1, 'F');
-            doc.setTextColor(...COL_DARK); doc.setFontSize(7); doc.text(txt, bx + 3, y);
+            doc.setFillColor(255, 255, 255); // Fondo blanco (sin fondo de color)
+            doc.setDrawColor(...COL_ACCENT); // Borde con color de configuración
+            doc.setLineWidth(0.2);
+            doc.roundedRect(bx, y - 4, w, 6, 1.5, 1.5, 'FD'); 
+            doc.setTextColor(...COL_ACCENT); // Letras con color de configuración
+            doc.setFontSize(7); doc.text(txt, bx + 3, y);
             bx += w + 3;
         });
         y += 15;

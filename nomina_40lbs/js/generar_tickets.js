@@ -2,18 +2,181 @@
  * Genera y descarga tickets PDF para todos los empleados de la nómina
  */
 
-function generarTicketsPDF() {
-    // Validar que haya datos cargados
-    if (typeof jsonNomina40lbs === 'undefined' || !jsonNomina40lbs.departamentos) {
+function obtenerNomina40lbsGlobal() {
+    if (typeof jsonNomina40lbs !== 'undefined' && jsonNomina40lbs && Array.isArray(jsonNomina40lbs.departamentos)) {
+        if (typeof window !== 'undefined') window.jsonNomina40lbs = jsonNomina40lbs;
+        return jsonNomina40lbs;
+    }
+    if (typeof window !== 'undefined' && window.jsonNomina40lbs && Array.isArray(window.jsonNomina40lbs.departamentos)) {
+        return window.jsonNomina40lbs;
+    }
+    return null;
+}
+
+function obtenerEmpleadosFiltrados40lbs(options = {}) {
+    const { aplicarBusqueda = false } = options;
+    const nomina = obtenerNomina40lbsGlobal();
+    if (!nomina || !Array.isArray(nomina.departamentos)) return [];
+
+    const valorSelect = String($('#filtro-departamento').val() || 'all|all');
+    const q = aplicarBusqueda ? String($('#busqueda-nomina-40lbs').val() || '').trim().toLowerCase() : '';
+
+    let filtroDepto = 'all';
+    let seguroSocial = null;
+
+    if (valorSelect !== 'all|all' && valorSelect !== '') {
+        const partes = valorSelect.split('|');
+        filtroDepto = partes[0];
+        seguroSocial = partes[1] === 'true';
+    }
+
+    let empleados = [];
+
+    nomina.departamentos.forEach(depto => {
+        if (filtroDepto !== 'all') {
+            const matchId = depto.id_departamento && String(depto.id_departamento) === String(filtroDepto);
+            const matchNombre = depto.nombre && String(depto.nombre) === String(filtroDepto);
+            if (!matchId && !matchNombre) return;
+        }
+
+        if (!Array.isArray(depto.empleados)) return;
+
+        depto.empleados.forEach(emp => {
+            if (!emp || emp.mostrar === false) return;
+            if (seguroSocial !== null && emp.seguroSocial !== seguroSocial) return;
+
+            if (q) {
+                const nombre = String(emp.nombre || '').toLowerCase();
+                const clave = String(emp.clave || '').toLowerCase();
+                if (!nombre.includes(q) && !clave.includes(q)) return;
+            }
+
+            empleados.push({
+                emp,
+                deptoNombre: String(depto.nombre || '')
+            });
+        });
+    });
+
+    empleados.sort((a, b) => String(a.emp.nombre || '').localeCompare(String(b.emp.nombre || ''), 'es', { sensitivity: 'base' }));
+    return empleados;
+}
+
+function mapearEmpleadoTicket40lbs(emp, deptoNombre) {
+    const codigosDeduccion = {
+        '45': 'ISR',
+        '52': 'IMSS',
+        '16': 'INFONAVIT',
+        '107': 'AJUSTES AL SUB'
+    };
+
+    let deduccionesArray = [];
+    if (Array.isArray(emp.conceptos)) {
+        emp.conceptos.forEach(concepto => {
+            const codigo = String(concepto.codigo || '');
+            const nombre = codigosDeduccion[codigo] || concepto.nombre || '';
+            const valor = parseFloat(concepto.resultado) || 0;
+            if (nombre && valor > 0) {
+                deduccionesArray.push({
+                    nombre: nombre,
+                    resultado: valor
+                });
+            }
+        });
+    }
+
+    if ((emp.permiso || 0) > 0) {
+        deduccionesArray.push({
+            nombre: 'PERMISO',
+            resultado: emp.permiso
+        });
+    }
+
+    return {
+        clave: emp.clave || '',
+        nombre: emp.nombre || '',
+        id_empresa: emp.id_empresa || 1,
+        sueldo_base: emp.sueldo_neto || 0,
+        incentivo: emp.incentivo || 0,
+        sueldo_extra: emp.horas_extra || 0,
+        sueldo_extra_final: emp.sueldo_extra_final || 0,
+        bono_antiguedad: emp.bono_antiguedad || 0,
+        aplicar_bono: emp.aplicar_bono || 0,
+        actividades_especiales: emp.actividades_especiales || 0,
+        bono_puesto: emp.puesto || 0,
+        neto_pagar: emp.tarjeta || 0,
+        prestamo: emp.prestamo || 0,
+        uniformes: emp.uniformes || 0,
+        checador: emp.checador || 0,
+        inasistencias_descuento: emp.inasistencia || 0,
+        vacaciones: emp.vacaciones || 0,
+        conceptos: deduccionesArray,
+        conceptos_adicionales: (emp.percepciones_extra || []).map(item => ({
+            nombre: item.nombre || '',
+            valor: item.cantidad || 0
+        })),
+        deducciones_adicionales: (emp.deducciones_extra || []).map(item => ({
+            nombre: item.nombre || '',
+            valor: item.cantidad || 0
+        })),
+        mostrar: emp.mostrar !== false,
+        salario_semanal: emp.salario_semanal || 0,
+        salario_diario: emp.salario_diario || 0,
+        departamento: deptoNombre || '',
+        id_departamento: emp.id_departamento || null,
+        seguroSocial: emp.seguroSocial !== undefined ? emp.seguroSocial : true,
+        nombre_departamento: deptoNombre || '',
+        nombre_puesto: emp.nombre_puesto || '',
+        rfc_empleado: emp.rfc || '',
+        imss: emp.imss || '',
+        fecha_ingreso: emp.fecha_ingreso || ''
+    };
+}
+
+function construirNominaParaTickets40lbs(empleadosConDepto) {
+    const nomina = obtenerNomina40lbsGlobal();
+    const departamentosMap = new Map();
+
+    empleadosConDepto.forEach(({ emp, deptoNombre }) => {
+        const nombreDepto = String(deptoNombre || '').trim() || 'Sin Departamento';
+        if (!departamentosMap.has(nombreDepto)) departamentosMap.set(nombreDepto, []);
+        departamentosMap.get(nombreDepto).push(mapearEmpleadoTicket40lbs(emp, nombreDepto));
+    });
+
+    return {
+        numero_semana: nomina?.numero_semana || '',
+        fecha_inicio: nomina?.fecha_inicio || '',
+        fecha_cierre: nomina?.fecha_cierre || '',
+        departamentos: Array.from(departamentosMap.entries()).map(([nombre, empleados]) => ({
+            nombre,
+            empleados
+        }))
+    };
+}
+
+function descargarTickets40lbs(url, nombreArchivoBase, exitoTexto) {
+    const nomina = obtenerNomina40lbsGlobal();
+    if (!nomina || !Array.isArray(nomina.departamentos)) {
         Swal.fire({
-            title: 'Error',
-            text: 'No hay datos de nómina cargados. Carga los archivos Excel primero.',
-            icon: 'error'
+            title: 'Sin datos',
+            text: 'No hay datos de nómina para generar el PDF.',
+            icon: 'warning'
         });
         return;
     }
 
-    // Mostrar muestra de carga
+    const empleadosConDepto = obtenerEmpleadosFiltrados40lbs({ aplicarBusqueda: true });
+    if (empleadosConDepto.length === 0) {
+        Swal.fire({
+            title: 'Sin datos',
+            text: 'No hay empleados para los filtros seleccionados.',
+            icon: 'warning'
+        });
+        return;
+    }
+
+    const nominaParaEnviar = construirNominaParaTickets40lbs(empleadosConDepto);
+
     Swal.fire({
         title: 'Generando tickets...',
         text: 'Por favor espera mientras se generan los PDFs.',
@@ -24,153 +187,36 @@ function generarTicketsPDF() {
         }
     });
 
-    // Preparar estructura de datos para enviar al PHP
-    const nomina_para_enviar = {
-        numero_semana: jsonNomina40lbs.numero_semana,
-        fecha_inicio: jsonNomina40lbs.fecha_inicio,
-        fecha_cierre: jsonNomina40lbs.fecha_cierre,
-        departamentos: jsonNomina40lbs.departamentos.map(depto => ({
-            nombre: depto.nombre || '',
-            empleados: depto.empleados.map(emp => {
-                // Mapeo de códigos de concepto a nombres de deducción
-                const codigosDeduccion = {
-                    '45': 'ISR',
-                    '52': 'IMSS',
-                    '16': 'INFONAVIT',
-                    '107': 'AJUSTES AL SUB'
-                };
-
-                // Crear array de deducciones desde conceptos
-                let deduccionesArray = [];
-                if (Array.isArray(emp.conceptos)) {
-                    emp.conceptos.forEach(concepto => {
-                        const codigo = String(concepto.codigo || '');
-                        const nombre = codigosDeduccion[codigo] || concepto.nombre || '';
-                        const valor = parseFloat(concepto.resultado) || 0;
-                        
-                        // Solo agregar si tiene nombre y valor > 0
-                        if (nombre && valor > 0) {
-                            deduccionesArray.push({
-                                nombre: nombre,
-                                resultado: valor
-                            });
-                        }
-                    });
-                }
-
-                // Agregar permiso como deducción si existe y es > 0
-                if ((emp.permiso || 0) > 0) {
-                    deduccionesArray.push({
-                        nombre: 'PERMISO',
-                        resultado: emp.permiso
-                    });
-                }
-
-                // Crear estructura de empleado para el PDF
-                const empleado = {
-                    clave: emp.clave || '',
-                    nombre: emp.nombre || '',
-                    id_empresa: emp.id_empresa || 1,
-                    sueldo_base: emp.sueldo_neto || 0,
-                    incentivo: emp.incentivo || 0,
-                    sueldo_extra: emp.horas_extra || 0,  // Usar horas_extra del JSON
-                    sueldo_extra_final: emp.sueldo_extra_final || 0,
-                    bono_antiguedad: emp.bono_antiguedad || 0,
-                    aplicar_bono: emp.aplicar_bono || 0,
-                    actividades_especiales: emp.actividades_especiales || 0,
-                    bono_puesto: emp.puesto || 0,  // Mapear campo 'puesto' del JSON
-                    neto_pagar: emp.tarjeta || 0,
-                    prestamo: emp.prestamo || 0,
-                    uniformes: emp.uniformes || 0,
-                    checador: emp.checador || 0,
-                    inasistencias_descuento: emp.inasistencia || 0,
-                    vacaciones: emp.vacaciones || 0,
-                    conceptos: deduccionesArray, // Enviar deducciones mapeadas
-                    // Mapear percepciones_extra a conceptos_adicionales con estructura esperada por PHP
-                    conceptos_adicionales: (emp.percepciones_extra || []).map(item => ({
-                        nombre: item.nombre || '',
-                        valor: item.cantidad || 0
-                    })),
-                    // Mapear deducciones_extra a deducciones_adicionales con estructura esperada por PHP
-                    deducciones_adicionales: (emp.deducciones_extra || []).map(item => ({
-                        nombre: item.nombre || '',
-                        valor: item.cantidad || 0
-                    })),
-                    mostrar: emp.mostrar !== false, // Solo incluir si mostrar=true
-                    salario_semanal: emp.salario_semanal || 0,
-                    salario_diario: emp.salario_diario || 0,
-                    departamento: depto.nombre || '',
-                    id_departamento: emp.id_departamento || null,
-                    seguroSocial: emp.seguroSocial !== undefined ? emp.seguroSocial : true,
-                    // Información adicional del empleado que puede venir de BD
-                    nombre_departamento: depto.nombre || '',
-                    nombre_puesto: emp.nombre_puesto || '',
-                    rfc_empleado: emp.rfc || '',
-                    imss: emp.imss || '',
-                    fecha_ingreso: emp.fecha_ingreso || ''
-                };
-                return empleado;
-            })
-        }))
-    };
-
-    // Obtener departamento filtrado si está seleccionado en la interfaz
-    let departamentoFiltrado = null;
-    const filtroDepto = $('#filtro-departamento').val();
-    if (filtroDepto === '1') {
-        departamentoFiltrado = '40 Libras CSS';
-    } else if (filtroDepto === '2') {
-        departamentoFiltrado = '40 Libras SSS';
-    } else if (filtroDepto === '3') {
-        departamentoFiltrado = '10 Libras CSS';
-    } else if (filtroDepto === '4') {
-        departamentoFiltrado = '10 Libras SSS';
-    }
-
-    // Preparar datos para enviar
-    const datos = {
-        nomina: nomina_para_enviar,
-        departamento_filtrado: departamentoFiltrado,
-        solo_sin_seguro: false
-    };
-
-    // Enviar POST usando XMLHttpRequest directamente para manejar archivos binarios
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', '../php/descargar_ticket_pdf.php', true);
+    xhr.open('POST', url, true);
     xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-    xhr.responseType = 'blob'; // Recibir como blob
+    xhr.responseType = 'blob';
 
     xhr.onload = function() {
         if (xhr.status === 200) {
             try {
-                // Ya es un blob, crear URL directamente
                 const blob = xhr.response;
-                
-                // Generar nombre de archivo con fecha/semana
-                const numeroSemana = jsonNomina40lbs.numero_semana || 'SEM';
+                const numeroSemana = nomina.numero_semana || 'SEM';
                 const ahora = new Date();
                 const timestamp = ahora.getTime();
-                const nombreArchivo = `tickets_nomina_semana_${numeroSemana}_${timestamp}.pdf`;
+                const nombreArchivo = `${nombreArchivoBase}_semana_${numeroSemana}_${timestamp}.pdf`;
 
-                // Crear URL para descargar
-                const url = window.URL.createObjectURL(blob);
+                const urlBlob = window.URL.createObjectURL(blob);
                 const link = document.createElement('a');
-                link.href = url;
+                link.href = urlBlob;
                 link.download = nombreArchivo;
-                
-                // Simular click para descargar
+
                 document.body.appendChild(link);
                 link.click();
-                
-                // Limpiar
+
                 setTimeout(() => {
-                    window.URL.revokeObjectURL(url);
+                    window.URL.revokeObjectURL(urlBlob);
                     document.body.removeChild(link);
                 }, 100);
 
                 Swal.fire({
-                    title: 'Éxito',
-                    text: `Tickets generados y descargados como ${nombreArchivo}`,
+                    title: 'Exito',
+                    text: `${exitoTexto} ${nombreArchivo}`,
                     icon: 'success'
                 });
             } catch (error) {
@@ -200,27 +246,51 @@ function generarTicketsPDF() {
         });
     };
 
-    xhr.send(JSON.stringify(datos));
+    xhr.send(JSON.stringify({ nomina: nominaParaEnviar }));
 }
 
-// Manejador del botón de descargar tickets - Genera TODOS los tickets
+function generarTicketsPDF() {
+    descargarTickets40lbs('../php/descargar_ticket_pdf.php', 'tickets_nomina', 'Tickets generados y descargados como');
+}
+
+/**
+ * Genera y descarga tickets PDF con solo el nombre del empleado
+ */
+function generarTicketsNombrePDF() {
+    descargarTickets40lbs('../php/descargar_ticket_nombre_pdf.php', 'tickets_nombre_40lbs', 'Tickets de nombre generados y descargados como');
+}
+
+// Manejador del boton de tickets con selector de tipo
 $(document).ready(function() {
     $('#btn_ticket_pdf').on('click', function() {
-        generarTicketsPDF();
-    });
-    
-    // Botón para seleccionar empleados manualmente
-    $('#btn_ticket_manual_40lbs').on('click', function() {
-        if (!window.jsonNomina40lbs) {
+        const nomina = obtenerNomina40lbsGlobal();
+        if (!nomina || !Array.isArray(nomina.departamentos)) {
             Swal.fire({
-                icon: 'warning',
                 title: 'Sin datos',
-                text: 'No hay datos de nómina cargados. Primero procesa los archivos.'
+                text: 'No hay datos de nómina para generar el PDF.',
+                icon: 'warning'
             });
             return;
         }
-        
-        cargarEmpleadosParaTickets40lbs();
-        $('#modal_seleccion_tickets_40lbs').modal('show');
+
+        const modalEl = document.getElementById('modalSeleccionTicket');
+        if (modalEl) {
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        }
+    });
+
+    $('#btn_ticket_normal').on('click', function() {
+        const modalEl = document.getElementById('modalSeleccionTicket');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+        generarTicketsPDF();
+    });
+
+    $('#btn_ticket_nombre').on('click', function() {
+        const modalEl = document.getElementById('modalSeleccionTicket');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+        generarTicketsNombrePDF();
     });
 });

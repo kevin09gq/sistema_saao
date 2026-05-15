@@ -130,7 +130,7 @@ verificarSesion();
                   </button>
                 </div>
                 <div class="col-6">
-                  <button class="btn btn-outline-secondary btn-sm w-100 quick-insert" data-value="empleado.fecha_ingreso" type="button">
+                  <button class="btn btn-outline-secondary btn-sm w-100 quick-insert" data-value="empleado.fecha_alta_empresa" type="button">
                     Fecha Ingreso
                   </button>
                 </div>
@@ -429,7 +429,7 @@ verificarSesion();
                           <td>12345678901</td>
                         </tr>
                         <tr>
-                          <td><code>{{empleado.fecha_ingreso}}</code></td>
+                          <td><code>{{empleado.fecha_alta_empresa}}</code></td>
                           <td>Fecha de ingreso</td>
                           <td>01/01/2020</td>
                         </tr>

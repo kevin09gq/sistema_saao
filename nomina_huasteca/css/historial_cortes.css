@@ -9,7 +9,7 @@ body {
     padding: 20px 30px;
     border-radius: 10px;
     margin-bottom: 25px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -25,7 +25,7 @@ body {
     background: white;
     border-radius: 10px;
     padding: 20px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     margin-bottom: 25px;
 }
 
@@ -40,14 +40,19 @@ body {
     background: white;
     border-radius: 10px;
     padding: 20px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     border-left: 5px solid #48bb78;
     display: flex;
     flex-direction: column;
 }
 
-.kpi-box.success { border-left-color: #2f855a; }
-.kpi-box.warning { border-left-color: #ecc94b; }
+.kpi-box.success {
+    border-left-color: #2f855a;
+}
+
+.kpi-box.warning {
+    border-left-color: #ecc94b;
+}
 
 .kpi-title {
     color: #4a5568;
@@ -67,7 +72,7 @@ body {
     background: white;
     border-radius: 10px;
     padding: 20px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 table.dataTable {
@@ -76,11 +81,11 @@ table.dataTable {
 }
 
 table.dataTable th {
-    background-color: #f7fafc;
-    color: #4a5568;
+    background-color: #32BA5B;
+    color: white;
     font-weight: 600;
     padding: 12px;
-    border-bottom: 2px solid #e2e8f0;
+    border-bottom: 2px solid #28a44d;
     text-align: left;
 }
 
@@ -112,11 +117,13 @@ table.dataTable tr:hover {
     border-bottom: none;
     padding: 20px;
 }
+
 .modal-detalles-title {
     font-weight: 700;
     font-size: 1.25rem;
     letter-spacing: 0.5px;
 }
+
 .info-card {
     background-color: #f7fafc;
     border-radius: 8px;
@@ -124,27 +131,32 @@ table.dataTable tr:hover {
     margin-bottom: 20px;
     border: 1px solid #e2e8f0;
 }
+
 .info-card-item {
     margin-bottom: 8px;
     font-size: 0.95rem;
 }
+
 .info-card-item strong {
     color: #4a5568;
     display: inline-block;
     width: 80px;
 }
+
 .kpi-mini-card {
     background: white;
     border-radius: 8px;
     padding: 15px 10px;
     text-align: center;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     border: 1px solid #e2e8f0;
     transition: transform 0.2s;
 }
+
 .kpi-mini-card:hover {
     transform: translateY(-3px);
 }
+
 .kpi-mini-title {
     color: #718096;
     font-size: 0.8rem;
@@ -152,31 +164,45 @@ table.dataTable tr:hover {
     font-weight: 700;
     margin-bottom: 8px;
 }
+
 .kpi-mini-val {
     font-size: 1.4rem;
     font-weight: 800;
 }
-.val-primary { color: #38a169; }
-.val-success { color: #2f855a; }
-.val-dark { color: #1a202c; }
+
+.val-primary {
+    color: #38a169;
+}
+
+.val-success {
+    color: #2f855a;
+}
+
+.val-dark {
+    color: #1a202c;
+}
 
 .table-custom-modal {
     background: white;
     border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     border: 1px solid #e2e8f0;
     margin-bottom: 0;
 }
+
 .table-custom-modal thead th:first-child {
     border-top-left-radius: 8px;
 }
+
 .table-custom-modal thead th:last-child {
     border-top-right-radius: 8px;
 }
+
 .table-custom-modal thead {
-    background-color: #edf2f7;
-    color: #4a5568;
+    background-color: #32BA5B;
+    color: white;
 }
+
 .table-custom-modal th {
     font-weight: 600;
     text-transform: uppercase;
@@ -184,11 +210,13 @@ table.dataTable tr:hover {
     padding: 12px;
     border-bottom: 2px solid #e2e8f0;
 }
+
 .table-custom-modal td {
     vertical-align: middle;
     padding: 12px;
     border-bottom: 1px solid #edf2f7;
 }
+
 .table-custom-modal tbody tr:hover {
     background-color: #f7fafc;
 }
@@ -196,9 +224,24 @@ table.dataTable tr:hover {
 #modalDetalleCorte {
     z-index: 1060 !important;
 }
+
 .modal-backdrop {
     z-index: 1050;
 }
-.modal-backdrop ~ .modal-backdrop {
+
+.modal-backdrop~.modal-backdrop {
     z-index: 1059 !important;
+}
+
+/* 
+  Asegurar que el dropdown de acciones solo se abra al hacer clic.
+  Incrementamos la especificidad para ganar a los estilos globales del navbar.
+*/
+@media (min-width: 992px) {
+    body .tb-action-dropdown:hover > .dropdown-menu:not(.show) {
+        display: none !important;
+    }
+    body .tb-action-dropdown > .dropdown-menu.show {
+        display: block !important;
+    }
 }
