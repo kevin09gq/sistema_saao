@@ -57,13 +57,18 @@ function cargarDatos(empleados, indiceInicio) {
     let $cuerpoTabla = $('#tbodyVacaciones').empty();
 
     if (empleados.length === 0) {
-        $cuerpoTabla.append('<tr><td colspan="6" class="text-center text-muted p-4">No se encontraron resultados</td></tr>');
+        $cuerpoTabla.append('<tr><td colspan="7" class="text-center text-muted p-4">No se encontraron resultados</td></tr>');
         return;
     }
 
     $.each(empleados, function (indice, emp) {
         let iniciales = (emp.nombre.charAt(0) + (emp.ap_paterno ? emp.ap_paterno.charAt(0) : '')).toUpperCase();
         
+        // Determinar badge de estatus
+        let statusBadge = (emp.id_status == 1) 
+            ? '<span class="badge bg-success-subtle text-success border border-success-subtle">Activo</span>'
+            : '<span class="badge bg-danger-subtle text-danger border border-danger-subtle">Inactivo</span>';
+
         let fila = `
         <tr>
             <td>${indiceInicio + indice + 1}</td>
@@ -83,6 +88,7 @@ function cargarDatos(empleados, indiceInicio) {
                 </div>
             </td>
             <td><span class="badge bg-light text-dark border">${emp.antiguedad}</span></td>
+            <td class="text-center">${statusBadge}</td>
             <td class="text-center">
                 <button class="btn-action" onclick="verKardex(${emp.id_empleado})">
                     <i class="bi bi-clipboard2-data"></i> Ver Kardex
@@ -208,6 +214,14 @@ function actualizarTextoInformativo() {
 }
 
 //==============================
+// ENVIA EL ID DEL EMPLEADO A LA PÁGINA DE KARDEX PARA MOSTRAR SU INFORMACIÓN DETALLADA
+//==============================
+function verKardex(idEmpleado) {
+    window.location.href = `kardex.php?id=${idEmpleado}`;
+}
+
+
+//==============================
 // FUNCIONES AUXILIARES
 //==============================
 function formatearFecha(fechaTexto) {
@@ -217,6 +231,4 @@ function formatearFecha(fechaTexto) {
     return `${fecha.getDate()} ${meses[fecha.getMonth()]} ${fecha.getFullYear()}`;
 }
 
-function verKardex(idEmpleado) {
-    console.log("Abriendo Kardex para el empleado ID:", idEmpleado);
-}
+

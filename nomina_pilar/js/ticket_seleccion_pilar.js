@@ -261,6 +261,10 @@ function generarTicketsSeleccionados() {
                     seleccionados.push(datos);
                 });
             } else {
+                // Recalcular totales antes de enviar
+                if (typeof calcularTotalCobrar === 'function') {
+                    calcularTotalCobrar(emp);
+                }
                 seleccionados.push(emp);
             }
         }
@@ -314,6 +318,12 @@ function generarTicketsNombreSeleccionados() {
             if (item.original && item.original.mostrar === false) return;
             const empCopia = { ...item.original };
             if (item.esSinSeguro) empCopia.sin_seguro_ticket = true;
+
+            // Recalcular totales antes de enviar
+            if (typeof calcularTotalCobrar === 'function') {
+                calcularTotalCobrar(empCopia);
+            }
+
             seleccionados.push(empCopia);
         }
     });

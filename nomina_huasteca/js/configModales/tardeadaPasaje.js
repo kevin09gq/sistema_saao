@@ -221,8 +221,6 @@ function aplicarQuitarComidaPasaje() {
         });
     });
 
-    console.log(`Acción ${accion} aplicada a ${empleadosSeleccionados.length} empleados`);
-
     // Recalcular sueldos para aplicar los overrides
     actualizarPasajeTardeadaEnEmpleados();
 

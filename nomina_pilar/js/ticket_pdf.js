@@ -89,6 +89,15 @@ $(document).ready(function () {
             return;
         }
 
+        // Recalcular totales antes de enviar
+        (datosFiltrados.departamentos || []).forEach(depto => {
+            (depto.empleados || []).forEach(emp => {
+                if (typeof calcularTotalCobrar === 'function') {
+                    calcularTotalCobrar(emp);
+                }
+            });
+        });
+
         enviarDatosParaTicketsNombre({ nomina: datosFiltrados });
     });
 
@@ -222,6 +231,15 @@ $(document).ready(function () {
             Swal.fire('Sin datos', 'No hay empleados con los filtros actuales.', 'warning');
             return;
         }
+
+        // Recalcular totales antes de enviar
+        (datosFiltrados.departamentos || []).forEach(depto => {
+            (depto.empleados || []).forEach(emp => {
+                if (typeof calcularTotalCobrar === 'function') {
+                    calcularTotalCobrar(emp);
+                }
+            });
+        });
 
         enviarDatosParaTickets({ nomina: datosFiltrados, meta: { numero_semana: jsonNominaPilar.numero_semana || '' } });
     }

@@ -101,6 +101,15 @@ $(document).ready(function () {
             return;
         }
 
+        // Recalcular totales antes de enviar
+        (datosFiltrados.departamentos || []).forEach(depto => {
+            (depto.empleados || []).forEach(emp => {
+                if (typeof calcularTotalCobrar === 'function') {
+                    calcularTotalCobrar(emp);
+                }
+            });
+        });
+
         var datosEnviar = {
             nomina: datosFiltrados,
             meta: {
@@ -343,6 +352,15 @@ $(document).ready(function () {
             Swal.fire('Sin datos', 'No hay empleados para los filtros seleccionados.', 'warning');
             return;
         }
+
+        // Recalcular totales antes de enviar
+        (datosFiltrados.departamentos || []).forEach(depto => {
+            (depto.empleados || []).forEach(emp => {
+                if (typeof calcularTotalCobrar === 'function') {
+                    calcularTotalCobrar(emp);
+                }
+            });
+        });
 
         // Mostrar mensaje informativo
         let nombreDepartamento = $('#filtro_departamento option:selected').text();

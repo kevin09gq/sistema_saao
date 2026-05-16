@@ -140,7 +140,7 @@ function calcularSueldoSemanal(empleado = null) {
         }
 
         if (aplicaPasaje) {
-            empleado.pasaje = pasajeTotal === 0 ? 0 : pasajeTotal.toFixed(2);
+            empleado.pasaje = parseFloat(pasajeTotal === 0 ? 0 : pasajeTotal.toFixed(2));
         }
 
         // === CALCULAR COMIDA ===
@@ -164,7 +164,7 @@ function calcularSueldoSemanal(empleado = null) {
         }
 
         if (aplicaComida) {
-            empleado.comida = comidaTotal === 0 ? 0 : comidaTotal.toFixed(2);
+            empleado.comida = parseFloat(comidaTotal === 0 ? 0 : comidaTotal.toFixed(2));
         }
 
         // === CALCULAR TARDEADAS ===
@@ -174,7 +174,7 @@ function calcularSueldoSemanal(empleado = null) {
         const montoTardeada = parseFloat(jsonNominaPalmilla.pago_tardeada) || 0;
 
         const totalTardeada = diasTardeados * montoTardeada;
-        empleado.tardeada = totalTardeada === 0 ? 0 : totalTardeada.toFixed(2);
+        empleado.tardeada = parseFloat(totalTardeada === 0 ? 0 : totalTardeada.toFixed(2));
         // Recalcular el total extra de forma limpia (tardeada + percepciones_extra)
         if (typeof calcularTotalExtra === 'function') {
             calcularTotalExtra(empleado);

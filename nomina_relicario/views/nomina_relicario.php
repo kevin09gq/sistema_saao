@@ -21,7 +21,7 @@
     <link rel="stylesheet" href="../css/modalCoordinador.css">
     <link rel="stylesheet" href="../css/modalJornaleros.css">
     <link rel="stylesheet" href="../css/conceptos_totales.css">
-    <link rel="stylesheet" href="../css/ticket_manual.css">
+   
 
     <link rel="stylesheet" href="<?= JQUERY_UI_CSS ?>">
 

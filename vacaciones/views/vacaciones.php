@@ -65,13 +65,14 @@
                             <th>Empleado / Departamento</th>
                             <th>Aniversario</th>
                             <th>Antigüedad</th>
+                            <th class="text-center">Estatus</th>
                             <th class="text-center">Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="tbodyVacaciones">
                         <!-- Los datos se cargarán dinámicamente desde index.js -->
                         <tr>
-                            <td colspan="6" class="text-center p-4">
+                            <td colspan="7" class="text-center p-4">
                                 <div class="spinner-border text-success spinner-border-sm me-2" role="status"></div>
                                 <span class="text-muted">Cargando empleados...</span>
                             </td>

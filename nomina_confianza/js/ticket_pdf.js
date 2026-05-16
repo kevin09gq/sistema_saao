@@ -152,6 +152,15 @@ function descargarTicketsConfianza($btn, url, iconoDefault, nombreDefault) {
         return;
     }
 
+    // Recalcular totales antes de enviar
+    if (typeof calcularTotalCobrar === 'function') {
+        empleadosConDepto.forEach(item => {
+            if (item.emp) {
+                calcularTotalCobrar(item.emp);
+            }
+        });
+    }
+
     const nominaParaEnviar = construirNominaParaTicketsConfianza(empleadosConDepto);
 
     $btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Generando...');

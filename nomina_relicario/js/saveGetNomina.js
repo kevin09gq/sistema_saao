@@ -16,6 +16,14 @@ function confirmarsaveNomina() {
 }
 
 function saveNominaRelicario() {
+    // Recalcular total_cobrar y redondeo de todos los empleados antes de guardar
+    if (typeof calcularTotalCobrar === 'function') {
+        jsonNominaRelicario.departamentos.forEach(depto => {
+            (depto.empleados || []).forEach(emp => {
+                calcularTotalCobrar(emp);
+            });
+        });
+    }
     eliminarPropiedades(jsonNominaRelicario); // Limpiar propiedades con valor 0 antes de guardar
 
     // Quitar el departamento "Corte" del objeto global para no guardarlo en la nómina (se procesa aparte)

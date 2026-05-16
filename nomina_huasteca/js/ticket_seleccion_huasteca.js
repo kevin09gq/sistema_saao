@@ -482,6 +482,12 @@ function generarTicketsSeleccionados() {
                     console.log("  Empleado normal o sin movimientos específicos");
                     const empClon = {...empOriginal, departamento: item.departamento};
                     if (item.esSinSeguro) empClon.sin_seguro_ticket = true;
+                    
+                    // Recalcular totales antes de enviar
+                    if (typeof calcularTotalCobrar === 'function') {
+                        calcularTotalCobrar(empClon);
+                    }
+                    
                     seleccionados.push(empClon);
                 }
             }
@@ -667,9 +673,16 @@ function generarTicketsNombreSeleccionados() {
                 if (empOriginal.mostrar === false) return;
                 // Para ticket de nombre solo necesitamos el nombre y depto
                 const empTicket = {
+                    ...empOriginal,
                     nombre: empOriginal.nombre,
                     departamento: item.departamento
                 };
+
+                // Recalcular totales antes de enviar
+                if (typeof calcularTotalCobrar === 'function') {
+                    calcularTotalCobrar(empTicket);
+                }
+                
                 if (item.esSinSeguro) empTicket.sin_seguro_ticket = true;
                 seleccionados.push(empTicket);
             }

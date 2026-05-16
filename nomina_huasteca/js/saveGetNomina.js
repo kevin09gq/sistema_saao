@@ -19,6 +19,15 @@ function confirmarsaveNomina() {
 
 function saveNominaHuasteca() {
 
+    // Recalcular total_cobrar y redondeo de todos los empleados antes de guardar
+    if (typeof calcularTotalCobrar === 'function') {
+        jsonNominaHuasteca.departamentos.forEach(depto => {
+            (depto.empleados || []).forEach(emp => {
+                calcularTotalCobrar(emp);
+            });
+        });
+    }
+
     // Quitar el departamento "Corte" del objeto global para no guardarlo en la nómina (se procesa aparte)
     const jsonData = { ...jsonNominaHuasteca, departamentos: jsonNominaHuasteca.departamentos.filter(d => d.nombre !== "Corte") };
     const numeroSemana = jsonData.numero_semana;

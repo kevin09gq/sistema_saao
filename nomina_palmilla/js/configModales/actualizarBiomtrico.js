@@ -161,6 +161,7 @@ function subirBiometrico() {
                             } else {
                                 console.error('recalcularEventosCoordinador no está disponible');
                             }
+                            calcularTotalCobrar(emp);
                         }
                         else if (emp.tipo_horario === 2) {
                             // Verificar si existe horarioRancho
@@ -180,7 +181,7 @@ function subirBiometrico() {
                             if (typeof calcularSueldoSemanal === 'function') {
                                 calcularSueldoSemanal(emp);
                             }
-                            calcularTotalExtra(emp);
+                           calcularTotalCobrar(emp); // Recalcular total a cobrar después de actualizar percepciones
                         }
 
                     });

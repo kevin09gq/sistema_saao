@@ -17,6 +17,17 @@ function confirmarsaveNomina() {
 
 function saveNominaConfianza(){
 
+    // Recalcular total_cobrar y redondeo de todos los empleados antes de guardar
+    if (typeof calcularTotalCobrar === 'function') {
+        jsonNominaConfianza.departamentos.forEach(depto => {
+            if (Array.isArray(depto.empleados)) {
+                depto.empleados.forEach(emp => {
+                    calcularTotalCobrar(emp);
+                });
+            }
+        });
+    }
+
     eliminarPropiedades(jsonNominaConfianza); // Limpieza de propiedades innecesarias antes de enviar al servidor
     const jsonData = jsonNominaConfianza;
     const numeroSemana = jsonData.numero_semana;

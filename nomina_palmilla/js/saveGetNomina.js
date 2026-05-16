@@ -18,12 +18,20 @@ function confirmarsaveNomina() {
 }
 
 function saveNominaPalmilla() {
+    // Recalcular total_cobrar y redondeo de todos los empleados antes de guardar
+    if (typeof calcularTotalCobrar === 'function') {
+        jsonNominaPalmilla.departamentos.forEach(depto => {
+            (depto.empleados || []).forEach(emp => {
+                calcularTotalCobrar(emp);
+            });
+        });
+    }
 
     // Quitar el departamento "Corte" del objeto global para no guardarlo en la nómina (se procesa aparte)
     const jsonData = { ...jsonNominaPalmilla, departamentos: jsonNominaPalmilla.departamentos.filter(d => d.nombre !== "Corte") };
     const numeroSemana = jsonData.numero_semana;
 
-   // Obtener el dep Corte por separado
+    // Obtener el dep Corte por separado
     const departamentoCorte = jsonNominaPalmilla.departamentos.find(d => d.nombre === "Corte");
     const empleadosCorte = departamentoCorte ? departamentoCorte.empleados : [];
 

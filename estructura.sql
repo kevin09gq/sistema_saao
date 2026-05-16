@@ -369,6 +369,98 @@ CREATE TABLE primas_vacacionales_lft (
     FOREIGN KEY (id_version_vacaciones) REFERENCES versiones_vacaciones_lft(id_version_vacaciones) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
+
+-- ==========================================
+-- TABLA: PERIODOS DE VACACIONES
+-- ==========================================
+CREATE TABLE vacaciones_periodos (
+    id_periodo INT AUTO_INCREMENT PRIMARY KEY,
+
+    -- Empleado dueño del período
+    id_empleado INT NOT NULL,
+
+    -- Fecha en que cumple aniversario
+    fecha_aniversario DATE NOT NULL,
+
+    -- Años cumplidos
+    anios_antiguedad INT NOT NULL,
+
+    -- Versión LFT aplicada
+    id_version_vacaciones INT NOT NULL,
+
+    -- Días otorgados por derecho
+    dias_derecho DECIMAL(10,3) NOT NULL,
+
+    -- Días ya utilizados
+    dias_tomados DECIMAL(10,3) NOT NULL DEFAULT 0,
+
+    -- Saldo restante disponible
+    saldo DECIMAL(10,3) NOT NULL DEFAULT 0,
+
+    -- Estado del período
+    estatus ENUM(
+        'ACTIVO',
+        'VENCIDO'
+    ) NOT NULL DEFAULT 'ACTIVO',
+
+    -- Relaciones
+    FOREIGN KEY (id_empleado)
+        REFERENCES info_empleados(id_empleado)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+
+    FOREIGN KEY (id_version_vacaciones)
+        REFERENCES versiones_vacaciones_lft(id_version_vacaciones)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
+);
+
+-- ==========================================
+-- TABLA: KARDEX DE VACACIONES
+-- ==========================================
+
+CREATE TABLE kardex_vacaciones (
+    id_kardex INT AUTO_INCREMENT PRIMARY KEY,
+
+    -- Relación al período afectado
+    id_periodo INT NOT NULL,
+
+    -- Empleado
+    id_empleado INT NOT NULL,
+
+    -- Concepto visible en interfaz
+    concepto VARCHAR(200) NOT NULL,
+
+    -- Fecha del movimiento
+    fecha_registro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- Fechas del rango vacacional
+    fecha_inicio DATE NULL,
+    fecha_fin DATE NULL,
+
+    -- Cantidad de días del movimiento
+    dias_movimiento DECIMAL(10,3) NOT NULL,
+
+    -- Saldo resultante del período después del movimiento
+    saldo_resultante DECIMAL(10,3) NOT NULL,
+
+    -- Observaciones adicionales
+    observaciones TEXT NULL,
+
+    -- Relaciones
+    FOREIGN KEY (id_periodo)
+        REFERENCES vacaciones_periodos(id_periodo)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+
+    FOREIGN KEY (id_empleado)
+        REFERENCES info_empleados(id_empleado)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
+
+
+
 -- =============================
 -- TABLA DE HORARIOS RELOJ 8 HRS
 -- =============================

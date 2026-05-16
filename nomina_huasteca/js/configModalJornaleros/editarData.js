@@ -52,7 +52,7 @@ function modificarPercepcionesJornalero(empleado) {
     sueldoExtraTotal = isNaN(sueldoExtraTotal) ? 0 : sueldoExtraTotal;
 
     // Establecer los valores en el objeto empleado
-    empleado.salario_semanal = sueldoSemanal;
+    empleado.salario_semanal = parseFloat(sueldoSemanal);
     empleado.pasaje = pasaje;
     empleado.comida = comida;
     empleado.tardeada = tardeada;

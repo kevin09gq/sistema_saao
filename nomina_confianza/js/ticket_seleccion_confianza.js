@@ -177,6 +177,12 @@ async function generarTicketsSeleccionadosConfianza() {
             if (copia.id_empresa === undefined || copia.id_empresa === null || copia.id_empresa === '') {
                 copia.id_empresa = 1;
             }
+
+            // Recalcular totales antes de enviar
+            if (typeof calcularTotalCobrar === 'function') {
+                calcularTotalCobrar(copia);
+            }
+
             seleccionados.push({ emp: copia, deptoNombre: copia.departamento });
         }
     });
@@ -238,6 +244,12 @@ async function generarTicketsNombreSeleccionadosConfianza() {
             if (copia.id_empresa === undefined || copia.id_empresa === null || copia.id_empresa === '') {
                 copia.id_empresa = 1;
             }
+
+            // Recalcular totales antes de enviar
+            if (typeof calcularTotalCobrar === 'function') {
+                calcularTotalCobrar(copia);
+            }
+
             seleccionados.push({ emp: copia, deptoNombre: copia.departamento });
         }
     });

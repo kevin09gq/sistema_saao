@@ -1,5 +1,5 @@
 <?php
-require_once '../../conexion/conexion.php';
+require_once __DIR__ . '/../../config/config.php';
 
 $action = $_POST['action'] ?? '';
 
@@ -15,6 +15,9 @@ switch ($action) {
         break;
 }
 
+//==============================
+// OBTIENE TODAS LAS ÁREAS REGISTRADAS EN LA BASE DE DATOS
+//==============================
 function obtenerAreas($conexion) {
     $sql = "SELECT id_area, nombre_area FROM areas ORDER BY nombre_area ASC";
     $result = mysqli_query($conexion, $sql);
@@ -26,6 +29,10 @@ function obtenerAreas($conexion) {
     echo json_encode($areas);
 }
 
+
+//==============================
+// OBTIENE LOS DEPARTAMENTOS RELACIONADOS A UN AREA ESPECÍFICA O TODOS LOS DEPARTAMENTOS SI NO SE ESPECIFICA UN ÁREA
+//==============================
 function obtenerDepartamentos($conexion) {
     $id_area = $_POST['id_area'] ?? '';
 
