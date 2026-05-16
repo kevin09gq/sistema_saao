@@ -162,25 +162,7 @@
                         </tr>
                     </thead>
                     <tbody id="tbodyPeriodos">
-                        <!-- Datos estáticos de ejemplo -->
-                        <tr>
-                            <td>15 Mar 2023</td>
-                            <td>5</td>
-                            <td>LFT 2023 (Digna)</td>
-                            <td>20.000</td>
-                            <td>20.000</td>
-                            <td>0.000</td>
-                            <td class="text-center"><span class="badge-status status-agotado">AGOTADO</span></td>
-                        </tr>
-                        <tr>
-                            <td>15 Mar 2024</td>
-                            <td>6</td>
-                            <td>LFT 2023 (Digna)</td>
-                            <td>22.000</td>
-                            <td>10.000</td>
-                            <td>12.000</td>
-                            <td class="text-center"><span class="badge-status status-activo">ACTIVO</span></td>
-                        </tr>
+                        <!-- Los datos se cargan dinámicamente -->
                     </tbody>
                 </table>
             </div>
@@ -215,40 +197,7 @@
                         </tr>
                     </thead>
                     <tbody id="tbodyKardex">
-                        <!-- Datos estáticos de ejemplo -->
-                        <tr>
-                            <td>15 Mar 2024 09:00 AM</td>
-                            <td>
-                                <strong>Carga de Derecho Anual</strong><br>
-                                <small class="text-muted">Carga automática por aniversario 6</small>
-                            </td>
-                            <td>---</td>
-                            <td><span class="type-abono">ABONO</span></td>
-                            <td>+22.000</td>
-                            <td>22.000</td>
-                        </tr>
-                        <tr>
-                            <td>10 Abr 2024 14:30 PM</td>
-                            <td>
-                                <strong>Vacaciones Semana Santa</strong><br>
-                                <small class="text-muted">Autorizado por RRHH</small>
-                            </td>
-                            <td>01 Abr 2024 al 05 Abr 2024</td>
-                            <td><span class="type-cargo">CARGO</span></td>
-                            <td>-5.000</td>
-                            <td>17.000</td>
-                        </tr>
-                        <tr>
-                            <td>02 May 2024 11:15 AM</td>
-                            <td>
-                                <strong>Vacaciones Mayo</strong><br>
-                                <small class="text-muted">Día de las madres</small>
-                            </td>
-                            <td>10 May 2024 al 14 May 2024</td>
-                            <td><span class="type-cargo">CARGO</span></td>
-                            <td>-5.000</td>
-                            <td>12.000</td>
-                        </tr>
+                        <!-- Los datos se cargan dinámicamente -->
                     </tbody>
                 </table>
             </div>
@@ -273,6 +222,7 @@
     <script src="<?= BOOTSTRAP_JS ?>"></script>
     <script src="../js/kardex/establecerDataEmpleado.js"></script>
     <script src="../js/kardex/periodosVacacionales.js"></script>
+    <script src="../js/kardex/historialMovimientosKardex.js"></script>
 </body>
 
 </html>

@@ -26,6 +26,9 @@ function cargarPeriodosVacaciones(empleado) {
             // SI NO HAY DATOS, CALCULAR EN TIEMPO REAL (SIMULACIÓN)
             calcularYMostrarPeriodosSimulados(empleado);
         }
+
+        // CARGAR TAMBIÉN EL KARDEX (MOVIMIENTOS)
+        cargarKardexVacaciones(empleado);
         
     }, 'json');
 }
@@ -188,3 +191,4 @@ function actualizarResumenTotales(periodos) {
     $('#diasUtilizados').text(tomados.toFixed(3));
     $('#saldoDisponible').text(saldo.toFixed(3));
 }
+

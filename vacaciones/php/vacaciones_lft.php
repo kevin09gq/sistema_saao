@@ -16,9 +16,27 @@ switch ($action) {
     case 'obtenerPeriodosEmpleado':
         obtenerPeriodosEmpleado($conexion);
         break;
+    case 'obtenerKardexEmpleado':
+        obtenerKardexEmpleado($conexion);
+        break;
     default:
         echo json_encode(['error' => 'Acción no válida']);
         break;
+}
+
+function obtenerKardexEmpleado($conexion) {
+    $id_empleado = $_POST['id_empleado'] ?? 0;
+    
+    $sql = "SELECT * FROM kardex_vacaciones 
+            WHERE id_empleado = '$id_empleado'
+            ORDER BY fecha_registro ASC";
+            
+    $result = mysqli_query($conexion, $sql);
+    $movimientos = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $movimientos[] = $row;
+    }
+    echo json_encode($movimientos);
 }
 
 function obtenerPeriodosEmpleado($conexion) {
