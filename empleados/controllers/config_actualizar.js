@@ -739,6 +739,8 @@ $(document).ready(function () {
                         $("#modal_fecha_alta_empresa").val(fechaAltaEmpresa);
                         // Fecha alta IMSS
                         $("#modal_fecha_alta_imss").val(fechaAltaImss);
+                        // Vista de Fecha Ingreso IMSS en pestaña Trabajador (solo lectura)
+                        $("#modal_fecha_ingreso_imss_vista").val(fechaAltaImss);
                         // Nuevos campos
                         $("#modal_fecha_nacimiento").val(fechaNacimiento);
                         $("#modal_num_casillero").val(numCasillero);

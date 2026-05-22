@@ -210,8 +210,10 @@ function obtener_empleados()
                 CASE 
                     WHEN MAX(hr.fecha_reingreso) IS NOT NULL 
                         THEN MAX(hr.fecha_reingreso)
-                    ELSE e.fecha_ingreso
-                END AS fecha_ingreso_real,
+                    ELSE e.fecha_alta_empresa
+                END AS fecha_alta_empresa,
+
+                e.fecha_alta_imss AS fecha_alta_imss,
 
                 d.nombre_departamento,
                 d.id_departamento,
@@ -221,7 +223,7 @@ function obtener_empleados()
 
                 e.id_area,
 
-                MAX(nd.color_depto_nomina) AS color_departamento
+                nd.color_depto_nomina AS color_departamento
 
             FROM info_empleados e
 
@@ -239,9 +241,7 @@ function obtener_empleados()
 
             WHERE e.id_status = 1
 
-            GROUP BY e.id_empleado, e.clave_empleado, e.nombre, e.ap_paterno, e.ap_materno, 
-                     e.id_empresa, e.status_nss, e.salario_diario, d.nombre_departamento, 
-                     d.id_departamento, e.id_puestoEspecial, p.nombre_puesto, e.id_area
+            GROUP BY e.id_empleado
 
             ORDER BY e.nombre ASC";
 
@@ -271,9 +271,9 @@ function obtener_empleados()
             "status_nss"         => (int)$row["status_nss"],
             "salario_diario"     => $row["salario_diario"],
 
-            "fecha_ingreso_real" => $row["fecha_ingreso_real"],
+            "fecha_alta_empresa" => $row["fecha_alta_empresa"],
             // Por defecto es null, se obtiene luego
-            "fecha_ingreso_imss" => null,
+            "fecha_alta_imss" => $row["fecha_alta_imss"],
 
             "nombre_departamento" => $row["nombre_departamento"],
             "color_departamento"  => $row["color_departamento"],

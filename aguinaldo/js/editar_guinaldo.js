@@ -57,7 +57,7 @@ function editarAguinaldo(id) {
     $("#clave_empleado").val(empleado.clave_empleado);
     $("#nombre_empleado").val(`${empleado.nombre || ''} ${empleado.ap_paterno || ''} ${empleado.ap_materno || ''}`.trim());
     $("#nombre_departamento").val(empleado.nombre_departamento);
-    $("#fecha_ingreso_real").val(empleado.fecha_ingreso_real);
+    $("#fecha_alta_empresa").val(empleado.fecha_alta_empresa);
     $("#fecha_pago").val(empleado.fecha_pago);
 
     // Dias de aguinaldo
@@ -65,12 +65,12 @@ function editarAguinaldo(id) {
     
     // Si el empleado no tiene NSS, deshabilitar el campo de fecha de ingreso al IMSS
     if (empleado.status_nss === 0) {
-        $("#fecha_ingreso_imss").prop("disabled", true);
+        $("#fecha_alta_imss").prop("disabled", true);
         $("#check_usar_fecha_imss").prop("disabled", true);
         $("#isr").prop("disabled", true);
         $("#tarjeta").prop("disabled", true);
     } else {
-        $("#fecha_ingreso_imss").prop("disabled", false);
+        $("#fecha_alta_imss").prop("disabled", false);
         $("#check_usar_fecha_imss").prop("disabled", false);
         $("#isr").prop("disabled", false);
         $("#tarjeta").prop("disabled", false);
@@ -82,7 +82,7 @@ function editarAguinaldo(id) {
         $("#check_usar_fecha_imss").prop("checked", true);
     }
 
-    $("#fecha_ingreso_imss").val(empleado.fecha_ingreso_imss);
+    $("#fecha_alta_imss").val(empleado.fecha_alta_imss);
     $("#dias_trabajados").val(empleado.dias_trabajados);
     $("#salario_diario").val(empleado.salario_diario);
 
@@ -97,9 +97,9 @@ function editarAguinaldo(id) {
     let tmp_dias_trabajados = 0;
 
     if (empleado.usar_fecha_real === 1) {
-        tmp_dias_trabajados = diasTrabajados(empleado.fecha_ingreso_real);
+        tmp_dias_trabajados = diasTrabajados(empleado.fecha_alta_empresa);
     } else {
-        tmp_dias_trabajados = diasTrabajados(empleado.fecha_ingreso_imss);
+        tmp_dias_trabajados = diasTrabajados(empleado.fecha_alta_imss);
     }
 
     // Llenar el campo temporal de días trabajados
@@ -122,8 +122,8 @@ function editarAguinaldo(id) {
  */
 function recalcular_todo_fechas() {
     let dias = 0;
-    let fechaReal = $("#fecha_ingreso_real").val();
-    let fechaImss = $("#fecha_ingreso_imss").val();
+    let fechaReal = $("#fecha_alta_empresa").val();
+    let fechaImss = $("#fecha_alta_imss").val();
 
     $('#tmp_dias_trabajados').removeClass('bg-danger-subtle text-danger');
 
@@ -233,7 +233,7 @@ function recalcular_variables_calculo() {
 // ================================================================
 
 // Evento para recalcular los días trabajados al cambiar la fecha de ingreso real
-$(document).on('change', '#fecha_ingreso_real, #fecha_ingreso_imss', function (e) {
+$(document).on('change', '#fecha_alta_empresa, #fecha_alta_imss', function (e) {
     e.preventDefault();
 
     recalcular_todo_fechas();
@@ -241,7 +241,7 @@ $(document).on('change', '#fecha_ingreso_real, #fecha_ingreso_imss', function (e
 
 // Detecta cambio en la fecha a usar Fecha Real
 $(document).on('change', '#check_usar_fecha_real', function () {
-    const input = document.getElementById('fecha_ingreso_real');
+    const input = document.getElementById('fecha_alta_empresa');
     if (input.value == "") {
         if (input.showPicker) {
             input.showPicker();
@@ -253,7 +253,7 @@ $(document).on('change', '#check_usar_fecha_real', function () {
 
 // Detecta cambio en la fecha a usar Fecha IMSS
 $(document).on('change', '#check_usar_fecha_imss', function () {
-    const input = document.getElementById('fecha_ingreso_imss');
+    const input = document.getElementById('fecha_alta_imss');
     if (input.value == "") {
         if (input.showPicker) {
             input.showPicker();
@@ -397,8 +397,8 @@ function guardar_cambios_aguinaldo() {
 function guardar_edicion() {
     // RECUPERAR LOS VALORES DEL FORMULARIO
     const idEmpleado = parseInt($("#id_empleado").val());
-    const fechaIngresoReal = $("#fecha_ingreso_real").val() ?? null;
-    const fechaIngresoImss = $("#fecha_ingreso_imss").val() ?? null;
+    const fechaIngresoReal = $("#fecha_alta_empresa").val() ?? null;
+    const fechaIngresoImss = $("#fecha_alta_imss").val() ?? null;
     const tmpDiasTrabajados = parseInt($("#tmp_dias_trabajados").val()) || 0;
     const diasTrabajados = parseInt($("#dias_trabajados").val()) || 0;
 
@@ -427,8 +427,8 @@ function guardar_edicion() {
     }
 
     // Actualiza los datos del empleado en el jsonAguinaldo
-    json.empleados[empleadoIndex].fecha_ingreso_real = fechaIngresoReal;
-    json.empleados[empleadoIndex].fecha_ingreso_imss = fechaIngresoImss;
+    json.empleados[empleadoIndex].fecha_alta_empresa = fechaIngresoReal;
+    json.empleados[empleadoIndex].fecha_alta_imss = fechaIngresoImss;
     json.empleados[empleadoIndex].dias_trabajados_tmp = tmpDiasTrabajados;
     json.empleados[empleadoIndex].dias_trabajados = diasTrabajados;
     json.empleados[empleadoIndex].meses_trabajados = mesesTrabajados(diasTrabajados);

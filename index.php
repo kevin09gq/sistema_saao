@@ -133,6 +133,17 @@ verificarSesion();
     <script src="public/js/notifications.js"></script>
     <!-- Script para funcionalidad del navbar -->
     <script src="public/js/navbar.js"></script>
+    
+    <!-- Sincronización automática de vacaciones en segundo plano al iniciar sesión -->
+    <script>
+        $(document).ready(function() {
+            $.post('vacaciones/php/sincronizar_vacaciones.php', function(response) {
+                console.log("Sincronización de vacaciones:", response);
+            }, 'json').fail(function(err) {
+                console.error("Error al sincronizar vacaciones:", err);
+            });
+        });
+    </script>
 </body>
 
 </html>

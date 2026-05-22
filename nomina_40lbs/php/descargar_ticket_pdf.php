@@ -41,7 +41,7 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
     $puesto = safeText($extra['nombre_puesto'] ?? '');
     
     // Convertir fecha de YYYY-MM-DD a YYYY/MM/DD
-    $fechaIngreso = safeText($extra['fecha_ingreso'] ?? '');
+    $fechaIngreso = safeText($extra['fecha_alta_empresa'] ?? '');
     $fechaIngreso = str_replace('-', '/', $fechaIngreso);
 
     // Salarios desde base de datos
@@ -834,7 +834,7 @@ if (count($clavesEmpresas) > 0) {
         $params[] = $ce['id_empresa'];
         $types .= 'si';
     }
-    $sql = "SELECT e.clave_empleado, e.id_empresa, e.imss, e.rfc_empleado, e.fecha_ingreso, e.salario_diario, e.salario_semanal, p.nombre_puesto, d.nombre_departamento
+    $sql = "SELECT e.clave_empleado, e.id_empresa, e.imss, e.rfc_empleado, e.fecha_alta_empresa, e.salario_diario, e.salario_semanal, p.nombre_puesto, d.nombre_departamento
             FROM info_empleados e
             LEFT JOIN puestos_especiales p ON e.id_puestoEspecial = p.id_puestoEspecial
             LEFT JOIN departamentos d ON e.id_departamento = d.id_departamento
@@ -855,7 +855,7 @@ if (count($clavesEmpresas) > 0) {
                 $extraMap[$key] = [
                     'imss' => $row['imss'] ?? '',
                     'rfc_empleado' => $row['rfc_empleado'] ?? '',
-                    'fecha_ingreso' => $row['fecha_ingreso'] ?? '',
+                    'fecha_alta_empresa' => $row['fecha_alta_empresa'] ?? '',
                     'nombre_puesto' => $row['nombre_puesto'] ?? '',
                     'salario_diario' => $row['salario_diario'] ?? 0,
                     'salario_semanal' => $row['salario_semanal'] ?? 0,

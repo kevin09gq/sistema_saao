@@ -34,7 +34,7 @@ function renderTicketPdf($pdf, $emp, $extra, $meta) {
     $departamento = preg_replace('/^\d+\s*/', '', $departamento);
 
     $puesto = safeText($extra['nombre_puesto'] ?? '');
-    $fechaIngreso = safeText($extra['fecha_ingreso'] ?? '');
+    $fechaIngreso = safeText($extra['fecha_alta_empresa'] ?? '');
     $fechaIngreso = str_replace('-', '/', $fechaIngreso);
 
     // En 10lbs usamos sueldo_neto como base
@@ -417,7 +417,7 @@ $clavesEmpresa = array_values($clavesEmpresa);
 $extras_map = [];
 if (count($clavesEmpresa) > 0) {
     $in_params = implode(',', array_fill(0, count($clavesEmpresa), '(?, ?)'));
-    $sqlStr = "SELECT e.clave_empleado, e.id_empresa, p.nombre_puesto, d.nombre_departamento, e.fecha_ingreso, e.salario_semanal, e.salario_diario
+    $sqlStr = "SELECT e.clave_empleado, e.id_empresa, p.nombre_puesto, d.nombre_departamento, e.fecha_alta_empresa, e.salario_semanal, e.salario_diario
                FROM info_empleados e
                LEFT JOIN puestos_especiales p ON e.id_puestoEspecial = p.id_puestoEspecial
                LEFT JOIN departamentos d ON e.id_departamento = d.id_departamento
@@ -440,7 +440,7 @@ if (count($clavesEmpresa) > 0) {
                 $extras_map[$key] = [
                     'nombre_puesto' => $row['nombre_puesto'] ?? '',
                     'nombre_departamento' => $row['nombre_departamento'] ?? '',
-                    'fecha_ingreso' => $row['fecha_ingreso'] ?? '',
+                    'fecha_alta_empresa' => $row['fecha_alta_empresa'] ?? '',
                     'salario_semanal' => $row['salario_semanal'] ?? 0,
                     'salario_diario' => $row['salario_diario'] ?? 0
                 ];
@@ -468,7 +468,7 @@ foreach ($empleados as $emp) {
     $extra = [
         'nombre_puesto' => $emp['puesto'] ?? '',
         'nombre_departamento' => $emp['departamento'] ?? '',
-        'fecha_ingreso' => $emp['fecha_ingreso'] ?? '',
+        'fecha_alta_empresa' => $emp['fecha_alta_empresa'] ?? '',
         'salario_semanal' => $emp['salario_semanal'] ?? 0,
         'salario_diario' => $emp['salario_diario'] ?? 0
     ];

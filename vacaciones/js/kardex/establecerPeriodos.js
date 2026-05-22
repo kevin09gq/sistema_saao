@@ -13,7 +13,7 @@ function cargarPeriodosVacaciones(empleado) {
     if (!empleado) return;
 
     // 1. Intentar traer datos reales de la base de datos
-    $.post('../php/vacaciones_lft.php', { 
+    $.post('../php/infoEmpleados.php', { 
         action: 'obtenerPeriodosEmpleado', 
         id_empleado: empleado.id_empleado 
     }, function(periodos) {
@@ -171,24 +171,5 @@ function actualizarControlesPaginacion(total) {
     // Botón Siguiente
     let disabledNext = (paginaActualPeriodos === numPaginas) ? 'disabled' : '';
     $lista.append(`<li class="page-item ${disabledNext}"><a class="page-link" href="javascript:void(0)" onclick="mostrarPaginaPeriodos(${paginaActualPeriodos + 1})"><i class="bi bi-chevron-right"></i></a></li>`);
-}
-
-//==============================
-// ACTUALIZA LAS TARJETAS DE RESUMEN
-//==============================
-function actualizarResumenTotales(periodos) {
-    let totales = 0;
-    let tomados = 0;
-    let saldo = 0;
-
-    $.each(periodos, function(i, p) {
-        totales += parseFloat(p.dias_derecho);
-        tomados += parseFloat(p.dias_tomados);
-        saldo += parseFloat(p.saldo);
-    });
-
-    $('#diasTotales').text(totales.toFixed(3));
-    $('#diasUtilizados').text(tomados.toFixed(3));
-    $('#saldoDisponible').text(saldo.toFixed(3));
 }
 

@@ -214,7 +214,7 @@ function unirDatos(datosProcessados) {
     let json = getAguinaldo();
 
     // Procesar datos de raya y actualizar jsonAguinaldo de cada empleado
-    // Sólo se actualiza la fecha_ingreso_imss, isr, tarjeta
+    // Sólo se actualiza la fecha_alta_imss, isr, tarjeta
     datosRaya.forEach(raya => {
         const empleadoEncontrado = json.empleados.find(emp =>
             emp.clave_empleado === raya.clave_empleado && emp.id_empresa === raya.id_empresa
@@ -222,7 +222,7 @@ function unirDatos(datosProcessados) {
 
         if (empleadoEncontrado) {
             // Agregar la fecha de ingreso al IMSS, si no existe se queda como null
-            empleadoEncontrado.fecha_ingreso_imss = raya.fecha_ingreso_imss || null;
+            empleadoEncontrado.fecha_alta_imss = raya.fecha_alta_imss || null;
 
             // Unir los conceptos de ISR y tarjeta
             empleadoEncontrado.isr = raya.isr || empleadoEncontrado.isr || 0;
@@ -351,8 +351,8 @@ function llenar_tabla_configuracion() {
                             type="radio"
                             name="fecha_opcion_${emp.id_empleado}"
                             id="fecha_imss_${emp.id_empleado}"
-                            value="${emp.fecha_ingreso_imss}" ${isImssChecked}>
-                        <label class="form-check-label" for="fecha_imss_${emp.id_empleado}">${formatearFecha(emp.fecha_ingreso_imss)}</label>
+                            value="${emp.fecha_alta_imss}" ${isImssChecked}>
+                        <label class="form-check-label" for="fecha_imss_${emp.id_empleado}">${formatearFecha(emp.fecha_alta_imss)}</label>
                     </div>
                 </td>
             `;
@@ -384,8 +384,8 @@ function llenar_tabla_configuracion() {
                             type="radio"
                             name="fecha_opcion_${emp.id_empleado}"
                             id="fecha_real_${emp.id_empleado}"
-                            value="${emp.fecha_ingreso_real}" ${isRealChecked}>
-                        <label class="form-check-label" for="fecha_real_${emp.id_empleado}">${formatearFecha(emp.fecha_ingreso_real)}</label>
+                            value="${emp.fecha_alta_empresa}" ${isRealChecked}>
+                        <label class="form-check-label" for="fecha_real_${emp.id_empleado}">${formatearFecha(emp.fecha_alta_empresa)}</label>
                     </div>
                 </td>
                 ${celdaFechaImss}
@@ -507,7 +507,7 @@ $(document).on('click', '#btn_seleccionar_todas_imss', function (e) {
         if (
             aplicaDepartamento &&
             empleado.status_nss !== 0 &&
-            empleado.fecha_ingreso_imss
+            empleado.fecha_alta_imss
         ) {
             empleado.usar_fecha_real = 0;
         }
@@ -713,7 +713,7 @@ $(document).on('change', '.check_fecha_imss', function (e) {
 
     // Actualizar el estado de usar_fecha_real del empleado seleccionado
     // Si es cero significa que debe usar la fecha imss
-    if (json.empleados[empleadoIndex].fecha_ingreso_imss) {
+    if (json.empleados[empleadoIndex].fecha_alta_imss) {
         json.empleados[empleadoIndex].usar_fecha_real = 0;
     }
 
@@ -772,9 +772,9 @@ $('#form_tabla_configuracion').submit(function (e) {
         // 1. CALCULAR DIAS TRABAJADOS TEMPORAL APARTIR DE LA FECHA REAL DE INGRESO (SE USUARÁ POR DEFECTO LA REAL)
         // Si usar_fecha_real es 1 se usa la fecha de ingreso real, si es 0 se usa la fecha de ingreso al imss
         if (empleado.usar_fecha_real === 1) {
-            empleado.dias_trabajados_tmp = diasTrabajados(empleado.fecha_ingreso_real, anio);
+            empleado.dias_trabajados_tmp = diasTrabajados(empleado.fecha_alta_empresa, anio);
         } else {
-            empleado.dias_trabajados_tmp = diasTrabajados(empleado.fecha_ingreso_imss, anio);
+            empleado.dias_trabajados_tmp = diasTrabajados(empleado.fecha_alta_imss, anio);
         }
 
         // 2. CALCULAR DIAS TRABAJADOS DEFINITIVO RESTANDO LAS AUSENCIAS

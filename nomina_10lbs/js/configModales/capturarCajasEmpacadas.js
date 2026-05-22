@@ -40,6 +40,7 @@ $(document).ready(function () {
 /**
  * Función auxiliar para obtener la lista de empleados agrupada por Seguro Social
  * (Asegura que el orden sea consistente en todas las funciones del modal)
+ * Solo devuelve empleados donde mostrar === true
  */
 function obtenerListaEmpleadosCajas() {
     if (!jsonNomina10lbs || !jsonNomina10lbs.departamentos) return [];
@@ -50,6 +51,9 @@ function obtenerListaEmpleadosCajas() {
     jsonNomina10lbs.departamentos.forEach(depto => {
         if (!depto.empleados) return;
         depto.empleados.forEach(emp => {
+            // Filtrar solo empleados donde mostrar === true
+            if (emp.mostrar !== true) return;
+            
             if (emp.seguroSocial === true) conSeguro.push(emp);
             else sinSeguro.push(emp);
         });

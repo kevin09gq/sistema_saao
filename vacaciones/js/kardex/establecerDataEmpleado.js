@@ -57,6 +57,27 @@ function cargarEncabezadoEmpleado(emp) {
         .text(emp.id_status == 1 ? 'ELEGIBLE' : 'NO ELEGIBLE');
 }
 
+
+//==============================
+// CARGA LA INFORMACION DEL RESUMEN DE LOS PERIODOS EN EL ENCABEZADO
+//==============================
+function actualizarResumenTotales(periodos) {
+    let totales = 0;
+    let tomados = 0;
+    let saldo = 0;
+
+    $.each(periodos, function(i, p) {
+        totales += parseFloat(p.dias_derecho);
+        tomados += parseFloat(p.dias_tomados);
+        saldo += parseFloat(p.saldo);
+    });
+
+    $('#diasTotales').text(totales.toFixed(3));
+    $('#diasUtilizados').text(tomados.toFixed(3));
+    $('#saldoDisponible').text(saldo.toFixed(3));
+}
+
+
 //==============================
 // FUNCIONES AUXILIARES
 //==============================

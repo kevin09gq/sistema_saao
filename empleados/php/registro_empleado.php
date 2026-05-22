@@ -112,6 +112,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sql->close();
 
         // ====================================
+        // VERIFICAR NOMBRE Y APELLIDOS EXISTENTES
+        // ====================================
+        $sqlNombre = $conexion->prepare("SELECT id_empleado FROM info_empleados WHERE nombre = ? AND ap_paterno = ? AND ap_materno = ?");
+        if (!$sqlNombre) {
+            throw new Exception("Error al preparar consulta de verificación de nombre: " . $conexion->error);
+        }
+
+        $sqlNombre->bind_param("sss", $nombre, $ap_paterno, $ap_materno);
+        $sqlNombre->execute();
+        $resultadoNombre = $sqlNombre->get_result();
+
+        if ($resultadoNombre->num_rows > 0) {
+            $respuesta = array(
+                "success" => false,
+                "title" => "ADVERTENCIA",
+                "text" => "Ya existe un empleado registrado con el mismo nombre y apellidos.",
+                "type" => "warning",
+                "timeout" => 3500,
+            );
+            echo json_encode($respuesta);
+            exit();
+        }
+        $sqlNombre->close();
+
+        // ====================================
         //  VALIDAR NÚMERO BIOMÉTRICO
         // ====================================
         if (!empty($biometrico)) {

@@ -215,7 +215,7 @@ function renderTicketPdf($pdf, $emp, $extra, $meta) {
     $departamento = preg_replace('/^\d+\s*/', '', $departamento);
 
     $puesto      = safeText($extra['nombre_puesto'] ?? '');
-    $fechaIngreso = safeText($extra['fecha_ingreso'] ?? '');
+    $fechaIngreso = safeText($extra['fecha_alta_empresa'] ?? '');
     $fechaIngreso = str_replace('-', '/', $fechaIngreso);
 
     // Salarios: priorizar lo que viene del JSON del empleado; si no hay, usar BD
@@ -720,24 +720,24 @@ foreach ($empleados as $emp) {
     // Obtener datos extras de la BD si es necesario
     $extra = [
         'nombre_puesto'  => $emp['puesto'] ?? '',
-        'fecha_ingreso'  => $emp['fecha_ingreso'] ?? '',
+        'fecha_alta_empresa'  => $emp['fecha_alta_empresa'] ?? '',
         'salario_semanal' => $emp['salario_semanal'] ?? 0,
         'salario_diario'  => $emp['salario_diario'] ?? 0
     ];
 
     if ($clave !== '') {
-        $sql = "SELECT p.nombre_puesto, e.fecha_ingreso, e.salario_semanal, e.salario_diario 
+        $sql = "SELECT p.nombre_puesto, e.fecha_alta_empresa, e.salario_semanal, e.salario_diario 
                 FROM info_empleados e 
                 JOIN puestos_especiales p ON e.id_puestoEspecial = p.id_puestoEspecial 
                 WHERE e.clave_empleado = ? AND e.id_empresa = ? AND e.id_status = 1";
         $stmt = $conexion->prepare($sql);
         $stmt->bind_param("si", $clave, $id_empresa);
         $stmt->execute();
-        $stmt->bind_result($nombre_puesto, $fecha_ingreso, $salario_semanal, $salario_diario);
+        $stmt->bind_result($nombre_puesto, $fecha_alta_empresa, $salario_semanal, $salario_diario);
         if ($stmt->fetch()) {
             $extra = [
                 'nombre_puesto'  => $nombre_puesto,
-                'fecha_ingreso'  => $fecha_ingreso,
+                'fecha_alta_empresa'  => $fecha_alta_empresa,
                 'salario_semanal' => $salario_semanal,
                 'salario_diario'  => $salario_diario
             ];

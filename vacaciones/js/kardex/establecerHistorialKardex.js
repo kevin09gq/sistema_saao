@@ -15,14 +15,108 @@ function cargarKardexVacaciones(empleado) {
     if (!empleado) return;
 
     // Pedimos al servidor los movimientos guardados en la tabla 'kardex_vacaciones'
-    $.post('../php/vacaciones_lft.php', {
+    $.post('../php/infoEmpleados.php', {
         action: 'obtenerKardexEmpleado',
         id_empleado: empleado.id_empleado
     }, function (movimientos) {
         if (movimientos && movimientos.length > 0) {
-            // Si hay datos en la base de datos, los usamos
-            listaMovimientosGlobal = movimientos;
-            mostrarPaginaKardex(1);
+            // Si hay datos en la base de datos, los usamos pero les agregamos el proporcional dinámico
+            let listaModificada = [];
+            
+            // 1. Agregar fila inicial de "Vacaciones tomadas antes del registro del empleado" (Saldo inicial)
+            listaModificada.push({
+                concepto: 'Vacaciones tomadas antes del registro del empleado',
+                fecha_registro: '', // Columna vacia para que no interfiera con el orden cronológico
+                dias_movimiento: 0.000,
+                saldo_resultante: 0.000,
+                observaciones: 'Saldo inicial de apertura'
+            });
+                       
+
+            // 2. Agregar los movimientos reales de la base de datos tomados directamente
+            $.each(movimientos, function(i, m) {
+                if (m.concepto !== 'Vacaciones tomadas antes del registro del empleado') {
+                    listaModificada.push({
+                        concepto: m.concepto,
+                        // Limpiamos la fecha para quedarnos solo con YYYY-MM-DD
+                        fecha_registro: m.fecha_registro.split(' ')[0], 
+                        fecha_inicio: m.fecha_inicio,
+                        fecha_fin: m.fecha_fin,
+                        dias_movimiento: parseFloat(m.dias_movimiento),
+                        saldo_resultante: parseFloat(m.saldo_resultante),
+                        observaciones: m.observaciones
+                    });
+                }
+            });
+
+            // 3. Agregar la Proporción del Último Año si el empleado sigue activo
+            let ultimoAnivFecha = new Date(empleado.fecha_ingreso_final);
+            let numAniversarios = 0;
+
+            $.each(listaModificada, function(i, m) {
+                if (m.concepto.includes('Aniversario laboral')) {
+                    numAniversarios++;
+                    let f = new Date(m.fecha_registro);
+                    if (f > ultimoAnivFecha) {
+                        ultimoAnivFecha = f;
+                    }
+                }
+            });
+
+            let hoy = new Date();
+            if (ultimoAnivFecha < hoy && empleado.id_status == 1) { // Solo si está activo
+                let diffDays = Math.ceil(Math.abs(hoy - ultimoAnivFecha) / (1000 * 60 * 60 * 24));
+                
+                // Pedimos las leyes para saber cuántos días le tocarían el próximo año
+                $.post('../php/vacaciones_lft.php', { action: 'obtenerTodoLft' }, function(todasLasLeyes) {
+                    let proximoAnio = numAniversarios + 1;
+                    let leyActual = todasLasLeyes[todasLasLeyes.length - 1]; // Ley vigente actual
+                    
+                    let rangoProximo = null;
+                    $.each(leyActual.tabla_dias, function(i, r) {
+                        if (proximoAnio >= parseInt(r.anios_antiguedad_inicio)) {
+                            if (!rangoProximo || parseInt(r.anios_antiguedad_inicio) > parseInt(rangoProximo.anios_antiguedad_inicio)) {
+                                rangoProximo = r;
+                            }
+                        }
+                    });
+
+                    if (rangoProximo) {
+                        //--------------------------------------------------------------------------
+                        // DETECCIÓN DINÁMICA DE AÑO BISIESTO (366 DÍAS)
+                        // Calculamos la fecha del próximo aniversario (exactamente 1 año después del último).
+                        // La diferencia en días nos dirá si ese año específico tiene 365 o 366 días.
+                        //--------------------------------------------------------------------------
+                        let proximoAnivFecha = new Date(ultimoAnivFecha);
+                        proximoAnivFecha.setFullYear(proximoAnivFecha.getFullYear() + 1);
+                        
+                        let diasDelAnio = Math.round(Math.abs(proximoAnivFecha - ultimoAnivFecha) / (1000 * 60 * 60 * 24));
+                        
+                        let diasProporcionales = (diffDays / diasDelAnio) * parseInt(rangoProximo.dias_vacaciones_correspondientes);
+                        
+                        // Obtenemos el último saldo resultante de la lista modificada
+                        let saldoUltimo = listaModificada[listaModificada.length - 1].saldo_resultante;
+                        
+                        listaModificada.push({
+                            concepto: 'Proporción último año',
+                            fecha_registro: hoy.toISOString().split('T')[0],
+                            dias_movimiento: diasProporcionales,
+                            saldo_resultante: saldoUltimo + diasProporcionales,
+                            observaciones: `Cálculo automático: ${diffDays} días transcurridos de un año de ${diasDelAnio} días`
+                        });
+                    }
+
+                    listaMovimientosGlobal = listaModificada;
+                    mostrarPaginaKardex(1);
+                }, 'json').fail(function() {
+                    // Si falla la LFT, igual mostramos lo que tenemos
+                    listaMovimientosGlobal = listaModificada;
+                    mostrarPaginaKardex(1);
+                });
+            } else {
+                listaMovimientosGlobal = listaModificada;
+                mostrarPaginaKardex(1);
+            }
         } else {
             // SI LA TABLA ESTÁ VACÍA: Ejecutamos el motor de simulación para mostrar el pasado
             generarKardexSimulado(empleado);
@@ -35,10 +129,8 @@ function cargarKardexVacaciones(empleado) {
 // Calcula el historial desde el ingreso del empleado usando las leyes LFT.
 //==============================
 function generarKardexSimulado(empleado) {
-    // Necesitamos las leyes LFT para saber cuántos días le tocaban en cada año pasado
     $.post('../php/vacaciones_lft.php', { action: 'obtenerTodoLft' }, function (todasLasLeyes) {
 
-        // Configuramos la fecha de ingreso ajustando la zona horaria
         let fechaIngreso = new Date(empleado.fecha_ingreso_final);
         fechaIngreso.setMinutes(fechaIngreso.getMinutes() + fechaIngreso.getTimezoneOffset());
 
@@ -48,13 +140,14 @@ function generarKardexSimulado(empleado) {
         let diaBase = fechaIngreso.getDate();
 
         let movimientos = []; // Lista temporal para ir armando el historial
+        let saldoAcumulado = 0.000;
 
         // Fila inicial informativa (Saldo 0)
         movimientos.push({
             concepto: 'Vacaciones tomadas antes del registro del empleado',
             fecha_registro: empleado.fecha_ingreso_final,
-            dias_tomados: 0,
-            dias_derecho: 0,
+            dias_movimiento: 0.000,
+            saldo_resultante: 0.000,
             observaciones: 'Saldo inicial de apertura'
         });
 
@@ -63,54 +156,39 @@ function generarKardexSimulado(empleado) {
             let fechaAniversario = new Date(anioBase + anios, mesBase, diaBase);
             if (fechaAniversario > hoy) break;
 
-            //==============================
             // 1. BUSCAMOS LA LEY VIGENTE EN ESE ANIVERSARIO
-            // Consultamos la tabla 'versiones_vacaciones_lft'
-            //==============================
             let ley = null;
             $.each(todasLasLeyes, function (i, l) {
-                // Convertimos las fechas de vigencia de la tabla a objetos de fecha
                 let inicio = new Date(l.fecha_inicio_vigencia);
                 let fin = l.fecha_fin_vigencia ? new Date(l.fecha_fin_vigencia) : new Date(9999, 11, 31);
-
-                // REGLA: Si la fecha del aniversario cae dentro del inicio y fin de esta ley, ¡esta es la ley correcta!
                 if (fechaAniversario >= inicio && fechaAniversario <= fin) {
                     ley = l;
-                    return false; // Salimos del bucle porque ya encontramos la ley
+                    return false;
                 }
             });
 
             if (ley) {
-                //==============================
                 // 2. BUSCAMOS EL RANGO DE ANTIGÜEDAD DENTRO DE ESA LEY
-                // Consultamos la tabla 'dias_vacaciones_lft' que viene dentro de la ley
-                //==============================
                 let rangoValido = null;
                 $.each(ley.tabla_dias, function (i, r) {
-                    // Obtenemos los años de inicio del rango (ej: 1, 5, 10...)
                     let inicioRango = parseInt(r.anios_antiguedad_inicio);
-
-                    // REGLA: Si los años del empleado son mayores o iguales al inicio del rango, es un candidato.
-                    // Ejemplo: Si el empleado tiene 3 años, entra en el rango que inicia en 1, pero no en el de 5.
                     if (anios >= inicioRango) {
-                        // Nos quedamos con el rango que tenga el inicio más alto posible sin pasarse.
-                        // Esto asegura que si tiene 7 años, tome el rango de "5 a 9" y no el de "1 a 4".
                         if (!rangoValido || inicioRango > parseInt(rangoValido.anios_antiguedad_inicio)) {
                             rangoValido = r;
                         }
                     }
                 });
 
-                //==============================
-                // 3. ASIGNAMOS LOS DÍAS ENCONTRADOS
-                // Una vez que tenemos el rango exacto, tomamos el valor de 'dias_vacaciones_correspondientes'
-                //==============================
+                // 3. ASIGNAMOS LOS DÍAS ENCONTRADOS Y SUMAMOS AL SALDO ACUMULADO
                 if (rangoValido) {
+                    let diasDerecho = parseInt(rangoValido.dias_vacaciones_correspondientes);
+                    saldoAcumulado += diasDerecho;
+
                     movimientos.push({
                         concepto: 'Aniversario laboral al finalizar la jornada',
                         fecha_registro: fechaAniversario.toISOString().split('T')[0],
-                        dias_derecho: parseInt(rangoValido.dias_vacaciones_correspondientes),
-                        dias_tomados: 0
+                        dias_movimiento: diasDerecho,
+                        saldo_resultante: saldoAcumulado
                     });
                 }
             }
@@ -119,7 +197,7 @@ function generarKardexSimulado(empleado) {
 
         // CÁLCULO DEL PROPORCIONAL (REGLA DE 3)
         let ultimoAniversario = new Date(anioBase + (movimientos.length - 1), mesBase, diaBase);
-        if (ultimoAniversario < hoy) {
+        if (ultimoAniversario < hoy && empleado.id_status == 1) {
             let diffDays = Math.ceil(Math.abs(hoy - ultimoAniversario) / (1000 * 60 * 60 * 24));
             let proximoAnio = movimientos.length;
             let leyActual = todasLasLeyes[todasLasLeyes.length - 1];
@@ -134,13 +212,23 @@ function generarKardexSimulado(empleado) {
             });
 
             if (rangoProximo) {
-                let diasProporcionales = (diffDays / 365) * parseInt(rangoProximo.dias_vacaciones_correspondientes);
+                //--------------------------------------------------------------------------
+                // DETECCIÓN DINÁMICA DE AÑO BISIESTO (366 DÍAS)
+                //--------------------------------------------------------------------------
+                let proximoAnivFecha = new Date(ultimoAniversario);
+                proximoAnivFecha.setFullYear(proximoAnivFecha.getFullYear() + 1);
+                
+                let diasDelAnio = Math.round(Math.abs(proximoAnivFecha - ultimoAniversario) / (1000 * 60 * 60 * 24));
+
+                let diasProporcionales = (diffDays / diasDelAnio) * parseInt(rangoProximo.dias_vacaciones_correspondientes);
+                saldoAcumulado += diasProporcionales;
+
                 movimientos.push({
                     concepto: 'Proporción último año',
                     fecha_registro: hoy.toISOString().split('T')[0],
-                    dias_derecho: diasProporcionales,
-                    dias_tomados: 0,
-                    observaciones: `Cálculo automático: ${diffDays} días transcurridos`
+                    dias_movimiento: diasProporcionales,
+                    saldo_resultante: saldoAcumulado,
+                    observaciones: `Cálculo automático: ${diffDays} días transcurridos de un año de ${diasDelAnio} días`
                 });
             }
         }
@@ -165,25 +253,17 @@ function mostrarPaginaKardex(pagina) {
         return;
     }
 
-    // Calculamos el saldo que viene de las páginas anteriores
-    let saldoAcumulado = 0;
-    for (let j = 0; j < (pagina - 1) * filasPorPaginaKardex; j++) {
-        let m = listaMovimientosGlobal[j];
-        saldoAcumulado += (parseFloat(m.dias_derecho || 0) - parseFloat(m.dias_tomados || 0));
-    }
-
     let inicio = (pagina - 1) * filasPorPaginaKardex;
     let fin = Math.min(inicio + filasPorPaginaKardex, total);
     let fragmento = listaMovimientosGlobal.slice(inicio, fin);
 
     $.each(fragmento, function (i, m) {
-        let conDerecho = parseFloat(m.dias_derecho || 0);
-        let tomadas = parseFloat(m.dias_tomados || 0);
-        saldoAcumulado += (conDerecho - tomadas);
+        let valorMov = parseFloat(m.dias_movimiento || 0);
+        let saldoResultante = parseFloat(m.saldo_resultante || 0);
 
-        let tipo = (conDerecho > 0) ? '<span class="type-abono">ABONO</span>' : '<span class="type-cargo">CARGO</span>';
-        let diasTexto = (conDerecho > 0) ? `+${conDerecho.toFixed(3)}` : `-${tomadas.toFixed(3)}`;
-        let claseDias = (conDerecho > 0) ? 'text-success' : 'text-danger';
+        let tipo = (valorMov >= 0) ? '<span class="type-abono">ABONO</span>' : '<span class="type-cargo">CARGO</span>';
+        let diasTexto = (valorMov >= 0) ? `+${valorMov.toFixed(3)}` : `-${Math.abs(valorMov).toFixed(3)}`;
+        let claseDias = (valorMov >= 0) ? 'text-success' : 'text-danger';
         let periodoTexto = (m.fecha_inicio && m.fecha_fin) ? `${formatearFecha(m.fecha_inicio)} - ${formatearFecha(m.fecha_fin)}` : '---';
 
         let fila = `
@@ -196,12 +276,15 @@ function mostrarPaginaKardex(pagina) {
                 <td class="text-center">${periodoTexto}</td>
                 <td class="text-center">${tipo}</td>
                 <td class="${claseDias} fw-bold text-end">${diasTexto}</td>
-                <td class="fw-bold text-end">${saldoAcumulado.toFixed(3)}</td>
+                <td class="fw-bold text-end">${saldoResultante.toFixed(3)}</td>
             </tr>`;
         $tbody.append(fila);
     });
 
     actualizarControlesPaginacionKardex(total);
+    if (typeof actualizarCalendarioConDatos === 'function') {
+        actualizarCalendarioConDatos();
+    }
 }
 
 //==============================

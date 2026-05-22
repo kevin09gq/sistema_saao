@@ -31,7 +31,7 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
     $departamento = safeText($emp['departamento'] ?? '');
     $departamento = preg_replace('/^\d+/', '', $departamento);
     $puesto = safeText($emp['puesto'] ?? '');
-    $fechaIngreso = safeText($emp['fecha_ingreso'] ?? '');
+    $fechaIngreso = safeText($emp['fecha_alta_empresa'] ?? '');
     $fechaIngreso = str_replace('-', '/', $fechaIngreso);
 
     $sueldoSemanal = toNumber($emp['salario_semanal'] ?? 0);
@@ -209,7 +209,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['datos'])) {
         'nombre' => $datosForm['nombre'],
         'departamento' => $datosForm['departamento'],
         'puesto' => $datosForm['puesto'],
-        'fecha_ingreso' => $datosForm['fechaIngreso'],
+        'fecha_alta_empresa' => $datosForm['fechaIngreso'],
         'salario_diario' => $datosForm['salarioDiario'],
         'salario_semanal' => $datosForm['salarioSemanal'],
         'percepciones_manuales' => array_merge(array_values($datosForm['percepciones']), $datosForm['adicionales']['percepciones']),

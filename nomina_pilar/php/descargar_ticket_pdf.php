@@ -154,7 +154,7 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
     $departamento = safeText($extra['nombre_departamento'] ?? ($emp['departamento'] ?? ''));
     $departamento = preg_replace('/^\d+\s*/', '', $departamento);
     $puesto = safeText($extra['nombre_puesto'] ?? ($emp['puesto'] ?? ''));
-    $fechaIngreso = safeText($extra['fecha_ingreso'] ?? ($emp['fecha_ingreso'] ?? ''));
+    $fechaIngreso = safeText($extra['fecha_alta_empresa'] ?? ($emp['fecha_alta_empresa'] ?? ''));
     $fechaIngreso = str_replace('-', '/', $fechaIngreso);
 
     $sueldoSemanal = toNumber($emp['salario_semanal'] ?? ($extra['salario_semanal'] ?? 0));
@@ -392,15 +392,15 @@ foreach ($empleados as $emp) {
         renderTicketPodaPdf($pdf, $emp, $meta);
     } else {
         $clave = (string)($emp['clave'] ?? ''); $id_empresa = isset($emp['id_empresa']) ? intval($emp['id_empresa']) : 1;
-        $extra = ['nombre_puesto' => $emp['puesto'] ?? '', 'fecha_ingreso' => $emp['fecha_ingreso'] ?? '', 'salario_semanal' => $emp['salario_semanal'] ?? 0, 'salario_diario' => $emp['salario_diario'] ?? 0, 'nombre_departamento' => $emp['departamento'] ?? ''];
+        $extra = ['nombre_puesto' => $emp['puesto'] ?? '', 'fecha_alta_empresa' => $emp['fecha_alta_empresa'] ?? '', 'salario_semanal' => $emp['salario_semanal'] ?? 0, 'salario_diario' => $emp['salario_diario'] ?? 0, 'nombre_departamento' => $emp['departamento'] ?? ''];
         if ($clave !== '') {
-            $sql = "SELECT p.nombre_puesto, e.fecha_ingreso, e.salario_semanal, e.salario_diario, d.nombre_departamento 
+            $sql = "SELECT p.nombre_puesto, e.fecha_alta_empresa, e.salario_semanal, e.salario_diario, d.nombre_departamento 
                     FROM info_empleados e 
                     JOIN puestos_especiales p ON e.id_puestoEspecial = p.id_puestoEspecial 
                     JOIN departamentos d ON e.id_departamento = d.id_departamento
                     WHERE e.clave_empleado = ? AND e.id_empresa = ? AND e.id_status = 1";
             $stmt = $conexion->prepare($sql); $stmt->bind_param("si", $clave, $id_empresa); $stmt->execute();
-            $stmt->bind_result($np, $fi, $ss, $sd, $nd); if ($stmt->fetch()) $extra = ['nombre_puesto' => $np, 'fecha_ingreso' => $fi, 'salario_semanal' => $ss, 'salario_diario' => $sd, 'nombre_departamento' => $nd];
+            $stmt->bind_result($np, $fi, $ss, $sd, $nd); if ($stmt->fetch()) $extra = ['nombre_puesto' => $np, 'fecha_alta_empresa' => $fi, 'salario_semanal' => $ss, 'salario_diario' => $sd, 'nombre_departamento' => $nd];
             $stmt->close();
         }
         $pdf->AddPage();

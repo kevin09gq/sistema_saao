@@ -280,10 +280,9 @@ verificarSesion();
                                         <input type="text" class="form-control" id="modal_enfermedades_alergias" name="enfermedades_alergias">
                                     </div>
                                     <div class="col-md-4 mb-3">
-                                        <label for="modal_fecha_alta_empresa" class="form-label">Fecha de Alta Empresa</label>
-                                        <input type="date" class="form-control" id="modal_fecha_alta_empresa" name="fecha_alta_empresa">
+                                        <label for="modal_fecha_ingreso_imss_vista" class="form-label">Fecha Ingreso IMSS</label>
+                                        <input type="date" class="form-control" id="modal_fecha_ingreso_imss_vista" readonly disabled>
                                     </div>
-
                                 </div>
                                 <div class="row">
                                     <div class="col-md-4 mb-3">
@@ -647,6 +646,10 @@ verificarSesion();
                                     <div id="seccion_fechas" class="mb-3 d-none">
                                         <h5 class="mb-3">Registro de Fechas</h5>
                                         <div class="row g-3">
+                                            <div class="col-md-4">
+                                                <label for="modal_fecha_alta_empresa" class="form-label">Fecha de Alta Empresa</label>
+                                                <input type="date" class="form-control" id="modal_fecha_alta_empresa" name="fecha_alta_empresa">
+                                            </div>
                                             <div class="col-md-4">
                                                 <label for="modal_fecha_alta_imss" class="form-label">Fecha de Alta IMSS</label>
                                                 <input type="date" id="modal_fecha_alta_imss" class="form-control">

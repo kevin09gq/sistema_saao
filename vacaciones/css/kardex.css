@@ -326,6 +326,31 @@ body {
     cursor: default;
 }
 
+.calendar-day.vacaciones {
+    background: #10b981 !important;
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+.calendar-day.festivo {
+    background: #f59e0b !important;
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+.calendar-day.aniversario {
+    background: #8b5cf6 !important;
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+.calendar-day.aniversario-proximo {
+    background: #c084fc !important;
+    color: #ffffff !important;
+    border: 1px dashed #7c3aed !important;
+    font-weight: 600;
+}
+
 .calendar-legend {
     display: flex;
     gap: 1rem;
@@ -345,3 +370,36 @@ body {
     height: 10px;
     border-radius: 2px;
 }
+
+.calendar-month {
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.2s;
+}
+
+.calendar-month:hover {
+    color: var(--primary-green) !important;
+}
+
+.calendar-item-selector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 1.2rem 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.calendar-item-selector:hover {
+    background: var(--bg-gray);
+    color: var(--text-main);
+}
+
+.calendar-item-selector.active {
+    background: var(--primary-green) !important;
+    color: #ffffff !important;
+}
+

@@ -31,6 +31,9 @@
             <button class="btn-download" id="btnCalcular">
                 <i class="bi bi-calculator"></i> Calcular Vacaciones
             </button>
+            <button class="btn-download" id="btnRestaurar" style="background: #dc2626; margin-left: 10px;">
+                <i class="bi bi-arrow-counterclockwise"></i> Restaurar Todo
+            </button>
         </div>
 
         <!-- Encabezado: Información del Empleado -->
@@ -41,9 +44,12 @@
                     <h1 class="emp-name-title" id="nombreEmpleado"></h1>
                     <div class="emp-meta">
                         <span><i class="bi bi-hash"></i> <strong>Clave:</strong> <span id="claveEmpleado"></span></span>
-                        <span><i class="bi bi-briefcase"></i> <strong>Depto:</strong> <span id="deptoEmpleado"></span></span>
-                        <span><i class="bi bi-calendar3"></i> <strong>Ingreso:</strong> <span id="ingresoEmpleado"></span></span>
-                        <span><i class="bi bi-clock-history"></i> <strong>Antigüedad:</strong> <span id="antiguedadEmpleado"></span></span>
+                        <span><i class="bi bi-briefcase"></i> <strong>Depto:</strong> <span
+                                id="deptoEmpleado"></span></span>
+                        <span><i class="bi bi-calendar3"></i> <strong>Ingreso:</strong> <span
+                                id="ingresoEmpleado"></span></span>
+                        <span><i class="bi bi-clock-history"></i> <strong>Antigüedad:</strong> <span
+                                id="antiguedadEmpleado"></span></span>
                     </div>
                 </div>
             </div>
@@ -58,19 +64,22 @@
             <div class="col-md-4">
                 <div class="summary-card">
                     <div class="summary-label">Días Totales Ganados</div>
-                    <div class="summary-value"><span id="diasTotales"></span> <span class="summary-unit">días</span></div>
+                    <div class="summary-value"><span id="diasTotales"></span> <span class="summary-unit">días</span>
+                    </div>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="summary-card">
                     <div class="summary-label">Días Utilizados</div>
-                    <div class="summary-value" style="color: #dc2626;"><span id="diasUtilizados"></span> <span class="summary-unit">días</span></div>
+                    <div class="summary-value" style="color: #dc2626;"><span id="diasUtilizados"></span> <span
+                            class="summary-unit">días</span></div>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="summary-card">
                     <div class="summary-label">Saldo Disponible</div>
-                    <div class="summary-value" style="color: #059669;"><span id="saldoDisponible"></span> <span class="summary-unit">días</span></div>
+                    <div class="summary-value" style="color: #059669;"><span id="saldoDisponible"></span> <span
+                            class="summary-unit">días</span></div>
                 </div>
             </div>
         </div>
@@ -93,11 +102,13 @@
                             </div>
                             <div class="col-12">
                                 <label class="form-label-kardex">Concepto / Observaciones</label>
-                                <textarea class="input-kardex" id="txtObservaciones" rows="2" placeholder="Ej. Vacaciones de Verano"></textarea>
+                                <textarea class="input-kardex" id="txtObservaciones" rows="2"
+                                    placeholder="Ej. Vacaciones de Verano"></textarea>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label-kardex">Días a Descontar</label>
-                                <input type="number" class="input-kardex" id="numDiasDescontar" step="0.5" value="0" readonly>
+                                <input type="number" class="input-kardex" id="numDiasDescontar" step="0.5" value="0"
+                                    readonly>
                             </div>
                             <div class="col-md-6 d-flex align-items-end">
                                 <button type="submit" class="btn-register" id="btnRegistrarVacaciones">
@@ -114,32 +125,34 @@
                 <h2 class="section-title"><i class="bi bi-calendar3"></i> Calendario de Disponibilidad</h2>
                 <div class="calendar-wrapper">
                     <div class="calendar-header">
-                        <div class="calendar-month" id="calendarioMes">Mayo 2024</div>
+                        <div class="calendar-month" id="calendarioMes"></div>
                         <div class="d-flex gap-2">
-                            <button class="btn btn-sm btn-outline-secondary py-0" id="btnMesAnterior"><i class="bi bi-chevron-left"></i></button>
-                            <button class="btn btn-sm btn-outline-secondary py-0" id="btnMesSiguiente"><i class="bi bi-chevron-right"></i></button>
+                            <button class="btn btn-sm btn-outline-secondary py-0" id="btnMesAnterior"><i
+                                    class="bi bi-chevron-left"></i></button>
+                            <button class="btn btn-sm btn-outline-secondary py-0" id="btnMesSiguiente"><i
+                                    class="bi bi-chevron-right"></i></button>
                         </div>
                     </div>
                     <div class="calendar-grid" id="calendarioGrid">
                         <!-- Se cargará dinámicamente -->
-                        <div class="calendar-day-name">LU</div>
-                        <div class="calendar-day-name">MA</div>
-                        <div class="calendar-day-name">MI</div>
-                        <div class="calendar-day-name">JU</div>
-                        <div class="calendar-day-name">VI</div>
-                        <div class="calendar-day-name">SA</div>
-                        <div class="calendar-day-name">DO</div>
-                        <!-- ... días de ejemplo ... -->
-                        <div class="calendar-day empty"></div><div class="calendar-day empty"></div>
-                        <div class="calendar-day">1</div><div class="calendar-day">2</div><div class="calendar-day">3</div><div class="calendar-day">4</div><div class="calendar-day">5</div>
-                        <div class="calendar-day">6</div><div class="calendar-day">7</div><div class="calendar-day">8</div><div class="calendar-day">9</div><div class="calendar-day selected">10</div><div class="calendar-day selected">11</div><div class="calendar-day selected">12</div>
-                        <div class="calendar-day selected">13</div><div class="calendar-day selected">14</div><div class="calendar-day">15</div><div class="calendar-day">16</div><div class="calendar-day">17</div><div class="calendar-day">18</div><div class="calendar-day">19</div>
-                        <div class="calendar-day today">20</div><div class="calendar-day">21</div><div class="calendar-day">22</div><div class="calendar-day">23</div><div class="calendar-day">24</div><div class="calendar-day">25</div><div class="calendar-day">26</div>
-                        <div class="calendar-day">27</div><div class="calendar-day">28</div><div class="calendar-day">29</div><div class="calendar-day">30</div><div class="calendar-day">31</div><div class="calendar-day empty"></div><div class="calendar-day empty"></div>
+
                     </div>
-                    <div class="calendar-legend">
-                        <div class="legend-item"><div class="legend-color" style="background: var(--primary-green);"></div> Seleccionado</div>
-                        <div class="legend-item"><div class="legend-color" style="border: 1px solid var(--primary-green);"></div> Hoy</div>
+                    <div class="calendar-legend d-flex flex-wrap gap-2 justify-content-between">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #10b981;"></div> Vacaciones
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #f59e0b;"></div> Festivos
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #8b5cf6;"></div> Aniversario
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #c084fc; border: 1px dashed #7c3aed;"></div> Próx. Aniversario
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="border: 2px solid var(--primary-green);"></div> Hoy
+                        </div>
                     </div>
                 </div>
             </div>
@@ -167,15 +180,18 @@
                 </table>
             </div>
             <!-- Paginación de Períodos -->
-            <div class="pagination-container p-3 border-top d-flex justify-content-between align-items-center bg-light-subtle">
+            <div
+                class="pagination-container p-3 border-top d-flex justify-content-between align-items-center bg-light-subtle">
                 <div class="page-info text-muted small" id="infoPaginacionPeriodos">
                     Mostrando <strong>1</strong> a <strong>2</strong> de <strong>2</strong> períodos
                 </div>
                 <nav>
                     <ul class="pagination pagination-sm mb-0" id="listaPaginacionPeriodos">
-                        <li class="page-item disabled"><a class="page-link" href="#"><i class="bi bi-chevron-left"></i></a></li>
+                        <li class="page-item disabled"><a class="page-link" href="#"><i
+                                    class="bi bi-chevron-left"></i></a></li>
                         <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item disabled"><a class="page-link" href="#"><i class="bi bi-chevron-right"></i></a></li>
+                        <li class="page-item disabled"><a class="page-link" href="#"><i
+                                    class="bi bi-chevron-right"></i></a></li>
                     </ul>
                 </nav>
             </div>
@@ -202,15 +218,18 @@
                 </table>
             </div>
             <!-- Paginación del Kardex -->
-            <div class="pagination-container p-3 border-top d-flex justify-content-between align-items-center bg-light-subtle">
+            <div
+                class="pagination-container p-3 border-top d-flex justify-content-between align-items-center bg-light-subtle">
                 <div class="page-info text-muted small" id="infoPaginacionKardex">
                     Mostrando <strong>1</strong> a <strong>3</strong> de <strong>3</strong> movimientos
                 </div>
                 <nav>
                     <ul class="pagination pagination-sm mb-0" id="listaPaginacionKardex">
-                        <li class="page-item disabled"><a class="page-link" href="#"><i class="bi bi-chevron-left"></i></a></li>
+                        <li class="page-item disabled"><a class="page-link" href="#"><i
+                                    class="bi bi-chevron-left"></i></a></li>
                         <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item disabled"><a class="page-link" href="#"><i class="bi bi-chevron-right"></i></a></li>
+                        <li class="page-item disabled"><a class="page-link" href="#"><i
+                                    class="bi bi-chevron-right"></i></a></li>
                     </ul>
                 </nav>
             </div>
@@ -221,8 +240,10 @@
     <script src="<?= JQUERY_JS ?>"></script>
     <script src="<?= BOOTSTRAP_JS ?>"></script>
     <script src="../js/kardex/establecerDataEmpleado.js"></script>
-    <script src="../js/kardex/periodosVacacionales.js"></script>
-    <script src="../js/kardex/historialMovimientosKardex.js"></script>
+    <script src="../js/kardex/establecerHistorialKardex.js"></script>
+    <script src="../js/kardex/establecerPeriodos.js"></script>
+    <script src="../js/kardex/registrarVacaciones.js"></script>
+    <script src="../js/kardex/calendario.js"></script>
 </body>
 
 </html>

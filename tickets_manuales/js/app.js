@@ -273,7 +273,7 @@ $(document).ready(function() {
         if (!empleado) return;
         $('#inputClave').val(empleado.clave || '');
         $('#inputNombre').val(empleado.nombre || '');
-        $('#inputFechaIngreso').val(empleado.fecha_ingreso || '');
+        $('#inputFechaIngreso').val(empleado.fecha_alta_empresa || '');
         $('#inputDepartamento').val(empleado.departamento || '');
         $('#inputPuesto').val(empleado.puesto || '');
         $('#inputSalarioDiario').val(empleado.salario_diario || '');

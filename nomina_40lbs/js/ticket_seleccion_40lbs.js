@@ -495,7 +495,7 @@ async function generarTicketsSeleccionados40lbs() {
                             nombre_puesto: emp.nombre_puesto || '',
                             rfc_empleado: emp.rfc || '',
                             imss: emp.imss || '',
-                            fecha_ingreso: emp.fecha_ingreso || '',
+                            fecha_alta_empresa: emp.fecha_alta_empresa || '',
                             sin_seguro_ticket: emp.sin_seguro_ticket || false
                         };
                         return empleado;
