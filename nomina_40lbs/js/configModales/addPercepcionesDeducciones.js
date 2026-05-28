@@ -26,6 +26,24 @@ $(document).ready(function () {
         });
     });
 
+    // Auto-fill/disable name input when a fixed concept is selected
+    $('#tipo-concepto-masivo').on('change', function () {
+        const val = $(this).val();
+        const $nombre = $('#nombre-concepto-masivo');
+        
+        if (val === 'puesto') {
+            $nombre.val('Puesto').prop('disabled', true);
+        } else if (val === 'bono_antiguedad') {
+            $nombre.val('Bono de Antigüedad').prop('disabled', true);
+        } else if (val === 'actividades_especiales') {
+            $nombre.val('Actividades Especiales').prop('disabled', true);
+        } else if (val === 'incentivo') {
+            $nombre.val('Incentivo').prop('disabled', true);
+        } else {
+            $nombre.val('').prop('disabled', false);
+        }
+    });
+
     // Botón para aplicar el concepto
     $('#btn-aplicar-concepto-masivo').on('click', function () {
         aplicarConceptoMasivo();
@@ -158,12 +176,38 @@ function aplicarConceptoMasivo() {
 
                             // Actualizar el total acumulado de percepciones extras
                             empleado.sueldo_extra_total = empleado.percepciones_extra.reduce((sum, p) => sum + (parseFloat(p.cantidad) || 0), 0);
-                        } else {
+                        } else if (tipo === 'deduccion') {
                             if (!Array.isArray(empleado.deducciones_extra)) empleado.deducciones_extra = [];
                             empleado.deducciones_extra.push(nuevoConcepto);
 
                             // Actualizar el total acumulado de deducciones extras (F.A/Gafet/Cofia)
                             empleado.fa_gafet_cofia = empleado.deducciones_extra.reduce((sum, d) => sum + (parseFloat(d.cantidad) || 0), 0);
+                        } else {
+                            // Conceptos fijos directos
+                            if (tipo === 'bono_antiguedad') {
+                                empleado.bono_antiguedad = importe;
+                            } else if (tipo === 'puesto') {
+                                empleado.puesto = importe;
+                            } else if (tipo === 'actividades_especiales') {
+                                empleado.actividades_especiales = importe;
+                            } else if (tipo === 'incentivo') {
+                                empleado.incentivo = importe;
+                            }
+
+                            // Recalcular sueldo_extra_total (sin incluir incentivo)
+                            if (typeof recalcularSueldoExtraTotal === 'function') {
+                                recalcularSueldoExtraTotal(empleado);
+                            } else {
+                                let totalExtras = 0;
+                                if (Array.isArray(empleado.percepciones_extra)) {
+                                    totalExtras += empleado.percepciones_extra.reduce((sum, p) => sum + (parseFloat(p.cantidad) || 0), 0);
+                                }
+                                totalExtras += parseFloat(empleado.horas_extra) || 0;
+                                totalExtras += parseFloat(empleado.bono_antiguedad) || 0;
+                                totalExtras += parseFloat(empleado.actividades_especiales) || 0;
+                                totalExtras += parseFloat(empleado.puesto) || 0;
+                                empleado.sueldo_extra_total = parseFloat(totalExtras.toFixed(2));
+                            }
                         }
 
                         // Recalcular el total del empleado para que se refleje en la tabla principal

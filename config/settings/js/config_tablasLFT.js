@@ -9,10 +9,6 @@ $(document).ready(function () {
     // Gestión de Días
     configurarDias();
     registrarDia();
-    
-    // Gestión de Primas
-    configurarPrimas();
-    registrarPrima();
 
     // Inicializar evento de pestaña
     eventoTabLFT();
@@ -54,11 +50,6 @@ function getVersiones() {
                                         data-id="${v.id_version_vacaciones}" 
                                         data-nombre="${v.nombre_version}" 
                                         title="Configurar Días"><i class="bi bi-calendar-check"></i></button>
-                                    
-                                    <button class="btn btn-sm btn-info btn-config-primas" 
-                                        data-id="${v.id_version_vacaciones}" 
-                                        data-nombre="${v.nombre_version}" 
-                                        title="Configurar Primas"><i class="bi bi-percent"></i></button>
                                     
                                     <button class="btn btn-sm btn-warning btn-edit-version" 
                                         data-id="${v.id_version_vacaciones}" 
@@ -315,100 +306,6 @@ function eliminarDia(id, id_version) {
         success: function (response) {
             if (response.trim() == "1") {
                 listarDias(id_version);
-            }
-        }
-    });
-}
-
-/**
- * ============================================================================
- * GESTIÓN DE PRIMA VACACIONAL
- * ============================================================================
- */
-
-function configurarPrimas() {
-    $(document).on("click", ".btn-config-primas", function() {
-        let id = $(this).data("id");
-        let nombre = $(this).data("nombre");
-        
-        $("#id_version_primas").val(id);
-        $("#nombre_version_primas").text(nombre);
-        listarPrimas(id);
-        $("#modal_primas_lft").modal("show");
-    });
-}
-
-function listarPrimas(id) {
-    $.ajax({
-        type: "POST",
-        url: "../php/configTablasLft.php",
-        data: { accion: "listarPrimas", id_version_vacaciones: id },
-        success: function (response) {
-            try {
-                let primas = JSON.parse(response);
-                let html = "";
-                if (primas.length === 0) {
-                    html = '<tr><td colspan="3" class="text-center text-muted">No hay primas configuradas</td></tr>';
-                } else {
-                    primas.forEach(p => {
-                        let vigencia = p.fecha_inicio_vigencia + (p.fecha_fin_vigencia ? " al " + p.fecha_fin_vigencia : " (Actual)");
-                        html += `
-                            <tr>
-                                <td>${p.porcentaje_prima}%</td>
-                                <td><small>${vigencia}</small></td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-danger" onclick="eliminarPrima(${p.id_prima_vacacional}, ${id})"><i class="bi bi-trash"></i></button>
-                                </td>
-                            </tr>
-                        `;
-                    });
-                }
-                $("#tbody_primas_lft").html(html);
-            } catch (e) {
-                console.error("Error al listar primas:", e);
-            }
-        }
-    });
-}
-
-function registrarPrima() {
-    $("#form_primas_lft").submit(function (e) {
-        e.preventDefault();
-        let id_version = $("#id_version_primas").val();
-        let formData = new FormData(this);
-        formData.append("accion", "guardarPrima");
-
-        $.ajax({
-            type: "POST",
-            url: "../php/configTablasLft.php",
-            data: formData,
-            contentType: false,
-            processData: false,
-            success: function (response) {
-                if (response.icono == "success") {
-                    listarPrimas(id_version);
-                    $("#form_primas_lft")[0].reset();
-                    $("#id_version_primas").val(id_version);
-                }
-                Swal.fire({
-                    icon: response.icono,
-                    title: response.titulo,
-                    text: response.mensaje,
-                    confirmButtonColor: response.icono === 'success' ? '#22c55e' : '#ef4444'
-                });
-            }
-        });
-    });
-}
-
-function eliminarPrima(id, id_version) {
-    $.ajax({
-        type: "POST",
-        url: "../php/configTablasLft.php",
-        data: { accion: "eliminarPrima", id_prima_vacacional: id },
-        success: function (response) {
-            if (response.trim() == "1") {
-                listarPrimas(id_version);
             }
         }
     });

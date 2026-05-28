@@ -60,16 +60,28 @@ function cargarEncabezadoEmpleado(emp) {
 
 //==============================
 // CARGA LA INFORMACION DEL RESUMEN DE LOS PERIODOS EN EL ENCABEZADO
+// Solo suma los periodos del CICLO ACTUAL (el num_ciclo más alto)
 //==============================
 function actualizarResumenTotales(periodos) {
     let totales = 0;
     let tomados = 0;
     let saldo = 0;
 
+    // Determinar el ciclo más reciente (el número más alto)
+    let cicloActual = 0;
     $.each(periodos, function(i, p) {
-        totales += parseFloat(p.dias_derecho);
-        tomados += parseFloat(p.dias_tomados);
-        saldo += parseFloat(p.saldo);
+        let nc = parseInt(p.num_ciclo) || 1;
+        if (nc > cicloActual) cicloActual = nc;
+    });
+
+    // Sumar solo los periodos del ciclo actual
+    $.each(periodos, function(i, p) {
+        let nc = parseInt(p.num_ciclo) || 1;
+        if (nc === cicloActual) {
+            totales += parseFloat(p.dias_derecho);
+            tomados += parseFloat(p.dias_tomados);
+            saldo += parseFloat(p.saldo);
+        }
     });
 
     $('#diasTotales').text(totales.toFixed(3));

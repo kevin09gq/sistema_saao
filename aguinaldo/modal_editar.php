@@ -44,22 +44,22 @@
                                 </h6>
                                 <div class="row g-3">
                                     <div class="col-md-6">
-                                        <label class="form-label fw-semibold small" for="fecha_alta_empresa">F. Ingreso Real (FIR)</label>
+                                        <label class="form-label fw-semibold small" for="fecha_ingreso_real">F. Ingreso Real (FIR)</label>
                                         <div class="input-group">
                                             <div class="input-group-text bg-white">
                                                 <input class="form-check-input mt-0" type="radio" value="1" name="usar_fecha" id="check_usar_fecha_real">
                                             </div>
-                                            <input type="date" class="form-control shadow-sm" id="fecha_alta_empresa" name="fecha_alta_empresa">
+                                            <input type="date" class="form-control shadow-sm" id="fecha_ingreso_real" name="fecha_ingreso_real">
                                         </div>
                                     </div>
 
                                     <div class="col-md-6">
-                                        <label class="form-label fw-semibold small" for="fecha_alta_imss">F. Ingreso IMSS (FII)</label>
+                                        <label class="form-label fw-semibold small" for="fecha_ingreso_imss">F. Ingreso IMSS (FII)</label>
                                         <div class="input-group">
                                             <div class="input-group-text bg-white">
                                                 <input class="form-check-input mt-0" type="radio" value="0" name="usar_fecha" id="check_usar_fecha_imss">
                                             </div>
-                                            <input type="date" class="form-control shadow-sm" id="fecha_alta_imss" name="fecha_alta_imss">
+                                            <input type="date" class="form-control shadow-sm" id="fecha_ingreso_imss" name="fecha_ingreso_imss">
                                         </div>
                                     </div>
                                 </div>

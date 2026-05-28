@@ -389,7 +389,7 @@ foreach ($empleados40Libras as $empleado) {
         $permisoTieneDatos = true;
     }
 
-    if (($empleado['uniforme'] ?? 0) != 0) {
+    if (($empleado['uniformes'] ?? 0) != 0) {
         $uniformeTieneDatos = true;
     }
 
@@ -515,7 +515,7 @@ foreach ($empleados40Libras as $empleado) {
 
     // Agregar uniforme en la columna UNIFORMES (solo si hay datos)
     if ($uniformeTieneDatos) {
-        $uniforme = $empleado['uniforme'] ?? 0;
+        $uniforme = $empleado['uniformes'] ?? 0;
         if (!empty($uniforme) && $uniforme != 0) {
             $sheet->setCellValue('N' . $numeroFila, $uniforme);
             $sheet->getStyle('N' . $numeroFila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');

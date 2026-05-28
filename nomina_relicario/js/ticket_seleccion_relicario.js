@@ -118,86 +118,123 @@ function cargarEmpleadosParaTickets(nominaData) {
     empleadosParaTickets = [];
     empleadosSeleccionados.clear();
 
+    const empleadosPorNombre = {};
+
     nominaData.departamentos.forEach(depto => {
         const nombreDepto = depto.nombre || '';
         if (!depto.empleados) return;
 
         depto.empleados.forEach(emp => {
             if (!emp || emp.mostrar === false) return;
-            if (nombreDepto.toUpperCase() === 'CORTE' && emp.concepto === 'REJA' && Array.isArray(emp.tickets)) {
-                // Desglosar por precio de reja
-                const porPrecio = {};
-                emp.tickets.forEach(t => {
-                    const p = (t.precio_reja ?? 0).toString();
-                    if (!porPrecio[p]) porPrecio[p] = [];
-                    porPrecio[p].push(t);
-                });
+            
+            const nombre = emp.nombre;
+            if (!empleadosPorNombre[nombre]) {
+                const esSinSeguro = (emp?.seguroSocial === false) || String(nombreDepto || '').toLowerCase().includes('sin seguro');
+                empleadosPorNombre[nombre] = {
+                    nombre: nombre,
+                    clave: emp.clave || `emp-${nombre}-${Math.random()}`,
+                    departamento: nombreDepto,
+                    esSinSeguro: esSinSeguro,
+                    rejas: [],
+                    nomina: null,
+                    movimientosPoda: [],
+                    extrasPoda: [],
+                    originalParaExtras: { ...emp }, // Guardar datos base del empleado
+                    originalNormal: null
+                };
+            }
 
-                Object.keys(porPrecio).forEach(precioStr => {
-                    const tickets = porPrecio[precioStr];
-                    const precio = parseFloat(precioStr);
-                    let totalRejas = 0;
-                    tickets.forEach(t => {
-                        (t.datosRejas || []).forEach(tr => totalRejas += tr.cantidad);
-                    });
+            const ref = empleadosPorNombre[nombre];
+            if (!ref.originalParaExtras && emp) ref.originalParaExtras = { ...emp };
 
-                    const claveUnica = `Corte-${emp.nombre}-${precioStr}`;
-                    empleadosParaTickets.push({
-                        original: { ...emp, clave: claveUnica, totalRejas, precio, totalEfectivo: totalRejas * precio, departamento: 'Corte' },
-                        clave: claveUnica,
-                        nombre: `${emp.nombre} ($${precioStr})`,
-                        departamento: 'Corte'
+            if (nombreDepto.toUpperCase() === 'CORTE') {
+                if (emp.concepto === 'REJA' && Array.isArray(emp.tickets)) {
+                    emp.tickets.forEach(t => {
+                        ref.rejas.push({
+                            ticket: t,
+                            precio: t.precio_reja ?? 0
+                        });
                     });
-                });
+                } else if (emp.concepto === 'NOMINA' && Array.isArray(emp.nomina)) {
+                    ref.nomina = emp.nomina;
+                }
             } else if (nombreDepto.toUpperCase() === 'PODA' && Array.isArray(emp.movimientos)) {
-                // Desglosar Poda por monto
                 const movsPoda = emp.movimientos.filter(m => m.concepto === 'PODA');
-                const porMonto = {};
-                movsPoda.forEach(m => {
-                    const p = (m.monto ?? 0).toString();
-                    if (!porMonto[p]) porMonto[p] = [];
-                    porMonto[p].push(m);
-                });
-
-                Object.keys(porMonto).forEach(montoStr => {
-                    const movs = porMonto[montoStr];
-                    const monto = parseFloat(montoStr);
-                    let totalArboles = 0;
-                    movs.forEach(m => totalArboles += Number(m.arboles_podados || 0));
-
-                    const claveUnica = `Poda-${emp.nombre}-${montoStr}`;
-                    empleadosParaTickets.push({
-                        original: { ...emp, clave: claveUnica, totalArboles, monto, totalEfectivo: totalArboles * monto, departamento: 'Poda' },
-                        clave: claveUnica,
-                        nombre: `${emp.nombre} ($${montoStr})`,
-                        departamento: 'Poda'
-                    });
-                });
-
-                // Movimientos extras de Poda
+                ref.movimientosPoda.push(...movsPoda);
+                
                 const extras = emp.movimientos.filter(m => m.concepto !== 'PODA');
-                extras.forEach((ex, i) => {
-                    const claveUnica = `Poda-Ex-${emp.nombre}-${ex.concepto}-${i}`;
-                    empleadosParaTickets.push({
-                        original: { ...emp, clave: claveUnica, nombre: `${emp.nombre} (${ex.concepto})`, salario_semanal: ex.monto, departamento: ex.concepto },
-                        clave: claveUnica,
-                        nombre: `${emp.nombre} (${ex.concepto})`,
-                        departamento: 'Poda'
-                    });
-                });
+                ref.extrasPoda.push(...extras);
             } else {
                 // Nómina normal
-                const clave = emp.clave || `emp-${emp.nombre}-${Math.random()}`;
-                const esSinSeguro = (emp?.seguroSocial === false) || String(nombreDepto || '').toLowerCase().includes('sin seguro');
-                empleadosParaTickets.push({
-                    original: { ...emp, departamento: nombreDepto },
-                    clave: String(clave),
-                    nombre: emp.nombre,
-                    departamento: nombreDepto,
-                    esSinSeguro: esSinSeguro
-                });
+                ref.originalNormal = { ...emp, departamento: nombreDepto };
             }
         });
+    });
+
+    // Convertir el mapa a la lista para el modal
+    Object.keys(empleadosPorNombre).forEach(nombre => {
+        const empConsolidado = empleadosPorNombre[nombre];
+        const esSinSeguro = empConsolidado.esSinSeguro;
+        const claveBase = String(empConsolidado.clave);
+
+        // CASO 1: CORTE (Rejas o Nómina)
+        if (empConsolidado.rejas.length > 0 || empConsolidado.nomina) {
+            const original = procesarTicketsCorteCombinado(nombre, empConsolidado.rejas, empConsolidado.nomina);
+            original.departamento = 'Corte';
+            if (esSinSeguro) original.sin_seguro_ticket = true;
+            
+            empleadosParaTickets.push({
+                original: original,
+                clave: claveBase + '-Corte',
+                nombre: nombre,
+                departamento: 'Corte',
+                esSinSeguro: esSinSeguro
+            });
+        }
+
+        // CASO 2: PODA (Movimientos de Poda)
+        if (empConsolidado.movimientosPoda.length > 0) {
+            const original = procesarPodaParaTicket(nombre, empConsolidado.movimientosPoda);
+            original.departamento = 'Poda';
+            if (esSinSeguro) original.sin_seguro_ticket = true;
+
+            empleadosParaTickets.push({
+                original: original,
+                clave: claveBase + '-Poda',
+                nombre: nombre,
+                departamento: 'Poda',
+                esSinSeguro: esSinSeguro
+            });
+        }
+
+        // CASO 3: EXTRA (Movimientos que no son Poda en el depto Poda)
+        if (empConsolidado.extrasPoda.length > 0) {
+            const original = procesarExtrasParaTicket(nombre, empConsolidado.extrasPoda, empConsolidado.originalParaExtras);
+            original.departamento = 'Extra';
+            if (esSinSeguro) original.sin_seguro_ticket = true;
+
+            empleadosParaTickets.push({
+                original: original,
+                clave: claveBase + '-Extra',
+                nombre: nombre,
+                departamento: 'Extra',
+                esSinSeguro: esSinSeguro
+            });
+        }
+
+        // CASO 4: NÓMINA NORMAL (Otros departamentos)
+        if (empConsolidado.originalNormal) {
+            const original = { ...empConsolidado.originalNormal };
+            if (esSinSeguro) original.sin_seguro_ticket = true;
+
+            empleadosParaTickets.push({
+                original: original,
+                clave: claveBase,
+                nombre: nombre,
+                departamento: empConsolidado.departamento,
+                esSinSeguro: esSinSeguro
+            });
+        }
     });
 
     // Ordenar: primero con seguro (esSinSeguro = false), luego sin seguro (esSinSeguro = true)
@@ -384,15 +421,21 @@ function generarTicketsNombreSeleccionados() {
         return;
     }
 
-    const seleccionados = [];
+    const seleccionadosMap = {};
     empleadosParaTickets.forEach(item => {
         if (empleadosSeleccionados.has(item.clave)) {
             if (item.original && item.original.mostrar === false) return;
-            const empCopia = { ...item.original };
-            if (item.esSinSeguro) empCopia.sin_seguro_ticket = true;
-            seleccionados.push(empCopia);
+            
+            const nombre = (item.nombre || '').trim();
+            if (nombre && !seleccionadosMap[nombre]) {
+                const empCopia = { ...item.original };
+                if (item.esSinSeguro) empCopia.sin_seguro_ticket = true;
+                seleccionadosMap[nombre] = empCopia;
+            }
         }
     });
+
+    const seleccionados = Object.values(seleccionadosMap);
 
     const btn = $(this);
     const original = btn.html();

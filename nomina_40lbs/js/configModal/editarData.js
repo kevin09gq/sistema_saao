@@ -101,41 +101,6 @@ function modificarConceptos(empleado) {
     actualizarConcepto("107", parseFloat($('#mod-ajustes-sub-40lbs').val()) || 0); // Ajuste al Sub
 }
 
-function desabilitarCamposConceptos(tieneSeguroSocial) {
-
-    // Deshabilitar o habilitar campos de conceptos según seguroSocial
-    if (!tieneSeguroSocial) {
-        // Deshabilitar campos de entrada
-        $('#mod-isr-40lbs').prop('disabled', true);
-        $('#mod-imss-40lbs').prop('disabled', true);
-        $('#mod-infonavit-40lbs').prop('disabled', true);
-        $('#mod-ajustes-sub-40lbs').prop('disabled', true);
-
-        // Deshabilitar botones de aplicar
-        $('#btn-aplicar-isr-40lbs').prop('disabled', true);
-        $('#btn-aplicar-imss-40lbs').prop('disabled', true);
-        $('#btn-aplicar-infonavit-40lbs').prop('disabled', true);
-        $('#btn-aplicar-ajuste-sub-40lbs').prop('disabled', true);
-
-        // Deshabilitar total (aunque ya tiene readonly)
-        $('#mod-total-conceptos-40lbs').prop('disabled', true);
-
-        return; // Salir sin procesar conceptos
-    }
-
-    // Si tiene seguro social, habilitar los campos
-    $('#mod-isr-40lbs').prop('disabled', false);
-    $('#mod-imss-40lbs').prop('disabled', false);
-    $('#mod-infonavit-40lbs').prop('disabled', false);
-    $('#mod-ajustes-sub-40lbs').prop('disabled', false);
-
-    $('#btn-aplicar-isr-40lbs').prop('disabled', false);
-    $('#btn-aplicar-imss-40lbs').prop('disabled', false);
-    $('#btn-aplicar-infonavit-40lbs').prop('disabled', false);
-    $('#btn-aplicar-ajuste-sub-40lbs').prop('disabled', false);
-
-    $('#mod-total-conceptos-40lbs').prop('disabled', false);
-}
 
 /************************************
  * MODIFICAR DEDUCCIONES DEL EMPLEADO
@@ -151,7 +116,7 @@ function modificarDeducciones(empleado) {
     let checador = parseFloat($('#mod-checador-40lbs').val());
     let inasistencias = parseFloat($('#mod-inasistencias-40lbs').val());
     let permiso = parseFloat($('#mod-permisos-40lbs').val());
-    let uniforme = parseFloat($('#mod-uniforme-40lbs').val());
+    let uniformes = parseFloat($('#mod-uniforme-40lbs').val());
     let fa_gafet_cofia = parseFloat($('#mod-fagafetcofia-40lbs').val());
 
 
@@ -161,7 +126,7 @@ function modificarDeducciones(empleado) {
     checador = isNaN(checador) ? 0 : checador;
     inasistencias = isNaN(inasistencias) ? 0 : inasistencias;
     permiso = isNaN(permiso) ? 0 : permiso;
-    uniforme = isNaN(uniforme) ? 0 : uniforme;
+    uniformes = isNaN(uniformes) ? 0 : uniformes;
     fa_gafet_cofia = isNaN(fa_gafet_cofia) ? 0 : fa_gafet_cofia;
 
 
@@ -183,7 +148,7 @@ function modificarDeducciones(empleado) {
     empleado.checador = checador;
     empleado.inasistencia = inasistencias;
     empleado.permiso = permiso;
-    empleado.uniforme = uniforme;
+    empleado.uniformes = uniformes;
     empleado.fa_gafet_cofia = fa_gafet_cofia;
 
 }

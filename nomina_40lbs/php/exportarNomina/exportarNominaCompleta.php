@@ -305,7 +305,7 @@ function crearHoja($spreadsheet, $titulo1, $titulo2, $filtroEmpleados, $nombreHo
         'ajustes' => false,
         'ausentismo' => false,
         'permiso' => false,
-        'uniforme' => false,
+        'uniformes' => false,
         'checador' => false,
         'fa_gafet_cofia' => false
     ];
@@ -317,8 +317,8 @@ function crearHoja($spreadsheet, $titulo1, $titulo2, $filtroEmpleados, $nombreHo
             $flags['ausentismo'] = true;
         if (($emp['permiso'] ?? 0) != 0)
             $flags['permiso'] = true;
-        if (($emp['uniforme'] ?? 0) != 0)
-            $flags['uniforme'] = true;
+        if (($emp['uniformes'] ?? 0) != 0)
+            $flags['uniformes'] = true;
         if (($emp['checador'] ?? 0) != 0)
             $flags['checador'] = true;
         if (($emp['fa_gafet_cofia'] ?? 0) != 0)
@@ -368,8 +368,8 @@ function crearHoja($spreadsheet, $titulo1, $titulo2, $filtroEmpleados, $nombreHo
             $sheet->setCellValue('L' . $row, $emp['inasistencia']);
         if (($emp['permiso'] ?? 0) != 0)
             $sheet->setCellValue('M' . $row, $emp['permiso']);
-        if (($emp['uniforme'] ?? 0) != 0)
-            $sheet->setCellValue('N' . $row, $emp['uniforme']);
+        if (($emp['uniformes'] ?? 0) != 0)
+            $sheet->setCellValue('N' . $row, $emp['uniformes']);
         if (($emp['checador'] ?? 0) != 0)
             $sheet->setCellValue('O' . $row, $emp['checador']);
         if (($emp['fa_gafet_cofia'] ?? 0) != 0)
@@ -444,7 +444,7 @@ function crearHoja($spreadsheet, $titulo1, $titulo2, $filtroEmpleados, $nombreHo
         $sheet->getColumnDimension('L')->setVisible(false);
     if (!$flags['permiso'])
         $sheet->getColumnDimension('M')->setVisible(false);
-    if (!$flags['uniforme'])
+    if (!$flags['uniformes'])
         $sheet->getColumnDimension('N')->setVisible(false);
     if (!$flags['checador'])
         $sheet->getColumnDimension('O')->setVisible(false);

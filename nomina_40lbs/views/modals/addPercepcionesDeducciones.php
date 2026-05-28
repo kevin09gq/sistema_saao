@@ -19,7 +19,11 @@
                                 <select class="form-select form-select-sm" id="tipo-concepto-masivo">
                                     <option value="percepcion">Percepción (+)</option>
                                     <option value="deduccion">Deducción (-)</option>
-                                </select>
+                                    <option value="puesto">Puesto ($) [Fijo]</option>
+                                    <option value="bono_antiguedad">Bono de Antigüedad ($) [Fijo]</option>
+                                    <option value="actividades_especiales">Actividades Especiales ($) [Fijo]</option>                                     
+                                    <option value="incentivo">Incentivo ($) [Fijo]</option>                              
+                                  </select>
                             </div>
                             <div class="col-md-5">
                                 <label class="form-label small fw-bold">Nombre del Concepto</label>

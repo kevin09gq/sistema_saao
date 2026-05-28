@@ -491,8 +491,9 @@ function establecerConceptosJornalero(empleado) {
 
     // Verificar si el empleado tiene seguro social
     const tieneSeguroSocial = empleado.seguroSocial !== false;
+    const quitarTarjeta = empleado.quitar_tarjeta === true;
 
-    desabilitarCamposConceptosJornalero(tieneSeguroSocial);
+    desabilitarCamposConceptosJornalero(tieneSeguroSocial, quitarTarjeta);
     const conceptos = empleado.conceptos || [];
 
     // Buscar conceptos por código
@@ -523,7 +524,7 @@ function calcularTotalConceptosJornalero() {
     $('#mod-total-conceptos-jornalero').val(total.toFixed(2));
 }
 
-function desabilitarCamposConceptosJornalero(tieneSeguroSocial) {
+function desabilitarCamposConceptosJornalero(tieneSeguroSocial, quitarTarjeta) {
 
     // Deshabilitar o habilitar campos de conceptos según seguroSocial
     if (!tieneSeguroSocial) {
@@ -532,12 +533,14 @@ function desabilitarCamposConceptosJornalero(tieneSeguroSocial) {
         $('#mod-imss-jornalero').prop('disabled', true);
         $('#mod-infonavit-jornalero').prop('disabled', true);
         $('#mod-ajustes-sub-jornalero').prop('disabled', true);
+        $('#mod-tarjeta-jornalero').prop('disabled', true);
 
         // Deshabilitar botones de aplicar
         $('#btn-aplicar-isr-jornalero').prop('disabled', true);
         $('#btn-aplicar-imss-jornalero').prop('disabled', true);
         $('#btn-aplicar-infonavit-jornalero').prop('disabled', true);
         $('#btn-aplicar-ajuste-sub-jornalero').prop('disabled', true);
+        $('#btn-aplicar-tarjeta-jornalero').prop('disabled', true);
 
         // Deshabilitar total (aunque ya tiene readonly)
         $('#mod-total-conceptos-jornalero').prop('disabled', true);
@@ -550,13 +553,21 @@ function desabilitarCamposConceptosJornalero(tieneSeguroSocial) {
     $('#mod-imss-jornalero').prop('disabled', false);
     $('#mod-infonavit-jornalero').prop('disabled', false);
     $('#mod-ajustes-sub-jornalero').prop('disabled', false);
+    $('#mod-tarjeta-jornalero').prop('disabled', false);
 
     $('#btn-aplicar-isr-jornalero').prop('disabled', false);
     $('#btn-aplicar-imss-jornalero').prop('disabled', false);
     $('#btn-aplicar-infonavit-jornalero').prop('disabled', false);
     $('#btn-aplicar-ajuste-sub-jornalero').prop('disabled', false);
+    $('#btn-aplicar-tarjeta-jornalero').prop('disabled', false);
 
     $('#mod-total-conceptos-jornalero').prop('disabled', false);
+
+    // Si quitarTarjeta es true, deshabilitar específicamente el campo de la tarjeta
+    if (quitarTarjeta) {
+        $('#mod-tarjeta-jornalero').prop('disabled', true);
+        $('#btn-aplicar-tarjeta-jornalero').prop('disabled', true);
+    }
 }
 
 

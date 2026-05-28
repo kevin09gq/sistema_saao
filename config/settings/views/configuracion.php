@@ -1217,52 +1217,6 @@ verificarSesion(); // Proteger esta página
         </div>
     </div>
 
-    <!-- Modal para configurar Primas Vacacionales por Versión -->
-    <div class="modal fade" id="modal_primas_lft" tabindex="-1" aria-labelledby="modal_primas_lft_label" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modal_primas_lft_label">Configurar Primas: <span id="nombre_version_primas" class="badge bg-primary"></span></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="form_primas_lft" class="mb-4 bg-light p-3 rounded border">
-                        <input type="hidden" id="id_version_primas" name="id_version_vacaciones">
-                        <div class="row g-2 align-items-end">
-                            <div class="col-md-3">
-                                <label class="form-label small">Porcentaje (%)</label>
-                                <input type="number" class="form-control" name="porcentaje_prima" required min="1" step="0.01" value="25.00">
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label small">Inicio Vigencia</label>
-                                <input type="date" class="form-control" name="fecha_inicio_vigencia" required>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label small">Fin Vigencia</label>
-                                <input type="date" class="form-control" name="fecha_fin_vigencia">
-                            </div>
-                            <div class="col-md-3">
-                                <button type="submit" class="btn btn-success w-100"><i class="bi bi-plus-circle"></i> Agregar</button>
-                            </div>
-                        </div>
-                    </form>
-                    <div class="table-responsive">
-                        <table class="table table-sm table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Porcentaje</th>
-                                    <th>Vigencia</th>
-                                    <th>Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tbody_primas_lft"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Modal para mostrar la imagen del área -->
     <div class="modal fade" id="modalAreaImagen" tabindex="-1" aria-labelledby="modalAreaTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">

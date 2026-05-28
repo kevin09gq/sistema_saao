@@ -35,16 +35,7 @@ if (isset($_GET['accion']) || isset($_POST['accion'])) {
             eliminarDia();
             break;
 
-        // PRIMAS LFT
-        case 'listarPrimas':
-            listarPrimas();
-            break;
-        case 'guardarPrima':
-            guardarPrima();
-            break;
-        case 'eliminarPrima':
-            eliminarPrima();
-            break;
+
 
         default:
             echo json_encode(["error" => true, "mensaje" => "Acción no reconocida"]);
@@ -174,49 +165,4 @@ function eliminarDia() {
     $stmt->close();
 }
 
-// ======================
-// PRIMAS LFT
-// ======================
 
-function listarPrimas() {
-    global $conexion;
-    $id_version = (int)$_POST['id_version_vacaciones'];
-    $sql = "SELECT * FROM primas_vacacionales_lft WHERE id_version_vacaciones = $id_version ORDER BY fecha_inicio_vigencia DESC";
-    $res = $conexion->query($sql);
-    $data = [];
-    while ($row = $res->fetch_assoc()) {
-        $data[] = $row;
-    }
-    echo json_encode($data);
-}
-
-function guardarPrima() {
-    global $conexion;
-    $id_version = (int)$_POST['id_version_vacaciones'];
-    $porcentaje = $_POST['porcentaje_prima'];
-    $inicio = $_POST['fecha_inicio_vigencia'];
-    $fin = !empty($_POST['fecha_fin_vigencia']) ? $_POST['fecha_fin_vigencia'] : null;
-
-    $stmt = $conexion->prepare("INSERT INTO primas_vacacionales_lft (id_version_vacaciones, porcentaje_prima, fecha_inicio_vigencia, fecha_fin_vigencia) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("idss", $id_version, $porcentaje, $inicio, $fin);
-
-    if ($stmt->execute()) {
-        respuesta(200, "Éxito", "Prima vacacional agregada correctamente.", "success");
-    } else {
-        respuesta(500, "Error", "No se pudo agregar la prima.", "error");
-    }
-    $stmt->close();
-}
-
-function eliminarPrima() {
-    global $conexion;
-    $id = (int)$_POST['id_prima_vacacional'];
-    $stmt = $conexion->prepare("DELETE FROM primas_vacacionales_lft WHERE id_prima_vacacional = ?");
-    $stmt->bind_param("i", $id);
-    if ($stmt->execute()) {
-        echo "1";
-    } else {
-        echo "0";
-    }
-    $stmt->close();
-}

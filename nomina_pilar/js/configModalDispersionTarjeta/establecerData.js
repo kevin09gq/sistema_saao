@@ -19,7 +19,9 @@ function abrirModalDispersionTarjeta() {
 
     // Mostrar todos los empleados inicialmente
     const todosLosEmpleados = obtenerTodosLosEmpleadosFiltrados();
-    renderizarTablaTarjeta(todosLosEmpleados);
+    // Filtrar solo empleados con mostrar = true
+    const empleadosAMostrar = todosLosEmpleados.filter(emp => emp.mostrar === true);
+    renderizarTablaTarjeta(empleadosAMostrar);
 
     // Mostrar el modal
     $('#modalDispersionTarjeta').modal('show');

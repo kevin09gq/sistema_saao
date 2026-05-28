@@ -399,9 +399,9 @@ function calcularSueldoACobrar() {
     const checador = parseFloat($('#mod-checador-40lbs').val()) || 0;
     const inasistencias = parseFloat($('#mod-inasistencias-40lbs').val()) || 0;
     const permisos = parseFloat($('#mod-permisos-40lbs').val()) || 0;
-    const uniforme = parseFloat($('#mod-uniforme-40lbs').val()) || 0;
+    const uniformes = parseFloat($('#mod-uniforme-40lbs').val()) || 0;
     const fagafetcofia = parseFloat($('#mod-fagafetcofia-40lbs').val()) || 0;
-    const totalDeducciones = tarjeta + prestamo + checador + inasistencias + permisos + uniforme + fagafetcofia;
+    const totalDeducciones = tarjeta + prestamo + checador + inasistencias + permisos + uniformes + fagafetcofia;
 
     // ---- CÁLCULO FINAL ----
     const totalSinRedondear = totalPercepciones - totalConceptos - totalDeducciones;

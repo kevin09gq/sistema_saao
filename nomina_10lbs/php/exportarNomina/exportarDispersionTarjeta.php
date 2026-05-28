@@ -71,9 +71,9 @@ if (isset($jsonNomina['departamentos']) && is_array($jsonNomina['departamentos']
             continue;
         }
 
-        // Filtrar empleados con tarjeta (monto > 0)
+        // Filtrar empleados con tarjeta (monto > 0) y mostrar = true
         $empleadosConTarjeta = array_filter($departamento['empleados'] ?? [], function ($e) {
-            return (isset($e['tarjeta']) && (float) $e['tarjeta'] > 0);
+            return (isset($e['tarjeta']) && (float) $e['tarjeta'] > 0 && $e['mostrar'] === true);
         });
 
         // Si el departamento no tiene empleados con tarjeta, no creamos la hoja

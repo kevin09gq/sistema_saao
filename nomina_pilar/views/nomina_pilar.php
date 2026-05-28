@@ -194,7 +194,7 @@
 
                 <!-- Grupo 3: Procesamiento -->
                 <div class="btn-group-pilar btn-group-procesamiento">
-                    <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global"
+                    <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global" hidden
                         title="Aplicar Tarjeta">
                         <i class="bi bi-arrow-clockwise"></i>
                     </button>
@@ -202,9 +202,12 @@
                         title="Redondear Sueldos" aria-label="Redondear Sueldos">
                         <i class="bi bi-arrow-repeat"></i>
                     </button>
-                    <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta"
+                    <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta" hidden
                         aria-label="Quitar tarjeta">
                         <i class="bi bi-credit-card-2-back"></i>
+                    </button>
+                    <button class="btn btn-outline-info" id="btn_abrir_add_remove_tarjeta" title="Configurar Tarjeta/Impuestos por Empleado">
+                        <i class="bi bi-person-gear"></i>
                     </button>
                     <button class="btn btn-outline-primary" id="btn_add_percepciones_deducciones"
                         title="Agregar Percepciones/Deducciones Extras"> <i class="bi bi-patch-plus"></i>
@@ -394,7 +397,7 @@
         style="position:absolute;z-index:10000;display:none;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);padding:4px;">
         <div class="cm_item_poda" data-action="ver" style="padding:6px 12px;cursor:pointer;">🔎​ Ver detalles</div>
     </div>
-    
+
 
     <!-- Modal para los cortes -->
     <?php include __DIR__ . "/modalsCorte/modalCorte.php"; ?>
@@ -419,6 +422,7 @@
     <?php include "modals/modalQuitarComidaPasaje.php"; ?>
     <?php include "modals/modalConceptosTotales.php"; ?>
     <?php include "modals/modalOlvidos.php"; ?>
+    <?php include 'modals/modalAddRemoveTarjeta.php'; ?>
     <?php include "modals/modalReasignarEmpleado.php"; ?>
     <?php include "modals/modalExportarNomina.php"; ?>
     <?php include "modals/modalSeleccionarEmpleados.php"; ?>
@@ -473,6 +477,8 @@
     <script src="../js/configModales/redondearSueldos.js"></script>
     <script src="../js/configModales/reasignarEmpleado.js"></script>
     <script src="../js/configModales/addPercepcionesDeducciones.js"></script>
+    <script src="../js/configModales/addRemoveTarjeta.js"></script>
+
 
 
     <script src="../js/ticket_pdf.js"></script>

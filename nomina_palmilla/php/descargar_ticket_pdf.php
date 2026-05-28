@@ -38,172 +38,391 @@ function safeText($s) {
     return $s;
 }
 
+function normalizarDiaNominaPhp($dia) {
+    $d = strtolower(trim((string)$dia));
+    $d = str_replace(['á', 'é', 'í', 'ó', 'ú'], ['a', 'e', 'i', 'o', 'u'], $d);
+    $alias = [
+        'dom' => 'domingo', 'domingo' => 'domingo',
+        'lun' => 'lunes', 'lunes' => 'lunes',
+        'mar' => 'martes', 'martes' => 'martes',
+        'mie' => 'miercoles', 'miercoles' => 'miercoles',
+        'jue' => 'jueves', 'jueves' => 'jueves',
+        'vie' => 'viernes', 'viernes' => 'viernes',
+        'sab' => 'sabado', 'sabado' => 'sabado',
+    ];
+    return $alias[$d] ?? $d;
+}
+
+function obtenerDiaSemanaDesdeFechaPhp($fechaStr) {
+    $s = trim((string)$fechaStr);
+    if ($s === '') return '';
+
+    if (preg_match('/^(\d{4})-(\d{2})-(\d{2})/', $s, $m)) {
+        $ts = mktime(0, 0, 0, (int)$m[2], (int)$m[3], (int)$m[1]);
+        $dias = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+        return normalizarDiaNominaPhp($dias[(int)date('w', $ts)]);
+    }
+
+    if (strpos($s, '/') !== false) {
+        $meses = [
+            'Ene' => 0, 'Feb' => 1, 'Mar' => 2, 'Abr' => 3, 'May' => 4, 'Jun' => 5,
+            'Jul' => 6, 'Ago' => 7, 'Sep' => 8, 'Oct' => 9, 'Nov' => 10, 'Dic' => 11
+        ];
+        $partes = explode('/', $s);
+        if (count($partes) === 3 && isset($meses[$partes[1]])) {
+            $ts = mktime(0, 0, 0, $meses[$partes[1]] + 1, (int)$partes[0], (int)$partes[2]);
+            $dias = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+            return normalizarDiaNominaPhp($dias[(int)date('w', $ts)]);
+        }
+    }
+
+    return normalizarDiaNominaPhp($s);
+}
+
 function renderTicketCortePdf($pdf, $empleado, $meta) {
     $nombre = safeText($empleado['nombre'] ?? '');
     $semana = safeText($meta['numero_semana'] ?? '');
-    
-    // Datos específicos de corte
-    $totalRejas = toNumber($empleado['totalRejas'] ?? 0);
-    $precioReja = toNumber($empleado['precio'] ?? 0);
+
+    $totalRejas = intval($empleado['totalRejas'] ?? 0);
+    $preciosUnicos = is_array($empleado['preciosUnicos'] ?? null) ? $empleado['preciosUnicos'] : [];
+    $efectivoRejas = toNumber($empleado['efectivoRejas'] ?? 0);
+    $diasTrabajados = intval($empleado['diasTrabajados'] ?? 0);
+    $preciosPorDia = is_array($empleado['preciosPorDia'] ?? null) ? $empleado['preciosPorDia'] : [];
+    $totalNomina = toNumber($empleado['totalNomina'] ?? 0);
+    $subtotal = toNumber($empleado['subtotal'] ?? $empleado['totalEfectivo'] ?? 0);
+    $redondeo = toNumber($empleado['redondeo'] ?? 0);
     $totalEfectivo = toNumber($empleado['totalEfectivo'] ?? 0);
 
-    // ─── Funciones de dibujo (idénticas a Poda) ─────────────────────
     $pdf->SetTextColor(0, 0, 0);
-    
-    $dot = function ($d) {
-        return ((float)$d) / 8.0;
-    };
-    $pt = function ($dotH) use ($dot) {
-        $mm = $dot($dotH);
-        return max(4.0, $mm / 0.352777);
-    };
-    
+    $dot = function ($d) { return ((float)$d) / 8.0; };
+    $pt = function ($dotH) use ($dot) { return max(4.0, ($dot($dotH)) / 0.352777); };
+
     $text = function ($xDot, $yDot, $fontPt, $value) use ($pdf, $dot) {
         $pdf->SetFont('helvetica', '', $fontPt);
         $pdf->Text($dot($xDot), $dot($yDot), (string)$value);
     };
-    
     $textB = function ($xDot, $yDot, $fontPt, $value) use ($pdf, $dot) {
         $pdf->SetFont('helvetica', 'B', $fontPt);
         $pdf->Text($dot($xDot), $dot($yDot), (string)$value);
     };
-
-    // ─── Encabezado ──────────────────────────────────────────────────
-    $pdf->SetLineWidth($dot(2));
-    $pdf->Rect($dot(10), $dot(12), $dot(812), $dot(386));
-    
-    $text(290, 22, $pt(17), $nombre);
-    $text(710, 20, $pt(18), 'SEM ' . $semana);
-    
-    $pdf->SetLineWidth($dot(1));
-    $pdf->Line($dot(10), $dot(42), $dot(10 + 812), $dot(42));
-
-    $text(280, 47, $pt(20), "Tipo de trabajo: Corte De Rejas");
-    $pdf->SetLineWidth($dot(1));
-    $pdf->Line($dot(10), $dot(75), $dot(10 + 812), $dot(75));
-
-    // ─── Celdas tipo Poda ─────────────────────────────────────────────
     $cellText = function ($xDot, $yDot, $wDot, $hDot, $fontPt, $value, $align = 'L') use ($pdf, $dot) {
         $pdf->SetFont('helvetica', '', $fontPt);
-        $pdf->SetXY($dot($xDot), $dot($yDot));
-        $pdf->Cell($dot($wDot), $dot($hDot), $value, 1, 0, $align, false, '', 0, false, 'C', 'M');
+        $pdf->SetXY($dot($xDot), $dot($yDot + 5));
+        $pdf->Cell($dot($wDot), $dot($hDot - 8), substr((string)$value, 0, 50), 0, 0, $align, false, '', 0, false, 'T', 'T');
     };
-    
-    $fNormal = $pt(16);
-    $fGrande = $pt(22);
-    
-    $xInicio = 10;
-    $yInicio = 100;
-    $anchoEtiqueta = 400;
-    $anchoValor = 412;
-    $altoCelda = 50;
-    $espacioCeldas = 50;
 
-    $cellText($xInicio, $yInicio, $anchoEtiqueta, $altoCelda, $fNormal, 'Total de rejas:', 'L');
-    $cellText($xInicio + $anchoEtiqueta, $yInicio, $anchoValor, $altoCelda, $fGrande, $totalRejas, 'C');
-
-    $cellText($xInicio, $yInicio + $espacioCeldas, $anchoEtiqueta, $altoCelda, $fNormal, 'Precio por reja:', 'L');
-    $cellText($xInicio + $anchoEtiqueta, $yInicio + $espacioCeldas, $anchoValor, $altoCelda, $fGrande, '$' . money($precioReja), 'C');
-
-    $cellText($xInicio, $yInicio + ($espacioCeldas * 2), $anchoEtiqueta, $altoCelda, $fNormal, 'Total efectivo:', 'L');
-    $cellText($xInicio + $anchoEtiqueta, $yInicio + ($espacioCeldas * 2), $anchoValor, $altoCelda, $fGrande, '$' . money($totalEfectivo), 'C');
-
-    $yLineaFinal = $yInicio + ($espacioCeldas * 3) + 20;
     $pdf->SetLineWidth($dot(2));
-    $pdf->Line($dot(10), $dot($yLineaFinal), $dot(10 + 812), $dot($yLineaFinal));
-    
-    $textB(18, $yLineaFinal + 35, $pt(28), 'TOTAL EFECTIVO');
-    $textB(280, $yLineaFinal + 35, $pt(28), '$');
-    $textB(300, $yLineaFinal + 35, $pt(28), money($totalEfectivo));
+    $pdf->Rect($dot(10), $dot(12), $dot(812), $dot(386));
+
+    $textB(12, 22, $pt(17), $nombre);
+    $text(710, 20, $pt(18), 'SEM ' . $semana);
+    $pdf->SetLineWidth($dot(1));
+    $pdf->Line($dot(10), $dot(42), $dot(822), $dot(42));
+    $text(280, 47, $pt(20), "Corte De Rejas");
+    $pdf->Line($dot(10), $dot(75), $dot(822), $dot(75));
+
+    $textB(150, 78, $pt(20), 'REJAS');
+    $textB(520, 78, $pt(20), 'NOMINA');
+    $pdf->Line($dot(10), $dot(107), $dot(822), $dot(107));
+
+    $rejasList = [];
+    $rejasList[] = ['label' => 'Total de rejas', 'monto' => $totalRejas];
+
+    $idx = 1;
+    foreach ($preciosUnicos as $precio) {
+        $rejasList[] = ['label' => 'Precio por reja ' . $idx, 'monto' => '$ ' . money($precio)];
+        $idx++;
+    }
+
+    $nominaList = [];
+    if ($diasTrabajados > 0) {
+        $nominaList[] = ['label' => 'Días trabajados', 'monto' => $diasTrabajados];
+        $idx = 1;
+        foreach ($preciosPorDia as $precio) {
+            $nominaList[] = ['label' => 'Precio por día ' . $idx, 'monto' => '$ ' . money($precio)];
+            $idx++;
+        }
+    }
+
+    $lh = 26; $tableTop = 107;
+    $maxC = max(count($rejasList), count($nominaList));
+    $maxRows1 = 9; $maxRowsC = 11;
+    $row = 0; $currentY = $tableTop;
+
+    for ($i = 0; $i < $maxC; $i++) {
+        if ($i >= $maxRows1 && ($i - $maxRows1) % $maxRowsC === 0) {
+            $pdf->AddPage();
+            $pdf->SetLineWidth($dot(2)); $pdf->Rect($dot(10), $dot(12), $dot(812), $dot(386));
+            $textB(12, 22, $pt(15), $nombre);
+            $text(710, 20, $pt(18), 'SEM ' . $semana);
+            $pdf->SetLineWidth($dot(1)); $pdf->Line($dot(10), $dot(42), $dot(822), $dot(42));
+            $textB(150, 48, $pt(20), 'REJAS');
+            $textB(520, 48, $pt(20), 'NOMINA');
+            $pdf->Line($dot(10), $dot(75), $dot(822), $dot(75));
+            $tableTop = 75; $row = 0;
+        }
+        $y = $tableTop + ($row * $lh);
+        if (isset($rejasList[$i])) {
+            $pdf->SetFont('helvetica', '', $pt(15));
+            $cellText(9, $y, 170, $lh, $pt(14), $rejasList[$i]['label'], 'L');
+            $cellText(240, $y, 229, $lh, $pt(16), $rejasList[$i]['monto'], 'C');
+        }
+        if (isset($nominaList[$i])) {
+            $pdf->SetFont('helvetica', '', $pt(15));
+            $cellText(410, $y, 218, $lh, $pt(14), $nominaList[$i]['label'], 'L');
+            $cellText(660, $y, 182, $lh, $pt(16), $nominaList[$i]['monto'], 'C');
+        }
+        $pdf->SetLineWidth($dot(1));
+        $pdf->Line($dot(10), $dot($y + $lh), $dot(822), $dot($y + $lh));
+        $pdf->SetLineWidth($dot(2));
+        $pdf->Line($dot(415), $dot($tableTop), $dot(415), $dot($y + $lh));
+        $currentY = $y + $lh; $row++;
+    }
+
+    $yT = $currentY + 18;
+    if ($yT > 310) {
+        $pdf->AddPage();
+        $pdf->SetLineWidth($dot(2)); $pdf->Rect($dot(10), $dot(12), $dot(812), $dot(386));
+        $textB(12, 22, $pt(15), $nombre);
+        $text(710, 20, $pt(18), 'SEM ' . $semana);
+        $pdf->SetLineWidth($dot(1)); $pdf->Line($dot(10), $dot(42), $dot(822), $dot(42));
+        $pdf->Line($dot(415), $dot(12), $dot(415), $dot(42));
+        $yT = 55;
+    }
+
+    $pdf->SetLineWidth($dot(2));
+    $pdf->Line($dot(10), $dot($yT), $dot(822), $dot($yT));
+    $text(18, $yT + 13, $pt(16), 'Efectivo rejas');
+    $text(310, $yT + 13, $pt(16), '$' . money($efectivoRejas));
+    $text(430, $yT + 13, $pt(16), 'Total nómina');
+    $text(710, $yT + 13, $pt(16), '$' . money($totalNomina));
+    $pdf->Line($dot(415), $dot($yT), $dot(415), $dot($yT + 37));
+    $pdf->Line($dot(10), $dot($yT + 37), $dot(822), $dot($yT + 37));
+
+    if (round($redondeo, 2) != 0) {
+        $signo = $redondeo > 0 ? '+' : '';
+        $text(18, $yT + 42, $pt(16), 'Total efectivo $' . money($subtotal) . ' ---------- ajustes redondeo: ' . $signo . '$' . money($redondeo));
+        $pdf->Line($dot(10), $dot($yT + 62), $dot(822), $dot($yT + 62));
+        $textB(18, $yT + 68, $pt(22), 'TOTAL EFECTIVO');
+        $textB(620, $yT + 68, $pt(22), '$');
+        $textB(640, $yT + 68, $pt(22), money($totalEfectivo));
+    } else {
+        $textB(18, $yT + 43, $pt(22), 'TOTAL EFECTIVO');
+        $textB(620, $yT + 43, $pt(22), '$');
+        $textB(640, $yT + 43, $pt(22), money($totalEfectivo));
+    }
 }
 
 function renderTicketPodaPdf($pdf, $empleado, $meta) {
     $nombre = safeText($empleado['nombre'] ?? '');
     $semana = safeText($meta['numero_semana'] ?? '');
-    
-    // Datos específicos de poda
     $totalArboles = toNumber($empleado['totalArboles'] ?? 0);
-    $pagoPorArbol = toNumber($empleado['monto'] ?? 0);
     $totalEfectivo = toNumber($empleado['totalEfectivo'] ?? 0);
-    
-    // ─── Funciones de dibujo ─────────────────────────────────────────
+    $desgloses = is_array($empleado['desgloses'] ?? null) ? $empleado['desgloses'] : [];
+
     $pdf->SetTextColor(0, 0, 0);
-    
-    $dot = function ($d) {
-        return ((float)$d) / 8.0;
-    };
-    $pt = function ($dotH) use ($dot) {
-        $mm = $dot($dotH);
-        return max(4.0, $mm / 0.352777);
-    };
-    
+    $dot = function ($d) { return ((float)$d) / 8.0; };
+    $pt = function ($dotH) use ($dot) { return max(4.0, ($dot($dotH)) / 0.352777); };
+
     $text = function ($xDot, $yDot, $fontPt, $value) use ($pdf, $dot) {
         $pdf->SetFont('helvetica', '', $fontPt);
         $pdf->Text($dot($xDot), $dot($yDot), (string)$value);
     };
-    
     $textB = function ($xDot, $yDot, $fontPt, $value) use ($pdf, $dot) {
         $pdf->SetFont('helvetica', 'B', $fontPt);
         $pdf->Text($dot($xDot), $dot($yDot), (string)$value);
     };
-    
-    // ─── Encabezado ──────────────────────────────────────────────────
-    $pdf->SetLineWidth($dot(2));
-    $pdf->Rect($dot(10), $dot(12), $dot(812), $dot(386));
-    
-    // Título principal
-    $text(290, 22, $pt(17), $nombre);
-    $text(710, 20, $pt(18), 'SEM ' . $semana);
-    
-    $pdf->SetLineWidth($dot(1));
-    $pdf->Line($dot(10), $dot(42), $dot(10 + 812), $dot(42));
-    
-    
-    // Tipo de trabajo
-     $text(280, 47, $pt(20), "Tipo de trabajo: Poda De Árboles");
-    $pdf->SetLineWidth($dot(1));
-    $pdf->Line($dot(10), $dot(75), $dot(10 + 812), $dot(75));
-    
-    // ─── Función para dibujar celdas ─────────────────────────────────────
     $cellText = function ($xDot, $yDot, $wDot, $hDot, $fontPt, $value, $align = 'L') use ($pdf, $dot) {
         $pdf->SetFont('helvetica', '', $fontPt);
-        $pdf->SetXY($dot($xDot), $dot($yDot));
-        $pdf->Cell($dot($wDot), $dot($hDot), $value, 1, 0, $align, false, '', 0, false, 'C', 'M');
+        $pdf->SetXY($dot($xDot), $dot($yDot + 5));
+        $pdf->Cell($dot($wDot), $dot($hDot - 8), substr((string)$value, 0, 50), 0, 0, $align, false, '', 0, false, 'T', 'T');
     };
-    
-    // ─── Tabla de datos en celdas ───────────────────────────────────────
-    $fNormal = $pt(16);
-    $fGrande = $pt(22);
-    
-    // Posiciones y tamaños
-   $xInicio = 10;
-    $yInicio = 100;
-    $anchoEtiqueta = 400;
-    $anchoValor = 412;
-    $altoCelda = 50;
-    $espacioCeldas = 50;
-    
-    // Fila 1: Total árboles podados
-    $cellText($xInicio, $yInicio, $anchoEtiqueta, $altoCelda, $fNormal, 'Total Árboles podados:', 'L');
-    $cellText($xInicio + $anchoEtiqueta, $yInicio, $anchoValor, $altoCelda, $fGrande, $totalArboles, 'C');
-    
-    // Fila 2: Pago por árbol
-    $cellText($xInicio, $yInicio + $espacioCeldas, $anchoEtiqueta, $altoCelda, $fNormal, 'Pago por árbol:', 'L');
-    $cellText($xInicio + $anchoEtiqueta, $yInicio + $espacioCeldas, $anchoValor, $altoCelda, $fGrande, '$' . money($pagoPorArbol), 'C');
-    
-    // Fila 3: Total efectivo
-    $cellText($xInicio, $yInicio + ($espacioCeldas * 2), $anchoEtiqueta, $altoCelda, $fNormal, 'Total efectivo:', 'L');
-    $cellText($xInicio + $anchoEtiqueta, $yInicio + ($espacioCeldas * 2), $anchoValor, $altoCelda, $fGrande, '$' . money($totalEfectivo), 'C');
-    
-    // Línea separadora antes del total final
-    $yLineaFinal = $yInicio + ($espacioCeldas * 3) + 20;
+
     $pdf->SetLineWidth($dot(2));
-    $pdf->Line($dot(10), $dot($yLineaFinal), $dot(10 + 812), $dot($yLineaFinal));
-    
-    // Total final como texto plano
-    $textB(18, $yLineaFinal + 35, $pt(28), 'TOTAL EFECTIVO');
-    $textB(280, $yLineaFinal + 35, $pt(28), '$');
-    $textB(300, $yLineaFinal + 35, $pt(28), money($totalEfectivo));
+    $pdf->Rect($dot(10), $dot(12), $dot(812), $dot(386));
+
+    $textB(12, 22, $pt(17), $nombre);
+    $text(710, 20, $pt(18), 'SEM ' . $semana);
+    $pdf->SetLineWidth($dot(1));
+    $pdf->Line($dot(10), $dot(42), $dot(822), $dot(42));
+    $text(280, 47, $pt(20), "Poda De Árboles");
+    $pdf->Line($dot(10), $dot(75), $dot(822), $dot(75));
+
+    $pagoArbolList = [];
+    $arbolesPoddosList = [];
+    $totalEfectivoList = [];
+
+    $idx = 1;
+    foreach ($desgloses as $d) {
+        $precio = toNumber($d['precio'] ?? 0);
+        $cantidad = toNumber($d['cantidad'] ?? 0);
+        $total = toNumber($d['total'] ?? 0);
+
+        $pagoArbolList[] = ['label' => 'Pago por árbol ' . $idx, 'monto' => '$ ' . money($precio)];
+        $arbolesPoddosList[] = ['label' => 'Árboles podados', 'monto' => $cantidad];
+        $totalEfectivoList[] = ['label' => 'Total efectivo árbol ' . $idx, 'monto' => '$ ' . money($total)];
+        $idx++;
+    }
+
+    $lh = 26; $tableTop = 75;
+    $maxC = max(count($pagoArbolList), count($arbolesPoddosList), count($totalEfectivoList));
+    $maxRows1 = 11; $maxRowsC = 13;
+    $row = 0; $currentY = $tableTop;
+
+    for ($i = 0; $i < $maxC; $i++) {
+        if ($i >= $maxRows1 && ($i - $maxRows1) % $maxRowsC === 0) {
+            $pdf->AddPage();
+            $pdf->SetLineWidth($dot(2)); $pdf->Rect($dot(10), $dot(12), $dot(812), $dot(386));
+            $textB(12, 22, $pt(15), $nombre);
+            $text(710, 20, $pt(18), 'SEM ' . $semana);
+            $pdf->SetLineWidth($dot(1)); $pdf->Line($dot(10), $dot(42), $dot(822), $dot(42));
+            $text(280, 47, $pt(20), "Poda De Árboles - Total árboles: " . intval($totalArboles));
+            $pdf->Line($dot(10), $dot(75), $dot(822), $dot(75));
+            $tableTop = 75; $row = 0;
+        }
+        $y = $tableTop + ($row * $lh);
+
+        if (isset($pagoArbolList[$i])) {
+            $pdf->SetFont('helvetica', '', $pt(15));
+            $cellText(9, $y, 170, $lh, $pt(14), $pagoArbolList[$i]['label'], 'L');
+            $cellText(140, $y, 100, $lh, $pt(16), $pagoArbolList[$i]['monto'], 'C');
+        }
+        if (isset($arbolesPoddosList[$i])) {
+            $pdf->SetFont('helvetica', '', $pt(15));
+            $cellText(280, $y, 150, $lh, $pt(14), $arbolesPoddosList[$i]['label'], 'L');
+            $cellText(400, $y, 100, $lh, $pt(16), $arbolesPoddosList[$i]['monto'], 'C');
+        }
+        if (isset($totalEfectivoList[$i])) {
+            $pdf->SetFont('helvetica', '', $pt(15));
+            $cellText(510, $y, 170, $lh, $pt(14), $totalEfectivoList[$i]['label'], 'L');
+            $cellText(675, $y, 82, $lh, $pt(16), $totalEfectivoList[$i]['monto'], 'C');
+        }
+
+        $pdf->SetLineWidth($dot(1));
+        $pdf->Line($dot(10), $dot($y + $lh), $dot(822), $dot($y + $lh));
+        $pdf->SetLineWidth($dot(2));
+        $pdf->Line($dot(270), $dot($tableTop), $dot(270), $dot($y + $lh));
+        $pdf->Line($dot(500), $dot($tableTop), $dot(500), $dot($y + $lh));
+        $currentY = $y + $lh; $row++;
+    }
+
+    $yT = $currentY + 18;
+    if ($yT > 310) {
+        $pdf->AddPage();
+        $pdf->SetLineWidth($dot(2)); $pdf->Rect($dot(10), $dot(12), $dot(812), $dot(386));
+        $textB(12, 22, $pt(15), $nombre);
+        $text(710, 20, $pt(18), 'SEM ' . $semana);
+        $pdf->SetLineWidth($dot(1)); $pdf->Line($dot(10), $dot(42), $dot(822), $dot(42));
+        $yT = 55;
+    }
+
+    $subtotal = 0;
+    foreach ($desgloses as $d) {
+        $subtotal += toNumber($d['total'] ?? 0);
+    }
+    $totalEfectivoRedondeado = round($subtotal);
+    $redondeo = $totalEfectivoRedondeado - $subtotal;
+
+    $pdf->SetLineWidth($dot(2));
+    $pdf->Line($dot(10), $dot($yT), $dot(822), $dot($yT));
+
+    if (round($redondeo, 2) != 0) {
+        $signo = $redondeo > 0 ? '+' : '';
+        $text(18, $yT + 13, $pt(16), 'Efectivo $' . money($subtotal) . ' ---------- ajustes redondeo: ' . $signo . '$' . money($redondeo));
+        $pdf->Line($dot(10), $dot($yT + 37), $dot(822), $dot($yT + 37));
+        $textB(18, $yT + 43, $pt(22), 'TOTAL EFECTIVO');
+        $textB(620, $yT + 43, $pt(22), '$');
+        $textB(640, $yT + 43, $pt(22), money($totalEfectivoRedondeado));
+    } else {
+        $text(430, $yT + 13, $pt(16), 'Total efectivo');
+        $text(710, $yT + 13, $pt(16), '$' . money($totalEfectivo));
+        $pdf->Line($dot(10), $dot($yT + 37), $dot(822), $dot($yT + 37));
+        $textB(18, $yT + 43, $pt(22), 'TOTAL EFECTIVO');
+        $textB(620, $yT + 43, $pt(22), '$');
+        $textB(640, $yT + 43, $pt(22), money($totalEfectivo));
+    }
+}
+
+function renderTicketExtraSimplificadoPdf($pdf, $empleado, $meta) {
+    $nombre = safeText($empleado['nombre'] ?? '');
+    $semana = safeText($meta['numero_semana'] ?? '');
+    $conceptosExtras = is_array($empleado['conceptosExtras'] ?? null) ? $empleado['conceptosExtras'] : [];
+
+    $subtotal = 0;
+    foreach ($conceptosExtras as $ex) {
+        $subtotal += toNumber($ex['monto'] ?? 0);
+    }
+    $totalFinal = round($subtotal);
+    $redondeo = $totalFinal - $subtotal;
+
+    $pdf->SetTextColor(0, 0, 0);
+    $dot = function ($d) { return ((float)$d) / 8.0; };
+    $pt = function ($dotH) use ($dot) { return max(4.0, ($dot($dotH)) / 0.352777); };
+
+    $text = function ($xDot, $yDot, $fontPt, $value) use ($pdf, $dot) {
+        $pdf->SetFont('helvetica', '', $fontPt);
+        $pdf->Text($dot($xDot), $dot($yDot), (string)$value);
+    };
+    $textB = function ($xDot, $yDot, $fontPt, $value) use ($pdf, $dot) {
+        $pdf->SetFont('helvetica', 'B', $fontPt);
+        $pdf->Text($dot($xDot), $dot($yDot), (string)$value);
+    };
+    $cellText = function ($xDot, $yDot, $wDot, $hDot, $fontPt, $value, $align = 'L') use ($pdf, $dot) {
+        $pdf->SetFont('helvetica', '', $fontPt);
+        $pdf->SetXY($dot($xDot), $dot($yDot + 5));
+        $pdf->Cell($dot($wDot), $dot($hDot - 8), substr((string)$value, 0, 50), 0, 0, $align, false, '', 0, false, 'T', 'T');
+    };
+
+    $pdf->SetLineWidth($dot(2));
+    $pdf->Rect($dot(10), $dot(12), $dot(812), $dot(386));
+
+    $textB(12, 22, $pt(17), $nombre);
+    $text(710, 20, $pt(18), 'SEM ' . $semana);
+    $pdf->SetLineWidth($dot(1));
+    $pdf->Line($dot(10), $dot(42), $dot(822), $dot(42));
+    $text(280, 47, $pt(20), "Pago Extra / Complemento");
+    $pdf->Line($dot(10), $dot(75), $dot(822), $dot(75));
+
+    $textB(150, 78, $pt(20), 'CONCEPTOS');
+    $textB(520, 78, $pt(20), 'MONTO');
+    $pdf->Line($dot(10), $dot(107), $dot(822), $dot(107));
+
+    $lh = 26; $tableTop = 107;
+    $row = 0;
+    foreach ($conceptosExtras as $ex) {
+        $y = $tableTop + ($row * $lh);
+        $cellText(9, $y, 400, $lh, $pt(16), safeText($ex['concepto']), 'L');
+        $cellText(410, $y, 400, $lh, $pt(16), '$ ' . money($ex['monto']), 'C');
+
+        $pdf->SetLineWidth($dot(1));
+        $pdf->Line($dot(10), $dot($y + $lh), $dot(822), $dot($y + $lh));
+        $row++;
+    }
+
+    $pdf->SetLineWidth($dot(2));
+    $pdf->Line($dot(415), $dot($tableTop), $dot(415), $dot($tableTop + ($row * $lh)));
+
+    $yPie = $tableTop + ($row * $lh) + 10;
+    if ($yPie > 320) { $pdf->AddPage(); $yPie = 50; }
+
+    $pdf->SetLineWidth($dot(2));
+    $pdf->Line($dot(10), $dot($yPie), $dot(822), $dot($yPie));
+
+    if (round($redondeo, 2) != 0) {
+        $signo = $redondeo > 0 ? '+' : '';
+        $text(18, $yPie + 13, $pt(16), 'Efectivo $' . money($subtotal) . ' ---------- ajustes redondeo: ' . $signo . '$' . money($redondeo));
+        $pdf->Line($dot(10), $dot($yPie + 37), $dot(822), $dot($yPie + 37));
+        $textB(18, $yPie + 43, $pt(22), 'TOTAL EFECTIVO');
+        $textB(620, $yPie + 43, $pt(22), '$');
+        $textB(640, $yPie + 43, $pt(22), money($totalFinal));
+    } else {
+        $text(430, $yPie + 13, $pt(16), 'Total efectivo');
+        $text(710, $yPie + 13, $pt(16), '$' . money($subtotal));
+        $pdf->Line($dot(10), $dot($yPie + 37), $dot(822), $dot($yPie + 37));
+        $textB(18, $yPie + 43, $pt(22), 'TOTAL EFECTIVO');
+        $textB(620, $yPie + 43, $pt(22), '$');
+        $textB(640, $yPie + 43, $pt(22), money($totalFinal));
+    }
 }
 
 function renderTicketPdf($pdf, $emp, $extra, $meta) {
@@ -656,11 +875,9 @@ if (isset($data['seleccion']) && $data['seleccion'] === true) {
     $empleados = $data['empleados'] ?? [];
     $meta = $data['meta'] ?? ['numero_semana' => ''];
 } elseif (isset($data['empleados']) && is_array($data['empleados'])) {
-    // Payload para tickets Corte/Poda
     $empleados = $data['empleados'] ?? [];
     $meta = $data['meta'] ?? ['numero_semana' => ''];
 } else {
-    // Procesar solicitud normal (todos los empleados o filtrados)
     if (!isset($data['nomina']) || !is_array($data['nomina'])) {
         http_response_code(400);
         echo 'Solicitud inválida: Estructura de nómina no encontrada.';
@@ -670,16 +887,170 @@ if (isset($data['seleccion']) && $data['seleccion'] === true) {
     $nomina = $data['nomina'];
     $meta   = $data['meta'] ?? ['numero_semana' => ''];
 
-    // ─── Recolectar empleados de todos los departamentos ─────────────────
-    $empleados = [];
+    $empleadosRaw = [];
     foreach (($nomina['departamentos'] ?? []) as $depto) {
-        $nombreDepto = $depto['nombre'] ?? '';
         foreach (($depto['empleados'] ?? []) as $emp) {
             if (is_array($emp)) {
-                $emp['departamento'] = $nombreDepto;
-                $empleados[] = $emp;
+                $emp['departamento'] = $depto['nombre'] ?? '';
+                $empleadosRaw[] = $emp;
             }
         }
+    }
+
+    $empleados = [];
+    $mapConsolidacion = [];
+
+    foreach ($empleadosRaw as $emp) {
+        $depto = strtoupper($emp['departamento'] ?? '');
+        $nombre = trim($emp['nombre'] ?? '');
+
+        if ($depto === 'CORTE' || $depto === 'PODA') {
+            $key = $depto . '|' . $nombre;
+            if (!isset($mapConsolidacion[$key])) {
+                $mapConsolidacion[$key] = $emp;
+                if ($depto === 'CORTE') {
+                    $mapConsolidacion[$key]['rejasArray'] = [];
+                    $mapConsolidacion[$key]['nominaArray'] = [];
+                } elseif ($depto === 'PODA') {
+                    $mapConsolidacion[$key]['movsArray'] = [];
+                }
+            }
+
+            if ($depto === 'CORTE') {
+                $conceptoEmp = strtoupper($emp['concepto'] ?? '');
+                if ($conceptoEmp === 'REJA' && isset($emp['tickets'])) {
+                    foreach ($emp['tickets'] as $t) {
+                        $mapConsolidacion[$key]['rejasArray'][] = ['ticket' => $t, 'precio' => $t['precio_reja'] ?? 0];
+                    }
+                } elseif ($conceptoEmp === 'NOMINA' && isset($emp['nomina'])) {
+                    $mapConsolidacion[$key]['nominaArray'] = array_merge($mapConsolidacion[$key]['nominaArray'], $emp['nomina']);
+                }
+            } elseif ($depto === 'PODA') {
+                if (isset($emp['movimientos'])) {
+                    $movsPoda = array_filter($emp['movimientos'], function($m) {
+                        return (strtoupper($m['concepto'] ?? '') === 'PODA');
+                    });
+                    if (!empty($movsPoda)) {
+                        $mapConsolidacion[$key]['movsArray'] = array_merge($mapConsolidacion[$key]['movsArray'], $movsPoda);
+                    }
+
+                    $movsExtras = array_filter($emp['movimientos'], function($m) {
+                        return (strtoupper($m['concepto'] ?? '') !== 'PODA');
+                    });
+                    if (!empty($movsExtras)) {
+                        if (!isset($mapConsolidacion[$key]['extrasArray'])) {
+                            $mapConsolidacion[$key]['extrasArray'] = [];
+                        }
+                        foreach ($movsExtras as $ex) {
+                            $mapConsolidacion[$key]['extrasArray'][] = [
+                                'concepto' => $ex['concepto'] ?? 'Extra',
+                                'monto' => $ex['monto'] ?? 0
+                            ];
+                        }
+                    }
+                }
+            }
+        } else {
+            $empleados[] = $emp;
+        }
+    }
+
+    foreach ($mapConsolidacion as $key => $consolidado) {
+        $partes = explode('|', $key);
+        $depto = $partes[0];
+
+        if ($depto === 'CORTE') {
+            $totalRejas = 0; $efectivoRejas = 0; $preciosUnicos = [];
+            $diasConCorte = [];
+
+            foreach ($consolidado['rejasArray'] as $r) {
+                $cantT = 0;
+                if (isset($r['ticket']['datosRejas'])) {
+                    foreach ($r['ticket']['datosRejas'] as $tr) {
+                        $cantT += intval($tr['cantidad'] ?? 0);
+                    }
+                }
+                $totalRejas += $cantT;
+                $efectivoRejas += ($cantT * ($r['precio'] ?? 0));
+                if (!in_array($r['precio'], $preciosUnicos)) $preciosUnicos[] = $r['precio'];
+
+                if ($cantT > 0 && isset($r['ticket']['fecha'])) {
+                    $dia = obtenerDiaSemanaDesdeFechaPhp($r['ticket']['fecha']);
+                    if ($dia) $diasConCorte[$dia] = true;
+                }
+            }
+
+            $diasTrabajados = 0; $totalNomina = 0; $preciosPorDia = [];
+            $hayDiasConCorte = !empty($diasConCorte);
+            foreach ($consolidado['nominaArray'] as $n) {
+                $nombreDia = normalizarDiaNominaPhp($n['dia'] ?? '');
+                $pago = toNumber($n['pago'] ?? 0);
+                if ($pago > 0 && (!$hayDiasConCorte || !empty($diasConCorte[$nombreDia]))) {
+                    $totalNomina += $pago;
+                    $diasTrabajados++;
+                    $preciosPorDia[] = $pago;
+                }
+            }
+
+            $subtotal = $efectivoRejas + $totalNomina;
+            $consolidado['totalRejas'] = $totalRejas;
+            $consolidado['efectivoRejas'] = $efectivoRejas;
+            $consolidado['preciosUnicos'] = $preciosUnicos;
+            $consolidado['diasTrabajados'] = $diasTrabajados;
+            $consolidado['totalNomina'] = $totalNomina;
+            $consolidado['preciosPorDia'] = $preciosPorDia;
+            $consolidado['subtotal'] = $subtotal;
+            $consolidado['redondeo'] = round($subtotal) - $subtotal;
+            $consolidado['totalEfectivo'] = round($subtotal);
+
+        } elseif ($depto === 'PODA') {
+            if (!empty($consolidado['movsArray'])) {
+                $podaTicket = $consolidado;
+                $totalArboles = 0; $totalEfectivo = 0; $desglosesMap = [];
+                $dias = ['viernes' => 0, 'sabado' => 0, 'domingo' => 0, 'lunes' => 0, 'martes' => 0, 'miercoles' => 0, 'jueves' => 0];
+
+                foreach ($consolidado['movsArray'] as $m) {
+                    $cant = intval($m['arboles_podados'] ?? 0);
+                    $monto = toNumber($m['monto'] ?? 0);
+                    $totalArboles += $cant;
+                    $totalEfectivo += ($cant * $monto);
+
+                    $precioKey = (string)$monto;
+                    if (!isset($desglosesMap[$precioKey])) {
+                        $desglosesMap[$precioKey] = ['precio' => $monto, 'cantidad' => 0, 'total' => 0];
+                    }
+                    $desglosesMap[$precioKey]['cantidad'] += $cant;
+                    $desglosesMap[$precioKey]['total'] += ($cant * $monto);
+
+                    if (isset($m['fecha'])) {
+                        $dw = strtolower(date('l', strtotime($m['fecha'])));
+                        $traduccion = ['friday' => 'viernes', 'saturday' => 'sabado', 'sunday' => 'domingo', 'monday' => 'lunes', 'tuesday' => 'martes', 'wednesday' => 'miercoles', 'thursday' => 'jueves'];
+                        $dia = $traduccion[$dw] ?? '';
+                        if (isset($dias[$dia])) $dias[$dia] += $cant;
+                    }
+                }
+                $podaTicket = array_merge($podaTicket, $dias);
+                $podaTicket['totalArboles'] = $totalArboles;
+                $podaTicket['totalEfectivo'] = $totalEfectivo;
+                $podaTicket['desgloses'] = array_values($desglosesMap);
+                $empleados[] = $podaTicket;
+            }
+
+            if (!empty($consolidado['extrasArray'])) {
+                $extraTicket = $consolidado;
+                $extraTicket['conceptosExtras'] = $consolidado['extrasArray'];
+                $totalEfectivoExtra = 0;
+                foreach ($consolidado['extrasArray'] as $ex) {
+                    $totalEfectivoExtra += toNumber($ex['monto'] ?? 0);
+                }
+                $extraTicket['totalEfectivo'] = $totalEfectivoExtra;
+                $extraTicket['esExtraPoda'] = true;
+                $empleados[] = $extraTicket;
+            }
+            continue;
+        }
+
+        $empleados[] = $consolidado;
     }
 }
 
@@ -701,18 +1072,19 @@ $pdf->setPrintHeader(false);
 $pdf->setPrintFooter(false);
 
 foreach ($empleados as $emp) {
-    $depto = safeText($emp['departamento'] ?? '');
-    if ($depto === 'Corte') {
+    $depto = strtoupper($emp['departamento'] ?? '');
+    $esExtraPoda = isset($emp['esExtraPoda']) && $emp['esExtraPoda'] === true;
+
+    if ($esExtraPoda) {
+        $pdf->AddPage();
+        renderTicketExtraSimplificadoPdf($pdf, $emp, $meta);
+    } elseif ($depto === 'CORTE') {
         $pdf->AddPage();
         renderTicketCortePdf($pdf, $emp, $meta);
-        continue;
-    }
-    if ($depto === 'Poda') {
+    } elseif ($depto === 'PODA') {
         $pdf->AddPage();
         renderTicketPodaPdf($pdf, $emp, $meta);
-        continue;
-    }
-
+    } else {
     // Nómina normal (flujo original)
     $clave = (string)($emp['clave'] ?? '');
     $id_empresa = isset($emp['id_empresa']) ? intval($emp['id_empresa']) : 1;
@@ -747,6 +1119,7 @@ foreach ($empleados as $emp) {
 
     $pdf->AddPage();
     renderTicketPdf($pdf, $emp, $extra, $meta);
+    }
 }
 
 // Limpiar cualquier salida previa que pueda corromper el PDF

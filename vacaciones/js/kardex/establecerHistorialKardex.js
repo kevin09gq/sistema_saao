@@ -25,6 +25,7 @@ function cargarKardexVacaciones(empleado) {
             
             // 1. Agregar fila inicial de "Vacaciones tomadas antes del registro del empleado" (Saldo inicial)
             listaModificada.push({
+                num_ciclo: 1,
                 concepto: 'Vacaciones tomadas antes del registro del empleado',
                 fecha_registro: '', // Columna vacia para que no interfiera con el orden cronológico
                 dias_movimiento: 0.000,
@@ -37,6 +38,7 @@ function cargarKardexVacaciones(empleado) {
             $.each(movimientos, function(i, m) {
                 if (m.concepto !== 'Vacaciones tomadas antes del registro del empleado') {
                     listaModificada.push({
+                        num_ciclo: m.num_ciclo || 1,
                         concepto: m.concepto,
                         // Limpiamos la fecha para quedarnos solo con YYYY-MM-DD
                         fecha_registro: m.fecha_registro.split(' ')[0], 
@@ -97,7 +99,11 @@ function cargarKardexVacaciones(empleado) {
                         // Obtenemos el último saldo resultante de la lista modificada
                         let saldoUltimo = listaModificada[listaModificada.length - 1].saldo_resultante;
                         
+                        // Obtenemos el ciclo más reciente de la lista
+                        let cicloActual = listaModificada[listaModificada.length - 1].num_ciclo || 1;
+                        
                         listaModificada.push({
+                            num_ciclo: cicloActual,
                             concepto: 'Proporción último año',
                             fecha_registro: hoy.toISOString().split('T')[0],
                             dias_movimiento: diasProporcionales,
@@ -248,7 +254,7 @@ function mostrarPaginaKardex(pagina) {
     let $tbody = $('#tbodyKardex').empty();
 
     if (total === 0) {
-        $tbody.append('<tr><td colspan="6" class="text-center text-muted">No hay movimientos registrados</td></tr>');
+        $tbody.append('<tr><td colspan="7" class="text-center text-muted">No hay movimientos registrados</td></tr>');
         actualizarControlesPaginacionKardex(0);
         return;
     }
@@ -260,6 +266,7 @@ function mostrarPaginaKardex(pagina) {
     $.each(fragmento, function (i, m) {
         let valorMov = parseFloat(m.dias_movimiento || 0);
         let saldoResultante = parseFloat(m.saldo_resultante || 0);
+        let numCiclo = m.num_ciclo || 1;
 
         let tipo = (valorMov >= 0) ? '<span class="type-abono">ABONO</span>' : '<span class="type-cargo">CARGO</span>';
         let diasTexto = (valorMov >= 0) ? `+${valorMov.toFixed(3)}` : `-${Math.abs(valorMov).toFixed(3)}`;
@@ -268,6 +275,7 @@ function mostrarPaginaKardex(pagina) {
 
         let fila = `
             <tr>
+                <td><span class="badge bg-secondary">${numCiclo}</span></td>
                 <td>${formatearFecha(m.fecha_registro)}</td>
                 <td>
                     <strong>${m.concepto}</strong>

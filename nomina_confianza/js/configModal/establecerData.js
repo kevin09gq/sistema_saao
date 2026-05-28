@@ -364,8 +364,9 @@ function establecerConceptos(empleado) {
 
     // Verificar si el empleado tiene seguro social
     const tieneSeguroSocial = empleado.seguroSocial !== false;
+    const quitarTarjeta = empleado.quitar_tarjeta === true;
 
-    desabilitarCamposConceptos(tieneSeguroSocial);
+    desabilitarCamposConceptos(tieneSeguroSocial, quitarTarjeta);
     const conceptos = empleado.conceptos || [];
 
     // Buscar conceptos por código
@@ -396,7 +397,7 @@ function calcularTotalConceptos() {
     $('#mod-total-conceptos-confianza').val(total.toFixed(2));
 }
 
-function desabilitarCamposConceptos(tieneSeguroSocial) {
+function desabilitarCamposConceptos(tieneSeguroSocial, quitarTarjeta) {
 
     // Deshabilitar o habilitar campos de conceptos según seguroSocial
     if (!tieneSeguroSocial) {
@@ -405,17 +406,17 @@ function desabilitarCamposConceptos(tieneSeguroSocial) {
         $('#mod-imss-confianza').prop('disabled', true);
         $('#mod-infonavit-confianza').prop('disabled', true);
         $('#mod-ajustes-sub-confianza').prop('disabled', true);
+        $('#mod-tarjeta-confianza').prop('disabled', true);
 
         // Deshabilitar botones de aplicar
         $('#btn-aplicar-isr-confianza').prop('disabled', true);
         $('#btn-aplicar-imss-confianza').prop('disabled', true);
         $('#btn-aplicar-infonavit-confianza').prop('disabled', true);
         $('#btn-aplicar-ajuste-sub-confianza').prop('disabled', true);
+        $('#btn-aplicar-tarjeta-confianza').prop('disabled', true);
 
         // Deshabilitar total (aunque ya tiene readonly)
         $('#mod-total-conceptos-confianza').prop('disabled', true);
-
-
 
         return; // Salir sin procesar conceptos
     }
@@ -425,13 +426,21 @@ function desabilitarCamposConceptos(tieneSeguroSocial) {
     $('#mod-imss-confianza').prop('disabled', false);
     $('#mod-infonavit-confianza').prop('disabled', false);
     $('#mod-ajustes-sub-confianza').prop('disabled', false);
+    $('#mod-tarjeta-confianza').prop('disabled', false);
 
     $('#btn-aplicar-isr-confianza').prop('disabled', false);
     $('#btn-aplicar-imss-confianza').prop('disabled', false);
     $('#btn-aplicar-infonavit-confianza').prop('disabled', false);
     $('#btn-aplicar-ajuste-sub-confianza').prop('disabled', false);
+    $('#btn-aplicar-tarjeta-confianza').prop('disabled', false);
 
     $('#mod-total-conceptos-confianza').prop('disabled', false);
+
+    // Si quitarTarjeta es true, deshabilitar específicamente el campo de la tarjeta
+    if (quitarTarjeta) {
+        $('#mod-tarjeta-confianza').prop('disabled', true);
+        $('#btn-aplicar-tarjeta-confianza').prop('disabled', true);
+    }
 }
 
 

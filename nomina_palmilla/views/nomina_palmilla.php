@@ -274,7 +274,7 @@
 
                 <!-- Grupo 3: Procesamiento -->
                 <div class="btn-group-palmilla btn-group-procesamiento">
-                    <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global"
+                    <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global" hidden
                         title="Aplicar Tarjeta">
                         <i class="bi bi-arrow-clockwise"></i>
                     </button>
@@ -282,7 +282,7 @@
                         title="Redondear Sueldos" aria-label="Redondear Sueldos">
                         <i class="bi bi-arrow-repeat"></i>
                     </button>
-                    <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta"
+                    <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta" hidden
                         aria-label="Quitar tarjeta">
                         <i class="bi bi-credit-card-2-back"></i>
                     </button>

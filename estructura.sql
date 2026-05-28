@@ -356,63 +356,35 @@ CREATE TABLE dias_vacaciones_lft (
     anios_antiguedad_inicio INT NOT NULL,
     anios_antiguedad_fin INT NULL,
     dias_vacaciones_correspondientes INT NOT NULL,
-    FOREIGN KEY (id_version_vacaciones) REFERENCES versiones_vacaciones_lft(id_version_vacaciones) ON UPDATE CASCADE ON DELETE CASCADE
+    FOREIGN KEY (id_version_vacaciones) REFERENCES versiones_vacaciones_lft (id_version_vacaciones) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- 3. Tabla para la prima vacacional (por separado por si cambia en un futuro)
 CREATE TABLE primas_vacacionales_lft (
     id_prima_vacacional INT AUTO_INCREMENT PRIMARY KEY,
     id_version_vacaciones INT NOT NULL,
-    porcentaje_prima DECIMAL(5,2) NOT NULL DEFAULT 25.00,
+    porcentaje_prima DECIMAL(5, 2) NOT NULL DEFAULT 25.00,
     fecha_inicio_vigencia DATE NOT NULL,
     fecha_fin_vigencia DATE NULL,
-    FOREIGN KEY (id_version_vacaciones) REFERENCES versiones_vacaciones_lft(id_version_vacaciones) ON UPDATE CASCADE ON DELETE CASCADE
+    FOREIGN KEY (id_version_vacaciones) REFERENCES versiones_vacaciones_lft (id_version_vacaciones) ON UPDATE CASCADE ON DELETE CASCADE
 );
-
 
 -- ==========================================
 -- TABLA: PERIODOS DE VACACIONES
 -- ==========================================
 CREATE TABLE vacaciones_periodos (
     id_periodo INT AUTO_INCREMENT PRIMARY KEY,
-
-    -- Empleado dueño del período
     id_empleado INT NOT NULL,
-
-    -- Fecha en que cumple aniversario
+    num_ciclo INT NOT NULL DEFAULT 1,
     fecha_aniversario DATE NOT NULL,
-
-    -- Años cumplidos
     anios_antiguedad INT NOT NULL,
-
-    -- Versión LFT aplicada
     id_version_vacaciones INT NOT NULL,
-
-    -- Días otorgados por derecho
-    dias_derecho DECIMAL(10,3) NOT NULL,
-
-    -- Días ya utilizados
-    dias_tomados DECIMAL(10,3) NOT NULL DEFAULT 0,
-
-    -- Saldo restante disponible
-    saldo DECIMAL(10,3) NOT NULL DEFAULT 0,
-
-    -- Estado del período
-    estatus ENUM(
-        'ACTIVO',
-        'VENCIDO'
-    ) NOT NULL DEFAULT 'ACTIVO',
-
-    -- Relaciones
-    FOREIGN KEY (id_empleado)
-        REFERENCES info_empleados(id_empleado)
-        ON UPDATE CASCADE
-        ON DELETE CASCADE,
-
-    FOREIGN KEY (id_version_vacaciones)
-        REFERENCES versiones_vacaciones_lft(id_version_vacaciones)
-        ON UPDATE CASCADE
-        ON DELETE RESTRICT
+    dias_derecho DECIMAL(10, 3) NOT NULL,
+    dias_tomados DECIMAL(10, 3) NOT NULL DEFAULT 0,
+    saldo DECIMAL(10, 3) NOT NULL DEFAULT 0,
+    estatus ENUM('ACTIVO', 'VENCIDO') NOT NULL DEFAULT 'ACTIVO',
+    FOREIGN KEY (id_empleado) REFERENCES info_empleados (id_empleado) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (id_version_vacaciones) REFERENCES versiones_vacaciones_lft (id_version_vacaciones) ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
 -- ==========================================
@@ -421,46 +393,45 @@ CREATE TABLE vacaciones_periodos (
 
 CREATE TABLE kardex_vacaciones (
     id_kardex INT AUTO_INCREMENT PRIMARY KEY,
-
-    -- Relación al período afectado
     id_periodo INT NOT NULL,
-
-    -- Empleado
     id_empleado INT NOT NULL,
-
-    -- Concepto visible en interfaz
+    num_ciclo INT NOT NULL DEFAULT 1,
     concepto VARCHAR(200) NOT NULL,
-
-    -- Fecha del movimiento
     fecha_registro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    -- Fechas del rango vacacional
     fecha_inicio DATE NULL,
     fecha_fin DATE NULL,
-
-    -- Cantidad de días del movimiento
-    dias_movimiento DECIMAL(10,3) NOT NULL,
-
-    -- Saldo resultante del período después del movimiento
-    saldo_resultante DECIMAL(10,3) NOT NULL,
-
-    -- Observaciones adicionales
+    dias_movimiento DECIMAL(10, 3) NOT NULL,
+    saldo_resultante DECIMAL(10, 3) NOT NULL,
     observaciones TEXT NULL,
+    FOREIGN KEY (id_periodo) REFERENCES vacaciones_periodos (id_periodo) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (id_empleado) REFERENCES info_empleados (id_empleado) ON UPDATE CASCADE ON DELETE CASCADE
+);
 
-    -- Relaciones
-    FOREIGN KEY (id_periodo)
-        REFERENCES vacaciones_periodos(id_periodo)
-        ON UPDATE CASCADE
-        ON DELETE CASCADE,
+CREATE TABLE prima_vacacional_empleados (
+    id_prima_empleado INT AUTO_INCREMENT PRIMARY KEY,
+    id_empleado INT NOT NULL,
+    fecha_registro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    numero_semana INT NOT NULL,
+    anio INT NOT NULL,
+    fecha_pago DATE NOT NULL,
+    fecha_inicio DATE NOT NULL,
+    fecha_fin DATE NOT NULL,
+    dias_vacaciones DECIMAL(10,3) NOT NULL,
+    domingos INT NOT NULL DEFAULT 0,
+    festivos INT NOT NULL DEFAULT 0,
+    salario_diario DECIMAL(10,2) NOT NULL,
+    porcentaje_prima DECIMAL(5,2) NOT NULL,
+    monto_prima_vacacional DECIMAL(10, 2) NOT NULL,
+    dispersion_tarjeta DECIMAL(10, 2) NOT NULL,
+    isr DECIMAL(10, 2) NOT NULL,
+    total_pagado DECIMAL(10, 2) NOT NULL,
+    observaciones TEXT NULL,
 
     FOREIGN KEY (id_empleado)
         REFERENCES info_empleados(id_empleado)
         ON UPDATE CASCADE
         ON DELETE CASCADE
 );
-
-
-
 -- =============================
 -- TABLA DE HORARIOS RELOJ 8 HRS
 -- =============================
@@ -811,7 +782,8 @@ INSERT INTO status (nombre_status) VALUES ('Activo'), ('Baja');
 INSERT INTO rol (nombre_rol) VALUES ('admin'), ('empleado');
 
 -- Procedimiento para crear casilleros del 1 al 300
-DELIMITER / /
+DELIMITER /
+/
 
 CREATE PROCEDURE crear_casilleros()
 BEGIN
@@ -821,7 +793,9 @@ BEGIN
         VALUES (i);
         SET i = i + 1;
     END WHILE;
-END //
+END
+/
+/
 
 DELIMITER;
 
@@ -832,32 +806,39 @@ INSERT INTO tabulador ( id_tabulador, id_empresa, info_tabulador )
 
 -- Versiones de Tablas de Vacaciones LFT
 
-INSERT INTO dias_vacaciones_lft 
-(id_version_vacaciones, anios_antiguedad_inicio, anios_antiguedad_fin, dias_vacaciones_correspondientes) 
-VALUES 
-(1, 1, NULL, 6),
-(1, 2, NULL, 8),
-(1, 3, NULL, 10),
-(1, 4, NULL, 12),
-(1, 5, 9, 14),
-(1, 10, 14, 16),
-(1, 15, 19, 18),
-(1, 20, 24, 20),
-(1, 25, 29, 22),
-(1, 30, 34, 24);
+INSERT INTO
+    dias_vacaciones_lft (
+        id_version_vacaciones,
+        anios_antiguedad_inicio,
+        anios_antiguedad_fin,
+        dias_vacaciones_correspondientes
+    )
+VALUES (1, 1, NULL, 6),
+    (1, 2, NULL, 8),
+    (1, 3, NULL, 10),
+    (1, 4, NULL, 12),
+    (1, 5, 9, 14),
+    (1, 10, 14, 16),
+    (1, 15, 19, 18),
+    (1, 20, 24, 20),
+    (1, 25, 29, 22),
+    (1, 30, 34, 24);
 
-
-INSERT INTO dias_vacaciones_lft 
-(id_version_vacaciones, anios_antiguedad_inicio, anios_antiguedad_fin, dias_vacaciones_correspondientes) 
-VALUES 
-(2, 1, NULL, 12),
-(2, 2, NULL, 14),
-(2, 3, NULL, 16),
-(2, 4, NULL, 18),
-(2, 5, NULL, 20),
-(2, 6, 10, 22),
-(2, 11, 15, 24),
-(2, 16, 20, 26),
-(2, 21, 25, 28),
-(2, 26, 30, 30),
-(2, 31, 35, 32);
+INSERT INTO
+    dias_vacaciones_lft (
+        id_version_vacaciones,
+        anios_antiguedad_inicio,
+        anios_antiguedad_fin,
+        dias_vacaciones_correspondientes
+    )
+VALUES (2, 1, NULL, 12),
+    (2, 2, NULL, 14),
+    (2, 3, NULL, 16),
+    (2, 4, NULL, 18),
+    (2, 5, NULL, 20),
+    (2, 6, 10, 22),
+    (2, 11, 15, 24),
+    (2, 16, 20, 26),
+    (2, 21, 25, 28),
+    (2, 26, 30, 30),
+    (2, 31, 35, 32);

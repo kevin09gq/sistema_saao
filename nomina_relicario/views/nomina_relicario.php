@@ -21,7 +21,7 @@
     <link rel="stylesheet" href="../css/modalCoordinador.css">
     <link rel="stylesheet" href="../css/modalJornaleros.css">
     <link rel="stylesheet" href="../css/conceptos_totales.css">
-   
+
 
     <link rel="stylesheet" href="<?= JQUERY_UI_CSS ?>">
 
@@ -198,7 +198,7 @@
 
                 <!-- Grupo 3: Procesamiento -->
                 <div class="btn-group-relicario btn-group-procesamiento">
-                    <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global"
+                    <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global" hidden
                         title="Aplicar Tarjeta">
                         <i class="bi bi-arrow-clockwise"></i>
                     </button>
@@ -206,9 +206,12 @@
                         title="Redondear Sueldos" aria-label="Redondear Sueldos">
                         <i class="bi bi-arrow-repeat"></i>
                     </button>
-                    <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta"
+                    <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" hidden
                         title="Quitar tarjeta" aria-label="Quitar tarjeta">
                         <i class="bi bi-credit-card-2-back"></i>
+                    </button>
+                    <button class="btn btn-outline-info" id="btn_abrir_add_remove_tarjeta" title="Configurar Tarjeta/Impuestos por Empleado">
+                        <i class="bi bi-person-gear"></i>
                     </button>
                     <button class="btn btn-outline-primary" id="btn_add_percepciones_deducciones"
                         title="Agregar Percepciones/Deducciones Extras">
@@ -403,7 +406,7 @@
     </div>
 
 
-    
+
     <!-- Modal para los cortes -->
     <?php include "modalsCorte/modalCorte.php"; ?>
     <?php include "modalsCorte/modalCorteNominaEditar.php"; ?>
@@ -413,8 +416,6 @@
     <?php include __DIR__ . "/modalsPoda/modalPoda.php"; ?>
     <?php include __DIR__ . "/modalsPoda/modalPodaDetalles.php"; ?>
     <?php include __DIR__ . "/modalsPoda/modalPodaDetallesExtra.php"; ?>
-
-
 
     <!-- Incluir los modales -->
     <?php include "modalsNomina/modalCoordinador.php"; ?>
@@ -430,6 +431,7 @@
     <?php include "modalsNomina/modalDiasExtra.php"; ?>
     <?php include "modalsNomina/modalOlvidos.php"; ?>
     <?php include "modalsNomina/modalReasignarEmpleado.php"; ?>
+    <?php include 'modalsNomina/modalAddRemoveTarjeta.php'; ?>
     <?php include "modalsNomina/modalRedondeoSueldos.php"; ?>
     <?php include "modalsNomina/modal_seleccion_tickets_relicario.php"; ?>
     <?php include "modalsNomina/modalTicketsEmpleados.php"; ?>
@@ -480,6 +482,7 @@
     <script src="../js/configModales/reasignarEmpleado.js"></script>
     <script src="../js/configModales/redondearSueldos.js"></script>
     <script src="../js/configModales/addPercepcionesDeducciones.js"></script>
+    <script src="../js/configModales/addRemoveTarjeta.js"></script>
 
     <script src="../js/configModalCorte/configCorte.js"></script>
     <script src="../js/configModalCorte/showTablaCorte.js"></script>

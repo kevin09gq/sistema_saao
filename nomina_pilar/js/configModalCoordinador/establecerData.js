@@ -366,8 +366,9 @@ function establecerConceptos(empleado) {
 
     // Verificar si el empleado tiene seguro social
     const tieneSeguroSocial = empleado.seguroSocial !== false;
+    const quitarTarjeta = empleado.quitar_tarjeta === true;
 
-    desabilitarCamposConceptos(tieneSeguroSocial);
+    desabilitarCamposConceptos(tieneSeguroSocial, quitarTarjeta);
     const conceptos = empleado.conceptos || [];
 
     // Buscar conceptos por código
@@ -398,7 +399,7 @@ function calcularTotalConceptos() {
     $('#mod-total-conceptos-coordinador').val(total.toFixed(2));
 }
 
-function desabilitarCamposConceptos(tieneSeguroSocial) {
+function desabilitarCamposConceptos(tieneSeguroSocial, quitarTarjeta) {
 
     // Deshabilitar o habilitar campos de conceptos según seguroSocial
     if (!tieneSeguroSocial) {
@@ -407,17 +408,17 @@ function desabilitarCamposConceptos(tieneSeguroSocial) {
         $('#mod-imss-coordinador').prop('disabled', true);
         $('#mod-infonavit-coordinador').prop('disabled', true);
         $('#mod-ajustes-sub-coordinador').prop('disabled', true);
+        $('#mod-tarjeta-coordinador').prop('disabled', true);
 
         // Deshabilitar botones de aplicar
         $('#btn-aplicar-isr-coordinador').prop('disabled', true);
         $('#btn-aplicar-imss-coordinador').prop('disabled', true);
         $('#btn-aplicar-infonavit-coordinador').prop('disabled', true);
         $('#btn-aplicar-ajuste-sub-coordinador').prop('disabled', true);
+        $('#btn-aplicar-tarjeta-coordinador').prop('disabled', true);
 
         // Deshabilitar total (aunque ya tiene readonly)
         $('#mod-total-conceptos-coordinador').prop('disabled', true);
-
-
 
         return; // Salir sin procesar conceptos
     }
@@ -427,13 +428,21 @@ function desabilitarCamposConceptos(tieneSeguroSocial) {
     $('#mod-imss-coordinador').prop('disabled', false);
     $('#mod-infonavit-coordinador').prop('disabled', false);
     $('#mod-ajustes-sub-coordinador').prop('disabled', false);
+    $('#mod-tarjeta-coordinador').prop('disabled', false);
 
     $('#btn-aplicar-isr-coordinador').prop('disabled', false);
     $('#btn-aplicar-imss-coordinador').prop('disabled', false);
     $('#btn-aplicar-infonavit-coordinador').prop('disabled', false);
     $('#btn-aplicar-ajuste-sub-coordinador').prop('disabled', false);
+    $('#btn-aplicar-tarjeta-coordinador').prop('disabled', false);
 
     $('#mod-total-conceptos-coordinador').prop('disabled', false);
+
+    // Si quitarTarjeta es true, deshabilitar específicamente el campo de la tarjeta
+    if (quitarTarjeta) {
+        $('#mod-tarjeta-coordinador').prop('disabled', true);
+        $('#btn-aplicar-tarjeta-coordinador').prop('disabled', true);
+    }
 }
 
 

@@ -11,7 +11,7 @@ function validarApellido(apellido) {
 }
 
 function validarClave(clave) {
-    var validar = /^(\d+|SS\/\d{3})$/;
+    var validar = /^(\d+|SS\/\d{3})$/i;
     return validar.test(clave);
 }
 

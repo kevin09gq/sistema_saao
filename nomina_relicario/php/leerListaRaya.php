@@ -17,6 +17,31 @@ $actualDepto = null;
 $ultimoEmpleadoIdx = null;
 $procesandoEmpleados = false;
 
+function convertirImporteANumero($valor)
+{
+    if (is_numeric($valor)) {
+        return (float) $valor;
+    }
+
+    if (!is_string($valor)) {
+        return 0.0;
+    }
+
+    $valorLimpio = trim($valor);
+    $valorLimpio = str_replace(['$', ',', ' '], '', $valorLimpio);
+
+    if ($valorLimpio === '' || !is_numeric($valorLimpio)) {
+        return 0.0;
+    }
+
+    return (float) $valorLimpio;
+}
+
+function formatearImporteComoTexto($valor)
+{
+    return number_format((float) $valor, 2, '.', '');
+}
+
 // Variables para semana y fechas
 $numeroSemana = null;
 $fechaInicio = null;
@@ -127,7 +152,32 @@ foreach ($rows as $row) {
         $codigoConcepto = trim($row[5]);
         $nombreConcepto = trim($row[6]);
         $resultadoConcepto = trim($row[8]);
-        if (in_array($codigoConcepto, ['45', '52', '16'])) {
+
+        if (in_array($codigoConcepto, ['14', '15', '16'], true)) {
+            $importeInfonavit = convertirImporteANumero($resultadoConcepto);
+            $concepto16Idx = null;
+
+            foreach ($actualDepto['empleados'][$ultimoEmpleadoIdx]['conceptos'] as $idx => $concepto) {
+                if (($concepto['codigo'] ?? null) === '16') {
+                    $concepto16Idx = $idx;
+                    break;
+                }
+            }
+
+            if ($concepto16Idx === null) {
+                $actualDepto['empleados'][$ultimoEmpleadoIdx]['conceptos'][] = [
+                    'codigo' => '16',
+                    'nombre' => 'INFONAVIT',
+                    'resultado' => formatearImporteComoTexto($importeInfonavit)
+                ];
+            } else {
+                $nuevoImporte =
+                    convertirImporteANumero($actualDepto['empleados'][$ultimoEmpleadoIdx]['conceptos'][$concepto16Idx]['resultado']) + $importeInfonavit;
+
+                $actualDepto['empleados'][$ultimoEmpleadoIdx]['conceptos'][$concepto16Idx]['resultado'] =
+                    formatearImporteComoTexto($nuevoImporte);
+            }
+        } elseif (in_array($codigoConcepto, ['45', '52'], true)) {
             $actualDepto['empleados'][$ultimoEmpleadoIdx]['conceptos'][] = [
                 'codigo' => $codigoConcepto,
                 'nombre' => $nombreConcepto,

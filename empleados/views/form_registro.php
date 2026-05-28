@@ -95,8 +95,14 @@ verificarSesion();
                                     <div class="row">
                                         <div class="col-md-3 mb-3">
                                             <label for="clave_trabajador" class="form-label">Clave de Empleado</label>
-                                            <input type="text" class="form-control" id="clave_trabajador"
-                                                name="clave_empleado">
+                                            <div class="input-group">
+                                                <button class="btn btn-outline-info" type="button"
+                                                    id="btnAbrirModalClaves" title="Consultar claves disponibles">
+                                                    <i class="bi bi-search"></i>
+                                                </button>
+                                                <input type="text" class="form-control" id="clave_trabajador"
+                                                    name="clave_empleado" placeholder="Ej: 002 o SS/012">
+                                            </div>
                                         </div>
                                         <div class="col-md-3 mb-3">
                                             <label for="nombre_trabajador" class="form-label">Nombre(s)</label>
@@ -193,8 +199,16 @@ verificarSesion();
 
                                         <div class="col-md-3 mb-3">
                                             <label for="biometrico" class="form-label">Biométrico</label>
-                                            <input type="number" class="form-control" id="biometrico" name="biometrico"
-                                                min="0" placeholder="ID biométrico">
+                                            <div class="input-group">
+                                                <button class="btn btn-outline-info btn-abrir-modal-biometrico"
+                                                    type="button" data-target-input="#biometrico"
+                                                    data-area-input="#area_trabajador"
+                                                    title="Consultar biométricos">
+                                                    <i class="bi bi-search"></i>
+                                                </button>
+                                                <input type="number" class="form-control" id="biometrico"
+                                                    name="biometrico" min="0" placeholder="ID biométrico">
+                                            </div>
                                         </div>
                                         <div class="col-md-3 mb-3">
                                             <label for="telefono_empleado" class="form-label">Teléfono</label>
@@ -625,6 +639,9 @@ verificarSesion();
         </div>
     </div>
 
+    <?php include("../views/modal_claves_disponibles.php"); ?>
+    <?php include("../views/modal_biometricos.php"); ?>
+
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
     <!-- Bootstrap JS -->
@@ -632,6 +649,8 @@ verificarSesion();
     <!-- JS personalizados -->
     <script src="../../public/js/validaciones.js"></script>
     <script src="../controllers/registro_empleado.js"></script>
+    <script src="../controllers/modal_claves_disponibles.js"></script>
+    <script src="../controllers/modal_biometricos.js"></script>
     <script src="../controllers/casillero_registro.js"></script>
 
 

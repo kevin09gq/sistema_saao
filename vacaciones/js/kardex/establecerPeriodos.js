@@ -109,7 +109,7 @@ function mostrarPaginaPeriodos(pagina) {
     let $tbody = $('#tbodyPeriodos').empty();
 
     if (total === 0) {
-        $tbody.append('<tr><td colspan="7" class="text-center text-muted">No hay periodos registrados</td></tr>');
+        $tbody.append('<tr><td colspan="8" class="text-center text-muted">No hay periodos registrados</td></tr>');
         actualizarControlesPaginacion(0);
         return;
     }
@@ -122,8 +122,10 @@ function mostrarPaginaPeriodos(pagina) {
     // Renderizar filas
     $.each(fragmento, function(i, p) {
         let statusClass = p.estatus.toLowerCase();
+        let numCiclo = p.num_ciclo || 1;
         let fila = `
             <tr>
+                <td><span class="badge bg-secondary">${numCiclo}</span></td>
                 <td>${formatearFecha(p.fecha_aniversario)}</td>
                 <td>${p.anios_antiguedad}</td>
                 <td><small>${p.nombre_version}</small></td>

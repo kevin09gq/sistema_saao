@@ -134,8 +134,8 @@ function aplicarDiasExtraEmpleado() {
             showConfirmButton: false
         });
 
-        // Cerrar modal
-        bootstrap.Modal.getInstance(document.getElementById('modal-dias-extra')).hide();
+        // Refrescar la lista del modal sin cerrarlo
+        cargarJornalerosEnModal();
     });
 }
 
@@ -180,8 +180,8 @@ function quitarDiaExtraEmpleado() {
             showConfirmButton: false
         });
 
-        // Cerrar modal
-        bootstrap.Modal.getInstance(document.getElementById('modal-dias-extra')).hide();
+        // Refrescar la lista del modal sin cerrarlo
+        cargarJornalerosEnModal();
     });
 }
 

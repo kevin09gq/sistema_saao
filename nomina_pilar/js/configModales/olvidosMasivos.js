@@ -182,14 +182,15 @@ function aplicarPerdonOlvidos() {
                     });
                 });
 
-                // Guardar cambios, refrescar tabla y cerrar
+                // Guardar cambios y refrescar
                 if (typeof saveNomina === 'function') {
                     saveNomina(jsonNominaPilar);
                 }
                 // Actualizar la tabla manteniendo la paginación actual
                aplicarFiltrosActuales();
 
-                $('#modal-olvidos-masivos').modal('hide');
+                // Refrescar la lista de olvidos en el modal sin cerrarlo
+                renderizarListaOlvidos(diaSeleccionado);
 
                 Swal.fire({
                     title: '¡Completado!',

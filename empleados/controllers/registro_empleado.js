@@ -49,6 +49,7 @@ $(document).ready(function () {
     formatearMayusculas("#nombre_trabajador");
     formatearMayusculas("#apellido_paterno");
     formatearMayusculas("#apellido_materno");
+    formatearMayusculas("#clave_trabajador");
     formatearMayusculas("#curp_trabajador");
     formatearMayusculas("#grupo_sanguineo_trabajador");
     formatearMayusculas("#rfc_trabajador");

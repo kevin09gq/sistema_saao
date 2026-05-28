@@ -1,5 +1,7 @@
 <?php
-require_once __DIR__ . '/../../config/config.php';
+include("../../conexion/conexion.php");
+/** @var mysqli $conexion */
+
 
 $action = $_POST['action'] ?? '';
 

@@ -211,9 +211,9 @@ function obtener_empleados()
                     WHEN MAX(hr.fecha_reingreso) IS NOT NULL 
                         THEN MAX(hr.fecha_reingreso)
                     ELSE e.fecha_alta_empresa
-                END AS fecha_alta_empresa,
+                END AS fecha_ingreso_real,
 
-                e.fecha_alta_imss AS fecha_alta_imss,
+                e.fecha_alta_imss AS fecha_ingreso_imss,
 
                 d.nombre_departamento,
                 d.id_departamento,
@@ -223,7 +223,7 @@ function obtener_empleados()
 
                 e.id_area,
 
-                nd.color_depto_nomina AS color_departamento
+                MAX(nd.color_depto_nomina) AS color_departamento
 
             FROM info_empleados e
 
@@ -241,7 +241,9 @@ function obtener_empleados()
 
             WHERE e.id_status = 1
 
-            GROUP BY e.id_empleado
+            GROUP BY e.id_empleado, e.clave_empleado, e.nombre, e.ap_paterno, e.ap_materno, 
+                     e.id_empresa, e.status_nss, e.salario_diario, d.nombre_departamento, 
+                     d.id_departamento, e.id_puestoEspecial, p.nombre_puesto, e.id_area
 
             ORDER BY e.nombre ASC";
 
@@ -271,9 +273,9 @@ function obtener_empleados()
             "status_nss"         => (int)$row["status_nss"],
             "salario_diario"     => $row["salario_diario"],
 
-            "fecha_alta_empresa" => $row["fecha_alta_empresa"],
+            "fecha_ingreso_real" => $row["fecha_ingreso_real"],
             // Por defecto es null, se obtiene luego
-            "fecha_alta_imss" => $row["fecha_alta_imss"],
+            "fecha_ingreso_imss" => $row["fecha_ingreso_imss"],
 
             "nombre_departamento" => $row["nombre_departamento"],
             "color_departamento"  => $row["color_departamento"],
@@ -396,7 +398,7 @@ function obtener_aguinaldos_historial()
         // OBTENER EL NÚMERO DE PÁGINA (por defecto 1)
         $pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
         $registrosPorPagina = 10;
-        
+
         // OBTENER EL TÉRMINO DE BÚSQUEDA (por defecto vacío)
         $busqueda = isset($_GET['busqueda']) ? trim($_GET['busqueda']) : '';
 
@@ -490,7 +492,8 @@ function obtener_aguinaldos_historial()
 /**
  * Función para borrar un registro de aguinaldo por su ID
  */
-function borrar_aguinaldo() {
+function borrar_aguinaldo()
+{
     global $conexion;
 
     try {

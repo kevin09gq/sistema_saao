@@ -267,7 +267,12 @@ verificarSesion();
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label for="modal_biometrico" class="form-label">Biométrico</label>
-                                        <input type="number" class="form-control" id="modal_biometrico" name="biometrico" min="0" placeholder="ID biométrico">
+                                        <div class="input-group">
+                                            <button class="btn btn-outline-info btn-abrir-modal-biometrico" type="button" data-target-input="#modal_biometrico" data-area-input="#modal_area" data-open-all="true" title="Consultar biométricos">
+                                                <i class="bi bi-search"></i>
+                                            </button>
+                                            <input type="number" class="form-control" id="modal_biometrico" name="biometrico" min="0" placeholder="ID biométrico">
+                                        </div>
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label for="modal_telefono_empleado" class="form-label">Teléfono</label>
@@ -699,12 +704,15 @@ verificarSesion();
         </div>
     </div>
 
+    <?php include("../views/modal_biometricos.php"); ?>
+
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
     <!-- Bootstrap JS -->
     <script src="<?= BOOTSTRAP_JS ?>"></script>
     <script src="../controllers/paginacion.js"></script>
     <script src="../controllers/config_actualizar.js"></script>
+    <script src="../controllers/modal_biometricos.js"></script>
     <script src="../controllers/casillero_empleado.js"></script>
     <script src="../../public/js/validaciones.js"></script>
 

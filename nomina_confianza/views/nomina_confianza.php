@@ -117,13 +117,16 @@
                         title="Redondear Sueldos Masivo" aria-label="Redondear Sueldos Masivo">
                         <i class="bi bi-arrow-repeat"></i>
                     </button>
-                    <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global"
+                    <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global" hidden
                         title="Aplicar Tarjeta">
                         <i class="bi bi-arrow-clockwise"></i>
                     </button>
-                    <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta"
+                    <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta" hidden
                         aria-label="Quitar tarjeta">
                         <i class="bi bi-credit-card-2-back"></i>
+                    </button>
+                    <button class="btn btn-outline-info" id="btn_abrir_add_remove_tarjeta" title="Configurar Tarjeta/Impuestos por Empleado">
+                        <i class="bi bi-person-gear"></i>
                     </button>
                     <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf"
                         title="Descargar Todos los Tickets">
@@ -245,13 +248,14 @@
     <?php include 'modals/modalDiasInhabiles.php'; ?>
     <?php include 'modals/modalOlvidos.php'; ?>
     <?php include 'modals/modalConceptosTotales.php'; ?>
+    <?php include 'modals/modalAddRemoveTarjeta.php'; ?>
     <?php include 'modals/modalTicketsEmpleados.php'; ?>
     <?php include 'modals/modal_seleccion_tickets_confianza.php'; ?>
     <?php include 'modals/modalExportarNomina.php'; ?>
     <?php include 'modals/modalReasignarEmpleado.php'; ?>
     <?php include 'modals/modalRedondeoSueldos.php'; ?>
     <?php include 'modals/dispersionTarjeta.php'; ?>
-    
+
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
     <script src="<?= JQUERY_UI_JS ?>"></script>
@@ -286,6 +290,7 @@
     <script src="../js/configModales/reasignarEmpleado.js"></script>
     <script src="../js/configModales/redondearSueldos.js"></script>
     <script src="../js/configModales/addPercepcionesDeducciones.js"></script>
+    <script src="../js/configModales/addRemoveTarjeta.js"></script>
 
     <script src="../js/ticket_pdf.js"></script>
     <script src="../js/ticket_seleccion_confianza.js"></script>

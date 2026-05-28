@@ -86,41 +86,7 @@ function modificarConceptos(empleado) {
     actualizarConcepto("107", parseFloat($('#mod-ajustes-sub-10lbs').val()) || 0); // Ajuste al Sub
 }
 
-function desabilitarCamposConceptos(tieneSeguroSocial) {
 
-    // Deshabilitar o habilitar campos de conceptos según seguroSocial
-    if (!tieneSeguroSocial) {
-        // Deshabilitar campos de entrada
-        $('#mod-isr-10lbs').prop('disabled', true);
-        $('#mod-imss-10lbs').prop('disabled', true);
-        $('#mod-infonavit-10lbs').prop('disabled', true);
-        $('#mod-ajustes-sub-10lbs').prop('disabled', true);
-
-        // Deshabilitar botones de aplicar
-        $('#btn-aplicar-isr-10lbs').prop('disabled', true);
-        $('#btn-aplicar-imss-10lbs').prop('disabled', true);
-        $('#btn-aplicar-infonavit-10lbs').prop('disabled', true);
-        $('#btn-aplicar-ajuste-sub-10lbs').prop('disabled', true);
-
-        // Deshabilitar total (aunque ya tiene readonly)
-        $('#mod-total-conceptos-10lbs').prop('disabled', true);
-
-        return; // Salir sin procesar conceptos
-    }
-
-    // Si tiene seguro social, habilitar los campos
-    $('#mod-isr-10lbs').prop('disabled', false);
-    $('#mod-imss-10lbs').prop('disabled', false);
-    $('#mod-infonavit-10lbs').prop('disabled', false);
-    $('#mod-ajustes-sub-10lbs').prop('disabled', false);
-
-    $('#btn-aplicar-isr-10lbs').prop('disabled', false);
-    $('#btn-aplicar-imss-10lbs').prop('disabled', false);
-    $('#btn-aplicar-infonavit-10lbs').prop('disabled', false);
-    $('#btn-aplicar-ajuste-sub-10lbs').prop('disabled', false);
-
-    $('#mod-total-conceptos-10lbs').prop('disabled', false);
-}
 
 /************************************
  * MODIFICAR DEDUCCIONES DEL EMPLEADO

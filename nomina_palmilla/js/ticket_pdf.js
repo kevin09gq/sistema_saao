@@ -91,10 +91,26 @@ $(document).ready(function () {
         }
 
         datosFiltrados = filtrarNominaSoloVisibles(datosFiltrados);
-        totalEmpleados = 0;
+
+        // Consolidar por nombre para que cada empleado aparezca solo UNA vez en los tickets por nombre
+        const empleadosUnicos = {};
         (datosFiltrados.departamentos || []).forEach(depto => {
-            totalEmpleados += (depto.empleados || []).length;
+            (depto.empleados || []).forEach(emp => {
+                const nombre = (emp.nombre || '').trim();
+                if (nombre && !empleadosUnicos[nombre]) {
+                    empleadosUnicos[nombre] = { ...emp };
+                }
+            });
         });
+
+        const nominaConsolidada = {
+            departamentos: [{
+                nombre: 'Consolidado',
+                empleados: Object.values(empleadosUnicos)
+            }]
+        };
+
+        totalEmpleados = nominaConsolidada.departamentos[0].empleados.length;
 
         if (totalEmpleados === 0) {
             Swal.fire('Sin datos', 'No hay empleados para los filtros seleccionados.', 'warning');
@@ -102,7 +118,7 @@ $(document).ready(function () {
         }
 
         // Recalcular totales antes de enviar
-        (datosFiltrados.departamentos || []).forEach(depto => {
+        (nominaConsolidada.departamentos || []).forEach(depto => {
             (depto.empleados || []).forEach(emp => {
                 if (typeof calcularTotalCobrar === 'function') {
                     calcularTotalCobrar(emp);
@@ -111,7 +127,7 @@ $(document).ready(function () {
         });
 
         var datosEnviar = {
-            nomina: datosFiltrados,
+            nomina: nominaConsolidada,
             meta: {
                 numero_semana: jsonNominaPalmilla.numero_semana || ''
             }
@@ -181,43 +197,45 @@ $(document).ready(function () {
      * Genera tickets para la vista de cortes
      */
     function generarTicketsCorte() {
-        let departamentoCorte = jsonNominaPalmilla.departamentos.find(d => d.nombre === "Corte");
-
-        if (!departamentoCorte || !departamentoCorte.empleados || departamentoCorte.empleados.length === 0) {
+        let deptoCorte = (jsonNominaPalmilla.departamentos || []).find(d => d.nombre.toUpperCase() === 'CORTE');
+        if (!deptoCorte || !deptoCorte.empleados || deptoCorte.empleados.length === 0) {
             Swal.fire('Sin datos', 'No hay datos de corte para generar tickets.', 'warning');
             return;
         }
 
-        // Procesar empleados para el formato de tickets
-        let empleadosParaTickets = [];
+        const empleadosPorNombre = {};
+        const esSinSeguroPorNombre = {};
 
-        departamentoCorte.empleados.forEach(empleado => {
-            if (!empleado || empleado.mostrar === false) return;
-            const esSinSeguro = (empleado.seguroSocial === false) || departamentoCorte.nombre.toUpperCase().includes('SIN SEGURO');
-            if (empleado.concepto === "REJA") {
-                // Agrupar tickets por precio
-                const ticketsPorPrecio = {};
-                (empleado.tickets || []).forEach(ticket => {
-                    const precio = (ticket.precio_reja ?? 0).toString();
-                    if (!ticketsPorPrecio[precio]) {
-                        ticketsPorPrecio[precio] = [];
-                    }
-                    ticketsPorPrecio[precio].push(ticket);
-                });
+        deptoCorte.empleados.forEach(emp => {
+            if (!emp || emp.mostrar === false) return;
+            const esSinSeguro = (emp.seguroSocial === false) || deptoCorte.nombre.toUpperCase().includes('SIN SEGURO');
+            const nombre = (emp.nombre || '').trim();
 
-                // Crear un ticket por cada grupo de precio
-                Object.keys(ticketsPorPrecio).forEach(precio => {
-                    const tickets = ticketsPorPrecio[precio];
-                    const datosTicket = procesarTicketsParaCorte(empleado.nombre, tickets, parseFloat(precio));
-                    if (esSinSeguro) datosTicket.sin_seguro_ticket = true;
-                    empleadosParaTickets.push(datosTicket);
-                });
-            } else if (empleado.concepto === "NOMINA") {
-                // Procesar nómina de corte
-                const datosTicket = procesarNominaParaCorte(empleado.nombre, empleado.nomina || []);
-                if (esSinSeguro) datosTicket.sin_seguro_ticket = true;
-                empleadosParaTickets.push(datosTicket);
+            if (!empleadosPorNombre[nombre]) {
+                empleadosPorNombre[nombre] = { rejas: [], nomina: null };
+                esSinSeguroPorNombre[nombre] = esSinSeguro;
             }
+
+            const concepto = String(emp.concepto || '').toUpperCase();
+            if (concepto === 'REJA' && Array.isArray(emp.tickets)) {
+                emp.tickets.forEach(t => {
+                    empleadosPorNombre[nombre].rejas.push({
+                        ticket: t,
+                        precio: t.precio_reja ?? 0
+                    });
+                });
+            } else if (concepto === 'NOMINA' && Array.isArray(emp.nomina)) {
+                empleadosPorNombre[nombre].nomina = emp.nomina;
+            }
+        });
+
+        let empleadosParaTickets = [];
+        Object.keys(empleadosPorNombre).forEach(nombre => {
+            const consolidado = empleadosPorNombre[nombre];
+            const datos = procesarTicketsCorteCombinado(nombre, consolidado.rejas, consolidado.nomina);
+            datos.departamento = 'Corte';
+            if (esSinSeguroPorNombre[nombre]) datos.sin_seguro_ticket = true;
+            empleadosParaTickets.push(datos);
         });
 
         if (empleadosParaTickets.length === 0) {
@@ -234,73 +252,55 @@ $(document).ready(function () {
             showConfirmButton: false
         });
 
-        const datosConMeta = {
+        enviarDatosParaTickets({
             empleados: empleadosParaTickets,
-            meta: {
-                numero_semana: jsonNominaPalmilla.numero_semana || ''
-            }
-        };
-        enviarDatosParaTickets(datosConMeta, 'corte');
+            meta: { numero_semana: jsonNominaPalmilla.numero_semana || '' }
+        }, 'corte');
     }
 
-    /**
-     * Genera tickets para la vista de podas
-     */
     function generarTicketsPoda() {
-        let departamentoPoda = jsonNominaPalmilla.departamentos.find(d => d.nombre === "Poda");
-
-        if (!departamentoPoda || !departamentoPoda.empleados || departamentoPoda.empleados.length === 0) {
+        let deptoPoda = (jsonNominaPalmilla.departamentos || []).find(d => d.nombre.toUpperCase() === 'PODA');
+        if (!deptoPoda || !deptoPoda.empleados || deptoPoda.empleados.length === 0) {
             Swal.fire('Sin datos', 'No hay datos de poda para generar tickets.', 'warning');
             return;
         }
 
-        // Procesar empleados para el formato de tickets
-        let empleadosParaTickets = [];
+        const empleadosPorNombre = {};
+        const esSinSeguroPorNombre = {};
 
-        departamentoPoda.empleados.forEach(emp => {
+        deptoPoda.empleados.forEach(emp => {
             if (!emp || emp.mostrar === false) return;
-            const esSinSeguro = (emp.seguroSocial === false) || departamentoPoda.nombre.toUpperCase().includes('SIN SEGURO');
+            const nombre = (emp.nombre || '').trim();
+            const esSinSeguro = (emp.seguroSocial === false) || deptoPoda.nombre.toUpperCase().includes('SIN SEGURO');
 
-            const movimientos = Array.isArray(emp.movimientos) ? emp.movimientos : [];
-            const movimientosPoda = movimientos.filter(m => m.concepto === "PODA");
-            const movimientosExtras = movimientos.filter(m => m.concepto !== "PODA");
+            if (!empleadosPorNombre[nombre]) {
+                empleadosPorNombre[nombre] = { movsPoda: [], movsExtras: [], original: emp };
+                esSinSeguroPorNombre[nombre] = esSinSeguro;
+            }
 
-            // Agrupar movimientos de PODA por monto
-            const gruposPoda = {};
-            movimientosPoda.forEach(mov => {
-                const monto = mov.monto;
-                if (!gruposPoda[monto]) {
-                    gruposPoda[monto] = [];
-                }
-                gruposPoda[monto].push(mov);
-            });
+            const movs = Array.isArray(emp.movimientos) ? emp.movimientos : [];
+            empleadosPorNombre[nombre].movsPoda.push(...movs.filter(m => m.concepto === 'PODA'));
+            empleadosPorNombre[nombre].movsExtras.push(...movs.filter(m => m.concepto !== 'PODA'));
+        });
 
-            // Crear un ticket por cada grupo de monto de PODA
-            Object.keys(gruposPoda).forEach(monto => {
-                const movimientos = gruposPoda[monto];
-                const datosTicket = procesarPodaParaTicket(emp.nombre, movimientos, parseFloat(monto));
-                if (esSinSeguro) datosTicket.sin_seguro_ticket = true;
-                empleadosParaTickets.push(datosTicket);
-            });
+        let empleadosParaTickets = [];
+        Object.keys(empleadosPorNombre).forEach(nombre => {
+            const data = empleadosPorNombre[nombre];
+            const esSinSeguro = esSinSeguroPorNombre[nombre];
 
-            // Agrupar movimientos extras por concepto y monto
-            const gruposExtras = {};
-            movimientosExtras.forEach(mov => {
-                const clave = `${mov.concepto}|${mov.monto}`;
-                if (!gruposExtras[clave]) {
-                    gruposExtras[clave] = [];
-                }
-                gruposExtras[clave].push(mov);
-            });
+            if (data.movsPoda.length > 0) {
+                const datos = procesarPodaParaTicket(nombre, data.movsPoda);
+                datos.departamento = 'Poda';
+                if (esSinSeguro) datos.sin_seguro_ticket = true;
+                empleadosParaTickets.push(datos);
+            }
 
-            // Crear un ticket por cada grupo extra
-            Object.values(gruposExtras).forEach(grupo => {
-                if (grupo.length > 0) {
-                    const datosTicket = procesarExtraParaTicket(emp.nombre, grupo[0].concepto, grupo, grupo[0].monto);
-                    if (esSinSeguro) datosTicket.sin_seguro_ticket = true;
-                    empleadosParaTickets.push(datosTicket);
-                }
-            });
+            if (data.movsExtras.length > 0) {
+                const datosExtra = procesarExtrasParaTicket(nombre, data.movsExtras, data.original);
+                datosExtra.departamento = 'Poda';
+                if (esSinSeguro) datosExtra.sin_seguro_ticket = true;
+                empleadosParaTickets.push(datosExtra);
+            }
         });
 
         if (empleadosParaTickets.length === 0) {
@@ -317,13 +317,10 @@ $(document).ready(function () {
             showConfirmButton: false
         });
 
-        const datosConMeta = {
+        enviarDatosParaTickets({
             empleados: empleadosParaTickets,
-            meta: {
-                numero_semana: jsonNominaPalmilla.numero_semana || ''
-            }
-        };
-        enviarDatosParaTickets(datosConMeta, 'poda');
+            meta: { numero_semana: jsonNominaPalmilla.numero_semana || '' }
+        }, 'poda');
     }
 
     /**
@@ -444,146 +441,189 @@ $(document).ready(function () {
         });
     }
 
-    /**
-     * Procesa los tickets de un empleado para corte
-     */
-    function procesarTicketsParaCorte(nombreEmpleado, tickets, precio) {
-        const rejasPorDia = {
-            'viernes': 0, 'sabado': 0, 'domingo': 0,
-            'lunes': 0, 'martes': 0, 'miercoles': 0, 'jueves': 0
-        };
-
-        let totalRejas = 0;
-        let todasLasTablas = [];
-
-        (tickets || []).forEach(ticket => {
-            const diaSemana = obtenerDiaSemana(ticket.fecha);
-
-            // Agregar todas las tablas de este ticket
-            (ticket.datosRejas || []).forEach(tabla => {
-                todasLasTablas.push({
-                    tabla: tabla.tabla,
-                    cantidad: tabla.cantidad
-                });
-
-                // Acumular para el total por día
-                if (rejasPorDia.hasOwnProperty(diaSemana.toLowerCase())) {
-                    rejasPorDia[diaSemana.toLowerCase()] += tabla.cantidad;
-                }
-                totalRejas += tabla.cantidad;
-            });
-        });
-
-        return {
-            nombre: nombreEmpleado,
-            concepto: 'REJA',
-            ...rejasPorDia,
-            totalRejas: totalRejas,
-            precio: precio,
-            totalEfectivo: totalRejas * precio,
-            tablas: todasLasTablas
-        };
-    }
-
-    /**
-     * Procesa la nómina de un empleado para corte
-     */
-    function procesarNominaParaCorte(nombreEmpleado, nomina) {
-        const pagosPorDia = {
-            'viernes': 0, 'sabado': 0, 'domingo': 0,
-            'lunes': 0, 'martes': 0, 'miercoles': 0, 'jueves': 0
-        };
-
-        let totalEfectivo = 0;
-
-        (nomina || []).forEach(diaPago => {
-            const dia = String(diaPago.dia || '').toLowerCase();
-            const pago = parseFloat(diaPago.pago) || 0;
-
-            if (pagosPorDia.hasOwnProperty(dia)) {
-                pagosPorDia[dia] = pago;
-            }
-            totalEfectivo += pago;
-        });
-
-        return {
-            nombre: nombreEmpleado,
-            concepto: 'NOMINA',
-            ...pagosPorDia,
-            totalRejas: 0,
-            precio: 0,
-            totalEfectivo: totalEfectivo
-        };
-    }
-
-    /**
-     * Procesa los movimientos de poda para ticket
-     */
-    function procesarPodaParaTicket(nombreEmpleado, movimientos, monto) {
-        const arbolesPorDia = {
-            'viernes': 0, 'sabado': 0, 'domingo': 0,
-            'lunes': 0, 'martes': 0, 'miercoles': 0, 'jueves': 0
-        };
-
-        let totalArboles = 0;
-
-        (movimientos || []).forEach(mov => {
-            const diaSemana = obtenerDiaSemana(mov.fecha);
-
-            if (arbolesPorDia.hasOwnProperty(diaSemana.toLowerCase())) {
-                arbolesPorDia[diaSemana.toLowerCase()] += mov.arboles_podados || 0;
-            }
-            totalArboles += mov.arboles_podados || 0;
-        });
-
-        return {
-            nombre: nombreEmpleado,
-            concepto: 'PODA',
-            ...arbolesPorDia,
-            totalArboles: totalArboles,
-            monto: monto,
-            totalEfectivo: totalArboles * monto
-        };
-    }
-
-    /**
-     * Procesa movimientos extras para ticket
-     */
-    function procesarExtraParaTicket(nombreEmpleado, concepto, movimientos, monto) {
-        const montosPorDia = {
-            'viernes': 0, 'sabado': 0, 'domingo': 0,
-            'lunes': 0, 'martes': 0, 'miercoles': 0, 'jueves': 0
-        };
-
-        let totalEfectivo = 0;
-
-        (movimientos || []).forEach(mov => {
-            const diaSemana = obtenerDiaSemana(mov.fecha);
-
-            if (montosPorDia.hasOwnProperty(diaSemana.toLowerCase())) {
-                montosPorDia[diaSemana.toLowerCase()] += mov.monto || 0;
-            }
-            totalEfectivo += mov.monto || 0;
-        });
-
-        return {
-            nombre: nombreEmpleado,
-            concepto: concepto,
-            ...montosPorDia,
-            totalArboles: 0,
-            monto: monto,
-            totalEfectivo: totalEfectivo
-        };
-    }
-
-    /**
-     * Función para obtener el día de la semana a partir de una fecha
-     */
-    function obtenerDiaSemana(fechaStr) {
-        const [año, mes, dia] = String(fechaStr || '').split('-').map(Number);
-        let fecha = new Date(año, mes - 1, dia);
-
-        const dias = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
-        return dias[fecha.getDay()];
-    }
 });
+
+function normalizarDiaNomina(dia) {
+    if (!dia) return '';
+    const d = String(dia).trim().toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const alias = {
+        dom: 'domingo', domingo: 'domingo',
+        lun: 'lunes', lunes: 'lunes',
+        mar: 'martes', martes: 'martes',
+        mie: 'miercoles', miercoles: 'miercoles',
+        jue: 'jueves', jueves: 'jueves',
+        vie: 'viernes', viernes: 'viernes',
+        sab: 'sabado', sabado: 'sabado'
+    };
+    return alias[d] || d;
+}
+
+function obtenerDiaSemanaDesdeFecha(fechaStr) {
+    if (!fechaStr) return '';
+    const s = String(fechaStr).trim();
+
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+        const [a, m, d] = s.split('-').map(Number);
+        const date = new Date(a, m - 1, d);
+        const dias = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+        return normalizarDiaNomina(dias[date.getDay()]);
+    }
+
+    if (s.includes('/')) {
+        const meses = {
+            Ene: 0, Feb: 1, Mar: 2, Abr: 3, May: 4, Jun: 5,
+            Jul: 6, Ago: 7, Sep: 8, Oct: 9, Nov: 10, Dic: 11
+        };
+        const partes = s.split('/');
+        if (partes.length === 3) {
+            const [dia, mesStr, anio] = partes;
+            const mes = meses[mesStr];
+            if (mes !== undefined) {
+                const date = new Date(Number(anio), mes, Number(dia));
+                const dias = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+                return normalizarDiaNomina(dias[date.getDay()]);
+            }
+        }
+    }
+
+    return normalizarDiaNomina(s);
+}
+
+function procesarTicketsCorteCombinado(nombre, rejasArray, datoNomina) {
+    let totalRejas = 0;
+    let rejasConPrecio = [];
+    let diasTrabajados = 0;
+    let preciosPorDia = [];
+    let diasConCorte = {};
+
+    if (Array.isArray(rejasArray) && rejasArray.length > 0) {
+        rejasArray.forEach(rInfo => {
+            const t = rInfo.ticket;
+            let cantidadTicket = 0;
+            (t.datosRejas || []).forEach(tr => {
+                cantidadTicket += Number(tr.cantidad || 0);
+                totalRejas += Number(tr.cantidad || 0);
+            });
+
+            if (cantidadTicket > 0) {
+                const diaSemana = obtenerDiaSemanaDesdeFecha(t.fecha);
+                if (diaSemana) diasConCorte[diaSemana] = true;
+
+                rejasConPrecio.push({
+                    cantidad: cantidadTicket,
+                    precio: rInfo.precio || 0
+                });
+            }
+        });
+    }
+
+    const preciosUnicos = [];
+    const preciosYaAgregados = new Set();
+    rejasConPrecio.forEach(rp => {
+        const precioStr = rp.precio.toString();
+        if (!preciosYaAgregados.has(precioStr)) {
+            preciosUnicos.push(rp.precio);
+            preciosYaAgregados.add(precioStr);
+        }
+    });
+
+    let efectivoRejas = 0;
+    rejasConPrecio.forEach(rp => {
+        efectivoRejas += rp.cantidad * rp.precio;
+    });
+
+    let totalNomina = 0;
+    const hayDiasConCorte = Object.keys(diasConCorte).length > 0;
+    if (datoNomina && Array.isArray(datoNomina)) {
+        datoNomina.forEach(n => {
+            const nombreDia = normalizarDiaNomina(n.dia);
+            const pago = parseFloat(n.pago) || 0;
+            const aplicaNomina = pago > 0 && (!hayDiasConCorte || diasConCorte[nombreDia]);
+
+            if (aplicaNomina) {
+                preciosPorDia.push(pago);
+                totalNomina += pago;
+                diasTrabajados++;
+            }
+        });
+    }
+
+    const subtotal = efectivoRejas + totalNomina;
+    const totalEfectivo = Math.round(subtotal);
+    const redondeo = totalEfectivo - subtotal;
+
+    return {
+        nombre,
+        concepto: 'REJA_NOMINA',
+        totalRejas,
+        preciosUnicos,
+        efectivoRejas,
+        diasTrabajados,
+        preciosPorDia,
+        totalNomina,
+        subtotal,
+        redondeo,
+        totalEfectivo
+    };
+}
+
+function procesarPodaParaTicket(nombre, movs) {
+    const arb = { viernes: 0, sabado: 0, domingo: 0, lunes: 0, martes: 0, miercoles: 0, jueves: 0 };
+    let totalArboles = 0;
+    let totalEfectivo = 0;
+    const desglosesMap = {};
+
+    (movs || []).forEach(m => {
+        const dia = obtenerDiaSemanaDesdeFecha(m.fecha);
+        const cant = Number(m.arboles_podados || 0);
+        const monto = parseFloat(m.monto || 0);
+
+        if (arb.hasOwnProperty(dia)) arb[dia] += cant;
+        totalArboles += cant;
+        totalEfectivo += (cant * monto);
+
+        const key = monto.toString();
+        if (!desglosesMap[key]) {
+            desglosesMap[key] = { precio: monto, cantidad: 0, total: 0 };
+        }
+        desglosesMap[key].cantidad += cant;
+        desglosesMap[key].total += (cant * monto);
+    });
+
+    return {
+        nombre,
+        concepto: 'PODA',
+        ...arb,
+        totalArboles,
+        desgloses: Object.values(desglosesMap),
+        totalEfectivo: totalEfectivo
+    };
+}
+
+function procesarExtrasParaTicket(nombre, movsExtras, original) {
+    const conceptosExtras = [];
+    let totalEfectivo = 0;
+
+    movsExtras.forEach(ex => {
+        const monto = parseFloat(ex.monto || 0);
+        conceptosExtras.push({
+            concepto: ex.concepto || 'Extra',
+            monto: monto
+        });
+        totalEfectivo += monto;
+    });
+
+    return {
+        ...original,
+        nombre: nombre,
+        concepto: 'EXTRA_PODA',
+        esExtraPoda: true,
+        conceptosExtras: conceptosExtras,
+        totalEfectivo: totalEfectivo
+    };
+}
+
+function obtenerDiaSemana(fechaStr) {
+    return obtenerDiaSemanaDesdeFecha(fechaStr);
+}

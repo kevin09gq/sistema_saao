@@ -66,15 +66,32 @@ $(document).ready(function () {
 
         datosFiltrados = filtrarNominaSoloVisibles(datosFiltrados);
 
-        let total = 0;
-        (datosFiltrados.departamentos || []).forEach(d => total += (d.empleados || []).length);
+        // Consolidar por nombre para que cada empleado aparezca solo UNA vez en los tickets por nombre
+        const empleadosUnicos = {};
+        (datosFiltrados.departamentos || []).forEach(depto => {
+            (depto.empleados || []).forEach(emp => {
+                const nombre = (emp.nombre || '').trim();
+                if (nombre && !empleadosUnicos[nombre]) {
+                    empleadosUnicos[nombre] = { ...emp };
+                }
+            });
+        });
+
+        const nominaConsolidada = {
+            departamentos: [{
+                nombre: 'Consolidado',
+                empleados: Object.values(empleadosUnicos)
+            }]
+        };
+
+        let total = nominaConsolidada.departamentos[0].empleados.length;
 
         if (total === 0) {
             Swal.fire('Sin datos', 'No hay empleados con los filtros actuales.', 'warning');
             return;
         }
 
-        enviarDatosParaTicketsNombre({ nomina: datosFiltrados });
+        enviarDatosParaTicketsNombre({ nomina: nominaConsolidada });
     });
 
     function enviarDatosParaTicketsNombre(datos) {
@@ -124,29 +141,40 @@ $(document).ready(function () {
             return;
         }
 
-        let empleadosParaTickets = [];
+        // Consolidar por nombre de empleado
+        const empleadosPorNombre = {};
+        const esSinSeguroPorNombre = {};
+        
         deptoCorte.empleados.forEach(emp => {
             if (!emp || emp.mostrar === false) return;
             const esSinSeguro = (emp.seguroSocial === false) || deptoCorte.nombre.toUpperCase().includes('SIN SEGURO');
+            const nombre = (emp.nombre || '').trim();
+            
+            if (!empleadosPorNombre[nombre]) {
+                empleadosPorNombre[nombre] = { rejas: [], nomina: null };
+                esSinSeguroPorNombre[nombre] = esSinSeguro;
+            }
+            
             if (emp.concepto === 'REJA' && Array.isArray(emp.tickets)) {
-                const porPrecio = {};
+                // Guardar todas las rejas sin separar por precio
                 emp.tickets.forEach(t => {
-                    const p = (t.precio_reja ?? 0).toString();
-                    if (!porPrecio[p]) porPrecio[p] = [];
-                    porPrecio[p].push(t);
-                });
-                Object.keys(porPrecio).forEach(p => {
-                    const datos = procesarTicketsParaCorte(emp.nombre, porPrecio[p], parseFloat(p));
-                    datos.departamento = 'Corte';
-                    if (esSinSeguro) datos.sin_seguro_ticket = true;
-                    empleadosParaTickets.push(datos);
+                    empleadosPorNombre[nombre].rejas.push({
+                        ticket: t,
+                        precio: t.precio_reja ?? 0
+                    });
                 });
             } else if (emp.concepto === 'NOMINA' && Array.isArray(emp.nomina)) {
-                const datos = procesarNominaParaCorte(emp.nombre, emp.nomina);
-                datos.departamento = 'Corte';
-                if (esSinSeguro) datos.sin_seguro_ticket = true;
-                empleadosParaTickets.push(datos);
+                empleadosPorNombre[nombre].nomina = emp.nomina;
             }
+        });
+
+        let empleadosParaTickets = [];
+        Object.keys(empleadosPorNombre).forEach(nombre => {
+            const consolidado = empleadosPorNombre[nombre];
+            const datos = procesarTicketsCorteCombinado(nombre, consolidado.rejas, consolidado.nomina);
+            datos.departamento = 'Corte';
+            if (esSinSeguroPorNombre[nombre]) datos.sin_seguro_ticket = true;
+            empleadosParaTickets.push(datos);
         });
 
         if (empleadosParaTickets.length === 0) {
@@ -164,23 +192,45 @@ $(document).ready(function () {
             return;
         }
 
-        let empleadosParaTickets = [];
+        // Consolidar por nombre de empleado
+        const empleadosPorNombre = {};
+        const esSinSeguroPorNombre = {};
+
         deptoPoda.empleados.forEach(emp => {
             if (!emp || emp.mostrar === false) return;
+            const nombre = (emp.nombre || '').trim();
             const esSinSeguro = (emp.seguroSocial === false) || deptoPoda.nombre.toUpperCase().includes('SIN SEGURO');
+            
+            if (!empleadosPorNombre[nombre]) {
+                empleadosPorNombre[nombre] = { movsPoda: [], movsExtras: [], original: emp };
+                esSinSeguroPorNombre[nombre] = esSinSeguro;
+            }
+            
             const movs = Array.isArray(emp.movimientos) ? emp.movimientos : [];
-            const movsPoda = movs.filter(m => m.concepto === 'PODA');
-            const porMonto = {};
-            movsPoda.forEach(m => {
-                if (!porMonto[m.monto]) porMonto[m.monto] = [];
-                porMonto[m.monto].push(m);
-            });
-            Object.keys(porMonto).forEach(m => {
-                const datos = procesarPodaParaTicket(emp.nombre, porMonto[m], parseFloat(m));
+            empleadosPorNombre[nombre].movsPoda.push(...movs.filter(m => m.concepto === 'PODA'));
+            empleadosPorNombre[nombre].movsExtras.push(...movs.filter(m => m.concepto !== 'PODA'));
+        });
+
+        let empleadosParaTickets = [];
+        Object.keys(empleadosPorNombre).forEach(nombre => {
+            const data = empleadosPorNombre[nombre];
+            const esSinSeguro = esSinSeguroPorNombre[nombre];
+            
+            // TICKET 1: PODA
+            if (data.movsPoda.length > 0) {
+                const datos = procesarPodaParaTicket(nombre, data.movsPoda);
                 datos.departamento = 'Poda';
                 if (esSinSeguro) datos.sin_seguro_ticket = true;
                 empleadosParaTickets.push(datos);
-            });
+            }
+
+            // TICKET 2: EXTRAS
+            if (data.movsExtras.length > 0) {
+                const datosExtra = procesarExtrasParaTicket(nombre, data.movsExtras, data.original);
+                datosExtra.departamento = 'Poda'; // O el depto original
+                if (esSinSeguro) datosExtra.sin_seguro_ticket = true;
+                empleadosParaTickets.push(datosExtra);
+            }
         });
 
         if (empleadosParaTickets.length === 0) {
@@ -244,48 +294,178 @@ $(document).ready(function () {
             }
         });
     }
-
-    function procesarTicketsParaCorte(nombre, tickets, precio) {
-        const rejas = { viernes: 0, sabado: 0, domingo: 0, lunes: 0, martes: 0, miercoles: 0, jueves: 0 };
-        let total = 0;
-        (tickets || []).forEach(t => {
-            const dia = obtenerDiaSemana(t.fecha);
-            (t.datosRejas || []).forEach(tr => {
-                if (rejas.hasOwnProperty(dia)) rejas[dia] += tr.cantidad;
-                total += tr.cantidad;
-            });
-        });
-        return { nombre, concepto: 'REJA', ...rejas, totalRejas: total, precio, totalEfectivo: total * precio };
-    }
-
-    function procesarNominaParaCorte(nombre, nomina) {
-        const pagos = { viernes: 0, sabado: 0, domingo: 0, lunes: 0, martes: 0, miercoles: 0, jueves: 0 };
-        let total = 0;
-        (nomina || []).forEach(n => {
-            const dia = String(n.dia || '').toLowerCase();
-            const pago = parseFloat(n.pago) || 0;
-            if (pagos.hasOwnProperty(dia)) pagos[dia] = pago;
-            total += pago;
-        });
-        return { nombre, concepto: 'NOMINA', ...pagos, totalRejas: 0, precio: 0, totalEfectivo: total };
-    }
-
-    function procesarPodaParaTicket(nombre, movs, monto) {
-        const arb = { viernes: 0, sabado: 0, domingo: 0, lunes: 0, martes: 0, miercoles: 0, jueves: 0 };
-        let total = 0;
-        (movs || []).forEach(m => {
-            const dia = obtenerDiaSemana(m.fecha);
-            const cant = Number(m.arboles_podados || 0);
-            if (arb.hasOwnProperty(dia)) arb[dia] += cant;
-            total += cant;
-        });
-        return { nombre, concepto: 'PODA', ...arb, totalArboles: total, monto, totalEfectivo: total * monto };
-    }
-
-    function obtenerDiaSemana(fechaStr) {
-        if (!fechaStr) return '';
-        const [a, m, d] = fechaStr.split('-').map(Number);
-        const date = new Date(a, m - 1, d);
-        return ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'][date.getDay()];
-    }
 });
+
+function procesarTicketsCorteCombinado(nombre, rejasArray, datoNomina) {
+    let totalRejas = 0;
+    let rejasConPrecio = []; // Array de {cantidad, precio}
+    let diasTrabajados = 0;
+    let preciosPorDia = []; // Array de precios de nómina
+    
+    let diasConCorte = {}; // Para saber qué días tuvieron rejas > 0
+
+    // PASO 1 & 2: Procesar todas las REJAS - sumar cantidades y guardar precios
+    if (Array.isArray(rejasArray) && rejasArray.length > 0) {
+        rejasArray.forEach(rInfo => {
+            const t = rInfo.ticket;
+            let cantidadTicket = 0;
+            (t.datosRejas || []).forEach(tr => {
+                cantidadTicket += tr.cantidad;
+                totalRejas += tr.cantidad;
+            });
+            
+            // Guardar cantidad y precio de esta reja, y registrar el día
+            if (cantidadTicket > 0) {
+                const diaSemana = obtenerDiaSemana(t.fecha);
+                if (diaSemana) diasConCorte[diaSemana] = true;
+                
+                rejasConPrecio.push({
+                    cantidad: cantidadTicket,
+                    precio: rInfo.precio || 0
+                });
+            }
+        });
+    }
+
+    // Eliminar precios duplicados de reja
+    const preciosUnicos = [];
+    const preciosYaAgregados = new Set();
+    rejasConPrecio.forEach(rp => {
+        const precioStr = rp.precio.toString();
+        if (!preciosYaAgregados.has(precioStr)) {
+            preciosUnicos.push(rp.precio);
+            preciosYaAgregados.add(precioStr);
+        }
+    });
+
+    // PASO 3: Calcular Efectivo rejas (Suma de todas las rejas)
+    let efectivoRejas = 0;
+    if (rejasConPrecio.length > 0) {
+        rejasConPrecio.forEach(rp => {
+            efectivoRejas += rp.cantidad * rp.precio;
+        });
+    }
+
+    // PASO 4 & 5: Procesar NOMINA - contar días y sumar pagos (SOLO si hubo cortes ese día)
+    let totalNomina = 0;
+    if (datoNomina && Array.isArray(datoNomina)) {
+        datoNomina.forEach(n => {
+            const nombreDia = String(n.dia || '').toLowerCase();
+            const pago = parseFloat(n.pago) || 0;
+            
+            // Solo cuenta el día de nómina si en ese mismo día hubo corte de rejas
+            if (pago > 0 && diasConCorte[nombreDia]) {
+                preciosPorDia.push(pago);
+                totalNomina += pago;
+                diasTrabajados++;
+            }
+        });
+    }
+
+    // PASO 6: Calcular total efectivo
+    const subtotal = efectivoRejas + totalNomina;
+    const totalEfectivo = Math.round(subtotal);
+    const redondeo = totalEfectivo - subtotal;
+    
+    return {
+        nombre,
+        concepto: 'REJA_NOMINA',
+        totalRejas,
+        preciosUnicos, // Array con precios únicos de reja
+        efectivoRejas,
+        diasTrabajados,
+        preciosPorDia, // Array de precios individuales
+        totalNomina,
+        subtotal,
+        redondeo,
+        totalEfectivo
+    };
+}
+
+function procesarTicketsParaCorte(nombre, tickets, precio) {
+    const rejas = { viernes: 0, sabado: 0, domingo: 0, lunes: 0, martes: 0, miercoles: 0, jueves: 0 };
+    let total = 0;
+    (tickets || []).forEach(t => {
+        const dia = obtenerDiaSemana(t.fecha);
+        (t.datosRejas || []).forEach(tr => {
+            if (rejas.hasOwnProperty(dia)) rejas[dia] += tr.cantidad;
+            total += tr.cantidad;
+        });
+    });
+    return { nombre, concepto: 'REJA', ...rejas, totalRejas: total, precio, totalEfectivo: total * precio };
+}
+
+function procesarNominaParaCorte(nombre, nomina) {
+    const pagos = { viernes: 0, sabado: 0, domingo: 0, lunes: 0, martes: 0, miercoles: 0, jueves: 0 };
+    let total = 0;
+    (nomina || []).forEach(n => {
+        const dia = String(n.dia || '').toLowerCase();
+        const pago = parseFloat(n.pago) || 0;
+        if (pagos.hasOwnProperty(dia)) pagos[dia] = pago;
+        total += pago;
+    });
+    return { nombre, concepto: 'NOMINA', ...pagos, totalRejas: 0, precio: 0, totalEfectivo: total };
+}
+
+function procesarPodaParaTicket(nombre, movs) {
+    const arb = { viernes: 0, sabado: 0, domingo: 0, lunes: 0, martes: 0, miercoles: 0, jueves: 0 };
+    let totalArboles = 0;
+    let totalEfectivo = 0;
+    const desglosesMap = {};
+
+    (movs || []).forEach(m => {
+        const dia = obtenerDiaSemana(m.fecha);
+        const cant = Number(m.arboles_podados || 0);
+        const monto = parseFloat(m.monto || 0);
+        
+        if (arb.hasOwnProperty(dia)) arb[dia] += cant;
+        totalArboles += cant;
+        totalEfectivo += (cant * monto);
+
+        const key = monto.toString();
+        if (!desglosesMap[key]) {
+            desglosesMap[key] = { precio: monto, cantidad: 0, total: 0 };
+        }
+        desglosesMap[key].cantidad += cant;
+        desglosesMap[key].total += (cant * monto);
+    });
+
+    return {
+        nombre,
+        concepto: 'PODA',
+        ...arb,
+        totalArboles,
+        desgloses: Object.values(desglosesMap),
+        totalEfectivo: totalEfectivo
+    };
+}
+
+function procesarExtrasParaTicket(nombre, movsExtras, original) {
+    const conceptosExtras = [];
+    let totalEfectivo = 0;
+
+    movsExtras.forEach(ex => {
+        const monto = parseFloat(ex.monto || 0);
+        conceptosExtras.push({
+            concepto: ex.concepto || 'Extra',
+            monto: monto
+        });
+        totalEfectivo += monto;
+    });
+
+    return {
+        ...original,
+        nombre: nombre,
+        concepto: 'EXTRA_PODA',
+        esExtraPoda: true,
+        conceptosExtras: conceptosExtras,
+        totalEfectivo: totalEfectivo
+    };
+}
+
+function obtenerDiaSemana(fechaStr) {
+    if (!fechaStr) return '';
+    const [a, m, d] = fechaStr.split('-').map(Number);
+    const date = new Date(a, m - 1, d);
+    return ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'][date.getDay()];
+}

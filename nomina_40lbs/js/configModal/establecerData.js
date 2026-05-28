@@ -332,8 +332,9 @@ function establecerConceptos(empleado) {
 
     // Verificar si el empleado tiene seguro social
     const tieneSeguroSocial = empleado.seguroSocial !== false;
+    const quitarTarjeta = empleado.quitar_tarjeta === true;
 
-    desabilitarCamposConceptos(tieneSeguroSocial);
+    desabilitarCamposConceptos(tieneSeguroSocial, quitarTarjeta);
     const conceptos = empleado.conceptos || [];
 
     // Buscar conceptos por código
@@ -364,7 +365,7 @@ function calcularTotalConceptosJornalero() {
     $('#mod-total-conceptos-40lbs').val(total.toFixed(2));
 }
 
-function desabilitarCamposConceptos(tieneSeguroSocial) {
+function desabilitarCamposConceptos(tieneSeguroSocial, quitarTarjeta) {
 
     // Deshabilitar o habilitar campos de conceptos según seguroSocial
     if (!tieneSeguroSocial) {
@@ -373,12 +374,14 @@ function desabilitarCamposConceptos(tieneSeguroSocial) {
         $('#mod-imss-40lbs').prop('disabled', true);
         $('#mod-infonavit-40lbs').prop('disabled', true);
         $('#mod-ajustes-sub-40lbs').prop('disabled', true);
+        $('#mod-tarjeta-40lbs').prop('disabled', true);
 
         // Deshabilitar botones de aplicar
         $('#btn-aplicar-isr-40lbs').prop('disabled', true);
         $('#btn-aplicar-imss-40lbs').prop('disabled', true);
         $('#btn-aplicar-infonavit-40lbs').prop('disabled', true);
         $('#btn-aplicar-ajuste-sub-40lbs').prop('disabled', true);
+        $('#btn-aplicar-tarjeta-40lbs').prop('disabled', true);
 
         // Deshabilitar total (aunque ya tiene readonly)
         $('#mod-total-conceptos-40lbs').prop('disabled', true);
@@ -391,13 +394,20 @@ function desabilitarCamposConceptos(tieneSeguroSocial) {
     $('#mod-imss-40lbs').prop('disabled', false);
     $('#mod-infonavit-40lbs').prop('disabled', false);
     $('#mod-ajustes-sub-40lbs').prop('disabled', false);
+    $('#mod-tarjeta-40lbs').prop('disabled', false);
 
     $('#btn-aplicar-isr-40lbs').prop('disabled', false);
     $('#btn-aplicar-imss-40lbs').prop('disabled', false);
     $('#btn-aplicar-infonavit-40lbs').prop('disabled', false);
     $('#btn-aplicar-ajuste-sub-40lbs').prop('disabled', false);
-
+    $('#btn-aplicar-tarjeta-40lbs').prop('disabled', true);
     $('#mod-total-conceptos-40lbs').prop('disabled', false);
+
+    // Si quitarTarjeta es true, deshabilitar específicamente el campo de la tarjeta
+    if (quitarTarjeta) {
+        $('#mod-tarjeta-40lbs').prop('disabled', true);
+        $('#btn-aplicar-tarjeta-40lbs').prop('disabled', true);
+    }
 }
 
 
@@ -418,7 +428,7 @@ function establecerDeducciones(empleado) {
     // Establecer checador
     $('#mod-checador-40lbs').val(empleado.checador || '');
     // Establecer Uniforme
-    $('#mod-uniforme-40lbs').val(empleado.uniforme || '');
+    $('#mod-uniforme-40lbs').val(empleado.uniformes || '');
     // Establecer inasistencias
     $('#mod-inasistencias-40lbs').val(empleado.inasistencia || '');
     // Establecer fa_gafet_cofia

@@ -125,7 +125,7 @@ function obtenerKardexEmpleado($conexion)
 
     $sql = "SELECT * FROM kardex_vacaciones 
             WHERE id_empleado = '$id_empleado'
-            ORDER BY fecha_registro ASC";
+            ORDER BY num_ciclo ASC, fecha_registro ASC";
 
     $result = mysqli_query($conexion, $sql);
     $movimientos = [];
@@ -143,7 +143,7 @@ function obtenerPeriodosEmpleado($conexion)
             FROM vacaciones_periodos p
             JOIN versiones_vacaciones_lft v ON p.id_version_vacaciones = v.id_version_vacaciones
             WHERE p.id_empleado = '$id_empleado'
-            ORDER BY p.fecha_aniversario DESC";
+            ORDER BY p.num_ciclo ASC, p.fecha_aniversario ASC";
 
     $result = mysqli_query($conexion, $sql);
     $periodos = [];
@@ -202,9 +202,71 @@ function registrarVacaciones($conexion)
         return;
     }
 
-    // 1. Obtener la suma del saldo disponible total de los periodos activos del empleado
+    // Obtener la fecha de alta del empleado para reconstruir los ciclos
+    $sql_emp = "SELECT fecha_alta_empresa FROM info_empleados WHERE id_empleado = '$id_empleado'";
+    $res_emp = mysqli_query($conexion, $sql_emp);
+    $row_emp = mysqli_fetch_assoc($res_emp);
+    $fecha_alta = $row_emp['fecha_alta_empresa'] ?? '';
+
+    if (empty($fecha_alta) || $fecha_alta == '0000-00-00') {
+        echo json_encode(['success' => false, 'message' => 'El empleado no cuenta con una fecha de ingreso (alta) válida para registrar vacaciones.']);
+        return;
+    }
+
+    // Reconstruir los ciclos de empleo
+    $sql_h = "SELECT fecha_reingreso, fecha_salida FROM historial_reingresos WHERE id_empleado = '$id_empleado' ORDER BY fecha_reingreso ASC";
+    $res_h = mysqli_query($conexion, $sql_h);
+    
+    $ciclos = [];
+    $hoy_str = date('Y-m-d');
+    if (mysqli_num_rows($res_h) == 0) {
+        $ciclos[] = [
+            'num_ciclo' => 1,
+            'inicio' => $fecha_alta,
+            'fin' => $hoy_str
+        ];
+    } else {
+        $idx = 0;
+        while ($h = mysqli_fetch_assoc($res_h)) {
+            $idx++;
+            $fin = $h['fecha_salida'];
+            if (empty($fin) || $fin == '0000-00-00') {
+                $fin = $hoy_str; 
+            }
+            $ciclos[] = [
+                'num_ciclo' => $idx,
+                'inicio' => $h['fecha_reingreso'],
+                'fin' => $fin
+            ];
+        }
+    }
+
+    // Determinar a qué ciclo corresponde la fecha de inicio de las vacaciones
+    $num_ciclo_actual = 1;
+    try {
+        $fecha_vac_dt = new DateTime($fecha_inicio);
+        foreach ($ciclos as $c) {
+            $inicio_dt = new DateTime($c['inicio']);
+            $fin_dt = new DateTime($c['fin']);
+            if ($c['fin'] === $hoy_str) {
+                $fin_dt = new DateTime('9999-12-31');
+            }
+            if ($fecha_vac_dt >= $inicio_dt && $fecha_vac_dt <= $fin_dt) {
+                $num_ciclo_actual = $c['num_ciclo'];
+                break;
+            }
+        }
+    } catch (Exception $e) {
+        // Fallback al ciclo más alto en caso de error de fecha
+        $sql_ciclo = "SELECT COALESCE(MAX(num_ciclo), 1) AS ciclo_actual FROM vacaciones_periodos WHERE id_empleado = '$id_empleado'";
+        $res_ciclo = mysqli_query($conexion, $sql_ciclo);
+        $row_ciclo = mysqli_fetch_assoc($res_ciclo);
+        $num_ciclo_actual = (int)$row_ciclo['ciclo_actual'];
+    }
+
+    // 1. Obtener la suma del saldo disponible total de los periodos activos del CICLO ACTUAL
     $sql_saldo = "SELECT SUM(saldo) AS saldo_total FROM vacaciones_periodos 
-                  WHERE id_empleado = '$id_empleado' AND estatus = 'ACTIVO'";
+                  WHERE id_empleado = '$id_empleado' AND estatus = 'ACTIVO' AND num_ciclo = '$num_ciclo_actual'";
     $res_saldo = mysqli_query($conexion, $sql_saldo);
     $row_saldo = mysqli_fetch_assoc($res_saldo);
     $saldo_total = (float)($row_saldo['saldo_total'] ?? 0);
@@ -217,9 +279,9 @@ function registrarVacaciones($conexion)
         return;
     }
 
-    // 2. Obtener los periodos activos ordenados por fecha_aniversario ASC (del más antiguo al más actual)
+    // 2. Obtener los periodos activos del CICLO ACTUAL ordenados por fecha_aniversario ASC (del más antiguo al más actual)
     $sql_periodos = "SELECT id_periodo, saldo, dias_tomados FROM vacaciones_periodos 
-                     WHERE id_empleado = '$id_empleado' AND estatus = 'ACTIVO' AND saldo > 0 
+                     WHERE id_empleado = '$id_empleado' AND estatus = 'ACTIVO' AND saldo > 0 AND num_ciclo = '$num_ciclo_actual'
                      ORDER BY fecha_aniversario ASC";
     $res_periodos = mysqli_query($conexion, $sql_periodos);
 
@@ -264,16 +326,16 @@ function registrarVacaciones($conexion)
             // Para la fecha de registro en el Kardex usamos fecha_inicio con hora 00:00:00 para ordenar cronológicamente
             $fecha_registro_kardex = $fecha_inicio . ' 00:00:00';
             
-            $sql_ins_k = "INSERT INTO kardex_vacaciones (id_periodo, id_empleado, concepto, fecha_registro, fecha_inicio, fecha_fin, dias_movimiento, saldo_resultante, observaciones)
-                          VALUES ('$id_periodo_kardex', '$id_empleado', '$concepto', '$fecha_registro_kardex', '$fecha_inicio', '$fecha_fin', '$dias_movimiento', 0, '$observaciones')";
+            $sql_ins_k = "INSERT INTO kardex_vacaciones (id_periodo, id_empleado, num_ciclo, concepto, fecha_registro, fecha_inicio, fecha_fin, dias_movimiento, saldo_resultante, observaciones)
+                          VALUES ('$id_periodo_kardex', '$id_empleado', '$num_ciclo_actual', '$concepto', '$fecha_registro_kardex', '$fecha_inicio', '$fecha_fin', '$dias_movimiento', 0, '$observaciones')";
             if (!mysqli_query($conexion, $sql_ins_k)) {
                 throw new Exception("Error al insertar el movimiento consolidado en el Kardex.");
             }
         }
 
-        // 3. Recalcular todos los saldos resultantes del Kardex para el empleado
+        // 3. Recalcular todos los saldos resultantes del Kardex para el CICLO ACTUAL del empleado
         $sql_kardex_all = "SELECT id_kardex, dias_movimiento FROM kardex_vacaciones 
-                           WHERE id_empleado = '$id_empleado' 
+                           WHERE id_empleado = '$id_empleado' AND num_ciclo = '$num_ciclo_actual'
                            ORDER BY fecha_registro ASC, id_kardex ASC";
         $res_kardex_all = mysqli_query($conexion, $sql_kardex_all);
 
@@ -377,7 +439,9 @@ function restaurarVacaciones($conexion)
         }
 
         // 5. Calcular los periodos y movimientos para cada ciclo
+        $num_ciclo = 0; // Contador de ciclos laborales
         foreach ($ciclos as $ciclo) {
+            $num_ciclo++; // Cada ciclo laboral es independiente (1, 2, 3...)
             $fecha_inicio_ciclo = new DateTime($ciclo['inicio']);
             $fecha_fin_ciclo = new DateTime($ciclo['fin']);
             
@@ -421,8 +485,8 @@ function restaurarVacaciones($conexion)
                     if ($rangoValido) {
                         $diasDerecho = (float)$rangoValido['dias_vacaciones_correspondientes'];
                         
-                        $sql_ins_p = "INSERT INTO vacaciones_periodos (id_empleado, fecha_aniversario, anios_antiguedad, id_version_vacaciones, dias_derecho, dias_tomados, saldo, estatus)
-                                      VALUES ('$id_empleado', '$fecha_aniv_str', '$anios', '$id_version', '$diasDerecho', 0, '$diasDerecho', 'ACTIVO')";
+                        $sql_ins_p = "INSERT INTO vacaciones_periodos (id_empleado, num_ciclo, fecha_aniversario, anios_antiguedad, id_version_vacaciones, dias_derecho, dias_tomados, saldo, estatus)
+                                      VALUES ('$id_empleado', '$num_ciclo', '$fecha_aniv_str', '$anios', '$id_version', '$diasDerecho', 0, '$diasDerecho', 'ACTIVO')";
                         
                         if (!mysqli_query($conexion, $sql_ins_p)) {
                             throw new Exception("Error al insertar el periodo del aniversario #" . $anios);
@@ -430,7 +494,7 @@ function restaurarVacaciones($conexion)
                         
                         $id_periodo_nuevo = mysqli_insert_id($conexion);
                         
-                        $sql_sum = "SELECT COALESCE(SUM(dias_movimiento), 0) AS total_saldo FROM kardex_vacaciones WHERE id_empleado = '$id_empleado'";
+                        $sql_sum = "SELECT COALESCE(SUM(dias_movimiento), 0) AS total_saldo FROM kardex_vacaciones WHERE id_empleado = '$id_empleado' AND num_ciclo = '$num_ciclo'";
                         $res_sum = mysqli_query($conexion, $sql_sum);
                         $row_sum = mysqli_fetch_assoc($res_sum);
                         $saldo_previo = (float)$row_sum['total_saldo'];
@@ -438,8 +502,8 @@ function restaurarVacaciones($conexion)
 
                         $concepto = "Aniversario laboral al finalizar la jornada";
                         $observaciones = "Cálculo automático del sistema";
-                        $sql_ins_k = "INSERT INTO kardex_vacaciones (id_periodo, id_empleado, concepto, fecha_registro, fecha_inicio, fecha_fin, dias_movimiento, saldo_resultante, observaciones)
-                                      VALUES ('$id_periodo_nuevo', '$id_empleado', '$concepto', '$fecha_aniv_str', NULL, NULL, '$diasDerecho', '$nuevo_saldo_resultante', '$observaciones')";
+                        $sql_ins_k = "INSERT INTO kardex_vacaciones (id_periodo, id_empleado, num_ciclo, concepto, fecha_registro, fecha_inicio, fecha_fin, dias_movimiento, saldo_resultante, observaciones)
+                                      VALUES ('$id_periodo_nuevo', '$id_empleado', '$num_ciclo', '$concepto', '$fecha_aniv_str', NULL, NULL, '$diasDerecho', '$nuevo_saldo_resultante', '$observaciones')";
                         
                         if (!mysqli_query($conexion, $sql_ins_k)) {
                             throw new Exception("Error al insertar el movimiento de Kardex del aniversario #" . $anios);

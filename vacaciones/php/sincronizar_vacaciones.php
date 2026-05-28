@@ -14,6 +14,10 @@ include("../../conexion/conexion.php");
 //==================================================================================================
 // PASO 1: CARGAR LAS NORMAS LFT DE LA BASE DE DATOS
 // Traemos todas las versiones (ej: Ley anterior, Ley 2023 "Digna") y sus respectivas tablas de días.
+//
+// EJEMPLO DE DATOS QUE TRAE:
+// id_version_vacaciones=1, nombre_version="Ley Anterior", fecha_inicio_vigencia="2018-01-01"
+// id_version_vacaciones=2, nombre_version="Ley 2023 Digna", fecha_inicio_vigencia="2023-05-01"
 //==================================================================================================
 $sql_v = "SELECT * FROM versiones_vacaciones_lft ORDER BY fecha_inicio_vigencia ASC";
 $res_v = mysqli_query($conexion, $sql_v);
@@ -27,14 +31,21 @@ while ($v = mysqli_fetch_assoc($res_v)) {
     
     $v['tabla_dias'] = [];
     while ($d = mysqli_fetch_assoc($res_d)) {
+        // Ejemplo: anios_antiguedad_inicio=1, dias_vacaciones_correspondientes=12
+        // Ejemplo: anios_antiguedad_inicio=5, dias_vacaciones_correspondientes=14
         $v['tabla_dias'][] = $d;
     }
     $leyes[] = $v; // Guardamos la ley completa con su tabla de días adentro
+    // Resultado: $leyes[0] = ['id_version'=>1, 'nombre_version'=>'Ley Anterior', 'tabla_dias'=>[...]]
 }
 
 //==================================================================================================
 // PASO 2: OBTENER TODOS LOS EMPLEADOS
 // Necesitamos procesar a cada trabajador registrado en el sistema.
+//
+// EJEMPLO DE DATOS QUE TRAE:
+// id_empleado=1, clave_empleado="12345", nombre="Juan", ap_paterno="Pérez", fecha_alta_empresa="2020-05-27", id_status=1
+// id_empleado=2, clave_empleado="12346", nombre="María", ap_paterno="López", fecha_alta_empresa="2018-01-15", id_status=1
 //==================================================================================================
 $sql_e = "SELECT id_empleado, clave_empleado, nombre, ap_paterno, ap_materno, fecha_alta_empresa, id_status FROM info_empleados";
 $res_e = mysqli_query($conexion, $sql_e);
@@ -58,6 +69,11 @@ while ($emp = mysqli_fetch_assoc($res_e)) {
     //==============================================================================================
     // PASO 3: RECONSTRUIR LOS "CICLOS DE EMPLEO" (REINGRESOS Y BAJAS)
     // Leemos la tabla 'historial_reingresos' ordenada cronológicamente por fecha de reingreso.
+    //
+    // EJEMPLO PARA EMPLEADO ID=1:
+    // Ciclo 1: fecha_reingreso="2020-05-27", fecha_salida="2023-06-15" (fue dado de baja)
+    // Ciclo 2: fecha_reingreso="2023-10-01", fecha_salida=NULL (actual - sin baja)
+    // Se construyen 2 ciclos independientes que resetean antigüedad de 0
     //==============================================================================================
     $sql_h = "SELECT fecha_reingreso, fecha_salida FROM historial_reingresos WHERE id_empleado = '$id_empleado' ORDER BY fecha_reingreso ASC";
     $res_h = mysqli_query($conexion, $sql_h);
@@ -66,6 +82,7 @@ while ($emp = mysqli_fetch_assoc($res_e)) {
     if (mysqli_num_rows($res_h) == 0) {
         // CASO A: Empleado limpio (nunca ha sido dado de baja).
         // Su único ciclo laboral va desde su fecha de ingreso original ('fecha_alta_empresa') hasta hoy.
+        // Ejemplo: $ciclos[] = ['inicio'=>'2020-05-27', 'fin'=>'2026-05-27']
         $ciclos[] = [
             'inicio' => $fecha_alta,
             'fin' => $hoy_str
@@ -79,6 +96,8 @@ while ($emp = mysqli_fetch_assoc($res_e)) {
             if (empty($fin) || $fin == '0000-00-00') {
                 $fin = $hoy_str; 
             }
+            // Ejemplo ciclo 1: ['inicio'=>'2020-05-27', 'fin'=>'2023-06-15']
+            // Ejemplo ciclo 2: ['inicio'=>'2023-10-01', 'fin'=>'2026-05-27'] (actual)
             $ciclos[] = [
                 'inicio' => $h['fecha_reingreso'],
                 'fin' => $fin
@@ -91,8 +110,14 @@ while ($emp = mysqli_fetch_assoc($res_e)) {
     //==============================================================================================
     // PASO 4: CALCULAR LOS DERECHOS DE VACACIONES EN CADA CICLO
     // Cada ciclo laboral es totalmente independiente y resetea la antigüedad desde el Año 1.
+    //
+    // EJEMPLO: Un empleado con 2 ciclos tendrá:
+    // Ciclo 1 (num_ciclo=1): Año 1, Año 2, Año 3 (hasta fecha salida)
+    // Ciclo 2 (num_ciclo=2): Año 1 (reinicia) - NUEVO CONTADOR
     //==============================================================================================
+    $num_ciclo = 0; // Contador de ciclos laborales
     foreach ($ciclos as $ciclo) {
+        $num_ciclo++; // Cada ciclo laboral es independiente (1, 2, 3...)
         $fecha_inicio_ciclo = new DateTime($ciclo['inicio']);
         $fecha_fin_ciclo = new DateTime($ciclo['fin']);
         
@@ -104,11 +129,14 @@ while ($emp = mysqli_fetch_assoc($res_e)) {
         for ($anios = 1; $anios <= 100; $anios++) {
             
             // Calculamos la fecha exacta en la que se cumple el aniversario laboral
+            // Ejemplo: Si empleado ingresa 2023-10-01
+            // Año 1: 2024-10-01, Año 2: 2025-10-01, Año 3: 2026-10-01
             $timestamp = mktime(12, 0, 0, $mesBase, $diaBase, $anioBase + $anios);
             $fechaAniversario = new DateTime(date('Y-m-d', $timestamp));
             
             // Si la fecha del aniversario supera la fecha en que terminó este ciclo laboral,
             // significa que el empleado ya no cumplió más años de antigüedad en este ciclo. Terminamos el bucle.
+            // Ejemplo: Si ciclo termina 2023-06-15 y aniversario sería 2024-10-01, no se cuenta
             if ($fechaAniversario > $fecha_fin_ciclo) {
                 break;
             }
@@ -118,6 +146,11 @@ while ($emp = mysqli_fetch_assoc($res_e)) {
             //--------------------------------------------------------------------------------------
             // PASO 4.1: IDENTIFICAR LA LEY VIGENTE EN EL ANIVERSARIO
             // Buscamos cuál ley (versiones_vacaciones_lft) estaba activa en la fecha del aniversario.
+            //
+            // EJEMPLO: 
+            // Aniversario: 2023-05-15
+            // Ley Anterior: válida hasta 2023-04-30 (NO aplica)
+            // Ley 2023 Digna: válida desde 2023-05-01 (SÍ aplica) ✓
             //--------------------------------------------------------------------------------------
             $leySeleccionada = null;
             foreach ($leyes as $ley) {
@@ -137,6 +170,12 @@ while ($emp = mysqli_fetch_assoc($res_e)) {
                 //--------------------------------------------------------------------------------------
                 // PASO 4.2: IDENTIFICAR LOS DÍAS CORRESPONDIENTES
                 // Según la ley seleccionada y los años cumplidos, buscamos la fila del tabulador.
+                //
+                // EJEMPLO DE TABULADOR:
+                // Año 1-3: 12 días | Año 4-5: 14 días | Año 6-9: 16 días | Año 10+: 20 días
+                // Si empleado cumple 1 año → 12 días
+                // Si empleado cumple 4 años → 14 días
+                // Si empleado cumple 10 años → 20 días
                 //--------------------------------------------------------------------------------------
                 $rangoValido = null;
                 foreach ($leySeleccionada['tabla_dias'] as $rango) {
@@ -145,6 +184,8 @@ while ($emp = mysqli_fetch_assoc($res_e)) {
                     // Si los años del empleado son mayores o iguales al inicio de este rango...
                     if ($anios >= $inicioRango) {
                         // Buscamos el rango más alto que se adapte (ej: si tiene 3 años, entra en el de '1' y no en el de '5')
+                        // Ejemplo: Si $anios=3, valida rangos: 1 (sí), 4 (no), 5 (no) → usa rango 1 (12 días)
+                        // Ejemplo: Si $anios=5, valida rangos: 1 (sí), 4 (sí), 5 (no) → usa rango 4 (14 días)
                         if (!$rangoValido || $inicioRango > (int)$rangoValido['anios_antiguedad_inicio']) {
                             $rangoValido = $rango;
                         }
@@ -152,10 +193,15 @@ while ($emp = mysqli_fetch_assoc($res_e)) {
                 }
                 
                 if ($rangoValido) {
+                    // Ejemplo: Empleado 1 año con Ley 2023 = 12 días derecho
                     $diasDerecho = (float)$rangoValido['dias_vacaciones_correspondientes'];
                     
                     //==================================================================================
                     // PASO 5: GUARDADO Y EVITACIÓN DE DUPLICADOS (PERSISTENCIA)
+                    //
+                    // PROTECCIÓN: Si ejecutas sincronizar_vacaciones.php dos veces, no crea duplicados
+                    // Primera ejecución: Crea período 2024-10-01 para Juan (12 días)
+                    // Segunda ejecución: Detecta que ya existe → NO LO VUELVE A CREAR
                     //==================================================================================
                     
                     // Comprobamos si ya tenemos guardado este aniversario para evitar duplicarlo si el script corre varias veces
@@ -165,8 +211,11 @@ while ($emp = mysqli_fetch_assoc($res_e)) {
                     
                     if (mysqli_num_rows($res_check) == 0) {
                         // SI NO EXISTE: Procedemos a crear el registro en la tabla 'vacaciones_periodos'
-                        $sql_ins_p = "INSERT INTO vacaciones_periodos (id_empleado, fecha_aniversario, anios_antiguedad, id_version_vacaciones, dias_derecho, dias_tomados, saldo, estatus)
-                                      VALUES ('$id_empleado', '$fecha_aniv_str', '$anios', '$id_version', '$diasDerecho', 0, '$diasDerecho', 'ACTIVO')";
+                        // Ejemplo INSERT para Juan ciclo 2:
+                        // INSERT INTO vacaciones_periodos VALUES (null, 1, 1, '2024-10-01', 1, 2, 12, 0, 12, 'ACTIVO')
+                        // Resultado: id_periodo=1001, dias_derecho=12, saldo=12 (nuevo saldo sin usar)
+                        $sql_ins_p = "INSERT INTO vacaciones_periodos (id_empleado, num_ciclo, fecha_aniversario, anios_antiguedad, id_version_vacaciones, dias_derecho, dias_tomados, saldo, estatus)
+                                      VALUES ('$id_empleado', '$num_ciclo', '$fecha_aniv_str', '$anios', '$id_version', '$diasDerecho', 0, '$diasDerecho', 'ACTIVO')";
                         
                         if (mysqli_query($conexion, $sql_ins_p)) {
                             $id_periodo_nuevo = mysqli_insert_id($conexion);
@@ -176,10 +225,15 @@ while ($emp = mysqli_fetch_assoc($res_e)) {
                             // CÁLCULO DE SALDO ACUMULADO REAL (RUNNING BALANCE)
                             // Obtenemos la suma de todos los movimientos de Kardex existentes para el empleado
                             // hasta este momento. Al sumar $diasDerecho, el nuevo saldo resultante será acumulativo exacto.
+                            //
+                            // EJEMPLO DE SALDO ACUMULADO:
+                            // Kardex histórico: +12 (año 1), -3 (usados ago), +12 (año 2) = 21 días
+                            // Nuevo período: +12 (año 3)
+                            // Saldo resultante = 21 + 12 = 33 días (acumulado exacto)
                             //------------------------------------------------------------------------------
                             $sql_sum = "SELECT COALESCE(SUM(dias_movimiento), 0) AS total_saldo 
                                         FROM kardex_vacaciones 
-                                        WHERE id_empleado = '$id_empleado'";
+                                        WHERE id_empleado = '$id_empleado' AND num_ciclo = '$num_ciclo'";
                             $res_sum = mysqli_query($conexion, $sql_sum);
                             $row_sum = mysqli_fetch_assoc($res_sum);
                             $saldo_previo = (float)$row_sum['total_saldo'];
@@ -188,8 +242,10 @@ while ($emp = mysqli_fetch_assoc($res_e)) {
                             // Insertamos el movimiento en el Kardex con el saldo acumulado real calculado
                             $concepto = "Aniversario laboral al finalizar la jornada";
                             $observaciones = "Cálculo automático del sistema";
-                            $sql_ins_k = "INSERT INTO kardex_vacaciones (id_periodo, id_empleado, concepto, fecha_registro, fecha_inicio, fecha_fin, dias_movimiento, saldo_resultante, observaciones)
-                                          VALUES ('$id_periodo_nuevo', '$id_empleado', '$concepto', '$fecha_aniv_str', NULL, NULL, '$diasDerecho', '$nuevo_saldo_resultante', '$observaciones')";
+                            // Ejemplo INSERT para Juan ciclo 2:
+                            // INSERT kardex: período=1001, empleado=1, ciclo=2, movimiento=+12, saldo_resultante=33
+                            $sql_ins_k = "INSERT INTO kardex_vacaciones (id_periodo, id_empleado, num_ciclo, concepto, fecha_registro, fecha_inicio, fecha_fin, dias_movimiento, saldo_resultante, observaciones)
+                                          VALUES ('$id_periodo_nuevo', '$id_empleado', '$num_ciclo', '$concepto', '$fecha_aniv_str', NULL, NULL, '$diasDerecho', '$nuevo_saldo_resultante', '$observaciones')";
                             
                             if (mysqli_query($conexion, $sql_ins_k)) {
                                 $kardex_insertados++;

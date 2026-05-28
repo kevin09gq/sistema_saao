@@ -188,7 +188,7 @@ function establecerColorBiometrico(empleado) {
         const diaNom = normalizarDia(nombreDia(fecha));
         const horario = horariosPorDia[diaNom];
 
-    
+
 
         // 2. OLVIDOS (Si falta entrada o salida)
         if ((entrada === '-' || salida === '-') && Array.isArray(empleado.historial_olvidos)) {
@@ -276,8 +276,9 @@ function establecerConceptos(empleado) {
 
     // Verificar si el empleado tiene seguro social
     const tieneSeguroSocial = empleado.seguroSocial !== false;
+    const quitarTarjeta = empleado.quitar_tarjeta === true;
 
-    desabilitarCamposConceptos(tieneSeguroSocial);
+    desabilitarCamposConceptos(tieneSeguroSocial, quitarTarjeta);
     const conceptos = empleado.conceptos || [];
 
     // Buscar conceptos por código
@@ -308,7 +309,7 @@ function calcularTotalConceptosJornalero() {
     $('#mod-total-conceptos-10lbs').val(total.toFixed(2));
 }
 
-function desabilitarCamposConceptos(tieneSeguroSocial) {
+function desabilitarCamposConceptos(tieneSeguroSocial, quitarTarjeta) {
 
     // Deshabilitar o habilitar campos de conceptos según seguroSocial
     if (!tieneSeguroSocial) {
@@ -317,12 +318,14 @@ function desabilitarCamposConceptos(tieneSeguroSocial) {
         $('#mod-imss-10lbs').prop('disabled', true);
         $('#mod-infonavit-10lbs').prop('disabled', true);
         $('#mod-ajustes-sub-10lbs').prop('disabled', true);
+        $('#mod-tarjeta-10lbs').prop('disabled', true);
 
         // Deshabilitar botones de aplicar
         $('#btn-aplicar-isr-10lbs').prop('disabled', true);
         $('#btn-aplicar-imss-10lbs').prop('disabled', true);
         $('#btn-aplicar-infonavit-10lbs').prop('disabled', true);
         $('#btn-aplicar-ajuste-sub-10lbs').prop('disabled', true);
+        $('#btn-aplicar-tarjeta-10lbs').prop('disabled', true);
 
         // Deshabilitar total (aunque ya tiene readonly)
         $('#mod-total-conceptos-10lbs').prop('disabled', true);
@@ -335,13 +338,21 @@ function desabilitarCamposConceptos(tieneSeguroSocial) {
     $('#mod-imss-10lbs').prop('disabled', false);
     $('#mod-infonavit-10lbs').prop('disabled', false);
     $('#mod-ajustes-sub-10lbs').prop('disabled', false);
+    $('#mod-tarjeta-10lbs').prop('disabled', false);
 
     $('#btn-aplicar-isr-10lbs').prop('disabled', false);
     $('#btn-aplicar-imss-10lbs').prop('disabled', false);
     $('#btn-aplicar-infonavit-10lbs').prop('disabled', false);
     $('#btn-aplicar-ajuste-sub-10lbs').prop('disabled', false);
+    $('#btn-aplicar-tarjeta-10lbs').prop('disabled', false);
 
     $('#mod-total-conceptos-10lbs').prop('disabled', false);
+
+    // Si quitarTarjeta es true, deshabilitar específicamente el campo de la tarjeta
+    if (quitarTarjeta) {
+        $('#mod-tarjeta-10lbs').prop('disabled', true);
+        $('#btn-aplicar-tarjeta-10lbs').prop('disabled', true);
+    }
 }
 
 

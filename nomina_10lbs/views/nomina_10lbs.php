@@ -116,18 +116,21 @@
                         title="Redondear Sueldos Masivo" aria-label="Redondear Sueldos Masivo">
                         <i class="bi bi-arrow-repeat"></i>
                     </button>
-                    <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global"
+                    <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global" hidden
                         title="Aplicar Tarjeta">
                         <i class="bi bi-arrow-clockwise"></i>
                     </button>
-                    <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta"
+                    <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta" hidden
                         aria-label="Quitar tarjeta">
                         <i class="bi bi-credit-card-2-back"></i>
                     </button>
-                     <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf"
-                    title="Descargar Tickets">
-                    <i class="bi bi-ticket-perforated"></i>
-                </button>
+                    <button class="btn btn-outline-info" id="btn_abrir_add_remove_tarjeta" title="Configurar Tarjeta/Impuestos por Empleado">
+                        <i class="bi bi-person-gear"></i>
+                    </button>
+                    <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf"
+                        title="Descargar Tickets">
+                        <i class="bi bi-ticket-perforated"></i>
+                    </button>
                     <button class="btn btn-outline-success btn-ticket-zebra" id="btn_ticket_manual_10lbs"
                         title="Descargar Tickets Seleccionados">
                         <i class="bi bi-hand-index"></i>
@@ -236,6 +239,7 @@
     <?php include 'modals/modalOlvidos.php'; ?>
     <?php include 'modals/modalConceptosTotales.php'; ?>
     <?php include 'modals/modalExportarNomina.php'; ?>
+    <?php include 'modals/modalAddRemoveTarjeta.php'; ?>
     <?php include 'modals/modalTicketsEmpleados.php'; ?>
     <?php include 'modals/modal_seleccion_tickets_10lbs.php'; ?>
     <?php include 'modals/modalRedondeoSueldos.php'; ?>
@@ -273,6 +277,7 @@
     <script src="../js/configModales/redondearSueldos.js"></script>
     <script src="../js/configModales/capturarCajasEmpacadas.js"></script>
     <script src="../js/configModales/capturarClientes.js"></script>
+    <script src="../js/configModales/addRemoveTarjeta.js"></script>
 
     <script src="../js/configModal/establecerData.js"></script>
     <script src="../js/configModal/editarData.js"></script>

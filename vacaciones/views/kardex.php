@@ -12,6 +12,7 @@
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <link rel="stylesheet" href="../css/kardex.css">
+    <link rel="stylesheet" href="../css/calendario.css">
     <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -165,6 +166,7 @@
                 <table class="table table-custom">
                     <thead>
                         <tr>
+                            <th>Ciclo</th>
                             <th>Aniversario</th>
                             <th>Años</th>
                             <th>Versión LFT</th>
@@ -204,6 +206,7 @@
                 <table class="table table-custom">
                     <thead>
                         <tr>
+                            <th>Ciclo</th>
                             <th>Fecha Registro</th>
                             <th>Concepto / Observaciones</th>
                             <th>Periodo Vacacional</th>

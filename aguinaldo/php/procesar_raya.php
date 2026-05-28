@@ -126,7 +126,7 @@ foreach ($rows as $rowIdx => $row) {
                 'clave_empleado' => $clave,
                 'nombre' => $nombreEmpleado,
                 'id_empresa' => $idEmpresa,
-                'fecha_alta_imss' => $fechaIngreso,
+                'fecha_ingreso_imss' => $fechaIngreso,
                 'isr' => $isr,
                 'tarjeta' => $tarjeta
             ];

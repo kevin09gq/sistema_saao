@@ -130,7 +130,7 @@ function obtener_empleados(anio, dias_pago = 15) {
                 empleado.dias_pago = dias_pago;
 
                 // 2. CALCULAR DIAS TRABAJADOS TEMPORAL APARTIR DE LA FECHA REAL DE INGRESO (SE USUARÁ POR DEFECTO LA REAL)
-                empleado.dias_trabajados_tmp = diasTrabajados(empleado.fecha_alta_empresa, anio);
+                empleado.dias_trabajados_tmp = diasTrabajados(empleado.fecha_ingreso_real, anio);
 
                 // 3. CALCULAR DIAS TRABAJADOS DEFINITIVO RESTANDO LAS AUSENCIAS POR DEFECTO AUSENCIAS SON 0
                 empleado.dias_trabajados = empleado.dias_trabajados_tmp - empleado.total_ausencias;
