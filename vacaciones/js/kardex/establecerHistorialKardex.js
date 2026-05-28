@@ -254,7 +254,7 @@ function mostrarPaginaKardex(pagina) {
     let $tbody = $('#tbodyKardex').empty();
 
     if (total === 0) {
-        $tbody.append('<tr><td colspan="7" class="text-center text-muted">No hay movimientos registrados</td></tr>');
+        $tbody.append('<tr><td colspan="6" class="text-center text-muted">No hay movimientos registrados</td></tr>');
         actualizarControlesPaginacionKardex(0);
         return;
     }
@@ -266,7 +266,6 @@ function mostrarPaginaKardex(pagina) {
     $.each(fragmento, function (i, m) {
         let valorMov = parseFloat(m.dias_movimiento || 0);
         let saldoResultante = parseFloat(m.saldo_resultante || 0);
-        let numCiclo = m.num_ciclo || 1;
 
         let tipo = (valorMov >= 0) ? '<span class="type-abono">ABONO</span>' : '<span class="type-cargo">CARGO</span>';
         let diasTexto = (valorMov >= 0) ? `+${valorMov.toFixed(3)}` : `-${Math.abs(valorMov).toFixed(3)}`;
@@ -275,7 +274,6 @@ function mostrarPaginaKardex(pagina) {
 
         let fila = `
             <tr>
-                <td><span class="badge bg-secondary">${numCiclo}</span></td>
                 <td>${formatearFecha(m.fecha_registro)}</td>
                 <td>
                     <strong>${m.concepto}</strong>

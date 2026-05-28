@@ -762,7 +762,7 @@ $(document).on('click', '#btn_borrar_nomina', function (e) {
         cancelButtonText: "Cancelar"
     }).then((result) => {
         if (result.isConfirmed) {
-            
+
             if (jsonNominaRelicario == null) {
                 alerta("error", "Error de datos", "No se pudo eliminar la nómina porque no se han cargado los datos correctamente.");
                 return;
@@ -771,14 +771,14 @@ $(document).on('click', '#btn_borrar_nomina', function (e) {
             try {
                 // Buscar el departamento "Corte"
                 const departamentoCorte = jsonNominaRelicario.departamentos.find(dept => dept.nombre === 'Corte');
-                
+
                 if (!departamentoCorte) {
                     alerta("error", "Departamento no encontrado", "El departamento 'Corte' no existe en los datos.");
                     return;
                 }
 
                 // Buscar y eliminar el empleado con concepto "NOMINA"
-                const indexEmpleado = departamentoCorte.empleados.findIndex(emp => 
+                const indexEmpleado = departamentoCorte.empleados.findIndex(emp =>
                     emp.nombre === nombre && emp.concepto === 'NOMINA'
                 );
 

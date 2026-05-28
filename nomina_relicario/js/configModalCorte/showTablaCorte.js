@@ -29,7 +29,7 @@ function mostrarDatosTablaCorte(jsonNominaRelicario) {
                 // Generar fila HTML
                 const filaHTML = generarFilaTablaCorte(numeroFila, datosFila);
                 $('#tabla-body-corte-relicario').append(filaHTML);
-                
+
                 // Guardar datos de la fila para calcular totales
                 todasLasFilas.push(datosFila);
 
@@ -43,7 +43,7 @@ function mostrarDatosTablaCorte(jsonNominaRelicario) {
             // Generar fila HTML
             const filaHTML = generarFilaTablaCorte(numeroFila, datosFila);
             $('#tabla-body-corte-relicario').append(filaHTML);
-            
+
             // Guardar datos de la fila para calcular totales
             todasLasFilas.push(datosFila);
 

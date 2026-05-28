@@ -152,6 +152,9 @@
                             <div class="legend-color" style="background: #c084fc; border: 1px dashed #7c3aed;"></div> Próx. Aniversario
                         </div>
                         <div class="legend-item">
+                            <div class="legend-color" style="background: #3b82f6;"></div> Pago de Prima
+                        </div>
+                        <div class="legend-item">
                             <div class="legend-color" style="border: 2px solid var(--primary-green);"></div> Hoy
                         </div>
                     </div>
@@ -166,7 +169,6 @@
                 <table class="table table-custom">
                     <thead>
                         <tr>
-                            <th>Ciclo</th>
                             <th>Aniversario</th>
                             <th>Años</th>
                             <th>Versión LFT</th>
@@ -201,12 +203,11 @@
 
         <!-- Tabla: Movimientos del Kardex -->
         <h2 class="section-title"><i class="bi bi-list-check"></i> Historial de Movimientos (Kardex)</h2>
-        <div class="card-table">
+        <div class="card-table mb-5">
             <div class="table-responsive">
                 <table class="table table-custom">
                     <thead>
                         <tr>
-                            <th>Ciclo</th>
                             <th>Fecha Registro</th>
                             <th>Concepto / Observaciones</th>
                             <th>Periodo Vacacional</th>
@@ -237,6 +238,47 @@
                 </nav>
             </div>
         </div>
+
+        <!-- Tabla: Primas Vacacionales -->
+        <h2 class="section-title"><i class="bi bi-currency-dollar"></i> Historial de Primas Vacacionales</h2>
+        <div class="card-table">
+            <div class="table-responsive">
+                <table class="table table-custom">
+                    <thead>
+                        <tr>
+                            <th>Semana/Año</th>
+                            <th>Fecha Pago</th>
+                            <th>Periodo Vacacional</th>
+                            <th class="text-end">Días Vac.</th>
+                            <th class="text-end">Salario Diario</th>
+                            <th class="text-end">Monto Prima</th>
+                            <th class="text-end">ISR</th>
+                            <th class="text-end">Tarjeta</th>
+                            <th class="text-end">Total Neto</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyPrimas">
+                        <!-- Los datos se cargan dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+            <!-- Paginación de Primas -->
+            <div
+                class="pagination-container p-3 border-top d-flex justify-content-between align-items-center bg-light-subtle">
+                <div class="page-info text-muted small" id="infoPaginacionPrimas">
+                    Mostrando <strong>0</strong> a <strong>0</strong> de <strong>0</strong> primas
+                </div>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0" id="listaPaginacionPrimas">
+                        <li class="page-item disabled"><a class="page-link" href="#"><i
+                                    class="bi bi-chevron-left"></i></a></li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item disabled"><a class="page-link" href="#"><i
+                                    class="bi bi-chevron-right"></i></a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
     </div>
 
     <!-- Scripts y Librerías -->
@@ -245,6 +287,7 @@
     <script src="../js/kardex/establecerDataEmpleado.js"></script>
     <script src="../js/kardex/establecerHistorialKardex.js"></script>
     <script src="../js/kardex/establecerPeriodos.js"></script>
+    <script src="../js/kardex/establecerHistorialPrima.js"></script>
     <script src="../js/kardex/registrarVacaciones.js"></script>
     <script src="../js/kardex/calendario.js"></script>
 </body>

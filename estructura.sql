@@ -359,15 +359,6 @@ CREATE TABLE dias_vacaciones_lft (
     FOREIGN KEY (id_version_vacaciones) REFERENCES versiones_vacaciones_lft (id_version_vacaciones) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
--- 3. Tabla para la prima vacacional (por separado por si cambia en un futuro)
-CREATE TABLE primas_vacacionales_lft (
-    id_prima_vacacional INT AUTO_INCREMENT PRIMARY KEY,
-    id_version_vacaciones INT NOT NULL,
-    porcentaje_prima DECIMAL(5, 2) NOT NULL DEFAULT 25.00,
-    fecha_inicio_vigencia DATE NOT NULL,
-    fecha_fin_vigencia DATE NULL,
-    FOREIGN KEY (id_version_vacaciones) REFERENCES versiones_vacaciones_lft (id_version_vacaciones) ON UPDATE CASCADE ON DELETE CASCADE
-);
 
 -- ==========================================
 -- TABLA: PERIODOS DE VACACIONES
@@ -410,6 +401,7 @@ CREATE TABLE kardex_vacaciones (
 CREATE TABLE prima_vacacional_empleados (
     id_prima_empleado INT AUTO_INCREMENT PRIMARY KEY,
     id_empleado INT NOT NULL,
+    id_kardex INT NOT NULL,
     fecha_registro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     numero_semana INT NOT NULL,
     anio INT NOT NULL,
@@ -429,6 +421,11 @@ CREATE TABLE prima_vacacional_empleados (
 
     FOREIGN KEY (id_empleado)
         REFERENCES info_empleados(id_empleado)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    
+    FOREIGN KEY (id_kardex)
+        REFERENCES kardex_vacaciones(id_kardex)
         ON UPDATE CASCADE
         ON DELETE CASCADE
 );

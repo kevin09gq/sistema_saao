@@ -138,3 +138,9 @@
     color: #ffffff !important;
 }
 
+.calendar-day.pago-prima {
+    background: #3b82f6 !important;
+    color: #ffffff !important;
+    font-weight: 600;
+}
+

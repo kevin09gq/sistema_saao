@@ -23,6 +23,9 @@ switch ($action) {
     case 'restaurarVacaciones':
         restaurarVacaciones($conexion);
         break;
+    case 'obtenerPrimasEmpleado':
+        obtenerPrimasEmpleado($conexion);
+        break;
     default:
         echo json_encode(['error' => 'Acción no válida']);
         break;
@@ -519,6 +522,33 @@ function restaurarVacaciones($conexion)
         mysqli_rollback($conexion);
         echo json_encode(['success' => false, 'message' => $e->getMessage()]);
     }
+}
+
+//==============================
+// OBTIENE LAS PRIMAS VACACIONALES DE UN EMPLEADO
+//==============================
+function obtenerPrimasEmpleado($conexion)
+{
+    $id_empleado = intval($_POST['id_empleado'] ?? 0);
+
+    if ($id_empleado <= 0) {
+        echo json_encode([]);
+        return;
+    }
+
+    $sql = "SELECT * 
+            FROM prima_vacacional_empleados
+            WHERE id_empleado = '$id_empleado'
+            ORDER BY fecha_pago DESC, id_prima_empleado DESC";
+
+    $result = mysqli_query($conexion, $sql);
+    $primas = [];
+    if ($result) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $primas[] = $row;
+        }
+    }
+    echo json_encode($primas);
 }
 
 

@@ -143,6 +143,16 @@ function renderizarVistaDias($grid) {
         });
     }
 
+    // Cargar fechas de pago de primas
+    let fechasPagoPrimas = [];
+    if (typeof listaPrimasGlobal !== 'undefined') {
+        $.each(listaPrimasGlobal, function (i, p) {
+            if (p.fecha_pago) {
+                fechasPagoPrimas.push(p.fecha_pago.split(' ')[0]);
+            }
+        });
+    }
+
     // Datos aniversario
     let fechaIngreso = new Date(empleadoActual.fecha_ingreso_final + 'T00:00:00');
     let mesAniversario = fechaIngreso.getMonth();
@@ -172,6 +182,12 @@ function renderizarVistaDias($grid) {
         if (esFestivo && !esDomingo) {
             clases.push('festivo');
             tooltips.push('Día Festivo');
+        }
+
+        // Highlight Prima Payment
+        if (fechasPagoPrimas.includes(fechaStr)) {
+            clases.push('pago-prima');
+            tooltips.push('Pago de Prima Vacacional');
         }
 
         let esVacacion = false;

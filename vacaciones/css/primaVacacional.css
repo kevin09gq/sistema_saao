@@ -1,0 +1,471 @@
+/* ============================================
+   ESTILOS PRIMA VACACIONAL - REGISTRO DE CUENTAS
+   RESPETANDO DISEÑO DE KARDEX.CSS Y VACACIONES.CSS
+   ============================================ */
+
+:root {
+    --primary-green: #2d6a4f;
+    --light-green: #d8f3dc;
+    --soft-green: #95d5b2;
+    --bg-gray: #f8f9fa;
+    --border-color: #e9ecef;
+    --text-main: #343a40;
+    --text-muted: #6c757d;
+    --white: #ffffff;
+    --accent-green: #1b4332;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+body {
+    background-color: var(--bg-gray);
+    color: var(--text-main);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Contenedor Principal */
+.kardex-container {
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+}
+
+/* Card del Formulario */
+.card-form {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.5rem;
+}
+
+/* Títulos de Secciones */
+.section-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-main);
+    border-bottom: 2px solid var(--primary-green);
+    padding-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.section-title i {
+    font-size: 1.1rem;
+    color: var(--primary-green);
+}
+
+/* Subtítulos */
+.subsection-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 1rem 0 0.75rem 0;
+}
+
+/* Etiquetas del Formulario */
+.form-label-kardex {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+/* Inputs del Formulario */
+.input-kardex {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    background: var(--white);
+    transition: all 0.2s ease;
+    font-family: 'Inter', sans-serif;
+}
+
+.input-kardex:focus {
+    outline: none;
+    border-color: var(--soft-green);
+    box-shadow: 0 0 0 3px rgba(149, 213, 178, 0.2);
+}
+
+.input-kardex::placeholder {
+    color: #adb5bd;
+}
+
+/* Inputs de Cálculo */
+.input-calc {
+    background: #f5f5f5;
+    border-color: #d0d0d0;
+}
+
+/* Inputs de Deducción */
+.input-deduccion {
+    background: #fff8e5;
+    border-color: #ffc107;
+}
+
+/* TextArea */
+.input-kardex[rows] {
+    resize: vertical;
+    min-height: 75px;
+}
+
+/* Botones de Acción */
+.btn-action {
+    padding: 0.6rem 1.25rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--white);
+    color: var(--text-main);
+}
+
+.btn-action:hover {
+    background: var(--bg-gray);
+    border-color: var(--soft-green);
+    color: var(--primary-green);
+}
+
+.btn-action:active {
+    transform: scale(0.98);
+}
+
+.btn-action[type="submit"] {
+    background: var(--primary-green);
+    color: var(--white);
+    border-color: var(--primary-green);
+}
+
+.btn-action[type="submit"]:hover {
+    background: var(--accent-green);
+    border-color: var(--accent-green);
+    color: var(--white);
+}
+
+/* Botón de Cálculo */
+.btn-calc {
+    padding: 0.6rem 1.25rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #6c757d;
+    color: var(--white);
+    width: 100%;
+}
+
+.btn-calc:hover {
+    background: #5a6268;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-calc:active {
+    transform: translateY(0);
+}
+
+/* Caja de Fórmula */
+.formula-box {
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 0.85rem;
+    text-align: center;
+}
+
+.formula-label {
+    font-size: 0.85rem;
+    color: #525252;
+    margin: 0;
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.3px;
+}
+
+/* ============================================
+   DESGLOSE (REGISTRO DE CUENTAS)
+   ============================================ */
+
+.desglose-box {
+    background: #fafafa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.25rem;
+    font-family: 'Courier New', monospace;
+}
+
+.desglose-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0;
+    font-size: 0.95rem;
+}
+
+.desglose-concepto {
+    color: var(--text-main);
+    font-weight: 500;
+    flex: 1;
+}
+
+.desglose-valor {
+    color: #333333;
+    font-weight: 700;
+    text-align: right;
+    flex: 0 0 auto;
+    margin-left: 1.5rem;
+}
+
+.desglose-separator {
+    height: 1px;
+    background: #d0d0d0;
+    margin: 0.6rem 0;
+    border-radius: 1px;
+}
+
+.desglose-subtotal {
+    font-size: 1rem;
+    padding-top: 0.5rem;
+}
+
+.desglose-subtotal .desglose-concepto {
+    font-weight: 700;
+    color: #333333;
+}
+
+.desglose-subtotal .desglose-valor {
+    font-size: 1.1rem;
+}
+
+/* ============================================
+   RESUMEN FINAL (REGISTRO DE CUENTAS)
+   ============================================ */
+
+.resumen-final-box {
+    background: var(--white);
+    border: 2px solid #d0d0d0;
+    border-radius: 8px;
+    padding: 1.25rem;
+    font-family: 'Courier New', monospace;
+}
+
+.resumen-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.resumen-row:last-child {
+    border-bottom: none;
+}
+
+.resumen-label {
+    color: var(--text-main);
+    font-weight: 500;
+    flex: 1;
+}
+
+.resumen-valor {
+    color: #666;
+    font-weight: 600;
+    text-align: right;
+    flex: 0 0 auto;
+    margin-left: 1.5rem;
+}
+
+.resumen-separator {
+    height: 1px;
+    background: #d0d0d0;
+    margin: 0.5rem 0;
+    border-radius: 1px;
+}
+
+.resumen-total {
+    background: #f5f5f5;
+    padding: 0.85rem;
+    margin: 0;
+    border-radius: 6px;
+    border-top: 2px solid #d0d0d0;
+    border-bottom: 2px solid #d0d0d0;
+    margin-top: 0.5rem;
+}
+
+.resumen-total .resumen-label {
+    font-size: 0.95rem;
+    color: #333333;
+    font-weight: 700;
+}
+
+.resumen-valor-total {
+    color: #333333;
+    font-size: 1.25rem;
+    font-weight: 900;
+    text-align: right;
+}
+
+/* Encabezado - Información del Empleado */
+.kardex-header {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.emp-profile {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.emp-avatar-large {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    background: var(--light-green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-green);
+    font-size: 1.5rem;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.emp-name-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 0.35rem;
+}
+
+.emp-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.emp-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.emp-meta i {
+    color: var(--primary-green);
+    font-size: 0.95rem;
+}
+
+.emp-meta strong {
+    color: var(--text-main);
+}
+
+/* Botón Volver */
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-main);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    background: var(--white);
+}
+
+.btn-back:hover {
+    background: var(--bg-gray);
+    color: var(--primary-green);
+    border-color: var(--soft-green);
+    text-decoration: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .kardex-container {
+        padding-top: 1rem;
+        padding-bottom: 2rem;
+    }
+
+    .card-form {
+        padding: 1rem;
+    }
+
+    .kardex-header {
+        padding: 1rem;
+    }
+
+    .emp-profile {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.75rem;
+    }
+
+    .emp-meta {
+        justify-content: center;
+        gap: 0.75rem;
+        font-size: 0.8rem;
+    }
+
+    .btn-action,
+    .btn-calc {
+        padding: 0.5rem 0.875rem;
+        font-size: 0.8rem;
+    }
+
+    .section-title {
+        font-size: 0.85rem;
+    }
+
+    .desglose-box,
+    .resumen-final-box {
+        padding: 1rem;
+    }
+
+    .desglose-row,
+    .resumen-row {
+        font-size: 0.85rem;
+    }
+
+    .form-label-kardex {
+        font-size: 0.7rem;
+    }
+
+    .input-kardex {
+        padding: 0.5rem 0.7rem;
+        font-size: 0.85rem;
+    }
+}
+
+
+

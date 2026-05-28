@@ -90,9 +90,14 @@ function cargarDatos(empleados, indiceInicio) {
             <td><span class="badge bg-light text-dark border">${emp.antiguedad}</span></td>
             <td class="text-center">${statusBadge}</td>
             <td class="text-center">
-                <button class="btn-action" onclick="verKardex(${emp.id_empleado})">
-                    <i class="bi bi-clipboard2-data"></i> Ver Kardex
-                </button>
+                <div class="btn-group" role="group">
+                    <button class="btn-action" onclick="verKardex(${emp.id_empleado})" title="Ver Kardex de Vacaciones">
+                        <i class="bi bi-clipboard2-data"></i> Ver Kardex
+                    </button>
+                    <button class="btn-action" onclick="agregarPrima(${emp.id_empleado})" title="Agregar Prima Vacacional">
+                        <i class="bi bi-plus-circle"></i> Prima
+                    </button>
+                </div>
             </td>
         </tr>`;
         $cuerpoTabla.append(fila);
@@ -218,6 +223,13 @@ function actualizarTextoInformativo() {
 //==============================
 function verKardex(idEmpleado) {
     window.location.href = `kardex.php?id=${idEmpleado}`;
+}
+
+//==============================
+// ENVIA EL ID DEL EMPLEADO A LA PÁGINA DE PRIMA VACACIONAL
+//==============================
+function agregarPrima(idEmpleado) {
+    window.location.href = `prima_vacacional.php?id=${idEmpleado}`;
 }
 
 

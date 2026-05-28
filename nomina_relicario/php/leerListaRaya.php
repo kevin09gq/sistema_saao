@@ -177,7 +177,7 @@ foreach ($rows as $row) {
                 $actualDepto['empleados'][$ultimoEmpleadoIdx]['conceptos'][$concepto16Idx]['resultado'] =
                     formatearImporteComoTexto($nuevoImporte);
             }
-        } elseif (in_array($codigoConcepto, ['45', '52'], true)) {
+        } elseif (in_array($codigoConcepto, ['45', '52', '107'], true)) {
             $actualDepto['empleados'][$ultimoEmpleadoIdx]['conceptos'][] = [
                 'codigo' => $codigoConcepto,
                 'nombre' => $nombreConcepto,
