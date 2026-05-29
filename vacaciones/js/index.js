@@ -232,6 +232,9 @@ function agregarPrima(idEmpleado) {
     window.location.href = `prima_vacacional.php?id=${idEmpleado}`;
 }
 
+//==============================
+// CONFIGURACION DEL CALENDARIO DEL MODAL
+//==============================
 
 //==============================
 // FUNCIONES AUXILIARES

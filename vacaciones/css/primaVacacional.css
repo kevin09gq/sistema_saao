@@ -35,8 +35,26 @@ body {
     border-radius: 12px;
     padding: 1.5rem;
     border: 1px solid var(--border-color);
+    border-left: 4px solid var(--primary-green);
     box-shadow: var(--shadow-sm);
     margin-bottom: 1.5rem;
+}
+
+/* Colores distintos para cada sección */
+.card-form:nth-child(1) {
+    border-left-color: #2d6a4f; /* Verde oscuro */
+}
+
+.card-form:nth-child(2) {
+    border-left-color: #40916c; /* Verde medio */
+}
+
+.card-form:nth-child(3) {
+    border-left-color: #52b788; /* Verde claro */
+}
+
+.card-form:nth-child(4) {
+    border-left-color: #74c69d; /* Verde más claro */
 }
 
 /* Títulos de Secciones */

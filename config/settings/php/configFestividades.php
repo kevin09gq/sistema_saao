@@ -23,6 +23,9 @@ if (isset($_GET['accion']) || isset($_POST['accion'])) {
         case 'actualizarFestividad':
             actualizarFestividad();
             break;
+        case 'obtenerAniosFestividades':
+            obtenerAniosFestividades();
+            break;
         default:
             echo "Acción no reconocida";
     }
@@ -33,6 +36,32 @@ if (isset($_GET['accion']) || isset($_POST['accion'])) {
 // ================================
 // Funciones para las festividades
 // ================================
+
+function obtenerAniosFestividades()
+{
+    global $conexion;
+
+    // Obtener años únicos de la tabla festividades, ordenados de mayor a menor
+    $sql = "SELECT DISTINCT YEAR(fecha) AS anio FROM festividades ORDER BY anio DESC";
+    $resultado = $conexion->query($sql);
+
+    if (!$resultado) {
+        echo json_encode(['error' => true, 'message' => 'Error en la consulta: ' . $conexion->error]);
+        return;
+    }
+
+    $anios = array();
+    while ($fila = $resultado->fetch_assoc()) {
+        $anios[] = $fila['anio'];
+    }
+
+    // Si no hay años en la base de datos, devolver el año actual
+    if (empty($anios)) {
+        $anios[] = date('Y');
+    }
+
+    echo json_encode($anios);
+}
 
 function registrarFestividad()
 {

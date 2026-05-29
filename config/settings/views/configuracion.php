@@ -523,10 +523,7 @@ verificarSesion(); // Proteger esta página
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h5><i class="bi bi-list-ul"></i> Lista de festividades</h5>
                                         <select class="form-select form-select-lg w-25" id="select_anio_festividad">
-                                            <?php for ($i = 2025; $i <= date('Y') + 1; $i++): ?>
-                                                <option <?= $i == date('Y') ? 'selected' : '' ?> value="<?= $i ?>"><?= $i ?>
-                                                </option>
-                                            <?php endfor; ?>
+                                            <option value="">Cargando años...</option>
                                         </select>
                                         <div class="search-box-container">
                                             <input type="text" class="search-box" id="search-festividades"

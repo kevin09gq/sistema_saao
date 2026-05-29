@@ -16,7 +16,8 @@
 
 <body>
     <?php
-    include "../../public/views/navbar.php"
+    include "../../public/views/navbar.php";
+    include "modalCalendario.php";
     ?>
 
     <div class="container vacation-container">
@@ -46,86 +47,13 @@
                         <option value="4">Mantenimiento</option>
                     </select>
                 </div>
-                <div class="col-md-3 d-flex align-items-end">
-                    <button id="btnLimpiar" class="btn-action w-100 justify-content-center" style="height: 40px; border-color: transparent; background: var(--soft-gray);">
-                        <i class="bi bi-eraser"></i> Limpiar Filtros
+                <div class="col-md-3 d-flex align-items-end gap-2">
+                    <button type="button" class="btn-action w-50 justify-content-center" style="height: 40px; border-color: transparent; background: var(--accent-green); color: white;" data-bs-toggle="modal" data-bs-target="#modalCalendario" title="Ver Calendario">
+                        <i class="bi bi-calendar3"></i> Calendario
                     </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Calendario Estático -->
-        <div class="mb-4">
-            <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; color: var(--text-main);">
-                <i class="bi bi-calendar3"></i> Calendario Mayo 2026
-            </h3>
-            <div class="calendar-wrapper">
-                <div class="calendar-header">
-                    <div class="calendar-month">Mayo 2026</div>
-                </div>
-                <div class="calendar-grid">
-                    <!-- Nombres de días -->
-                    <div class="calendar-day-name">Lun</div>
-                    <div class="calendar-day-name">Mar</div>
-                    <div class="calendar-day-name">Mié</div>
-                    <div class="calendar-day-name">Jue</div>
-                    <div class="calendar-day-name">Vie</div>
-                    <div class="calendar-day-name">Sáb</div>
-                    <div class="calendar-day-name">Dom</div>
-
-                    <!-- Días del mes -->
-                    <div class="calendar-day">1</div>
-                    <div class="calendar-day">2</div>
-                    <div class="calendar-day">3</div>
-                    <div class="calendar-day">4</div>
-                    <div class="calendar-day vacaciones">5</div>
-                    <div class="calendar-day vacaciones">6</div>
-                    <div class="calendar-day vacaciones">7</div>
-                    
-                    <div class="calendar-day vacaciones">8</div>
-                    <div class="calendar-day vacaciones">9</div>
-                    <div class="calendar-day">10</div>
-                    <div class="calendar-day">11</div>
-                    <div class="calendar-day festivo">12</div>
-                    <div class="calendar-day">13</div>
-                    <div class="calendar-day">14</div>
-                    
-                    <div class="calendar-day today">15</div>
-                    <div class="calendar-day aniversario">16</div>
-                    <div class="calendar-day">17</div>
-                    <div class="calendar-day">18</div>
-                    <div class="calendar-day">19</div>
-                    <div class="calendar-day">20</div>
-                    <div class="calendar-day">21</div>
-                    
-                    <div class="calendar-day">22</div>
-                    <div class="calendar-day">23</div>
-                    <div class="calendar-day">24</div>
-                    <div class="calendar-day">25</div>
-                    <div class="calendar-day">26</div>
-                    <div class="calendar-day">27</div>
-                    <div class="calendar-day">28</div>
-                    
-                    <div class="calendar-day">29</div>
-                    <div class="calendar-day aniversario-proximo">30</div>
-                    <div class="calendar-day">31</div>
-                </div>
-                <div class="calendar-legend">
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #10b981;"></div> Vacaciones
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #f59e0b;"></div> Festivos
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #8b5cf6;"></div> Aniversario
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #c084fc; border: 1px dashed #7c3aed;"></div> Próx. Aniversario
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="border: 2px solid var(--accent-green);"></div> Hoy
-                    </div>
+                    <button id="btnLimpiar" class="btn-action w-50 justify-content-center" style="height: 40px; border-color: transparent; background: var(--soft-gray);">
+                        <i class="bi bi-eraser"></i> Limpiar
+                    </button>
                 </div>
             </div>
         </div>

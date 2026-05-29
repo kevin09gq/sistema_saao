@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    getFestividades();
+    cargarAniosFestividades();
     registrarFestividad();
     eliminarFestividad();
     editarFestividad();
@@ -7,6 +7,53 @@ $(document).ready(function () {
     cancelarFestividad();
 });
 
+
+// Cargar los años disponibles en la BD
+function cargarAniosFestividades() {
+    $.ajax({
+        type: "POST",
+        url: "../php/configFestividades.php",
+        data: { accion: "obtenerAniosFestividades" },
+        dataType: "json",
+        success: function (response) {
+            if (Array.isArray(response)) {
+                let selectAnio = $('#select_anio_festividad');
+                selectAnio.empty();
+                
+                // Agregar los años obtenidos
+                let anioActual = new Date().getFullYear();
+                
+                // Convertir a números y evitar duplicados usando Set
+                let aniosUnicos = new Set(response.map(Number));
+                
+                // Asegurar que el año actual esté en el set
+                aniosUnicos.add(anioActual);
+                
+                // Convertir a array y ordenar descendente
+                let aniosOrdenados = Array.from(aniosUnicos).sort((a, b) => b - a);
+                
+                // Agregar opciones al select
+                aniosOrdenados.forEach(function (anio) {
+                    let selected = (anio === anioActual) ? 'selected' : '';
+                    selectAnio.append(`<option value="${anio}" ${selected}>${anio}</option>`);
+                });
+                
+                // Cargar festividades del año actual después de poblar el select
+                getFestividades();
+            }
+        },
+        error: function () {
+            console.error('Error al cargar años');
+            // Mantener el comportamiento anterior si hay error
+            let selectAnio = $('#select_anio_festividad');
+            selectAnio.empty();
+            let anioActual = new Date().getFullYear();
+            selectAnio.append(`<option value="${anioActual}" selected>${anioActual}</option>`);
+            // Cargar festividades del año actual
+            getFestividades();
+        }
+    });
+}
 
 // Se Obtienen las áreas
 function getFestividades() {

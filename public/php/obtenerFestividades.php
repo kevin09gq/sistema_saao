@@ -1,11 +1,11 @@
 <?php
 include("../../conexion/conexion.php");
-
+/** @var mysqli $conexion */
 // Verificar la conexión
 if (!$conexion) {
     die(json_encode(array("error" => true, "message" => "Error de conexión: " . mysqli_connect_error())));
 }
-
+/** @var mysqli $conexion */
 $anio = isset($_GET['anio']) ? (int)$_GET['anio'] : null;
 
 // Consulta base
