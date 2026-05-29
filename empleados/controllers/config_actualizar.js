@@ -494,19 +494,117 @@ $(document).ready(function () {
                 return;
             }
 
-            // Validación: la fecha de salida no puede ser anterior a la de reingreso
-            if (fechaSalida) {
-                const dReing = new Date(fechaReingreso);
-                const dSal = new Date(fechaSalida);
-                if (dSal < dReing) {
-                    Swal.fire({
-                        title: 'ERROR',
-                        text: 'La fecha de salida no puede ser anterior a la fecha de reingreso.',
-                        icon: 'error',
-                        confirmButtonText: 'Entendido'
-                    });
-                    return;
+            // Obtener fecha de alta de la empresa
+            const fechaAltaEmpresa = $('#modal_fecha_alta_empresa').val();
+            if (!fechaAltaEmpresa) {
+                Swal.fire({
+                    title: 'ADVERTENCIA',
+                    text: 'Debe definir primero la fecha de alta de la empresa.',
+                    icon: 'warning',
+                    confirmButtonText: 'Entendido'
+                });
+                return;
+            }
+
+            if (new Date(fechaReingreso) < new Date(fechaAltaEmpresa)) {
+                Swal.fire({
+                    title: 'ERROR',
+                    text: `La fecha de reingreso no puede ser anterior a la fecha de alta de la empresa (${formatToDMY(fechaAltaEmpresa)}).`,
+                    icon: 'error',
+                    confirmButtonText: 'Entendido'
+                });
+                return;
+            }
+
+            if (fechaSalida && new Date(fechaSalida) < new Date(fechaAltaEmpresa)) {
+                Swal.fire({
+                    title: 'ERROR',
+                    text: `La fecha de salida no puede ser anterior a la fecha de alta de la empresa (${formatToDMY(fechaAltaEmpresa)}).`,
+                    icon: 'error',
+                    confirmButtonText: 'Entendido'
+                });
+                return;
+            }
+
+            // Construir los intervalos cronológicos propuestos para validación en frontend
+            const intervals = [];
+            let errorMsg = null;
+
+            $('#tbody_historial_reingresos tr').each(function () {
+                const $btnEdit = $(this).find('.btn-editar-historial');
+                if ($btnEdit.length === 0) return; // Fila "Sin registros"
+                
+                const idHistRow = $btnEdit.data('id-historial').toString();
+                
+                let entrada, salida;
+                if (idHistRow === idHist) {
+                    entrada = fechaReingreso;
+                    salida = fechaSalida || null;
+                } else {
+                    const entradaTxt = $(this).children('td').eq(1).text().trim();
+                    const salidaTxt = $(this).children('td').eq(2).text().trim();
+                    entrada = toYMD(entradaTxt);
+                    salida = salidaTxt ? toYMD(salidaTxt) : null;
                 }
+                
+                intervals.push({
+                    id: idHistRow,
+                    entrada: entrada,
+                    salida: salida
+                });
+            });
+
+            if (idHist === '') {
+                intervals.push({
+                    id: 'nuevo',
+                    entrada: fechaReingreso,
+                    salida: fechaSalida || null
+                });
+            }
+
+            // Ordenar intervalos
+            intervals.sort((a, b) => new Date(a.entrada) - new Date(b.entrada));
+
+            // Validar primer registro
+            if (intervals.length > 0 && intervals[0].entrada !== fechaAltaEmpresa) {
+                Swal.fire({
+                    title: 'ERROR',
+                    text: `El primer reingreso registrado debe coincidir exactamente con la fecha de alta de la empresa (${formatToDMY(fechaAltaEmpresa)}).`,
+                    icon: 'error',
+                    confirmButtonText: 'Entendido'
+                });
+                return;
+            }
+
+            // Validar traslapes y orden lógico
+            for (let i = 0; i < intervals.length; i++) {
+                const cur = intervals[i];
+                if (cur.salida && new Date(cur.salida) < new Date(cur.entrada)) {
+                    errorMsg = `La fecha de salida (${formatToDMY(cur.salida)}) no puede ser anterior a la de entrada/reingreso (${formatToDMY(cur.entrada)}).`;
+                    break;
+                }
+                
+                if (i < intervals.length - 1) {
+                    const next = intervals[i + 1];
+                    if (!cur.salida) {
+                        errorMsg = `No se puede registrar un reingreso posterior si el periodo anterior aún no tiene fecha de salida.`;
+                        break;
+                    }
+                    if (new Date(next.entrada) <= new Date(cur.salida)) {
+                        errorMsg = `Las fechas no pueden sobreponerse. El siguiente reingreso (${formatToDMY(next.entrada)}) debe ser posterior a la salida anterior (${formatToDMY(cur.salida)}).`;
+                        break;
+                    }
+                }
+            }
+
+            if (errorMsg) {
+                Swal.fire({
+                    title: 'ERROR',
+                    text: errorMsg,
+                    icon: 'error',
+                    confirmButtonText: 'Entendido'
+                });
+                return;
             }
 
             // Si hay idHist => editar. Si está vacío => crear (nuevoReingreso)
@@ -530,6 +628,23 @@ $(document).ready(function () {
                 url: '../php/obtenerEmpleados.php',
                 data: payload,
                 success: function (resp) {
+                    let parsedResp = resp;
+                    if (typeof resp === 'string') {
+                        try {
+                            parsedResp = JSON.parse(resp);
+                        } catch (e) {}
+                    }
+
+                    if (parsedResp && parsedResp.success === false) {
+                        Swal.fire({
+                            title: 'ERROR',
+                            text: parsedResp.message || 'Error de validación.',
+                            icon: 'error',
+                            confirmButtonText: 'Entendido'
+                        });
+                        return;
+                    }
+
                     const $tbody = $('#tbody_historial_reingresos');
                     if (!isCreate) {
                         if (resp == true || resp === '1') {
@@ -545,6 +660,7 @@ $(document).ready(function () {
                             $fila.children('td').eq(2).text(formatToDMY(fsTxt));
 
                             $('#modal_historial_reingreso').modal('hide');
+                            obtenerDatosEmpleados();
                         }
                     } else {
                         const newId = (resp || '').toString().trim();
@@ -573,6 +689,7 @@ $(document).ready(function () {
                             </tr>`;
                             $tbody.append(nuevaFila);
                             $('#modal_historial_reingreso').modal('hide');
+                            obtenerDatosEmpleados();
                         }
                     }
                 },
@@ -585,7 +702,17 @@ $(document).ready(function () {
         // Abrir modal vacío para crear nuevo reingreso
         $(document).on('click', '#btn_nuevo_reingreso', function () {
             $('#modal_hist_id_historial').val('');
-            $('#modal_hist_fecha_reingreso').val('');
+            
+            // Si no hay registros registrados, pre-poblar con la fecha de alta de la empresa
+            const numFilas = $('#tbody_historial_reingresos tr').length;
+            const sinRegistros = $('#tbody_historial_reingresos tr').first().find('td').attr('colspan') !== undefined;
+            if (numFilas === 0 || sinRegistros) {
+                const fechaAlta = $('#modal_fecha_alta_empresa').val();
+                $('#modal_hist_fecha_reingreso').val(fechaAlta);
+            } else {
+                $('#modal_hist_fecha_reingreso').val('');
+            }
+
             $('#modal_hist_fecha_salida').val('');
             $('#modal_historial_reingreso').modal('show');
         });
@@ -1115,6 +1242,7 @@ $(document).ready(function () {
             $("#tab_reingresos").removeClass("show active");
             $("#tab_beneficiarios").removeClass("show active");
             $("#tab_horarios").removeClass("show active");
+            $("#tab_horarios_oficiales").removeClass("show active");
             $("#tab_configuracion").removeClass("show active");
 
 
@@ -1567,6 +1695,18 @@ $(document).ready(function () {
 
         if (!idHist) return;
 
+        // Verificar si es la última fila del tbody (más reciente)
+        const esUltima = $fila.is(':last-child');
+        if (!esUltima) {
+            Swal.fire({
+                title: 'No permitido',
+                text: 'Solo se permite eliminar los registros de reingresos desde el más reciente (actual) hacia el más antiguo. Elimina primero los registros más recientes.',
+                icon: 'warning',
+                confirmButtonText: 'Entendido'
+            });
+            return;
+        }
+
         const ejecutar = () => {
             $.ajax({
                 type: 'POST',
@@ -1584,9 +1724,14 @@ $(document).ready(function () {
                                 $(this).children('td').eq(0).text(i + 1);
                             });
                         }
-                        // No mostrar ningún mensaje
+                        obtenerDatosEmpleados();
                     } else {
-                        // No mostrar ningún mensaje
+                        Swal.fire({
+                            title: 'No permitido',
+                            text: 'No se puede eliminar este registro porque existen registros más actuales.',
+                            icon: 'error',
+                            confirmButtonText: 'Entendido'
+                        });
                     }
                 },
                 error: function () {

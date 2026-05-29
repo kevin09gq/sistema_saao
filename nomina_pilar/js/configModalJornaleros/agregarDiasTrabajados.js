@@ -1,6 +1,7 @@
 
 abrirModalDiasExtra();
 filtrarEmpleadosExtra();
+seleccionarDeseleccionarEmpleado();
 aplicarDiasExtraEmpleado();
 quitarDiaExtraEmpleado();
 
@@ -89,12 +90,21 @@ function filtrarEmpleadosExtra() {
 //=====================================
 
 function seleccionarDeseleccionarEmpleado() {
-      // Seleccionar/Deseleccionar todos
+    // Seleccionar/Deseleccionar todos
     $(document).on('change', '#check-all-extra', function () {
         const checked = $(this).prop('checked');
         $('.check-empleado-extra').prop('checked', checked);
     });
 
+    // Sincronizar el checkbox "Seleccionar todos" cuando se selecciona/deselecciona un empleado
+    $(document).on('change', '.check-empleado-extra', function () {
+        const totalCheckboxes = $('.check-empleado-extra').length;
+        const checkedCheckboxes = $('.check-empleado-extra:checked').length;
+        
+        // Si todos están seleccionados, marcar "Seleccionar todos"
+        // Si ninguno está seleccionado, desmarcar "Seleccionar todos"
+        $('#check-all-extra').prop('checked', totalCheckboxes > 0 && totalCheckboxes === checkedCheckboxes);
+    });
 }
 
 //=====================================

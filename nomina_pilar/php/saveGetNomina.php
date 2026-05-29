@@ -4,6 +4,7 @@ ini_set('display_errors', 0);
 error_reporting(0);
 
 include '../../conexion/conexion.php';
+/** @var mysqli $conexion */
 
 // Forzar cabecera JSON
 header('Content-Type: application/json; charset=UTF-8');

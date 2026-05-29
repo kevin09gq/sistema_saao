@@ -286,7 +286,7 @@
     <script src="<?= BOOTSTRAP_JS ?>"></script>
     <script src="../js/kardex/establecerDataEmpleado.js"></script>
     <script src="../js/kardex/establecerHistorialKardex.js"></script>
-    <script src="../js/kardex/establecerPeriodos.js"></script>
+    <script src="../js/kardex/establecerHistorialPeriodos.js"></script>
     <script src="../js/kardex/establecerHistorialPrima.js"></script>
     <script src="../js/kardex/registrarVacaciones.js"></script>
     <script src="../js/kardex/calendario.js"></script>

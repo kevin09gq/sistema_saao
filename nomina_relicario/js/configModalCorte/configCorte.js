@@ -106,8 +106,9 @@ function obtenerRangoFechas(inicioStr, finStr, formatoCorto = true) {
  * @param {String} fechaStr Fecha con formato "12/Ene/2026"
  * @returns Nombre del día de la semana en español (ej. "LUNES")
  */
-function obtenerDiaSemana(fechaStr) {
-    // Mapeo de meses abreviados en español a número (0 = enero)
+function obtenerDiaSemanaBHL(fechaStr) { 
+
+  // Mapeo de meses abreviados en español a número (0 = enero)
     const meses = {
         Ene: 0,
         Feb: 1,
@@ -135,7 +136,10 @@ function obtenerDiaSemana(fechaStr) {
 
     // Ajustar al arreglo dias_nomina
     return dias_nomina[indice];
+
 }
+
+
 
 /**
  * Función para llenar el cuerpo de la tabla de pagos por día con las fechas del rango y los inputs correspondientes
@@ -156,20 +160,29 @@ function llenar_cuerpo_tabla_pagos_por_dia() {
     // Obtener el rango de fechas entre fecha_inicio y fecha_cierre
     const rangoFechas = obtenerRangoFechas(jsonNominaRelicario.fecha_inicio, jsonNominaRelicario.fecha_cierre);
 
+    console.log("RANGO DE FECHA: ", rangoFechas);
+    
+
     // ======================================================
     // Generar las filas de la tabla con las fechas del rango
     // ====================================================== 
 
     for (let i = 0; i < dias_nomina.length; i++) {
+
+        console.log("LA FECHA ES: " + rangoFechas[i]);
+        
+        console.log(obtenerDiaSemanaBHL(rangoFechas[i]));
+    
+
         tmp += `
             <tr>
-                <td>${obtenerDiaSemana(rangoFechas[i])}</td>
+                <td>${obtenerDiaSemanaBHL(rangoFechas[i])}</td>
                 <td>${rangoFechas[i]}</td>
                 <td>
                     <input type="number" step="0.01" min="0"
                         class="form-control shadow-sm pago_del_dia"
-                        name="pago_${obtenerDiaSemana(rangoFechas[i]).toLowerCase()}"
-                        id="pago_${obtenerDiaSemana(rangoFechas[i]).toLowerCase()}"
+                        name="pago_${obtenerDiaSemanaBHL(rangoFechas[i]).toLowerCase()}"
+                        id="pago_${obtenerDiaSemanaBHL(rangoFechas[i]).toLowerCase()}"
                         placeholder="Pago del día">
                 </td>
                 <td class="text-center">
@@ -199,13 +212,13 @@ function llenar_cuerpo_tabla_pagos_por_dia() {
     for (let i = 0; i < dias_nomina.length; i++) {
         tmp_editar += `
             <tr>
-                <td>${obtenerDiaSemana(rangoFechas[i])}</td>
+                <td>${obtenerDiaSemanaBHL(rangoFechas[i])}</td>
                 <td>${rangoFechas[i]}</td>
                 <td>
                     <input type="number" step="0.01" min="0"
                         class="form-control shadow-sm pago_del_dia_editar"
-                        name="pago_editar_${obtenerDiaSemana(rangoFechas[i]).toLowerCase()}"
-                        id="pago_editar_${obtenerDiaSemana(rangoFechas[i]).toLowerCase()}"
+                        name="pago_editar_${obtenerDiaSemanaBHL(rangoFechas[i]).toLowerCase()}"
+                        id="pago_editar_${obtenerDiaSemanaBHL(rangoFechas[i]).toLowerCase()}"
                         placeholder="Pago del día">
                 </td>
                 <td class="text-center">

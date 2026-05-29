@@ -1,5 +1,6 @@
 
 abrirModalDiasExtra();
+seleccionarDeseleccionarEmpleado();
 filtrarEmpleadosExtra();
 aplicarDiasExtraEmpleado();
 quitarDiaExtraEmpleado();

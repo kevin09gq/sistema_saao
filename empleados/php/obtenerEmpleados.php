@@ -367,15 +367,179 @@ function cambiarStatus($idEmpleado, $idStatus, $fechaIngreso = null)
     print_r(true);
 }
 
+function validarHistorialCronologico($idEmpleado, $idHistorialEvitar, $nuevaEntrada, $nuevaSalida, &$errorMsg)
+{
+    global $conexion;
+
+    // Obtener la fecha de alta de la empresa del empleado
+    $stmtEmp = $conexion->prepare("SELECT fecha_alta_empresa FROM info_empleados WHERE id_empleado = ? LIMIT 1");
+    if ($stmtEmp) {
+        $stmtEmp->bind_param("i", $idEmpleado);
+        $stmtEmp->execute();
+        $stmtEmp->bind_result($fechaAltaEmpresa);
+        $stmtEmp->fetch();
+        $stmtEmp->close();
+    }
+
+    if (empty($fechaAltaEmpresa)) {
+        $errorMsg = "No se encontró la fecha de alta de la empresa para este empleado.";
+        return false;
+    }
+
+    if ($nuevaEntrada < $fechaAltaEmpresa) {
+        $errorMsg = "La fecha de reingreso no puede ser anterior a la fecha de alta de la empresa ($fechaAltaEmpresa).";
+        return false;
+    }
+
+    if ($nuevaSalida !== null && $nuevaSalida < $fechaAltaEmpresa) {
+        $errorMsg = "La fecha de salida no puede ser anterior a la fecha de alta de la empresa ($fechaAltaEmpresa).";
+        return false;
+    }
+
+    // Obtener todos los otros registros del historial
+    $historial = [];
+    $stmtHist = $conexion->prepare("SELECT id_historial, fecha_reingreso, fecha_salida FROM historial_reingresos WHERE id_empleado = ? AND id_historial != ? ORDER BY fecha_reingreso ASC, id_historial ASC");
+    if ($stmtHist) {
+        $idHistorialEvitarInt = (int)$idHistorialEvitar;
+        $stmtHist->bind_param("ii", $idEmpleado, $idHistorialEvitarInt);
+        $stmtHist->execute();
+        $resHist = $stmtHist->get_result();
+        while ($row = $resHist->fetch_assoc()) {
+            $historial[] = [
+                'id' => $row['id_historial'],
+                'entrada' => $row['fecha_reingreso'],
+                'salida' => $row['fecha_salida']
+            ];
+        }
+        $stmtHist->close();
+    }
+
+    // Agregar el propuesto
+    $historial[] = [
+        'id' => $idHistorialEvitar,
+        'entrada' => $nuevaEntrada,
+        'salida' => $nuevaSalida
+    ];
+
+    // Ordenar por fecha_reingreso
+    usort($historial, function ($a, $b) {
+        return strcmp($a['entrada'], $b['entrada']);
+    });
+
+    // Validar el primer registro
+    if (count($historial) > 0) {
+        if ($historial[0]['entrada'] !== $fechaAltaEmpresa) {
+            $errorMsg = "El primer reingreso debe coincidir exactamente con la fecha de alta de la empresa ($fechaAltaEmpresa).";
+            return false;
+        }
+    }
+
+    // Validar orden y traslapes
+    for ($i = 0; $i < count($historial); $i++) {
+        $cur = $historial[$i];
+        if ($cur['salida'] !== null && $cur['salida'] < $cur['entrada']) {
+            $errorMsg = "La fecha de salida (" . $cur['salida'] . ") no puede ser anterior a la de entrada/reingreso (" . $cur['entrada'] . ").";
+            return false;
+        }
+
+        if ($i < count($historial) - 1) {
+            $next = $historial[$i + 1];
+            if ($cur['salida'] === null) {
+                $errorMsg = "No se puede registrar un reingreso posterior si el periodo anterior aún está activo (sin fecha de salida).";
+                return false;
+            }
+            if ($next['entrada'] <= $cur['salida']) {
+                $errorMsg = "Las fechas no pueden sobreponerse. El siguiente reingreso (" . $next['entrada'] . ") debe ser posterior a la salida anterior (" . $cur['salida'] . ").";
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+function sincronizarEstatusEmpleado($idEmpleado)
+{
+    global $conexion;
+
+    // Buscar el reingreso más reciente (el último ordenado por fecha_reingreso DESC, id_historial DESC)
+    $stmt = $conexion->prepare("SELECT fecha_salida FROM historial_reingresos WHERE id_empleado = ? ORDER BY fecha_reingreso DESC, id_historial DESC LIMIT 1");
+    if ($stmt) {
+        $stmt->bind_param("i", $idEmpleado);
+        $stmt->execute();
+        $stmt->store_result();
+        
+        $idStatus = 1; // Por defecto Activo (si no hay registros)
+        
+        if ($stmt->num_rows > 0) {
+            $stmt->bind_result($fechaSalida);
+            $stmt->fetch();
+            
+            // Si tiene fecha de salida no nula y no vacía, es Baja (2)
+            if ($fechaSalida !== null && $fechaSalida !== '' && $fechaSalida !== '0000-00-00') {
+                $idStatus = 2; // Baja
+            } else {
+                $idStatus = 1; // Activo
+            }
+        }
+        $stmt->close();
+
+        // Actualizar el estatus del empleado en la tabla info_empleados
+        $stmtStatus = $conexion->prepare("UPDATE info_empleados SET id_status = ? WHERE id_empleado = ?");
+        if ($stmtStatus) {
+            $stmtStatus->bind_param("ii", $idStatus, $idEmpleado);
+            $stmtStatus->execute();
+            $stmtStatus->close();
+        }
+    }
+}
+
 function eliminarReingreso($idHistorial)
 {
     global $conexion;
+
+    // Obtener el id_empleado y la fecha_salida de este historial antes de eliminarlo
+    $idEmpleado = 0;
+    $fechaSalida = null;
+    $fechaReingreso = null;
+    $stmtGet = $conexion->prepare("SELECT id_empleado, fecha_reingreso, fecha_salida FROM historial_reingresos WHERE id_historial = ? LIMIT 1");
+    if ($stmtGet) {
+        $stmtGet->bind_param("i", $idHistorial);
+        $stmtGet->execute();
+        $stmtGet->bind_result($idEmpleado, $fechaReingreso, $fechaSalida);
+        $stmtGet->fetch();
+        $stmtGet->close();
+    }
+
+    if ($idEmpleado > 0) {
+        // Verificar si existe algún registro más reciente (con fecha_reingreso mayor, o con id_historial mayor si es el mismo día)
+        $stmtCheck = $conexion->prepare("SELECT COUNT(*) FROM historial_reingresos WHERE id_empleado = ? AND (fecha_reingreso > ? OR (fecha_reingreso = ? AND id_historial > ?))");
+        if ($stmtCheck) {
+            $stmtCheck->bind_param("issi", $idEmpleado, $fechaReingreso, $fechaReingreso, $idHistorial);
+            $stmtCheck->execute();
+            $stmtCheck->bind_result($countNewer);
+            $stmtCheck->fetch();
+            $stmtCheck->close();
+
+            if ($countNewer > 0) {
+                // Hay registros más recientes, no permitir eliminar
+                print_r(false);
+                return;
+            }
+        }
+    }
+
+    // Proceder a eliminar
     $stmt = $conexion->prepare("DELETE FROM historial_reingresos WHERE id_historial = ? LIMIT 1");
     $stmt->bind_param("i", $idHistorial);
     $ok = $stmt->execute();
     $stmt->close();
 
-    // Responder simple como el resto de endpoints
+    if ($ok && $idEmpleado > 0) {
+        // Sincronizar el estatus del empleado basado en su nuevo historial
+        sincronizarEstatusEmpleado($idEmpleado);
+    }
+
     print_r($ok ? true : false);
 }
 
@@ -385,6 +549,13 @@ function nuevoReingreso($idEmpleado, $fechaReingreso, $fechaSalida)
 
     // Normalizar fecha_salida: si viene vacía, establecer a NULL
     $fechaSalida = ($fechaSalida === '' || $fechaSalida === null) ? null : $fechaSalida;
+
+    $errorMsg = "";
+    if (!validarHistorialCronologico($idEmpleado, 0, $fechaReingreso, $fechaSalida, $errorMsg)) {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'message' => $errorMsg]);
+        return;
+    }
 
     if ($fechaSalida === null) {
         $stmt = $conexion->prepare("INSERT INTO historial_reingresos (id_empleado, fecha_reingreso, fecha_salida) VALUES (?, ?, NULL)");
@@ -399,6 +570,8 @@ function nuevoReingreso($idEmpleado, $fechaReingreso, $fechaSalida)
     $stmt->close();
 
     if ($ok && $insertId > 0) {
+        // Sincronizar el estatus del empleado
+        sincronizarEstatusEmpleado($idEmpleado);
         print_r($insertId);
     } else {
         print_r(false);
@@ -409,8 +582,31 @@ function editarReingreso($idHistorial, $fechaReingreso, $fechaSalida)
 {
     global $conexion;
 
+    // Obtener el id_empleado asociado a este historial
+    $idEmpleado = 0;
+    $stmtGet = $conexion->prepare("SELECT id_empleado FROM historial_reingresos WHERE id_historial = ? LIMIT 1");
+    if ($stmtGet) {
+        $stmtGet->bind_param("i", $idHistorial);
+        $stmtGet->execute();
+        $stmtGet->bind_result($idEmpleado);
+        $stmtGet->fetch();
+        $stmtGet->close();
+    }
+
+    if ($idEmpleado <= 0) {
+        print_r(false);
+        return;
+    }
+
     // Normalizar fecha_salida: si viene vacía, establecer a NULL
     $fechaSalida = ($fechaSalida === '' || $fechaSalida === null) ? null : $fechaSalida;
+
+    $errorMsg = "";
+    if (!validarHistorialCronologico($idEmpleado, $idHistorial, $fechaReingreso, $fechaSalida, $errorMsg)) {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'message' => $errorMsg]);
+        return;
+    }
 
     if ($fechaSalida === null) {
         // Actualizar con fecha_salida = NULL
@@ -424,6 +620,11 @@ function editarReingreso($idHistorial, $fechaReingreso, $fechaSalida)
 
     $ok = $stmt->execute();
     $stmt->close();
+
+    if ($ok) {
+        // Sincronizar el estatus del empleado
+        sincronizarEstatusEmpleado($idEmpleado);
+    }
 
     print_r($ok ? true : false);
 }

@@ -316,6 +316,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $update_empleado->execute();
     $update_empleado->close();
 
+    // Sincronizar fecha_alta_empresa con el primer reingreso en historial_reingresos
+    if (!empty($fecha_alta_empresa)) {
+        $sql_primer_reingreso = $conexion->prepare("SELECT id_historial FROM historial_reingresos WHERE id_empleado = ? ORDER BY fecha_reingreso ASC, id_historial ASC LIMIT 1");
+        if ($sql_primer_reingreso) {
+            $sql_primer_reingreso->bind_param("i", $id_empleado);
+            $sql_primer_reingreso->execute();
+            $resultado_primer = $sql_primer_reingreso->get_result();
+            if ($resultado_primer && $resultado_primer->num_rows > 0) {
+                $fila_primer = $resultado_primer->fetch_assoc();
+                $id_historial_primer = $fila_primer['id_historial'];
+                
+                $sql_update_primer = $conexion->prepare("UPDATE historial_reingresos SET fecha_reingreso = ? WHERE id_historial = ?");
+                if ($sql_update_primer) {
+                    $sql_update_primer->bind_param("si", $fecha_alta_empresa, $id_historial_primer);
+                    $sql_update_primer->execute();
+                    $sql_update_primer->close();
+                }
+            }
+            $sql_primer_reingreso->close();
+        }
+    }
+
 
 
     /**
