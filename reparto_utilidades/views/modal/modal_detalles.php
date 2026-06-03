@@ -1,4 +1,3 @@
-
 <!-- MODAL PARA VER Y EDITAR LA INFORMACIÓN DEL EMPLEADO (Scrollable) -->
 <div class="modal fade" id="modalCalculoPTU" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalEditarLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-xl">
@@ -54,27 +53,32 @@
                             <div class="row g-3">
                                 <div class="col-md-3">
                                     <label class="form-label small fw-bold">Días Trabajados</label>
-                                    <input type="number" class="form-control" id="dias_trabajados" name="dias_trabajados">
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-calendar2-check"></i></span>
+                                        <input type="number" class="form-control" id="dias_trabajados" name="dias_trabajados" placeholder="0" step="0.01">
+                                    </div>
                                 </div>
 
                                 <div class="col-md-3">
                                     <label class="form-label small fw-semibold">Días Pago (Base)</label>
-                                    <div class="input-group">
-                                        <input type="number" class="form-control" id="dias_pago">
+                                    <div class="input-group shadow-sm">
+
+                                        <input type="number" class="form-control" id="dias_pago" placeholder="0" step="0.01">
                                         <button class="btn btn-outline-secondary" type="button" id="btn_resetear_dias_pago"><i class="bi bi-arrow-clockwise"></i></button>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label small fw-semibold">Días PTU</label>
                                     <div class="input-group">
-                                        <input type="number" class="form-control" id="dias_ptu" step="0.01">
+                                        <input type="number" class="form-control" id="dias_ptu" placeholder="0" step="0.01">
                                         <button class="btn btn-outline-secondary" type="button" id="btn_resetear_dias_ptu"><i class="bi bi-arrow-clockwise"></i></button>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label small fw-semibold">Salario Diario</label>
                                     <div class="input-group">
-                                        <input type="number" class="form-control" id="salario_diario" step="0.01">
+                                        <span class="input-group-text"><i class="bi bi-currency-dollar"></i></span>
+                                        <input type="number" class="form-control" id="salario_diario" placeholder="0" step="0.01">
                                         <button class="btn btn-outline-secondary" type="button" id="btn_resetear_salario"><i class="bi bi-arrow-clockwise"></i></button>
                                     </div>
                                 </div>
@@ -87,12 +91,35 @@
                         <div class="card-body bg-white rounded-3">
                             <h6 class="fw-bold mb-3 border-bottom pb-2 text-dark">Cálculo Neto</h6>
                             <div class="row g-3 align-items-end">
-                                <div class="col-md-4"><label class="form-label small fw-bold text-primary">Total PTU</label><input type="number" class="form-control" id="total_ptu" readonly></div>
-                                <div class="col-md-4"><label class="form-label small fw-bold text-danger">Tarjeta</label>
-                                    <div class="input-group"><input type="number" class="form-control text-danger border-danger" id="tarjeta">
-                                    <button class="btn btn-outline-secondary" type="button" id="btn_resetear_tarjeta"><i class="bi bi-arrow-clockwise"></i></button></div>
+
+                                <!-- TOTAL PTU (Solo Lectura) -->
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold text-primary">Total PTU</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text text-primary bg-primary-subtle border border-primary"><i class="bi bi-currency-dollar"></i></span>
+                                        <input type="number" class="form-control border border-primary" id="total_ptu" placeholder="0" step="0.01" readonly>
+                                    </div>
                                 </div>
-                                <div class="col-md-4"><label class="form-label small fw-bold text-success">Neto a Pagar</label><input type="number" class="form-control border-success text-success fw-bold" id="neto_pagar" readonly></div>
+                                
+                                <!-- DESCUENTO DE TARJETA (Si Aplica) -->
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold text-danger">Tarjeta</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text text-danger bg-danger-subtle border border-danger"><i class="bi bi-credit-card-2-back-fill"></i></span>
+                                        <input type="number" class="form-control text-danger border-danger" id="tarjeta" placeholder="0" step="0.01">
+                                        <button class="btn btn-outline-secondary" type="button" id="btn_resetear_tarjeta"><i class="bi bi-arrow-clockwise"></i></button>
+                                    </div>
+                                </div>
+
+                                <!-- NETO A PAGAR SIN REDONDEO -->
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold text-success">Neto a Pagar</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text text-success bg-success-subtle border border-success"><i class="bi bi-currency-dollar"></i></span>
+                                        <input type="number" class="form-control border-success text-success fw-bold" id="neto_pagar" placeholder="0" step="0.01" readonly>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     </div>

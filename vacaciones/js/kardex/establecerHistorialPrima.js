@@ -64,6 +64,11 @@ function mostrarPaginaPrimas(pagina) {
                 <td class="text-end text-danger">$${isr}</td>
                 <td class="text-end text-secondary">$${tarjeta}</td>
                 <td class="text-end fw-bold text-primary">$${totalPagado}</td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-outline-primary" onclick="verDetallePrima(${p.id_prima_empleado})">
+                        <i class="bi bi-eye"></i> Ver
+                    </button>
+                </td>
             </tr>`;
         $tbody.append(fila);
     });
@@ -109,3 +114,5 @@ function actualizarControlesPaginacionPrimas(total) {
         </a>
     </li>`);
 }
+
+

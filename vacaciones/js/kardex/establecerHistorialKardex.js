@@ -22,7 +22,7 @@ function cargarKardexVacaciones(empleado) {
         if (movimientos && movimientos.length > 0) {
             // Si hay datos en la base de datos, los usamos pero les agregamos el proporcional dinámico
             let listaModificada = [];
-            
+
             // 1. Agregar fila inicial de "Vacaciones tomadas antes del registro del empleado" (Saldo inicial)
             listaModificada.push({
                 num_ciclo: 1,
@@ -32,16 +32,16 @@ function cargarKardexVacaciones(empleado) {
                 saldo_resultante: 0.000,
                 observaciones: 'Saldo inicial de apertura'
             });
-                       
+
 
             // 2. Agregar los movimientos reales de la base de datos tomados directamente
-            $.each(movimientos, function(i, m) {
+            $.each(movimientos, function (i, m) {
                 if (m.concepto !== 'Vacaciones tomadas antes del registro del empleado') {
                     listaModificada.push({
                         num_ciclo: m.num_ciclo || 1,
                         concepto: m.concepto,
                         // Limpiamos la fecha para quedarnos solo con YYYY-MM-DD
-                        fecha_registro: m.fecha_registro.split(' ')[0], 
+                        fecha_registro: m.fecha_registro.split(' ')[0],
                         fecha_inicio: m.fecha_inicio,
                         fecha_fin: m.fecha_fin,
                         dias_movimiento: parseFloat(m.dias_movimiento),
@@ -55,7 +55,7 @@ function cargarKardexVacaciones(empleado) {
             let ultimoAnivFecha = new Date(empleado.fecha_ingreso_final);
             let numAniversarios = 0;
 
-            $.each(listaModificada, function(i, m) {
+            $.each(listaModificada, function (i, m) {
                 if (m.concepto.includes('Aniversario laboral')) {
                     numAniversarios++;
                     let f = new Date(m.fecha_registro);
@@ -68,14 +68,14 @@ function cargarKardexVacaciones(empleado) {
             let hoy = new Date();
             if (ultimoAnivFecha < hoy && empleado.id_status == 1) { // Solo si está activo
                 let diffDays = Math.ceil(Math.abs(hoy - ultimoAnivFecha) / (1000 * 60 * 60 * 24));
-                
+
                 // Pedimos las leyes para saber cuántos días le tocarían el próximo año
-                $.post('../php/vacaciones_lft.php', { action: 'obtenerTodoLft' }, function(todasLasLeyes) {
+                $.post('../php/vacaciones_lft.php', { action: 'obtenerTodoLft' }, function (todasLasLeyes) {
                     let proximoAnio = numAniversarios + 1;
                     let leyActual = todasLasLeyes[todasLasLeyes.length - 1]; // Ley vigente actual
-                    
+
                     let rangoProximo = null;
-                    $.each(leyActual.tabla_dias, function(i, r) {
+                    $.each(leyActual.tabla_dias, function (i, r) {
                         if (proximoAnio >= parseInt(r.anios_antiguedad_inicio)) {
                             if (!rangoProximo || parseInt(r.anios_antiguedad_inicio) > parseInt(rangoProximo.anios_antiguedad_inicio)) {
                                 rangoProximo = r;
@@ -91,17 +91,17 @@ function cargarKardexVacaciones(empleado) {
                         //--------------------------------------------------------------------------
                         let proximoAnivFecha = new Date(ultimoAnivFecha);
                         proximoAnivFecha.setFullYear(proximoAnivFecha.getFullYear() + 1);
-                        
+
                         let diasDelAnio = Math.round(Math.abs(proximoAnivFecha - ultimoAnivFecha) / (1000 * 60 * 60 * 24));
-                        
+
                         let diasProporcionales = (diffDays / diasDelAnio) * parseInt(rangoProximo.dias_vacaciones_correspondientes);
-                        
+
                         // Obtenemos el último saldo resultante de la lista modificada
                         let saldoUltimo = listaModificada[listaModificada.length - 1].saldo_resultante;
-                        
+
                         // Obtenemos el ciclo más reciente de la lista
                         let cicloActual = listaModificada[listaModificada.length - 1].num_ciclo || 1;
-                        
+
                         listaModificada.push({
                             num_ciclo: cicloActual,
                             concepto: 'Proporción último año',
@@ -112,15 +112,15 @@ function cargarKardexVacaciones(empleado) {
                         });
                     }
 
-                    listaMovimientosGlobal = listaModificada;
+                    listaMovimientosGlobal = inyectarYRecalcularKardex(listaModificada, empleado);
                     mostrarPaginaKardex(1);
-                }, 'json').fail(function() {
+                }, 'json').fail(function () {
                     // Si falla la LFT, igual mostramos lo que tenemos
-                    listaMovimientosGlobal = listaModificada;
+                    listaMovimientosGlobal = inyectarYRecalcularKardex(listaModificada, empleado);
                     mostrarPaginaKardex(1);
                 });
             } else {
-                listaMovimientosGlobal = listaModificada;
+                listaMovimientosGlobal = inyectarYRecalcularKardex(listaModificada, empleado);
                 mostrarPaginaKardex(1);
             }
         } else {
@@ -223,7 +223,7 @@ function generarKardexSimulado(empleado) {
                 //--------------------------------------------------------------------------
                 let proximoAnivFecha = new Date(ultimoAniversario);
                 proximoAnivFecha.setFullYear(proximoAnivFecha.getFullYear() + 1);
-                
+
                 let diasDelAnio = Math.round(Math.abs(proximoAnivFecha - ultimoAniversario) / (1000 * 60 * 60 * 24));
 
                 let diasProporcionales = (diffDays / diasDelAnio) * parseInt(rangoProximo.dias_vacaciones_correspondientes);
@@ -239,7 +239,7 @@ function generarKardexSimulado(empleado) {
             }
         }
 
-        listaMovimientosGlobal = movimientos;
+        listaMovimientosGlobal = inyectarYRecalcularKardex(movimientos, empleado);
         mostrarPaginaKardex(1);
     }, 'json');
 }
@@ -264,26 +264,48 @@ function mostrarPaginaKardex(pagina) {
     let fragmento = listaMovimientosGlobal.slice(inicio, fin);
 
     $.each(fragmento, function (i, m) {
-        let valorMov = parseFloat(m.dias_movimiento || 0);
-        let saldoResultante = parseFloat(m.saldo_resultante || 0);
+        let fila = '';
+        if (m.tipo_evento === 'INGRESO' || m.tipo_evento === 'REINGRESO' || m.tipo_evento === 'BAJA') {
+            let badgeClass = '';
+            if (m.tipo_evento === 'INGRESO') badgeClass = 'bg-primary';
+            else if (m.tipo_evento === 'REINGRESO') badgeClass = 'bg-info text-white';
+            else if (m.tipo_evento === 'BAJA') badgeClass = 'bg-danger';
 
-        let tipo = (valorMov >= 0) ? '<span class="type-abono">ABONO</span>' : '<span class="type-cargo">CARGO</span>';
-        let diasTexto = (valorMov >= 0) ? `+${valorMov.toFixed(3)}` : `-${Math.abs(valorMov).toFixed(3)}`;
-        let claseDias = (valorMov >= 0) ? 'text-success' : 'text-danger';
-        let periodoTexto = (m.fecha_inicio && m.fecha_fin) ? `${formatearFecha(m.fecha_inicio)} - ${formatearFecha(m.fecha_fin)}` : '---';
+            fila = `
+                <tr style="background-color: #fafafa;">
+                    <td>${formatearFecha(m.fecha_registro)}</td>
+                    <td>
+                        <span class="badge ${badgeClass} px-2 py-1 me-2">${m.tipo_evento}</span>
+                        <strong>${m.concepto}</strong>
+                        ${m.observaciones ? `<br><small class="text-muted">${m.observaciones}</small>` : ''}
+                    </td>
+                    <td class="text-center">---</td>
+                    <td class="text-center">---</td>
+                    <td class="text-end">---</td>
+                    <td class="text-end">---</td>
+                </tr>`;
+        } else {
+            let valorMov = parseFloat(m.dias_movimiento || 0);
+            let saldoResultante = parseFloat(m.saldo_resultante || 0);
 
-        let fila = `
-            <tr>
-                <td>${formatearFecha(m.fecha_registro)}</td>
-                <td>
-                    <strong>${m.concepto}</strong>
-                    ${m.observaciones ? `<br><small class="text-muted">${m.observaciones}</small>` : ''}
-                </td>
-                <td class="text-center">${periodoTexto}</td>
-                <td class="text-center">${tipo}</td>
-                <td class="${claseDias} fw-bold text-end">${diasTexto}</td>
-                <td class="fw-bold text-end">${saldoResultante.toFixed(3)}</td>
-            </tr>`;
+            let tipo = (valorMov >= 0) ? '<span class="type-abono">ABONO</span>' : '<span class="type-cargo">CARGO</span>';
+            let diasTexto = (valorMov >= 0) ? `+${valorMov.toFixed(3)}` : `-${Math.abs(valorMov).toFixed(3)}`;
+            let claseDias = (valorMov >= 0) ? 'text-success' : 'text-danger';
+            let periodoTexto = (m.fecha_inicio && m.fecha_fin) ? `${formatearFecha(m.fecha_inicio)} - ${formatearFecha(m.fecha_fin)}` : '---';
+
+            fila = `
+                <tr>
+                    <td>${formatearFecha(m.fecha_registro)}</td>
+                    <td>
+                        <strong>${m.concepto}</strong>
+                        ${m.observaciones ? `<br><small class="text-muted">${m.observaciones}</small>` : ''}
+                    </td>
+                    <td class="text-center">${periodoTexto}</td>
+                    <td class="text-center">${tipo}</td>
+                    <td class="${claseDias} fw-bold text-end">${diasTexto}</td>
+                    <td class="fw-bold text-end">${saldoResultante.toFixed(3)}</td>
+                </tr>`;
+        }
         $tbody.append(fila);
     });
 
@@ -327,4 +349,100 @@ function actualizarControlesPaginacionKardex(total) {
             <i class="bi bi-chevron-right"></i>
         </a>
     </li>`);
+}
+
+//==============================
+// OBTIENE EL CICLO LABORAL CORRESPONDIENTE A UNA FECHA
+//==============================
+function obtenerCicloPorFecha(fecha, empleado) {
+    if (!empleado.historial_reingresos || empleado.historial_reingresos.length === 0) {
+        return 1;
+    }
+    let ciclo = 1;
+    for (let i = 0; i < empleado.historial_reingresos.length; i++) {
+        let re = empleado.historial_reingresos[i];
+        if (re.fecha_reingreso && re.fecha_reingreso !== '0000-00-00') {
+            if (new Date(fecha) >= new Date(re.fecha_reingreso)) {
+                ciclo = i + 2;
+            }
+        }
+    }
+    return ciclo;
+}
+
+//==============================
+// INYECTA LOS HITOS LABORALES Y RECALCULA EL SALDO RESULTANTE POR CICLO
+//==============================
+function inyectarYRecalcularKardex(movimientos, empleado) {
+    let result = [];
+    
+    // Clonar para evitar mutar el original
+    $.each(movimientos, function(idx, m) {
+        result.push(Object.assign({}, m));
+    });
+
+    // Obtener los hitos laborales
+    let hitos = obtenerHitosLaborales(empleado);
+
+    // Mapear cada hito al formato de la tabla de kardex y agregarlo
+    $.each(hitos, function(idx, h) {
+        result.push({
+            concepto: h.concepto,
+            fecha_registro: h.fecha,
+            fecha_inicio: '',
+            fecha_fin: '',
+            dias_movimiento: 0.000,
+            saldo_resultante: 0.000,
+            observaciones: h.observaciones,
+            tipo_evento: h.tipo
+        });
+    });
+
+    // Ordenar cronológicamente
+    result.sort(function(a, b) {
+        // El saldo inicial siempre va al inicio
+        if (a.concepto === 'Vacaciones tomadas antes del registro del empleado') return -1;
+        if (b.concepto === 'Vacaciones tomadas antes del registro del empleado') return 1;
+
+        // Si alguno no tiene fecha, lo dejamos al inicio (después del saldo inicial)
+        if (!a.fecha_registro) return -1;
+        if (!b.fecha_registro) return 1;
+
+        let dateA = new Date(a.fecha_registro);
+        let dateB = new Date(b.fecha_registro);
+        if (dateA - dateB !== 0) {
+            return dateA - dateB;
+        }
+
+        // Si la fecha es idéntica, priorizamos hitos
+        let getPriority = function(item) {
+            if (item.tipo_evento === 'INGRESO' || item.tipo_evento === 'REINGRESO') return 1;
+            if (item.tipo_evento === 'BAJA') return 3;
+            return 2;
+        };
+        return getPriority(a) - getPriority(b);
+    });
+
+    // Recalcular saldo resultante por ciclo
+    let saldoAcumuladoPorCiclo = {};
+    $.each(result, function(idx, m) {
+        let ciclo = m.num_ciclo;
+        if (!ciclo) {
+            if (m.fecha_registro) {
+                ciclo = obtenerCicloPorFecha(m.fecha_registro, empleado);
+            } else {
+                ciclo = 1;
+            }
+            m.num_ciclo = ciclo;
+        }
+        
+        if (saldoAcumuladoPorCiclo[ciclo] === undefined) {
+            saldoAcumuladoPorCiclo[ciclo] = 0.000;
+        }
+        
+        saldoAcumuladoPorCiclo[ciclo] += parseFloat(m.dias_movimiento || 0);
+        m.saldo_resultante = saldoAcumuladoPorCiclo[ciclo];
+    });
+
+    return result;
 }

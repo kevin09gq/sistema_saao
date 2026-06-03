@@ -63,7 +63,7 @@ function abrir_modal_detalles(id) {
     $('#fecha_ingreso_real').val(empleado.fecha_ingreso_real);
     $('#fecha_ingreso_imss').val(empleado.fecha_ingreso_imss);
 
-    $('#dias_trabajados').val(empleado.dias_trabajados);
+    $('#dias_trabajados').val(empleado.dias_trabajados || '');
 
 
     // Marcar el radio button según el valor booleano o de control
@@ -87,8 +87,8 @@ function abrir_modal_detalles(id) {
 
     // 5. LLENAR INPUTS EDITABLES
     $('#salario_diario').val(empleado.salario_diario ? empleado.salario_diario.toFixed(2) : '');
-    $('#dias_pago').val(empleado.dias_pago || 0);
-    $('#dias_ptu').val(empleado.dias_ptu || 0);
+    $('#dias_pago').val(empleado.dias_pago || '');
+    $('#dias_ptu').val(empleado.dias_ptu === 0 ? '' : empleado.dias_ptu);
 
     // 6. LLENAR RESULTADOS (Calculados)
     $('#total_ptu').val(empleado.ptu ? empleado.ptu.toFixed(2) : '');

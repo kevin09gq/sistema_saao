@@ -305,37 +305,50 @@ function unir_salarios(empleados, salarios) {
 function calcular_valores(empleados, anio) {
     // RECORRER LOS EMPLEADOS PARA CALCULAR LA PTU, NETO A PAGAR, REDONDEO Y NETO A PAGAR REDONDEADO
     empleados.forEach(empleado => {
-
-        // CALCULAR LOS DÍAS TRABAJADOS. Por defecto usar la fecha real
-        if (empleado.usar_fecha_real) {
-            empleado.dias_trabajados = diasTrabajados(empleado.fecha_ingreso_real, anio);
-        } else {
-            // Si es false usa la fecha del imss
-            empleado.dias_trabajados = diasTrabajados(empleado.fecha_ingreso_imss, anio);
-        }
-
-        empleado.dias_trabajados_copia = empleado.dias_trabajados;
-
-        // CALCULAR LOS DIAS DE PTU PROPORCIONAL
-        // dias_pago es la base para calcular
-        empleado.dias_ptu = diasPTU(empleado.dias_trabajados, empleado.dias_pago);
-        empleado.dias_ptu_copia = empleado.dias_ptu;
-
-        // CALCULAR LA PTU
-        empleado.ptu = calcular_ptu(empleado.salario_diario, empleado.dias_ptu);
-        empleado.ptu_copia = empleado.ptu;
-
-        // CALCULAR EL NETO A PAGAR
-        empleado.neto_pagar = calcular_neto_pagar(empleado.ptu, empleado.tarjeta);
-
-        // CALCULAR LA DIFERENCIA DE REDONDEO
-        empleado.redondeo = diferenciaRedondeo(empleado.neto_pagar);
-
-        // CALCULAR EL NETO A PAGAR REDONDEADO
-        empleado.neto_pagar_redondeado = calcular_neto_pagar_redondeo(empleado.neto_pagar, empleado.redondeo);
+        // CALCULAR LOS VALORES PARA CADA EMPLEADO
+        empleado = calcular_valor_empleado(empleado, anio);
     });
 
     return empleados;
+}
+
+/**
+ * Esta funcion calcula los valores para un solo empleado
+ * @param {Array} empleado Empleado a procesar 
+ * @param {Number} anio Anio ingresado para el cálculo de la PTU
+ */
+function calcular_valor_empleado(empleado, anio) {
+
+    // CALCULAR LOS DÍAS TRABAJADOS. Por defecto usar la fecha real
+    if (empleado.usar_fecha_real) {
+        empleado.dias_trabajados = diasTrabajados(empleado.fecha_ingreso_real, anio);
+    } else {
+        // Si es false usa la fecha del imss
+        empleado.dias_trabajados = diasTrabajados(empleado.fecha_ingreso_imss, anio);
+    }
+
+    empleado.dias_trabajados_copia = empleado.dias_trabajados;
+
+    // CALCULAR LOS DIAS DE PTU PROPORCIONAL
+    // dias_pago es la base para calcular
+    empleado.dias_ptu = diasPTU(empleado.dias_trabajados, empleado.dias_pago);
+    empleado.dias_ptu_copia = empleado.dias_ptu;
+
+    // CALCULAR LA PTU
+    empleado.ptu = calcular_ptu(empleado.salario_diario, empleado.dias_ptu);
+    empleado.ptu_copia = empleado.ptu;
+
+    // CALCULAR EL NETO A PAGAR
+    empleado.neto_pagar = calcular_neto_pagar(empleado.ptu, empleado.tarjeta);
+
+    // CALCULAR LA DIFERENCIA DE REDONDEO
+    empleado.redondeo = diferenciaRedondeo(empleado.neto_pagar);
+
+    // CALCULAR EL NETO A PAGAR REDONDEADO
+    empleado.neto_pagar_redondeado = calcular_neto_pagar_redondeo(empleado.neto_pagar, empleado.redondeo);
+
+    // RETORNAR EL EMPLEADO CON LOS VALORES CALCULADOS
+    return empleado;
 }
 
 /**
@@ -343,7 +356,6 @@ function calcular_valores(empleados, anio) {
  * FUNCIONES AUX PARA CALCULAR EL REPARTO DE UTILIDADES
  * ==========================================================================================================
  */
-
 
 /**
  * Calcular los días trabajados de los empleados hasta fin de año.

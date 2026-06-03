@@ -103,6 +103,7 @@ function llenar_tabla_fechas() {
         tbody.append(fila);
     });
 
+    console.log("SE LLENO LA TABLA DEL MODAL DE FECHAS....");
 }
 
 
@@ -250,7 +251,9 @@ $('#btn_todos_fecha_imss').click(function (e) {
 
 
 /**
+ * =========================================================================================
  * EVENTOS PARA APLICAR A UN SOLO EMPLEADO CUANDO SELECCIONA UNA DE LAS FECHAS
+ * =========================================================================================
  */
 
 
@@ -368,3 +371,146 @@ $(document).on('change', '.checked_fecha_imss', function (e) {
     // Se llena la tabla de fechas con los datos obtenidos del storage
     llenar_tabla_fechas();
 });
+
+
+
+/**
+ * =========================================================================================
+ * EVENTOS PARA TRAER LAS FECHAS DESDE LA BASE DE DATOS
+ * =========================================================================================
+ */
+
+// EVENTO PARA OBTENER LAS FECHAS DE LA BASE DE DATOS
+$(document).on('click', '#btn_actualizar_fechas', function (e) {
+    e.preventDefault();
+
+    Swal.fire({
+        title: 'Obtener Fechas de la Base de datos',
+        text: 'Advertencia: esta acción hará que las fechas de ingreso previamente cargadas en el PTU sean actualizadas por las fechas existentes en la base de datos. Esta acción podría modificar el cálculo del PTU. ¿Seguro que deseas confirmar?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#198754', // Verde (éxito)
+        cancelButtonColor: '#6c757d',   // Gris (cancelar)
+        confirmButtonText: 'Sí, actualizar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+
+            // Si el usuario confirma, ejecutamos la función
+            obtener_fechas_ingreso();
+
+            // ALERTA DE ÉXITO
+            alerta("success", "Fechas actualizadas", "Las fechas de ingreso han sido actualizadas con éxito desde la base de datos.");
+        }
+    });
+});
+
+
+/**
+ * Función para obtener las fechas de ingreso de cada empleado desde la base de datos
+ * - Reutiliza el obtener_empleados de php/utilidades.php
+ * - Pero solo hará uso de las fechas ingreso real e imss
+ */
+function obtener_fechas_ingreso() {
+
+    let json = getUtilidad();
+
+    if (!json || json.length === 0) {
+        console.warn("No hay empleados en el JSON para actualizar las fechas de ingreso.");
+        return;
+    }
+
+    $.ajax({
+        type: "GET",
+        url: RUTA_RAIZ + "/reparto_utilidades/php/utilidades.php",
+        data: {
+            accion: "obtener_empleados"
+        },
+        dataType: "json",
+        success: function (response) {
+
+            // FILTRAR SOLO LAS FECHAS DE INGRESO REAL E IMSS DE CADA EMPLEADO CON SU ID
+            let empleados_fechas = response.data.map(emp => ({
+                id_empleado: emp.id_empleado,
+                fecha_ingreso_real: emp.fecha_ingreso_real,
+                fecha_ingreso_imss: emp.fecha_ingreso_imss
+            }));
+
+            // UNIR LAS FECHAS DE INGRESO CON EL JSON DE EMPLEADOS DEL STORAGE
+            let empleados_con_fechas = unir_fechas(empleados_fechas, json);
+
+            // console.log("EMPLEADOS CON FECHAS ACTUALIZADAS: ", empleados_con_fechas);
+
+            // LIMPIAR json.empleado Y ASIGNARLE SOLO LOS EMPLEADOS CON LAS FECHAS ACTUALIZADAS
+            json.empleados = empleados_con_fechas;
+
+            // ACTUALIZAR EL JSON EN EL STORAGE CON LAS NUEVAS FECHAS DE INGRESO
+            setUtilidad(json);
+
+            // LLENAR TABLA DE FECHAS
+            llenar_tabla_fechas();
+
+            // LLENAR TABLA DE PTU
+            llenar_tabla_ptu();
+
+            console.log("SE ACTUALIZADO EL JSON EN EL STORAGE CON LAS NUEVAS FECHAS DE INGRESO: ", getUtilidad());
+
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.error("Error al obtener los empleados:", errorThrown);
+            console.error("Response:", jqXHR.responseText);
+            alerta("error", "Ocurrió un error", "No se pudieron cargar los empleados. Contacta a sistemas.");
+        }
+    });
+}
+
+
+/**
+ * Función para unir las fechas de ingreso de cada empleado con el json del storage
+ * @param {JSON} empleados_fechas Arreglo de fecha obtenido desde la base de datos
+ * @param {JSON} json JSON recuperado del storage
+ * @returns Empleados con sus fechas actualizadas
+ */
+function unir_fechas(empleados_fechas, json) {
+
+    // VALIDAR QUE EL JSON EXISTE Y ES UN ARRAY NO VACÍO
+    if (!json || json.length === 0 || !json.empleados || json.empleados.length === 0) {
+        console.warn("No hay empleados en el JSON para actualizar las fechas de ingreso.");
+        return json; // Retorna el JSON original sin modificaciones
+    }
+
+    // VALIDAR QUE EL ARREGLO DE FECHAS DE EMPLEADOS NO ESTÁ VACÍO
+    if (!empleados_fechas || empleados_fechas.length === 0) {
+        console.warn("No se obtuvieron fechas de ingreso de los empleados para actualizar.");
+        return json; // Retorna el JSON original sin modificaciones
+    }
+
+    // RECUPERAR LOS EMPLEADOS DEL JSON
+    let json_empleados = json.empleados;
+    // RECUPERAR EL AÑO DEL JSON
+    let anio = json.anio;
+
+    // UNIR LAS FECHAS DE INGRESO CON EL JSON DE EMPLEADOS DEL STORAGE
+    json_empleados.forEach(emp => {
+        // Buscar el empleado en empleados_fechas por id_empleado
+        let empFechas = empleados_fechas.find(emp_fecha => emp_fecha.id_empleado === emp.id_empleado);
+
+        // Si existe, actualizar las fechas
+        if (empFechas) {
+
+            // SI LAS FECHAS COINCIDEN SE ACTUALIZAN, ESTO PORQUE POSIBLEMENTE LA ING YA HIZO MODIFICACIONES EN EL JSON DEL STORAGE
+            emp.fecha_ingreso_real = empFechas.fecha_ingreso_real;
+            emp.fecha_ingreso_imss = empFechas.fecha_ingreso_imss;
+
+            // LAS COPIAS SE ACTUALIZAN SIEMPRE SIN IMPORTAR SI EL USUARIO HIZO MODIFICACIONES EN EL JSON DEL STORAGE
+            emp.fecha_ingreso_real_copia = empFechas.fecha_ingreso_real;
+            emp.fecha_ingreso_imss_copia = empFechas.fecha_ingreso_imss;
+        }
+
+        // REPROCESAR LOS VALORES
+        emp = calcular_valor_empleado(emp, anio);
+    });
+
+    // RETORNAR SOLO LOS EMPLEADOS YA CON LAS FECHAS NUEVAS
+    return json_empleados;
+}

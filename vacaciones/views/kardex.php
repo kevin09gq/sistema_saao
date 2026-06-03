@@ -26,12 +26,6 @@
             <a href="vacaciones.php" class="btn-back" id="btnVolver">
                 <i class="bi bi-arrow-left"></i> Volver al listado
             </a>
-            <button class="btn-download" id="btnExportarPdf" style="background: #6c757d;">
-                <i class="bi bi-file-earmark-pdf"></i> Exportar Kardex
-            </button>
-            <button class="btn-download" id="btnCalcular">
-                <i class="bi bi-calculator"></i> Calcular Vacaciones
-            </button>
             <button class="btn-download" id="btnRestaurar" style="background: #dc2626; margin-left: 10px;">
                 <i class="bi bi-arrow-counterclockwise"></i> Restaurar Todo
             </button>
@@ -240,7 +234,7 @@
         </div>
 
         <!-- Tabla: Primas Vacacionales -->
-        <h2 class="section-title"><i class="bi bi-currency-dollar"></i> Historial de Primas Vacacionales</h2>
+        <h2 class="section-title"><i class="bi bi-currency-dollar"></i> Historial de Pagos</h2>
         <div class="card-table">
             <div class="table-responsive">
                 <table class="table table-custom">
@@ -255,6 +249,7 @@
                             <th class="text-end">ISR</th>
                             <th class="text-end">Tarjeta</th>
                             <th class="text-end">Total Neto</th>
+                            <th class="text-center">Accion</th>
                         </tr>
                     </thead>
                     <tbody id="tbodyPrimas">
@@ -281,13 +276,17 @@
         </div>
     </div>
 
+    <?php include "modalPrimaVacacional.php"; ?>
+
     <!-- Scripts y Librerías -->
+    <script src="<?= SWEETALERT ?>"></script>
     <script src="<?= JQUERY_JS ?>"></script>
     <script src="<?= BOOTSTRAP_JS ?>"></script>
     <script src="../js/kardex/establecerDataEmpleado.js"></script>
     <script src="../js/kardex/establecerHistorialKardex.js"></script>
     <script src="../js/kardex/establecerHistorialPeriodos.js"></script>
     <script src="../js/kardex/establecerHistorialPrima.js"></script>
+    <script src="../js/kardex/editarPrimaVacacional.js"></script>
     <script src="../js/kardex/registrarVacaciones.js"></script>
     <script src="../js/kardex/calendario.js"></script>
 </body>

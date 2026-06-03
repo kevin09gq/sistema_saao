@@ -9,6 +9,8 @@
     include "../../config/config.php";
     verificarSesion(); // Proteger esta página
     ?>
+   
+
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <link rel="stylesheet" href="../css/vacaciones.css">
@@ -100,6 +102,8 @@
     </div>
 
     <!-- jQuery -->
+      <!-- SweetAlert2 CSS -->
+    <script src="<?= SWEETALERT ?>"></script>
     <script src="<?= JQUERY_JS ?>"></script>
     <script src="<?= JQUERY_UI_JS ?>"></script>
     <!-- Plugin Inputmask -->
@@ -108,6 +112,7 @@
     <script src="<?= BOOTSTRAP_JS ?>"></script>
     <!-- Archivo JS específico -->
     <script src="../js/index.js"></script>
+    <script src="../js/kardex/calendarioGeneral.js"></script>
 </body>
 
 </html>

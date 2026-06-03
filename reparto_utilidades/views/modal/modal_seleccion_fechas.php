@@ -2,29 +2,40 @@
 <div class="modal fade" id="modal_seleccion_fechas" tabindex="-1" aria-labelledby="modal_fechas_label" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-xl">
         <div class="modal-content border-0 shadow-lg">
-            
+
             <div class="modal-header bg-success text-white">
                 <h1 class="modal-title fs-5" id="modal_fechas_label">
                     <i class="bi bi-calendar-check me-2"></i>Selección de Fecha para Cálculo
                 </h1>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            
+
             <div class="modal-body p-4">
                 <!-- Filtros y Controles -->
-                <div class="row g-3 mb-4 p-3 bg-light rounded shadow-sm align-items-end">
-                    <div class="col-md-3">
-                        <label class="form-label small fw-bold text-muted">Búsqueda:</label>
-                        <input class="form-control form-control-sm" type="text" id="busqueda_empleado_fechas" placeholder="Buscar empleado...">
+                <div class="bg-light p-3 rounded shadow-sm mb-4">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted">Búsqueda:</label>
+                            <input class="form-control form-control-sm" type="text" id="busqueda_empleado_fechas" placeholder="Buscar empleado...">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted">Departamento:</label>
+                            <select class="form-select form-select-sm" id="id_departamento_fecha">
+                                <!-- Opciones de departamentos -->
+                            </select>
+                        </div>
                     </div>
-                    <div class="col-md-3">
-                        <label class="form-label small fw-bold text-muted">Departamento:</label>
-                        <select class="form-select form-select-sm" id="id_departamento_fecha">
-                            <!-- Aquí se cargarían los departamentos dinámicamente -->
-                        </select>
-                    </div>
-                    <div class="col-md-6 text-md-end">
-                        <div class="d-flex gap-2 justify-content-md-end">
+
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-2">
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-secondary" id="btn_actualizar_fechas">
+                                <i class="bi bi-arrow-repeat me-1"></i>Actualizar fechas
+                            </button>
+                            <!-- <button type="button" class="btn btn-sm btn-success" id="btn_aplicar_fechas">
+                                <i class="bi bi-check-circle me-1"></i>Aplicar Fechas
+                            </button> -->
+                        </div>
+                        <div class="d-flex gap-2">
                             <button type="button" class="btn btn-sm btn-outline-success" id="btn_todos_fecha_real">
                                 <i class="bi bi-calendar-event me-1"></i>Fecha real todos
                             </button>

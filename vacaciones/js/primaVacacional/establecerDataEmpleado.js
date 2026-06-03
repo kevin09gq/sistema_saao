@@ -53,8 +53,14 @@ function obtenerInformacionEmpleado(idEmpleado) {
         }
         empleadoActual = empleado; // Guardar en variable global
         $('#idEmpleado').val(empleado.id_empleado); // Establecer el ID en el campo oculto
+        
+        // Cargar salario diario en el formulario
+        $('#salarioDiario').val(empleado.salario_diario || '');
+        
         cargarEncabezadoEmpleado(empleado);
 
+        // Disparar cambio para calcular
+        $('#salarioDiario').trigger('change');
     }, 'json');
 }
 
@@ -90,8 +96,16 @@ function cargarFestividades() {
 function autoLlenarDatos(idKardex) {
     if (!idKardex) {
         $('#idKardexSeleccionado').val('');
+        $('#diasVacaciones').val('');
+        $('#fechaInicio').val('');
+        $('#fechaFin').val('');
+        $('#anio').val('');
         $('#domingos').val('0');
         $('#festivos').val('0');
+        $('#incluirDomingos').prop('checked', true);
+        $('#incluirFestivos').prop('checked', true);
+        $('#diasTotalesCalculo').text('0.000');
+        $('#diasVacaciones').trigger('change');
         return;
     }
 
@@ -120,10 +134,12 @@ function autoLlenarDatos(idKardex) {
         let numFestivos = contarFestivos(inicio, fin);
         $('#festivos').val(numFestivos);
 
+        // Default switches to checked
+        $('#incluirDomingos').prop('checked', true);
+        $('#incluirFestivos').prop('checked', true);
 
-        // Actualizar campos de desglose (registro de cuentas)
-        $('#desglosesDias').text(dias);
-
+        // Trigger change event to fire calculations
+        $('#diasVacaciones').trigger('change');
     }
 }
 

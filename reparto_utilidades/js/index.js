@@ -491,11 +491,13 @@ function init() {
 
     if (json) {
         // Si hay datos en storage, cargarlos en la variable global jsonUtilidad
-        window.jsonUtilidad = json;
+        setUtilidad(json);
 
-        console.log("DATOS CARGADOS DEL STORAGE: ", window.jsonUtilidad);
+        console.log("Datos obtenidos del storage: ", getUtilidad() );
+
         // LLENAR LA TABLA PRINCIPAL CON LOS DATOS DE STORAGE
         llenar_tabla_ptu();
+
         // Mostrar la tabla principal con los datos cargados
         mostrar_tabla();
     } else {

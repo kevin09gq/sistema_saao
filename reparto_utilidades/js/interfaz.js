@@ -9,7 +9,6 @@
  * Función para Llenar la tabla principal con los datos de PTU
  */
 function llenar_tabla_ptu() {
-
     // RECUPERAR DATOS DE JSON
     let json = getUtilidad();
 
@@ -147,20 +146,12 @@ function llenar_tabla_ptu() {
 
         const filaTotal = `
         <tr class="table-light fw-bold">
-            <td colspan="2" class="text-center">
-                TOTALES
-            </td>
-
+            <td colspan="2" class="text-center">TOTALES</td>
             <td colspan="5"></td>
-
             <td class="text-end">${formatoCantidad(totalPTU, '')}</td>
-
             <td class="text-end">${formatoCantidad(totalTarjeta, 'text-danger')}</td>
-
             <td class="text-end text-success">${formatoCantidad(totalNeto, '')}</td>
-
             <td class="text-end">${formatoCantidad(totalRedondeo, '')}</td>
-
             <td class="text-end text-success">${formatoCantidad(totalNetoRedondeado, '')}</td>
         </tr>
         `;
@@ -171,8 +162,9 @@ function llenar_tabla_ptu() {
 
     // RENDIZAR LA PAGINACION
     renderizarPaginacion(empleadosFiltrados.length, paginaActual, limite);
-}
 
+    console.log("SE LLENO LA TABLA PRINCIPAL...");
+}
 
 /**
  * Renderizar los botones de paginación

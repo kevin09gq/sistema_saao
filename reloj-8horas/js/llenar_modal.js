@@ -1499,6 +1499,170 @@ $(document).ready(function () {
         }
     });
 
+    /**
+     * Genera una hora aleatoria dentro de un rango en minutos
+     * @param {string} horaBase - Hora en formato HH:MM
+     * @param {number} minMin - Minutos mínimo (puede ser negativo)
+     * @param {number} minMax - Minutos máximo
+     * @returns {string} Hora generada en formato HH:MM
+     */
+    function generarHoraConJitter(horaBase, minMin, minMax) {
+        if (!horaBase) return horaBase;
+        
+        // Convertir hora base a minutos
+        let minutosBase = horaAMinutos(horaBase);
+        
+        // Generar número aleatorio dentro del rango
+        const jitter = Math.floor(Math.random() * (minMax - minMin + 1)) + minMin;
+        
+        // Aplicar jitter
+        let minutosResultado = minutosBase + jitter;
+        
+        // Asegurar que esté dentro de 0-1440 (24 horas)
+        if (minutosResultado < 0) minutosResultado = 0;
+        if (minutosResultado >= 1440) minutosResultado = 1439;
+        
+        return minutosAHora(minutosResultado);
+    }
+
+    /**
+     * Genera una hora aleatoria según el tipo de marca
+     * Aplica los rangos específicos para cada tipo
+     * @param {string} horaBase - Hora oficial en formato HH:MM
+     * @param {string} tipo - Tipo de marca: E1, S1, E2, S2
+     * @returns {string} Hora generada
+     */
+    function generarHoraSegunTipo(horaBase, tipo) {
+        switch(tipo) {
+            case 'E1': // Entrada: -15 a 0 minutos (7:45 a 8:00)
+                return generarHoraConJitter(horaBase, -15, 0);
+            case 'S1': // Salida comida: -5 a 0 minutos (12:55 a 13:00)
+                return generarHoraConJitter(horaBase, -5, 0);
+            case 'E2': // Entrada comida: -3 a 0 minutos (13:57 a 14:00)
+                return generarHoraConJitter(horaBase, -3, 0);
+            case 'S2': // Salida: 0 a +7 minutos (18:00 a 18:07)
+                return generarHoraConJitter(horaBase, 0, 7);
+            default:
+                return horaBase;
+        }
+    }
+
+    /**
+     * Genera registros ideales (caso A-1) cuando se marca un día como asistencia
+     * Retorna los 4 registros si tiene horario, false si no tiene horario para ese día
+     */
+    function generarRegistrosIdealParaAsistencia(empleado, fecha) {
+        if (!empleado || !empleado.horario) return false;
+
+        // Parsear la fecha para obtener el día de la semana
+        const [dd, mm, yyyy] = fecha.split('/').map(x => parseInt(x, 10));
+        if (!dd || !mm || !yyyy) return false;
+
+        const dateObj = new Date(yyyy, mm - 1, dd);
+        const diasSemana = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
+        const diaSemanaActual = diasSemana[dateObj.getDay()];
+
+        // Buscar el horario para ese día
+        const horarioDia = empleado.horario.find(h => h.dia.toUpperCase() === diaSemanaActual);
+        
+        if (!horarioDia || !horarioDia.entrada || !horarioDia.salida) {
+            return false; // No tiene horario para ese día
+        }
+
+        // Obtener horas del horario
+        const entrada = horarioDia.entrada.trim();
+        const salida_comida = horarioDia.salida_comida?.trim() || '';
+        const entrada_comida = horarioDia.entrada_comida?.trim() || '';
+        const salida = horarioDia.salida.trim();
+
+        // NUEVO: Generar horas con jitter según los rangos
+        const horaE1 = generarHoraSegunTipo(entrada, 'E1');
+        const horaE1Minutos = horaAMinutos(horaE1);
+
+        // Generar los registros
+        const registros = [
+            {
+                hora: horaE1,
+                marca: 'E1',
+                minutos_desde_medianoche: horaE1Minutos
+            }
+        ];
+
+        // Si tiene comida, agregar S1 y E2
+        if (salida_comida && entrada_comida) {
+            const horaS1 = generarHoraSegunTipo(salida_comida, 'S1');
+            const horaS1Minutos = horaAMinutos(horaS1);
+            const horaE2 = generarHoraSegunTipo(entrada_comida, 'E2');
+            const horaE2Minutos = horaAMinutos(horaE2);
+
+            registros.push({
+                hora: horaS1,
+                marca: 'S1',
+                minutos_desde_medianoche: horaS1Minutos
+            });
+            registros.push({
+                hora: horaE2,
+                marca: 'E2',
+                minutos_desde_medianoche: horaE2Minutos
+            });
+        }
+
+        // Agregar salida final
+        const horaS2 = generarHoraSegunTipo(salida, 'S2');
+        const horaS2Minutos = horaAMinutos(horaS2);
+        registros.push({
+            hora: horaS2,
+            marca: 'S2',
+            minutos_desde_medianoche: horaS2Minutos
+        });
+
+        return registros;
+
+    }
+
+
+    /**
+     * Calcula minutos trabajados desde un arreglo de registros
+     */
+    function calcularTrabajadoDesdeRegistros(registros) {
+        if (!registros || registros.length === 0) {
+            return {
+                minutos: 0,
+                hhmm: '00:00',
+                decimal: 0
+            };
+        }
+
+        let totalMinutos = 0;
+
+        // Agrupar por pares entrada/salida
+        if (registros.length === 2) {
+            // Sin comida: simple entrada - salida
+            const inicio = registros[0].minutos_desde_medianoche || 0;
+            const fin = registros[1].minutos_desde_medianoche || 0;
+            totalMinutos = Math.max(0, fin - inicio);
+        } else if (registros.length >= 4) {
+            // Con comida: (E1 a S1) + (E2 a S2)
+            const e1 = registros[0].minutos_desde_medianoche || 0;
+            const s1 = registros[1].minutos_desde_medianoche || 0;
+            const e2 = registros[2].minutos_desde_medianoche || 0;
+            const s2 = registros[3].minutos_desde_medianoche || 0;
+
+            const trabajoAntesComida = Math.max(0, s1 - e1);
+            const trabajoDespuesComida = Math.max(0, s2 - e2);
+            totalMinutos = trabajoAntesComida + trabajoDespuesComida;
+        }
+
+        const hhmm = minutosAHora(totalMinutos);
+        const decimal = redondearDecimal(hhmm);
+
+        return {
+            minutos: totalMinutos,
+            hhmm: hhmm,
+            decimal: decimal
+        };
+    }
+
     // Función para convertir HH:MM a minutos
     function horaAMinutos(hora) {
         if (!hora) return 0;
@@ -1850,7 +2014,29 @@ $(document).ready(function () {
                         registroProcesado.observacion_dia = 'DESCANSO';
                         break;
                 }
+            } else if (tipoSeleccionado === 'asistencia') {
+                // NUEVO: Si cambia a asistencia, generar registros ideales si tiene horario
+                const registrosGenerados = generarRegistrosIdealParaAsistencia(empleadoEncontrado, fecha);
+                
+                if (registrosGenerados && registrosGenerados.length > 0) {
+                    // Tiene horario: generar registros ideales (caso A-1)
+                    registroProcesado.registros = registrosGenerados;
+                    registroProcesado.observacion_dia = 'ASISTENCIA - Registros generados automáticamente';
+                    
+                    // Calcular horas trabajadas desde los registros generados
+                    const trabajo = calcularTrabajadoDesdeRegistros(registrosGenerados);
+                    registroProcesado.trabajado_minutos = trabajo.minutos;
+                    registroProcesado.trabajado_hhmm = trabajo.hhmm;
+                    registroProcesado.trabajado_decimal = trabajo.decimal;
+                    
+                    // Marcar que fue generado automáticamente
+                    registroProcesado.auto_generado = true;
+                } else {
+                    // No tiene horario: solo cambiar el tipo sin generar nada
+                    registroProcesado.observacion_dia = 'ASISTENCIA';
+                }
             }
+
 
             // Actualizar las filas en la tabla
             const $tbody = $('#table-body-registros-procesados');
@@ -1873,11 +2059,94 @@ $(document).ready(function () {
                         $(this).remove();
                     }
                 });
-            } else {
-                // Si es asistencia, solo actualizar el data-tipo
-                $filasConMismaFecha.each(function () {
-                    $(this).attr('data-tipo', tipoSeleccionado);
-                });
+            } else if (tipoSeleccionado === 'asistencia') {
+                // NUEVO: Si es asistencia CON registros generados, mostrar los nuevos registros en la tabla
+                const registrosGenerados = generarRegistrosIdealParaAsistencia(empleadoEncontrado, fecha);
+                
+                if (registrosGenerados && registrosGenerados.length > 0) {
+                    // IMPORTANTE: Encontrar la fila anterior a la primera fila con esa fecha
+                    // ANTES de eliminar cualquier cosa, para mantener el orden exacto
+                    const $todasLasFilas = $tbody.find('tr');
+                    let $filaAnterior = null;
+                    let indexPrimeraFila = -1;
+                    
+                    $todasLasFilas.each(function(idx) {
+                        if ($(this).attr('data-fecha') === fecha && indexPrimeraFila === -1) {
+                            indexPrimeraFila = idx;
+                            if (idx > 0) {
+                                $filaAnterior = $($todasLasFilas[idx - 1]);
+                            }
+                        }
+                    });
+                    
+                    // Eliminar todas las filas actuales con esa fecha
+                    $filasConMismaFecha.remove();
+                    
+                    // Agrupar registros en pares (entrada-salida)
+                    const pares = [];
+                    for (let i = 0; i < registrosGenerados.length; i += 2) {
+                        if (registrosGenerados[i] && registrosGenerados[i + 1]) {
+                            pares.push({
+                                entrada: registrosGenerados[i].hora,
+                                salida: registrosGenerados[i + 1].hora
+                            });
+                        }
+                    }
+                    
+                    // Crear nuevas filas para cada par e insertar en la posición original
+                    if (pares.length > 0) {
+                        const filasAInsertar = [];
+                        
+                        pares.forEach((par, idx) => {
+                            const horasTrabajadas = calcularDiferenciaHoras(par.entrada, par.salida);
+                            
+                            const $row = $('<tr>');
+                            if (idx === 0) {
+                                $row.attr('data-tipo', 'asistencia');
+                            }
+                            $row.attr('data-fecha', fecha);
+                            
+                            // Obtener información para la fila
+                            const d = parseDDMMYYYY(fecha);
+                            const dia = d ? diaSemanaES(d) : '';
+                            
+                            $row.append(`<td>${dia}</td>`);
+                            $row.append(`<td>${fecha}</td>`);
+                            $row.append(`<td><input type="time" class="form-control form-control-sm hora-entrada" value="${par.entrada}" /></td>`);
+                            $row.append(`<td><input type="time" class="form-control form-control-sm hora-salida" value="${par.salida}" /></td>`);
+                            $row.append(`<td class="horas-trabajadas-cell">${horasTrabajadas}</td>`);
+                            $row.append(`<td>
+                                <button class="btn btn-sm btn-primary btn-agregar-fila-abajo" title="Insertar fila abajo"><i class="bi bi-caret-down-square"></i></button>
+                                <button class="btn btn-sm btn-warning btn-limpiar-horario" title="Limpiar fila"><i class="bi bi-x-circle-fill"></i></button>
+                                <button class="btn btn-sm btn-danger btn-borrar-fila-horario" title="Borrar fila"><i class="bi bi-trash-fill"></i></button>
+                                <button type="button" class="btn btn-sm btn-outline-primary btn-abrir-eventos" data-bs-toggle="modal" data-bs-target="#eventosModal" title="Asignar eventos">
+                                    <i class="bi bi-calendar-check-fill"></i>
+                                </button>
+                            </td>`);
+                            
+                            filasAInsertar.push($row);
+                        });
+                        
+                        // Insertar las nuevas filas en la posición exacta donde estaba la primera fila
+                        filasAInsertar.forEach(($fila, i) => {
+                            if (i === 0 && $filaAnterior && $filaAnterior.length > 0) {
+                                // Primera nueva fila y hay fila anterior: insertar DESPUÉS de la fila anterior
+                                $fila.insertAfter($filaAnterior);
+                            } else if (i === 0 && !$filaAnterior) {
+                                // Primera nueva fila y NO hay fila anterior: insertar al principio del tbody
+                                $tbody.prepend($fila);
+                            } else {
+                                // Filas subsecuentes: insertar después de la anterior nueva fila
+                                $fila.insertAfter(filasAInsertar[i - 1]);
+                            }
+                        });
+                    }
+                } else {
+                    // No tiene horario: solo actualizar el data-tipo de las filas existentes
+                    $filasConMismaFecha.each(function () {
+                        $(this).attr('data-tipo', 'asistencia');
+                    });
+                }
             }
 
             // =====================================================

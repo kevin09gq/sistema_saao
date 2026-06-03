@@ -134,37 +134,27 @@ verificarSesion();
                 </h2>
 
                 <!-- BOTONES DE ACCIÓN (Derecha) -->
-                <div class="d-flex justify-content-end gap-2 mb-3">
-                    <button class="btn btn-sm btn-outline-info fw-bold shadow-sm" id="btn_visibilidad">
-                        <i class="bi bi-eye-fill me-1"></i>Visible
-                    </button>
-                    <button class="btn btn-sm btn-outline-warning fw-bold shadow-sm" id="btn_redondeo">
-                        <i class="bi bi-cash-coin me-1"></i>Redondeo
-                    </button>
-                    <button class="btn btn-sm btn-outline-success fw-bold shadow-sm" id="btn_tarjeta">
-                        <i class="bi bi-credit-card-fill me-1"></i>Tarjeta
-                    </button>
-                    <button class="btn btn-sm btn-outline-dark fw-bold shadow-sm" id="btn_fechas">
-                        <i class="bi bi-calendar-event me-1"></i>Fechas
-                    </button>
-                    <button class="btn btn-sm btn-dark fw-bold shadow-sm" id="btn_configuracion">
-                        <i class="bi bi-gear-fill me-1"></i>Listas
-                    </button>
-                    <button class="btn btn-sm btn-success fw-bold shadow-sm" id="btn_reporte">
-                        <i class="bi bi-file-earmark-excel-fill me-1"></i>Reporte
-                    </button>
-                    <button class="btn btn-sm btn-danger fw-bold shadow-sm" id="btn_ticket_pdf">
-                        <i class="bi bi-ticket-perforated me-1"></i>Tickets
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger fw-bold shadow-sm" id="btn_ticket_seleccion_ptu">
-                        <i class="bi bi-person-check me-1"></i>Selección
-                    </button>
-                    <button class="btn btn-sm btn-primary fw-bold shadow-sm" id="btn_guardar">
-                        <i class="bi bi-download me-1"></i>Guardar
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger fw-bold shadow-sm" id="btn_cerrar">
-                        <i class="bi bi-x-circle me-1"></i>Cerrar
-                    </button>
+                <div class="d-flex flex-wrap justify-content-end gap-3 mb-3">
+
+                    <div class="btn-group shadow-sm" role="group">
+                        <button class="btn btn-sm btn-outline-info fw-bold" id="btn_visibilidad"><i class="bi bi-eye-fill me-1"></i>Visible</button>
+                        <button class="btn btn-sm btn-outline-warning fw-bold" id="btn_redondeo"><i class="bi bi-cash-coin me-1"></i>Redondeo</button>
+                        <button class="btn btn-sm btn-outline-success fw-bold" id="btn_tarjeta"><i class="bi bi-credit-card-fill me-1"></i>Tarjeta</button>
+                        <button class="btn btn-sm btn-outline-dark fw-bold" id="btn_fechas"><i class="bi bi-calendar-event me-1"></i>Fechas</button>
+                        <button class="btn btn-sm btn-dark fw-bold" id="btn_configuracion"><i class="bi bi-gear-fill me-1"></i>Listas</button>
+                    </div>
+
+                    <div class="btn-group shadow-sm" role="group">
+                        <button class="btn btn-sm btn-success fw-bold" id="btn_reporte"><i class="bi bi-file-earmark-excel-fill me-1"></i>Reporte</button>
+                        <button class="btn btn-sm btn-danger fw-bold" id="btn_ticket_pdf"><i class="bi bi-ticket-perforated me-1"></i>Tickets</button>
+                        <button class="btn btn-sm btn-outline-danger fw-bold" id="btn_ticket_seleccion_ptu"><i class="bi bi-person-check me-1"></i>Selección</button>
+                    </div>
+
+                    <div class="btn-group shadow-sm" role="group">
+                        <button class="btn btn-sm btn-primary fw-bold" id="btn_guardar"><i class="bi bi-download me-1"></i>Guardar</button>
+                        <button class="btn btn-sm btn-outline-danger fw-bold" id="btn_cerrar"><i class="bi bi-x-circle me-1"></i>Cerrar</button>
+                    </div>
+
                 </div>
 
                 <!-- FILTROS -->
@@ -248,8 +238,10 @@ verificarSesion();
     <?php include __DIR__ . '/modal/modal_configuracion.php'; ?>
     <?php include __DIR__ . '/modal/modal_exportar.php'; ?>
     <?php include __DIR__ . '/modal/modal_seleccion_fechas.php'; ?>
-    <?php include __DIR__ . '/modal/modal_tickets_empleados.php'; ?>
-    <?php include __DIR__ . '/modal/modal_seleccion_tickets_ptu.php'; ?>
+
+    <!-- MODALES PARA LOS TICKETS -->
+    <?php require_once __DIR__ . '/modal/modal_seleccion_tickets_ptu.php' ?>
+    <?php require_once __DIR__ . '/modal/modal_tickets_empleados.php' ?>
 
     <script src="<?= JQUERY_JS ?>"></script>
     <script src="<?= JQUERY_UI_JS ?>"></script>
@@ -268,6 +260,8 @@ verificarSesion();
     <script src="../js/configuracion.js"></script>
     <script src="../js/exportar.js"></script>
     <script src="../js/seleccion_fechas.js"></script>
+
+    <!-- Scripts para los tickets -->
     <script src="../js/ticket_ptu_pdf.js"></script>
 
 

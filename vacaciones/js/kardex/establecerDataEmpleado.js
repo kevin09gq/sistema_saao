@@ -100,3 +100,49 @@ function formatearFecha(fechaTexto) {
     fecha.setMinutes(fecha.getMinutes() + fecha.getTimezoneOffset());
     return `${fecha.getDate()} ${meses[fecha.getMonth()]} ${fecha.getFullYear()}`;
 }
+
+//==============================
+// OBTIENE EL HISTORIAL DE HITOS LABORALES (INGRESO, REINGRESOS Y BAJAS) ORDENADO CRONOLÓGICAMENTE
+//==============================
+function obtenerHitosLaborales(empleado) {
+    let hitos = [];
+
+    // 1. Agregar Ingreso inicial
+    if (empleado.fecha_alta_empresa && empleado.fecha_alta_empresa !== '0000-00-00') {
+        hitos.push({
+            fecha: empleado.fecha_alta_empresa,
+            tipo: 'INGRESO',
+            concepto: 'Ingreso del empleado',
+            observaciones: 'Alta de empleado en la empresa'
+        });
+    }
+
+    // 2. Agregar Reingresos y Bajas
+    if (empleado.historial_reingresos && empleado.historial_reingresos.length > 0) {
+        $.each(empleado.historial_reingresos, function(idx, h) {
+            if (h.fecha_reingreso && h.fecha_reingreso !== '0000-00-00' && h.fecha_reingreso !== empleado.fecha_alta_empresa) {
+                hitos.push({
+                    fecha: h.fecha_reingreso,
+                    tipo: 'REINGRESO',
+                    concepto: 'Reingreso del empleado',
+                    observaciones: 'Reingreso a labores'
+                });
+            }
+            if (h.fecha_salida && h.fecha_salida !== '0000-00-00') {
+                hitos.push({
+                    fecha: h.fecha_salida,
+                    tipo: 'BAJA',
+                    concepto: 'Dada de baja del empleado',
+                    observaciones: 'Baja del empleado / Fin de relación laboral'
+                });
+            }
+        });
+    }
+
+    // 3. Ordenar cronológicamente (más antiguo a más reciente)
+    hitos.sort(function(a, b) {
+        return new Date(a.fecha) - new Date(b.fecha);
+    });
+
+    return hitos;
+}

@@ -95,7 +95,7 @@ function cargarDatos(empleados, indiceInicio) {
                         <i class="bi bi-clipboard2-data"></i> Ver Kardex
                     </button>
                     <button class="btn-action" onclick="agregarPrima(${emp.id_empleado})" title="Agregar Prima Vacacional">
-                        <i class="bi bi-plus-circle"></i> Prima
+                        <i class="bi bi-plus-circle"></i> Detalle Pago
                     </button>
                 </div>
             </td>

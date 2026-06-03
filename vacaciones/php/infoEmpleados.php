@@ -26,6 +26,9 @@ switch ($action) {
     case 'obtenerPrimasEmpleado':
         obtenerPrimasEmpleado($conexion);
         break;
+    case 'editarPrimaVacacional':
+        editarPrimaVacacional($conexion);
+        break;
     default:
         echo json_encode(['error' => 'Acción no válida']);
         break;
@@ -47,6 +50,7 @@ function obtenerEmpleadoPorId($conexion)
                 e.ap_materno,
                 e.fecha_alta_empresa,
                 e.id_status,
+                e.salario_diario,
                 COALESCE(
                     (SELECT MAX(fecha_reingreso) 
                      FROM historial_reingresos 
@@ -71,6 +75,17 @@ function obtenerEmpleadoPorId($conexion)
         $hoy = new DateTime();
         $diferencia = $hoy->diff($fecha_ingreso);
         $row['antiguedad'] = $diferencia->y . " años";
+
+        // Obtener historial de reingresos y bajas
+        $sql_h = "SELECT fecha_reingreso, fecha_salida FROM historial_reingresos WHERE id_empleado = '$id_empleado' ORDER BY fecha_reingreso ASC";
+        $res_h = mysqli_query($conexion, $sql_h);
+        $historial = [];
+        if ($res_h) {
+            while ($h = mysqli_fetch_assoc($res_h)) {
+                $historial[] = $h;
+            }
+        }
+        $row['historial_reingresos'] = $historial;
     }
 
     echo json_encode($row);
@@ -550,6 +565,59 @@ function obtenerPrimasEmpleado($conexion)
     }
     echo json_encode($primas);
 }
+
+//==============================
+// EDITA EL REGISTRO DE PRIMA VACACIONAL EN LA BASE DE DATOS
+//==============================
+function editarPrimaVacacional($conexion)
+{
+    $id_prima_empleado = intval($_POST['id_prima_empleado'] ?? 0);
+    if ($id_prima_empleado <= 0) {
+        echo json_encode(['success' => false, 'message' => 'ID de prima no válido.']);
+        return;
+    }
+
+    $numero_semana      = intval($_POST['numero_semana'] ?? 0);
+    $anio               = intval($_POST['anio'] ?? 0);
+    $fecha_pago         = mysqli_real_escape_string($conexion, $_POST['fecha_pago'] ?? '');
+    $fecha_inicio       = mysqli_real_escape_string($conexion, $_POST['fecha_inicio'] ?? '');
+    $fecha_fin          = mysqli_real_escape_string($conexion, $_POST['fecha_fin'] ?? '');
+    $dias_vacaciones    = floatval($_POST['dias_vacaciones'] ?? 0);
+    $domingos           = intval($_POST['domingos'] ?? 0);
+    $festivos           = intval($_POST['festivos'] ?? 0);
+    $salario_diario     = floatval($_POST['salario_diario'] ?? 0);
+    $porcentaje_prima   = floatval($_POST['porcentaje_prima'] ?? 0);
+    $monto_prima_vacacional = floatval($_POST['monto_prima_vacacional'] ?? 0);
+    $dispersion_tarjeta = floatval($_POST['dispersion_tarjeta'] ?? 0);
+    $isr                = floatval($_POST['isr'] ?? 0);
+    $total_pagado       = floatval($_POST['total_pagado'] ?? 0);
+    $observaciones      = mysqli_real_escape_string($conexion, $_POST['observaciones'] ?? '');
+
+    $sql = "UPDATE prima_vacacional_empleados SET 
+                numero_semana = '$numero_semana',
+                anio = '$anio',
+                fecha_pago = '$fecha_pago',
+                fecha_inicio = '$fecha_inicio',
+                fecha_fin = '$fecha_fin',
+                dias_vacaciones = '$dias_vacaciones',
+                domingos = '$domingos',
+                festivos = '$festivos',
+                salario_diario = '$salario_diario',
+                porcentaje_prima = '$porcentaje_prima',
+                monto_prima_vacacional = '$monto_prima_vacacional',
+                dispersion_tarjeta = '$dispersion_tarjeta',
+                isr = '$isr',
+                total_pagado = '$total_pagado',
+                observaciones = '$observaciones'
+            WHERE id_prima_empleado = '$id_prima_empleado'";
+
+    if (mysqli_query($conexion, $sql)) {
+        echo json_encode(['success' => true, 'message' => 'Prima vacacional actualizada exitosamente.']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Error al actualizar: ' . mysqli_error($conexion)]);
+    }
+}
+
 
 
 
