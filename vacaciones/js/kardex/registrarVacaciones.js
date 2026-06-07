@@ -43,32 +43,59 @@ function inicializarRegistroVacaciones() {
 //==============================
 function restaurarDatosVacaciones() {
     if (!empleadoActual) {
-        alert("No hay un empleado seleccionado.");
+        Swal.fire({
+            icon: 'warning',
+            title: 'Empleado no seleccionado',
+            text: 'No hay un empleado seleccionado.'
+        });
         return;
     }
 
-    if (confirm("¿Está seguro de restaurar todos los datos de vacaciones de este empleado? Esto eliminará todo el historial y volverá a calcular desde 0 a la fecha de hoy.")) {
-        let $btn = $('#btnRestaurar');
-        let btnHtml = $btn.html();
-        $btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Restaurando...');
+    Swal.fire({
+        icon: 'question',
+        title: 'Restaurar datos de vacaciones',
+        text: '¿Está seguro de restaurar todos los datos de vacaciones de este empleado? Esto eliminará todo el historial y volverá a calcular desde 0 a la fecha de hoy.',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, restaurar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            let $btn = $('#btnRestaurar');
+            let btnHtml = $btn.html();
+            $btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Restaurando...');
 
-        $.post('../php/infoEmpleados.php', {
-            action: 'restaurarVacaciones',
-            id_empleado: empleadoActual.id_empleado
-        }, function (res) {
-            $btn.prop('disabled', false).html(btnHtml);
-            if (res.success) {
-                alert("Se restauraron todos los datos correctamente.");
-                // Recargar toda la información del empleado
-                obtenerInformacionEmpleado(empleadoActual.id_empleado);
-            } else {
-                alert("Error: " + res.message);
-            }
-        }, 'json').fail(function () {
-            $btn.prop('disabled', false).html(btnHtml);
-            alert("Ocurrió un error al procesar la restauración en el servidor.");
-        });
-    }
+            $.post('../php/infoEmpleados.php', {
+                action: 'restaurarVacaciones',
+                id_empleado: empleadoActual.id_empleado
+            }, function (res) {
+                $btn.prop('disabled', false).html(btnHtml);
+                if (res.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Datos restaurados',
+                        text: 'Se restauraron todos los datos correctamente.'
+                    });
+                    // Recargar toda la información del empleado
+                    obtenerInformacionEmpleado(empleadoActual.id_empleado);
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error al restaurar datos',
+                        text: 'Error: ' + res.message
+                    });
+                }
+            }, 'json').fail(function () {
+                $btn.prop('disabled', false).html(btnHtml);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error al restaurar datos',
+                    text: 'Ocurrió un error al procesar la restauración en el servidor.'
+                });
+            });
+        }
+    });
 }
 
 //==============================
@@ -86,7 +113,11 @@ function calcularDiasRegistro() {
 //==============================
 function registrarSalidaVacaciones() {
     if (!empleadoActual) {
-        alert("No hay un empleado seleccionado.");
+        Swal.fire({
+            icon: 'warning',
+            title: 'Empleado no seleccionado',
+            text: 'No hay un empleado seleccionado.'
+        });
         return;
     }
 
@@ -96,44 +127,71 @@ function registrarSalidaVacaciones() {
     let dias = parseFloat($('#numDiasDescontar').val());
 
     if (dias <= 0) {
-        alert("Por favor seleccione un rango válido de fechas de vacaciones (mínimo 1 día laborable).");
+        Swal.fire({
+            icon: 'warning',
+            title: 'Rango de fechas inválido',
+            text: 'Por favor seleccione un rango válido de fechas de vacaciones (mínimo 1 día laborable).'
+        });
         return;
     }
 
-    if (confirm(`¿Está seguro de registrar ${dias.toFixed(1)} días de vacaciones del ${formatearFechaSimple(fIniStr)} al ${formatearFechaSimple(fFinStr)}?`)) {
-        let $btn = $('#btnRegistrarVacaciones');
-        let btnHtml = $btn.html();
-        $btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Procesando...');
+    Swal.fire({
+        icon: 'question',
+        title: 'Confirmar Registro',
+        text: `¿Está seguro de registrar ${dias.toFixed(1)} días de vacaciones del ${formatearFechaSimple(fIniStr)} al ${formatearFechaSimple(fFinStr)}?`,
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, registrar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            let $btn = $('#btnRegistrarVacaciones');
+            let btnHtml = $btn.html();
+            $btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Procesando...');
 
-        $.post('../php/infoEmpleados.php', {
-            action: 'registrarVacaciones',
-            id_empleado: empleadoActual.id_empleado,
-            fecha_inicio: fIniStr,
-            fecha_fin: fFinStr,
-            concepto: 'Salida de vacaciones',
-            dias_descontar: dias,
-            observaciones: obs
-        }, function (res) {
-            $btn.prop('disabled', false).html(btnHtml);
-            if (res.success) {
-                alert("Vacaciones registradas exitosamente.");
+            $.post('../php/infoEmpleados.php', {
+                action: 'registrarVacaciones',
+                id_empleado: empleadoActual.id_empleado,
+                fecha_inicio: fIniStr,
+                fecha_fin: fFinStr,
+                concepto: 'Salida de vacaciones',
+                dias_descontar: dias,
+                observaciones: obs
+            }, function (res) {
+                $btn.prop('disabled', false).html(btnHtml);
+                if (res.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Vacaciones registradas',
+                        text: 'Las vacaciones se registraron exitosamente.'
+                    });
 
-                // Limpiar formulario
-                $('#fechaInicio').val('');
-                $('#fechaFin').val('');
-                $('#txtObservaciones').val('');
-                $('#numDiasDescontar').val(0);
+                    // Limpiar formulario
+                    $('#fechaInicio').val('');
+                    $('#fechaFin').val('');
+                    $('#txtObservaciones').val('');
+                    $('#numDiasDescontar').val(0);
 
-                // Recargar información del empleado, periodos y movimientos
-                obtenerInformacionEmpleado(empleadoActual.id_empleado);
-            } else {
-                alert("Error: " + res.message);
-            }
-        }, 'json').fail(function () {
-            $btn.prop('disabled', false).html(btnHtml);
-            alert("Ocurrió un error al procesar el registro en el servidor.");
-        });
-    }
+                    // Recargar información del empleado, periodos y movimientos
+                    obtenerInformacionEmpleado(empleadoActual.id_empleado);
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error al registrar vacaciones',
+                        text: 'Error: ' + res.message
+                    });
+                }
+            }, 'json').fail(function () {
+                $btn.prop('disabled', false).html(btnHtml);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error al registrar vacaciones',
+                    text: 'Ocurrió un error al procesar el registro en el servidor.'
+                });
+            });
+        }
+    });
 }
 
 //==============================
@@ -150,7 +208,7 @@ function calcularDiasVacaciones(fechaIniStr, fechaFinStr) {
     while (iter <= fFin) {
         // Obtener el día de la semana (0 = Domingo, 1 = Lunes, etc.)
         let w = iter.getDay();
-        
+
         // Formatear la fecha iterada a YYYY-MM-DD para validar festivos
         let y = iter.getFullYear();
         let m = String(iter.getMonth() + 1).padStart(2, '0');

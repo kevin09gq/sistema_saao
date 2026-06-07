@@ -113,6 +113,7 @@
     <!-- Archivo JS específico -->
     <script src="../js/index.js"></script>
     <script src="../js/kardex/calendarioGeneral.js"></script>
+    <script src="../js/sincronizarVacaciones.js"></script>
 </body>
 
 </html>

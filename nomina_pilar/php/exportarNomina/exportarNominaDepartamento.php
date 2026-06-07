@@ -173,12 +173,12 @@ $sheet->mergeCells('A4:AB4');
 // Formatear título 1 - RANCHO EL PILAR (Rojo, Negrita, Tamaño 24)
 $sheet->getStyle('A1')->getFont()->setBold(true);
 $sheet->getStyle('A1')->getFont()->setSize(24);
-$sheet->getStyle('A1')->getFont()->setColor(new Color('7030A0'));
+$sheet->getStyle('A1')->getFont()->setColor(new Color($colorExcel));
 
 // Formatear título 2 - PERSONAL DE BASE (Negrita, Tamaño 11)
 $sheet->getStyle('A2')->getFont()->setBold(true);
 $sheet->getStyle('A2')->getFont()->setSize(20);
-$sheet->getStyle('A2')->getFont()->setColor(new Color('DBADFF'));
+$sheet->getStyle('A2')->getFont()->setColor(new Color($colorExcel));
 
 // Formatear título 3 - NOMINA (Negrita, Tamaño 10)
 $sheet->getStyle('A3')->getFont()->setBold(true);
@@ -196,7 +196,7 @@ $logoPath = '../../../public/img/logo.jpg';
 if (file_exists($logoPath)) {
     $logo = new Drawing();
     $logo->setName('Logo');
-    $logo->setDescription('Logo de Rancho El Relicario');
+    $logo->setDescription('Logo de Rancho Pilar');
     $logo->setPath($logoPath);
     $logo->setHeight(190); // Altura en píxeles
     $logo->setCoordinates('B1'); // Colocar en columna Z, fila 1

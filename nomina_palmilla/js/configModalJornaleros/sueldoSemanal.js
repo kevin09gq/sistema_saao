@@ -35,6 +35,27 @@ function obtenerHorarioRancho(empleado = null) {
  * CALCULAR SUELDO SEMANAL, PASAJE
  ************************************/
 
+function actualizarPercepcionExtra(empleado, nombreConcepto, cantidad) {
+    if (!Array.isArray(empleado.percepciones_extra)) {
+        empleado.percepciones_extra = [];
+    }
+    const idx = empleado.percepciones_extra.findIndex(p => p.nombre === nombreConcepto);
+    if (cantidad > 0) {
+        if (idx !== -1) {
+            empleado.percepciones_extra[idx].cantidad = parseFloat(cantidad.toFixed(2));
+        } else {
+            empleado.percepciones_extra.push({
+                nombre: nombreConcepto,
+                cantidad: parseFloat(cantidad.toFixed(2))
+            });
+        }
+    } else {
+        if (idx !== -1) {
+            empleado.percepciones_extra.splice(idx, 1);
+        }
+    }
+}
+
 function calcularSueldoSemanal(empleado = null) {
     // Verificar que existe jsonNominaPalmilla
     if (!jsonNominaPalmilla || !jsonNominaPalmilla.departamentos) {
@@ -53,12 +74,12 @@ function calcularSueldoSemanal(empleado = null) {
             empleadosAProcesar = [empleado];
         }
     } else {
-        // Si no se envía nada, recorrer todos los del departamento con tipo_horario 2
+        // Si no se envía nada, recorrer todos los del departamento con tipo_horario 2 o 1
         jsonNominaPalmilla.departamentos.forEach(departamento => {
             if (!departamento.empleados) return;
 
             departamento.empleados.forEach(empleado => {
-                if (empleado.tipo_horario === 2) {
+                if (empleado.tipo_horario === 2 || empleado.tipo_horario === 1) {
                     empleadosAProcesar.push(empleado);
                 }
             });
@@ -67,8 +88,9 @@ function calcularSueldoSemanal(empleado = null) {
 
     // === PROCESAR EMPLEADOS ===
     empleadosAProcesar.forEach(empleado => {
-        // Verificar que sea tipo_horario 2
-        if (parseInt(empleado.tipo_horario) !== 2) {
+        const tipoHorario = parseInt(empleado.tipo_horario);
+        // Verificar que sea tipo_horario 2 o 1
+        if (tipoHorario !== 2 && tipoHorario !== 1) {
             return;
         }
 
@@ -106,25 +128,23 @@ function calcularSueldoSemanal(empleado = null) {
         // Sumar días detectados por biometrico + días extra manuales - días de descuento
         const diasExtra = parseInt(empleado.dias_extra) || 0;
         const diasMenos = parseInt(empleado.dias_menos) || 0;
-        empleado.dias_trabajados = (diasAsistidos + diasExtra) - diasMenos;
+        const totalDiasTrabajados = Math.max(0, (diasAsistidos + diasExtra) - diasMenos);
 
-        // Evitar días negativos
-        if (empleado.dias_trabajados < 0) {
-            empleado.dias_trabajados = 0;
+        if (tipoHorario === 2) {
+            empleado.dias_trabajados = totalDiasTrabajados;
+
+            // === CALCULAR SUELDO SEMANAL ===
+            const salarioDiario = parseFloat(empleado.salario_diario) || 0;
+            const sueldoSemanal = totalDiasTrabajados * salarioDiario;
+            empleado.salario_semanal = parseFloat(sueldoSemanal === 0 ? 0 : sueldoSemanal.toFixed(2));
         }
-
-        // === CALCULAR SUELDO SEMANAL ===
-        const salarioDiario = parseFloat(empleado.salario_diario) || 0;
-        const sueldoSemanal = empleado.dias_trabajados * salarioDiario;
-        empleado.salario_semanal = sueldoSemanal === 0 ? 0 : sueldoSemanal.toFixed(2);
 
         // === CALCULAR PASAJE ===
         let pasajeTotal = 0;
         let aplicaPasaje = false;
+        
 
-
-        // Solo para empleados del tipo_horario 2 
-        if (empleado.tipo_horario === 2) {
+        if (tipoHorario === 2) {
             const precioPasaje = parseFloat(jsonNominaPalmilla.precio_pasaje) || 0;
 
             if (empleado.pasaje_override === 'quitar') {
@@ -137,6 +157,22 @@ function calcularSueldoSemanal(empleado = null) {
                 pasajeTotal = empleado.dias_trabajados * precioPasaje;
             }
             aplicaPasaje = true;
+        } else if (tipoHorario === 1) {
+            const precioPasaje = parseFloat(jsonNominaPalmilla.precio_pasaje) || 0;
+            const tienePasajeExtra = Array.isArray(empleado.percepciones_extra) && empleado.percepciones_extra.some(p => p.nombre === 'Pasaje');
+
+            if (empleado.pasaje_override === 'quitar') {
+                pasajeTotal = 0;
+                delete empleado.pasaje_override;
+                actualizarPercepcionExtra(empleado, 'Pasaje', 0);
+            } else if (empleado.pasaje_override === 'agregar') {
+                pasajeTotal = (totalDiasTrabajados || 1) * precioPasaje;
+                delete empleado.pasaje_override;
+                actualizarPercepcionExtra(empleado, 'Pasaje', pasajeTotal);
+            } else if (tienePasajeExtra) {
+                pasajeTotal = totalDiasTrabajados * precioPasaje;
+                actualizarPercepcionExtra(empleado, 'Pasaje', pasajeTotal);
+            }
         }
 
         if (aplicaPasaje) {
@@ -147,8 +183,7 @@ function calcularSueldoSemanal(empleado = null) {
         let comidaTotal = 0;
         let aplicaComida = false;
 
-        // Solo para empleados del tipo_horario 2 con id_tipo_puesto diferente de 3
-        if (parseInt(empleado.tipo_horario) === 2) {
+        if (tipoHorario === 2) {
             const precioComida = parseFloat(jsonNominaPalmilla.pago_comida) || 0;
 
             if (empleado.comida_override === 'quitar') {
@@ -161,34 +196,66 @@ function calcularSueldoSemanal(empleado = null) {
                 comidaTotal = empleado.dias_trabajados * precioComida;
             }
             aplicaComida = true;
+        } else if (tipoHorario === 1) {
+            const precioComida = parseFloat(jsonNominaPalmilla.pago_comida) || 0;
+            const tieneComidaExtra = Array.isArray(empleado.percepciones_extra) && empleado.percepciones_extra.some(p => p.nombre === 'Comida');
+
+            if (empleado.comida_override === 'quitar') {
+                comidaTotal = 0;
+                delete empleado.comida_override;
+                actualizarPercepcionExtra(empleado, 'Comida', 0);
+            } else if (empleado.comida_override === 'agregar') {
+                comidaTotal = (totalDiasTrabajados || 1) * precioComida;
+                delete empleado.comida_override;
+                actualizarPercepcionExtra(empleado, 'Comida', comidaTotal);
+            } else if (tieneComidaExtra) {
+                comidaTotal = totalDiasTrabajados * precioComida;
+                actualizarPercepcionExtra(empleado, 'Comida', comidaTotal);
+            }
         }
 
         if (aplicaComida) {
             empleado.comida = parseFloat(comidaTotal === 0 ? 0 : comidaTotal.toFixed(2));
         }
 
-        // === CALCULAR TARDEADAS ===
+        if (tipoHorario === 2) {
+            // === CALCULAR TARDEADAS ===
+            const diasTardeados = calcularTardeadas(empleado);
+            const montoTardeada = parseFloat(jsonNominaPalmilla.pago_tardeada) || 0;
 
-        // calcular y asignar tardeadas
-        const diasTardeados = calcularTardeadas(empleado);
-        const montoTardeada = parseFloat(jsonNominaPalmilla.pago_tardeada) || 0;
+            const totalTardeada = diasTardeados * montoTardeada;
+            empleado.tardeada = parseFloat(totalTardeada === 0 ? 0 : totalTardeada.toFixed(2));
+            // Recalcular el total extra de forma limpia (tardeada + percepciones_extra)
+            if (typeof calcularTotalExtra === 'function') {
+                calcularTotalExtra(empleado);
+            } else {
+                // Fallback si no está cargado el script del modal
+                empleado.sueldo_extra_total = parseFloat(empleado.tardeada) || 0;
+            }
+        } else if (tipoHorario === 1) {
+            // Recalcular el total extra sumando todas las percepciones extras para el coordinador
+            let totalExtra = 0;
+            if (Array.isArray(empleado.percepciones_extra)) {
+                empleado.percepciones_extra.forEach(p => {
+                    totalExtra += parseFloat(p.cantidad) || 0;
+                });
+            }
+            empleado.sueldo_extra_total = parseFloat(totalExtra.toFixed(2));
+        }
 
-        const totalTardeada = diasTardeados * montoTardeada;
-        empleado.tardeada = parseFloat(totalTardeada === 0 ? 0 : totalTardeada.toFixed(2));
-        // Recalcular el total extra de forma limpia (tardeada + percepciones_extra)
-        if (typeof calcularTotalExtra === 'function') {
-            calcularTotalExtra(empleado);
-        } else {
-            // Fallback si no está cargado el script del modal
-            empleado.sueldo_extra_total = parseFloat(empleado.tardeada) || 0;
+        // IMPORTANTE: Recalcular el total a cobrar con el nuevo sueldo y extras
+        if (typeof calcularTotalCobrar === 'function') {
+            calcularTotalCobrar(empleado);
         }
 
     });
 
     actualizarCabeceraNomina(jsonNominaPalmilla);
+    // Actualizar la tabla manteniendo el filtrado y paginación actual
     if (typeof aplicarFiltrosActuales === 'function') {
         aplicarFiltrosActuales();
     }
+
     saveNomina(jsonNominaPalmilla);
 }
 

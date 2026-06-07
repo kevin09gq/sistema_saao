@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return 'documentos';
         } else if (path.includes('/prestamos/views/index.php')) {
             return 'documentos';
-        } else if (path.includes('/tickets_manuales/views/tickets_manuales.php')) {
+        } else if (path.includes('/public/views/generacion_tickets_manuales.php')) {
             return 'documentos';
         } else if (path.includes('/reloj-8horas/views/reloj.php')) {
             return 'documentos';
@@ -40,10 +40,12 @@ document.addEventListener('DOMContentLoaded', function () {
             return 'documentos';
         } else if (path.includes('/aguinaldo/aguinaldo.php')) {
             return 'documentos';
+        } else if (path.includes('/reparto_utilidades/views/historial.php')) {
+            return 'documentos';
+        } else if (path.includes('/vacaciones/views/vacaciones.php')) {
+            return 'documentos';
         } else if (path.includes('/nomina_40lbs/views/nomina_40lbs.php')) {
             return 'nominas'; // Highlight 'Nóminas' for 40 lbs
-        } else if (path.includes('/nomina_10lbs/views/nomina_10lbs.php')) {
-            return 'nominas'; // Highlight 'Nóminas' for 10 lbs
         } else if (path.includes('/nomina_confianza/views/nomina_confianza.php')) {
             return 'nominas'; // Highlight 'Nóminas' for Confianza
         } else if (path.includes('/nomina_relicario/views/nomina_relicario.php')) {

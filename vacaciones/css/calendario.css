@@ -80,9 +80,9 @@
 }
 
 .calendar-day.aniversario-proximo {
-    background: #c084fc !important;
+    background: #ec0b0b !important;
     color: #ffffff !important;
-    border: 1px dashed #7c3aed !important;
+    border: 1px dashed #ec0b0b !important;
     font-weight: 600;
 }
 

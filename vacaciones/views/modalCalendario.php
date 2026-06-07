@@ -30,7 +30,7 @@
                             <div class="legend-color" style="background: #8b5cf6;"></div> Aniversario
                         </div>
                         <div class="legend-item">
-                            <div class="legend-color" style="background: #c084fc; border: 1px dashed #7c3aed;"></div> Próx. Aniversario
+                            <div class="legend-color" style="background: #ec0b0b; border: 1px dashed #ec0b0b;"></div> Próx. Aniversario
                         </div>
                         <div class="legend-item">
                             <div class="legend-color" style="border: 2px solid #22c55e;"></div> Hoy

@@ -42,7 +42,9 @@
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/contratos/contratos.php">Contratos</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/prestamos/views/index.php">Prestamos</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/aguinaldo/aguinaldo.php">Aguinaldos</a></li>
-                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/tickets_manuales/views/tickets_manuales.php">Tickets Manuales</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/reparto_utilidades/views/historial.php">PTU</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/vacaciones/views/vacaciones.php">Vacaciones</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/public/views/generacion_tickets_manuales.php">Tickets Manuales</a></li>
                         <li class="dropdown-submenu">
                             <a class="dropdown-item dropdown-toggle" href="#">Reloj 8 Horas</a>
                             <ul class="submenu dropdown-menu">
@@ -60,7 +62,6 @@
                     </a>
                     <ul class="submenu dropdown-menu" aria-labelledby="nominasDropdown">
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_40lbs/views/nomina_40lbs.php">40 lbs</a></li>
-                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_10lbs/views/nomina_10lbs.php">10 lbs</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_confianza/views/nomina_confianza.php">Confianza</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_relicario/views/nomina_relicario.php">Rancho Relicario</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_pilar/views/nomina_pilar.php">Rancho Pilar</a></li>
@@ -87,6 +88,17 @@
                     </a>
                 </li>
 
+                <!-- Botón de Notificaciones en el Navbar -->
+                <li class="menu-item nav-item">
+                    <a href="<?= $rutaRaiz ?>/public/views/notificaciones.php" class="nav-link notification-nav-link" id="notificationNavbarButton">
+                        <div class="notification-icon-wrapper">
+                            <i class="bi bi-bell-fill"></i>
+                            <span class="badge rounded-pill bg-danger" id="notificationBadge">0</span>
+                        </div>
+                        <span class="link-text d-lg-none ms-2">Notificaciones</span>
+                    </a>
+                </li>
+
                 <!-- Mantener la clase original "btn-salir" para conservar comportamiento JS -->
                 <li class="nav-item">
                     <a class="nav-link btn-salir" href="#">
@@ -101,7 +113,11 @@
 
 <!-- Incluir estilos del navbar -->
 <link rel="stylesheet" href="<?= $rutaRaiz ?>/public/styles/navbar_styles.css">
+<!-- Incluir estilos de notificaciones -->
+<link rel="stylesheet" href="<?= $rutaRaiz ?>/public/styles/notificacion.css">
 <!-- Iconos Bootstrap (asegurar que estén disponibles en todas las vistas) -->
 <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
 <!-- Script para funcionalidad del navbar -->
 <script src="<?= $rutaRaiz ?>/public/js/navbar.js"></script>
+<!-- Script para funcionalidad de notificaciones -->
+<script src="<?= $rutaRaiz ?>/public/js/notifications.js"></script>

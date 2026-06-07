@@ -1,5 +1,6 @@
 <?php
-
+// LLAMAR A LA CONEXION
+require_once __DIR__ . '/../../../conexion/conexion.php';
 // Incluir autoload de Composer
 require_once __DIR__ . '/../../../vendor/autoload.php';
 
@@ -295,11 +296,12 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
     // Formatear título 1 - RANCHO RELICARIO (Purpura, Negrita, Tamaño 24)
     $sheet->getStyle('A1')->getFont()->setBold(true);
     $sheet->getStyle('A1')->getFont()->setSize(24);
-    $sheet->getStyle('A1')->getFont()->setColor(new Color('FF0000'));
+    $sheet->getStyle('A1')->getFont()->setColor(new Color($colorExcel));
 
     // Formatear título 2 (Negrita, Tamaño 20)
     $sheet->getStyle('A2')->getFont()->setBold(true);
     $sheet->getStyle('A2')->getFont()->setSize(20);
+    $sheet->getStyle('A2')->getFont()->setColor(new Color($colorExcel));
 
 
     // Formatear título 3 - NOMINA (Negrita, Tamaño 14)
@@ -992,6 +994,272 @@ function rangoDeFechas($fechaInicio, $fechaFin)
     return $resultado;
 }
 
+
+
+/**
+ * ====================================================================================================
+ * FUNCIONES AUXILIARES PARA LA PODA DE LOS ARBOLES
+ * ====================================================================================================
+ */
+
+/**
+ * Convierte una fecha en formato 'DD/MM/AAA' a timestamp
+ */
+function fechaATimestamp($fecha)
+{
+    $meses = [
+        "Ene" => 1,
+        "Feb" => 2,
+        "Mar" => 3,
+        "Abr" => 4,
+        "May" => 5,
+        "Jun" => 6,
+        "Jul" => 7,
+        "Ago" => 8,
+        "Sep" => 9,
+        "Oct" => 10,
+        "Nov" => 11,
+        "Dic" => 12
+    ];
+
+    list($dia, $mesAbrev, $anio) = explode("/", $fecha);
+    $mesNum = $meses[$mesAbrev];
+    return mktime(0, 0, 0, $mesNum, (int)$dia, (int)$anio);
+}
+
+/**
+ * Verifica si una fecha (YYYY-MM-DD) está dentro del rango
+ */
+function estaEnRango($fechaStr, $fechaInicio, $fechaFin)
+{
+    [$anio, $mes, $dia] = array_map('intval', explode('-', $fechaStr));
+    $fechaMovimiento = mktime(0, 0, 0, $mes, $dia, $anio);
+
+    // Convertir fechas DD/MM/AAA a timestamps
+    $meses = [
+        "Ene" => 1,
+        "Feb" => 2,
+        "Mar" => 3,
+        "Abr" => 4,
+        "May" => 5,
+        "Jun" => 6,
+        "Jul" => 7,
+        "Ago" => 8,
+        "Sep" => 9,
+        "Oct" => 10,
+        "Nov" => 11,
+        "Dic" => 12
+    ];
+
+    list($diaIni, $mesAbrevIni, $anioIni) = explode("/", $fechaInicio);
+    $mesNumIni = $meses[$mesAbrevIni];
+    $timestampInicio = mktime(0, 0, 0, $mesNumIni, (int)$diaIni, (int)$anioIni);
+
+    list($diaFin, $mesAbrevFin, $anioFin) = explode("/", $fechaFin);
+    $mesNumFin = $meses[$mesAbrevFin];
+    $timestampFin = mktime(0, 0, 0, $mesNumFin, (int)$diaFin, (int)$anioFin);
+
+    return $fechaMovimiento >= $timestampInicio && $fechaMovimiento <= $timestampFin;
+}
+
+/**
+ * Obtiene el nombre del día de la semana en español a partir de una fecha 'YYYY-MM-DD'
+ */
+function obtenerDiaSemanaPoda(string $fechaStr): string
+{
+    [$anio, $mes, $dia] = array_map('intval', explode('-', $fechaStr));
+    $timestamp = mktime(0, 0, 0, $mes, $dia, $anio);
+    $dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
+    return $dias[(int)date('w', $timestamp)];
+}
+
+/**
+ * Agrupa los movimientos por concepto + monto, marcando extras si estan fuera del rango
+ */
+function agruparMovimientosPoda(array $movimientos, $fechaInicio, $fechaFin): array
+{
+    $agrupados = [];
+
+    foreach ($movimientos as $mov) {
+        $concepto = $mov['concepto'] ?? '';
+        $monto = (string)($mov['monto'] ?? 0);
+        $fecha = $mov['fecha'] ?? '';
+
+        // Verificar si está fuera del rango
+        $esExtra = !estaEnRango($fecha, $fechaInicio, $fechaFin);
+
+        // Si es extra, agregar día al concepto: "E. CONCEPTO (DÍA)"
+        if ($esExtra) {
+            $dia = (int)explode('-', $fecha)[2];
+            $concepto = "E. " . $concepto . " (" . $dia . ")";
+        }
+
+        $clave = $concepto . '_' . $monto;
+
+        $agrupados[$clave][] = $mov;
+    }
+
+    return $agrupados;
+}
+
+/**
+ * Procesa un grupo de movimientos (misma clave) y genera una fila
+ */
+function procesarMovimientosParaFila(string $nombre, string $concepto, array $movimientosGrupo, float $monto): array
+{
+    $valoresPorDia = [
+        'VIERNES' => 0,
+        'SABADO' => 0,
+        'DOMINGO' => 0,
+        'LUNES' => 0,
+        'MARTES' => 0,
+        'MIERCOLES' => 0,
+        'JUEVES' => 0
+    ];
+
+    $totalArboles = 0;
+    $totalEfectivo = 0;
+
+    // Verificar si es PODA (puede tener prefijo "E. ")
+    $esPoda = strpos($concepto, 'PODA') !== false;
+
+    foreach ($movimientosGrupo as $mov) {
+
+        $dia = obtenerDiaSemanaPoda($mov['fecha']); // puedes reutilizarla
+
+        if (!array_key_exists($dia, $valoresPorDia)) continue;
+
+        // PODA
+        if ($esPoda) {
+
+            $arboles = intval($mov['arboles_podados'] ?? 0);
+
+            $valoresPorDia[$dia] += $arboles;
+            $totalArboles += $arboles;
+            $totalEfectivo += ($arboles * $monto);
+        }
+        // EXTRAS
+        else {
+
+            $valor = floatval($mov['monto'] ?? 0);
+
+            $valoresPorDia[$dia] += $valor;
+            $totalEfectivo += $valor;
+        }
+    }
+
+    return [
+        'nombre'           => $nombre,
+        'concepto'         => $concepto,
+        'viernes'          => $valoresPorDia['VIERNES'],
+        'sabado'           => $valoresPorDia['SABADO'],
+        'domingo'          => $valoresPorDia['DOMINGO'],
+        'lunes'            => $valoresPorDia['LUNES'],
+        'martes'           => $valoresPorDia['MARTES'],
+        'miercoles'        => $valoresPorDia['MIERCOLES'],
+        'jueves'           => $valoresPorDia['JUEVES'],
+        'total_arboles'    => $esPoda ? $totalArboles : 0,
+        'precio'           => $esPoda ? $monto : 0,
+        'total_efectivo'   => $totalEfectivo,
+        'tipoConcepto'     => $esPoda ? 'PODA' : 'EXTRA'
+    ];
+}
+
+/**
+ * Verifica si el texto contiene un numero entre parentesi. Ejemplo: "E. PODA (30)" o "E. EXTRAS (15)"
+ * Si lo tiene signfica que es un dia extra fuera del rango
+ * @param String $texto El texto a verificar
+ * @return Bool Retorna true si el texto contiene un número entre paréntesis, false en caso contrario
+ */
+function esDiaExtra($texto)
+{
+    // Expresión regular: busca un número dentro de paréntesis
+    return preg_match('/\(\d+\)/', $texto) === 1;
+}
+
+
+
+
+/**
+ * -----------------------------------------------------------------
+ * OBTENER EL COLOR DE FORMA DINAMICA 
+ * -----------------------------------------------------------------
+ */
+
+$nombre_nomina = "RELICARIO";
+
+/**
+ * Obtiene el color principal de una nómina (el color que más se repite).
+ *
+ * @param string $nombreNomina Nombre de la nómina.
+ * @return string|null
+ */
+function obtenerColorPrincipal($nombreNomina)
+{
+    global $conexion;
+
+    $sql = "
+        SELECT
+            nd.color_depto_nomina
+        FROM nomina_departamento nd
+        INNER JOIN nombre_nominas nn
+            ON nd.id_nomina = nn.id_nomina
+        WHERE nn.nombre_nomina = ?
+        GROUP BY nd.color_depto_nomina
+        ORDER BY COUNT(*) DESC
+        LIMIT 1
+    ";
+
+    $stmt = mysqli_prepare($conexion, $sql);
+
+    if (!$stmt) {
+        return null;
+    }
+
+    mysqli_stmt_bind_param($stmt, "s", $nombreNomina);
+    mysqli_stmt_execute($stmt);
+
+    $resultado = mysqli_stmt_get_result($stmt);
+
+    if ($fila = mysqli_fetch_assoc($resultado)) {
+        $color = ltrim($fila['color_depto_nomina'], '#');
+    } else {
+        $color = null;
+    }
+
+    mysqli_stmt_close($stmt);
+
+    return $color;
+}
+
+
+/**
+ * Obtiene un color de contraste (blanco o negro)
+ * para que el texto sea legible sobre el color dado.
+ *
+ * @param string $colorHex Color hexadecimal sin #
+ * @return string Retorna FFFFFF o 000000
+ */
+function obtenerContraste($colorHex)
+{
+    $r = hexdec(substr($colorHex, 0, 2));
+    $g = hexdec(substr($colorHex, 2, 2));
+    $b = hexdec(substr($colorHex, 4, 2));
+
+    // Fórmula estándar de luminosidad
+    $luminosidad = (0.299 * $r) + (0.587 * $g) + (0.114 * $b);
+
+    return ($luminosidad > 186) ? '000000' : 'FFFFFF';
+}
+
+
+
+/**
+ * ====================================================================================================
+ * FUNCIONES PARA CREAR LAS HOJAS DE CORTE Y PODA
+ * ====================================================================================================
+ */
+
 /**
  * Función para crear la hoja de corte
  * @param Spreadsheet $spreadsheet El objeto de la hoja de cálculo
@@ -1001,7 +1269,7 @@ function rangoDeFechas($fechaInicio, $fechaFin)
  */
 function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
 {
-    global $jsonNomina, $encabezados_corte, $anchos_corte, $fecha_inicio, $fecha_cierre, $numero_semana, $ano;
+    global $jsonNomina, $encabezados_corte, $anchos_corte, $fecha_inicio, $fecha_cierre, $numero_semana, $ano, $nombre_nomina;
 
     // ==========================
     // COLORES PARA USAR
@@ -1013,6 +1281,11 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
     $colorNomina    = 'FFD6D6';  // fondo filas NOMINA
     $colorDias      = 'D5F5E3';  // verde claro para columnas de días (REJA)
     $colorTotales   = 'E0E0E0';  // rojo claro para columnas de totales
+
+    // OBTENER COLOR DE LA BASE DE DATOS
+    $color_primario = obtenerColorPrincipal($nombre_nomina) ?? 'B50600';
+    // COLOR DE LAS LETRAS DE LOS ENCABEZADOS
+    $color_letras_encabezados = obtenerContraste($color_primario) ?? '000000';
 
     //=====================
     //  PROCESAR FILAS DEL DEPARTAMENTO CORTE
@@ -1137,7 +1410,7 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
     // Formatear los encabezados (Negrita, Centrados, Tamaño 12, Fondo Rojo, Letra Blanca)
     $sheet->getStyle('A6:N6')->getFont()->setBold(true);
     $sheet->getStyle('A6:N6')->getFont()->setSize(12);
-    $sheet->getStyle('A6:N6')->getFont()->setColor(new Color($color_blanco)); // Letra blanca
+    $sheet->getStyle('A6:N6')->getFont()->setColor(new Color($color_letras_encabezados)); // Letra blanca
     $sheet->getStyle('A6:N6')->getAlignment()->setHorizontal('center');
     $sheet->getStyle('A6:N6')->getAlignment()->setVertical('center');
     $sheet->getStyle('A6:N6')->getAlignment()->setWrapText(true); // Ajustar texto
@@ -1341,189 +1614,6 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
     $sheet->getPageSetup()->setPrintArea('A1:N' . $filaTotal);
 }
 
-
-
-/**
- * ====================================================================================================
- * FUNCIONES AUXILIARES PARA LA PODA DE LOS ARBOLES
- * ====================================================================================================
- */
-
-/**
- * Convierte una fecha en formato 'DD/MM/AAA' a timestamp
- */
-function fechaATimestamp($fecha)
-{
-    $meses = [
-        "Ene" => 1,
-        "Feb" => 2,
-        "Mar" => 3,
-        "Abr" => 4,
-        "May" => 5,
-        "Jun" => 6,
-        "Jul" => 7,
-        "Ago" => 8,
-        "Sep" => 9,
-        "Oct" => 10,
-        "Nov" => 11,
-        "Dic" => 12
-    ];
-
-    list($dia, $mesAbrev, $anio) = explode("/", $fecha);
-    $mesNum = $meses[$mesAbrev];
-    return mktime(0, 0, 0, $mesNum, (int)$dia, (int)$anio);
-}
-
-/**
- * Verifica si una fecha (YYYY-MM-DD) está dentro del rango
- */
-function estaEnRango($fechaStr, $fechaInicio, $fechaFin)
-{
-    [$anio, $mes, $dia] = array_map('intval', explode('-', $fechaStr));
-    $fechaMovimiento = mktime(0, 0, 0, $mes, $dia, $anio);
-
-    // Convertir fechas DD/MM/AAA a timestamps
-    $meses = [
-        "Ene" => 1,
-        "Feb" => 2,
-        "Mar" => 3,
-        "Abr" => 4,
-        "May" => 5,
-        "Jun" => 6,
-        "Jul" => 7,
-        "Ago" => 8,
-        "Sep" => 9,
-        "Oct" => 10,
-        "Nov" => 11,
-        "Dic" => 12
-    ];
-
-    list($diaIni, $mesAbrevIni, $anioIni) = explode("/", $fechaInicio);
-    $mesNumIni = $meses[$mesAbrevIni];
-    $timestampInicio = mktime(0, 0, 0, $mesNumIni, (int)$diaIni, (int)$anioIni);
-
-    list($diaFin, $mesAbrevFin, $anioFin) = explode("/", $fechaFin);
-    $mesNumFin = $meses[$mesAbrevFin];
-    $timestampFin = mktime(0, 0, 0, $mesNumFin, (int)$diaFin, (int)$anioFin);
-
-    return $fechaMovimiento >= $timestampInicio && $fechaMovimiento <= $timestampFin;
-}
-
-/**
- * Obtiene el nombre del día de la semana en español a partir de una fecha 'YYYY-MM-DD'
- */
-function obtenerDiaSemanaPoda(string $fechaStr): string
-{
-    [$anio, $mes, $dia] = array_map('intval', explode('-', $fechaStr));
-    $timestamp = mktime(0, 0, 0, $mes, $dia, $anio);
-    $dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
-    return $dias[(int)date('w', $timestamp)];
-}
-
-/**
- * Agrupa los movimientos por concepto + monto, marcando extras si estan fuera del rango
- */
-function agruparMovimientosPoda(array $movimientos, $fechaInicio, $fechaFin): array
-{
-    $agrupados = [];
-
-    foreach ($movimientos as $mov) {
-        $concepto = $mov['concepto'] ?? '';
-        $monto = (string)($mov['monto'] ?? 0);
-        $fecha = $mov['fecha'] ?? '';
-
-        // Verificar si está fuera del rango
-        $esExtra = !estaEnRango($fecha, $fechaInicio, $fechaFin);
-
-        // Si es extra, agregar día al concepto: "E. CONCEPTO (DÍA)"
-        if ($esExtra) {
-            $dia = (int)explode('-', $fecha)[2];
-            $concepto = "E. " . $concepto . " (" . $dia . ")";
-        }
-
-        $clave = $concepto . '_' . $monto;
-
-        $agrupados[$clave][] = $mov;
-    }
-
-    return $agrupados;
-}
-
-/**
- * Procesa un grupo de movimientos (misma clave) y genera una fila
- */
-function procesarMovimientosParaFila(string $nombre, string $concepto, array $movimientosGrupo, float $monto): array
-{
-    $valoresPorDia = [
-        'VIERNES' => 0,
-        'SABADO' => 0,
-        'DOMINGO' => 0,
-        'LUNES' => 0,
-        'MARTES' => 0,
-        'MIERCOLES' => 0,
-        'JUEVES' => 0
-    ];
-
-    $totalArboles = 0;
-    $totalEfectivo = 0;
-
-    // Verificar si es PODA (puede tener prefijo "E. ")
-    $esPoda = strpos($concepto, 'PODA') !== false;
-
-    foreach ($movimientosGrupo as $mov) {
-
-        $dia = obtenerDiaSemanaPoda($mov['fecha']); // puedes reutilizarla
-
-        if (!array_key_exists($dia, $valoresPorDia)) continue;
-
-        // PODA
-        if ($esPoda) {
-
-            $arboles = intval($mov['arboles_podados'] ?? 0);
-
-            $valoresPorDia[$dia] += $arboles;
-            $totalArboles += $arboles;
-            $totalEfectivo += ($arboles * $monto);
-        }
-        // EXTRAS
-        else {
-
-            $valor = floatval($mov['monto'] ?? 0);
-
-            $valoresPorDia[$dia] += $valor;
-            $totalEfectivo += $valor;
-        }
-    }
-
-    return [
-        'nombre'           => $nombre,
-        'concepto'         => $concepto,
-        'viernes'          => $valoresPorDia['VIERNES'],
-        'sabado'           => $valoresPorDia['SABADO'],
-        'domingo'          => $valoresPorDia['DOMINGO'],
-        'lunes'            => $valoresPorDia['LUNES'],
-        'martes'           => $valoresPorDia['MARTES'],
-        'miercoles'        => $valoresPorDia['MIERCOLES'],
-        'jueves'           => $valoresPorDia['JUEVES'],
-        'total_arboles'    => $esPoda ? $totalArboles : 0,
-        'precio'           => $esPoda ? $monto : 0,
-        'total_efectivo'   => $totalEfectivo,
-        'tipoConcepto'     => $esPoda ? 'PODA' : 'EXTRA'
-    ];
-}
-
-/**
- * Verifica si el texto contiene un numero entre parentesi. Ejemplo: "E. PODA (30)" o "E. EXTRAS (15)"
- * Si lo tiene signfica que es un dia extra fuera del rango
- * @param String $texto El texto a verificar
- * @return Bool Retorna true si el texto contiene un número entre paréntesis, false en caso contrario
- */
-function esDiaExtra($texto)
-{
-    // Expresión regular: busca un número dentro de paréntesis
-    return preg_match('/\(\d+\)/', $texto) === 1;
-}
-
 /**
  * Función para crear la hoja de poda
  * @param Spreadsheet $spreadsheet El objeto de la hoja de cálculo
@@ -1533,7 +1623,7 @@ function esDiaExtra($texto)
  */
 function crearHojaPoda($spreadsheet, $titulo2, $jsonNomina, $nombreHoja = 'PODA')
 {
-    global $jsonNomina, $encabezados_poda, $anchos_poda, $fecha_inicio, $fecha_cierre, $numero_semana, $ano;
+    global $jsonNomina, $encabezados_poda, $anchos_poda, $fecha_inicio, $fecha_cierre, $numero_semana, $ano, $nombre_nomina;
 
     // ==========================
     // COLORES PARA USAR
@@ -1544,6 +1634,11 @@ function crearHojaPoda($spreadsheet, $titulo2, $jsonNomina, $nombreHoja = 'PODA'
     $colorConcepto  = 'F2F2F2';  // fondo columna CONCEPTO GRIS CLARO
     $colorTotales   = 'E0E0E0';  // rojo claro para columnas de totales
     $color_rojo_claro   = 'FFE8E8';  // rojo claro para columnas de totales
+
+    // OBTENER COLOR DE LA BASE DE DATOS
+    $color_primario = obtenerColorPrincipal($nombre_nomina) ?? 'B50600';
+    // COLOR DE LAS LETRAS DE LOS ENCABEZADOS
+    $color_letras_encabezados = obtenerContraste($color_primario) ?? '000000';
 
 
     //=====================
@@ -1715,7 +1810,7 @@ function crearHojaPoda($spreadsheet, $titulo2, $jsonNomina, $nombreHoja = 'PODA'
     // Formatear los encabezados (Negrita, Centrados, Tamaño 10, Fondo Rojo, Letra Blanca)
     $sheet->getStyle('A6:N6')->getFont()->setBold(true);
     $sheet->getStyle('A6:N6')->getFont()->setSize(12);
-    $sheet->getStyle('A6:N6')->getFont()->setColor(new Color($color_blanco)); // Letra Blanco
+    $sheet->getStyle('A6:N6')->getFont()->setColor(new Color($color_letras_encabezados)); // Letra Blanco
     $sheet->getStyle('A6:N6')->getAlignment()->setHorizontal('center');
     $sheet->getStyle('A6:N6')->getAlignment()->setVertical('center');
     $sheet->getStyle('A6:N6')->getAlignment()->setWrapText(true); // Ajustar texto
@@ -1988,9 +2083,6 @@ function crearHojaPoda($spreadsheet, $titulo2, $jsonNomina, $nombreHoja = 'PODA'
     $sheet->getPageSetup()->setFitToWidth(1);
     $sheet->getPageSetup()->setPrintArea('A1:N' . $filaTotal);
 }
-
-
-
 
 //==================================================================================================
 //  CREAR LAS DIFERENTES HOJAS

@@ -1,5 +1,6 @@
 <?php
-
+// LLAMAR A LA CONEXION
+require_once __DIR__ . '/../../../conexion/conexion.php';
 // Incluir autoload de Composer
 require_once __DIR__ . '/../../../vendor/autoload.php';
 
@@ -15,6 +16,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 //=====================
 
 $jsonNomina = null;
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['jsonNomina'])) {
     $jsonNomina = json_decode($_POST['jsonNomina'], true);
 
@@ -30,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['jsonNomina'])) {
         }
     }
 }
+
 
 //=====================
 //  CONFIGURACIÓN INICIAL
@@ -52,6 +55,7 @@ if ($jsonNomina) {
 //  DEFINIR COLUMNAS COMUNES
 //=====================
 
+// Nominas normales
 $columnas = [
     'N°',
     'CD',
@@ -172,10 +176,12 @@ $tamanioLetraFilas = [
     'X' => 15,  // PRÉSTAMO
     'Y' => 15,  // TOTAL A RECIBIR
     'Z' => 15,  // REDONDEADO
-    'AA' => 15  // TOTAL EFECTIVO REDONDEADO
+    'AA' => 15, // TOTAL EFECTIVO REDONDEADO
+    'AB' => 15  // FIRMA RECIBIDO
 ];
 
-// Columnas para el corte de limon
+
+// Nomina del corte
 $encabezados_corte = [
     'A' => 'N°', // Número consecutivo
     'B' => 'NOMBRE', // Nombre del empleado
@@ -190,10 +196,9 @@ $encabezados_corte = [
     'K' => 'TOTAL REJAS', // Solo para el concepto REJA: suma de rejas por día
     'L' => 'PRECIO POR REJA', // Solo para el concepto REJA: precio por reja
     'M' => 'TOTAL EFECTIVO', // Para NOMINA: suma de pagos por día; para REJA: Total Rejas * Precio por Reja
-    'N' => 'FIRMA DE RECIBIDO' // Columna para la firma al recibir el corte de limón
+    'N' => 'FIRMA',
 ];
 
-// Ancho de columnas para el corte de limon
 $anchos_corte = [
     'A' => 10,   // N°
     'B' => 38,  // NOMBRE
@@ -208,7 +213,7 @@ $anchos_corte = [
     'K' => 14,  // TOTAL REJAS
     'L' => 16,  // PRECIO POR REJA
     'M' => 16,  // TOTAL EFECTIVO
-    'N' => 20   // FIRMA
+    'N' => 20,  // FIRMA
 ];
 
 // Nomina de Poda
@@ -226,7 +231,7 @@ $encabezados_poda = [
     'K' => 'TOTAL ARBOLES', // Solo para el concepto REJA: suma de rejas por día
     'L' => 'PAGO POR ARBOL', // Solo para el concepto REJA: precio por reja
     'M' => 'TOTAL EFECTIVO', // Para NOMINA: suma de pagos por día; para REJA: Total Rejas * Precio por Reja
-    'N' => 'FIRMA DE RECIBIDO',
+    'N' => 'FIRMA',
 ];
 
 $anchos_poda = [
@@ -246,13 +251,18 @@ $anchos_poda = [
     'N' => 20,  // FIRMA
 ];
 
+
+
 //=====================
 //  FUNCIÓN PARA CREAR UNA HOJA
 //=====================
 
-function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja)
+function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $colorExcel = 'FF0000')
 {
     global $jsonNomina, $columnas, $columnasAncho, $tamanioLetraColumnas, $tamanioLetraFilas, $fecha_inicio, $fecha_cierre, $numero_semana, $ano;
+
+    $colorExcel = str_replace('#', '', $colorExcel);
+    $textColor = obtenerColorContraste($colorExcel);
 
     // Crear una nueva hoja o usar la existente (si el libro está recién creado)
     if ($spreadsheet->getSheetCount() === 1 && $spreadsheet->getActiveSheet()->getTitle() === 'Worksheet') {
@@ -267,7 +277,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja)
     //  TÍTULOS
     //=====================
 
-    $titulo1 = 'RANCHO EL PILAR';
+    $titulo1 = 'RANCHO PILAR';
     $titulo3 = 'NOMINA DEL ' . strtoupper($fecha_inicio) . ' AL ' . strtoupper($fecha_cierre);
     $titulo4 = 'SEMANA ' . str_pad($numero_semana, 2, '0', STR_PAD_LEFT) . '-' . $ano;
 
@@ -283,15 +293,16 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja)
     $sheet->mergeCells('A3:AB3');
     $sheet->mergeCells('A4:AB4');
 
-    // Formatear título 1 - RANCHO EL PILAR (Purpura, Negrita, Tamaño 24)
+    // Formatear título 1 - RANCHO PILAR (Purpura, Negrita, Tamaño 24)
     $sheet->getStyle('A1')->getFont()->setBold(true);
     $sheet->getStyle('A1')->getFont()->setSize(24);
-    $sheet->getStyle('A1')->getFont()->setColor(new Color('7030A0'));
+    $sheet->getStyle('A1')->getFont()->setColor(new Color($colorExcel));
 
     // Formatear título 2 (Negrita, Tamaño 20)
     $sheet->getStyle('A2')->getFont()->setBold(true);
     $sheet->getStyle('A2')->getFont()->setSize(20);
-    $sheet->getStyle('A2')->getFont()->setColor(new Color('DBADFF'));
+    $sheet->getStyle('A2')->getFont()->setColor(new Color($colorExcel));
+
 
     // Formatear título 3 - NOMINA (Negrita, Tamaño 14)
     $sheet->getStyle('A3')->getFont()->setBold(true);
@@ -309,7 +320,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja)
     if (file_exists($logoPath)) {
         $logo = new Drawing();
         $logo->setName('Logo');
-        $logo->setDescription('Logo de Rancho El Relicario');
+        $logo->setDescription('Logo de Rancho Pilar');
         $logo->setPath($logoPath);
         $logo->setHeight(190); // Altura en píxeles
         $logo->setCoordinates('B1');
@@ -328,17 +339,17 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja)
         $columnaLetra++;
     }
 
-    // Formatear los encabezados (Negrita, Centrados, Tamaño 10, Fondo Rojo, Letra Blanca)
+    // Formatear los encabezados (Negrita, Centrados, Tamaño 10, Fondo Dinámico, Letra de Contraste)
     $sheet->getStyle('A6:AB6')->getFont()->setBold(true);
     $sheet->getStyle('A6:AB6')->getFont()->setSize(10);
-    $sheet->getStyle('A6:AB6')->getFont()->setColor(new Color('000000')); // Letra negra
+    $sheet->getStyle('A6:AB6')->getFont()->setColor(new Color($textColor));
     $sheet->getStyle('A6:AB6')->getAlignment()->setHorizontal('center');
     $sheet->getStyle('A6:AB6')->getAlignment()->setVertical('center');
     $sheet->getStyle('A6:AB6')->getAlignment()->setWrapText(true);
 
-    // Agregar color de fondo rojo a los encabezados
+    // Agregar color de fondo dinámico a los encabezados
     $sheet->getStyle('A6:AB6')->getFill()->setFillType('solid');
-    $sheet->getStyle('A6:AB6')->getFill()->getStartColor()->setRGB('E5C8E6'); // Rojo
+    $sheet->getStyle('A6:AB6')->getFill()->getStartColor()->setRGB($colorExcel);
 
     // Ajustar el ancho de las columnas
     foreach ($columnasAncho as $columna => $ancho) {
@@ -662,7 +673,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja)
     $sheet->getStyle('A' . $filaTotal)->getAlignment()->setHorizontal('center');
     $sheet->getStyle('A' . $filaTotal)->getAlignment()->setVertical('center');
 
-    $columnasData = ['D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA'];
+    $columnasData = ['E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA'];
 
     foreach ($columnasData as $columna) {
         $rangoSuma = $columna . '7:' . $columna . ($filaTotal - 1);
@@ -670,9 +681,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja)
         $sheet->getStyle($columna . $filaTotal)->getFont()->setBold(true);
         $sheet->getStyle($columna . $filaTotal)->getFont()->setSize(14);
 
-        if ($columna === 'D') {
-            $sheet->getStyle($columna . $filaTotal)->getNumberFormat()->setFormatCode('0');
-        } elseif (in_array($columna, ['J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'V', 'X'])) {
+        if (in_array($columna, ['J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'V', 'X'])) {
             $sheet->getStyle($columna . $filaTotal)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
             $sheet->getStyle($columna . $filaTotal)->getFont()->setColor(new Color('FF0000'));
         } elseif ($columna === 'Z') {
@@ -918,6 +927,29 @@ function restarUnDia($fecha)
 }
 
 /**
+ * Determina si un color de fondo es oscuro o claro y devuelve el color de texto adecuado (blanco o negro).
+ */
+function obtenerColorContraste($hexColor)
+{
+    // Eliminar el # si existe
+    $hexColor = str_replace('#', '', $hexColor);
+
+    // Si el color no es válido, por defecto blanco
+    if (strlen($hexColor) != 6) return '000000';
+
+    // Convertir hex a RGB
+    $r = hexdec(substr($hexColor, 0, 2));
+    $g = hexdec(substr($hexColor, 2, 2));
+    $b = hexdec(substr($hexColor, 4, 2));
+
+    // Calcular el brillo (Fórmula YIQ)
+    // El umbral de 128 (la mitad de 255) determina si el fondo es claro u oscuro
+    $yiq = (($r * 299) + ($g * 587) + ($b * 114)) / 1000;
+
+    return ($yiq >= 128) ? '000000' : 'FFFFFF';
+}
+
+/**
  * Genera un rango de fechas entre dos fechas dadas en formato 'DD/MM/AAA' con meses abreviados en español (ENE, FEB, MAR, etc.) y devuelve un array con todas las fechas del rango en el mismo formato.
  */
 function rangoDeFechas($fechaInicio, $fechaFin)
@@ -962,341 +994,6 @@ function rangoDeFechas($fechaInicio, $fechaFin)
     return $resultado;
 }
 
-function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
-{
-    global $jsonNomina, $encabezados_corte, $anchos_corte, $fecha_inicio, $fecha_cierre, $numero_semana, $ano;
-
-    //=====================
-    //  PROCESAR FILAS DEL DEPARTAMENTO CORTE
-    //=====================
-
-    $filasCorte = [];
-
-    if ($jsonNomina && isset($jsonNomina['departamentos'])) {
-        foreach ($jsonNomina['departamentos'] as $departamento) {
-            if (($departamento['nombre'] ?? '') !== 'Corte') continue;
-
-            foreach ($departamento['empleados'] ?? [] as $empleado) {
-                $concepto = $empleado['concepto'] ?? '';
-                $nombre   = $empleado['nombre']   ?? '';
-
-                if ($concepto === 'REJA' && !empty($empleado['tickets'])) {
-                    $grupos = agruparTicketsPorPrecio($empleado['tickets']);
-                    foreach ($grupos as $precio => $ticketsGrupo) {
-                        $filasCorte[] = procesarTicketsParaFila($nombre, $concepto, $ticketsGrupo, (float)$precio);
-                    }
-                } elseif ($concepto === 'NOMINA' && !empty($empleado['nomina'])) {
-                    $filasCorte[] = procesarNominaParaFila($nombre, $concepto, $empleado['nomina']);
-                }
-            }
-        }
-    }
-
-    // Crear una nueva hoja o usar la existente
-    if ($nombreHoja === 'JORNALERO BASE') {
-        $sheet = $spreadsheet->getActiveSheet();
-    } else {
-        $sheet = $spreadsheet->createSheet();
-    }
-
-    $sheet->setTitle($nombreHoja);
-
-    // Poner los titulos, logo y estilos
-
-    $titulo1 = 'RANCHO EL PILAR';
-    // $titulo2 = 'REJAS DE CORTE DE LIMON';
-    $titulo3 = 'NOMINA DEL ' . strtoupper($fecha_inicio) . ' AL ' . strtoupper($fecha_cierre);
-    $titulo4 = 'SEMANA ' . (isset($jsonNomina['numero_semana']) ? str_pad($jsonNomina['numero_semana'], 2, '0', STR_PAD_LEFT) : '00') . ' - ' . $ano;
-
-    $sheet->setCellValue('A1', $titulo1);
-    $sheet->setCellValue('A2', $titulo2);
-    $sheet->setCellValue('A3', $titulo3);
-    $sheet->setCellValue('A4', $titulo4);
-
-    // Columnas A–N (14 columnas)
-    $sheet->mergeCells('A1:N1');
-    $sheet->mergeCells('A2:N2');
-    $sheet->mergeCells('A3:N3');
-    $sheet->mergeCells('A4:N4');
-
-    $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(24)->getColor()->setRGB('7030A0');
-    $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(20);
-    $sheet->getStyle('A3')->getFont()->setBold(true)->setSize(14);
-    $sheet->getStyle('A4')->getFont()->setBold(true)->setSize(14);
-    $sheet->getStyle('A1:A4')->getAlignment()->setHorizontal('center');
-
-    // Logo
-    $logoPath = __DIR__ . '/../../../public/img/logo.jpg';
-    if (file_exists($logoPath)) {
-        $logo = new Drawing();
-        $logo->setName('Logo');
-        $logo->setDescription('Logo de Rancho El Pilar');
-        $logo->setPath($logoPath);
-        $logo->setHeight(110);
-        $logo->setCoordinates('B1');
-        $logo->setOffsetX(10);
-        $logo->setWorksheet($sheet);
-    }
-
-    // Poner los encabezados de la tabla en la fila 6
-    foreach ($encabezados_corte as $col => $titulo) {
-        $sheet->setCellValue($col . '6', $titulo);
-    }
-
-    // ==============================================================
-    // FILA DE LOS DIAS DE LA SEMANA (fila 5 de las columna D a la J)
-    // ==============================================================
-
-    // Generar rango de fechas entre fecha_inicio y fecha_cierre
-    $fechas = rangoDeFechas($fecha_inicio, $fecha_cierre);
-
-    // Fila donde quieres imprimir
-    $fila = 5;
-
-    // Columna de inicio
-    $columnaInicio = 'D';
-
-    // Recorremos las fechas y las imprimimos
-    $columna = $columnaInicio;
-
-    // Imprimir solo el día (DD) de cada fecha en las columnas D a J
-    foreach ($fechas as $fecha) {
-        // Extraer solo el día (ejemplo: "05" de "05/Ene/2026")
-        $dia = explode("/", $fecha)[0];
-
-        // Escribir en la celda
-        $sheet->setCellValue($columna . $fila, $dia);
-
-        // Estilos para el rango D5:J5
-        $sheet->getStyle('D5:J5')->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('D5:J5')->getAlignment()->setVertical('center');
-
-        // Aplicar estilo: centrado y borde negro
-        $sheet->getStyle($columna . $fila)->applyFromArray([
-            'borders' => [
-                'allBorders' => [
-                    'borderStyle' => Border::BORDER_THIN,
-                    'color' => ['argb' => '000000'],
-                ],
-            ],
-        ]);
-
-        // Avanzar a la siguiente columna
-        $columna++;
-    }
-
-    // Formatear los encabezados (Negrita, Centrados, Tamaño 10, Fondo Rojo, Letra Blanca)
-    $sheet->getStyle('A6:N6')->getFont()->setBold(true);
-    $sheet->getStyle('A6:N6')->getFont()->setSize(10);
-    $sheet->getStyle('A6:N6')->getFont()->setColor(new Color('000000')); // Letra blanca
-    $sheet->getStyle('A6:N6')->getAlignment()->setHorizontal('center');
-    $sheet->getStyle('A6:N6')->getAlignment()->setVertical('center');
-    $sheet->getStyle('A6:N6')->getAlignment()->setWrapText(true); // Ajustar texto
-
-    // Agregar color de fondo rojo a los encabezados
-    $sheet->getStyle('A6:N6')->getFill()->setFillType('solid');
-    $sheet->getStyle('A6:N6')->getFill()->getStartColor()->setRGB('E5C8E6'); // Rojo
-
-    // Ajustar el ancho de las columnas
-    foreach ($anchos_corte as $col => $ancho) {
-        $sheet->getColumnDimension($col)->setWidth($ancho);
-    }
-
-    //=====================
-    //  AGREGAR FILAS DE DATOS
-    //=====================
-
-    $numeroFila     = 7;
-    $numeroEmpleado = 1;   // Contador para la columna N° (A)
-    $filasReja      = [];  // Guardar índices de filas REJA para los totales
-
-    // Colores para estilo visual
-    $colorConcepto = 'F2F2F2';  // fondo columna CONCEPTO GRIS CLARO
-    $colorNomina   = 'FFD6D6';  // fondo filas NOMINA
-    $colorDias     = 'D5F5E3';  // verde claro para columnas de días (REJA)
-    $colorTotales  = 'F2F2F2';  // rojo claro para columnas de totales
-
-
-    foreach ($filasCorte as $fila) {
-        $esNomina = $fila['tipoConcepto'] === 'NOMINA';
-
-        // Fondo de la fila completa si es NOMINA
-        if ($esNomina) {
-            $sheet->getStyle('A' . $numeroFila . ':M' . $numeroFila)->getFill()
-                ->setFillType('solid')->getStartColor()->setRGB($colorNomina);
-        } else {
-            // Guardar índice de fila REJA para usar en totales
-            $filasReja[] = $numeroFila;
-        }
-
-        // N°
-        $sheet->setCellValue('A' . $numeroFila, $numeroEmpleado);
-
-        // NOMBRE
-        $sheet->setCellValue('B' . $numeroFila, $fila['nombre']);
-
-        // CONCEPTO — fondo gris siempre
-        $sheet->setCellValue('C' . $numeroFila, $fila['concepto']);
-        $sheet->getStyle('C' . $numeroFila)->applyFromArray([
-            'font' => ['bold' => true, 'color' => ['rgb' => '000000']],
-            'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => $colorConcepto]],
-        ]);
-
-        // Días (D–J)
-        $diasCols = [
-            'D' => 'viernes',
-            'E' => 'sabado',
-            'F' => 'domingo',
-            'G' => 'lunes',
-            'H' => 'martes',
-            'I' => 'miercoles',
-            'J' => 'jueves',
-        ];
-
-        foreach ($diasCols as $col => $campo) {
-            $valor = $fila[$campo] ?? 0;
-            if ($valor != 0) {
-                $sheet->setCellValue($col . $numeroFila, $valor);
-            } else {
-                $sheet->setCellValue($col . $numeroFila, 0);
-            }
-
-            if ($esNomina) {
-                $sheet->getStyle($col . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
-            } else {
-                // Rejas: número entero
-                $sheet->getStyle($col . $numeroFila)->getNumberFormat()->setFormatCode('#,##0');
-            }
-        }
-
-        // TOTAL REJAS (K)
-        if (!$esNomina) {
-            // Para REJA: K = SUM(D:J) — suma de rejas por día
-            $sheet->setCellValue('K' . $numeroFila, '=SUM(D' . $numeroFila . ':J' . $numeroFila . ')');
-            $sheet->getStyle('K' . $numeroFila)->getFont()->setBold(true);
-            $sheet->getStyle('K' . $numeroFila)->getNumberFormat()->setFormatCode('#,##0');
-        }
-
-        // PRECIO POR REJA (L)
-        if (!$esNomina && $fila['precio'] !== null) {
-            $sheet->setCellValue('L' . $numeroFila, $fila['precio']);
-            $sheet->getStyle('L' . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
-        }
-
-        // TOTAL EFECTIVO (M)
-        if ($esNomina) {
-            // Para NOMINA: M = SUM(D:J) — suma de pagos por día
-            $sheet->setCellValue('M' . $numeroFila, '=SUM(D' . $numeroFila . ':J' . $numeroFila . ')');
-        } else {
-            // Para REJA: M = K * L — Total Rejas × Precio por Reja
-            $sheet->setCellValue('M' . $numeroFila, '=K' . $numeroFila . '*L' . $numeroFila);
-        }
-        $sheet->getStyle('M' . $numeroFila)->applyFromArray([
-            'font'         => ['bold' => true],
-            'numberFormat' => ['formatCode' => '$#,##0.00'],
-        ]);
-
-        // Alineación de la fila
-        $sheet->getStyle('A' . $numeroFila)->getAlignment()->setHorizontal('center')->setVertical('center');
-        $sheet->getStyle('B' . $numeroFila)->getAlignment()->setHorizontal('left')->setVertical('center');
-        $sheet->getStyle('C' . $numeroFila . ':M' . $numeroFila)->getAlignment()->setHorizontal('center')->setVertical('center');
-
-        // Tamaño de letra de la fila
-        $sheet->getStyle('A' . $numeroFila . ':M' . $numeroFila)->getFont()->setSize(12);
-        $sheet->getStyle('B' . $numeroFila)->getFont()->setSize(13);
-
-        $numeroFila++;
-        $numeroEmpleado++;
-    }
-
-    //=====================
-    //  FILA DE TOTALES
-    //=====================
-
-    $filaTotal = $numeroFila;
-    $sheet->setCellValue('C' . $filaTotal, 'TOTALES');
-    $sheet->getStyle('C' . $filaTotal)->applyFromArray([
-        'font'      => ['bold' => true, 'size' => 12],
-        'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
-        'fill'      => ['fillType' => 'solid', 'startColor' => ['rgb' => $colorTotales]],
-    ]);
-
-    // Aplicar fondo gris a toda la fila de totales
-    $sheet->getStyle('A' . $filaTotal . ':M' . $filaTotal)->getFill()
-        ->setFillType('solid')->getStartColor()->setRGB($colorTotales);
-
-    // Columnas D-J (días): Dejar vacías (no sumar, no tiene sentido mezclar rejas con dinero)
-
-    // Columna K (TOTAL REJAS): Solo sumar filas REJA
-    if (!empty($filasReja)) {
-        $primeraFila = min($filasReja);
-        $ultimaFila  = max($filasReja);
-
-        // Construir fórmula SUM solo para filas REJA (si hay múltiples no contiguas, usar SUM directo)
-        $sheet->setCellValue('K' . $filaTotal, '=SUM(K' . $primeraFila . ':K' . $ultimaFila . ')');
-        // Pero esto suma incluidas las NOMINA. Mejor usar SUMIF
-        // SUMIF busca en una columna (C) el valor 'REJA' y suma los correspondientes en K
-        $sheet->setCellValue('K' . $filaTotal, '=SUMIF(C7:C' . ($filaTotal - 1) . ',"REJA",K7:K' . ($filaTotal - 1) . ')');
-
-        $sheet->getStyle('K' . $filaTotal)->applyFromArray([
-            'font'      => ['bold' => true, 'size' => 12],
-            'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
-        ]);
-        $sheet->getStyle('K' . $filaTotal)->getNumberFormat()->setFormatCode('#,##0');
-    }
-
-    // Columna L (PRECIO POR REJA): SE QUEDA VACIA
-
-    // Columna M (TOTAL EFECTIVO): Sumar TODO (REJA + NOMINA)
-    $sheet->setCellValue('M' . $filaTotal, '=SUM(M7:M' . ($filaTotal - 1) . ')');
-    $sheet->getStyle('M' . $filaTotal)->applyFromArray([
-        'font'      => ['bold' => true, 'size' => 12],
-        'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
-    ]);
-    $sheet->getStyle('M' . $filaTotal)->getNumberFormat()->setFormatCode('$#,##0.00');
-
-    $sheet->getRowDimension($filaTotal)->setRowHeight(25);
-
-    //=====================
-    //  BORDES
-    //=====================
-    $sheet->getStyle('A6:N' . $filaTotal)->applyFromArray([
-        'borders' => [
-            'allBorders' => [
-                'borderStyle' => Border::BORDER_THIN,
-                'color'       => ['rgb' => '000000'],
-            ],
-        ],
-    ]);
-
-    //=====================
-    //  ALTURA DE FILAS Y TAMAÑO
-    //=====================
-    $sheet->getRowDimension(1)->setRowHeight(38);
-    $sheet->getRowDimension(2)->setRowHeight(28);
-    $sheet->getRowDimension(3)->setRowHeight(24);
-    $sheet->getRowDimension(4)->setRowHeight(24);
-    $sheet->getRowDimension(5)->setRowHeight(20); // Fila de días
-    $sheet->getRowDimension(6)->setRowHeight(40);
-
-    for ($f = 7; $f < $numeroFila; $f++) {
-        $sheet->getRowDimension($f)->setRowHeight(32);
-    }
-
-    //=====================
-    //  CONFIGURACIÓN DE PÁGINA
-    //=====================
-    $sheet->getPageSetup()->setPaperSize(PageSetup::PAPERSIZE_LETTER);
-    $sheet->getPageSetup()->setOrientation(PageSetup::ORIENTATION_LANDSCAPE);
-    $sheet->getPageMargins()->setLeft(0.4);
-    $sheet->getPageMargins()->setRight(0.4);
-    $sheet->getPageMargins()->setTop(0.4);
-    $sheet->getPageMargins()->setBottom(0.4);
-    $sheet->getPageSetup()->setFitToPage(true);
-    $sheet->getPageSetup()->setFitToHeight(0);
-    $sheet->getPageSetup()->setFitToWidth(1);
-    $sheet->getPageSetup()->setPrintArea('A1:N' . $filaTotal);
-}
 
 
 /**
@@ -1480,6 +1177,443 @@ function esDiaExtra($texto)
     return preg_match('/\(\d+\)/', $texto) === 1;
 }
 
+
+
+
+/**
+ * -----------------------------------------------------------------
+ * OBTENER EL COLOR DE FORMA DINAMICA 
+ * -----------------------------------------------------------------
+ */
+
+$nombre_nomina = "PILAR";
+
+/**
+ * Obtiene el color principal de una nómina (el color que más se repite).
+ *
+ * @param string $nombreNomina Nombre de la nómina.
+ * @return string|null
+ */
+function obtenerColorPrincipal($nombreNomina)
+{
+    global $conexion;
+
+    $sql = "
+        SELECT
+            nd.color_depto_nomina
+        FROM nomina_departamento nd
+        INNER JOIN nombre_nominas nn
+            ON nd.id_nomina = nn.id_nomina
+        WHERE nn.nombre_nomina = ?
+        GROUP BY nd.color_depto_nomina
+        ORDER BY COUNT(*) DESC
+        LIMIT 1
+    ";
+
+    $stmt = mysqli_prepare($conexion, $sql);
+
+    if (!$stmt) {
+        return null;
+    }
+
+    mysqli_stmt_bind_param($stmt, "s", $nombreNomina);
+    mysqli_stmt_execute($stmt);
+
+    $resultado = mysqli_stmt_get_result($stmt);
+
+    if ($fila = mysqli_fetch_assoc($resultado)) {
+        $color = ltrim($fila['color_depto_nomina'], '#');
+    } else {
+        $color = null;
+    }
+
+    mysqli_stmt_close($stmt);
+
+    return $color;
+}
+
+
+/**
+ * Obtiene un color de contraste (blanco o negro)
+ * para que el texto sea legible sobre el color dado.
+ *
+ * @param string $colorHex Color hexadecimal sin #
+ * @return string Retorna FFFFFF o 000000
+ */
+function obtenerContraste($colorHex)
+{
+    $r = hexdec(substr($colorHex, 0, 2));
+    $g = hexdec(substr($colorHex, 2, 2));
+    $b = hexdec(substr($colorHex, 4, 2));
+
+    // Fórmula estándar de luminosidad
+    $luminosidad = (0.299 * $r) + (0.587 * $g) + (0.114 * $b);
+
+    return ($luminosidad > 186) ? '000000' : 'FFFFFF';
+}
+
+
+
+/**
+ * ====================================================================================================
+ * FUNCIONES PARA CREAR LAS HOJAS DE CORTE Y PODA
+ * ====================================================================================================
+ */
+
+/**
+ * Función para crear la hoja de corte
+ * @param Spreadsheet $spreadsheet El objeto de la hoja de cálculo
+ * @param String $titulo2 El título específico para esta hoja (ejemplo: "REJAS DE CORTE DE LIMON")
+ * @param Array $jsonNomina El arreglo con la información de nómina, incluyendo departamentos, empleados, tickets y nómina
+ * @param String $nombreHoja El nombre que se le dará a la hoja (ejemplo: "PODA")
+ */
+function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
+{
+    global $jsonNomina, $encabezados_corte, $anchos_corte, $fecha_inicio, $fecha_cierre, $numero_semana, $ano, $nombre_nomina;
+
+    // ==========================
+    // COLORES PARA USAR
+    // ==========================
+    $color_primario = 'B50600';  // Color primario Rojo
+    $color_negro    = '000000';  // Color negro
+    $color_blanco   = 'FFFFFF';  // Color blanco
+    $colorConcepto  = 'F2F2F2';  // fondo columna CONCEPTO GRIS CLARO
+    $colorNomina    = 'FFD6D6';  // fondo filas NOMINA
+    $colorDias      = 'D5F5E3';  // verde claro para columnas de días (REJA)
+    $colorTotales   = 'E0E0E0';  // rojo claro para columnas de totales
+
+    // OBTENER COLOR DE LA BASE DE DATOS
+    $color_primario = obtenerColorPrincipal($nombre_nomina) ?? 'B50600';
+    // COLOR DE LAS LETRAS DE LOS ENCABEZADOS
+    $color_letras_encabezados = obtenerContraste($color_primario) ?? '000000';
+
+    //=====================
+    //  PROCESAR FILAS DEL DEPARTAMENTO CORTE
+    //=====================
+
+    $filasCorte = [];
+
+    if ($jsonNomina && isset($jsonNomina['departamentos'])) {
+        foreach ($jsonNomina['departamentos'] as $departamento) {
+            if (($departamento['nombre'] ?? '') !== 'Corte') continue;
+
+            foreach ($departamento['empleados'] ?? [] as $empleado) {
+                $concepto = $empleado['concepto'] ?? '';
+                $nombre   = $empleado['nombre']   ?? '';
+
+                if ($concepto === 'REJA' && !empty($empleado['tickets'])) {
+                    $grupos = agruparTicketsPorPrecio($empleado['tickets']);
+                    foreach ($grupos as $precio => $ticketsGrupo) {
+                        $filasCorte[] = procesarTicketsParaFila($nombre, $concepto, $ticketsGrupo, (float)$precio);
+                    }
+                } elseif ($concepto === 'NOMINA' && !empty($empleado['nomina'])) {
+                    $filasCorte[] = procesarNominaParaFila($nombre, $concepto, $empleado['nomina']);
+                }
+            }
+        }
+    }
+
+    // Crear una nueva hoja o usar la existente
+    if ($nombreHoja === 'JORNALERO BASE') {
+        $sheet = $spreadsheet->getActiveSheet();
+    } else {
+        $sheet = $spreadsheet->createSheet();
+    }
+
+    $sheet->setTitle($nombreHoja);
+
+    // Poner los titulos, logo y estilos
+
+    $titulo1 = 'RANCHO PILAR';
+    // $titulo2 = 'REJAS DE CORTE DE LIMON';
+    $titulo3 = 'NOMINA DEL ' . strtoupper($fecha_inicio) . ' AL ' . strtoupper($fecha_cierre);
+    $titulo4 = 'SEMANA ' . (isset($jsonNomina['numero_semana']) ? str_pad($jsonNomina['numero_semana'], 2, '0', STR_PAD_LEFT) : '00') . ' - ' . $ano;
+
+    $sheet->setCellValue('A1', $titulo1);
+    $sheet->setCellValue('A2', $titulo2);
+    $sheet->setCellValue('A3', $titulo3);
+    $sheet->setCellValue('A4', $titulo4);
+
+    // Columnas A–N (14 columnas)
+    $sheet->mergeCells('A1:N1');
+    $sheet->mergeCells('A2:N2');
+    $sheet->mergeCells('A3:N3');
+    $sheet->mergeCells('A4:N4');
+
+    // Estilos para los títulos
+    $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(24)->getColor()->setRGB($color_primario);
+    $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(20);
+    $sheet->getStyle('A3')->getFont()->setBold(true)->setSize(14);
+    $sheet->getStyle('A4')->getFont()->setBold(true)->setSize(14);
+    $sheet->getStyle('A1:A4')->getAlignment()->setHorizontal('center');
+
+    // Logo
+    $logoPath = __DIR__ . '/../../../public/img/logo.jpg';
+    if (file_exists($logoPath)) {
+        $logo = new Drawing();
+        $logo->setName('Logo');
+        $logo->setDescription('Logo de Rancho Pilar');
+        $logo->setPath($logoPath);
+        $logo->setHeight(110);
+        $logo->setCoordinates('B1');
+        $logo->setOffsetX(10);
+        $logo->setWorksheet($sheet);
+    }
+
+    // Poner los encabezados de la tabla en la fila 6
+    foreach ($encabezados_corte as $col => $titulo) {
+        $sheet->setCellValue($col . '6', $titulo);
+    }
+
+    // ==============================================================
+    // FILA DE LOS DIAS DE LA SEMANA (fila 5 de las columna D a la J)
+    // ==============================================================
+
+    // Generar rango de fechas entre fecha_inicio y fecha_cierre
+    $fechas = rangoDeFechas($fecha_inicio, $fecha_cierre);
+
+    // Fila donde quieres imprimir
+    $fila = 5;
+
+    // Columna de inicio
+    $columnaInicio = 'D';
+
+    // Recorremos las fechas y las imprimimos
+    $columna = $columnaInicio;
+
+    // Imprimir solo el día (DD) de cada fecha en las columnas D a J
+    foreach ($fechas as $fecha) {
+        // Extraer solo el día (ejemplo: "05" de "05/Ene/2026")
+        $dia = explode("/", $fecha)[0];
+
+        // Escribir en la celda
+        $sheet->setCellValue($columna . $fila, $dia);
+
+        // Estilos para el rango D5:J5
+        $sheet->getStyle('D5:J5')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('D5:J5')->getAlignment()->setVertical('center');
+
+        // Aplicar estilo: centrado y borde negro
+        $sheet->getStyle($columna . $fila)->applyFromArray([
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color' => ['argb' => $color_negro],
+                ],
+            ],
+        ]);
+
+        // Avanzar a la siguiente columna
+        $columna++;
+    }
+
+    // Formatear los encabezados (Negrita, Centrados, Tamaño 12, Fondo Rojo, Letra Blanca)
+    $sheet->getStyle('A6:N6')->getFont()->setBold(true);
+    $sheet->getStyle('A6:N6')->getFont()->setSize(12);
+    $sheet->getStyle('A6:N6')->getFont()->setColor(new Color($color_letras_encabezados)); // Letra blanca
+    $sheet->getStyle('A6:N6')->getAlignment()->setHorizontal('center');
+    $sheet->getStyle('A6:N6')->getAlignment()->setVertical('center');
+    $sheet->getStyle('A6:N6')->getAlignment()->setWrapText(true); // Ajustar texto
+
+    // Agregar color de fondo rojo a los encabezados
+    $sheet->getStyle('A6:N6')->getFill()->setFillType('solid');
+    $sheet->getStyle('A6:N6')->getFill()->getStartColor()->setRGB($color_primario); // Rojo
+
+    // Ajustar el ancho de las columnas
+    foreach ($anchos_corte as $col => $ancho) {
+        $sheet->getColumnDimension($col)->setWidth($ancho);
+    }
+
+    //=====================
+    //  AGREGAR FILAS DE DATOS
+    //=====================
+
+    $numeroFila     = 7;
+    $numeroEmpleado = 1;   // Contador para la columna N° (A)
+    $filasReja      = [];  // Guardar índices de filas REJA para los totales
+
+
+    foreach ($filasCorte as $fila) {
+        $esNomina = $fila['tipoConcepto'] === 'NOMINA';
+
+        // Fondo de la fila completa si es NOMINA
+        if ($esNomina) {
+            $sheet->getStyle('A' . $numeroFila . ':M' . $numeroFila)->getFill()
+                ->setFillType('solid')->getStartColor()->setRGB($colorNomina);
+        } else {
+            // Guardar índice de fila REJA para usar en totales
+            $filasReja[] = $numeroFila;
+        }
+
+        // N°
+        $sheet->setCellValue('A' . $numeroFila, $numeroEmpleado);
+
+        // NOMBRE
+        $sheet->setCellValue('B' . $numeroFila, $fila['nombre']);
+
+        // CONCEPTO — fondo gris siempre
+        $sheet->setCellValue('C' . $numeroFila, $fila['concepto']);
+        $sheet->getStyle('C' . $numeroFila)->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => $color_negro]],
+            'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => $colorConcepto]],
+        ]);
+
+        // Días (D–J)
+        $diasCols = [
+            'D' => 'viernes',
+            'E' => 'sabado',
+            'F' => 'domingo',
+            'G' => 'lunes',
+            'H' => 'martes',
+            'I' => 'miercoles',
+            'J' => 'jueves',
+        ];
+
+        foreach ($diasCols as $col => $campo) {
+            $valor = $fila[$campo] ?? 0;
+            if ($valor != 0) {
+                $sheet->setCellValue($col . $numeroFila, $valor);
+            } else {
+                $sheet->setCellValue($col . $numeroFila, 0);
+            }
+
+            if ($esNomina) {
+                $sheet->getStyle($col . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
+            } else {
+                // Rejas: número entero
+                $sheet->getStyle($col . $numeroFila)->getNumberFormat()->setFormatCode('#,##0');
+            }
+        }
+
+        // TOTAL REJAS (K)
+        if (!$esNomina) {
+            // Para REJA: K = SUM(D:J) — suma de rejas por día
+            $sheet->setCellValue('K' . $numeroFila, '=SUM(D' . $numeroFila . ':J' . $numeroFila . ')');
+            $sheet->getStyle('K' . $numeroFila)->getFont()->setBold(true);
+            $sheet->getStyle('K' . $numeroFila)->getNumberFormat()->setFormatCode('#,##0');
+        }
+
+        // PRECIO POR REJA (L)
+        if (!$esNomina && $fila['precio'] !== null) {
+            $sheet->setCellValue('L' . $numeroFila, $fila['precio']);
+            $sheet->getStyle('L' . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
+        }
+
+        // TOTAL EFECTIVO (M)
+        if ($esNomina) {
+            // Para NOMINA: M = SUM(D:J) — suma de pagos por día
+            $sheet->setCellValue('M' . $numeroFila, '=SUM(D' . $numeroFila . ':J' . $numeroFila . ')');
+        } else {
+            // Para REJA: M = K * L — Total Rejas × Precio por Reja
+            $sheet->setCellValue('M' . $numeroFila, '=K' . $numeroFila . '*L' . $numeroFila);
+        }
+        $sheet->getStyle('M' . $numeroFila)->applyFromArray([
+            'font'         => ['bold' => true],
+            'numberFormat' => ['formatCode' => '$#,##0.00'],
+        ]);
+
+        // Alineación de la fila
+        $sheet->getStyle('A' . $numeroFila)->getAlignment()->setHorizontal('center')->setVertical('center');
+        $sheet->getStyle('B' . $numeroFila)->getAlignment()->setHorizontal('left')->setVertical('center');
+        $sheet->getStyle('C' . $numeroFila . ':N' . $numeroFila)->getAlignment()->setHorizontal('center')->setVertical('center');
+
+        // Tamaño de letra de la fila
+        $sheet->getStyle('A' . $numeroFila . ':N' . $numeroFila)->getFont()->setSize(12);
+        $sheet->getStyle('B' . $numeroFila)->getFont()->setSize(13);
+
+        $numeroFila++;
+        $numeroEmpleado++;
+    }
+
+    //=====================
+    //  FILA DE TOTALES
+    //=====================
+
+    $filaTotal = $numeroFila;
+    $sheet->setCellValue('C' . $filaTotal, 'TOTALES');
+    $sheet->getStyle('C' . $filaTotal)->applyFromArray([
+        'font'      => ['bold' => true, 'size' => 12],
+        'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
+        'fill'      => ['fillType' => 'solid', 'startColor' => ['rgb' => $colorTotales]],
+    ]);
+
+    // Aplicar fondo gris a toda la fila de totales
+    $sheet->getStyle('A' . $filaTotal . ':N' . $filaTotal)->getFill()
+        ->setFillType('solid')->getStartColor()->setRGB($colorTotales);
+
+    // Columnas D-J (días): Dejar vacías (no sumar, no tiene sentido mezclar rejas con dinero)
+
+    // Columna K (TOTAL REJAS): Solo sumar filas REJA
+    if (!empty($filasReja)) {
+        $primeraFila = min($filasReja);
+        $ultimaFila  = max($filasReja);
+
+        // Construir fórmula SUM solo para filas REJA (si hay múltiples no contiguas, usar SUM directo)
+        $sheet->setCellValue('K' . $filaTotal, '=SUM(K' . $primeraFila . ':K' . $ultimaFila . ')');
+        // Pero esto suma incluidas las NOMINA. Mejor usar SUMIF
+        // SUMIF busca en una columna (C) el valor 'REJA' y suma los correspondientes en K
+        $sheet->setCellValue('K' . $filaTotal, '=SUMIF(C7:C' . ($filaTotal - 1) . ',"REJA",K7:K' . ($filaTotal - 1) . ')');
+
+        $sheet->getStyle('K' . $filaTotal)->applyFromArray([
+            'font'      => ['bold' => true, 'size' => 12],
+            'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
+        ]);
+        $sheet->getStyle('K' . $filaTotal)->getNumberFormat()->setFormatCode('#,##0');
+    }
+
+    // Columna L (PRECIO POR REJA): SE QUEDA VACIA
+
+    // Columna M (TOTAL EFECTIVO): Sumar TODO (REJA + NOMINA)
+    $sheet->setCellValue('M' . $filaTotal, '=SUM(M7:M' . ($filaTotal - 1) . ')');
+    $sheet->getStyle('M' . $filaTotal)->applyFromArray([
+        'font'      => ['bold' => true, 'size' => 12],
+        'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
+    ]);
+    $sheet->getStyle('M' . $filaTotal)->getNumberFormat()->setFormatCode('$#,##0.00');
+
+    $sheet->getRowDimension($filaTotal)->setRowHeight(25);
+
+    //=====================
+    //  BORDES
+    //=====================
+    $sheet->getStyle('A6:N' . $filaTotal)->applyFromArray([
+        'borders' => [
+            'allBorders' => [
+                'borderStyle' => Border::BORDER_THIN,
+                'color'       => ['rgb' => $color_negro],
+            ],
+        ],
+    ]);
+
+    //=====================
+    //  ALTURA DE FILAS Y TAMAÑO
+    //=====================
+    $sheet->getRowDimension(1)->setRowHeight(38);
+    $sheet->getRowDimension(2)->setRowHeight(28);
+    $sheet->getRowDimension(3)->setRowHeight(24);
+    $sheet->getRowDimension(4)->setRowHeight(24);
+    $sheet->getRowDimension(5)->setRowHeight(20); // Fila de días
+    $sheet->getRowDimension(6)->setRowHeight(40);
+
+    for ($f = 7; $f < $numeroFila; $f++) {
+        $sheet->getRowDimension($f)->setRowHeight(32);
+    }
+
+    //=====================
+    //  CONFIGURACIÓN DE PÁGINA
+    //=====================
+    $sheet->getPageSetup()->setPaperSize(PageSetup::PAPERSIZE_LETTER);
+    $sheet->getPageSetup()->setOrientation(PageSetup::ORIENTATION_LANDSCAPE);
+    $sheet->getPageMargins()->setLeft(0.4);
+    $sheet->getPageMargins()->setRight(0.4);
+    $sheet->getPageMargins()->setTop(0.4);
+    $sheet->getPageMargins()->setBottom(0.4);
+    $sheet->getPageSetup()->setFitToPage(true);
+    $sheet->getPageSetup()->setFitToHeight(0);
+    $sheet->getPageSetup()->setFitToWidth(1);
+    $sheet->getPageSetup()->setPrintArea('A1:N' . $filaTotal);
+}
+
 /**
  * Función para crear la hoja de poda
  * @param Spreadsheet $spreadsheet El objeto de la hoja de cálculo
@@ -1489,18 +1623,22 @@ function esDiaExtra($texto)
  */
 function crearHojaPoda($spreadsheet, $titulo2, $jsonNomina, $nombreHoja = 'PODA')
 {
-    global $jsonNomina, $encabezados_poda, $anchos_poda, $fecha_inicio, $fecha_cierre, $numero_semana, $ano;
+    global $jsonNomina, $encabezados_poda, $anchos_poda, $fecha_inicio, $fecha_cierre, $numero_semana, $ano, $nombre_nomina;
 
     // ==========================
     // COLORES PARA USAR
     // ==========================
-    $color_primario = 'E5C8E6';  // Color primario
-    $color_secundario = '7030A0';  // Color secundario
+    $color_primario = 'B50600';  // Color primario Rojo
     $color_negro    = '000000';  // Color negro
     $color_blanco   = 'FFFFFF';  // Color blanco
     $colorConcepto  = 'F2F2F2';  // fondo columna CONCEPTO GRIS CLARO
     $colorTotales   = 'E0E0E0';  // rojo claro para columnas de totales
     $color_rojo_claro   = 'FFE8E8';  // rojo claro para columnas de totales
+
+    // OBTENER COLOR DE LA BASE DE DATOS
+    $color_primario = obtenerColorPrincipal($nombre_nomina) ?? 'B50600';
+    // COLOR DE LAS LETRAS DE LOS ENCABEZADOS
+    $color_letras_encabezados = obtenerContraste($color_primario) ?? '000000';
 
 
     //=====================
@@ -1585,7 +1723,7 @@ function crearHojaPoda($spreadsheet, $titulo2, $jsonNomina, $nombreHoja = 'PODA'
     // PONER LOS TITULOS, LOGO Y ESTILSO DE LOS ENCABEZADOS
     // =======================================================
 
-    $titulo1 = 'RANCHO EL PILAR';
+    $titulo1 = 'RANCHO PILAR';
     // $titulo2 = 'PODA DE ARBOLES';
     $titulo3 = 'NOMINA DEL ' . strtoupper($fecha_inicio) . ' AL ' . strtoupper($fecha_cierre);
     $titulo4 = 'SEMANA ' . (isset($jsonNomina['numero_semana']) ? str_pad($jsonNomina['numero_semana'], 2, '0', STR_PAD_LEFT) : '00') . ' - ' . $ano;
@@ -1601,7 +1739,7 @@ function crearHojaPoda($spreadsheet, $titulo2, $jsonNomina, $nombreHoja = 'PODA'
     $sheet->mergeCells('A3:N3');
     $sheet->mergeCells('A4:N4');
 
-    $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(24)->getColor()->setRGB($color_secundario);
+    $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(24)->getColor()->setRGB($color_primario);
     $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(20);
     $sheet->getStyle('A3')->getFont()->setBold(true)->setSize(14);
     $sheet->getStyle('A4')->getFont()->setBold(true)->setSize(14);
@@ -1612,7 +1750,7 @@ function crearHojaPoda($spreadsheet, $titulo2, $jsonNomina, $nombreHoja = 'PODA'
     if (file_exists($logoPath)) {
         $logo = new Drawing();
         $logo->setName('Logo');
-        $logo->setDescription('Logo de Rancho El Pilar');
+        $logo->setDescription('Logo de Rancho Pilar');
         $logo->setPath($logoPath);
         $logo->setHeight(110);
         $logo->setCoordinates('B1');
@@ -1672,7 +1810,7 @@ function crearHojaPoda($spreadsheet, $titulo2, $jsonNomina, $nombreHoja = 'PODA'
     // Formatear los encabezados (Negrita, Centrados, Tamaño 10, Fondo Rojo, Letra Blanca)
     $sheet->getStyle('A6:N6')->getFont()->setBold(true);
     $sheet->getStyle('A6:N6')->getFont()->setSize(12);
-    $sheet->getStyle('A6:N6')->getFont()->setColor(new Color($color_negro)); // Letra NEGRA
+    $sheet->getStyle('A6:N6')->getFont()->setColor(new Color($color_letras_encabezados)); // Letra Blanco
     $sheet->getStyle('A6:N6')->getAlignment()->setHorizontal('center');
     $sheet->getStyle('A6:N6')->getAlignment()->setVertical('center');
     $sheet->getStyle('A6:N6')->getAlignment()->setWrapText(true); // Ajustar texto
@@ -1946,12 +2084,9 @@ function crearHojaPoda($spreadsheet, $titulo2, $jsonNomina, $nombreHoja = 'PODA'
     $sheet->getPageSetup()->setPrintArea('A1:N' . $filaTotal);
 }
 
-
-
-
-//=====================
+//==================================================================================================
 //  CREAR LAS DIFERENTES HOJAS
-//=====================
+//==================================================================================================
 
 if ($jsonNomina && isset($jsonNomina['departamentos'])) {
     foreach ($jsonNomina['departamentos'] as $departamento) {
@@ -1977,6 +2112,14 @@ if ($jsonNomina && isset($jsonNomina['departamentos'])) {
         // Si no hay empleados válidos, no crear la hoja
         if (empty($empleadosValidos)) continue;
 
+        // Determinar el color del departamento (nuevo formato arreglo o fallback al anterior)
+        $colorDepto = 'FF0000';
+        if (!empty($departamento['color_reporte']) && is_array($departamento['color_reporte'])) {
+            $colorDepto = $departamento['color_reporte'][0]['color'] ?? 'FF0000';
+        } else if (!empty($departamento['color_depto_nomina'])) {
+            $colorDepto = $departamento['color_depto_nomina'];
+        }
+
         // Crear hoja solo si hay datos
         crearHoja(
             $spreadsheet,
@@ -1986,7 +2129,8 @@ if ($jsonNomina && isset($jsonNomina['departamentos'])) {
                 $mostrar    = $emp['mostrar'] ?? false;
                 return ($mostrar && $idDeptoEmp == $idDepto);
             },
-            substr(strtoupper($nombreDepto), 0, 31)
+            substr(strtoupper($nombreDepto), 0, 31),
+            $colorDepto
         );
     }
 }
@@ -2010,6 +2154,7 @@ if ($jsonNomina && isset($jsonNomina['departamentos'])) {
 if ($existeCorteConEmpleados) {
     crearHojaCorte($spreadsheet, 'REJAS DE CORTE DE LIMON', $jsonNomina, 'CORTE');
 }
+
 
 // =================================================================================================
 // IDENTIFICAR QUE EXISTE EL DEPARTAMENTO DE PODA Y QUE TENGA EMPLEADOS PARA CREAR LA HOJA DE PODA
@@ -2037,7 +2182,7 @@ if ($existePodaConEmpleados) {
 
 $writer = new Xlsx($spreadsheet);
 
-$filename = 'SEM ' . str_pad($numero_semana, 2, '0', STR_PAD_LEFT) . ' - ' . $ano . ' RANCHO EL PILAR NOMINAS COMPLETAS - ' . date('Y-m-d_H-i-s') . '.xlsx';
+$filename = 'SEM ' . str_pad($numero_semana, 2, '0', STR_PAD_LEFT) . ' - ' . $ano . ' RANCHO PILAR NOMINAS COMPLETAS - ' . date('Y-m-d_H-i-s') . '.xlsx';
 
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Content-Disposition: attachment; filename="' . $filename . '"');

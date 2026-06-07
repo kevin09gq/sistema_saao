@@ -70,8 +70,8 @@ function actualizarPasajeTardeadaEnEmpleados() {
             if (!Array.isArray(departamento.empleados)) return;
 
             departamento.empleados.forEach(empleado => {
-                // Solo procesar empleados con tipo_horario 2 y registros
-                if (empleado.tipo_horario === 2 && Array.isArray(empleado.registros)) {
+                // Solo procesar empleados con tipo_horario 2 o 1 y registros
+                if ((empleado.tipo_horario === 2 || empleado.tipo_horario === 1) && Array.isArray(empleado.registros)) {
                     empleadosAActualizar.push(empleado);
                 }
             });
@@ -124,8 +124,8 @@ function listarEmpleadosParaQuitarComidaPasaje() {
     jsonNominaPilar.departamentos.forEach(departamento => {
         if (!Array.isArray(departamento.empleados)) return;
 
-        // Filtrar jornaleros del departamento
-        const jornaleros = departamento.empleados.filter(e => e.tipo_horario === 2 && e.mostrar !== false);
+        // Filtrar jornaleros/coordinadores del departamento
+        const jornaleros = departamento.empleados.filter(e => (e.tipo_horario === 2 || e.tipo_horario === 1) && e.mostrar !== false);
 
         if (jornaleros.length > 0) {
             // Agregar fila del departamento

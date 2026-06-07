@@ -96,7 +96,7 @@ function cargarDatos(empleados, indiceInicio) {
                     </button>
                     <button class="btn-action" onclick="agregarPrima(${emp.id_empleado})" title="Agregar Prima Vacacional">
                         <i class="bi bi-plus-circle"></i> Detalle Pago
-                    </button>
+                    </button> 
                 </div>
             </td>
         </tr>`;

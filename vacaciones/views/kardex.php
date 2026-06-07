@@ -26,9 +26,30 @@
             <a href="vacaciones.php" class="btn-back" id="btnVolver">
                 <i class="bi bi-arrow-left"></i> Volver al listado
             </a>
-            <button class="btn-download" id="btnRestaurar" style="background: #dc2626; margin-left: 10px;">
-                <i class="bi bi-arrow-counterclockwise"></i> Restaurar Todo
-            </button>
+            <div class="d-flex align-items-center gap-2">
+                <!-- Dropdown de Exportación PDF -->
+                <div class="dropdown">
+                    <button class="btn-download dropdown-toggle" type="button" id="dropdownExportarPdf" data-bs-toggle="dropdown" aria-expanded="false" style="background: #0284c7;">
+                        <i class="bi bi-file-earmark-pdf"></i> Exportar PDF
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownExportarPdf" style="border-radius: 8px; border: 1px solid rgba(0,0,0,0.08); font-size: 0.875rem;">
+                        <li>
+                            <a class="dropdown-item py-2 d-flex align-items-center gap-2" href="#" id="btnExportarKardexPdf">
+                                <i class="bi bi-card-list text-danger"></i> Reporte de Kardex
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item py-2 d-flex align-items-center gap-2" href="#" id="btnExportarPrimaPdf">
+                                <i class="bi bi-piggy-bank text-success"></i> Reporte de Prima Vacacional
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <button class="btn-download" id="btnRestaurar" style="background: #dc2626;">
+                    <i class="bi bi-arrow-counterclockwise"></i> Restaurar Todo
+                </button>
+            </div>
         </div>
 
         <!-- Encabezado: Información del Empleado -->
@@ -143,7 +164,7 @@
                             <div class="legend-color" style="background: #8b5cf6;"></div> Aniversario
                         </div>
                         <div class="legend-item">
-                            <div class="legend-color" style="background: #c084fc; border: 1px dashed #7c3aed;"></div> Próx. Aniversario
+                            <div class="legend-color" style="background: #ec0b0b; border: 1px dashed #ec0b0b;"></div> Próx. Aniversario
                         </div>
                         <div class="legend-item">
                             <div class="legend-color" style="background: #3b82f6;"></div> Pago de Prima
@@ -289,6 +310,8 @@
     <script src="../js/kardex/editarPrimaVacacional.js"></script>
     <script src="../js/kardex/registrarVacaciones.js"></script>
     <script src="../js/kardex/calendario.js"></script>
+    <script src="../js/exportarArchivos/exportarKardex.js"></script>
+    <script src="../js/exportarArchivos/exportarPrimaVacacional.js"></script>
 </body>
 
 </html>

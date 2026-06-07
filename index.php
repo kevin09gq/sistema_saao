@@ -26,23 +26,6 @@ verificarSesion();
     
     <?php include("public/views/navbar.php"); ?>
 
-    <!-- Botón de notificación -->
-    <button class="notification-btn" id="notificationButton">
-        <i class="bi bi-bell-fill" style="font-size: 22px;"></i>
-        <span class="notification-badge" id="notificationBadge">0</span>
-    </button>
-
-    <!-- Panel de notificaciones -->
-    <div id="notificationPanel" class="notification-panel">
-        <div class="notification-header">
-            <h5>Notificaciones</h5>
-            <button type="button" class="btn-close btn-close-white" aria-label="Close" onclick="closeNotificationPanel()"></button>
-        </div>
-        <div class="notification-body" id="notificationPanelContent">
-            <!-- Las notificaciones se cargarán aquí -->
-        </div>
-    </div>
-
     <!-- Sección principal de bienvenida (Hero Section) -->
     <section class="hero-section py-5">
         <div class="container">
@@ -129,21 +112,11 @@ verificarSesion();
     <script src="<?= JQUERY_JS ?>"></script>
     <!-- Bootstrap JS -->
     <script src="<?= BOOTSTRAP_JS ?>"></script>
-    <!-- Script de notificaciones -->
-    <script src="public/js/notifications.js"></script>
     <!-- Script para funcionalidad del navbar -->
     <script src="public/js/navbar.js"></script>
     
     <!-- Sincronización automática de vacaciones en segundo plano al iniciar sesión -->
-    <script>
-        $(document).ready(function() {
-            $.post('vacaciones/php/sincronizar_vacaciones.php', function(response) {
-                console.log("Sincronización de vacaciones:", response);
-            }, 'json').fail(function(err) {
-                console.error("Error al sincronizar vacaciones:", err);
-            });
-        });
-    </script>
+    <script src="vacaciones/js/sincronizarVacaciones.js"></script>
 </body>
 
 </html>

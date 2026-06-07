@@ -1,5 +1,6 @@
 <?php
-
+// LLAMAR A LA CONEXION
+require_once __DIR__ . '/../../../conexion/conexion.php';
 // Incluir autoload de Composer
 require_once __DIR__ . '/../../../vendor/autoload.php';
 
@@ -26,24 +27,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['jsonNomina'])) {
 }
 
 
-// ==========================
-// COLORES PARA USAR
-// ==========================
-$color_primario   = 'C9C5C3';
-$color_secundario = 'BAA59C';
-$color_negro    = '000000';  // Color negro
-$color_blanco   = 'FFFFFF';  // Color blanco
-$colorConcepto  = 'F2F2F2';  // fondo columna CONCEPTO GRIS CLARO
-$colorNomina    = 'FFD6D6';  // fondo filas NOMINA
-$colorDias      = 'D5F5E3';  // verde claro para columnas de días (REJA)
-$colorTotales   = 'E0E0E0';  // Gris claro para columnas de totales
-$color_rojo_claro   = 'FFE8E8';  // rojo claro para columnas de totales
-
-
 
 //==============================
 //  FUNCIONES AUXILIARES CORTE
 //==============================
+
+$nombre_nomina = "PALMILLA";
 
 /**
  * Convierte una fecha en formato 'DD/MM/AAA' a timestamp
@@ -307,6 +296,103 @@ function esDiaExtra($texto)
     return preg_match('/\(\d+\)/', $texto) === 1;
 }
 
+
+/**
+ * --------------------------------------------------------------------------
+ * FUNCIONA PARA OBTENER LOS COLORES DE FORMA DINAMICA DE LA BASE
+ * --------------------------------------------------------------------------
+ */
+
+
+
+/**
+ * Obtiene el color principal de una nómina (el color que más se repite).
+ *
+ * @param string $nombreNomina Nombre de la nómina.
+ * @return string|null
+ */
+function obtenerColorPrincipal($nombreNomina)
+{
+    global $conexion;
+
+    $sql = "
+        SELECT
+            nd.color_depto_nomina
+        FROM nomina_departamento nd
+        INNER JOIN nombre_nominas nn
+            ON nd.id_nomina = nn.id_nomina
+        WHERE nn.nombre_nomina = ?
+        GROUP BY nd.color_depto_nomina
+        ORDER BY COUNT(*) DESC
+        LIMIT 1
+    ";
+
+    $stmt = mysqli_prepare($conexion, $sql);
+
+    if (!$stmt) {
+        return null;
+    }
+
+    mysqli_stmt_bind_param($stmt, "s", $nombreNomina);
+    mysqli_stmt_execute($stmt);
+
+    $resultado = mysqli_stmt_get_result($stmt);
+
+    if ($fila = mysqli_fetch_assoc($resultado)) {
+        $color = ltrim($fila['color_depto_nomina'], '#');
+    } else {
+        $color = null;
+    }
+
+    mysqli_stmt_close($stmt);
+
+    return $color;
+}
+
+
+/**
+ * Obtiene un color de contraste (blanco o negro)
+ * para que el texto sea legible sobre el color dado.
+ *
+ * @param string $colorHex Color hexadecimal sin #
+ * @return string Retorna FFFFFF o 000000
+ */
+function obtenerContraste($colorHex)
+{
+    $r = hexdec(substr($colorHex, 0, 2));
+    $g = hexdec(substr($colorHex, 2, 2));
+    $b = hexdec(substr($colorHex, 4, 2));
+
+    // Fórmula estándar de luminosidad
+    $luminosidad = (0.299 * $r) + (0.587 * $g) + (0.114 * $b);
+
+    return ($luminosidad > 186) ? '000000' : 'FFFFFF';
+}
+
+
+
+
+// ==========================
+// COLORES PARA USAR
+// ==========================
+$color_primario = 'B50600';  // Color primario Rojo
+$color_negro    = '000000';  // Color negro
+$color_blanco   = 'FFFFFF';  // Color blanco
+$colorConcepto  = 'F2F2F2';  // fondo columna CONCEPTO GRIS CLARO
+$colorNomina    = 'FFD6D6';  // fondo filas NOMINA
+$colorDias      = 'D5F5E3';  // verde claro para columnas de días (REJA)
+$colorTotales   = 'E0E0E0';  // rojo claro para columnas de totales
+
+$color_letras_encabezados = '000000';
+
+// OBTENER COLOR DE LA BASE DE DATOS
+$color_primario = obtenerColorPrincipal($nombre_nomina) ?? 'B50600';
+// COLOR DE LAS LETRAS DE LOS ENCABEZADOS
+$color_letras_encabezados = obtenerContraste($color_primario) ?? '000000';
+
+
+
+
 // ===================================================
 // PROCESAR LAS FECHAS
 // ===================================================
@@ -446,7 +532,7 @@ $sheet->mergeCells('A2:N2');
 $sheet->mergeCells('A3:N3');
 $sheet->mergeCells('A4:N4');
 
-$sheet->getStyle('A1')->getFont()->setBold(true)->setSize(24)->getColor()->setRGB($color_secundario);
+$sheet->getStyle('A1')->getFont()->setBold(true)->setSize(24)->getColor()->setRGB($color_primario);
 $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(20);
 $sheet->getStyle('A3')->getFont()->setBold(true)->setSize(14);
 $sheet->getStyle('A4')->getFont()->setBold(true)->setSize(14);
@@ -537,7 +623,7 @@ foreach ($encabezados as $col => $titulo) {
 // Formatear los encabezados (Negrita, Centrados, Tamaño 12, Fondo Rojo, Letra Blanca)
 $sheet->getStyle('A6:N6')->getFont()->setBold(true);
 $sheet->getStyle('A6:N6')->getFont()->setSize(12);
-$sheet->getStyle('A6:N6')->getFont()->setColor(new Color($color_negro)); // Letra BLANCA
+$sheet->getStyle('A6:N6')->getFont()->setColor(new Color($color_letras_encabezados)); // Letra BLANCA
 $sheet->getStyle('A6:N6')->getAlignment()->setHorizontal('center');
 $sheet->getStyle('A6:N6')->getAlignment()->setVertical('center');
 $sheet->getStyle('A6:N6')->getAlignment()->setWrapText(true); // Ajustar texto

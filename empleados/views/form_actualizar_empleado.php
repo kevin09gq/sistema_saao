@@ -14,6 +14,7 @@ verificarSesion();
     <!-- Iconos Bootstrap -->
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <link rel="stylesheet" href="../styles/actualizar_empleado.css">
+    <link rel="stylesheet" href="../styles/exportar_informacion.css">
 
     <style>
         .buscador-wrap {
@@ -67,15 +68,19 @@ verificarSesion();
                 <select class="form-select me-2" id="filtroDepartamento" style="min-width:200px;">
                     <!-- Opciones dinámicas -->
                 </select>
-                <div class="buscador-wrap me-2">
+                 <div class="buscador-wrap me-2">
                     <input type="text" class="search-box" placeholder="Buscar..." id="buscadorEmpleado">
                     <button type="button" id="btn-clear-buscador-empleado" class="btn-clear-search" title="Limpiar">
                         <i class="bi bi-x-circle"></i>
                     </button>
                 </div>
-                <button class="btn btn-add" id="btnAgregarEmpleado">
-                    <a href="form_registro.php" style="text-decoration: none">+ Agregar Empleado</a>
-                </button>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="form_registro.php" class="btn btn-add" id="btnAgregarEmpleado">+ Agregar Empleado</a>
+                  
+                </div>
+                  <button type="button" class="btn btn-outline-success fw-semibold" data-bs-toggle="modal" data-bs-target="#modal_exportar_informacion">
+                        <i class="bi bi-box-arrow-up-right me-1"></i>Exporta información
+                    </button>
             </div>
             <!-- Dropdown para ordenamiento -->
             <div class="dropdown">
@@ -127,6 +132,9 @@ verificarSesion();
             </ul>
         </nav>
     </div>
+
+     <?php include("modal_exportar_informacion.php"); ?>
+     <?php include("modal_previsualizar.php"); ?>
 
     <!-- Modal Actualizar Empleado con Tabs -->
     <div class="modal fade" id="modal_actualizar_empleado" tabindex="-1" aria-labelledby="modalActualizarEmpleadoLabel" aria-hidden="true">
@@ -711,6 +719,7 @@ verificarSesion();
     <!-- Bootstrap JS -->
     <script src="<?= BOOTSTRAP_JS ?>"></script>
     <script src="../controllers/paginacion.js"></script>
+    <script src="../controllers/exportar_informacion.js"></script>
     <script src="../controllers/config_actualizar.js"></script>
     <script src="../controllers/modal_biometricos.js"></script>
     <script src="../controllers/casillero_empleado.js"></script>

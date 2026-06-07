@@ -1,5 +1,6 @@
 <?php
-
+// LLAMAR A LA CONEXION
+require_once __DIR__ . '/../../../conexion/conexion.php';
 // Incluir autoload de Composer
 require_once __DIR__ . '/../../../vendor/autoload.php';
 
@@ -12,8 +13,6 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 
 // Definir zona horaria de la CDMX bhl
 date_default_timezone_set('America/Mexico_City');
-
-
 
 //=====================
 //  RECIBIR DATOS DEL JSON
@@ -30,6 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['jsonNomina'])) {
 //==============================
 //  FUNCIONES AUXILIARES CORTE
 //==============================
+
+$nombre_nomina = "RELICARIO";
 
 /**
  * Obtiene el nombre del día de la semana en español a partir de una fecha 'YYYY-MM-DD'
@@ -198,6 +199,79 @@ function rangoDeFechas($fechaInicio, $fechaFin)
 }
 
 
+/**
+ * --------------------------------------------------------------------------
+ * FUNCIONA PARA OBTENER LOS COLORES DE FORMA DINAMICA DE LA BASE
+ * --------------------------------------------------------------------------
+ */
+
+
+
+/**
+ * Obtiene el color principal de una nómina (el color que más se repite).
+ *
+ * @param string $nombreNomina Nombre de la nómina.
+ * @return string|null
+ */
+function obtenerColorPrincipal($nombreNomina)
+{
+    global $conexion;
+
+    $sql = "
+        SELECT
+            nd.color_depto_nomina
+        FROM nomina_departamento nd
+        INNER JOIN nombre_nominas nn
+            ON nd.id_nomina = nn.id_nomina
+        WHERE nn.nombre_nomina = ?
+        GROUP BY nd.color_depto_nomina
+        ORDER BY COUNT(*) DESC
+        LIMIT 1
+    ";
+
+    $stmt = mysqli_prepare($conexion, $sql);
+
+    if (!$stmt) {
+        return null;
+    }
+
+    mysqli_stmt_bind_param($stmt, "s", $nombreNomina);
+    mysqli_stmt_execute($stmt);
+
+    $resultado = mysqli_stmt_get_result($stmt);
+
+    if ($fila = mysqli_fetch_assoc($resultado)) {
+        $color = ltrim($fila['color_depto_nomina'], '#');
+    } else {
+        $color = null;
+    }
+
+    mysqli_stmt_close($stmt);
+
+    return $color;
+}
+
+
+/**
+ * Obtiene un color de contraste (blanco o negro)
+ * para que el texto sea legible sobre el color dado.
+ *
+ * @param string $colorHex Color hexadecimal sin #
+ * @return string Retorna FFFFFF o 000000
+ */
+function obtenerContraste($colorHex)
+{
+    $r = hexdec(substr($colorHex, 0, 2));
+    $g = hexdec(substr($colorHex, 2, 2));
+    $b = hexdec(substr($colorHex, 4, 2));
+
+    // Fórmula estándar de luminosidad
+    $luminosidad = (0.299 * $r) + (0.587 * $g) + (0.114 * $b);
+
+    return ($luminosidad > 186) ? '000000' : 'FFFFFF';
+}
+
+
 
 //=====================
 //  PROCESAR FILAS DEL DEPARTAMENTO CORTE
@@ -237,6 +311,12 @@ $colorNomina    = 'FFD6D6';  // fondo filas NOMINA
 $colorDias      = 'D5F5E3';  // verde claro para columnas de días (REJA)
 $colorTotales   = 'E0E0E0';  // rojo claro para columnas de totales
 
+$color_letras_encabezados = '000000';
+
+// OBTENER COLOR DE LA BASE DE DATOS
+$color_primario = obtenerColorPrincipal($nombre_nomina) ?? 'B50600';
+// COLOR DE LAS LETRAS DE LOS ENCABEZADOS
+$color_letras_encabezados = obtenerContraste($color_primario) ?? '000000';
 
 //=====================
 //  CONFIGURACIÓN INICIAL
@@ -385,14 +465,14 @@ foreach ($encabezados as $col => $titulo) {
 // Formatear los encabezados (Negrita, Centrados, Tamaño 12, Fondo Rojo, Letra Blanca)
 $sheet->getStyle('A6:N6')->getFont()->setBold(true);
 $sheet->getStyle('A6:N6')->getFont()->setSize(12);
-$sheet->getStyle('A6:N6')->getFont()->setColor(new Color($color_blanco)); // Letra BLANCA
+$sheet->getStyle('A6:N6')->getFont()->setColor(new Color($color_letras_encabezados)); // Color de letra para encabezados
 $sheet->getStyle('A6:N6')->getAlignment()->setHorizontal('center');
 $sheet->getStyle('A6:N6')->getAlignment()->setVertical('center');
 $sheet->getStyle('A6:N6')->getAlignment()->setWrapText(true); // Ajustar texto
 
 // Agregar color de fondo rojo a los encabezados
 $sheet->getStyle('A6:N6')->getFill()->setFillType('solid');
-$sheet->getStyle('A6:N6')->getFill()->getStartColor()->setRGB($color_primario); // Rojo
+$sheet->getStyle('A6:N6')->getFill()->getStartColor()->setRGB($color_primario);
 
 // Ancho de columnas
 $anchos = [
