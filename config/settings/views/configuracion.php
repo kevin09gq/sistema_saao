@@ -846,10 +846,6 @@ verificarSesion(); // Proteger esta página
 
                                             </div>
                                         </div>
-
-
-
-
                                         <div class="form-actions">
                                             <button type="submit" class="btn btn-success"
                                                 id="btn-guardar-rancho">Guardar</button>
@@ -1053,7 +1049,7 @@ verificarSesion(); // Proteger esta página
                                     <h5 class="mb-3"><i class="bi bi-plus-circle"></i> Agregar Precio</h5>
                                     <form id="precioCajaForm">
                                         <input type="hidden" id="precio_id" name="precio_id">
-                                        
+
                                         <div class="mb-3">
                                             <label for="tipo_precio" class="form-label">Tipo de Clasificación</label>
                                             <select class="form-select" name="tipo_precio" id="tipo_precio" required>
@@ -1132,7 +1128,7 @@ verificarSesion(); // Proteger esta página
                                     <h5 class="mb-3"><i class="bi bi-plus-circle"></i> Configurar Versión</h5>
                                     <form id="versionLftForm">
                                         <input type="hidden" id="id_version_vacaciones" name="id_version_vacaciones">
-                                        
+
                                         <div class="mb-3">
                                             <label for="nombre_version" class="form-label">Nombre de la Versión</label>
                                             <input type="text" class="form-control" id="nombre_version" name="nombre_version" required placeholder="Ej: Reforma 2023">
@@ -1164,376 +1160,34 @@ verificarSesion(); // Proteger esta página
                 </div>
             </div>
         </div>
-        <br>
-        <br>
     </div>
 
     <!-- Modal para configurar Días de Vacaciones por Versión -->
-    <div class="modal fade" id="modal_dias_lft" tabindex="-1" aria-labelledby="modal_dias_lft_label" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modal_dias_lft_label">Configurar Días: <span id="nombre_version_dias" class="badge bg-primary"></span></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="form_dias_lft" class="mb-4 bg-light p-3 rounded border">
-                        <input type="hidden" id="id_version_dias" name="id_version_vacaciones">
-                        <div class="row g-2 align-items-end">
-                            <div class="col-md-3">
-                                <label class="form-label small">Año Inicio</label>
-                                <input type="number" class="form-control" name="anios_antiguedad_inicio" required min="1">
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label small">Año Fin</label>
-                                <input type="number" class="form-control" name="anios_antiguedad_fin" min="1" placeholder="Igual al inicio">
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label small">Días Vacaciones</label>
-                                <input type="number" class="form-control" name="dias_vacaciones_correspondientes" required min="1">
-                            </div>
-                            <div class="col-md-3">
-                                <button type="submit" class="btn btn-success w-100"><i class="bi bi-plus-circle"></i> Agregar</button>
-                            </div>
-                        </div>
-                    </form>
-                    <div class="table-responsive">
-                        <table class="table table-sm table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Rango de Años</th>
-                                    <th>Días</th>
-                                    <th>Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tbody_dias_lft"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <?php include 'modals/modalVacaciones.php'; ?>
 
     <!-- Modal para mostrar la imagen del área -->
-    <div class="modal fade" id="modalAreaImagen" tabindex="-1" aria-labelledby="modalAreaTitle" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalAreaTitle">Imagen del Área</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body text-center">
-                    <img id="modalAreaImage" src="" alt="Imagen del área" class="img-fluid rounded shadow-sm"
-                        style="max-height: 400px;">
-                </div>
-                <div class="modal-footer">
-                    <p id="modalAreaFooter" class="text-muted small w-100 text-center mb-0"></p>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <?php include 'modals/modalImagenArea.php'; ?>
 
     <!-- Modal para mostrar el logo de la empresa -->
-    <div class="modal fade" id="modalEmpresaLogo" tabindex="-1" aria-labelledby="modalEmpresaLogoTitle"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalEmpresaLogoTitle">Logo de la Empresa</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                </div>
-                <div class="modal-body text-center">
-                    <img id="modalEmpresaLogoImage" src="" alt="Logo de la empresa" class="img-fluid rounded shadow-sm"
-                        style="max-height: 400px; display: none;">
-                    <p id="modalEmpresaLogoFooter" class="text-muted small w-100 text-center mb-0"></p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <?php include 'modals/modalLogoEmpresa.php'; ?>
 
     <!-- Modal para ver los detalles de la información del rancho -->
-    <div class="modal fade" id="modalInfoRancho" tabindex="-1" aria-labelledby="modalInfoRanchoLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="modalInfoRanchoLabel">Detalles de la información del rancho</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="table-responsive mb-4">
-                        <h6 class="mb-3">Información general</h6>
-                        <table class="table table-hover table-bordered shadow-sm">
-                            <thead>
-                                <tr class="text-center">
-                                    <th>Rancho</th>
-                                    <th>Número de Tablas</th>
-                                </tr>
-                            </thead>
-                            <tbody id="body-info-rancho"></tbody>
-                        </table>
-                    </div>
-
-                    <div class="table-responsive">
-                        <h6 class="mb-3">Horarios de los jornaleros</h6>
-                        <table class="table table-hover table-bordered shadow-sm">
-                            <thead>
-                                <tr class="text-center">
-                                    <th>Día</th>
-                                    <th>Entrada</th>
-                                    <th>Salida</th>
-                                    <th>Descanso</th>
-                                </tr>
-                            </thead>
-                            <tbody id="body-rancho-horario-jornaleros"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <?php include 'modals/modalInfoRanchos.php'; ?>
 
     <!-- Modal para Asignar Departamentos a Nómina -->
-    <div class="modal fade" id="modalAsignarDepartamentos" tabindex="-1" aria-labelledby="lblNombreNominaModal"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-light">
-                    <h5 class="modal-title">
-                        <i class="bi bi-diagram-3 me-2 text-primary"></i>Departamentos en Nómina: <strong
-                            id="lblNombreNominaModal" class="text-primary"></strong>
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <!-- Formulario para agregar -->
-                    <form id="formAgregarDeptoNomina" class="p-3 bg-light rounded border mb-4 shadow-sm">
-                        <input type="hidden" id="modal_nomina_id" name="modal_nomina_id">
-                        <input type="hidden" id="modal_nomina_area_id" name="modal_nomina_area_id">
-                        <div class="row gx-3 align-items-end mb-3">
-                            <div class="col-sm-7">
-                                <label for="modal_select_departamento"
-                                    class="form-label fw-bold text-secondary mb-1">Elegir Departamento del Área</label>
-                                <select class="form-select border-primary-subtle" id="modal_select_departamento"
-                                    required>
-                                    <option value="" selected disabled>Seleccione un departamento...</option>
-                                    <!-- Se llenará dinámicamente -->
-                                </select>
-                            </div>
-                            <div class="col-sm-3">
-                                <label for="modal_color_departamento"
-                                    class="form-label fw-bold text-secondary mb-1">Color Reporte</label>
-                                <div class="d-flex align-items-center gap-2 bg-white border rounded px-2"
-                                    style="height: 38px;">
-                                    <input type="color" class="form-control-color border-0 bg-transparent p-0"
-                                        id="modal_color_departamento" value="#FF0000" title="Elegir color"
-                                        style="width: 30px; height: 30px;">
-                                    <span class="small text-muted" id="modal_color_text">#FF0000</span>
-                                </div>
-                            </div>
-                            <div class="col-sm-2">
-                                <button type="submit" class="btn btn-success w-100 shadow-sm"
-                                    id="btn-asignar-depto-modal">
-                                    <i class="bi bi-plus-circle"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-
-                    <!-- Lista de departamentos actuales -->
-                    <h6 class="border-bottom pb-2 mb-3 fw-bold text-secondary"><i
-                            class="bi bi-tags me-2"></i>Departamentos Asignados</h6>
-                    <div id="contenedorDepartamentosAsignados" class="d-flex flex-wrap gap-2 p-2 min-vh-25">
-                        <!-- Badges dinámicos -->
-                        <div class="text-center w-100 text-muted">
-                            <div class="spinner-border spinner-border-sm" role="status"></div> Cargando...
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary shadow-sm" data-bs-dismiss="modal">Cerrar
-                        ventana</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal para Configurar Roles por Puesto (ELIMINADO POR REESTRUCTURACIÓN) -->
-
-
+    <?php include 'modals/modalDepartamentosNominas.php'; ?>
 
     <!-- NUEVO MODAL PARA LOS DETALLES DE AREA Y SUS DEPARTAMENTOS -->
-    <div class="modal fade" id="modal_departamentos_area" tabindex="-1" aria-labelledby="modal_departamentos_area_label"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-scrollable modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="modal_departamentos_area_label">Departamentos del Área: <span
-                            id="nombre_area_detalle_dep">prueba</span></h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="alert alert-info mb-2">
-                        <i class="bi bi-info-circle me-2"></i>Seleccione los departamentos que forman parte del área.
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Seleccionar departamentos</label>
-                        <div class="input-group mb-3">
-                            <select class="form-select" name="select_dep_area" id="select_dep_area"
-                                aria-describedby="btn_agregar_dep_area"></select>
-                            <button class="btn btn-outline-success" type="button" id="btn_agregar_dep_area"><i
-                                    class="bi bi-diagram-3-fill me-2"></i>Asignar</button>
-                        </div>
-                        <input type="number" id="id_area_modal_dep" hidden>
-                    </div>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>N°</th>
-                                <th>DEPARTAMENTO</th>
-                                <th>ACCION</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody_dep_area"></tbody>
-                    </table>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <?php include 'modals/modalAreaDepartamento.php'; ?>
 
     <!-- NUEVO MODAL PARA LOS DETALLES POR DEPARTAMENTO Y SUS AREAS -->
-    <div class="modal fade" id="modal_area_departamento" tabindex="-1" aria-labelledby="modal_area_departamento_label"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-scrollable modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="modal_area_departamento_label">Áreas del Departamento: <span
-                            id="nombre_depa_area">prueba</span></h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="alert alert-info mb-2">
-                        <i class="bi bi-info-circle me-2"></i>Seleccione las áreas a las que pertenece el departamento.
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Seleccionar áreas</label>
-                        <div class="input-group mb-3">
-                            <select class="form-select" name="select_area_dep" id="select_area_dep"
-                                aria-describedby="btn_agregar_area_dep"></select>
-                            <button class="btn btn-outline-success" type="button" id="btn_agregar_area_dep"><i
-                                    class="bi bi-diagram-3-fill me-2"></i>Asignar</button>
-                        </div>
-                        <input type="number" id="id_departamento_modal_area" hidden>
-                    </div>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>N°</th>
-                                <th>ÁREA</th>
-                                <th>ACCION</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody_area_dep"></tbody>
-                    </table>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <?php include 'modals/modalDepartamentoArea.php'; ?>
 
     <!-- NUEVO MODAL PARA LOS DETALLES LOS PUESTOS POR DEPARTAMENTO -->
-    <div class="modal fade" id="modal_departamento_puestos" tabindex="-1"
-        aria-labelledby="modal_departamento_puestos_label" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-scrollable modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="modal_departamento_puestos_label">Puestos del Departamento: <span
-                            class="badge text-bg-success fs-5" id="nombre_depa_puestos">prueba</span></h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="alert alert-info mb-2">
-                        <i class="bi bi-info-circle me-2"></i>Seleccione los puestos para el departamento.
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Seleccionar puesto</label>
-                        <div class="input-group mb-3">
-                            <select class="form-select" name="select_puesto_departamento"
-                                id="select_puesto_departamento" aria-describedby="btn_agregar_puesto_dep"></select>
-                            <button class="btn btn-outline-success" type="button" id="btn_agregar_puesto_dep"><i
-                                    class="bi bi-diagram-3-fill me-2"></i>Asignar</button>
-                        </div>
-                        <input type="number" id="id_departamento_modal_puesto" hidden>
-                    </div>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>N°</th>
-                                <th>PUESTO</th>
-                                <th>ACCION</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody_puestos_depa"></tbody>
-                    </table>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <?php include 'modals/modalPuestoDepartamento.php'; ?>
 
     <!-- NUEVO MODAL PARA VER LOS DEPARTAMENTOS ASIGNADOS A UN PUESTO -->
-    <div class="modal fade" id="modal_departamentos_puesto" tabindex="-1"
-        aria-labelledby="modal_departamentos_puesto_label" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-scrollable modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="modal_departamentos_puesto_label">Departamentos del Puesto: <span
-                            class="badge text-bg-success fs-5" id="nombre_puesto_modal">prueba</span></h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="alert alert-info mb-2">
-                        <i class="bi bi-info-circle me-2"></i>Seleccione los departamentos para el puesto.
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Seleccionar departamento</label>
-                        <div class="input-group mb-3">
-                            <select class="form-select" name="select_depa_puesto" id="select_depa_puesto"
-                                aria-describedby="btn_agregar_depa_puesto"></select>
-                            <button class="btn btn-outline-success" type="button" id="btn_agregar_depa_puesto"><i
-                                    class="bi bi-diagram-3-fill me-2"></i>Asignar</button>
-                        </div>
-                        <input type="number" id="id_puesto_modal" hidden>
-                    </div>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>N°</th>
-                                <th>DEPARTAMENTO</th>
-                                <th>ACCION</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody_departamentos_puesto"></tbody>
-                    </table>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    <?php include 'modals/modalDepartamentoPuesto.php'; ?>
 
 
     <!-- jQuery -->
