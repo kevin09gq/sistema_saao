@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return 'documentos';
         } else if (path.includes('/public/views/generacion_tickets_manuales.php')) {
             return 'documentos';
-        } else if (path.includes('/reloj-8horas/views/reloj.php')) {
+        } else if (path.includes('/reloj-8horas/views/historial_v2/historial.php')) {
             return 'documentos';
         } else if (path.includes('/reloj-8horas/views/historial.php')) {
             return 'documentos';
@@ -44,8 +44,14 @@ document.addEventListener('DOMContentLoaded', function () {
             return 'documentos';
         } else if (path.includes('/vacaciones/views/vacaciones.php')) {
             return 'documentos';
+        } else if (path.includes('/vacaciones/views/prima_vacacional.php')) {
+            return 'documentos';
+        }else if (path.includes('/vacaciones/views/kardex.php')) {
+            return 'documentos';
         } else if (path.includes('/nomina_40lbs/views/nomina_40lbs.php')) {
             return 'nominas'; // Highlight 'Nóminas' for 40 lbs
+        } else if (path.includes('/nomina_40lbs/views/nomina_10lbs.php')) {
+            return 'nominas'; // Highlight 'Nóminas' for 10 lbs
         } else if (path.includes('/nomina_confianza/views/nomina_confianza.php')) {
             return 'nominas'; // Highlight 'Nóminas' for Confianza
         } else if (path.includes('/nomina_relicario/views/nomina_relicario.php')) {
@@ -58,6 +64,14 @@ document.addEventListener('DOMContentLoaded', function () {
             return 'nominas'; // Highlight 'Nóminas' for Huasteca
         } else if (path.includes('/historial_cortes.php')) {
             return 'nominas'; // Highlight 'Nóminas' for any Historial Cortes
+        } else if (path.includes('/nomina_40lbs/historial/views/historial_40lbs.php')) {
+            return 'nominas'; // Highlight 'Nóminas' for Historial 40 lbs
+        } else if (path.includes('/nomina_40lbs/historial/views/detalle_nomina.php')) {
+            return 'nominas'; // Highlight 'Nóminas' for Historial 40 lbs
+        } else if (path.includes('/nomina_10lbs/historial/views/historial_10lbs.php')) {
+            return 'nominas'; // Highlight 'Nóminas' for Historial 10 lbs
+        } else if (path.includes('/nomina_10lbs/historial/views/detalle_nomina.php')) {
+            return 'nominas'; // Highlight 'Nóminas' for Historial 10 lbs
         } else if (path.includes('/empleados/views/form_registro.php')) {
             return 'empleados';
         } else if (path.includes('/empleados/views/form_actualizar_empleado.php')) {

@@ -4,7 +4,7 @@
  ************************************/
 
 function obtenerHorarioRancho(empleado = null) {
-    // Obtener el id_area del Huasteca (siempre es 2)
+    // Obtener el id_area del Relicario (siempre es 4)
     const id_area = 2;
 
     $.ajax({
@@ -20,7 +20,7 @@ function obtenerHorarioRancho(empleado = null) {
             // response.data contiene el horario_jornalero
             if (response.data && response.data.horario_jornalero) {
                 const horarioRancho = JSON.parse(response.data.horario_jornalero);
-                jsonNominaHuasteca.horarioRancho = horarioRancho;
+                jsonNominaRelicario.horarioRancho = horarioRancho;
                 // Siempre recalcular después de obtener/actualizar el horario
                 calcularSueldoSemanal(empleado);
             }
@@ -57,8 +57,8 @@ function actualizarPercepcionExtra(empleado, nombreConcepto, cantidad) {
 }
 
 function calcularSueldoSemanal(empleado = null) {
-    // Verificar que existe jsonNominaHuasteca
-    if (!jsonNominaHuasteca || !jsonNominaHuasteca.departamentos) {
+    // Verificar que existe jsonNominaRelicario
+    if (!jsonNominaRelicario || !jsonNominaRelicario.departamentos) {
         return;
     }
 
@@ -75,7 +75,7 @@ function calcularSueldoSemanal(empleado = null) {
         }
     } else {
         // Si no se envía nada, recorrer todos los del departamento con tipo_horario 2 o 1
-        jsonNominaHuasteca.departamentos.forEach(departamento => {
+        jsonNominaRelicario.departamentos.forEach(departamento => {
             if (!departamento.empleados) return;
 
             departamento.empleados.forEach(empleado => {
@@ -145,7 +145,7 @@ function calcularSueldoSemanal(empleado = null) {
         
 
         if (tipoHorario === 2) {
-            const precioPasaje = parseFloat(jsonNominaHuasteca.precio_pasaje) || 0;
+            const precioPasaje = parseFloat(jsonNominaRelicario.precio_pasaje) || 0;
 
             if (empleado.pasaje_override === 'quitar') {
                 pasajeTotal = 0;
@@ -158,7 +158,7 @@ function calcularSueldoSemanal(empleado = null) {
             }
             aplicaPasaje = true;
         } else if (tipoHorario === 1) {
-            const precioPasaje = parseFloat(jsonNominaHuasteca.precio_pasaje) || 0;
+            const precioPasaje = parseFloat(jsonNominaRelicario.precio_pasaje) || 0;
             const tienePasajeExtra = Array.isArray(empleado.percepciones_extra) && empleado.percepciones_extra.some(p => p.nombre === 'Pasaje');
 
             if (empleado.pasaje_override === 'quitar') {
@@ -184,7 +184,7 @@ function calcularSueldoSemanal(empleado = null) {
         let aplicaComida = false;
 
         if (tipoHorario === 2) {
-            const precioComida = parseFloat(jsonNominaHuasteca.pago_comida) || 0;
+            const precioComida = parseFloat(jsonNominaRelicario.pago_comida) || 0;
 
             if (empleado.comida_override === 'quitar') {
                 comidaTotal = 0;
@@ -197,7 +197,7 @@ function calcularSueldoSemanal(empleado = null) {
             }
             aplicaComida = true;
         } else if (tipoHorario === 1) {
-            const precioComida = parseFloat(jsonNominaHuasteca.pago_comida) || 0;
+            const precioComida = parseFloat(jsonNominaRelicario.pago_comida) || 0;
             const tieneComidaExtra = Array.isArray(empleado.percepciones_extra) && empleado.percepciones_extra.some(p => p.nombre === 'Comida');
 
             if (empleado.comida_override === 'quitar') {
@@ -221,7 +221,7 @@ function calcularSueldoSemanal(empleado = null) {
         if (tipoHorario === 2) {
             // === CALCULAR TARDEADAS ===
             const diasTardeados = calcularTardeadas(empleado);
-            const montoTardeada = parseFloat(jsonNominaHuasteca.pago_tardeada) || 0;
+            const montoTardeada = parseFloat(jsonNominaRelicario.pago_tardeada) || 0;
 
             const totalTardeada = diasTardeados * montoTardeada;
             empleado.tardeada = parseFloat(totalTardeada === 0 ? 0 : totalTardeada.toFixed(2));
@@ -250,13 +250,13 @@ function calcularSueldoSemanal(empleado = null) {
 
     });
 
-    actualizarCabeceraNomina(jsonNominaHuasteca);
+    actualizarCabeceraNomina(jsonNominaRelicario);
     // Actualizar la tabla manteniendo el filtrado y paginación actual
     if (typeof aplicarFiltrosActuales === 'function') {
         aplicarFiltrosActuales();
     }
 
-    saveNomina(jsonNominaHuasteca);
+    saveNomina(jsonNominaRelicario);
 }
 
 
@@ -265,9 +265,9 @@ function calcularSueldoSemanal(empleado = null) {
  ************************************/
 
 // calcula cuántos días el empleado se pasó más de 45 min de la hora de salida
-// usa jsonNominaHuasteca.horarioRancho que es un arreglo de objetos {dia,entrada,salida,...}
+// usa jsonNominaRelicario.horarioRancho que es un arreglo de objetos {dia,entrada,salida,...}
 function calcularTardeadas(empleado) {
-    if (!empleado.registros || !jsonNominaHuasteca.horarioRancho) return 0;
+    if (!empleado.registros || !jsonNominaRelicario.horarioRancho) return 0;
 
     const diasSemana = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
     let contador = 0;
@@ -290,7 +290,7 @@ function calcularTardeadas(empleado) {
         const dt = new Date(p[2], p[1] - 1, p[0]);
         const dia = diasSemana[dt.getDay()];
 
-        const horarioDia = jsonNominaHuasteca.horarioRancho.find(h => h.dia === dia);
+        const horarioDia = jsonNominaRelicario.horarioRancho.find(h => h.dia === dia);
         if (!horarioDia || !horarioDia.salida) return;
 
         // comparar la última marca con la hora de salida del horario

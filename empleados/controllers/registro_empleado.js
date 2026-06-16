@@ -131,7 +131,8 @@ $(document).ready(function () {
             $('#salario_diario').val('');
         } else {
             const diario = val / 7;
-            $('#salario_diario').val(diario.toFixed(2));
+            // $('#salario_diario').val(diario.toFixed(2));
+            $('#salario_diario').val(diario);
         }
     });
 

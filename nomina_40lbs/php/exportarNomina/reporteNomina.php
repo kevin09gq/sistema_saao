@@ -432,7 +432,8 @@ foreach ($grupos as $nombreGrupo => $empleados) {
 
         $totalGeneralPercepciones += $totalPercepcionesEmpleado;
         $totalGeneralDeducciones += $totalDeduccionesEmpleado;
-        $totalGeneralNetoRedondeado += $sueldoRedondeado;
+        // Redondear Neto General Acumulado para evitar decimales residuales por sumatoria
+        $totalGeneralNetoRedondeado = round($totalGeneralPercepciones - $totalGeneralDeducciones);
         $contadorEmpleados++;
         $contLocal++;
     }

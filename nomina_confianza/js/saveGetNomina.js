@@ -1,5 +1,5 @@
 function confirmarsaveNomina() {
-  $('#btn_guardar_nomina_confianza').on('click', function () {
+    $('#btn_guardar_nomina_confianza').on('click', function () {
         Swal.fire({
             title: '¿Confirmar guardado?',
             text: `¿Está seguro que desea guardar la nómina de la semana ${jsonNominaConfianza.numero_semana}?`,
@@ -15,7 +15,7 @@ function confirmarsaveNomina() {
     });
 }
 
-function saveNominaConfianza(){
+function saveNominaConfianza() {
 
     // Recalcular total_cobrar y redondeo de todos los empleados antes de guardar
     if (typeof calcularTotalCobrar === 'function') {
@@ -28,10 +28,79 @@ function saveNominaConfianza(){
         });
     }
 
+    // Helper para calcular totales localmente antes de guardar (alineado con conceptos_totales.js)
+    const calcularTotalesLocales = (jsonData) => {
+        let totalPercepciones = 0;
+        let totalDeducciones = 0;
+
+        // Lista idéntica a la de conceptos_totales.js
+        const PERCEPCIONES_LIST = [
+            { propiedad: 'salario_semanal' },
+            { propiedad: 'sueldo_extra_total' }
+        ];
+        const DEDUCCIONES_LIST = [
+            { codigo: '45' }, // ISR
+            { codigo: '52' }, // IMSS
+            { codigo: '107' }, // Ajuste al Sub
+            { codigo: '16' }, // Infonavit
+            { propiedad: 'permiso' },
+            { propiedad: 'inasistencia' },
+            { propiedad: 'uniformes' },
+            { propiedad: 'checador' },
+            { propiedad: 'prestamo' },
+            { propiedad: 'tarjeta' },
+            { propiedad: 'retardos' },
+            { propiedad: 'fa_gafet_cofia' },
+        ];
+
+        if (jsonData && jsonData.departamentos) {
+            jsonData.departamentos.forEach(depto => {
+                // SIN filtro por depto.editar — el modal tampoco lo aplica en confianza
+                if (!depto.empleados || !Array.isArray(depto.empleados)) return;
+
+                depto.empleados.forEach(empleado => {
+                    if (empleado.mostrar === false) return;
+
+                    // Percepciones fijas
+                    PERCEPCIONES_LIST.forEach(perc => {
+                        totalPercepciones += parseFloat(empleado[perc.propiedad]) || 0;
+                    });
+
+                    // Deducciones fijas
+                    DEDUCCIONES_LIST.forEach(dedu => {
+                        let valor = 0;
+                        if (dedu.propiedad) {
+                            valor = parseFloat(empleado[dedu.propiedad]) || 0;
+                        } else if (dedu.codigo) {
+                            const concepto = (empleado.conceptos || []).find(c => String(c.codigo) === String(dedu.codigo));
+                            valor = concepto ? (parseFloat(concepto.resultado) || 0) : 0;
+                        }
+                        totalDeducciones += valor;
+                    });
+
+                    // Deducciones adicionales (igual que el modal)
+                    if (Array.isArray(empleado.deducciones_extra)) {
+                        empleado.deducciones_extra.forEach(extra => {
+                            totalDeducciones += parseFloat(extra.cantidad) || 0;
+                        });
+                    }
+                });
+            });
+        }
+
+        return {
+            totalPercepciones: parseFloat(totalPercepciones.toFixed(2)),
+            totalDeducciones: parseFloat(totalDeducciones.toFixed(2)),
+            totalNeto: Math.round(totalPercepciones - totalDeducciones)
+        };
+    };
+
+    const totales = calcularTotalesLocales(jsonNominaConfianza);
+
     eliminarPropiedades(jsonNominaConfianza); // Limpieza de propiedades innecesarias antes de enviar al servidor
     const jsonData = jsonNominaConfianza;
     const numeroSemana = jsonData.numero_semana;
-    
+
     // IMPORTANTE: Usar fecha_cierre para determinar el año (NO fecha_inicio)
     // Esto es crítico para semanas que cruzan el cambio de año
     // Ejemplo: Semana 1 del 2026 que va del 27/Dic/2025 al 02/Ene/2026
@@ -52,8 +121,8 @@ function saveNominaConfianza(){
     } else {
         anio = new Date().getFullYear();
     }
-    
-   
+
+
     $.ajax({
         url: '../php/saveGetNomina.php',
         type: 'POST',
@@ -62,12 +131,15 @@ function saveNominaConfianza(){
             numero_semana: numeroSemana,
             anio: anio,
             nomina: JSON.stringify(jsonData),
+            total_percepciones: totales.totalPercepciones,
+            total_deducciones: totales.totalDeducciones,
+            total_neto: totales.totalNeto,
             actualizar: true,
             case: 'guardarNomina' // Agregar el caso para identificar la función en el servidor
         }),
         contentType: 'application/json; charset=UTF-8',
         success: function (response, textStatus, xhr) {
-           
+
 
             // Parseo simple y seguro (más conciso)
             let parsed = null;
@@ -178,7 +250,7 @@ function eliminarPropiedades(json) {
                 if (empleado.uniformes === 0) delete empleado.uniformes;
                 if (empleado.checador === 0) delete empleado.checador;
                 if (empleado.fa_gafet_cofia === 0) delete empleado.fa_gafet_cofia;
-               
+
                 // Eliminar arreglos de historial si están vacíos
                 if (Array.isArray(empleado.historial_retardos) && empleado.historial_retardos.length === 0) delete empleado.historial_retardos;
                 if (Array.isArray(empleado.historial_olvidos) && empleado.historial_olvidos.length === 0) delete empleado.historial_olvidos;
@@ -190,7 +262,7 @@ function eliminarPropiedades(json) {
                 if (Array.isArray(empleado.percepciones_extra) && empleado.percepciones_extra.length === 0) delete empleado.percepciones_extra;
                 if (Array.isArray(empleado.deducciones_extra) && empleado.deducciones_extra.length === 0) delete empleado.deducciones_extra;
 
-             
+
             });
         }
     });

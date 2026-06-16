@@ -171,6 +171,23 @@ body {
 .status-agotado { background: #fff4e5; color: #d97706; }
 .status-vencido { background: #fef2f2; color: #dc2626; }
 
+/* LFT inline (dentro de emp-meta) */
+.lft-inline-value {
+    color: #d97706;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+.lft-inline-unit {
+    font-size: 0.78rem;
+    color: #b45309;
+    font-weight: 500;
+}
+.lft-inline-version {
+    font-size: 0.72rem;
+    color: #9ca3af;
+    font-style: italic;
+}
+
 .type-abono { color: #1e7e34; font-weight: 600; }
 .type-cargo { color: #dc2626; font-weight: 600; }
 

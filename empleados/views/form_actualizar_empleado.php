@@ -294,7 +294,7 @@ verificarSesion();
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label for="modal_fecha_ingreso_imss_vista" class="form-label">Fecha Ingreso IMSS</label>
-                                        <input type="date" class="form-control" id="modal_fecha_ingreso_imss_vista" readonly disabled>
+                                        <input type="text" class="form-control" id="modal_fecha_ingreso_imss_vista" readonly disabled>
                                     </div>
                                 </div>
                                 <div class="row">
@@ -330,7 +330,7 @@ verificarSesion();
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label for="modal_salario_diario" class="form-label">Salario Diario</label>
-                                        <input type="number" step="0.01" class="form-control" id="modal_salario_diario" name="salario_diario" placeholder="0.00">
+                                        <input type="number" step="any" class="form-control" id="modal_salario_diario" name="salario_diario" placeholder="0.00">
                                     </div>
                                 </div>
 
@@ -661,11 +661,11 @@ verificarSesion();
                                         <div class="row g-3">
                                             <div class="col-md-4">
                                                 <label for="modal_fecha_alta_empresa" class="form-label">Fecha de Alta Empresa</label>
-                                                <input type="date" class="form-control" id="modal_fecha_alta_empresa" name="fecha_alta_empresa">
+                                                <input type="text" class="form-control" id="modal_fecha_alta_empresa" name="fecha_alta_empresa">
                                             </div>
                                             <div class="col-md-4">
                                                 <label for="modal_fecha_alta_imss" class="form-label">Fecha de Alta IMSS</label>
-                                                <input type="date" id="modal_fecha_alta_imss" class="form-control">
+                                                <input type="text" id="modal_fecha_alta_imss" class="form-control">
                                             </div>
                                         </div>
                                     </div>

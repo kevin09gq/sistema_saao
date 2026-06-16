@@ -23,6 +23,9 @@ function abrirModalBiometrico() {
 }
 
 function listarEmpleados() {
+    // cargar departamentos en el select
+    cargarDepartamentosBiometrico();
+
     // vaciar lista
     $('#lista-empleados-biometrico').empty();
 
@@ -32,10 +35,12 @@ function listarEmpleados() {
 
     jsonNominaPalmilla.departamentos.forEach(depto => {
         if (!Array.isArray(depto.empleados)) return;
+
         depto.empleados.forEach(emp => {
             if (emp.mostrar === false) return; // omitir
+
             const item = `
-                <label class="list-group-item">
+                <label class="list-group-item" data-depto="${depto.nombre}">
                     <input type="checkbox" class="form-check-input me-2" data-empresa="${emp.id_empresa}" value="${emp.clave}">
                     ${emp.nombre} <small class="text-muted">(${emp.clave})</small>
                 </label>
@@ -45,14 +50,60 @@ function listarEmpleados() {
     });
 }
 
+//=======================================
+// BUSCADOR DE EMPLEADOS EN EL MODAL
+//=======================================
+
 function buscarEmpleados() {
     // asocia el evento keyup al input de búsqueda
-    $('#buscar-empleado-biometrico').on('keyup', function () {
-        const texto = $(this).val().toLowerCase();
-        $('#lista-empleados-biometrico .list-group-item').each(function () {
-            const contenido = $(this).text().toLowerCase();
-            $(this).toggle(contenido.indexOf(texto) !== -1);
-        });
+    $('#buscar-empleado-biometrico').off('keyup input').on('keyup input', function () {
+        filtrarListaEmpleadosBiometrico();
+    });
+
+    // asocia el evento change al select de departamentos
+    $('#filtro-departamento-biometrico').off('change').on('change', function () {
+        filtrarListaEmpleadosBiometrico();
+    });
+}
+
+//=======================================
+// CARGAR DEPARTAMENTOS EN EL SELECT DEL MODAL
+//=======================================
+
+function cargarDepartamentosBiometrico() {
+    const $select = $('#filtro-departamento-biometrico');
+    if ($select.length === 0) return;
+
+    $select.empty().append('<option value="">Todos los departamentos</option>');
+
+    if (!jsonNominaPalmilla || !Array.isArray(jsonNominaPalmilla.departamentos)) {
+        return;
+    }
+
+    jsonNominaPalmilla.departamentos.forEach(depto => {
+        $select.append(`<option value="${depto.nombre}">${depto.nombre}</option>`);
+    });
+}
+
+//=======================================
+// FILTRAR EMPLEADOS POR BÚSQUEDA Y DEPARTAMENTO
+//=======================================
+
+function filtrarListaEmpleadosBiometrico() {
+    const text = $('#buscar-empleado-biometrico').val();
+    const texto = text ? text.toLowerCase().trim() : '';
+    const deptoSeleccionado = $('#filtro-departamento-biometrico').val();
+
+    $('#lista-empleados-biometrico .list-group-item').each(function () {
+        const $item = $(this);
+        const contenido = $item.text().toLowerCase();
+        const deptoItem = $item.attr('data-depto') || '';
+
+        const cumpleBusqueda = contenido.indexOf(texto) !== -1;
+        const cumpleDepto = !deptoSeleccionado || deptoItem === deptoSeleccionado;
+
+        // Mostrar u ocultar basándose en ambos criterios
+        $item.toggle(cumpleBusqueda && cumpleDepto);
     });
 }
 
@@ -301,8 +352,9 @@ function resetearModalBiometrico() {
     // Ocultar sección de archivo
     $('#seccion-archivo-biometrico').hide();
     
-    // Limpiar búsqueda y archivo
+    // Limpiar búsqueda, filtro y archivo
     $('#buscar-empleado-biometrico').val('');
+    $('#filtro-departamento-biometrico').val('');
     $('#archivo-biometrico-modal').val('');
 
     // Mostrar todos los items de la lista

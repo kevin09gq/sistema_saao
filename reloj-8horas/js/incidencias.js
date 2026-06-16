@@ -1,18 +1,35 @@
-/**
- * Incidencias - Asignación manual de Vacaciones e Incapacidades
- * 
- * Este módulo permite al usuario asignar los días específicos de vacaciones
- * e incapacidades para empleados que los tienen según la lista de raya.
- * 
- * Autor: Brandon
- */
-
 $(document).ready(function () {
 
     // ============================================================
     // NOMBRES DE DÍAS EN ESPAÑOL
     // ============================================================
     const DIAS_SEMANA_ES = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO'];
+
+
+    /**
+     * Funcion para obtener los departamentos de los empleados con incidencias, eliminando duplicados
+     * @param {*} empleadosIncidencias 
+     * @returns 
+     */
+    function obtenerDepartamentos(empleadosIncidencias) {
+        return [...new Set(
+            empleadosIncidencias.map(empleado => empleado.departamento)
+        )].map(departamento => ({
+            nombre: departamento
+        }));
+    }
+
+    /**
+     * Funcion para llenar el select de departamentos en el modal de incidencias
+     * @param {*} departamentos 
+     */
+    function llenar_select_departamentos_incidencias(departamentos) {
+        let tmp = '';
+        departamentos.forEach(depto => {
+            tmp += `<option value="${depto.nombre}">${depto.nombre}</option>`;
+        });
+        $('#select_departamentos_incidencias').html(tmp);
+    }
 
     /**
      * Parsea fecha DD/MM/YYYY a Date
@@ -133,23 +150,31 @@ $(document).ready(function () {
      * Renderiza la tabla principal de empleados
      */
     function renderizarTablaEmpleados(empleados) {
+        // Limpiar tabla
         const $tbody = $('#tbody-incidencias');
         $tbody.empty();
 
+        // Si no hay empleados con incidencias, mostrar mensaje de vacío
         if (empleados.length === 0) {
             $('#incidencias-contenido').hide();
             $('#incidencias-vacio').show();
             return;
         }
 
+        // Mostrar tabla y ocultar mensaje de vacío
         $('#incidencias-vacio').hide();
         $('#incidencias-contenido').show();
 
-        empleados.forEach((emp, idx) => {
-            const estado = calcularEstado(emp);
+        // Obtener el departamento seleccionado
+        const deptoSeleccionado = $('#select_departamentos_incidencias').val();
 
-            // Fila principal del empleado (clickeable para expandir)
-            const $filaEmpleado = $(`
+        // Renderizar cada empleado
+        empleados.forEach((emp, idx) => {
+            if (emp.departamento == deptoSeleccionado) {
+                const estado = calcularEstado(emp);
+
+                // Fila principal del empleado (clickeable para expandir)
+                const $filaEmpleado = $(`
                 <tr class="fila-empleado-incidencia" data-idx="${idx}">
                     <td class="text-center">
                         <i class="bi bi-chevron-right flecha-expand"></i>
@@ -161,13 +186,13 @@ $(document).ready(function () {
                     <td><small>${emp.departamento}</small></td>
                     <td class="text-center">
                         ${emp.dias_vacaciones > 0
-                    ? `<span class="badge bg-success">${emp.vacaciones_asignadas}/${emp.dias_vacaciones}</span>`
-                    : '<span class="text-muted">-</span>'}
+                        ? `<span class="badge bg-success">${emp.vacaciones_asignadas}/${emp.dias_vacaciones}</span>`
+                        : '<span class="text-muted">-</span>'}
                     </td>
                     <td class="text-center">
                         ${emp.dias_incapacidades > 0
-                    ? `<span class="badge bg-primary">${emp.incapacidades_asignadas}/${emp.dias_incapacidades}</span>`
-                    : '<span class="text-muted">-</span>'}
+                        ? `<span class="badge bg-primary">${emp.incapacidades_asignadas}/${emp.dias_incapacidades}</span>`
+                        : '<span class="text-muted">-</span>'}
                     </td>
                     <td class="text-center">
                         <span class="badge ${estado.clase}">${estado.texto}</span>
@@ -175,10 +200,10 @@ $(document).ready(function () {
                 </tr>
             `);
 
-            $tbody.append($filaEmpleado);
+                $tbody.append($filaEmpleado);
 
-            // Fila de detalle (oculta inicialmente)
-            const $filaDetalle = $(`
+                // Fila de detalle (oculta inicialmente)
+                const $filaDetalle = $(`
                 <tr class="detalle-dias-row" data-idx="${idx}" style="display:none;">
                     <td colspan="6">
                         <div class="detalle-dias-container">
@@ -188,7 +213,8 @@ $(document).ready(function () {
                 </tr>
             `);
 
-            $tbody.append($filaDetalle);
+                $tbody.append($filaDetalle);
+            }
         });
     }
 
@@ -337,6 +363,7 @@ $(document).ready(function () {
     const modalIncidencias = document.getElementById('modalIncidencias');
     if (modalIncidencias) {
         modalIncidencias.addEventListener('show.bs.modal', function () {
+
             const $loading = $('#incidencias-loading');
             const $vacio = $('#incidencias-vacio');
             const $contenido = $('#incidencias-contenido');
@@ -345,6 +372,7 @@ $(document).ready(function () {
             $vacio.hide();
             $contenido.hide();
 
+            // RECUPERAR EL JSON DEL LOCAL STORAGE
             const jsonUnido = obtenerDatos();
 
             if (!jsonUnido) {
@@ -353,41 +381,19 @@ $(document).ready(function () {
                 return;
             }
 
-            // Guardar valores originales de lista de raya si no se han guardado aún
-            (jsonUnido.departamentos || []).forEach(depto => {
-                (depto.empleados || []).forEach(emp => {
-                    if (emp.dias_vacaciones_original == null) {
-                        emp.dias_vacaciones_original = emp.dias_vacaciones || 0;
-                    }
-                    if (emp.dias_incapacidades_original == null) {
-                        emp.dias_incapacidades_original = emp.dias_incapacidades || 0;
-                    }
-                    // Guardar tipo_original de cada registro para poder revertir correctamente
-                    (emp.registros_procesados || []).forEach(reg => {
-                        if (reg.tipo_original == null) {
-                            reg.tipo_original = reg.tipo;
-                            // Guardar también los datos originales de trabajo para restaurar
-                            reg.registros_original = reg.registros ? JSON.parse(JSON.stringify(reg.registros)) : [];
-                            reg.trabajado_minutos_original = reg.trabajado_minutos || 0;
-                            reg.trabajado_hhmm_original = reg.trabajado_hhmm || '00:00';
-                            reg.trabajado_decimal_original = reg.trabajado_decimal || 0;
-                            reg.observacion_dia_original = reg.observacion_dia || '';
-                        }
-                    });
-                });
-            });
-
-            // Guardar los originales en sessionStorage
-            try {
-                sessionStorage.setItem('reloj-ocho', JSON.stringify(jsonUnido));
-            } catch (e) {
-                console.error('Error al guardar originales:', e);
-            }
-
+            // RECUPERAR EMPLEADOS CON INCIDENCIAS
             empleadosIncidencias = buscarEmpleadosConIncidencias(jsonUnido);
 
-            $loading.hide();
+            // OBTENER LOS DEPARTAMENTOS DE LOS EMPLEADOS CON INCIDENCIAS PARA LLENAR EL SELECT
+            let departamentos = obtenerDepartamentos(empleadosIncidencias);
+
+            // LLENAR EL SELECT DE DEPARTAMENTOS
+            llenar_select_departamentos_incidencias(departamentos);
+
+            // RENDERIZAR LA TABLA DE EMPLEADOS CON INCIDENCIAS
             renderizarTablaEmpleados(empleadosIncidencias);
+
+            $loading.hide();
 
             // Actualizar contadores iniciales
             empleadosIncidencias.forEach((emp, idx) => {
@@ -395,6 +401,13 @@ $(document).ready(function () {
             });
         });
     }
+
+    // ============================================================
+    // EVENTO: Cambio en el select de departamentos
+    // ============================================================
+    $(document).on('change', '#select_departamentos_incidencias', function () {
+        renderizarTablaEmpleados(empleadosIncidencias);
+    });
 
     // ============================================================
     // EVENTO: Click en fila de empleado para expandir/colapsar
@@ -500,6 +513,7 @@ $(document).ready(function () {
         }
 
         // Validar que todos los empleados con incidencias tengan horario asignado
+        /*
         const empleadosSinHorario = [];
         empleadosIncidencias.forEach(empInfo => {
             const tieneRegistrosSinHorario = empInfo.registros_procesados.some(reg =>
@@ -516,7 +530,7 @@ $(document).ready(function () {
         if (empleadosSinHorario.length > 0) {
             const listaNombres = empleadosSinHorario.map(e => `<li>${e.nombre} (${e.clave})</li>`).join('');
             Swal.fire({
-                title: "⚠️ Horarios pendientes",
+                title: "Horarios pendientes",
                 html: `
                     <p>Los siguientes empleados no tienen horario asignado:</p>
                     <ul style="text-align: left; max-height: 200px; overflow-y: auto;">
@@ -528,7 +542,7 @@ $(document).ready(function () {
                 confirmButtonText: "Entendido"
             });
             return;
-        }
+        } */
 
         let totalCambios = 0;
 
@@ -592,7 +606,7 @@ $(document).ready(function () {
                         reg.editado_manualmente = true;
                         totalCambios++;
                     }
-                } else {
+                } /* else {
                     // Si antes era incapacidad/vacaciones manual y ahora no está marcado,
                     // revertir al estado original del día
                     if (reg.editado_manualmente && (reg.tipo === 'incapacidad' || reg.tipo === 'vacaciones')) {
@@ -607,7 +621,7 @@ $(document).ready(function () {
                         reg.editado_manualmente = false;
                         totalCambios++;
                     }
-                }
+                } */
             });
 
             // Recalcular contadores del empleado

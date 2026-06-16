@@ -18,7 +18,7 @@ const objEmpleado = {
     }
 };
 
-function establerDataModal(empleado) {
+function establecerDataModal(empleado) {
     // Guardar el empleado en el objeto
     objEmpleado.setEmpleado(empleado);
 

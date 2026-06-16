@@ -55,6 +55,14 @@ function cargarEncabezadoEmpleado(emp) {
         .removeClass('status-activo status-vencido')
         .addClass(emp.id_status == 1 ? 'status-activo' : 'status-vencido')
         .text(emp.id_status == 1 ? 'ELEGIBLE' : 'NO ELEGIBLE');
+
+    // ── Días de Derecho LFT del año actual ──
+    if (emp.dias_lft_anio_actual !== null && emp.dias_lft_anio_actual !== undefined) {
+        $('#diasLftAnioActual').text(parseFloat(emp.dias_lft_anio_actual).toFixed(0));
+        $('#wrapperDiasLft').show();
+    } else {
+        $('#wrapperDiasLft').hide();
+    }
 }
 
 

@@ -32,7 +32,8 @@ $(document).ready(function () {
             $('#modal_salario_diario').val('');
         } else {
             const diario = val / 7;
-            $('#modal_salario_diario').val(diario.toFixed(2));
+            // $('#modal_salario_diario').val(diario.toFixed(2));
+            $('#modal_salario_diario').val(diario);
         }
     });
 
@@ -164,6 +165,51 @@ $(document).ready(function () {
             return `${yyyy}-${mm}-${dd}`;
         }
         return trimmed;
+    }
+
+    // Helper: Formatea 'YYYY-MM-DD' a 'DD/Mon/YYYY' (Mon en español, ej: Jun)
+    function formatToDMonY(dateStr) {
+        if (!dateStr) return '';
+        const parts = dateStr.split('-');
+        const monthsEs = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        if (parts.length === 3) {
+            const [y, m, d] = parts;
+            if (y && m && d) {
+                const dd = d.padStart(2, '0');
+                const mmIndex = parseInt(m, 10) - 1;
+                if (mmIndex >= 0 && mmIndex < 12) {
+                    const mon = monthsEs[mmIndex];
+                    return `${dd}/${mon}/${y}`;
+                }
+            }
+        }
+        const dt = new Date(dateStr);
+        if (!isNaN(dt)) {
+            const dd = String(dt.getDate()).padStart(2, '0');
+            const mon = monthsEs[dt.getMonth()];
+            const yyyy = dt.getFullYear();
+            return `${dd}/${mon}/${yyyy}`;
+        }
+        return dateStr;
+    }
+
+    // Helper: Convierte 'DD/Mon/YYYY' o 'YYYY-MM-DD' a 'YYYY-MM-DD'
+    function dMonYToYMD(dateStr) {
+        if (!dateStr) return '';
+        const trimmed = String(dateStr).trim();
+        if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+        const monthsEs = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        const parts = trimmed.split('/');
+        if (parts.length === 3) {
+            const [d, mon, y] = parts;
+            const mmIndex = monthsEs.findIndex(m => m.toLowerCase() === mon.toLowerCase());
+            if (mmIndex !== -1) {
+                const dd = d.padStart(2, '0');
+                const mm = String(mmIndex + 1).padStart(2, '0');
+                return `${y}-${mm}-${dd}`;
+            }
+        }
+        return toYMD(trimmed);
     }
 
     // ===================================================
@@ -495,7 +541,7 @@ $(document).ready(function () {
             }
 
             // Obtener fecha de alta de la empresa
-            const fechaAltaEmpresa = $('#modal_fecha_alta_empresa').val();
+            const fechaAltaEmpresa = dMonYToYMD($('#modal_fecha_alta_empresa').val());
             if (!fechaAltaEmpresa) {
                 Swal.fire({
                     title: 'ADVERTENCIA',
@@ -533,9 +579,9 @@ $(document).ready(function () {
             $('#tbody_historial_reingresos tr').each(function () {
                 const $btnEdit = $(this).find('.btn-editar-historial');
                 if ($btnEdit.length === 0) return; // Fila "Sin registros"
-                
+
                 const idHistRow = $btnEdit.data('id-historial').toString();
-                
+
                 let entrada, salida;
                 if (idHistRow === idHist) {
                     entrada = fechaReingreso;
@@ -546,7 +592,7 @@ $(document).ready(function () {
                     entrada = toYMD(entradaTxt);
                     salida = salidaTxt ? toYMD(salidaTxt) : null;
                 }
-                
+
                 intervals.push({
                     id: idHistRow,
                     entrada: entrada,
@@ -583,7 +629,7 @@ $(document).ready(function () {
                     errorMsg = `La fecha de salida (${formatToDMY(cur.salida)}) no puede ser anterior a la de entrada/reingreso (${formatToDMY(cur.entrada)}).`;
                     break;
                 }
-                
+
                 if (i < intervals.length - 1) {
                     const next = intervals[i + 1];
                     if (!cur.salida) {
@@ -632,7 +678,7 @@ $(document).ready(function () {
                     if (typeof resp === 'string') {
                         try {
                             parsedResp = JSON.parse(resp);
-                        } catch (e) {}
+                        } catch (e) { }
                     }
 
                     if (parsedResp && parsedResp.success === false) {
@@ -702,12 +748,12 @@ $(document).ready(function () {
         // Abrir modal vacío para crear nuevo reingreso
         $(document).on('click', '#btn_nuevo_reingreso', function () {
             $('#modal_hist_id_historial').val('');
-            
+
             // Si no hay registros registrados, pre-poblar con la fecha de alta de la empresa
             const numFilas = $('#tbody_historial_reingresos tr').length;
             const sinRegistros = $('#tbody_historial_reingresos tr').first().find('td').attr('colspan') !== undefined;
             if (numFilas === 0 || sinRegistros) {
-                const fechaAlta = $('#modal_fecha_alta_empresa').val();
+                const fechaAlta = dMonYToYMD($('#modal_fecha_alta_empresa').val());
                 $('#modal_hist_fecha_reingreso').val(fechaAlta);
             } else {
                 $('#modal_hist_fecha_reingreso').val('');
@@ -765,6 +811,40 @@ $(document).ready(function () {
         }
 
     }
+
+    /**
+     * Función para formatear números de manera flexible:
+     * - Si el número es 0, muestra un guion "0"
+     * - Si el número tiene más de 2 decimales y no son ceros, muestra todos los decimales significativos
+     * - En caso contrario, muestra el número con máximo 2 decimales
+     * @param {Number} valor 
+     * @returns 
+     */
+    function formatoFlexible(valor) {
+        // Convertimos a número
+        let numero = parseFloat(valor);
+
+        // Si no hay salario (null, vacío, NaN) o es cero → retorna ''
+        if (!valor || isNaN(numero) || numero === 0) {
+            return '';
+        }
+
+        // Convertimos a string para analizar decimales
+        let str = numero.toString();
+
+        // Si tiene más de dos decimales y no son ceros, lo dejamos tal cual
+        if (str.includes(".")) {
+            let [entero, decimales] = str.split(".");
+            if (decimales.length > 2 && !/^0+$/.test(decimales.slice(2))) {
+                return str; // conserva todos los decimales significativos
+            }
+        }
+
+        // En caso contrario, mostramos con máximo dos decimales
+        return numero.toFixed(2);
+    }
+
+
 
     /**
      * ================================================
@@ -825,7 +905,7 @@ $(document).ready(function () {
 
                         // Campos de salario
                         let salarioSemanal = empleado.salario_semanal;
-                        let salarioDiario = empleado.salario_diario;
+                        let salarioDiario = formatoFlexible(empleado.salario_diario);
 
                         // Obtener la última fecha de reingreso
                         let ultimaFechaReingreso = empleado.ultima_fecha_reingreso;
@@ -863,11 +943,11 @@ $(document).ready(function () {
                         $("#modal_grupo_sanguineo").val(grupoSanguineo);
                         $("#modal_enfermedades_alergias").val(enfermedades);
                         // La fecha alta empresa se asigna al input correspondiente
-                        $("#modal_fecha_alta_empresa").val(fechaAltaEmpresa);
+                        $("#modal_fecha_alta_empresa").prop('type', 'text').val(formatToDMonY(fechaAltaEmpresa));
                         // Fecha alta IMSS
-                        $("#modal_fecha_alta_imss").val(fechaAltaImss);
+                        $("#modal_fecha_alta_imss").prop('type', 'text').val(formatToDMonY(fechaAltaImss));
                         // Vista de Fecha Ingreso IMSS en pestaña Trabajador (solo lectura)
-                        $("#modal_fecha_ingreso_imss_vista").val(fechaAltaImss);
+                        $("#modal_fecha_ingreso_imss_vista").prop('type', 'text').val(formatToDMonY(fechaAltaImss));
                         // Nuevos campos
                         $("#modal_fecha_nacimiento").val(fechaNacimiento);
                         $("#modal_num_casillero").val(numCasillero);
@@ -1274,8 +1354,8 @@ $(document).ready(function () {
         let sexo = $("#modal_sexo").val();
         let grupoSanguineo = $("#modal_grupo_sanguineo").val();
         let enfermedades = $("#modal_enfermedades_alergias").val();
-        let fechaAltaEmpresa = $("#modal_fecha_alta_empresa").val();
-        let fechaAltaImss = $("#modal_fecha_alta_imss").val();
+        let fechaAltaEmpresa = dMonYToYMD($("#modal_fecha_alta_empresa").val());
+        let fechaAltaImss = dMonYToYMD($("#modal_fecha_alta_imss").val());
         let idDepartamento = $("#modal_departamento").val();
 
         // Nuevos campos agregados
@@ -1910,9 +1990,25 @@ $(document).ready(function () {
         }
     });
 
+    // Cambiar dinámicamente tipo de input a date en focus y a text en blur para mantener formato de vista 'DD/Mon/YYYY'
+    $(document).on('focus', '#modal_fecha_alta_empresa, #modal_fecha_alta_imss', function () {
+        const val = $(this).val();
+        if (val) {
+            const ymd = dMonYToYMD(val);
+            $(this).prop('type', 'date').val(ymd);
+        } else {
+            $(this).prop('type', 'date');
+        }
+    });
 
-
-
-
+    $(document).on('blur', '#modal_fecha_alta_empresa, #modal_fecha_alta_imss', function () {
+        const val = $(this).val();
+        $(this).prop('type', 'text');
+        if (val) {
+            $(this).val(formatToDMonY(val));
+        } else {
+            $(this).val('');
+        }
+    });
 
 });

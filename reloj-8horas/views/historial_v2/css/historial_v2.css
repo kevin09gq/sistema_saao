@@ -1,0 +1,129 @@
+/* Estilos para Historial V2 - Versión Compacta con Tono Verde */
+
+:root {
+    --primary-green: #2d9d78; /* Verde medio, ni muy fuerte ni muy claro */
+    --light-green: rgba(45, 157, 120, 0.1);
+    --border-green: rgba(45, 157, 120, 0.2);
+}
+
+.container-fluid {
+    max-width: 1200px;
+}
+
+/* Reducir tamaños de fuente generales */
+body {
+    font-size: 0.9rem;
+}
+
+h1.h3 {
+    font-size: 1.25rem;
+}
+
+/* Transiciones suaves */
+.nav-pills .nav-link {
+    transition: all 0.3s ease;
+    color: #6c757d;
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+}
+
+.nav-pills .nav-link.active {
+    background-color: #fff !important;
+    color: var(--primary-green) !important;
+    box-shadow: 0 2px 8px rgba(45, 157, 120, 0.15);
+}
+
+/* Botones con el nuevo color verde */
+.btn-primary {
+    background-color: var(--primary-green) !important;
+    border-color: var(--primary-green) !important;
+}
+
+.btn-primary:hover {
+    background-color: #248662 !important;
+    border-color: #248662 !important;
+}
+
+.btn-outline-primary {
+    color: var(--primary-green) !important;
+    border-color: var(--primary-green) !important;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-green) !important;
+    color: #fff !important;
+}
+
+/* Badges personalizados con tono verde base */
+.badge-soft-azul { background-color: var(--light-green); color: var(--primary-green); border: 1px solid var(--border-green); cursor: pointer; }
+.badge-soft-morado { background-color: rgba(111, 66, 193, 0.1); color: #6f42c1; border: 1px solid rgba(111, 66, 193, 0.2); cursor: pointer; }
+.badge-soft-gris { background-color: rgba(108, 117, 125, 0.1); color: #6c757d; border: 1px solid rgba(108, 117, 125, 0.2); cursor: pointer; }
+.badge-soft-negro { background-color: rgba(33, 37, 41, 0.1); color: #212529; border: 1px solid rgba(33, 37, 41, 0.2); cursor: pointer; }
+
+
+.badge {
+    padding: 0.4em 0.8em;
+    font-weight: 600;
+    border-radius: 6px;
+    font-size: 0.8rem;
+}
+
+/* Tabla refinements - Más compacta */
+.table thead th {
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    padding: 0.75rem 0.5rem; /* Reducido de 1.25rem */
+    font-size: 0.75rem;
+}
+
+.table tbody td {
+    padding: 0.6rem 0.5rem; /* Reducido de 1rem */
+    color: #495057;
+}
+
+/* Form controls más pequeños */
+.form-select, .form-control {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.75rem;
+}
+
+/* Paginación más pequeña */
+#paginacion_semana .btn, #paginacion_persona .btn {
+    border-radius: 6px;
+    width: auto; /* Cambiado de 32px para evitar que se corte el texto */
+    min-width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+    padding: 0 8px; /* Añadido padding lateral */
+}
+
+/* Evitar scroll innecesario en la tabla por el dropdown */
+.table-responsive {
+    overflow: visible !important;
+}
+
+/* Asegurar que el dropdown no cause scroll en la celda */
+td {
+    overflow: visible !important;
+}
+
+/* Custom dots for list view */
+.dots-separator {
+    color: #e9ecef;
+    flex-grow: 1;
+    border-bottom: 1px dotted #dee2e6;
+    margin: 0 10px;
+    margin-bottom: 4px;
+}
+
+/* Context menu style */
+.custom-context-menu {
+    font-size: 0.85rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border: none !important;
+}
+
+.context-menu-item:hover {
+    background-color: #f8f9fa;
+    color: #0d6efd;
+}

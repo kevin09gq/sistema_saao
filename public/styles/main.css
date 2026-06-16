@@ -263,18 +263,20 @@
 }
 
 /* Variantes por columna (3 columnas por fila) */
-.features .col-md-4:nth-child(1) .feature-card::before{background: linear-gradient(180deg, var(--brand-500), var(--brand-700));}
-.features .col-md-4:nth-child(2) .feature-card::before{background: linear-gradient(180deg, #ffb020, #ff8a00);} /* naranja */
-.features .col-md-4:nth-child(3) .feature-card::before{background: linear-gradient(180deg, #0d6efd, #0b5ed7);} /* azul */
+.features .col-md-3:nth-child(1) .feature-card::before{background: linear-gradient(180deg, var(--brand-500), var(--brand-700));}
+.features .col-md-3:nth-child(2) .feature-card::before{background: linear-gradient(180deg, #ffb020, #ff8a00);} /* naranja */
+.features .col-md-3:nth-child(3) .feature-card::before{background: linear-gradient(180deg, #0d6efd, #0b5ed7);} /* azul */
+.features .col-md-3:nth-child(4) .feature-card::before{background: linear-gradient(180deg, #6f42c1, #5a32a3);} /* morado */
+
 
 /* Icono con fondo acorde */
-.features .col-md-4:nth-child(1) .feature-icon{background:linear-gradient(180deg, rgba(73,198,123,0.12), rgba(73,198,123,0.04)); color:var(--brand-700)}
-.features .col-md-4:nth-child(2) .feature-icon{background:linear-gradient(180deg, rgba(255,176,32,0.12), rgba(255,138,0,0.04)); color:#ff8a00}
-.features .col-md-4:nth-child(3) .feature-icon{background:linear-gradient(180deg, rgba(13,110,253,0.10), rgba(11,94,215,0.04)); color:#0d6efd}
-
+.features .col-md-3:nth-child(1) .feature-icon{background:linear-gradient(180deg, rgba(73,198,123,0.12), rgba(73,198,123,0.04)); color:var(--brand-700)}
+.features .col-md-3:nth-child(2) .feature-icon{background:linear-gradient(180deg, rgba(255,176,32,0.12), rgba(255,138,0,0.04)); color:#ff8a00}
+.features .col-md-3:nth-child(3) .feature-icon{background:linear-gradient(180deg, rgba(13,110,253,0.10), rgba(11,94,215,0.04)); color:#0d6efd}
+.features .col-md-3:nth-child(4) .feature-icon{background:linear-gradient(180deg, rgba(111,66,193,0.10), rgba(111,66,193,0.03)); color:#6f42c1}
 /* Ajustes para evitar que el acento lateral cubra el padding interior en móviles */
 @media (max-width: 767.98px){
-  .features .col-md-4 .feature-card::before{left:8px}
+  .features .col-md-3 .feature-card::before{left:8px}
 }
  
 .feature-item{

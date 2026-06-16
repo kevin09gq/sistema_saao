@@ -26,6 +26,11 @@ function inicializarRegistroVacaciones() {
         calcularDiasRegistro();
     });
 
+    // Escuchar cambios en el período seleccionado
+    $('#selectPeriodo').on('change', function () {
+        verificarExcedente();
+    });
+
     // Formulario de Registro de Vacaciones
     $('#formRegistroVacaciones').on('submit', function (e) {
         e.preventDefault();
@@ -106,6 +111,20 @@ function calcularDiasRegistro() {
     let fFinStr = $('#fechaFin').val();
     let dias = calcularDiasVacaciones(fIniStr, fFinStr);
     $('#numDiasDescontar').val(dias);
+    verificarExcedente();
+}
+
+// Muestra u oculta el selector de método de excedente según los días y saldo del período
+function verificarExcedente() {
+    let dias = parseFloat($('#numDiasDescontar').val()) || 0;
+    let selectedOption = $('#selectPeriodo').find('option:selected');
+    let saldo = parseFloat(selectedOption.data('saldo')) || 0;
+    
+    if (dias > saldo && $('#selectPeriodo').val() !== '') {
+        $('#divMetodoExcedente').slideDown();
+    } else {
+        $('#divMetodoExcedente').slideUp();
+    }
 }
 
 //==============================
@@ -125,6 +144,17 @@ function registrarSalidaVacaciones() {
     let fFinStr = $('#fechaFin').val();
     let obs = $('#txtObservaciones').val();
     let dias = parseFloat($('#numDiasDescontar').val());
+    let idPeriodo = $('#selectPeriodo').val();
+    let metodoExcedente = $('#selectMetodoExcedente').val() || 'antiguo_nuevo';
+
+    if (!idPeriodo) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Período no seleccionado',
+            text: 'Por favor seleccione el período del cual se descontarán los días.'
+        });
+        return;
+    }
 
     if (dias <= 0) {
         Swal.fire({
@@ -157,7 +187,9 @@ function registrarSalidaVacaciones() {
                 fecha_fin: fFinStr,
                 concepto: 'Salida de vacaciones',
                 dias_descontar: dias,
-                observaciones: obs
+                observaciones: obs,
+                id_periodo: idPeriodo,
+                metodo_excedente: metodoExcedente
             }, function (res) {
                 $btn.prop('disabled', false).html(btnHtml);
                 if (res.success) {
@@ -172,6 +204,8 @@ function registrarSalidaVacaciones() {
                     $('#fechaFin').val('');
                     $('#txtObservaciones').val('');
                     $('#numDiasDescontar').val(0);
+                    $('#selectPeriodo').val('');
+                    $('#divMetodoExcedente').hide();
 
                     // Recargar información del empleado, periodos y movimientos
                     obtenerInformacionEmpleado(empleadoActual.id_empleado);

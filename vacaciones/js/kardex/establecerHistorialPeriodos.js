@@ -18,10 +18,26 @@ function cargarPeriodosVacaciones(empleado) {
         id_empleado: empleado.id_empleado
     }, function (periodos) {
 
+        // Limpiar el select de períodos y dejar solo la opción placeholder
+        let $select = $('#selectPeriodo');
+        if ($select.length) {
+            $select.empty().append('<option value="">-- Seleccione un período --</option>');
+        }
+
         if (periodos && periodos.length > 0) {
             listaPeriodosGlobal = inyectarEventosHistorialPeriodos(periodos, empleado);
             mostrarPaginaPeriodos(1);
             actualizarResumenTotales(periodos);
+
+            // Poblar el select con los periodos activos con saldo
+            if ($select.length) {
+                $.each(periodos, function (i, p) {
+                    if (p.estatus === 'ACTIVO' && parseFloat(p.saldo) > 0) {
+                        let text = `Aniv: ${formatearFecha(p.fecha_aniversario)} (${p.anios_antiguedad} ${p.anios_antiguedad == 1 ? 'año' : 'años'}) - Saldo: ${parseFloat(p.saldo).toFixed(3)} días`;
+                        $select.append(`<option value="${p.id_periodo}" data-saldo="${p.saldo}">${text}</option>`);
+                    }
+                });
+            }
         } else {
             // SI NO HAY DATOS, CALCULAR EN TIEMPO REAL (SIMULACIÓN)
             calcularYMostrarPeriodosSimulados(empleado);

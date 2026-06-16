@@ -4,9 +4,10 @@ error_reporting(E_ALL);
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
-// Incluir archivo de conexión a la base de datos
+// Incluir archivos necesarios
 require_once('../../conexion/conexion.php');
-
+require_once('../config_vigencia.php');
+/** @var mysqli $conexion */
 // Establecer la zona horaria a México
 date_default_timezone_set('America/Mexico_City');
 
@@ -44,7 +45,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $tieneIMSS = $row_imss['imss'] && $row_imss['imss'] !== 'N/A' && trim($row_imss['imss']) !== '';
                 }
                 
-                // Establecer la vigencia: 6 meses con IMSS; 45 días sin IMSS
+                // Obtener configuración de vigencia
+                $config = getConfigVigencia();
+                
+                // Establecer la vigencia usando la configuración
                 // Calcular las fechas usando DateTime para mayor precisión
                 $fecha_actual = new DateTime();
                 $fecha_actual->setTime(0, 0, 0); // Establecer hora a 00:00:00
@@ -52,14 +56,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 $fecha_vigencia_obj = clone $fecha_actual;
                 if ($tieneIMSS) {
-                    $fecha_vigencia_obj->modify('+6 months');
+                    $valor = $config['con_imss']['valor'];
+                    $unidad = $config['con_imss']['unidad'];
+                    $fecha_vigencia_obj->modify("+$valor $unidad");
                 } else {
-                    $fecha_vigencia_obj->modify('+45 days');
+                    $valor = $config['sin_imss']['valor'];
+                    $unidad = $config['sin_imss']['unidad'];
+                    $fecha_vigencia_obj->modify("+$valor $unidad");
                 }
                 $fecha_vigencia = $fecha_vigencia_obj->format('Y-m-d');
                 
                 // Log para depuración
-                $vigenciaTexto = $tieneIMSS ? '6 meses' : '45 dias';
+                $vigenciaTexto = $tieneIMSS ? 
+                    "{$config['con_imss']['valor']} {$config['con_imss']['unidad']}" : 
+                    "{$config['sin_imss']['valor']} {$config['sin_imss']['unidad']}";
                 error_log("Calculando fechas - Tiene IMSS: " . ($tieneIMSS ? 'SI' : 'NO') . ", Vigencia: $vigenciaTexto, Fecha creación: $fecha_creacion, Fecha vigencia: $fecha_vigencia");
                 
                 // Preparar la consulta SQL para actualizar las fechas

@@ -27,6 +27,80 @@ function saveNominaPalmilla() {
         });
     }
 
+        // Helper para calcular totales localmente antes de guardar (alineado con conceptos_totales.js)
+    const calcularTotalesLocales = (jsonData) => {
+        let totalPercepciones = 0;
+        let totalDeducciones = 0;
+
+        // Lista idéntica a la de conceptos_totales.js
+        const PERCEPCIONES_LIST = [
+            { propiedad: 'salario_semanal' },
+            { propiedad: 'pasaje' },
+            { propiedad: 'comida' },
+            { propiedad: 'sueldo_extra_total' },
+        ];
+        const DEDUCCIONES_LIST = [
+            { codigo: '45' }, // ISR
+            { codigo: '52' }, // IMSS
+            { codigo: '107' }, // Ajuste al Sub
+            { codigo: '16' }, // Infonavit
+            { propiedad: 'permiso' },
+            { propiedad: 'inasistencia' },
+            { propiedad: 'uniformes' },
+            { propiedad: 'checador' },
+            { propiedad: 'prestamo' },
+            { propiedad: 'tarjeta' },
+            { propiedad: 'retardos' },
+            { propiedad: 'fa_gafet_cofia' },
+        ];
+
+        if (jsonData && jsonData.departamentos) {
+            jsonData.departamentos.forEach(depto => {
+                // SIN filtro por depto.editar — el modal tampoco lo aplica en confianza
+                if (!depto.empleados || !Array.isArray(depto.empleados)) return;
+
+                depto.empleados.forEach(empleado => {
+                    if (empleado.mostrar === false) return;
+
+                    // Percepciones fijas
+                    PERCEPCIONES_LIST.forEach(perc => {
+                        totalPercepciones += parseFloat(empleado[perc.propiedad]) || 0;
+                    });
+
+                    // Deducciones fijas
+                    DEDUCCIONES_LIST.forEach(dedu => {
+                        let valor = 0;
+                        if (dedu.propiedad) {
+                            valor = parseFloat(empleado[dedu.propiedad]) || 0;
+                        } else if (dedu.codigo) {
+                            const concepto = (empleado.conceptos || []).find(c => String(c.codigo) === String(dedu.codigo));
+                            valor = concepto ? (parseFloat(concepto.resultado) || 0) : 0;
+                        }
+                        totalDeducciones += valor;
+                    });
+
+                    // Deducciones adicionales (igual que el modal)
+                    if (Array.isArray(empleado.deducciones_extra)) {
+                        empleado.deducciones_extra.forEach(extra => {
+                            totalDeducciones += parseFloat(extra.cantidad) || 0;
+                        });
+                    }
+                });
+            });
+        }
+
+        return {
+            totalPercepciones: parseFloat(totalPercepciones.toFixed(2)),
+            totalDeducciones: parseFloat(totalDeducciones.toFixed(2)),
+            totalNeto: Math.round(totalPercepciones - totalDeducciones)
+        };
+    };
+
+    const totales = calcularTotalesLocales(jsonNominaPalmilla);
+
+    eliminarPropiedades(jsonNominaPalmilla); // Limpiar propiedades con valor 0 antes de guardar
+
+
     // Quitar el departamento "Corte" del objeto global para no guardarlo en la nómina (se procesa aparte)
     const jsonData = { ...jsonNominaPalmilla, departamentos: jsonNominaPalmilla.departamentos.filter(d => d.nombre !== "Corte") };
     const numeroSemana = jsonData.numero_semana;
@@ -73,6 +147,9 @@ function saveNominaPalmilla() {
             nomina: JSON.stringify(jsonData),
             corte: JSON.stringify(empleadosCorte), // Enviar solo los empleados del departamento de Corte
             poda: JSON.stringify(empleadosPoda), // Enviar solo los empleados del departamento de Poda
+            total_percepciones: totales.totalPercepciones,
+            total_deducciones: totales.totalDeducciones,
+            total_neto: totales.totalNeto,
             actualizar: true,
             case: 'guardarNominaPalmilla' // Agregar el caso para identificar la función en el servidor
         }),
@@ -165,6 +242,54 @@ function getNominaPalmilla(numeroSemana, anio) {
     }).catch(function (err) {
         console.error('getNominaPalmilla AJAX failed', err);
         return null;
+    });
+}
+
+//=======================================
+// ELIMINAR PROPIEDADES CON VALOR 0 PARA OPTIMIZAR ALMACENAMIENTO EN BASE DE DATOS
+//=======================================
+
+function eliminarPropiedades(json) {
+    if (!json || !json.departamentos || !Array.isArray(json.departamentos)) return;
+
+    json.departamentos.forEach(departamento => {
+        if (departamento.empleados && Array.isArray(departamento.empleados)) {
+            departamento.empleados.forEach(empleado => {
+
+                // Verificamos y eliminamos individualmente cada propiedad si es 0
+                if (empleado.salario_semanal === 0) delete empleado.salario_semanal;
+                if (empleado.salario_diario === 0) delete empleado.salario_diario;
+                if (empleado.sueldo_extra_total === 0) delete empleado.sueldo_extra_total;
+                if (empleado.retardos === 0) delete empleado.retardos;
+                if (empleado.prestamo === 0) delete empleado.prestamo;
+                if (empleado.permiso === 0) delete empleado.permiso;
+                if (empleado.inasistencia === 0) delete empleado.inasistencia;
+                if (empleado.uniformes === 0) delete empleado.uniformes;
+                if (empleado.checador === 0) delete empleado.checador;
+                if (empleado.fa_gafet_cofia === 0) delete empleado.fa_gafet_cofia;
+                if (empleado.pasaje === 0) delete empleado.pasaje;
+                if (empleado.comida === 0) delete empleado.comida;
+                if (empleado.tardeada === 0) delete empleado.tardeada;
+                if (empleado.dias_extra === 0) delete empleado.dias_extra;
+                if (empleado.dias_menos === 0) delete empleado.dias_menos;
+
+
+                // --- LIMPIEZA DE HISTORIALES Y CONCEPTOS EXTRAS (Si están vacíos) ---
+                if (Array.isArray(empleado.historial_olvidos) && empleado.historial_olvidos.length === 0) delete empleado.historial_olvidos;
+                if (Array.isArray(empleado.historial_inasistencias) && empleado.historial_inasistencias.length === 0) delete empleado.historial_inasistencias;
+                if (Array.isArray(empleado.historial_permisos) && empleado.historial_permisos.length === 0) delete empleado.historial_permisos;
+                if (Array.isArray(empleado.historial_uniforme) && empleado.historial_uniforme.length === 0) delete empleado.historial_uniforme;
+                if (Array.isArray(empleado.historial_retardos) && empleado.historial_retardos.length === 0) delete empleado.historial_retardos;
+                if (Array.isArray(empleado.dias_menos_detalle) && empleado.dias_menos_detalle.length === 0) delete empleado.dias_menos_detalle;
+                if (Array.isArray(empleado.dias_extra_detalle) && empleado.dias_extra_detalle.length === 0) delete empleado.dias_extra_detalle;
+
+                // Limpieza de percepciones y deducciones extras
+                if (Array.isArray(empleado.percepciones_extra) && empleado.percepciones_extra.length === 0) delete empleado.percepciones_extra;
+                if (Array.isArray(empleado.deducciones_extra) && empleado.deducciones_extra.length === 0) delete empleado.deducciones_extra;
+
+
+            });
+        }
     });
 }
 

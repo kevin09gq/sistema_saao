@@ -42,25 +42,29 @@ function guardarNominaRelicario($data, $conexion)
     $anio = $data['anio'];
     $nomina = $data['nomina'];
     $actualizar = $data['actualizar'];
+    $total_percepciones = isset($data['total_percepciones']) ? floatval($data['total_percepciones']) : 0.0;
+    $total_deducciones = isset($data['total_deducciones']) ? floatval($data['total_deducciones']) : 0.0;
+    $total_neto = isset($data['total_neto']) ? floatval($data['total_neto']) : 0.0;
+
 
     // Obtener todo lo de corte
     $corte = $data['corte'];
     // Obtener todo lo de poda
     $poda = $data['poda'];
 
-    // Verificar si ya existe la nómina considerando número de semana y año
-    $query = "SELECT * FROM nomina_relicario WHERE numero_semana = ? AND anio = ?";
+    // Verificar si ya existe la nómina considerando empresa, número de semana y año
+    $query = "SELECT * FROM nomina_relicario WHERE id_empresa = ? AND numero_semana = ? AND anio = ?";
     $stmt = $conexion->prepare($query);
-    $stmt->bind_param("ii", $numero_semana, $anio);
+    $stmt->bind_param("iii", $id_empresa, $numero_semana, $anio);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
         if ($actualizar) {
             // Actualizar nómina existente
-            $updateQuery = "UPDATE nomina_relicario SET nomina_relicario = ? WHERE id_empresa = ? AND numero_semana = ? AND anio = ?";
+            $updateQuery = "UPDATE nomina_relicario SET nomina_relicario = ?, total_percepciones = ?, total_deducciones = ?, total_neto = ? WHERE id_empresa = ? AND numero_semana = ? AND anio = ?";
             $updateStmt = $conexion->prepare($updateQuery);
-            $updateStmt->bind_param("siii", $nomina, $id_empresa, $numero_semana, $anio);
+            $updateStmt->bind_param("sdddiii", $nomina, $total_percepciones, $total_deducciones, $total_neto, $id_empresa, $numero_semana, $anio);
             if ($updateStmt->execute()) {
                 // Obtener el ID de la nómina actualizada
                 $queryId = "SELECT id_nomina_relicario FROM nomina_relicario WHERE id_empresa = ? AND numero_semana = ? AND anio = ?";
@@ -86,9 +90,9 @@ function guardarNominaRelicario($data, $conexion)
         }
     } else {
         // Insertar nueva nómina
-        $insertQuery = "INSERT INTO nomina_relicario (id_empresa, numero_semana, anio, nomina_relicario) VALUES (?, ?, ?, ?)";
+        $insertQuery = "INSERT INTO nomina_relicario (id_empresa, numero_semana, anio, nomina_relicario, total_percepciones, total_deducciones, total_neto) VALUES (?, ?, ?, ?, ?, ?, ?)";
         $insertStmt = $conexion->prepare($insertQuery);
-        $insertStmt->bind_param("iiis", $id_empresa, $numero_semana, $anio, $nomina);
+        $insertStmt->bind_param("iiisddd", $id_empresa, $numero_semana, $anio, $nomina, $total_percepciones, $total_deducciones, $total_neto);
         if ($insertStmt->execute()) {
             // Recuperar el ID insertado
             $ultimoId = $conexion->insert_id;
@@ -469,7 +473,6 @@ function guardarPoda($poda, $idNomina, $conexion)
         $conexion->commit();
 
         error_log("Poda guardada correctamente (TRANSACCIÓN OK) para nómina ID: " . $idNomina);
-
     } catch (Exception $e) {
 
         // Revertir todo

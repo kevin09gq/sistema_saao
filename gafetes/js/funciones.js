@@ -11,6 +11,9 @@ $(document).ready(function () {
     let todosLosEmpleados = [];
     let ordenClave = 'asc'; // 'asc' o 'desc' para controlar el orden de la columna Clave
     let filtroEstado = 'todos'; // todos | vigente | expirado | sin_fecha
+    let filtroArea = 'todos';
+    let filtroIMSS = 'todos';
+    let configVigencia = null; // Configuración de vigencia
 
     // Función para formatear texto a mayúsculas mientras se escribe
     function formatearMayusculas(selector) {
@@ -59,11 +62,35 @@ $(document).ready(function () {
         return `${dd}/${mm}/${yyyy}`;
     }
 
-    // Función para obtener la lista actual de empleados aplicando búsqueda y filtro de estado
+    // Función para obtener la lista actual de empleados aplicando búsqueda y filtros
     function obtenerEmpleadosAMostrar() {
         let base = ($('#buscadorEmpleados').val().trim() !== '') ? empleadosFiltrados : empleados;
+        
+        // Filtro por Área
+        if (filtroArea !== 'todos') {
+            base = base.filter(e => e.id_area == filtroArea);
+        }
+
+        // Filtro por IMSS
+        if (filtroIMSS !== 'todos') {
+            base = base.filter(e => {
+                // Determinar si el empleado tiene IMSS válido
+                const tieneNumeroIMSS = e.imss && e.imss !== 'N/A' && e.imss.trim() !== '';
+                const statusNss = e.status_nss !== undefined ? e.status_nss : 0;
+                const tieneIMSS = tieneNumeroIMSS && statusNss == 1;
+
+                if (filtroIMSS === 'con_imss') return tieneIMSS;
+                if (filtroIMSS === 'sin_imss') return !tieneIMSS;
+                return true;
+            });
+        }
+
+        // Filtro por Estado de Gafete
         if (filtroEstado !== 'todos') {
             base = base.filter(e => {
+                if (filtroEstado === 'seleccionados') {
+                    return empleadosSeleccionados.has(e.id_empleado.toString());
+                }
                 const estado = obtenerEstadoGafete(e);
                 if (filtroEstado === 'vigente') return estado === 'Vigente';
                 if (filtroEstado === 'expirado') return estado === 'Expirado';
@@ -109,8 +136,14 @@ $(document).ready(function () {
         return { logoAreaUrl, logoEmpresaUrl };
     }
 
+    // Cargar áreas al iniciar
+    cargarAreas();
+
     // Cargar departamentos al iniciar
     cargarDepartamentos();
+
+    // Cargar configuración de vigencia
+    cargarConfigVigencia();
 
     // Cargar todos los empleados inicialmente
     cargarEmpleadosPorDepartamento('todos', true); // true para indicar que es carga global
@@ -294,10 +327,13 @@ $(document).ready(function () {
         const idEmpleado = $(this).val(); // Usamos value en lugar de data-id
         if ($(this).is(':checked')) {
             empleadosSeleccionados.add(idEmpleado);
-
         } else {
             empleadosSeleccionados.delete(idEmpleado);
-
+            
+            // Si el filtro actual es 'seleccionados' y desmarcamos uno, actualizamos la tabla
+            if (filtroEstado === 'seleccionados') {
+                actualizarTablaEmpleados();
+            }
         }
         window.empleadosSeleccionados = empleadosSeleccionados;
         actualizarContadorSeleccionados();
@@ -841,11 +877,40 @@ $(document).ready(function () {
         ventanaImpresion.document.close();
     }
 
-    // Función para cargar departamentos (dropdown)
-    function cargarDepartamentos() {
+    // Función para cargar áreas (dropdown)
+    function cargarAreas() {
         $.ajax({
-            url: '../public/php/obtenerDepartamentos.php',
+            url: '../public/php/obtenerAreas.php',
             type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                const $select = $('#filtroArea');
+                $select.empty();
+                $select.append('<option value="todos">Todas las áreas</option>');
+
+                data.forEach(area => {
+                    $select.append(`<option value="${area.id_area}">${area.nombre_area}</option>`);
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error('Error al cargar las áreas:', error);
+            }
+        });
+    }
+
+    // Función para cargar departamentos (dropdown)
+    function cargarDepartamentos(idArea = 'todos') {
+        let url = '../public/php/obtenerDepartamentos.php';
+        const data = {};
+
+        if (idArea !== 'todos') {
+            data.id_area = idArea;
+        }
+
+        $.ajax({
+            url: url,
+            type: 'GET',
+            data: data,
             dataType: 'json',
             success: function (data) {
                 departamentos = data;
@@ -876,10 +941,33 @@ $(document).ready(function () {
         });
     }
 
+    // Evento para el filtro de área
+    $('#filtroArea').on('change', function () {
+        filtroArea = $(this).val();
+        // Resetear departamento al cambiar de área
+        $('#filtroDepartamento').val('todos');
+        // Cargar departamentos filtrados por área
+        cargarDepartamentos(filtroArea);
+        paginaActual = 1;
+        
+        if (filtroArea === 'todos') {
+            cargarEmpleadosPorDepartamento('todos');
+        } else {
+            actualizarTablaEmpleados();
+        }
+    });
+
     // Evento para filtrar empleados por departamento desde el select
     $('#filtroDepartamento').on('change', function () {
         const idDepartamento = $(this).val() || 'todos';
         cargarEmpleadosPorDepartamento(idDepartamento);
+    });
+
+    // Evento para el filtro de IMSS
+    $('#filtroIMSS').on('change', function () {
+        filtroIMSS = $(this).val();
+        paginaActual = 1;
+        actualizarTablaEmpleados();
     });
 
     // Función para cargar empleados por departamento
@@ -1595,16 +1683,44 @@ $(document).ready(function () {
                 const statusNss = empleado.status_nss !== undefined ? empleado.status_nss : 0;
                 const tieneIMSS = tieneNumeroIMSS && statusNss == 1;
                 
-                // Establecer la vigencia: 6 meses con IMSS; 45 días sin IMSS
-                if (tieneIMSS) {
-                    // Sumar 6 meses y ajustar si cae en fin de mes
-                    fechaFin.setMonth(fechaFin.getMonth() + 6);
-                    if (fechaFin.getDate() !== fechaInicio.getDate()) {
-                        fechaFin.setDate(0);
+                // Establecer la vigencia usando la configuración
+                if (configVigencia) {
+                    const config = tieneIMSS ? configVigencia.con_imss : configVigencia.sin_imss;
+                    const valor = config.valor;
+                    const unidad = config.unidad;
+                    
+                    switch (unidad) {
+                        case 'days':
+                            fechaFin.setDate(fechaFin.getDate() + valor);
+                            break;
+                        case 'weeks':
+                            fechaFin.setDate(fechaFin.getDate() + (valor * 7));
+                            break;
+                        case 'months':
+                            fechaFin.setMonth(fechaFin.getMonth() + valor);
+                            // Ajustar si cae en fin de mes
+                            if (fechaFin.getDate() !== fechaInicio.getDate()) {
+                                fechaFin.setDate(0);
+                            }
+                            break;
+                        case 'years':
+                            fechaFin.setFullYear(fechaFin.getFullYear() + valor);
+                            // Ajustar si es año bisiesto y el día es 29 de febrero
+                            if (fechaFin.getDate() !== fechaInicio.getDate()) {
+                                fechaFin.setDate(0);
+                            }
+                            break;
                     }
                 } else {
-                    // Sumar 45 días
-                    fechaFin.setDate(fechaFin.getDate() + 45);
+                    // Fallback a valores por defecto si no hay configuración
+                    if (tieneIMSS) {
+                        fechaFin.setMonth(fechaFin.getMonth() + 1);
+                        if (fechaFin.getDate() !== fechaInicio.getDate()) {
+                            fechaFin.setDate(0);
+                        }
+                    } else {
+                        fechaFin.setDate(fechaFin.getDate() + 45);
+                    }
                 }
                 const pad = n => n.toString().padStart(2, '0');
                 const formato = (f) => `${pad(f.getDate())}/${pad(f.getMonth() + 1)}/${f.getFullYear()}`;
@@ -2581,6 +2697,114 @@ $(document).ready(function () {
     // FUNCIONES DE VALIDACIÓN
     // ======================================
 
+    // ======================================
+    // FUNCIONES DE CONFIGURACIÓN DE VIGENCIA
+    // ======================================
+
+    // Función para cargar la configuración de vigencia
+    function cargarConfigVigencia() {
+        $.ajax({
+            url: 'php/obtenerConfigVigencia.php',
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                if (response.success && response.config) {
+                    configVigencia = response.config;
+                    // Actualizar los campos del modal con la configuración
+                    actualizarCamposConfigVigencia();
+                }
+            },
+            error: function() {
+                console.error('Error al cargar la configuración de vigencia');
+            }
+        });
+    }
+
+    // Función para actualizar los campos del modal con la configuración
+    function actualizarCamposConfigVigencia() {
+        if (!configVigencia) return;
+        
+        $('#con_imss_valor').val(configVigencia.con_imss.valor);
+        $('#con_imss_unidad').val(configVigencia.con_imss.unidad);
+        $('#sin_imss_valor').val(configVigencia.sin_imss.valor);
+        $('#sin_imss_unidad').val(configVigencia.sin_imss.unidad);
+    }
+
+    // Función para guardar la configuración de vigencia
+    function guardarConfigVigencia() {
+        const con_imss_valor = parseInt($('#con_imss_valor').val()) || 1;
+        const con_imss_unidad = $('#con_imss_unidad').val() || 'year';
+        const sin_imss_valor = parseInt($('#sin_imss_valor').val()) || 45;
+        const sin_imss_unidad = $('#sin_imss_unidad').val() || 'days';
+        
+        // Validar valores
+        if (con_imss_valor < 1) {
+            mostrarAlertaGafete('El valor para CON IMSS debe ser al menos 1', 'warning');
+            return;
+        }
+        if (sin_imss_valor < 1) {
+            mostrarAlertaGafete('El valor para SIN IMSS debe ser al menos 1', 'warning');
+            return;
+        }
+        
+        $.ajax({
+            url: 'php/guardarConfigVigencia.php',
+            type: 'POST',
+            data: {
+                con_imss_valor: con_imss_valor,
+                con_imss_unidad: con_imss_unidad,
+                sin_imss_valor: sin_imss_valor,
+                sin_imss_unidad: sin_imss_unidad
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    configVigencia = response.config;
+                    mostrarAlertaGafete('Configuración guardada correctamente', 'success');
+                    // Cerrar el modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('modalConfigVigencia'));
+                    if (modal) modal.hide();
+                } else {
+                    mostrarAlertaGafete(response.message || 'Error al guardar la configuración', 'error');
+                }
+            },
+            error: function() {
+                mostrarAlertaGafete('Error al guardar la configuración', 'error');
+            }
+        });
+    }
+
+    // Función para restablecer la configuración a valores por defecto
+    function resetConfigVigencia() {
+        $('#con_imss_valor').val(1);
+        $('#con_imss_unidad').val('years');
+        $('#sin_imss_valor').val(45);
+        $('#sin_imss_unidad').val('days');
+    }
+
+    // Evento para abrir el modal y cargar la configuración
+    $('#modalConfigVigencia').on('show.bs.modal', function () {
+        if (configVigencia) {
+            actualizarCamposConfigVigencia();
+        } else {
+            cargarConfigVigencia();
+        }
+    });
+
+    // Evento para guardar la configuración
+    $('#btnGuardarConfigVigencia').on('click', function() {
+        guardarConfigVigencia();
+    });
+
+    // Evento para restablecer la configuración
+    $('#btnResetConfigVigencia').on('click', function() {
+        resetConfigVigencia();
+    });
+
+    // ======================================
+    // FUNCIONES DE VALIDACIÓN
+    // ======================================
+
     // Funciones de validación importadas
     function validarNombre(nombre) {
         // Convertir a mayúsculas antes de validar
@@ -3202,6 +3426,10 @@ $(document).ready(function () {
             $('#btn_eliminar_foto').prop('disabled', true);
         }
     }
+
+    // Manejador para vista previa de nueva foto
+    $(document).on('change', '#nueva_foto', function() {
+        const file = this.files[0];
 
         if (file) {
             // Validar tipo de archivo
@@ -4059,4 +4287,4 @@ $(document).ready(function () {
     });
     modalInstance.show();
     }
-;
+});

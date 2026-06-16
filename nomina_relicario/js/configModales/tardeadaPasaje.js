@@ -21,13 +21,13 @@ function abrirModalPasajeTardeada() {
 // ============================================
 
 function establecerDataModalTardeadaPasaje() {
-    if (!jsonNominaPalmilla) {
-        console.warn('jsonNominaPalmilla no está cargado aún');
+    if (!jsonNominaRelicario) {
+        console.warn('jsonNominaRelicario no está cargado aún');
         return;
     }
-    $("#input-pasaje").val(jsonNominaPalmilla.precio_pasaje || 0);
-    $("#input-comida").val(jsonNominaPalmilla.pago_comida || 0);
-    $("#input-tardeada").val(jsonNominaPalmilla.pago_tardeada || 0);
+    $("#input-pasaje").val(jsonNominaRelicario.precio_pasaje || 0);
+    $("#input-comida").val(jsonNominaRelicario.pago_comida || 0);
+    $("#input-tardeada").val(jsonNominaRelicario.pago_tardeada || 0);
 }
 
 // ============================================
@@ -41,9 +41,9 @@ function guardarValoresTardeadaPasaje() {
         const comida = parseFloat($('#input-comida').val()) || 0;
         const tardeada = parseFloat($('#input-tardeada').val()) || 0;
 
-        jsonNominaPalmilla.precio_pasaje = pasaje;
-        jsonNominaPalmilla.pago_comida = comida;
-        jsonNominaPalmilla.pago_tardeada = tardeada;
+        jsonNominaRelicario.precio_pasaje = pasaje;
+        jsonNominaRelicario.pago_comida = comida;
+        jsonNominaRelicario.pago_tardeada = tardeada;
 
         // Actualizar pasaje y tardeada en todos los empleados
         actualizarPasajeTardeadaEnEmpleados();
@@ -56,17 +56,17 @@ function guardarValoresTardeadaPasaje() {
 // ACTUALIZAR PASAJE Y TARDEADA EN TODOS LOS EMPLEADOS
 // ============================================
 function actualizarPasajeTardeadaEnEmpleados() {
-    // Validar que exista jsonNominaPalmilla y horarioRancho
-    if (!jsonNominaPalmilla || !jsonNominaPalmilla.horarioRancho) {
-        console.warn('No se puede actualizar: falta jsonNominaPalmilla o horarioRancho');
+    // Validar que exista jsonNominaRelicario y horarioRancho
+    if (!jsonNominaRelicario || !jsonNominaRelicario.horarioRancho) {
+        console.warn('No se puede actualizar: falta jsonNominaRelicario o horarioRancho');
         return;
     }
 
     // Recolectar empleados del tipo_horario 2 que tengan registros
     const empleadosAActualizar = [];
 
-    if (Array.isArray(jsonNominaPalmilla.departamentos)) {
-        jsonNominaPalmilla.departamentos.forEach(departamento => {
+    if (Array.isArray(jsonNominaRelicario.departamentos)) {
+        jsonNominaRelicario.departamentos.forEach(departamento => {
             if (!Array.isArray(departamento.empleados)) return;
 
             departamento.empleados.forEach(empleado => {
@@ -112,8 +112,8 @@ function abrirModalQuitarComidaPasaje() {
 }
 
 function listarEmpleadosParaQuitarComidaPasaje() {
-    if (!jsonNominaPalmilla || !Array.isArray(jsonNominaPalmilla.departamentos)) {
-        console.warn('jsonNominaPalmilla no disponible');
+    if (!jsonNominaRelicario || !Array.isArray(jsonNominaRelicario.departamentos)) {
+        console.warn('jsonNominaRelicario no disponible');
         return;
     }
 
@@ -121,7 +121,7 @@ function listarEmpleadosParaQuitarComidaPasaje() {
     tbody.empty();
 
     // Iterar y filtrar jornaleros (tipo_horario 2 con mostrar = true)
-    jsonNominaPalmilla.departamentos.forEach(departamento => {
+    jsonNominaRelicario.departamentos.forEach(departamento => {
         if (!Array.isArray(departamento.empleados)) return;
 
         // Filtrar jornaleros/coordinadores del departamento
@@ -188,7 +188,7 @@ function aplicarQuitarComidaPasaje() {
     empleadosSeleccionados.forEach(claveBuscar => {
         const [clave, id_empresa] = claveBuscar.split('|');
 
-        jsonNominaPalmilla.departamentos.forEach(departamento => {
+        jsonNominaRelicario.departamentos.forEach(departamento => {
             if (!Array.isArray(departamento.empleados)) return;
 
             const empleado = departamento.empleados.find(
@@ -235,7 +235,7 @@ function aplicarQuitarComidaPasaje() {
     const id_puestoEspecial = parseInt($('#filtro_puesto').val());
 
     // Aplicar los mismos filtros que están activos
-    let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaPalmilla, id_departamento);
+    let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, id_departamento);
     jsonFiltrado = filtrarEmpleadosPorPuesto(jsonFiltrado, id_puestoEspecial);
 
     // Mostrar la tabla en la página actual (usar window.paginaActualNomina para acceso global)

@@ -49,7 +49,7 @@
                             <a class="dropdown-item dropdown-toggle" href="#">Reloj 8 Horas</a>
                             <ul class="submenu dropdown-menu">
                                 <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/reloj-8horas/views/reloj.php">Subir Excel</a></li>
-                                <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/reloj-8horas/views/historial.php">Historial</a></li>
+                                <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/reloj-8horas/views/historial_v2/historial.php">Historial</a></li>
                             </ul>
                         </li>
                     </ul>
@@ -62,6 +62,7 @@
                     </a>
                     <ul class="submenu dropdown-menu" aria-labelledby="nominasDropdown">
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_40lbs/views/nomina_40lbs.php">40 lbs</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_10lbs/views/nomina_10lbs.php">10 lbs</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_confianza/views/nomina_confianza.php">Confianza</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_relicario/views/nomina_relicario.php">Rancho Relicario</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_pilar/views/nomina_pilar.php">Rancho Pilar</a></li>
@@ -77,6 +78,14 @@
                                 <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_huasteca/views/historial_cortes.php">Huasteca</a></li>
                             </ul>
                         </li>
+                        <li class="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle" href="#">Historial Nominas</a>
+                            <ul class="submenu dropdown-menu">
+                                <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_40lbs/historial/views/historial_40lbs.php">40 lbs</a></li>
+                                <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_10lbs/historial/views/historial_10lbs.php">10 lbs</a></li>
+
+                            </ul>
+                        </li>
 
                     </ul>
                 </li>
@@ -90,10 +99,10 @@
 
                 <!-- Botón de Notificaciones en el Navbar -->
                 <li class="menu-item nav-item">
-                    <a href="<?= $rutaRaiz ?>/public/views/notificaciones.php" class="nav-link notification-nav-link" id="notificationNavbarButton">
+                    <a href="#" class="nav-link notification-nav-link" id="notificationNavbarButton" role="button" title="Notificaciones">
                         <div class="notification-icon-wrapper">
                             <i class="bi bi-bell-fill"></i>
-                            <span class="badge rounded-pill bg-danger" id="notificationBadge">0</span>
+                            <span class="badge rounded-pill bg-danger d-none" id="notificationBadge">0</span>
                         </div>
                         <span class="link-text d-lg-none ms-2">Notificaciones</span>
                     </a>

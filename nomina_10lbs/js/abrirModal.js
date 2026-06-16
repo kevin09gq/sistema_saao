@@ -49,7 +49,7 @@ function abrirModal() {
             const empleadoEncontrado = buscarEmpleado(clave, idEmpresa);
 
             if (empleadoEncontrado) {
-                establerDataModal(empleadoEncontrado);
+                establecerDataModal(empleadoEncontrado);
             } else {
                 console.warn('Empleado no encontrado');
             }

@@ -66,6 +66,12 @@
                                 id="ingresoEmpleado"></span></span>
                         <span><i class="bi bi-clock-history"></i> <strong>Antigüedad:</strong> <span
                                 id="antiguedadEmpleado"></span></span>
+                        <span id="wrapperDiasLft" style="display:none;">
+                            <i class="bi bi-award" style="color:#f59e0b;"></i>
+                            <strong>Días derecho (año actual):</strong>
+                            <span id="diasLftAnioActual" class="lft-inline-value">--</span>
+                            <span class="lft-inline-unit">días</span>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -74,6 +80,7 @@
                 <span class="badge-status status-activo" id="statusEmpleado"></span>
             </div>
         </div>
+
 
         <!-- Estadísticas Resumidas -->
         <div class="row g-4 mb-5">
@@ -120,6 +127,19 @@
                                 <label class="form-label-kardex">Concepto / Observaciones</label>
                                 <textarea class="input-kardex" id="txtObservaciones" rows="2"
                                     placeholder="Ej. Vacaciones de Verano"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label-kardex">Descontar de Período</label>
+                                <select class="input-kardex" id="selectPeriodo" required>
+                                    <option value="">-- Seleccione un período --</option>
+                                </select>
+                            </div>
+                            <div class="col-12" id="divMetodoExcedente" style="display: none;">
+                                <label class="form-label-kardex">Método para días excedentes</label>
+                                <select class="input-kardex" id="selectMetodoExcedente">
+                                    <option value="antiguo_nuevo">Descontar de más antiguo a más nuevo (Recomendado)</option>
+                                    <option value="nuevo_antiguo">Descontar de más reciente a más antiguo</option>
+                                </select>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label-kardex">Días a Descontar</label>

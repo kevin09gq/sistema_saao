@@ -4,7 +4,7 @@ Este modal se utiliza para mostrar y gestionar las incidencias
 de vacaciones e incapacidades de los empleados durante el
 periodo, esto proviene de la lista de raya
 =====================================================-->
-<div class="modal fade" id="modalIncidencias" tabindex="-1" aria-labelledby="modalIncidenciasLabel" aria-hidden="true">
+<div class="modal fade" id="modalIncidencias" tabindex="-1" aria-labelledby="modalIncidenciasLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
@@ -15,12 +15,18 @@ periodo, esto proviene de la lista de raya
             </div>
             <div class="modal-body">
 
+                <div class="row g-2">
+                    <div class="col-md-5 mb-3">
+                        <select class="form-select form-select-sm shadow-sm" id="select_departamentos_incidencias"></select>
+                    </div>
+                </div>
+
                 <!-- Mensaje informativo -->
-                <div class="alert alert-info py-2 mb-3" role="alert">
+                <!-- <div class="alert alert-info py-2 mb-3" role="alert">
                     <i class="bi bi-info-circle me-1"></i>
                     <small>Aquí se listan los empleados que tienen <strong>vacaciones</strong> o <strong>incapacidades</strong> según la lista de raya. 
                     Selecciona los días específicos para cada empleado.</small>
-                </div>
+                </div> -->
 
                 <!-- Contenedor de carga -->
                 <div id="incidencias-loading" class="text-center py-4" style="display:none;">

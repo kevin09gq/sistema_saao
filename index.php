@@ -15,7 +15,7 @@ verificarSesion();
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="public/styles/main.css">
     <link rel="stylesheet" href="public/styles/notificacion.css">
-   
+
     <!-- Iconos Bootstrap -->
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <!-- SweetAlert2 CSS -->
@@ -23,7 +23,7 @@ verificarSesion();
 </head>
 
 <body>
-    
+
     <?php include("public/views/navbar.php"); ?>
 
     <!-- Sección principal de bienvenida (Hero Section) -->
@@ -43,33 +43,33 @@ verificarSesion();
                         <h5 class="mb-3">Contenido del sistema</h5>
                         <ul class="list-unstyled mb-0">
                             <li class="py-2">
-                                <a class="feature-link link-empleados" href="#" title="Gestión de empleados">
+                                <a class="feature-link link-empleados" href="prestamos/views/index.php" title="Gestión de empleados">
                                     <i class="bi bi-people-fill me-2"></i>
-                                    <span>Gestión de empleados</span>
+                                    <span>Prestamos</span>
                                 </a>
                             </li>
                             <li class="py-2">
-                                <a class="feature-link link-nomina" href="#" title="Nómina y exportes">
+                                <a class="feature-link link-nomina" href="aguinaldo/aguinaldo.php" title="Nómina y exportes">
                                     <i class="bi bi-cash-stack me-2"></i>
-                                    <span>Nómina y exportes</span>
+                                    <span>Aguinaldo</span>
                                 </a>
                             </li>
                             <li class="py-2">
-                                <a class="feature-link link-contratos" href="#" title="Contratos y plantillas">
+                                <a class="feature-link link-contratos" href="vacaciones/views/vacaciones.php" title="Contratos y plantillas">
                                     <i class="bi bi-file-earmark-text-fill me-2"></i>
-                                    <span>Contratos y plantillas</span>
+                                    <span>Vacaciones</span>
                                 </a>
                             </li>
                             <li class="py-2">
-                                <a class="feature-link link-autorizaciones" href="#" title="Autorizaciones y claves">
+                                <a class="feature-link link-autorizaciones" href="claves_autorizacion/views/autorizacion.php" title="Autorizaciones y claves">
                                     <i class="bi bi-key-fill me-2"></i>
                                     <span>Autorizaciones y claves</span>
                                 </a>
                             </li>
                             <li class="py-2">
-                                <a class="feature-link link-prestamos" href="#" title="Préstamos y pagos">
+                                <a class="feature-link link-prestamos" href="config/settings/views/configuracion.php" title="Préstamos y pagos">
                                     <i class="bi bi-bank2 me-2"></i>
-                                    <span>Préstamos y pagos</span>
+                                    <span>Configuracion</span>
                                 </a>
                             </li>
                         </ul>
@@ -82,25 +82,32 @@ verificarSesion();
     <section class="features-section py-5">
         <div class="container">
             <div class="row features mt-5">
-                <div class="col-md-4 mb-3">
+                <div class="col-md-3 mb-3">
                     <div class="feature-card p-4 h-100 text-center">
                         <div class="feature-icon mb-3"> <i class="bi bi-people"></i> </div>
-                        <h6>Empleados</h6>
+                        <h6><a href="empleados/views/form_actualizar_empleado.php" class="text-decoration-none text-dark" >Empleados</a></h6>
                         <p class="mb-0">Registro, historial y asignaciones de casilleros.</p>
                     </div>
                 </div>
-                <div class="col-md-4 mb-3">
+                <div class="col-md-3 mb-3">
                     <div class="feature-card p-4 h-100 text-center">
                         <div class="feature-icon mb-3"> <i class="bi bi-cash-stack"></i> </div>
-                        <h6>Nómina</h6>
+                        <h6><a href="gafetes/gafetes.php" class="text-decoration-none text-dark" >Gafetes</a></h6>
                         <p class="mb-0">Generación, exportación y tabuladores.</p>
                     </div>
                 </div>
-                <div class="col-md-4 mb-3">
+                <div class="col-md-3 mb-3">
                     <div class="feature-card p-4 h-100 text-center">
                         <div class="feature-icon mb-3"> <i class="bi bi-file-earmark-text"></i> </div>
-                        <h6>Contratos</h6>
+                        <h6><a href="contratos/contratos.php" class="text-decoration-none text-dark" >Contratos</a></h6>
                         <p class="mb-0">Plantillas y exportación a Word.</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="feature-card p-4 h-100 text-center">
+                        <div class="feature-icon mb-3"> <i class="bi bi-file-earmark-text"></i> </div>
+                        <h6><a href="reloj-8horas/views/reloj.php" class="text-decoration-none text-dark" >Biometrico</a></h6>
+                        <p class="mb-0">Registro y gestión de datos biometricos.</p>
                     </div>
                 </div>
             </div>
@@ -114,7 +121,7 @@ verificarSesion();
     <script src="<?= BOOTSTRAP_JS ?>"></script>
     <!-- Script para funcionalidad del navbar -->
     <script src="public/js/navbar.js"></script>
-    
+
     <!-- Sincronización automática de vacaciones en segundo plano al iniciar sesión -->
     <script src="vacaciones/js/sincronizarVacaciones.js"></script>
 </body>

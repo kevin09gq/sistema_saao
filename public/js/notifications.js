@@ -1,300 +1,276 @@
-// Variable para almacenar el intervalo de verificación
-let notificationInterval;
-const API_URL = '/sistema_saao/gafetes/php/verificarVigenciaGafetes.php';
+/**
+ * notifications.js
+ * Sistema de notificaciones de aniversarios laborales.
+ *
+ * Tipos de notificación que se manejan:
+ *   PROXIMO  → El aniversario ocurre en 1 o 2 días (alerta previa)
+ *   HOY      → El aniversario es exactamente hoy (celebración)
+ *   RECIENTE → El aniversario ocurrió hace 1 o 2 días (recordatorio)
+ */
 
-// Funcionalidad para el botón de notificación (si existe)
-const notificationButton = document.getElementById('notificationButton');
-if (notificationButton) {
-    notificationButton.addEventListener('click', function() {
-        loadNotifications();
-        const panel = document.getElementById('notificationPanel');
-        if (panel) panel.classList.add('show');
+// ======================================================
+// CONFIGURACIÓN GLOBAL DEL MÓDULO
+// ======================================================
+const NOTIF_CONFIG = {
+    // Ruta al archivo PHP que devuelve las notificaciones
+    endpoint: '/sistema_saao/public/php/notificaciones.php',
+    // Intervalo de refresco automático: cada 5 minutos
+    pollingMs: 5 * 60 * 1000,
+    // ID del modal de notificaciones en el DOM
+    modalId: 'modalNotificaciones',
+};
+
+// ======================================================
+// INICIALIZACIÓN — espera a que jQuery esté disponible
+// ======================================================
+(function iniciarCuandoJqueryEste() {
+    if (typeof $ === 'undefined' || typeof $.fn === 'undefined') {
+        // jQuery aún no ha cargado, reintentar en 50 ms
+        setTimeout(iniciarCuandoJqueryEste, 50);
+        return;
+    }
+
+    $(document).ready(function () {
+        // Cargar notificaciones al iniciar y repetir cada 5 min
+        obtenerYMostrarNotificaciones();
+        setInterval(obtenerYMostrarNotificaciones, NOTIF_CONFIG.pollingMs);
+
+        // Crear el modal en el DOM si no existe
+        crearModalSiNoExiste();
+
+        // Conectar el botón de la campana con el modal
+        vincularBotonCampana();
     });
-}
+})();
 
-// Función para cerrar el panel de notificaciones
-function closeNotificationPanel() {
-    const panel = document.getElementById('notificationPanel');
-    if (panel) panel.classList.remove('show');
-}
-
-// Función para verificar gafetes vencidos
-function checkExpiredBadges() {
-    fetch(API_URL)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const vencidos = data.total_vencidos || 0;
-                const proximos = data.total_proximos || 0;
-                const totalGeneral = vencidos + proximos;
-
-                // Actualizar el número en el badge con el total general
-                const badge = document.getElementById('notificationBadge');
-                if (badge) {
-                    badge.textContent = totalGeneral;
-                    // Ocultar badge si es 0
-                    badge.style.display = totalGeneral > 0 ? 'block' : 'none';
-                }
-
-                // Mostrar notificación toast si hay algo y el panel no está abierto (y no estamos en la vista de notificaciones)
-                const isNotificationPage = document.getElementById('vencidos-tab') !== null;
-                const panel = document.getElementById('notificationPanel');
-                const isPanelOpen = panel && panel.classList.contains('show');
-
-                if (totalGeneral > 0 && !isPanelOpen && !isNotificationPage) {
-                    showNotificationToast(vencidos, proximos);
-                }
-
-                // Si estamos en la página de notificaciones, cargar el contenido
-                if (isNotificationPage) {
-                    renderFullNotifications(data);
-                }
-            } else {
-                const badge = document.getElementById('notificationBadge');
-                if (badge) {
-                    badge.textContent = '0';
-                    badge.style.display = 'none';
-                }
+// ======================================================
+// FETCH PRINCIPAL
+// Consulta el servidor y actualiza el indicador + la lista
+// ======================================================
+function obtenerYMostrarNotificaciones() {
+    $.ajax({
+        url: NOTIF_CONFIG.endpoint,
+        type: 'POST',
+        data: { action: 'obtenerNotificaciones' },
+        dataType: 'json',
+        success: function (respuesta) {
+            if (respuesta.error) {
+                console.warn('[Notificaciones] Error del servidor:', respuesta.error);
+                return;
             }
-        })
-        .catch(error => {
-            console.error('Error al verificar gafetes vencidos:', error);
-        });
-}
-
-// Función para mostrar notificación toast
-function showNotificationToast(vencidos, proximos) {
-    // Crear elemento toast si no existe
-    if (!document.getElementById('badgeNotificationToast')) {
-        const toastContainer = document.createElement('div');
-        toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
-        toastContainer.style.zIndex = '1100';
-        
-        const toastHTML = `
-            <div id="badgeNotificationToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="toast-header bg-warning text-dark">
-                    <strong class="me-auto" id="toastTitle">Gafetes</strong>
-                    <small class="text-muted">ahora</small>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-                <div class="toast-body" id="toastBody"></div>
-            </div>
-        `;
-        
-        toastContainer.innerHTML = toastHTML;
-        document.body.appendChild(toastContainer);
-    }
-
-    // Actualizar contenido del toast dinámicamente
-    const total = (vencidos || 0) + (proximos || 0);
-    const titleEl = document.getElementById('toastTitle');
-    const bodyEl = document.getElementById('toastBody');
-    if (titleEl && bodyEl) {
-        titleEl.textContent = 'Gafetes';
-        const partes = [];
-        if (vencidos) partes.push(`${vencidos} vencido(s)`);
-        if (proximos) partes.push(`${proximos} próximo(s) a vencer`);
-        bodyEl.textContent = `Hay ${total} gafete(s): ${partes.join(' y ')}. Por favor, revise.`;
-    }
-
-    // Inicializar y mostrar el toast
-    const toastEl = document.getElementById('badgeNotificationToast');
-    if (toastEl && typeof bootstrap !== 'undefined') {
-        const toast = new bootstrap.Toast(toastEl);
-        toast.show();
-    }
-}
-
-// Función para cargar notificaciones en el panel lateral (legacy)
-function loadNotifications() {
-    fetch(API_URL)
-        .then(response => response.json())
-        .then(data => {
-            const notificationsContent = document.getElementById('notificationPanelContent');
-            if (!notificationsContent) return;
-
-            if (data.success && (data.total_vencidos > 0 || data.total_proximos > 0)) {
-                notificationsContent.innerHTML = generateNotificationsHTML(data, 'panel');
-            } else {
-                notificationsContent.innerHTML = `
-                    <div class="no-notifications">
-                        <i class="bi bi-bell"></i>
-                        <h5>No hay notificaciones</h5>
-                        <p class="mb-0">No hay notificaciones pendientes en este momento.</p>
-                    </div>
-                `;
-            }
-        })
-        .catch(error => {
-            console.error('Error al cargar notificaciones:', error);
-            const content = document.getElementById('notificationPanelContent');
-            if (content) {
-                content.innerHTML = `
-                    <div class="no-notifications">
-                        <i class="bi bi-exclamation-circle"></i>
-                        <h5>Error</h5>
-                        <p class="mb-0">Error al cargar notificaciones.</p>
-                    </div>
-                `;
-            }
-        });
-}
-
-// Función para renderizar notificaciones en la página completa (Tabs)
-function renderFullNotifications(data) {
-    const vencidosContainer = document.getElementById('notifications-vencidos-content');
-    const proximosContainer = document.getElementById('notifications-proximos-content');
-    const badgeVencidos = document.getElementById('badge-vencidos');
-    const badgeProximos = document.getElementById('badge-proximos');
-
-    if (!vencidosContainer || !proximosContainer) return;
-
-    // Actualizar contadores de las pestañas
-    if (badgeVencidos) badgeVencidos.textContent = data.total_vencidos;
-    if (badgeProximos) badgeProximos.textContent = data.total_proximos;
-
-    // Renderizar Vencidos
-    if (data.total_vencidos > 0) {
-        vencidosContainer.innerHTML = generateListHTML(data.gafetes_vencidos, 'vencido');
-    } else {
-        vencidosContainer.innerHTML = `
-            <div class="no-notifications-full">
-                <i class="bi bi-check-circle text-success"></i>
-                <h3 class="fw-bold">No hay gafetes vencidos</h3>
-                <p class="text-muted">Todos los empleados tienen sus gafetes al día.</p>
-            </div>
-        `;
-    }
-
-    // Renderizar Próximos
-    if (data.total_proximos > 0) {
-        proximosContainer.innerHTML = generateListHTML(data.gafetes_proximos, 'proximo');
-    } else {
-        proximosContainer.innerHTML = `
-            <div class="no-notifications-full">
-                <i class="bi bi-calendar-check text-info"></i>
-                <h3 class="fw-bold">No hay vencimientos próximos</h3>
-                <p class="text-muted">No hay gafetes que venzan en los próximos 7 días.</p>
-            </div>
-        `;
-    }
-}
-
-// Función para generar HTML de lista para las pestañas
-function generateListHTML(gafetes, type) {
-    let html = `<div class="notification-list">`;
-    
-    gafetes.forEach(g => {
-        let infoExtra = '';
-        if (type === 'vencido') {
-            const dVencidos = g.dias_vencidos || 0;
-            infoExtra = `<span class="me-3 text-danger"><strong>Vencido hace:</strong> ${dVencidos} días</span>`;
-        } else {
-            infoExtra = `<span class="me-3 text-warning"><strong>Días restantes:</strong> ${g.dias_restantes} días</span>`;
+            // Actualizar el número en la campana del navbar
+            actualizarContadorNavbar(respuesta.total);
+            // Pintar la lista dentro del modal
+            mostrarListaEnModal(respuesta.notificaciones);
+        },
+        error: function (xhr, estado, errorDetalle) {
+            console.warn('[Notificaciones] Error HTTP', xhr.status, errorDetalle);
         }
+    });
+}
 
-        html += `
-            <div class="notification-list-item">
-                <div class="d-flex align-items-center w-100">
-                    <div class="notif-icon-circle ${type} me-3">
-                        <i class="bi ${type === 'vencido' ? 'bi-person-x-fill' : 'bi-person-exclamation'} fs-5"></i>
-                    </div>
-                    <div class="flex-grow-1">
-                        <div class="d-flex align-items-center justify-content-between mb-1">
-                            <div class="d-flex align-items-center flex-wrap">
-                                <div class="notif-user-name me-3">${g.nombre} ${g.ap_paterno || ''} ${g.ap_materno || ''}</div>
-                                <span class="status-pill ${type} mb-0">${type === 'vencido' ? 'Vencido' : 'Próximo'}</span>
-                            </div>
-                            <a href="/sistema_saao/gafetes/gafetes.php" class="btn btn-sm btn-outline-${type === 'vencido' ? 'danger' : 'warning'} px-3">
-                                <i class="bi bi-pencil-square me-1"></i> Gestionar
-                            </a>
-                        </div>
-                        <div class="notif-info-text">
-                            <span class="me-3"><strong>Clave:</strong> ${g.clave_empleado}</span>
-                            ${infoExtra}
-                            <span><strong>Fecha Vencimiento:</strong> ${g.fecha_vigencia}</span>
-                        </div>
-                    </div>
+// ======================================================
+// CONTADOR EN EL NAVBAR
+// Muestra o esconde el número rojo sobre la campana
+// ======================================================
+function actualizarContadorNavbar(totalNotificaciones) {
+    const elementoContador = $('#notificationBadge');
+    elementoContador.text(totalNotificaciones);
+
+    if (totalNotificaciones > 0) {
+        // Mostrar el indicador con animación de pulso
+        elementoContador.removeClass('d-none').addClass('notif-badge-pulse');
+    } else {
+        // Ocultar el indicador si no hay notificaciones
+        elementoContador.addClass('d-none').removeClass('notif-badge-pulse');
+    }
+}
+
+// ======================================================
+// LISTA DE NOTIFICACIONES EN EL MODAL
+// Recorre el array y construye cada tarjeta
+// ======================================================
+function mostrarListaEnModal(listaNotificaciones) {
+    const elementoLista = $('#notifLista');
+    elementoLista.empty();
+
+    // Si no hay notificaciones, mostrar estado vacío
+    if (!listaNotificaciones || listaNotificaciones.length === 0) {
+        elementoLista.html(crearMensajeSinNotificaciones());
+        return;
+    }
+
+    // Construir y agregar una tarjeta por cada notificación
+    $.each(listaNotificaciones, function (indice, notificacion) {
+        elementoLista.append(crearTarjetaNotificacion(notificacion));
+    });
+}
+
+// ── Construye el HTML de una tarjeta individual ────────
+function crearTarjetaNotificacion(notificacion) {
+    // Obtener colores, icono y texto según el tipo (PROXIMO / HOY / RECIENTE)
+    const configuracion  = obtenerConfiguracionTipo(notificacion.tipo, notificacion.dias_diferencia);
+    const iniciales      = obtenerIniciales(notificacion.nombre);
+    const fechaLegible   = formatearFecha(notificacion.fecha_aniversario);
+    const tipoCss        = notificacion.tipo.toLowerCase(); // "proximo", "hoy", "reciente"
+
+    return `
+        <div class="notif-item notif-tipo-${tipoCss}">
+            <div class="notif-avatar notif-avatar-${tipoCss}">${iniciales}</div>
+            <div class="notif-content">
+                <div class="notif-header-row">
+                    <span class="notif-nombre">${notificacion.nombre}</span>
+                    <span class="notif-badge-tipo notif-badge-${tipoCss}">${configuracion.etiqueta}</span>
+                </div>
+                <div class="notif-desc">
+                    <i class="${configuracion.icono}"></i> ${configuracion.mensaje(notificacion)}
+                </div>
+                <div class="notif-fecha">
+                    <i class="bi bi-calendar3"></i> ${fechaLegible} &nbsp;·&nbsp;
+                    <i class="bi bi-person-badge"></i> Clave: ${notificacion.clave_empleado}
                 </div>
             </div>
-        `;
+        </div>`;
+}
+
+// ── Mensaje cuando no hay notificaciones activas ───────
+function crearMensajeSinNotificaciones() {
+    return `
+        <div class="notif-vacio">
+            <i class="bi bi-bell-slash"></i>
+            <p>Sin notificaciones pendientes</p>
+        </div>`;
+}
+
+// ======================================================
+// CONFIGURACIÓN POR TIPO DE NOTIFICACIÓN
+// Define etiqueta, icono y mensaje de cada tipo
+// ======================================================
+function obtenerConfiguracionTipo(tipo) {
+    const configuraciones = {
+        // 📅 Próximo: el aniversario aún no ha llegado
+        PROXIMO: {
+            etiqueta: '📅 Próximo',
+            icono: 'bi bi-clock',
+            mensaje: (n) =>
+                `Cumple <strong>${n.anios} año${n.anios > 1 ? 's' : ''}</strong> de antigüedad ` +
+                `en <strong>${n.dias_diferencia === 1 ? '1 día' : '2 días'}</strong>.`,
+        },
+        // 🎉 Hoy: es el día del aniversario
+        HOY: {
+            etiqueta: '🎉 Hoy',
+            icono: 'bi bi-stars',
+            mensaje: (n) =>
+                `¡Hoy cumple <strong>${n.anios} año${n.anios > 1 ? 's' : ''}</strong> de antigüedad!`,
+        },
+        // ✅ Reciente: el aniversario ya ocurrió (1–2 días antes)
+        RECIENTE: {
+            etiqueta: '✅ Cumplido',
+            icono: 'bi bi-check-circle',
+            mensaje: (n) =>
+                `Cumplió <strong>${n.anios} año${n.anios > 1 ? 's' : ''}</strong> de antigüedad hace ` +
+                `<strong>${n.dias_diferencia === 1 ? '1 día' : '2 días'}</strong>.`,
+        },
+    };
+
+    // Si el tipo no se reconoce, usar PROXIMO como fallback
+    return configuraciones[tipo] ?? configuraciones['PROXIMO'];
+}
+
+// ======================================================
+// MODAL DE NOTIFICACIONES
+// Se inserta dinámicamente en el body una sola vez
+// ======================================================
+function crearModalSiNoExiste() {
+    if ($('#' + NOTIF_CONFIG.modalId).length === 0) {
+        $('body').append(generarHTMLModal());
+    }
+}
+
+// ── Genera la estructura HTML completa del modal ──────
+function generarHTMLModal() {
+    return `
+    <div class="modal fade" id="${NOTIF_CONFIG.modalId}" tabindex="-1"
+         aria-labelledby="notifModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable notif-modal-dialog">
+            <div class="modal-content notif-modal-content">
+
+                <!-- Encabezado del modal -->
+                <div class="modal-header notif-modal-header">
+                    <div class="notif-modal-title-wrap">
+                        <i class="bi bi-bell-fill notif-modal-icon"></i>
+                        <h5 class="modal-title" id="notifModalLabel">Notificaciones</h5>
+                    </div>
+                    <!-- Badge que muestra el total de notificaciones activas -->
+                    <span class="notif-total-badge" id="notifTotalBadge">0</span>
+                    <button type="button" class="btn-close btn-close-white"
+                            data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+
+                <!-- Cuerpo con scroll vertical para la lista de notificaciones -->
+                <div class="modal-body notif-modal-body" id="notifLista">
+                    <div class="notif-vacio">
+                        <i class="bi bi-bell-slash"></i>
+                        <p>Cargando notificaciones…</p>
+                    </div>
+                </div>
+
+                <!-- Pie con nota informativa -->
+                <div class="modal-footer notif-modal-footer">
+                    <small class="notif-footer-texto">
+                        <i class="bi bi-info-circle"></i>
+                        Se muestran aniversarios próximos (2 días antes), del día y recientes (2 días después).
+                    </small>
+                </div>
+
+            </div>
+        </div>
+    </div>`;
+}
+
+// ======================================================
+// BOTÓN DE LA CAMPANA EN EL NAVBAR
+// Al hacer clic, abre el modal de notificaciones
+// ======================================================
+function vincularBotonCampana() {
+    $(document).on('click', '#notificationNavbarButton', function (evento) {
+        // Evitar que el enlace navegue a otra página
+        evento.preventDefault();
+
+        // Actualizar el texto del badge dentro del modal antes de abrirlo
+        sincronizarContadorModal();
+
+        const modal = new bootstrap.Modal(document.getElementById(NOTIF_CONFIG.modalId));
+        modal.show();
     });
-    
-    html += `</div>`;
-    return html;
 }
 
-// Función para generar el HTML del panel lateral (legacy)
-function generateNotificationsHTML(data, type = 'panel') {
-    let html = '';
-    // Esta función se mantiene solo para el panel lateral si se usa en otras vistas
-    if (data.total_proximos > 0) {
-        html += `
-            <div class="notification-section">
-                <div class="section-header d-flex align-items-center justify-content-between">
-                    <h6 class="mb-2">Próximos a vencer (7 días)</h6>
-                    <span class="badge bg-warning text-dark">${data.total_proximos}</span>
-                </div>
-        `;
-        data.gafetes_proximos.forEach(g => {
-            html += `
-                <div class="notification-item warning">
-                    <div class="notification-title">
-                        <h6>${g.nombre} ${g.ap_paterno || ''} ${g.ap_materno || ''}</h6>
-                        <span class="badge bg-warning text-dark">Próximo</span>
-                    </div>
-                    <div class="notification-content">
-                        <p class="mb-1 small">
-                            <strong>Clave:</strong> ${g.clave_empleado}<br>
-                            <strong>Vencimiento:</strong> ${g.fecha_vigencia}
-                        </p>
-                    </div>
-                </div>
-            `;
-        });
-        html += `</div>`;
-    }
-
-    if (data.total_vencidos > 0) {
-        html += `
-            <div class="notification-section mt-3">
-                <div class="section-header d-flex align-items-center justify-content-between">
-                    <h6 class="mb-2">Vencidos</h6>
-                    <span class="badge bg-danger">${data.total_vencidos}</span>
-                </div>
-        `;
-        data.gafetes_vencidos.forEach(g => {
-            html += `
-                <div class="notification-item expired">
-                    <div class="notification-title">
-                        <h6>${g.nombre} ${g.ap_paterno || ''} ${g.ap_materno || ''}</h6>
-                        <span class="badge bg-danger">Vencido</span>
-                    </div>
-                    <div class="notification-content">
-                        <p class="mb-1 small">
-                            <strong>Clave:</strong> ${g.clave_empleado}<br>
-                            <strong>Vencimiento:</strong> ${g.fecha_vigencia}
-                        </p>
-                    </div>
-                </div>
-            `;
-        });
-        html += `</div>`;
-    }
-    
-    return html;
+// ── Sincroniza el contador del modal con el del navbar ─
+function sincronizarContadorModal() {
+    const totalActual = parseInt($('#notificationBadge').text()) || 0;
+    const textoContador = totalActual > 0
+        ? totalActual + ' nueva' + (totalActual > 1 ? 's' : '')
+        : 'Al día';
+    $('#notifTotalBadge').text(textoContador);
 }
 
-// Función para actualizar manualmente el contador de notificaciones
-function updateNotificationCount() {
-    checkExpiredBadges();
+// ======================================================
+// UTILIDADES
+// ======================================================
+
+// Obtiene las 2 primeras letras del nombre completo para el avatar
+function obtenerIniciales(nombreCompleto) {
+    const palabras = nombreCompleto.trim().split(' ').filter(Boolean);
+    const primeraLetra  = palabras[0]?.charAt(0) || '';
+    const segundaLetra  = palabras[1]?.charAt(0) || '';
+    return (primeraLetra + segundaLetra).toUpperCase();
 }
 
-// Iniciar verificación periódica
-document.addEventListener('DOMContentLoaded', function() {
-    // Verificar inmediatamente al cargar la página
-    checkExpiredBadges();
-    
-    // Verificar cada 30 segundos
-    notificationInterval = setInterval(checkExpiredBadges, 30000);
-});
+// Convierte "2026-06-16" → "16 Jun 2026"
+function formatearFecha(fechaString) {
+    if (!fechaString) return '---';
+    const nombresMeses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+                          'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const [anio, mes, dia] = fechaString.split('-').map(Number);
+    return `${dia} ${nombresMeses[mes - 1]} ${anio}`;
+}

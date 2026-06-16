@@ -262,7 +262,7 @@ verificarSesion();
                                         <div class="col-md-6 mb-3">
                                             <label for="salario_diario" class="form-label">Salario Diario</label>
                                             <input type="number" class="form-control" id="salario_diario"
-                                                name="salario_diario" step="0.01" placeholder="0.00">
+                                                name="salario_diario" step="any" placeholder="0.00">
                                         </div>
                                     </div>
                                     <div class="row px-3">

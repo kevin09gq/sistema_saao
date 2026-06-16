@@ -144,32 +144,39 @@ verificarSesion();
                 <div class="subtitulo-nomina" style="margin: 6px 0 0 0; font-size: 13px;">Selecciona empleados, genera gafetes y administra fotos</div>
             </div>
             <div class="header-controls">
-                <button class="btn btn-outline-primary btn-lg-header" type="button" id="generarGafetes" title="Generar Gafetes">
+                <button class="btn btn-outline-primary btn-lg-header" type="button" id="generarGafetes" title="Generar Gafetes">Gafetes
                     <i class="bi bi-person-vcard"></i>
                 </button>
-                <button class="btn btn-outline-primary btn-lg-header" type="button" id="generarFoto" title="Generar Foto">
+                <button class="btn btn-outline-primary btn-lg-header" type="button" id="generarFoto" title="Generar Foto">Foto
                     <i class="bi bi-camera-fill"></i>
                 </button>
-                 <button class="btn btn-outline-primary btn-lg-header" type="button" id="btnCasillero" title="Casillero">
+                 <button class="btn btn-outline-primary btn-lg-header" type="button" id="btnCasillero" title="Casillero">Casillero
                     <i class="bi bi-box-seam"></i>
                 </button>
-                <button class="btn btn-outline-info btn-lg-header" type="button" id="subirFotos" data-bs-toggle="modal" data-bs-target="#modalSubirFotos" title="Subir fotos">
+                <button class="btn btn-outline-info btn-lg-header" type="button" id="subirFotos" data-bs-toggle="modal" data-bs-target="#modalSubirFotos" title="Subir fotos">Subir Fotos
                     <i class="bi bi-cloud-upload"></i>
                 </button>
-                <button class="btn btn-outline-primary btn-lg-header" type="button" id="actualizarLogos" data-bs-toggle="modal" data-bs-target="#modalActualizarLogos" title="Actualizar logos">
+                <button class="btn btn-outline-primary btn-lg-header" type="button" id="actualizarLogos" data-bs-toggle="modal" data-bs-target="#modalActualizarLogos" title="Actualizar logos">Actualizar Logos
                     <i class="bi bi-images"></i>
                 </button>
-                <button class="btn btn-outline-primary btn-lg-header" type="button" id="limpiarFotos" title="Limpiar fotos">
-                    <i class="bi bi-trash3"></i>
-                </button>
-                <button class="btn btn-outline-primary btn-lg-header" type="button" id="btnConfigColoresAreas" data-bs-toggle="modal" data-bs-target="#modalColoresAreas" title="Colores por área">
+                <button class="btn btn-outline-primary btn-lg-header" type="button" id="btnConfigColoresAreas" data-bs-toggle="modal" data-bs-target="#modalColoresAreas" title="Colores por área">Colores 
                     <i class="bi bi-palette-fill"></i>
+                </button>
+                <button class="btn btn-outline-warning btn-lg-header" type="button" id="btnConfigVigencia" data-bs-toggle="modal" data-bs-target="#modalConfigVigencia" title="Configurar vigencia">Vigencia
+                    <i class="bi bi-calendar-check"></i>
+                </button>
+               <button class="btn btn-outline-primary btn-lg-header" type="button" id="limpiarFotos" title="Limpiar fotos">
+                    <i class="bi bi-trash3"></i>
                 </button>
             </div>
         </div>
 
         <div class="controles-tabla">
             <div class="filtros-container">
+                <select class="filtro-departamento" id="filtroArea">
+                    <option value="todos">Todas las áreas</option>
+                </select>
+
                 <select class="filtro-departamento" id="filtroDepartamento">
                     <option value="todos">Todos los departamentos</option>
                 </select>
@@ -180,6 +187,13 @@ verificarSesion();
                     <option value="expirado">Expirados</option>
                     <option value="proximo">Próximo a vencer</option>
                     <option value="sin_fecha">Sin fecha</option>
+                    <option value="seleccionados">Seleccionados</option>
+                </select>
+
+                <select class="filtro-departamento" id="filtroIMSS">
+                    <option value="todos">Todos (IMSS)</option>
+                    <option value="con_imss">Con IMSS</option>
+                    <option value="sin_imss">Sin IMSS</option>
                 </select>
 
                 <div class="busqueda-container">
@@ -942,6 +956,83 @@ verificarSesion();
                     </button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         <i class="bi bi-x-circle"></i> Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Configurar vigencia de gafetes -->
+    <div class="modal fade" id="modalConfigVigencia" tabindex="-1" aria-labelledby="modalConfigVigenciaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title" id="modalConfigVigenciaLabel"><i class="bi bi-calendar-check me-2"></i>Configurar Vigencia</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info mb-3">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        Establece el tiempo de vigencia para los gafetes. Puedes configurar separadamente para empleados con y sin IMSS.
+                    </div>
+
+                    <!-- Configuración para CON IMSS -->
+                    <div class="card mb-3 border-success">
+                        <div class="card-header bg-success text-white">
+                            <i class="bi bi-shield-lock me-2"></i>Empleados CON IMSS
+                        </div>
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-5">
+                                    <label for="con_imss_valor" class="form-label">Valor</label>
+                                    <input type="number" class="form-control" id="con_imss_valor" min="1" value="1">
+                                </div>
+                                <div class="col-md-7">
+                                    <label for="con_imss_unidad" class="form-label">Unidad</label>
+                                    <select class="form-select" id="con_imss_unidad">
+                                        <option value="days">Días</option>
+                                        <option value="weeks">Semanas</option>
+                                        <option value="months">Meses</option>
+                                        <option value="years" selected>Años</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Configuración para SIN IMSS -->
+                    <div class="card border-secondary">
+                        <div class="card-header bg-secondary text-white">
+                            <i class="bi bi-person-x me-2"></i>Empleados SIN IMSS
+                        </div>
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-5">
+                                    <label for="sin_imss_valor" class="form-label">Valor</label>
+                                    <input type="number" class="form-control" id="sin_imss_valor" min="1" value="45">
+                                </div>
+                                <div class="col-md-7">
+                                    <label for="sin_imss_unidad" class="form-label">Unidad</label>
+                                    <select class="form-select" id="sin_imss_unidad">
+                                        <option value="days" selected>Días</option>
+                                        <option value="weeks">Semanas</option>
+                                        <option value="months">Meses</option>
+                                        <option value="years">Años</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" id="btnResetConfigVigencia">
+                        <i class="bi bi-arrow-counterclockwise"></i> Restablecer
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cerrar
+                    </button>
+                    <button type="button" class="btn btn-warning text-dark" id="btnGuardarConfigVigencia">
+                        <i class="bi bi-check-circle"></i> Guardar
                     </button>
                 </div>
             </div>

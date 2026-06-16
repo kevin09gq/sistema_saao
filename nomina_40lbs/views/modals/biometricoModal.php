@@ -16,14 +16,26 @@
                 <div id="seccion-seleccion-biometrico">
                     <div class="card border-0 bg-light mb-4 rounded-3">
                         <div class="card-body p-3">
-                            <label for="buscar-empleado-biometrico" class="form-label fw-bold text-dark small mb-2">
-                                <i class="bi bi-search me-1"></i> BUSCAR EMPLEADOS PARA ACTUALIZAR
-                            </label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-white border-end-0">
-                                    <i class="bi bi-person text-muted"></i>
-                                </span>
-                                <input type="text" class="form-control border-start-0" id="buscar-empleado-biometrico" placeholder="Escribe nombre o clave del empleado...">
+                            <div class="row g-2">
+                                <div class="col-md-7">
+                                    <label for="buscar-empleado-biometrico" class="form-label fw-bold text-dark small mb-2">
+                                        <i class="bi bi-search me-1"></i> BUSCAR EMPLEADOS PARA ACTUALIZAR
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0">
+                                            <i class="bi bi-person text-muted"></i>
+                                        </span>
+                                        <input type="text" class="form-control border-start-0" id="buscar-empleado-biometrico" placeholder="Escribe nombre o clave del empleado...">
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    <label for="filtro-departamento-biometrico" class="form-label fw-bold text-dark small mb-2">
+                                        <i class="bi bi-building me-1"></i> DEPARTAMENTO
+                                    </label>
+                                    <select class="form-select" id="filtro-departamento-biometrico">
+                                        <option value="">Todos los departamentos</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>

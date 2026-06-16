@@ -24,6 +24,73 @@ function confirmarsaveNomina() {
 //=======================================
 
 function saveNomina40lbs() {
+    // Helper para calcular totales localmente antes de guardar (alineado con conceptos_totales.js)
+    const calcularTotalesLocales = (jsonData) => {
+        let totalPercepciones = 0;
+        let totalDeducciones = 0;
+
+        const PERCEPCIONES_LIST = [
+            { propiedad: 'sueldo_neto' },
+            { propiedad: 'incentivo' },
+            { propiedad: 'sueldo_extra_total' },
+        ];
+
+        const DEDUCCIONES_LIST = [
+            { codigo: '45' }, // ISR
+            { codigo: '52' }, // IMSS
+            { codigo: '107' }, // Ajuste al Sub
+            { codigo: '16' }, // Infonavit
+            { propiedad: 'permiso' },
+            { propiedad: 'inasistencia' },
+            { propiedad: 'uniformes' },
+            { propiedad: 'checador' },
+            { propiedad: 'prestamo' },
+            { propiedad: 'tarjeta' },
+            { propiedad: 'fa_gafet_cofia' },
+        ];
+
+        if (jsonData && jsonData.departamentos) {
+            jsonData.departamentos.forEach(depto => {
+                // Solo considerar departamentos habilitados para edición (igual que en conceptos_totales.js)
+                if (depto.editar !== true) return;
+
+                if (depto.empleados && Array.isArray(depto.empleados)) {
+                    depto.empleados.forEach(empleado => {
+                        if (empleado.mostrar === false) return;
+
+                        // Percepciones fijas
+                        PERCEPCIONES_LIST.forEach(perc => {
+                            totalPercepciones += parseFloat(empleado[perc.propiedad]) || 0;
+                        });
+
+
+                        // Deducciones fijas
+                        DEDUCCIONES_LIST.forEach(dedu => {
+                            let valor = 0;
+                            if (dedu.propiedad) {
+                                valor = parseFloat(empleado[dedu.propiedad]) || 0;
+                            } else if (dedu.codigo) {
+                                const concepto = (empleado.conceptos || []).find(c => String(c.codigo) === String(dedu.codigo));
+                                valor = concepto ? (parseFloat(concepto.resultado) || 0) : 0;
+                            }
+                            totalDeducciones += valor;
+                        });
+
+
+                    });
+                }
+            });
+        }
+
+        return {
+            totalPercepciones: parseFloat(totalPercepciones.toFixed(2)),
+            totalDeducciones: parseFloat(totalDeducciones.toFixed(2)),
+            totalNeto: Math.round(totalPercepciones - totalDeducciones)
+        };
+    };
+
+    const totales = calcularTotalesLocales(jsonNomina40lbs);
+
     // Eliminamos las propiedades que tienen 0 para optimizar el almacenamiento en BD
     eliminarPropiedades(jsonNomina40lbs);
 
@@ -61,6 +128,9 @@ function saveNomina40lbs() {
             numero_semana: numeroSemana,
             anio: anio,
             nomina: JSON.stringify(jsonData),
+            total_percepciones: totales.totalPercepciones,
+            total_deducciones: totales.totalDeducciones,
+            total_neto: totales.totalNeto,
             actualizar: true,
             case: 'guardarNomina' // Agregar el caso para identificar la función en el servidor
         }),
@@ -199,7 +269,7 @@ function eliminarPropiedades(json) {
                 if (Array.isArray(empleado.percepciones_extra) && empleado.percepciones_extra.length === 0) delete empleado.percepciones_extra;
                 if (Array.isArray(empleado.deducciones_extra) && empleado.deducciones_extra.length === 0) delete empleado.deducciones_extra;
 
-                
+
             });
         }
     });

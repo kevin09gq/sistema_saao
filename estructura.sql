@@ -359,7 +359,6 @@ CREATE TABLE dias_vacaciones_lft (
     FOREIGN KEY (id_version_vacaciones) REFERENCES versiones_vacaciones_lft (id_version_vacaciones) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
-
 -- ==========================================
 -- TABLA: PERIODOS DE VACACIONES
 -- ==========================================
@@ -408,27 +407,20 @@ CREATE TABLE prima_vacacional_empleados (
     fecha_pago DATE NOT NULL,
     fecha_inicio DATE NOT NULL,
     fecha_fin DATE NOT NULL,
-    dias_vacaciones DECIMAL(10,3) NOT NULL,
+    dias_vacaciones DECIMAL(10, 3) NOT NULL,
     domingos INT NOT NULL DEFAULT 0,
     festivos INT NOT NULL DEFAULT 0,
-    salario_diario DECIMAL(10,2) NOT NULL,
-    porcentaje_prima DECIMAL(5,2) NOT NULL,
+    salario_diario DECIMAL(10, 2) NOT NULL,
+    porcentaje_prima DECIMAL(5, 2) NOT NULL,
     monto_prima_vacacional DECIMAL(10, 2) NOT NULL,
     dispersion_tarjeta DECIMAL(10, 2) NOT NULL,
     isr DECIMAL(10, 2) NOT NULL,
     total_pagado DECIMAL(10, 2) NOT NULL,
     observaciones TEXT NULL,
-
-    FOREIGN KEY (id_empleado)
-        REFERENCES info_empleados(id_empleado)
-        ON UPDATE CASCADE
-        ON DELETE CASCADE,
-    
-    FOREIGN KEY (id_kardex)
-        REFERENCES kardex_vacaciones(id_kardex)
-        ON UPDATE CASCADE
-        ON DELETE CASCADE
+    FOREIGN KEY (id_empleado) REFERENCES info_empleados (id_empleado) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (id_kardex) REFERENCES kardex_vacaciones (id_kardex) ON UPDATE CASCADE ON DELETE CASCADE
 );
+
 -- =============================
 -- TABLA DE HORARIOS RELOJ 8 HRS
 -- =============================
@@ -512,6 +504,9 @@ CREATE TABLE nomina_40lbs (
     anio INT NOT NULL,
     numero_semana INT NOT NULL,
     nomina_40lbs LONGTEXT NOT NULL,
+    total_percepciones DECIMAL(14, 2) DEFAULT 0,
+    total_deducciones DECIMAL(14, 2) DEFAULT 0,
+    total_neto DECIMAL(14, 2) DEFAULT 0,
     FOREIGN KEY (id_empresa) REFERENCES empresa (id_empresa) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
@@ -525,6 +520,9 @@ CREATE TABLE nomina_10lbs (
     anio INT NOT NULL,
     numero_semana INT NOT NULL,
     nomina_10lbs LONGTEXT NOT NULL,
+    total_percepciones DECIMAL(14, 2) DEFAULT 0,
+    total_deducciones DECIMAL(14, 2) DEFAULT 0,
+    total_neto DECIMAL(14, 2) DEFAULT 0,
     FOREIGN KEY (id_empresa) REFERENCES empresa (id_empresa) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
@@ -550,6 +548,9 @@ CREATE TABLE nomina_confianza (
     anio INT NOT NULL,
     numero_semana INT NOT NULL,
     nomina LONGTEXT NOT NULL,
+    total_percepciones DECIMAL(14, 2) DEFAULT 0,
+    total_deducciones DECIMAL(14, 2) DEFAULT 0,
+    total_neto DECIMAL(14, 2) DEFAULT 0,
     FOREIGN KEY (id_empresa) REFERENCES empresa (id_empresa) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
@@ -564,6 +565,9 @@ CREATE TABLE nomina_relicario (
     anio INT NOT NULL,
     numero_semana INT NOT NULL,
     nomina_relicario LONGTEXT NOT NULL,
+    total_percepciones DECIMAL(14, 2) DEFAULT 0,
+    total_deducciones DECIMAL(14, 2) DEFAULT 0,
+    total_neto DECIMAL(14, 2) DEFAULT 0,
     FOREIGN KEY (id_empresa) REFERENCES empresa (id_empresa) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
@@ -618,6 +622,9 @@ CREATE TABLE nomina_pilar (
     anio INT NOT NULL,
     numero_semana INT NOT NULL,
     nomina_pilar LONGTEXT NOT NULL,
+    total_percepciones DECIMAL(14, 2) DEFAULT 0,
+    total_deducciones DECIMAL(14, 2) DEFAULT 0,
+    total_neto DECIMAL(14, 2) DEFAULT 0,
     FOREIGN KEY (id_empresa) REFERENCES empresa (id_empresa) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
@@ -672,6 +679,9 @@ CREATE TABLE nomina_huasteca (
     anio INT NOT NULL,
     numero_semana INT NOT NULL,
     nomina_huasteca LONGTEXT NOT NULL,
+    total_percepciones DECIMAL(14, 2) DEFAULT 0,
+    total_deducciones DECIMAL(14, 2) DEFAULT 0,
+    total_neto DECIMAL(14, 2) DEFAULT 0,
     FOREIGN KEY (id_empresa) REFERENCES empresa (id_empresa) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
@@ -725,6 +735,9 @@ CREATE TABLE nomina_palmilla (
     anio INT NOT NULL,
     numero_semana INT NOT NULL,
     nomina_palmilla LONGTEXT NOT NULL,
+    total_percepciones DECIMAL(14, 2) DEFAULT 0,
+    total_deducciones DECIMAL(14, 2) DEFAULT 0,
+    total_neto DECIMAL(14, 2) DEFAULT 0,
     FOREIGN KEY (id_empresa) REFERENCES empresa (id_empresa) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
@@ -769,7 +782,7 @@ CREATE TABLE podas_movimientos_palmilla (
 );
 
 -- =============================
--- ISERTAR DATOS
+-- INSERTAR DATOS
 -- =============================
 
 -- Insertar estatus true y false

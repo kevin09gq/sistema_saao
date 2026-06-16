@@ -86,6 +86,82 @@ function obtenerEmpleadoPorId($conexion)
             }
         }
         $row['historial_reingresos'] = $historial;
+
+        // ======================================================
+        // CALCULAR DÍAS DE DERECHO LFT DEL ANIVERSARIO ACTUAL
+        // ======================================================
+        $fecha_ingreso_final = new DateTime($row['fecha_ingreso_final']);
+        $hoy_lft = new DateTime();
+
+        // Años de antigüedad completos a la fecha
+        $anios_antiguedad = (int)$hoy_lft->diff($fecha_ingreso_final)->y;
+
+        // Fecha del último aniversario cumplido
+        $aniversario_actual = clone $fecha_ingreso_final;
+        $aniversario_actual->setDate(
+            (int)$hoy_lft->format('Y') - ($hoy_lft < (clone $fecha_ingreso_final)->setDate((int)$hoy_lft->format('Y'), (int)$fecha_ingreso_final->format('m'), (int)$fecha_ingreso_final->format('d')) ? 1 : 0),
+            (int)$fecha_ingreso_final->format('m'),
+            (int)$fecha_ingreso_final->format('d')
+        );
+
+        // Calcular la fecha del aniversario del año actual (puede ser futuro o pasado)
+        $aniv_este_anio = clone $fecha_ingreso_final;
+        $aniv_este_anio->setDate((int)$hoy_lft->format('Y'), (int)$fecha_ingreso_final->format('m'), (int)$fecha_ingreso_final->format('d'));
+        $ultimo_aniversario = ($hoy_lft >= $aniv_este_anio)
+            ? $aniv_este_anio
+            : (clone $aniv_este_anio)->modify('-1 year');
+
+        // Obtener todas las versiones de leyes LFT con sus días
+        $sql_v = "SELECT * FROM versiones_vacaciones_lft ORDER BY fecha_inicio_vigencia ASC";
+        $res_v = mysqli_query($conexion, $sql_v);
+        $leyes = [];
+        if ($res_v) {
+            while ($ley = mysqli_fetch_assoc($res_v)) {
+                $id_v = $ley['id_version_vacaciones'];
+                $sql_d = "SELECT * FROM dias_vacaciones_lft WHERE id_version_vacaciones = '$id_v' ORDER BY anios_antiguedad_inicio ASC";
+                $res_d = mysqli_query($conexion, $sql_d);
+                $ley['tabla_dias'] = [];
+                if ($res_d) {
+                    while ($d = mysqli_fetch_assoc($res_d)) {
+                        $ley['tabla_dias'][] = $d;
+                    }
+                }
+                $leyes[] = $ley;
+            }
+        }
+
+        // Seleccionar la ley vigente en la fecha del último aniversario
+        $leySeleccionada = null;
+        foreach ($leyes as $ley) {
+            $inicio_v = new DateTime($ley['fecha_inicio_vigencia']);
+            $fin_v = !empty($ley['fecha_fin_vigencia']) ? new DateTime($ley['fecha_fin_vigencia']) : new DateTime('9999-12-31');
+            if ($ultimo_aniversario >= $inicio_v && $ultimo_aniversario <= $fin_v) {
+                $leySeleccionada = $ley;
+                break;
+            }
+        }
+
+        $diasLft = null;
+        $nombreVersionLft = null;
+        if ($leySeleccionada) {
+            $nombreVersionLft = $leySeleccionada['nombre_version'];
+            $rangoValido = null;
+            foreach ($leySeleccionada['tabla_dias'] as $rango) {
+                $inicioRango = (int)$rango['anios_antiguedad_inicio'];
+                if ($anios_antiguedad >= $inicioRango) {
+                    if (!$rangoValido || $inicioRango > (int)$rangoValido['anios_antiguedad_inicio']) {
+                        $rangoValido = $rango;
+                    }
+                }
+            }
+            if ($rangoValido) {
+                $diasLft = (float)$rangoValido['dias_vacaciones_correspondientes'];
+            }
+        }
+
+        $row['dias_lft_anio_actual']  = $diasLft;
+        $row['anios_antiguedad_actual'] = $anios_antiguedad;
+        $row['nombre_version_lft']    = $nombreVersionLft;
     }
 
     echo json_encode($row);
@@ -220,7 +296,7 @@ function registrarVacaciones($conexion)
         return;
     }
 
-    // Obtener la fecha de alta del empleado para reconstruir los ciclos
+    // Obtener la fecha de alta del empleado para validación básica
     $sql_emp = "SELECT fecha_alta_empresa FROM info_empleados WHERE id_empleado = '$id_empleado'";
     $res_emp = mysqli_query($conexion, $sql_emp);
     $row_emp = mysqli_fetch_assoc($res_emp);
@@ -231,141 +307,144 @@ function registrarVacaciones($conexion)
         return;
     }
 
-    // Reconstruir los ciclos de empleo
-    $sql_h = "SELECT fecha_reingreso, fecha_salida FROM historial_reingresos WHERE id_empleado = '$id_empleado' ORDER BY fecha_reingreso ASC";
-    $res_h = mysqli_query($conexion, $sql_h);
-    
-    $ciclos = [];
-    $hoy_str = date('Y-m-d');
-    if (mysqli_num_rows($res_h) == 0) {
-        $ciclos[] = [
-            'num_ciclo' => 1,
-            'inicio' => $fecha_alta,
-            'fin' => $hoy_str
-        ];
-    } else {
-        $idx = 0;
-        while ($h = mysqli_fetch_assoc($res_h)) {
-            $idx++;
-            $fin = $h['fecha_salida'];
-            if (empty($fin) || $fin == '0000-00-00') {
-                $fin = $hoy_str; 
-            }
-            $ciclos[] = [
-                'num_ciclo' => $idx,
-                'inicio' => $h['fecha_reingreso'],
-                'fin' => $fin
-            ];
-        }
+    $id_periodo_seleccionado = $_POST['id_periodo'] ?? '';
+
+    if (empty($id_periodo_seleccionado)) {
+        echo json_encode(['success' => false, 'message' => 'Debe seleccionar un período válido para descontar las vacaciones.']);
+        return;
     }
 
-    // Determinar a qué ciclo corresponde la fecha de inicio de las vacaciones
-    $num_ciclo_actual = 1;
-    try {
-        $fecha_vac_dt = new DateTime($fecha_inicio);
-        foreach ($ciclos as $c) {
-            $inicio_dt = new DateTime($c['inicio']);
-            $fin_dt = new DateTime($c['fin']);
-            if ($c['fin'] === $hoy_str) {
-                $fin_dt = new DateTime('9999-12-31');
-            }
-            if ($fecha_vac_dt >= $inicio_dt && $fecha_vac_dt <= $fin_dt) {
-                $num_ciclo_actual = $c['num_ciclo'];
-                break;
-            }
-        }
-    } catch (Exception $e) {
-        // Fallback al ciclo más alto en caso de error de fecha
-        $sql_ciclo = "SELECT COALESCE(MAX(num_ciclo), 1) AS ciclo_actual FROM vacaciones_periodos WHERE id_empleado = '$id_empleado'";
-        $res_ciclo = mysqli_query($conexion, $sql_ciclo);
-        $row_ciclo = mysqli_fetch_assoc($res_ciclo);
-        $num_ciclo_actual = (int)$row_ciclo['ciclo_actual'];
+    $id_periodo_seleccionado = intval($id_periodo_seleccionado);
+
+    // Obtener datos del periodo seleccionado
+    $sql_p = "SELECT id_periodo, saldo, dias_tomados, num_ciclo, fecha_aniversario FROM vacaciones_periodos 
+              WHERE id_periodo = '$id_periodo_seleccionado' AND id_empleado = '$id_empleado'";
+    $res_p = mysqli_query($conexion, $sql_p);
+    $periodo = mysqli_fetch_assoc($res_p);
+
+    if (!$periodo) {
+        echo json_encode(['success' => false, 'message' => 'El período seleccionado no es válido o no pertenece al empleado.']);
+        return;
     }
 
-    // 1. Obtener la suma del saldo disponible total de los periodos activos del CICLO ACTUAL
-    $sql_saldo = "SELECT SUM(saldo) AS saldo_total FROM vacaciones_periodos 
-                  WHERE id_empleado = '$id_empleado' AND estatus = 'ACTIVO' AND num_ciclo = '$num_ciclo_actual'";
-    $res_saldo = mysqli_query($conexion, $sql_saldo);
-    $row_saldo = mysqli_fetch_assoc($res_saldo);
-    $saldo_total = (float)($row_saldo['saldo_total'] ?? 0);
-
-    if ($dias_descontar > $saldo_total) {
+    // Validar que la fecha de inicio de las vacaciones sea igual o posterior al aniversario del período seleccionado
+    if ($fecha_inicio < $periodo['fecha_aniversario']) {
         echo json_encode([
             'success' => false, 
-            'message' => 'El empleado no cuenta con suficientes días de vacaciones disponibles. Disponibles: ' . number_format($saldo_total, 3) . ', Solicitados: ' . number_format($dias_descontar, 3)
+            'message' => 'No se puede descontar de este período. La fecha de inicio de las vacaciones (' . date('d-m-Y', strtotime($fecha_inicio)) . ') es anterior a la fecha del aniversario correspondiente (' . date('d-m-Y', strtotime($periodo['fecha_aniversario'])) . ').'
         ]);
         return;
     }
 
-    // 2. Obtener los periodos activos del CICLO ACTUAL ordenados por fecha_aniversario ASC (del más antiguo al más actual)
-    $sql_periodos = "SELECT id_periodo, saldo, dias_tomados FROM vacaciones_periodos 
-                     WHERE id_empleado = '$id_empleado' AND estatus = 'ACTIVO' AND saldo > 0 AND num_ciclo = '$num_ciclo_actual'
-                     ORDER BY fecha_aniversario ASC";
-    $res_periodos = mysqli_query($conexion, $sql_periodos);
+    $metodo_excedente = $_POST['metodo_excedente'] ?? 'antiguo_nuevo';
+    $num_ciclo_actual = intval($periodo['num_ciclo']);
+    $fecha_aniversario_limite = $periodo['fecha_aniversario'];
+    $saldo_periodo_seleccionado = (float)$periodo['saldo'];
 
-    $dias_restantes_por_descontar = $dias_descontar;
+    // Obtener los periodos anteriores activos del mismo ciclo con saldo > 0
+    $sql_anteriores = "SELECT id_periodo, saldo, dias_tomados, fecha_aniversario FROM vacaciones_periodos 
+                       WHERE id_empleado = '$id_empleado' 
+                         AND estatus = 'ACTIVO' 
+                         AND saldo > 0 
+                         AND num_ciclo = '$num_ciclo_actual'
+                         AND fecha_aniversario < '$fecha_aniversario_limite'";
+    $res_anteriores = mysqli_query($conexion, $sql_anteriores);
+    $anteriores = [];
+    $saldo_acumulado = $saldo_periodo_seleccionado;
+    while ($ant = mysqli_fetch_assoc($res_anteriores)) {
+        $anteriores[] = $ant;
+        $saldo_acumulado += (float)$ant['saldo'];
+    }
+
+    if ($dias_descontar > $saldo_acumulado) {
+        echo json_encode([
+            'success' => false, 
+            'message' => 'El saldo disponible acumulado hasta el período seleccionado es de ' . number_format($saldo_acumulado, 3) . ' días, pero solicita ' . number_format($dias_descontar, 3) . ' días.'
+        ]);
+        return;
+    }
+
     mysqli_begin_transaction($conexion);
-
     try {
-        $id_periodo_kardex = null;
-        while ($periodo = mysqli_fetch_assoc($res_periodos)) {
-            if ($dias_restantes_por_descontar <= 0) {
-                break;
+        $dias_restantes_por_descontar = $dias_descontar;
+
+        // 1. Descontar primero del periodo seleccionado
+        $dias_a_tomar_sel = min($dias_restantes_por_descontar, $saldo_periodo_seleccionado);
+        $nuevo_saldo_sel = $saldo_periodo_seleccionado - $dias_a_tomar_sel;
+        $nuevos_dias_tomados_sel = (float)$periodo['dias_tomados'] + $dias_a_tomar_sel;
+        $nuevo_estatus_sel = ($nuevo_saldo_sel <= 0) ? 'VENCIDO' : 'ACTIVO';
+
+        $sql_upd_sel = "UPDATE vacaciones_periodos 
+                        SET saldo = '$nuevo_saldo_sel', dias_tomados = '$nuevos_dias_tomados_sel', estatus = '$nuevo_estatus_sel' 
+                        WHERE id_periodo = '$id_periodo_seleccionado'";
+        if (!mysqli_query($conexion, $sql_upd_sel)) {
+            throw new Exception("Error al actualizar el periodo seleccionado.");
+        }
+        $dias_restantes_por_descontar -= $dias_a_tomar_sel;
+
+        // 2. Si quedan días por descontar, descontar de los anteriores
+        if ($dias_restantes_por_descontar > 0 && count($anteriores) > 0) {
+            // Ordenar los anteriores de acuerdo con el metodo_excedente seleccionado
+            usort($anteriores, function ($a, $b) use ($metodo_excedente) {
+                $timeA = strtotime($a['fecha_aniversario']);
+                $timeB = strtotime($b['fecha_aniversario']);
+                if ($metodo_excedente === 'nuevo_antiguo') {
+                    // Más reciente a más antiguo (DESC)
+                    return $timeB - $timeA;
+                } else {
+                    // Más antiguo a más nuevo (ASC)
+                    return $timeA - $timeB;
+                }
+            });
+
+            foreach ($anteriores as $ant) {
+                if ($dias_restantes_por_descontar <= 0) {
+                    break;
+                }
+                $id_ant = $ant['id_periodo'];
+                $saldo_ant = (float)$ant['saldo'];
+                $dias_tomados_ant = (float)$ant['dias_tomados'];
+
+                $dias_a_tomar_ant = min($dias_restantes_por_descontar, $saldo_ant);
+                $nuevo_saldo_ant = $saldo_ant - $dias_a_tomar_ant;
+                $nuevos_dias_tomados_ant = $dias_tomados_ant + $dias_a_tomar_ant;
+                $nuevo_estatus_ant = ($nuevo_saldo_ant <= 0) ? 'VENCIDO' : 'ACTIVO';
+
+                $sql_upd_ant = "UPDATE vacaciones_periodos 
+                                SET saldo = '$nuevo_saldo_ant', dias_tomados = '$nuevos_dias_tomados_ant', estatus = '$nuevo_estatus_ant' 
+                                WHERE id_periodo = '$id_ant'";
+                if (!mysqli_query($conexion, $sql_upd_ant)) {
+                    throw new Exception("Error al actualizar el periodo anterior.");
+                }
+                $dias_restantes_por_descontar -= $dias_a_tomar_ant;
             }
-
-            $id_periodo = $periodo['id_periodo'];
-            if ($id_periodo_kardex === null) {
-                $id_periodo_kardex = $id_periodo;
-            }
-            $saldo_periodo = (float)$periodo['saldo'];
-            $dias_tomados_periodo = (float)$periodo['dias_tomados'];
-
-            // Determinar cuántos días tomamos de este periodo
-            $dias_a_tomar = min($dias_restantes_por_descontar, $saldo_periodo);
-
-            $nuevo_saldo = $saldo_periodo - $dias_a_tomar;
-            $nuevos_dias_tomados = $dias_tomados_periodo + $dias_a_tomar;
-            $nuevo_estatus = ($nuevo_saldo <= 0) ? 'VENCIDO' : 'ACTIVO';
-
-            // Actualizar el periodo en la base de datos
-            $sql_upd_p = "UPDATE vacaciones_periodos 
-                          SET saldo = '$nuevo_saldo', dias_tomados = '$nuevos_dias_tomados', estatus = '$nuevo_estatus' 
-                          WHERE id_periodo = '$id_periodo'";
-            if (!mysqli_query($conexion, $sql_upd_p)) {
-                throw new Exception("Error al actualizar el periodo.");
-            }
-
-            $dias_restantes_por_descontar -= $dias_a_tomar;
         }
 
-        // Insertar el único movimiento consolidado en el Kardex
-        if ($id_periodo_kardex !== null) {
-            $dias_movimiento = -$dias_descontar;
-            // Para la fecha de registro en el Kardex usamos fecha_inicio con hora 00:00:00 para ordenar cronológicamente
-            $fecha_registro_kardex = $fecha_inicio . ' 00:00:00';
-            
-            $sql_ins_k = "INSERT INTO kardex_vacaciones (id_periodo, id_empleado, num_ciclo, concepto, fecha_registro, fecha_inicio, fecha_fin, dias_movimiento, saldo_resultante, observaciones)
-                          VALUES ('$id_periodo_kardex', '$id_empleado', '$num_ciclo_actual', '$concepto', '$fecha_registro_kardex', '$fecha_inicio', '$fecha_fin', '$dias_movimiento', 0, '$observaciones')";
-            if (!mysqli_query($conexion, $sql_ins_k)) {
-                throw new Exception("Error al insertar el movimiento consolidado en el Kardex.");
-            }
+        // Insertar el movimiento en el Kardex asociándolo al período seleccionado
+        $dias_movimiento = -$dias_descontar;
+        $fecha_registro_kardex = $fecha_inicio . ' 00:00:00';
+        
+        $sql_ins_k = "INSERT INTO kardex_vacaciones (id_periodo, id_empleado, num_ciclo, concepto, fecha_registro, fecha_inicio, fecha_fin, dias_movimiento, saldo_resultante, observaciones)
+                      VALUES ('$id_periodo_seleccionado', '$id_empleado', '$num_ciclo_actual', '$concepto', '$fecha_registro_kardex', '$fecha_inicio', '$fecha_fin', '$dias_movimiento', 0, '$observaciones')";
+        if (!mysqli_query($conexion, $sql_ins_k)) {
+            throw new Exception("Error al insertar el movimiento en el Kardex.");
         }
 
-        // 3. Recalcular todos los saldos resultantes del Kardex para el CICLO ACTUAL del empleado
+        // Recalcular todos los saldos resultantes del Kardex para el CICLO ACTUAL del empleado
         $sql_kardex_all = "SELECT id_kardex, dias_movimiento FROM kardex_vacaciones 
                            WHERE id_empleado = '$id_empleado' AND num_ciclo = '$num_ciclo_actual'
                            ORDER BY fecha_registro ASC, id_kardex ASC";
         $res_kardex_all = mysqli_query($conexion, $sql_kardex_all);
 
-        $saldo_acumulado = 0.000;
+        $saldo_acumulado_kardex = 0.000;
         while ($mov = mysqli_fetch_assoc($res_kardex_all)) {
-            $id_kardex = $mov['id_kardex'];
+            $id_k = $mov['id_kardex'];
             $dias_mov = (float)$mov['dias_movimiento'];
-            $saldo_acumulado += $dias_mov;
+            $saldo_acumulado_kardex += $dias_mov;
 
             $sql_upd_k = "UPDATE kardex_vacaciones 
-                          SET saldo_resultante = '$saldo_acumulado' 
-                          WHERE id_kardex = '$id_kardex'";
+                          SET saldo_resultante = '$saldo_acumulado_kardex' 
+                          WHERE id_kardex = '$id_k'";
             if (!mysqli_query($conexion, $sql_upd_k)) {
                 throw new Exception("Error al recalcular el saldo del Kardex.");
             }
