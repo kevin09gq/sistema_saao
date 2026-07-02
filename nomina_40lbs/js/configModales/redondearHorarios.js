@@ -421,13 +421,19 @@ function calcularTotalesRegistroRedondeado(registroRedondeado) {
     var entradaMin = convertirHoraAMinutos((registroRedondeado.entrada || "").trim());
     var salidaMin = convertirHoraAMinutos((registroRedondeado.salida || "").trim());
 
-    var minutosTurno = Math.max(0, salidaMin - entradaMin);
+    var minutosTurno = salidaMin - entradaMin;
+    if (minutosTurno < 0) {
+        minutosTurno += 1440;
+    }
 
     var minutosComida = 0;
     if (!esHoraCero(registroRedondeado.entrada_comida) && !esHoraCero(registroRedondeado.termino_comida)) {
         var entradaComidaMin = convertirHoraAMinutos((registroRedondeado.entrada_comida || "").trim());
         var terminoComidaMin = convertirHoraAMinutos((registroRedondeado.termino_comida || "").trim());
-        minutosComida = Math.max(0, terminoComidaMin - entradaComidaMin);
+        minutosComida = terminoComidaMin - entradaComidaMin;
+        if (minutosComida < 0) {
+            minutosComida += 1440;
+        }
     }
 
     var minutosNetos = Math.max(0, minutosTurno - minutosComida);
@@ -575,6 +581,22 @@ function imprimirSueldoBasePorHorasTrabajadas(tabulador, empleadosSeleccionados)
     }
     var minDesdeHoraExtra = itemHoraExtra ? convertirHoraAMinutos((itemHoraExtra.rango.desde || '').trim()) : null;
 
+    // Calcular el límite de minutos normales recorriendo los rangos normales y buscando el "hasta" más alto
+    var maxMinNormal = 0;
+    for (var i = 0; i < (tabulador || []).length; i++) {
+        var item = tabulador[i];
+        if (item && item.tipo === 'normal' && item.rango && item.rango.hasta) {
+            var minHasta = convertirHoraAMinutos(item.rango.hasta.trim());
+            if (minHasta > maxMinNormal) {
+                maxMinNormal = minHasta;
+            }
+        }
+    }
+    // Si no se encuentra un rango normal o es 0, usamos minDesdeHoraExtra - 1 como fallback
+    if (maxMinNormal === 0 && minDesdeHoraExtra !== null) {
+        maxMinNormal = minDesdeHoraExtra - 1;
+    }
+
     jsonNomina40lbs.departamentos.forEach(function (departamento) {
         // Solo procesar los departamentos que tienen habilitada la edición (Dinámico)
         if (departamento.editar !== true) {
@@ -608,8 +630,8 @@ function imprimirSueldoBasePorHorasTrabajadas(tabulador, empleadosSeleccionados)
                 }
             }
 
-            if (itemHoraExtra && minDesdeHoraExtra !== null && minutosEmpleado > minDesdeHoraExtra) {
-                var minutosExtra = Math.max(0, minutosEmpleado - minDesdeHoraExtra);
+            if (itemHoraExtra && maxMinNormal > 0 && minutosEmpleado > maxMinNormal) {
+                var minutosExtra = Math.max(0, minutosEmpleado - maxMinNormal);
                 var costo = parseFloat(itemHoraExtra.costo_por_minuto) || 0;
                 var pagoExtra = minutosExtra * costo;
 

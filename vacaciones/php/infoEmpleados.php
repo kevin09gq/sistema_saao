@@ -662,14 +662,20 @@ function editarPrimaVacacional($conexion)
     $fecha_inicio       = mysqli_real_escape_string($conexion, $_POST['fecha_inicio'] ?? '');
     $fecha_fin          = mysqli_real_escape_string($conexion, $_POST['fecha_fin'] ?? '');
     $dias_vacaciones    = floatval($_POST['dias_vacaciones'] ?? 0);
-    $domingos           = intval($_POST['domingos'] ?? 0);
+    $septimo_dia        = floatval($_POST['septimo_dia'] ?? 0);
     $festivos           = intval($_POST['festivos'] ?? 0);
+    $incluir_septimo_dia = intval($_POST['incluir_septimo_dia'] ?? 1);
+    $incluir_festivos    = intval($_POST['incluir_festivos'] ?? 1);
     $salario_diario     = floatval($_POST['salario_diario'] ?? 0);
     $porcentaje_prima   = floatval($_POST['porcentaje_prima'] ?? 0);
     $monto_prima_vacacional = floatval($_POST['monto_prima_vacacional'] ?? 0);
     $dispersion_tarjeta = floatval($_POST['dispersion_tarjeta'] ?? 0);
     $isr                = floatval($_POST['isr'] ?? 0);
+    $imss               = floatval($_POST['imss'] ?? 0);
+    $infonavit          = floatval($_POST['infonavit'] ?? 0);
     $total_pagado       = floatval($_POST['total_pagado'] ?? 0);
+    $dias_disfrutados   = floatval($_POST['dias_disfrutados'] ?? 0);
+    $dias_pagadas       = floatval($_POST['dias_pagadas'] ?? 0);
     $observaciones      = mysqli_real_escape_string($conexion, $_POST['observaciones'] ?? '');
 
     $sql = "UPDATE prima_vacacional_empleados SET 
@@ -679,14 +685,20 @@ function editarPrimaVacacional($conexion)
                 fecha_inicio = '$fecha_inicio',
                 fecha_fin = '$fecha_fin',
                 dias_vacaciones = '$dias_vacaciones',
-                domingos = '$domingos',
+                septimo_dia = '$septimo_dia',
                 festivos = '$festivos',
+                incluir_septimo_dia = '$incluir_septimo_dia',
+                incluir_festivos = '$incluir_festivos',
                 salario_diario = '$salario_diario',
                 porcentaje_prima = '$porcentaje_prima',
                 monto_prima_vacacional = '$monto_prima_vacacional',
                 dispersion_tarjeta = '$dispersion_tarjeta',
                 isr = '$isr',
+                imss = '$imss',
+                infonavit = '$infonavit',
                 total_pagado = '$total_pagado',
+                dias_disfrutados = '$dias_disfrutados',
+                dias_pagadas = '$dias_pagadas',
                 observaciones = '$observaciones'
             WHERE id_prima_empleado = '$id_prima_empleado'";
 

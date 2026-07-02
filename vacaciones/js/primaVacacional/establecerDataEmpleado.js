@@ -53,14 +53,11 @@ function obtenerInformacionEmpleado(idEmpleado) {
         }
         empleadoActual = empleado; // Guardar en variable global
         $('#idEmpleado').val(empleado.id_empleado); // Establecer el ID en el campo oculto
-        
-        // Cargar salario diario en el formulario
-        $('#salarioDiario').val(empleado.salario_diario || '');
-        
-        cargarEncabezadoEmpleado(empleado);
 
-        // Disparar cambio para calcular
-        $('#salarioDiario').trigger('change');
+        // Cargar salario diario en el formulario
+        $('#salarioDiario').val(empleado.salario_diario || '').trigger('change');
+
+        cargarEncabezadoEmpleado(empleado);
     }, 'json');
 }
 
@@ -100,9 +97,9 @@ function autoLlenarDatos(idKardex) {
         $('#fechaInicio').val('');
         $('#fechaFin').val('');
         $('#anio').val('');
-        $('#domingos').val('0');
+        $('#septimoDia').val('0');
         $('#festivos').val('0');
-        $('#incluirDomingos').prop('checked', true);
+        $('#incluirSeptimoDia').prop('checked', true);
         $('#incluirFestivos').prop('checked', true);
         $('#diasTotalesCalculo').text('0.000');
         $('#diasVacaciones').trigger('change');
@@ -126,19 +123,19 @@ function autoLlenarDatos(idKardex) {
         $('#fechaInicio').val(inicio);
         $('#fechaFin').val(fin);
 
-        // Calcular y llenar domingos
-        let numDomingos = contarDomingos(inicio, fin);
-        $('#domingos').val(numDomingos);
+        // Calcular y llenar séptimo día (Días de vacaciones / 6)
+        let numSeptimo = (parseFloat(dias) / 6).toFixed(2);
+        $('#septimoDia').val(numSeptimo);
 
         // Calcular y llenar festivos
         let numFestivos = contarFestivos(inicio, fin);
         $('#festivos').val(numFestivos);
 
         // Default switches to checked
-        $('#incluirDomingos').prop('checked', true);
+        $('#incluirSeptimoDia').prop('checked', true);
         $('#incluirFestivos').prop('checked', true);
 
-        // Trigger change event to fire calculations
+        // Trigger change to recalculate
         $('#diasVacaciones').trigger('change');
     }
 }

@@ -56,7 +56,7 @@ function obtenerNotificaciones($conexion)
         return;
     }
 
-    $notificaciones = [];
+    $notificaciones = array();
 
     while ($emp = mysqli_fetch_assoc($result)) {
         // Saltar si la fecha de ingreso es inválida
@@ -112,8 +112,64 @@ function obtenerNotificaciones($conexion)
         ];
     }
 
-    // Ordenar: HOY primero, luego PROXIMO, luego RECIENTE
-    $orden = ['HOY' => 0, 'PROXIMO' => 1, 'RECIENTE' => 2];
+    // ======================================================
+    // AGREGAR NOTIFICACIONES DE GAFETES (nuevo código agregado)
+    // ======================================================
+    // Notificaciones de gafetes vencidos
+    $sql_vencidos = "SELECT id_empleado, clave_empleado, nombre, ap_paterno, ap_materno, fecha_vigencia 
+        FROM info_empleados 
+        WHERE fecha_vigencia < CURDATE() 
+          AND fecha_vigencia IS NOT NULL
+          AND id_status = 1";
+
+    $result_vencidos = $conexion->query($sql_vencidos);
+    if ($result_vencidos) {
+        while ($row = $result_vencidos->fetch_assoc()) {
+            $fecha_vigencia = new DateTime($row['fecha_vigencia']);
+            $diferencia = $fecha_vigencia->diff($hoy);
+            $nombre = trim($row['nombre'] . ' ' . $row['ap_paterno'] . ' ' . $row['ap_materno']);
+            
+            $notificaciones[] = [
+                'id_empleado'       => $row['id_empleado'],
+                'clave_empleado'    => $row['clave_empleado'],
+                'nombre'            => $nombre,
+                'fecha_vigencia'    => $row['fecha_vigencia'],
+                'dias_vencidos'     => $diferencia->days,
+                'tipo'              => 'GAFETE_VENCIDO',
+            ];
+        }
+    }
+
+    // Notificaciones de gafetes próximos a vencer (7 días)
+    $sql_proximos = "SELECT id_empleado, clave_empleado, nombre, ap_paterno, ap_materno, fecha_vigencia 
+        FROM info_empleados 
+        WHERE fecha_vigencia IS NOT NULL 
+          AND fecha_vigencia >= CURDATE() 
+          AND fecha_vigencia <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+          AND id_status = 1";
+
+    $result_proximos = $conexion->query($sql_proximos);
+    if ($result_proximos) {
+        while ($row = $result_proximos->fetch_assoc()) {
+            $fecha_vigencia = new DateTime($row['fecha_vigencia']);
+            $fecha_vigencia->setTime(0,0,0);
+            $diferencia = $hoy->diff($fecha_vigencia);
+            $nombre = trim($row['nombre'] . ' ' . $row['ap_paterno'] . ' ' . $row['ap_materno']);
+            
+            $notificaciones[] = [
+                'id_empleado'       => $row['id_empleado'],
+                'clave_empleado'    => $row['clave_empleado'],
+                'nombre'            => $nombre,
+                'fecha_vigencia'    => $row['fecha_vigencia'],
+                'dias_restantes'    => (int)$diferencia->format('%r%a'),
+                'tipo'              => 'GAFETE_PROXIMO',
+            ];
+        }
+    }
+
+    // Ordenar: HOY primero, luego PROXIMO, luego RECIENTE, luego gafetes
+    // Pero mantenemos el orden original para lo que ya existía
+    $orden = ['HOY' => 0, 'PROXIMO' => 1, 'RECIENTE' => 2, 'GAFETE_VENCIDO' => 3, 'GAFETE_PROXIMO' => 4];
     usort($notificaciones, fn($a, $b) => $orden[$a['tipo']] - $orden[$b['tipo']]);
 
     echo json_encode([

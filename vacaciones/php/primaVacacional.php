@@ -30,14 +30,20 @@ function guardarPrimaVacacional($conexion)
     $fecha_inicio       = mysqli_real_escape_string($conexion, $_POST['fecha_inicio'] ?? '');
     $fecha_fin          = mysqli_real_escape_string($conexion, $_POST['fecha_fin'] ?? '');
     $dias_vacaciones    = floatval($_POST['dias_vacaciones'] ?? 0);
-    $domingos           = intval($_POST['domingos'] ?? 0);
+    $septimo_dia        = floatval($_POST['septimo_dia'] ?? 0);
     $festivos           = intval($_POST['festivos'] ?? 0);
+    $incluir_septimo_dia = intval($_POST['incluir_septimo_dia'] ?? 1);
+    $incluir_festivos    = intval($_POST['incluir_festivos'] ?? 1);
     $salario_diario     = floatval($_POST['salario_diario'] ?? 0);
     $porcentaje_prima   = floatval($_POST['porcentaje_prima'] ?? 0);
     $monto_prima_vacacional = floatval($_POST['monto_prima_vacacional'] ?? 0);
     $dispersion_tarjeta = floatval($_POST['dispersion_tarjeta'] ?? 0);
     $isr                = floatval($_POST['isr'] ?? 0);
+    $imss               = floatval($_POST['imss'] ?? 0);
+    $infonavit          = floatval($_POST['infonavit'] ?? 0);
     $total_pagado       = floatval($_POST['total_pagado'] ?? 0);
+    $dias_disfrutados   = floatval($_POST['dias_disfrutados'] ?? 0);
+    $dias_pagadas       = floatval($_POST['dias_pagadas'] ?? 0);
     $observaciones      = mysqli_real_escape_string($conexion, $_POST['observaciones'] ?? '');
 
     // Validaciones básicas
@@ -68,12 +74,14 @@ function guardarPrimaVacacional($conexion)
     // Insertar en la base de datos
     $sql = "INSERT INTO prima_vacacional_empleados 
             (id_empleado, id_kardex, numero_semana, anio, fecha_pago, fecha_inicio, fecha_fin, 
-             dias_vacaciones, domingos, festivos, salario_diario, porcentaje_prima, 
-             monto_prima_vacacional, dispersion_tarjeta, isr, total_pagado, observaciones)
+             dias_vacaciones, septimo_dia, festivos, incluir_septimo_dia, incluir_festivos, salario_diario, porcentaje_prima, 
+             monto_prima_vacacional, dispersion_tarjeta, isr, imss, infonavit, total_pagado,
+             dias_disfrutados, dias_pagadas, observaciones)
             VALUES 
             ('$id_empleado', '$id_kardex', '$numero_semana', '$anio', '$fecha_pago', '$fecha_inicio', '$fecha_fin', 
-             '$dias_vacaciones', '$domingos', '$festivos', '$salario_diario', '$porcentaje_prima', 
-             '$monto_prima_vacacional', '$dispersion_tarjeta', '$isr', '$total_pagado', '$observaciones')";
+             '$dias_vacaciones', '$septimo_dia', '$festivos', '$incluir_septimo_dia', '$incluir_festivos', '$salario_diario', '$porcentaje_prima', 
+             '$monto_prima_vacacional', '$dispersion_tarjeta', '$isr', '$imss', '$infonavit', '$total_pagado',
+             '$dias_disfrutados', '$dias_pagadas', '$observaciones')";
 
     if (mysqli_query($conexion, $sql)) {
         $id_insertado = mysqli_insert_id($conexion);

@@ -946,28 +946,20 @@ verificarSesion(); // Proteger esta página
 
                     <!-- USUARIO -->
                     <div class="tab-pane fade" id="usuario" role="tabpanel">
-                        <div class="d-flex justify-content-center align-items-center" style="min-height: 70vh;">
-                            <div class="card border-0 shadow-lg" style="width: 100%; max-width: 420px;">
-                                <div class="card-header bg-success text-white text-center">
-                                    <h5 class="mb-0">
-                                        <i class="bi bi-person-circle fs-4"></i>
-                                    </h5>
-                                </div>
-                                <div class="card-body">
+                        <div class="row mt-4">
+                            <div class="col-md-5 offset-md-3">
+                                <div class="form-container">
+                                    <h5 class="mb-3"><i class="bi bi-person-gear"></i> Actualizar Datos del Usuario</h5>
                                     <form id="formUsuario">
-                                        <div class="mb-4">
-                                            <label for="correo" class="form-label">
-                                                <i class="bi bi-envelope"></i> Correo Electrónico
-                                            </label>
-                                            <input type="email" class="form-control shadow-sm" id="correo" name="correo"
+                                        <div class="mb-3">
+                                            <label for="correo" class="form-label">Correo Electrónico</label>
+                                            <input type="email" class="form-control" id="correo" name="correo"
                                                 placeholder="ejemplo@correo.com" required>
                                         </div>
 
-                                        <div class="mb-4">
-                                            <label for="password_actual" class="form-label">
-                                                <i class="bi bi-shield-lock"></i> Contraseña Actual
-                                            </label>
-                                            <div class="input-group shadow-sm">
+                                        <div class="mb-3">
+                                            <label for="password_actual" class="form-label">Contraseña Actual</label>
+                                            <div class="input-group">
                                                 <input type="password" class="form-control" id="password_actual"
                                                     name="password_actual" placeholder="Tu contraseña actual" required>
                                                 <button class="btn btn-outline-secondary" type="button"
@@ -975,16 +967,12 @@ verificarSesion(); // Proteger esta página
                                                     <i class="bi bi-eye"></i>
                                                 </button>
                                             </div>
-                                            <small class="text-muted">
-                                                <i class="bi bi-info-circle"></i> Necesaria para confirmar cualquier cambio.
-                                            </small>
+                                            <small class="text-muted">Necesaria para confirmar cualquier cambio.</small>
                                         </div>
 
-                                        <div class="mb-4">
-                                            <label for="password_nueva" class="form-label">
-                                                <i class="bi bi-key"></i> Nueva Contraseña
-                                            </label>
-                                            <div class="input-group shadow-sm">
+                                        <div class="mb-3">
+                                            <label for="password_nueva" class="form-label">Nueva Contraseña</label>
+                                            <div class="input-group">
                                                 <input type="password" class="form-control" id="password_nueva"
                                                     name="password_nueva" placeholder="Mínimo 8 caracteres">
                                                 <button class="btn btn-outline-secondary" type="button"
@@ -992,20 +980,14 @@ verificarSesion(); // Proteger esta página
                                                     <i class="bi bi-eye"></i>
                                                 </button>
                                             </div>
-                                            <small class="text-muted">
-                                                <i class="bi bi-lightbulb"></i> Dejar vacío si solo deseas actualizar tu correo.
-                                            </small>
+                                            <small class="text-muted">Dejar vacío si solo deseas actualizar tu correo.</small>
                                         </div>
 
-                                        <hr class="my-4 opacity-50">
-
-                                        <div class="d-grid gap-3">
-                                            <button type="submit" class="btn btn-success d-flex justify-content-center align-items-center">
-                                                <i class="bi bi-check2-circle fs-5 me-2"></i> Actualizar Información
-                                            </button>
-                                            <button type="reset" class="btn btn-secondary d-flex justify-content-center align-items-center" id="btn-cancelar-usuario">
-                                                <i class="bi bi-arrow-counterclockwise me-2"></i> Restaurar Campos
-                                            </button>
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn btn-success" id="btn-guardar-usuario"><i
+                                                    class="bi bi-save"></i> Actualizar Información</button>
+                                            <button type="reset" class="btn btn-secondary" id="btn-cancelar-usuario"><i
+                                                    class="bi bi-x-circle"></i> Restaurar Campos</button>
                                         </div>
                                     </form>
                                 </div>
@@ -1053,7 +1035,7 @@ verificarSesion(); // Proteger esta página
                                         <div class="mb-3">
                                             <label for="tipo_precio" class="form-label">Tipo de Clasificación</label>
                                             <select class="form-select" name="tipo_precio" id="tipo_precio" required>
-                                                <option value="CALIBRE" selected>CALIBRE</option>
+                                                <option value="NUMERO_DE_BOLSA" selected>NUMERO_DE_BOLSA</option>
                                                 <option value="PESO">PESO</option>
                                             </select>
                                         </div>

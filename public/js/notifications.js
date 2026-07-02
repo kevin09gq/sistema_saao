@@ -108,11 +108,37 @@ function mostrarListaEnModal(listaNotificaciones) {
 
 // ── Construye el HTML de una tarjeta individual ────────
 function crearTarjetaNotificacion(notificacion) {
-    // Obtener colores, icono y texto según el tipo (PROXIMO / HOY / RECIENTE)
-    const configuracion  = obtenerConfiguracionTipo(notificacion.tipo, notificacion.dias_diferencia);
-    const iniciales      = obtenerIniciales(notificacion.nombre);
-    const fechaLegible   = formatearFecha(notificacion.fecha_aniversario);
-    const tipoCss        = notificacion.tipo.toLowerCase(); // "proximo", "hoy", "reciente"
+    // Si es una notificación de gafete
+    if (notificacion.tipo === 'GAFETE_VENCIDO' || notificacion.tipo === 'GAFETE_PROXIMO') {
+        const configuracion = obtenerConfiguracionTipo(notificacion.tipo);
+        const iniciales = obtenerIniciales(notificacion.nombre);
+        const fechaLegible = formatearFecha(notificacion.fecha_vigencia);
+        const tipoCss = notificacion.tipo.toLowerCase(); // "gafete_vencido", "gafete_proximo"
+
+        return `
+            <div class="notif-item notif-tipo-${tipoCss}">
+                <div class="notif-avatar notif-avatar-${tipoCss}">${iniciales}</div>
+                <div class="notif-content">
+                    <div class="notif-header-row">
+                        <span class="notif-nombre">${notificacion.nombre}</span>
+                        <span class="notif-badge-tipo notif-badge-${tipoCss}">${configuracion.etiqueta}</span>
+                    </div>
+                    <div class="notif-desc">
+                        <i class="${configuracion.icono}"></i> ${configuracion.mensaje(notificacion)}
+                    </div>
+                    <div class="notif-fecha">
+                        <i class="bi bi-calendar3"></i> ${fechaLegible} &nbsp;·&nbsp;
+                        <i class="bi bi-person-badge"></i> Clave: ${notificacion.clave_empleado}
+                    </div>
+                </div>
+            </div>`;
+    }
+
+    // Si es una notificación de aniversario (original)
+    const configuracion = obtenerConfiguracionTipo(notificacion.tipo, notificacion.dias_diferencia);
+    const iniciales = obtenerIniciales(notificacion.nombre);
+    const fechaLegible = formatearFecha(notificacion.fecha_aniversario);
+    const tipoCss = notificacion.tipo.toLowerCase(); // "proximo", "hoy", "reciente"
 
     return `
         <div class="notif-item notif-tipo-${tipoCss}">
@@ -170,6 +196,20 @@ function obtenerConfiguracionTipo(tipo) {
             mensaje: (n) =>
                 `Cumplió <strong>${n.anios} año${n.anios > 1 ? 's' : ''}</strong> de antigüedad hace ` +
                 `<strong>${n.dias_diferencia === 1 ? '1 día' : '2 días'}</strong>.`,
+        },
+        // ❌ Gafete vencido
+        GAFETE_VENCIDO: {
+            etiqueta: '❌ Vencido',
+            icono: 'bi bi-exclamation-triangle',
+            mensaje: (n) =>
+                `El gafete vence desde hace <strong>${n.dias_vencidos} día${n.dias_vencidos > 1 ? 's' : ''}</strong>.`,
+        },
+        // ⚠️ Gafete próximo a vencer
+        GAFETE_PROXIMO: {
+            etiqueta: '⚠️ Por vencer',
+            icono: 'bi bi-exclamation-circle',
+            mensaje: (n) =>
+                `El gafete vence en <strong>${n.dias_restantes} día${n.dias_restantes > 1 ? 's' : ''}</strong>.`,
         },
     };
 
@@ -261,8 +301,8 @@ function sincronizarContadorModal() {
 // Obtiene las 2 primeras letras del nombre completo para el avatar
 function obtenerIniciales(nombreCompleto) {
     const palabras = nombreCompleto.trim().split(' ').filter(Boolean);
-    const primeraLetra  = palabras[0]?.charAt(0) || '';
-    const segundaLetra  = palabras[1]?.charAt(0) || '';
+    const primeraLetra = palabras[0]?.charAt(0) || '';
+    const segundaLetra = palabras[1]?.charAt(0) || '';
     return (primeraLetra + segundaLetra).toUpperCase();
 }
 
@@ -270,7 +310,7 @@ function obtenerIniciales(nombreCompleto) {
 function formatearFecha(fechaString) {
     if (!fechaString) return '---';
     const nombresMeses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
-                          'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
     const [anio, mes, dia] = fechaString.split('-').map(Number);
     return `${dia} ${nombresMeses[mes - 1]} ${anio}`;
 }

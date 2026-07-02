@@ -119,16 +119,33 @@ function calcularTotalHorasFila(fila) {
             var entradaComidaMinutos = convertirHoraAMinutos(entradaComida);
             var terminoComidaMinutos = convertirHoraAMinutos(terminoComida);
 
-            // Calcular el total de minutos trabajados: (Entrada Comida - Entrada) + (Salida - Salida Comida)
-            minutosTrabajados = (entradaComidaMinutos - entradaMinutos) + (salidaMinutos - terminoComidaMinutos);
+            // Calcular duración total del turno (considerando cruce de medianoche)
+            var totalShift = salidaMinutos - entradaMinutos;
+            if (totalShift < 0) {
+                totalShift += 1440;
+            }
+
+            // Calcular duración de la comida (considerando cruce de medianoche si ocurriera)
+            var breakDuration = terminoComidaMinutos - entradaComidaMinutos;
+            if (breakDuration < 0) {
+                breakDuration += 1440;
+            }
+
+            minutosTrabajados = totalShift - breakDuration;
+            if (minutosTrabajados < 0) {
+                minutosTrabajados = 0;
+            }
 
             // Calcular horas de comida
-            var horasComida = Math.floor((terminoComidaMinutos - entradaComidaMinutos) / 60);
-            var minutosComida = (terminoComidaMinutos - entradaComidaMinutos) % 60;
+            var horasComida = Math.floor(breakDuration / 60);
+            var minutosComida = breakDuration % 60;
             var horasComidaTexto = horasComida.toString().padStart(2, '0') + ':' + minutosComida.toString().padStart(2, '0');
         } else {
             // Si no hay horas de comida, calcular directamente de entrada a salida
             minutosTrabajados = salidaMinutos - entradaMinutos;
+            if (minutosTrabajados < 0) {
+                minutosTrabajados += 1440;
+            }
 
             // No hay horas de comida
             var horasComidaTexto = '00:00';

@@ -17,7 +17,7 @@ function abrirModalSeleccionarEmpleados() {
         }
 
         // Cargar la lista de empleados
-        cargarListaEmpleados();
+        cargarListaEmpleado();
 
         // Mostrar el modal usando Bootstrap
         const modal = new bootstrap.Modal(document.getElementById('modal-seleccionar-empleados'));
@@ -26,7 +26,7 @@ function abrirModalSeleccionarEmpleados() {
 }
 
 // Cargar lista de empleados agrupados por departamento
-function cargarListaEmpleados() {
+function cargarListaEmpleado() {
     const contenedor = $('#contenedor-lista-empleados');
     contenedor.empty();
 
@@ -35,8 +35,7 @@ function cargarListaEmpleados() {
 
     // Recorrer departamentos
     jsonNomina40lbs.departamentos.forEach(departamento => {
-        // Solo procesar departamentos habilitados para edición (Dinámico)
-        if (departamento.editar !== true || !departamento.empleados || departamento.empleados.length === 0) return;
+        if (!departamento.empleados || departamento.empleados.length === 0) return;
 
         // Crear grupo de departamento
         const grupoHTML = `
@@ -149,9 +148,7 @@ function aplicarSeleccion() {
         if (typeof saveNomina === 'function') {
             saveNomina(jsonNomina40lbs);
         }
-     
         refrescarTabla();
-
         // Cerrar modal usando Bootstrap
         const modalEl = document.getElementById('modal-seleccionar-empleados');
         const modal = bootstrap.Modal.getInstance(modalEl);

@@ -75,7 +75,7 @@ CREATE TABLE info_ranchos (
 -- TABLAS DE ADMINISTRACION DE USUARIOS
 -- =============================
 
--- Crear tabla usuarios
+-- Crear tabla estatus
 CREATE TABLE status (
     id_status INT AUTO_INCREMENT PRIMARY KEY,
     nombre_status VARCHAR(50) NOT NULL
@@ -121,7 +121,7 @@ CREATE TABLE info_empleados (
     fecha_creacion DATE,
     fecha_vigencia DATE,
     salario_semanal DECIMAL(10, 2) DEFAULT 0,
-    salario_diario DECIMAL(10, 2) DEFAULT 0,
+    salario_diario DECIMAL(18, 10) DEFAULT 0, 
     id_puestoEspecial INT,
     id_departamento INT,
     id_area INT,
@@ -337,6 +337,7 @@ CREATE TABLE aguinaldos (
     PRIMARY KEY (id_aguinaldo)
 );
 
+
 -- =============================
 -- TABLAS DE VACACIONES LFT
 -- =============================
@@ -359,9 +360,11 @@ CREATE TABLE dias_vacaciones_lft (
     FOREIGN KEY (id_version_vacaciones) REFERENCES versiones_vacaciones_lft (id_version_vacaciones) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
+
 -- ==========================================
--- TABLA: PERIODOS DE VACACIONES
+-- TABLAS DE CONTROL DE VACACIONES DE EMPLEADOS
 -- ==========================================
+
 CREATE TABLE vacaciones_periodos (
     id_periodo INT AUTO_INCREMENT PRIMARY KEY,
     id_empleado INT NOT NULL,
@@ -376,10 +379,6 @@ CREATE TABLE vacaciones_periodos (
     FOREIGN KEY (id_empleado) REFERENCES info_empleados (id_empleado) ON UPDATE CASCADE ON DELETE CASCADE,
     FOREIGN KEY (id_version_vacaciones) REFERENCES versiones_vacaciones_lft (id_version_vacaciones) ON UPDATE CASCADE ON DELETE RESTRICT
 );
-
--- ==========================================
--- TABLA: KARDEX DE VACACIONES
--- ==========================================
 
 CREATE TABLE kardex_vacaciones (
     id_kardex INT AUTO_INCREMENT PRIMARY KEY,
@@ -408,14 +407,20 @@ CREATE TABLE prima_vacacional_empleados (
     fecha_inicio DATE NOT NULL,
     fecha_fin DATE NOT NULL,
     dias_vacaciones DECIMAL(10, 3) NOT NULL,
-    domingos INT NOT NULL DEFAULT 0,
+    septimo_dia DECIMAL(10, 3) NOT NULL DEFAULT 0.000,
     festivos INT NOT NULL DEFAULT 0,
+    incluir_septimo_dia TINYINT NOT NULL DEFAULT 1,
+    incluir_festivos TINYINT NOT NULL DEFAULT 1,
     salario_diario DECIMAL(10, 2) NOT NULL,
     porcentaje_prima DECIMAL(5, 2) NOT NULL,
     monto_prima_vacacional DECIMAL(10, 2) NOT NULL,
-    dispersion_tarjeta DECIMAL(10, 2) NOT NULL,
-    isr DECIMAL(10, 2) NOT NULL,
+    dispersion_tarjeta DECIMAL(10, 2) NOT NULL DEFAULT 0,
+    isr DECIMAL(10, 2) NOT NULL DEFAULT 0,
+    imss DECIMAL(10, 2) NOT NULL DEFAULT 0,
+    infonavit DECIMAL(10, 2) NOT NULL DEFAULT 0,
     total_pagado DECIMAL(10, 2) NOT NULL,
+    dias_disfrutados DECIMAL(10, 3) NULL DEFAULT NULL,
+    dias_pagadas DECIMAL(10, 3) NULL DEFAULT NULL,
     observaciones TEXT NULL,
     FOREIGN KEY (id_empleado) REFERENCES info_empleados (id_empleado) ON UPDATE CASCADE ON DELETE CASCADE,
     FOREIGN KEY (id_kardex) REFERENCES kardex_vacaciones (id_kardex) ON UPDATE CASCADE ON DELETE CASCADE
@@ -461,7 +466,7 @@ CREATE TABLE historial_incidencias_semanal (
 );
 
 -- =============================
--- TABLAS DE NÓMINA DINAMICAS
+-- TABLAS DE CONTROL DE NÓMINAS
 -- =============================
 
 -- Una nómina pertenece a una sola área.
@@ -526,9 +531,7 @@ CREATE TABLE nomina_10lbs (
     FOREIGN KEY (id_empresa) REFERENCES empresa (id_empresa) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
--- =============================
--- TABLA DE PRECIOS DE CAJAS
--- =============================
+-- Tabla de precios de cajas
 CREATE TABLE precios_cajas (
     id_precio_caja INT AUTO_INCREMENT PRIMARY KEY,
     tipo ENUM('NUMERO_DE_BOLSA', 'PESO') NOT NULL,

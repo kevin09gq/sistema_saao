@@ -243,8 +243,16 @@ verificarSesion();
                                         <input type="text" class="form-control" id="modal_grupo_sanguineo" name="grupo_sanguineo">
                                     </div>
                                     <div class="col-md-4 mb-3">
-                                        <label for="modal_fecha_nacimiento" class="form-label">Fecha de Nacimiento</label>
+                                        <label for="modal_fecha_nacimiento" class="form-label">
+                                            Fecha de Nacimiento
+                                        </label>
                                         <input type="date" class="form-control" id="modal_fecha_nacimiento" name="fecha_nacimiento">
+                                        <div class="mt-1">
+                                            <span id="edad-empleado-vista" class="badge rounded-pill text-bg-secondary d-none">
+                                                <i class="bi bi-calendar-heart me-1"></i>
+                                                <span id="edad-empleado-texto"></span>
+                                            </span>
+                                        </div>
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label for="modal_rfc" class="form-label">RFC</label>

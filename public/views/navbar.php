@@ -44,7 +44,7 @@
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/aguinaldo/aguinaldo.php">Aguinaldos</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/reparto_utilidades/views/historial.php">PTU</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/vacaciones/views/vacaciones.php">Vacaciones</a></li>
-                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/public/views/generacion_tickets_manuales.php">Tickets Manuales</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/tickets_manuales/views/tickets_manuales.php">Tickets Manuales</a></li>
                         <li class="dropdown-submenu">
                             <a class="dropdown-item dropdown-toggle" href="#">Reloj 8 Horas</a>
                             <ul class="submenu dropdown-menu">

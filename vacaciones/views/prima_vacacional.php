@@ -9,7 +9,7 @@
     include "../../config/config.php";
     verificarSesion();
     ?>
-      <!-- SweetAlert2 CSS -->
+    <!-- SweetAlert2 CSS -->
     <script src="<?= SWEETALERT ?>"></script>
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
@@ -115,8 +115,8 @@
                         <input type="number" class="input-kardex" id="diasVacaciones" name="dias_vacaciones" step="0.001" min="0" placeholder="6.000" required>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label-kardex">Domingos</label>
-                        <input type="number" class="input-kardex" id="domingos" name="domingos" min="0" value="0" placeholder="0">
+                        <label class="form-label-kardex">Séptimo Día</label>
+                        <input type="number" class="input-kardex" id="septimoDia" name="septimo_dia" step="0.01" min="0" value="0" placeholder="0">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label-kardex">Festivos</label>
@@ -127,8 +127,8 @@
                 <div class="row g-3 align-items-center mb-3">
                     <div class="col-md-6">
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="incluirDomingos" name="incluir_domingos" checked>
-                            <label class="form-check-label fw-semibold text-secondary" for="incluirDomingos" style="font-size: 0.85rem;">Tomar en cuenta domingos en el cálculo</label>
+                            <input class="form-check-input" type="checkbox" id="incluirSeptimoDia" name="incluir_domingos" checked>
+                            <label class="form-check-label fw-semibold text-secondary" for="incluirSeptimoDia" style="font-size: 0.85rem;">Tomar en cuenta séptimo día en el cálculo</label>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -150,13 +150,8 @@
                          ============================================ -->
             <div class="card-form">
                 <h5 class="section-title">
-                    <i class="bi bi-calculator"></i> Cálculo de Prima
+                    <i class="bi bi-calculator"></i> Pago de vacaciones
                 </h5>
-
-                <!-- Fórmula -->
-                <div class="formula-box mb-4">
-                    <p class="formula-label">(Días de Vacaciones × Salario Diario) × Porcentaje (%)</p>
-                </div>
 
                 <!-- Datos para Cálculo -->
                 <div class="row g-3 mb-3">
@@ -173,68 +168,122 @@
                         <input type="number" class="input-kardex" id="porcentajePrima" name="porcentaje_prima" step="0.01" min="0" max="100" value="25.00" placeholder="25.00" required>
                     </div>
                 </div>
-                <!-- Desglose de Cálculo -->
-                <div class="desglose-box mb-4">
-                    <div class="desglose-row">
-                        <span class="desglose-concepto">Días Vacaciones:</span>
-                        <span class="desglose-valor" id="desglosesDias">0.000</span>
-                    </div>
-                    <div class="desglose-row">
-                        <span class="desglose-concepto">× Salario Diario:</span>
-                        <span class="desglose-valor" id="desglosesSalario">$0.00</span>
-                    </div>
-                    <div class="desglose-separator"></div>
-                    <div class="desglose-row fw-bold text-primary">
-                        <span class="desglose-concepto">Sueldo por Vacaciones:</span>
-                        <span class="desglose-valor" id="desglosesSueldoVac">$0.00</span>
-                    </div>
-                    <div class="desglose-row">
-                        <span class="desglose-concepto">× Porcentaje Prima:</span>
-                        <span class="desglose-valor" id="desglosesPorcentaje">25.00%</span>
-                    </div>
-                    <div class="desglose-separator"></div>
-                    <div class="desglose-row desglose-subtotal">
-                        <span class="desglose-concepto">Prima Vacacional:</span>
-                        <span class="desglose-valor" id="desglosePrima">$0.00</span>
-                    </div>
-                </div>
 
-                <!-- Deducciones -->
-                <h6 class="subsection-title">Deducciones</h6>
+                <div class="desglose-separator"></div>
+
+                <!-- Inputs de Deducciones -->
+                <h6 class="subsection-title mt-3"><i class="bi bi-dash-circle text-danger"></i> Deducciones</h6>
                 <div class="row g-3 mb-4">
-                    <div class="col-md-6">
+                    <div class="col-md-3">
                         <label class="form-label-kardex">Dispersión Tarjeta</label>
-                        <input type="number" class="input-kardex input-deduccion" id="dispersionTarjeta" name="dispersion_tarjeta" step="0.01" min="0" value="0.00" placeholder="0.00">
+                        <div class="input-group">
+                            <input type="number" class="input-kardex" id="dispersionTarjeta" name="dispersion_tarjeta" step="0.01" min="0" placeholder="0.00">
+                        </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-3">
                         <label class="form-label-kardex">ISR</label>
-                        <input type="number" class="input-kardex input-deduccion" id="isr" name="isr" step="0.01" min="0" value="0.00" placeholder="0.00">
+                        <div class="input-group">
+                            <input type="number" class="input-kardex" id="isr" name="isr" step="0.01" min="0" placeholder="0.00">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label-kardex">IMSS</label>
+                        <div class="input-group">
+                            <input type="number" class="input-kardex" id="imss" name="imss" step="0.01" min="0" placeholder="0.00">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label-kardex">Infonavit</label>
+                        <div class="input-group">
+                            <input type="number" class="input-kardex" id="infonavit" name="infonavit" step="0.01" min="0" placeholder="0.00">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="desglose-separator"></div>
+
+                <!-- Resumen de Pago -->
+                <div class="desglose-box mb-4" id="resumenPagoBox">
+                    <div class="desglose-row" id="filaVacaciones">
+                        <span class="desglose-concepto">Vacaciones:</span>
+                        <span class="desglose-valor" id="resumenVacaciones">$0.00</span>
+                    </div>
+                    <div class="desglose-row" id="filaPrima">
+                        <span class="desglose-concepto">Prima Vacacional:</span>
+                        <span class="desglose-valor" id="resumenPrima">$0.00</span>
+                    </div>
+                    <div class="desglose-row" id="filaSemptimoDia">
+                        <span class="desglose-concepto">Séptimo Día:</span>
+                        <span class="desglose-valor" id="resumenSeptimoDia">$0.00</span>
+                    </div>
+                    <div class="desglose-row" id="filaFestivos">
+                        <span class="desglose-concepto">Festivos:</span>
+                        <span class="desglose-valor" id="resumenFestivos">$0.00</span>
+                    </div>
+
+                    <div class="desglose-separator" id="separadorDeducciones" style="display: none;"></div>
+
+                    <!-- Deducciones individuales dentro del resumen -->
+                    <div class="desglose-row text-danger" id="filaDeducTarjeta" style="display: none;">
+                        <span class="desglose-concepto">- Tarjeta:</span>
+                        <span class="desglose-valor" id="resumenDeducTarjeta">$0.00</span>
+                    </div>
+                    <div class="desglose-row text-danger" id="filaDeducIsr" style="display: none;">
+                        <span class="desglose-concepto">- ISR:</span>
+                        <span class="desglose-valor" id="resumenDeducIsr">$0.00</span>
+                    </div>
+                    <div class="desglose-row text-danger" id="filaDeducImss" style="display: none;">
+                        <span class="desglose-concepto">- IMSS:</span>
+                        <span class="desglose-valor" id="resumenDeducImss">$0.00</span>
+                    </div>
+                    <div class="desglose-row text-danger" id="filaDeducInfonavit" style="display: none;">
+                        <span class="desglose-concepto">- Infonavit:</span>
+                        <span class="desglose-valor" id="resumenDeducInfonavit">$0.00</span>
+                    </div>
+                    <div class="desglose-separator" id="separadorTotal" style="display: none;"></div>
+                    <div class="desglose-row desglose-subtotal text-primary fw-bold" id="filaTotal">
+                        <span class="desglose-concepto">TOTAL A PAGAR:</span>
+                        <span class="desglose-valor" id="resumenTotal">$0.00</span>
                     </div>
                 </div>
 
-                <!-- Resumen Final -->
-                <div class="resumen-final-box">
-                    <div class="resumen-row">
-                        <span class="resumen-label">Prima Vacacional</span>
-                        <span class="resumen-valor" id="resumenPrima">$0.00</span>
-                    </div>
-                    <div class="resumen-row">
-                        <span class="resumen-label">- Dispersión Tarjeta</span>
-                        <span class="resumen-valor" id="resumenDispersion">$0.00</span>
-                    </div>
-                    <div class="resumen-row">
-                        <span class="resumen-label">- ISR</span>
-                        <span class="resumen-valor" id="resumenISR">$0.00</span>
-                    </div>
-                    <div class="resumen-row resumen-total">
-                        <span class="resumen-label">TOTAL A PAGAR</span>
-                        <span class="resumen-valor-total" id="resumenTotal">$0.00</span>
-                    </div>
-                </div>
+
 
             </div>
 
-            <!-- SECCIÓN 3: OBSERVACIONES Y BOTONES -->
+
+            <!-- SECCIÓN 4: DÍAS DISFRUTADOS / PAGADAS -->
+            <div class="card-form" style="border-left: 4px solid #6f42c1;">
+                <h5 class="section-title">
+                    <i class="bi bi-check2-square"></i> Días Vacaciones
+                </h5>
+
+                <div class="row g-3 align-items-end">
+                    <!-- Disfrutados -->
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input" type="checkbox" id="chkDisfrutados" name="tiene_disfrutados">
+                                <label class="form-check-label fw-semibold text-secondary" for="chkDisfrutados" style="font-size: 0.85rem;">Disfrutados</label>
+                            </div>
+                        </div>
+                        <input type="number" class="input-kardex" id="diasDisfrutados" name="dias_disfrutados" step="0.001" min="0" placeholder="0.000" disabled style="background-color: #f1f3f5; opacity: 0.6;">
+                    </div>
+
+                    <!-- Pagadas -->
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input" type="checkbox" id="chkPagadas" name="tiene_pagadas">
+                                <label class="form-check-label fw-semibold text-secondary" for="chkPagadas" style="font-size: 0.85rem;">Pagadas</label>
+                            </div>
+                        </div>
+                        <input type="number" class="input-kardex" id="diasPagadas" name="dias_pagadas" step="0.001" min="0" placeholder="0.000" disabled style="background-color: #f1f3f5; opacity: 0.6;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 5: OBSERVACIONES Y BOTONES -->
             <div class="card-form">
                 <div class="mb-3">
                     <label class="form-label-kardex">Observaciones</label>
@@ -242,10 +291,10 @@
                 </div>
 
                 <div class="d-flex gap-2 justify-content-end">
-                    <button type="reset" class="btn-action">
+                    <button type="reset" class="btn-action" id="btn_limpiar">
                         <i class="bi bi-arrow-clockwise"></i> Limpiar
                     </button>
-                    <button  class="btn-action" id="btn_guardar_prima">
+                    <button class="btn-action" id="btn_guardar_prima">
                         <i class="bi bi-check-circle"></i> Guardar
                     </button>
                 </div>

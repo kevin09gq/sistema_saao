@@ -179,7 +179,7 @@ function subirBiometrico() {
                 $('#lista-empleados-biometrico').hide();
                 $('#buscar-empleado-biometrico').closest('.mb-3').hide();
             }
-            
+
             // mostrar sección de archivo
             $('#seccion-archivo-biometrico').show();
             boton.html('<span>Procesar archivo</span> <i class="bi bi-gear-fill ms-2"></i>');
@@ -260,7 +260,7 @@ function subirBiometrico() {
                         // 2) Resetear y recalcular olvidos (historial + total) - Aplica para ambos
                         delete emp.historial_olvidos;
                         delete emp._checador_editado_manual;
-                        
+
                         if (typeof asignarHistorialOlvidos === 'function') {
                             asignarHistorialOlvidos(emp);
                         }
@@ -268,7 +268,7 @@ function subirBiometrico() {
                             asignarTotalOlvidos(emp, true);
                         }
 
-                      
+
 
                     });
 
@@ -293,7 +293,7 @@ function subirBiometrico() {
 
                     alert('Biométrico actualizado correctamente');
 
-                 
+
 
                 } catch (e) {
                     console.error('Error al procesar biométrico:', e);
@@ -397,7 +397,7 @@ function resetearModalBiometrico() {
 
     // Ocultar sección de archivo
     $('#seccion-archivo-biometrico').hide();
-    
+
     // Limpiar búsqueda, filtro y archivo
     $('#buscar-empleado-biometrico').val('');
     $('#filtro-departamento-biometrico').val('');

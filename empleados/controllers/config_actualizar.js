@@ -950,6 +950,7 @@ $(document).ready(function () {
                         $("#modal_fecha_ingreso_imss_vista").prop('type', 'text').val(formatToDMonY(fechaAltaImss));
                         // Nuevos campos
                         $("#modal_fecha_nacimiento").val(fechaNacimiento);
+                        mostrarEdadEmpleado(fechaNacimiento);
                         $("#modal_num_casillero").val(numCasillero);
                         // Asignar biométrico
                         $("#modal_biometrico").val(biometrico);
@@ -2011,4 +2012,53 @@ $(document).ready(function () {
         }
     });
 
+    // Actualizar edad en tiempo real al cambiar la fecha de nacimiento
+    $(document).on('change', '#modal_fecha_nacimiento', function () {
+        mostrarEdadEmpleado($(this).val());
+    });
+
 });
+
+// ─── Utilidad: calcula y muestra la edad del empleado ────────────────────────
+function calcularEdad(fechaNac) {
+    if (!fechaNac) return null;
+    const hoy  = new Date();
+    const nac  = new Date(fechaNac);
+    if (isNaN(nac.getTime())) return null;
+
+    let anios  = hoy.getFullYear() - nac.getFullYear();
+    let meses  = hoy.getMonth()   - nac.getMonth();
+    let dias   = hoy.getDate()    - nac.getDate();
+
+    if (dias < 0) {
+        meses--;
+        // días del mes anterior
+        const mesAnterior = new Date(hoy.getFullYear(), hoy.getMonth(), 0);
+        dias += mesAnterior.getDate();
+    }
+    if (meses < 0) {
+        anios--;
+        meses += 12;
+    }
+    return { anios, meses, dias };
+}
+
+function mostrarEdadEmpleado(fechaNac) {
+    const edad = calcularEdad(fechaNac);
+    const $badge = $('#edad-empleado-vista');
+    const $texto = $('#edad-empleado-texto');
+
+    if (!edad) {
+        $badge.addClass('d-none');
+        $texto.text('');
+        return;
+    }
+
+    const partes = [];
+    if (edad.anios > 0)  partes.push(`${edad.anios} año${edad.anios !== 1 ? 's' : ''}`);
+    if (edad.meses > 0)  partes.push(`${edad.meses} mes${edad.meses !== 1 ? 'es' : ''}`);
+    if (edad.dias  >= 0) partes.push(`${edad.dias}  día${edad.dias  !== 1 ? 's' : ''}`);
+
+    $texto.text(partes.join(', '));
+    $badge.removeClass('d-none');
+}

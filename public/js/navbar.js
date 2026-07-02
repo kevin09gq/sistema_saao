@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return 'documentos';
         } else if (path.includes('/prestamos/views/index.php')) {
             return 'documentos';
-        } else if (path.includes('/public/views/generacion_tickets_manuales.php')) {
+        } else if (path.includes('/tickets_manuales/views/tickets_manuales.php')) {
             return 'documentos';
         } else if (path.includes('/reloj-8horas/views/historial_v2/historial.php')) {
             return 'documentos';

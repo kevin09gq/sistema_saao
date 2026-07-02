@@ -175,7 +175,19 @@ function aplicarConceptoMasivo() {
                             empleado.percepciones_extra.push(nuevoConcepto);
 
                             // Actualizar el total acumulado de percepciones extras
-                            empleado.sueldo_extra_total = empleado.percepciones_extra.reduce((sum, p) => sum + (parseFloat(p.cantidad) || 0), 0);
+                            if (typeof recalcularSueldoExtraTotal === 'function') {
+                                recalcularSueldoExtraTotal(empleado);
+                            } else {
+                                let totalExtras = 0;
+                                if (Array.isArray(empleado.percepciones_extra)) {
+                                    totalExtras += empleado.percepciones_extra.reduce((sum, p) => sum + (parseFloat(p.cantidad) || 0), 0);
+                                }
+                                totalExtras += parseFloat(empleado.horas_extra) || 0;
+                                totalExtras += parseFloat(empleado.bono_antiguedad) || 0;
+                                totalExtras += parseFloat(empleado.actividades_especiales) || 0;
+                                totalExtras += parseFloat(empleado.puesto) || 0;
+                                empleado.sueldo_extra_total = parseFloat(totalExtras.toFixed(2));
+                            }
                         } else if (tipo === 'deduccion') {
                             if (!Array.isArray(empleado.deducciones_extra)) empleado.deducciones_extra = [];
                             empleado.deducciones_extra.push(nuevoConcepto);
@@ -185,13 +197,13 @@ function aplicarConceptoMasivo() {
                         } else {
                             // Conceptos fijos directos
                             if (tipo === 'bono_antiguedad') {
-                                empleado.bono_antiguedad = importe;
+                                empleado.bono_antiguedad = parseFloat(((parseFloat(empleado.bono_antiguedad) || 0) + importe).toFixed(2));
                             } else if (tipo === 'puesto') {
-                                empleado.puesto = importe;
+                                empleado.puesto = parseFloat(((parseFloat(empleado.puesto) || 0) + importe).toFixed(2));
                             } else if (tipo === 'actividades_especiales') {
-                                empleado.actividades_especiales = importe;
+                                empleado.actividades_especiales = parseFloat(((parseFloat(empleado.actividades_especiales) || 0) + importe).toFixed(2));
                             } else if (tipo === 'incentivo') {
-                                empleado.incentivo = importe;
+                                empleado.incentivo = parseFloat(((parseFloat(empleado.incentivo) || 0) + importe).toFixed(2));
                             }
 
                             // Recalcular sueldo_extra_total (sin incluir incentivo)

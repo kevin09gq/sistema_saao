@@ -75,6 +75,7 @@
                     <button class="btn btn-outline-primary" type="button" id="btn_marcajes" title="Ajustar Marcaje">
                         <i class="bi bi-clock-history"></i>
                     </button>
+                    
                     <button class="btn btn-outline-primary" id="btn-seleccionar-empleados" title="Seleccionar empleados">
                         <i class="bi bi-people"></i>
                     </button>
