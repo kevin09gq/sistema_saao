@@ -41,6 +41,11 @@ function inicializarRegistroVacaciones() {
     $('#btnRestaurar').on('click', function () {
         restaurarDatosVacaciones();
     });
+
+    // Botón Adelantar Período
+    $('#btnGenerarAnticipado').on('click', function () {
+        generarPeriodoAnticipado();
+    });
 }
 
 //==============================
@@ -272,4 +277,70 @@ function formatearFechaSimple(fechaTexto) {
         return `${d} ${meses[m]} ${y}`;
     }
     return fechaTexto;
+}
+
+//==============================
+// GENERA MANUALMENTE EL SIGUIENTE PERÍODO (ANIVERSARIO FUTURO) DEL EMPLEADO
+//==============================
+function generarPeriodoAnticipado() {
+    // Verificar si hay un empleado seleccionado actualmente en la vista
+    if (!empleadoActual) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Empleado no seleccionado',
+            text: 'Por favor, selecciona un empleado primero.'
+        });
+        return;
+    }
+
+    // Confirmar la acción con el usuario
+    Swal.fire({
+        icon: 'question',
+        title: 'Adelantar Período',
+        text: '¿Deseas generar el siguiente período de aniversario laboral para este empleado de forma anticipada?',
+        showCancelButton: true,
+        confirmButtonColor: '#0d9488',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, generar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Deshabilitar temporalmente el botón para evitar doble clic
+            let $btn = $('#btnGenerarAnticipado');
+            let btnHtml = $btn.html();
+            $btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Procesando...');
+
+            // Realizar la petición al backend
+            $.post('../php/infoEmpleados.php', {
+                action: 'generarPeriodoAnticipado',
+                id_empleado: empleadoActual.id_empleado
+            }, function (res) {
+                $btn.prop('disabled', false).html(btnHtml);
+                
+                if (res.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Período Generado!',
+                        text: res.message
+                    });
+                    
+                    // Recargar la información del empleado y sus periodos
+                    obtenerInformacionEmpleado(empleadoActual.id_empleado);
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: res.message
+                    });
+                }
+            }, 'json').fail(function () {
+                $btn.prop('disabled', false).html(btnHtml);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de Conexión',
+                    text: 'Ocurrió un error en el servidor al intentar generar el período.'
+                });
+            });
+        }
+    });
 }

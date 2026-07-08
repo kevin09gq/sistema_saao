@@ -60,7 +60,7 @@ function cargarEmpleadosMasivo() {
     tbody.empty();
     $('#check-all-masivo').prop('checked', false);
     $('#buscar-empleado-masivo').val('');
-    $('#nombre-concepto-masivo').val('');
+    $('#tipo-concepto-masivo').val('percepcion').trigger('change');
     $('#importe-concepto-masivo').val('0.00');
 
     jsonNomina40lbs.departamentos.forEach(depto => {
@@ -125,8 +125,10 @@ function aplicarConceptoMasivo() {
         return;
     }
 
-    if (importe <= 0) {
-        swal.fire('Error', 'El importe debe ser mayor a 0', 'error');
+    const esConceptoFijo = ['bono_antiguedad', 'puesto', 'actividades_especiales', 'incentivo'].includes(tipo);
+
+    if (esConceptoFijo ? importe < 0 : importe <= 0) {
+        swal.fire('Error', esConceptoFijo ? 'El importe no puede ser negativo' : 'El importe debe ser mayor a 0', 'error');
         return;
     }
 
@@ -197,13 +199,13 @@ function aplicarConceptoMasivo() {
                         } else {
                             // Conceptos fijos directos
                             if (tipo === 'bono_antiguedad') {
-                                empleado.bono_antiguedad = parseFloat(((parseFloat(empleado.bono_antiguedad) || 0) + importe).toFixed(2));
+                                empleado.bono_antiguedad = parseFloat(importe.toFixed(2));
                             } else if (tipo === 'puesto') {
-                                empleado.puesto = parseFloat(((parseFloat(empleado.puesto) || 0) + importe).toFixed(2));
+                                empleado.puesto = parseFloat(importe.toFixed(2));
                             } else if (tipo === 'actividades_especiales') {
-                                empleado.actividades_especiales = parseFloat(((parseFloat(empleado.actividades_especiales) || 0) + importe).toFixed(2));
+                                empleado.actividades_especiales = parseFloat(importe.toFixed(2));
                             } else if (tipo === 'incentivo') {
-                                empleado.incentivo = parseFloat(((parseFloat(empleado.incentivo) || 0) + importe).toFixed(2));
+                                empleado.incentivo = parseFloat(importe.toFixed(2));
                             }
 
                             // Recalcular sueldo_extra_total (sin incluir incentivo)

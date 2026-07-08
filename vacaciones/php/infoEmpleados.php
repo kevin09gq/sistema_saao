@@ -14,6 +14,9 @@ switch ($action) {
     case 'obtenerPeriodosEmpleado':
         obtenerPeriodosEmpleado($conexion);
         break;
+    case 'generarPeriodoAnticipado':
+        generarPeriodoAnticipado($conexion);
+        break;
     case 'obtenerKardexEmpleado':
         obtenerKardexEmpleado($conexion);
         break;
@@ -217,6 +220,15 @@ function obtenerKardexEmpleado($conexion)
 {
     $id_empleado = $_POST['id_empleado'] ?? 0;
 
+    // Actualizar aniversarios anticipados que ya pasaron a normales
+    $hoy_str = date('Y-m-d');
+    $sql_upd = "UPDATE kardex_vacaciones 
+                SET concepto = 'Aniversario laboral al finalizar la jornada' 
+                WHERE id_empleado = '$id_empleado' 
+                  AND concepto = 'Aniversario laboral (Anticipado)' 
+                  AND fecha_registro <= '$hoy_str'";
+    mysqli_query($conexion, $sql_upd);
+
     $sql = "SELECT * FROM kardex_vacaciones 
             WHERE id_empleado = '$id_empleado'
             ORDER BY num_ciclo ASC, fecha_registro ASC";
@@ -327,14 +339,7 @@ function registrarVacaciones($conexion)
         return;
     }
 
-    // Validar que la fecha de inicio de las vacaciones sea igual o posterior al aniversario del período seleccionado
-    if ($fecha_inicio < $periodo['fecha_aniversario']) {
-        echo json_encode([
-            'success' => false, 
-            'message' => 'No se puede descontar de este período. La fecha de inicio de las vacaciones (' . date('d-m-Y', strtotime($fecha_inicio)) . ') es anterior a la fecha del aniversario correspondiente (' . date('d-m-Y', strtotime($periodo['fecha_aniversario'])) . ').'
-        ]);
-        return;
-    }
+
 
     $metodo_excedente = $_POST['metodo_excedente'] ?? 'antiguo_nuevo';
     $num_ciclo_actual = intval($periodo['num_ciclo']);
@@ -706,6 +711,185 @@ function editarPrimaVacacional($conexion)
         echo json_encode(['success' => true, 'message' => 'Prima vacacional actualizada exitosamente.']);
     } else {
         echo json_encode(['success' => false, 'message' => 'Error al actualizar: ' . mysqli_error($conexion)]);
+    }
+}
+
+//==================================================================================================
+// GENERA MANUALMENTE EL SIGUIENTE PERÍODO (ANIVERSARIO FUTURO) PARA REGISTRAR VACACIONES ANTICIPADAS
+//==================================================================================================
+function generarPeriodoAnticipado($conexion)
+{
+    $id_empleado = intval($_POST['id_empleado'] ?? 0);
+
+    if ($id_empleado <= 0) {
+        echo json_encode(['success' => false, 'message' => 'ID de empleado no válido.']);
+        return;
+    }
+
+    // 1. Obtener datos del empleado para validar su existencia y su fecha de ingreso original
+    $sql_emp = "SELECT fecha_alta_empresa, nombre, ap_paterno FROM info_empleados WHERE id_empleado = '$id_empleado'";
+    $res_emp = mysqli_query($conexion, $sql_emp);
+    if (mysqli_num_rows($res_emp) == 0) {
+        echo json_encode(['success' => false, 'message' => 'Empleado no encontrado.']);
+        return;
+    }
+    $emp = mysqli_fetch_assoc($res_emp);
+    $fecha_alta = $emp['fecha_alta_empresa'];
+
+    if (empty($fecha_alta) || $fecha_alta == '0000-00-00') {
+        echo json_encode(['success' => false, 'message' => 'El empleado no cuenta con una fecha de alta/ingreso válida.']);
+        return;
+    }
+
+    // 2. Buscar el último período generado en la base de datos
+    $sql_last = "SELECT * FROM vacaciones_periodos WHERE id_empleado = '$id_empleado' ORDER BY fecha_aniversario DESC LIMIT 1";
+    $res_last = mysqli_query($conexion, $sql_last);
+    $last_period = mysqli_fetch_assoc($res_last);
+
+    $num_ciclo = 1;
+    $anios = 1;
+    $fecha_base_str = '';
+
+    if ($last_period) {
+        // Si ya existen períodos generados previamente:
+        // El nuevo período pertenecerá al mismo ciclo laboral del último período
+        $num_ciclo = intval($last_period['num_ciclo']);
+        // Cumplirá un año más de antigüedad
+        $anios = intval($last_period['anios_antiguedad']) + 1;
+        // Calculamos la fecha sumando un año a la fecha del último aniversario registrado
+        $fechaAniversario = new DateTime($last_period['fecha_aniversario']);
+        $fechaAniversario->modify('+1 year');
+        $fecha_aniv_str = $fechaAniversario->format('Y-m-d');
+    } else {
+        // Si NO existen períodos previos en la base de datos (empleado sin historial de períodos):
+        // Buscamos si tiene algún reingreso activo en el historial de reingresos (para calcular su fecha de inicio del ciclo actual)
+        $sql_h = "SELECT fecha_reingreso FROM historial_reingresos WHERE id_empleado = '$id_empleado' AND (fecha_salida IS NULL OR fecha_salida = '0000-00-00') ORDER BY fecha_reingreso DESC LIMIT 1";
+        $res_h = mysqli_query($conexion, $sql_h);
+        $h_row = mysqli_fetch_assoc($res_h);
+
+        if ($h_row) {
+            $fecha_base_str = $h_row['fecha_reingreso'];
+        } else {
+            $fecha_base_str = $fecha_alta;
+        }
+
+        $num_ciclo = 1;
+        $anios = 1;
+        // El primer aniversario se cumple 1 año después de la fecha de inicio/ingreso
+        $fechaAniversario = new DateTime($fecha_base_str);
+        $fechaAniversario->modify('+1 year');
+        $fecha_aniv_str = $fechaAniversario->format('Y-m-d');
+    }
+
+    // 3. Validar que este aniversario no se encuentre ya guardado en la base de datos
+    $sql_check = "SELECT id_periodo FROM vacaciones_periodos WHERE id_empleado = '$id_empleado' AND fecha_aniversario = '$fecha_aniv_str'";
+    $res_check = mysqli_query($conexion, $sql_check);
+    if (mysqli_num_rows($res_check) > 0) {
+        echo json_encode(['success' => false, 'message' => "El período correspondiente al aniversario del " . date('d/m/Y', strtotime($fecha_aniv_str)) . " ya se encuentra registrado."]);
+        return;
+    }
+
+    // 4. Identificar la ley LFT vigente en la fecha del aniversario futuro
+    $sql_v = "SELECT * FROM versiones_vacaciones_lft ORDER BY fecha_inicio_vigencia ASC";
+    $res_v = mysqli_query($conexion, $sql_v);
+    $leyes = [];
+    while ($v = mysqli_fetch_assoc($res_v)) {
+        $id_v = $v['id_version_vacaciones'];
+        $sql_d = "SELECT * FROM dias_vacaciones_lft WHERE id_version_vacaciones = '$id_v' ORDER BY anios_antiguedad_inicio ASC";
+        $res_d = mysqli_query($conexion, $sql_d);
+        $v['tabla_dias'] = [];
+        while ($d = mysqli_fetch_assoc($res_d)) {
+            $v['tabla_dias'][] = $d;
+        }
+        $leyes[] = $v;
+    }
+
+    $leySeleccionada = null;
+    foreach ($leyes as $ley) {
+        $inicio_vigencia = new DateTime($ley['fecha_inicio_vigencia']);
+        $fin_vigencia = !empty($ley['fecha_fin_vigencia']) ? new DateTime($ley['fecha_fin_vigencia']) : new DateTime('9999-12-31');
+        
+        if ($fechaAniversario >= $inicio_vigencia && $fechaAniversario <= $fin_vigencia) {
+            $leySeleccionada = $ley;
+            break;
+        }
+    }
+
+    // Si por alguna razón la fecha supera todas las leyes configuradas, asignamos la última versión disponible
+    if (!$leySeleccionada && count($leyes) > 0) {
+        $leySeleccionada = $leyes[count($leyes) - 1];
+    }
+
+    if (!$leySeleccionada) {
+        echo json_encode(['success' => false, 'message' => 'No se encontró una ley LFT vigente configurada para el aniversario ' . $fecha_aniv_str]);
+        return;
+    }
+
+    $id_version = $leySeleccionada['id_version_vacaciones'];
+
+    // 5. Determinar la cantidad de días correspondientes según la antigüedad y el tabulador de la ley
+    $rangoValido = null;
+    foreach ($leySeleccionada['tabla_dias'] as $rango) {
+        $inicioRango = (int)$rango['anios_antiguedad_inicio'];
+        if ($anios >= $inicioRango) {
+            if (!$rangoValido || $inicioRango > (int)$rangoValido['anios_antiguedad_inicio']) {
+                $rangoValido = $rango;
+            }
+        }
+    }
+
+    if (!$rangoValido) {
+        echo json_encode(['success' => false, 'message' => 'No se pudo determinar los días de vacaciones correspondientes para ' . $anios . ' años de antigüedad.']);
+        return;
+    }
+
+    $diasDerecho = (float)$rangoValido['dias_vacaciones_correspondientes'];
+
+    // 6. Iniciar transacción en la base de datos para asegurar consistencia
+    mysqli_begin_transaction($conexion);
+
+    try {
+        // Insertar el nuevo período en la base de datos
+        $sql_ins_p = "INSERT INTO vacaciones_periodos (id_empleado, num_ciclo, fecha_aniversario, anios_antiguedad, id_version_vacaciones, dias_derecho, dias_tomados, saldo, estatus)
+                      VALUES ('$id_empleado', '$num_ciclo', '$fecha_aniv_str', '$anios', '$id_version', '$diasDerecho', 0, '$diasDerecho', 'ACTIVO')";
+        
+        if (!mysqli_query($conexion, $sql_ins_p)) {
+            throw new Exception("Error al insertar el período: " . mysqli_error($conexion));
+        }
+
+        $id_periodo_nuevo = mysqli_insert_id($conexion);
+
+        // 7. Calcular el saldo acumulado (Running Balance) sumando los movimientos del Kardex existentes
+        $sql_sum = "SELECT COALESCE(SUM(dias_movimiento), 0) AS total_saldo 
+                    FROM kardex_vacaciones 
+                    WHERE id_empleado = '$id_empleado' AND num_ciclo = '$num_ciclo'";
+        $res_sum = mysqli_query($conexion, $sql_sum);
+        $row_sum = mysqli_fetch_assoc($res_sum);
+        $saldo_previo = (float)$row_sum['total_saldo'];
+        $nuevo_saldo_resultante = $saldo_previo + $diasDerecho;
+
+        // Insertar el registro de "Percepcion" en el Kardex de Vacaciones indicando que es un aniversario anticipado
+        $concepto = "Aniversario laboral (Anticipado)";
+        $observaciones = "Generado manualmente por el usuario para adelanto de vacaciones.";
+        $sql_ins_k = "INSERT INTO kardex_vacaciones (id_periodo, id_empleado, num_ciclo, concepto, fecha_registro, fecha_inicio, fecha_fin, dias_movimiento, saldo_resultante, observaciones)
+                      VALUES ('$id_periodo_nuevo', '$id_empleado', '$num_ciclo', '$concepto', '$fecha_aniv_str', NULL, NULL, '$diasDerecho', '$nuevo_saldo_resultante', '$observaciones')";
+        
+        if (!mysqli_query($conexion, $sql_ins_k)) {
+            throw new Exception("Error al insertar el movimiento en el Kardex: " . mysqli_error($conexion));
+        }
+
+        // Confirmar los cambios si todo salió bien
+        mysqli_commit($conexion);
+
+        echo json_encode([
+            'success' => true,
+            'message' => "Se generó con éxito el aniversario " . $anios . " (" . date('d/m/Y', strtotime($fecha_aniv_str)) . ") con " . $diasDerecho . " días de derecho."
+        ]);
+
+    } catch (Exception $e) {
+        // Revertir cambios en caso de error
+        mysqli_rollback($conexion);
+        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
     }
 }
 

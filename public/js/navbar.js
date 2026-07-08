@@ -62,6 +62,8 @@ document.addEventListener('DOMContentLoaded', function () {
             return 'nominas'; // Highlight 'Nóminas' for Palmilla
         } else if (path.includes('/nomina_huasteca/views/nomina_huasteca.php')) {
             return 'nominas'; // Highlight 'Nóminas' for Huasteca
+        } else if (path.includes('/gestion_ranchos/views/historial_corte.php')) {
+            return 'nominas'; // Highlight 'Nóminas' for 40 lbs
         } else if (path.includes('/historial_cortes.php')) {
             return 'nominas'; // Highlight 'Nóminas' for any Historial Cortes
         } else if (path.includes('/nomina_40lbs/historial/views/historial_40lbs.php')) {

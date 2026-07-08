@@ -1,20 +1,23 @@
 <?php
 // contratos/views/lista_empleados.php
- include "../../config/config.php";
- verificarSesion();
+include "../../config/config.php";
+verificarSesion();
 ?>
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Empleados - Generar contratos</title>
   <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
-    <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
+  <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
+  <link rel="icon" href="<?= ICONO_SISTEMA ?>" />
   <link rel="stylesheet" href="<?= $rutaRaiz ?>/contratos/styles/lista_empleados.css">
   <!-- SweetAlert2 CSS -->
-    <script src="<?= SWEETALERT ?>"></script>
+  <script src="<?= SWEETALERT ?>"></script>
 </head>
+
 <body>
   <?php include '../../public/views/navbar.php'; ?>
   <div class="container py-4">
@@ -85,7 +88,7 @@
           </tbody>
         </table>
       </div>
-      
+
       <!-- Paginación -->
       <div class="pagination-container">
         <div class="info-text">
@@ -100,9 +103,10 @@
     </div>
   </div>
 
-   <script src="<?= JQUERY_JS ?>"></script>
+  <script src="<?= JQUERY_JS ?>"></script>
   <script src="<?= BOOTSTRAP_JS ?>"></script>
   <script src="<?= $rutaRaiz ?>/public/js/navbar.js"></script>
   <script src="<?= $rutaRaiz ?>/contratos/js/lista_empleados.js"></script>
 </body>
+
 </html>

@@ -258,6 +258,13 @@ while ($emp = mysqli_fetch_assoc($res_e)) {
     }
 }
 
+// Actualizar de forma masiva los aniversarios anticipados que ya se cumplieron a la fecha de hoy
+$sql_upd_all = "UPDATE kardex_vacaciones 
+                SET concepto = 'Aniversario laboral al finalizar la jornada' 
+                WHERE concepto = 'Aniversario laboral (Anticipado)' 
+                  AND fecha_registro <= '$hoy_str'";
+mysqli_query($conexion, $sql_upd_all);
+
 // Retornamos el resultado del proceso en formato JSON para que se pueda ver en consola
 echo json_encode([
     'success' => true,

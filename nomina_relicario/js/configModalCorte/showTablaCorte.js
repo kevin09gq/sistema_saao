@@ -15,19 +15,32 @@ function mostrarDatosTablaCorte(jsonNominaRelicario) {
     // Array para almacenar todos los datos de las filas (para calcular totales después)
     let todasLasFilas = [];
 
+    // console.log(departamentoCorte);
+    
+
     // Procesar cada empleado
     departamentoCorte.empleados.forEach(empleado => {
         if (empleado.concepto === "REJA") {
             // Procesar empleados con concepto REJA (lógica original)
             const ticketsPorPrecio = agruparTicketsPorPrecio(empleado.tickets);
 
+            // console.log(ticketsPorPrecio);
+            
+
             // Para cada grupo de precio, crear una fila
             Object.keys(ticketsPorPrecio).forEach(precio => {
                 const tickets = ticketsPorPrecio[precio];
                 const datosFila = procesarTicketsParaFila(empleado.nombre, empleado.concepto, tickets, parseFloat(precio));
 
+                // console.log("DATOS FILAS: ", datosFila);
+                
+
                 // Generar fila HTML
                 const filaHTML = generarFilaTablaCorte(numeroFila, datosFila);
+
+                // console.log("DATOS HTML: ", filaHTML);
+                
+
                 $('#tabla-body-corte-relicario').append(filaHTML);
 
                 // Guardar datos de la fila para calcular totales
@@ -105,8 +118,14 @@ function procesarTicketsParaFila(nombreEmpleado, concepto, tickets, precio) {
     tickets.forEach(ticket => {
         const diaSemana = obtenerDiaSemanaCorte(ticket.fecha);
 
+        // console.log("DIA SEMANA DESDE PROCESAR TICKETS FILA: ", diaSemana, "FECHA: ", ticket.fecha);
+        
+
         // Sumar todas las rejas de todas las tablas de este ticket
         const rejasTicket = ticket.datosRejas.reduce((suma, tabla) => suma + tabla.cantidad, 0);
+
+        // console.log(rejasTicket);
+        
 
         // Agregar al día correspondiente
         if (rejasPorDia.hasOwnProperty(diaSemana)) {

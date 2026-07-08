@@ -9,6 +9,7 @@
     include "../../config/config.php";
     verificarSesion(); // Proteger esta página
     ?>
+    <link rel="icon" href="<?= ICONO_SISTEMA ?>" />
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <link rel="stylesheet" href="<?= JQUERY_UI_CSS ?>">

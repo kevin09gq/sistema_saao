@@ -5,17 +5,21 @@ verificarSesion();
 ?>
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Generar Contrato</title>
+  <link rel="icon" href="<?= ICONO_SISTEMA ?>" />
+
   <link rel="stylesheet" href="<?= BOOTSTRAP_CSS ?>">
   <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
   <link rel="stylesheet" href="<?= $rutaRaiz ?>/contratos/styles/contratos.css">
   <link rel="stylesheet" href="<?= $rutaRaiz ?>/contratos/styles/generar-moderno.css">
   <!-- SweetAlert2 CSS -->
-    <script src="<?= SWEETALERT ?>"></script>
+  <script src="<?= SWEETALERT ?>"></script>
 </head>
+
 <body>
   <?php include '../../public/views/navbar.php'; ?>
   <div class="container py-4">
@@ -41,7 +45,7 @@ verificarSesion();
       </div>
       <div class="form-card-body">
         <form id="formDatosContrato">
-          
+
           <!-- SECCIÓN 1: Datos de la Empresa -->
           <div class="form-section">
             <div class="section-title">
@@ -379,7 +383,7 @@ verificarSesion();
             <button id="btnImprimir" class="btn btn-outline-secondary btn-sm" disabled>
               🖨️ Imprimir
             </button>
-<button id="btnDescargarWord" class="btn btn-success btn-sm" disabled>
+            <button id="btnDescargarWord" class="btn btn-success btn-sm" disabled>
               📄 Descargar Word
             </button>
           </div>
@@ -390,12 +394,12 @@ verificarSesion();
 
   </div>
 
-   <script src="<?= JQUERY_JS ?>"></script>
+  <script src="<?= JQUERY_JS ?>"></script>
   <script src="<?= BOOTSTRAP_JS ?>"></script>
   <script src="<?= $rutaRaiz ?>/public/js/navbar.js"></script>
   <script>
     // Mapear parámetros de URL a los nombres esperados por generar.js
-    (function(){
+    (function() {
       try {
         var params = new URLSearchParams(window.location.search);
         window.parametrosUrl = {
@@ -410,4 +414,5 @@ verificarSesion();
   </script>
   <script src="<?= $rutaRaiz ?>/contratos/js/generar.js"></script>
 </body>
+
 </html>

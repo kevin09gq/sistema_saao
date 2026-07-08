@@ -3,18 +3,30 @@ let precio_reja = document.getElementById("precio_reja");
 let total_pagar = document.getElementById("total_pagar");
 const modalCorte = new bootstrap.Modal(document.getElementById("modalCorte"));
 
+let cortes = [];
+
 // Dias de la semana en el orden ideal para la nómina (DOMINGO = 0, LUNES = 1, ..., SABADO = 6)
 const dias_nomina = ["DOMINGO", "LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO"];
 
 $(document).ready(function () {
 
-    obtenerTablasRancho();
+    // obtenerTablasRancho();
     llenar_cuerpo_tabla_pagos_por_dia();
     buscar_cortador();
     buscar_cortador_nomina();
 
-
 });
+
+
+// EVENTO: ABRIR EL MODAL DE LOS CORTES Y LLAMAR LOS TICKETS PENDIENTES
+$(document).on('click', '#btn_modal_corte', function (e) {
+    e.preventDefault();
+
+    obtener_tickets_pendientes();
+
+    modalCorte.show();
+});
+
 
 /**
  * ====================================================================
@@ -106,9 +118,9 @@ function obtenerRangoFechas(inicioStr, finStr, formatoCorto = true) {
  * @param {String} fechaStr Fecha con formato "12/Ene/2026"
  * @returns Nombre del día de la semana en español (ej. "LUNES")
  */
-function obtenerDiaSemanaBHL(fechaStr) { 
+function obtenerDiaSemanaBHL(fechaStr) {
 
-  // Mapeo de meses abreviados en español a número (0 = enero)
+    // Mapeo de meses abreviados en español a número (0 = enero)
     const meses = {
         Ene: 0,
         Feb: 1,
@@ -160,8 +172,8 @@ function llenar_cuerpo_tabla_pagos_por_dia() {
     // Obtener el rango de fechas entre fecha_inicio y fecha_cierre
     const rangoFechas = obtenerRangoFechas(jsonNominaRelicario.fecha_inicio, jsonNominaRelicario.fecha_cierre);
 
-    console.log("RANGO DE FECHA: ", rangoFechas);
-    
+    // console.log("RANGO DE FECHA: ", rangoFechas);
+
 
     // ======================================================
     // Generar las filas de la tabla con las fechas del rango
@@ -169,10 +181,10 @@ function llenar_cuerpo_tabla_pagos_por_dia() {
 
     for (let i = 0; i < dias_nomina.length; i++) {
 
-        console.log("LA FECHA ES: " + rangoFechas[i]);
-        
-        console.log(obtenerDiaSemanaBHL(rangoFechas[i]));
-    
+        // console.log("LA FECHA ES: " + rangoFechas[i]);
+
+        // console.log(obtenerDiaSemanaBHL(rangoFechas[i]));
+
 
         tmp += `
             <tr>
@@ -727,6 +739,234 @@ function limpiar_formulario_corte() {
     $("#form_corte_nomina").trigger("reset");
     $("#total_pagos").html("$0.00");
 }
+
+
+
+
+
+/**
+ * Obtener los tickets que están pendientes de añadir a una nómina
+ */
+function obtener_tickets_pendientes() {
+    $.ajax({
+        type: "GET",
+        url: "../php/info-rancho.php",
+        data: {
+            accion: "obtener_tickets_pendientes"
+        },
+        dataType: "json",
+        success: function (response) {
+            cortes = response.data; // Almacenar los tickets obtenidos
+            llenar_tabla_tickets_pendientes(); // Llamar a la función para llenar la tabla con los tickets obtenidos
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.error("Error al obtener los empleados:", errorThrown);
+            let data = JSON.parse(jqXHR.responseText);
+            alerta(data.icono, data.titulo, data.texto);
+        }
+    });
+}
+
+/**
+ * Llena la tabla de tickets pendientes en el modal de corte
+ */
+function llenar_tabla_tickets_pendientes() {
+
+    // VALIDAR QUE EXISTE EL jsonNominaRelicario
+    if (!jsonNominaRelicario || !jsonNominaRelicario.departamentos) {
+        console.error("jsonNominaRelicario no está definido o no tiene departamentos");
+        return;
+    }
+
+    // Limpiar el cuerpo de la tabla antes de llenarlo
+    const tbody = $("#cuerpo_tabla_tickets_pendientes");
+    tbody.empty();
+    // Validar que haya tickets pendientes
+    if (cortes.length === 0) {
+        tbody.html(`
+            <tr>
+                <td colspan="4" class="text-center">No hay tickets pendientes</td>
+            </tr>
+        `);
+        return;
+    }
+
+    // OBTENER FILTRO DE BUSQUEDA Y LIMITE
+    const busqueda = $("#buscar_ticket").val().trim().toLowerCase();
+    const limite = 100;
+    // let paginaActual = parseInt($('#pagina-actual').data('pagina')) || 1;
+    let paginaActual = 1;
+
+
+    // Filtrar los tickets según el folio o el nombre del cortador
+    let cortesFiltrados = cortes.filter(corte => {
+        // Filtro de búsqueda: folio o nombre del cortador
+        const coincideBusqueda = !busqueda ||
+            (corte.folio && corte.folio.toLowerCase().includes(busqueda)) ||
+            (corte.nombre_cortador && corte.nombre_cortador.toLowerCase().includes(busqueda));
+
+        return coincideBusqueda;
+    });
+
+    console.log(cortesFiltrados);
+
+    // CALCULAR INICIO Y FIN DE LOS CORTES A MOSTRAR SEGUN LA PAGINACION
+    let inicio = 0;
+    let fin = cortesFiltrados.length;
+
+    if (limite !== -1) {
+        inicio = (paginaActual - 1) * limite;
+        fin = inicio + limite;
+    }
+
+    // OBTENER LOS CORTES A MOSTRAR EN LA PAGINA ACTUAL
+    const cortesPagina = cortesFiltrados.slice(inicio, fin);
+    const totalPaginas = limite === -1 ? 1 : Math.ceil(cortesFiltrados.length / limite);
+
+    cortesPagina.forEach((corte, index) => {
+        // Buscar si el folio ya está en la estructura jsonNominaRelicario
+        let existeFolio = false;
+
+        // Buscar el departamento Corte
+        let departamentoCorte = jsonNominaRelicario.departamentos.find(
+            d => d.nombre === "Corte"
+        );
+
+        if (departamentoCorte) {
+            // Recorrer empleados del departamento Corte
+            departamentoCorte.empleados.forEach(emp => {
+                if (Array.isArray(emp.tickets)) {
+                    // Verificar si alguno de sus tickets tiene el mismo folio
+                    if (emp.tickets.some(ticket => ticket.folio === corte.folio)) {
+                        existeFolio = true;
+                    }
+                }
+            });
+        }
+
+        // Generar la fila con el checkbox marcado si existeFolio es true
+        const fila = `
+            <tr>
+                <td class="text-center bg-light">
+                    <input
+                        data-folio="${corte.folio}"
+                        data-vale='${JSON.stringify(corte)}'
+                        class="form-check-input shadow-sm check_select_corte"
+                        type="checkbox"
+                        id="checkbox_ticket_${corte.folio}"
+                        ${existeFolio ? "checked" : ""}>
+                </td>
+                <td>${corte.folio}</td>
+                <td>${corte.nombre_cortador}</td>
+                <td>${formatearFechaEspaBHL(corte.fecha_corte)}</td>
+            </tr>
+        `;
+
+        tbody.append(fila);
+    });
+}
+
+/**
+ * Pasar fecha de formato "YYYY-MM-DD" a "DD/MMM/YYYY"
+ */
+function formatearFechaEspaBHL(fechaISO) {
+    const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun",
+        "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
+    // Descomponer la cadena YYYY-MM-DD
+    const [anio, mes, dia] = fechaISO.split("-").map(Number);
+
+    // Crear la fecha en modo local (sin interpretar como UTC)
+    const fecha = new Date(anio, mes - 1, dia);
+
+    // Formatear
+    const diaStr = String(fecha.getDate()).padStart(2, '0');
+    const mesStr = meses[fecha.getMonth()];
+    const anioStr = fecha.getFullYear();
+
+    return `${diaStr}/${mesStr}/${anioStr}`;
+}
+
+// EVENTO: Buscar tickets pendientes al escribir en el input de búsqueda
+$(document).on("input", "#buscar_ticket", function () {
+    llenar_tabla_tickets_pendientes();
+});
+
+// EVENTO CHANGE: AL MARCAR O DESMARCAR UN CHECKBOX DE TICKET PENDIENTE
+$(document).on("change", ".check_select_corte", function (e) {
+    e.preventDefault();
+
+    const esChecked = $(this).is(":checked");
+    const folio = $(this).data("folio");
+    const ticket = $(this).data("vale");
+
+    // Buscar o crear el departamento Corte
+    let departamentoCorte = jsonNominaRelicario.departamentos.find(d => d.nombre === "Corte");
+    if (!departamentoCorte) {
+        departamentoCorte = { id_departamento: 800, nombre: "Corte", empleados: [] };
+        jsonNominaRelicario.departamentos.push(departamentoCorte);
+    }
+
+    // Buscar el empleado
+    let empleado = departamentoCorte.empleados.find(e =>
+        e.nombre === ticket.nombre_cortador && e.concepto === "REJA"
+    );
+
+    if (esChecked) {
+        // AGREGAR
+        if (!empleado) {
+            empleado = { nombre: ticket.nombre_cortador, concepto: "REJA", tickets: [] };
+            departamentoCorte.empleados.push(empleado);
+        }
+        if (!empleado.tickets.some(t => t.folio === ticket.folio)) {
+            // Transformar las rejas al formato correcto
+            const datosRejasTransformados = (ticket.rejas || []).map(r => ({
+                tabla: String(r.num_tabla),   // convertir a string si lo prefieres
+                cantidad: r.rejas
+            }));
+
+            // Construir un objeto limpio
+            const nuevoTicket = {
+                folio: ticket.folio,
+                fecha: ticket.fecha_corte,
+                datosRejas: datosRejasTransformados,
+                precio_reja: ticket.precio_reja
+            };
+
+            empleado.tickets.push(nuevoTicket);
+        }
+    } else {
+        // ELIMINAR POR FOLIO
+        if (empleado && Array.isArray(empleado.tickets)) {
+            empleado.tickets = empleado.tickets.filter(t => t.folio !== ticket.folio);
+
+            // Si ya no quedan tickets, eliminar al empleado completo
+            if (empleado.tickets.length === 0) {
+                departamentoCorte.empleados = departamentoCorte.empleados.filter(
+                    e => !(e.nombre === ticket.nombre_cortador && e.concepto === "REJA")
+                );
+            }
+        }
+    }
+
+    // OBTENER EL DEPARTAMENTO SELECCIONADO
+    let dep = $("#filtro_departamento").val();
+
+    if (dep == 800) {
+        mostrarDatosTablaCorte(jsonNominaRelicario);
+    }
+
+});
+
+
+
+
+
+
+
+
+
+
 
 
 /** *********************************************************************************************************************************** */

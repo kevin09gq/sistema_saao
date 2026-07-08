@@ -15,16 +15,27 @@
                     <input type="hidden" id="modal_nomina_id" name="modal_nomina_id">
                     <input type="hidden" id="modal_nomina_area_id" name="modal_nomina_area_id">
                     <div class="row gx-3 align-items-end mb-3">
-                        <div class="col-sm-7">
+                        <div class="col-sm-6">
                             <label for="modal_select_departamento"
-                                class="form-label fw-bold text-secondary mb-1">Elegir Departamento del Área</label>
+                                class="form-label fw-bold text-secondary mb-1">Departamento del Área</label>
                             <select class="form-select border-primary-subtle" id="modal_select_departamento"
                                 required>
                                 <option value="" selected disabled>Seleccione un departamento...</option>
                                 <!-- Se llenará dinámicamente -->
                             </select>
                         </div>
-                        <div class="col-sm-3">
+                        <div class="col-sm-6">
+                            <label for="modal_select_empresa"
+                                class="form-label fw-bold text-secondary mb-1">Empresa</label>
+                            <select class="form-select border-primary-subtle" id="modal_select_empresa"
+                                required>
+                                <option value="" selected disabled>Seleccione una empresa...</option>
+                                <!-- Se llenará dinámicamente -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row gx-3 align-items-end mb-3">
+                        <div class="col-sm-10">
                             <label for="modal_color_departamento"
                                 class="form-label fw-bold text-secondary mb-1">Color Reporte</label>
                             <div class="d-flex align-items-center gap-2 bg-white border rounded px-2"

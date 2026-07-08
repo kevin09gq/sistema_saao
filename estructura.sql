@@ -576,12 +576,13 @@ CREATE TABLE nomina_relicario (
 
 -- Crear tabla cortes_relicario
 CREATE TABLE cortes_relicario (
-    id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    id_nomina INT(11) NOT NULL,
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    id_nomina INT NULL,
     nombre_cortador VARCHAR(150) NOT NULL,
     folio VARCHAR(10) NOT NULL,
     precio_reja DECIMAL(10, 2) NOT NULL,
     fecha_corte DATE NOT NULL,
+    estado TINYINT NOT NULL DEFAULT 1,
     FOREIGN KEY (id_nomina) REFERENCES nomina_relicario (id_nomina_relicario) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
@@ -633,12 +634,13 @@ CREATE TABLE nomina_pilar (
 
 -- Crear tabla cortes_pilar
 CREATE TABLE cortes_pilar (
-    id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    id_nomina INT(11) NOT NULL,
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    id_nomina INT NULL,
     nombre_cortador VARCHAR(150) NOT NULL,
     folio VARCHAR(10) NOT NULL,
     precio_reja DECIMAL(10, 2) NOT NULL,
     fecha_corte DATE NOT NULL,
+    estado TINYINT NOT NULL DEFAULT 1,
     FOREIGN KEY (id_nomina) REFERENCES nomina_pilar (id_nomina_pilar) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
@@ -690,20 +692,21 @@ CREATE TABLE nomina_huasteca (
 
 -- Crear tabla cortes_huasteca
 CREATE TABLE cortes_huasteca (
-    id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    id_nomina INT(11) NOT NULL,
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    id_nomina INT NULL,
     nombre_cortador VARCHAR(150) NOT NULL,
     folio VARCHAR(10) NOT NULL,
     precio_reja DECIMAL(10, 2) NOT NULL,
     fecha_corte DATE NOT NULL,
+    estado TINYINT NOT NULL DEFAULT 1,
     FOREIGN KEY (id_nomina) REFERENCES nomina_huasteca (id_nomina_huasteca) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- Crear tabla cortes_huasteca_tablas
 CREATE TABLE cortes_huasteca_tablas (
-    id_corte INT(11) NOT NULL,
-    num_tabla INT(11) NOT NULL,
-    rejas INT(11) NOT NULL,
+    id_corte INT NOT NULL,
+    num_tabla INT NOT NULL,
+    rejas INT NOT NULL,
     FOREIGN KEY (id_corte) REFERENCES cortes_huasteca (id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
@@ -746,12 +749,13 @@ CREATE TABLE nomina_palmilla (
 
 -- Crear tabla cortes_palmilla
 CREATE TABLE cortes_palmilla (
-    id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    id_nomina INT(11) NOT NULL,
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    id_nomina INT NULL,
     nombre_cortador VARCHAR(150) NOT NULL,
     folio VARCHAR(10) NOT NULL,
     precio_reja DECIMAL(10, 2) NOT NULL,
     fecha_corte DATE NOT NULL,
+    estado TINYINT NOT NULL DEFAULT 1,
     FOREIGN KEY (id_nomina) REFERENCES nomina_palmilla (id_nomina_palmilla) ON UPDATE CASCADE ON DELETE CASCADE
 );
 

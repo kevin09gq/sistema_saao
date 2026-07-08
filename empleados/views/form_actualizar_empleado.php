@@ -10,6 +10,7 @@ verificarSesion();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administrar Empleados</title>
+    <link rel="icon" href="<?= ICONO_SISTEMA ?>" />
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <!-- Iconos Bootstrap -->
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">

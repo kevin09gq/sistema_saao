@@ -9,6 +9,7 @@ verificarSesion();
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Contratos - Módulo</title>
+  <link rel="icon" href="<?= ICONO_SISTEMA ?>" />
   <!-- Rutas relativas -->
   <link rel="stylesheet" href="<?= BOOTSTRAP_CSS ?>">
   <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">

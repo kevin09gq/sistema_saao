@@ -5,10 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kardex de Vacaciones</title>
+    
     <?php
     include "../../config/config.php";
     verificarSesion();
     ?>
+       <link rel="icon" href="<?= ICONO_SISTEMA ?>" />
+
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <link rel="stylesheet" href="../css/kardex.css">
@@ -45,6 +48,10 @@
                         </li>
                     </ul>
                 </div>
+
+                <button class="btn-download" id="btnGenerarAnticipado" style="background: #0d9488;">
+                    <i class="bi bi-calendar-plus"></i> Adelantar Período
+                </button>
 
                 <button class="btn-download" id="btnRestaurar" style="background: #dc2626;">
                     <i class="bi bi-arrow-counterclockwise"></i> Restaurar Todo

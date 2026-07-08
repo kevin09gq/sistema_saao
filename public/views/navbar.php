@@ -68,6 +68,7 @@
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_pilar/views/nomina_pilar.php">Rancho Pilar</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_palmilla/views/nomina_palmilla.php">Rancho Palmilla</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_huasteca/views/nomina_huasteca.php">Rancho Huasteca</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/gestion_ranchos/views/historial_cortes.php">Cortes Ranchos</a></li>
                         <li class="dropdown-divider"></li>
                         <li class="dropdown-submenu">
                             <a class="dropdown-item dropdown-toggle" href="#">Historial Cortes</a>

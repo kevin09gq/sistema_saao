@@ -1,10 +1,10 @@
 <!-- Modal -->
 <div class="modal fade" id="modalCorte" tabindex="-1" aria-labelledby="modalCorteLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
         <div class="modal-content">
 
             <div class="modal-header">
-                <h1 class="modal-title fs-5" id="modalCorteLabel">Rejas de Corte de Limón RANCHO EL PILAR</h1>
+                <h1 class="modal-title fs-5" id="modalCorteLabel">Rejas de Corte de Limón RANCHO EL RELICARIO</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
@@ -23,54 +23,30 @@
 
                     <!-- Poner las rejas que se cortaron -->
                     <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
-                        <form method="post" id="form_corte">
-                            <div class="row g-2">
-
-                                <div class="col-md-2 mb-3">
-                                    <label for="folio_corte" class="form-label">Folio</label>
-                                    <input type="text" class="form-control shadow-sm" id="folio_corte" name="folio_corte" placeholder="Número de Folio">
-                                </div>
-
-                                <div class="col-md-5 mb-3">
-                                    <label for="nombre_cortador" class="form-label">Nombre del Cabo</label>
-                                    <input type="text" class="form-control shadow-sm" id="nombre_cortador" name="nombre_cortador" placeholder="Nombre del Cabo">
-                                </div>
-
-                                <div class="col-md-2 mb-3">
-                                    <label for="fecha_corte" class="form-label">Fecha de Corte</label>
-                                    <input type="date" class="form-control shadow-sm" id="fecha_corte" name="fecha_corte">
-                                </div>
-
-                                <div class="col-12 mb-3">
-                                    <label for="observaciones_corte" class="form-label">Tablas</label>
-                                    <div class="container-fluid" id="cuerpo_tablas_corte"><!-- Cuerpo de las tablas --></div>
-                                </div>
-
-                                <div id="cuerpo_cantidad_rejas" class="row">
-
-                                </div>
-
-                                <div class="col-md-2 mb-3">
-                                    <label for="rejas_totales" class="form-label">Rejas totales</label>
-                                    <input type="number" class="form-control shadow-sm" id="rejas_totales" name="rejas_totales" placeholder="Total de rejas" disabled>
-                                </div>
-
-                                <div class="col-md-2 mb-3">
-                                    <label for="precio_reja" class="form-label">Precio reja $</label>
-                                    <input type="number" step="0.01" min="0" class="form-control shadow-sm" id="precio_reja" name="precio_reja" placeholder="Precio por reja">
-                                </div>
-
-                                <div class="col-md-2 mb-3">
-                                    <label for="total_pagar" class="form-label">Total $</label>
-                                    <input type="text" class="form-control shadow-sm" id="total_pagar" name="total_pagar" placeholder="Total a pagar" disabled>
-                                </div>
-
+                        <!-- BARRA DE BUSQUEDA -->
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label" for="buscar_ticket">Buscar</label>
+                                <input type="text" class="form-control form-control-sm shadow-sm" id="buscar_ticket" placeholder="Buscar...">
                             </div>
-                            <div class="text-end mb-3 me-3">
-                                <button type="button" class="btn btn-secondary shadow-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle me-2"></i>Cerrar</button>
-                                <button type="submit" class="btn btn-primary shadow-sm fw-bold"><i class="bi bi-check-circle me-2"></i>Guardar</button>
-                            </div>
-                        </form>
+                        </div>
+
+                        <!-- TABLA DE TICKETS -->
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="text-center" width="2%">Accion</th>
+                                        <th>Folio</th>
+                                        <th>Nombre Cabo</th>
+                                        <th>Fecha</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cuerpo_tabla_tickets_pendientes">
+
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
                     <!-- Poner la nomina del cortador de forma manual -->
@@ -103,7 +79,7 @@
                                             </tr>
                                         </thead>
                                         <tbody id="cuerpo_tabla_pagos_por_dia">
-                                           
+
                                         </tbody>
                                     </table>
                                 </div>

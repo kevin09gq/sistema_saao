@@ -9,6 +9,7 @@ $(document).ready(function () {
     obtenerDepartamentos();
     obtenerEmpleados();
     inicializarEventosFiltrado();
+    restaurarEstado();
 });
 
 
@@ -45,7 +46,23 @@ function obtenerEmpleados() {
     $.post('../php/infoEmpleados.php', { action: 'obtenerEmpleados' }, function (respuesta) {
         todosLosEmpleados = respuesta;
         empleadosFiltrados = [...respuesta]; // Al inicio, filtrados son todos
-        paginarEmpleados(1);
+
+        // Restaurar filtros guardados antes de paginar
+        let estado = obtenerEstadoGuardado();
+        if (estado) {
+            // Restaurar valores de los filtros
+            $('#inputBusqueda').val(estado.busqueda || '');
+            $('#selectArea').val(estado.area || '');
+            $('#selectDepartamento').val(estado.departamento || '');
+            // Aplicar filtros con los valores restaurados
+            aplicarFiltros();
+            // Ir a la página guardada
+            paginarEmpleados(estado.pagina || 1);
+            // Limpiar el estado guardado después de restaurarlo
+            sessionStorage.removeItem('vacaciones_estado');
+        } else {
+            paginarEmpleados(1);
+        }
     }, 'json');
 }
 
@@ -222,6 +239,7 @@ function actualizarTextoInformativo() {
 // ENVIA EL ID DEL EMPLEADO A LA PÁGINA DE KARDEX PARA MOSTRAR SU INFORMACIÓN DETALLADA
 //==============================
 function verKardex(idEmpleado) {
+    guardarEstado();
     window.location.href = `kardex.php?id=${idEmpleado}`;
 }
 
@@ -229,7 +247,46 @@ function verKardex(idEmpleado) {
 // ENVIA EL ID DEL EMPLEADO A LA PÁGINA DE PRIMA VACACIONAL
 //==============================
 function agregarPrima(idEmpleado) {
+    guardarEstado();
     window.location.href = `prima_vacacional.php?id=${idEmpleado}`;
+}
+
+//==============================
+// GUARDA EL ESTADO ACTUAL (FILTROS + PAGINACIÓN) EN SESSIONSTORAGE
+//==============================
+function guardarEstado() {
+    let estado = {
+        busqueda: $('#inputBusqueda').val(),
+        area: $('#selectArea').val(),
+        departamento: $('#selectDepartamento').val(),
+        pagina: paginaActual
+    };
+    sessionStorage.setItem('vacaciones_estado', JSON.stringify(estado));
+}
+
+//==============================
+// OBTIENE EL ESTADO GUARDADO DE SESSIONSTORAGE (O NULL SI NO EXISTE)
+//==============================
+function obtenerEstadoGuardado() {
+    let raw = sessionStorage.getItem('vacaciones_estado');
+    if (!raw) return null;
+    try {
+        return JSON.parse(raw);
+    } catch (e) {
+        return null;
+    }
+}
+
+//==============================
+// RESTAURA LOS DEPARTAMENTOS Y LUEGO LOS FILTROS (SECUENCIA ASÍNCRONA)
+//==============================
+function restaurarEstado() {
+    let estado = obtenerEstadoGuardado();
+    if (estado && estado.area) {
+        // Si había un área seleccionada, recargar los departamentos filtrados
+        // antes de que obtenerEmpleados intente restaurar el departamento
+        obtenerDepartamentos(estado.area);
+    }
 }
 
 //==============================

@@ -9,6 +9,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CITRICOS SAAO - Iniciar Sesión</title>
+    <link rel="icon" href="<?= ICONO_SISTEMA ?>" />
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <link rel="stylesheet" href="login.css">
      <!-- SweetAlert2 CSS -->

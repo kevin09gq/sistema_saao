@@ -9,7 +9,7 @@
     include "../../config/config.php";
     verificarSesion(); // Proteger esta página
     ?>
-   
+    <link rel="icon" href="<?= ICONO_SISTEMA ?>" />
 
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
@@ -102,7 +102,7 @@
     </div>
 
     <!-- jQuery -->
-      <!-- SweetAlert2 CSS -->
+    <!-- SweetAlert2 CSS -->
     <script src="<?= SWEETALERT ?>"></script>
     <script src="<?= JQUERY_JS ?>"></script>
     <script src="<?= JQUERY_UI_JS ?>"></script>
