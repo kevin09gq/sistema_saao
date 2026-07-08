@@ -9,7 +9,6 @@
     include "../../config/config.php";
     verificarSesion(); // Proteger esta página
     ?>
-    <link rel="icon" href="<?= ICONO_SISTEMA ?>" />
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <link rel="stylesheet" href="../css/nomina_relicario.css">
@@ -154,8 +153,7 @@
                         id="btn_modal_poda">
                         <i class="bi bi-scissors"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
-                        data-bs-target="#modalCorte" title="Tickes de Corte de Rejas">
+                    <button type="button" class="btn btn-outline-primary" title="Tickes de Corte de Rejas" id="btn_modal_corte">
                         <i class="bi bi-truck"></i>
                     </button>
 

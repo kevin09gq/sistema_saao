@@ -23,7 +23,6 @@ if (isset($_GET['accion']) || isset($_POST['accion'])) {
             break;
 
 
-
         case 'obtener_tickets_pendientes':
             obtener_tickets_pendientes();
             break;
@@ -146,6 +145,10 @@ function obtenerHorarioRancho()
     }
 }
 
+
+
+
+
 /** ============================= RECUPERAR LOS TICKETS QUE ESTAN PENDIENTES DE AÑADIR A UNA NOMINA ============================= */
 
 /**
@@ -195,13 +198,13 @@ function obtener_tickets_pendientes()
     $result = $stmt->get_result();
     $rows = $result->fetch_all(MYSQLI_ASSOC);
 
-    // Agrupar por folio
+    // Agrupar por id_corte (único) en lugar de solo folio
     $structured = [];
     foreach ($rows as $row) {
-        $folio = $row['folio'];
+        $id_corte = $row['id_corte'];
 
-        if (!isset($structured[$folio])) {
-            $structured[$folio] = [
+        if (!isset($structured[$id_corte])) {
+            $structured[$id_corte] = [
                 "id_corte" => $row['id_corte'],
                 "anio" => $row['anio'],
                 "numero_semana" => $row['numero_semana'],
@@ -210,18 +213,20 @@ function obtener_tickets_pendientes()
                 "fecha_corte" => $row['fecha_corte'],
                 "nombre_cortador" => $row['nombre_cortador'],
                 "precio_reja" => (float)$row['precio_reja'],
+                "seleccionado" => false,
                 "rejas" => []
             ];
         }
 
         if (!is_null($row['num_tabla'])) {
-            $structured[$folio]["rejas"][] = [
+            $structured[$id_corte]["rejas"][] = [
                 "num_tabla" => $row['num_tabla'],
                 "rejas" => $row['rejas']
             ];
         }
     }
 
+    // Convertir a arreglo indexado
     $structured = array_values($structured);
 
     if (!empty($structured)) {

@@ -9,7 +9,6 @@
     include "../../config/config.php";
     verificarSesion(); // Proteger esta página
     ?>
-    <link rel="icon" href="<?= ICONO_SISTEMA ?>" />
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <link rel="stylesheet" href="<?= JQUERY_UI_CSS ?>">
@@ -236,8 +235,7 @@
                     <button type="button" class="btn btn-outline-primary" title="Tickes de Poda de Árboles" id="btn_modal_poda">
                         <i class="bi bi-scissors"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
-                        data-bs-target="#modalCorte" title="Tickes de Corte de Rejas">
+                    <button type="button" class="btn btn-outline-primary" title="Tickes de Corte de Rejas" id="btn_modal_corte">
                         <i class="bi bi-truck"></i>
                     </button>
 
@@ -478,7 +476,7 @@
         <div class="cm_item_poda" data-action="ver" style="padding:6px 12px;cursor:pointer;">🔎​ Ver detalles</div>
     </div>
 
- 
+
     <!-- Incluir los modales -->
     <?php include "modals/modalCoordinador.php"; ?>
     <?php include "modals/modalJornaleros.php"; ?>
@@ -490,7 +488,7 @@
     <?php include "modals/modalDiasInhabiles.php"; ?>
     <?php include "modals/modalTipoDia.php"; ?>
     <?php include "modals/modalExportarNomina.php"; ?>
-     <?php include "modals/modalTicketsEmpleados.php"; ?>
+    <?php include "modals/modalTicketsEmpleados.php"; ?>
     <?php include "modals/modal_seleccion_tickets_palmilla.php"; ?>
     <?php include "modals/modalDiasExtra.php"; ?>
     <?php include "modals/modalOlvidos.php"; ?>

@@ -3,8 +3,6 @@ let precio_reja = document.getElementById("precio_reja");
 let total_pagar = document.getElementById("total_pagar");
 const modalCorte = new bootstrap.Modal(document.getElementById("modalCorte"));
 
-let cortes = [];
-
 // Dias de la semana en el orden ideal para la nómina (DOMINGO = 0, LUNES = 1, ..., SABADO = 6)
 const dias_nomina = ["DOMINGO", "LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO"];
 
@@ -14,6 +12,7 @@ $(document).ready(function () {
     llenar_cuerpo_tabla_pagos_por_dia();
     buscar_cortador();
     buscar_cortador_nomina();
+
 
 });
 
@@ -118,9 +117,9 @@ function obtenerRangoFechas(inicioStr, finStr, formatoCorto = true) {
  * @param {String} fechaStr Fecha con formato "12/Ene/2026"
  * @returns Nombre del día de la semana en español (ej. "LUNES")
  */
-function obtenerDiaSemanaBHL(fechaStr) {
+function obtenerDiaSemanaBHL(fechaStr) { 
 
-    // Mapeo de meses abreviados en español a número (0 = enero)
+  // Mapeo de meses abreviados en español a número (0 = enero)
     const meses = {
         Ene: 0,
         Feb: 1,
@@ -172,8 +171,8 @@ function llenar_cuerpo_tabla_pagos_por_dia() {
     // Obtener el rango de fechas entre fecha_inicio y fecha_cierre
     const rangoFechas = obtenerRangoFechas(jsonNominaRelicario.fecha_inicio, jsonNominaRelicario.fecha_cierre);
 
-    // console.log("RANGO DE FECHA: ", rangoFechas);
-
+    console.log("RANGO DE FECHA: ", rangoFechas);
+    
 
     // ======================================================
     // Generar las filas de la tabla con las fechas del rango
@@ -181,10 +180,10 @@ function llenar_cuerpo_tabla_pagos_por_dia() {
 
     for (let i = 0; i < dias_nomina.length; i++) {
 
-        // console.log("LA FECHA ES: " + rangoFechas[i]);
-
-        // console.log(obtenerDiaSemanaBHL(rangoFechas[i]));
-
+        console.log("LA FECHA ES: " + rangoFechas[i]);
+        
+        console.log(obtenerDiaSemanaBHL(rangoFechas[i]));
+    
 
         tmp += `
             <tr>
@@ -743,6 +742,8 @@ function limpiar_formulario_corte() {
 
 
 
+/** =============================== TICKETS PENDIENTES =============================== **/
+
 
 /**
  * Obtener los tickets que están pendientes de añadir a una nómina
@@ -791,11 +792,10 @@ function llenar_tabla_tickets_pendientes() {
         return;
     }
 
-    // OBTENER FILTRO DE BUSQUEDA Y LIMITE
+    // OBTENER FILTRO DE BUSQUEDA, LIMITE Y PAGINA ACTUAL
     const busqueda = $("#buscar_ticket").val().trim().toLowerCase();
-    const limite = 100;
-    // let paginaActual = parseInt($('#pagina-actual').data('pagina')) || 1;
-    let paginaActual = 1;
+    const limite = parseInt($('#limite_corte').val()) || 10;
+    let paginaActual = parseInt($('#pagina-actual-corte').data('pagina')) || 1;
 
 
     // Filtrar los tickets según el folio o el nombre del cortador
@@ -808,7 +808,15 @@ function llenar_tabla_tickets_pendientes() {
         return coincideBusqueda;
     });
 
-    console.log(cortesFiltrados);
+    // Si no hay resultados después del filtrado, mostrar mensaje
+    if (cortesFiltrados.length === 0) {
+        tbody.html(`
+            <tr>
+                <td colspan="4" class="text-center">No se encontraron resultados coincidentes...</td>
+            </tr>
+        `);
+        return;
+    }
 
     // CALCULAR INICIO Y FIN DE LOS CORTES A MOSTRAR SEGUN LA PAGINACION
     let inicio = 0;
@@ -864,6 +872,82 @@ function llenar_tabla_tickets_pendientes() {
 
         tbody.append(fila);
     });
+
+
+    // RENDIZAR LA PAGINACION
+    renderizarPaginacionCorte(cortesFiltrados.length, paginaActual, limite);
+}
+
+/**
+ * Renderizar los botones de paginación
+ */
+function renderizarPaginacionCorte(totalCortes, paginaActual, limite) {
+    if (limite === -1) {
+        $('#paginacion_corte').empty();
+        return;
+    }
+
+    const totalPaginas = Math.ceil(totalCortes / limite);
+    const paginacion = $('#paginacion_corte');
+    paginacion.empty();
+
+    // Botón Inicio
+    if (paginaActual > 1) {
+        paginacion.append(`
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="cambiarPaginaCorte(1); return false;"><i class="bi bi-chevron-double-left me-1"></i>Inicio</a>
+            </li>
+        `);
+    }
+
+    // Botón anterior
+    if (paginaActual > 1) {
+        paginacion.append(`
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="cambiarPaginaCorte(${paginaActual - 1}); return false;">Anterior</a>
+            </li>
+        `);
+    }
+
+    // Botones de páginas
+    const rangoInicio = Math.max(1, paginaActual - 2);
+    const rangoFin = Math.min(totalPaginas, paginaActual + 2);
+
+    for (let i = rangoInicio; i <= rangoFin; i++) {
+        const activa = i === paginaActual ? 'active' : '';
+        paginacion.append(`
+            <li class="page-item ${activa}">
+                <a class="page-link" href="#" onclick="cambiarPaginaCorte(${i}); return false;">${i}</a>
+            </li>
+        `);
+    }
+
+    // Botón siguiente
+    if (paginaActual < totalPaginas) {
+        paginacion.append(`
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="cambiarPaginaCorte(${paginaActual + 1}); return false;">Siguiente</a>
+            </li>
+        `);
+    }
+
+    // Botón Final
+    if (paginaActual < totalPaginas) {
+        paginacion.append(`
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="cambiarPaginaCorte(${totalPaginas}); return false;">Final <i class="bi bi-chevron-double-right ms-1"></i></a>
+            </li>
+        `);
+    }
+}
+
+/**
+ * Cambiar a una página específica
+ */
+function cambiarPaginaCorte(nuevaPagina) {
+    $('#pagina-actual-corte').data('pagina', nuevaPagina);
+    llenar_tabla_tickets_pendientes();
+    window.scrollTo(0, 0);
 }
 
 /**
@@ -886,11 +970,6 @@ function formatearFechaEspaBHL(fechaISO) {
 
     return `${diaStr}/${mesStr}/${anioStr}`;
 }
-
-// EVENTO: Buscar tickets pendientes al escribir en el input de búsqueda
-$(document).on("input", "#buscar_ticket", function () {
-    llenar_tabla_tickets_pendientes();
-});
 
 // EVENTO CHANGE: AL MARCAR O DESMARCAR UN CHECKBOX DE TICKET PENDIENTE
 $(document).on("change", ".check_select_corte", function (e) {
@@ -959,12 +1038,27 @@ $(document).on("change", ".check_select_corte", function (e) {
 });
 
 
+/**
+ * Configurar eventos de filtrado del corte
+ */
+$(document).ready(function () {
+    // Evento de búsqueda
+    $('#buscar_ticket').on('keyup', function () {
+        $('#pagina-actual-corte').data('pagina', 1);
+        llenar_tabla_tickets_pendientes();
+    });
 
+    // Evento de límite por página
+    $('#limite_corte').on('change', function () {
+        $('#pagina-actual-corte').data('pagina', 1);
+        llenar_tabla_tickets_pendientes();
+    });
 
-
-
-
-
+    // Inicializar variable de página actual si no existe
+    if (!$('#pagina-actual-corte').length) {
+        $('body').append('<div id="pagina-actual-corte" data-pagina="1" style="display:none;"></div>');
+    }
+});
 
 
 

@@ -1,6 +1,6 @@
 <!-- Modal -->
 <div class="modal fade" id="modalCorte" tabindex="-1" aria-labelledby="modalCorteLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content">
 
             <div class="modal-header">
@@ -23,16 +23,26 @@
 
                     <!-- Poner las rejas que se cortaron -->
                     <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
-                        <!-- BARRA DE BUSQUEDA -->
+                         <!-- FILTRO PARA LA TABLA DE TICKETS PENDIENTES -->
                         <div class="row">
+                            <!-- BARRA DE BUSQUEDA -->
                             <div class="col-md-4 mb-3">
                                 <label class="form-label" for="buscar_ticket">Buscar</label>
                                 <input type="text" class="form-control form-control-sm shadow-sm" id="buscar_ticket" placeholder="Buscar...">
                             </div>
+                            <!-- SELECT DE LIMITE DE REGISTROS -->
+                            <div class="col-md-2 mb-3">
+                                <label for="" class="form-label">Limite</label>
+                                <select class="form-select form-select-sm shadow-sm" id="limite_corte">
+                                    <option value="10" selected>10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                </select>
+                            </div>
                         </div>
 
                         <!-- TABLA DE TICKETS -->
-                        <div class="table-responsive">
+                        <div class="table-responsive mb-2">
                             <table class="table table-hover table-bordered">
                                 <thead class="table-light">
                                     <tr>
@@ -46,6 +56,14 @@
 
                                 </tbody>
                             </table>
+                            <!-- Paginación -->
+                            <nav aria-label="Page navigation" id="contenedor-paginacion">
+                                <ul class="pagination justify-content-center" id="paginacion_corte">
+                                    <!-- Se genera dinámicamente -->
+                                </ul>
+                            </nav>
+                            <!-- Contenedor para almacenar la página actual -->
+                            <div id="pagina-actual-corte" data-pagina="1" style="display:none;"></div>
                         </div>
                     </div>
 
@@ -79,7 +97,7 @@
                                             </tr>
                                         </thead>
                                         <tbody id="cuerpo_tabla_pagos_por_dia">
-
+                                           
                                         </tbody>
                                     </table>
                                 </div>

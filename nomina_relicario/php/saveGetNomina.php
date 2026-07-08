@@ -1,10 +1,7 @@
 <?php
 // Evitar que warnings/avisos rompan el JSON de respuesta
-// ini_set('display_errors', 0);
-// error_reporting(0);
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-
+ini_set('display_errors', 0);
+error_reporting(0);
 
 include '../../conexion/conexion.php';
 
@@ -208,6 +205,7 @@ function obtenerNomina($data, $conexion)
  */
 
 /**
+ * NOTA: BORRAR LUEGO
  * Función para guardar tickets de corte (llamada desde guardarNominaRelicario)
  */
 function guardarTicketsCorte($corte, $idNomina, $conexion)
@@ -341,6 +339,8 @@ function asignarTicketsCorteANomina($corte, $idNomina, $conexion)
         error_log("Error en asignarTicketsCorteANomina: " . $e->getMessage());
     }
 }
+
+
 
 
 /**

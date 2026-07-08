@@ -241,7 +241,7 @@ function obtener_cortes() {
             vales = response.data;
             historial = vales;
 
-            console.log(historial);
+            console.log(vales);
 
             // LLENAR LA TABLA DE RESULTADOS CON LOS CORTES OBTENIDOS
             llenar_resultados_historial();
@@ -263,6 +263,8 @@ function llenar_resultados_historial() {
     // COSAS PARA LA SECCION DE LAS TARJETAS DE RESUMEN
     // --------------------------------------------------------
 
+    // LIMPIAR EL TOTAL DE REJAS
+    $('#total_rejas_visual').val("");
     // OBTENER EL TOTAL DE REJAS DE TODOS LOS CORTES
     $('#label_total_rejas_general').text(obtenerTotalRejasGeneral(vales));
     // OBTENER EL TOTAL DE GASTOS DE TODOS LOS CORTES
@@ -351,7 +353,7 @@ function llenar_resultados_historial() {
         // DEFINIR EL ESTADO DEL VALE
         const estado = vale.estado ? `<span class="badge bg-success">Activo</span>` : `<span class="badge bg-danger">Cancelado</span>`;
         // DEFINIR SI TIENE O NO NOMINA
-        const nomina = vale.anio ? `Sem ${ formatoDosDigitos(vale.numero_semana) } / ${ vale.anio }` : `<em class="text-muted">Pendiente</em>`;
+        const nomina = vale.anio ? `Sem ${formatoDosDigitos(vale.numero_semana)} / ${vale.anio}` : `<em class="text-muted">Pendiente</em>`;
 
         // TABLAS INVOLUCRADAS Y TOTAL REJAS
         let tablas = "";
@@ -384,19 +386,19 @@ function llenar_resultados_historial() {
         // CREAR LA FILA DE LA TABLA
         const fila = `
         <tr data-index="${indexGlobal}">
-            <td class="text-center fw-bold">${ formatoDosDigitos(contador) }</td>
+            <td class="text-center fw-bold">${formatoDosDigitos(contador)}</td>
             <td>${nomina}</td>
             <td>${vale.folio}</td>
             <td>${formatearFechaEspa(vale.fecha_corte)}</td>
             <td>${vale.nombre_cortador}</td>
             <td>${tablas}</td>
-            <td class="text-center fw-bold ${ vale.estado ? 'text-primary' : 'text-danger' }">${total_rejas}</td>
-            <td class="text-end ${ vale.estado ? 'text-success' : 'text-danger' }">${ formatoMoneda(vale.precio_reja) }</td>
-            <td class="text-end fw-bold ${ vale.estado ? 'text-success' : 'text-danger' }">${ formatoMoneda(total_rejas * vale.precio_reja) }</td>
+            <td class="text-center fw-bold ${vale.estado ? 'text-primary' : 'text-danger'}">${total_rejas}</td>
+            <td class="text-end ${vale.estado ? 'text-success' : 'text-danger'}">${formatoMoneda(vale.precio_reja)}</td>
+            <td class="text-end fw-bold ${vale.estado ? 'text-success' : 'text-danger'}">${formatoMoneda(total_rejas * vale.precio_reja)}</td>
             <td class="text-center">${estado}</td>
             <td class="text-center bg-body-secondary">
                 <input
-                    ${ vale.estado ? '' : 'disabled' }
+                    ${vale.estado ? '' : 'disabled'}
                     ${vale.seleccionado ? 'checked' : ''}
                     data-index="${indexGlobal}"
                     data-rejas='${total_rejas}'
@@ -640,7 +642,7 @@ $(document).on('click', '.btn_ver_detalles_corte', function (e) {
     $("#label_detalle_cortador").text(vale.nombre_cortador);
     $("#label_detalle_fecha").text(formatearFechaEspa(vale.fecha_corte));
     // VER SI TIENE NOMINA O NO, SI NO TIENE NOMINA, PONER "PENDIENTE"
-    const nomina = vale.anio ? `Sem ${ formatoDosDigitos(vale.numero_semana) } / ${vale.anio}` : `<em class="text-muted">Pendiente</em>`;
+    const nomina = vale.anio ? `Sem ${formatoDosDigitos(vale.numero_semana)} / ${vale.anio}` : `<em class="text-muted">Pendiente</em>`;
     $("#label_detalle_nomina").html(nomina);
     // ESTADO DEL VALE
     $("#label_detalle_estado").html(vale.estado ? '<span class="badge text-bg-success">Activo</span>' : '<span class="badge text-bg-danger">Cancelado</span>');
@@ -973,8 +975,8 @@ $(document).on('click', '#btn_guardar_nuevo_vale', function (e) {
             $('#accion').val(1);
             // LIMPIAR EL FORMULARIO DEL MODAL
             limpiar_formulario_vale();
-            // LLENAR LA TABLA DE RESULTADOS CON EL NUEVO VALE
-            llenar_resultados_historial();
+            // LLAMAR DE NUEVO LOS CORTES PARA ACTUALIZAR LA TABLA
+            obtener_cortes();
             if (id_corte !== "") {
                 modal_nuevo_vale.hide(); // Cerrar el modal si se estaba modificando un vale existente
             }
@@ -1105,9 +1107,9 @@ $(document).on('click', '#btn_ranking_extra', function (e) {
         // PREPARAR LA FILA
         const fila = `
         <tr>
-            <td class="text-center"><span class="badge ${ contador === 1 ? 'bg-warning text-dark' : 'bg-secondary' } fs-6">${ contador }°</span></td>
-            <td class="text-center"><i class="bi bi-box me-2"></i>Tabla ${ formatoDosDigitos(ran.num_tabla) }</td>
-            <td class="text-center fw-bold text-success">${ ran.total_rejas }</td>
+            <td class="text-center"><span class="badge ${contador === 1 ? 'bg-warning text-dark' : 'bg-secondary'} fs-6">${contador}°</span></td>
+            <td class="text-center"><i class="bi bi-box me-2"></i>Tabla ${formatoDosDigitos(ran.num_tabla)}</td>
+            <td class="text-center fw-bold text-success">${ran.total_rejas}</td>
         </tr>
         `;
 

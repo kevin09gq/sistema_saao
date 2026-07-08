@@ -15,11 +15,16 @@ if (isset($_GET['accion']) || isset($_POST['accion'])) {
         case 'obtenerDepartamento':
             obtenerDepartamento();
             break;
-         case 'obtenerPuesto':
+        case 'obtenerPuesto':
             obtenerPuesto();
             break;
         case 'obtenerHorarioRancho':
             obtenerHorarioRancho();
+            break;
+
+
+        case 'obtener_tickets_pendientes':
+            obtener_tickets_pendientes();
             break;
 
 
@@ -63,7 +68,7 @@ function obtenerDepartamento()
             INNER JOIN areas_departamentos ad ON d.id_departamento = ad.id_departamento 
             INNER JOIN nombre_nominas n ON ad.id_area = n.id_area 
             WHERE n.id_nomina = 6";
-            
+
     $stmt = $conexion->prepare($sql);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -80,7 +85,8 @@ function obtenerDepartamento()
 /**
  * Función para obtener los puestos que pertenecen a Huasteca
  */
-function obtenerPuesto() {
+function obtenerPuesto()
+{
     global $conexion;
 
     if (empty($_GET["id_departamento"])) {
@@ -113,7 +119,8 @@ function obtenerPuesto() {
 /**
  * Función para obtener el horario del rancho
  */
-function obtenerHorarioRancho() {
+function obtenerHorarioRancho()
+{
     global $conexion;
 
     if (empty($_GET["id_area"])) {
@@ -136,4 +143,97 @@ function obtenerHorarioRancho() {
     } else {
         respuesta(404, "Error", "No se encontró horario para esta área", "error", []);
     }
+}
+
+
+
+
+
+/** ============================= RECUPERAR LOS TICKETS QUE ESTAN PENDIENTES DE AÑADIR A UNA NOMINA ============================= */
+
+/**
+ * Función para obtener los tickets que están pendientes de añadir a una nómina
+ */
+function obtener_tickets_pendientes()
+{
+    global $conexion;
+
+    $nombre_rancho = "huasteca"; // Cambiar según el rancho que se esté consultando
+
+    // Tablas dinámicas
+    $nombre_tabla = "cortes_" . $nombre_rancho;
+    $nombre_tabla_nomina = "nomina_" . $nombre_rancho;
+    $id_tabla_nomina = "id_nomina_" . $nombre_rancho;
+    $nombre_tabla_rejas = "cortes_" . $nombre_rancho . "_tablas";
+
+    // Base SELECT con LEFT JOIN hacia nómina y rejas
+    $sql = "SELECT
+                c.id AS id_corte,
+                n.anio,
+                n.numero_semana,
+                c.folio,
+                c.estado,
+                c.fecha_corte,
+                c.nombre_cortador,
+                c.precio_reja,
+                r.num_tabla,
+                r.rejas
+            FROM {$nombre_tabla} c
+            LEFT JOIN {$nombre_tabla_nomina} n 
+                   ON c.id_nomina = n.{$id_tabla_nomina}
+            LEFT JOIN {$nombre_tabla_rejas} r
+                   ON c.id = r.id_corte
+            WHERE n.anio IS NULL 
+              AND n.numero_semana IS NULL 
+              AND c.estado = 1
+            ORDER BY c.fecha_corte DESC";
+
+    $stmt = $conexion->prepare($sql);
+    if (!$stmt) {
+        respuesta(500, "Error", "Error en prepare: " . $conexion->error, "error", []);
+        return;
+    }
+
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $rows = $result->fetch_all(MYSQLI_ASSOC);
+
+    // Agrupar por id_corte (único) en lugar de solo folio
+    $structured = [];
+    foreach ($rows as $row) {
+        $id_corte = $row['id_corte'];
+
+        if (!isset($structured[$id_corte])) {
+            $structured[$id_corte] = [
+                "id_corte" => $row['id_corte'],
+                "anio" => $row['anio'],
+                "numero_semana" => $row['numero_semana'],
+                "folio" => $row['folio'],
+                "estado" => $row['estado'],
+                "fecha_corte" => $row['fecha_corte'],
+                "nombre_cortador" => $row['nombre_cortador'],
+                "precio_reja" => (float)$row['precio_reja'],
+                "seleccionado" => false,
+                "rejas" => []
+            ];
+        }
+
+        if (!is_null($row['num_tabla'])) {
+            $structured[$id_corte]["rejas"][] = [
+                "num_tabla" => $row['num_tabla'],
+                "rejas" => $row['rejas']
+            ];
+        }
+    }
+
+    // Convertir a arreglo indexado
+    $structured = array_values($structured);
+
+    if (!empty($structured)) {
+        respuesta(200, "OK", "Cortes pendientes encontrados", "success", $structured);
+    } else {
+        respuesta(200, "OK", "No se encontraron cortes pendientes", "info", []);
+    }
+
+    $stmt->close();
 }

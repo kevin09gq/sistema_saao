@@ -23,54 +23,48 @@
 
                     <!-- Poner las rejas que se cortaron -->
                     <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
-                        <form method="post" id="form_corte">
-                            <div class="row g-2">
-
-                                <div class="col-md-2 mb-3">
-                                    <label for="folio_corte" class="form-label">Folio</label>
-                                    <input type="text" class="form-control shadow-sm" id="folio_corte" name="folio_corte" placeholder="Número de Folio">
-                                </div>
-
-                                <div class="col-md-5 mb-3">
-                                    <label for="nombre_cortador" class="form-label">Nombre del Cabo</label>
-                                    <input type="text" class="form-control shadow-sm" id="nombre_cortador" name="nombre_cortador" placeholder="Nombre del Cabo">
-                                </div>
-
-                                <div class="col-md-2 mb-3">
-                                    <label for="fecha_corte" class="form-label">Fecha de Corte</label>
-                                    <input type="date" class="form-control shadow-sm" id="fecha_corte" name="fecha_corte">
-                                </div>
-
-                                <div class="col-12 mb-3">
-                                    <label for="observaciones_corte" class="form-label">Tablas</label>
-                                    <div class="container-fluid" id="cuerpo_tablas_corte"><!-- Cuerpo de las tablas --></div>
-                                </div>
-
-                                <div id="cuerpo_cantidad_rejas" class="row">
-
-                                </div>
-
-                                <div class="col-md-2 mb-3">
-                                    <label for="rejas_totales" class="form-label">Rejas totales</label>
-                                    <input type="number" class="form-control shadow-sm" id="rejas_totales" name="rejas_totales" placeholder="Total de rejas" disabled>
-                                </div>
-
-                                <div class="col-md-2 mb-3">
-                                    <label for="precio_reja" class="form-label">Precio reja $</label>
-                                    <input type="number" step="0.01" min="0" class="form-control shadow-sm" id="precio_reja" name="precio_reja" placeholder="Precio por reja">
-                                </div>
-
-                                <div class="col-md-2 mb-3">
-                                    <label for="total_pagar" class="form-label">Total $</label>
-                                    <input type="text" class="form-control shadow-sm" id="total_pagar" name="total_pagar" placeholder="Total a pagar" disabled>
-                                </div>
-
+                        <!-- FILTRO PARA LA TABLA DE TICKETS PENDIENTES -->
+                        <div class="row">
+                            <!-- BARRA DE BUSQUEDA -->
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label" for="buscar_ticket">Buscar</label>
+                                <input type="text" class="form-control form-control-sm shadow-sm" id="buscar_ticket" placeholder="Buscar...">
                             </div>
-                            <div class="text-end mb-3 me-3">
-                                <button type="button" class="btn btn-secondary shadow-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle me-2"></i>Cerrar</button>
-                                <button type="submit" class="btn btn-primary shadow-sm fw-bold"><i class="bi bi-check-circle me-2"></i>Guardar</button>
+                            <!-- SELECT DE LIMITE DE REGISTROS -->
+                            <div class="col-md-2 mb-3">
+                                <label for="" class="form-label">Limite</label>
+                                <select class="form-select form-select-sm shadow-sm" id="limite_corte">
+                                    <option value="10" selected>10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                </select>
                             </div>
-                        </form>
+                        </div>
+
+                        <!-- TABLA DE TICKETS -->
+                        <div class="table-responsive mb-2">
+                            <table class="table table-hover table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="text-center" width="2%">Accion</th>
+                                        <th>Folio</th>
+                                        <th>Nombre Cabo</th>
+                                        <th>Fecha</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cuerpo_tabla_tickets_pendientes">
+
+                                </tbody>
+                            </table>
+                            <!-- Paginación -->
+                            <nav aria-label="Page navigation" id="contenedor-paginacion">
+                                <ul class="pagination justify-content-center" id="paginacion_corte">
+                                    <!-- Se genera dinámicamente -->
+                                </ul>
+                            </nav>
+                            <!-- Contenedor para almacenar la página actual -->
+                            <div id="pagina-actual-corte" data-pagina="1" style="display:none;"></div>
+                        </div>
                     </div>
 
                     <!-- Poner la nomina del cortador de forma manual -->

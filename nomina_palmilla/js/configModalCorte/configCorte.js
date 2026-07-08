@@ -8,13 +8,24 @@ const dias_nomina = ["DOMINGO", "LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERN
 
 $(document).ready(function () {
 
-    obtenerTablasRancho();
+    // obtenerTablasRancho();
     llenar_cuerpo_tabla_pagos_por_dia();
     buscar_cortador();
     buscar_cortador_nomina();
 
 
 });
+
+
+// EVENTO: ABRIR EL MODAL DE LOS CORTES Y LLAMAR LOS TICKETS PENDIENTES
+$(document).on('click', '#btn_modal_corte', function (e) {
+    e.preventDefault();
+
+    obtener_tickets_pendientes();
+
+    modalCorte.show();
+});
+
 
 /**
  * ====================================================================
@@ -711,6 +722,329 @@ function limpiar_formulario_corte() {
     $("#form_corte_nomina").trigger("reset");
     $("#total_pagos").html("$0.00");
 }
+
+
+
+/** =============================== TICKETS PENDIENTES =============================== **/
+
+
+/**
+ * Obtener los tickets que están pendientes de añadir a una nómina
+ */
+function obtener_tickets_pendientes() {
+    $.ajax({
+        type: "GET",
+        url: "../php/info-rancho.php",
+        data: {
+            accion: "obtener_tickets_pendientes"
+        },
+        dataType: "json",
+        success: function (response) {
+            cortes = response.data; // Almacenar los tickets obtenidos
+            llenar_tabla_tickets_pendientes(); // Llamar a la función para llenar la tabla con los tickets obtenidos
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.error("Error al obtener los empleados:", errorThrown);
+            let data = JSON.parse(jqXHR.responseText);
+            alerta(data.icono, data.titulo, data.texto);
+        }
+    });
+}
+
+/**
+ * Llena la tabla de tickets pendientes en el modal de corte
+ */
+function llenar_tabla_tickets_pendientes() {
+
+    // VALIDAR QUE EXISTE EL jsonNominaPalmilla
+    if (!jsonNominaPalmilla || !jsonNominaPalmilla.departamentos) {
+        console.error("jsonNominaPalmilla no está definido o no tiene departamentos");
+        return;
+    }
+
+    // Limpiar el cuerpo de la tabla antes de llenarlo
+    const tbody = $("#cuerpo_tabla_tickets_pendientes");
+    tbody.empty();
+    // Validar que haya tickets pendientes
+    if (cortes.length === 0) {
+        tbody.html(`
+            <tr>
+                <td colspan="4" class="text-center">No hay tickets pendientes</td>
+            </tr>
+        `);
+        return;
+    }
+
+    // OBTENER FILTRO DE BUSQUEDA, LIMITE Y PAGINA ACTUAL
+    const busqueda = $("#buscar_ticket").val().trim().toLowerCase();
+    const limite = parseInt($('#limite_corte').val()) || 10;
+    let paginaActual = parseInt($('#pagina-actual-corte').data('pagina')) || 1;
+
+
+    // Filtrar los tickets según el folio o el nombre del cortador
+    let cortesFiltrados = cortes.filter(corte => {
+        // Filtro de búsqueda: folio o nombre del cortador
+        const coincideBusqueda = !busqueda ||
+            (corte.folio && corte.folio.toLowerCase().includes(busqueda)) ||
+            (corte.nombre_cortador && corte.nombre_cortador.toLowerCase().includes(busqueda));
+
+        return coincideBusqueda;
+    });
+
+    // Si no hay resultados después del filtrado, mostrar mensaje
+    if (cortesFiltrados.length === 0) {
+        tbody.html(`
+            <tr>
+                <td colspan="4" class="text-center">No se encontraron resultados coincidentes...</td>
+            </tr>
+        `);
+        return;
+    }
+
+    // CALCULAR INICIO Y FIN DE LOS CORTES A MOSTRAR SEGUN LA PAGINACION
+    let inicio = 0;
+    let fin = cortesFiltrados.length;
+
+    if (limite !== -1) {
+        inicio = (paginaActual - 1) * limite;
+        fin = inicio + limite;
+    }
+
+    // OBTENER LOS CORTES A MOSTRAR EN LA PAGINA ACTUAL
+    const cortesPagina = cortesFiltrados.slice(inicio, fin);
+    const totalPaginas = limite === -1 ? 1 : Math.ceil(cortesFiltrados.length / limite);
+
+    cortesPagina.forEach((corte, index) => {
+        // Buscar si el folio ya está en la estructura jsonNominaPalmilla
+        let existeFolio = false;
+
+        // Buscar el departamento Corte
+        let departamentoCorte = jsonNominaPalmilla.departamentos.find(
+            d => d.nombre === "Corte"
+        );
+
+        if (departamentoCorte) {
+            // Recorrer empleados del departamento Corte
+            departamentoCorte.empleados.forEach(emp => {
+                if (Array.isArray(emp.tickets)) {
+                    // Verificar si alguno de sus tickets tiene el mismo folio
+                    if (emp.tickets.some(ticket => ticket.folio === corte.folio)) {
+                        existeFolio = true;
+                    }
+                }
+            });
+        }
+
+        // Generar la fila con el checkbox marcado si existeFolio es true
+        const fila = `
+            <tr>
+                <td class="text-center bg-light">
+                    <input
+                        data-folio="${corte.folio}"
+                        data-vale='${JSON.stringify(corte)}'
+                        class="form-check-input shadow-sm check_select_corte"
+                        type="checkbox"
+                        id="checkbox_ticket_${corte.folio}"
+                        ${existeFolio ? "checked" : ""}>
+                </td>
+                <td>${corte.folio}</td>
+                <td>${corte.nombre_cortador}</td>
+                <td>${formatearFechaEspaBHL(corte.fecha_corte)}</td>
+            </tr>
+        `;
+
+        tbody.append(fila);
+    });
+
+
+    // RENDIZAR LA PAGINACION
+    renderizarPaginacionCorte(cortesFiltrados.length, paginaActual, limite);
+}
+
+/**
+ * Renderizar los botones de paginación
+ */
+function renderizarPaginacionCorte(totalCortes, paginaActual, limite) {
+    if (limite === -1) {
+        $('#paginacion_corte').empty();
+        return;
+    }
+
+    const totalPaginas = Math.ceil(totalCortes / limite);
+    const paginacion = $('#paginacion_corte');
+    paginacion.empty();
+
+    // Botón Inicio
+    if (paginaActual > 1) {
+        paginacion.append(`
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="cambiarPaginaCorte(1); return false;"><i class="bi bi-chevron-double-left me-1"></i>Inicio</a>
+            </li>
+        `);
+    }
+
+    // Botón anterior
+    if (paginaActual > 1) {
+        paginacion.append(`
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="cambiarPaginaCorte(${paginaActual - 1}); return false;">Anterior</a>
+            </li>
+        `);
+    }
+
+    // Botones de páginas
+    const rangoInicio = Math.max(1, paginaActual - 2);
+    const rangoFin = Math.min(totalPaginas, paginaActual + 2);
+
+    for (let i = rangoInicio; i <= rangoFin; i++) {
+        const activa = i === paginaActual ? 'active' : '';
+        paginacion.append(`
+            <li class="page-item ${activa}">
+                <a class="page-link" href="#" onclick="cambiarPaginaCorte(${i}); return false;">${i}</a>
+            </li>
+        `);
+    }
+
+    // Botón siguiente
+    if (paginaActual < totalPaginas) {
+        paginacion.append(`
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="cambiarPaginaCorte(${paginaActual + 1}); return false;">Siguiente</a>
+            </li>
+        `);
+    }
+
+    // Botón Final
+    if (paginaActual < totalPaginas) {
+        paginacion.append(`
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="cambiarPaginaCorte(${totalPaginas}); return false;">Final <i class="bi bi-chevron-double-right ms-1"></i></a>
+            </li>
+        `);
+    }
+}
+
+/**
+ * Cambiar a una página específica
+ */
+function cambiarPaginaCorte(nuevaPagina) {
+    $('#pagina-actual-corte').data('pagina', nuevaPagina);
+    llenar_tabla_tickets_pendientes();
+    window.scrollTo(0, 0);
+}
+
+/**
+ * Pasar fecha de formato "YYYY-MM-DD" a "DD/MMM/YYYY"
+ */
+function formatearFechaEspaBHL(fechaISO) {
+    const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun",
+        "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
+    // Descomponer la cadena YYYY-MM-DD
+    const [anio, mes, dia] = fechaISO.split("-").map(Number);
+
+    // Crear la fecha en modo local (sin interpretar como UTC)
+    const fecha = new Date(anio, mes - 1, dia);
+
+    // Formatear
+    const diaStr = String(fecha.getDate()).padStart(2, '0');
+    const mesStr = meses[fecha.getMonth()];
+    const anioStr = fecha.getFullYear();
+
+    return `${diaStr}/${mesStr}/${anioStr}`;
+}
+
+// EVENTO CHANGE: AL MARCAR O DESMARCAR UN CHECKBOX DE TICKET PENDIENTE
+$(document).on("change", ".check_select_corte", function (e) {
+    e.preventDefault();
+
+    const esChecked = $(this).is(":checked");
+    const folio = $(this).data("folio");
+    const ticket = $(this).data("vale");
+
+    // Buscar o crear el departamento Corte
+    let departamentoCorte = jsonNominaPalmilla.departamentos.find(d => d.nombre === "Corte");
+    if (!departamentoCorte) {
+        departamentoCorte = { id_departamento: 800, nombre: "Corte", empleados: [] };
+        jsonNominaPalmilla.departamentos.push(departamentoCorte);
+    }
+
+    // Buscar el empleado
+    let empleado = departamentoCorte.empleados.find(e =>
+        e.nombre === ticket.nombre_cortador && e.concepto === "REJA"
+    );
+
+    if (esChecked) {
+        // AGREGAR
+        if (!empleado) {
+            empleado = { nombre: ticket.nombre_cortador, concepto: "REJA", tickets: [] };
+            departamentoCorte.empleados.push(empleado);
+        }
+        if (!empleado.tickets.some(t => t.folio === ticket.folio)) {
+            // Transformar las rejas al formato correcto
+            const datosRejasTransformados = (ticket.rejas || []).map(r => ({
+                tabla: String(r.num_tabla),   // convertir a string si lo prefieres
+                cantidad: r.rejas
+            }));
+
+            // Construir un objeto limpio
+            const nuevoTicket = {
+                folio: ticket.folio,
+                fecha: ticket.fecha_corte,
+                datosRejas: datosRejasTransformados,
+                precio_reja: ticket.precio_reja
+            };
+
+            empleado.tickets.push(nuevoTicket);
+        }
+    } else {
+        // ELIMINAR POR FOLIO
+        if (empleado && Array.isArray(empleado.tickets)) {
+            empleado.tickets = empleado.tickets.filter(t => t.folio !== ticket.folio);
+
+            // Si ya no quedan tickets, eliminar al empleado completo
+            if (empleado.tickets.length === 0) {
+                departamentoCorte.empleados = departamentoCorte.empleados.filter(
+                    e => !(e.nombre === ticket.nombre_cortador && e.concepto === "REJA")
+                );
+            }
+        }
+    }
+
+    // OBTENER EL DEPARTAMENTO SELECCIONADO
+    let dep = $("#filtro_departamento").val();
+
+    if (dep == 800) {
+        mostrarDatosTablaCorte(jsonNominaPalmilla);
+    }
+
+});
+
+
+/**
+ * Configurar eventos de filtrado del corte
+ */
+$(document).ready(function () {
+    // Evento de búsqueda
+    $('#buscar_ticket').on('keyup', function () {
+        $('#pagina-actual-corte').data('pagina', 1);
+        llenar_tabla_tickets_pendientes();
+    });
+
+    // Evento de límite por página
+    $('#limite_corte').on('change', function () {
+        $('#pagina-actual-corte').data('pagina', 1);
+        llenar_tabla_tickets_pendientes();
+    });
+
+    // Inicializar variable de página actual si no existe
+    if (!$('#pagina-actual-corte').length) {
+        $('body').append('<div id="pagina-actual-corte" data-pagina="1" style="display:none;"></div>');
+    }
+});
+
+
+
 
 
 /** *********************************************************************************************************************************** */

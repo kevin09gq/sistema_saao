@@ -54,7 +54,7 @@ function exportarNominaDepartamento() {
     $(document).on('click', '#btn-export-corte', function (e) {
         e.preventDefault();
 
-        if (validarEmpleadosNegativos()) return;
+        // if (validarEmpleadosNegativos()) return;
 
         const deptoId = $(this).data('id');
         const deptoNombre = $(this).data('nombre');

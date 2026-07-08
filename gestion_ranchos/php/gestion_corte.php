@@ -322,13 +322,13 @@ function obtener_cortes()
     $result = $stmt->get_result();
     $rows = $result->fetch_all(MYSQLI_ASSOC);
 
-    // Agrupar por folio para formar la estructura deseada
+    // Agrupar por id_corte (único) en lugar de solo folio
     $structured = [];
     foreach ($rows as $row) {
-        $folio = $row['folio'];
+        $id_corte = $row['id_corte'];
 
-        if (!isset($structured[$folio])) {
-            $structured[$folio] = [
+        if (!isset($structured[$id_corte])) {
+            $structured[$id_corte] = [
                 "id_corte" => $row['id_corte'],
                 "anio" => $row['anio'],
                 "numero_semana" => $row['numero_semana'],
@@ -343,7 +343,7 @@ function obtener_cortes()
         }
 
         if (!is_null($row['num_tabla'])) {
-            $structured[$folio]["rejas"][] = [
+            $structured[$id_corte]["rejas"][] = [
                 "num_tabla" => $row['num_tabla'],
                 "rejas" => $row['rejas']
             ];
@@ -352,6 +352,7 @@ function obtener_cortes()
 
     // Convertir a arreglo indexado
     $structured = array_values($structured);
+
 
     if (!empty($structured)) {
         respuesta(200, "OK", "Cortes encontrados", "success", $structured);
@@ -489,14 +490,14 @@ function guardar_nuevo_vale()
     // --------------------------------------------------------------------------------------------
 
     // Primero verificar si el folio ya existe
-    $sql_verificar = "SELECT COUNT(*) AS total FROM {$tabla_cortes} WHERE folio = ?";
+    $sql_verificar = "SELECT COUNT(*) AS total FROM {$tabla_cortes} WHERE folio = ? AND nombre_cortador = ? AND estado = 1";
     $stmt_verificar = $conexion->prepare($sql_verificar);
     if (!$stmt_verificar) {
         respuesta(500, "Error", "Error en prepare (verificar): " . $conexion->error, "error", []);
         return;
     }
 
-    $stmt_verificar->bind_param("s", $folio);
+    $stmt_verificar->bind_param("ss", $folio, $nombre_cortador); // "ss" porque ambos son strings
     if (!$stmt_verificar->execute()) {
         respuesta(500, "Error", "Error al ejecutar verificación: " . $stmt_verificar->error, "error", []);
         return;
@@ -506,7 +507,7 @@ function guardar_nuevo_vale()
     $row = $result->fetch_assoc();
     if ($row['total'] > 0) {
         // Ya existe el folio
-        respuesta(400, "Registro existente", "El folio ya está registrado en la tabla de cortes.", "error", []);
+        respuesta(400, "Registro existente", "El folio ya está registrado para: " . $nombre_cortador, "info", []);
         return;
     }
 
@@ -583,14 +584,14 @@ function modificar_vale()
     }
 
     // RECIBIR EL FOLIO
-    $folio = $_POST['folio'] ?? '';
+    $folio = trim($_POST['folio']) ?? '';
     if (empty($folio)) {
         respuesta(400, "Campo requerido", "El folio es obligatorio.", "error", []);
         return;
     }
 
     // RECIBIR EL NOMBRE DEL CORTADOR
-    $nombre_cortador = $_POST['nombre_cortador'] ?? '';
+    $nombre_cortador = trim($_POST['nombre_cortador']) ?? '';
     if (empty($nombre_cortador)) {
         respuesta(400, "Campo requerido", "El nombre del cortador es obligatorio.", "error", []);
         return;
@@ -604,7 +605,7 @@ function modificar_vale()
     }
 
     // RECIBIR EL NOMBRE DEL RANCHO
-    $nombre_rancho = $_POST['nombre_rancho'] ?? '';
+    $nombre_rancho = trim($_POST['nombre_rancho']) ?? '';
     if (empty($nombre_rancho)) {
         respuesta(400, "Campo requerido", "El nombre del rancho es obligatorio.", "error", []);
         return;
@@ -664,15 +665,18 @@ function modificar_vale()
     // VALIDAR SI EL FOLIO YA EXISTE EN OTRO REGISTRO
     // --------------------------------------------------------------------------------------------
 
-    // Verificar si el folio ya existe en otro registro distinto al actual
-    $sql_verificar = "SELECT COUNT(*) AS total FROM {$tabla_cortes} WHERE folio = ? AND id <> ?";
+    // Verificar si el folio ya existe para el mismo cortador en otro registro distinto
+    $sql_verificar = "SELECT COUNT(*) AS total 
+                        FROM {$tabla_cortes} 
+                        WHERE folio = ? AND nombre_cortador = ? AND id <> ?";
     $stmt_verificar = $conexion->prepare($sql_verificar);
     if (!$stmt_verificar) {
-        respuesta(500, "Error", "Error en prepare (verificar folio): " . $conexion->error, "error", []);
+        respuesta(500, "Error", "Error en prepare (verificar folio+cortador): " . $conexion->error, "error", []);
         return;
     }
 
-    $stmt_verificar->bind_param("si", $folio, $id_corte); // folio es string, id es entero
+    $stmt_verificar->bind_param("ssi", $folio, $nombre_cortador, $id_corte);
+
     if (!$stmt_verificar->execute()) {
         respuesta(500, "Error", "Error al ejecutar verificación de folio: " . $stmt_verificar->error, "error", []);
         return;
@@ -682,8 +686,14 @@ function modificar_vale()
     $row = $result->fetch_assoc();
 
     if ($row['total'] > 0) {
-        // Ya existe el folio en otro registro
-        respuesta(400, "Folio duplicado", "El folio ya está registrado en otro corte.", "error", []);
+        // Ya existe el folio para ese cortador en otro registro
+        respuesta(
+            400,
+            "Folio duplicado",
+            "El folio ya está asignado a este cortador en otro registro. Usa un folio diferente o verifica los datos.",
+            "error",
+            []
+        );
         return;
     }
 

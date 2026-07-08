@@ -70,7 +70,7 @@ function guardarNominaPilar($data, $conexion)
                 $idNominaActualizada = $rowId['id_nomina_pilar'];
 
                 // También actualizar los tickets de corte
-                guardarTicketsCorte($corte, $idNominaActualizada, $conexion);
+                asignarTicketsCorteANomina($corte, $idNominaActualizada, $conexion);
                 // También actualizar los movimientos de poda
                 guardarPoda($poda, $idNominaActualizada, $conexion);
 
@@ -90,7 +90,7 @@ function guardarNominaPilar($data, $conexion)
             // Recuperar el ID insertado
             $ultimoId = $conexion->insert_id;
 
-            guardarTicketsCorte($corte, $ultimoId, $conexion);
+            asignarTicketsCorteANomina($corte, $ultimoId, $conexion);
             // Guardar los movimientos de poda relacionados con esta nómina
             guardarPoda($poda, $ultimoId, $conexion);
 
@@ -251,6 +251,84 @@ function guardarTicketsCorte($corte, $idNomina, $conexion)
         error_log("Error en guardarTicketsCorte: " . $e->getMessage());
     }
 }
+
+
+
+/**
+ * Función para asignar tickets de corte a una nómina existente
+ */
+function asignarTicketsCorteANomina($corte, $idNomina, $conexion)
+{
+    try {
+        $empleadosCorte = json_decode($corte, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            error_log("Error al decodificar JSON de cortes: " . json_last_error_msg());
+            return;
+        }
+
+        foreach ($empleadosCorte as $empleado) {
+            $nombreCortador = $empleado['nombre'];
+
+            // Solo procesar empleados con concepto REJA
+            if ($empleado['concepto'] === 'REJA' && isset($empleado['tickets']) && is_array($empleado['tickets'])) {
+                foreach ($empleado['tickets'] as $ticket) {
+                    $folio = $ticket['folio'];
+                    $fechaCorte = $ticket['fecha'];
+                    $precioReja = $ticket['precio_reja'];
+
+                    // 1. Consultar si el vale ya tiene nómina
+                    $checkQuery = "SELECT id, id_nomina FROM cortes_pilar WHERE folio = ? AND nombre_cortador = ?";
+                    $checkStmt = $conexion->prepare($checkQuery);
+                    $checkStmt->bind_param("ss", $folio, $nombreCortador);
+                    $checkStmt->execute();
+                    $result = $checkStmt->get_result();
+
+                    if ($row = $result->fetch_assoc()) {
+                        $idCorte = $row['id'];
+                        $idNominaExistente = $row['id_nomina'];
+
+                        if (is_null($idNominaExistente)) {
+                            // 2. Si está pendiente, asignar a la nómina
+                            $updateQuery = "UPDATE cortes_pilar 
+                                        SET id_nomina = ?, fecha_corte = ?, precio_reja = ?
+                                        WHERE id = ?";
+                            $updateStmt = $conexion->prepare($updateQuery);
+                            $updateStmt->bind_param("isdi", $idNomina, $fechaCorte, $precioReja, $idCorte);
+                            $updateStmt->execute();
+                        } else {
+                            // 3. Si ya tiene nómina, actualizar datos
+                            $updateQuery = "UPDATE cortes_pilar 
+                                        SET fecha_corte = ?, precio_reja = ?, nombre_cortador = ?
+                                        WHERE id = ?";
+                            $updateStmt = $conexion->prepare($updateQuery);
+                            $updateStmt->bind_param("sdsi", $fechaCorte, $precioReja, $nombreCortador, $idCorte);
+                            $updateStmt->execute();
+
+                            // Actualizar tablas: borrar y volver a insertar
+                            $conexion->query("DELETE FROM cortes_pilar_tablas WHERE id_corte = $idCorte");
+                            foreach ($ticket['datosRejas'] as $datosTabla) {
+                                $numTabla = intval($datosTabla['tabla']);
+                                $cantidadRejas = intval($datosTabla['cantidad']);
+                                $insertTablaQuery = "INSERT INTO cortes_pilar_tablas (id_corte, num_tabla, rejas) VALUES (?, ?, ?)";
+                                $insertTablaStmt = $conexion->prepare($insertTablaQuery);
+                                $insertTablaStmt->bind_param("iii", $idCorte, $numTabla, $cantidadRejas);
+                                $insertTablaStmt->execute();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        error_log("Tickets de corte procesados para nómina ID: " . $idNomina);
+    } catch (Exception $e) {
+        error_log("Error en asignarTicketsCorteANomina: " . $e->getMessage());
+    }
+}
+
+
+
 
 /**
  * Función para obtener tickets de corte (llamada independientemente)
