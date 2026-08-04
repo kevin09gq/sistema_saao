@@ -101,8 +101,8 @@ function exportarNominaDepartamento() {
         });
 
         // Identificar la empresa asociada a este departamento en el JSON
-        const idEmpresa = departamento && departamento.color_reporte && departamento.color_reporte.length > 0 
-            ? departamento.color_reporte[0].id_empresa 
+        const idEmpresa = departamento && departamento.color_reporte && departamento.color_reporte.length > 0
+            ? departamento.color_reporte[0].id_empresa
             : 1;
 
         // Enviar el jsonNominaPilar al servidor PHP mediante POST
@@ -240,8 +240,10 @@ function reporteNominaPdf() {
                 var link = document.createElement('a');
                 var url = URL.createObjectURL(blob);
                 link.href = url;
+                var numeroSemana = String(jsonNominaPilar.numero_semana).padStart(2, '0');
+                var aniosCierre = jsonNominaPilar.fecha_cierre.split('/')[2];
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'REPORTE_NOMINA_PILAR_' + timestamp + '.pdf';
+                link.download = 'SEM_' + numeroSemana + '_REPORTE_NOMINA_PILAR_' + timestamp + '.pdf';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);

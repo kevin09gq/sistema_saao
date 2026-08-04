@@ -13,8 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 $idEmpresa = isset($_GET['id_empresa']) ? (int) $_GET['id_empresa'] : 0;
-$limite = isset($_GET['limite']) ? (int) $_GET['limite'] : 1000;
-$limite = max(1, min($limite, 1000));
+$limite = isset($_GET['limite']) ? (int) $_GET['limite'] : 10000;
+$limite = max(1, min($limite, 10000));
 
 if ($idEmpresa <= 0) {
     echo json_encode([

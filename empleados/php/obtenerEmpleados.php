@@ -1,6 +1,6 @@
 <?php
 include("../../conexion/conexion.php");
-
+/** @var mysqli $conexion */
 
 if (isset($_GET['accion']) || isset($_POST['accion'])) {
     $accion = $_GET['accion'] ?? $_POST['accion'];
@@ -23,7 +23,8 @@ if (isset($_GET['accion']) || isset($_POST['accion'])) {
                 $idEmpleado = $_POST['id_empleado'];
                 $idStatus = $_POST['id_status'];
                 $fechaIngreso = $_POST['fecha_alta_empresa'] ?? null; // opcional
-                cambiarStatus($idEmpleado, $idStatus, $fechaIngreso);
+                $fechaBaja = $_POST['fecha_baja'] ?? null; // opcional
+                cambiarStatus($idEmpleado, $idStatus, $fechaIngreso, $fechaBaja);
             }
 
 
@@ -156,6 +157,23 @@ function dataEmpleado($idEmpleado, $idClave)
             ORDER BY hr.fecha_reingreso DESC
             LIMIT 1
         ) AS ultima_fecha_reingreso,
+        (
+            CASE 
+                WHEN EXISTS (
+                    SELECT 1 FROM historial_reingresos hr 
+                    WHERE hr.id_empleado = e.id_empleado 
+                    AND hr.fecha_salida IS NULL
+                ) THEN (
+                    SELECT hr.fecha_reingreso
+                    FROM historial_reingresos hr
+                    WHERE hr.id_empleado = e.id_empleado
+                    AND hr.fecha_salida IS NULL
+                    ORDER BY hr.fecha_reingreso DESC
+                    LIMIT 1
+                )
+                ELSE e.fecha_alta_empresa
+            END
+        ) AS fecha_alta_empresa_actual,
         ehr.horario,
         ho.horario_oficial,
         e.horario_fijo
@@ -222,6 +240,7 @@ function dataEmpleado($idEmpleado, $idClave)
             'domicilio_contacto' => $row['domicilio_contacto'],
             'parentesco' => $row['parentesco'],
             'ultima_fecha_reingreso' => $row['ultima_fecha_reingreso'],
+            'fecha_alta_empresa_actual' => $row['fecha_alta_empresa_actual'],
             'horario_reloj' => json_decode($row['horario'], true) ?? [],
             'horario_oficial' => $row['horario_oficial'],
             'horarios_oficiales' => ($row['horario_oficial'] !== null && $row['horario_oficial'] !== '') ? (json_decode($row['horario_oficial'], true) ?? []) : [],
@@ -280,13 +299,16 @@ function dataEmpleado($idEmpleado, $idClave)
     echo json_encode($empleado, JSON_UNESCAPED_UNICODE);
 }
 
-function cambiarStatus($idEmpleado, $idStatus, $fechaIngreso = null)
+function cambiarStatus($idEmpleado, $idStatus, $fechaIngreso = null, $fechaBaja = null)
 {
     global $conexion;
 
     // Estado actual que recibimos del cliente (antes del toggle)
     $estadoActual = (int)$idStatus; // 1=Activo, 2=Baja
     $hoy = date('Y-m-d');
+
+    // Usar fecha de baja proporcionada o la fecha de hoy por defecto
+    $fechaSalida = $fechaBaja ?: $hoy;
 
     if ($estadoActual === 1) {
 
@@ -327,7 +349,7 @@ function cambiarStatus($idEmpleado, $idStatus, $fechaIngreso = null)
             $fechaReingreso = $fechaIngresoBD ?: ($fechaIngreso ?: $hoy);
 
             $stmtIns = $conexion->prepare("INSERT INTO historial_reingresos (id_empleado, fecha_reingreso, fecha_salida) VALUES (?, ?, ?)");
-            $stmtIns->bind_param("iss", $idEmpleado, $fechaReingreso, $hoy);
+            $stmtIns->bind_param("iss", $idEmpleado, $fechaReingreso, $fechaSalida);
             $stmtIns->execute();
             $stmtIns->close();
         } else {
@@ -338,7 +360,7 @@ function cambiarStatus($idEmpleado, $idStatus, $fechaIngreso = null)
 
             if ($fechaSalidaUltimo === null || $fechaSalidaUltimo === '' || $fechaSalidaUltimo === '0000-00-00') {
                 $stmtUpd = $conexion->prepare("UPDATE historial_reingresos SET fecha_salida = ? WHERE id_historial = ?");
-                $stmtUpd->bind_param("si", $hoy, $idHistorialUltimo);
+                $stmtUpd->bind_param("si", $fechaSalida, $idHistorialUltimo);
                 $stmtUpd->execute();
                 $stmtUpd->close();
             }
@@ -386,14 +408,33 @@ function validarHistorialCronologico($idEmpleado, $idHistorialEvitar, $nuevaEntr
         return false;
     }
 
-    if ($nuevaEntrada < $fechaAltaEmpresa) {
-        $errorMsg = "La fecha de reingreso no puede ser anterior a la fecha de alta de la empresa ($fechaAltaEmpresa).";
-        return false;
+    // Verificar si el registro que se está editando es el último del historial
+    $stmtUltimo = $conexion->prepare("SELECT id_historial FROM historial_reingresos WHERE id_empleado = ? ORDER BY fecha_reingreso DESC, id_historial DESC LIMIT 1");
+    $esUltimoRegistro = false;
+    if ($stmtUltimo) {
+        $stmtUltimo->bind_param("i", $idEmpleado);
+        $stmtUltimo->execute();
+        $stmtUltimo->bind_result($idUltimo);
+        $stmtUltimo->fetch();
+        $stmtUltimo->close();
+        
+        $idHistorialEvitarInt = (int)$idHistorialEvitar;
+        if ($idHistorialEvitarInt > 0 && $idHistorialEvitarInt == $idUltimo) {
+            $esUltimoRegistro = true;
+        }
     }
 
-    if ($nuevaSalida !== null && $nuevaSalida < $fechaAltaEmpresa) {
-        $errorMsg = "La fecha de salida no puede ser anterior a la fecha de alta de la empresa ($fechaAltaEmpresa).";
-        return false;
+    // Solo validar contra fecha de alta empresa si NO es el último registro
+    if (!$esUltimoRegistro) {
+        if ($nuevaEntrada < $fechaAltaEmpresa) {
+            $errorMsg = "La fecha de reingreso no puede ser anterior a la fecha de alta de la empresa ($fechaAltaEmpresa).";
+            return false;
+        }
+
+        if ($nuevaSalida !== null && $nuevaSalida < $fechaAltaEmpresa) {
+            $errorMsg = "La fecha de salida no puede ser anterior a la fecha de alta de la empresa ($fechaAltaEmpresa).";
+            return false;
+        }
     }
 
     // Obtener todos los otros registros del historial
@@ -426,13 +467,6 @@ function validarHistorialCronologico($idEmpleado, $idHistorialEvitar, $nuevaEntr
         return strcmp($a['entrada'], $b['entrada']);
     });
 
-    // Validar el primer registro
-    if (count($historial) > 0) {
-        if ($historial[0]['entrada'] !== $fechaAltaEmpresa) {
-            $errorMsg = "El primer reingreso debe coincidir exactamente con la fecha de alta de la empresa ($fechaAltaEmpresa).";
-            return false;
-        }
-    }
 
     // Validar orden y traslapes
     for ($i = 0; $i < count($historial); $i++) {

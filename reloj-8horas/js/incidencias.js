@@ -65,6 +65,40 @@ $(document).ready(function () {
     }
 
     /**
+     * Congela los valores originales de incidencias antes de permitir cambios manuales.
+     * Esto evita que el guardado posterior reemplace la fuente de verdad del filtro.
+     */
+    function asegurarValoresOriginalesIncidencias(jsonUnido) {
+        (jsonUnido.departamentos || []).forEach(depto => {
+            (depto.empleados || []).forEach(emp => {
+                if (emp.dias_vacaciones_original == null) {
+                    emp.dias_vacaciones_original = emp.dias_vacaciones || 0;
+                }
+                if (emp.dias_incapacidades_original == null) {
+                    emp.dias_incapacidades_original = emp.dias_incapacidades || 0;
+                }
+                if (emp.dias_ausencias_original == null) {
+                    emp.dias_ausencias_original = emp.dias_ausencias || 0;
+                }
+                if (emp.dias_trabajados_original == null) {
+                    emp.dias_trabajados_original = emp.dias_trabajados || 0;
+                }
+
+                (emp.registros_procesados || []).forEach(reg => {
+                    if (reg.tipo_original == null) {
+                        reg.tipo_original = reg.tipo;
+                        reg.registros_original = reg.registros ? JSON.parse(JSON.stringify(reg.registros)) : [];
+                        reg.trabajado_minutos_original = reg.trabajado_minutos || 0;
+                        reg.trabajado_hhmm_original = reg.trabajado_hhmm || '00:00';
+                        reg.trabajado_decimal_original = reg.trabajado_decimal || 0;
+                        reg.observacion_dia_original = reg.observacion_dia || '';
+                    }
+                });
+            });
+        });
+    }
+
+    /**
      * Busca empleados con vacaciones o incapacidades según la lista de raya ORIGINAL
      * (valores que vienen del Excel/lista de raya, no los recalculados)
      */
@@ -233,10 +267,27 @@ $(document).ready(function () {
         html += '<th>Día</th><th>Fecha</th><th>Estado Actual</th>';
 
         if (emp.dias_incapacidades > 0) {
-            html += '<th class="text-center">Incapacidad</th>';
+            html += `
+            <th class="text-center">
+                <div class="d-flex justify-content-center align-items-center gap-1">
+                    Incapacidad
+                    <button id="btn_completar_incapacidades" class="btn btn-sm btn-outline-success" title="Completar incapacidades">
+                        <i class="bi bi-check2-square"></i>
+                    </button>
+                </div>
+            </th>`;
         }
+
         if (emp.dias_vacaciones > 0) {
-            html += '<th class="text-center">Vacaciones</th>';
+            html += `
+            <th class="text-center">
+                <div class="d-flex justify-content-center align-items-center gap-1">
+                    Vacaciones
+                    <button id="btn_completar_vacaciones" class="btn btn-sm btn-outline-success" title="Completar vacaciones">
+                        <i class="bi bi-check2-square"></i>
+                    </button>
+                </div>
+            </th>`;
         }
 
         html += '</tr></thead><tbody>';
@@ -381,6 +432,8 @@ $(document).ready(function () {
                 return;
             }
 
+            asegurarValoresOriginalesIncidencias(jsonUnido);
+
             // RECUPERAR EMPLEADOS CON INCIDENCIAS
             empleadosIncidencias = buscarEmpleadosConIncidencias(jsonUnido);
 
@@ -496,6 +549,78 @@ $(document).ready(function () {
                 return;
             }
         }
+
+        actualizarContadores(idxEmpleado, empleadosIncidencias);
+    });
+
+    // ============================================================
+    // EVENTO: Botón completar vacaciones
+    // ============================================================
+    $(document).on('click', '#btn_completar_vacaciones', function (e) {
+        e.preventDefault();
+        // Obtener el índice del empleado desde el botón
+        const idxEmpleado = parseInt($(this).closest('table').find('.check-vacacion').first().data('emp-idx'));
+        // Obtener el empleado correspondiente
+        const emp = empleadosIncidencias[idxEmpleado];
+        // Si no se encuentra el empleado, salir
+        if (!emp) return;
+
+        // Obtener el límite de vacaciones y el contador actual
+        const limite = emp.dias_vacaciones;
+        // Contador para llevar la cantidad de días asignados
+        let count = 0;
+
+        // Orden de días
+        const ordenDias = ["SÁBADO", "DOMINGO", "LUNES", "MARTES", "MIÉRCOLES", "JUEVES", "VIERNES"];
+
+        // Se recorren los check en el orden de los dias
+        ordenDias.forEach(dia => {
+            if (dia === "DOMINGO") return; // nunca marcar domingo
+            $(`.check-vacacion[data-emp-idx="${idxEmpleado}"]`).each(function () {
+                const fecha = $(this).data('fecha');
+                const nombreDia = getNombreDia(fecha).toUpperCase();
+                if (nombreDia === dia && count < limite) {
+                    $(this).prop('checked', true);
+                    // desmarcar incapacidad si estaba marcada
+                    $(`.check-incapacidad[data-emp-idx="${idxEmpleado}"][data-fecha="${fecha}"]`).prop('checked', false);
+                    count++;
+                }
+            });
+        });
+
+        // Actualizar contadores después de completar
+        actualizarContadores(idxEmpleado, empleadosIncidencias);
+    });
+
+    // ============================================================
+    // EVENTO: Botón completar incapacidades
+    // ============================================================
+    $(document).on('click', '#btn_completar_incapacidades', function (e) {
+        e.preventDefault();
+        const idxEmpleado = parseInt($(this).closest('table').find('.check-incapacidad').first().data('emp-idx'));
+        const emp = empleadosIncidencias[idxEmpleado];
+        if (!emp) return;
+
+        const limite = emp.dias_incapacidades;
+        let count = 0;
+
+        // Orden de días
+        const ordenDias = ["SÁBADO", "DOMINGO", "LUNES", "MARTES", "MIÉRCOLES", "JUEVES", "VIERNES"];
+
+        // Recorremos los checkboxes en orden
+        ordenDias.forEach(dia => {
+            if (dia === "DOMINGO") return; // nunca marcar domingo
+            $(`.check-incapacidad[data-emp-idx="${idxEmpleado}"]`).each(function () {
+                const fecha = $(this).data('fecha');
+                const nombreDia = getNombreDia(fecha).toUpperCase();
+                if (nombreDia === dia && count < limite) {
+                    $(this).prop('checked', true);
+                    // desmarcar vacaciones si estaba marcada
+                    $(`.check-vacacion[data-emp-idx="${idxEmpleado}"][data-fecha="${fecha}"]`).prop('checked', false);
+                    count++;
+                }
+            });
+        });
 
         actualizarContadores(idxEmpleado, empleadosIncidencias);
     });
@@ -635,13 +760,10 @@ $(document).ready(function () {
                 }
             });
 
-            emp.dias_vacaciones = contVac;
-            emp.vacaciones = contVac > 0;
-            emp.dias_incapacidades = contInc;
-            emp.incapacidades = contInc > 0;
-            emp.dias_ausencias = contAus;
-            emp.ausencias = contAus > 0;
-            emp.dias_trabajados = contAsis;
+            emp.vacaciones_asignadas = contVac;
+            emp.incapacidades_asignadas = contInc;
+            emp.ausencias_asignadas = contAus;
+            emp.asistencias_asignadas = contAsis;
 
             // Recalcular totales de minutos trabajados
             let totalMin = 0;

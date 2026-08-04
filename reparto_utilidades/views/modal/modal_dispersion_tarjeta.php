@@ -8,16 +8,11 @@
             </div>
             
             <div class="modal-body">
+                <!-- Sección de Búsqueda -->
                 <div class="row g-3 align-items-end mb-3">
                     <div class="col-5">
                         <label class="form-label small fw-bold text-muted">Busqueda:</label>
                         <input class="form-control form-control-sm shadow-sm" type="text" id="busqueda_tarjeta" placeholder="Buscar...">
-                    </div>
-                    <div class="col-auto">
-                        <label class="form-label small fw-bold text-muted">Departamento</label>
-                        <select class="form-select form-select-sm" id="select_departamento_tarjeta">
-                            <option value="-1" selected>Todos los departamentos</option>
-                        </select>
                     </div>
                 </div>
 

@@ -29,7 +29,7 @@ function llenar_lista_dispersion_tarjetas() {
 
     // OBTENER LOS VALORES DE LOS FILTROS
     const textoBusqueda = $('#busqueda_tarjeta').val().toLowerCase();
-    const departamentoSeleccionado = $('#select_departamento_tarjeta').val();
+    // const departamentoSeleccionado = $('#select_departamento_tarjeta').val();
 
     // Filtrar empleados
     let empleadosFiltrados = json.empleados.filter(emp => {
@@ -43,13 +43,14 @@ function llenar_lista_dispersion_tarjetas() {
         // Filtro de departamento por id
         // Si es -1 significa que debe mostrar todos los departamentos
         // Si no, mostrar solo los empleado de ese departamento
-        const coincideDepartamento = departamentoSeleccionado === "-1" ||
-            (parseInt(emp.id_departamento) === parseInt(departamentoSeleccionado));
+        // const coincideDepartamento = departamentoSeleccionado === "-1" ||
+        //     (parseInt(emp.id_departamento) === parseInt(departamentoSeleccionado));
 
         // TIENE SEGURO: Solo los empleado con seguro tiene tarjeta
         const tieneSeguro = emp.status_seguro === 1;
 
-        return coincideBusqueda && coincideDepartamento && tieneSeguro;
+        // return coincideBusqueda && coincideDepartamento && tieneSeguro;
+        return coincideBusqueda && tieneSeguro;
     });
 
     // OBTENER CUERPO DE LA TABLA Y LIMPIARLO
@@ -115,9 +116,9 @@ $(document).on('input', '#busqueda_tarjeta', function () {
 });
 
 // Evento para el filtro de departamento|
-$(document).on('change', '#select_departamento_tarjeta', function () {
-    llenar_lista_dispersion_tarjetas();
-});
+// $(document).on('change', '#select_departamento_tarjeta', function () {
+//     llenar_lista_dispersion_tarjetas();
+// });
 
 
 /**
@@ -250,20 +251,27 @@ $(document).on('click', '#btn_quitar_tarjetas', function (e) {
     // RECUPERAR EL JSON ACTUAL
     let json = getUtilidad();
     // OBTENER DEPARTAMENTO SELECCIONADO EN EL FILTRO
-    const departamentoSeleccionado = $('#select_departamento_tarjeta').val();
+    // const departamentoSeleccionado = $('#select_departamento_tarjeta').val();
 
     // RECORRER LOS EMPLEADOS
     json.empleados.forEach(empleado => {
         // SI EL DEPARTAMENTO DEL EMPLEADO COINCIDE CON EL DEPARTAMENTO SELECCIONADO, PONER LA TARJETA EN CERO
-        if (empleado.id_departamento == departamentoSeleccionado) {
-            empleado.tarjeta = 0;
-            // CALCULAR NETO A PAGAR DEL EMPLEADO: ptu - tarjeta
-            empleado.neto_pagar = calcular_neto_pagar(empleado.ptu, empleado.tarjeta);
-            // CALCULAR EL REDONDEO DEL NETO A PAGAR
-            empleado.redondeo = empleado.aplicar_redondeo ? diferenciaRedondeo(empleado.neto_pagar) : 0;
-            // CALCULAR EL NETO A PAGAR CON REDONDEO
-            empleado.neto_pagar_redondeado = calcular_neto_pagar_redondeo(empleado.neto_pagar, empleado.redondeo);
-        }
+        // if (empleado.id_departamento == departamentoSeleccionado) {
+        //     empleado.tarjeta = 0;
+        //     // CALCULAR NETO A PAGAR DEL EMPLEADO: ptu - tarjeta
+        //     empleado.neto_pagar = calcular_neto_pagar(empleado.ptu, empleado.tarjeta);
+        //     // CALCULAR EL REDONDEO DEL NETO A PAGAR
+        //     empleado.redondeo = empleado.aplicar_redondeo ? diferenciaRedondeo(empleado.neto_pagar) : 0;
+        //     // CALCULAR EL NETO A PAGAR CON REDONDEO
+        //     empleado.neto_pagar_redondeado = calcular_neto_pagar_redondeo(empleado.neto_pagar, empleado.redondeo);
+        // }
+        empleado.tarjeta = 0;
+        // CALCULAR NETO A PAGAR DEL EMPLEADO: ptu - tarjeta
+        empleado.neto_pagar = calcular_neto_pagar(empleado.ptu, empleado.tarjeta);
+        // CALCULAR EL REDONDEO DEL NETO A PAGAR
+        empleado.redondeo = empleado.aplicar_redondeo ? diferenciaRedondeo(empleado.neto_pagar) : 0;
+        // CALCULAR EL NETO A PAGAR CON REDONDEO
+        empleado.neto_pagar_redondeado = calcular_neto_pagar_redondeo(empleado.neto_pagar, empleado.redondeo);
     });
 
     // GUARDAR LOS CAMBIOS EN EL LOCAL STORAGE
@@ -286,18 +294,28 @@ $(document).on('click', '#btn_aplicar_tarjetas', function (e) {
     // RECORRER LOS EMPLEADOS
     json.empleados.forEach(empleado => {
         // SI EL DEPARTAMENTO DEL EMPLEADO COINCIDE CON EL DEPARTAMENTO SELECCIONADO, PONER TARJETA
-        if (empleado.id_departamento == departamentoSeleccionado && empleado.tarjeta_copia !== 0) {
-            // RECUPERAR EL VALOR DE LA COPIA DE LA TARJETA
-            const copia = empleado.tarjeta_copia;
-            // APLICAR SI EL VALOR DE COPIA Y EL VALOR DE LA TARJETA SON DIFERENTES
-            empleado.tarjeta = copia;
-            // CALCULAR NETO A PAGAR DEL EMPLEADO: aguinaldo - isr - tarjeta
-            empleado.neto_pagar = calcular_neto_pagar(empleado.ptu, empleado.tarjeta);
-            // CALCULAR EL REDONDEO DEL NETO A PAGAR
-            empleado.redondeo = empleado.aplicar_redondeo ? diferenciaRedondeo(empleado.neto_pagar) : 0;
-            // CALCULAR EL NETO A PAGAR CON REDONDEO
-            empleado.neto_pagar_redondeado = calcular_neto_pagar_redondeo(empleado.neto_pagar, empleado.redondeo);
-        }
+        // if (empleado.id_departamento == departamentoSeleccionado && empleado.tarjeta_copia !== 0) {
+        //     // RECUPERAR EL VALOR DE LA COPIA DE LA TARJETA
+        //     const copia = empleado.tarjeta_copia;
+        //     // APLICAR SI EL VALOR DE COPIA Y EL VALOR DE LA TARJETA SON DIFERENTES
+        //     empleado.tarjeta = copia;
+        //     // CALCULAR NETO A PAGAR DEL EMPLEADO: aguinaldo - isr - tarjeta
+        //     empleado.neto_pagar = calcular_neto_pagar(empleado.ptu, empleado.tarjeta);
+        //     // CALCULAR EL REDONDEO DEL NETO A PAGAR
+        //     empleado.redondeo = empleado.aplicar_redondeo ? diferenciaRedondeo(empleado.neto_pagar) : 0;
+        //     // CALCULAR EL NETO A PAGAR CON REDONDEO
+        //     empleado.neto_pagar_redondeado = calcular_neto_pagar_redondeo(empleado.neto_pagar, empleado.redondeo);
+        // }
+        // RECUPERAR EL VALOR DE LA COPIA DE LA TARJETA
+        const copia = empleado.tarjeta_copia;
+        // APLICAR SI EL VALOR DE COPIA Y EL VALOR DE LA TARJETA SON DIFERENTES
+        empleado.tarjeta = copia;
+        // CALCULAR NETO A PAGAR DEL EMPLEADO: aguinaldo - isr - tarjeta
+        empleado.neto_pagar = calcular_neto_pagar(empleado.ptu, empleado.tarjeta);
+        // CALCULAR EL REDONDEO DEL NETO A PAGAR
+        empleado.redondeo = empleado.aplicar_redondeo ? diferenciaRedondeo(empleado.neto_pagar) : 0;
+        // CALCULAR EL NETO A PAGAR CON REDONDEO
+        empleado.neto_pagar_redondeado = calcular_neto_pagar_redondeo(empleado.neto_pagar, empleado.redondeo);
     });
 
     // GUARDAR LOS CAMBIOS EN EL LOCAL STORAGE
@@ -310,7 +328,9 @@ $(document).on('click', '#btn_aplicar_tarjetas', function (e) {
 
 
 /**
+ * ===========================================================================================
  * EVENTO PARA EXPORTAR EL REPORTE DE TARJETAS EN EXCEL
+ * ===========================================================================================
  */
 
 /**

@@ -440,8 +440,8 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
                    stripos($departamento, 'sin seguro') !== false;
     if (!$esSinSeguro) {
         $text(551, 22, $pt(17), 'F.Ingr: ' . $fechaIngreso);
-        $text(710, 20, $pt(18), 'SEM ' . safeText($meta['numero_semana'] ?? ''));
     }
+    $text(710, 20, $pt(18), 'SEM ' . safeText($meta['numero_semana'] ?? ''));
 
     $pdf->SetLineWidth($dot(1));
     $pdf->Line($dot(10), $dot(42), $dot(822), $dot(42));
@@ -809,6 +809,19 @@ foreach ($empleados as $emp) {
 }
 
 if (ob_get_length()) ob_clean();
+
+// Generar nombre del archivo con formato: SEMANA_DEPARTAMENTO_RANCHO_AÑO (en mayúsculas)
+$semana = safeText($meta['numero_semana'] ?? '');
+$departamento = safeText($meta['departamento'] ?? '');
+$año = safeText($meta['año'] ?? date('Y'));
+
+// Si el departamento está vacío (múltiples departamentos), omitirlo
+if (empty($departamento)) {
+    $nombreArchivo = 'SEM_' . $semana . '_RANCHO RELICARIO_' . $año . '.pdf';
+} else {
+    $nombreArchivo = 'SEM_' . $semana . '_' . strtoupper($departamento) . '_RANCHO RELICARIO_' . $año . '.pdf';
+}
+
 header('Content-Type: application/pdf');
-header('Content-Disposition: attachment; filename="tickets_relicario.pdf"');
-echo $pdf->Output('tickets_relicario.pdf', 'S');
+header('Content-Disposition: attachment; filename="' . $nombreArchivo . '"');
+echo $pdf->Output($nombreArchivo, 'S');

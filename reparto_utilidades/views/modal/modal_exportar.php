@@ -1,12 +1,12 @@
 <!-- Modal Reporte Excel por Departamentos y Empresa -->
-<div class="modal fade" id="modal_reporte_excel" tabindex="-1" aria-labelledby="modal_reporte_excel_label" aria-hidden="true">
+<div class="modal fade" id="modal_reporte_excel" tabindex="-1" aria-labelledby="modal_reporte_excel_label" aria-hidden="true" data-bs-keyboard="false" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
             <!-- Header con identidad visual de Excel -->
             <div class="modal-header bg-success text-white py-3">
                 <h5 class="modal-title d-flex align-items-center" id="modal_reporte_excel_label">
                     <i class="bi bi-file-earmark-excel fs-4 me-2"></i>
-                    Exportar Reporte de Aguinaldos
+                    Exportar Reporte de PTU
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
@@ -76,7 +76,7 @@
             <!-- Footer -->
             <div class="modal-footer bg-white border-0 py-3">
                  <button type="button" id="btn_reporte_tarjeta" class="btn btn-outline-primary fw-bold shadow">
-                    <i class="bi bi-file-earmark-arrow-down me-2"></i>Reporte Tarjetas
+                    <i class="bi bi-file-earmark-arrow-down me-2"></i>Reporte Dispersión
                 </button>
                 <button type="button" id="btn_generar_reporte" class="btn btn-success fw-bold shadow">
                     <i class="bi bi-file-earmark-arrow-down me-2"></i>Reporte PTU

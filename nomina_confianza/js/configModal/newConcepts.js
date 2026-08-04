@@ -621,7 +621,28 @@ function guardarPermisoManual() {
         $('#input-descuento-permiso-confianza').val(descuento.toFixed(2));
     }
 
+    // Función para calcular costo por minuto a partir de horas trabajadas al día
+    // Fórmula: salario_semanal / 7 / 60 / horas_dia
+    function recalcularCostoMinuto() {
+        const empleado = objEmpleado.getEmpleado();
+        if (!empleado) return;
+
+        const horasDia = parseFloat($('#input-horas-dia-permiso-confianza').val()) || 0;
+        if (horasDia <= 0) return;
+
+        const salarioSemanal = parseFloat(empleado.salario_semanal) || 0;
+        const costoMinuto = salarioSemanal / 7 / 60 / horasDia;
+  
+       // Evita Redondear la Cantidad Con la Funcion Match
+        const costoTruncado = (Math.floor(costoMinuto * 100) / 100).toFixed(2);
+
+        $('#input-costo-minuto-permiso-confianza').val(costoTruncado);
+        // Recalcular descuento con el nuevo costo
+        recalcularDescuentoPermiso();
+    }
+
     // Agregar eventos de input para cálculo en tiempo real
+    $('#input-horas-dia-permiso-confianza').on('input', recalcularCostoMinuto);
     $('#input-minutos-permiso-confianza').on('input', recalcularDescuentoPermiso);
     $('#input-costo-minuto-permiso-confianza').on('input', recalcularDescuentoPermiso);
 
@@ -663,6 +684,7 @@ function guardarPermisoManual() {
 
         // Limpiar formulario
         $('#select-dia-permiso-confianza').val('');
+        $('#input-horas-dia-permiso-confianza').val('');
         $('#input-minutos-permiso-confianza').val('0');
         $('#input-costo-minuto-permiso-confianza').val('0.00');
         $('#input-descuento-permiso-confianza').val('0.00');

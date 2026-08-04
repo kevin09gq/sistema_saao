@@ -1,33 +1,61 @@
+// ================================================================================================
+// EVENTO: HABILITAR O DESHABILITAR INPUT DE SALARIO MANUAL
+// ================================================================================================
+$(document).on('change', '#usar_salario_manual', function (e) {
+    e.preventDefault();
+    // Si el checkbox está marcado, habilitar el input
+    if ($(this).is(':checked')) {
+        $('#salario_manual').prop('disabled', false);
+    } else {
+        // Si el checkbox no está marcado, deshabilitar el input y limpiar su valor
+        $('#salario_manual').prop('disabled', true).val('');
+    }
+});
 
-/**
- * COMENZAR EL PROCESO DE REPARTO DE UTILIDADES
- * 1. RECUPERAR LOS DÍAS DE PAGO POR DEPARTAMENTO
- * 2. RECUPERAR LOS TIPOS DE SALARIO Y MONTOS MANUALES POR DEPARTAMENTO
- * 3. VALIDAR SI YA EXISTEN REGISTROS DE PTU PARA EL AÑO SELECCIONADO
- * 4. SI EXISTE:
- *  4.1. RECUPERAR LOS REGISTROS EXISTENTES
- *  4.2. MOSTRAR LOS REGISTROS EXISTENTES EN UNA TABLA PRINCIPAL
- * 5. SI NO EXISTE:
- *  5.1. RECUPERAR TODOS LOS EMPLEADOS ACTIVOS DE LA BASE DE DATOS
- *  5.2. UNIR LOS EMPLEADOS CON LOS DIAS DE PAGO Y SALARIOS POR DEPARTAMENTO
- *  5.3. CALCULAR LA PTU PARA CADA EMPLEADO: PTU = SALARIO DIARIO * DIAS DE PAGO
- *  5.4. CALCULAR NETO PAGAR: NETO = PTU - TARJETA
- *  5.5. CALCULAR REDONDEO
- *  5.6. CALCULAR NETO PAGAR REDONDEADO: NETO REDONDEADO = NETO PAGAR + RODENDEO
- */
+// ================================================================================================
+// EVENTO: COMENZO EL PROCESO PARA LA PTU DEL AÑO Y DEPARTAMENTO SELECCIONADO
+// ================================================================================================
 $(document).on('click', '#btn_procesar_ptu', function (e) {
     e.preventDefault();
 
-    console.log('COMIENZA EL PROCESO DE LA PTU');
-
-    // RECUPERAMOS EL AÑO SELECCIONADO
-    let anio = $("#anio").val();
-
-    // VALIDAMOS EL AÑO SELECCIONADO
-    if (!anio || anio == 0 || anio < 0) {
-        alerta("error", "Error en año seleccionado", "Por favor, seleccione un año válido.");
+    // OBTENER EL AÑO SELECCIONADO
+    let anio = $("#anio").val().trim();
+    // VALIDAR QUE SE HAYA SELECCIONADO UN AÑO
+    if (!anio) {
+        alerta('info', 'Año requerido', 'Por favor, selecciona un año para procesar la PTU.');
         return;
     }
+
+    // OBTENER EL DEPARTAMENTO SELECCIONADO
+    let id_departamento = $("#departamento_configuracion").val();
+    // VALIDAR QUE SE HAYA SELECCIONADO UN DEPARTAMENTO
+    if (!id_departamento || id_departamento === "-1") {
+        alerta('info', 'Departamento requerido', 'Por favor, selecciona un departamento para procesar la PTU.');
+        return;
+    }
+
+    // RECUPERAR DIAS DE UTILIDAD
+    // Si el input de días de utilidad está vacío, usar un valor por defecto (ej. 7 días)
+    let dias_utilidad = $("#dias_utilidad").val().trim() || 7;
+
+    // VALIDAR EL SUELDO MANUAL SI ESTÁ HABILITADO
+    let usar_salario_manual = $("#usar_salario_manual").is(':checked');
+    let salario_manual = null;
+
+    if (usar_salario_manual) {
+        salario_manual = $("#salario_manual").val().trim();
+        if (!salario_manual) {
+            alerta('info', 'Salario manual requerido', 'Por favor, ingresa un salario manual para procesar la PTU.');
+            return;
+        }
+        // Validar que el salario manual sea un número positivo
+        if (isNaN(salario_manual) || Number(salario_manual) <= 0) {
+            alerta('info', 'Salario manual inválido', 'Por favor, ingresa un salario manual válido (número positivo).');
+            return;
+        }
+    }
+
+    // console.log("COMIENZA EL PROCESO DE LA PTU...", anio, id_departamento, dias_utilidad, usar_salario_manual, salario_manual);
 
     // Mostrar alerta de carga
     Swal.fire({
@@ -43,203 +71,185 @@ $(document).on('click', '#btn_procesar_ptu', function (e) {
 
     setTimeout(() => {
 
-        console.log("SE CONTINUA DESPUES DE UNA PEQUEÑA PAUSA");
+        // console.log("SE CONTINUA DESPUES DE UNA PEQUEÑA PAUSA");
+
+        validar_existe_utilidad(anio, id_departamento, dias_utilidad, usar_salario_manual, salario_manual);
 
 
-        // RECUPERAMOS LOS DÍAS DE PAGO POR DEPARTAMENTO
-        let dias_pago_departamentos = obtenerDiasPorDepartamento();
-        // RECUPERAMOS LOS TIPOS DE SALARIO Y MONTOS MANUALES POR DEPARTAMENTO
-        let salarios = obtenerSalariosPorDepartamento();
-        // SI HAY ERRORES EN LOS MONTOS MANUALES, MOSTRAMOS ALERTA Y NO PROCEDEMOS
-        if (salarios.errores.length > 0) {
-            alerta("error", "Error en datos de salarios", "Errores:\n" + salarios.errores.join("\n"));
-            return; // No enviamos si hay errores
-        }
-        // VALIDAMOS SI YA EXISTE UN CÁLCULO DE PTU PARA EL AÑO SELECCIONADO
-        validar_existe_utilidad(anio, dias_pago_departamentos, salarios.resultados);
     }, 1500);
-
 });
 
-/**
- * Función para obtener los días de pago por departamento
- * @returns {Array} Array de objetos con los días de pago por departamento
- */
-function obtenerDiasPorDepartamento() {
-    let resultados = [];
-
-    $("#cuerpo_tabla_dias_pago input").each(function () {
-        let idDept = $(this).data("id");              // Recupera el id del departamento
-        let diasPago = parseInt($(this).val(), 10);   // Convierte el valor a número
-
-        // Si está vacío o no es número, asignamos 7 por defecto
-        resultados.push({
-            id_departamento: idDept,
-            dias_pago: isNaN(diasPago) ? 7 : diasPago
-        });
-    });
-
-    return resultados;
-}
-
-/**
- * Función para obtener los tipos de salario y montos manuales por departamento
- * @returns {Object} Objeto con los resultados y errores
- */
-function obtenerSalariosPorDepartamento() {
-    let resultados = [];
-    let errores = [];
-
-    $("#cuerpo_tabla_salarios tr").each(function () {
-        let idDept = $(this).find(".radio-salario").data("id");
-        let tipoSalario = $(this).find(".radio-salario:checked").val();
-        let montoManual = $(this).find(".input-salario-manual").val();
-
-        if (tipoSalario === "manual") {
-            let monto = parseFloat(montoManual);
-
-            if (isNaN(monto) || monto <= 0) {
-                errores.push(`Departamento ${idDept}: monto manual inválido`);
-            }
-
-            resultados.push({
-                id_departamento: idDept,
-                tipo_salario: "manual",
-                monto_manual: monto
-            });
-        } else {
-            resultados.push({
-                id_departamento: idDept,
-                tipo_salario: "base",
-                monto_manual: null
-            });
-        }
-    });
-
-    return { resultados, errores };
-}
 
 /**
  * Función para validar si ya existe un cálculo de aguinaldo para el año ingresado
  * @param {number} anio Año a validar
+ * @param {number} id_departamento ID del departamento seleccionado
  * @param {number} dias_pago Número de días de pago
- * @param {Array} salarios Array con los tipos de salario y montos manuales por departamento
+ * @param {boolean} usar_manual Indica si se debe usar el salario manual
+ * @param {Array} salario Array con los tipos de salario y montos manuales por departamento
  */
-function validar_existe_utilidad(anio, dias_pago, salarios) {
+function validar_existe_utilidad(anio, id_departamento, dias_pago, usar_manual, salario) {
     $.ajax({
         type: "GET",
         url: RUTA_RAIZ + "/reparto_utilidades/php/utilidades.php",
         data: {
             accion: "existe_utilidad",
-            anio: anio
+            anio: anio,
+            id_departamento: id_departamento
         },
         dataType: "json",
         success: function (response) {
-
             // CERRAR PRIMERA ALERTA DE CARGA
             Swal.close();
 
-            if (response.texto == "existe") {
-                console.log("EXISTE ALGO EN LA BASE");
+            let respuesta = response;
 
+            if (respuesta.texto == "existe") {
 
-                // // MOSTRAR ALERTA DE CARGA DE RECUPERACIÓN DE DATOS
                 Swal.fire({
-                    title: 'RECUPERANDO DATOS...',
-                    html: 'OBTENIENDO INFORMACIÓN DE LA BASE DE DATOS.',
-                    icon: 'info',
-                    allowOutsideClick: false,
-                    allowEscapeKey: false,
-                    didOpen: (modal) => {
-                        Swal.showLoading();
+                    title: "Registro existente encontrado",
+                    text: "¿Desea utilizar el registro existente o iniciar uno nuevo?",
+                    icon: "question",
+                    showCancelButton: false,
+                    showDenyButton: true,
+                    confirmButtonText: "Usar existente",
+                    denyButtonText: "Iniciar nuevo",
+                    confirmButtonColor: "#3085d6",
+                    denyButtonColor: "#6c757d"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+
+                        // // MOSTRAR ALERTA DE CARGA DE RECUPERACIÓN DE DATOS
+                        Swal.fire({
+                            title: 'RECUPERANDO DATOS...',
+                            html: 'OBTENIENDO INFORMACIÓN DE LA BASE DE DATOS.',
+                            icon: 'info',
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            didOpen: (modal) => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        // // HACER UNA PAUSA VISUAL
+                        setTimeout(() => {
+                            // CERRAR LA ALERTA DE CARGA
+                            Swal.close();
+
+                            // YA EXISTEN DATOS GUARDADOS EN LA BASE DE DATOS PARA EL AÑO INGRESADO
+                            setUtilidad(respuesta.data);
+                            // Se llena la tabla con los datos obtenidos del storage
+                            llenar_tabla_ptu();
+                            // Llamar departamentos para llenar los selects
+                            obtener_departamentos();
+                            // Se muestra la tabla y se oculta el formulario
+                            mostrar_tabla();
+                            // Alerta de éxito
+                            alerta("success", "Información recuperada de la base de datos con exito.", "", true);
+                        }, 1000);
+                    } else if (result.isDenied) {
+                        // Acción si inicia uno nuevo
+                        const estructura = {
+                            anio: anio,
+                            id_departamento: id_departamento,
+                            dias_pago: dias_pago,
+                            usar_manual: usar_manual,
+                            salario: salario
+                        };
+
+                        // NO EXISTEN DATOS GUARDADOS EN LA BASE DE DATOS PARA EL AÑO INGRESADO
+                        // SE PROCEDE A RECUPERAR LOS DATOS DE LOS EMPLEADOS
+                        obtener_empleados(estructura);
+
+                        // Alerta de éxito
+                        alerta("success", "Se procesó nuevamente con exito.", "", true);
                     }
                 });
 
-                // // HACER UNA PAUSA VISUAL
-                setTimeout(() => {
-                    // CERRAR LA ALERTA DE CARGA
-                    Swal.close();
-
-                    // YA EXISTEN DATOS GUARDADOS EN LA BASE DE DATOS PARA EL AÑO INGRESADO
-                    // SIMPLEMENTE SE RECUPERAN Y SE MUESTRAN EN LA INTERFAZ
-                    setUtilidad(response.data);
-                    // Se llena la tabla con los datos obtenidos del storage
-                    llenar_tabla_ptu();
-                    // Se muestra la tabla y se oculta el formulario
-                    mostrar_tabla();
-                    // Alerta de éxito
-                    alerta("success", "Información recuperada de la base de datos con exito.", "", true);
-                }, 1500);
-
             } else {
+
+                const estructura = {
+                    anio: anio,
+                    id_departamento: id_departamento,
+                    dias_pago: dias_pago,
+                    usar_manual: usar_manual,
+                    salario: salario
+                };
+
                 // NO EXISTEN DATOS GUARDADOS EN LA BASE DE DATOS PARA EL AÑO INGRESADO
                 // SE PROCEDE A RECUPERAR LOS DATOS DE LOS EMPLEADOS
-                obtener_empleados(anio, dias_pago, salarios);
+                obtener_empleados(estructura);
             }
         }
     });
 }
 
 /**
- * Función para obtener los datos de los empleados desde la base de datos
- * @param {number} anio Año para el cual se van a obtener los empleados (opcional, por defecto el año actual)
- * @param {number} dias_pago Número de días de pago
- * @param {Array} salarios Array con los tipos de salario y montos manuales por departamento
+ * Funcion para obtener los empleados de la base de datos según la estructura proporcionada
+ * @param {Array} estructura Estructura con los datos necesarios para obtener los empleados
+ * @param {number} estructura.anio Año a procesar
+ * @param {number} estructura.id_departamento ID del departamento seleccionado
+ * @param {number} estructura.dias_pago Número de días de pago
+ * @param {boolean} estructura.usar_manual Indica si se debe usar el salario manual
+ * @param {Array} estructura.salario Array con los tipos de salario y montos manuales por departamento
  */
-function obtener_empleados(anio, dias_pago, salarios) {
+function obtener_empleados(estructura) {
     // RECUPERAR LOS DATOS DEL JSON GUARDADO EN LOCALSTORAGE
     let json = getUtilidad();
-    // SI EL JSON EXISTE Y ES UN ARRAY NO VACÍO, NO HACEMOS LA PETICIÓN AJAX
+    // SI EL JSON EXISTE Y ES UN ARRAY NO VACÍO NO HACE NADA
     if (json !== null && Array.isArray(json) && json.length > 0) return;
 
     $.ajax({
         type: "GET",
         url: RUTA_RAIZ + "/reparto_utilidades/php/utilidades.php",
         data: {
-            accion: "obtener_empleados"
+            accion: "obtener_empleados",
+            anio: estructura.anio,
+            id_departamento: estructura.id_departamento
         },
         dataType: "json",
         success: function (response) {
-
             // RECUPERAR LOS DATOS DE LOS EMPLEADOS DE LA BD
             let empleados = response.data;
 
-            // console.log("Empleados obtenidos de la BD: ", empleados);
+            // VALIDAR QUE SE HAYAN RECUPERADO EMPLEADOS
+            if (empleados.length == 0) {
+                alerta("warning", "Empleados no encontrados", "No se encontraron empleados para el departamento seleccionado. Por favor, verifica que existan empleados registrados en ese departamento para el año " + estructura.anio + ".");
+                return;
+            }
 
-            // UNIR LOS EMPLEADOS CON LOS DIAS DE PAGO
-            empleados = unir_dias_pago(empleados, dias_pago);
+            // RECORRER LOS EMPLEADOS PARA ASIGNARLES LOS DIAS DE PAGO Y EL SALARIO MANUAL SI APLICA
+            empleados.forEach(empleado => {
+                // ASIGNAR LOS DÍAS DE PAGO A CADA EMPLEADO
+                empleado.dias_pago = estructura.dias_pago;
+                empleado.dias_pago_copia = estructura.dias_pago;
 
-            // console.log("Empleados unidos con dias pago: ", empleados);
-
-            // UNIR LOS EMPLEADOS CON LOS TIPOS DE SALARIO Y MONTOS MANUALES
-            empleados = unir_salarios(empleados, salarios);
-
-            // console.log("Empleados unidos con salarios: ", empleados);
+                // ASIGNAR EL SALARIO MANUAL A CADA EMPLEADO SI APLICA
+                if (estructura.usar_manual) {
+                    // REEMPLAZAR EL SALARIO DE LA BASE POR EL SALARIO MANUAL PROPORCIONADO
+                    empleado.salario_diario = estructura.salario;
+                    empleado.salario_diario_copia = estructura.salario;
+                }
+            });
 
             // CALCULAR LOS VALORES DE PTU, NETO A PAGAR, REDONDEO Y NETO A PAGAR REDONDEADO PARA CADA EMPLEADO
-            empleados = calcular_valores(empleados, anio);
-
-            // console.log("Empleados con valores calculados: ", empleados);
+            empleados = calcular_valores(empleados, estructura.anio);
 
             // SE ASIGNA EL RESULTADO LA ESTRUCTURA BASE DEL AGUINALDO
-            let estructura = {
-                "empleados": empleados,
-                "anio": anio
+            let json = {
+                "anio": estructura.anio,
+                "id_departamento": estructura.id_departamento,
+                "empleados": empleados
             };
 
-
             // GUARDAR LOS DATOS DE LOS EMPLEADOS EN EL LOCALSTORAGE
-            setUtilidad(estructura);
-
-            // CERRAR LA ALERTA DE CARGA
-            Swal.close();
-
+            setUtilidad(json);
             // Se llena la tabla con los datos obtenidos del storage
             llenar_tabla_ptu();
-
+            // Obtener departamentos
+            obtener_departamentos();
             // Se muestra la tabla y se oculta el formulario
             mostrar_tabla();
-
         },
         error: function (jqXHR, textStatus, errorThrown) {
             console.error("Error al obtener los empleados:", errorThrown);
@@ -247,53 +257,6 @@ function obtener_empleados(anio, dias_pago, salarios) {
             alerta("error", "Ocurrió un error", "No se pudieron cargar los empleados. Contacta a sistemas.");
         }
     });
-}
-
-/**
- * Función para unir los empleados con los días de pago por departamento
- * @param {Array} empleados Lista de empleados obtenida de la base de datos
- * @param {Array} dias_pago Lista de días de pago por departamento obtenida del formulario
- * @returns 
- */
-function unir_dias_pago(empleados, dias_pago) {
-    // RECORRER LOS EMPLEADOS
-    empleados.forEach(empleado => {
-        // BUSCAR EL DEPARTAMENTO DEL EMPLEADO EN EL ARRAY DE DÍAS DE PAGO
-        let depto = dias_pago.find(d => d.id_departamento === empleado.id_departamento);
-        // SI SE ENCUENTRA EL DEPARTAMENTO, ASIGNAR LOS DÍAS DE PAGO AL EMPLEADO
-        if (depto) {
-            // ASIGNAR LOS DÍAS DE PAGO AL EMPLEADO
-            empleado.dias_pago = depto.dias_pago;
-            empleado.dias_pago_copia = depto.dias_pago;
-        }
-    });
-
-    return empleados;
-}
-
-/**
- * Función para unir los empleados con los tipos de salario y montos manuales por departamento
- * @param {Array} empleados Lista de empleados obtenida de la base de datos
- * @param {Array} salarios Lista de tipos de salario y montos manuales por departamento obtenida del formulario
- * @returns {Array} Lista de empleados con los salarios unidos
- */
-function unir_salarios(empleados, salarios) {
-    // RECORRER LOS EMPLEADOS
-    empleados.forEach(empleado => {
-        // Buscar el salario correspondiente al departamento del empleado
-        let salario = salarios.find(s => s.id_departamento === empleado.id_departamento);
-
-        // VALIDAR SI SE ENCONTRÓ EL SALARIO Y ASIGNARLO AL EMPLEADO
-        if (salario) {
-            // ASIGNAR EL TIPO DE SALARIO AL EMPLEADO
-            if (salario.tipo_salario === "manual") {
-                // Si es manual, asignar el monto_manual al salario_diario
-                empleado.salario_diario = salario.monto_manual;
-            }
-        }
-    });
-
-    return empleados;
 }
 
 /**

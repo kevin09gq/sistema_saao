@@ -891,9 +891,23 @@ foreach ($empleados as $idx => $emp) {
 }
 
 $sem = $meta['numero_semana'] ? ('_sem_' . preg_replace('/[^0-9A-Za-z_-]/', '', (string)$meta['numero_semana'])) : '';
+
+// Generar nombre del archivo con formato: SEMANA_DEPARTAMENTO_40LBS_AÑO (en mayúsculas)
+$semana = safeText($meta['numero_semana'] ?? '');
+$departamento = safeText($meta['departamento'] ?? '');
+$año = safeText($meta['año'] ?? date('Y'));
+
+// Si el departamento está vacío (múltiples departamentos), omitirlo
+if (empty($departamento)) {
+    $filename = 'SEM_' . $semana . '_40LBS_' . $año . '.pdf';
+} else {
+    $filename = 'SEM_' . $semana . '_' . strtoupper($departamento) . '_40LBS_' . $año . '.pdf';
+}
+
 // Nombre del archivo según el tipo de tickets (sin seguro o normal)
-$prefijo = $soloSinSeguro ? 'tickets_sin_seguro' : 'tickets_zebra';
-$filename = $prefijo . $sem . '.pdf';
+if ($soloSinSeguro) {
+    $filename = 'SIN_SEGURO_' . $filename;
+}
 
 // Evitar que cualquier salida previa corrompa el PDF
 if (function_exists('ob_get_length') && ob_get_length()) {

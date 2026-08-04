@@ -1,12 +1,12 @@
 <!-- Modal Reporte Excel por Departamentos y Empresa -->
-<div class="modal fade" id="modal_visibilidad" tabindex="-1" aria-labelledby="modal_visibilidad_label" aria-hidden="true">
+<div class="modal fade" id="modal_visibilidad" tabindex="-1" aria-labelledby="modal_visibilidad_label" aria-hidden="true" data-bs-keyboard="false" data-bs-backdrop="static">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content border-0 shadow-lg">
             <!-- Header con identidad visual de Excel -->
             <div class="modal-header bg-success text-white py-3">
                 <h5 class="modal-title d-flex align-items-center" id="modal_visibilidad_label">
                     <i class="bi bi-file-earmark-excel fs-4 me-2"></i>
-                    Visibilidad de Empleados para Aguinaldo
+                    Selección de Empleados para Aguinaldo
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
@@ -22,12 +22,10 @@
                         </div>
                     </div>
 
+                    <!-- Filtro de búsqueda -->
                     <div class="row g-2 mb-3">
                         <div class="col-md-7">
                             <input type="text" class="form-control form-control-sm shadow-sm" placeholder="Buscar empleado..." id="buscar_empleado_visibilidad">
-                        </div>
-                        <div class="col-md-5">
-                            <select class="form-select form-select-sm shadow-sm" id="select_departamento_visibilidad"></select>
                         </div>
                     </div>
 

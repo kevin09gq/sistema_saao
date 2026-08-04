@@ -66,6 +66,15 @@ $(document).ready(function () {
 
         datosFiltrados = filtrarNominaSoloVisibles(datosFiltrados);
 
+        // Obtener departamento predominante antes de consolidar
+        const deptoCount = {};
+        (datosFiltrados.departamentos || []).forEach(depto => {
+            const nombreDepto = (depto.nombre || 'GENERAL').toUpperCase();
+            const count = (depto.empleados || []).length;
+            deptoCount[nombreDepto] = (deptoCount[nombreDepto] || 0) + count;
+        });
+        const departamentoPredominante = Object.keys(deptoCount).reduce((a, b) => deptoCount[a] > deptoCount[b] ? a : b);
+
         // Consolidar por nombre para que cada empleado aparezca solo UNA vez en los tickets por nombre
         const empleadosUnicos = {};
         (datosFiltrados.departamentos || []).forEach(depto => {
@@ -78,8 +87,9 @@ $(document).ready(function () {
         });
 
         const nominaConsolidada = {
+            numero_semana: jsonNominaRelicario.numero_semana || '',
             departamentos: [{
-                nombre: 'Consolidado',
+                nombre: departamentoPredominante,
                 empleados: Object.values(empleadosUnicos)
             }]
         };
@@ -99,6 +109,28 @@ $(document).ready(function () {
         const original = btn.html();
         btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i>');
 
+        // Obtener departamento predominante
+        let departamento = 'GENERAL';
+        if (datos.nomina && datos.nomina.departamentos) {
+            const deptoCount = {};
+            datos.nomina.departamentos.forEach(depto => {
+                const nombreDepto = (depto.nombre || 'GENERAL').toUpperCase();
+                const count = (depto.empleados || []).length;
+                deptoCount[nombreDepto] = (deptoCount[nombreDepto] || 0) + count;
+            });
+            departamento = Object.keys(deptoCount).reduce((a, b) => deptoCount[a] > deptoCount[b] ? a : b);
+        }
+        
+        // Generar nombre del archivo con formato: NOMBRE_SEMANA_DEPARTAMENTO_RANCHO_AÑO
+        const numSemana = datos.nomina ? (datos.nomina.numero_semana || '') : '';
+        const año = new Date().getFullYear();
+        const nombreArchivo = `NOMBRE_SEM_${numSemana}_${departamento}_RANCHO RELICARIO_${año}.pdf`;
+        
+        // Agregar departamento y año al nomina
+        if (!datos.nomina) datos.nomina = {};
+        datos.nomina.departamento = departamento;
+        datos.nomina.año = año;
+
         $.ajax({
             url: '../php/descargar_ticket_nombre_pdf.php',
             type: 'POST',
@@ -112,7 +144,7 @@ $(document).ready(function () {
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.href = url;
-                    link.download = 'tickets_nombre_relicario.pdf';
+                    link.download = nombreArchivo;
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
@@ -266,6 +298,47 @@ $(document).ready(function () {
         const original = btn.html();
         btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i>');
         
+        // Obtener departamento predominante y verificar si hay múltiples departamentos
+        let departamento = 'GENERAL';
+        let multiplesDepartamentos = false;
+        
+        if (datos.nomina && datos.nomina.departamentos) {
+            const deptoCount = {};
+            datos.nomina.departamentos.forEach(depto => {
+                const nombreDepto = (depto.nombre || 'GENERAL').toUpperCase();
+                const count = (depto.empleados || []).length;
+                deptoCount[nombreDepto] = (deptoCount[nombreDepto] || 0) + count;
+            });
+            const departamentosUnicos = Object.keys(deptoCount);
+            multiplesDepartamentos = departamentosUnicos.length > 1;
+            departamento = Object.keys(deptoCount).reduce((a, b) => deptoCount[a] > deptoCount[b] ? a : b);
+        } else if (datos.empleados) {
+            const deptoCount = {};
+            datos.empleados.forEach(emp => {
+                const depto = (emp.departamento || 'GENERAL').toUpperCase();
+                deptoCount[depto] = (deptoCount[depto] || 0) + 1;
+            });
+            const departamentosUnicos = Object.keys(deptoCount);
+            multiplesDepartamentos = departamentosUnicos.length > 1;
+            departamento = Object.keys(deptoCount).reduce((a, b) => deptoCount[a] > deptoCount[b] ? a : b);
+        }
+        
+        // Generar nombre del archivo con formato: SEMANA_DEPARTAMENTO_RANCHO_AÑO (sin departamento si hay múltiples)
+        const numSemana = datos.meta ? (datos.meta.numero_semana || '') : '';
+        const año = new Date().getFullYear();
+        let nombreArchivo;
+        if (multiplesDepartamentos) {
+            nombreArchivo = `SEM_${numSemana}_RANCHO RELICARIO_${año}.pdf`;
+            departamento = ''; // No enviar departamento si hay múltiples
+        } else {
+            nombreArchivo = `SEM_${numSemana}_${departamento}_RANCHO RELICARIO_${año}.pdf`;
+        }
+        
+        // Agregar departamento y año al meta
+        if (!datos.meta) datos.meta = {};
+        datos.meta.departamento = departamento;
+        datos.meta.año = año;
+        
         $.ajax({
             url: '../php/descargar_ticket_pdf.php',
             type: 'POST',
@@ -279,7 +352,7 @@ $(document).ready(function () {
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.href = url;
-                    link.download = 'tickets_relicario.pdf';
+                    link.download = nombreArchivo;
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);

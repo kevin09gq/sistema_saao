@@ -347,6 +347,9 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius: 8px; font-size: 0.9rem; padding: 0.5rem 1.25rem;">
                         <i class="bi bi-x-lg"></i> Cerrar
                     </button>
+                    <button type="button" class="btn btn-success" id="btnExportarExcel" onclick="exportarPrimaVacacionalExcel()" style="background-color: #28a745; border-color: #28a745; border-radius: 8px; font-size: 0.9rem; padding: 0.5rem 1.5rem; font-weight: 600; margin-right: 0.5rem;">
+                        <i class="bi bi-file-earmark-excel"></i> Exportar Excel
+                    </button>
                     <button type="submit" class="btn btn-success" style="background-color: var(--primary-green); border-color: var(--primary-green); border-radius: 8px; font-size: 0.9rem; padding: 0.5rem 1.5rem; font-weight: 600;">
                         <i class="bi bi-check-circle"></i> Guardar Cambios
                     </button>

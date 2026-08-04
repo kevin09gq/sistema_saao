@@ -69,13 +69,19 @@ function existe_utilidad()
     global $conexion;
 
     $anio = isset($_GET['anio']) ? (int)$_GET['anio'] : null;
+    $id_departamento = isset($_GET['id_departamento']) ? (int)$_GET['id_departamento'] : null;
 
     if (empty($anio)) {
         respuesta(400, "Error", "Año no proporcionado", "error", []);
         return;
     }
 
-    $sql = "SELECT jsonUtilidad FROM repartos_utilidades WHERE anio = ? LIMIT 1";
+    if (empty($id_departamento)) {
+        respuesta(400, "Error", "ID de departamento no proporcionado", "error", []);
+        return;
+    }
+
+    $sql = "SELECT anio, id_departamento, json_empleados FROM repartos_utilidades WHERE anio = ? AND id_departamento = ? LIMIT 1";
     $stmt = $conexion->prepare($sql);
 
     if (!$stmt) {
@@ -83,16 +89,26 @@ function existe_utilidad()
         return;
     }
 
-    $stmt->bind_param("i", $anio);
+    $stmt->bind_param("ii", $anio, $id_departamento);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($row = $result->fetch_assoc()) {
-
         // Decodificar JSON almacenado
-        $jsonUtilidad = json_decode($row['jsonUtilidad'], true);
+        $json_empleados = json_decode($row['json_empleados'], true);
+        // Obtener el anio
+        $anio = (int)$row['anio'];
+        // Obtener el id_departamento
+        $id_departamento = (int)$row['id_departamento'];
 
-        respuesta(200, "", "existe", "", $jsonUtilidad);
+        // formar estructura de respuesta
+        $data = [
+            "anio" => $anio,
+            "id_departamento" => $id_departamento,
+            "empleados" => $json_empleados
+        ];
+
+        respuesta(200, "", "existe", "", $data);
     } else {
         respuesta(200, "", "no_existe", "", []);
     }
@@ -112,69 +128,80 @@ function obtener_empleados()
         respuestas(401, [], "Debes primero iniciar sesión", "Sesión no válida", "error");
     }
 
+    $anio = isset($_GET['anio']) ? (int)$_GET['anio'] : null;
+
+    if (empty($anio)) {
+        respuesta(400, "Error", "Año no proporcionado", "error", []);
+        return;
+    }
+
+    $id_departamento = isset($_GET['id_departamento']) ? (int)$_GET['id_departamento'] : null;
+
+    if (empty($id_departamento)) {
+        respuesta(400, "Error", "ID de departamento no proporcionado", "error", []);
+        return;
+    }
+
     // ==============================
     // CONSULTA SQL
     // ==============================
-    $sqlDatos = "SELECT
-
-                    -- DATOS GENERALES DEL EMPLEADO
-                    e.id_empleado,
-                    e.clave_empleado,
-                    e.nombre,
-                    e.ap_paterno,
-                    e.ap_materno,
-
-                    -- INFORMACION LABORAL
-                    e.salario_diario,
-                    e.status_nss AS status_seguro,
-                    e.id_empresa,
-                    e.id_departamento,
-                    d.nombre_departamento,
-                    e.id_puestoEspecial AS id_puesto,
-                    p.nombre_puesto,
-
-                    -- Fecha ingreso real considerando reingresos
-                    CASE 
-                        WHEN MAX(hr.fecha_reingreso) IS NOT NULL 
-                            THEN MAX(hr.fecha_reingreso)
-                        ELSE e.fecha_alta_empresa
-                    END AS fecha_ingreso_real,
-
-                    -- Fecha de alta en el imss
-                    e.fecha_alta_imss AS fecha_ingreso_imss,
-
-                    -- Color de ese departamento
-                    MAX(nd.color_depto_nomina) AS color_departamento
-                FROM info_empleados e
-                LEFT JOIN departamentos d
-                    ON e.id_departamento = d.id_departamento
-                LEFT JOIN puestos_especiales p
-                    ON e.id_puestoEspecial = p.id_puestoEspecial
-                LEFT JOIN nomina_departamento nd
-                    ON d.id_departamento = nd.id_departamento
-                LEFT JOIN historial_reingresos hr 
-                    ON e.id_empleado = hr.id_empleado
-                WHERE e.id_status = 1
-                GROUP BY
-                    e.id_empleado,
-                    e.clave_empleado,
-                    e.nombre,
-                    e.ap_paterno,
-                    e.ap_materno,
-                    e.salario_diario,
-                    e.status_nss,
-                    e.id_empresa,
-                    e.id_departamento,
-                    d.nombre_departamento,
-                    e.id_puestoEspecial,
-                    p.nombre_puesto
-                ORDER BY e.nombre ASC";
+    $sqlDatos = "SELECT *
+        FROM (
+            SELECT
+                e.id_empleado,
+                e.clave_empleado,
+                e.nombre,
+                e.ap_paterno,
+                e.ap_materno,
+                e.salario_diario,
+                e.status_nss AS status_seguro,
+                e.id_empresa,
+                e.id_departamento,
+                d.nombre_departamento,
+                e.id_puestoEspecial AS id_puesto,
+                p.nombre_puesto,
+                CASE 
+                    WHEN MAX(hr.fecha_reingreso) IS NOT NULL 
+                        THEN MAX(hr.fecha_reingreso)
+                    ELSE e.fecha_alta_empresa
+                END AS fecha_ingreso_real,
+                e.fecha_alta_imss AS fecha_ingreso_imss,
+                MAX(nd.color_depto_nomina) AS color_departamento
+            FROM info_empleados e
+            LEFT JOIN departamentos d ON e.id_departamento = d.id_departamento
+            LEFT JOIN puestos_especiales p ON e.id_puestoEspecial = p.id_puestoEspecial
+            LEFT JOIN nomina_departamento nd ON d.id_departamento = nd.id_departamento
+            LEFT JOIN historial_reingresos hr ON e.id_empleado = hr.id_empleado
+            WHERE e.id_status = 1
+            GROUP BY
+                e.id_empleado,
+                e.clave_empleado,
+                e.nombre,
+                e.ap_paterno,
+                e.ap_materno,
+                e.salario_diario,
+                e.status_nss,
+                e.id_empresa,
+                e.id_departamento,
+                d.nombre_departamento,
+                e.id_puestoEspecial,
+                p.nombre_puesto
+        ) AS empleados
+        WHERE YEAR(fecha_ingreso_real) <= ?
+            AND id_departamento = ?
+        ORDER BY empleados.nombre ASC;
+        ";
 
     $stmtDatos = $conexion->prepare($sqlDatos);
 
     if (!$stmtDatos) {
         respuestas(500, [], "Error en la consulta SQL", "Error", "error");
     }
+
+    // ==============================
+    // PASAR EL PARÁMETRO
+    // ==============================
+    $stmtDatos->bind_param("ii", $anio, $id_departamento); // "i" porque es un entero
 
     $stmtDatos->execute();
     $resultDatos = $stmtDatos->get_result();
@@ -254,28 +281,31 @@ function guardar_utilidad()
 {
     global $conexion;
 
-    if (!isset($_POST['anio']) || !isset($_POST['json'])) {
+    if (!isset($_POST['anio']) || !isset($_POST['id_departamento']) || !isset($_POST['empleados'])) {
         respuesta(400, "Error", "Datos incompletos", "error", []);
         return;
     }
 
+    // Validar que el año sea un número entero
     $anio = (int)$_POST['anio'];
-    // $jsonAguinaldo = json_encode($_POST['json'], JSON_UNESCAPED_UNICODE);
-    $json = $_POST['json'];
+    // Validar que el ID de departamento sea un número entero
+    $id_departamento = (int)$_POST['id_departamento'];
+    // $json = json_encode($_POST['empleados'], JSON_UNESCAPED_UNICODE);
+    $json = $_POST['empleados'];
 
     $conexion->begin_transaction();
 
     try {
 
         // 1. Verificar si ya existe el año
-        $sql = "SELECT id_utilidad FROM repartos_utilidades WHERE anio = ? LIMIT 1";
+        $sql = "SELECT id_utilidad FROM repartos_utilidades WHERE anio = ? AND id_departamento = ? LIMIT 1";
         $stmt = $conexion->prepare($sql);
 
         if (!$stmt) {
             throw new Exception("Error en SELECT: " . $conexion->error);
         }
 
-        $stmt->bind_param("i", $anio);
+        $stmt->bind_param("ii", $anio, $id_departamento);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -283,8 +313,8 @@ function guardar_utilidad()
 
             // Si existe actualiza el json y la fecha de creación
             $sql = "UPDATE repartos_utilidades 
-                    SET jsonUtilidad = ?, fecha_creacion = NOW() 
-                    WHERE anio = ?";
+                    SET json_empleados = ?, fecha_creacion = NOW() 
+                    WHERE anio = ? AND id_departamento = ?";
 
             $stmt = $conexion->prepare($sql);
 
@@ -292,15 +322,15 @@ function guardar_utilidad()
                 throw new Exception("Error en UPDATE: " . $conexion->error);
             }
 
-            $stmt->bind_param("si", $json, $anio);
+            $stmt->bind_param("sii", $json, $anio, $id_departamento);
             $stmt->execute();
 
-            $mensaje = "Registro de utilidad actualizado exitosamente";
+            $mensaje = "Actualizado exitosamente";
         } else {
 
             // Si no existe, inserta un nuevo registro
-            $sql = "INSERT INTO repartos_utilidades (jsonUtilidad, anio, fecha_creacion) 
-                    VALUES (?, ?, NOW())";
+            $sql = "INSERT INTO repartos_utilidades (anio, id_departamento, json_empleados, fecha_creacion) 
+                    VALUES (?, ?, ?, NOW())";
 
             $stmt = $conexion->prepare($sql);
 
@@ -308,10 +338,10 @@ function guardar_utilidad()
                 throw new Exception("Error en INSERT: " . $conexion->error);
             }
 
-            $stmt->bind_param("si", $json, $anio);
+            $stmt->bind_param("iis", $anio, $id_departamento, $json);
             $stmt->execute();
 
-            $mensaje = "Registro de utilidad guardado exitosamente";
+            $mensaje = "Guardado exitosamente";
         }
 
         $stmt->close();
@@ -341,15 +371,17 @@ function buscar_anio()
         $buscar = $_GET["buscar"] ?? '';
 
         if ($buscar === '') {
-            // Sin búsqueda → solo 10 años
-            $sql = "SELECT anio 
-                FROM repartos_utilidades 
-                LIMIT 10";
+            // Sin búsqueda → solo 10 años distintos
+            $sql = "SELECT DISTINCT anio 
+                    FROM repartos_utilidades 
+                    ORDER BY anio DESC 
+                    LIMIT 10";
         } else {
-            // Con búsqueda → todos los años que empiecen con el prefijo
-            $sql = "SELECT anio 
-                FROM repartos_utilidades 
-                WHERE anio LIKE CONCAT(?, '%')";
+            // Con búsqueda → todos los años distintos que empiecen con el prefijo
+            $sql = "SELECT DISTINCT anio 
+                    FROM repartos_utilidades 
+                    WHERE anio LIKE CONCAT(?, '%')
+                    ORDER BY anio DESC";
         }
 
         $pr = $conexion->prepare($sql);
@@ -369,11 +401,6 @@ function buscar_anio()
         exit;
     }
 }
-
-
-
-
-
 
 
 /**

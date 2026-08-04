@@ -232,11 +232,10 @@ function renderTicketPdf($pdf, $emp, $extra, $meta) {
         }
         $text(310, 20, $deptoFont, $deptoTexto);
         
-        // No mostrar fecha de ingreso ni semana si es sin seguro
         if (!$esSinSeguro) {
             $text(515, 20, $pt(18), 'F.Ingr: ' . $fechaIngreso);
-            $text(710, 20, $pt(18), 'SEM ' . $semana);
         }
+        $text(710, 20, $pt(18), 'SEM ' . $semana);
 
         $pdf->SetLineWidth($dot(1));
         $pdf->Line($dot(10), $dot(42), $dot(10 + 812), $dot(42));
@@ -277,9 +276,7 @@ function renderTicketPdf($pdf, $emp, $extra, $meta) {
         $pdf->SetLineWidth($dot(2));
         $pdf->Rect($dot(10), $dot(10), $dot(812), $dot(386));
         $textB(18, 22, $pt(20), $claveMostrar . ' ' . $nombre);
-        if (!$esSinSeguro) {
-            $text(700, 22, $pt(18), 'SEM ' . $semana);
-        }
+        $text(700, 22, $pt(18), 'SEM ' . $semana);
         $pdf->SetLineWidth($dot(1));
         $pdf->Line($dot(10), $dot($yInicioCeldasContinuacion), $dot(10 + 812), $dot($yInicioCeldasContinuacion));
 
@@ -481,4 +478,16 @@ foreach ($empleados as $emp) {
     renderTicketPdf($pdf, $emp, $extra, $meta);
 }
 
-$pdf->Output($prefix . '.pdf', 'D');
+// Generar nombre del archivo con formato: SEMANA_DEPARTAMENTO_10LBS_AÑO (en mayúsculas)
+$semana = safeText($meta['numero_semana'] ?? '');
+$departamento = safeText($meta['departamento'] ?? '');
+$año = safeText($meta['año'] ?? date('Y'));
+
+// Si el departamento está vacío (múltiples departamentos), omitirlo
+if (empty($departamento)) {
+    $filename = 'SEM_' . $semana . '_10LBS_' . $año . '.pdf';
+} else {
+    $filename = 'SEM_' . $semana . '_' . strtoupper($departamento) . '_10LBS_' . $año . '.pdf';
+}
+
+$pdf->Output($filename, 'D');

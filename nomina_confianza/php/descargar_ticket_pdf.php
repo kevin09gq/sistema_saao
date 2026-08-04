@@ -464,8 +464,17 @@ if (function_exists('ob_get_length') && ob_get_length()) {
     @ob_end_clean();
 }
 
-$sem = $meta['numero_semana'] ? ('_sem_' . preg_replace('/[^0-9A-Za-z_-]/', '', (string)$meta['numero_semana'])) : '';
-$filename = preg_replace('/[^0-9A-Za-z_-]/', '', $prefix) . $sem . '.pdf';
+// Generar nombre del archivo con formato: SEMANA_DEPARTAMENTO_CONFIANZA_AÑO (en mayúsculas)
+$semana = safeText($meta['numero_semana'] ?? '');
+$departamento = safeText($meta['departamento'] ?? '');
+$año = safeText($meta['año'] ?? date('Y'));
+
+// Si el departamento está vacío (múltiples departamentos), omitirlo
+if (empty($departamento)) {
+    $filename = 'SEM_' . $semana . '_CONFIANZA_' . $año . '.pdf';
+} else {
+    $filename = 'SEM_' . $semana . '_' . strtoupper($departamento) . '_CONFIANZA_' . $año . '.pdf';
+}
 
 header('Content-Type: application/pdf');
 header('Content-Disposition: attachment; filename="' . $filename . '"');

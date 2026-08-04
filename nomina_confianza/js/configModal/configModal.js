@@ -505,7 +505,7 @@ function validarConceptoMaxTarjeta() {
 
 validarConceptoMax('#mod-isr-confianza', '45');
 validarConceptoMax('#mod-imss-confianza', '52');
-validarConceptoMax('#mod-infonavit-confianza', '16');
+//validarConceptoMax('#mod-infonavit-confianza', '16');
 validarConceptoMax('#mod-ajustes-sub-confianza', '107');
 validarConceptoMaxTarjeta();
     

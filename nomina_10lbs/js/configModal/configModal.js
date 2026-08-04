@@ -8,7 +8,7 @@ inicializarSueldoACobrar();
 
 validarConceptoMax('#mod-isr-10lbs', '45');
 validarConceptoMax('#mod-imss-10lbs', '52');
-validarConceptoMax('#mod-infonavit-10lbs', '16');
+//validarConceptoMax('#mod-infonavit-10lbs', '16');
 validarConceptoMax('#mod-ajustes-sub-10lbs', '107');
 validarConceptoMaxTarjeta();
 

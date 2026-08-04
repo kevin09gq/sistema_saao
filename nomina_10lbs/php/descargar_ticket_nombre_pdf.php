@@ -104,7 +104,16 @@ if (function_exists('ob_get_length') && ob_get_length()) {
     @ob_end_clean();
 }
 
-$filename = 'tickets_10lbs_nombre' . ($semana !== '' ? ('_sem_' . preg_replace('/[^0-9A-Za-z_-]/', '', $semana)) : '') . '.pdf';
+// Generar nombre del archivo con formato: NOMBRE_SEMANA_DEPARTAMENTO_10LBS_AÑO (en mayúsculas)
+$departamento = safeText($data['meta']['departamento'] ?? $nomina['departamento'] ?? '');
+$año = safeText($data['meta']['año'] ?? $nomina['año'] ?? date('Y'));
+
+// Si el departamento está vacío (múltiples departamentos), omitirlo
+if (empty($departamento)) {
+    $filename = 'NOMBRE_SEM_' . $semana . '_10LBS_' . $año . '.pdf';
+} else {
+    $filename = 'NOMBRE_SEM_' . $semana . '_' . strtoupper($departamento) . '_10LBS_' . $año . '.pdf';
+}
 
 header('Content-Type: application/pdf');
 header('Content-Disposition: attachment; filename="' . $filename . '"');

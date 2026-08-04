@@ -87,7 +87,8 @@
                 texto: 'Ocupada en esta empresa',
                 botonClass: 'btn-outline-secondary',
                 botonTexto: 'No disponible',
-                seleccionable: false
+                seleccionable: false,
+                estadoFiltro: 'ocupada_misma_empresa'
             };
         }
 
@@ -95,10 +96,11 @@
             return {
                 badgeClass: 'text-bg-warning',
                 borderClass: 'border-warning',
-                texto: 'Disponible en esta empresa',
+                texto: 'Usada en otra empresa o sin empresa',
                 botonClass: 'btn-outline-primary',
                 botonTexto: 'Usar clave',
-                seleccionable: true
+                seleccionable: true,
+                estadoFiltro: 'usada_otra_empresa'
             };
         }
 
@@ -108,7 +110,8 @@
             texto: 'Disponible',
             botonClass: 'btn-outline-success',
             botonTexto: 'Usar clave',
-            seleccionable: true
+            seleccionable: true,
+            estadoFiltro: 'disponible'
         };
     }
 
@@ -160,8 +163,18 @@
 
     function renderizarListaClaves(tipo) {
         const busqueda = ($('#buscarClaveDisponible').val() || '').trim().toUpperCase();
+        const filtroEstado = $('#filtroEstadoClave').val() || 'todos';
         const claves = Array.isArray(estadoClaves[tipo]) ? estadoClaves[tipo] : [];
-        const clavesFiltradas = claves.filter((claveInfo) => coincideConBusqueda(claveInfo, busqueda));
+        
+        let clavesFiltradas = claves.filter((claveInfo) => coincideConBusqueda(claveInfo, busqueda));
+        
+        // Aplicar filtro por estado
+        if (filtroEstado !== 'todos') {
+            clavesFiltradas = clavesFiltradas.filter((claveInfo) => {
+                const estado = obtenerMetadatosEstado(claveInfo);
+                return estado.estadoFiltro === filtroEstado;
+            });
+        }
 
         const contenedorId = tipo === 'numericas' ? '#contenedorClavesNumericas' : '#contenedorClavesSS';
         const infoId = tipo === 'numericas' ? '#infoClavesNumericas' : '#infoClavesSS';
@@ -172,7 +185,8 @@
             ? resumenActual?.numericas_ocupadas_misma_empresa
             : resumenActual?.ss_ocupadas_misma_empresa;
 
-        $(infoId).text(`Mostrando ${clavesFiltradas.length} de ${claves.length}. Disponibles: ${resumenDisponibles ?? 0}. Ocupadas en esta empresa: ${resumenOcupadas ?? 0}.`);
+        const textoFiltro = filtroEstado !== 'todos' ? ` (Filtro: ${$('#filtroEstadoClave option:selected').text()})` : '';
+        $(infoId).text(`Mostrando ${clavesFiltradas.length} de ${claves.length}${textoFiltro}. Disponibles: ${resumenDisponibles ?? 0}. Ocupadas en esta empresa: ${resumenOcupadas ?? 0}.`);
 
         if (!claves.length) {
             $(contenedorId).html('<div class="col-12 text-center text-muted py-4">No hay claves cargadas para mostrar.</div>');
@@ -263,7 +277,7 @@
             url: '../php/obtener_claves_disponibles.php',
             data: {
                 id_empresa: empresa.id,
-                limite: 1000
+                limite: 10000
             },
             success: function (response) {
                 let respuesta = response;
@@ -313,6 +327,11 @@
     $(document).on('change', '#selectEmpresaClaves', function () {
         resetearContenido();
         cargarClavesDisponibles();
+    });
+
+    // Filtro de estado
+    $(document).on('change', '#filtroEstadoClave', function () {
+        renderizarTodasLasListas();
     });
 
     // Botón Actualizar

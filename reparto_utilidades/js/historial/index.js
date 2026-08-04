@@ -1,443 +1,450 @@
 // Constantes y variables globales
 const RUTA_RAIZ = window.rutaRaiz || '/sistema_saao';
 
-// Modales
-const modal_detalles_utilidad = new bootstrap.Modal(document.getElementById('modal_detalles_utilidad'));
 
-// Inicialización del módulo
+/**
+ * Función para mostrar alertas usando SweetAlert2
+ * @param {String} icono Iconos: success, error, warning, info, question.
+ * @param {String} titulo Titulo prinicipal de la alerta.
+ * @param {String} texto Mensaje principal de la alerta.
+ * @param {Boolean} toast True para mostrar como toast, false para modal tradicional. Valor por defecto: false.
+ * @param {Number} tiempo Duración del toast en ms (si toast=true). Valor por defecto: 3000ms.
+ */
+function alerta(icono, titulo, texto, toast = false, tiempo = 3000) {
+    if (toast) {
+        const Toast = Swal.mixin({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: tiempo,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.onmouseenter = Swal.stopTimer;
+                toast.onmouseleave = Swal.resumeTimer;
+            }
+        });
+        Toast.fire({
+            icon: icono,
+            title: titulo
+        });
+    } else {
+        // Modal tradicional
+        Swal.fire({
+            title: titulo,
+            text: texto,
+            icon: icono,
+            confirmButtonText: "Entendido"
+        });
+    }
+}
+
+
+/**
+ * Función para obtener los años disponibles desde el servidor.
+ */
+function obtener_anios() {
+    $.ajax({
+        type: "GET",
+        url: RUTA_RAIZ + "/reparto_utilidades/php/historial/historial.php",
+        data: { accion: "obtener_anios" },
+        dataType: "json",
+        success: function (response) {
+            // Manejar la respuesta del servidor
+            let anios = response.data;
+            // LLENAR EL SELECT filtro_anio con un -1 para indicar "Todos los años" y luego los años obtenidos
+            $("#filtro_anio").append('<option value="">-- Todos los años --</option>');
+            // Recorrer los años y agregarlos al select
+            anios.forEach(anio => {
+                $("#filtro_anio").append(`<option value="${anio}">${anio}</option>`);
+            });
+        },
+        error: function (xhr, status, error) {
+            console.error("Error al obtener los años:", error);
+        }
+    });
+}
+
+/**
+ * Función para obtener los departamentos
+ */
+function obtener_departamentos() {
+    $.ajax({
+        type: "GET",
+        url: RUTA_RAIZ + "/reparto_utilidades/php/historial/historial.php",
+        data: { accion: "obtener_departamentos" },
+        dataType: "json",
+        success: function (response) {
+            // Manejar la respuesta del servidor
+            let departamentos = response.data;
+            // LLENAR EL SELECT filtro_departamento con un -1 para indicar "Todos los departamentos" y luego los departamentos obtenidos
+            $("#filtro_departamento").append('<option value="">-- Todos los departamentos --</option>');
+            // Recorrer los departamentos y agregarlos al select
+            departamentos.forEach(dep => {
+                $("#filtro_departamento").append(`<option value="${dep.id_departamento}">${dep.nombre_departamento.toUpperCase()}</option>`);
+            });
+        },
+        error: function (xhr, status, error) {
+            console.error("Error al obtener los departamentos:", error);
+        }
+    });
+}
+
+
+/**
+ * Función para obtener las utilidades según los filtros seleccionados
+ */
+function obtener_utilidades() {
+
+    // Obtener los valores seleccionados en los filtros
+    let busqueda = $("#busqueda").val();
+    let anioSeleccionado = $("#filtro_anio").val();
+    let departamentoSeleccionado = $("#filtro_departamento").val();
+    let limite = $("#filtro_limite").val() || 20;
+    let paginaActual = parseInt($("#pagina_actual").data("pagina")) || 1;
+
+    $.ajax({
+        type: "POST",
+        url: RUTA_RAIZ + "/reparto_utilidades/php/historial/historial.php",
+        data: {
+            accion: "obtener_utilidades",
+            busqueda: busqueda,
+            anio: anioSeleccionado,
+            departamento: departamentoSeleccionado,
+            limite: limite,
+            pagina: paginaActual
+        },
+        dataType: "json",
+        success: function (response) {
+            // OBTENER SOLO LA DATA DE LA BASE
+            let data = response.data.data;
+
+            // PREPARAR CADA ELEMENTO ANTES DE PRESENTAR EN UNA TABLA
+            data.forEach(elemento => {
+                // OBTENER EL TOTAL DE EMPLEADOS VISIBLES PARA CADA ELEMENTO
+                const empleadosVisibles = elemento.empleados.filter(emp => emp.visible === true);
+                elemento.total_empleados = empleadosVisibles.length;
+                // OBTENER EL TOTAL DEL PTU DE LOS EMPLEADOS VISIBLES
+                const totalPTU = elemento.empleados
+                    .filter(emp => emp.visible)        // solo visibles
+                    .reduce((suma, emp) => suma + emp.ptu, 0);
+                elemento.total_ptu = totalPTU; // Redondear a 2 decimales
+                // OBTENER EL TOTAL DE LA DISPESION DE TARJETA
+                const totalDispersion = elemento.empleados
+                    .filter(emp => emp.visible)
+                    .reduce((suma, emp) => suma + emp.tarjeta, 0);
+                elemento.total_tarjeta = totalDispersion; // Redondear a 2 decimales
+                // TOTAL DEL NETO A PAGAR REDONDEADO
+                const totalNeto = elemento.empleados
+                    .filter(emp => emp.visible)
+                    .reduce((suma, emp) => suma + emp.neto_pagar_redondeado, 0);
+                elemento.total_neto = totalNeto; // Redondear a 2 decimales
+            });
+
+            // LLENAR LA TABLA PRINCIPAL CON LOS DATOS FILTRADOS
+            llenar_tabla_principal(data, response.data.inicio);
+
+            // RENDERIZAR LA PAGINACION
+            renderizarPaginacion(response.data.total, response.data.pagina, response.data.limite);
+
+        },
+        error: function (xhr, status, error) {
+            console.error("Error al obtener los departamentos:", error);
+        }
+    });
+}
+
+/**
+ * Función para llenar la tabla principal con los datos obtenidos
+ */
+function llenar_tabla_principal(data, inicio) {
+    // Limpiar la tabla antes de llenarla
+    $("#cuerpo_tabla_principal").empty();
+    // VERIFICAR QUE LA DATA NO ESTE VACIA
+    if (data.length === 0) {
+        // Si no hay datos, mostrar un mensaje en la tabla
+        $("#cuerpo_tabla_principal").html('<tr><td colspan="9" class="text-center">No se encontraron registros.</td></tr>');
+        return;
+    }
+
+    // Recorrer los datos y agregarlos a la tabla
+    data.forEach((elemento, index) => {
+
+        const contador = (inicio || 0) + index + 1; // Ajustar el contador según el inicio de la página
+
+        let opciones = ``;
+
+        if (elemento.id_utilidad) {
+            opciones = `
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-dropdown-custom" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-three-dots-vertical"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                        <li>
+                            <button
+                                data-anio="${elemento.anio}"
+                                data-departamento="${elemento.nombre_departamento}"
+                                data-iddepartamento="${elemento.id_departamento}"
+                                data-id_utilidad="${elemento.id_utilidad}"
+                                data-empleados='${JSON.stringify(elemento.empleados)}'
+                                data-fecha_creacion="${elemento.fecha_creacion}"
+                                class="dropdown-item btn_ver_detalles">
+                                <i class="bi bi-eye me-2"></i>Ver Detalles</button>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <button
+                                data-idutilidad="${elemento.id_utilidad}"
+                                class="dropdown-item text-danger btn_eliminar_utilidad">
+                                <i class="bi bi-trash me-2"></i>Eliminar</button>
+                        </li>
+                    </ul>
+                </div>
+            `;
+        } else {
+            opciones = `<span class="text-muted">Pendiente</span>`;
+        }
+
+        const fila = `
+         <tr>
+            <td class="ps-4 fw-bold">${contador}</td>
+            <td>${elemento.anio}</td>
+            <td><span class="badge bg-primary-subtle text-primary">${elemento.nombre_departamento.toUpperCase()}</span></td>
+            <td>${elemento.total_empleados == 0 ? '<span class="text-muted">Pendiente</span>' : elemento.total_empleados}</td>
+            <td class="fw-semibold">${formatoMonedaVisual(elemento.total_ptu)}</td>
+            <td>${formatoMonedaVisual(elemento.total_tarjeta)}</td>
+            <td>${formatoMonedaVisual(elemento.total_neto)}</td>
+            <td class="small">${elemento.fecha_creacion == "Pendiente" ? '<span class="text-muted">Pendiente</span>' : formatearFecha(elemento.fecha_creacion)}</td>
+            <td class="text-center">
+                ${opciones}
+            </td>
+        </tr>
+        `;
+
+        // Agregar la fila a la tabla
+        $("#cuerpo_tabla_principal").append(fila);
+    });
+}
+
+/**
+ * Renderizar los botones de paginación
+ */
+function renderizarPaginacion(totalEmpleados, paginaActual, limite) {
+    if (limite === -1) {
+        $('#paginacion').empty();
+        return;
+    }
+
+    const totalPaginas = Math.ceil(totalEmpleados / limite);
+    const paginacion = $('#paginacion');
+    paginacion.empty();
+
+    // Botón Inicio
+    if (paginaActual > 1) {
+        paginacion.append(`
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="cambiarPagina(1); return false;"><i class="bi bi-chevron-double-left me-1"></i>Inicio</a>
+            </li>
+        `);
+    }
+
+    // Botón anterior
+    if (paginaActual > 1) {
+        paginacion.append(`
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="cambiarPagina(${paginaActual - 1}); return false;">Anterior</a>
+            </li>
+        `);
+    }
+
+    // Botones de páginas
+    const rangoInicio = Math.max(1, paginaActual - 2);
+    const rangoFin = Math.min(totalPaginas, paginaActual + 2);
+
+    for (let i = rangoInicio; i <= rangoFin; i++) {
+        const activa = i === paginaActual ? 'active' : '';
+        paginacion.append(`
+            <li class="page-item ${activa}">
+                <a class="page-link" href="#" onclick="cambiarPagina(${i}); return false;">${i}</a>
+            </li>
+        `);
+    }
+
+    // Botón siguiente
+    if (paginaActual < totalPaginas) {
+        paginacion.append(`
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="cambiarPagina(${paginaActual + 1}); return false;">Siguiente</a>
+            </li>
+        `);
+    }
+
+    // Botón Final
+    if (paginaActual < totalPaginas) {
+        paginacion.append(`
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="cambiarPagina(${totalPaginas}); return false;">Final <i class="bi bi-chevron-double-right ms-1"></i></a>
+            </li>
+        `);
+    }
+}
+
+/**
+ * Cambiar a una página específica
+ */
+function cambiarPagina(nuevaPagina) {
+    $('#pagina_actual').data('pagina', nuevaPagina);
+    obtener_utilidades();
+}
+
+// ===================================================================================================
+// EVENTOS: CONTROLA LOS CAMBIOS EN LOS FILTROS PARA CAMBIAR LA TABLA PRINCIPAL
+// ===================================================================================================
+$(document).ready(function () {
+    // Evento de búsqueda
+    $('#busqueda').on('keyup', function () {
+        $('#pagina_actual').data('pagina', 1);
+        obtener_utilidades();
+    });
+
+    // Evento de filtro departamento
+    $('#filtro_departamento').on('change', function () {
+        $('#pagina_actual').data('pagina', 1);
+        obtener_utilidades();
+    });
+
+    // Evento de filtro empresa
+    $('#filtro_anio').on('change', function () {
+        $('#pagina_actual').data('pagina', 1);
+        obtener_utilidades();
+    });
+
+    // Evento de límite por página
+    $('#filtro_limite').on('change', function () {
+        $('#pagina_actual').data('pagina', 1);
+        obtener_utilidades();
+    });
+
+    // Inicializar variable de página actual si no existe
+    if (!$('#pagina_actual').length) {
+        $('body').append('<div id="pagina_actual" data-pagina="1" style="display:none;"></div>');
+    }
+});
+
+/**
+ * Funcion para iniciar la página y cargar los años disponibles.
+ */
+function init() {
+    // Llamar a la función para obtener los años disponibles
+    obtener_anios();
+    // Llamar a la función para obtener los departamentos
+    obtener_departamentos();
+    // Llamar a la función para obtener las utilidades
+    obtener_utilidades();
+    // LLENAR SELECT DE EMPRESA
+    obtener_empresas();
+}
+
+
+// Evento que se ejecuta cuando el DOM está completamente cargado
 $(document).ready(function () {
     init();
 });
 
+
 /**
- * Función para llenar la tabla de utilidades con datos del servidor
+ * ----------------------------------------------------------------------------------------------
+ * FUNCIONES AUXILIARES
+ * ----------------------------------------------------------------------------------------------
  */
-function obtener_utilidades_historial(pagina = 1) {
 
-    const busqueda = $('#busqueda').val().trim();
 
-    $.ajax({
-        type: "GET",
-        url: `${RUTA_RAIZ}/reparto_utilidades/php/utilidades.php`,
-        data: {
-            accion: 'obtener_utilidades_historial',
-            pagina: pagina,
-            busqueda: busqueda
-        },
-        dataType: "json",
-        success: function (response) {
+/**
+ * Convierte una fecha en formato YYYY-MM-DD
+ * a "DD Mes YYYY" con abreviatura en español
+ * @param {string} fecha Cadena en formato "YYYY-MM-DD"
+ * @returns {string} Fecha formateada
+ */
+function formatearFecha(fecha) {
+    const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun",
+        "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
-            // Recuperar los datos del historial de utilidades
-            let dataRespuesta = response.data || {};
-            let data = dataRespuesta.registros || [];
+    const partes = fecha.split("-");
+    const anio = partes[0];
+    const mes = parseInt(partes[1], 10) - 1; // índice del mes
+    const dia = partes[2];
 
-            data.forEach((elemento, index) => {
-
-                // Obtener la lista de empleados del aguinaldo
-                let empleados = elemento.jsonUtilidad.empleados || [];
-
-                // OBTENER EL TOTAL DE PTU SUMANDO LOS VALORES DE CADA EMPLEADO
-                // SOLO SE SUMAN LOS EMPLEADOS QUE ESTÉN MARCADOS COMO VISIBLES (visible === true)
-                const totalPTU = empleados
-                    .filter(emp => emp.visible === true)
-                    .reduce((acc, emp) => {
-                        return acc + (parseFloat(emp.ptu) || 0);
-                    }, 0);
-
-                // OBTENER DE TARJETA
-                const totalTarjeta = empleados
-                    .filter(emp => emp.visible === true)
-                    .reduce((acc, emp) => {
-                        return acc + (parseFloat(emp.tarjeta) || 0);
-                    }, 0);
-
-                // TOTAL DEL NETO A PAGAR
-                const totalNeto = empleados
-                    .filter(emp => emp.visible === true)
-                    .reduce((acc, emp) => {
-                        return acc + (parseFloat(emp.neto_pagar_redondeado) || 0);
-                    }, 0);
-
-                // OBTENER EL TOTAL DE EMPLEADOS VISIBLES
-                const totalEmpleadosVisibles = empleados
-                    .filter(emp => emp.visible === true)
-                    .length;
-
-                // AGREGAR LOS TOTALES CALCULADOS AL OBJETO DEL ELEMENTO
-                elemento.totalPTU = totalPTU;
-                elemento.totalTarjeta = totalTarjeta;
-                elemento.totalNeto = totalNeto;
-                elemento.total_empleados_visibles = totalEmpleadosVisibles;
-
-                // AGREGAR LOS EMPLEADOS DIRECTAMENTE EN EL OBJETO
-                elemento.empleados = empleados;
-
-                // ELIMINAR EL jsonUtilidad PARA EVITAR CONFUSIONES
-                delete elemento.jsonUtilidad;
-            });
-
-            // Renderizar la tabla de utilidades en el historial con los datos obtenidos
-            render_tabla_utilidades_historial(data);
-
-            // Generar la paginación
-            generar_paginacion(dataRespuesta);
-
-        }
-    });
+    return `${dia} ${meses[mes]} ${anio}`;
 }
 
 /**
- * Función para renderizar la tabla de utilidades en el historial
- * @param {JsonArray} data La data obtenida del servidor para renderizar la tabla de utilidades en el historial
+ * Da formato de moneda a un número
+ * @param {number} cantidad Número a formatear
+ * @returns {string} HTML con span y clase de color
  */
-function render_tabla_utilidades_historial(data) {
-    // Limpiar tabla
-    const tbody = $('#cuerpo_tabla_historial');
-    tbody.empty();
+function formatoMonedaVisual(cantidad) {
+    let clase;
+    let contenido;
 
-    // Verificar si no hay datos para mostrar
-    if (data.length === 0) {
-        const filaVacia = `
-            <tr>
-                <td colspan="7" class="text-center">No hay datos para mostrar</td>
-            </tr>
-        `;
-        tbody.append(filaVacia);
-        return;
-    }
-
-    console.log(data);
-    
-
-    // RECORRER LOS DATOS OBTENIDOS Y CREAR LAS FILAS DE LA TABLA
-    data.forEach((elemento, index) => {
-
-        const contador = index + 1;
-
-        const fila = `
-            <tr>
-                <td class="ps-4 fw-bold">${contador}</td>
-                <td class="ps-4 fw-bold text-primary">${elemento.anio}</td>
-                <td class="text-center">${elemento.total_empleados_visibles}</td>
-                <td class="text-center">${estructuraDinero(elemento.totalPTU)}</td>
-                <td class="text-center">${estructuraDinero(elemento.totalTarjeta)}</td>
-                <td class="text-center fw-bold">${estructuraDinero(elemento.totalNeto)}</td>
-                <td class="text-center">
-                    <button
-                        data-empleados='${JSON.stringify(elemento.empleados)}'
-                        data-anio='${elemento.anio}'
-                        data-total='${elemento.total_empleados_visibles}'
-                        type="button"
-                        class="btn btn-outline-primary btn-sm px-3 shadow-sm btn_ver_detalles"
-                        title="Ver Detalles">
-                        <i class="bi bi-eye-fill"></i>
-                    </button>
-                    <button
-                        data-id='${elemento.id_utilidad}'
-                        type="button"
-                        class="btn btn-outline-danger btn-sm px-3 shadow-sm btn_borrar"
-                        title="Borrar Utilidad">
-                        <i class="bi bi-trash-fill"></i>
-                    </button>
-                    <!-- 
-                    <a
-                        href="generar_aguinaldo.php?cv=${elemento.anio}"
-                        class="btn btn-outline-success btn-sm px-3 shadow-sm"
-                        title="Editar Aguinaldo">
-                        <i class="bi bi-pencil-fill"></i>
-                    </a> -->
-                </td>
-            </tr>
-        `;
-
-        // AGREGAR LA FILA AL CUERPO DE LA TABLA
-        tbody.append(fila);
-    });
-}
-
-/**
- * Función para generar la paginación de los resultados
- * @param {Object} dataPaginacion Objeto con información de paginación
- */
-function generar_paginacion(dataPaginacion) {
-    const contenedorPaginacion = document.getElementById('paginacion');
-    contenedorPaginacion.innerHTML = '';
-
-    const paginaActual = dataPaginacion.paginaActual || 1;
-    const totalPaginas = dataPaginacion.totalPaginas || 1;
-
-    // Si hay solo una página, no mostrar paginación
-    if (totalPaginas <= 1) {
-        return;
-    }
-
-    // BOTÓN INICIO
-    if (paginaActual > 1) {
-        const li = document.createElement('li');
-        li.className = 'page-item';
-        li.innerHTML = `<a class="page-link" href="#" onclick="obtener_utilidades_historial(1); return false;"><i class="bi bi-skip-start-fill"></i> Inicio</a>`;
-        contenedorPaginacion.appendChild(li);
-    }
-
-    // BOTÓN ANTERIOR
-    if (paginaActual > 1) {
-        const li = document.createElement('li');
-        li.className = 'page-item';
-        li.innerHTML = `<a class="page-link" href="#" onclick="obtener_utilidades_historial(${paginaActual - 1}); return false;">Anterior</a>`;
-        contenedorPaginacion.appendChild(li);
-    }
-
-    // NÚMEROS DE PÁGINA
-    // Mostrar máximo 5 números de página
-    let paginaInicio = Math.max(1, paginaActual - 2);
-    let paginaFin = Math.min(totalPaginas, paginaActual + 2);
-
-    // Ajustar si estamos al inicio o final
-    if (paginaFin - paginaInicio < 4) {
-        if (paginaInicio === 1) {
-            paginaFin = Math.min(totalPaginas, paginaInicio + 4);
-        } else {
-            paginaInicio = Math.max(1, paginaFin - 4);
-        }
-    }
-
-    // Mostrar botón a primera página si no está en el rango
-    if (paginaInicio > 1) {
-        const li = document.createElement('li');
-        li.className = 'page-item';
-        li.innerHTML = `<a class="page-link" href="#" onclick="obtener_utilidades_historial(1); return false;">1</a>`;
-        contenedorPaginacion.appendChild(li);
-
-        if (paginaInicio > 2) {
-            const liPuntos = document.createElement('li');
-            liPuntos.className = 'page-item disabled';
-            liPuntos.innerHTML = '<span class="page-link">...</span>';
-            contenedorPaginacion.appendChild(liPuntos);
-        }
-    }
-
-    // Números de página
-    for (let i = paginaInicio; i <= paginaFin; i++) {
-        const li = document.createElement('li');
-        li.className = `page-item ${i === paginaActual ? 'active' : ''}`;
-        li.innerHTML = `<a class="page-link" href="#" onclick="obtener_utilidades_historial(${i}); return false;">${i}</a>`;
-        contenedorPaginacion.appendChild(li);
-    }
-
-    // Mostrar botón a última página si no está en el rango
-    if (paginaFin < totalPaginas) {
-        if (paginaFin < totalPaginas - 1) {
-            const liPuntos = document.createElement('li');
-            liPuntos.className = 'page-item disabled';
-            liPuntos.innerHTML = '<span class="page-link">...</span>';
-            contenedorPaginacion.appendChild(liPuntos);
-        }
-
-        const li = document.createElement('li');
-        li.className = 'page-item';
-        li.innerHTML = `<a class="page-link" href="#" onclick="obtener_utilidades_historial(${totalPaginas}); return false;">${totalPaginas}</a>`;
-        contenedorPaginacion.appendChild(li);
-    }
-
-    // BOTÓN SIGUIENTE
-    if (paginaActual < totalPaginas) {
-        const li = document.createElement('li');
-        li.className = 'page-item';
-        li.innerHTML = `<a class="page-link" href="#" onclick="obtener_utilidades_historial(${paginaActual + 1}); return false;">Siguiente</a>`;
-        contenedorPaginacion.appendChild(li);
-    }
-
-    // BOTÓN FINAL
-    if (paginaActual < totalPaginas) {
-        const li = document.createElement('li');
-        li.className = 'page-item';
-        li.innerHTML = `<a class="page-link" href="#" onclick="obtener_utilidades_historial(${totalPaginas}); return false;">Final <i class="bi bi-skip-end-fill"></i></a>`;
-        contenedorPaginacion.appendChild(li);
-    }
-}
-
-// EVENTO DE BÚSQUEDA EN TIEMPO REAL
-$(document).on('input', '#busqueda', function (e) {
-    e.preventDefault();
-
-    obtener_utilidades_historial(1);
-});
-
-
-/**
- * =======================================================================================
- * FUNCIONES AUXILIARES PARA PREPARAR LA INTERFAZ 
- * =======================================================================================
- */
-
-/**
- * Dar formato a una cantidad numérica para mostrarla en la tabla con colores según si es positiva, negativa o cero
- * @param {Float} cantidad 
- * @returns 
- */
-function estructuraDinero(cantidad) {
-    switch (true) {
-        case (cantidad < 0):
-            return `<span class="text-danger">- $ ${formatoMoneda(cantidad * -1)}</span>`;
-            break;
-        case (cantidad === 0):
-            return '<span class="text-secondary">-</span>';
-            break;
-        case (cantidad > 0):
-            return `<span class="text-success">$ ${formatoMoneda(cantidad)}</span>`;
-            break;
-        default:
-            return '<span class="text-secondary">-</span>';
-    }
-}
-
-/**
- * Dar formulato de moneda a un número, con dos decimales y separador de miles, sin símbolo de moneda
- * @param {Number} numero 
- * @returns 
- */
-function formatoMoneda(numero) {
-    return numero.toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    });
-}
-
-/**
- * Obtener la lista de departamentos para el filtro
- */
-function obtener_departamentos() {
-    $.ajax({
-        url: RUTA_RAIZ + "/public/php/obtenerDepartamentos.php",
-        type: "GET",
-        dataType: "json",
-        success: function (data) {
-
-            // Renderizar departamentos en el select del filtro
-            render_select_departamentos({
-                selector: '#id_departamento',
-                data: data,
-                keepFirstOption: true,
-                selectFirst: true
-            });
-
-        },
-        error: function () {
-            console.error("Error al cargar departamentos");
-        }
-    });
-}
-
-/**
- * Función para obtener las empresas
- */
-function obtener_empresas() {
-    $.ajax({
-        url: RUTA_RAIZ + "/public/php/obtenerEmpresas.php",
-        type: "GET",
-        dataType: "json",
-        success: function (data) {
-            // console.log(data);
-            // Llenar el select de empresas de la tabla
-            render_select_empresas(data);
-        },
-        error: function () {
-            console.error("Error al cargar empresas");
-        }
-    });
-}
-
-/**
- * Renderiza departamentos en un select
- * 
- * @param {Object} config
- * @param {string} config.selector Selector del select
- * @param {Array} config.data Lista de departamentos
- * @param {boolean} [config.keepFirstOption=false] Mantener primera opción existente
- * @param {boolean} [config.selectFirst=false] Seleccionar automáticamente el primer elemento
- */
-function render_select_departamentos({
-    selector,
-    data,
-    keepFirstOption = false,
-    selectFirst = false
-}) {
-
-    const select = $(selector);
-
-    // =========================
-    // MANTENER PRIMERA OPCIÓN
-    // =========================
-    if (keepFirstOption) {
-
-        // Seleccionar primera opción existente
-        if (selectFirst) {
-            select.find('option:first').prop('selected', true);
-        }
-
-        // Eliminar resto
-        select.find('option:not(:first)').remove();
-
+    if (cantidad > 0) {
+        clase = "text-success";
+        contenido = `$ ${cantidad.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        })}`;
+    } else if (cantidad < 0) {
+        clase = "text-danger";
+        contenido = `- $ ${Math.abs(cantidad).toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        })}`;
     } else {
-
-        // Vaciar completamente
-        select.empty();
+        clase = "text-secondary";
+        contenido = `-`;
     }
 
-    // =========================
-    // AGREGAR NUEVAS OPCIONES
-    // =========================
-    data.forEach((depto, index) => {
+    return `<span class="${clase}">${contenido}</span>`;
+}
 
-        // Solo seleccionar primer elemento del arreglo
-        // si NO se está manteniendo una opción previa
-        const selected = (
-            !keepFirstOption &&
-            selectFirst &&
-            index === 0
-        )
-            ? 'selected'
-            : '';
+/** ---------------------------------------------------------------------------------------------- */
 
-        select.append(`
-            <option ${selected} value="${depto.id_departamento}">
-                ${depto.nombre_departamento}
-            </option>
-        `);
+// EVENTO: Eliminar un registro de utilidad
+$(document).on('click', '.btn_eliminar_utilidad', function (e) {
+    e.preventDefault();
+    // Obtener el ID de la utilidad desde el atributo data-idutilidad del botón
+    const id_utilidad = $(this).data('idutilidad');
+
+    Swal.fire({
+        title: "Eliminar utilidad",
+        text: "Esta acción es irreversible. ¿Estás seguro de que deseas eliminar esta utilidad?",
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonColor: "#B31515",
+        cancelButtonColor: "#13051F",
+        confirmButtonText: "Eliminar",
+        cancelButtonText: "Cancelar"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                type: "POST",
+                url: RUTA_RAIZ + "/reparto_utilidades/php/historial/historial.php",
+                data: {
+                    accion: "eliminar_utilidad",
+                    id_utilidad: id_utilidad
+                },
+                dataType: "json",
+                success: function (response) {
+                    // Manejar la respuesta exitosa
+                    alerta(response.icono, response.titulo, response.texto);
+                    // Recargar la tabla principal después de eliminar
+                    obtener_utilidades();
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error al obtener los departamentos:", error);
+                }
+            });
+        }
     });
-}
-
-/**
- * Renderizar la lista de empresas en el modal de exportación
- * @param {Array} data Array de empresas con id_empresa y nombre_empresa
- */
-function render_select_empresas(data) {
-    const select = $("#id_empresa");
-    // Mantener la opción por defecto
-    select.find("option:not(:first)").remove();
-
-    data.forEach(function (depto) {
-        select.append(
-            `<option value="${depto.id_empresa}">${depto.nombre_empresa}</option>`
-        );
-    });
-}
-
-
-/**
- * ======================================================================================
- * INICIALIZACIÓN DEL MÓDULO
- * ======================================================================================
- */
-
-/**
- * Función de inicialización para el módulo de historial de utilidades
- */
-function init() {
-    // CARGAR EL HISTORIAL DE UTILIDADES
-    obtener_utilidades_historial();
-    // CARGAR LA LISTA DE DEPARTAMENTOS PARA EL FILTRO
-    obtener_departamentos();
-    // CARGAR LA LISTA DE EMPRESAS PARA EL FILTRO
-    obtener_empresas();
-}
+});

@@ -539,11 +539,15 @@
                                                                     <option value="Domingo">Domingo</option>
                                                                 </select>
                                                             </div>
-                                                            <div class="col-md-3">
+                                                            <div class="col-md-2">
+                                                                <label class="form-label fw-semibold small">Hrs Trabajadas/Día</label>
+                                                                <input type="number" step="0.5" class="form-control form-control-sm" id="input-horas-dia-permiso-confianza" placeholder="0" min="0" max="24">
+                                                            </div>
+                                                            <div class="col-md-2">
                                                                 <label class="form-label fw-semibold small">Minutos</label>
                                                                 <input type="number" step="1" class="form-control form-control-sm" id="input-minutos-permiso-confianza" placeholder="0" min="0">
                                                             </div>
-                                                            <div class="col-md-3">
+                                                            <div class="col-md-2">
                                                                 <label class="form-label fw-semibold small">Costo por Minuto ($)</label>
                                                                 <input type="number" step="0.01" class="form-control form-control-sm" id="input-costo-minuto-permiso-confianza" placeholder="0.00" min="0">
                                                             </div>

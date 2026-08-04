@@ -25,7 +25,7 @@ function llenar_lista_empleados_visibilidad() {
     }
 
     // Filtrar empleados por departamentos
-    let departamentoSeleccionado = $('#select_departamento_visibilidad').val();
+    // let departamentoSeleccionado = $('#select_departamento_visibilidad').val();
     // Obtener el texto de búsqueda y convertirlo a minúsculas para comparación
     let textoBusqueda = $('#buscar_empleado_visibilidad').val().toLowerCase();
 
@@ -38,9 +38,10 @@ function llenar_lista_empleados_visibilidad() {
             (emp.ap_paterno && emp.ap_paterno.toLowerCase().includes(textoBusqueda)) ||
             (emp.ap_materno && emp.ap_materno.toLowerCase().includes(textoBusqueda));
         // Filtro de departamento por id
-        const coincideDepartamento = parseInt(emp.id_departamento) === parseInt(departamentoSeleccionado);
+        // const coincideDepartamento = parseInt(emp.id_departamento) === parseInt(departamentoSeleccionado);
 
-        return coincideDepartamento && coincideBusqueda;
+        // return coincideDepartamento && coincideBusqueda;
+        return coincideBusqueda;
     });
 
     // Limpiar tabla
@@ -115,14 +116,15 @@ $(document).on('click', '#btn_visibles_todos', function (e) {
     // Recuperar el estado actual de jsonAguinaldo
     let json = getUtilidad();
     // Recuperar departamento seleccionado para filtrar los empleados
-    let departamentoSeleccionado = $('#select_departamento_visibilidad').val();
+    // let departamentoSeleccionado = $('#select_departamento_visibilidad').val();
 
     // Actualizar el estado de visible de todos los empleados a true
     json.empleados.forEach(empleado => {
         // MARCA VISIBLE SOLO A LOS EMPLEADOS DEL DEPARTAMENTO SELECCIONADO
-        if (parseInt(empleado.id_departamento) === parseInt(departamentoSeleccionado)) {
-            empleado.visible = true;
-        }
+        // if (parseInt(empleado.id_departamento) === parseInt(departamentoSeleccionado)) {
+        //     empleado.visible = true;
+        // }
+        empleado.visible = true;
     });
 
     // Actualizar el jsonUtilidad con los nuevos datos combinados
@@ -142,14 +144,15 @@ $(document).on('click', '#btn_ocultos_todos', function (e) {
     // Recuperar el estado actual de jsonAguinaldo
     let json = getUtilidad();
     // Recuperar departamento seleccionado para filtrar los empleados
-    let departamentoSeleccionado = $('#select_departamento_visibilidad').val();
+    // let departamentoSeleccionado = $('#select_departamento_visibilidad').val();
 
     // Actualizar el estado de visible de todos los empleados a false
     json.empleados.forEach(empleado => {
         // NO IMPORTA SI EL EMPLEADO TIENE DERECHO AL AGUINALDO O NO, SI SE VA A OCULTAR
-        if (parseInt(empleado.id_departamento) === parseInt(departamentoSeleccionado)) {
-            empleado.visible = false;
-        }
+        // if (parseInt(empleado.id_departamento) === parseInt(departamentoSeleccionado)) {
+        //     empleado.visible = false;
+        // }
+        empleado.visible = false;
     });
 
     // Actualizar el jsonUtilidad con los nuevos datos combinados

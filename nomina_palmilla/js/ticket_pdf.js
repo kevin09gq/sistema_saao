@@ -92,6 +92,15 @@ $(document).ready(function () {
 
         datosFiltrados = filtrarNominaSoloVisibles(datosFiltrados);
 
+        // Obtener departamento predominante antes de consolidar
+        const deptoCount = {};
+        (datosFiltrados.departamentos || []).forEach(depto => {
+            const nombreDepto = (depto.nombre || 'GENERAL').toUpperCase();
+            const count = (depto.empleados || []).length;
+            deptoCount[nombreDepto] = (deptoCount[nombreDepto] || 0) + count;
+        });
+        const departamentoPredominante = Object.keys(deptoCount).reduce((a, b) => deptoCount[a] > deptoCount[b] ? a : b);
+
         // Consolidar por nombre para que cada empleado aparezca solo UNA vez en los tickets por nombre
         const empleadosUnicos = {};
         (datosFiltrados.departamentos || []).forEach(depto => {
@@ -104,8 +113,9 @@ $(document).ready(function () {
         });
 
         const nominaConsolidada = {
+            numero_semana: jsonNominaPalmilla.numero_semana || '',
             departamentos: [{
-                nombre: 'Consolidado',
+                nombre: departamentoPredominante,
                 empleados: Object.values(empleadosUnicos)
             }]
         };
@@ -126,10 +136,21 @@ $(document).ready(function () {
             });
         });
 
+        // Generar nombre del archivo con formato: NOMBRE_SEMANA_DEPARTAMENTO_RANCHO_AÑO
+        const numSemana = jsonNominaPalmilla.numero_semana || '';
+        const año = new Date().getFullYear();
+        const nombreArchivo = `NOMBRE_SEM_${numSemana}_${departamentoPredominante}_RANCHO PALMILLA_${año}.pdf`;
+        
+        // Agregar departamento y año al nomina
+        nominaConsolidada.departamento = departamentoPredominante;
+        nominaConsolidada.año = año;
+
         var datosEnviar = {
             nomina: nominaConsolidada,
             meta: {
-                numero_semana: jsonNominaPalmilla.numero_semana || ''
+                numero_semana: jsonNominaPalmilla.numero_semana || '',
+                departamento: departamentoPredominante,
+                año: año
             }
         };
 
@@ -154,7 +175,7 @@ $(document).ready(function () {
                     $('#btn_ticket_pdf').prop('disabled', false).html('<i class="bi bi-ticket-perforated"></i>');
                     return;
                 }
-                var filename = 'tickets_nombre_palmilla.pdf';
+                var filename = nombreArchivo;
                 var disposition = xhr.getResponseHeader('Content-Disposition');
                 if (disposition && disposition.indexOf('filename=') !== -1) {
                     var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
@@ -388,6 +409,47 @@ $(document).ready(function () {
     function enviarDatosParaTickets(datos, tipo) {
         $('#btn_ticket_pdf').prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Generando...');
 
+        // Obtener departamento predominante y verificar si hay múltiples departamentos
+        let departamento = 'GENERAL';
+        let multiplesDepartamentos = false;
+        
+        if (datos.nomina && datos.nomina.departamentos) {
+            const deptoCount = {};
+            datos.nomina.departamentos.forEach(depto => {
+                const nombreDepto = (depto.nombre || 'GENERAL').toUpperCase();
+                const count = (depto.empleados || []).length;
+                deptoCount[nombreDepto] = (deptoCount[nombreDepto] || 0) + count;
+            });
+            const departamentosUnicos = Object.keys(deptoCount);
+            multiplesDepartamentos = departamentosUnicos.length > 1;
+            departamento = Object.keys(deptoCount).reduce((a, b) => deptoCount[a] > deptoCount[b] ? a : b);
+        } else if (datos.empleados) {
+            const deptoCount = {};
+            datos.empleados.forEach(emp => {
+                const depto = (emp.departamento || 'GENERAL').toUpperCase();
+                deptoCount[depto] = (deptoCount[depto] || 0) + 1;
+            });
+            const departamentosUnicos = Object.keys(deptoCount);
+            multiplesDepartamentos = departamentosUnicos.length > 1;
+            departamento = Object.keys(deptoCount).reduce((a, b) => deptoCount[a] > deptoCount[b] ? a : b);
+        }
+        
+        // Generar nombre del archivo con formato: SEMANA_DEPARTAMENTO_RANCHO_AÑO (sin departamento si hay múltiples)
+        const numSemana = datos.meta ? (datos.meta.numero_semana || '') : '';
+        const año = new Date().getFullYear();
+        let nombreArchivo;
+        if (multiplesDepartamentos) {
+            nombreArchivo = `SEM_${numSemana}_RANCHO PALMILLA_${año}.pdf`;
+            departamento = ''; // No enviar departamento si hay múltiples
+        } else {
+            nombreArchivo = `SEM_${numSemana}_${departamento}_RANCHO PALMILLA_${año}.pdf`;
+        }
+        
+        // Agregar departamento y año al meta
+        if (!datos.meta) datos.meta = {};
+        datos.meta.departamento = departamento;
+        datos.meta.año = año;
+
         $.ajax({
             url: '../php/descargar_ticket_pdf.php',
             type: 'POST',
@@ -407,7 +469,7 @@ $(document).ready(function () {
                     $('#btn_ticket_pdf').prop('disabled', false).html('<i class="bi bi-ticket-perforated"></i>');
                     return;
                 }
-                var filename = `tickets_palmilla.pdf`;
+                var filename = nombreArchivo;
                 var disposition = xhr.getResponseHeader('Content-Disposition');
                 if (disposition && disposition.indexOf('filename=') !== -1) {
                     var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;

@@ -436,7 +436,7 @@ function validarConceptoMaxTarjetaJornalero() {
 
 validarConceptoMaxJornalero('#mod-isr-jornalero', '45');
 validarConceptoMaxJornalero('#mod-imss-jornalero', '52');
-validarConceptoMaxJornalero('#mod-infonavit-jornalero', '16');
+//validarConceptoMaxJornalero('#mod-infonavit-jornalero', '16');
 validarConceptoMaxJornalero('#mod-ajustes-sub-jornalero', '107');
 validarConceptoMaxTarjetaJornalero();
 

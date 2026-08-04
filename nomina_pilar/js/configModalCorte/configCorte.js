@@ -779,6 +779,9 @@ function llenar_tabla_tickets_pendientes() {
         return;
     }
 
+    // ORDENAR LOS CORTES POR EL NUMERO DE FOLIO
+    cortes.sort((a, b) => a.folio.localeCompare(b.folio, 'es', { numeric: true }));
+
     // OBTENER FILTRO DE BUSQUEDA, LIMITE Y PAGINA ACTUAL
     const busqueda = $("#buscar_ticket").val().trim().toLowerCase();
     const limite = parseInt($('#limite_corte').val()) || 10;

@@ -6,7 +6,7 @@
 
 // Configuración para empleados CON IMSS
 $config_vigencia['con_imss'] = [
-    'valor' => 1,
+    'valor' => 2,
     'unidad' => 'years'
 ];
 

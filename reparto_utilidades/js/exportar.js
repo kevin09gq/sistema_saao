@@ -42,6 +42,9 @@ $(document).on('click', '#btn_generar_reporte', function (e) {
         return;
     }
 
+    console.log("JSON PARA EXPORTAR: ", json);
+    
+
     // Obtener el año seleccionado por el usuario
     const anio = json.anio;
     // Obtener los departamentos seleccionados

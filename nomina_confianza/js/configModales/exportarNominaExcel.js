@@ -279,8 +279,10 @@ function reporteNominaPdf() {
                 var link = document.createElement('a');
                 var url = URL.createObjectURL(blob);
                 link.href = url;
+                var numeroSemana = String(jsonNominaConfianza.numero_semana).padStart(2, '0');
+                var aniosCierre = jsonNominaConfianza.fecha_cierre.split('/')[2];
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'REPORTE_NOMINA_CONFIANZA_' + timestamp + '.pdf';
+                link.download = 'SEM_' + numeroSemana + '_REPORTE_NOMINA_CONFIANZA_' + timestamp + '.pdf';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);

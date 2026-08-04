@@ -117,9 +117,9 @@ function obtenerRangoFechas(inicioStr, finStr, formatoCorto = true) {
  * @param {String} fechaStr Fecha con formato "12/Ene/2026"
  * @returns Nombre del día de la semana en español (ej. "LUNES")
  */
-function obtenerDiaSemanaBHL(fechaStr) { 
+function obtenerDiaSemanaBHL(fechaStr) {
 
-  // Mapeo de meses abreviados en español a número (0 = enero)
+    // Mapeo de meses abreviados en español a número (0 = enero)
     const meses = {
         Ene: 0,
         Feb: 1,
@@ -172,7 +172,7 @@ function llenar_cuerpo_tabla_pagos_por_dia() {
     const rangoFechas = obtenerRangoFechas(jsonNominaRelicario.fecha_inicio, jsonNominaRelicario.fecha_cierre);
 
     console.log("RANGO DE FECHA: ", rangoFechas);
-    
+
 
     // ======================================================
     // Generar las filas de la tabla con las fechas del rango
@@ -181,9 +181,9 @@ function llenar_cuerpo_tabla_pagos_por_dia() {
     for (let i = 0; i < dias_nomina.length; i++) {
 
         console.log("LA FECHA ES: " + rangoFechas[i]);
-        
+
         console.log(obtenerDiaSemanaBHL(rangoFechas[i]));
-    
+
 
         tmp += `
             <tr>
@@ -797,6 +797,8 @@ function llenar_tabla_tickets_pendientes() {
     const limite = parseInt($('#limite_corte').val()) || 10;
     let paginaActual = parseInt($('#pagina-actual-corte').data('pagina')) || 1;
 
+    // Ordenar los cortes por folio de manera ascendente (alfabéticamente y numéricamente)
+    cortes.sort((a, b) => a.folio.localeCompare(b.folio, 'es', { numeric: true }));
 
     // Filtrar los tickets según el folio o el nombre del cortador
     let cortesFiltrados = cortes.filter(corte => {

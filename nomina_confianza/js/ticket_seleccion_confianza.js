@@ -53,6 +53,24 @@ function cargarEmpleadosParaTicketsConfianza() {
         return a.esSinSeguro ? 1 : -1;
     });
 
+    // Cargar opciones en el select de departamentos
+    const selectDepto = $('#filtro_departamento_ticket_confianza');
+    if (selectDepto.length) {
+        const departamentosUnicos = [...new Set(empleadosParaTicketsConfianza.map(emp => emp.departamento).filter(d => d))].sort();
+        selectDepto.empty();
+        selectDepto.append('<option value="todos">Todos los departamentos</option>');
+        departamentosUnicos.forEach(depto => {
+            selectDepto.append(`<option value="${depto}">${depto}</option>`);
+        });
+        
+        if (departamentosUnicos.includes(filtroDepartamentoActivoConfianza)) {
+            selectDepto.val(filtroDepartamentoActivoConfianza);
+        } else {
+            filtroDepartamentoActivoConfianza = 'todos';
+            selectDepto.val('todos');
+        }
+    }
+
     mostrarEmpleadosTicketsConfianza(empleadosParaTicketsConfianza);
     actualizarContadoresTicketsConfianza();
 }
@@ -124,6 +142,7 @@ function actualizarContadoresTicketsConfianza() {
 }
 
 let filtroSeguroActivoConfianza = 'todos';
+let filtroDepartamentoActivoConfianza = 'todos';
 
 function filtrarEmpleadosTicketsConfianza() {
     const query = String($('#buscar_empleado_ticket').val() || '').toLowerCase().trim();
@@ -143,10 +162,16 @@ function filtrarEmpleadosTicketsConfianza() {
         
         // Filtro por seguro
         let coincideSeguro = true;
+        let coincideDepto = true;
         if (filtroSeguroActivoConfianza === 'con_seguro') coincideSeguro = !emp.esSinSeguro;
         else if (filtroSeguroActivoConfianza === 'sin_seguro') coincideSeguro = emp.esSinSeguro;
 
-        return coincideQuery && coincideSeguro;
+        // Filtro por departamento
+        if (filtroDepartamentoActivoConfianza !== 'todos') {
+            coincideDepto = (emp.departamento === filtroDepartamentoActivoConfianza);
+        }
+
+        return coincideQuery && coincideSeguro && coincideDepto;
     });
 
     mostrarEmpleadosTicketsConfianza(filtrados);
@@ -195,6 +220,35 @@ async function generarTicketsSeleccionadosConfianza() {
 
     if (!nominaParaEnviar) return;
 
+    // Obtener departamento predominante y verificar si hay múltiples departamentos
+    const deptoCount = {};
+    nominaParaEnviar.departamentos.forEach(depto => {
+        const nombreDepto = (depto.nombre || 'GENERAL').toUpperCase();
+        const count = (depto.empleados || []).length;
+        deptoCount[nombreDepto] = (deptoCount[nombreDepto] || 0) + count;
+    });
+    const departamentosUnicos = Object.keys(deptoCount);
+    const multiplesDepartamentos = departamentosUnicos.length > 1;
+    const departamento = Object.keys(deptoCount).reduce((a, b) => deptoCount[a] > deptoCount[b] ? a : b);
+    
+    // Generar nombre del archivo con formato: SEMANA_DEPARTAMENTO_CONFIANZA_AÑO (sin departamento si hay múltiples)
+    const nominaData = obtenerNominaConfianzaGlobal();
+    const numSemana = nominaData?.numero_semana || '';
+    const año = new Date().getFullYear();
+    let nombreArchivo;
+    if (multiplesDepartamentos) {
+        nombreArchivo = `SEM_${numSemana}_CONFIANZA_${año}.pdf`;
+    } else {
+        nombreArchivo = `SEM_${numSemana}_${departamento}_CONFIANZA_${año}.pdf`;
+    }
+    
+    // Agregar departamento y año al meta
+    nominaParaEnviar.meta = {
+        numero_semana: numSemana,
+        departamento: multiplesDepartamentos ? '' : departamento,
+        año: año
+    };
+
     $('#modal_seleccion_tickets').modal('hide');
 
     Swal.fire({
@@ -209,7 +263,7 @@ async function generarTicketsSeleccionadosConfianza() {
         const response = await fetch('../php/descargar_ticket_pdf.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json; charset=UTF-8' },
-            body: JSON.stringify({ nomina: nominaParaEnviar, filename_prefix: 'tickets_confianza_seleccion' })
+            body: JSON.stringify({ nomina: nominaParaEnviar })
         });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const blob = await response.blob();
@@ -218,7 +272,7 @@ async function generarTicketsSeleccionadosConfianza() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `tickets_confianza_seleccion_${seleccionados.length}.pdf`;
+        a.download = nombreArchivo;
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -262,6 +316,35 @@ async function generarTicketsNombreSeleccionadosConfianza() {
 
     if (!nominaParaEnviar) return;
 
+    // Obtener departamento predominante y verificar si hay múltiples departamentos
+    const deptoCount = {};
+    nominaParaEnviar.departamentos.forEach(depto => {
+        const nombreDepto = (depto.nombre || 'GENERAL').toUpperCase();
+        const count = (depto.empleados || []).length;
+        deptoCount[nombreDepto] = (deptoCount[nombreDepto] || 0) + count;
+    });
+    const departamentosUnicos = Object.keys(deptoCount);
+    const multiplesDepartamentos = departamentosUnicos.length > 1;
+    const departamento = Object.keys(deptoCount).reduce((a, b) => deptoCount[a] > deptoCount[b] ? a : b);
+    
+    // Generar nombre del archivo con formato: NOMBRE_SEMANA_DEPARTAMENTO_CONFIANZA_AÑO (sin departamento si hay múltiples)
+    const nominaData = obtenerNominaConfianzaGlobal();
+    const numSemana = nominaData?.numero_semana || '';
+    const año = new Date().getFullYear();
+    let nombreArchivo;
+    if (multiplesDepartamentos) {
+        nombreArchivo = `NOMBRE_SEM_${numSemana}_CONFIANZA_${año}.pdf`;
+    } else {
+        nombreArchivo = `NOMBRE_SEM_${numSemana}_${departamento}_CONFIANZA_${año}.pdf`;
+    }
+    
+    // Agregar departamento y año al meta
+    nominaParaEnviar.meta = {
+        numero_semana: numSemana,
+        departamento: multiplesDepartamentos ? '' : departamento,
+        año: año
+    };
+
     $('#modal_seleccion_tickets').modal('hide');
 
     Swal.fire({
@@ -276,7 +359,7 @@ async function generarTicketsNombreSeleccionadosConfianza() {
         const response = await fetch('../php/descargar_ticket_nombre_pdf.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json; charset=UTF-8' },
-            body: JSON.stringify({ nomina: nominaParaEnviar, filename_prefix: 'tickets_nombre_confianza_seleccion' })
+            body: JSON.stringify({ nomina: nominaParaEnviar })
         });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const blob = await response.blob();
@@ -285,7 +368,7 @@ async function generarTicketsNombreSeleccionadosConfianza() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `tickets_nombre_confianza_seleccion_${seleccionados.length}.pdf`;
+        a.download = nombreArchivo;
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -306,6 +389,8 @@ $(document).ready(function () {
             return;
         }
         filtroSeguroActivoConfianza = 'todos';
+        filtroDepartamentoActivoConfianza = 'todos';
+        $('#filtro_departamento_ticket_confianza').val('todos');
         actualizarEstilosFiltrosConfianza();
         cargarEmpleadosParaTicketsConfianza();
         $('#modal_seleccion_tickets').modal('show');
@@ -329,6 +414,11 @@ $(document).ready(function () {
         filtrarEmpleadosTicketsConfianza();
     });
 
+    $('#filtro_departamento_ticket_confianza').on('change', function() {
+        filtroDepartamentoActivoConfianza = $(this).val();
+        filtrarEmpleadosTicketsConfianza();
+    });
+
     $('#btn_marcar_visibles_tickets').on('click', function () {
         const query = String($('#buscar_empleado_ticket').val() || '').toLowerCase().trim();
         empleadosParaTicketsConfianza.forEach(emp => {
@@ -343,7 +433,13 @@ $(document).ready(function () {
             if (filtroSeguroActivoConfianza === 'con_seguro') coincideSeguro = !emp.esSinSeguro;
             else if (filtroSeguroActivoConfianza === 'sin_seguro') coincideSeguro = emp.esSinSeguro;
 
-            if (coincideQuery && coincideSeguro) {
+            // Filtro por departamento
+            let coincideDepto = true;
+            if (filtroDepartamentoActivoConfianza !== 'todos') {
+                coincideDepto = (emp.departamento === filtroDepartamentoActivoConfianza);
+            }
+
+            if (coincideQuery && coincideSeguro && coincideDepto) {
                 empleadosSeleccionadosConfianza.add(String(emp.id));
             }
         });

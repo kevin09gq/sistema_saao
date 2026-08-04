@@ -92,8 +92,8 @@ $spreadsheet->getDefaultStyle()->getFont()->setName('Arial');
 
 // Datos de fecha
 if ($jsonNomina) {
-    $fecha_inicio = restarUnDia($jsonNomina['fecha_inicio']) ?? 'Fecha Inicio';
-    $fecha_cierre = restarUnDia($jsonNomina['fecha_cierre']) ?? 'Fecha Cierre';
+    $fecha_inicio = $jsonNomina['fecha_inicio'] ?? 'Fecha Inicio';
+    $fecha_cierre = $jsonNomina['fecha_cierre'] ?? 'Fecha Cierre';
     $numero_semana = $jsonNomina['numero_semana'] ?? '00';
     $ano = date('Y');
 }
@@ -480,10 +480,7 @@ $esPrimeraHoja = true;
 
 if ($jsonNomina && isset($jsonNomina['departamentos'])) {
     foreach ($jsonNomina['departamentos'] as $depto) {
-        // Solo procesar si el departamento tiene la propiedad editar: true
-        if (!isset($depto['editar']) || $depto['editar'] !== true)
-            continue;
-
+  
         $idDepto = $depto['id_departamento'] ?? $depto['nombre'];
         $nombreDepto = $depto['nombre'];
 

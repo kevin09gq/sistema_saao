@@ -789,6 +789,21 @@ CREATE TABLE podas_movimientos_palmilla (
 );
 
 -- =============================
+-- TABLAS DE NÓMINA PTU
+-- =============================
+CREATE TABLE repartos_utilidades (
+  id_utilidad INT NOT NULL AUTO_INCREMENT,
+  anio INT NOT NULL,
+  id_departamento INT NOT NULL,
+  json_empleados JSON NOT NULL,
+  fecha_creacion DATETIME,
+  PRIMARY KEY (id_utilidad),
+  FOREIGN KEY (id_departamento) REFERENCES departamentos(id_departamento)
+    ON DELETE CASCADE 
+    ON UPDATE CASCADE
+);
+
+-- =============================
 -- INSERTAR DATOS
 -- =============================
 

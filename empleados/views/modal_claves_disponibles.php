@@ -14,17 +14,26 @@
                 </div>
 
                 <div class="row g-3 align-items-end mb-3">
-                    <div class="col-md-5">
+                    <div class="col-md-4">
                         <label for="selectEmpresaClaves" class="form-label">Empresa</label>
                         <select class="form-select" id="selectEmpresaClaves">
                             <option value="">-- Selecciona una empresa --</option>
                         </select>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
+                        <label for="filtroEstadoClave" class="form-label">Estado</label>
+                        <select class="form-select" id="filtroEstadoClave">
+                            <option value="todos">Todos</option>
+                            <option value="disponible">Disponible</option>
+                            <option value="ocupada_misma_empresa">Ocupada en esta empresa</option>
+                            <option value="usada_otra_empresa">Usada en otra empresa o sin empresa</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
                         <label for="buscarClaveDisponible" class="form-label">Buscar clave</label>
                         <input type="text" class="form-control" id="buscarClaveDisponible" placeholder="Ej: 015 o SS/015">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <button type="button" class="btn btn-outline-primary w-100" id="btnRecargarClavesDisponibles">
                             <i class="bi bi-arrow-clockwise me-1"></i>Actualizar
                         </button>

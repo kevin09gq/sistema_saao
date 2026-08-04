@@ -10,6 +10,7 @@ let empleadosParaTickets = [];
 let empleadosSeleccionados = new Set();
 
 let filtroSeguroActivoHuasteca = 'todos';
+let filtroDepartamentoActivoHuasteca = 'todos';
 
 $(document).ready(function() {
     $('#btn_ticket_seleccion').on('click', function(e) {
@@ -35,6 +36,8 @@ $(document).ready(function() {
         }
 
         filtroSeguroActivoHuasteca = 'todos';
+        filtroDepartamentoActivoHuasteca = 'todos';
+        $('#filtro_departamento_ticket_huasteca').val('todos');
         actualizarEstilosFiltrosHuasteca();
         $('#buscar_empleado_ticket').val('');
         cargarEmpleadosParaTickets(nominaData);
@@ -71,6 +74,11 @@ $(document).ready(function() {
         $('#buscar_empleado_ticket').trigger('input');
     });
 
+    $('#filtro_departamento_ticket_huasteca').on('change', function() {
+        filtroDepartamentoActivoHuasteca = $(this).val();
+        $('#buscar_empleado_ticket').trigger('input');
+    });
+
     $('#btn_marcar_visibles_tickets').on('click', function() {
         const query = String($('#buscar_empleado_ticket').val() || '').toLowerCase().trim();
         empleadosParaTickets.forEach(emp => {
@@ -81,7 +89,13 @@ $(document).ready(function() {
             let coincideSeguro = true;
             if (filtroSeguroActivoHuasteca === 'con_seguro') coincideSeguro = !emp.esSinSeguro;
             else if (filtroSeguroActivoHuasteca === 'sin_seguro') coincideSeguro = emp.esSinSeguro;
-            if (coincideQuery && coincideSeguro) {
+            
+            let coincideDepto = true;
+            if (filtroDepartamentoActivoHuasteca !== 'todos') {
+                coincideDepto = (depto === filtroDepartamentoActivoHuasteca.toLowerCase());
+            }
+
+            if (coincideQuery && coincideSeguro && coincideDepto) {
                 empleadosSeleccionados.add(String(emp.clave));
             }
         });
@@ -237,6 +251,23 @@ function cargarEmpleadosParaTickets(nominaData) {
         return a.esSinSeguro ? 1 : -1;
     });
 
+    const selectDepto = $('#filtro_departamento_ticket_huasteca');
+    if (selectDepto.length) {
+        const departamentosUnicos = [...new Set(empleadosParaTickets.map(emp => emp.departamento).filter(d => d))].sort();
+        selectDepto.empty();
+        selectDepto.append('<option value="todos">Todos los departamentos</option>');
+        departamentosUnicos.forEach(depto => {
+            selectDepto.append(`<option value="${depto}">${depto}</option>`);
+        });
+        
+        if (departamentosUnicos.includes(filtroDepartamentoActivoHuasteca)) {
+            selectDepto.val(filtroDepartamentoActivoHuasteca);
+        } else {
+            filtroDepartamentoActivoHuasteca = 'todos';
+            selectDepto.val('todos');
+        }
+    }
+
     mostrarEmpleados(empleadosParaTickets);
     actualizarContadores();
 }
@@ -281,7 +312,13 @@ function filtrarEmpleadosHuasteca() {
         let coincideSeguro = true;
         if (filtroSeguroActivoHuasteca === 'con_seguro') coincideSeguro = !emp.esSinSeguro;
         else if (filtroSeguroActivoHuasteca === 'sin_seguro') coincideSeguro = emp.esSinSeguro;
-        return coincideQuery && coincideSeguro;
+        
+        let coincideDepto = true;
+        if (filtroDepartamentoActivoHuasteca !== 'todos') {
+            coincideDepto = (depto === filtroDepartamentoActivoHuasteca.toLowerCase());
+        }
+
+        return coincideQuery && coincideSeguro && coincideDepto;
     });
 
     mostrarEmpleados(filtrados);
@@ -346,6 +383,26 @@ function generarTicketsSeleccionados() {
             seleccionados.push(empCopia);
         }
     });
+    
+    // Obtener departamento predominante y verificar si hay múltiples departamentos
+    const deptoCount = {};
+    seleccionados.forEach(emp => {
+        const depto = (emp.departamento || 'GENERAL').toUpperCase();
+        deptoCount[depto] = (deptoCount[depto] || 0) + 1;
+    });
+    const departamentosUnicos = Object.keys(deptoCount);
+    const multiplesDepartamentos = departamentosUnicos.length > 1;
+    let departamento = Object.keys(deptoCount).reduce((a, b) => deptoCount[a] > deptoCount[b] ? a : b);
+    
+    // Generar nombre del archivo con formato: SEMANA_DEPARTAMENTO_RANCHO_AÑO (sin departamento si hay múltiples)
+    const año = new Date().getFullYear();
+    let nombreArchivo;
+    if (multiplesDepartamentos) {
+        nombreArchivo = `SEM_${numSemana}_HUASTECA_${año}.pdf`;
+        departamento = ''; // No enviar departamento si hay múltiples
+    } else {
+        nombreArchivo = `SEM_${numSemana}_${departamento}_HUASTECA_${año}.pdf`;
+    }
 
     const btn = $('#btn_generar_tickets_seleccionados');
     const original = btn.html();
@@ -358,7 +415,7 @@ function generarTicketsSeleccionados() {
         data: JSON.stringify({
             seleccion: true,
             empleados: seleccionados,
-            meta: { numero_semana: numSemana }
+            meta: { numero_semana: numSemana, departamento: departamento, año: año }
         }),
         xhrFields: { responseType: 'blob' },
         success: function(blob) {
@@ -366,7 +423,7 @@ function generarTicketsSeleccionados() {
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'tickets_seleccionados_Huasteca.pdf';
+                a.download = nombreArchivo;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -389,6 +446,11 @@ function generarTicketsNombreSeleccionados() {
         return;
     }
 
+    let numSemana = '';
+    try {
+        if (typeof jsonNominaHuasteca !== 'undefined') numSemana = jsonNominaHuasteca.numero_semana || '';
+    } catch (e) {}
+
     const seleccionadosMap = {};
     empleadosParaTickets.forEach(item => {
         if (empleadosSeleccionados.has(item.clave)) {
@@ -404,6 +466,26 @@ function generarTicketsNombreSeleccionados() {
     });
 
     const seleccionados = Object.values(seleccionadosMap);
+    
+    // Obtener departamento predominante y verificar si hay múltiples departamentos
+    const deptoCount = {};
+    seleccionados.forEach(emp => {
+        const depto = (emp.departamento || 'GENERAL').toUpperCase();
+        deptoCount[depto] = (deptoCount[depto] || 0) + 1;
+    });
+    const departamentosUnicos = Object.keys(deptoCount);
+    const multiplesDepartamentos = departamentosUnicos.length > 1;
+    let departamento = Object.keys(deptoCount).reduce((a, b) => deptoCount[a] > deptoCount[b] ? a : b);
+    
+    // Generar nombre del archivo con formato: NOMBRE_SEMANA_DEPARTAMENTO_RANCHO_AÑO (sin departamento si hay múltiples)
+    const año = new Date().getFullYear();
+    let nombreArchivo;
+    if (multiplesDepartamentos) {
+        nombreArchivo = `NOMBRE_SEM_${numSemana}_HUASTECA_${año}.pdf`;
+        departamento = ''; // No enviar departamento si hay múltiples
+    } else {
+        nombreArchivo = `NOMBRE_SEM_${numSemana}_${departamento}_HUASTECA_${año}.pdf`;
+    }
 
     const btn = $('#btn_generar_tickets_nombre_seleccionados');
     const original = btn.html();
@@ -415,8 +497,10 @@ function generarTicketsNombreSeleccionados() {
         contentType: 'application/json',
         data: JSON.stringify({
             nomina: {
+                numero_semana: numSemana,
                 departamentos: [{ nombre: 'Seleccionados', empleados: seleccionados }]
-            }
+            },
+            meta: { numero_semana: numSemana, departamento: departamento, año: año }
         }),
         xhrFields: { responseType: 'blob' },
         success: function(blob) {
@@ -424,7 +508,7 @@ function generarTicketsNombreSeleccionados() {
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'tickets_nombre_seleccionados_Huasteca.pdf';
+                a.download = nombreArchivo;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);

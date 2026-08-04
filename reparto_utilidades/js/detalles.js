@@ -4,7 +4,9 @@ $(document).ready(function () {
 
 });
 
-// Funciones para mostrar el menú contextual
+/**
+ * Función para mostrar el menú contextual
+ */
 function mostrarContextMenu() {
     // Click derecho en fila de la tabla
     $('#tabla_ptu tbody').on('contextmenu', 'tr', function (e) {
@@ -24,7 +26,9 @@ function mostrarContextMenu() {
     });
 }
 
+// =========================================================================================
 // Evento para abrir el modal de detalles al hacer click en la opción del menú contextual
+// =========================================================================================
 $(document).on('click', '#context_menu', function (e) {
     e.preventDefault();
     // Obtener el id del empleado desde la fila seleccionada
@@ -34,6 +38,7 @@ $(document).on('click', '#context_menu', function (e) {
     // Ocultar el menú contextual
     $menu_contexto.hide();
 });
+
 
 /**
  * Función para abrir el modal de detalles del empleado seleccionado
@@ -86,13 +91,13 @@ function abrir_modal_detalles(id) {
     }
 
     // 5. LLENAR INPUTS EDITABLES
-    $('#salario_diario').val(empleado.salario_diario ? empleado.salario_diario.toFixed(2) : '');
+    $('#salario_diario').val(empleado.salario_diario ? empleado.salario_diario : '');
     $('#dias_pago').val(empleado.dias_pago || '');
     $('#dias_ptu').val(empleado.dias_ptu === 0 ? '' : empleado.dias_ptu);
 
     // 6. LLENAR RESULTADOS (Calculados)
-    $('#total_ptu').val(empleado.ptu ? empleado.ptu.toFixed(2) : '');
-    $('#tarjeta').val(empleado.tarjeta ? empleado.tarjeta.toFixed(2) : '');
+    $('#total_ptu').val(empleado.ptu ? empleado.ptu : '');
+    $('#tarjeta').val(empleado.tarjeta ? empleado.tarjeta : '');
     $('#neto_pagar').val(empleado.neto_pagar ? empleado.neto_pagar.toFixed(2) : '');
 
     // 7. LÓGICA DE NEGOCIO (Seguro)
@@ -102,6 +107,10 @@ function abrir_modal_detalles(id) {
     // Si tu variable global se llama modalCalculoPTU:
     modalCalculoPTU.show();
 }
+
+// ========================================================================================
+// EVENTOS DE CONTROL PARA CALCULAR EL PTU EN TIEMPO REAL
+// ========================================================================================
 
 // CHANGE PARA DETECTAR CUANDO SE CAMBIE DE FECHA
 $('#fecha_ingreso_real, #fecha_ingreso_imss').change(function (e) {

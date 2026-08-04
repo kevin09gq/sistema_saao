@@ -391,6 +391,9 @@ function llenarTabDetallesRejas(nombre, datos) {
 function llenarTabTicketsRejas(tickets) {
     let htmlTickets = '';
 
+    // ORDENAR LOS TICKETS POR FOLIO DE MANERA ASCENDENTE
+    tickets.sort((a, b) => a.folio.localeCompare(b.folio, 'es', { numeric: true }));
+    
     tickets.forEach((ticket, index) => {
         htmlTickets += generarHtmlTicket(ticket, index);
     });

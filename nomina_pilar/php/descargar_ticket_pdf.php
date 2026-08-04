@@ -847,6 +847,19 @@ foreach ($empleados as $emp) {
 }
 
 if (ob_get_length()) ob_clean();
+
+// Generar nombre del archivo con formato: SEMANA_DEPARTAMENTO_RANCHO_AÑO (en mayúsculas)
+$semana = safeText($meta['numero_semana'] ?? '');
+$departamento = safeText($meta['departamento'] ?? '');
+$año = safeText($meta['año'] ?? date('Y'));
+
+// Si el departamento está vacío (múltiples departamentos), omitirlo
+if (empty($departamento)) {
+    $nombreArchivo = 'SEM_' . $semana . '_RANCHO PILAR_' . $año . '.pdf';
+} else {
+    $nombreArchivo = 'SEM_' . $semana . '_' . strtoupper($departamento) . '_RANCHO PILAR_' . $año . '.pdf';
+}
+
 header('Content-Type: application/pdf');
-header('Content-Disposition: attachment; filename="tickets_pilar.pdf"');
-echo $pdf->Output('tickets_pilar.pdf', 'S');
+header('Content-Disposition: attachment; filename="' . $nombreArchivo . '"');
+echo $pdf->Output($nombreArchivo, 'S');

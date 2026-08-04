@@ -19,7 +19,7 @@ function llenar_lista_empleados_redondeos() {
     // Obtener el jsonUtilidad actual para obtener la lista de empleados
     let json = getUtilidad();
     // Filtrar empleados por departamentos
-    let departamentoSeleccionado = $('#select_departamento_redondeos').val();
+    // let departamentoSeleccionado = $('#select_departamento_redondeos').val();
     // Obtener el texto de búsqueda y convertirlo a minúsculas para comparación
     let textoBusqueda = $('#buscar_empleado_redondeos').val().toLowerCase();
     // Filtrar empleados: De acuerdo al departamento seleccionado
@@ -31,9 +31,10 @@ function llenar_lista_empleados_redondeos() {
             (emp.ap_paterno && emp.ap_paterno.toLowerCase().includes(textoBusqueda)) ||
             (emp.ap_materno && emp.ap_materno.toLowerCase().includes(textoBusqueda));
         // Filtro de departamento por id
-        const coincideDepartamento = parseInt(emp.id_departamento) === parseInt(departamentoSeleccionado);
+        // const coincideDepartamento = parseInt(emp.id_departamento) === parseInt(departamentoSeleccionado);
 
-        return coincideDepartamento && coincideBusqueda;
+        // return coincideDepartamento && coincideBusqueda;
+        return coincideBusqueda;
     });
 
     // Limpiar tabla
@@ -42,7 +43,7 @@ function llenar_lista_empleados_redondeos() {
 
     // Si no hay empleados después de filtrar, mostrar mensaje
     if (empleadosFiltrados.length === 0) {
-        contenedor.html('No se encontraron empleados');
+        contenedor.html('<span class="text-muted text-center">No se encontraron empleados</span>');
         return;
     }
 
@@ -72,7 +73,7 @@ $('#btn_poner_redondeos').click(function (e) {
     e.preventDefault();
 
     // RECUPERAR EL DEPARTAMENTO SELECCIONADO EN EL FILTRO
-    let departamentoSeleccionado = $('#select_departamento_redondeos').val();
+    // let departamentoSeleccionado = $('#select_departamento_redondeos').val();
 
     // RECUPERAR EL JSON ACTUAL
     let json = getUtilidad();
@@ -80,13 +81,18 @@ $('#btn_poner_redondeos').click(function (e) {
     // APLICAR REDONDEOS A TODOS LOS EMPLEADOS
     json.empleados.forEach(empleado => {
         // SI EL DEPARTAMENTO DEL EMPLEADO COINCIDE CON EL DEPARTAMENTO SELECCIONADO, APLICAR REDONDEO
-        if (parseInt(empleado.id_departamento) === parseInt(departamentoSeleccionado)) {
-            empleado.aplicar_redondeo = true;
-            // CALCULAR EL REDONDEO
-            empleado.redondeo = empleado.aplicar_redondeo ? diferenciaRedondeo(empleado.neto_pagar) : 0;
-            // CALCULAR EL NETO A PAGAR CON REDONDEO
-            empleado.neto_pagar_redondeado = calcular_neto_pagar_redondeo(empleado.neto_pagar, empleado.redondeo);
-        }
+        // if (parseInt(empleado.id_departamento) === parseInt(departamentoSeleccionado)) {
+        //     empleado.aplicar_redondeo = true;
+        //     // CALCULAR EL REDONDEO
+        //     empleado.redondeo = empleado.aplicar_redondeo ? diferenciaRedondeo(empleado.neto_pagar) : 0;
+        //     // CALCULAR EL NETO A PAGAR CON REDONDEO
+        //     empleado.neto_pagar_redondeado = calcular_neto_pagar_redondeo(empleado.neto_pagar, empleado.redondeo);
+        // }
+        empleado.aplicar_redondeo = true;
+        // CALCULAR EL REDONDEO
+        empleado.redondeo = empleado.aplicar_redondeo ? diferenciaRedondeo(empleado.neto_pagar) : 0;
+        // CALCULAR EL NETO A PAGAR CON REDONDEO
+        empleado.neto_pagar_redondeado = calcular_neto_pagar_redondeo(empleado.neto_pagar, empleado.redondeo);
     });
 
     // ACTUALIZAR EL JSON ACTUAL
@@ -110,13 +116,18 @@ $('#btn_quitar_redondeos').click(function (e) {
     // APLICAR REDONDEOS A TODOS LOS EMPLEADOS
     json.empleados.forEach(empleado => {
         // SI EL DEPARTAMENTO DEL EMPLEADO COINCIDE CON EL DEPARTAMENTO SELECCIONADO, QUITAR REDONDEO
-        if (parseInt(empleado.id_departamento) === parseInt(departamentoSeleccionado)) {
-            empleado.aplicar_redondeo = false;
-            // CALCULAR EL REDONDEO
-            empleado.redondeo = empleado.aplicar_redondeo ? diferenciaRedondeo(empleado.neto_pagar) : 0;
-            // CALCULAR EL NETO A PAGAR CON REDONDEO
-            empleado.neto_pagar_redondeado = calcular_neto_pagar_redondeo(empleado.neto_pagar, empleado.redondeo);
-        }
+        // if (parseInt(empleado.id_departamento) === parseInt(departamentoSeleccionado)) {
+        //     empleado.aplicar_redondeo = false;
+        //     // CALCULAR EL REDONDEO
+        //     empleado.redondeo = empleado.aplicar_redondeo ? diferenciaRedondeo(empleado.neto_pagar) : 0;
+        //     // CALCULAR EL NETO A PAGAR CON REDONDEO
+        //     empleado.neto_pagar_redondeado = calcular_neto_pagar_redondeo(empleado.neto_pagar, empleado.redondeo);
+        // }
+        empleado.aplicar_redondeo = false;
+        // CALCULAR EL REDONDEO
+        empleado.redondeo = empleado.aplicar_redondeo ? diferenciaRedondeo(empleado.neto_pagar) : 0;
+        // CALCULAR EL NETO A PAGAR CON REDONDEO
+        empleado.neto_pagar_redondeado = calcular_neto_pagar_redondeo(empleado.neto_pagar, empleado.redondeo);
     });
 
     // ACTUALIZAR EL JSON ACTUAL

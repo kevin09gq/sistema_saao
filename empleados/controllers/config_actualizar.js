@@ -212,6 +212,53 @@ $(document).ready(function () {
         return toYMD(trimmed);
     }
 
+    // Función para actualizar el input de fecha alta empresa con la fecha más reciente del historial
+    function actualizarFechaAltaEmpresaDesdeHistorial() {
+        const $tbody = $('#tbody_historial_reingresos');
+        const filas = $tbody.find('tr');
+        
+        // Verificar si hay registros en el historial
+        if (filas.length > 0 && !filas.first().find('td').attr('colspan')) {
+            let fechaMasReciente = null;
+            
+            // Recorrer las filas para encontrar la fecha más reciente sin fecha de salida
+            filas.each(function() {
+                const $btnEdit = $(this).find('.btn-editar-historial');
+                if ($btnEdit.length > 0) {
+                    const fechaSalidaTxt = $(this).children('td').eq(2).text().trim();
+                    const fechaReingresoTxt = $(this).children('td').eq(1).text().trim();
+                    
+                    // Si no tiene fecha de salida (está activo), usar esta fecha
+                    if (!fechaSalidaTxt || fechaSalidaTxt === '') {
+                        fechaMasReciente = toYMD(fechaReingresoTxt);
+                    }
+                }
+            });
+            
+            // Si no hay registro activo, buscar el último reingreso (el más reciente)
+            if (!fechaMasReciente) {
+                let ultimaFechaReingreso = null;
+                filas.each(function() {
+                    const $btnEdit = $(this).find('.btn-editar-historial');
+                    if ($btnEdit.length > 0) {
+                        const fechaReingresoTxt = $(this).children('td').eq(1).text().trim();
+                        const fechaReingresoYMD = toYMD(fechaReingresoTxt);
+                        
+                        if (!ultimaFechaReingreso || new Date(fechaReingresoYMD) > new Date(ultimaFechaReingreso)) {
+                            ultimaFechaReingreso = fechaReingresoYMD;
+                        }
+                    }
+                });
+                fechaMasReciente = ultimaFechaReingreso;
+            }
+            
+            // Si encontramos una fecha, actualizar el input
+            if (fechaMasReciente) {
+                $("#modal_fecha_alta_empresa").prop('type', 'text').val(formatToDMonY(fechaMasReciente));
+            }
+        }
+    }
+
     // ===================================================
     // Funciones para obtener datos de selects con filtros
     // ===================================================
@@ -552,24 +599,31 @@ $(document).ready(function () {
                 return;
             }
 
-            if (new Date(fechaReingreso) < new Date(fechaAltaEmpresa)) {
-                Swal.fire({
-                    title: 'ERROR',
-                    text: `La fecha de reingreso no puede ser anterior a la fecha de alta de la empresa (${formatToDMY(fechaAltaEmpresa)}).`,
-                    icon: 'error',
-                    confirmButtonText: 'Entendido'
-                });
-                return;
-            }
+            // Verificar si es el último registro del historial (el más reciente)
+            const $filaEditando = $(`#tbody_historial_reingresos .btn-editar-historial[data-id-historial='${idHist}']`).closest('tr');
+            const esUltimoRegistro = $filaEditando.is(':last-child');
+            
+            // Solo validar contra fecha de alta empresa si NO es el último registro
+            if (!esUltimoRegistro) {
+                if (new Date(fechaReingreso) < new Date(fechaAltaEmpresa)) {
+                    Swal.fire({
+                        title: 'ERROR',
+                        text: `La fecha de reingreso no puede ser anterior a la fecha de alta de la empresa (${formatToDMY(fechaAltaEmpresa)}).`,
+                        icon: 'error',
+                        confirmButtonText: 'Entendido'
+                    });
+                    return;
+                }
 
-            if (fechaSalida && new Date(fechaSalida) < new Date(fechaAltaEmpresa)) {
-                Swal.fire({
-                    title: 'ERROR',
-                    text: `La fecha de salida no puede ser anterior a la fecha de alta de la empresa (${formatToDMY(fechaAltaEmpresa)}).`,
-                    icon: 'error',
-                    confirmButtonText: 'Entendido'
-                });
-                return;
+                if (fechaSalida && new Date(fechaSalida) < new Date(fechaAltaEmpresa)) {
+                    Swal.fire({
+                        title: 'ERROR',
+                        text: `La fecha de salida no puede ser anterior a la fecha de alta de la empresa (${formatToDMY(fechaAltaEmpresa)}).`,
+                        icon: 'error',
+                        confirmButtonText: 'Entendido'
+                    });
+                    return;
+                }
             }
 
             // Construir los intervalos cronológicos propuestos para validación en frontend
@@ -610,17 +664,6 @@ $(document).ready(function () {
 
             // Ordenar intervalos
             intervals.sort((a, b) => new Date(a.entrada) - new Date(b.entrada));
-
-            // Validar primer registro
-            if (intervals.length > 0 && intervals[0].entrada !== fechaAltaEmpresa) {
-                Swal.fire({
-                    title: 'ERROR',
-                    text: `El primer reingreso registrado debe coincidir exactamente con la fecha de alta de la empresa (${formatToDMY(fechaAltaEmpresa)}).`,
-                    icon: 'error',
-                    confirmButtonText: 'Entendido'
-                });
-                return;
-            }
 
             // Validar traslapes y orden lógico
             for (let i = 0; i < intervals.length; i++) {
@@ -707,6 +750,9 @@ $(document).ready(function () {
 
                             $('#modal_historial_reingreso').modal('hide');
                             obtenerDatosEmpleados();
+                            
+                            // Actualizar el input de fecha alta empresa con la fecha más reciente del historial
+                            actualizarFechaAltaEmpresaDesdeHistorial();
                         }
                     } else {
                         const newId = (resp || '').toString().trim();
@@ -736,6 +782,9 @@ $(document).ready(function () {
                             $tbody.append(nuevaFila);
                             $('#modal_historial_reingreso').modal('hide');
                             obtenerDatosEmpleados();
+                            
+                            // Actualizar el input de fecha alta empresa con la fecha más reciente del historial
+                            actualizarFechaAltaEmpresaDesdeHistorial();
                         }
                     }
                 },
@@ -909,6 +958,9 @@ $(document).ready(function () {
 
                         // Obtener la última fecha de reingreso
                         let ultimaFechaReingreso = empleado.ultima_fecha_reingreso;
+                        
+                        // Obtener la fecha alta empresa actual (la más reciente del historial o la original)
+                        let fechaAltaEmpresaActual = empleado.fecha_alta_empresa_actual || fechaAltaEmpresa;
 
                         let nombreContacto = empleado.nombre_contacto;
                         let apPaternoContacto = empleado.apellido_paterno_contacto;
@@ -942,8 +994,8 @@ $(document).ready(function () {
                         $("#modal_sexo").val(sexoEmpleado);
                         $("#modal_grupo_sanguineo").val(grupoSanguineo);
                         $("#modal_enfermedades_alergias").val(enfermedades);
-                        // La fecha alta empresa se asigna al input correspondiente
-                        $("#modal_fecha_alta_empresa").prop('type', 'text').val(formatToDMonY(fechaAltaEmpresa));
+                        // La fecha alta empresa se asigna al input correspondiente (usando la fecha más reciente del historial)
+                        $("#modal_fecha_alta_empresa").prop('type', 'text').val(formatToDMonY(fechaAltaEmpresaActual));
                         // Fecha alta IMSS
                         $("#modal_fecha_alta_imss").prop('type', 'text').val(formatToDMonY(fechaAltaImss));
                         // Vista de Fecha Ingreso IMSS en pestaña Trabajador (solo lectura)
@@ -1588,6 +1640,16 @@ $(document).ready(function () {
             url: "../php/update_empleado.php",
             data: datos,
             success: function (response) {
+                // Verificar si hay error en la respuesta
+                if (response && response.type === 'error') {
+                    Swal.fire({
+                        title: response.title || 'ERROR',
+                        text: response.text || 'Error al actualizar el empleado.',
+                        icon: response.type || 'error',
+                        confirmButtonText: 'Entendido'
+                    });
+                    return;
+                }
 
                 // Actualizar la tabla de empleados
                 $.ajax({
@@ -1602,6 +1664,61 @@ $(document).ready(function () {
                         paginaActual = paginaAnterior;
                         // Renderizar la tabla con la página actual
                         renderTablaEmpleados();
+
+                        // Recargar los datos del empleado actualizado en el modal (incluyendo historial actualizado)
+                        const idEmpleado = datos.id_empleado;
+                        const claveEmpleado = datos.clave_empleado;
+                        
+                        $.ajax({
+                            type: "POST",
+                            url: "../php/obtenerEmpleados.php",
+                            data: { 
+                                accion: "dataEmpleado",
+                                id_empleado: idEmpleado,
+                                clave_empleado: claveEmpleado
+                            },
+                            dataType: "json",
+                            success: function (empleadoActualizado) {
+                                // Actualizar el historial de reingresos en el modal
+                                const $tbodyReingresos = $('#tbody_historial_reingresos');
+                                if ($tbodyReingresos.length) {
+                                    const historial = Array.isArray(empleadoActualizado.historial) ? empleadoActualizado.historial : [];
+                                    let filas = '';
+                                    if (historial.length === 0) {
+                                        filas = '<tr><td colspan="4" class="text-center">Sin registros</td></tr>';
+                                    } else {
+                                        historial.forEach((item, idx) => {
+                                            const fechaReingreso = item.fecha_reingreso || '';
+                                            const fechaSalida = item.fecha_salida || '';
+                                            const frFmt = formatToDMY(fechaReingreso);
+                                            const fsFmt = formatToDMY(fechaSalida);
+                                            filas += `
+                                                <tr>
+                                                    <td>${idx + 1}</td>
+                                                    <td>${frFmt}</td>
+                                                    <td>${fsFmt}</td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-danger btn-sm btn-eliminar-historial" data-id-historial="${item.id_historial}">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-warning btn-sm btn-editar-historial" data-id-historial="${item.id_historial}">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>`;
+                                        });
+                                    }
+                                    $tbodyReingresos.html(filas);
+                                }
+                                
+                                // Actualizar la fecha alta empresa en el modal con la fecha más reciente
+                                const fechaAltaEmpresaActual = empleadoActualizado.fecha_alta_empresa_actual || empleadoActualizado.fecha_alta_empresa;
+                                $("#modal_fecha_alta_empresa").prop('type', 'text').val(formatToDMonY(fechaAltaEmpresaActual));
+                            },
+                            error: function (xhr, status, error) {
+                                console.error('Error al recargar datos del empleado:', error);
+                            }
+                        });
 
                         // Cerrar el modal
                         $("#modal_actualizar_empleado").modal("hide");
@@ -1629,91 +1746,220 @@ $(document).ready(function () {
 
         let mensaje = idStatus == 1 ? "¿Deseas desactivar a este empleado?" : "¿Deseas activar a este empleado?";
 
-
-        Swal.fire({
-            title: "Cambiar status",
-            text: mensaje,
-            icon: "info",
-            showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "rgb(127, 127, 127)",
-            confirmButtonText: "Sí, cambiar",
-            cancelButtonText: "Cancelar",
-            reverseButtons: true,
-            focusCancel: true
-        }).then((result) => {
-            if (result.isConfirmed) {
-
-                // Evitar doble click y desactivar visualmente
-                const $el = $(this);
-                if ($el.data('processing')) return;
-                $el.data('processing', true).addClass('disabled').css('pointer-events', 'none').css('opacity', '0.6');
-
-                let datos = {
-                    id_empleado: idEmpleado,
-                    id_status: idStatus,
-                    accion: "cambiarStatus"
-                };
-
-                $.ajax({
-                    type: "POST",
-                    url: "../php/obtenerEmpleados.php",
-                    data: datos,
-                    success: function (response) {
-
-                        if (response == true) {
-                            // Actualizar solo los datos sin cambiar la página actual
-                            $.ajax({
-                                type: "POST",
-                                url: "../php/obtenerEmpleados.php",
-                                data: {
-                                    accion: "cargarEmpleados",
-                                },
-                                dataType: "json",
-                                success: function (empleados) {
-                                    empleadosData = empleados;
-                                    paginacionStatus(empleados);
-
-                                    const Toast = Swal.mixin({
-                                        toast: true,
-                                        position: "top-end",
-                                        showConfirmButton: false,
-                                        timer: 3000,
-                                        timerProgressBar: true,
-                                        didOpen: (toast) => {
-                                            toast.onmouseenter = Swal.stopTimer;
-                                            toast.onmouseleave = Swal.resumeTimer;
-                                        }
-                                    });
-                                    Toast.fire({
-                                        icon: "success",
-                                        title: "Cambio de status exitoso"
-                                    });
-                                },
-                                complete: function () {
-                                    $el.data('processing', false).removeClass('disabled').css('pointer-events', '').css('opacity', '');
+        // Si se está dando de baja, mostrar opciones de fecha
+        if (idStatus == 1) {
+            Swal.fire({
+                title: "Cambiar status",
+                text: mensaje,
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "rgb(127, 127, 127)",
+                confirmButtonText: "Sí, cambiar",
+                cancelButtonText: "Cancelar",
+                reverseButtons: true,
+                focusCancel: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Mostrar opciones para la fecha de baja
+                    Swal.fire({
+                        title: "Seleccionar fecha de baja",
+                        text: "¿Deseas usar la fecha de hoy o ingresar una fecha manual?",
+                        icon: "question",
+                        showCancelButton: true,
+                        showDenyButton: true,
+                        confirmButtonColor: "#3085d6",
+                        denyButtonColor: "#17a2b8",
+                        cancelButtonColor: "rgb(127, 127, 127)",
+                        confirmButtonText: "Fecha de hoy",
+                        denyButtonText: "Fecha manual",
+                        cancelButtonText: "Cancelar",
+                        reverseButtons: true,
+                        focusCancel: true
+                    }).then((fechaResult) => {
+                        if (fechaResult.isConfirmed) {
+                            // Usar fecha de hoy
+                            procesarCambioStatus(idEmpleado, idStatus, null, this);
+                        } else if (fechaResult.isDenied) {
+                            // Fecha manual
+                            Swal.fire({
+                                title: "Ingresar fecha de baja",
+                                html: '<input type="date" id="fecha_baja_manual" class="swal2-input">',
+                                icon: "info",
+                                showCancelButton: true,
+                                confirmButtonColor: "#3085d6",
+                                cancelButtonColor: "rgb(127, 127, 127)",
+                                confirmButtonText: "Aceptar",
+                                cancelButtonText: "Cancelar",
+                                reverseButtons: true,
+                                focusCancel: true,
+                                preConfirm: () => {
+                                    const fecha = document.getElementById('fecha_baja_manual').value;
+                                    if (!fecha) {
+                                        Swal.showValidationMessage('Por favor selecciona una fecha');
+                                    }
+                                    return fecha;
+                                }
+                            }).then((manualResult) => {
+                                if (manualResult.isConfirmed) {
+                                    const fechaManual = manualResult.value;
+                                    procesarCambioStatus(idEmpleado, idStatus, fechaManual, this);
                                 }
                             });
-                        } else {
-                            $el.data('processing', false).removeClass('disabled').css('pointer-events', '').css('opacity', '');
-                            Swal.fire({
-                                title: "No permitido",
-                                text: "Este empleado tiene una deuda pendiente",
-                                icon: "error",
-                                confirmButtonText: "Entendido"
-                            });
                         }
-                    },
-                    error: function () {
-                        $el.data('processing', false).removeClass('disabled').css('pointer-events', '').css('opacity', '');
-                    }
-                });
+                    });
+                }
+            });
+        } else {
+            // Si se está activando, proceder normalmente
+            Swal.fire({
+                title: "Cambiar status",
+                text: mensaje,
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "rgb(127, 127, 127)",
+                confirmButtonText: "Sí, cambiar",
+                cancelButtonText: "Cancelar",
+                reverseButtons: true,
+                focusCancel: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    procesarCambioStatus(idEmpleado, idStatus, null, this);
+                }
+            });
+        }
+    });
 
+    // Función para procesar el cambio de status
+    function procesarCambioStatus(idEmpleado, idStatus, fechaBaja, element) {
+        // Evitar doble click y desactivar visualmente
+        const $el = $(element);
+        if ($el.data('processing')) return;
+        $el.data('processing', true).addClass('disabled').css('pointer-events', 'none').css('opacity', '0.6');
+
+        let datos = {
+            id_empleado: idEmpleado,
+            id_status: idStatus,
+            accion: "cambiarStatus"
+        };
+
+        // Agregar fecha de baja si se proporcionó
+        if (fechaBaja) {
+            datos.fecha_baja = fechaBaja;
+        }
+
+        $.ajax({
+            type: "POST",
+            url: "../php/obtenerEmpleados.php",
+            data: datos,
+            success: function (response) {
+
+                if (response == true) {
+                    // Actualizar solo los datos sin cambiar la página actual
+                    $.ajax({
+                        type: "POST",
+                        url: "../php/obtenerEmpleados.php",
+                        data: {
+                            accion: "cargarEmpleados",
+                        },
+                        dataType: "json",
+                        success: function (empleados) {
+                            empleadosData = empleados;
+                            paginacionStatus(empleados);
+
+                            // Actualizar la fecha alta empresa en el modal si está abierto
+                            const idEmpleado = datos.id_empleado;
+                            
+                            // Buscar la clave del empleado en los datos cargados
+                            const empleadoEncontrado = empleados.find(emp => emp.id_empleado == idEmpleado);
+                            const claveEmpleado = empleadoEncontrado ? empleadoEncontrado.clave_empleado : null;
+                            
+                            if ($('#modal_actualizar_empleado').hasClass('show') && claveEmpleado) {
+                                $.ajax({
+                                    type: "POST",
+                                    url: "../php/obtenerEmpleados.php",
+                                    data: { 
+                                        accion: "dataEmpleado",
+                                        id_empleado: idEmpleado,
+                                        clave_empleado: claveEmpleado
+                                    },
+                                    dataType: "json",
+                                    success: function (empleadoActualizado) {
+                                        // Actualizar el historial de reingresos en el modal
+                                        const $tbodyReingresos = $('#tbody_historial_reingresos');
+                                        if ($tbodyReingresos.length) {
+                                            const historial = Array.isArray(empleadoActualizado.historial) ? empleadoActualizado.historial : [];
+                                            let filas = '';
+                                            if (historial.length === 0) {
+                                                filas = '<tr><td colspan="4" class="text-center">Sin registros</td></tr>';
+                                            } else {
+                                                historial.forEach((item, idx) => {
+                                                    const fechaReingreso = item.fecha_reingreso || '';
+                                                    const fechaSalida = item.fecha_salida || '';
+                                                    const frFmt = formatToDMY(fechaReingreso);
+                                                    const fsFmt = formatToDMY(fechaSalida);
+                                                    filas += `
+                                                        <tr>
+                                                            <td>${idx + 1}</td>
+                                                            <td>${frFmt}</td>
+                                                            <td>${fsFmt}</td>
+                                                            <td>
+                                                                <button type="button" class="btn btn-danger btn-sm btn-eliminar-historial" data-id-historial="${item.id_historial}">
+                                                                    <i class="bi bi-trash"></i>
+                                                                </button>
+                                                                <button type="button" class="btn btn-warning btn-sm btn-editar-historial" data-id-historial="${item.id_historial}">
+                                                                    <i class="bi bi-pencil"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>`;
+                                                });
+                                            }
+                                            $tbodyReingresos.html(filas);
+                                        }
+                                        
+                                        // Actualizar la fecha alta empresa en el modal con la fecha más reciente
+                                        const fechaAltaEmpresaActual = empleadoActualizado.fecha_alta_empresa_actual || empleadoActualizado.fecha_alta_empresa;
+                                        $("#modal_fecha_alta_empresa").prop('type', 'text').val(formatToDMonY(fechaAltaEmpresaActual));
+                                    }
+                                });
+                            }
+
+                            const Toast = Swal.mixin({
+                                toast: true,
+                                position: "top-end",
+                                showConfirmButton: false,
+                                timer: 3000,
+                                timerProgressBar: true,
+                                didOpen: (toast) => {
+                                    toast.onmouseenter = Swal.stopTimer;
+                                    toast.onmouseleave = Swal.resumeTimer;
+                                }
+                            });
+                            Toast.fire({
+                                icon: "success",
+                                title: "Cambio de status exitoso"
+                            });
+                        },
+                        complete: function () {
+                            $el.data('processing', false).removeClass('disabled').css('pointer-events', '').css('opacity', '');
+                        }
+                    });
+                } else {
+                    $el.data('processing', false).removeClass('disabled').css('pointer-events', '').css('opacity', '');
+                    Swal.fire({
+                        title: "No permitido",
+                        text: "Este empleado tiene una deuda pendiente",
+                        icon: "error",
+                        confirmButtonText: "Entendido"
+                    });
+                }
+            },
+            error: function () {
+                $el.data('processing', false).removeClass('disabled').css('pointer-events', '').css('opacity', '');
             }
         });
-
-
-    });
+    }
 
     // Eliminar empleado (visible en filas inactivas)
     $(document).on('click', '.btn-eliminar', function () {
@@ -1806,6 +2052,9 @@ $(document).ready(function () {
                             });
                         }
                         obtenerDatosEmpleados();
+                        
+                        // Actualizar el input de fecha alta empresa con la fecha más reciente del historial
+                        actualizarFechaAltaEmpresaDesdeHistorial();
                     } else {
                         Swal.fire({
                             title: 'No permitido',
@@ -2022,13 +2271,13 @@ $(document).ready(function () {
 // ─── Utilidad: calcula y muestra la edad del empleado ────────────────────────
 function calcularEdad(fechaNac) {
     if (!fechaNac) return null;
-    const hoy  = new Date();
-    const nac  = new Date(fechaNac);
+    const hoy = new Date();
+    const nac = new Date(fechaNac);
     if (isNaN(nac.getTime())) return null;
 
-    let anios  = hoy.getFullYear() - nac.getFullYear();
-    let meses  = hoy.getMonth()   - nac.getMonth();
-    let dias   = hoy.getDate()    - nac.getDate();
+    let anios = hoy.getFullYear() - nac.getFullYear();
+    let meses = hoy.getMonth() - nac.getMonth();
+    let dias = hoy.getDate() - nac.getDate();
 
     if (dias < 0) {
         meses--;
@@ -2055,9 +2304,9 @@ function mostrarEdadEmpleado(fechaNac) {
     }
 
     const partes = [];
-    if (edad.anios > 0)  partes.push(`${edad.anios} año${edad.anios !== 1 ? 's' : ''}`);
-    if (edad.meses > 0)  partes.push(`${edad.meses} mes${edad.meses !== 1 ? 'es' : ''}`);
-    if (edad.dias  >= 0) partes.push(`${edad.dias}  día${edad.dias  !== 1 ? 's' : ''}`);
+    if (edad.anios > 0) partes.push(`${edad.anios} año${edad.anios !== 1 ? 's' : ''}`);
+    if (edad.meses > 0) partes.push(`${edad.meses} mes${edad.meses !== 1 ? 'es' : ''}`);
+    if (edad.dias >= 0) partes.push(`${edad.dias}  día${edad.dias !== 1 ? 's' : ''}`);
 
     $texto.text(partes.join(', '));
     $badge.removeClass('d-none');

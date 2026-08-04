@@ -10,6 +10,7 @@ const RUTA_RAIZ = window.rutaRaiz || '/sistema_saao';
 const $menu_contexto = $('#context_menu');
 let filaSeleccionada = null; // Variable para almacenar la fila seleccionada en el menú contextual
 
+
 // MODALES
 const modalCalculoPTU = new bootstrap.Modal(document.getElementById('modalCalculoPTU'));
 const modal_visibilidad = new bootstrap.Modal(document.getElementById('modal_visibilidad'));
@@ -19,6 +20,7 @@ const modal_tarjeta = new bootstrap.Modal(document.getElementById('modal_tarjeta
 const modal_configuracion = new bootstrap.Modal(document.getElementById('modal_configuracion'));
 const modal_reporte_excel = new bootstrap.Modal(document.getElementById('modal_reporte_excel'));
 const modal_seleccion_fechas = new bootstrap.Modal(document.getElementById('modal_seleccion_fechas'));
+
 
 
 // =============================================================
@@ -32,14 +34,7 @@ const modal_seleccion_fechas = new bootstrap.Modal(document.getElementById('moda
  * @param {number} config Si es 0 no se han cargado archivos excel, si es 1 se han cargado archivos excel
  */
 function setStorage(data, anio, config) {
-
-    const obj = {
-        anio: anio,
-        configuracion: config,
-        empleados: data
-    };
-
-    localStorage.setItem("utilidad", JSON.stringify(obj));
+    localStorage.setItem("utilidad", JSON.stringify(data));
 }
 
 /**
@@ -53,7 +48,7 @@ function getStorage() {
 
     try {
         const obj = JSON.parse(data);
-        return obj.empleados || null;
+        return obj || null;
     } catch (e) {
         console.error("Error parseando storage", e);
         return null;
@@ -90,9 +85,14 @@ function getUtilidad() {
  * @returns {void}
  */
 function syncStorage() {
-    if (!window.jsonUtilidad) return;
+    if (!window.jsonUtilidad) {
+        console.error("ERROR EN LA SINCRONIZACIÓ CON EL STORAGE. Archivo index.js linea 72", window.jsonUtilidad);
+        alerta("error", "Error de almacenamiento", "Error en la sincronización. Contacta a sistemas");
+        return;
+    }
     setStorage(window.jsonUtilidad);
 }
+
 
 /**
  * =============================================================================================
@@ -138,73 +138,6 @@ function alerta(icono, titulo, texto, toast = false, tiempo = 3000) {
 }
 
 /**
- * Obtener la lista de departamentos para el filtro
- */
-function obtener_departamentos() {
-    $.ajax({
-        url: RUTA_RAIZ + "/public/php/obtenerDepartamentos.php",
-        type: "GET",
-        dataType: "json",
-        success: function (data) {
-            // Ordenar departamentos alfabéticamente por nombre_departamento
-            let depa_ordenado = ordenarDepartamentos(data);
-
-            // Renderizar departamentos en la SECCION 1
-            render_departamentos_dias_pago(depa_ordenado);
-
-            // Renderizar departamentos en la SECCION 2
-            render_departamentos_salarios(depa_ordenado);
-
-            // Llenar los select de departamentos principal
-            render_select_departamentos({
-                selector: "#id_departamento",
-                data: ordenarDepartamentos(data),
-                keepFirstOption: true,
-                selectFirst: false
-            });
-
-            // Llenar los select de departamentos de visibilidad
-            render_select_departamentos({
-                selector: "#select_departamento_visibilidad",
-                data: ordenarDepartamentos(data),
-                keepFirstOption: false,
-                selectFirst: true
-            });
-
-            // Llenar los select de departamentos de redondeos
-            render_select_departamentos({
-                selector: "#select_departamento_redondeos",
-                data: ordenarDepartamentos(data),
-                keepFirstOption: false,
-                selectFirst: true
-            });
-
-            // Llenar los select de departamentos de tarjetas
-            render_select_departamentos({
-                selector: "#select_departamento_tarjeta",
-                data: ordenarDepartamentos(data),
-                keepFirstOption: false,
-                selectFirst: true
-            });
-
-            // Llenar los select de departamentos de fechas
-            render_select_departamentos({
-                selector: "#id_departamento_fecha",
-                data: ordenarDepartamentos(data),
-                keepFirstOption: true,
-                selectFirst: false
-            });
-
-            // Llenar la lista de departamentos para exportar
-            render_exportar_departamentos(ordenarDepartamentos(data));
-        },
-        error: function () {
-            console.error("Error al cargar departamentos");
-        }
-    });
-}
-
-/**
  * Ordenar los departamentos alfabéticamente por su nombre,
  * ignorando mayúsculas y acentos, y convertir el nombre a mayúsculas
  * @param {Array} departamentos Array de departamentos con id_departamento y nombre_departamento
@@ -226,7 +159,7 @@ function ordenarDepartamentos(departamentos) {
 /**
  * Renderiza departamentos en un select
  * 
- * @param {Object} config
+ * @param {Object} config Configuración para renderizar los departamentos
  * @param {string} config.selector Selector del select
  * @param {Array} config.data Lista de departamentos
  * @param {boolean} [config.keepFirstOption=false] Mantener primera opción existente
@@ -262,89 +195,83 @@ function render_select_departamentos({
 }
 
 /**
- * Función para renderizar la tabla de días de pago por departamento en la SECCIÓN 1
- * @param {Array} departamentos Deptos con id_departamento y nombre_departamento para construir la tabla de días de pago
+ * Obtener la lista de departamentos para el filtro
  */
-function render_departamentos_dias_pago(departamentos) {
-    // Limpiar tabla antes de renderizar
-    let tbody = $("#cuerpo_tabla_dias_pago");
-    tbody.empty();
-    // Variable temporal para construir el HTML de las filas
-    let tmp = ``;
-    // Recorrer departamentos y construir filas
-    departamentos.forEach((departamento, index) => {
-        tmp += `
-         <tr>
-            <td>${departamento.nombre_departamento}</td>
-            <td>
-                <input type="number" class="form-control form-control-sm text-center" data-id="${departamento.id_departamento}" name="dias_dept[${departamento.id_departamento}]" placeholder="0">
-            </td>
-        </tr>
-        `;
+function obtener_departamentos() {
+    $.ajax({
+        url: RUTA_RAIZ + "/public/php/obtenerDepartamentos.php",
+        type: "GET",
+        dataType: "json",
+        success: function (data) {
+            // Ordenar departamentos alfabéticamente por nombre_departamento
+            let depa_ordenado = ordenarDepartamentos(data);
+
+            // Llenar los select del formulario de configuración
+            render_select_departamentos({
+                selector: "#departamento_configuracion",
+                data: depa_ordenado,
+                keepFirstOption: true,
+                selectFirst: false
+            });
+
+            // ESTO ES PARA LLENAR LOS SELECT DE LOS FILTROS CUANDO YA SE CARGA LA INFORMACIÓN
+            let json = getUtilidad();
+            if (json && json.id_departamento) {
+                // DEBE SER FILTER PORQUE render_select_departamentos ACEPTA UN ARRAY DE DEPARTAMENTOS
+                let depa_seleccionado = depa_ordenado.filter(d => d.id_departamento == json.id_departamento);
+
+                // Llenar los select de departamentos de la tabla principal
+                render_select_departamentos({
+                    selector: "#id_departamento",
+                    data: depa_seleccionado,
+                    keepFirstOption: false,
+                    selectFirst: false
+                });
+            }
+
+        },
+        error: function () {
+            console.error("Error al cargar departamentos");
+        }
     });
-    // Insertar filas en el tbody
-    tbody.html(tmp);
 }
 
 /**
- * Función para renderizar la tabla de salarios por departamento en la SECCIÓN 2
- * @param {Array} departamentos Deptos con id_departamento y nombre_departamento para construir la tabla de salarios
+ * Renderiza empresas en un select
+ * 
+ * @param {Object} config Configuración para renderizar las empresas
+ * @param {string} config.selector Selector del select
+ * @param {Array} config.data Lista de empresas
+ * @param {boolean} [config.keepFirstOption=false] Mantener primera opción existente
+ * @param {boolean} [config.selectFirst=false] Seleccionar automáticamente el primer elemento
  */
-function render_departamentos_salarios(departamentos) {
-    // Limpiar tabla antes de renderizar
-    let tbody = $("#cuerpo_tabla_salarios");
-    tbody.empty();
-    // Variable temporal para construir el HTML de las filas
-    let tmp = ``;
-    // Recorrer departamentos y construir filas
-    departamentos.forEach((departamento, index) => {
-        tmp += `
-        <tr>
-            <td>${departamento.nombre_departamento}</td>
-            <td>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input radio-salario" data-id="${departamento.id_departamento}" type="radio" name="tipo_salario_${departamento.id_departamento}" id="base_${departamento.id_departamento}" value="base" checked>
-                    <label class="form-check-label" for="base_${departamento.id_departamento}">Base</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input radio-salario" data-id="${departamento.id_departamento}" type="radio" name="tipo_salario_${departamento.id_departamento}" id="manual_${departamento.id_departamento}" value="manual">
-                    <label class="form-check-label" for="manual_${departamento.id_departamento}">Manual</label>
-                </div>
-            </td>
-            <td>
-                <input type="number" class="form-control form-control-sm input-salario-manual" data-id="${departamento.id_departamento}" id="monto_${departamento.id_departamento}" disabled placeholder="0.00">
-            </td>
-        </tr>
-        `;
+function render_select_empresas({
+    selector,
+    data,
+    keepFirstOption = false,
+    selectFirst = false
+}) {
+
+    const select = $(selector);
+
+    if (keepFirstOption) {
+        select.find("option:not(:first)").remove();
+    } else {
+        select.empty();
+    }
+
+    data.forEach((empresa, index) => {
+
+        const selected = (selectFirst && index === 0)
+            ? 'selected'
+            : '';
+
+        select.append(`
+            <option ${selected} value="${empresa.id_empresa}">
+                ${empresa.nombre_empresa}
+            </option>
+        `);
     });
-    // Insertar filas en el tbody
-    tbody.html(tmp);
-}
-
-/**
- * Renderizar la lista de departamentos en el modal de exportación
- * @param {Array} data Array de departamentos con id_departamento y nombre_departamento
- */
-function render_exportar_departamentos(data) {
-    let tmp = ``;
-
-    data.forEach(departamento => {
-        tmp += `
-        <label class="list-group-item list-group-item-action d-flex align-items-center py-3">
-            <input
-                class="form-check-input me-3 mt-0"
-                type="checkbox" 
-                value="${departamento.id_departamento}"
-                id="departamento_${departamento.nombre_departamento}"
-                data-id="${departamento.id_departamento}"
-                data-nombre="${departamento.nombre_departamento}" 
-                name="departamentos_seleccionados[]" checked>
-            <span class="flex-grow-1 fw-medium">${departamento.nombre_departamento}</span>
-        </label>
-        `;
-    });
-
-    $('#contenedor_lista_deptamentos').html(tmp);
 }
 
 /**
@@ -356,29 +283,24 @@ function obtener_empresas() {
         type: "GET",
         dataType: "json",
         success: function (data) {
-            // console.log(data);
-            // Llenar el select de empresas de la tabla
-            render_select_empresas(data);
+            // LLENAR EL SELECT DE LA TABLA PRINCIPAL
+            render_select_empresas({
+                selector: "#id_empresa",
+                data: data,
+                keepFirstOption: true,
+                selectFirst: false
+            });
+            // LLENAR EL SELECT DEL MODAL DE SELECCIÓN DE FECHAS
+            render_select_empresas({
+                selector: "#id_empresa_fecha",
+                data: data,
+                keepFirstOption: true,
+                selectFirst: false
+            });
         },
         error: function () {
             console.error("Error al cargar empresas");
         }
-    });
-}
-
-/**
- * Renderizar la lista de empresas en el modal de exportación
- * @param {Array} data Array de empresas con id_empresa y nombre_empresa
- */
-function render_select_empresas(data) {
-    const select = $("#id_empresa");
-    // Mantener la opción por defecto
-    select.find("option:not(:first)").remove();
-
-    data.forEach(function (depto) {
-        select.append(
-            `<option value="${depto.id_empresa}">${depto.nombre_empresa}</option>`
-        );
     });
 }
 
@@ -423,6 +345,71 @@ function buscar_anio() {
 }
 
 /**
+ * =============================================================================================================
+ * FUNCIONES PARA MOSTRAR Y OCULTAR SECCIONES DE LA APLICACIÓN
+ * =============================================================================================================
+ */
+
+/**
+ * Función para mostrar la tabla principal y ocultar los formularios de configuración
+ */
+function mostrar_tabla() {
+    // OCULTAR FORMULARIO DE CONFIGURACIÓN
+    $("#seccion_1_configuracion").addClass("d-none");
+    $("#cuerpo_config_ptu").addClass("d-none");
+    // MOSTRAR TABLA PRINCIPAL
+    $("#seccion_2_resultados").removeClass("d-none");
+
+    // PREPARAR INTERFAZ CON LOS DATOS CARGADOS
+    preparar_interfaz();
+    // RESETEAR EL FORMULARIO DE CONFIGURACIÓN PARA QUE SI SE REGRESA, APAREZCA LIMPIO
+    resetFormularioConfiguracion();
+}
+
+/**
+ * Función para resetear el formulario de configuración a su estado inicial
+ */
+function resetFormularioConfiguracion() {
+    // Reiniciar el input de año
+    $("#anio").val("");
+
+    // Reiniciar el select al valor -1
+    $("#departamento_configuracion").val("-1");
+
+    // Reiniciar días de utilidad
+    $("#dias_utilidad").val("");
+
+    // Reiniciar salario manual y deshabilitarlo
+    $("#usar_salario_manual").prop("checked", false);
+    $("#salario_manual").val("").prop("disabled", true);
+}
+
+// SELECT DE FILTROS PARA LA TABLA PRINCIPAL Y DE MÁS
+const selects_departamentos = ["#id_departamento"];
+
+/**
+ * Función para mostrar formulario y ocultar tabla principal
+ */
+function mostrar_formulario() {
+    // OCULTAR TABLA PRINCIPAL
+    $("#seccion_2_resultados").addClass("d-none");
+    // MOSTRAR FORMULARIO DE CONFIGURACIÓN
+    $("#seccion_1_configuracion").removeClass("d-none");
+    $("#cuerpo_config_ptu").removeClass("d-none");
+
+    // BORRAR EL CUERPO DE LA TABLA PRINCIPAL
+    $("#cuerpo_tabla_ptu").empty();
+    // BORRAR LOS SELECT DE DEPARTAMENTOS PARA EVITAR ERROR AL LLENAR
+    selects_departamentos.forEach(select => {
+        limpiar_select(select);
+    });
+}
+
+function limpiar_select(id_select) {
+    $(id_select).empty().append('<option value="-1">--Selecciona un departamento--</option>');
+}
+
+/**
  * Función para preparar la interfaz, mostrar u ocultar secciones, etc.
  */
 function preparar_interfaz() {
@@ -438,42 +425,10 @@ function preparar_interfaz() {
     $("#span_anio").text(anio);
 }
 
-/**
- * =============================================================================================================
- * FUNCIONES PARA MOSTRAR Y OCULTAR SECCIONES DE LA APLICACIÓN
- * =============================================================================================================
- */
 
-/**
- * Función para mostrar la tabla principal y ocultar los formularios de configuración
- */
-function mostrar_tabla() {
-    // OCULTAR FORMULARIO DE CONFIGURACIÓN
-    $("#seccion_1_configuracion").addClass("d-none");
-    $("#seccion_2_salarios").addClass("d-none");
-    $("#cuerpo_config_ptu").addClass("d-none");
-    // MOSTRAR TABLA PRINCIPAL
-    $("#seccion_3_resultados").removeClass("d-none");
-
-    // PREPARAR INTERFAZ CON LOS DATOS CARGADOS
-    preparar_interfaz();
-}
-
-/**
- * Función para mostrar formulario y ocultar tabla principal
- */
-function mostrar_formulario() {
-    // OCULTAR TABLA PRINCIPAL
-    $("#seccion_3_resultados").addClass("d-none");
-    // MOSTRAR FORMULARIO DE CONFIGURACIÓN
-    $("#seccion_1_configuracion").removeClass("d-none");
-    $("#seccion_2_salarios").removeClass("d-none");
-    $("#cuerpo_config_ptu").removeClass("d-none");
-}
-
-
-// =============================================================================================================
-// =============================================================================================================
+// ================================================================================================
+// SECCION DE INICIALIZACIÓN DE LA APLICACIÓN
+// ================================================================================================
 
 /**
  * Función de inicialización para cargar datos necesarios al iniciar la página
@@ -489,15 +444,13 @@ function init() {
     // RECUPERAR DATOS DE STORAGE SI EXISTEN
     let json = getStorage();
 
+    console.log(json);
+
     if (json) {
         // Si hay datos en storage, cargarlos en la variable global jsonUtilidad
         setUtilidad(json);
-
-        console.log("Datos obtenidos del storage: ", getUtilidad() );
-
         // LLENAR LA TABLA PRINCIPAL CON LOS DATOS DE STORAGE
         llenar_tabla_ptu();
-
         // Mostrar la tabla principal con los datos cargados
         mostrar_tabla();
     } else {
@@ -513,12 +466,4 @@ function init() {
  */
 $(document).ready(function () {
     init();
-});
-
-
-/**
- * Eventos para hacer que los modales sean arrastrables usando jQuery UI
- */
-$(".modal-dialog").draggable({
-    handle: ".modal-header"
 });

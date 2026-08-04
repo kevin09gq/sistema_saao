@@ -19,16 +19,17 @@ function llenar_tabla_fechas() {
     if (!json || json.length === 0) {
         console.warn("No hay datos en json para mostrar en la tabla");
         $('#cuerpo_tabla_ptu').html(
-            '<tr><td colspan="10" class="text-center text-muted">No hay empleados disponibles</td></tr>'
+            '<tr><td colspan="10" class="text-center text-muted"></td></tr>'
         );
         return;
     }
 
     // OBTENER LOS FILTROS SELECCIONADOS
     const textoBusqueda = $('#busqueda_empleado_fechas').val().toLowerCase();
-    const departamentoSeleccionado = $('#id_departamento_fecha').val();
+    // const departamentoSeleccionado = $('#id_departamento_fecha').val();
+    const empresaSeleccionada = $('#id_empresa_fecha').val();
 
-    // FILTRAR LOS EMPLEADOS SEGUN LOS FILTROS SELECCIONADOS
+    // FILTRAR LOS EMPLEADOS SEGÚN LOS FILTROS SELECCIONADOS
     let empleadosFiltrados = json.empleados.filter(emp => {
         // Filtro de búsqueda (clave, nombre y apellidos)
         const coincideBusqueda = !textoBusqueda ||
@@ -38,13 +39,17 @@ function llenar_tabla_fechas() {
             (emp.ap_materno && emp.ap_materno.toLowerCase().includes(textoBusqueda));
 
         // Filtro de departamento por id
-        // Si es -1 significa que debe mostrar todos los departamentos
-        // Si no, mostrar solo los empleado de ese departamento
-        const coincideDepartamento = departamentoSeleccionado === "-1" ||
-            (parseInt(emp.id_departamento) === parseInt(departamentoSeleccionado));
+        // const coincideDepartamento = departamentoSeleccionado === "-1" ||
+        //     (parseInt(emp.id_departamento) === parseInt(departamentoSeleccionado));
 
-        return coincideBusqueda && coincideDepartamento;
+        // Filtro de empresa por id
+        const coincideEmpresa = empresaSeleccionada === "-1" ||
+            (parseInt(emp.id_empresa) === parseInt(empresaSeleccionada));
+
+        // return coincideBusqueda && coincideDepartamento && coincideEmpresa;
+        return coincideBusqueda && coincideEmpresa;
     });
+
 
 
     // LIMPIAR EL CUERPO DE LA TABLA ANTES DE LLENARLA
@@ -68,10 +73,10 @@ function llenar_tabla_fechas() {
         const fila = `
             <tr data-id="${emp.id_empleado}" style="cursor:pointer;">
                 <td>${contador}</td>
-                <td class="text-center">${emp.clave_empleado}</td>
-                <td>${nombreCompleto}</td>
-                <td class="text-center">${emp.fecha_ingreso_real ? formatearFecha(emp.fecha_ingreso_real) : '—'}</td>
-                <td class="text-center">${emp.fecha_ingreso_imss ? formatearFecha(emp.fecha_ingreso_imss) : '—'}</td>
+                <td class="text-center ${emp.status_seguro == 0 ? 'text-muted' : ''}">${emp.clave_empleado}</td>
+                <td class="${emp.status_seguro == 0 ? 'text-muted' : ''}">${nombreCompleto}</td>
+                <td class="text-center ${emp.status_seguro == 0 ? 'text-muted' : ''}">${emp.fecha_ingreso_real ? formatearFecha(emp.fecha_ingreso_real) : '—'}</td>
+                <td class="text-center ${emp.status_seguro == 0 ? 'text-muted' : ''}">${emp.fecha_ingreso_imss ? formatearFecha(emp.fecha_ingreso_imss) : '—'}</td>
                 <td class="text-center">
                     <div class="btn-group btn-group-sm" role="group">
                         <input
@@ -113,6 +118,12 @@ $('#id_departamento_fecha').change(function (e) {
     llenar_tabla_fechas();
 });
 
+// Evento change en select de empresa para actualizar la tabla de fechas
+$('#id_empresa_fecha').change(function (e) {
+    e.preventDefault();
+    llenar_tabla_fechas();
+});
+
 // Evento input en el campo de búsqueda para actualizar la tabla de fechas
 $('#busqueda_empleado_fechas').on('input', function (e) {
     e.preventDefault();
@@ -121,15 +132,14 @@ $('#busqueda_empleado_fechas').on('input', function (e) {
 
 
 /**
+ * =========================================================================================
  * EVENTOS PARA APLICAR A TODOS LOS EMPLEADOS DEL DEPARTAMENTO SELECCIONADO
+ * =========================================================================================
  */
 
 // PONER A TODOS LA FECHA REAL
 $('#btn_todos_fecha_real').click(function (e) {
     e.preventDefault();
-
-    console.log("Hola a todos la fecha real");
-
 
     // RECUPERAR JSON
     let json = getUtilidad();
@@ -138,25 +148,30 @@ $('#btn_todos_fecha_real').click(function (e) {
     let anio = json.anio;
 
     // OBTENER EL DEPARTAMENTO SELECCIONADO
-    const departamentoSeleccionado = $('#id_departamento_fecha').val();
+    // const departamentoSeleccionado = parseInt($('#id_departamento_fecha').val(), 10);
 
-    // Aplicar a todos los empleados del departamento seleccionado la fecha real
+    // OBTENER LA EMPRESA SELECCIONADA
+    const empresaSeleccionada = parseInt($('#id_empresa_fecha').val(), 10);
+
+    // Aplicar a todos los empleados según filtros
     json.empleados.forEach(empleado => {
-        if (empleado.id_departamento == departamentoSeleccionado) {
+        // Validar que el empleado cumpla con los filtros de departamento y empresa
+        // const coincideDepto = (departamentoSeleccionado === -1 || empleado.id_departamento == departamentoSeleccionado);
+        // Si el filtro de empresa es -1, se aplica a todos, si no, solo a los que coincidan con la empresa seleccionada
+        const coincideEmpresa = (empresaSeleccionada === -1 || empleado.id_empresa == empresaSeleccionada);
 
+        if (coincideEmpresa) {
             // VA A USAR LA FECHA REAL
             empleado.usar_fecha_real = true;
 
-            // CALCULAR LOS DÍAS TRABAJADOS. Por defecto usar la fecha real
+            // CALCULAR LOS DÍAS TRABAJADOS
             if (empleado.usar_fecha_real) {
                 empleado.dias_trabajados = diasTrabajados(empleado.fecha_ingreso_real, anio);
             } else {
-                // Si es false usa la fecha del imss
                 empleado.dias_trabajados = diasTrabajados(empleado.fecha_ingreso_imss, anio);
             }
 
             // CALCULAR LOS DIAS DE PTU PROPORCIONAL
-            // dias_pago es la base para calcular
             empleado.dias_ptu = diasPTU(empleado.dias_trabajados, empleado.dias_pago);
 
             // CALCULAR LA PTU
@@ -172,6 +187,7 @@ $('#btn_todos_fecha_real').click(function (e) {
             empleado.neto_pagar_redondeado = calcular_neto_pagar_redondeo(empleado.neto_pagar, empleado.redondeo);
         }
     });
+
 
     // GUARDAR LOS DATOS DE LOS EMPLEADOS EN EL LOCALSTORAGE
     setUtilidad(json);
@@ -197,26 +213,29 @@ $('#btn_todos_fecha_imss').click(function (e) {
     let anio = json.anio;
 
     // OBTENER EL DEPARTAMENTO SELECCIONADO
-    const departamentoSeleccionado = $('#id_departamento_fecha').val();
+    //const departamentoSeleccionado = parseInt($('#id_departamento_fecha').val(), 10);
 
-    // Aplicar a todos los empleados del departamento seleccionado la fecha imss
-    // Sólo aplica si el empleado tiene seguro
+    // OBTENER LA EMPRESA SELECCIONADA
+    const empresaSeleccionada = parseInt($('#id_empresa_fecha').val(), 10);
+
+    // Aplicar a todos los empleados según filtros
     json.empleados.forEach(empleado => {
-        if (empleado.id_departamento == departamentoSeleccionado && empleado.status_seguro == 1) {
+        // const coincideDepto = (departamentoSeleccionado === -1 || empleado.id_departamento == departamentoSeleccionado);
+        const coincideEmpresa = (empresaSeleccionada === -1 || empleado.id_empresa == empresaSeleccionada);
+
+        // Solo aplica si el empleado tiene seguro social
+        if (coincideEmpresa && empleado.status_seguro == 1 && empleado.fecha_ingreso_imss) {
             // VA A USAR LA FECHA IMSS
             empleado.usar_fecha_real = false;
 
-
-            // CALCULAR LOS DÍAS TRABAJADOS. Por defecto usar la fecha real
+            // CALCULAR LOS DÍAS TRABAJADOS
             if (empleado.usar_fecha_real) {
                 empleado.dias_trabajados = diasTrabajados(empleado.fecha_ingreso_real, anio);
             } else {
-                // Si es false usa la fecha del imss
                 empleado.dias_trabajados = diasTrabajados(empleado.fecha_ingreso_imss, anio);
             }
 
             // CALCULAR LOS DIAS DE PTU PROPORCIONAL
-            // dias_pago es la base para calcular
             empleado.dias_ptu = diasPTU(empleado.dias_trabajados, empleado.dias_pago);
 
             // CALCULAR LA PTU
@@ -232,6 +251,7 @@ $('#btn_todos_fecha_imss').click(function (e) {
             empleado.neto_pagar_redondeado = calcular_neto_pagar_redondeo(empleado.neto_pagar, empleado.redondeo);
         }
     });
+
 
     // Recalcular los valores de todos
     let empleados_tmp = json.empleados;
@@ -335,6 +355,16 @@ $(document).on('change', '.checked_fecha_imss', function (e) {
         return;
     }
 
+    // SI NO TIENE FECHA IMSS, NO SE PUEDE CAMBIAR A ESA OPCIÓN
+    if (!json.empleados[indexEmpleado].fecha_ingreso_imss) {
+        Swal.fire({
+            icon: "error",
+            title: "Sin fecha",
+            text: "El empleado no tiene fecha de ingreso IMSS asignada."
+        });
+        return;
+    }
+
     // Cambiar a usar fecha real
     json.empleados[indexEmpleado].usar_fecha_real = false;
 
@@ -420,21 +450,42 @@ function obtener_fechas_ingreso() {
         return;
     }
 
+    const anio = json.anio;
+    const departamentoSeleccionado = $('#id_departamento_fecha').val();
+    const empresaSeleccionada = $('#id_empresa_fecha').val();
+
     $.ajax({
         type: "GET",
         url: RUTA_RAIZ + "/reparto_utilidades/php/utilidades.php",
         data: {
-            accion: "obtener_empleados"
+            accion: "obtener_empleados",
+            anio: anio
         },
         dataType: "json",
         success: function (response) {
 
-            // FILTRAR SOLO LAS FECHAS DE INGRESO REAL E IMSS DE CADA EMPLEADO CON SU ID
-            let empleados_fechas = response.data.map(emp => ({
-                id_empleado: emp.id_empleado,
-                fecha_ingreso_real: emp.fecha_ingreso_real,
-                fecha_ingreso_imss: emp.fecha_ingreso_imss
-            }));
+            // FILTRAR SOLO LOS EMPLEADOS SEGÚN DEPARTAMENTO Y EMPRESA
+            let empleados_fechas = response.data
+                .filter(emp => {
+                    // SE FILTRA PRIMERO POR DEPARTAMENTO Y EMPRESA
+                    // SI ES -1 EN CUALQUIERA DE LOS DOS, SE INCLUYEN TODOS LOS EMPLEADOS SIN IMPORTAR ESE CRITERIO
+                    // const coincideDepartamento = departamentoSeleccionado === "-1" ||
+                    //     parseInt(emp.id_departamento) === parseInt(departamentoSeleccionado);
+
+                    const coincideEmpresa = empresaSeleccionada === "-1" ||
+                        parseInt(emp.id_empresa) === parseInt(empresaSeleccionada);
+
+                    // return coincideDepartamento && coincideEmpresa;
+                    return coincideEmpresa;
+                })
+                .map(emp => ({
+                    // SOLO SE OBTIENEN LOS CAMPOS NECESARIOS PARA ACTUALIZAR LAS FECHAS DE INGRESO EN EL JSON DEL STORAGE
+                    id_empleado: emp.id_empleado,
+                    fecha_ingreso_real: emp.fecha_ingreso_real,
+                    fecha_ingreso_imss: emp.fecha_ingreso_imss,
+                    id_empresa: emp.id_empresa,
+                    id_departamento: emp.id_departamento
+                }));
 
             // UNIR LAS FECHAS DE INGRESO CON EL JSON DE EMPLEADOS DEL STORAGE
             let empleados_con_fechas = unir_fechas(empleados_fechas, json);

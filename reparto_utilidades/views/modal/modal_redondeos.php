@@ -1,5 +1,5 @@
 <!-- Modal Reporte Excel por Departamentos y Empresa -->
-<div class="modal fade" id="modal_redondeos" tabindex="-1" aria-labelledby="modal_redondeos_label" aria-hidden="true">
+<div class="modal fade" id="modal_redondeos" tabindex="-1" aria-labelledby="modal_redondeos_label" aria-hidden="true" data-bs-keyboard="false" data-bs-backdrop="static">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content border-0 shadow-lg">
             <!-- Header con identidad visual de Excel -->
@@ -22,12 +22,10 @@
                         </div>
                     </div>
 
+                    <!-- Campo de Búsqueda -->
                     <div class="row g-2 mb-3">
-                        <div class="col-md-7">
-                            <input type="text" class="form-control form-control-sm shadow-sm" placeholder="Buscar empleado..." id="buscar_empleado_redondeos">
-                        </div>
                         <div class="col-md-5">
-                            <select class="form-select form-select-sm shadow-sm" id="select_departamento_redondeos"></select>
+                            <input type="text" class="form-control form-control-sm shadow-sm" placeholder="Buscar empleado..." id="buscar_empleado_redondeos">
                         </div>
                     </div>
 

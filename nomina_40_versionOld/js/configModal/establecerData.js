@@ -1,0 +1,662 @@
+// Objeto para almacenar el empleado actual del modal
+const objEmpleado = {
+    empleado: null,
+
+    // Getter: obtener el empleado actual
+    getEmpleado() {
+        return this.empleado;
+    },
+
+    // Setter: establecer el empleado
+    setEmpleado(emp) {
+        this.empleado = emp;
+    },
+
+    // Limpiar: resetear el empleado
+    limpiarEmpleado() {
+        this.empleado = null;
+    }
+};
+
+function establerDataModal(empleado) {
+    // Guardar el empleado en el objeto
+    objEmpleado.setEmpleado(empleado);
+
+    // Establecer información del empleado
+    establecerInformacionEmpleado(empleado);
+
+    // Establecer Biometrico del empleado
+    establecerBiometrico(empleado);
+
+    // Colorear filas de biométrico según eventos
+    establecerColorBiometrico(empleado);
+
+    // Establecer Biometrico Redondeado del empleado
+    establecerBiomtricoRedondeado(empleado);
+
+    // Establecer percepciones del empleado
+    establecerPercepciones(empleado);
+
+    // Establecer percepciones adicionales del empleado
+    mostrarPercepcionesExtras40lbs(empleado);
+    mostrarDeduccionesExtras40lbs(empleado);
+
+    // Establecer conceptos del empleado
+    establecerConceptos(empleado);
+
+    // Establecer deducciones del empleado
+    establecerDeducciones(empleado);
+
+    // Establecer historial de checador del empleado
+    establecerHistorialChecador(empleado);
+    // Establecer historial de inasistencias del empleado
+    establecerHistorialInasistencias(empleado);
+    // Establecer historial de permisos del empleado
+    establecerHistorialPermisos(empleado);
+    // Establecer historial de uniforme del empleado
+    establecerHistorialUniforme(empleado);
+
+    mostrarEntradasTempranas(empleado);
+    mostrarSalidasTardias(empleado);
+    mostrarSalidasTempranas(empleado);
+    mostrarRetardos(empleado);
+    mostrarInasistencias(empleado);
+    mostrarOlvidosChecador(empleado);
+
+
+    calcularSueldoACobrar();
+
+    // Mostrar modal usando Bootstrap
+    const modalEl = document.getElementById('modal-40lbs');
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+}
+
+/************************************
+ * ESTABLECER INFORMACIÓN DEL EMPLEADO
+ ************************************/
+
+function establecerInformacionEmpleado(empleado) {
+    // Rellenar los campos del modal con los datos del empleado
+    $('#campo-clave-40lbs').text(empleado.clave || '');
+    $('#campo-nombre-40lbs').text(empleado.nombre || '');
+
+    // Si tiene sueldo base, mostrar guión ya que no se calculan minutos por redondeo
+    const esSueldoBase = empleado.sueldo_base === true;
+    $('#campo-minutos-trabajados-40lbs').text(esSueldoBase ? '-' : (empleado.minutos_trabajados || '0'));
+    $('#campo-minutos-extras-40lbs').text(esSueldoBase ? '-' : (empleado.minutos_extras_trabajados || '0'));
+
+    $('#nombre-empleado-modal').text(empleado.nombre || '');
+}
+
+/************************************
+ * ESTABLECER BIOMETRICO DEL EMPLEADO
+ ************************************/
+function establecerBiometrico(empleado) {
+
+    // Si no hay empleado, salir
+    if (!empleado || !empleado.registros) return;
+
+    // Array de nombres de días en español
+    const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+    // Limpiar la tabla
+    $('#tbody-biometrico-40lbs').empty();
+
+    // Iterar sobre los registros y agregar filas
+    empleado.registros.forEach(registro => {
+        // Calcular día de la semana a partir de la fecha (formato DD/MM/YYYY)
+        const [dia, mes, anio] = registro.fecha.split('/');
+        const fecha = new Date(anio, mes - 1, dia);
+        const nombreDia = dias[fecha.getDay()];
+
+        // Crear fila
+        const fila = `
+            <tr>
+                <td>${nombreDia}</td>
+                <td>${registro.fecha}</td>
+                <td>${registro.entrada || '-'}</td>
+                <td>${registro.salida || '-'}</td>
+               
+            </tr>
+        `;
+
+        // Agregar fila a la tabla
+        $('#tbody-biometrico-40lbs').append(fila);
+    });
+}
+
+function establecerColorBiometrico(empleado) {
+    if (!empleado || !empleado.registros) return;
+
+    // Definir colores para cada tipo de evento
+    const colores = {
+        retardo: '#fef3c7',           // Amarillo (retardos)
+        olvido: '#fee2e2',            // Rojo (olvidos)
+        entrada_temprana: '#dbeafe',  // Azul (entradas tempranas)
+        salida_tardia: '#fed7aa',     // Naranja (salidas tardías)
+        salida_temprana: '#d1d5db',   // Gris oscuro (salidas tempranas)
+        inasistencia: '#f3f4f6',      // Gris (inasistencias)
+        mas_de_4_marcajes: '#876ca3', // Morado claro (más de 4 marcajes)
+        exceso_comida: '#dfabc8'      // Rosa (exceso de comida)
+    };
+
+    const abreviaturas = {
+        retardo: 'R',
+        olvido: 'O',
+        entrada_temprana: 'ET',
+        salida_tardia: 'STA',
+        salida_temprana: 'STE',
+        inasistencia: 'I',
+        mas_de_4_marcajes: '>4',
+        exceso_comida: 'EC'           // Exceso Comida
+    };
+
+    // Identificar la primera y última fila de cada fecha para aplicar eventos específicos
+    const primeraFilaPorFecha = {};
+    const ultimaFilaPorFecha = {};
+    let fechaAnterior = null;
+
+    $('#tbody-biometrico-40lbs tr').each(function () {
+        const $celdas = $(this).find('td');
+        const fecha = $celdas.eq(1).text().trim();
+
+        if (fecha) {
+            if (fecha !== fechaAnterior) {
+                primeraFilaPorFecha[fecha] = this;
+                fechaAnterior = fecha;
+            }
+            ultimaFilaPorFecha[fecha] = this;
+        }
+    });
+
+    // Obtener horarios para comparaciones (Prioridad: oficial si es sueldo base, sino semanal global)
+    const horariosPorDia = {};
+    const fuenteHorarios = (empleado.sueldo_base === true && Array.isArray(empleado.horario_oficial))
+        ? empleado.horario_oficial
+        : (window.jsonNomina40lbs ? window.jsonNomina40lbs.horarios_semanales : null);
+
+    if (Array.isArray(fuenteHorarios)) {
+        fuenteHorarios.forEach(h => {
+            horariosPorDia[normalizarDia(h.dia)] = h;
+        });
+    }
+
+    // Recorrer las filas y aplicar lógica de colorización
+    const contadoresFecha = {};
+    $('#tbody-biometrico-40lbs tr').each(function () {
+        const $fila = $(this);
+        const $celdas = $fila.find('td');
+        const fecha = $celdas.eq(1).text().trim();
+        const entrada = $celdas.eq(2).text().trim();
+        const salida = $celdas.eq(3).text().trim();
+
+        if (!fecha) return;
+
+        if (contadoresFecha[fecha] === undefined) {
+            contadoresFecha[fecha] = 0;
+        }
+        const indexRegistro = contadoresFecha[fecha];
+        contadoresFecha[fecha]++;
+
+        const eventosEnRegistro = [];
+        let colorAplicar = null;
+        const diaNom = normalizarDia(nombreDia(fecha));
+        const horario = horariosPorDia[diaNom];
+
+        // 0. MÁS DE 4 MARCAJES (Si el empleado tiene más de 4 marcajes en el día)
+        const registrosFecha = empleado.registros.filter(r => r.fecha === fecha);
+        let totalMarcajesDia = 0;
+        registrosFecha.forEach(r => {
+            if (r.entrada && r.entrada.trim() !== '' && r.entrada.trim() !== '-') {
+                totalMarcajesDia++;
+            }
+            if (r.salida && r.salida.trim() !== '' && r.salida.trim() !== '-') {
+                totalMarcajesDia++;
+            }
+        });
+
+        if (totalMarcajesDia > 4) {
+            if (!colorAplicar) colorAplicar = colores.mas_de_4_marcajes;
+            eventosEnRegistro.push(abreviaturas.mas_de_4_marcajes);
+        }
+
+        // 1. INASISTENCIAS (Basado en historial)
+        if (Array.isArray(empleado.historial_inasistencias)) {
+            const tieneInasistencia = empleado.historial_inasistencias.some(i =>
+                normalizarDia(i.dia) === diaNom
+            );
+            if (tieneInasistencia) {
+                if (!colorAplicar) colorAplicar = colores.inasistencia;
+                eventosEnRegistro.push(abreviaturas.inasistencia);
+            }
+        }
+
+        // 2. OLVIDOS (Si falta entrada o salida)
+        if ((entrada === '-' || salida === '-') && Array.isArray(empleado.historial_olvidos)) {
+            const tieneOlvido = empleado.historial_olvidos.some(o => o.fecha === fecha);
+            if (tieneOlvido) {
+                if (!colorAplicar) colorAplicar = colores.olvido;
+                eventosEnRegistro.push(abreviaturas.olvido);
+            }
+        }
+
+        // Si tenemos horario, calcular eventos de tiempo
+        if (horario) {
+            // 3. RETARDOS (Solo en la primera fila del día)
+            if (primeraFilaPorFecha[fecha] === this && entrada && entrada !== '-' && horario.entrada) {
+                const diff = aMinutos(entrada) - aMinutos(horario.entrada);
+                if (diff > 0) {
+                    if (!colorAplicar) colorAplicar = colores.retardo;
+                    eventosEnRegistro.push(abreviaturas.retardo);
+                }
+            }
+
+            // 4. ENTRADAS TEMPRANAS (Solo en la primera fila del día)
+            if (primeraFilaPorFecha[fecha] === this && entrada && entrada !== '-' && horario.entrada) {
+                const diff = aMinutos(entrada) - aMinutos(horario.entrada);
+                if (diff < -50) { // Siguiendo lógica de eventos.js
+                    if (!colorAplicar) colorAplicar = colores.entrada_temprana;
+                    eventosEnRegistro.push(abreviaturas.entrada_temprana);
+                }
+            }
+
+            // 5. SALIDAS TARDÍAS (Solo en la última fila del día)
+            if (ultimaFilaPorFecha[fecha] === this && salida && salida !== '-' && horario.salida) {
+                const diff = aMinutos(salida) - aMinutos(horario.salida);
+                if (diff > 50) { // Siguiendo lógica de eventos.js
+                    if (!colorAplicar) colorAplicar = colores.salida_tardia;
+                    eventosEnRegistro.push(abreviaturas.salida_tardia);
+                }
+            }
+
+            // 6. SALIDAS TEMPRANAS (Solo en la última fila del día)
+            if (ultimaFilaPorFecha[fecha] === this && salida && salida !== '-' && horario.salida) {
+                const diff = aMinutos(salida) - aMinutos(horario.salida);
+                if (diff < -5) { // Siguiendo lógica de eventos.js
+                    if (!colorAplicar) colorAplicar = colores.salida_temprana;
+                    eventosEnRegistro.push(abreviaturas.salida_temprana);
+                }
+            }
+
+            // 7. EXCESO COMIDA (Si el día contempla comida, el empleado tiene 2+ registros, y es el segundo registro del día)
+            if (horario && 
+                horario.entrada_comida && horario.entrada_comida !== '-' && horario.entrada_comida !== '00:00' &&
+                horario.termino_comida && horario.termino_comida !== '-' && horario.termino_comida !== '00:00' &&
+                registrosFecha.length >= 2 && indexRegistro === 1) {
+                
+                const regresoReal = registrosFecha[1].entrada;
+                const salidaReal = registrosFecha[0].salida;
+                
+                if (regresoReal && regresoReal !== '-' && salidaReal && salidaReal !== '-') {
+                    const diffRegreso = aMinutos(regresoReal) - aMinutos(horario.termino_comida);
+                    const comidaRealMinutos = aMinutos(regresoReal) - aMinutos(salidaReal);
+                    const comidaProgramadaMinutos = aMinutos(horario.termino_comida) - aMinutos(horario.entrada_comida);
+                    const diffDuracion = comidaRealMinutos - comidaProgramadaMinutos;
+
+                    // Si regresó después de los 15 minutos de tolerancia o duró más de la comida programada más 15 minutos de tolerancia
+                    if (diffRegreso > 15 || diffDuracion > 15) {
+                        if (!colorAplicar) colorAplicar = colores.exceso_comida;
+                        eventosEnRegistro.push(abreviaturas.exceso_comida);
+                    }
+                }
+            }
+        }
+
+        // Aplicar el color si se encontró un evento
+        if (colorAplicar) {
+            $fila.css('background-color', colorAplicar);
+        }
+
+        // Agregar badge si hay eventos detectados
+        if (eventosEnRegistro.length > 0) {
+            const eventosTexto = eventosEnRegistro.join(', ');
+            const badgeColor = '#000000';
+            const badge = `<span class="badge" style="background-color: ${colorAplicar || '#e5e7eb'}; color: ${badgeColor}; margin-left: 8px; font-size: 0.85em; padding: 2px 6px; border:1px solid ${badgeColor}; border-radius:4px;">${eventosTexto}</span>`;
+            $celdas.eq(0).append(badge);
+        }
+    });
+}
+/************************************
+ * ESTABLECER BIOMÉTRICO REDONDEADO DEL EMPLEADO
+ ************************************/
+function establecerBiomtricoRedondeado(emp) {
+    if (!emp) return;
+    const isBase = emp.sueldo_base === true;
+    const datos = isBase ? (emp.horario_oficial || []) : (emp.biometrico_redondeado || []);
+
+    $('#btn-biometrico-redondeado-40lbs').html(isBase ? '<i class="bi bi-calendar3"></i> Horario Oficial' : '<i class="bi bi-clock-history"></i> Biometrico Redondeado');
+    $('#tabla-biometrico-redondeado th:nth-child(n+6)').toggle(!isBase);
+
+    $('#tbody-biometrico-redondeado-40lbs').html(datos.map(reg => `
+        <tr>
+            <td class="text-center">${String(reg.dia || '').charAt(0).toUpperCase() + String(reg.dia || '').slice(1).toLowerCase()}</td>
+            <td class="text-center">${reg.entrada || '-'}</td>
+            <td class="text-center">${isBase ? (reg.salida_comida || '-') : (reg.entrada_comida || '-')}</td>
+            <td class="text-center">${isBase ? (reg.entrada_comida || '-') : (reg.termino_comida || '-')}</td>
+            <td class="text-center">${reg.salida || '-'}</td>
+            ${isBase ? '' : `
+                <td class="text-center">${reg.horas_comida || '-'}</td>
+                <td class="text-center">${reg.minutos_trabajados || '-'}</td>
+                <td class="text-center">${reg.horas_trabajadas || '-'}</td>
+            `}
+        </tr>
+    `).join(''));
+}
+
+
+/************************************
+ * ESTABLECER PERCEPCIONES DEL EMPLEADO
+ ************************************/
+function establecerPercepciones(empleado) {
+    // Establecer sueldo neto
+    $("#mod-sueldo-neto-40lbs").val(empleado.sueldo_neto || '');
+
+    // Establecer incentivo 
+    $("#mod-incentivo-40lbs").val(empleado.incentivo || '');
+
+    // Establecer Horas extras
+    $("#mod-horas-extras-40lbs").val(empleado.horas_extra || '');
+
+    // Establecer Bono de Antiguedad
+    $("#mod-bono-antiguedad-40lbs").val(empleado.bono_antiguedad || '');
+
+    // Establecer actividades especiales
+    $("#mod-actividades-especiales-40lbs").val(empleado.actividades_especiales || '');
+
+    // Establecer puesto
+    $("#mod-puesto-40lbs").val(empleado.puesto || '');
+
+    // Establecer total extras
+    $("#mod-total-extra-40lbs").val(empleado.sueldo_extra_total || '');
+
+}
+
+/************************************
+ * ESTABLECER CONCEPTOS DEL EMPLEADO
+ ************************************/
+
+function establecerConceptos(empleado) {
+
+    // Si no hay empleado, salir
+    if (!empleado) return;
+
+    // Verificar si el empleado tiene seguro social
+    const tieneSeguroSocial = empleado.seguroSocial !== false;
+    const quitarTarjeta = empleado.quitar_tarjeta === true;
+
+    desabilitarCamposConceptos(tieneSeguroSocial, quitarTarjeta);
+    const conceptos = empleado.conceptos || [];
+
+    // Buscar conceptos por código
+    const conceptoISR = conceptos.find(c => c.codigo === "45");
+    const conceptoIMSS = conceptos.find(c => c.codigo === "52");
+    const conceptoInfonavit = conceptos.find(c => c.codigo === "16");
+    const conceptoAjusteSub = conceptos.find(c => c.codigo === "107");
+
+    // Establecer valores en los campos de entrada
+    $('#mod-isr-40lbs').val(conceptoISR ? conceptoISR.resultado || '' : '');
+    $('#mod-imss-40lbs').val(conceptoIMSS ? conceptoIMSS.resultado || '' : '');
+    $('#mod-infonavit-40lbs').val(conceptoInfonavit ? conceptoInfonavit.resultado || '' : '');
+    $('#mod-ajustes-sub-40lbs').val(conceptoAjusteSub ? conceptoAjusteSub.resultado || '' : '');
+
+    // Calcular total de conceptos
+    calcularTotalConceptosJornalero();
+}
+
+// Función para calcular el total de conceptos y mostrarlo en el campo correspondiente
+function calcularTotalConceptosJornalero() {
+    const isr = parseFloat($('#mod-isr-40lbs').val()) || 0;
+    const imss = parseFloat($('#mod-imss-40lbs').val()) || 0;
+    const infonavit = parseFloat($('#mod-infonavit-40lbs').val()) || 0;
+    const ajusteSub = parseFloat($('#mod-ajustes-sub-40lbs').val()) || 0;
+
+    const total = isr + imss + infonavit + ajusteSub;
+
+    $('#mod-total-conceptos-40lbs').val(total.toFixed(2));
+}
+
+function desabilitarCamposConceptos(tieneSeguroSocial, quitarTarjeta) {
+
+    // Deshabilitar o habilitar campos de conceptos según seguroSocial
+    if (!tieneSeguroSocial) {
+        // Deshabilitar campos de entrada
+        $('#mod-isr-40lbs').prop('disabled', true);
+        $('#mod-imss-40lbs').prop('disabled', true);
+        $('#mod-infonavit-40lbs').prop('disabled', true);
+        $('#mod-ajustes-sub-40lbs').prop('disabled', true);
+        $('#mod-tarjeta-40lbs').prop('disabled', true);
+
+        // Deshabilitar botones de aplicar
+        $('#btn-aplicar-isr-40lbs').prop('disabled', true);
+        $('#btn-aplicar-imss-40lbs').prop('disabled', true);
+        $('#btn-aplicar-infonavit-40lbs').prop('disabled', true);
+        $('#btn-aplicar-ajuste-sub-40lbs').prop('disabled', true);
+        $('#btn-aplicar-tarjeta-40lbs').prop('disabled', true);
+
+        // Deshabilitar total (aunque ya tiene readonly)
+        $('#mod-total-conceptos-40lbs').prop('disabled', true);
+
+        return; // Salir sin procesar conceptos
+    }
+
+    // Si tiene seguro social, habilitar los campos
+    $('#mod-isr-40lbs').prop('disabled', false);
+    $('#mod-imss-40lbs').prop('disabled', false);
+    $('#mod-infonavit-40lbs').prop('disabled', false);
+    $('#mod-ajustes-sub-40lbs').prop('disabled', false);
+    $('#mod-tarjeta-40lbs').prop('disabled', false);
+
+    $('#btn-aplicar-isr-40lbs').prop('disabled', false);
+    $('#btn-aplicar-imss-40lbs').prop('disabled', false);
+    $('#btn-aplicar-infonavit-40lbs').prop('disabled', false);
+    $('#btn-aplicar-ajuste-sub-40lbs').prop('disabled', false);
+    $('#btn-aplicar-tarjeta-40lbs').prop('disabled', true);
+    $('#mod-total-conceptos-40lbs').prop('disabled', false);
+
+    // Si quitarTarjeta es true, deshabilitar específicamente el campo de la tarjeta
+    if (quitarTarjeta) {
+        $('#mod-tarjeta-40lbs').prop('disabled', true);
+        $('#btn-aplicar-tarjeta-40lbs').prop('disabled', true);
+    }
+}
+
+
+/************************************
+ * ESTABLECER DEDUCCIONES DEL EMPLEADO
+ ************************************/
+
+function establecerDeducciones(empleado) {
+    // Si no hay empleado, salir
+    if (!empleado) return;
+
+    // Establecer tarjeta 
+    $('#mod-tarjeta-40lbs').val(empleado.tarjeta || '');
+    // Establecer préstamo
+    $('#mod-prestamo-40lbs').val(empleado.prestamo || '');
+    // Establecer Permiso
+    $('#mod-permisos-40lbs').val(empleado.permiso || '');
+    // Establecer checador
+    $('#mod-checador-40lbs').val(empleado.checador || '');
+    // Establecer Uniforme
+    $('#mod-uniforme-40lbs').val(empleado.uniformes || '');
+    // Establecer inasistencias
+    $('#mod-inasistencias-40lbs').val(empleado.inasistencia || '');
+    // Establecer fa_gafet_cofia
+    $('#mod-fagafetcofia-40lbs').val(empleado.fa_gafet_cofia || '');
+
+    // Restaurar estado del redondeo (si estaba activo al guardar)
+    const redondeoActivo = empleado.redondeo_activo === true;
+    $('#mod-redondear-sueldo-40lbs').prop('checked', redondeoActivo);
+
+}
+
+/************************************
+ * ESTABLECER HISTORIAL CHECADOR, INASISTENCIAS
+ ************************************/
+
+function establecerHistorialChecador(empleado) {
+    // Validar que exista el empleado
+    if (!empleado) return;
+
+    // Obtener el contenedor del historial
+    const $contenedor = $('#contenedor-historial-olvidos');
+    $contenedor.empty();
+
+    // Si no hay historial, mostrar mensaje
+    if (!Array.isArray(empleado.historial_olvidos) || empleado.historial_olvidos.length === 0) {
+        $contenedor.html('<p class="text-muted text-center">Sin olvidos por mostrar</p>');
+        return;
+    }
+
+    // Crear tabla con los datos del historial
+    const html = `
+        <table class="table table-sm table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Día</th>
+                    <th>Fecha</th>
+                    <th>Descuento</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${empleado.historial_olvidos.map((olvido, index) => `
+                    <tr>
+                        <td>${olvido.dia}</td>
+                        <td>${olvido.fecha}</td>
+                        <td>$${parseFloat(olvido.descuento_olvido).toFixed(2)}</td>
+                        <td><button type="button" class="btn btn-sm btn-primary btn-editar-olvido" data-index="${index}"><i class="bi bi-pencil"></i></button></td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+
+    $contenedor.html(html);
+}
+
+function establecerHistorialInasistencias(empleado) {
+    // Validar que exista el empleado
+    if (!empleado) return;
+
+    // Obtener el contenedor del historial
+    const $contenedor = $('#contenedor-historial-inasistencias-40lbs');
+    $contenedor.empty();
+
+    // Si no hay historial, mostrar mensaje
+    if (!Array.isArray(empleado.historial_inasistencias) || empleado.historial_inasistencias.length === 0) {
+        $contenedor.html('<p class="text-muted text-center">Sin inasistencias por mostrar</p>');
+        return;
+    }
+
+    // Crear tabla con los datos del historial
+    const html = `
+        <table class="table table-sm table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Día</th>
+                    <th>Descuento</th>
+                    <th>Tipo</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${empleado.historial_inasistencias.map((inasistencia, index) => {
+        const esAutoIgnorada = inasistencia.tipo === 'automatico' && empleado.ignorar_inasistencias_automaticas;
+        return `
+                        <tr class="${esAutoIgnorada ? 'opacity-50 text-decoration-line-through' : ''}">
+                            <td>${inasistencia.dia}</td>
+                            <td>$${parseFloat(inasistencia.descuento_inasistencia).toFixed(2)}</td>
+                            <td>
+                                <span class="badge ${inasistencia.tipo === 'manual' ? 'bg-info' : 'bg-secondary'}">${inasistencia.tipo === 'manual' ? 'Manual' : 'Automática'}</span>
+                                ${esAutoIgnorada ? '<span class="badge bg-warning text-dark ms-1">Ignorada</span>' : ''}
+                            </td>
+                            <td>
+                                ${inasistencia.tipo === 'manual' ? `<button type="button" class="btn btn-sm btn-danger btn-eliminar-inasistencia-manual" data-index="${index}"><i class="bi bi-trash"></i></button>` : '<span class="text-muted">-</span>'}
+                            </td>
+                        </tr>
+                    `;
+    }).join('')}
+            </tbody>
+        </table>
+    `;
+
+    $contenedor.html(html);
+}
+
+function establecerHistorialPermisos(empleado) {
+    // Validar que exista el empleado
+    if (!empleado) return;
+
+    // Obtener el contenedor del historial
+    const $contenedor = $('#contenedor-historial-permisos-40lbs');
+    $contenedor.empty();
+
+    // Si no hay historial, mostrar mensaje
+    if (!Array.isArray(empleado.historial_permisos) || empleado.historial_permisos.length === 0) {
+        $contenedor.html('<p class="text-muted text-center">Sin permisos por mostrar</p>');
+        return;
+    }
+
+    // Crear tabla con los datos del historial
+    const html = `
+        <table class="table table-sm table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Día</th>
+                    <th>Minutos</th>
+                    <th>$/min</th>
+                    <th>Descuento</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${empleado.historial_permisos.map((permiso, index) => `
+                    <tr>
+                        <td>${permiso.dia}</td>
+                        <td>${permiso.minutos_permiso}m</td>
+                        <td>$${parseFloat(permiso.costo_por_minuto).toFixed(2)}</td>
+                        <td>$${parseFloat(permiso.descuento_permiso).toFixed(2)}</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-danger btn-eliminar-permiso-manual" data-index="${index}"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+
+    $contenedor.html(html);
+}
+
+function establecerHistorialUniforme(empleado) {
+    if (!empleado) return;
+    const $contenedor = $('#contenedor-historial-uniforme-40lbs');
+    $contenedor.empty();
+    if (!Array.isArray(empleado.historial_uniforme) || empleado.historial_uniforme.length === 0) {
+        $contenedor.html('<p class="text-muted text-center">Sin uniformes por mostrar</p>');
+        return;
+    }
+    const html = `
+        <table class="table table-sm table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Folio</th>
+                    <th>Cantidad</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${empleado.historial_uniforme.map((u, index) => `
+                    <tr>
+                        <td>${u.folio}</td>
+                        <td>${u.cantidad}</td>
+                        <td><button type="button" class="btn btn-sm btn-danger btn-eliminar-uniforme-manual" data-index="${index}"><i class="bi bi-trash"></i></button></td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+    $contenedor.html(html);
+}

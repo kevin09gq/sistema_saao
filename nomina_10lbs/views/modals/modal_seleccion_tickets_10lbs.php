@@ -12,7 +12,7 @@
                 <div class="mb-3">
                     <div class="mb-2">
                         <small class="text-muted fw-bold">Filtros:</small>
-                        <div class="d-flex gap-2 mt-1">
+                        <div class="d-flex flex-wrap gap-2 mt-1 align-items-center">
                             <button type="button" class="btn btn-sm btn-outline-primary active" id="btn_seleccionar_todos_tickets">
                                 <i class="bi bi-people"></i> Ver Todos
                             </button>
@@ -22,13 +22,16 @@
                             <button type="button" class="btn btn-sm btn-outline-warning text-dark" id="btn_seleccionar_sin_seguro_tickets">
                                 <i class="bi bi-shield-exclamation"></i> Sin Seguro
                             </button>
+                            <select class="form-select form-select-sm w-auto" id="filtro_departamento_ticket_10lbs">
+                                <option value="todos">Todos los departamentos</option>
+                            </select>
                         </div>
                     </div>
                     <div class="mb-3">
                         <small class="text-muted fw-bold">Acciones:</small>
                         <div class="d-flex gap-2 mt-1">
                             <button type="button" class="btn btn-sm btn-outline-info" id="btn_marcar_visibles_tickets">
-                                <i class="bi bi-check-all"></i> Seleccionar Visibles
+                                <i class="bi bi-check-all"></i> Seleccionar Todos
                             </button>
                             <button type="button" class="btn btn-sm btn-outline-secondary" id="btn_deseleccionar_todos_tickets">
                                 <i class="bi bi-x-square"></i> Ninguno
@@ -60,7 +63,7 @@
                     <i class="bi bi-person-badge"></i> Ticket Nombre (<span id="contador_seleccionados_btn">0</span>)
                 </button>
                 <button type="button" class="btn btn-primary" id="btn_generar_tickets_seleccionados" disabled>
-                    <i class="bi bi-download"></i> Generar Tickets (<span id="contador_seleccionados_btn">0</span>)
+                    <i class="bi bi-download"></i> Generar Tickets (<span id="contador_generar_btn">0</span>)
                 </button>
             </div>
         </div>

@@ -1,0 +1,58 @@
+.table-scroll-rounded {
+max-height: 400px;
+overflow-y: auto;
+border-radius: 12px;
+border: 1px solid #dee2e6;
+}
+
+.table-scroll-rounded table {
+margin-bottom: 0;
+border-radius: 12px;
+overflow: hidden;
+}
+
+.table-orange,
+.table-orange td,
+.table-orange th {
+background-color: #ff9900 !important;
+color: #000000 !important;
+}
+
+.table-purple,
+.table-purple>td,
+.table-purple>th {
+background-color: #ceaaf1 !important;
+color: #161516 !important;
+}
+
+.table-brown,
+.table-brown>td,
+.table-brown>th {
+background-color: #c49f92 !important;
+color: #795548 !important;
+}
+
+.table-pink,
+.table-pink td,
+.table-pink th {
+background-color: #e83e8c !important;
+color: #ffffff !important;
+}
+
+#tabsPrincipales {
+    position: sticky;
+    top: -1rem;
+    z-index: 1020;
+    background-color: #ffffff;
+    padding-top: 1rem;
+    margin-top: -1rem;
+    padding-bottom: 0.5rem;
+}
+
+#labelNombreEmpleado,
+#labelTotalEmpleado {
+    color: #ffffff !important;
+}
+
+
+

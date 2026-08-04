@@ -1,6 +1,7 @@
 <?php
 
 header('Content-Type: application/json; charset=utf-8');
+/** @var mysqli $conexion */
 
 include("../../config/config.php");
 include("../../conexion/conexion.php");
@@ -58,6 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $fecha_alta_empresa = null;
     }
+    
     
     // Convertir fecha real si viene
     if ($fecha_alta_imss) {
@@ -316,25 +318,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $update_empleado->execute();
     $update_empleado->close();
 
-    // Sincronizar fecha_alta_empresa con el primer reingreso en historial_reingresos
+    // Manejar la actualización de fecha_alta_empresa con el historial de reingresos
     if (!empty($fecha_alta_empresa)) {
-        $sql_primer_reingreso = $conexion->prepare("SELECT id_historial FROM historial_reingresos WHERE id_empleado = ? ORDER BY fecha_reingreso ASC, id_historial ASC LIMIT 1");
-        if ($sql_primer_reingreso) {
-            $sql_primer_reingreso->bind_param("i", $id_empleado);
-            $sql_primer_reingreso->execute();
-            $resultado_primer = $sql_primer_reingreso->get_result();
-            if ($resultado_primer && $resultado_primer->num_rows > 0) {
-                $fila_primer = $resultado_primer->fetch_assoc();
-                $id_historial_primer = $fila_primer['id_historial'];
+        // Obtener el historial de reingresos del empleado
+        $stmt_historial = $conexion->prepare("SELECT id_historial, fecha_reingreso, fecha_salida FROM historial_reingresos WHERE id_empleado = ? ORDER BY fecha_reingreso DESC, id_historial DESC LIMIT 1");
+        if ($stmt_historial) {
+            $stmt_historial->bind_param("i", $id_empleado);
+            $stmt_historial->execute();
+            $resultado_historial = $stmt_historial->get_result();
+            
+            if ($resultado_historial && $resultado_historial->num_rows > 0) {
+                // El empleado tiene historial de reingresos
+                $fila_historial = $resultado_historial->fetch_assoc();
+                $id_historial_ultimo = $fila_historial['id_historial'];
+                $fecha_reingreso_ultimo = $fila_historial['fecha_reingreso'];
+                $fecha_salida_ultimo = $fila_historial['fecha_salida'];
                 
-                $sql_update_primer = $conexion->prepare("UPDATE historial_reingresos SET fecha_reingreso = ? WHERE id_historial = ?");
-                if ($sql_update_primer) {
-                    $sql_update_primer->bind_param("si", $fecha_alta_empresa, $id_historial_primer);
-                    $sql_update_primer->execute();
-                    $sql_update_primer->close();
+                // Si el último registro tiene fecha de salida (está cerrado), crear nuevo reingreso SOLO si la fecha es diferente
+                if ($fecha_salida_ultimo !== null && $fecha_salida_ultimo !== '' && $fecha_salida_ultimo !== '0000-00-00') {
+                    // Solo crear nuevo registro si la fecha es diferente a la del último reingreso
+                    if ($fecha_alta_empresa !== $fecha_reingreso_ultimo) {
+                        $stmt_nuevo_reingreso = $conexion->prepare("INSERT INTO historial_reingresos (id_empleado, fecha_reingreso, fecha_salida) VALUES (?, ?, NULL)");
+                        if ($stmt_nuevo_reingreso) {
+                            $stmt_nuevo_reingreso->bind_param("is", $id_empleado, $fecha_alta_empresa);
+                            $stmt_nuevo_reingreso->execute();
+                            $stmt_nuevo_reingreso->close();
+                            
+                            // Sincronizar el estatus del empleado a Activo (1)
+                            $stmt_status = $conexion->prepare("UPDATE info_empleados SET id_status = 1 WHERE id_empleado = ?");
+                            if ($stmt_status) {
+                                $stmt_status->bind_param("i", $id_empleado);
+                                $stmt_status->execute();
+                                $stmt_status->close();
+                            }
+                        }
+                    }
+                }
+                // Si el último registro no tiene fecha de salida (está abierto), actualizar la fecha de reingreso
+                else {
+                    $stmt_actualizar_ultimo = $conexion->prepare("UPDATE historial_reingresos SET fecha_reingreso = ? WHERE id_historial = ?");
+                    if ($stmt_actualizar_ultimo) {
+                        $stmt_actualizar_ultimo->bind_param("si", $fecha_alta_empresa, $id_historial_ultimo);
+                        $stmt_actualizar_ultimo->execute();
+                        $stmt_actualizar_ultimo->close();
+                    }
                 }
             }
-            $sql_primer_reingreso->close();
+            $stmt_historial->close();
         }
     }
 

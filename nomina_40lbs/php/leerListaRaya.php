@@ -12,10 +12,10 @@ $spreadsheet = IOFactory::load($tmpFile);
 $sheet = $spreadsheet->getActiveSheet();
 $rows = $sheet->toArray();
 
-$departamentos = [];
-$actualDepto = null;
+$empleados = [];
 $ultimoEmpleadoIdx = null;
 $procesandoEmpleados = false;
+$enDepartamento = false;
 
 function convertirImporteANumero($valor)
 {
@@ -42,43 +42,13 @@ function formatearImporteComoTexto($valor)
     return number_format((float) $valor, 2, '.', '');
 }
 
-// Variables para semana y fechas
-$numeroSemana = null;
-$fechaInicio = null;
-$fechaCierre = null;
-
-// Buscar datos generales en las primeras filas
 foreach ($rows as $row) {
-    // Buscar número de semana
-    foreach ($row as $cell) {
-        if (is_string($cell) && preg_match('/Per[ií]odo\s+Semanal\s+No\.\s*(\d+)/iu', $cell, $matchSemana)) {
-            $numeroSemana = $matchSemana[1];
-        }
-        // Buscar fechas de inicio y cierre
-        if (is_string($cell) && preg_match('/Lista\s+de\s+Raya\s+del\s+(\d{2}\/\w+\/\d{4})\s+al\s+(\d{2}\/\w+\/\d{4})/iu', $cell, $matchFechas)) {
-            $fechaInicio = $matchFechas[1];
-            $fechaCierre = $matchFechas[2];
-        }
-    }
-}
-
-foreach ($rows as $row) {
-    // Detectar nuevo departamento
+    // Detectar nuevo departamento (para saber que estamos en la sección de empleados)
     if (isset($row[0]) && is_string($row[0])) {
         $cell = ltrim($row[0], "'");
         $cell = preg_replace('/(Reg\.? Pat\.? IMSS.*)$/i', '', $cell);
         if (preg_match('/^(\d+)\s+(.+)/u', $cell, $match)) {
-            if ($actualDepto !== null) {
-                $actualDepto['empleados'] = array_values(array_filter($actualDepto['empleados']));
-                $departamentos[] = $actualDepto;
-            }
-            
-            $nombreCompleto = trim($match[2]);
-            $actualDepto = [
-                'nombre' => $nombreCompleto,
-                'empleados' => []
-            ];
-            
+            $enDepartamento = true;
             $ultimoEmpleadoIdx = null;
             $procesandoEmpleados = false;
             continue;
@@ -87,7 +57,7 @@ foreach ($rows as $row) {
 
     // Detectar empleado
     if (
-        $actualDepto &&
+        $enDepartamento &&
         isset($row[0]) && is_numeric($row[0]) &&
         isset($row[1]) && is_string($row[1]) && trim($row[1]) !== ''
     ) {
@@ -96,22 +66,21 @@ foreach ($rows as $row) {
             // Formatear la clave para que tenga 3 dígitos con ceros a la izquierda
             $claveFormateada = str_pad((string)$row[0], 3, '0', STR_PAD_LEFT);
             
-            $empleado = [
+            $empleados[] = [
                 'clave' => $claveFormateada,
                 'nombre' => $nombreEmpleado,
                 'tarjeta' => null,
                 'conceptos' => []
             ];
             
-            $actualDepto['empleados'][] = $empleado;
-            $ultimoEmpleadoIdx = count($actualDepto['empleados']) - 1;
+            $ultimoEmpleadoIdx = count($empleados) - 1;
             $procesandoEmpleados = true;
             continue;
         }
     }
 
     // Detectar "Neto a pagar"
-    if ($actualDepto) {
+    if ($enDepartamento) {
         $esNeto = false;
         $colNeto = null;
         foreach ($row as $idx => $cell) {
@@ -125,9 +94,9 @@ foreach ($rows as $row) {
             for ($i = $colNeto + 1; $i < count($row); $i++) {
                 if (is_numeric($row[$i])) {
                     $neto = floatval($row[$i]);
-                    if ($neto > 0 && $actualDepto && !empty($actualDepto['empleados'])) {
+                    if ($neto > 0 && !empty($empleados)) {
                         // Asignar SIEMPRE al último empleado detectado
-                        $actualDepto['empleados'][count($actualDepto['empleados']) - 1]['tarjeta'] = $neto;
+                        $empleados[count($empleados) - 1]['tarjeta'] = $neto;
                     }
                     break;
                 }
@@ -146,7 +115,7 @@ foreach ($rows as $row) {
 
     // Guardar conceptos
     if (
-        $procesandoEmpleados && $actualDepto && $ultimoEmpleadoIdx !== null &&
+        $procesandoEmpleados && $ultimoEmpleadoIdx !== null &&
         isset($row[5]) && isset($row[6]) && isset($row[8])
     ) {
         $codigoConcepto = trim($row[5]);
@@ -157,7 +126,7 @@ foreach ($rows as $row) {
             $importeInfonavit = convertirImporteANumero($resultadoConcepto);
             $concepto16Idx = null;
 
-            foreach ($actualDepto['empleados'][$ultimoEmpleadoIdx]['conceptos'] as $idx => $concepto) {
+            foreach ($empleados[$ultimoEmpleadoIdx]['conceptos'] as $idx => $concepto) {
                 if (($concepto['codigo'] ?? null) === '16') {
                     $concepto16Idx = $idx;
                     break;
@@ -165,20 +134,20 @@ foreach ($rows as $row) {
             }
 
             if ($concepto16Idx === null) {
-                $actualDepto['empleados'][$ultimoEmpleadoIdx]['conceptos'][] = [
+                $empleados[$ultimoEmpleadoIdx]['conceptos'][] = [
                     'codigo' => '16',
                     'nombre' => 'INFONAVIT',
                     'resultado' => formatearImporteComoTexto($importeInfonavit)
                 ];
             } else {
                 $nuevoImporte =
-                    convertirImporteANumero($actualDepto['empleados'][$ultimoEmpleadoIdx]['conceptos'][$concepto16Idx]['resultado']) + $importeInfonavit;
+                    convertirImporteANumero($empleados[$ultimoEmpleadoIdx]['conceptos'][$concepto16Idx]['resultado']) + $importeInfonavit;
 
-                $actualDepto['empleados'][$ultimoEmpleadoIdx]['conceptos'][$concepto16Idx]['resultado'] =
+                $empleados[$ultimoEmpleadoIdx]['conceptos'][$concepto16Idx]['resultado'] =
                     formatearImporteComoTexto($nuevoImporte);
             }
         } elseif (in_array($codigoConcepto, ['45', '52', '107'], true)) {
-            $actualDepto['empleados'][$ultimoEmpleadoIdx]['conceptos'][] = [
+            $empleados[$ultimoEmpleadoIdx]['conceptos'][] = [
                 'codigo' => $codigoConcepto,
                 'nombre' => $nombreConcepto,
                 'resultado' => $resultadoConcepto
@@ -187,18 +156,8 @@ foreach ($rows as $row) {
     }
 }
 
-// Agregar último departamento
-if ($actualDepto !== null) {
-    $actualDepto['empleados'] = array_values(array_filter($actualDepto['empleados']));
-    $departamentos[] = $actualDepto;
-}
+$empleados = array_values(array_filter($empleados));
 
-// Salida con identificadores
-$output = [
-    'numero_semana' => $numeroSemana,
-    'fecha_inicio' => $fechaInicio,
-    'fecha_cierre' => $fechaCierre,
-    'departamentos' => $departamentos
-];
-
-echo json_encode($output);
+echo json_encode([
+    'empleados' => $empleados
+]);

@@ -140,8 +140,8 @@ $sheet->setTitle(substr($nombreDeptoSeleccionado, 0, 25) . " $tipoSuffix");
 
 // Usar datos del JSON si existen
 if ($jsonNomina) {
-    $fecha_inicio = restarUnDia($jsonNomina['fecha_inicio']) ?? 'Fecha Inicio';
-    $fecha_cierre = restarUnDia($jsonNomina['fecha_cierre']) ?? 'Fecha Cierre';
+    $fecha_inicio = $jsonNomina['fecha_inicio'] ?? 'Fecha Inicio';
+    $fecha_cierre = $jsonNomina['fecha_cierre'] ?? 'Fecha Cierre';
     $ano = date('Y');
 } else {
     $fecha_inicio = '16/Ene';

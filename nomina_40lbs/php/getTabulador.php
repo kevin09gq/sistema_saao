@@ -1,39 +1,32 @@
 <?php
 
-include("../../conexion/conexion.php");
+require_once '../../conexion/conexion.php';
+/** @var mysqli $conexion */
 
-// Verificar si la conexión a la base de datos es válida
-if (!$conexion) {
-    die("Error de conexión: " . mysqli_connect_error());
+$accion = $_POST['accion'] ?? $_GET['accion'] ?? '';
+
+// VALIDAR A QUE FUNCION SE VA A LLAMAR A TRAVEZ DEL CASE
+
+switch ($accion) {
+
+    case 'obtenerTabulador':
+        obtenerTabulador($conexion);
+        break;
+
+    default:
+        echo json_encode([
+            "success" => false,
+            "mensaje" => "Acción no válida."
+        ]);
+        break;
 }
 
-if (isset($_GET['accion']) || isset($_POST['accion'])) {
-    $accion = $_GET['accion'] ?? $_POST['accion'];
-
-    switch ($accion) {
-        case 'obtenerTabulador':
-            // Cambia aquí para obtener id_empresa correctamente de POST o GET
-            $id_empresa = $_POST['id_empresa'] ?? $_GET['id_empresa'] ?? null;
-            obtenerTabulador($id_empresa);
-            break;
-    }
-} else {
-    echo "No se especificó ninguna acción";
-}
-
-function obtenerTabulador($id_empresa)
+function obtenerTabulador(mysqli $conexion)
 {
-    global $conexion;
-
-    // Validar que id_empresa sea numérico y no nulo
-    if (!$id_empresa || !is_numeric($id_empresa)) {
-        echo json_encode([]);
-        return;
-    }
-
-    $query = "SELECT info_tabulador FROM tabulador WHERE id_empresa = ?";
+   
+    $query = "SELECT info_tabulador FROM tabulador WHERE id_empresa = 1";
     $stmt = $conexion->prepare($query);
-    $stmt->bind_param("i", $id_empresa);
+   
     $stmt->execute();
     $result = $stmt->get_result();
 

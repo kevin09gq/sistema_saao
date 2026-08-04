@@ -505,7 +505,7 @@ function validarConceptoMaxTarjeta() {
 
 validarConceptoMax('#mod-isr-coordinador', '45');
 validarConceptoMax('#mod-imss-coordinador', '52');
-validarConceptoMax('#mod-infonavit-coordinador', '16');
+//validarConceptoMax('#mod-infonavit-coordinador', '16');
 validarConceptoMax('#mod-ajustes-sub-coordinador', '107');
 validarConceptoMaxTarjeta();
     

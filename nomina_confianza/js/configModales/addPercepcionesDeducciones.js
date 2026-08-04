@@ -9,6 +9,15 @@ $(document).ready(function () {
     $('#check-all-masivo').on('change', function () {
         const isChecked = $(this).is(':checked');
         $('.check-empleado-masivo:visible').prop('checked', isChecked);
+        $('.check-depto-masivo:visible').prop('checked', isChecked);
+        actualizarContadorSeleccionados();
+    });
+
+    // Checkbox de departamento para seleccionar/deseleccionar empleados del departamento
+    $(document).on('change', '.check-depto-masivo', function () {
+        const deptoId = $(this).data('depto-id');
+        const isChecked = $(this).is(':checked');
+        $(`.emp-row-depto-masivo-${deptoId}:visible .check-empleado-masivo`).prop('checked', isChecked);
         actualizarContadorSeleccionados();
     });
 
@@ -21,9 +30,21 @@ $(document).ready(function () {
     $('#buscar-empleado-masivo').on('input', function () {
         const busqueda = $(this).val().toLowerCase();
         $('#tbody-empleados-masivo tr').each(function () {
+            // No ocultar las filas de encabezado de departamento si tienen elementos hijos visibles
+            if ($(this).hasClass('table-secondary')) return;
+
             const texto = $(this).text().toLowerCase();
             $(this).toggle(texto.indexOf(busqueda) > -1);
         });
+
+        // Ocultar cabeceras de departamento si no hay empleados visibles en él
+        $('.depto-header-row-masivo').each(function () {
+            const deptoId = $(this).data('depto-id');
+            const empleadosVisibles = $(`.emp-row-depto-masivo-${deptoId}:visible`).length;
+            $(this).toggle(empleadosVisibles > 0);
+        });
+
+        actualizarContadorSeleccionados();
     });
 
     // Botón para aplicar el concepto
@@ -45,16 +66,23 @@ function cargarEmpleadosMasivo() {
     $('#nombre-concepto-masivo').val('');
     $('#importe-concepto-masivo').val('0.00');
 
+    let deptoCounter = 0;
+
     jsonNominaConfianza.departamentos.forEach(depto => {
         // Filtrar empleados que se muestran en la nómina
         const empleadosVisibles = depto.empleados.filter(emp => emp.mostrar !== false);
 
         if (empleadosVisibles.length === 0) return;
 
-        // Fila de encabezado de departamento
+        deptoCounter++;
+
+        // Fila de encabezado de departamento con checkbox
         tbody.append(`
-            <tr class="table-secondary">
-                <td colspan="4" class="fw-bold">
+            <tr class="table-secondary depto-header-row-masivo" data-depto-id="${deptoCounter}">
+                <td class="text-center">
+                    <input class="form-check-input check-depto-masivo" type="checkbox" data-depto-id="${deptoCounter}">
+                </td>
+                <td colspan="3" class="fw-bold">
                     <i class="bi bi-building"></i> ${depto.nombre} 
                     <small class="fw-normal text-muted ms-1">(${empleadosVisibles.length} empleados)</small>
                 </td>
@@ -66,7 +94,7 @@ function cargarEmpleadosMasivo() {
 
         empleadosVisibles.forEach(empleado => {
             const fila = `
-                <tr>
+                <tr class="emp-row-depto-masivo-${deptoCounter}">
                     <td class="text-center">
                         <input class="form-check-input check-empleado-masivo" type="checkbox" 
                                data-clave="${empleado.clave}" 
@@ -91,6 +119,27 @@ function cargarEmpleadosMasivo() {
 function actualizarContadorSeleccionados() {
     const total = $('.check-empleado-masivo:checked').length;
     $('#contador-seleccionados-masivo').text(total);
+
+    // Actualizar estado de los checkboxes de departamento
+    $('.depto-header-row-masivo:visible').each(function () {
+        const deptoId = $(this).data('depto-id');
+        const $empChecks = $(`.emp-row-depto-masivo-${deptoId}:visible .check-empleado-masivo`);
+        if ($empChecks.length > 0) {
+            const allChecked = $empChecks.length === $empChecks.filter(':checked').length;
+            $(this).find('.check-depto-masivo').prop('checked', allChecked);
+        } else {
+            $(this).find('.check-depto-masivo').prop('checked', false);
+        }
+    });
+
+    // Actualizar estado del checkbox principal (check-all)
+    const $todosVisibles = $('.check-empleado-masivo:visible');
+    if ($todosVisibles.length > 0) {
+        const todosChecked = $todosVisibles.length === $todosVisibles.filter(':checked').length;
+        $('#check-all-masivo').prop('checked', todosChecked);
+    } else {
+        $('#check-all-masivo').prop('checked', false);
+    }
 }
 
 //======================================================

@@ -59,6 +59,24 @@ function cargarEmpleadosParaTickets10lbs() {
         return a.esSinSeguro ? 1 : -1;
     });
 
+    // Cargar opciones en el select de departamentos
+    const selectDepto = $('#filtro_departamento_ticket_10lbs');
+    if (selectDepto.length) {
+        const departamentosUnicos = [...new Set(empleadosParaTickets10lbs.map(emp => emp.departamento).filter(d => d))].sort();
+        selectDepto.empty();
+        selectDepto.append('<option value="todos">Todos los departamentos</option>');
+        departamentosUnicos.forEach(depto => {
+            selectDepto.append(`<option value="${depto}">${depto}</option>`);
+        });
+        
+        if (departamentosUnicos.includes(filtroDepartamentoActivo10lbs)) {
+            selectDepto.val(filtroDepartamentoActivo10lbs);
+        } else {
+            filtroDepartamentoActivo10lbs = 'todos';
+            selectDepto.val('todos');
+        }
+    }
+
     mostrarEmpleadosTickets10lbs(empleadosParaTickets10lbs);
     actualizarContadoresTickets10lbs();
 }
@@ -126,11 +144,13 @@ function actualizarContadoresTickets10lbs() {
     const count = empleadosSeleccionados10lbs.size;
     $('#contador_seleccionados').text(count);
     $('#contador_seleccionados_btn').text(count);
+    $('#contador_generar_btn').text(count);
     $('#btn_generar_tickets_seleccionados').prop('disabled', count === 0);
     $('#btn_generar_tickets_nombre_seleccionados').prop('disabled', count === 0);
 }
 
 let filtroSeguroActivo10lbs = 'todos';
+let filtroDepartamentoActivo10lbs = 'todos';
 
 function filtrarEmpleadosTickets10lbs() {
     const query = String($('#buscar_empleado_ticket').val() || '').toLowerCase().trim();
@@ -150,10 +170,16 @@ function filtrarEmpleadosTickets10lbs() {
         
         // Filtro por seguro
         let coincideSeguro = true;
+        let coincideDepto = true;
         if (filtroSeguroActivo10lbs === 'con_seguro') coincideSeguro = !emp.esSinSeguro;
         else if (filtroSeguroActivo10lbs === 'sin_seguro') coincideSeguro = emp.esSinSeguro;
 
-        return coincideQuery && coincideSeguro;
+        // Filtro por departamento
+        if (filtroDepartamentoActivo10lbs !== 'todos') {
+            coincideDepto = (emp.departamento === filtroDepartamentoActivo10lbs);
+        }
+
+        return coincideQuery && coincideSeguro && coincideDepto;
     });
 
     mostrarEmpleadosTickets10lbs(filtrados);
@@ -197,6 +223,35 @@ async function generarTicketsSeleccionados10lbs() {
 
     if (!nominaParaEnviar) return;
 
+    // Obtener departamento predominante y verificar si hay múltiples departamentos
+    const deptoCount = {};
+    nominaParaEnviar.departamentos.forEach(depto => {
+        const nombreDepto = (depto.nombre || 'GENERAL').toUpperCase();
+        const count = (depto.empleados || []).length;
+        deptoCount[nombreDepto] = (deptoCount[nombreDepto] || 0) + count;
+    });
+    const departamentosUnicos = Object.keys(deptoCount);
+    const multiplesDepartamentos = departamentosUnicos.length > 1;
+    const departamento = Object.keys(deptoCount).reduce((a, b) => deptoCount[a] > deptoCount[b] ? a : b);
+    
+    // Generar nombre del archivo con formato: SEMANA_DEPARTAMENTO_10LBS_AÑO (sin departamento si hay múltiples)
+    const nominaData = obtenerNomina10lbsGlobal();
+    const numSemana = nominaData?.numero_semana || '';
+    const año = new Date().getFullYear();
+    let nombreArchivo;
+    if (multiplesDepartamentos) {
+        nombreArchivo = `SEM_${numSemana}_10LBS_${año}.pdf`;
+    } else {
+        nombreArchivo = `SEM_${numSemana}_${departamento}_10LBS_${año}.pdf`;
+    }
+    
+    // Agregar departamento y año al meta
+    nominaParaEnviar.meta = {
+        numero_semana: numSemana,
+        departamento: multiplesDepartamentos ? '' : departamento,
+        año: año
+    };
+
     $('#modal_seleccion_tickets').modal('hide');
 
     Swal.fire({
@@ -211,7 +266,7 @@ async function generarTicketsSeleccionados10lbs() {
         const response = await fetch('../php/descargar_ticket_pdf.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json; charset=UTF-8' },
-            body: JSON.stringify({ nomina: nominaParaEnviar, filename_prefix: 'tickets_10lbs_seleccion' })
+            body: JSON.stringify({ nomina: nominaParaEnviar })
         });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const blob = await response.blob();
@@ -220,7 +275,7 @@ async function generarTicketsSeleccionados10lbs() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `tickets_10lbs_seleccion_${seleccionados.length}.pdf`;
+        a.download = nombreArchivo;
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -241,6 +296,8 @@ $(document).ready(function () {
             return;
         }
         filtroSeguroActivo10lbs = 'todos';
+        filtroDepartamentoActivo10lbs = 'todos';
+        $('#filtro_departamento_ticket_10lbs').val('todos');
         actualizarEstilosFiltros10lbs();
         cargarEmpleadosParaTickets10lbs();
         $('#modal_seleccion_tickets').modal('show');
@@ -264,6 +321,11 @@ $(document).ready(function () {
         filtrarEmpleadosTickets10lbs();
     });
 
+    $('#filtro_departamento_ticket_10lbs').on('change', function() {
+        filtroDepartamentoActivo10lbs = $(this).val();
+        filtrarEmpleadosTickets10lbs();
+    });
+
     $('#btn_marcar_visibles_tickets').on('click', function () {
         const query = String($('#buscar_empleado_ticket').val() || '').toLowerCase().trim();
         empleadosParaTickets10lbs.forEach(emp => {
@@ -278,7 +340,13 @@ $(document).ready(function () {
             if (filtroSeguroActivo10lbs === 'con_seguro') coincideSeguro = !emp.esSinSeguro;
             else if (filtroSeguroActivo10lbs === 'sin_seguro') coincideSeguro = emp.esSinSeguro;
 
-            if (coincideQuery && coincideSeguro) {
+            // Filtro por departamento
+            let coincideDepto = true;
+            if (filtroDepartamentoActivo10lbs !== 'todos') {
+                coincideDepto = (emp.departamento === filtroDepartamentoActivo10lbs);
+            }
+
+            if (coincideQuery && coincideSeguro && coincideDepto) {
                 empleadosSeleccionados10lbs.add(String(emp.id));
             }
         });
@@ -388,11 +456,38 @@ function generarTicketsNombreSeleccionados10lbs() {
     
     if (seleccionados.length === 0) return;
     
+    // Obtener departamento predominante y verificar si hay múltiples departamentos
+    const deptoCount = {};
+    seleccionados.forEach(emp => {
+        const depto = (emp.departamento || 'GENERAL').toUpperCase();
+        deptoCount[depto] = (deptoCount[depto] || 0) + 1;
+    });
+    const departamentosUnicos = Object.keys(deptoCount);
+    const multiplesDepartamentos = departamentosUnicos.length > 1;
+    const departamento = Object.keys(deptoCount).reduce((a, b) => deptoCount[a] > deptoCount[b] ? a : b);
+    
+    // Generar nombre del archivo con formato: NOMBRE_SEMANA_DEPARTAMENTO_10LBS_AÑO (sin departamento si hay múltiples)
+    const numSemana = nominaData.numero_semana || '';
+    const año = new Date().getFullYear();
+    let nombreArchivo;
+    if (multiplesDepartamentos) {
+        nombreArchivo = `NOMBRE_SEM_${numSemana}_10LBS_${año}.pdf`;
+    } else {
+        nombreArchivo = `NOMBRE_SEM_${numSemana}_${departamento}_10LBS_${año}.pdf`;
+    }
+    
     // Preparar datos en formato de nómina para el endpoint
     const nominaParaEnviar = construirNominaParaTickets10lbs(seleccionados.map(emp => ({
         emp,
         deptoNombre: emp.departamento || ''
     })));
+    
+    // Agregar departamento y año al meta
+    nominaParaEnviar.meta = {
+        numero_semana: numSemana,
+        departamento: multiplesDepartamentos ? '' : departamento,
+        año: año
+    };
     
     // Mostrar cargando
     const btnOriginalHtml = $(this).html();
@@ -430,20 +525,10 @@ function generarTicketsNombreSeleccionados10lbs() {
                 return;
             }
             
-            let filename = 'tickets_nombre_seleccionados_10lbs.pdf';
-            const disposition = xhr.getResponseHeader('Content-Disposition');
-            if (disposition && disposition.indexOf('filename=') !== -1) {
-                const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-                const matches = filenameRegex.exec(disposition);
-                if (matches && matches[1]) {
-                    filename = matches[1].replace(/["']/g, '');
-                }
-            }
-            
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = filename;
+            a.download = nombreArchivo;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);

@@ -147,9 +147,7 @@ $grupos = [];
 
 if (isset($datosNomina['departamentos']) && is_array($datosNomina['departamentos'])) {
     foreach ($datosNomina['departamentos'] as $depto) {
-        // Solo procesar departamentos oficiales (editar: true)
-        if (!isset($depto['editar']) || $depto['editar'] !== true)
-            continue;
+   
 
         $nombreDepto = strtoupper($depto['nombre']);
 

@@ -28,6 +28,8 @@ $(document).ready(function() {
         }
         
         filtroSeguroActivoRelicario = 'todos';
+        filtroDepartamentoActivoRelicario = 'todos';
+        $('#filtro_departamento_ticket_relicario').val('todos');
         actualizarEstilosFiltrosRelicario();
         $('#buscar_empleado_ticket').val('');
         cargarEmpleadosParaTickets(nominaData);
@@ -58,6 +60,11 @@ $(document).ready(function() {
         $('#buscar_empleado_ticket').trigger('input');
     });
 
+    $('#filtro_departamento_ticket_relicario').on('change', function() {
+        filtroDepartamentoActivoRelicario = $(this).val();
+        $('#buscar_empleado_ticket').trigger('input');
+    });
+
     $('#btn_marcar_visibles_tickets').on('click', function() {
         const query = String($('#buscar_empleado_ticket').val() || '').toLowerCase().trim();
         empleadosParaTickets.forEach(emp => {
@@ -73,7 +80,13 @@ $(document).ready(function() {
             if (filtroSeguroActivoRelicario === 'con_seguro') coincideSeguro = !emp.esSinSeguro;
             else if (filtroSeguroActivoRelicario === 'sin_seguro') coincideSeguro = emp.esSinSeguro;
 
-            if (coincideQuery && coincideSeguro) {
+            // Filtro por departamento
+            let coincideDepto = true;
+            if (filtroDepartamentoActivoRelicario !== 'todos') {
+                coincideDepto = (depto === filtroDepartamentoActivoRelicario.toLowerCase());
+            }
+
+            if (coincideQuery && coincideSeguro && coincideDepto) {
                 empleadosSeleccionados.add(String(emp.clave));
             }
         });
@@ -247,6 +260,24 @@ function cargarEmpleadosParaTickets(nominaData) {
         return aSin ? 1 : -1;
     });
 
+    // Cargar opciones en el select de departamentos
+    const selectDepto = $('#filtro_departamento_ticket_relicario');
+    if (selectDepto.length) {
+        const departamentosUnicos = [...new Set(empleadosParaTickets.map(emp => emp.departamento).filter(d => d))].sort();
+        selectDepto.empty();
+        selectDepto.append('<option value="todos">Todos los departamentos</option>');
+        departamentosUnicos.forEach(depto => {
+            selectDepto.append(`<option value="${depto}">${depto}</option>`);
+        });
+        
+        if (departamentosUnicos.includes(filtroDepartamentoActivoRelicario)) {
+            selectDepto.val(filtroDepartamentoActivoRelicario);
+        } else {
+            filtroDepartamentoActivoRelicario = 'todos';
+            selectDepto.val('todos');
+        }
+    }
+
     mostrarEmpleados(empleadosParaTickets);
     actualizarContadores();
 }
@@ -280,6 +311,7 @@ function mostrarEmpleados(empleados) {
 }
 
 let filtroSeguroActivoRelicario = 'todos';
+let filtroDepartamentoActivoRelicario = 'todos';
 
 function filtrarEmpleados() {
     const query = String($(this).val() || '').toLowerCase().trim();
@@ -300,10 +332,16 @@ function filtrarEmpleados() {
         
         // Filtro por seguro
         let coincideSeguro = true;
+        let coincideDepto = true;
         if (filtroSeguroActivoRelicario === 'con_seguro') coincideSeguro = !emp.esSinSeguro;
         else if (filtroSeguroActivoRelicario === 'sin_seguro') coincideSeguro = emp.esSinSeguro;
 
-        return coincideQuery && coincideSeguro;
+        // Filtro por departamento
+        if (filtroDepartamentoActivoRelicario !== 'todos') {
+            coincideDepto = (depto === filtroDepartamentoActivoRelicario.toLowerCase());
+        }
+
+        return coincideQuery && coincideSeguro && coincideDepto;
     });
     
     mostrarEmpleados(filtrados);
@@ -379,6 +417,26 @@ function generarTicketsSeleccionados() {
         }
     });
     
+    // Obtener departamento predominante y verificar si hay múltiples departamentos
+    const deptoCount = {};
+    seleccionados.forEach(emp => {
+        const depto = (emp.departamento || 'GENERAL').toUpperCase();
+        deptoCount[depto] = (deptoCount[depto] || 0) + 1;
+    });
+    const departamentosUnicos = Object.keys(deptoCount);
+    const multiplesDepartamentos = departamentosUnicos.length > 1;
+    let departamento = Object.keys(deptoCount).reduce((a, b) => deptoCount[a] > deptoCount[b] ? a : b);
+    
+    // Generar nombre del archivo con formato: SEMANA_DEPARTAMENTO_RANCHO_AÑO (sin departamento si hay múltiples)
+    const año = new Date().getFullYear();
+    let nombreArchivo;
+    if (multiplesDepartamentos) {
+        nombreArchivo = `SEM_${numSemana}_RANCHO RELICARIO_${año}.pdf`;
+        departamento = ''; // No enviar departamento si hay múltiples
+    } else {
+        nombreArchivo = `SEM_${numSemana}_${departamento}_RANCHO RELICARIO_${año}.pdf`;
+    }
+    
     const btn = $(this);
     const original = btn.html();
     btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Generando...');
@@ -390,7 +448,7 @@ function generarTicketsSeleccionados() {
         data: JSON.stringify({ 
             seleccion: true, 
             empleados: seleccionados, 
-            meta: { numero_semana: numSemana } 
+            meta: { numero_semana: numSemana, departamento: departamento, año: año } 
         }),
         xhrFields: { responseType: 'blob' },
         success: function(blob) {
@@ -398,7 +456,7 @@ function generarTicketsSeleccionados() {
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'tickets_seleccionados.pdf';
+                a.download = nombreArchivo;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -421,6 +479,11 @@ function generarTicketsNombreSeleccionados() {
         return;
     }
 
+    let numSemana = '';
+    try {
+        if (typeof jsonNominaRelicario !== 'undefined') numSemana = jsonNominaRelicario.numero_semana || '';
+    } catch(e){}
+
     const seleccionadosMap = {};
     empleadosParaTickets.forEach(item => {
         if (empleadosSeleccionados.has(item.clave)) {
@@ -436,6 +499,26 @@ function generarTicketsNombreSeleccionados() {
     });
 
     const seleccionados = Object.values(seleccionadosMap);
+    
+    // Obtener departamento predominante y verificar si hay múltiples departamentos
+    const deptoCount = {};
+    seleccionados.forEach(emp => {
+        const depto = (emp.departamento || 'GENERAL').toUpperCase();
+        deptoCount[depto] = (deptoCount[depto] || 0) + 1;
+    });
+    const departamentosUnicos = Object.keys(deptoCount);
+    const multiplesDepartamentos = departamentosUnicos.length > 1;
+    let departamento = Object.keys(deptoCount).reduce((a, b) => deptoCount[a] > deptoCount[b] ? a : b);
+    
+    // Generar nombre del archivo con formato: NOMBRE_SEMANA_DEPARTAMENTO_RANCHO_AÑO (sin departamento si hay múltiples)
+    const año = new Date().getFullYear();
+    let nombreArchivo;
+    if (multiplesDepartamentos) {
+        nombreArchivo = `NOMBRE_SEM_${numSemana}_RANCHO RELICARIO_${año}.pdf`;
+        departamento = ''; // No enviar departamento si hay múltiples
+    } else {
+        nombreArchivo = `NOMBRE_SEM_${numSemana}_${departamento}_RANCHO RELICARIO_${año}.pdf`;
+    }
 
     const btn = $(this);
     const original = btn.html();
@@ -447,11 +530,13 @@ function generarTicketsNombreSeleccionados() {
         contentType: 'application/json',
         data: JSON.stringify({
             nomina: {
+                numero_semana: numSemana,
                 departamentos: [{
                     nombre: 'Seleccionados',
                     empleados: seleccionados
                 }]
-            }
+            },
+            meta: { numero_semana: numSemana, departamento: departamento, año: año }
         }),
         xhrFields: { responseType: 'blob' },
         success: function(blob) {
@@ -459,7 +544,7 @@ function generarTicketsNombreSeleccionados() {
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'tickets_nombre_seleccionados.pdf';
+                a.download = nombreArchivo;
                 document.body.appendChild(a);
                 a.click();
                 URL.revokeObjectURL(url);

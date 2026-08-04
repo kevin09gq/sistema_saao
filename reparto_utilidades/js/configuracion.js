@@ -113,6 +113,9 @@ $("#form_subir_archivos_raya").submit(function (e) {
             // 5. Mostrar mensaje de éxito
             alerta("success", "Archivos procesados", "Los archivos se han procesado correctamente.");
 
+            // 6. Reiniciar el formulario para permitir subir nuevos archivos
+            $("#form_subir_archivos_raya")[0].reset();
+
         })
         .catch(error => {
             Swal.close();

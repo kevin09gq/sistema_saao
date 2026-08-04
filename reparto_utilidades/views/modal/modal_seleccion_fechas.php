@@ -14,14 +14,15 @@
                 <!-- Filtros y Controles -->
                 <div class="bg-light p-3 rounded shadow-sm mb-4">
                     <div class="row g-3 mb-3">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label small fw-bold text-muted">Búsqueda:</label>
                             <input class="form-control form-control-sm" type="text" id="busqueda_empleado_fechas" placeholder="Buscar empleado...">
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label small fw-bold text-muted">Departamento:</label>
-                            <select class="form-select form-select-sm" id="id_departamento_fecha">
-                                <!-- Opciones de departamentos -->
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted">Empresa:</label>
+                            <select class="form-select form-select-sm" id="id_empresa_fecha">
+                                <option value="-1">-- Seleccione una empresa --</option>
                             </select>
                         </div>
                     </div>
@@ -31,9 +32,6 @@
                             <button type="button" class="btn btn-sm btn-secondary" id="btn_actualizar_fechas">
                                 <i class="bi bi-arrow-repeat me-1"></i>Actualizar fechas
                             </button>
-                            <!-- <button type="button" class="btn btn-sm btn-success" id="btn_aplicar_fechas">
-                                <i class="bi bi-check-circle me-1"></i>Aplicar Fechas
-                            </button> -->
                         </div>
                         <div class="d-flex gap-2">
                             <button type="button" class="btn btn-sm btn-outline-success" id="btn_todos_fecha_real">

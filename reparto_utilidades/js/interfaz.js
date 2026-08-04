@@ -16,7 +16,7 @@ function llenar_tabla_ptu() {
     if (!json || json.length === 0) {
         console.warn("No hay datos en json para mostrar en la tabla");
         $('#cuerpo_tabla_ptu').html(
-            '<tr><td colspan="10" class="text-center text-muted">No hay empleados disponibles</td></tr>'
+            '<tr><td colspan="13" class="text-center text-danger">ERROR AL CARGAR LOS DATOS</td></tr>'
         );
         return;
     }
@@ -73,7 +73,7 @@ function llenar_tabla_ptu() {
     // VALIDAR SI HAY EMPLEADOS PARA MOSTRAR EN LA PAGINA ACTUAL
     if (empleadosPagina.length === 0) {
         tbody.html(
-            '<tr><td colspan="10" class="text-center text-muted">No se encontraron resultados</td></tr>'
+            '<tr><td colspan="13" class="text-center text-muted">No se encontraron resultados</td></tr>'
         );
         $('#paginacion').empty();
         return;
@@ -290,31 +290,9 @@ function formatearFecha(fechaStr) {
     return `${dia}/${mesAbrev}/${anio}`;
 }
 
-
-/**
- * Evento para habilitar o deshabilitar el input de salario manual según la opción seleccionada en los radios de salario.
- */
-$(document).on('change', '.radio-salario', function (e) {
-    console.log("Esto es una prueba");
-    const row = $(this).closest('tr');
-    const isManual = $(this).val() === 'manual';
-    row.find('.input-salario-manual').prop('disabled', !isManual);
-    if (!isManual) row.find('.input-salario-manual').val('');
-});
-
-
-/**
- * ===================================================================================================
- * EVENTOS PARA ACTUALIZAR LA TABLA CUANDO SE HAGA CAMBIOS EN LOS FILTROS
- * ===================================================================================================
- */
-
-/**
- * Eventos de control
- */
-/**
- * Configurar eventos de filtrado
- */
+// ===================================================================================================
+// EVENTOS: CONTROLA LOS CAMBIOS EN LOS FILTROS PARA CAMBIAR LA TABLA PRINCIPAL
+// ===================================================================================================
 $(document).ready(function () {
     // Evento de búsqueda
     $('#busqueda').on('keyup', function () {
@@ -347,49 +325,46 @@ $(document).ready(function () {
 });
 
 
-/**
- * ==================================================================================================
- * FUNCIONALIDAD DE LOS BOTONES PARA MOSTRAR U OCULTAR LA TABLA PRINCIPAL
-* ===================================================================================================
- */
-
-
-/**
- * EVENTO PARA CERRAR LA TABLA PRINCIPAL Y MOSTRAR EL FORMULARIO DE CONFIGURACIÓN
- */
-$('#btn_cerrar').click(function (e) {
+// =====================================================================
+// EVENTO: LIMPIAR LOS DATOS DEL STORAGE
+// =====================================================================
+$(document).on('click', '#btn_cerrar', function (e) {
     e.preventDefault();
+
     Swal.fire({
-        title: "¿Seguro de cerrar?",
-        text: "Si no has guardado, perderás los cambios realizados. ¿Deseas continuar?",
-        icon: "info",
+        title: "¿Seguro que quieres cerrar?",
+        text: "Si no has guardado los datos, se perderán para siempre",
+        icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
+        confirmButtonColor: "#B51B00",
+        cancelButtonColor: "#180E29",
         confirmButtonText: "Sí, cerrar",
-        cancelButtonText: "cancelar"
+        cancelButtonText: "Cancelar"
     }).then((result) => {
         if (result.isConfirmed) {
-            // Limpiar datos del storage y jsonAguinaldo
+            // Limpiar el localStorage
             clearStorage();
-            // Mostrar formulario y ocultar tabla
+            // Reiniciar la variable global jsonUtilidad
+            window.jsonUtilidad = null;
+            // MOSTRAR EL FORMULARIO
             mostrar_formulario();
         }
     });
 });
 
-/**
- * EVENTO PARA GUARDAR LOS DATOS DE LA TABLA PRINCIPAL EN LA BASE DE DATOS
- */
-$('#btn_guardar').click(function (e) {
+// ======================================================================
+// EVENTO: GUARDAR LOS DATOS EN LA BASE DE DATOS
+// ======================================================================
+$(document).on('click', '#btn_guardar', function (e) {
     e.preventDefault();
+
     Swal.fire({
-        title: "¿Seguro de guardar?",
-        text: "Una vez guardados, los cambios no podrán ser deshechos. ¿Deseas continuar?",
+        title: "¿Guardar los datos en la base de datos?",
+        text: "Esta acción guardará los datos en la base de datos. ¿Deseas continuar?",
         icon: "info",
         showCancelButton: true,
-        confirmButtonColor: "#008227",
-        cancelButtonColor: "#20193B",
+        confirmButtonColor: "#318247",
+        cancelButtonColor: "#1B172E",
         confirmButtonText: "Sí, guardar",
         cancelButtonText: "Cancelar"
     }).then((result) => {
@@ -408,17 +383,24 @@ $('#btn_guardar').click(function (e) {
             });
 
             setTimeout(() => {
+                // Cerrar la alerta de carga
                 Swal.close();
+                // Obtener el jsonUtilidad actualizado
                 let json = getUtilidad();
                 // Obtener el año del calculo desde el jsonUtilidad o usar el año actual si no está definido
                 let anio = json.anio;
+                // obtener el id_departamento
+                let id_departamento = json.id_departamento;
+                // Json de empleados
+                let empleados = json.empleados;
 
                 $.ajax({
                     type: "POST",
                     url: "../php/utilidades.php",
                     data: {
                         anio: anio,
-                        json: JSON.stringify(json),
+                        id_departamento: id_departamento,
+                        empleados: JSON.stringify(empleados),
                         accion: "guardar_utilidad"
                     },
                     dataType: "json",
@@ -428,7 +410,9 @@ $('#btn_guardar').click(function (e) {
 
                     }
                 });
-            }, 1500);
+
+
+            }, 1000);
         }
     });
 });

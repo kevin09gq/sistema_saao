@@ -1,47 +1,77 @@
+// MODAL DE LOS DETALLES
+const modal_detalles = new bootstrap.Modal(document.getElementById('modal_detalles'));
 
-// EVENTO PARA ABRIR EL MODAL DE LOS DETALLES DEL AGUINALDO
-$(document).on('click', '.btn_ver_detalles', function () {
+// EVENTO: ABRIR EL MODAL DE LOS DETALLES
+$(document).on('click', '.btn_ver_detalles', function (e) {
+    e.preventDefault();
 
     // Obtener los datos del botón
-    const empleados = $(this).data('empleados');
     const anio = $(this).data('anio');
-    const totalEmpleados = $(this).data('total');
+    const departamento = $(this).data('departamento');
+    const id_departamento = $(this).data('iddepartamento');
+    const id_utilidad = $(this).data('id_utilidad');
+    const empleados = $(this).data('empleados');
+    const fecha_creacion = $(this).data('fecha_creacion');
 
-    // VACIAR LOS DATOS ANTERIORES DEL MODAL
-    $('#span_anio_detalle').text('');
-    $('#total_registros_modal').text('');
-    $('#empleados').val('');
-    $('#cuerpo_tabla_detalles_ptu').empty();
+    $('#detalle_empleados').val('');
+    $('#detalle_anio').val('');
+    $('#detalle_id_departamento').val('');
+    $('#detalle_nombre_departamento').val('');
 
-    // LLENAR EL MODAL CON LOS DATOS CORRESPONDIENTES
-    $('#span_anio_detalle').text(anio);
-    // LLENAR EL INPUT OCULTO CON LOS EMPLEADOS (EN FORMATO JSON)
-    $('#empleados').val(JSON.stringify(empleados));
-    // LLENAR EL TOTAL DE EMPLEADOS EN EL MODAL
-    $('#total_registros_modal').text(totalEmpleados);
+    // LLENAR EL INPUT DE EMPLEADOS
+    $('#detalle_empleados').val(JSON.stringify(empleados));
+    $('#detalle_anio').val(anio);
+    $('#detalle_id_departamento').val(id_departamento);
+    $('#detalle_nombre_departamento').val(departamento);
 
-    // Llenar la tabla con los empleados
-    llenar_tabla_aguinaldo(empleados);
+    // PONER UN TITULO DEL MODAL
+    $('#titulo_modal').text(anio + ' ' + departamento.toUpperCase());
 
-    // Abrir el modal
-    modal_detalles_utilidad.show();
+    // LLENAR SELECT DE DEPARTAMENTO
+    $('#detalle_departamento').empty();
+    $('#detalle_departamento').html('<option value="' + id_departamento + '">' + departamento + '</option>');
+
+    // LLENAR LA TABLA DE DETALLES
+    llenar_tabla_detalles(empleados);
+
+    // PONER LA FECHA DE REGISTRO
+    $('#fecha_registro_modal').text(formatearFecha(fecha_creacion));
+
+    modal_detalles.show();
 });
 
 
 /**
- * Llenar la tabla de aguinaldo con los datos obtenidos del servidor
+ * Función para obtener las empresas
  */
-function llenar_tabla_aguinaldo(empleados) {
+function obtener_empresas() {
+    $.ajax({
+        url: RUTA_RAIZ + "/public/php/obtenerEmpresas.php",
+        type: "GET",
+        dataType: "json",
+        success: function (data) {
+            // VAIAR EL SELECT DE EMPRESAS
+            const selectEmpresa = $('#detalle_empresa');
+            selectEmpresa.empty();
+            data.forEach(element => {
+                selectEmpresa.append('<option value="' + element.id_empresa + '">' + element.nombre_empresa + '</option>');
+            });
+        },
+        error: function () {
+            console.error("Error al cargar empresas");
+        }
+    });
+}
 
-    // Obtener valores de los filtros
-    const textoBusqueda = $('#busqueda_detalles').val().toLowerCase();
-    const departamentoSeleccionado = $('#id_departamento').val();
-    const empresaSeleccionada = $('#id_empresa').val();
-    const limite = parseInt($('#limite').val()) || 10;
-
-    // Obtener la página actual de la paginación
-    let paginaActual = parseInt($('#pagina_actual_detalles').data('pagina')) || 1;
-
+/**
+ * Llena la tabla de detalles con los empleados filtrados
+ * @param {Array} empleados Empleados a mostrar en la tabla
+ */
+function llenar_tabla_detalles(empleados) {
+    // RECUPERAR LOS FILTROS PARA FILTRAR LOS EMPLEADOS
+    const departamentoSeleccionado = $('#detalle_departamento').val();
+    const empresaSeleccionada = $('#detalle_empresa').val();
+    const textoBusqueda = $('#detalle_busqueda').val();
 
     // Filtrar empleados
     let empleadosFiltrados = empleados.filter(emp => {
@@ -67,276 +97,163 @@ function llenar_tabla_aguinaldo(empleados) {
         return coincideBusqueda && coincideDepartamento && coincideEmpresa && esVisible;
     });
 
-    // Calcular paginación
-    let inicio = 0;
-    let fin = empleadosFiltrados.length;
-
-    if (limite !== -1) {
-        inicio = (paginaActual - 1) * limite;
-        fin = inicio + limite;
+    // VACIAR LA TABLA
+    $("#cuerpo_tabla_detalles").empty();
+    if (empleadosFiltrados.length === 0) {
+        $("#cuerpo_tabla_detalles").append('<tr><td colspan="13" class="text-center">No se encontraron empleados</td></tr>');
     }
 
-    // Obtener empleados para la página actual
-    const empleadosPagina = empleadosFiltrados.slice(inicio, fin);
-    const totalPaginas = limite === -1 ? 1 : Math.ceil(empleadosFiltrados.length / limite);
-
-    // Limpiar tabla
-    const tbody = $('#cuerpo_tabla_detalles_ptu');
-    tbody.empty();
-
-    // Si no hay empleados después de filtrar, mostrar mensaje
-    if (empleadosPagina.length === 0) {
-        tbody.html(
-            '<tr><td colspan="13" class="text-center text-muted">No se encontraron resultados</td></tr>'
-        );
-        $('#paginacion_detalles').empty();
-        return;
-    }
-
-    // Renderizar filas
-    empleadosPagina.forEach((emp, index) => {
-        // CAMPO VACIO
-        const campoVacio = '<span class="text-secondary">-</span>'
-
-        // PREPARAR DATOS PARA MOSTRAR EN LA FILA
-        const contador = inicio + index + 1;
-        const nombreCompleto = `${emp.nombre || ''} ${emp.ap_paterno || ''} ${emp.ap_materno || ''}`.trim();
-        const empresa = emp.id_empresa == 1 ? '<span class="badge rounded-pill text-bg-primary">SAAO</span>' : (emp.id_empresa == 2 ? '<span class="badge rounded-pill text-bg-secondary">SB</span>' : campoVacio);
-        const nss = emp.status_seguro === 1 ? '<span class="badge rounded-pill text-bg-success">Sí</span>' : '<span class="badge rounded-pill text-bg-secondary">No</span>';
-
-        const puesto = emp.nombre_puesto ? emp.nombre_puesto : campoVacio;
-
-        // FORMAR LA FILA CON LOS DATOS CORRESPONDIENTES
+    // RECORRER LOS EMPLEADOS FILTRADOS Y AGREGARLOS A LA TABLA
+    empleadosFiltrados.forEach((empleado, index) => {
         const fila = `
-            <tr data-id="${emp.id_empleado}" style="cursor:pointer;">
-                <td>${contador}</td>
-                <td class="text-center">${emp.clave_empleado}</td>
-                <td>${nombreCompleto}</td>
-                <td class="text-center">${nss}</td>
-                <td class="text-center fw-bold">${empresa}</td>
-
-                <td class="text-center">${formatoCantidad(emp.salario_diario, '')}</td>
-                <td class="text-center">${puesto}</td>
-                <td class="text-end">${formatoCantidad(emp.ptu, '')}</td>
-                <td width="100" class="text-end">${formatoCantidad(emp.tarjeta, 'text-danger')}</td>
-                <td class="text-end">${formatoCantidad(emp.neto_pagar, 'text-success')}</td>
-                <td class="text-end">${formatoCantidad(emp.redondeo, 'text-success')}</td>
-                <td width="100" class="text-end fw-bolder">${formatoCantidad(emp.neto_pagar_redondeado, 'text-primary')}</td>
-            </tr>
-        `;
-
-        tbody.append(fila);
-    });
-
-    // ===============================
-    // FILA DE TOTALES
-    // ===============================
-    if (paginaActual === totalPaginas || limite === -1) {
-
-        const totalPTU = empleadosFiltrados.reduce(
-            (acc, emp) => acc + (parseFloat(emp.ptu) || 0),
-            0
-        );
-
-        const totalTarjeta = empleadosFiltrados.reduce(
-            (acc, emp) => acc + (parseFloat(emp.tarjeta) || 0),
-            0
-        );
-
-        const totalNeto = empleadosFiltrados.reduce(
-            (acc, emp) => acc + (parseFloat(emp.neto_pagar) || 0),
-            0
-        );
-
-        const totalRedondeo = empleadosFiltrados.reduce(
-            (acc, emp) => acc + (parseFloat(emp.redondeo) || 0),
-            0
-        );
-
-        const totalNetoRedondeado = empleadosFiltrados.reduce(
-            (acc, emp) => acc + (parseFloat(emp.neto_pagar_redondeado) || 0),
-            0
-        );
-
-        const filaTotal = `
-        <tr class="table-light fw-bold">
-            <td colspan="2" class="text-center">
-                TOTALES
-            </td>
-
-            <td colspan="5"></td>
-
-            <td class="text-end">${formatoCantidad(totalPTU, '')}</td>
-
-            <td class="text-end">${formatoCantidad(totalTarjeta, 'text-danger')}</td>
-
-            <td class="text-end text-success">${formatoCantidad(totalNeto, '')}</td>
-
-            <td class="text-end">${formatoCantidad(totalRedondeo, '')}</td>
-
-            <td class="text-end text-success">${formatoCantidad(totalNetoRedondeado, '')}</td>
+        <tr>
+            <td class="fw-bold">${index + 1}</td>
+            <td class="text-center">${empleado.clave_empleado}</td>
+            <td>${empleado.nombre} ${empleado.ap_paterno} ${empleado.ap_materno}</td>
+            <td>${empleado.nombre_puesto ?? '-'}</td>
+            <td>${formatoMonedaVisual(empleado.salario_diario)}</td>
+            <td class="text-center">${empleado.dias_ptu > 7 ? Math.round(empleado.dias_ptu) : empleado.dias_ptu}</td>
+            <td>${formatoMonedaVisual(empleado.ptu)}</td>
+            <td>${formatoMonedaVisual(empleado.tarjeta)}</td>
+            <td>${formatoMonedaVisual(empleado.neto_pagar)}</td>
+            <td>${formatoMonedaVisual(empleado.redondeo)}</td>
+            <td>${formatoMonedaVisual(empleado.neto_pagar_redondeado)}</td>
         </tr>
         `;
 
-        tbody.append(filaTotal);
-    }
-
-    // Renderizar paginación
-    renderizarPaginacion(empleadosFiltrados.length, paginaActual, limite);
+        $("#cuerpo_tabla_detalles").append(fila);
+    });
 }
 
-/**
- * Renderizar los botones de paginación
- */
-function renderizarPaginacion(totalEmpleados, paginaActual, limite) {
-    if (limite === -1) {
-        $('#paginacion_detalles').empty();
-        return;
-    }
 
-    const totalPaginas = Math.ceil(totalEmpleados / limite);
-    const paginacion = $('#paginacion_detalles');
-    paginacion.empty();
-
-    // Botón Inicio
-    if (paginaActual > 1) {
-        paginacion.append(`
-            <li class="page-item">
-                <a class="page-link" href="#" onclick="cambiarPagina(1); return false;"><i class="bi bi-chevron-double-left me-1"></i>Inicio</a>
-            </li>
-        `);
-    }
-
-    // Botón anterior
-    if (paginaActual > 1) {
-        paginacion.append(`
-            <li class="page-item">
-                <a class="page-link" href="#" onclick="cambiarPagina(${paginaActual - 1}); return false;"><i class="bi bi-chevron-left me-1"></i>Anterior</a>
-            </li>
-        `);
-    }
-
-    // Botones de páginas
-    const rangoInicio = Math.max(1, paginaActual - 2);
-    const rangoFin = Math.min(totalPaginas, paginaActual + 2);
-
-    for (let i = rangoInicio; i <= rangoFin; i++) {
-        const activa = i === paginaActual ? 'active' : '';
-        paginacion.append(`
-            <li class="page-item ${activa}">
-                <a class="page-link" href="#" onclick="cambiarPagina(${i}); return false;">${i}</a>
-            </li>
-        `);
-    }
-
-    // Botón siguiente
-    if (paginaActual < totalPaginas) {
-        paginacion.append(`
-            <li class="page-item">
-                <a class="page-link" href="#" onclick="cambiarPagina(${paginaActual + 1}); return false;">Siguiente<i class="bi bi-chevron-right ms-1"></i></a>
-            </li>
-        `);
-    }
-
-    // Botón Final
-    if (paginaActual < totalPaginas) {
-        paginacion.append(`
-            <li class="page-item">
-                <a class="page-link" href="#" onclick="cambiarPagina(${totalPaginas}); return false;">Final <i class="bi bi-chevron-double-right ms-1"></i></a>
-            </li>
-        `);
-    }
-}
-
-/**
- * Función para formatear una cantidad como moneda, con el formato adecuado según si es positiva, negativa o cero, y aplicando la clase de color correspondiente.
- * @param {Number} cantidad La cantidad a formatear, puede ser positiva, negativa o cero 
- * @param {String} color puede ser 'text-success' para positivo, 'text-danger' para negativo o 'text-secondary' o 'text-muted' para cero
- * @returns 
- */
-function formatoCantidad(cantidad, color) {
-    let contenido;
-    let clase = color;
-
-    if (cantidad === null || cantidad === 0) {
-        contenido = '-';
-    } else if (cantidad < 0) {
-        contenido = `- $ ${Math.abs(cantidad).toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        })}`;
-        clase = "text-danger"; // fuerza la clase para negativos
-    } else {
-        contenido = `$ ${cantidad.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        })}`;
-    }
-
-    return `<span class="${clase}">${contenido}</span>`;
-}
-
-/**
- * Cambiar a una página específica
- */
-function cambiarPagina(nuevaPagina) {
-    $('#pagina_actual_detalles').data('pagina', nuevaPagina);
-    let empleado = $('#empleados').val();
-    if (empleado) {
-        empleado = JSON.parse(empleado);
-        llenar_tabla_aguinaldo(empleado);
-    } else {
-        console.error("No se encontraron empleados para paginar.");
-    }
-    window.scrollTo(0, 0);
-}
 
 /**
  * Configurar eventos de filtrado
  */
 $(document).ready(function () {
     // Evento de búsqueda
-    $('#busqueda_detalles').on('keyup', function () {
-        $('#pagina_actual_detalles').data('pagina', 1);
-        let empleado = $('#empleados').val();
-        if (empleado) {
-            empleado = JSON.parse(empleado);
+    $('#detalle_busqueda').on('keyup', function () {
+        let empleados = $('#detalle_empleados').val();
+        if (empleados) {
+            empleados = JSON.parse(empleados);
         }
-        llenar_tabla_aguinaldo(empleado);
+        llenar_tabla_detalles(empleados);
     });
 
     // Evento de filtro departamento
-    $('#id_departamento').on('change', function () {
-        $('#pagina_actual_detalles').data('pagina', 1);
-        let empleado = $('#empleados').val();
-        if (empleado) {
-            empleado = JSON.parse(empleado);
+    $('#detalle_departamento').on('change', function () {
+        let empleados = $('#detalle_empleados').val();
+        if (empleados) {
+            empleados = JSON.parse(empleados);
         }
-        llenar_tabla_aguinaldo(empleado);
+        llenar_tabla_detalles(empleados);
     });
 
     // Evento de filtro empresa
-    $('#id_empresa').on('change', function () {
-        $('#pagina_actual_detalles').data('pagina', 1);
-        let empleado = $('#empleados').val();
-        if (empleado) {
-            empleado = JSON.parse(empleado);
+    $('#detalle_empresa').on('change', function () {
+        let empleados = $('#detalle_empleados').val();
+        if (empleados) {
+            empleados = JSON.parse(empleados);
         }
-        llenar_tabla_aguinaldo(empleado);
+        llenar_tabla_detalles(empleados);
     });
+});
 
-    // Evento de límite por página
-    $('#limite').on('change', function () {
-        $('#pagina_actual_detalles').data('pagina', 1);
-        let empleado = $('#empleados').val();
-        if (empleado) {
-            empleado = JSON.parse(empleado);
-        }
-        llenar_tabla_aguinaldo(empleado);
-    });
 
-    // Inicializar variable de página actual si no existe
-    if (!$('#pagina_actual_detalles').length) {
-        $('body').append('<div id="pagina_actual_detalles" data-pagina="1" style="display:none;"></div>');
+
+/**
+ * Evento para generar el reporte Excel de utilidades (PTU)
+ */
+$(document).on('click', '#btn_generar_excel_detalles', function (e) {
+    e.preventDefault();
+
+    // OBTENER EL JSON DE UTILIDAD DESDE EL STORAGE
+    let empleados = $('#detalle_empleados').val();
+
+    // VALIDAR SI EL JSON DE UTILIDAD EXISTE
+    if (!empleados) {
+        alerta('Sin datos para exportar', 'No se ha encontrado información de utilidades. Por favor, asegúrate de haber cargado los datos correctamente.', 'warning');
+        return;
     }
+
+    // Obtener el año seleccionado por el usuario
+    const anio = $('#detalle_anio').val();;
+    const id_departamento = $('#detalle_id_departamento').val();
+    const nombre_departamento = $('#detalle_nombre_departamento').val();
+    // Obtener los departamentos seleccionados
+    let departamentosSeleccionados = [];
+    // Agregar el departamento seleccionado al array con su id y nombre
+    departamentosSeleccionados.push({
+        id_departamento: id_departamento,
+        nombre_departamento: nombre_departamento
+    });
+
+    // Validar que se haya seleccionado al menos un departamento
+    if (departamentosSeleccionados.length == 0) {
+        alerta('info', 'Departamentos no seleccionados', 'Por favor, selecciona al menos un departamento para generar el reporte.');
+        return;
+    }
+
+    // Obtener la empresa
+    let empresaSeleccionada = $('#detalle_empresa').val();
+
+    // estructura
+    let json = {
+        anio: anio,
+        empleados: JSON.parse(empleados),
+        id_departamento: id_departamento,
+    };
+
+    // Mostrar alerta de carga
+    Swal.fire({
+        title: 'Generando documento...',
+        html: 'Por favor espera mientras se genera el archivo Excel.',
+        icon: 'info',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: (modal) => {
+            Swal.showLoading();
+        }
+    });
+
+    // Enviar el jsonUtilidad al servidor PHP mediante POST
+    $.ajax({
+        url: '../php/exportar_excel.php',
+        type: 'POST',
+        data: {
+            jsonUtilidad: JSON.stringify(json),
+            anio: anio,
+            departamentos: JSON.stringify(departamentosSeleccionados),
+            empresa: empresaSeleccionada
+        },
+        xhrFields: {
+            responseType: 'blob'
+        },
+        success: function (blob) {
+            // Cerrar la alerta de carga
+            Swal.close();
+
+            // Crear un blob y descargar el archivo
+            var link = document.createElement('a');
+            var url = URL.createObjectURL(blob);
+            // Generar un timestamp para el nombre del archivo
+            var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
+            // Determinar el nombre de la empresa para el nombre del archivo
+            var nombre_empresa = empresaSeleccionada == 1 ? 'CITRICOS_SAAO' : 'SB_CITRICS_GROUP';
+            link.href = url;
+            // Establecer el nombre del archivo con el formato: REPORTE_AGUINALDOS_AÑO_EMPRESA_TIMESTAMP.xlsx
+            link.download = 'REPORTE_PTU_' + anio + '_' + nombre_empresa + '_' + timestamp + '.xlsx';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        },
+        error: function (xhr, status, error) {
+            // Cerrar la alerta de carga
+            Swal.close();
+
+            console.error('Error al descargar el Excel:', error);
+            alerta("error", "Error al generar reporte Excel", "Error al generar reporte Excel: " + error);
+        }
+    });
 });

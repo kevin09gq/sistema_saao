@@ -139,7 +139,7 @@ function construirNominaParaTicketsConfianza(empleadosConDepto) {
     };
 }
 
-function descargarTicketsConfianza($btn, url, iconoDefault, nombreDefault) {
+function descargarTicketsConfianza($btn, url, iconoDefault, nombreDefault, esTicketNombre = false) {
     const nomina = obtenerNominaConfianzaGlobal();
     if (!nomina || !Array.isArray(nomina.departamentos)) {
         Swal.fire('Sin datos', 'No hay datos de nómina para generar el PDF.', 'warning');
@@ -163,6 +163,44 @@ function descargarTicketsConfianza($btn, url, iconoDefault, nombreDefault) {
 
     const nominaParaEnviar = construirNominaParaTicketsConfianza(empleadosConDepto);
 
+    // Obtener departamento predominante y verificar si hay múltiples departamentos
+    const deptoCount = {};
+    nominaParaEnviar.departamentos.forEach(depto => {
+        const nombreDepto = (depto.nombre || 'GENERAL').toUpperCase();
+        const count = (depto.empleados || []).length;
+        deptoCount[nombreDepto] = (deptoCount[nombreDepto] || 0) + count;
+    });
+    const departamentosUnicos = Object.keys(deptoCount);
+    const multiplesDepartamentos = departamentosUnicos.length > 1;
+    const departamento = Object.keys(deptoCount).reduce((a, b) => deptoCount[a] > deptoCount[b] ? a : b);
+    
+    // Generar nombre del archivo con formato según el tipo de ticket
+    const numSemana = nomina.numero_semana || '';
+    const año = new Date().getFullYear();
+    let nombreArchivo;
+    if (esTicketNombre) {
+        // Formato para tickets nombre: NOMBRE_SEMANA_DEPARTAMENTO_CONFIANZA_AÑO
+        if (multiplesDepartamentos) {
+            nombreArchivo = `NOMBRE_SEM_${numSemana}_CONFIANZA_${año}.pdf`;
+        } else {
+            nombreArchivo = `NOMBRE_SEM_${numSemana}_${departamento}_CONFIANZA_${año}.pdf`;
+        }
+    } else {
+        // Formato para tickets generales: SEMANA_DEPARTAMENTO_CONFIANZA_AÑO
+        if (multiplesDepartamentos) {
+            nombreArchivo = `SEM_${numSemana}_CONFIANZA_${año}.pdf`;
+        } else {
+            nombreArchivo = `SEM_${numSemana}_${departamento}_CONFIANZA_${año}.pdf`;
+        }
+    }
+    
+    // Agregar departamento y año al meta
+    nominaParaEnviar.meta = {
+        numero_semana: numSemana,
+        departamento: multiplesDepartamentos ? '' : departamento,
+        año: año
+    };
+
     $btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Generando...');
 
     $.ajax({
@@ -178,18 +216,10 @@ function descargarTicketsConfianza($btn, url, iconoDefault, nombreDefault) {
                 return;
             }
 
-            let filename = nombreDefault;
-            const disposition = xhr.getResponseHeader('Content-Disposition');
-            if (disposition && disposition.indexOf('filename=') !== -1) {
-                const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-                const matches = filenameRegex.exec(disposition);
-                if (matches && matches[1]) filename = matches[1].replace(/["']/g, '');
-            }
-
             const urlBlob = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = urlBlob;
-            a.download = filename;
+            a.download = nombreArchivo;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(urlBlob);
@@ -222,13 +252,13 @@ $(document).ready(function () {
         const modalEl = document.getElementById('modalSeleccionTicket');
         const modal = bootstrap.Modal.getInstance(modalEl);
         if (modal) modal.hide();
-        descargarTicketsConfianza($('#btn_ticket_pdf'), '../php/descargar_ticket_pdf.php', 'bi-ticket-perforated', 'tickets_confianza.pdf');
+        descargarTicketsConfianza($('#btn_ticket_pdf'), '../php/descargar_ticket_pdf.php', 'bi-ticket-perforated', 'tickets_confianza.pdf', false);
     });
 
     $('#btn_ticket_nombre').on('click', function () {
         const modalEl = document.getElementById('modalSeleccionTicket');
         const modal = bootstrap.Modal.getInstance(modalEl);
         if (modal) modal.hide();
-        descargarTicketsConfianza($('#btn_ticket_pdf'), '../php/descargar_ticket_nombre_pdf.php', 'bi-ticket-perforated', 'tickets_nombre_confianza.pdf');
+        descargarTicketsConfianza($('#btn_ticket_pdf'), '../php/descargar_ticket_nombre_pdf.php', 'bi-ticket-perforated', 'tickets_nombre_confianza.pdf', true);
     });
 });

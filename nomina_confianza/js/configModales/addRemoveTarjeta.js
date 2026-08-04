@@ -9,6 +9,15 @@ $(document).ready(function () {
     $('#check-all-tarjeta').on('change', function () {
         const isChecked = $(this).is(':checked');
         $('.check-empleado-tarjeta:visible').prop('checked', isChecked);
+        $('.check-depto-tarjeta:visible').prop('checked', isChecked);
+        actualizarContadorSeleccionadosTarjeta();
+    });
+
+    // Checkbox de departamento para seleccionar/deseleccionar empleados del departamento
+    $(document).on('change', '.check-depto-tarjeta', function () {
+        const deptoId = $(this).data('depto-id');
+        const isChecked = $(this).is(':checked');
+        $(`.emp-row-depto-${deptoId}:visible .check-empleado-tarjeta`).prop('checked', isChecked);
         actualizarContadorSeleccionadosTarjeta();
     });
 
@@ -34,6 +43,8 @@ $(document).ready(function () {
             const empleadosVisibles = $(`.emp-row-depto-${deptoId}:visible`).length;
             $(this).toggle(empleadosVisibles > 0);
         });
+
+        actualizarContadorSeleccionadosTarjeta();
     });
 
     // Botón para aplicar la acción (agregar o quitar)
@@ -67,10 +78,13 @@ function cargarEmpleadosTarjeta() {
 
         deptoCounter++;
 
-        // Fila de encabezado de departamento
+        // Fila de encabezado de departamento con checkbox
         tbody.append(`
             <tr class="table-secondary depto-header-row" data-depto-id="${deptoCounter}">
-                <td colspan="3" class="fw-bold">
+                <td class="text-center">
+                    <input class="form-check-input check-depto-tarjeta" type="checkbox" data-depto-id="${deptoCounter}">
+                </td>
+                <td colspan="2" class="fw-bold">
                     <i class="bi bi-building"></i> ${depto.nombre} 
                     <small class="fw-normal text-muted ms-1">(${empleadosValidos.length} empleados con seguro)</small>
                 </td>
@@ -107,6 +121,27 @@ function cargarEmpleadosTarjeta() {
 function actualizarContadorSeleccionadosTarjeta() {
     const total = $('.check-empleado-tarjeta:checked').length;
     $('#contador-seleccionados-tarjeta').text(total);
+
+    // Actualizar estado de los checkboxes de departamento
+    $('.depto-header-row:visible').each(function () {
+        const deptoId = $(this).data('depto-id');
+        const $empChecks = $(`.emp-row-depto-${deptoId}:visible .check-empleado-tarjeta`);
+        if ($empChecks.length > 0) {
+            const allChecked = $empChecks.length === $empChecks.filter(':checked').length;
+            $(this).find('.check-depto-tarjeta').prop('checked', allChecked);
+        } else {
+            $(this).find('.check-depto-tarjeta').prop('checked', false);
+        }
+    });
+
+    // Actualizar estado del checkbox principal (check-all)
+    const $todosVisibles = $('.check-empleado-tarjeta:visible');
+    if ($todosVisibles.length > 0) {
+        const todosChecked = $todosVisibles.length === $todosVisibles.filter(':checked').length;
+        $('#check-all-tarjeta').prop('checked', todosChecked);
+    } else {
+        $('#check-all-tarjeta').prop('checked', false);
+    }
 }
 
 //======================================================
