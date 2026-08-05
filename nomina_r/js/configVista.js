@@ -4,10 +4,30 @@
 //============================================================================
 
 function cambiarVistaConfigValores() {
+
     // Agregar el atributo "hidden" al contenedor de datos para ocultarlo
+
     $("#contenedor-data").attr("hidden", true);
+
     // Quitar el atributo "hidden" del contenedor de la tabla de nómina para mostrarlo
+
     $("#config-valores-relicario").removeAttr("hidden");
+
+}
+
+function cambiarVistaTablaNomina() {
+    
+    // Agregar el atributo "hidden" al contenedor de datos para ocultarlo
+
+    $("#contenedor-data").attr("hidden", true);
+
+    // Agregar el atributo "hidden" al contenedor de configuración de valores para ocultarlo
+
+    $("#config-valores-relicario").attr("hidden", true);
+
+    // Quitar el atributo "hidden" del contenedor de la tabla de nómina para mostrarlo
+
+    $("#tabla-nomina-responsive").removeAttr("hidden");
 
 }
 

@@ -399,11 +399,13 @@ verificarSesion(); // Proteger esta página
             <div class="table-responsive-relicario">
                 <table class="table-nomina-relicario" id="tabla-nomina">
                     <thead>
-                        <tr>
+                       <tr>
                             <th rowspan="2">#</th>
-                            <th rowspan="2">NOMBRE</th>
-                            <th rowspan="2">SUELDO <br> NETO</th>
-                            <th rowspan="2">INCENTIVO</th>
+                            <th rowspan="2"> NOMBRE </th>
+                            <th rowspan="2" class="col-jornalero">DÍAS <br> TRAB.</th>
+                            <th rowspan="2">SUELDO <br> SEMANAL</th>
+                            <th rowspan="2">PASAJE</th>
+                            <th rowspan="2">COMIDA</th>
                             <th rowspan="2">EXTRAS</th>
                             <th rowspan="2">Total Percepciones</th>
                             <th rowspan="2">ISR</th>
@@ -412,8 +414,9 @@ verificarSesion(); // Proteger esta página
                             <th rowspan="2">AJUSTES <br> AL SUB</th>
                             <th rowspan="2">AUSENTISMO</th>
                             <th rowspan="2">PERMISO</th>
+                            <th rowspan="2">RETARDOS</th>
                             <th rowspan="2">UNIFORMES</th>
-                            <th rowspan="2">CHECADOR</th>
+                            <th rowspan="2">BIOMETRICO</th>
                             <th rowspan="2">F.A/GAFET/COFIA</th>
                             <th rowspan="2">TOTAL DE <br> DEDUCCIONES</th>
                             <th rowspan="2">NETO A RECIBIR</th>
@@ -450,6 +453,8 @@ verificarSesion(); // Proteger esta página
 
 
     <!-- Incluir el modal -->
+    <?php include 'modals/modalListaRaya.php'; ?>
+    <?php include 'modals/modalBiometrico.php'; ?>
 
 
 
@@ -462,6 +467,13 @@ verificarSesion(); // Proteger esta página
     <!-- Archivo JS específico -->
     <script src="../js/crearEstructuraJson.js"></script>
     <script src="../js/configVista.js"></script>
+    <script src="../js/mostrarEmpleados.js"></script>
+    <script src="../js/filtroBusqueda.js"></script>
+    <script src="../js/storage.js"></script>
+
+    <script src="../js/modals/listaDeRaya.js"></script>
+    <script src="../js/modals/biometrico.js"></script>
+    <script src="../js/modals/obtenerDiasTrabajados.js"></script>
    
 </body>
 

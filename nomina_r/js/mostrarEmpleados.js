@@ -15,24 +15,18 @@ let paginaActual = 1;
 function llenarTablaNomina() {
 
     // Limpiar el contenido actual de la tabla
-    $('#tabla-nomina-body-40lbs').empty();
-
-    const sanitizarColorHex = (color) => {
-        const c = String(color || '').trim();
-        return (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/).test(c) ? c : '';
-    };
+    $('#tabla-nomina-body-relicario').empty();
 
     // Obtener el departamento seleccionado
     let filtro = $('#filtro-departamento').val();
 
     // Obtener el texto escrito en el buscador
-    let textoBusqueda = $('#busqueda-nomina-40lbs').val().trim().toUpperCase();
+    let textoBusqueda = $('#busqueda-nomina-relicario').val().trim().toUpperCase();
 
     let datos = filtro.split("-");
 
     let idDepartamento = Number(datos[0]);
-    let tipoEmpleado = datos[1];
-
+   
 
     // Calcular el primer y último registro que se mostrarán en la página
     let inicio = (paginaActual - 1) * registrosPorPagina;
@@ -45,7 +39,7 @@ function llenarTablaNomina() {
     let numeroFila = inicio + 1;
 
     // Recorrer todos los departamentos
-    jsonNomina40lbs.departamentos.forEach(departamento => {
+    jsonNominaRelicario.departamentos.forEach(departamento => {
 
         if (departamento.id_departamento != idDepartamento) {
             return;
@@ -59,15 +53,7 @@ function llenarTablaNomina() {
                 return;
             }
 
-            // Si se seleccionó CSS solo mostrar empleados con seguro social
-            if (tipoEmpleado == "CSS" && !empleado.seguroSocial) {
-                return;
-            }
-
-            // Si se seleccionó SSS solo mostrar empleados sin seguro social
-            if (tipoEmpleado == "SSS" && empleado.seguroSocial) {
-                return;
-            }
+          
 
             // Si existe un texto de búsqueda, buscar por nombre o clave
             if (textoBusqueda != "") {
@@ -88,15 +74,17 @@ function llenarTablaNomina() {
             if (contador >= inicio && contador < fin) {
 
                 // Agregar la fila del empleado a la tabla
-                $('#tabla-nomina-body-40lbs').append(`
+                $('#tabla-nomina-body-relicario').append(`
                     <tr data-id-empleado="${empleado.id_empleado}">
                       
                         <td>${numeroFila}</td>
-                        <td style="${sanitizarColorHex(empleado.color_puesto) ? `color:${sanitizarColorHex(empleado.color_puesto)};` : ''}">${empleado.nombre}</td>
-                        <td>${formatoMoneda(empleado.sueldo_neto)}</td>
-                        <td>${formatoMoneda(empleado.incentivo)}</td>
-                        <td>${formatoMoneda(obtenerSueldoExtraTotal(empleado))}</td>
-                        <td>${formatoMoneda(obtenerTotalPercepciones(empleado))}</td>
+                        <td>${empleado.nombre}</td>
+                        <td>${empleado.dias_trabajados || ""}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
 
                         <td>${formatoMoneda(obtenerConcepto(empleado, 45))}</td>
                         <td>${formatoMoneda(obtenerConcepto(empleado, 52))}</td>
@@ -106,16 +94,16 @@ function llenarTablaNomina() {
                         <td>${formatoMoneda(empleado.permiso)}</td>
                         <td>${formatoMoneda(empleado.uniformes)}</td>    
                         <td>${formatoMoneda(empleado.checador)}</td>
-                        <td>${formatoMoneda(obtenerTotalFAGafetCofia(empleado))}</td>
-                        <td>${formatoMoneda(obtenerTotalDeducciones(empleado))}</td>
+                        <td></td>
+                        <td></td>
 
-                        <td>${formatoMoneda(obtenerNetoPagar(empleado))}</td>
+                        <td></td>
                         <td>${formatoMoneda(empleado.tarjeta)}</td>
-                        <td>${formatoMoneda(obtenerImporteEfectivo(empleado))}</td>
+                        <td></td>
                         <td>${formatoMoneda(empleado.prestamo)}</td>
                         <td>${formatoMoneda(obtenerTotalRecibir(empleado))}</td>
                         <td class="${parseFloat(empleado.redondeo) < 0 ? 'redondeo-negativo' : 'redondeo-positivo'}">${formatoMoneda(empleado.redondeo || 0)}</td>
-                        <td>${formatoMoneda(obtenerTotalCobrar(empleado))}</td>
+                        <td></td>
 
                     </tr>
                 `);
@@ -130,7 +118,7 @@ function llenarTablaNomina() {
     });
 
     // Calcular y pintar los totales de cada columna en el pie de la tabla
-    calcularTotalesPorColumna();
+    // calcularTotalesPorColumna();
 
     crearPaginacion();
 
@@ -143,18 +131,18 @@ function llenarTablaNomina() {
 function calcularTotalesPorColumna() {
 
     // Limpiar el contenido actual del pie de la tabla
-    $('#tabla-nomina-foot-40lbs').empty();
+    $('#tabla-nomina-foot-relicario').empty();
 
     // Obtener el departamento seleccionado
     let filtro = $('#filtro-departamento').val();
 
     // Obtener el texto escrito en el buscador
-    let textoBusqueda = $('#busqueda-nomina-40lbs').val().trim().toUpperCase();
+    let textoBusqueda = $('#busqueda-nomina-relicario').val().trim().toUpperCase();
 
     let datos = filtro.split("-");
 
     let idDepartamento = Number(datos[0]);
-    let tipoEmpleado = datos[1];
+    
 
     // Estructura de acumuladores para cada columna
     let totales = {
@@ -183,7 +171,7 @@ function calcularTotalesPorColumna() {
     };
 
     // Recorrer los departamentos
-    jsonNomina40lbs.departamentos.forEach(departamento => {
+    jsonNominaRelicario.departamentos.forEach(departamento => {
 
         // Solo trabajar con el departamento seleccionado
         if (departamento.id_departamento != idDepartamento) {
@@ -198,15 +186,7 @@ function calcularTotalesPorColumna() {
                 return;
             }
 
-            // Si se seleccionó CSS solo sumar empleados con seguro social
-            if (tipoEmpleado == "CSS" && !empleado.seguroSocial) {
-                return;
-            }
-
-            // Si se seleccionó SSS solo sumar empleados sin seguro social
-            if (tipoEmpleado == "SSS" && empleado.seguroSocial) {
-                return;
-            }
+        
 
             // Si existe texto de búsqueda, filtrar por nombre o clave
             if (textoBusqueda != "") {
@@ -254,7 +234,7 @@ function calcularTotalesPorColumna() {
     });
 
     // Agregar la fila de totales al pie de la tabla
-    $('#tabla-nomina-foot-40lbs').append(`
+    $('#tabla-nomina-foot-relicario').append(`
         <tr>
             <td><strong>TOTALES</strong></td>
             <td><strong>${totales.empleados} Empleado(s)</strong></td>
@@ -298,20 +278,19 @@ function crearPaginacion() {
     let filtro = $('#filtro-departamento').val();
 
     // Obtener el texto escrito en el buscador
-    let textoBusqueda = $('#busqueda-nomina-40lbs').val().trim().toUpperCase();
+    let textoBusqueda = $('#busqueda-nomina-relicario').val().trim().toUpperCase();
 
 
     // El valor tiene el formato: "idDepartamento-TipoEmpleado"
     let datos = filtro.split("-");
 
     let idDepartamento = Number(datos[0]);
-    let tipoEmpleado = datos[1];
 
     // Variable para almacenar el total de empleados que cumplen el filtro
     let totalEmpleados = 0;
 
     // Recorrer los departamentos
-    jsonNomina40lbs.departamentos.forEach(departamento => {
+    jsonNominaRelicario.departamentos.forEach(departamento => {
 
         // Solo trabajar con el departamento seleccionado
         if (departamento.id_departamento != idDepartamento) {
@@ -326,16 +305,7 @@ function crearPaginacion() {
                 return;
             }
 
-            // Si se seleccionó CSS, contar únicamente empleados con seguro social
-            if (tipoEmpleado == "CSS" && !empleado.seguroSocial) {
-                return;
-            }
-
-            // Si se seleccionó SSS, contar únicamente empleados sin seguro social
-            if (tipoEmpleado == "SSS" && empleado.seguroSocial) {
-                return;
-            }
-
+      
             // Si existe un texto de búsqueda, buscar por nombre o clave
             if (textoBusqueda != "") {
 

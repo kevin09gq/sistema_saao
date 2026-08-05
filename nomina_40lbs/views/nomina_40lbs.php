@@ -153,12 +153,6 @@ verificarSesion(); // Proteger esta página
                             </button>
                         </li>
                         <li>
-                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_marcajes">
-                                <i class="bi bi-clock-history text-primary"></i>
-                                <span>Ajustar Marcaje</span>
-                            </button>
-                        </li>
-                        <li>
                             <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn-ocultar-empleados">
                                 <i class="bi bi-people text-primary"></i>
                                 <span>Ocultar Empleados</span>

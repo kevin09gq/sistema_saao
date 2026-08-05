@@ -17,8 +17,8 @@ switch ($accion) {
         obtenerEmpleados($conexion);
         break;
 
-    case 'obtenerSueldoBase':
-        obtenerSueldoBase($conexion);
+    case 'obtenerHorarioRancho':
+        obtenerHorarioRancho($conexion);
         break;
 
     case 'guardarNomina':
@@ -142,37 +142,69 @@ function obtenerEmpleados(mysqli $conexion)
         "success" => true,
         "empleados" => $empleados
     ]);
+
+    
 }
 
-// FUNCIÓN PARA OBTENER EL SUELDO BASE DE LOS EMPLEADOS A TRAVES DE SU ID DE EMPLEADO
 
-function obtenerSueldoBase(mysqli $conexion)
+// FUNCION PARA OBTENER EL HORARIO DEL RANCHO
+
+function obtenerHorarioRancho(mysqli $conexion)
 {
 
-    $empleados = json_decode($_POST['empleados'], true);
+    $id_area = 2;
 
-    $ids = [];
+    $sql = "SELECT horario_jornalero 
+            FROM info_ranchos 
+            WHERE id_area = ?";
 
-    foreach ($empleados as $empleado) {
-        $ids[] = $empleado['id_empleado'];
+
+    $stmt = $conexion->prepare($sql);
+
+    if (!$stmt) {
+
+        echo json_encode([
+            "success" => false,
+            "mensaje" => $conexion->error
+        ]);
+
+        return;
     }
 
-    $sql = "SELECT
-                id_empleado,
-                salario_semanal
-            FROM info_empleados
-            WHERE id_empleado IN (" . implode(',', $ids) . ")";
 
-    $resultado = $conexion->query($sql);
+    $stmt->bind_param("i", $id_area);
 
-    $sueldos = [];
+    $stmt->execute();
 
-    while ($fila = $resultado->fetch_assoc()) {
-        $sueldos[] = $fila;
+
+    $resultado = $stmt->get_result();
+
+
+    if ($fila = $resultado->fetch_assoc()) {
+
+
+        echo json_encode([
+            "success" => true,
+            "horario_jornalero" => json_decode($fila["horario_jornalero"])
+        ]);
+
+
+    } else {
+
+
+        echo json_encode([
+            "success" => false,
+            "mensaje" => "No se encontró horario para el rancho."
+        ]);
+
     }
 
-    echo json_encode($sueldos);
+
+    $stmt->close();
+
 }
+
+
 
 // FUNCIÓN PARA GUARDAR O ACTUALIZAR LA NÓMINA
 function guardarNomina(mysqli $conexion)

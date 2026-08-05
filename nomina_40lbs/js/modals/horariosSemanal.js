@@ -430,3 +430,59 @@ function activarNavegacionCeldas() {
         }
     });
 }
+
+
+//===================================================
+// FUNCION PARA ESTABLECER EL COSTO POR MINUTO DEL
+// HORARIO SEMANAL DE ACUERDO AL TABULADOR
+//===================================================
+
+function establecerCostoPorMinutoHorarioSemanal() {
+
+    // Verificar que exista el tabulador
+    if (!tabuladorSueldo || tabuladorSueldo.length === 0) {
+        jsonNomina40lbs.costo_por_minuto = 0;
+        return;
+    }
+
+    // Obtener los minutos totales del horario semanal
+    var minutosTrabajados = 0;
+
+    for (var i = 0; i < jsonNomina40lbs.horarios_semanales.length; i++) {
+        minutosTrabajados += parseInt(jsonNomina40lbs.horarios_semanales[i].minutos) || 0;
+    }
+
+    // Variable para guardar el último rango normal
+    var ultimoRangoNormal = null;
+
+    // Buscar el rango correspondiente
+    for (var i = 0; i < tabuladorSueldo.length; i++) {
+
+        var rango = tabuladorSueldo[i];
+
+        if (rango.tipo === "normal") {
+
+            ultimoRangoNormal = rango;
+
+            if (minutosTrabajados <= rango.minutos) {
+
+                jsonNomina40lbs.costo_por_minuto = parseFloat(rango.costo_por_minuto);
+                return;
+            }
+        }
+
+        // Si llegó al rango de horas extra,
+        // utilizar el último rango normal
+        if (rango.tipo === "hora_extra") {
+
+            if (ultimoRangoNormal && minutosTrabajados > ultimoRangoNormal.minutos) {
+
+                jsonNomina40lbs.costo_por_minuto = parseFloat(ultimoRangoNormal.costo_por_minuto);
+                return;
+            }
+        }
+    }
+
+    // Si no encontró un rango
+    jsonNomina40lbs.costo_por_minuto = 0;
+}

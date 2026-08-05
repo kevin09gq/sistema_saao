@@ -272,12 +272,11 @@ function limpiarModalDetallesNominaEmpleado() {
     // LIMPIAR OBJETO DEL EMPLEADO SELECCIONADO
     //==========================================
 
-    if (typeof objEmpleado !== "undefined") {
+if (typeof objEmpleado !== "undefined") {
 
-        objEmpleado = null;
+    objEmpleado.limpiarEmpleado();
 
-    }
-
+}
 
 
     //==========================================

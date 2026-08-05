@@ -16,6 +16,10 @@ function redondearHorarios() {
     // Cargar el tabulador de sueldos antes de procesar los empleados
     getTabulador();
 
+
+    // Asignar el costo por minuto en el horario semanal de acuerdo al tabulador 
+    establecerCostoPorMinutoHorarioSemanal();
+
     // Recorremos los departamentos de la nómina uno a uno
     jsonNomina40lbs.departamentos.forEach(function (departamento) {
         // Recorremos los empleados del departamento actual y verificamos si mostrar = true

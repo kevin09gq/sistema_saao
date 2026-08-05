@@ -3,17 +3,29 @@
 jsonNominaRelicario = null;
 
 $(document).ready(function () {
-    /* Si no se logra restaurar una nómina previa, mostrar el contenedor de carga
+    // Si no se logra restaurar una nómina previa, mostrar el contenedor de carga
     if (!restoreNomina()) {
         $("#contenedor-data").removeAttr("hidden");
-    }*/
+    }
 
+    
 
     // Llamada de la función para crear la estructura del JSON (crearEstructuraJson.js)
     crearEstructuraJson();
 
+    // Llamada de la función para dar funcionalidad al select de departamentos (filtroBusqueda.js)
+    eventoFiltroDepartamento();
+
+    // Llamada de la función para dar funcionalidad al buscador de empleados (filtroBusqueda.js)
+    eventoBusquedaEmpleado();
+
+    // Llamada de la función para eliminar la busqueda del input de busqueda (filtroBusqueda.js)
+    limpiarBusqueda();
+
     // Llamada de la función para guardar la configuración general de la nómina (crearEstructuraJson.js)
     guardarConfiguracionRelicario();
+
+    console.log(jsonNominaRelicario);
 
 });
 
@@ -98,6 +110,9 @@ function obtenerInfoDepartamento(jsonNominaRelicario) {
 
             console.log(jsonNominaRelicario);
 
+            // Llamar a la función para obtener el horario del rancho y guardarlo en el JSON
+            obtenerHorarioRancho();
+
             // Cambiar de vista a la configuración de valores económicos del relicario
             cambiarVistaConfigValores();
 
@@ -111,6 +126,72 @@ function obtenerInfoDepartamento(jsonNominaRelicario) {
 
         }
     });
+
+}
+
+
+//===============================================================
+// FUNCION PARA OBTENER EL HORARIO DEL RANCHO
+// Y GUARDARLO EN EL JSON DE LA NOMINA RELICARIO
+//===============================================================
+
+function obtenerHorarioRancho() {
+
+    $.ajax({
+
+        url: "../php/infoEmpleados.php",
+
+        type: "POST",
+
+        dataType: "json",
+
+        data: {
+            accion: "obtenerHorarioRancho"
+        },
+
+
+        success: function (respuesta) {
+
+            if (!respuesta.success) {
+
+
+                mostrarAlerta(
+                    "error",
+                    "Error",
+                    respuesta.mensaje
+                );
+
+                return;
+
+            }
+
+            // Guardar horario del rancho dentro del JSON
+
+            jsonNominaRelicario.horarioRancho = respuesta.horario_jornalero;
+
+
+            console.log(
+                "Horario Rancho:",
+                jsonNominaRelicario.horarioRancho
+            );
+
+
+        },
+
+        error: function () {
+
+
+            mostrarAlerta(
+                "error",
+                "Error",
+                "No se pudo obtener el horario del rancho."
+            );
+
+
+        }
+
+    });
+
 
 }
 
@@ -247,10 +328,10 @@ function guardarConfiguracionRelicario() {
             return;
         }
 
-       
+
 
         // Aquí continúa el siguiente proceso...
-         obtenerEmpleados(jsonNominaRelicario);
+        obtenerEmpleados(jsonNominaRelicario);
 
     });
 
@@ -299,7 +380,7 @@ function obtenerEmpleados(jsonNominaRelicario) {
                             id_empleado: empleado.id_empleado,
                             clave: empleado.clave_empleado,
                             id_biometrico: empleado.biometrico,
-                            nombre: empleado.nombre + " " + empleado.ap_paterno + " " + empleado.ap_materno ,
+                            nombre: empleado.nombre + " " + empleado.ap_paterno + " " + empleado.ap_materno,
                             id_departamento: empleado.id_departamento,
                             id_empresa: empleado.id_empresa,
                             mostrar: true,
@@ -329,11 +410,20 @@ function obtenerEmpleados(jsonNominaRelicario) {
 
             });
 
-           
 
             console.log(jsonNominaRelicario);
 
-           
+            // Llamar a la función para asignar las propiedades a los empleados dentro del JSON
+
+            asignarPropiedadesEmpleado(jsonNominaRelicario);
+
+            // Cambiar de vista a la tabla de la nomina
+
+            cambiarVistaTablaNomina();
+
+            cargarFiltroDepartamentos();
+
+            llenarTablaNomina();
 
         },
         error: function () {
@@ -370,14 +460,9 @@ function asignarPropiedadesEmpleado(jsonNominaRelicario) {
             }
 
             // Agregar o mantener las propiedades necesarias (no sobrescribir si ya vienen de la BD)
-            empleado.sueldo_neto = empleado.sueldo_neto ?? 0;
-            empleado.incentivo = empleado.incentivo ?? 0;
-            empleado.horas_extra = empleado.horas_extra ?? 0;
-            empleado.bono_antiguedad = empleado.bono_antiguedad ?? 0;
-            empleado.actividades_especiales = empleado.actividades_especiales ?? 0;
-            empleado.puesto = empleado.puesto ?? 0;
-            empleado.color_puesto = empleado.color_puesto ?? null;
+            empleado.salario_semanal = empleado.salario_semanal ?? 0;
             empleado.sueldo_extra_total = empleado.sueldo_extra_total ?? 0;
+            empleado.retardos = empleado.retardos ?? 0;
             empleado.prestamo = empleado.prestamo ?? 0;
             empleado.permiso = empleado.permiso ?? 0;
             empleado.inasistencia = empleado.inasistencia ?? 0;

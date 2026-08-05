@@ -1096,7 +1096,7 @@
                                                 <div class="row">
 
                                                     <!-- Día -->
-                                                    <div class="col-md-4 mb-3">
+                                                    <div class="col-md-3 mb-3">
 
                                                         <label for="selectDiaAusentismo" class="form-label">
                                                             Día
@@ -1126,8 +1126,40 @@
 
                                                     </div>
 
+                                                    <!-- Minutos -->
+                                                    <div class="col-md-3 mb-3">
+
+                                                        <label for="inputMinutosAusentismo" class="form-label">
+                                                            Minutos
+                                                        </label>
+
+                                                        <input
+                                                            type="number"
+                                                            class="form-control"
+                                                            id="inputMinutosAusentismo"
+                                                            placeholder="0"
+                                                            step="1">
+
+                                                    </div>
+
+                                                    <!-- Costo por Minuto -->
+                                                    <div class="col-md-3 mb-3">
+
+                                                        <label for="inputCostoMinutoAusentismo" class="form-label">
+                                                            Costo por Minuto ($)
+                                                        </label>
+
+                                                        <input
+                                                            type="number"
+                                                            class="form-control"
+                                                            id="inputCostoMinutoAusentismo"
+                                                            placeholder="0.00"
+                                                            step="0.01">
+
+                                                    </div>
+
                                                     <!-- Cantidad -->
-                                                    <div class="col-md-4 mb-3">
+                                                    <div class="col-md-3 mb-3">
 
                                                         <label for="inputCantidadAusentismo" class="form-label">
                                                             Cantidad ($)
@@ -1138,7 +1170,8 @@
                                                             class="form-control"
                                                             id="inputCantidadAusentismo"
                                                             placeholder="0.00"
-                                                            step="0.01">
+                                                            step="0.01"
+                                                            readonly>
 
                                                     </div>
                                                 </div>

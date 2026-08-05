@@ -142,30 +142,6 @@
                 <!-- PASO 2 -->
                 <div id="divListaEmpleadosOlvidosChecador">
 
-
-
-                    <!-- BUSCADOR -->
-                    <div class="input-group mb-3">
-
-
-                        <span class="input-group-text bg-success text-white">
-
-                            <i class="bi bi-search"></i>
-
-                        </span>
-
-
-                        <input
-                            type="text"
-                            class="form-control"
-                            id="txtBuscarEmpleadoOlvidoChecador"
-                            placeholder="Buscar empleado por nombre o clave">
-
-
-                    </div>
-
-
-
                     <!-- TABLA EMPLEADOS CON OLVIDOS -->
                     <div class="card">
 

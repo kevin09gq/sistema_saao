@@ -436,6 +436,19 @@ function establecerHistorialOlvidosBiometrico(historialOlvidos) {
 
 function establecerHistorialInasistencias(historialInasistencias) {
 
+    let empleado = objEmpleado.getEmpleado();
+
+    // Establecer costo por minuto por defecto y limpiar campos
+    $("#inputCostoMinutoAusentismo").val(jsonNomina40lbs.costo_por_minuto || 0);
+    $("#inputMinutosAusentismo").val("");
+    $("#selectDiaAusentismo").val("");
+
+    if (empleado && empleado.sueldo_base == true) {
+        $("#inputCantidadAusentismo").val((empleado.sueldo_neto / 7).toFixed(2));
+    } else {
+        $("#inputCantidadAusentismo").val("");
+    }
+
 
     // Limpiar tabla
     $("#tbody-historial-ausentismos").empty();
@@ -578,6 +591,20 @@ function establecerHistorialInasistencias(historialInasistencias) {
 //==========================================================
 
 function establecerHistorialPermisos(historialPermisos) {
+
+    let empleado = objEmpleado.getEmpleado();
+
+    // Establecer en el input inputCostoMinutoPermiso el costo_por_minuto si existe,
+    // si no existe, establecerlo en 0
+    $("#inputCostoMinutoPermiso").val(jsonNomina40lbs.costo_por_minuto || 0);
+    $("#inputMinutosPermiso").val("");
+    $("#selectDiaPermiso").val("");
+
+    if (empleado && empleado.sueldo_base == true) {
+        $("#inputDescuentoPermiso").val((empleado.sueldo_neto / 7).toFixed(2));
+    } else {
+        $("#inputDescuentoPermiso").val("");
+    }
 
     // Limpiar tabla
     $("#tbody-historial-permisos").empty();

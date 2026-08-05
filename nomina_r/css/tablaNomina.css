@@ -113,10 +113,12 @@
     color: #1f2937;
 }
 
-.table-nomina-relicario td:nth-child(3),
+
 .table-nomina-relicario td:nth-child(4),
 .table-nomina-relicario td:nth-child(5),
-.table-nomina-relicario td:nth-child(6) {
+.table-nomina-relicario td:nth-child(6), 
+.table-nomina-relicario td:nth-child(7),
+.table-nomina-relicario td:nth-child(8) {
     color: #10b981;
     font-weight: 600;
     background: rgba(16, 185, 129, 0.05);
@@ -126,8 +128,7 @@
 
 
 /* Cambiar el color de las filas en las columnas de DEDUCCIONES (ajustado) */
-.table-nomina-relicario td:nth-child(7),
-.table-nomina-relicario td:nth-child(8),
+
 .table-nomina-relicario td:nth-child(9),
 .table-nomina-relicario td:nth-child(10),
 .table-nomina-relicario td:nth-child(11),
@@ -136,8 +137,11 @@
 .table-nomina-relicario td:nth-child(14),
 .table-nomina-relicario td:nth-child(15),
 .table-nomina-relicario td:nth-child(16),
+.table-nomina-relicario td:nth-child(17),
 .table-nomina-relicario td:nth-child(18),
-.table-nomina-relicario td:nth-child(20) {
+.table-nomina-relicario td:nth-child(19),
+.table-nomina-relicario td:nth-child(21),
+.table-nomina-relicario td:nth-child(23) {
     color: #ef4444;
     /* Rojo */
     font-weight: 600;
@@ -145,9 +149,9 @@
     font-variant-numeric: tabular-nums;
 }
 
-.table-nomina-relicario td:nth-child(17),
-.table-nomina-relicario td:nth-child(19),
-.table-nomina-relicario td:nth-child(21) {
+.table-nomina-relicario td:nth-child(20),
+.table-nomina-relicario td:nth-child(22),
+.table-nomina-relicario td:nth-child(24) {
     color: #000000;
     font-weight: 700;
     border-radius: 6px;
@@ -155,7 +159,7 @@
     font-variant-numeric: tabular-nums;
 }
 
-.table-nomina-relicario td:nth-child(23) {
+.table-nomina-relicario td:nth-child(26) {
     background: rgba(59, 130, 246, 0.1);
     color: #1d4ed8;
     font-weight: 700;

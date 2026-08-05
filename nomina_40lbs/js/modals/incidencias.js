@@ -3,6 +3,7 @@ $(document).ready(function () {
     agregarPermiso();
     agregarUniforme();
     calcularDescuentoPermisoTiempoReal();
+    calcularDescuentoInasistenciaTiempoReal();
 });
 
 
@@ -218,7 +219,8 @@ function eliminarOlvidoBiometrico(indice) {
 
 
 // ======================================================
-// FUNCION PARA CREAR EL HISTORIAL DE INASISTENCIAS
+// FUNCION PARA CREAR EL HISTORIAL DE INASISTENCIAS 
+// SIEMPRE Y CUANDO EL EMPLEADO TENGA SUELDO BASE
 // ======================================================
 
 function crearHistorialInasistencias(empleado) {
@@ -425,6 +427,8 @@ function agregarInasistencia() {
 
         // Obtener valores
         let dia = $("#selectDiaAusentismo").val();
+        let minutos = $("#inputMinutosAusentismo").val();
+        let costoPorMinuto = $("#inputCostoMinutoAusentismo").val();
         let cantidad = $("#inputCantidadAusentismo").val();
 
 
@@ -442,12 +446,31 @@ function agregarInasistencia() {
         }
 
 
-        // Si es sueldo base y no capturó cantidad,
-        // calcular automáticamente el descuento diario
-        if (empleado.sueldo_base == true && cantidad == "") {
-
-            cantidad = (empleado.sueldo_neto / 7).toFixed(2);
-
+        // Si se ingresó minutos, validar y calcular
+        if (minutos !== "") {
+            if (parseInt(minutos) <= 0) {
+                mostrarAlerta(
+                    "warning",
+                    "Advertencia",
+                    "Ingrese una cantidad de minutos válida o deje el campo de minutos vacío para usar el descuento por defecto."
+                );
+                return;
+            }
+            if (costoPorMinuto == "" || parseFloat(costoPorMinuto) <= 0) {
+                mostrarAlerta(
+                    "warning",
+                    "Advertencia",
+                    "Ingrese un costo por minuto válido."
+                );
+                return;
+            }
+            cantidad = (parseInt(minutos) * parseFloat(costoPorMinuto)).toFixed(2);
+        } else {
+            // Si es sueldo base y no capturó minutos,
+            // calcular automáticamente el descuento diario
+            if (empleado.sueldo_base == true) {
+                cantidad = (empleado.sueldo_neto / 7).toFixed(2);
+            }
         }
 
 
@@ -457,7 +480,7 @@ function agregarInasistencia() {
             mostrarAlerta(
                 "warning",
                 "Advertencia",
-                "Ingrese una cantidad válida."
+                "Ingrese minutos y costo por minuto válidos."
             );
 
             return;
@@ -499,7 +522,13 @@ function agregarInasistencia() {
 
         // Limpiar controles
         $("#selectDiaAusentismo").val("");
-        $("#inputCantidadAusentismo").val("");
+        $("#inputMinutosAusentismo").val("");
+        $("#inputCostoMinutoAusentismo").val(jsonNomina40lbs.costo_por_minuto || 0);
+        if (empleado.sueldo_base == true) {
+            $("#inputCantidadAusentismo").val((empleado.sueldo_neto / 7).toFixed(2));
+        } else {
+            $("#inputCantidadAusentismo").val("");
+        }
 
 
         // Actualizar la Tabla de la nomina
@@ -509,6 +538,30 @@ function agregarInasistencia() {
 
 }
 
+//==========================================================
+// FUNCIÓN PARA CALCULAR EL DESCUENTO DE LA INASISTENCIA
+// EN TIEMPO REAL
+//==========================================================
+function calcularDescuentoInasistenciaTiempoReal() {
+
+    $(document).on("keyup input change", "#inputMinutosAusentismo, #inputCostoMinutoAusentismo", function () {
+
+        let empleado = objEmpleado.getEmpleado();
+        let minutos = $("#inputMinutosAusentismo").val();
+        let costo = parseFloat($("#inputCostoMinutoAusentismo").val()) || 0;
+
+        if (minutos === "" && empleado && empleado.sueldo_base == true) {
+            let descuento = empleado.sueldo_neto / 7;
+            $("#inputCantidadAusentismo").val(descuento.toFixed(2));
+        } else {
+            let minVal = parseFloat(minutos) || 0;
+            let descuento = minVal * costo;
+            $("#inputCantidadAusentismo").val(descuento.toFixed(2));
+        }
+
+    });
+
+}
 
 //==========================================================
 // FUNCIÓN PARA CANCELAR LA EDICIÓN DEL HISTORIAL
@@ -610,6 +663,7 @@ function agregarPermiso() {
         let dia = $("#selectDiaPermiso").val();
         let minutos = $("#inputMinutosPermiso").val();
         let costoPorMinuto = $("#inputCostoMinutoPermiso").val();
+        let descuento = "";
 
         // Validar día
         if (dia == "") {
@@ -624,8 +678,36 @@ function agregarPermiso() {
 
         }
 
-        // Validar minutos
-        if (minutos == "" || parseInt(minutos) <= 0) {
+        // Si se ingresó una cantidad de minutos (independientemente de si el costo está pre-llenado), calculamos el descuento por minutos.
+        // Si no se ingresaron minutos, y el empleado tiene sueldo base, usamos el descuento diario por defecto.
+        if (minutos !== "") {
+            if (parseInt(minutos) <= 0) {
+                mostrarAlerta(
+                    "warning",
+                    "Advertencia",
+                    "Ingrese una cantidad de minutos válida o deje el campo de minutos vacío para usar el descuento por defecto."
+                );
+                return;
+            }
+            if (costoPorMinuto == "" || parseFloat(costoPorMinuto) <= 0) {
+                mostrarAlerta(
+                    "warning",
+                    "Advertencia",
+                    "Ingrese un costo por minuto válido."
+                );
+                return;
+            }
+            descuento = parseInt(minutos) * parseFloat(costoPorMinuto);
+        } else {
+            // Si es sueldo base y no capturó minutos,
+            // calcular automáticamente el descuento diario
+            if (empleado.sueldo_base == true) {
+                descuento = empleado.sueldo_neto / 7;
+            }
+        }
+
+        // Validar descuento final
+        if (descuento === "" || parseFloat(descuento) <= 0) {
 
             mostrarAlerta(
                 "warning",
@@ -636,22 +718,6 @@ function agregarPermiso() {
             return;
 
         }
-
-        // Validar costo por minuto
-        if (costoPorMinuto == "" || parseFloat(costoPorMinuto) <= 0) {
-
-            mostrarAlerta(
-                "warning",
-                "Advertencia",
-                "Ingrese un costo por minuto válido."
-            );
-
-            return;
-
-        }
-
-        // Calcular descuento
-        let descuento = parseInt(minutos) * parseFloat(costoPorMinuto);
 
         // Crear historial si no existe
         if (!empleado.historial_permisos) {
@@ -665,19 +731,23 @@ function agregarPermiso() {
 
             dia: dia,
 
-            minutos_permiso: parseInt(minutos),
+            minutos_permiso: minutos !== "" ? parseInt(minutos) : 0,
 
-            costo_por_minuto: parseFloat(costoPorMinuto),
+            costo_por_minuto: minutos !== "" ? parseFloat(costoPorMinuto) : 0,
 
-            descuento_permiso: parseFloat(descuento.toFixed(2))
+            descuento_permiso: parseFloat(parseFloat(descuento).toFixed(2))
 
         });
 
         // Limpiar controles
         $("#selectDiaPermiso").val("");
         $("#inputMinutosPermiso").val("");
-        $("#inputCostoMinutoPermiso").val("");
-        $("#inputDescuentoPermiso").val("");
+        $("#inputCostoMinutoPermiso").val(jsonNomina40lbs.costo_por_minuto || 0);
+        if (empleado.sueldo_base == true) {
+            $("#inputDescuentoPermiso").val((empleado.sueldo_neto / 7).toFixed(2));
+        } else {
+            $("#inputDescuentoPermiso").val("");
+        }
 
         establecerHistorialPermisos(empleado.historial_permisos);
 
@@ -701,15 +771,20 @@ function agregarPermiso() {
 
 function calcularDescuentoPermisoTiempoReal() {
 
-    $(document).on("keyup", "#inputMinutosPermiso, #inputCostoMinutoPermiso", function () {
+    $(document).on("keyup input change", "#inputMinutosPermiso, #inputCostoMinutoPermiso", function () {
 
-        let minutos = parseFloat($("#inputMinutosPermiso").val()) || 0;
-
+        let empleado = objEmpleado.getEmpleado();
+        let minutos = $("#inputMinutosPermiso").val();
         let costo = parseFloat($("#inputCostoMinutoPermiso").val()) || 0;
 
-        let descuento = minutos * costo;
-
-        $("#inputDescuentoPermiso").val(descuento.toFixed(2));
+        if (minutos === "" && empleado && empleado.sueldo_base == true) {
+            let descuento = empleado.sueldo_neto / 7;
+            $("#inputDescuentoPermiso").val(descuento.toFixed(2));
+        } else {
+            let minVal = parseFloat(minutos) || 0;
+            let descuento = minVal * costo;
+            $("#inputDescuentoPermiso").val(descuento.toFixed(2));
+        }
 
     });
 
@@ -1239,3 +1314,4 @@ function eliminarUniforme(indice) {
     llenarTablaNomina();
 
 }
+
