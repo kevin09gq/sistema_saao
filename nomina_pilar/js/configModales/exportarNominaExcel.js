@@ -242,9 +242,9 @@ function reporteNominaPdf() {
                 link.href = url;
                 var numeroSemana = String(jsonNominaPilar.numero_semana).padStart(2, '0');
                 var aniosCierre = jsonNominaPilar.fecha_cierre.split('/')[2];
+               var numeroSemana = String(jsonNominaPilar.numero_semana).padStart(2, '0');
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'SEM_' + numeroSemana + '_REPORTE_NOMINA_PILAR_' + timestamp + '.pdf';
-                document.body.appendChild(link);
+               link.download = 'SEM_' + numeroSemana + '_DESGLOSE_NOMINA_PILAR_' + '.pdf'; document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
                 URL.revokeObjectURL(url);
@@ -293,7 +293,7 @@ function exportarDispersionTarjeta() {
                 link.href = url;
                 var numeroSemana = String(jsonNominaPilar.numero_semana).padStart(2, '0');
                 var anio = jsonNominaPilar.fecha_cierre.split('/')[2];
-                link.download = 'DISPERSION_TARJETA_SEM_' + numeroSemana + '_' + anio + '.xlsx';
+                link.download = 'SEM_' + numeroSemana + '_DISPERSION_TARJETA_PILAR_' + anio + '.xlsx';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);

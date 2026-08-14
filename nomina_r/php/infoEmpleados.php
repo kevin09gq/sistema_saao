@@ -37,6 +37,10 @@ switch ($accion) {
         obtenerInformacionNuevosEmpleados($conexion);
         break;
 
+    case 'obtenerFestividadesNomina':
+        obtenerFestividadesNomina($conexion);
+        break;
+
     default:
         echo json_encode([
             "success" => false,
@@ -98,6 +102,7 @@ function obtenerEmpleados(mysqli $conexion)
             ie.id_empresa,
             ie.status_nss,
             ie.salario_semanal,
+            ie.salario_diario,
             ho.horario_oficial
 
         FROM info_empleados ie
@@ -210,7 +215,7 @@ function obtenerHorarioRancho(mysqli $conexion)
 function guardarNomina(mysqli $conexion)
 {
     // Obtener datos del POST
-    $jsonNomina = $_POST['nomina_40lbs'] ?? '';
+    $jsonNomina = $_POST['nomina_relicario'] ?? '';
     $anio = $_POST['anio'] ?? 0;
     $numeroSemana = $_POST['numero_semana'] ?? 0;
     $idEmpresa = $_POST['id_empresa'] ?? 1;
@@ -228,7 +233,7 @@ function guardarNomina(mysqli $conexion)
     }
 
     // Verificar si ya existe la nómina para esa semana y año
-    $sqlCheck = "SELECT id_nomina_40lbs FROM nomina_40lbs 
+    $sqlCheck = "SELECT id_nomina_relicario FROM nomina_relicario 
                  WHERE anio = ? AND numero_semana = ? AND id_empresa = ?";
 
     $stmtCheck = $conexion->prepare($sqlCheck);
@@ -239,14 +244,14 @@ function guardarNomina(mysqli $conexion)
     if ($resultadoCheck->num_rows > 0) {
         // ACTUALIZAR nómina existente
         $fila = $resultadoCheck->fetch_assoc();
-        $idNomina = $fila['id_nomina_40lbs'];
+        $idNomina = $fila['id_nomina_relicario'];
 
-        $sqlUpdate = "UPDATE nomina_40lbs 
-                      SET nomina_40lbs = ?, 
+        $sqlUpdate = "UPDATE nomina_relicario 
+                      SET nomina_relicario = ?, 
                           total_percepciones = ?, 
                           total_deducciones = ?, 
                           total_neto = ?
-                      WHERE id_nomina_40lbs = ?";
+                      WHERE id_nomina_relicario = ?";
 
         $stmtUpdate = $conexion->prepare($sqlUpdate);
         $stmtUpdate->bind_param("sdddi", $jsonNomina, $totalPercepciones, $totalDeducciones, $totalNeto, $idNomina);
@@ -267,8 +272,8 @@ function guardarNomina(mysqli $conexion)
         $stmtUpdate->close();
     } else {
         // INSERTAR nueva nómina
-        $sqlInsert = "INSERT INTO nomina_40lbs 
-                      (id_empresa, anio, numero_semana, nomina_40lbs, total_percepciones, total_deducciones, total_neto)
+        $sqlInsert = "INSERT INTO nomina_relicario
+                      (id_empresa, anio, numero_semana, nomina_relicario, total_percepciones, total_deducciones, total_neto)
                       VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         $stmtInsert = $conexion->prepare($sqlInsert);
@@ -299,11 +304,11 @@ function recuperarUltimaNomina(mysqli $conexion)
     $idEmpresa = $_POST['id_empresa'] ?? 1;
 
     // Obtener la nómina con el ID más alto (la última guardada)
-    $sql = "SELECT id_nomina_40lbs, anio, numero_semana, nomina_40lbs,
+    $sql = "SELECT id_nomina_relicario, anio, numero_semana, nomina_relicario,
                    total_percepciones, total_deducciones, total_neto
-            FROM nomina_40lbs
+            FROM nomina_relicario
             WHERE id_empresa = ?
-            ORDER BY id_nomina_40lbs DESC
+            ORDER BY id_nomina_relicario DESC
             LIMIT 1";
 
     $stmt = $conexion->prepare($sql);
@@ -324,9 +329,9 @@ function recuperarUltimaNomina(mysqli $conexion)
 
     echo json_encode([
         "success" => true,
-        "nomina_json" => $fila['nomina_40lbs'],
+        "nomina_json" => $fila['nomina_relicario'],
         "nomina_info" => [
-            "id_nomina_40lbs" => $fila['id_nomina_40lbs'],
+            "id_nomina_relicario" => $fila['id_nomina_relicario'],
             "anio" => $fila['anio'],
             "numero_semana" => $fila['numero_semana'],
             "total_percepciones" => $fila['total_percepciones'],
@@ -367,7 +372,7 @@ function obtenerNuevosEmpleados(mysqli $conexion)
                 ON n.id_nomina = nd.id_nomina
                 AND n.id_area = ie.id_area
 
-            WHERE nd.id_nomina = 1
+            WHERE nd.id_nomina = 4
             AND ie.id_status = 1
 
             ORDER BY
@@ -428,30 +433,53 @@ function obtenerInformacionNuevosEmpleados(mysqli $conexion)
         $ids[] = intval($empleado["id_empleado"]);
     }
 
+    if (empty($ids)) {
+
+        echo json_encode([
+            "success" => false,
+            "mensaje" => "No se recibieron IDs válidos."
+        ]);
+
+        return;
+    }
+
+    $idsString = implode(',', $ids);
+
     $sql = "SELECT
-                ie.id_empleado,
-                ie.clave_empleado,
+            ie.id_empleado,
+            ie.clave_empleado,
+            ie.nombre,
+            ie.ap_paterno,
+            ie.ap_materno,
+            ie.id_departamento,
+            ie.biometrico,
+            ie.id_empresa,
+            ie.status_nss,
+            ie.salario_semanal,
+            ie.salario_diario,
+            ho.horario_oficial
+
+        FROM info_empleados ie
+
+        INNER JOIN nomina_departamento nd
+            ON nd.id_departamento = ie.id_departamento
+            AND nd.id_empresa = ie.id_empresa
+
+        INNER JOIN nombre_nominas n
+            ON n.id_nomina = nd.id_nomina
+            AND n.id_area = ie.id_area
+
+        LEFT JOIN horarios_oficiales ho
+            ON ho.id_empleado = ie.id_empleado
+
+        WHERE nd.id_nomina = 4
+        AND ie.id_status = 1
+        AND ie.id_empleado IN ($idsString)
+
+        ORDER BY ie.id_departamento,
                 ie.nombre,
                 ie.ap_paterno,
-                ie.ap_materno,
-                ie.id_departamento,
-                ie.biometrico,
-                ie.id_empresa,
-                ie.status_nss,
-                pe.color_hex AS color_puesto
-
-            FROM info_empleados ie
-
-            LEFT JOIN puestos_especiales pe
-                ON pe.id_puestoEspecial = ie.id_puestoEspecial
-
-            WHERE ie.id_empleado IN (" . implode(",", $ids) . ")
-
-            ORDER BY
-                ie.id_departamento,
-                ie.ap_paterno,
-                ie.ap_materno,
-                ie.nombre";
+                ie.ap_materno";
 
     $resultado = $conexion->query($sql);
 
@@ -477,3 +505,94 @@ function obtenerInformacionNuevosEmpleados(mysqli $conexion)
         "empleados" => $informacion
     ]);
 }
+
+// FUNCIÓN PARA OBTENER FESTIVIDADES DENTRO DEL RANGO DE LA NÓMINA
+function obtenerFestividadesNomina(mysqli $conexion)
+{
+    $fechaInicioStr = $_POST['fecha_inicio'] ?? $_GET['fecha_inicio'] ?? '';
+    $fechaCierreStr = $_POST['fecha_cierre'] ?? $_GET['fecha_cierre'] ?? '';
+
+    if (empty($fechaInicioStr) || empty($fechaCierreStr)) {
+        echo json_encode([
+            "success" => false,
+            "mensaje" => "Se requieren las fechas de inicio y cierre de la nómina."
+        ]);
+        return;
+    }
+
+    $fechaInicio = normalizarFechaMysql($fechaInicioStr);
+    $fechaCierre = normalizarFechaMysql($fechaCierreStr);
+
+    $sql = "SELECT id_festividad, nombre, fecha, tipo, observacion
+            FROM festividades
+            WHERE fecha BETWEEN ? AND ?
+            ORDER BY fecha ASC";
+
+    $stmt = $conexion->prepare($sql);
+    if (!$stmt) {
+        echo json_encode([
+            "success" => false,
+            "mensaje" => "Error al preparar la consulta: " . $conexion->error
+        ]);
+        return;
+    }
+
+    $stmt->bind_param("ss", $fechaInicio, $fechaCierre);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+
+    $festividades = [];
+    $diasSemana = [
+        1 => 'LUNES',
+        2 => 'MARTES',
+        3 => 'MIÉRCOLES',
+        4 => 'JUEVES',
+        5 => 'VIERNES',
+        6 => 'SÁBADO',
+        7 => 'DOMINGO'
+    ];
+
+    while ($fila = $resultado->fetch_assoc()) {
+        $timestamp = strtotime($fila['fecha']);
+        $numDia = date('N', $timestamp);
+        $fila['dia_nombre'] = $diasSemana[$numDia] ?? '';
+        $fila['fecha_formateada'] = date('d/m/Y', $timestamp);
+        $festividades[] = $fila;
+    }
+
+    echo json_encode([
+        "success" => true,
+        "festividades" => $festividades
+    ]);
+
+    $stmt->close();
+}
+
+function normalizarFechaMysql($fechaStr)
+{
+    $fechaStr = trim($fechaStr);
+    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $fechaStr)) {
+        return $fechaStr;
+    }
+
+    $meses = [
+        'Ene' => '01', 'Feb' => '02', 'Mar' => '03', 'Abr' => '04',
+        'May' => '05', 'Jun' => '06', 'Jul' => '07', 'Ago' => '08',
+        'Sep' => '09', 'Oct' => '10', 'Nov' => '11', 'Dic' => '12',
+        'Enero' => '01', 'Febrero' => '02', 'Marzo' => '03', 'Abril' => '04',
+        'Mayo' => '05', 'Junio' => '06', 'Julio' => '07', 'Agosto' => '08',
+        'Septiembre' => '09', 'Octubre' => '10', 'Noviembre' => '11', 'Diciembre' => '12'
+    ];
+
+    $partes = explode('/', $fechaStr);
+    if (count($partes) === 3) {
+        $dia = str_pad($partes[0], 2, '0', STR_PAD_LEFT);
+        $mesStr = ucfirst(strtolower($partes[1]));
+        $mes = $meses[$mesStr] ?? '01';
+        $anio = $partes[2];
+        return "$anio-$mes-$dia";
+    }
+
+    return date('Y-m-d', strtotime($fechaStr));
+}
+

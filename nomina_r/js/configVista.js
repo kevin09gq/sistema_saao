@@ -29,6 +29,10 @@ function cambiarVistaTablaNomina() {
 
     $("#tabla-nomina-responsive").removeAttr("hidden");
 
+    // Actulizar la cabecera de la nómina con las fechas y el número de semana
+
+    actualizarCabeceraNomina(jsonNominaRelicario);
+
 }
 
 //=======================================
@@ -103,94 +107,6 @@ function actualizarCabeceraNomina(json) {
 }
 
 
-//===========================================
-// FUNCIÓN PARA AGREGAR UN HORARIO SEMANAL
-// DE PRUEBA AL JSON.
-//===========================================
-
-function agregarHorarioSemanalPrueba() {
-
-    // Crear la propiedad si no existe
-    if (!jsonNominaRelicario.horarios_semanales) {
-        jsonNominaRelicario.horarios_semanales = [];
-    }
-
-    jsonNominaRelicario.horarios_semanales = [
-
-        {
-            dia: "Lunes",
-            entrada: "08:00",
-            entrada_comida: "",
-            termino_comida: "",
-            salida: "13:00",
-            total_horas: "05:00",
-            horas_comida: "00:00",
-            minutos: "300"
-        },
-
-        {
-            dia: "Martes",
-            entrada: "08:00",
-            entrada_comida: "13:00",
-            termino_comida: "14:00",
-            salida: "23:00",
-            total_horas: "14:00",
-            horas_comida: "01:00",
-            minutos: "840"
-        },
-
-        {
-            dia: "Miércoles",
-            entrada: "08:00",
-            entrada_comida: "13:00",
-            termino_comida: "14:00",
-            salida: "01:00",
-            total_horas: "16:00",
-            horas_comida: "01:00",
-            minutos: "960"
-        },
-
-        {
-            dia: "Jueves",
-            entrada: "08:00",
-            entrada_comida: "13:00",
-            termino_comida: "14:00",
-            salida: "01:00",
-            total_horas: "16:00",
-            horas_comida: "01:00",
-            minutos: "960"
-        },
-
-        {
-            dia: "Viernes",
-            entrada: "08:00",
-            entrada_comida: "13:00",
-            termino_comida: "14:00",
-            salida: "20:20",
-            total_horas: "11:20",
-            horas_comida: "01:00",
-            minutos: "680"
-        },
-
-        {
-            dia: "Sábado",
-            entrada: "08:00",
-            entrada_comida: "",
-            termino_comida: "",
-            salida: "13:30",
-            total_horas: "05:30",
-            horas_comida: "00:00",
-            minutos: "330"
-        }
-
-    ];
-
-    // Mostrar el resultado en consola
-    console.log(jsonNominaRelicario.horarios_semanales);
-
-}
-
-
 
 //==========================================================
 // FUNCIÓN PARA MOSTRAR EL MENÚ CONTEXTUAL
@@ -200,7 +116,7 @@ function agregarHorarioSemanalPrueba() {
 function mostrarContextMenu() {
 
     // Detectar clic derecho sobre cualquier fila del tbody
-    $(document).on('contextmenu', '#tabla-nomina-body-40lbs tr', function (e) {
+    $(document).on('contextmenu', '#tabla-nomina-body-relicario tr', function (e) {
 
         // Evitar el menú contextual del navegador
         e.preventDefault();
@@ -293,7 +209,7 @@ function mostrarModalDetallesNominaEmpleado() {
 // REGRESAR A LA VISTA DE DATOS
 //===========================================
 
-function limpiarNomina40lbs() {
+function limpiarNominaRelicario() {
 
     $("#btn_limpiar_datos").click(function (e) {
 
@@ -346,3 +262,27 @@ function limpiarNomina40lbs() {
     });
 
 }
+
+//===================================================
+// NORMALIZAR NOMBRE DEL DÍA
+// QUITA ACENTOS Y CONVIERTE A MAYÚSCULAS
+//===================================================
+
+function normalizarDia(dia) {
+
+    // validar que exista el día
+    if (!dia) {
+
+        return "";
+
+    }
+
+    // quitar espacios, acentos y convertir a mayúsculas
+    return dia
+        .trim()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toUpperCase();
+
+}
+

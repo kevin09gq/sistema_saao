@@ -24,6 +24,13 @@ function abrirModalConfigConceptos() {
     // Detectar el clic en el botón "Configurar Conceptos"
     $('#btn_config_conceptos').click(function () {
         cargarEmpleadosConfigConceptos();
+
+        // Limpiar el buscador
+        $('#txtBuscarEmpleadoConfigConceptos').val('');
+        // Asingar el valor por defecto al select de concepto "todos"
+        $('#selectConceptoConfig').val('todos');
+        // Limpiar el select de acción
+        $('#selectAccionConcepto').val('');
         // Abrir el modal de Bootstrap
         $('#modalConfigConceptos').modal('show');
 
@@ -48,8 +55,8 @@ function cargarEmpleadosConfigConceptos() {
     // Recorrer departamentos
     jsonNomina40lbs.departamentos.forEach(departamento => {
 
-        // Obtener únicamente los empleados que se mostrarán
-        const empleadosMostrar = departamento.empleados.filter(emp => emp.mostrar);
+        // Obtener únicamente los empleados que se mostrarán y seguroSocial = true
+        const empleadosMostrar = departamento.empleados.filter(empleado => empleado.mostrar && empleado.seguroSocial);
 
         // Si no hay empleados visibles, no mostrar el departamento
         if (empleadosMostrar.length === 0) {
@@ -204,6 +211,9 @@ function obtenerEmpleadosSeleccionadosConfigConceptos() {
 
             obtenerConfiguracionConcepto();
             configurarConceptosEmpleados();
+
+            // Cerrar el modal
+            $('#modalConfigConceptos').modal('hide');
 
         }
     });
@@ -377,6 +387,9 @@ function aplicarConfiguracionConceptoEmpleado(empleado, configuracion) {
             });
 
         } else if (accion === "quitar") {
+
+            // Quitar tarjeta
+            empleado.tarjeta = 0;
 
             // Poner todos los conceptos en 0
             empleado.conceptos.forEach(conceptoEmpleado => {

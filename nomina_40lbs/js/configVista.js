@@ -327,3 +327,27 @@ function limpiarNomina40lbs() {
     });
 
 }
+
+//===================================================
+// NORMALIZAR NOMBRE DEL DÍA
+// QUITA ACENTOS Y CONVIERTE A MAYÚSCULAS
+//===================================================
+
+function normalizarDia(dia) {
+
+    // validar que exista el día
+    if (!dia) {
+
+        return "";
+
+    }
+
+    // quitar espacios, acentos y convertir a mayúsculas
+    return dia
+        .trim()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toUpperCase();
+
+}
+

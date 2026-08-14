@@ -52,6 +52,7 @@ function restoreNomina() {
         llenarTablaNomina(); // Llenar la tabla con los empleados
         saveNomina(jsonNominaRelicario); // Guardar el JSON de la nómina en el local storage
         cambiarVistaTablaNomina(); // Cambiar la vista para mostrar la tabla de nómina
+        actualizarCabeceraNomina(jsonNominaRelicario); // Actualizar la cabecera de la nómina
         
         return true;
     } catch (err) {

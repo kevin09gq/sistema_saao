@@ -152,7 +152,11 @@ if (isset($datosNomina['departamentos']) && is_array($datosNomina['departamentos
         $nombreDepto = strtoupper($depto['nombre']);
 
         foreach ($depto['empleados'] ?? [] as $emp) {
-            if (!($emp['mostrar'] ?? true))
+            $mostrarRaw = $emp['mostrar'] ?? true;
+            $mostrar = ($mostrarRaw !== false && $mostrarRaw !== 'false' && $mostrarRaw !== 0 && $mostrarRaw !== '0');
+            $totalCobrar = floatval($emp['total_cobrar'] ?? $emp['total_recibir'] ?? $emp['sueldo_neto'] ?? 0);
+
+            if (!$mostrar || $totalCobrar <= 0)
                 continue;
 
             $ss = $emp['seguroSocial'] ?? false;

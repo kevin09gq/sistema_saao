@@ -24,7 +24,7 @@ function poblarOpcionesExportar(json) {
 
     // 2. Agregar Opciones por Departamento (Dinámico)
     json.departamentos.forEach(depto => {
-       
+
 
         const nombre = depto.nombre;
         const idDepto = depto.id_departamento || depto.nombre;
@@ -232,9 +232,9 @@ function reporteNominaPdf() {
                 link.href = url;
                 var numeroSemana = String(jsonNomina40lbs.numero_semana).padStart(2, '0');
                 var aniosCierre = jsonNomina40lbs.fecha_cierre.split('/')[2];
+                var numeroSemana = String(jsonNomina40lbs.numero_semana).padStart(2, '0');
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'SEM_' + numeroSemana + '_REPORTE_NOMINA_40LBS_' + timestamp + '.pdf';
-                document.body.appendChild(link);
+                link.download = 'SEM_' + numeroSemana + '_DESGLOSE_NOMINA_40LBS_' + '.pdf'; document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
                 URL.revokeObjectURL(url);
@@ -284,7 +284,7 @@ function exportarDispersionTarjeta() {
                 link.href = url;
                 var numeroSemana = String(jsonNomina40lbs.numero_semana).padStart(2, '0');
                 var anio = jsonNomina40lbs.fecha_cierre.split('/')[2];
-                link.download = 'DISPERSION_TARJETA_SEM_' + numeroSemana + '_' + '40LBS_' + anio + '.xlsx';
+                link.download = 'SEM_' + numeroSemana + '_DISPERSION_TARJETA_40LBS_' + anio + '.xlsx';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -305,7 +305,7 @@ function validarEmpleadosNegativos() {
     let nombresNegativos = [];
 
     jsonNomina40lbs.departamentos.forEach(depto => {
-        
+
         depto.empleados.forEach(emp => {
             if (Number(emp.total_cobrar) < 0) {
                 nombresNegativos.push(emp.nombre);

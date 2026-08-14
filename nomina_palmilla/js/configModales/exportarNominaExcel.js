@@ -192,9 +192,9 @@ function exportarNominaCompleta() {
                 link.href = url;
                 var numeroSemana = String(jsonNominaPalmilla.numero_semana).padStart(2, '0');
                 var aniosCierre = jsonNominaPalmilla.fecha_cierre.split('/')[2];
+                var numeroSemana = String(jsonNominaPalmilla.numero_semana).padStart(2, '0');
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'SEM ' + numeroSemana + ' - ' + 'RANCHO LA PALMILLA - ' + aniosCierre + '.xlsx';
-                document.body.appendChild(link);
+                link.download = 'SEM_' + numeroSemana + '_DESGLOSE_NOMINA_PALMILLA_' + '.pdf'; document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
                 URL.revokeObjectURL(url);

@@ -26,7 +26,7 @@ function llenarTablaNomina() {
     let datos = filtro.split("-");
 
     let idDepartamento = Number(datos[0]);
-   
+
 
     // Calcular el primer y último registro que se mostrarán en la página
     let inicio = (paginaActual - 1) * registrosPorPagina;
@@ -53,7 +53,7 @@ function llenarTablaNomina() {
                 return;
             }
 
-          
+
 
             // Si existe un texto de búsqueda, buscar por nombre o clave
             if (textoBusqueda != "") {
@@ -79,12 +79,12 @@ function llenarTablaNomina() {
                       
                         <td>${numeroFila}</td>
                         <td>${empleado.nombre}</td>
-                        <td>${empleado.dias_trabajados || ""}</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                        <td class="col-jornalero">${empleado.dias_trabajados || ""}</td>
+                        <td>${formatoMoneda(empleado.salario_semanal || "")}</td>
+                        <td>${formatoMoneda(empleado.pasaje || "")}</td>
+                        <td>${formatoMoneda(empleado.comida || "")}</td>
+                        <td>${formatoMoneda(obtenerSueldoExtraTotal(empleado) || "")}</td>
+                        <td>${formatoMoneda(obtenerTotalPercepciones(empleado) || "")}</td>
 
                         <td>${formatoMoneda(obtenerConcepto(empleado, 45))}</td>
                         <td>${formatoMoneda(obtenerConcepto(empleado, 52))}</td>
@@ -92,18 +92,19 @@ function llenarTablaNomina() {
                         <td>${formatoMoneda(obtenerConcepto(empleado, 107))}</td> 
                         <td>${formatoMoneda(empleado.inasistencia)}</td>
                         <td>${formatoMoneda(empleado.permiso)}</td>
+                        <td>${formatoMoneda(empleado.retardos)}</td>
                         <td>${formatoMoneda(empleado.uniformes)}</td>    
                         <td>${formatoMoneda(empleado.checador)}</td>
-                        <td></td>
-                        <td></td>
+                        <td>${formatoMoneda(obtenerTotalFAGafetCofia(empleado))}</td>
+                        <td>${formatoMoneda(obtenerTotalDeducciones(empleado))}</td>
 
-                        <td></td>
+                        <td>${formatoMoneda(obtenerNetoPagar(empleado))}</td>
                         <td>${formatoMoneda(empleado.tarjeta)}</td>
-                        <td></td>
+                        <td>${formatoMoneda(obtenerImporteEfectivo(empleado))}</td>
                         <td>${formatoMoneda(empleado.prestamo)}</td>
                         <td>${formatoMoneda(obtenerTotalRecibir(empleado))}</td>
                         <td class="${parseFloat(empleado.redondeo) < 0 ? 'redondeo-negativo' : 'redondeo-positivo'}">${formatoMoneda(empleado.redondeo || 0)}</td>
-                        <td></td>
+                        <td class="${obtenerTotalCobrar(empleado) < 0 ? 'sueldo-negativo' : ''}">${formatoMoneda(obtenerTotalCobrar(empleado))}</td>
 
                     </tr>
                 `);
@@ -118,7 +119,15 @@ function llenarTablaNomina() {
     });
 
     // Calcular y pintar los totales de cada columna en el pie de la tabla
-    // calcularTotalesPorColumna();
+    calcularTotalesPorColumna();
+
+    // Ocultar o mostrar la columna de Días Trabajados (col-jornalero) según el tipo_horario del departamento seleccionado
+    let deptoSeleccionado = jsonNominaRelicario.departamentos.find(d => d.id_departamento == idDepartamento);
+    if (deptoSeleccionado && deptoSeleccionado.tipo_horario == 1) {
+        $('.col-jornalero').hide();
+    } else {
+        $('.col-jornalero').show();
+    }
 
     crearPaginacion();
 
@@ -142,13 +151,15 @@ function calcularTotalesPorColumna() {
     let datos = filtro.split("-");
 
     let idDepartamento = Number(datos[0]);
-    
+
 
     // Estructura de acumuladores para cada columna
     let totales = {
         empleados: 0,
-        sueldoNeto: 0,
-        incentivo: 0,
+        diasTrabajados: 0,
+        salarioSemanal: 0,
+        pasaje: 0,
+        comida: 0,
         extras: 0,
         totalPercepciones: 0,
         isr: 0,
@@ -157,6 +168,7 @@ function calcularTotalesPorColumna() {
         ajusteSub: 0,
         inasistencia: 0,
         permiso: 0,
+        retardos: 0,
         uniformes: 0,
         checador: 0,
         faGafetCofia: 0,
@@ -186,7 +198,7 @@ function calcularTotalesPorColumna() {
                 return;
             }
 
-        
+
 
             // Si existe texto de búsqueda, filtrar por nombre o clave
             if (textoBusqueda != "") {
@@ -203,8 +215,10 @@ function calcularTotalesPorColumna() {
 
             // Acumular los totales de cada columna
             totales.empleados++;
-            totales.sueldoNeto += parseFloat(empleado.sueldo_neto || 0);
-            totales.incentivo += parseFloat(empleado.incentivo || 0);
+            totales.diasTrabajados += parseInt(empleado.dias_trabajados || 0);
+            totales.salarioSemanal += parseFloat(empleado.salario_semanal || 0);
+            totales.pasaje += parseFloat(empleado.pasaje || 0);
+            totales.comida += parseFloat(empleado.comida || 0);
             totales.extras += parseFloat(obtenerSueldoExtraTotal(empleado) || 0);
             totales.totalPercepciones += parseFloat(obtenerTotalPercepciones(empleado) || 0);
 
@@ -214,6 +228,7 @@ function calcularTotalesPorColumna() {
             totales.ajusteSub += parseFloat(obtenerConcepto(empleado, 107) || 0);
             totales.inasistencia += parseFloat(empleado.inasistencia || 0);
             totales.permiso += parseFloat(empleado.permiso || 0);
+            totales.retardos += parseFloat(empleado.retardos || 0);
             totales.uniformes += parseFloat(empleado.uniformes || 0);
             totales.checador += parseFloat(empleado.checador || 0);
             totales.faGafetCofia += parseFloat(obtenerTotalFAGafetCofia(empleado) || 0);
@@ -238,8 +253,10 @@ function calcularTotalesPorColumna() {
         <tr>
             <td><strong>TOTALES</strong></td>
             <td><strong>${totales.empleados} Empleado(s)</strong></td>
-            <td><strong>${formatoMoneda(totales.sueldoNeto)}</strong></td>
-            <td><strong>${formatoMoneda(totales.incentivo)}</strong></td>
+            <td class="col-jornalero"><strong>${totales.diasTrabajados}</strong></td>
+            <td><strong>${formatoMoneda(totales.salarioSemanal)}</strong></td>
+            <td><strong>${formatoMoneda(totales.pasaje)}</strong></td>
+            <td><strong>${formatoMoneda(totales.comida)}</strong></td>           
             <td><strong>${formatoMoneda(totales.extras)}</strong></td>
             <td><strong>${formatoMoneda(totales.totalPercepciones)}</strong></td>
 
@@ -249,6 +266,7 @@ function calcularTotalesPorColumna() {
             <td><strong>${formatoMoneda(totales.ajusteSub)}</strong></td>
             <td><strong>${formatoMoneda(totales.inasistencia)}</strong></td>
             <td><strong>${formatoMoneda(totales.permiso)}</strong></td>
+            <td><strong>${formatoMoneda(totales.retardos)}</strong></td>
             <td><strong>${formatoMoneda(totales.uniformes)}</strong></td>
             <td><strong>${formatoMoneda(totales.checador)}</strong></td>
             <td><strong>${formatoMoneda(totales.faGafetCofia)}</strong></td>
@@ -260,7 +278,7 @@ function calcularTotalesPorColumna() {
             <td><strong>${formatoMoneda(totales.prestamo)}</strong></td>
             <td><strong>${formatoMoneda(totales.totalRecibir)}</strong></td>
             <td class="${totales.redondeo < 0 ? 'redondeo-negativo' : 'redondeo-positivo'}"><strong>${formatoMoneda(totales.redondeo)}</strong></td>
-            <td><strong>${formatoMoneda(totales.totalCobrar)}</strong></td>
+            <td class="${totales.totalCobrar < 0 ? 'sueldo-negativo' : ''}"><strong>${formatoMoneda(totales.totalCobrar)}</strong></td>
         </tr>
     `);
 
@@ -305,7 +323,7 @@ function crearPaginacion() {
                 return;
             }
 
-      
+
             // Si existe un texto de búsqueda, buscar por nombre o clave
             if (textoBusqueda != "") {
 
@@ -428,10 +446,8 @@ function obtenerConcepto(empleado, codigo) {
 function obtenerSueldoExtraTotal(empleado) {
     let total = 0;
     // Calcular el sueldo extra total desde sus componentes
-    let horasExtra = parseFloat(empleado.horas_extra || 0);
-    let bonoAntiguedad = parseFloat(empleado.bono_antiguedad || 0);
-    let actividadesEspeciales = parseFloat(empleado.actividades_especiales || 0);
-    let puesto = parseFloat(empleado.puesto || 0);
+    let tardeada = parseFloat(empleado.tardeada || 0);
+
 
     // Sumar las percepciones extras del arreglo
     let totalPercepcionesExtras = 0;
@@ -442,7 +458,7 @@ function obtenerSueldoExtraTotal(empleado) {
     }
 
     // Actualizar la propiedad sueldo_extra_total en el empleado
-    empleado.sueldo_extra_total = horasExtra + bonoAntiguedad + actividadesEspeciales + puesto + totalPercepcionesExtras;
+    empleado.sueldo_extra_total = tardeada + totalPercepcionesExtras;
     return empleado.sueldo_extra_total;
 }
 
@@ -458,9 +474,11 @@ function obtenerTotalPercepciones(empleado) {
 
     let total = 0;
 
-    total += parseFloat(empleado.sueldo_neto || 0);
+    total += parseFloat(empleado.salario_semanal || 0);
 
-    total += parseFloat(empleado.incentivo || 0);
+    total += parseFloat(empleado.comida || 0);
+
+    total += parseFloat(empleado.pasaje || 0);
 
     total += empleado.sueldo_extra_total;
 
@@ -505,6 +523,7 @@ function obtenerTotalDeducciones(empleado) {
     total += parseFloat(obtenerConcepto(empleado, 107) || 0);  // Ajuste al Subsidio
 
     // Deducciones
+    total += parseFloat(empleado.retardos || 0);
     total += parseFloat(empleado.inasistencia || 0);
     total += parseFloat(empleado.permiso || 0);
     total += parseFloat(empleado.uniformes || 0);

@@ -35,7 +35,7 @@ verificarSesion(); // Proteger esta página
 
     <!-- CONTENEDOR DE LOS DATOS DE LA NOMINA -->
 
-    <div class="container" id="contenedor-data" >
+    <div class="container" id="contenedor-data" hidden>
 
         <div class="row justify-content-center align-items-center vh-100">
 
@@ -126,7 +126,7 @@ verificarSesion(); // Proteger esta página
 
     </div>
 
-     <!-- CONTENEDOR PARA CONFIGURAR LOS VALORES ECONÓMICOS DEL RELICARIO -->
+    <!-- CONTENEDOR PARA CONFIGURAR LOS VALORES ECONÓMICOS DEL RELICARIO -->
 
     <div class="container py-5" id="config-valores-relicario" hidden>
         <div class="row justify-content-center">
@@ -222,18 +222,6 @@ verificarSesion(); // Proteger esta página
                             <h6 class="dropdown-header"><i class="bi bi-tools me-1"></i>Acciones de Servicio</h6>
                         </li>
                         <li>
-                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_establecer_horario_semanal">
-                                <i class="bi bi-calendar-check text-primary"></i>
-                                <span>Establecer Horario Semanal</span>
-                            </button>
-                        </li>
-                        <li>
-                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_marcajes">
-                                <i class="bi bi-clock-history text-primary"></i>
-                                <span>Ajustar Marcaje</span>
-                            </button>
-                        </li>
-                        <li>
                             <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn-ocultar-empleados">
                                 <i class="bi bi-people text-primary"></i>
                                 <span>Ocultar Empleados</span>
@@ -245,6 +233,25 @@ verificarSesion(); // Proteger esta página
                                 <span>Agregar Nuevos Empleados</span>
                             </button>
                         </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_aplicar_festividades">
+                                <i class="bi bi-calendar-event text-primary"></i>
+                                <span>Aplicar Festividades</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_justificar_ausencias">
+                                <i class="bi bi-question-circle text-primary"></i>
+                                <span>Justificar Ausencias</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_dias_extra">
+                                <i class="bi bi-calendar-plus text-success"></i>
+                                <span>Agregar / Quitar Días Extra</span>
+                            </button>
+                        </li>
+
                     </ul>
                 </div>
 
@@ -259,9 +266,15 @@ verificarSesion(); // Proteger esta página
                             <h6 class="dropdown-header"><i class="bi bi-sliders me-1"></i>Opciones de Configuración</h6>
                         </li>
                         <li>
-                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_establecer_sueldo_base">
-                                <i class="bi bi-currency-dollar"></i>
-                                <span>Establecer Sueldo Base</span>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_actualizar_valores_relicario">
+                                <i class="bi bi-wallet2"></i>
+                                <span>Actualizar Valores Economicos</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_gestionar_valores_economicos">
+                                <i class="bi bi-person-gear"></i>
+                                <span>Asingnar y Quitar Valores Economicos</span>
                             </button>
                         </li>
                         <li>
@@ -282,18 +295,13 @@ verificarSesion(); // Proteger esta página
                                 <span>Agregar Percepciones / Deducciones</span>
                             </button>
                         </li>
-                         <li>
-                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_actualizar_percepciones">
-                                <i class="bi bi-pencil-square text-primary"></i>
-                                <span>Actualizar Percepciones</span>
-                            </button>
-                        </li>
                         <li>
                             <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_dispersion_tarjeta">
                                 <i class="bi bi-list-columns-reverse text-info"></i>
                                 <span>Ver Dispersión de Tarjeta</span>
                             </button>
                         </li>
+
                     </ul>
                 </div>
 
@@ -323,6 +331,12 @@ verificarSesion(); // Proteger esta página
                             <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_redondear_sueldos">
                                 <i class="bi bi-arrow-repeat text-success"></i>
                                 <span>Redondear Sueldos </span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_cambiar_departamento">
+                                <i class="bi bi-arrow-left-right text-warning"></i>
+                                <span>Cambiar Departamento</span>
                             </button>
                         </li>
                         <li>
@@ -399,7 +413,7 @@ verificarSesion(); // Proteger esta página
             <div class="table-responsive-relicario">
                 <table class="table-nomina-relicario" id="tabla-nomina">
                     <thead>
-                       <tr>
+                        <tr>
                             <th rowspan="2">#</th>
                             <th rowspan="2"> NOMBRE </th>
                             <th rowspan="2" class="col-jornalero">DÍAS <br> TRAB.</th>
@@ -455,8 +469,22 @@ verificarSesion(); // Proteger esta página
     <!-- Incluir el modal -->
     <?php include 'modals/modalListaRaya.php'; ?>
     <?php include 'modals/modalBiometrico.php'; ?>
-
-
+    <?php include 'modals/modalDetallesNomina.php'; ?>
+    <?php include 'modals/modalConfigConceptos.php'; ?>
+    <?php include 'modals/modalValoresEconomicos.php'; ?>
+    <?php include 'modals/modalOlvidoChecador.php'; ?>
+    <?php include 'modals/modalAddPercepcionDeduccion.php'; ?>
+    <?php include 'modals/modalDispersionTarjeta.php'; ?>
+    <?php include 'modals/modalRedondearSueldos.php'; ?>
+    <?php include 'modals/modalOcultarEmpleados.php'; ?>
+    <?php include 'modals/modalNuevosEmpleados.php'; ?>
+    <?php include 'modals/modalGestionarValoresEconomicos.php'; ?>
+    <?php include 'modals/modalFestividades.php'; ?>
+    <?php include 'modals/modalJustificarAusencias.php'; ?>
+    <?php include 'modals/modalDiasExtra.php'; ?>
+    <?php include 'modals/modalCambiarDepartamento.php'; ?>
+    <?php include 'modals/modalExportarNomina.php'; ?>
+    <?php include 'modals/modalConceptosTotales.php'; ?>
 
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
@@ -470,11 +498,35 @@ verificarSesion(); // Proteger esta página
     <script src="../js/mostrarEmpleados.js"></script>
     <script src="../js/filtroBusqueda.js"></script>
     <script src="../js/storage.js"></script>
+    <script src="../js/guardarNomina.js"></script>
+    <script src="../js/recuperarNomina.js"></script>
+    <script src="../js/exportarNominaExcel.js"></script>
 
     <script src="../js/modals/listaDeRaya.js"></script>
     <script src="../js/modals/biometrico.js"></script>
     <script src="../js/modals/obtenerDiasTrabajados.js"></script>
-   
+    <script src="../js/modals/configConceptos.js"></script>
+    <script src="../js/modals/actualizarValoresEconomicos.js"></script>
+    <script src="../js/modals/olvidoChecador.js"></script>
+    <script src="../js/modals/agregarPercepcionesDeducciones.js"></script>
+    <script src="../js/modals/dispersionTarjeta.js"></script>
+    <script src="../js/modals/redondearSueldos.js"></script>
+    <script src="../js/modals/ocultarEmpleados.js"></script>
+    <script src="../js/modals/nuevosEmpleados.js"></script>
+    <script src="../js/modals/gestionarValoresEconomicos.js"></script>
+    <script src="../js/modals/festividades.js"></script>
+    <script src="../js/modals/justificarAusencias.js"></script>
+    <script src="../js/modals/diasExtra.js"></script>
+    <script src="../js/modals/cambiarDepartamento.js"></script>
+    <script src="../js/modals/conceptos_totales.js"></script>
+
+    <script src="../js/modalsDetalles/establecerDataEmpleado.js"></script>
+    <script src="../js/modalsDetalles/editarDataEmpleado.js"></script>
+    <script src="../js/modalsDetalles/crearNuevosConceptos.js"></script>
+    <script src="../js/modalsDetalles/calculosDetallesNomina.js"></script>
+    <script src="../js/modalsDetalles/incidencias.js"></script>
+    <script src="../js/modalsDetalles/mostrarIncidencias.js"></script>
+
 </body>
 
 </html>

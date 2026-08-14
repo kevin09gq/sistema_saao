@@ -347,9 +347,10 @@ function aplicarLimitarConceptoPorCopia() {
         limitarImporte("concepto", "52", "#inputIMSS");
     });
 
+    /*
     $("#inputInfonavit").on("input", function () {
         limitarImporte("concepto", "16", "#inputInfonavit");
-    });
+    });*/
 
     $("#inputAjustesSub").on("input", function () {
         limitarImporte("concepto", "107", "#inputAjustesSub");

@@ -8,6 +8,8 @@ $(document).ready(function () {
 
     seleccionarTodosEmpleadosBiometrico();
 
+    seleccionarDepartamentosBiometrico();
+
     continuarBiometrico();
 
     regresarBiometrico();
@@ -60,6 +62,10 @@ function cargarEmpleadosBiometrico() {
         $('#tbody-empleados-biometrico').append(`
             <tr class="table-secondary">
                 <td colspan="3" class="fw-bold">
+                    <input 
+                        type="checkbox"
+                        class="form-check-input me-2 check-departamento-biometrico"
+                        data-departamento="${departamento.id_departamento}">
                     <i class="bi bi-building me-2"></i>
                     ${departamento.nombre}
                 </td>
@@ -76,6 +82,7 @@ function cargarEmpleadosBiometrico() {
                         <input
                             type="checkbox"
                             class="form-check-input check-empleado-biometrico"
+                            data-departamento="${departamento.id_departamento}"
                             value="${empleado.id_empleado}"
                              data-id-biometrico="${empleado.id_biometrico}">
                     </td>
@@ -88,6 +95,26 @@ function cargarEmpleadosBiometrico() {
             `);
 
         });
+
+    });
+
+    seleccionarDepartamentosBiometrico();
+
+}
+
+//===================================================
+// SELECCIONAR EMPLEADOS POR DEPARTAMENTO
+//===================================================
+
+function seleccionarDepartamentosBiometrico() {
+
+    $('.check-departamento-biometrico').off('change').on('change', function () {
+
+        let idDepartamento = $(this).data('departamento');
+        let seleccionado = $(this).prop('checked');
+
+        $(`.check-empleado-biometrico[data-departamento="${idDepartamento}"]`)
+            .prop('checked', seleccionado);
 
     });
 
@@ -357,7 +384,7 @@ function compararEmpleadosBiometrico(empleadosSeleccionados, empleadosBiometrico
 
 
             return normalizarNombreEmpleadoBiometrico(empleadoSeleccionado.nombre) ==
-                   normalizarNombreEmpleadoBiometrico(empleadoBiometrico.nombre);
+                normalizarNombreEmpleadoBiometrico(empleadoBiometrico.nombre);
 
 
         });
@@ -377,7 +404,7 @@ function compararEmpleadosBiometrico(empleadosSeleccionados, empleadosBiometrico
 
         // EXISTEN EMPLEADOS CON EL MISMO NOMBRE
         // BUSCAR POR ID BIOMETRICO
- 
+
         else if (coincidencias.length > 1) {
 
 
@@ -405,7 +432,7 @@ function compararEmpleadosBiometrico(empleadosSeleccionados, empleadosBiometrico
         }
 
         // NO SE ENCONTRÓ
-       
+
         else {
 
 
@@ -454,28 +481,39 @@ function copiarInformacionEmpleadoBiometrico(empleadoSeleccionado, empleadoBiome
                 // Guardar los registros del biométrico
                 empleado.registros = empleadoBiometrico.registros;
 
-                 
-                // Validar si el departamento tiene tipo_horario = 2 (empleados de rancho)
-                if (departamento.tipo_horario == 2) {
-                    
-                    calcularDiasTrabajadosRancho(empleado);
+                // Vaciamos los arreglos de olvidos de checador e inasistencias para recalcularlos
+                empleado.historial_olvidos = [];
+                empleado.historial_inasistencias = [];
+                empleado.historial_retardos = [];
+                empleado.dias_justificados = [];
+                dias_trabajados = 0;
+
+                // Validar si el departamento tiene tipo_horario = 1 (empleados de oficina)
+                if (departamento.tipo_horario == 1) {
+
+                    crearHistorialRetardosRelicario(empleado);
 
                 }
 
-                // Vaciamos los arreglos de olvidos de checador e inasistencias para recalcularlos
-                //empleado.historial_olvidos = [];
-                //empleado.historial_inasistencias = [];
+                // Validar si el departamento tiene tipo_horario = 2 (empleados de rancho)
+                if (departamento.tipo_horario == 2) {
 
-                /* Verificamos si jsonNominaRelicario.horarios_semanales existe y tiene datos
-                 if (jsonNominaRelicario.horarios_semanales && jsonNominaRelicario.horarios_semanales.length > 0) {
-                     // Si existe, obtener Tabulador 
-                     getTabulador();
- 
-                     // Redondear horarios y calcular sueldo neto
-                     redondearRegistrosEmpleado(empleado);
-                    
-                 }
-                */
+                    calcularDiasTrabajadosRancho(empleado);
+                    // Calcular pago de comida y pasaje
+                    calcularSalarioSemanal(empleado);
+                    calcularPagoComidaEmpleado(empleado);
+                    calcularPagoPasajeEmpleado(empleado);
+                    calcularTardeadaEmpleado(empleado);
+
+                }
+
+
+                // Creamos el historial de olvidos de checador
+                crearHistorialOlvidosChecador(empleado);
+
+                // Creamos el historial de inasistencias
+                crearHistorialInasistenciasRelicario(empleado);
+
             }
 
         });

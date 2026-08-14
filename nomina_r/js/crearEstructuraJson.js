@@ -8,7 +8,6 @@ $(document).ready(function () {
         $("#contenedor-data").removeAttr("hidden");
     }
 
-    
 
     // Llamada de la función para crear la estructura del JSON (crearEstructuraJson.js)
     crearEstructuraJson();
@@ -22,8 +21,17 @@ $(document).ready(function () {
     // Llamada de la función para eliminar la busqueda del input de busqueda (filtroBusqueda.js)
     limpiarBusqueda();
 
+    // Llamada de la función para mostrar el menú contextual al hacer click derecho en una fila de la tabla (configVista.js)
+    mostrarContextMenu();
+
+    // Llamada de la función para mostrar el modal con los detalles de la nómina del empleado seleccionado (configVista.js)
+    mostrarModalDetallesNominaEmpleado();
+
     // Llamada de la función para guardar la configuración general de la nómina (crearEstructuraJson.js)
     guardarConfiguracionRelicario();
+
+    // Limpiar la nómina y regresar a la vista de datos
+    limpiarNominaRelicario();
 
     console.log(jsonNominaRelicario);
 
@@ -401,6 +409,10 @@ function obtenerEmpleados(jsonNominaRelicario) {
 
                         }
 
+                        if(departamento.tipo_horario == 2) {
+                            nuevoEmpleado.salario_diario = parseFloat(empleado.salario_diario);
+                        }
+
                         // Agregar el empleado al departamento correspondiente
                         departamento.empleados.push(nuevoEmpleado);
 
@@ -473,6 +485,7 @@ function asignarPropiedadesEmpleado(jsonNominaRelicario) {
             empleado.id_empresa = empleado.id_empresa ?? null;
             empleado.redondeo = empleado.redondeo ?? 0;
             empleado.redondeo_activo = empleado.redondeo_activo ?? false;
+            empleado.dias_justificados = empleado.dias_justificados ?? [];
 
             // Crear array de conceptos solo si tiene seguro social
             if (empleado.seguroSocial) {

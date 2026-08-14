@@ -55,7 +55,7 @@ function cargarEmpleadosOlvidosChecador() {
     }
 
     // Obtener día seleccionado y convertirlo a minúsculas
-    let diaSeleccionado = selectDiaVal.toLowerCase();
+    let diaSeleccionado = normalizarDia(selectDiaVal).toLowerCase();
 
     // Limpiar tabla
     $('#tbody-empleados-olvidos-checador').empty();
@@ -105,7 +105,7 @@ function cargarEmpleadosOlvidosChecador() {
                     // Comparar día ignorando mayúsculas y minúsculas
                     if (
                         olvido.dia &&
-                        olvido.dia.toLowerCase() === diaSeleccionado
+                        normalizarDia(olvido.dia).toLowerCase() === diaSeleccionado
                     ) {
 
 
@@ -250,31 +250,22 @@ function seleccionarTodosEmpleadosOlvidosChecador() {
 
 function perdonarOlvidosChecador() {
 
-
     // Detectar clic en el botón perdonar olvidos
     $('#btnPerdonarOlvidosChecador').click(function () {
-
 
         // Obtener empleados seleccionados
         let empleadosSeleccionados = [];
 
-
-
         $('.check-empleado-olvido:checked').each(function () {
-
 
             empleadosSeleccionados.push(
                 $(this).val()
             );
 
-
         });
-
-
 
         // Validar selección
         if (empleadosSeleccionados.length === 0) {
-
 
             mostrarAlerta(
                 "warning",
@@ -282,24 +273,19 @@ function perdonarOlvidosChecador() {
                 "Debes seleccionar al menos un empleado."
             );
 
-
             return;
-
-
         }
 
         // Obtener el día seleccionado
-        let diaSeleccionado = $('#selectDiaOlvidoChecador').val().toLowerCase();
+        let diaSeleccionado = normalizarDia(
+            $('#selectDiaOlvidoChecador').val()
+        );
 
         // Recorrer departamentos
         jsonNomina40lbs.departamentos.forEach(function (departamento) {
 
-
-
             // Recorrer empleados
             departamento.empleados.forEach(function (empleado) {
-
-
 
                 // Buscar empleado seleccionado
                 if (
@@ -308,50 +294,36 @@ function perdonarOlvidosChecador() {
                     )
                 ) {
 
-
-
                     // Validar historial de olvidos
                     if (
                         empleado.historial_olvidos &&
                         empleado.historial_olvidos.length > 0
                     ) {
 
-
-
                         // Recorrer historial de olvidos
                         empleado.historial_olvidos.forEach(function (olvido) {
 
-
-
-                            // Solo actualizar si coincide con el día seleccionado
+                            // Comparar el día eliminando acentos
                             if (
                                 olvido.dia &&
-                                olvido.dia.toLowerCase() === diaSeleccionado
+                                normalizarDia(olvido.dia) === diaSeleccionado
                             ) {
-
-
 
                                 // Perdonar descuento
                                 olvido.descuento_olvido = 0;
 
-
-
                                 // Marcar que fue editado
                                 olvido.editado = true;
 
-
-
                             }
-
-
 
                         });
 
+                        // Recalcular descuento del empleado
                         calcularDescuentoOlvidosChecador(empleado);
 
-
-
                     }
+
                 }
 
             });
@@ -364,16 +336,12 @@ function perdonarOlvidosChecador() {
         // Actualizar tabla de empleados con olvidos
         cargarEmpleadosOlvidosChecador();
 
-
         mostrarAlerta(
             "success",
             "Correcto",
             "Se perdonaron los olvidos seleccionados."
         );
 
-
-
     });
-
 
 }

@@ -140,21 +140,44 @@ $tituloNomina = 'NÓMINA DEL ' . obtenerTituloPeriodo($fecha_inicio, $fecha_cier
 $jsonNominaStr = $_POST['jsonNomina'] ?? '{}';
 $datosNomina = json_decode($jsonNominaStr, true);
 
-// Agrupar empleados por departamento (todos los que tengan mostrar = true)
+// Agrupar empleados por departamento (solo los que tengan mostrar = true y total_cobrar > 0)
 $empleadosPorDepartamento = [];
 if (isset($datosNomina['departamentos']) && is_array($datosNomina['departamentos'])) {
     foreach ($datosNomina['departamentos'] as $depto) {
         $nombreDepto = isset($depto['nombre']) ? strtoupper(trim($depto['nombre'])) : 'SIN DEPARTAMENTO';
-        if (!isset($empleadosPorDepartamento[$nombreDepto])) {
-            $empleadosPorDepartamento[$nombreDepto] = [];
-        }
+        $empleadosValidos = [];
+
         if (isset($depto['empleados']) && is_array($depto['empleados'])) {
             foreach ($depto['empleados'] as $empleado) {
-                $mostrar = isset($empleado['mostrar']) ? $empleado['mostrar'] : true;
-                if ($mostrar) {
-                    $empleadosPorDepartamento[$nombreDepto][] = $empleado;
+                $mostrarRaw = $empleado['mostrar'] ?? true;
+                $mostrar = ($mostrarRaw !== false && $mostrarRaw !== 'false' && $mostrarRaw !== 0 && $mostrarRaw !== '0');
+
+                $totalCobrar = null;
+                if (isset($empleado['total_cobrar'])) {
+                    $totalCobrar = floatval($empleado['total_cobrar']);
+                } elseif (isset($empleado['total_recibir'])) {
+                    $totalCobrar = floatval($empleado['total_recibir']);
+                } elseif (isset($empleado['sueldo_neto'])) {
+                    $totalCobrar = floatval($empleado['sueldo_neto']);
+                } else {
+                    $salarioSemanal = floatval($empleado['salario_semanal'] ?? 0);
+                    $extra = floatval($empleado['sueldo_extra_total'] ?? 0);
+                    $pasaje = floatval($empleado['pasaje'] ?? 0);
+                    $comida = floatval($empleado['comida'] ?? 0);
+                    $totalCobrar = $salarioSemanal + $extra + $pasaje + $comida;
+                }
+
+                if ($mostrar && $totalCobrar > 0) {
+                    $empleadosValidos[] = $empleado;
                 }
             }
+        }
+
+        if (!empty($empleadosValidos)) {
+            if (!isset($empleadosPorDepartamento[$nombreDepto])) {
+                $empleadosPorDepartamento[$nombreDepto] = [];
+            }
+            $empleadosPorDepartamento[$nombreDepto] = array_merge($empleadosPorDepartamento[$nombreDepto], $empleadosValidos);
         }
     }
 }
@@ -234,7 +257,7 @@ foreach ($empleadosPorTipo as $empleado) {
         $pdf->Ln(5);
         $contador = 1; // reiniciar contador por tipo
     }
-    
+
     $primerEmpleado = false;
 
     $nombre = strtoupper($empleado['nombre'] ?? '');
@@ -242,7 +265,12 @@ foreach ($empleadosPorTipo as $empleado) {
     $pdf->SetFont('helvetica', 'B', 12);
     $pdf->Cell(0, 8, "#{$contador} {$nombre}", 0, 1, 'L');
     $pdf->SetFont('dejavusans', '', 10);
-    $pdf->Cell(0, 6, "Clave: {$clave}", 0, 1, 'L');
+    $textoClave = "Clave: {$clave}";
+    if (($empleado['tipo_horario'] ?? '') == 2) {
+        $diasTrabajados = $empleado['dias_trabajados'] ?? 0;
+        $textoClave .= " | Días trabajados: {$diasTrabajados}";
+    }
+    $pdf->Cell(0, 6, $textoClave, 0, 1, 'L');
     $pdf->Ln(2);
 
     //=====================================
@@ -666,8 +694,8 @@ if ($contadorEmpleados > 0) {
     $pdf->Line(10, $pdf->GetY(), 200, $pdf->GetY());
     $pdf->Ln(3);
 
-    // Total neto general (con redondeos aplicados)
-    $totalGeneralNeto = $totalGeneralNetoRedondeado;
+    // Total neto general (redondeo de la diferencia entre percepciones y deducciones totales)
+    $totalGeneralNeto = round($totalGeneralPercepciones - $totalGeneralDeducciones);
     if ($totalGeneralNeto >= 0) {
         $pdf->SetTextColor(0, 100, 0);
     } else {

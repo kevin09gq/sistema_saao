@@ -240,9 +240,9 @@ function reporteNominaPdf() {
                 link.href = url;
                 var numeroSemana = String(jsonNominaHuasteca.numero_semana).padStart(2, '0');
                 var aniosCierre = jsonNominaHuasteca.fecha_cierre.split('/')[2];
+                var numeroSemana = String(jsonNominaHuasteca.numero_semana).padStart(2, '0');
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'SEM_' + numeroSemana + '_REPORTE_NOMINA_HUASTECA_' + timestamp + '.pdf';
-                document.body.appendChild(link);
+                link.download = 'SEM_' + numeroSemana + '_DESGLOSE_NOMINA_HUASTECA_' + '.pdf'; document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
                 URL.revokeObjectURL(url);

@@ -2,7 +2,7 @@ abrirModalExportarExcel();
 exportarNominaDepartamento();
 exportarNominaCompleta();
 reporteNominaPdf();
-exportarDispersionTarjeta();    
+exportarDispersionTarjeta();
 let mapaEmpresas = null;
 
 /**
@@ -62,7 +62,7 @@ async function cargarDepartamentosExportar() {
 
     // Recorremos cada departamento que unificamos previamente en process_excel.js
     jsonNominaConfianza.departamentos.forEach(depto => {
-        
+
         /**
          * listaConfiguraciones es un arreglo que contiene el color y el id_empresa.
          * Ejemplo: [{id_empresa: 1, color: '#pink'}, {id_empresa: 2, color: '#green'}]
@@ -131,7 +131,7 @@ function exportarNominaDepartamento() {
         // Obtener el color del departamento desde el JSON
         const deptoObj = jsonNominaConfianza.departamentos.find(d => d.id_departamento == deptoId);
         let colorExcel = '#FF0000';
-        
+
         if (deptoObj && deptoObj.color_reporte) {
             if (Array.isArray(deptoObj.color_reporte)) {
                 // Buscar el color que corresponde a la empresa seleccionada
@@ -281,9 +281,9 @@ function reporteNominaPdf() {
                 link.href = url;
                 var numeroSemana = String(jsonNominaConfianza.numero_semana).padStart(2, '0');
                 var aniosCierre = jsonNominaConfianza.fecha_cierre.split('/')[2];
+                var numeroSemana = String(jsonNominaConfianza.numero_semana).padStart(2, '0');
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'SEM_' + numeroSemana + '_REPORTE_NOMINA_CONFIANZA_' + timestamp + '.pdf';
-                document.body.appendChild(link);
+                link.download = 'SEM_' + numeroSemana + '_DESGLOSE_NOMINA_CONFIANZA_' + '.pdf'; document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
                 URL.revokeObjectURL(url);
@@ -332,7 +332,7 @@ function exportarDispersionTarjeta() {
                 link.href = url;
                 var numeroSemana = String(jsonNominaConfianza.numero_semana).padStart(2, '0');
                 var anio = jsonNominaConfianza.fecha_cierre.split('/')[2];
-                link.download = 'DISPERSION_TARJETA_SEM_' + numeroSemana + '_' + anio + '.xlsx';
+                link.download = 'SEM_' + numeroSemana + '_DISPERSION_TARJETA_CONFIANZA_' + anio + '.xlsx';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);

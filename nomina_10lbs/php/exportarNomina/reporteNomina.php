@@ -139,7 +139,11 @@ if (isset($datosNomina['departamentos']) && is_array($datosNomina['departamentos
         $nombreDepto = strtoupper($depto['nombre']);
 
         foreach ($depto['empleados'] ?? [] as $emp) {
-            if (!($emp['mostrar'] ?? true)) continue;
+            $mostrarRaw = $emp['mostrar'] ?? true;
+            $mostrar = ($mostrarRaw !== false && $mostrarRaw !== 'false' && $mostrarRaw !== 0 && $mostrarRaw !== '0');
+            $totalCobrar = floatval($emp['total_cobrar'] ?? $emp['total_recibir'] ?? $emp['sueldo_neto'] ?? 0);
+
+            if (!$mostrar || $totalCobrar <= 0) continue;
 
             $ss = $emp['seguroSocial'] ?? false;
             $suffix = $ss ? '(CSS)' : '(SSS)';
@@ -342,6 +346,52 @@ foreach ($grupos as $nombreGrupo => $empleados) {
         $pdf->Cell(60, 10, formatoMoneda($sueldoRedondeado), 0, 1, 'R', true);
         $pdf->SetTextColor(0,0,0);
         $pdf->Line(10, $pdf->GetY(), 200, $pdf->GetY());
+
+        // --- HISTORIAL DE CAJAS EMPACADAS ---
+        $historialEmpaque = $emp['historial_empaque'] ?? [];
+        if (!empty($historialEmpaque) && is_array($historialEmpaque)) {
+            $pdf->Ln(4);
+            $pdf->SetFont('helvetica', 'B', 10);
+            $pdf->SetFillColor(240, 240, 240);
+            $pdf->Cell(190, 7, 'HISTORIAL DE CAJAS EMPACADAS', 0, 1, 'C', true);
+            
+            $pdf->SetFont('helvetica', 'B', 9);
+            $pdf->SetFillColor(245, 245, 245);
+            $pdf->Cell(35, 6, 'DÍA', 1, 0, 'C', true);
+            $pdf->Cell(45, 6, 'TIPO', 1, 0, 'C', true);
+            $pdf->Cell(35, 6, 'CANTIDAD', 1, 0, 'C', true);
+            $pdf->Cell(35, 6, 'PRECIO UNIT.', 1, 0, 'C', true);
+            $pdf->Cell(40, 6, 'SUBTOTAL', 1, 1, 'C', true);
+
+            $pdf->SetFont('dejavusans', '', 9);
+            $totalCajasEmpaque = 0;
+            $totalSubtotalEmpaque = 0;
+
+            foreach ($historialEmpaque as $itemEmp) {
+                $diaEmp = $itemEmp['dia'] ?? '';
+                $tipoEmp = $itemEmp['tipo'] ?? '';
+                $cantEmp = intval($itemEmp['cantidad'] ?? 0);
+                $precioEmp = floatval($itemEmp['precio_unitario'] ?? 0);
+                $subtEmp = floatval($itemEmp['subtotal'] ?? 0);
+
+                $totalCajasEmpaque += $cantEmp;
+                $totalSubtotalEmpaque += $subtEmp;
+
+                $pdf->Cell(35, 5, $diaEmp, 1, 0, 'C');
+                $pdf->Cell(45, 5, $tipoEmp, 1, 0, 'C');
+                $pdf->Cell(35, 5, number_format($cantEmp), 1, 0, 'C');
+                $pdf->Cell(35, 5, formatoMoneda($precioEmp), 1, 0, 'R');
+                $pdf->Cell(40, 5, formatoMoneda($subtEmp), 1, 1, 'R');
+            }
+
+            // Fila de Totales del Historial de Empaque
+            $pdf->SetFont('helvetica', 'B', 9);
+            $pdf->SetFillColor(245, 245, 245);
+            $pdf->Cell(80, 6, 'TOTAL CAJAS / SUBTOTAL', 1, 0, 'R', true);
+            $pdf->Cell(35, 6, number_format($totalCajasEmpaque), 1, 0, 'C', true);
+            $pdf->Cell(35, 6, '', 1, 0, 'C', true);
+            $pdf->Cell(40, 6, formatoMoneda($totalSubtotalEmpaque), 1, 1, 'R', true);
+        }
 
         // Acumular Totales por Grupo
         $resumenPorTipo[$nombreGrupo]['count']++;

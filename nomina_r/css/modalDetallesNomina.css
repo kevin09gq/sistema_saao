@@ -39,6 +39,14 @@ background-color: #e83e8c !important;
 color: #ffffff !important;
 }
 
+
+.table-yellow,
+.table-yellow td,
+.table-yellow th {
+background-color: #f0ec08 !important;
+color: #1a1717 !important;
+}
+
 #tabsPrincipales {
     position: sticky;
     top: -1rem;

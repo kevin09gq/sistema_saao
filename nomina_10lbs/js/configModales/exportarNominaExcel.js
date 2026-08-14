@@ -94,8 +94,8 @@ function exportarPorDepartamento() {
 
         // Identificar la empresa asociada a este departamento en el JSON
         const deptoInfo = jsonNomina10lbs.departamentos.find(d => d.id_departamento == idDepto);
-        const idEmpresa = deptoInfo && deptoInfo.color_reporte && deptoInfo.color_reporte.length > 0 
-            ? deptoInfo.color_reporte[0].id_empresa 
+        const idEmpresa = deptoInfo && deptoInfo.color_reporte && deptoInfo.color_reporte.length > 0
+            ? deptoInfo.color_reporte[0].id_empresa
             : 1;
 
         // Enviar datos al PHP genérico
@@ -123,7 +123,7 @@ function exportarPorDepartamento() {
                 var anio = jsonNomina10lbs.fecha_cierre.split('/')[2];
                 var tipoSuffix = esSeguroSocial ? 'CSS' : 'SSS';
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                
+
                 link.download = `SEM ${numeroSemana} - ${anio} - ${nombreDepto} ${tipoSuffix} - ${timestamp}.xlsx`;
                 document.body.appendChild(link);
                 link.click();
@@ -225,8 +225,9 @@ function reporteNominaPdf() {
                 var link = document.createElement('a');
                 var url = URL.createObjectURL(blob);
                 link.href = url;
+                var numeroSemana = String(jsonNomina10lbs.numero_semana).padStart(2, '0');
                 var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
-                link.download = 'REPORTE_NOMINA_10LBS_' + timestamp + '.pdf';
+                link.download = 'DESGLOSE_NOMINA_10LBS_' + 'SEM_' + numeroSemana + '.pdf';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -277,7 +278,7 @@ function exportarDispersionTarjeta() {
                 link.href = url;
                 var numeroSemana = String(jsonNomina10lbs.numero_semana).padStart(2, '0');
                 var anio = jsonNomina10lbs.fecha_cierre.split('/')[2];
-                link.download = 'DISPERSION_TARJETA_SEM_' + numeroSemana + '_' + anio + '.xlsx';
+                link.download = 'SEM_' + numeroSemana + '_DESGLOSE_NOMINA_10LBS_' + '.pdf'; document.body.appendChild(link);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -292,7 +293,7 @@ function exportarDispersionTarjeta() {
     });
 }
 
- function validarEmpleadosNegativos() {
+function validarEmpleadosNegativos() {
     if (!jsonNomina10lbs || !jsonNomina10lbs.departamentos) return false;
 
     let nombresNegativos = [];
@@ -308,7 +309,7 @@ function exportarDispersionTarjeta() {
     });
 
     if (nombresNegativos.length > 0) {
-         Swal.fire({
+        Swal.fire({
             icon: 'error',
             title: 'No se puede exportar la nómina',
             html: `
