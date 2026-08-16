@@ -9,29 +9,17 @@ $(document).ready(function () {
 
 function guardarNomina() {
 
-    $('#btn_guardar_nomina_relicario').click(function (e) {
+    $('#btn_guardar_nomina_palmilla').click(function (e) {
         e.preventDefault();
 
         // Validar que exista el JSON de la nómina
-        if (!jsonNominaRelicario) {
+        if (!jsonNominaPalmilla) {
             mostrarAlerta('error', 'Error', 'No hay datos de nómina para guardar.');
             return;
         }
 
         // Calcular totales de percepciones y deducciones
-        const totales = calcularTotalesNomina(jsonNominaRelicario);
-
-
-        // Quitar el departamento "Corte" del objeto global para no guardarlo en la nómina (se procesa aparte)
-        const jsonData = { ...jsonNominaRelicario, departamentos: jsonNominaRelicario.departamentos.filter(d => d.id_departamento !== 800 && d.id_departamento !== 801) };
-
-        // Obtener el dep Corte por separado
-        const departamentoCorte = jsonNominaRelicario.departamentos.find(d => d.id_departamento === 800);
-        const empleadosCorte = departamentoCorte ? departamentoCorte.empleados : [];
-
-        // Obtener el dep Poda por separado
-        const departamentoPoda = jsonNominaRelicario.departamentos.find(d => d.id_departamento === 801);
-        const empleadosPoda = departamentoPoda ? departamentoPoda.empleados : [];
+        const totales = calcularTotalesNomina(jsonNominaPalmilla);
 
         // Mostrar confirmación
         Swal.fire({
@@ -45,7 +33,7 @@ function guardarNomina() {
             if (result.isConfirmed) {
 
                 // Limpiamos los datos 
-                eliminarPropiedades(jsonData);
+                eliminarPropiedades(jsonNominaPalmilla)
 
                 // Enviar datos al servidor
                 $.ajax({
@@ -54,16 +42,13 @@ function guardarNomina() {
                     dataType: "json",
                     data: {
                         accion: "guardarNomina",
-                        nomina_relicario: JSON.stringify(jsonData),
-                        anio: jsonData.anio,
-                        numero_semana: jsonData.numero_semana,
+                        nomina_palmilla: JSON.stringify(jsonNominaPalmilla),
+                        anio: jsonNominaPalmilla.anio,
+                        numero_semana: jsonNominaPalmilla.numero_semana,
                         id_empresa: 1,
                         total_percepciones: totales.totalPercepciones,
                         total_deducciones: totales.totalDeducciones,
-                        total_neto: totales.totalNeto,
-
-                        corte: JSON.stringify(empleadosCorte),
-                        poda: JSON.stringify(empleadosPoda)
+                        total_neto: totales.totalNeto
                     },
                     success: function (respuesta) {
                         if (respuesta.success) {

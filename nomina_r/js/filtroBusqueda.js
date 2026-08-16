@@ -7,6 +7,23 @@ function cargarFiltroDepartamentos() {
     // Limpiar el contenido del select
     $('#filtro-departamento').empty();
 
+    // Lista de departamentos a agregar
+    const nuevosDepartamentos = [
+        { id_departamento: 800, nombre: "Corte", empleados: [] },
+        { id_departamento: 801, nombre: "Poda", empleados: [] }
+    ];
+
+    // Recorremos cada uno y lo agregamos solo si no existe
+    nuevosDepartamentos.forEach(dep => {
+        const existe = jsonNominaRelicario.departamentos.some(
+            d => d.id_departamento === dep.id_departamento
+        );
+        if (!existe) {
+            jsonNominaRelicario.departamentos.push(dep);
+        }
+    });
+
+
     // Recorrer todos los departamentos
     jsonNominaRelicario.departamentos.forEach(departamento => {
 
@@ -19,7 +36,6 @@ function cargarFiltroDepartamentos() {
 
 
     });
-
 }
 
 //=====================================================
@@ -30,16 +46,47 @@ function cargarFiltroDepartamentos() {
 
 function eventoFiltroDepartamento() {
 
-    $('#filtro-departamento').change(function () {
+    $('#filtro-departamento').change(function (e) {
+        e.preventDefault();
 
-        // Regresar a la primera página
-        paginaActual = 1;
+        // Obtener el id del departamento seleccionado
+        let id_departamento = parseInt($(this).val());
 
-        // Volver a llenar la tabla
-        llenarTablaNomina();
+        switch (id_departamento) {
+            case 800:
+                // Se oculta la tabla de nomina normal
+                $("#tabla-nomina-container-relicario").prop("hidden", true);
+                // Se oculta la tabla de Poda
+                $("#tabla_poda_container").prop("hidden", true);
+                // Se muestra la tabla de corte
+                $("#tabla-corte-container").prop("hidden", false);
+                mostrarDatosTablaCorte(jsonNominaRelicario);
+                break;
 
+            case 801:
+                // Se oculta la tabla de nomina normal
+                $("#tabla-nomina-container-relicario").prop("hidden", true);
+                // Se oculta la tabla de corte
+                $("#tabla-corte-container").prop("hidden", true);
+                // Se muestra la tabla de Poda
+                $("#tabla_poda_container").prop("hidden", false);
+                mostrarDatosTablaPoda(jsonNominaRelicario);
+                break;
+
+            default:
+                // HACER VISIBLE LA TABLA DE NOMINA NORMAL
+                $("#tabla-nomina-container-relicario").prop("hidden", false);
+                 // Se oculta la tabla de corte
+                $("#tabla-corte-container").prop("hidden", true);
+                // Se muestra la tabla de Poda
+                $("#tabla_poda_container").prop("hidden", true);
+                // Regresar a la primera página
+                paginaActual = 1;
+                // Volver a llenar la tabla
+                llenarTablaNomina();
+                break;
+        }
     });
-
 }
 
 //=====================================================

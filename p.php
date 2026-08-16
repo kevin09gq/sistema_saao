@@ -4,7 +4,7 @@ require_once 'conexion/conexion.php';
 
 
 //====================================================
-// MIGRACION NOMINA RELICARIO
+// MIGRACION NOMINA PILAR
 //====================================================
 
 try {
@@ -29,10 +29,10 @@ try {
     $sql = "
 
         SELECT
-            id_nomina_relicario,
-            nomina_relicario
+            id_nomina_pilar,
+            nomina_pilar
 
-        FROM nomina_relicario
+        FROM nomina_pilar
 
     ";
 
@@ -59,7 +59,7 @@ try {
         //============================================
 
         $json = json_decode(
-            $nomina['nomina_relicario'],
+            $nomina['nomina_pilar'],
             true
         );
 
@@ -97,11 +97,11 @@ try {
 
         $sqlUpdate = "
 
-            UPDATE nomina_relicario
+            UPDATE nomina_pilar
 
-            SET nomina_relicario = ?
+            SET nomina_pilar = ?
 
-            WHERE id_nomina_relicario = ?
+            WHERE id_nomina_pilar = ?
 
         ";
 
@@ -111,7 +111,7 @@ try {
 
 
         $idNomina =
-            $nomina['id_nomina_relicario'];
+            $nomina['id_nomina_pilar'];
 
 
         $stmtUpdate->bind_param(
@@ -133,7 +133,7 @@ try {
     $conexion->commit();
 
 
-    echo "Migración de Relicario completada correctamente";
+    echo "Migración de Pilar completada correctamente";
 
 
 } catch (Exception $e) {

@@ -10,7 +10,7 @@ verificarSesion(); // Proteger esta página
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nomina Rancho Relicario</title>
+    <title>Nomina Rancho Palmilla</title>
 
     <!-- Icono del sistema -->
     <link rel="icon" href="<?= ICONO_SISTEMA ?>" />
@@ -20,16 +20,10 @@ verificarSesion(); // Proteger esta página
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <!-- SweetAlert2 CSS -->
     <script src="<?= SWEETALERT ?>"></script>
-    <!-- JQuery UI css -->
-    <link rel="stylesheet" href="<?= JQUERY_UI_CSS ?>">
-
     <link rel="stylesheet" href="../css/encabezados.css">
     <link rel="stylesheet" href="../css/tablaNomina.css">
     <link rel="stylesheet" href="../css/modalDetallesNomina.css">
     <link rel="stylesheet" href="../css/conceptos_totales.css">
-
-    <!-- ESTILOS PARA LA TABLA DE CORTE Y PODA -->
-    <link rel="stylesheet" href="../css/tablaCorte.css">
 
 </head>
 
@@ -134,7 +128,7 @@ verificarSesion(); // Proteger esta página
 
     <!-- CONTENEDOR PARA CONFIGURAR LOS VALORES ECONÓMICOS DEL RELICARIO -->
 
-    <div class="container py-5" id="config-valores-relicario" hidden>
+    <div class="container py-5" id="config-valores-palmilla" hidden>
         <div class="row justify-content-center">
             <div class="col-lg-11">
                 <div class="card border-0 shadow-sm">
@@ -144,28 +138,28 @@ verificarSesion(); // Proteger esta página
                             <h6 class="text-uppercase fw-bold text-dark mb-4">Valores Económicos</h6>
 
                             <div class="mb-4">
-                                <label for="precio_pasaje_relicario" class="form-label">Precio Pasaje</label>
+                                <label for="precio_pasaje_palmilla" class="form-label">Precio Pasaje</label>
                                 <div class="input-group">
                                     <span class="input-group-text">$</span>
-                                    <input type="number" id="precio_pasaje_relicario"
+                                    <input type="number" id="precio_pasaje_palmilla"
                                         class="form-control form-control-sm" placeholder="0.00" step="0.01" min="0">
                                 </div>
                             </div>
 
                             <div class="mb-4">
-                                <label for="pago_tardeada_relicario" class="form-label">Pago Tardeada</label>
+                                <label for="pago_tardeada_palmilla" class="form-label">Pago Tardeada</label>
                                 <div class="input-group">
                                     <span class="input-group-text">$</span>
-                                    <input type="number" id="pago_tardeada_relicario"
+                                    <input type="number" id="pago_tardeada_palmilla"
                                         class="form-control form-control-sm" placeholder="0.00" step="0.01" min="0">
                                 </div>
                             </div>
 
                             <div class="mb-0">
-                                <label for="pago_comida_relicario" class="form-label">Pago Comida</label>
+                                <label for="pago_comida_palmilla" class="form-label">Pago Comida</label>
                                 <div class="input-group">
                                     <span class="input-group-text">$</span>
-                                    <input type="number" id="pago_comida_relicario" class="form-control form-control-sm"
+                                    <input type="number" id="pago_comida_palmilla" class="form-control form-control-sm"
                                         placeholder="0.00" step="0.01" min="0">
                                 </div>
                             </div>
@@ -195,7 +189,7 @@ verificarSesion(); // Proteger esta página
                             </div>
 
                             <div class="mt-4 text-end">
-                                <button class="btn btn-primary" id="btn_config_avanzar_relicario" type="button">
+                                <button class="btn btn-primary" id="btn_config_avanzar_palmilla" type="button">
                                     Procesar Nómina <i class="bi bi-arrow-right-short ms-2"></i>
                                 </button>
                             </div>
@@ -209,38 +203,13 @@ verificarSesion(); // Proteger esta página
 
     <!-- CONTENEDOR DE LA TABLA DE NÓMINA -->
 
-    <div class="container-tabla-nomina-relicario" id="tabla-nomina-responsive" hidden>
-        <div class="header-tabla-relicario">
+    <div class="container-tabla-nomina-palmilla" id="tabla-nomina-responsive" hidden>
+        <div class="header-tabla-palmilla">
             <div class="header-titulo-semana">
                 <h3 id=nombre_nomina></h3>
-                <span class="sem-info-relicario" id="num_semana"></span>
+                <span class="sem-info-palmilla" id="num_semana"></span>
             </div>
-            <div class="header-controls-relicario">
-
-                <!-- Grupo Ranchos -->
-                <div class="dropdown">
-                    <button class="btn btn-toolbar-group dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-grid-3x3-gap-fill"></i>
-                        <span>Ranchos</span>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-nomina shadow-sm">
-                        <li>
-                            <h6 class="dropdown-header"><i class="bi bi-tools me-1"></i>Gestión de Ranchos</h6>
-                        </li>
-                        <li>
-                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_modal_corte">
-                                <i class="bi bi-truck"></i>
-                                <span>Corte Limón</span>
-                            </button>
-                        </li>
-                        <li>
-                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_modal_poda">
-                                <i class="bi bi-scissors"></i>
-                                <span>Poda Árboles</span>
-                            </button>
-                        </li>
-                    </ul>
-                </div>
+            <div class="header-controls-palmilla">
 
                 <!-- Grupo 1: Servicios -->
                 <div class="dropdown">
@@ -297,7 +266,7 @@ verificarSesion(); // Proteger esta página
                             <h6 class="dropdown-header"><i class="bi bi-sliders me-1"></i>Opciones de Configuración</h6>
                         </li>
                         <li>
-                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_actualizar_valores_relicario">
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_actualizar_valores_palmilla">
                                 <i class="bi bi-wallet2"></i>
                                 <span>Actualizar Valores Economicos</span>
                             </button>
@@ -383,7 +352,7 @@ verificarSesion(); // Proteger esta página
                             </button>
                         </li>
                         <li>
-                            <button class="dropdown-item d-flex align-items-center gap-2 btn-ticket-zebra" type="button" id="btn_ticket_manual_relicario">
+                            <button class="dropdown-item d-flex align-items-center gap-2 btn-ticket-zebra" type="button" id="btn_ticket_manual_palmilla">
                                 <i class="bi bi-hand-index text-success"></i>
                                 <span>Tickets Seleccionados</span>
                             </button>
@@ -403,15 +372,15 @@ verificarSesion(); // Proteger esta página
             </div>
         </div>
         <!-- Controles de filtro y búsqueda -->
-        <div class="controles-tabla-relicario">
-            <div class="filtros-container-relicario">
-                <select class="filtro-departamento-relicario" id="filtro-departamento">
+        <div class="controles-tabla-palmilla">
+            <div class="filtros-container-palmilla">
+                <select class="filtro-departamento-palmilla" id="filtro-departamento">
                     <!-- Se poblará dinámicamente -->
                 </select>
 
-                <div class="busqueda-container-relicario" id="busqueda-container">
+                <div class="busqueda-container-palmilla" id="busqueda-container">
                     <i class="bi bi-search"></i>
-                    <input type="text" class="campo-busqueda-relicario" placeholder="Buscar..." id="busqueda-nomina-relicario">
+                    <input type="text" class="campo-busqueda-palmilla" placeholder="Buscar..." id="busqueda-nomina-palmilla">
                     <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="btn-clear-busqueda"
                         title="Limpiar">
                         <i class="bi bi-x-circle"></i>
@@ -422,7 +391,7 @@ verificarSesion(); // Proteger esta página
 
 
             <!-- Botones de exportación -->
-            <div class="export-buttons-relicario">
+            <div class="export-buttons-palmilla">
                 <button class="btn btn-outline-success me-2" id="btn_export_excel" title="Exportar a Excel">
                     <i class="bi bi-file-earmark-excel"></i> Excel
                 </button>
@@ -430,7 +399,7 @@ verificarSesion(); // Proteger esta página
                 <button class="btn btn-outline-danger me-2" id="btn_export_pdf_reporte" title="Exportar a PDF">
                     <i class="bi bi-file-earmark-pdf"></i> Reporte
                 </button>
-                <button class="btn btn-outline-primary me-2" id="btn_guardar_nomina_relicario" title="Guardar nómina">
+                <button class="btn btn-outline-primary me-2" id="btn_guardar_nomina_palmilla" title="Guardar nómina">
                     <i class="bi bi-save"></i> Guardar Nómina
                 </button>
                 <button class="btn btn-outline-warning" id="btn_limpiar_datos" title="Subir Nuevamente">
@@ -440,10 +409,9 @@ verificarSesion(); // Proteger esta página
             </div>
         </div>
 
-        <!-- CONTENEDOR DE LA NOMINA NORMAL -->
-        <div id="tabla-nomina-container-relicario" class="tabla-nomina-container-relicario">
-            <div class="table-responsive-relicario">
-                <table class="table-nomina-relicario" id="tabla-nomina">
+        <div id="tabla-nomina-container-palmilla" class="tabla-nomina-container-palmilla">
+            <div class="table-responsive-palmilla">
+                <table class="table-nomina-palmilla" id="tabla-nomina">
                     <thead>
                         <tr>
                             <th rowspan="2">#</th>
@@ -475,76 +443,18 @@ verificarSesion(); // Proteger esta página
 
                         </tr>
                     </thead>
-                    <tbody id="tabla-nomina-body-relicario">
+                    <tbody id="tabla-nomina-body-palmilla">
                         <!-- Filas de la tabla se generarán dinámicamente -->
 
 
 
                     </tbody>
-                    <tfoot id="tabla-nomina-foot-relicario">
+                    <tfoot id="tabla-nomina-foot-palmilla">
                         <!-- Fila de totales se generará dinámicamente -->
                     </tfoot>
                 </table>
             </div>
             <ul id="paginacion-nomina" class="pagination" style="margin: 20px 0 0 0; justify-content: center;"></ul>
-        </div>
-
-        <!-- CONTENEDOR DE LA NOMINA DE CORTE -->
-        <div id="tabla-corte-container" class="tabla-nomina-container-corte" hidden>
-            <div class="table-responsive-corte">
-                <table class="table-nomina-corte" id="tabla-nomina-corte">
-                    <thead>
-                        <tr>
-                            <th rowspan="2">#</th>
-                            <th rowspan="2">NOMBRE</th>
-                            <th rowspan="2">CONCEPTO</th>
-                            <th rowspan="2">V</th>
-                            <th rowspan="2">SA</th>
-                            <th rowspan="2">DO</th>
-                            <th rowspan="2">L</th>
-                            <th rowspan="2">MA</th>
-                            <th rowspan="2">MI</th>
-                            <th rowspan="2">J</th>
-                            <th rowspan="2">TOTAL<br>REJAS</th>
-                            <th rowspan="2">PRECIO<br>POR REJA</th>
-                            <th rowspan="2">TOTAL<br>EFECTIVO</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-body-corte">
-                        <!-- Filas de la tabla se generarán dinámicamente -->
-                    </tbody>
-
-                </table>
-            </div>
-        </div>
-
-        <!-- CONTENEDOR DE LA NOMINA DE PODA -->
-        <div id="tabla_poda_container" class="tabla-nomina-container-corte" hidden>
-            <div class="table-responsive-corte">
-                <table class="table-nomina-corte" id="tabla_poda">
-                    <thead>
-                        <tr>
-                            <th rowspan="2">#</th>
-                            <th rowspan="2">NOMBRE</th>
-                            <th rowspan="2">CONCEPTO</th>
-                            <th rowspan="2">V</th>
-                            <th rowspan="2">SA</th>
-                            <th rowspan="2">DO</th>
-                            <th rowspan="2">L</th>
-                            <th rowspan="2">MA</th>
-                            <th rowspan="2">MI</th>
-                            <th rowspan="2">J</th>
-                            <th rowspan="2">TOTAL<br>ARBOLES</th>
-                            <th rowspan="2">PAGO</th>
-                            <th rowspan="2">TOTAL<br>EFECTIVO</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla_body_poda">
-                        <!-- Filas de la tabla se generarán dinámicamente -->
-                    </tbody>
-
-                </table>
-            </div>
         </div>
     </div>
 
@@ -553,16 +463,6 @@ verificarSesion(); // Proteger esta página
     <div id="context-menu"
         style="position:absolute;z-index:10000;display:none;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);padding:4px;">
         <div class="cm-item" data-action="ver" style="padding:6px 12px;cursor:pointer;">Ver detalles</div>
-    </div>
-    <!-- Menú contextual simple para la tabla de corte -->
-    <div id="context_menu_corte"
-        style="position:absolute;z-index:10000;display:none;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);padding:4px;">
-        <div class="cm_item_corte" data-action="ver" style="padding:6px 12px;cursor:pointer;">🔎​ Ver detalles</div>
-    </div>
-    <!-- Menú contextual simple para la tabla de poda -->
-    <div id="context_menu_poda"
-        style="position:absolute;z-index:10000;display:none;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);padding:4px;">
-        <div class="cm_item_poda" data-action="ver" style="padding:6px 12px;cursor:pointer;">🔎​ Ver detalles</div>
     </div>
 
 
@@ -585,16 +485,6 @@ verificarSesion(); // Proteger esta página
     <?php include 'modals/modalCambiarDepartamento.php'; ?>
     <?php include 'modals/modalExportarNomina.php'; ?>
     <?php include 'modals/modalConceptosTotales.php'; ?>
-
-    <!-- MODALES DEL CORTE -->
-    <?php require_once __DIR__ . '/modalsCorte/modalCorte.php'; ?>
-    <?php require_once __DIR__ . '/modalsCorte/modalCorteEditar.php'; ?>
-    <?php require_once __DIR__ . '/modalsCorte/modalCorteNominaEditar.php'; ?>
-
-    <!-- MODALES DEL PODA -->
-    <?php require_once __DIR__ . '/modalsPoda/modalPoda.php'; ?>
-    <?php require_once __DIR__ . '/modalsPoda/modalPodaDetalles.php'; ?>
-    <?php require_once __DIR__ . '/modalsPoda/modalPodaDetallesExtra.php'; ?>
 
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
@@ -636,16 +526,6 @@ verificarSesion(); // Proteger esta página
     <script src="../js/modalsDetalles/calculosDetallesNomina.js"></script>
     <script src="../js/modalsDetalles/incidencias.js"></script>
     <script src="../js/modalsDetalles/mostrarIncidencias.js"></script>
-
-    <!-- SCRIPTS DEL CORTE -->
-    <script src="../js/configModalCorte/configCorte.js"></script>
-    <script src="../js/configModalCorte/showTablaCorte.js"></script>
-    <script src="../js/configModalCorte/abrirModalDetallesCorte.js"></script>
-
-    <!-- SCRIPTS DEL PODA -->
-    <script src="../js/configModalPoda/config_poda.js"></script>
-    <script src="../js/configModalPoda/tabla_poda.js"></script>
-    <script src="../js/configModalPoda/detalles_modal.js"></script>
 
 </body>
 
