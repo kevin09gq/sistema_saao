@@ -147,8 +147,6 @@ function obtenerEmpleados(mysqli $conexion)
         "success" => true,
         "empleados" => $empleados
     ]);
-
-    
 }
 
 
@@ -192,8 +190,6 @@ function obtenerHorarioRancho(mysqli $conexion)
             "success" => true,
             "horario_jornalero" => json_decode($fila["horario_jornalero"])
         ]);
-
-
     } else {
 
 
@@ -201,12 +197,10 @@ function obtenerHorarioRancho(mysqli $conexion)
             "success" => false,
             "mensaje" => "No se encontró horario para el rancho."
         ]);
-
     }
 
 
     $stmt->close();
-
 }
 
 
@@ -222,6 +216,9 @@ function guardarNomina(mysqli $conexion)
     $totalPercepciones = $_POST['total_percepciones'] ?? 0;
     $totalDeducciones = $_POST['total_deducciones'] ?? 0;
     $totalNeto = $_POST['total_neto'] ?? 0;
+
+    $corte = $_POST['corte'] ?? [];
+    $poda = $_POST['poda'] ?? [];
 
     // Validar datos requeridos
     if (empty($jsonNomina) || empty($anio) || empty($numeroSemana)) {
@@ -257,6 +254,12 @@ function guardarNomina(mysqli $conexion)
         $stmtUpdate->bind_param("sdddi", $jsonNomina, $totalPercepciones, $totalDeducciones, $totalNeto, $idNomina);
 
         if ($stmtUpdate->execute()) {
+
+            // También actualizar los tickets de corte
+            asignarTicketsCorteANomina($corte, $idNomina, $conexion);
+            // También actualizar los movimientos de poda
+            guardarPoda($poda, $idNomina, $conexion);
+
             echo json_encode([
                 "success" => true,
                 "mensaje" => "Nómina actualizada correctamente.",
@@ -277,9 +280,16 @@ function guardarNomina(mysqli $conexion)
                       VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         $stmtInsert = $conexion->prepare($sqlInsert);
-        $stmtInsert->bind_param("iisdddd", $idEmpresa, $anio, $numeroSemana, $jsonNomina, $totalPercepciones, $totalDeducciones, $totalNeto);
+         $stmtInsert->bind_param("iiisddd", $idEmpresa, $anio, $numeroSemana, $jsonNomina, $totalPercepciones, $totalDeducciones, $totalNeto);
 
         if ($stmtInsert->execute()) {
+            // Recuperar el ID recién insertado
+            $idNominaInsertada = $conexion->insert_id;
+            // Guardar los tickets de corte relacionados con esta nómina
+            asignarTicketsCorteANomina($corte, $idNominaInsertada, $conexion);
+            // Guardar los movimientos de poda relacionados con esta nómina
+            guardarPoda($poda, $idNominaInsertada, $conexion);
+
             echo json_encode([
                 "success" => true,
                 "mensaje" => "Nómina guardada correctamente.",
@@ -327,9 +337,36 @@ function recuperarUltimaNomina(mysqli $conexion)
 
     $fila = $resultado->fetch_assoc();
 
+    // ALMACENAR EL ID Y LA NOMINA EN VARIABLES PARA PODER USARLAS EN EL JSON DE RESPUESTA
+    $id_nomina = $fila['id_nomina_pilar'];
+    $nomina_raw = $fila['nomina_pilar'];
+
+    // PASAR A JSON PARA PODER AGRERGAR EL CORTE Y PODA
+    $nomina_json = json_decode($nomina_raw, true);
+    // OBTENER LOS TICKETS DE CORTE
+    $ticketsCorte = obtenerTicketsCorteInterno($id_nomina, $conexion);
+    // OBTENER LOS TICKETS DE PODA
+    $movimientosPoda = obtenerPodaInterno($id_nomina, $conexion);
+
+    // METER MANUALMENTE LOS DEPARTAMENTOS DE CORTE Y PODA EN EL JSON DE LA NOMINA
+    $nomina_json['departamentos'][] = [
+        'nombre' => 'Corte',
+        'empleados' => $ticketsCorte,
+        'id_departamento' => 800
+    ];
+
+    $nomina_json['departamentos'][] = [
+        'nombre' => 'Poda',
+        'empleados' => $movimientosPoda,
+        'id_departamento' => 801
+    ];
+
+    // Convertir nuevamente a string JSON
+    $nomina_raw = json_encode($nomina_json, JSON_UNESCAPED_UNICODE);
+
     echo json_encode([
         "success" => true,
-        "nomina_json" => $fila['nomina_pilar'],
+        "nomina_json" => $nomina_raw,
         "nomina_info" => [
             "id_nomina_pilar" => $fila['id_nomina_pilar'],
             "anio" => $fila['anio'],
@@ -576,12 +613,30 @@ function normalizarFechaMysql($fechaStr)
     }
 
     $meses = [
-        'Ene' => '01', 'Feb' => '02', 'Mar' => '03', 'Abr' => '04',
-        'May' => '05', 'Jun' => '06', 'Jul' => '07', 'Ago' => '08',
-        'Sep' => '09', 'Oct' => '10', 'Nov' => '11', 'Dic' => '12',
-        'Enero' => '01', 'Febrero' => '02', 'Marzo' => '03', 'Abril' => '04',
-        'Mayo' => '05', 'Junio' => '06', 'Julio' => '07', 'Agosto' => '08',
-        'Septiembre' => '09', 'Octubre' => '10', 'Noviembre' => '11', 'Diciembre' => '12'
+        'Ene' => '01',
+        'Feb' => '02',
+        'Mar' => '03',
+        'Abr' => '04',
+        'May' => '05',
+        'Jun' => '06',
+        'Jul' => '07',
+        'Ago' => '08',
+        'Sep' => '09',
+        'Oct' => '10',
+        'Nov' => '11',
+        'Dic' => '12',
+        'Enero' => '01',
+        'Febrero' => '02',
+        'Marzo' => '03',
+        'Abril' => '04',
+        'Mayo' => '05',
+        'Junio' => '06',
+        'Julio' => '07',
+        'Agosto' => '08',
+        'Septiembre' => '09',
+        'Octubre' => '10',
+        'Noviembre' => '11',
+        'Diciembre' => '12'
     ];
 
     $partes = explode('/', $fechaStr);
@@ -596,3 +651,352 @@ function normalizarFechaMysql($fechaStr)
     return date('Y-m-d', strtotime($fechaStr));
 }
 
+
+
+
+
+// ================================================================================
+// FUNCIONES PARA TRABAJAR TODO LO RELACIONADO CON CORTES
+// ================================================================================
+
+/**
+ * Función para asignar tickets de corte a una nómina existente
+ */
+function asignarTicketsCorteANomina($corte, $idNomina, $conexion)
+{
+    try {
+        $empleadosCorte = json_decode($corte, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            error_log("Error al decodificar JSON de cortes: " . json_last_error_msg());
+            return;
+        }
+
+        foreach ($empleadosCorte as $empleado) {
+            $nombreCortador = $empleado['nombre'];
+
+            // Solo procesar empleados con concepto REJA
+            if ($empleado['concepto'] === 'REJA' && isset($empleado['tickets']) && is_array($empleado['tickets'])) {
+                foreach ($empleado['tickets'] as $ticket) {
+                    $folio = $ticket['folio'];
+                    $fechaCorte = $ticket['fecha'];
+                    $precioReja = $ticket['precio_reja'];
+
+                    // 1. Consultar si el vale ya tiene nómina
+                    $checkQuery = "SELECT id, id_nomina FROM cortes_pilar WHERE folio = ? AND nombre_cortador = ?";
+                    $checkStmt = $conexion->prepare($checkQuery);
+                    $checkStmt->bind_param("ss", $folio, $nombreCortador);
+                    $checkStmt->execute();
+                    $result = $checkStmt->get_result();
+
+                    if ($row = $result->fetch_assoc()) {
+                        $idCorte = $row['id'];
+                        $idNominaExistente = $row['id_nomina'];
+
+                        if (is_null($idNominaExistente)) {
+                            // 2. Si está pendiente, asignar a la nómina
+                            $updateQuery = "UPDATE cortes_pilar 
+                                        SET id_nomina = ?, fecha_corte = ?, precio_reja = ?
+                                        WHERE id = ?";
+                            $updateStmt = $conexion->prepare($updateQuery);
+                            $updateStmt->bind_param("isdi", $idNomina, $fechaCorte, $precioReja, $idCorte);
+                            $updateStmt->execute();
+                        } else {
+                            // 3. Si ya tiene nómina, actualizar datos
+                            $updateQuery = "UPDATE cortes_pilar 
+                                        SET fecha_corte = ?, precio_reja = ?, nombre_cortador = ?
+                                        WHERE id = ?";
+                            $updateStmt = $conexion->prepare($updateQuery);
+                            $updateStmt->bind_param("sdsi", $fechaCorte, $precioReja, $nombreCortador, $idCorte);
+                            $updateStmt->execute();
+
+                            // Actualizar tablas: borrar y volver a insertar
+                            $conexion->query("DELETE FROM cortes_pilar_tablas WHERE id_corte = $idCorte");
+                            foreach ($ticket['datosRejas'] as $datosTabla) {
+                                $numTabla = intval($datosTabla['tabla']);
+                                $cantidadRejas = intval($datosTabla['cantidad']);
+                                $insertTablaQuery = "INSERT INTO cortes_pilar_tablas (id_corte, num_tabla, rejas) VALUES (?, ?, ?)";
+                                $insertTablaStmt = $conexion->prepare($insertTablaQuery);
+                                $insertTablaStmt->bind_param("iii", $idCorte, $numTabla, $cantidadRejas);
+                                $insertTablaStmt->execute();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        error_log("Tickets de corte procesados para nómina ID: " . $idNomina);
+    } catch (Exception $e) {
+        error_log("Error en asignarTicketsCorteANomina: " . $e->getMessage());
+    }
+}
+
+/**
+ * Función interna para obtener tickets de corte desde un ID de nómina
+ */
+function obtenerTicketsCorteInterno($idNomina, $conexion)
+{
+    $empleadosCorte = [];
+
+    // Obtener todos los cortes para esta nómina
+    $queryCortes = "SELECT id, nombre_cortador, folio, precio_reja, fecha_corte FROM cortes_pilar WHERE id_nomina = ? ORDER BY nombre_cortador, fecha_corte";
+    $stmtCortes = $conexion->prepare($queryCortes);
+    $stmtCortes->bind_param("i", $idNomina);
+    $stmtCortes->execute();
+    $resultCortes = $stmtCortes->get_result();
+
+    while ($corte = $resultCortes->fetch_assoc()) {
+        $idCorte = $corte['id'];
+        $nombreCortador = $corte['nombre_cortador'];
+        $folio = $corte['folio'];
+        $precioReja = floatval($corte['precio_reja']);
+        $fechaCorte = $corte['fecha_corte'];
+
+        // Obtener las tablas de rejas para este corte
+        $queryTablas = "SELECT num_tabla, rejas FROM cortes_pilar_tablas WHERE id_corte = ? ORDER BY num_tabla";
+        $stmtTablas = $conexion->prepare($queryTablas);
+        $stmtTablas->bind_param("i", $idCorte);
+        $stmtTablas->execute();
+        $resultTablas = $stmtTablas->get_result();
+
+        $datosRejas = [];
+        while ($tabla = $resultTablas->fetch_assoc()) {
+            $datosRejas[] = [
+                'tabla' => $tabla['num_tabla'],
+                'cantidad' => intval($tabla['rejas'])
+            ];
+        }
+
+        // Buscar si el empleado ya existe en el array
+        $empleadoIndex = -1;
+        for ($i = 0; $i < count($empleadosCorte); $i++) {
+            if ($empleadosCorte[$i]['nombre'] === $nombreCortador) {
+                $empleadoIndex = $i;
+                break;
+            }
+        }
+
+        // Si el empleado no existe, crearlo
+        if ($empleadoIndex === -1) {
+            $empleadosCorte[] = [
+                'nombre' => $nombreCortador,
+                'tickets' => [],
+                'concepto' => 'REJA'
+            ];
+            $empleadoIndex = count($empleadosCorte) - 1;
+        }
+
+        // Agregar el ticket al empleado
+        $empleadosCorte[$empleadoIndex]['tickets'][] = [
+            'folio' => $folio,
+            'fecha' => $fechaCorte,
+            'datosRejas' => $datosRejas,
+            'precio_reja' => $precioReja
+        ];
+    }
+
+    return $empleadosCorte;
+}
+
+
+
+// ================================================================================
+// FUNCIONES PARA TRABAJAR TODO LO RELACIONADO CON PODAS
+// ================================================================================
+
+/**
+ * Función para guardar movimientos de poda con transacción
+ * @param Array $poda Puede ser un JSON string o un array ya decodificado de los movimientos de poda
+ * @param Int $idNomina El ID de la nómina a la que pertenecen estos movimientos de poda
+ * @param mysqli $conexion La conexión a la base de datos
+ */
+function guardarPoda($poda, $idNomina, $conexion)
+{
+    try {
+        // Iniciar transacción
+        $conexion->begin_transaction();
+
+        // Si viene como JSON string, decodificar
+        if (is_string($poda)) {
+            $poda = json_decode($poda, true);
+        }
+
+        if (!is_array($poda)) {
+            throw new Exception("Poda no es un arreglo válido");
+        }
+
+        /**
+         * ==========================================================
+         * LIMPIAR DATOS ANTERIORES
+         * ==========================================================
+         */
+        $deleteQuery = "DELETE FROM podas_pilar WHERE id_nomina = ?";
+        $deleteStmt = $conexion->prepare($deleteQuery);
+        $deleteStmt->bind_param("i", $idNomina);
+
+        if (!$deleteStmt->execute()) {
+            throw new Exception("Error al eliminar podas: " . $conexion->error);
+        }
+
+        /**
+         * ==========================================================
+         * INSERTAR NUEVOS DATOS
+         * ==========================================================
+         */
+        foreach ($poda as $empleado) {
+
+            $nombreEmpleado = $empleado['nombre'] ?? '';
+
+            if (!isset($empleado['movimientos'])) continue;
+
+            // 🔹 Insertar en tabla principal
+            $insertPodaQuery = "INSERT INTO podas_pilar 
+                (id_nomina, nombre_empleado, fecha_creacion) 
+                VALUES (?, ?, NOW())";
+
+            $stmtPoda = $conexion->prepare($insertPodaQuery);
+            $stmtPoda->bind_param("is", $idNomina, $nombreEmpleado);
+
+            if (!$stmtPoda->execute()) {
+                throw new Exception("Error al insertar poda: " . $conexion->error);
+            }
+
+            $idPoda = $conexion->insert_id;
+
+            // 🔹 Insertar movimientos
+            foreach ($empleado['movimientos'] as $mov) {
+
+                $concepto = $mov['concepto'] ?? 'PODA';
+                $fecha = $mov['fecha'] ?? null;
+
+                if (!$fecha) {
+                    throw new Exception("Movimiento sin fecha");
+                }
+
+                // Reglas de negocio
+                if ($concepto === "PODA") {
+                    $arboles = intval($mov['arboles_podados'] ?? 0);
+                    $monto = floatval($mov['monto'] ?? 0);
+                    $esExtra = 0;
+                } else {
+                    $arboles = 0;
+                    $monto = floatval($mov['monto'] ?? 0);
+                    $esExtra = 1;
+                }
+
+                $insertMovQuery = "INSERT INTO podas_movimientos_pilar 
+                    (id_poda, concepto, fecha, arboles_podados, monto, es_extra) 
+                    VALUES (?, ?, ?, ?, ?, ?)";
+
+                $stmtMov = $conexion->prepare($insertMovQuery);
+                $stmtMov->bind_param(
+                    "issidi",
+                    $idPoda,
+                    $concepto,
+                    $fecha,
+                    $arboles,
+                    $monto,
+                    $esExtra
+                );
+
+                if (!$stmtMov->execute()) {
+                    throw new Exception("Error al insertar movimiento: " . $conexion->error);
+                }
+            }
+        }
+
+        // Confirmar cambios
+        $conexion->commit();
+
+        error_log("Poda guardada correctamente (TRANSACCIÓN OK) para nómina ID: " . $idNomina);
+    } catch (Exception $e) {
+
+        // Revertir todo
+        $conexion->rollback();
+
+        error_log("Error en guardarPoda (ROLLBACK): " . $e->getMessage());
+    }
+}
+
+
+/**
+ * Función interna para obtener movimientos de poda desde un ID de nómina
+ * @param Int $idNomina El ID de la nómina para la cual se quieren obtener los movimientos de poda
+ * @param mysqli $conexion La conexión a la base de datos
+ * @return Array Un arreglo estructurado con los empleados y sus movimientos de poda
+ */
+function obtenerPodaInterno($idNomina, $conexion)
+{
+    $empleadosPoda = [];
+
+    // 🔹 Obtener todas las podas con sus movimientos
+    $query = "SELECT 
+            p.id_poda,
+            p.nombre_empleado,
+            m.id_movimiento,
+            m.concepto,
+            m.fecha,
+            m.arboles_podados,
+            m.monto,
+            m.es_extra
+        FROM podas_pilar p
+        INNER JOIN podas_movimientos_pilar m 
+            ON p.id_poda = m.id_poda
+        WHERE p.id_nomina = ?
+        ORDER BY m.id_movimiento ASC
+    ";
+
+    $stmt = $conexion->prepare($query);
+    $stmt->bind_param("i", $idNomina);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    while ($row = $result->fetch_assoc()) {
+
+        $nombreEmpleado = $row['nombre_empleado'];
+
+        // 🔹 Buscar si el empleado ya existe
+        $empleadoIndex = -1;
+        for ($i = 0; $i < count($empleadosPoda); $i++) {
+            if ($empleadosPoda[$i]['nombre'] === $nombreEmpleado) {
+                $empleadoIndex = $i;
+                break;
+            }
+        }
+
+        // 🔹 Si no existe, crearlo
+        if ($empleadoIndex === -1) {
+            $empleadosPoda[] = [
+                'nombre' => $nombreEmpleado,
+                'movimientos' => []
+            ];
+            $empleadoIndex = count($empleadosPoda) - 1;
+        }
+
+        // 🔹 Armar movimiento según reglas
+        if (intval($row['es_extra']) === 0) {
+            // PODA normal
+            $movimiento = [
+                'id' => intval($row['id_movimiento']),
+                'concepto' => $row['concepto'],
+                'fecha' => $row['fecha'],
+                'arboles_podados' => intval($row['arboles_podados']),
+                'monto' => floatval($row['monto'])
+            ];
+        } else {
+            // EXTRA (sin árboles)
+            $movimiento = [
+                'id' => intval($row['id_movimiento']),
+                'concepto' => $row['concepto'],
+                'fecha' => $row['fecha'],
+                'monto' => floatval($row['monto'])
+            ];
+        }
+
+        // 🔹 Agregar movimiento al empleado
+        $empleadosPoda[$empleadoIndex]['movimientos'][] = $movimiento;
+    }
+
+    return $empleadosPoda;
+}

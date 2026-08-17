@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['jsonNomina'])) {
 //  FUNCIONES AUXILIARES CORTE
 //==============================
 
-$nombre_nomina = "RELICARIO";
+$nombre_nomina = "PILAR";
 
 /**
  * Obtiene el nombre del día de la semana en español a partir de una fecha 'YYYY-MM-DD'
@@ -325,7 +325,7 @@ $color_letras_encabezados = obtenerContraste($color_primario) ?? '000000';
 $spreadsheet = new Spreadsheet();
 $sheet = $spreadsheet->getActiveSheet();
 
-$tmp_nombre = 'SEM ' . $jsonNomina['numero_semana'] . ' - ' . date('Y') . ' RANCHO RELICARIO NOMINAS - CORTE DE LIMON - ' . date('Y-m-d_H-i-s');
+$tmp_nombre = 'SEM ' . $jsonNomina['numero_semana'] . ' - ' . date('Y') . ' RANCHO PILAR NOMINAS - CORTE DE LIMON - ' . date('Y-m-d_H-i-s');
 
 // Propiedades del documento
 $spreadsheet->getProperties()
@@ -333,7 +333,7 @@ $spreadsheet->getProperties()
     ->setLastModifiedBy("BRANDON HERNANDEZ LOPEZ")
     ->setTitle($tmp_nombre)
     ->setSubject("Corte de Nómina")
-    ->setDescription("Reporte de Corte Rancho Relicario S.I.G. SAAO")
+    ->setDescription("Reporte de Corte Rancho PILAR S.I.G. SAAO")
     ->setKeywords("corte, nómina, excel")
     ->setCategory("Finanzas");
 
@@ -356,7 +356,7 @@ if ($jsonNomina) {
     $ano = date('Y');
 }
 
-$titulo1 = 'RANCHO RELICARIO';
+$titulo1 = 'RANCHO PILAR';
 $titulo2 = 'REJAS DE CORTE DE LIMON';
 $titulo3 = 'NOMINA DEL ' . strtoupper($fecha_inicio) . ' AL ' . strtoupper($fecha_cierre);
 $titulo4 = 'SEMANA ' . (isset($jsonNomina['numero_semana']) ? str_pad($jsonNomina['numero_semana'], 2, '0', STR_PAD_LEFT) : '00') . ' - ' . $ano;
@@ -385,7 +385,7 @@ $logoPath = __DIR__ . '/../../../public/img/logo.jpg';
 if (file_exists($logoPath)) {
     $logo = new Drawing();
     $logo->setName('Logo');
-    $logo->setDescription('Logo de Rancho El Relicario');
+    $logo->setDescription('Logo de Rancho El PILAR');
     $logo->setPath($logoPath);
     $logo->setHeight(110);
     $logo->setCoordinates('B1');

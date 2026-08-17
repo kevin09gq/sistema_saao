@@ -281,7 +281,7 @@ function guardarNomina(mysqli $conexion)
                       VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         $stmtInsert = $conexion->prepare($sqlInsert);
-        $stmtInsert->bind_param("iisdddd", $idEmpresa, $anio, $numeroSemana, $jsonNomina, $totalPercepciones, $totalDeducciones, $totalNeto);
+        $stmtInsert->bind_param("iiisddd", $idEmpresa, $anio, $numeroSemana, $jsonNomina, $totalPercepciones, $totalDeducciones, $totalNeto);
 
         if ($stmtInsert->execute()) {
             // Recuperar el ID recién insertado
@@ -725,7 +725,6 @@ function guardarTicketsCorte($corte, $idNomina, $conexion)
     }
 }
 
-
 /**
  * Función para asignar tickets de corte a una nómina existente
  */
@@ -798,9 +797,6 @@ function asignarTicketsCorteANomina($corte, $idNomina, $conexion)
         error_log("Error en asignarTicketsCorteANomina: " . $e->getMessage());
     }
 }
-
-
-
 
 /**
  * NOTA: BORRAR LUEGO

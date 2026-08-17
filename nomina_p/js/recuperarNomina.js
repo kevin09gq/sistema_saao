@@ -68,11 +68,17 @@ function recuperarUltimaNomina() {
                         // Parsear el JSON de la nómina almacenada en BD
                         jsonNominaPilar = JSON.parse(respuesta.nomina_json);
 
+                        console.log(jsonNominaPilar);
+                        
+
                         // Cargar la interfaz igual que restoreNomina()
                         cargarFiltroDepartamentos();
                         llenarTablaNomina();
                         saveNomina(jsonNominaPilar);
                         cambiarVistaTablaNomina();
+
+                        // Llamada de la función para llenar la tabla de pagos por día (configCorte.js)
+                        llenar_cuerpo_tabla_pagos_por_dia();
 
                         mostrarAlerta(
                             'success',

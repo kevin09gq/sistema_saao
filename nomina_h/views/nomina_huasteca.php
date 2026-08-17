@@ -20,10 +20,16 @@ verificarSesion(); // Proteger esta página
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <!-- SweetAlert2 CSS -->
     <script src="<?= SWEETALERT ?>"></script>
+    <!-- JQuery UI css -->
+    <link rel="stylesheet" href="<?= JQUERY_UI_CSS ?>">
+
     <link rel="stylesheet" href="../css/encabezados.css">
     <link rel="stylesheet" href="../css/tablaNomina.css">
     <link rel="stylesheet" href="../css/modalDetallesNomina.css">
     <link rel="stylesheet" href="../css/conceptos_totales.css">
+
+    <!-- ESTILOS PARA LA TABLA DE CORTE Y PODA -->
+    <link rel="stylesheet" href="../css/tablaCorte.css">
 
 </head>
 
@@ -126,7 +132,7 @@ verificarSesion(); // Proteger esta página
 
     </div>
 
-    <!-- CONTENEDOR PARA CONFIGURAR LOS VALORES ECONÓMICOS DEL RELICARIO -->
+    <!-- CONTENEDOR PARA CONFIGURAR LOS VALORES ECONÓMICOS DEL Huasteca -->
 
     <div class="container py-5" id="config-valores-huasteca" hidden>
         <div class="row justify-content-center">
@@ -210,6 +216,31 @@ verificarSesion(); // Proteger esta página
                 <span class="sem-info-huasteca" id="num_semana"></span>
             </div>
             <div class="header-controls-huasteca">
+
+                <!-- Grupo Ranchos -->
+                <div class="dropdown">
+                    <button class="btn btn-toolbar-group dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-grid-3x3-gap-fill"></i>
+                        <span>Ranchos</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-nomina shadow-sm">
+                        <li>
+                            <h6 class="dropdown-header"><i class="bi bi-tools me-1"></i>Gestión de Ranchos</h6>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_modal_corte">
+                                <i class="bi bi-truck"></i>
+                                <span>Corte Limón</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_modal_poda">
+                                <i class="bi bi-scissors"></i>
+                                <span>Poda Árboles</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
 
                 <!-- Grupo 1: Servicios -->
                 <div class="dropdown">
@@ -352,7 +383,7 @@ verificarSesion(); // Proteger esta página
                             </button>
                         </li>
                         <li>
-                            <button class="dropdown-item d-flex align-items-center gap-2 btn-ticket-zebra" type="button" id="btn_ticket_manual_huasteca">
+                            <button class="dropdown-item d-flex align-items-center gap-2 btn-ticket-zebra" type="button" id="btn_ticket_seleccion">
                                 <i class="bi bi-hand-index text-success"></i>
                                 <span>Tickets Seleccionados</span>
                             </button>
@@ -456,6 +487,64 @@ verificarSesion(); // Proteger esta página
             </div>
             <ul id="paginacion-nomina" class="pagination" style="margin: 20px 0 0 0; justify-content: center;"></ul>
         </div>
+
+        <!-- CONTENEDOR DE LA NOMINA DE CORTE -->
+        <div id="tabla-corte-container" class="tabla-nomina-container-corte" hidden>
+            <div class="table-responsive-corte">
+                <table class="table-nomina-corte" id="tabla-nomina-corte">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">#</th>
+                            <th rowspan="2">NOMBRE</th>
+                            <th rowspan="2">CONCEPTO</th>
+                            <th rowspan="2">V</th>
+                            <th rowspan="2">SA</th>
+                            <th rowspan="2">DO</th>
+                            <th rowspan="2">L</th>
+                            <th rowspan="2">MA</th>
+                            <th rowspan="2">MI</th>
+                            <th rowspan="2">J</th>
+                            <th rowspan="2">TOTAL<br>REJAS</th>
+                            <th rowspan="2">PRECIO<br>POR REJA</th>
+                            <th rowspan="2">TOTAL<br>EFECTIVO</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-body-corte">
+                        <!-- Filas de la tabla se generarán dinámicamente -->
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+
+        <!-- CONTENEDOR DE LA NOMINA DE PODA -->
+        <div id="tabla_poda_container" class="tabla-nomina-container-corte" hidden>
+            <div class="table-responsive-corte">
+                <table class="table-nomina-corte" id="tabla_poda">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">#</th>
+                            <th rowspan="2">NOMBRE</th>
+                            <th rowspan="2">CONCEPTO</th>
+                            <th rowspan="2">V</th>
+                            <th rowspan="2">SA</th>
+                            <th rowspan="2">DO</th>
+                            <th rowspan="2">L</th>
+                            <th rowspan="2">MA</th>
+                            <th rowspan="2">MI</th>
+                            <th rowspan="2">J</th>
+                            <th rowspan="2">TOTAL<br>ARBOLES</th>
+                            <th rowspan="2">PAGO</th>
+                            <th rowspan="2">TOTAL<br>EFECTIVO</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla_body_poda">
+                        <!-- Filas de la tabla se generarán dinámicamente -->
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
     </div>
 
 
@@ -463,6 +552,17 @@ verificarSesion(); // Proteger esta página
     <div id="context-menu"
         style="position:absolute;z-index:10000;display:none;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);padding:4px;">
         <div class="cm-item" data-action="ver" style="padding:6px 12px;cursor:pointer;">Ver detalles</div>
+    </div>
+
+    <!-- Menú contextual simple para la tabla de corte -->
+    <div id="context_menu_corte"
+        style="position:absolute;z-index:10000;display:none;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);padding:4px;">
+        <div class="cm_item_corte" data-action="ver" style="padding:6px 12px;cursor:pointer;">🔎​ Ver detalles</div>
+    </div>
+    <!-- Menú contextual simple para la tabla de poda -->
+    <div id="context_menu_poda"
+        style="position:absolute;z-index:10000;display:none;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);padding:4px;">
+        <div class="cm_item_poda" data-action="ver" style="padding:6px 12px;cursor:pointer;">🔎​ Ver detalles</div>
     </div>
 
 
@@ -485,6 +585,18 @@ verificarSesion(); // Proteger esta página
     <?php include 'modals/modalCambiarDepartamento.php'; ?>
     <?php include 'modals/modalExportarNomina.php'; ?>
     <?php include 'modals/modalConceptosTotales.php'; ?>
+    <?php include "modals/modalTicketsEmpleados.php"; ?>
+    <?php include "modals/modal_seleccion_tickets_huasteca.php"; ?>
+
+    <!-- MODALES DEL CORTE -->
+    <?php require_once __DIR__ . '/modalsCorte/modalCorte.php'; ?>
+    <?php require_once __DIR__ . '/modalsCorte/modalCorteEditar.php'; ?>
+    <?php require_once __DIR__ . '/modalsCorte/modalCorteNominaEditar.php'; ?>
+
+    <!-- MODALES DEL PODA -->
+    <?php require_once __DIR__ . '/modalsPoda/modalPoda.php'; ?>
+    <?php require_once __DIR__ . '/modalsPoda/modalPodaDetalles.php'; ?>
+    <?php require_once __DIR__ . '/modalsPoda/modalPodaDetallesExtra.php'; ?>
 
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
@@ -501,6 +613,8 @@ verificarSesion(); // Proteger esta página
     <script src="../js/guardarNomina.js"></script>
     <script src="../js/recuperarNomina.js"></script>
     <script src="../js/exportarNominaExcel.js"></script>
+    <script src="../js/ticket_pdf.js"></script>
+    <script src="../js/ticket_seleccion_huasteca.js"></script>
 
     <script src="../js/modals/listaDeRaya.js"></script>
     <script src="../js/modals/biometrico.js"></script>
@@ -526,6 +640,16 @@ verificarSesion(); // Proteger esta página
     <script src="../js/modalsDetalles/calculosDetallesNomina.js"></script>
     <script src="../js/modalsDetalles/incidencias.js"></script>
     <script src="../js/modalsDetalles/mostrarIncidencias.js"></script>
+
+    <!-- SCRIPTS DEL CORTE -->
+    <script src="../js/configModalCorte/configCorte.js"></script>
+    <script src="../js/configModalCorte/showTablaCorte.js"></script>
+    <script src="../js/configModalCorte/abrirModalDetallesCorte.js"></script>
+
+    <!-- SCRIPTS DEL PODA -->
+    <script src="../js/configModalPoda/config_poda.js"></script>
+    <script src="../js/configModalPoda/tabla_poda.js"></script>
+    <script src="../js/configModalPoda/detalles_modal.js"></script>
 
 </body>
 

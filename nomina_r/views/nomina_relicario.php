@@ -383,7 +383,7 @@ verificarSesion(); // Proteger esta página
                             </button>
                         </li>
                         <li>
-                            <button class="dropdown-item d-flex align-items-center gap-2 btn-ticket-zebra" type="button" id="btn_ticket_manual_relicario">
+                            <button class="dropdown-item d-flex align-items-center gap-2 btn-ticket-zebra" type="button" id="btn_ticket_manual">
                                 <i class="bi bi-hand-index text-success"></i>
                                 <span>Tickets Seleccionados</span>
                             </button>
@@ -585,6 +585,8 @@ verificarSesion(); // Proteger esta página
     <?php include 'modals/modalCambiarDepartamento.php'; ?>
     <?php include 'modals/modalExportarNomina.php'; ?>
     <?php include 'modals/modalConceptosTotales.php'; ?>
+    <?php include 'modals/modalTicketsEmpleados.php'; ?>
+    <?php include 'modals/modal_seleccion_tickets_relicario.php'; ?>
 
     <!-- MODALES DEL CORTE -->
     <?php require_once __DIR__ . '/modalsCorte/modalCorte.php'; ?>
@@ -611,6 +613,8 @@ verificarSesion(); // Proteger esta página
     <script src="../js/guardarNomina.js"></script>
     <script src="../js/recuperarNomina.js"></script>
     <script src="../js/exportarNominaExcel.js"></script>
+    <script src="../js/ticket_pdf.js"></script>
+    <script src="../js/ticket_seleccion_relicario.js"></script>
 
     <script src="../js/modals/listaDeRaya.js"></script>
     <script src="../js/modals/biometrico.js"></script>

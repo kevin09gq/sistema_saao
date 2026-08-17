@@ -100,7 +100,7 @@ function establecerEventosEntradasTempranas(empleado) {
     }
 
     // obtener el departamento del empleado
-    let departamentoEmpleado = jsonNominaRelicario.departamentos.find(function (departamento) {
+    let departamentoEmpleado = jsonNominaHuasteca.departamentos.find(function (departamento) {
 
         return departamento.id_departamento == empleado.id_departamento;
 
@@ -120,7 +120,7 @@ function establecerEventosEntradasTempranas(empleado) {
         } else if (departamentoEmpleado.tipo_horario == 2) {
 
             // horario general de rancho
-            tipoHorario = jsonNominaRelicario.horarioRancho;
+            tipoHorario = jsonNominaHuasteca.horarioRancho;
 
         }
 
@@ -220,7 +220,7 @@ function establecerEventosSalidasTardias(empleado) {
     let registros = empleado.registros || [];
 
     // obtener el departamento del empleado
-    let departamentoEmpleado = jsonNominaRelicario.departamentos.find(function (departamento) {
+    let departamentoEmpleado = jsonNominaHuasteca.departamentos.find(function (departamento) {
 
         return departamento.id_departamento == empleado.id_departamento;
 
@@ -240,7 +240,7 @@ function establecerEventosSalidasTardias(empleado) {
         } else if (departamentoEmpleado.tipo_horario == 2) {
 
             // horario general de rancho
-            tipoHorario = jsonNominaRelicario.horarioRancho;
+            tipoHorario = jsonNominaHuasteca.horarioRancho;
 
         }
 
@@ -425,7 +425,7 @@ function establecerEventosSalidasTempranas(empleado) {
     let registros = empleado.registros || [];
 
     // obtener el departamento del empleado
-    let departamentoEmpleado = jsonNominaRelicario.departamentos.find(function (departamento) {
+    let departamentoEmpleado = jsonNominaHuasteca.departamentos.find(function (departamento) {
 
         return departamento.id_departamento == empleado.id_departamento;
 
@@ -444,7 +444,7 @@ function establecerEventosSalidasTempranas(empleado) {
         } else if (departamentoEmpleado.tipo_horario == 2) {
 
             // horario general de rancho
-            tipoHorario = jsonNominaRelicario.horarioRancho;
+            tipoHorario = jsonNominaHuasteca.horarioRancho;
 
         }
 
@@ -619,7 +619,7 @@ function establecerEventosRetardos(empleado) {
     let registros = empleado.registros || [];
 
     // obtener el departamento del empleado
-    let departamentoEmpleado = jsonNominaRelicario.departamentos.find(function (departamento) {
+    let departamentoEmpleado = jsonNominaHuasteca.departamentos.find(function (departamento) {
 
         return departamento.id_departamento == empleado.id_departamento;
 
@@ -639,7 +639,7 @@ function establecerEventosRetardos(empleado) {
         } else if (departamentoEmpleado.tipo_horario == 2) {
 
             // horario general de rancho
-            tipoHorario = jsonNominaRelicario.horarioRancho;
+            tipoHorario = jsonNominaHuasteca.horarioRancho;
 
         }
 
@@ -774,7 +774,7 @@ function establecerEventosAusentismos(empleado) {
     let registros = empleado.registros || [];
 
     // obtener el departamento del empleado
-    let departamentoEmpleado = jsonNominaRelicario.departamentos.find(function (departamento) {
+    let departamentoEmpleado = jsonNominaHuasteca.departamentos.find(function (departamento) {
 
         return departamento.id_departamento == empleado.id_departamento;
 
@@ -793,7 +793,7 @@ function establecerEventosAusentismos(empleado) {
         } else if (departamentoEmpleado.tipo_horario == 2) {
 
             // horario general de rancho
-            tipoHorario = jsonNominaRelicario.horarioRancho;
+            tipoHorario = jsonNominaHuasteca.horarioRancho;
 
         }
 
@@ -1100,7 +1100,7 @@ function establecerEventosMarcajes(empleado) {
     }
 
     // buscar el departamento del empleado
-    let departamentoEmpleado = jsonNominaRelicario.departamentos.find(function (departamento) {
+    let departamentoEmpleado = jsonNominaHuasteca.departamentos.find(function (departamento) {
 
         return departamento.id_departamento == empleado.id_departamento;
 
@@ -1131,7 +1131,7 @@ function establecerEventosMarcajes(empleado) {
     } else if (departamentoEmpleado.tipo_horario == 2) {
 
         // tipo 2 utiliza el horario general del rancho
-        horarioEmpleado = jsonNominaRelicario.horarioRancho;
+        horarioEmpleado = jsonNominaHuasteca.horarioRancho;
 
     }
 

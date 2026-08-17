@@ -26,7 +26,7 @@ const objEmpleado = {
 
 function establecerDataEmpleado(empleado) {
     objEmpleado.setEmpleado(empleado);
- // Establecer Dias Trabajados
+    // Establecer Dias Trabajados
     $("#labelDiasTrabajados").text(empleado.dias_trabajados || 0);
 
     ocultarComponentesModalDetalles(empleado);
@@ -55,6 +55,7 @@ function establecerDataEmpleado(empleado) {
     establecerHistorialRetardos(empleado.historial_retardos);
     establecerHistorialPermisos(empleado.historial_permisos);
     establecerHistorialUniformes(empleado.historial_uniforme);
+    establecerDiasJustificados(empleado.dias_justificados);
 
     // Establecer Total a Cobrar y Status del Redondeo
     establecerTotalCobrarEmpleado(empleado);
@@ -129,9 +130,9 @@ function ocultarComponentesModalDetalles(empleado) {
     // tipo de horario 2 = horario de rancho
     else if (tipoHorario == 2) {
 
-       $("#ocultarRetardos").addClass("d-none").hide();
-       $("#ocultarAusentismos").addClass("d-none").hide();
-       $("#ocultarBotonHorarioOficial").addClass("d-none").hide();
+        $("#ocultarRetardos").addClass("d-none").hide();
+        $("#ocultarAusentismos").addClass("d-none").hide();
+        $("#ocultarBotonHorarioOficial").addClass("d-none").hide();
 
     }
 
@@ -1223,4 +1224,33 @@ function establecerHorarioOficial(horario_oficial) {
 
     });
 
+}
+
+
+//==========================================================
+// FUNCIÓN PARA MOSTRAR LOS DÍAS JUSTIFICADOS DEL EMPLEADO
+//==========================================================
+function establecerDiasJustificados(dias_justificados) {
+    // Limpiar tabla
+    $("#tbodyJustificacionesEmpleado").empty();
+
+    // Validar si existen días justificados
+    if (!dias_justificados || !Array.isArray(dias_justificados) || dias_justificados.length === 0) {
+        $("#tablaJustificacionesEmpleado").addClass("d-none");
+        $("#alertaNoJustificaciones").removeClass("d-none");
+        return;
+    }
+
+    $("#tablaJustificacionesEmpleado").removeClass("d-none");
+    $("#alertaNoJustificaciones").addClass("d-none");
+
+    // Recorrer los días justificados y agregarlos a la tabla
+    dias_justificados.forEach(justificado => {
+        $("#tbodyJustificacionesEmpleado").append(`
+            <tr>
+                <td>${justificado.dia}</td>
+                <td>${justificado.tipo || "-"}</td>
+            </tr>
+        `);
+    });
 }

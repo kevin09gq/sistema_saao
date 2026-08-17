@@ -49,7 +49,7 @@ $nombreDeptoTarget = $_POST['deptoNombre'] ?? 'DEPARTAMENTO';
 $idEmpresaSeleccionada = $_POST['id_empresa'] ?? null;
 
 // Obtener el color del departamento desde el JSON
-$colorExcel = 'FF0000'; // Color por defecto para Relicario
+$colorExcel = 'FF0000'; // Color por defecto para Pilar
 if ($jsonNomina && isset($jsonNomina['departamentos'])) {
     foreach ($jsonNomina['departamentos'] as $depto) {
         if ($depto['id_departamento'] == $idDeptoTarget) {
@@ -171,7 +171,7 @@ $logoPath = '../../../public/img/logo.jpg';
 if (file_exists($logoPath)) {
     $logo = new Drawing();
     $logo->setName('Logo');
-    $logo->setDescription('Logo de Rancho El Relicario');
+    $logo->setDescription('Logo de Rancho Pilar');
     $logo->setPath($logoPath);
     $logo->setHeight(190); // Altura en píxeles
     $logo->setCoordinates('B1'); // Colocar en columna Z, fila 1
@@ -900,7 +900,7 @@ $sheet->getPageSetup()->setPrintArea('A1:AB' . $ultimaFila);
 $writer = new Xlsx($spreadsheet);
 
 // Definir el nombre del archivo con fecha y hora
-$filename = 'Nomina_Jornalero_Apoyo_Relicario_' . date('Y-m-d_H-i-s') . '.xlsx';
+$filename = 'Nomina_Jornalero_Apoyo_Pilar_' . date('Y-m-d_H-i-s') . '.xlsx';
 
 // Configurar las cabeceras para descargar el archivo
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');

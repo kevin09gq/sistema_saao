@@ -277,7 +277,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
     //  TÍTULOS
     //=====================
 
-    $titulo1 = 'RANCHO RELICARIO';
+    $titulo1 = 'RANCHO PILAR';
     $titulo3 = 'NOMINA DEL ' . strtoupper($fecha_inicio) . ' AL ' . strtoupper($fecha_cierre);
     $titulo4 = 'SEMANA ' . str_pad($numero_semana, 2, '0', STR_PAD_LEFT) . '-' . $ano;
 
@@ -293,7 +293,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
     $sheet->mergeCells('A3:AB3');
     $sheet->mergeCells('A4:AB4');
 
-    // Formatear título 1 - RANCHO RELICARIO (Purpura, Negrita, Tamaño 24)
+    // Formatear título 1 - RANCHO PILAR (Purpura, Negrita, Tamaño 24)
     $sheet->getStyle('A1')->getFont()->setBold(true);
     $sheet->getStyle('A1')->getFont()->setSize(24);
     $sheet->getStyle('A1')->getFont()->setColor(new Color($colorExcel));
@@ -320,7 +320,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
     if (file_exists($logoPath)) {
         $logo = new Drawing();
         $logo->setName('Logo');
-        $logo->setDescription('Logo de Rancho El Relicario');
+        $logo->setDescription('Logo de Rancho El PILAR');
         $logo->setPath($logoPath);
         $logo->setHeight(190); // Altura en píxeles
         $logo->setCoordinates('B1');
@@ -1151,7 +1151,7 @@ function esDiaExtra($texto)
  * -----------------------------------------------------------------
  */
 
-$nombre_nomina = "RELICARIO";
+$nombre_nomina = "PILAR";
 
 /**
  * Obtiene el color principal de una nómina (el color que más se repite).
@@ -1289,7 +1289,7 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
 
     // Poner los titulos, logo y estilos
 
-    $titulo1 = 'RANCHO RELICARIO';
+    $titulo1 = 'RANCHO PILAR';
     // $titulo2 = 'REJAS DE CORTE DE LIMON';
     $titulo3 = 'NOMINA DEL ' . strtoupper($fecha_inicio) . ' AL ' . strtoupper($fecha_cierre);
     $titulo4 = 'SEMANA ' . (isset($jsonNomina['numero_semana']) ? str_pad($jsonNomina['numero_semana'], 2, '0', STR_PAD_LEFT) : '00') . ' - ' . $ano;
@@ -1317,7 +1317,7 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
     if (file_exists($logoPath)) {
         $logo = new Drawing();
         $logo->setName('Logo');
-        $logo->setDescription('Logo de Rancho Relicario');
+        $logo->setDescription('Logo de Rancho PILAR');
         $logo->setPath($logoPath);
         $logo->setHeight(110);
         $logo->setCoordinates('B1');
@@ -1688,7 +1688,7 @@ function crearHojaPoda($spreadsheet, $titulo2, $jsonNomina, $nombreHoja = 'PODA'
     // PONER LOS TITULOS, LOGO Y ESTILSO DE LOS ENCABEZADOS
     // =======================================================
 
-    $titulo1 = 'RANCHO RELICARIO';
+    $titulo1 = 'RANCHO PILAR';
     // $titulo2 = 'PODA DE ARBOLES';
     $titulo3 = 'NOMINA DEL ' . strtoupper($fecha_inicio) . ' AL ' . strtoupper($fecha_cierre);
     $titulo4 = 'SEMANA ' . (isset($jsonNomina['numero_semana']) ? str_pad($jsonNomina['numero_semana'], 2, '0', STR_PAD_LEFT) : '00') . ' - ' . $ano;
@@ -1715,7 +1715,7 @@ function crearHojaPoda($spreadsheet, $titulo2, $jsonNomina, $nombreHoja = 'PODA'
     if (file_exists($logoPath)) {
         $logo = new Drawing();
         $logo->setName('Logo');
-        $logo->setDescription('Logo de Rancho El Relicario');
+        $logo->setDescription('Logo de Rancho El PILAR');
         $logo->setPath($logoPath);
         $logo->setHeight(110);
         $logo->setCoordinates('B1');
@@ -2158,7 +2158,7 @@ if ($existePodaConEmpleados) {
 
 $writer = new Xlsx($spreadsheet);
 
-$filename = 'SEM ' . str_pad($numero_semana, 2, '0', STR_PAD_LEFT) . ' - ' . $ano . ' RANCHO RELICARIO NOMINAS COMPLETAS - ' . date('Y-m-d_H-i-s') . '.xlsx';
+$filename = 'SEM ' . str_pad($numero_semana, 2, '0', STR_PAD_LEFT) . ' - ' . $ano . ' RANCHO PILAR NOMINAS COMPLETAS - ' . date('Y-m-d_H-i-s') . '.xlsx';
 
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Content-Disposition: attachment; filename="' . $filename . '"');

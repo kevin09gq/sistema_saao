@@ -74,6 +74,9 @@ function recuperarUltimaNomina() {
                         saveNomina(jsonNominaHuasteca);
                         cambiarVistaTablaNomina();
 
+                        // Llamada de la función para llenar la tabla de pagos por día (configCorte.js)
+                        llenar_cuerpo_tabla_pagos_por_dia();
+
                         mostrarAlerta(
                             'success',
                             'Nómina recuperada',

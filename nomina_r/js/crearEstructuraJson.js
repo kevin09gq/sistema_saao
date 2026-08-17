@@ -33,7 +33,11 @@ $(document).ready(function () {
     // Limpiar la nómina y regresar a la vista de datos
     limpiarNominaRelicario();
 
-    console.log(jsonNominaRelicario);
+    console.log("Hola", jsonNominaRelicario);
+
+
+    // Llamada de la función para llenar la tabla de pagos por día (configCorte.js)
+    llenar_cuerpo_tabla_pagos_por_dia();
 
 });
 
@@ -76,7 +80,9 @@ function crearEstructuraJson() {
         };
 
         obtenerInfoDepartamento(jsonNominaRelicario);
-        ;
+
+        // Llamada de la función para llenar la tabla de pagos por día (configCorte.js)
+        llenar_cuerpo_tabla_pagos_por_dia();
     });
 
 }
@@ -409,7 +415,7 @@ function obtenerEmpleados(jsonNominaRelicario) {
 
                         }
 
-                        if(departamento.tipo_horario == 2) {
+                        if (departamento.tipo_horario == 2) {
                             nuevoEmpleado.salario_diario = parseFloat(empleado.salario_diario);
                         }
 

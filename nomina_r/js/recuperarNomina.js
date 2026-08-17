@@ -67,12 +67,15 @@ function recuperarUltimaNomina() {
                     try {
                         // Parsear el JSON de la nómina almacenada en BD
                         jsonNominaRelicario = JSON.parse(respuesta.nomina_json);
-
+                        
                         // Cargar la interfaz igual que restoreNomina()
                         cargarFiltroDepartamentos();
                         llenarTablaNomina();
                         saveNomina(jsonNominaRelicario);
                         cambiarVistaTablaNomina();
+
+                        // Llamada de la función para llenar la tabla de pagos por día (configCorte.js)
+                        llenar_cuerpo_tabla_pagos_por_dia();
 
                         mostrarAlerta(
                             'success',

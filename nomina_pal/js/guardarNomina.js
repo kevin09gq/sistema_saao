@@ -21,6 +21,17 @@ function guardarNomina() {
         // Calcular totales de percepciones y deducciones
         const totales = calcularTotalesNomina(jsonNominaPalmilla);
 
+        // Quitar el departamento "Corte" del objeto global para no guardarlo en la nómina (se procesa aparte)
+        const jsonData = { ...jsonNominaPalmilla, departamentos: jsonNominaPalmilla.departamentos.filter(d => d.id_departamento !== 800 && d.id_departamento !== 801) };
+
+        // Obtener el dep Corte por separado
+        const departamentoCorte = jsonNominaPalmilla.departamentos.find(d => d.id_departamento === 800);
+        const empleadosCorte = departamentoCorte ? departamentoCorte.empleados : [];
+
+        // Obtener el dep Poda por separado
+        const departamentoPoda = jsonNominaPalmilla.departamentos.find(d => d.id_departamento === 801);
+        const empleadosPoda = departamentoPoda ? departamentoPoda.empleados : [];
+
         // Mostrar confirmación
         Swal.fire({
             title: '¿Guardar nómina?',
@@ -33,7 +44,7 @@ function guardarNomina() {
             if (result.isConfirmed) {
 
                 // Limpiamos los datos 
-                eliminarPropiedades(jsonNominaPalmilla)
+                eliminarPropiedades(jsonData)
 
                 // Enviar datos al servidor
                 $.ajax({
@@ -42,13 +53,16 @@ function guardarNomina() {
                     dataType: "json",
                     data: {
                         accion: "guardarNomina",
-                        nomina_palmilla: JSON.stringify(jsonNominaPalmilla),
-                        anio: jsonNominaPalmilla.anio,
-                        numero_semana: jsonNominaPalmilla.numero_semana,
+                        nomina_palmilla: JSON.stringify(jsonData),
+                        anio: jsonData.anio,
+                        numero_semana: jsonData.numero_semana,
                         id_empresa: 1,
                         total_percepciones: totales.totalPercepciones,
                         total_deducciones: totales.totalDeducciones,
-                        total_neto: totales.totalNeto
+                        total_neto: totales.totalNeto,
+
+                        corte: JSON.stringify(empleadosCorte),
+                        poda: JSON.stringify(empleadosPoda)
                     },
                     success: function (respuesta) {
                         if (respuesta.success) {

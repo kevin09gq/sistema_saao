@@ -47,6 +47,24 @@
 
                         </button>
 
+                    </li>
+
+                     <li class="nav-item" role="presentation">
+
+                        <button
+                            class="nav-link"
+                            id="tab-justificaciones-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#tab-justificaciones"
+                            type="button"
+                            role="tab"
+                            aria-controls="tab-justificaciones"
+                            aria-selected="false">
+
+                            <i class="bi bi-calendar-check me-2"></i>
+                            Justificaciones
+
+                        </button>
 
                     </li>
 
@@ -497,6 +515,56 @@
 
                         </div>
 
+
+                    </div>
+
+                     <!-- Tab Principal: Justificaciones -->
+                    <div
+                        class="tab-pane fade"
+                        id="tab-justificaciones"
+                        role="tabpanel"
+                        aria-labelledby="tab-justificaciones-tab">
+
+                        <div class="card mb-4">
+
+                            <div class="card-header bg-success text-white">
+
+                                <strong>
+                                    <i class="bi bi-calendar-check me-2"></i>
+                                    Días Justificados
+                                </strong>
+
+                            </div>
+
+                            <div class="card-body">
+
+                                <div class="table-responsive">
+
+                                    <table class="table table-bordered table-striped align-middle" id="tablaJustificacionesEmpleado">
+
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Día</th>
+                                                <th>Motivo / Tipo de Justificación</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody id="tbodyJustificacionesEmpleado">
+                                            <!-- Se llena dinámicamente -->
+                                        </tbody>
+
+                                    </table>
+
+                                </div>
+
+                                <div id="alertaNoJustificaciones" class="alert alert-info d-none" role="alert">
+                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                    El empleado no tiene días justificados en esta semana.
+                                </div>
+
+                            </div>
+
+                        </div>
 
                     </div>
 

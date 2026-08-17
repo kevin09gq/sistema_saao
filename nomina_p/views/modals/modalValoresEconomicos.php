@@ -1,4 +1,4 @@
-<!-- modal para actualizar valores de relicario -->
+<!-- modal para actualizar valores de pilar -->
 <div class="modal fade" id="modalActualizarValores" tabindex="-1" aria-labelledby="modalActualizarValoresLabel" aria-hidden="true">
 
     <div class="modal-dialog modal-dialog-centered">

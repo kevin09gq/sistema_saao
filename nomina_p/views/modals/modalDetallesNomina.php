@@ -54,6 +54,25 @@
 
                         <button
                             class="nav-link"
+                            id="tab-justificaciones-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#tab-justificaciones"
+                            type="button"
+                            role="tab"
+                            aria-controls="tab-justificaciones"
+                            aria-selected="false">
+
+                            <i class="bi bi-calendar-check me-2"></i>
+                            Justificaciones
+
+                        </button>
+
+                    </li>
+
+                    <li class="nav-item" role="presentation">
+
+                        <button
+                            class="nav-link"
                             id="tab-modificar-detalles-tab"
                             data-bs-toggle="tab"
                             data-bs-target="#tab-modificar-detalles"
@@ -253,14 +272,14 @@
 
                                         <div class="card-body">
 
-                                            <div id="entradas-tempranas-relicario"></div>
+                                            <div id="entradas-tempranas-pilar"></div>
 
                                         </div>
 
                                         <div class="card-footer text-end fw-bold">
 
                                             Total:
-                                            <span id="total-entradas-tempranas-relicario">0</span>
+                                            <span id="total-entradas-tempranas-pilar">0</span>
 
                                         </div>
 
@@ -283,14 +302,14 @@
 
                                         <div class="card-body">
 
-                                            <div id="salidas-tardias-relicario"></div>
+                                            <div id="salidas-tardias-pilar"></div>
 
                                         </div>
 
                                         <div class="card-footer text-end fw-bold">
 
                                             Total:
-                                            <span id="total-salidas-tardias-relicario">0</span>
+                                            <span id="total-salidas-tardias-pilar">0</span>
 
                                         </div>
 
@@ -318,14 +337,14 @@
 
                                         <div class="card-body">
 
-                                            <div id="salidas-tempranas-relicario"></div>
+                                            <div id="salidas-tempranas-pilar"></div>
 
                                         </div>
 
                                         <div class="card-footer text-end fw-bold">
 
                                             Total:
-                                            <span id="total-salidas-tempranas-relicario">0</span>
+                                            <span id="total-salidas-tempranas-pilar">0</span>
 
                                         </div>
 
@@ -336,7 +355,7 @@
                                 <!-- Olvidos del Biométrico (Rojo) -->
                                 <div class="col-md-6 mb-3">
 
-                                    <div class="card border-danger shadow-sm h-100" id="olvidos-checador-card-relicario">
+                                    <div class="card border-danger shadow-sm h-100" id="olvidos-checador-card-pilar">
 
                                         <div class="card-header bg-danger text-white d-flex align-items-center">
 
@@ -348,14 +367,14 @@
 
                                         <div class="card-body">
 
-                                            <div id="olvidos-checador-relicario"></div>
+                                            <div id="olvidos-checador-pilar"></div>
 
                                         </div>
 
                                         <div class="card-footer text-end fw-bold">
 
                                             Total:
-                                            <span id="total-olvidos-checador-relicario">0</span>
+                                            <span id="total-olvidos-checador-pilar">0</span>
 
                                         </div>
 
@@ -371,7 +390,7 @@
                                 <!-- Retardos (Amarillo) -->
                                 <div class="col-md-6 mb-3">
 
-                                    <div class="card border-warning shadow-sm h-100" id="retardos-card-relicario">
+                                    <div class="card border-warning shadow-sm h-100" id="retardos-card-pilar">
 
                                         <div class="card-header bg-warning text-dark d-flex align-items-center">
 
@@ -383,14 +402,14 @@
 
                                         <div class="card-body">
 
-                                            <div id="retardos-relicario"></div>
+                                            <div id="retardos-pilar"></div>
 
                                         </div>
 
                                         <div class="card-footer text-end fw-bold">
 
                                             Total:
-                                            <span id="total-retardos-relicario">0</span>
+                                            <span id="total-retardos-pilar">0</span>
 
                                         </div>
 
@@ -401,7 +420,7 @@
                                 <!-- Ausentismos (Verde) -->
                                 <div class="col-md-6 mb-3">
 
-                                    <div class="card border-success shadow-sm h-100" id="inasistencias-card-relicario">
+                                    <div class="card border-success shadow-sm h-100" id="inasistencias-card-pilar">
 
                                         <div class="card-header bg-success text-white d-flex align-items-center">
 
@@ -413,14 +432,14 @@
 
                                         <div class="card-body">
 
-                                            <div id="inasistencias-content-relicario"></div>
+                                            <div id="inasistencias-content-pilar"></div>
 
                                         </div>
 
                                         <div class="card-footer text-end fw-bold">
 
                                             Total:
-                                            <span id="total-inasistencias-relicario">0</span>
+                                            <span id="total-inasistencias-pilar">0</span>
 
                                         </div>
 
@@ -435,7 +454,7 @@
                                 <!-- Hora Comida Extra (Cafe) -->
                                 <div class="col-md-6 mb-3">
 
-                                    <div class="card border-secondary shadow-sm h-100" id="comida-card-relicario">
+                                    <div class="card border-secondary shadow-sm h-100" id="comida-card-pilar">
 
                                         <div class="card-header bg-secondary text-white d-flex align-items-center">
 
@@ -447,14 +466,14 @@
 
                                         <div class="card-body">
 
-                                            <div id="comida-relicario"></div>
+                                            <div id="comida-pilar"></div>
 
                                         </div>
 
                                         <div class="card-footer text-end fw-bold">
 
                                             Total:
-                                            <span id="total-comida-relicario">0</span>
+                                            <span id="total-comida-pilar">0</span>
 
                                         </div>
 
@@ -478,14 +497,14 @@
 
                                         <div class="card-body">
 
-                                            <div id="marcajes-relicario"></div>
+                                            <div id="marcajes-pilar"></div>
 
                                         </div>
 
                                         <div class="card-footer text-end fw-bold">
 
                                             Total:
-                                            <span id="total-marcajes-relicario">0</span>
+                                            <span id="total-marcajes-pilar">0</span>
 
                                         </div>
 
@@ -497,6 +516,56 @@
 
                         </div>
 
+
+                    </div>
+
+                    <!-- Tab Principal: Justificaciones -->
+                    <div
+                        class="tab-pane fade"
+                        id="tab-justificaciones"
+                        role="tabpanel"
+                        aria-labelledby="tab-justificaciones-tab">
+
+                        <div class="card mb-4">
+
+                            <div class="card-header bg-success text-white">
+
+                                <strong>
+                                    <i class="bi bi-calendar-check me-2"></i>
+                                    Días Justificados
+                                </strong>
+
+                            </div>
+
+                            <div class="card-body">
+
+                                <div class="table-responsive">
+
+                                    <table class="table table-bordered table-striped align-middle" id="tablaJustificacionesEmpleado">
+
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Día</th>
+                                                <th>Motivo / Tipo de Justificación</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody id="tbodyJustificacionesEmpleado">
+                                            <!-- Se llena dinámicamente -->
+                                        </tbody>
+
+                                    </table>
+
+                                </div>
+
+                                <div id="alertaNoJustificaciones" class="alert alert-info d-none" role="alert">
+                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                    El empleado no tiene días justificados en esta semana.
+                                </div>
+
+                            </div>
+
+                        </div>
 
                     </div>
 

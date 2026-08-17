@@ -4,7 +4,7 @@ require_once 'conexion/conexion.php';
 
 
 //====================================================
-// MIGRACION NOMINA PILAR
+// MIGRACION NOMINA RELICARIO
 //====================================================
 
 try {
@@ -442,6 +442,25 @@ function convertirEmpleado(
 
 
     //================================================
+    // ELIMINAR TIPO HORARIO
+    //================================================
+
+    if (
+        array_key_exists(
+            'tipo_horario',
+            $empleado
+        )
+    ) {
+
+
+        unset(
+            $empleado['tipo_horario']
+        );
+
+    }
+
+
+    //================================================
     // ELIMINAR TIPO HISTORIAL INASISTENCIAS
     //================================================
 
@@ -478,6 +497,47 @@ function convertirEmpleado(
 
 
         unset($inasistencia);
+
+    }
+
+
+    //================================================
+    // ELIMINAR EDITADO HISTORIAL RETARDOS
+    //================================================
+
+    if (
+        isset(
+            $empleado['historial_retardos']
+        ) &&
+        is_array(
+            $empleado['historial_retardos']
+        )
+    ) {
+
+
+        foreach (
+            $empleado['historial_retardos']
+            as &$retardo
+        ) {
+
+
+            if (
+                isset(
+                    $retardo['editado']
+                )
+            ) {
+
+
+                unset(
+                    $retardo['editado']
+                );
+
+            }
+
+        }
+
+
+        unset($retardo);
 
     }
 

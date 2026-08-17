@@ -76,7 +76,10 @@ function crearEstructuraJson() {
         };
 
         obtenerInfoDepartamento(jsonNominaPalmilla);
-        ;
+
+
+        // Llamada de la función para llenar la tabla de pagos por día (configCorte.js)
+        llenar_cuerpo_tabla_pagos_por_dia();
     });
 
 }
@@ -409,7 +412,7 @@ function obtenerEmpleados(jsonNominaPalmilla) {
 
                         }
 
-                        if(departamento.tipo_horario == 2) {
+                        if (departamento.tipo_horario == 2) {
                             nuevoEmpleado.salario_diario = parseFloat(empleado.salario_diario);
                         }
 

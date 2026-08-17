@@ -34,7 +34,7 @@ class PDFEncabezado extends TCPDF
         // Título principal
         $this->SetFont('helvetica', 'B', 16);
         $this->SetY(12);
-        $this->Cell(0, 10, 'REPORTE NÓMINA RANCHO RELICARIO', 0, 1, 'C', 0, '', 0, false, 'M', 'M');
+        $this->Cell(0, 10, 'REPORTE NÓMINA RANCHO PILAR', 0, 1, 'C', 0, '', 0, false, 'M', 'M');
 
         // Subtítulo
         $this->SetFont('helvetica', 'B', 12);
@@ -190,7 +190,7 @@ $pdf = new PDFEncabezado('P', 'mm', 'A4', true, 'UTF-8', false);
 $pdf->setDatosNomina($tituloNomina, $numero_semana, $fecha_cierre);
 $pdf->SetCreator('SAAO');
 $pdf->SetAuthor('SAAO');
-$pdf->SetTitle('Reporte Contable de Nómina Relicario');
+$pdf->SetTitle('Reporte Contable de Nómina Pilar');
 $pdf->SetMargins(10, 50, 10);
 $pdf->SetHeaderMargin(10);
 $pdf->SetFooterMargin(10);

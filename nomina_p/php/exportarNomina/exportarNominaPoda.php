@@ -315,7 +315,7 @@ function esDiaExtra($texto)
  * -----------------------------------------------------------------
  */
 
-$nombre_nomina = "RELICARIO";
+$nombre_nomina = "PILAR";
 
 /**
  * Obtiene el color principal de una nómina (el color que más se repite).
@@ -492,7 +492,7 @@ if ($jsonNomina && isset($jsonNomina['departamentos'])) {
 $spreadsheet = new Spreadsheet();
 $sheet = $spreadsheet->getActiveSheet();
 
-$tmp_nombre = 'SEM ' . $jsonNomina['numero_semana'] . ' - ' . date('Y') . ' RANCHO RELICARIO NOMINAS - PODA DE ARBOLES - ' . date('Y-m-d_H-i-s');
+$tmp_nombre = 'SEM ' . $jsonNomina['numero_semana'] . ' - ' . date('Y') . ' RANCHO PILAR NOMINAS - PODA DE ARBOLES - ' . date('Y-m-d_H-i-s');
 
 // Propiedades del documento
 $spreadsheet->getProperties()
@@ -500,7 +500,7 @@ $spreadsheet->getProperties()
     ->setLastModifiedBy("BRANDON HERNANDEZ LOPEZ")
     ->setTitle($tmp_nombre)
     ->setSubject("Corte de Nómina")
-    ->setDescription("Reporte de Corte Rancho Relicario S.I.G. SAAO")
+    ->setDescription("Reporte de Corte Rancho PILAR S.I.G. SAAO")
     ->setKeywords("corte, nómina, excel")
     ->setCategory("Finanzas");
 
@@ -513,7 +513,7 @@ $sheet->setTitle('CORTE');
 //  TÍTULOS
 //=====================
 
-$titulo1 = 'RANCHO RELICARIO';
+$titulo1 = 'RANCHO PILAR';
 $titulo2 = 'PODA DE ARBOLES';
 $titulo3 = 'NOMINA DEL ' . strtoupper($fecha_inicio) . ' AL ' . strtoupper($fecha_cierre);
 $titulo4 = 'SEMANA ' . (isset($jsonNomina['numero_semana']) ? str_pad($jsonNomina['numero_semana'], 2, '0', STR_PAD_LEFT) : '00') . ' - ' . $ano;
@@ -540,7 +540,7 @@ $logoPath = __DIR__ . '/../../../public/img/logo.jpg';
 if (file_exists($logoPath)) {
     $logo = new Drawing();
     $logo->setName('Logo');
-    $logo->setDescription('Logo de Rancho El Relicario');
+    $logo->setDescription('Logo de Rancho El PILAR');
     $logo->setPath($logoPath);
     $logo->setHeight(110);
     $logo->setCoordinates('B1');
