@@ -2,6 +2,7 @@
 
 // Incluir autoload de Composer
 require_once __DIR__ . '/../../../vendor/autoload.php';
+require_once __DIR__ . '/../../../conexion/conexion.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -10,43 +11,6 @@ use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 
-/**
- * Resta un día a una fecha en formato 'DD/MM/AAA' con meses abreviados en español (ENE, FEB, MAR, etc.) y devuelve la nueva fecha en el mismo formato.
- */
-function restarUnDia($fecha)
-{
-    // Mapeo de meses abreviados en español a número
-    $meses = [
-        "Ene" => 1,
-        "Feb" => 2,
-        "Mar" => 3,
-        "Abr" => 4,
-        "May" => 5,
-        "Jun" => 6,
-        "Jul" => 7,
-        "Ago" => 8,
-        "Sep" => 9,
-        "Oct" => 10,
-        "Nov" => 11,
-        "Dic" => 12
-    ];
-
-    // Separar la fecha
-    list($dia, $mesAbrev, $anio) = explode("/", $fecha);
-
-    // Crear objeto DateTime
-    $mesNum = $meses[$mesAbrev];
-    $date = DateTime::createFromFormat("d/m/Y", "$dia/$mesNum/$anio");
-
-    // Restar un día
-    $date->modify("-1 day");
-
-    // Buscar la abreviatura del mes resultante
-    $mesAbrevNuevo = array_search((int) $date->format("m"), $meses);
-
-    // Formatear resultado
-    return $date->format("d") . "/" . $mesAbrevNuevo . "/" . $date->format("Y");
-}
 
 /**
  * Determina si un color de fondo es oscuro o claro y devuelve el color de texto adecuado (blanco o negro).
@@ -82,8 +46,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['jsonNomina'])) {
 
 $idDeptoTarget = $_POST['deptoId'] ?? null;
 $nombreDeptoTarget = $_POST['deptoNombre'] ?? 'DEPARTAMENTO';
-$idEmpresaTarget = $_POST['empresaId'] ?? null;
-$nombreEmpresaTarget = $_POST['empresaNombre'] ?? '';
+$idEmpresaTarget = $_POST['id_empresa'] ?? null;
+
+// Obtener datos de la empresa desde la base de datos
+$nombreEmpresaTarget = '';
+$logoEmpresa = '';
+if ($idEmpresaTarget) {
+    $queryEmpresa = "SELECT nombre_empresa, logo_empresa FROM empresa WHERE id_empresa = $idEmpresaTarget";
+    $resultEmpresa = mysqli_query($conexion, $queryEmpresa);
+    if ($resultEmpresa && mysqli_num_rows($resultEmpresa) > 0) {
+        $rowEmpresa = mysqli_fetch_assoc($resultEmpresa);
+        $nombreEmpresaTarget = $rowEmpresa['nombre_empresa'];
+        $logoEmpresa = $rowEmpresa['logo_empresa'];
+    } else {
+        // Si no se encuentra la empresa, usar un valor por defecto
+        $nombreEmpresaTarget = 'EMPRESA';
+        error_log("No se encontró empresa con id: $idEmpresaTarget");
+    }
+} else {
+    // Si no se envió id_empresa, usar un valor por defecto
+    $nombreEmpresaTarget = 'EMPRESA';
+    error_log("No se recibió id_empresa");
+}
 
 // Recibir color del departamento (limpiando el #)
 $colorExcel = $_POST['colorExcel'] ?? 'FF0000';
@@ -114,8 +98,8 @@ $sheet->setTitle($pestañaTitulo);
 
 // Usar datos del JSON si existen
 if ($jsonNomina) {
-    $fecha_inicio = restarUnDia($jsonNomina['fecha_inicio']) ?? 'Fecha Inicio';
-    $fecha_cierre = restarUnDia($jsonNomina['fecha_cierre']) ?? 'Fecha Cierre';
+    $fecha_inicio = $jsonNomina['fecha_inicio'] ?? 'Fecha Inicio';
+    $fecha_cierre = $jsonNomina['fecha_cierre'] ?? 'Fecha Cierre';
     $ano = date('Y');
 } else {
     $fecha_inicio = '16/Ene';
@@ -162,10 +146,25 @@ $sheet->getStyle('A4')->getFont()->setSize(14);
 $sheet->getStyle('A1:A4')->getAlignment()->setHorizontal('center');
 
 // Insertar logo dinámico según la empresa
-$logoPath = '../../../public/img/logo.jpg'; // Logo por defecto
-if ($idEmpresaTarget == 2) {
-    if (file_exists('../../../public/img/sbgroup_logo.PNG')) {
-        $logoPath = '../../../public/img/sbgroup_logo.PNG';
+if ($idEmpresaTarget == 1) {
+    // Si es empresa 1, usar el logo por defecto en public/img
+    $logoPath = '../../../public/img/logo.jpg';
+} else {
+    // Si es diferente de 1, usar el logo de la base de datos en gafetes/logos_empresa
+    $logoPath = '../../../public/img/logo.jpg'; // Logo por defecto
+    if (!empty($logoEmpresa)) {
+        // Construir la ruta completa al logo (la ruta correcta es gafetes/logos_empresa/)
+        $logoPath = '../../../gafetes/logos_empresa/' . $logoEmpresa;
+        error_log("Intentando cargar logo: $logoPath");
+        // Verificar si el archivo existe
+        if (!file_exists($logoPath)) {
+            error_log("El logo no existe en la ruta: $logoPath");
+            $logoPath = '../../../public/img/logo.jpg'; // Logo por defecto si no existe
+        } else {
+            error_log("Logo encontrado exitosamente: $logoPath");
+        }
+    } else {
+        error_log("logoEmpresa está vacío");
     }
 }
 
@@ -315,18 +314,20 @@ if ($jsonNomina && isset($jsonNomina['departamentos'])) {
     foreach ($jsonNomina['departamentos'] as $departamento) {
         // Filtrar por el ID del departamento recibido
         if ($departamento['id_departamento'] == $idDeptoTarget) {
-            if (isset($departamento['empleados'])) {
-                foreach ($departamento['empleados'] as $empleado) {
-                    $mostrar = $empleado['mostrar'] ?? false;
-                    $idEmpresaEmp = $empleado['id_empresa'] ?? null;
-
-                    // Filtrar por mostrar y por id_empresa (si se recibió un target)
-                    if ($mostrar && (!$idEmpresaTarget || $idEmpresaEmp == $idEmpresaTarget)) {
-                        $empleadosJornaleros[] = $empleado;
+            // Verificar que coincida el id_empresa si se recibió
+            $idEmpresaDepto = $departamento['id_empresa'] ?? null;
+            if (!$idEmpresaTarget || $idEmpresaDepto == $idEmpresaTarget) {
+                if (isset($departamento['empleados'])) {
+                    foreach ($departamento['empleados'] as $empleado) {
+                        // Si no tiene el campo mostrar o es true, incluir el empleado
+                        $mostrar = $empleado['mostrar'] ?? true;
+                        if ($mostrar) {
+                            $empleadosJornaleros[] = $empleado;
+                        }
                     }
                 }
             }
-            break; // Ya encontramos el departamento, podemos salir del bucle
+            // NO hacemos break porque puede haber múltiples departamentos con el mismo id_departamento pero diferentes id_empresa
         }
     }
 }

@@ -1,0 +1,774 @@
+{
+    "numero_semana": "20",
+    "fecha_inicio": "09/May/2026",
+    "fecha_cierre": "15/May/2026",
+    "precio_cajas": [
+        {
+            "valor": "17:1",
+            "precio": "17.00",
+            "color": "#f8c9c9",
+            "utilidad": false
+        },
+        {
+            "valor": "10 LBS",
+            "precio": "4.00",
+            "color": "#a6dbf2",
+            "utilidad": true
+        }
+    ],
+    "departamentos": [
+        {
+            "id_departamento": 5,
+            "nombre": "Empaque  10 Libras",
+            "color_reporte": [
+                {
+                    "id_empresa": 1,
+                    "color": "#f7f13b"
+                }
+            ],
+            "empleados": [
+                {
+                    "clave": "163",
+                    "nombre": "CAMPOS ESTEBAN NOELIA",
+                    "biometrico": "20",
+                    "tarjeta": 0,
+                    "id_empresa": "1",
+                    "id_departamento": 5,
+                    "color_puesto": null,
+                    "seguroSocial": false,
+                    "registros": [
+                        {
+                            "fecha": "08/05/2026",
+                            "entrada": "13:53",
+                            "salida": "18:35"
+                        },
+                        {
+                            "fecha": "09/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "10/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "11/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "12/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "13/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "14/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        }
+                    ],
+                    "mostrar": true,
+                    "tarjeta_copia": null,
+                    "sueldo_neto": 232,
+                    "total_cobrar": 232,
+                    "redondeo": 0,
+                    "redondeo_activo": false,
+                    "historial_empaque": [
+                        {
+                            "dia": "Viernes",
+                            "tipo": "10 LBS",
+                            "precio_unitario": 4,
+                            "cantidad": 58,
+                            "subtotal": 232
+                        }
+                    ]
+                },
+                {
+                    "clave": "186",
+                    "nombre": "DIAZ SANCHEZ MARIA DE LOS ANGELES",
+                    "id_departamento": "5",
+                    "id_empresa": "1",
+                    "color_puesto": null,
+                    "biometrico": "9",
+                    "seguroSocial": true,
+                    "tarjeta": 0,
+                    "conceptos": [],
+                    "registros": [
+                        {
+                            "fecha": "08/05/2026",
+                            "entrada": "13:53",
+                            "salida": "18:15"
+                        },
+                        {
+                            "fecha": "09/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "10/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "11/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "12/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "13/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "14/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        }
+                    ],
+                    "mostrar": true,
+                    "tarjeta_copia": 630.08,
+                    "sueldo_neto": 232,
+                    "total_cobrar": 232,
+                    "redondeo": 0,
+                    "redondeo_activo": false,
+                    "conceptos_copia": [],
+                    "historial_empaque": [
+                        {
+                            "dia": "Viernes",
+                            "tipo": "10 LBS",
+                            "precio_unitario": 4,
+                            "cantidad": 58,
+                            "subtotal": 232
+                        }
+                    ]
+                },
+                {
+                    "clave": "SS/003",
+                    "nombre": "FERNANDEZ LAGUNES ROSA",
+                    "biometrico": "6",
+                    "tarjeta": 0,
+                    "id_empresa": "1",
+                    "id_departamento": 5,
+                    "color_puesto": null,
+                    "seguroSocial": false,
+                    "registros": [
+                        {
+                            "fecha": "08/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "09/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "10/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "11/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "12/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "13/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "14/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        }
+                    ],
+                    "mostrar": false,
+                    "tarjeta_copia": null,
+                    "total_cobrar": 0,
+                    "redondeo": 0,
+                    "redondeo_activo": false
+                },
+                {
+                    "clave": "SS/007",
+                    "nombre": "GUDIÑO AGUILERA ARACELI",
+                    "biometrico": "28",
+                    "tarjeta": 0,
+                    "id_empresa": "1",
+                    "id_departamento": 5,
+                    "color_puesto": "#0a0a0a",
+                    "seguroSocial": false,
+                    "registros": [
+                        {
+                            "fecha": "08/05/2026",
+                            "entrada": "14:14",
+                            "salida": "18:15"
+                        },
+                        {
+                            "fecha": "09/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "10/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "11/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "12/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "13/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "14/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        }
+                    ],
+                    "mostrar": true,
+                    "tarjeta_copia": null,
+                    "sueldo_neto": 232,
+                    "total_cobrar": 232,
+                    "redondeo": 0,
+                    "redondeo_activo": false,
+                    "historial_empaque": [
+                        {
+                            "dia": "Viernes",
+                            "tipo": "10 LBS",
+                            "precio_unitario": 4,
+                            "cantidad": 58,
+                            "subtotal": 232
+                        }
+                    ]
+                },
+                {
+                    "clave": "100",
+                    "nombre": "LANDERO LOZANO JUANA",
+                    "id_departamento": "5",
+                    "id_empresa": "1",
+                    "color_puesto": null,
+                    "biometrico": "26",
+                    "seguroSocial": true,
+                    "tarjeta": 0,
+                    "conceptos": [],
+                    "registros": [
+                        {
+                            "fecha": "08/05/2026",
+                            "entrada": "13:58",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "09/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "10/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "11/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "12/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "13/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "14/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        }
+                    ],
+                    "mostrar": true,
+                    "tarjeta_copia": 2205.28,
+                    "sueldo_neto": 240,
+                    "checador": 20,
+                    "total_cobrar": 220,
+                    "redondeo": 0,
+                    "redondeo_activo": false,
+                    "conceptos_copia": [],
+                    "historial_olvidos": [
+                        {
+                            "dia": "Viernes",
+                            "fecha": "08/05/2026",
+                            "descuento_olvido": 20,
+                            "editado": false
+                        }
+                    ],
+                    "historial_empaque": [
+                        {
+                            "dia": "Viernes",
+                            "tipo": "10 LBS",
+                            "precio_unitario": 4,
+                            "cantidad": 60,
+                            "subtotal": 240
+                        }
+                    ]
+                },
+                {
+                    "clave": "081",
+                    "nombre": "LUNA HERNANDEZ MARIA GUADALUPE",
+                    "id_departamento": "5",
+                    "id_empresa": "1",
+                    "color_puesto": null,
+                    "biometrico": "18",
+                    "seguroSocial": true,
+                    "tarjeta": 0,
+                    "conceptos": [],
+                    "registros": [
+                        {
+                            "fecha": "08/05/2026",
+                            "entrada": "13:53",
+                            "salida": "18:15"
+                        },
+                        {
+                            "fecha": "09/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "10/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "11/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "12/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "13/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "14/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        }
+                    ],
+                    "mostrar": true,
+                    "tarjeta_copia": 2205.28,
+                    "sueldo_neto": 232,
+                    "total_cobrar": 232,
+                    "redondeo": 0,
+                    "redondeo_activo": false,
+                    "conceptos_copia": [],
+                    "historial_empaque": [
+                        {
+                            "dia": "Viernes",
+                            "tipo": "10 LBS",
+                            "precio_unitario": 4,
+                            "cantidad": 58,
+                            "subtotal": 232
+                        }
+                    ]
+                },
+                {
+                    "clave": "227",
+                    "nombre": "PARRA SOLANO SULLY IRANY",
+                    "biometrico": null,
+                    "tarjeta": 0,
+                    "id_empresa": "1",
+                    "id_departamento": 5,
+                    "color_puesto": null,
+                    "seguroSocial": false,
+                    "registros": [],
+                    "mostrar": false,
+                    "tarjeta_copia": null,
+                    "total_cobrar": 0,
+                    "redondeo": 0,
+                    "redondeo_activo": false
+                },
+                {
+                    "clave": "176",
+                    "nombre": "RAMIREZ LOPEZ MARIA DE JESUS",
+                    "biometrico": "61",
+                    "tarjeta": 0,
+                    "id_empresa": "1",
+                    "id_departamento": 5,
+                    "color_puesto": null,
+                    "seguroSocial": false,
+                    "registros": [
+                        {
+                            "fecha": "08/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "09/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "10/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "11/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "12/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "13/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "14/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        }
+                    ],
+                    "mostrar": false,
+                    "tarjeta_copia": null,
+                    "total_cobrar": 0,
+                    "redondeo": 0,
+                    "redondeo_activo": false
+                },
+                {
+                    "clave": "SS/023",
+                    "nombre": "REYES HERNANDEZ YURIANA",
+                    "biometrico": "104",
+                    "tarjeta": 0,
+                    "id_empresa": "1",
+                    "id_departamento": 5,
+                    "color_puesto": null,
+                    "seguroSocial": false,
+                    "registros": [
+                        {
+                            "fecha": "08/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "09/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "10/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "11/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "12/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "13/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "14/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        }
+                    ],
+                    "mostrar": false,
+                    "tarjeta_copia": null,
+                    "total_cobrar": 0,
+                    "redondeo": 0,
+                    "redondeo_activo": false
+                },
+                {
+                    "clave": "SS/045",
+                    "nombre": "RIVERA LANDERO JOANA AMAIRANI",
+                    "biometrico": "218",
+                    "tarjeta": 0,
+                    "id_empresa": "1",
+                    "id_departamento": 5,
+                    "color_puesto": null,
+                    "seguroSocial": false,
+                    "registros": [
+                        {
+                            "fecha": "08/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "09/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "10/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "11/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "12/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "13/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "14/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        }
+                    ],
+                    "mostrar": false,
+                    "tarjeta_copia": null,
+                    "total_cobrar": 0,
+                    "redondeo": 0,
+                    "redondeo_activo": false
+                },
+                {
+                    "clave": "140",
+                    "nombre": "SANCHEZ DE JESUS MARIA DEL CARMEN",
+                    "id_departamento": "5",
+                    "id_empresa": "1",
+                    "color_puesto": null,
+                    "biometrico": "22",
+                    "seguroSocial": true,
+                    "tarjeta": 0,
+                    "conceptos": [],
+                    "registros": [
+                        {
+                            "fecha": "08/05/2026",
+                            "entrada": "14:04",
+                            "salida": "18:15"
+                        },
+                        {
+                            "fecha": "09/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "10/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "11/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "12/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "13/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "14/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        }
+                    ],
+                    "mostrar": true,
+                    "tarjeta_copia": 2205.28,
+                    "sueldo_neto": 232,
+                    "total_cobrar": 232,
+                    "redondeo": 0,
+                    "redondeo_activo": false,
+                    "conceptos_copia": [],
+                    "historial_empaque": [
+                        {
+                            "dia": "Viernes",
+                            "tipo": "10 LBS",
+                            "precio_unitario": 4,
+                            "cantidad": 58,
+                            "subtotal": 232
+                        }
+                    ]
+                },
+                {
+                    "clave": "139",
+                    "nombre": "SANCHEZ DE JESUS GUADALUPE IVON",
+                    "biometrico": "23",
+                    "tarjeta": 0,
+                    "id_empresa": "1",
+                    "id_departamento": 5,
+                    "color_puesto": null,
+                    "seguroSocial": false,
+                    "registros": [
+                        {
+                            "fecha": "08/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "09/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "10/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "11/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "12/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "13/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "14/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        }
+                    ],
+                    "mostrar": false,
+                    "tarjeta_copia": null,
+                    "total_cobrar": 0,
+                    "redondeo": 0,
+                    "redondeo_activo": false
+                },
+                {
+                    "clave": "221",
+                    "nombre": "SANTIAGO SALAZAR ALMA IDALIA",
+                    "biometrico": "10",
+                    "tarjeta": 0,
+                    "id_empresa": "1",
+                    "id_departamento": 5,
+                    "color_puesto": null,
+                    "seguroSocial": false,
+                    "registros": [
+                        {
+                            "fecha": "08/05/2026",
+                            "entrada": "14:16",
+                            "salida": "18:36"
+                        },
+                        {
+                            "fecha": "09/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "10/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "11/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "12/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "13/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        },
+                        {
+                            "fecha": "14/05/2026",
+                            "entrada": "",
+                            "salida": ""
+                        }
+                    ],
+                    "mostrar": true,
+                    "tarjeta_copia": null,
+                    "sueldo_neto": 232,
+                    "total_cobrar": 232,
+                    "redondeo": 0,
+                    "redondeo_activo": false,
+                    "historial_empaque": [
+                        {
+                            "dia": "Viernes",
+                            "tipo": "10 LBS",
+                            "precio_unitario": 4,
+                            "cantidad": 58,
+                            "subtotal": 232
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "clientes": {
+        "registros": [
+            {
+                "nombre": "DARIO",
+                "tarimas": 2,
+                "cajas": 204,
+                "tipo_caja": "10 LBS",
+                "precio_unitario": 4,
+                "total": 1632
+            }
+        ],
+        "total_de_cajas": 408,
+        "total_general": 1632
+    }
+}

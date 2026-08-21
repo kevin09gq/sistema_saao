@@ -1,12 +1,16 @@
-// Funciones simples y fáciles de entender para Local Storage
-// Guardar automáticamente antes de recargar la página
-// Solo guardar si jsonNominaConfianza tiene datos válidos (evita re-grabar después de un clear)
+//======================================================================
+// FUNCION PARA GUARDAR LA NOMINA CUANDO SE RECARGA LA PAGINA 
+//======================================================================
+
 window.addEventListener('beforeunload', function () {
-    if (jsonNominaConfianza && Array.isArray(jsonNominaConfianza.departamentos) && jsonNominaConfianza.departamentos.length > 0) {
+    if (typeof jsonNominaConfianza !== 'undefined') {
         saveNomina(jsonNominaConfianza);
     }
 });
 
+//======================================================================
+//FUNCION PARA GUARDAR EL JSON DE LA NOMINA EN EL LOCAL STORAGE
+//======================================================================
 
 function saveNomina(jsonNominaConfianza) {
     try {
@@ -18,6 +22,10 @@ function saveNomina(jsonNominaConfianza) {
     }
 }
 
+//======================================================================
+// FUNCION PARA OBTENER EL JSON DE LA NOMINA DESDE EL LOCAL STORAGE
+//======================================================================
+
 function loadNomina() {
     try {
         const str = localStorage.getItem('jsonNominaConfianza');
@@ -28,21 +36,10 @@ function loadNomina() {
     }
 }
 
-function clearNomina() {
-    try {
-        localStorage.removeItem('jsonNominaConfianza');
-        // También limpiar la variable global para evitar que se vuelva a guardar en beforeunload
-        if (typeof window !== 'undefined') {
-            window.jsonNominaConfianza = null;
-        }
-        return true;
-    } catch (err) {
-        return false;
-    }
-}
+//====================================================================================
+// FUNCION PARA RESTAURAR LA NOMINA DESDE EL LOCAL STORAGE CUANDO SE CARGA LA PAGINA
+//====================================================================================
 
-
-// Restaura la nómina desde localStorage y actualiza la vista si las funciones UI están disponibles
 function restoreNomina() {
     try {
         const stored = loadNomina();
@@ -51,16 +48,12 @@ function restoreNomina() {
         // Poner la variable global para que el resto del código la use
         jsonNominaConfianza = stored;
 
-        if (typeof initComponents === 'function') {
-            initComponents();
-        }  
-
-        // Renderizar tabla restaurada
-        if (typeof aplicarFiltrosConfianza === 'function') {
-            aplicarFiltrosConfianza();
-        }
-        actualizarCabeceraNomina(jsonNominaConfianza);
-
+        cargarFiltroDepartamentos(); // Cargar el select
+        llenarTablaNomina(); // Llenar la tabla con los empleados
+        saveNomina(jsonNominaConfianza); // Guardar el JSON de la nómina en el local storage
+        cambiarVistaTablaNomina(); // Cambiar la vista para mostrar la tabla de nómina
+        actualizarCabeceraNomina(jsonNominaConfianza); // Actualizar la cabecera de la nómina
+        
         return true;
     } catch (err) {
 
@@ -68,4 +61,17 @@ function restoreNomina() {
     }
 }
 
+//=========================================================================
+// FUNCION PARA LIMPIAR LA NOMINA DEL LOCAL STORAGE Y DE LA VARIABLE GLOBAL
+//=========================================================================
 
+function clearNomina() {
+    try {
+        localStorage.removeItem('jsonNominaConfianza');
+        // También limpiar la variable global para evitar que se vuelva a guardar en beforeunload
+            jsonNominaConfianza = null;
+        return true;
+    } catch (err) {
+        return false;
+    }
+}

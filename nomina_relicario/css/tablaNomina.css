@@ -3,25 +3,29 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
-    scrollbar-color: rgba(0,0,0,0.35) rgba(0,0,0,0.05);
+    scrollbar-color: rgba(0, 0, 0, 0.35) rgba(0, 0, 0, 0.05);
 }
 
 
 /* WebKit (Chrome, Edge, Safari) - scroll horizontal más delgado */
 #tabla-nomina-container-relicario .table-responsive-relicario::-webkit-scrollbar {
-    height: 8px; /* ajustar si quieres más/menos */
+    height: 8px;
+    /* ajustar si quieres más/menos */
 }
+
 #tabla-nomina-container-relicario .table-responsive-relicario::-webkit-scrollbar-track {
-    background: rgba(0,0,0,0.03);
+    background: rgba(0, 0, 0, 0.03);
     border-radius: 8px;
 }
+
 #tabla-nomina-container-relicario .table-responsive-relicario::-webkit-scrollbar-thumb {
-    background: rgba(0,0,0,0.25);
+    background: rgba(0, 0, 0, 0.25);
     border-radius: 8px;
     min-height: 20px;
 }
+
 #tabla-nomina-container-relicario .table-responsive-relicario::-webkit-scrollbar-thumb:hover {
-    background: rgba(0,0,0,0.35);
+    background: rgba(0, 0, 0, 0.35);
 }
 
 /* Estilo general para el contenedor de la tabla */
@@ -109,11 +113,12 @@
     color: #1f2937;
 }
 
+
 .table-nomina-relicario td:nth-child(4),
 .table-nomina-relicario td:nth-child(5),
-.table-nomina-relicario td:nth-child(6),
+.table-nomina-relicario td:nth-child(6), 
 .table-nomina-relicario td:nth-child(7),
-.table-nomina-relicario td:nth-child(8){
+.table-nomina-relicario td:nth-child(8) {
     color: #10b981;
     font-weight: 600;
     background: rgba(16, 185, 129, 0.05);
@@ -123,6 +128,7 @@
 
 
 /* Cambiar el color de las filas en las columnas de DEDUCCIONES (ajustado) */
+
 .table-nomina-relicario td:nth-child(9),
 .table-nomina-relicario td:nth-child(10),
 .table-nomina-relicario td:nth-child(11),
@@ -145,16 +151,13 @@
 
 .table-nomina-relicario td:nth-child(20),
 .table-nomina-relicario td:nth-child(22),
-.table-nomina-relicario td:nth-child(24)
- {
-   
+.table-nomina-relicario td:nth-child(24) {
     color: #000000;
     font-weight: 700;
     border-radius: 6px;
     margin: 2px;
     font-variant-numeric: tabular-nums;
 }
-
 
 .table-nomina-relicario td:nth-child(26) {
     background: rgba(59, 130, 246, 0.1);
@@ -165,6 +168,7 @@
     font-variant-numeric: tabular-nums;
 }
 
+
 /* Estilo para valores vacíos (--) */
 .valor-vacio {
     color: #d1d5db !important;
@@ -172,6 +176,7 @@
     user-select: none;
     pointer-events: none;
 }
+
 /* Celdas vacías con estilo sutil */
 .table-nomina-relicario td:empty {
     background: #f9fafb;
@@ -198,30 +203,60 @@
     color: #ef4444;
     font-weight: 700;
 }
+
 .redondeo-positivo {
     color: #000000;
     font-weight: 700;
 }
 
-
+/* Estado visual para sueldo a cobrar negativo */
+.sueldo-negativo {
+    background: rgba(239, 68, 68, 0.08) !important;
+    color: #b91c1c !important;
+    font-weight: 700 !important;
+    border-radius: 6px !important;
+    border: none !important;
+}
 
 .pagination {
-     justify-content: center;
- }
+    justify-content: center;
+}
 
- .pagination .page-link {
-     color: #22c55e;
-     border: none;
-     background: none;
-     font-weight: 500;
- }
+.pagination .page-link {
+    color: #22c55e;
+    border: none;
+    background: none;
+    font-weight: 500;
+}
 
- .pagination .active .page-link {
-     background: #22c55e;
-     color: #fff;
-     border-radius: 6px;
- }
+.pagination .active .page-link {
+    background: #22c55e;
+    color: #fff;
+    border-radius: 6px;
+}
 
+/* Estilos para la fila de totales (tfoot) */
+.table-nomina-relicario tfoot tr {
+    background-color: #f8fafc;
+}
+
+.table-nomina-relicario tfoot td {
+    padding: 14px 12px;
+    border-top: 2px solid #e5e7eb;
+    border-bottom: 2px solid #e5e7eb;
+    font-weight: 700;
+    background-color: #f8fafc;
+    vertical-align: middle;
+    font-size: 12px;
+}
+
+/* Última columna de la fila de totales con color destacado */
+.table-nomina-relicario tfoot td:last-child {
+    background-color: #0446fc8c !important;
+    color: #ffffff !important;
+    font-weight: 700;
+    border-radius: 6px;
+}
 
 @media (max-width: 768px) {
 
@@ -235,15 +270,4 @@
         padding: 4px 3px;
         font-size: 8px;
     }
-
-
-
 }
-
-/* OCULTAR COLUMNAS DE JORNALERO (MODO CONFIANZA) */
-#tabla-nomina-container-relicario.modo-confianza .col-jornalero {
-    display: none !important;
-}
-
-
-

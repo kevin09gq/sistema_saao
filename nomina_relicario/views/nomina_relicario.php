@@ -1,72 +1,139 @@
 <!DOCTYPE html>
 <html lang="es">
 
+<!--Incluir config.php para iniciar sesión -->
+<?php
+include "../../config/config.php";
+verificarSesion(); // Proteger esta página
+?>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nómina relicario</title>
-    <?php
-    include "../../config/config.php";
-    verificarSesion(); // Proteger esta página
-    ?>
+    <title>Nomina Rancho Relicario</title>
+
+    <!-- Icono del sistema -->
+    <link rel="icon" href="<?= ICONO_SISTEMA ?>" />
+    <!-- Bootstrap 5 -->
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
+    <!-- Bootstrap Iconos 5 -->
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
-    <link rel="stylesheet" href="../css/nomina_relicario.css">
-    <link rel="stylesheet" href="../css/tablaNomina.css">
-
-    <!-- estilos para el corte -->
-    <link rel="stylesheet" href="../css/tablaCorte.css">
-
-    <link rel="stylesheet" href="../css/encabezados.css">
-    <link rel="stylesheet" href="../css/modalCoordinador.css">
-    <link rel="stylesheet" href="../css/modalJornaleros.css">
-    <link rel="stylesheet" href="../css/conceptos_totales.css">
-
-
-    <link rel="stylesheet" href="<?= JQUERY_UI_CSS ?>">
-
     <!-- SweetAlert2 CSS -->
     <script src="<?= SWEETALERT ?>"></script>
+    <!-- JQuery UI css -->
+    <link rel="stylesheet" href="<?= JQUERY_UI_CSS ?>">
+
+    <link rel="stylesheet" href="../css/encabezados.css">
+    <link rel="stylesheet" href="../css/tablaNomina.css">
+    <link rel="stylesheet" href="../css/modalDetallesNomina.css">
+    <link rel="stylesheet" href="../css/conceptos_totales.css">
+
+    <!-- ESTILOS PARA LA TABLA DE CORTE Y PODA -->
+    <link rel="stylesheet" href="../css/tablaCorte.css">
+
 </head>
 
-<body>
+<body class="bg-secondary-subtle">
     <?php
     // Incluir el navbar (config.php ya fue incluido en el head)
     include "../../public/views/navbar.php"
     ?>
 
-    <!-- Contenedor principal centrado -->
-    <div class="container-nomina_relicario" id="container-nomina_relicario" hidden>
-        <!-- Contenedor tipo navbar para formulario y filtros -->
-        <div class="navbar-nomina_relicario">
-            <div class="titulo-nomina_relicario">Procesamiento de Nómina relicario</div>
-            <div class="subtitulo-nomina_relicario">Selecciona los archivos Excel para procesar la información</div>
+    <!-- CONTENEDOR DE LOS DATOS DE LA NOMINA -->
 
-            <form id="form_excel_raya" enctype="multipart/form-data" class="form-nomina-inline-relicario">
-                <div>
-                    <label for="archivo_excel_lista_raya_relicario">
-                        <i class="bi bi-file-earmark-excel-fill"></i> Lista de Raya
-                    </label>
-                    <input type="file" id="archivo_excel_lista_raya_relicario" name="archivo_excel_lista_raya_relicario"
-                        accept=".xls,.xlsx" required>
+    <div class="container" id="contenedor-data" hidden>
+
+        <div class="row justify-content-center align-items-center vh-100">
+
+            <div class="col-md-8 col-lg-6">
+
+                <div class="card shadow-lg border-0">
+
+                    <div class="card-header bg-success text-white text-center py-3">
+                        <h3 class="mb-0">
+                            Módulo de Nómina
+                        </h3>
+                    </div>
+
+                    <div class="card-body bg-light p-4">
+
+
+                        <div class="mb-3">
+                            <label for="fecha_inicio" class="form-label fw-semibold">
+                                Fecha de Inicio
+                            </label>
+                            <input
+                                type="date"
+                                class="form-control"
+                                id="fecha_inicio"
+                                name="fecha_inicio">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="fecha_fin" class="form-label fw-semibold">
+                                Fecha de Fin
+                            </label>
+                            <input
+                                type="date"
+                                class="form-control"
+                                id="fecha_fin"
+                                name="fecha_fin">
+                        </div>
+
+                        <div class="row">
+
+                            <div class="col-md-6 mb-3">
+                                <label for="semana" class="form-label fw-semibold">
+                                    Número de Semana
+                                </label>
+                                <input
+                                    type="number"
+                                    class="form-control"
+                                    id="numero_semana"
+                                    name="numero_semana"
+                                    min="1"
+                                    max="53"
+                                    placeholder="Ej. 27">
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="anio" class="form-label fw-semibold">
+                                    Año
+                                </label>
+                                <input
+                                    type="number"
+                                    class="form-control"
+                                    id="anio"
+                                    name="anio"
+                                    value="2026">
+                            </div>
+
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button class="btn btn-success" id="btn-continuar">
+                                Continuar
+                            </button>
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button class="btn btn-secondary" id="btn-recuperar-nomina">
+                                Recuperar Nómina
+                            </button>
+                        </div>
+
+                    </div>
+
                 </div>
-                <div>
-                    <label for="archivo_excel_biometrico_relicario">
-                        <i class="bi bi-file-earmark-excel-fill"></i> Biometrico
-                    </label>
-                    <input type="file" id="archivo_excel_biometrico_relicario" name="archivo_excel_biometrico_relicario"
-                        accept=".xls,.xlsx" required>
-                </div>
-                <div>
-                    <button type="button" id="btn_procesar_nomina_relicario" class="btn-procesar-nomina_relicario">
-                        <i class="bi bi-arrow-repeat"></i> Procesar
-                    </button>
-                </div>
-            </form>
+
+            </div>
+
         </div>
+
     </div>
 
-    <!-- Contenedor de Configuración de Valores -->
+    <!-- CONTENEDOR PARA CONFIGURAR LOS VALORES ECONÓMICOS DEL RELICARIO -->
+
     <div class="container py-5" id="config-valores-relicario" hidden>
         <div class="row justify-content-center">
             <div class="col-lg-11">
@@ -140,6 +207,8 @@
     </div>
 
 
+    <!-- CONTENEDOR DE LA TABLA DE NÓMINA -->
+
     <div class="container-tabla-nomina-relicario" id="tabla-nomina-responsive" hidden>
         <div class="header-tabla-relicario">
             <div class="header-titulo-semana">
@@ -147,113 +216,202 @@
                 <span class="sem-info-relicario" id="num_semana"></span>
             </div>
             <div class="header-controls-relicario">
-                <!-- Grupo 1: Servicios -->
-                <div class="btn-group-relicario btn-group-servicios">
-                    <button type="button" class="btn btn-outline-primary" title="Tickes de Poda de Árboles"
-                        id="btn_modal_poda">
-                        <i class="bi bi-scissors"></i>
-                    </button>
-                    <button type="button" class="btn btn-outline-primary" title="Tickes de Corte de Rejas" id="btn_modal_corte">
-                        <i class="bi bi-truck"></i>
-                    </button>
 
+                <!-- Grupo Ranchos -->
+                <div class="dropdown">
+                    <button class="btn btn-toolbar-group dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-grid-3x3-gap-fill"></i>
+                        <span>Ranchos</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-nomina shadow-sm">
+                        <li>
+                            <h6 class="dropdown-header"><i class="bi bi-tools me-1"></i>Gestión de Ranchos</h6>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_modal_corte">
+                                <i class="bi bi-truck"></i>
+                                <span>Corte Limón</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_modal_poda">
+                                <i class="bi bi-scissors"></i>
+                                <span>Poda Árboles</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Grupo 1: Servicios -->
+                <div class="dropdown">
+                    <button class="btn btn-toolbar-group dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-grid-3x3-gap-fill"></i>
+                        <span>Servicios</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-nomina shadow-sm">
+                        <li>
+                            <h6 class="dropdown-header"><i class="bi bi-tools me-1"></i>Acciones de Servicio</h6>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn-ocultar-empleados">
+                                <i class="bi bi-people text-primary"></i>
+                                <span>Ocultar Empleados</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn-agregar-nuevos-empleados">
+                                <i class="bi bi-person-plus text-primary"></i>
+                                <span>Agregar Nuevos Empleados</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_aplicar_festividades">
+                                <i class="bi bi-calendar-event text-primary"></i>
+                                <span>Aplicar Festividades</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_justificar_ausencias">
+                                <i class="bi bi-question-circle text-primary"></i>
+                                <span>Justificar Ausencias</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_dias_extra">
+                                <i class="bi bi-calendar-plus text-success"></i>
+                                <span>Agregar / Quitar Días Extra</span>
+                            </button>
+                        </li>
+
+                    </ul>
                 </div>
 
                 <!-- Grupo 2: Configuración -->
-                <div class="btn-group-relicario btn-group-config">
-                    <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_actualizar_biometrico"
-                        title="Actualizar Biometrico" aria-label="Actualizar Biometrico">
-                        <i class="bi bi-person-badge"></i>
+                <div class="dropdown">
+                    <button class="btn btn-toolbar-group dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-gear-fill"></i>
+                        <span>Configuración</span>
                     </button>
-                    <button class="btn btn-outline-primary actualizar-valores" type="button" id="btn_actualizar_valores"
-                        title="Actualizar Valores" aria-label="Actualizar Valores pasaje y tardeada">
-                        <i class="bi bi-gear"></i>
-                    </button>
-                    <button class="btn btn-outline-primary quitrar-comida-pasaje" type="button"
-                        id="btn_quitar_comida_pasaje" title="Quitar Comida y Pasaje"
-                        aria-label="Quitar Comida y Pasaje">
-                        <i class="bi bi-x-circle"></i>
-                    </button>
-                    <button class="btn btn-outline-primary btn-horarios" type="button"
-                        id="btn_establecer_dias_justificados" title="Justificar Días" aria-label="dias-justificados">
-                        <i class="bi bi-check-circle"></i>
-                    </button>
-                    <button class="btn btn-outline-primary" id="btn-seleccionar-empleados"
-                        title="Ocultar/Mostrar Empleados">
-                        <i class="bi bi-people"></i>
-                    </button>
-                    <button class="btn btn-outline-primary" id="btn_modal_dias_extra"
-                        title="Agregar día extra jornaleros">
-                        <i class="bi bi-calendar-plus"></i>
-                    </button>
-                    <button class="btn btn-outline-danger" id="btn_modal_olvidos_masivos"
-                        title="Perdonar olvidos de checador">
-                        <i class="bi bi-clipboard-check"></i>
-                    </button>
-                    <button class="btn btn-outline-info" id="btn_ver_dispersion" title="Ver Dispersión de Tarjeta">
-                        <i class="bi bi-list-columns-reverse"></i>
-                    </button>
+                    <ul class="dropdown-menu dropdown-menu-nomina shadow-sm">
+                        <li>
+                            <h6 class="dropdown-header"><i class="bi bi-sliders me-1"></i>Opciones de Configuración</h6>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_actualizar_valores_relicario">
+                                <i class="bi bi-wallet2"></i>
+                                <span>Actualizar Valores Economicos</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_gestionar_valores_economicos">
+                                <i class="bi bi-person-gear"></i>
+                                <span>Asingnar y Quitar Valores Economicos</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_config_conceptos">
+                                <i class="bi bi-gear text-primary"></i>
+                                <span>Configurar Conceptos</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_olvidos_checador">
+                                <i class="bi bi-clipboard-check text-danger"></i>
+                                <span>Perdonar Olvidos de Checador</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_add_percepciones_deducciones">
+                                <i class="bi bi-patch-plus text-primary"></i>
+                                <span>Agregar Percepciones / Deducciones</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_dispersion_tarjeta">
+                                <i class="bi bi-list-columns-reverse text-info"></i>
+                                <span>Ver Dispersión de Tarjeta</span>
+                            </button>
+                        </li>
+
+                    </ul>
                 </div>
 
                 <!-- Grupo 3: Procesamiento -->
-                <div class="btn-group-relicario btn-group-procesamiento">
-                    <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global" hidden
-                        title="Aplicar Tarjeta">
-                        <i class="bi bi-arrow-clockwise"></i>
+                <div class="dropdown">
+                    <button class="btn btn-toolbar-group dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-cpu-fill"></i>
+                        <span>Procesamiento</span>
                     </button>
-                    <button class="btn btn-outline-success" type="button" id="btn_redondear_sueldos"
-                        title="Redondear Sueldos" aria-label="Redondear Sueldos">
-                        <i class="bi bi-arrow-repeat"></i>
-                    </button>
-                    <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" hidden
-                        title="Quitar tarjeta" aria-label="Quitar tarjeta">
-                        <i class="bi bi-credit-card-2-back"></i>
-                    </button>
-                    <button class="btn btn-outline-info" id="btn_abrir_add_remove_tarjeta" title="Configurar Tarjeta/Impuestos por Empleado">
-                        <i class="bi bi-person-gear"></i>
-                    </button>
-                    <button class="btn btn-outline-primary" id="btn_add_percepciones_deducciones"
-                        title="Agregar Percepciones/Deducciones Extras">
-                        <i class="bi bi-patch-plus"></i>
-                    </button>
-                    <button class="btn btn-outline-primary btn-suma" type="button" id="btn_conceptos_totales"
-                        title="Totales por concepto" aria-label="Totales por concepto">
-                        <i class="bi bi-calculator"></i>
-                    </button>
-                    <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf"
-                        title="Descargar Ticket">
-                        <i class="bi bi-ticket-perforated"></i>
-                    </button>
-                    <button class="btn btn-outline-secondary btn-ticket-zebra" id="btn_ticket_manual"
-                        title="Descargar Ticket Manual">
-                        <i class="bi bi-ticket-perforated"></i>
-                    </button>
-                    <button class="btn btn-outline-secondary" id="btn_abrir_modal_reasignar"
-                        title="Reasignar Departamento al Empleado">
-                        <i class="bi bi-person-fill-gear"></i>
-                    </button>
+                    <ul class="dropdown-menu dropdown-menu-nomina shadow-sm">
+                        <li>
+                            <h6 class="dropdown-header"><i class="bi bi-lightning-charge me-1"></i>Acciones de Procesamiento</h6>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_lista_raya">
+                                <i class="bi bi-file-earmark-excel text-primary"></i>
+                                <span>Actualizar Lista de Raya</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_biometrico">
+                                <i class="bi bi-person-lines-fill text-primary"></i>
+                                <span>Actualizar Biometrico</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_redondear_sueldos">
+                                <i class="bi bi-arrow-repeat text-success"></i>
+                                <span>Redondear Sueldos </span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_cambiar_departamento">
+                                <i class="bi bi-arrow-left-right text-warning"></i>
+                                <span>Cambiar Departamento</span>
+                            </button>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <h6 class="dropdown-header"><i class="bi bi-ticket me-1"></i>Tickets</h6>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2 btn-ticket-zebra" type="button" id="btn_ticket_pdf">
+                                <i class="bi bi-ticket-perforated text-primary"></i>
+                                <span>Descargar Tickets</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2 btn-ticket-zebra" type="button" id="btn_ticket_manual">
+                                <i class="bi bi-hand-index text-success"></i>
+                                <span>Tickets Seleccionados</span>
+                            </button>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2 btn-suma" type="button" id="btn_conceptos_totales">
+                                <i class="bi bi-calculator text-primary"></i>
+                                <span>Totales por Concepto</span>
+                            </button>
+                        </li>
+                    </ul>
                 </div>
+
             </div>
         </div>
-
         <!-- Controles de filtro y búsqueda -->
         <div class="controles-tabla-relicario">
             <div class="filtros-container-relicario">
-
-                <select class="filtro-departamento-relicario" id="filtro_departamento">
-                    <!-- Departamento -->
+                <select class="filtro-departamento-relicario" id="filtro-departamento">
+                    <!-- Se poblará dinámicamente -->
                 </select>
-
-                <select class="filtro-departamento-relicario" id="filtro_puesto">
-                    <!-- Puestos -->
-                </select>
-
-
 
                 <div class="busqueda-container-relicario" id="busqueda-container">
                     <i class="bi bi-search"></i>
-                    <input type="text" class="campo-busqueda-relicario" placeholder="Buscar..."
-                        id="busqueda-nomina-relicario">
+                    <input type="text" class="campo-busqueda-relicario" placeholder="Buscar..." id="busqueda-nomina-relicario">
                     <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="btn-clear-busqueda"
                         title="Limpiar">
                         <i class="bi bi-x-circle"></i>
@@ -282,6 +440,7 @@
             </div>
         </div>
 
+        <!-- CONTENEDOR DE LA NOMINA NORMAL -->
         <div id="tabla-nomina-container-relicario" class="tabla-nomina-container-relicario">
             <div class="table-responsive-relicario">
                 <table class="table-nomina-relicario" id="tabla-nomina">
@@ -291,8 +450,8 @@
                             <th rowspan="2"> NOMBRE </th>
                             <th rowspan="2" class="col-jornalero">DÍAS <br> TRAB.</th>
                             <th rowspan="2">SUELDO <br> SEMANAL</th>
-                            <th rowspan="2" class="col-jornalero">PASAJE</th>
-                            <th rowspan="2" class="col-jornalero">COMIDA</th>
+                            <th rowspan="2">PASAJE</th>
+                            <th rowspan="2">COMIDA</th>
                             <th rowspan="2">EXTRAS</th>
                             <th rowspan="2">Total Percepciones</th>
                             <th rowspan="2">ISR</th>
@@ -322,17 +481,18 @@
 
 
                     </tbody>
-
+                    <tfoot id="tabla-nomina-foot-relicario">
+                        <!-- Fila de totales se generará dinámicamente -->
+                    </tfoot>
                 </table>
             </div>
-            <ul id="paginacion-nomina" class="pagination my-5" style="margin: 20px 0 0 0; justify-content: center;">
-            </ul>
+            <ul id="paginacion-nomina" class="pagination" style="margin: 20px 0 0 0; justify-content: center;"></ul>
         </div>
 
-
-        <div id="tabla-corte-container-relicario" class="tabla-nomina-container-relicario-corte" hidden>
-            <div class="table-responsive-relicario-corte">
-                <table class="table-nomina-relicario-corte" id="tabla-nomina-corte">
+        <!-- CONTENEDOR DE LA NOMINA DE CORTE -->
+        <div id="tabla-corte-container" class="tabla-nomina-container-corte" hidden>
+            <div class="table-responsive-corte">
+                <table class="table-nomina-corte" id="tabla-nomina-corte">
                     <thead>
                         <tr>
                             <th rowspan="2">#</th>
@@ -350,7 +510,7 @@
                             <th rowspan="2">TOTAL<br>EFECTIVO</th>
                         </tr>
                     </thead>
-                    <tbody id="tabla-body-corte-relicario">
+                    <tbody id="tabla-body-corte">
                         <!-- Filas de la tabla se generarán dinámicamente -->
                     </tbody>
 
@@ -358,9 +518,10 @@
             </div>
         </div>
 
-        <div id="tabla_poda_container" class="tabla-nomina-container-relicario-corte" hidden>
-            <div class="table-responsive-relicario-corte">
-                <table class="table-nomina-relicario-corte" id="tabla_poda">
+        <!-- CONTENEDOR DE LA NOMINA DE PODA -->
+        <div id="tabla_poda_container" class="tabla-nomina-container-corte" hidden>
+            <div class="table-responsive-corte">
+                <table class="table-nomina-corte" id="tabla_poda">
                     <thead>
                         <tr>
                             <th rowspan="2">#</th>
@@ -385,8 +546,8 @@
                 </table>
             </div>
         </div>
-
     </div>
+
 
     <!-- Menú contextual simple para la tabla -->
     <div id="context-menu"
@@ -405,100 +566,90 @@
     </div>
 
 
+    <!-- Incluir el modal -->
+    <?php include 'modals/modalListaRaya.php'; ?>
+    <?php include 'modals/modalBiometrico.php'; ?>
+    <?php include 'modals/modalDetallesNomina.php'; ?>
+    <?php include 'modals/modalConfigConceptos.php'; ?>
+    <?php include 'modals/modalValoresEconomicos.php'; ?>
+    <?php include 'modals/modalOlvidoChecador.php'; ?>
+    <?php include 'modals/modalAddPercepcionDeduccion.php'; ?>
+    <?php include 'modals/modalDispersionTarjeta.php'; ?>
+    <?php include 'modals/modalRedondearSueldos.php'; ?>
+    <?php include 'modals/modalOcultarEmpleados.php'; ?>
+    <?php include 'modals/modalNuevosEmpleados.php'; ?>
+    <?php include 'modals/modalGestionarValoresEconomicos.php'; ?>
+    <?php include 'modals/modalFestividades.php'; ?>
+    <?php include 'modals/modalJustificarAusencias.php'; ?>
+    <?php include 'modals/modalDiasExtra.php'; ?>
+    <?php include 'modals/modalCambiarDepartamento.php'; ?>
+    <?php include 'modals/modalExportarNomina.php'; ?>
+    <?php include 'modals/modalConceptosTotales.php'; ?>
+    <?php include 'modals/modalTicketsEmpleados.php'; ?>
+    <?php include 'modals/modal_seleccion_tickets_relicario.php'; ?>
 
-    <!-- Modal para los cortes -->
-    <?php include "modalsCorte/modalCorte.php"; ?>
-    <?php include "modalsCorte/modalCorteNominaEditar.php"; ?>
-    <?php include "modalsCorte/modalCorteEditar.php"; ?>
+    <!-- MODALES DEL CORTE -->
+    <?php require_once __DIR__ . '/modalsCorte/modalCorte.php'; ?>
+    <?php require_once __DIR__ . '/modalsCorte/modalCorteEditar.php'; ?>
+    <?php require_once __DIR__ . '/modalsCorte/modalCorteNominaEditar.php'; ?>
 
-    <!-- Modal para la poda -->
-    <?php include __DIR__ . "/modalsPoda/modalPoda.php"; ?>
-    <?php include __DIR__ . "/modalsPoda/modalPodaDetalles.php"; ?>
-    <?php include __DIR__ . "/modalsPoda/modalPodaDetallesExtra.php"; ?>
-
-    <!-- Incluir los modales -->
-    <?php include "modalsNomina/modalCoordinador.php"; ?>
-    <?php include "modalsNomina/modalJornaleros.php"; ?>
-    <?php include "modalsNomina/modalTipoDia.php"; ?>
-    <?php include "modalsNomina/biometricoModal.php"; ?>
-    <?php include "modalsNomina/modalSeleccionarEmpleados.php"; ?>
-    <?php include "modalsNomina/modalTardeadaPasaje.php"; ?>
-    <?php include "modalsNomina/modalDiasInhabiles.php"; ?>
-    <?php include "modalsNomina/modalQuitarComidaPasaje.php"; ?>
-    <?php include "modalsNomina/modalConceptosTotales.php"; ?>
-    <?php include "modalsNomina/modalExportarNomina.php"; ?>
-    <?php include "modalsNomina/modalDiasExtra.php"; ?>
-    <?php include "modalsNomina/modalOlvidos.php"; ?>
-    <?php include "modalsNomina/modalReasignarEmpleado.php"; ?>
-    <?php include 'modalsNomina/modalAddRemoveTarjeta.php'; ?>
-    <?php include "modalsNomina/modalRedondeoSueldos.php"; ?>
-    <?php include "modalsNomina/modal_seleccion_tickets_relicario.php"; ?>
-    <?php include "modalsNomina/modalTicketsEmpleados.php"; ?>
-    <?php include "modalsNomina/addPercepcionesDeducciones.php"; ?>
-    <?php include "modalsNomina/dispersionTarjeta.php"; ?>
-
+    <!-- MODALES DEL PODA -->
+    <?php require_once __DIR__ . '/modalsPoda/modalPoda.php'; ?>
+    <?php require_once __DIR__ . '/modalsPoda/modalPodaDetalles.php'; ?>
+    <?php require_once __DIR__ . '/modalsPoda/modalPodaDetallesExtra.php'; ?>
 
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
     <script src="<?= JQUERY_UI_JS ?>"></script>
-    <!-- Plugin Inputmask -->
-    <script src="<?= JQUERY_INPUTMASK ?>"></script>
     <!-- Bootstrap JS -->
     <script src="<?= BOOTSTRAP_JS ?>"></script>
+
     <!-- Archivo JS específico -->
-    <script src="../js/process_excel.js"></script>
-
-    <!-- Archivos JS para funcionalidades adicionales -->
-    <script src="../js/showDataTable.js"></script>
-    <script src="../js/configComponentes.js"></script>
-    <script src="../js/saveGetNomina.js"></script>
-    <script src="../js/busquedaFiltrado.js"></script>
+    <script src="../js/crearEstructuraJson.js"></script>
+    <script src="../js/configVista.js"></script>
+    <script src="../js/mostrarEmpleados.js"></script>
+    <script src="../js/filtroBusqueda.js"></script>
     <script src="../js/storage.js"></script>
-    <script src="../js/abrirModal.js"></script>
+    <script src="../js/guardarNomina.js"></script>
+    <script src="../js/recuperarNomina.js"></script>
+    <script src="../js/exportarNominaExcel.js"></script>
+    <script src="../js/ticket_pdf.js"></script>
+    <script src="../js/ticket_seleccion_relicario.js"></script>
 
-    <script src="../js/configModalCoordinador/establecerData.js"></script>
-    <script src="../js/configModalCoordinador/configModal.js"></script>
-    <script src="../js/configModalCoordinador/editarData.js"></script>
-    <script src="../js/configModalCoordinador/newConcepts.js"></script>
-    <script src="../js/configModalCoordinador/eventos.js"></script>
-    <script src="../js/configModalCoordinador/justificacionCoordinador.js"></script>
+    <script src="../js/modals/listaDeRaya.js"></script>
+    <script src="../js/modals/biometrico.js"></script>
+    <script src="../js/modals/obtenerDiasTrabajados.js"></script>
+    <script src="../js/modals/configConceptos.js"></script>
+    <script src="../js/modals/actualizarValoresEconomicos.js"></script>
+    <script src="../js/modals/olvidoChecador.js"></script>
+    <script src="../js/modals/agregarPercepcionesDeducciones.js"></script>
+    <script src="../js/modals/dispersionTarjeta.js"></script>
+    <script src="../js/modals/redondearSueldos.js"></script>
+    <script src="../js/modals/ocultarEmpleados.js"></script>
+    <script src="../js/modals/nuevosEmpleados.js"></script>
+    <script src="../js/modals/gestionarValoresEconomicos.js"></script>
+    <script src="../js/modals/festividades.js"></script>
+    <script src="../js/modals/justificarAusencias.js"></script>
+    <script src="../js/modals/diasExtra.js"></script>
+    <script src="../js/modals/cambiarDepartamento.js"></script>
+    <script src="../js/modals/conceptos_totales.js"></script>
 
-    <script src="../js/configModalJornaleros/sueldoSemanal.js"></script>
-    <script src="../js/configModalJornaleros/establecerData.js"></script>
-    <script src="../js/configModalJornaleros/editarData.js"></script>
-    <script src="../js/configModalJornaleros/configModal.js"></script>
-    <script src="../js/configModalJornaleros/sueldoSemanal.js"></script>
-    <script src="../js/configModalJornaleros/eventos.js"></script>
-    <script src="../js/configModalJornaleros/newConcepts.js"></script>
-    <script src="../js/configModalJornaleros/agregarDiasTrabajados.js"></script>
+    <script src="../js/modalsDetalles/establecerDataEmpleado.js"></script>
+    <script src="../js/modalsDetalles/editarDataEmpleado.js"></script>
+    <script src="../js/modalsDetalles/crearNuevosConceptos.js"></script>
+    <script src="../js/modalsDetalles/calculosDetallesNomina.js"></script>
+    <script src="../js/modalsDetalles/incidencias.js"></script>
+    <script src="../js/modalsDetalles/mostrarIncidencias.js"></script>
 
-    <script src="../js/configModales/actualizarBiomtrico.js"></script>
-    <script src="../js/configModales/exportarNominaExcel.js"></script>
-    <script src="../js/configModales/olvidosMasivos.js"></script>
-    <script src="../js/configModales/conceptos_totales.js"></script>
-    <script src="../js/configModales/seleccionar_empleados.js"></script>
-    <script src="../js/configModales/tardeadaPasaje.js"></script>
-    <script src="../js/configModales/reasignarEmpleado.js"></script>
-    <script src="../js/configModales/redondearSueldos.js"></script>
-    <script src="../js/configModales/addPercepcionesDeducciones.js"></script>
-    <script src="../js/configModales/addRemoveTarjeta.js"></script>
-
+    <!-- SCRIPTS DEL CORTE -->
     <script src="../js/configModalCorte/configCorte.js"></script>
     <script src="../js/configModalCorte/showTablaCorte.js"></script>
     <script src="../js/configModalCorte/abrirModalDetallesCorte.js"></script>
 
-    <script src="../js/ticket_pdf.js"></script>
-    <script src="../js/ticket_seleccion_relicario.js"></script>
-
+    <!-- SCRIPTS DEL PODA -->
     <script src="../js/configModalPoda/config_poda.js"></script>
     <script src="../js/configModalPoda/tabla_poda.js"></script>
     <script src="../js/configModalPoda/detalles_modal.js"></script>
-
-    <!-- Dispersion Tarjeta -->
-    <script src="../js/configModalDispersionTarjeta/establecerData.js"></script>
-    <script src="../js/configModalDispersionTarjeta/filtroBusqueda.js"></script>
-    <script src="../js/configModalDispersionTarjeta/editarData.js"></script>
-
 
 </body>
 

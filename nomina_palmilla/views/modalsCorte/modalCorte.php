@@ -1,10 +1,10 @@
 <!-- Modal -->
 <div class="modal fade" id="modalCorte" tabindex="-1" aria-labelledby="modalCorteLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
         <div class="modal-content">
 
             <div class="modal-header">
-                <h1 class="modal-title fs-5" id="modalCorteLabel">Rejas de Corte de Limón RANCHO EL PILAR</h1>
+                <h1 class="modal-title fs-5" id="modalCorteLabel">Rejas de Corte de Limón RANCHO EL PALMILLA</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
@@ -23,7 +23,7 @@
 
                     <!-- Poner las rejas que se cortaron -->
                     <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
-                        <!-- FILTRO PARA LA TABLA DE TICKETS PENDIENTES -->
+                         <!-- FILTRO PARA LA TABLA DE TICKETS PENDIENTES -->
                         <div class="row">
                             <!-- BARRA DE BUSQUEDA -->
                             <div class="col-md-4 mb-3">
@@ -97,7 +97,7 @@
                                             </tr>
                                         </thead>
                                         <tbody id="cuerpo_tabla_pagos_por_dia">
-
+                                           
                                         </tbody>
                                     </table>
                                 </div>

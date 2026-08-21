@@ -1354,6 +1354,24 @@ $(document).ready(function () {
                         formatearMayusculas("#modal_emergencia_ap_materno");
                         formatearMayusculas("#modal_emergencia_parentesco");
 
+                        // -----------------------------------------------
+                        // Cargar foto del empleado en el panel
+                        // -----------------------------------------------
+                        const rutaFoto = empleado.ruta_foto;
+                        const $preview = $('#foto_empleado_preview');
+                        const $overlay = $('#foto_overlay');
+
+                        if (rutaFoto) {
+                            // La ruta en BD es relativa a gafetes/ (ej: fotos_empleados/empleado_1.jpg)
+                            $preview.attr('src', rutaRaiz + 'gafetes/' + rutaFoto + '?t=' + Date.now());
+                            $preview.show();
+                            $overlay.addClass('hidden');
+                        } else {
+                            $preview.attr('src', '');
+                            $preview.hide();
+                            $overlay.removeClass('hidden');
+                        }
+
                     }
 
                 },
@@ -1383,6 +1401,111 @@ $(document).ready(function () {
             $("#modal_actualizar_empleado").modal("show");
         });
     } // Aqui agregue cosas BHL
+
+    // ============================================================
+    // Manejo de foto del empleado en el modal de actualización
+    // ============================================================
+
+    // Función helper para actualizar la vista previa de la foto
+    function actualizarVistaFoto(rutaFoto) {
+        const $preview = $('#foto_empleado_preview');
+        const $overlay = $('#foto_overlay');
+        if (rutaFoto) {
+            // La ruta en BD es relativa a la carpeta gafetes/ (ej: fotos_empleados/empleado_1.jpg)
+            const urlFoto = rutaRaiz + 'gafetes/' + rutaFoto + '?t=' + Date.now();
+            $preview.attr('src', urlFoto);
+            $preview.show();
+            $overlay.addClass('hidden');
+        } else {
+            $preview.attr('src', '');
+            $preview.hide();
+            $overlay.removeClass('hidden');
+        }
+    }
+
+    // Clic en el contenedor de foto => abre selector de archivo
+    $(document).on('click', '#foto_empleado_container', function () {
+        $('#input_foto_empleado').trigger('click');
+    });
+
+    // Cuando se selecciona un archivo para subir
+    $(document).on('change', '#input_foto_empleado', function () {
+        const archivo = this.files[0];
+        if (!archivo) return;
+
+        const idEmpleado = $('#empleado_id').val();
+        if (!idEmpleado) {
+            Swal.fire({ icon: 'warning', title: 'Aviso', text: 'No se pudo identificar al empleado.' });
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('id_empleado', idEmpleado);
+        formData.append('foto', archivo);
+
+        $('#foto_empleado_container').addClass('cargando');
+
+        $.ajax({
+            type: 'POST',
+            url: rutaRaiz + 'gafetes/php/subir_foto_empleado.php',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                $('#foto_empleado_container').removeClass('cargando');
+                if (response.success) {
+                    actualizarVistaFoto(response.ruta_foto);
+                    Swal.fire({ icon: 'success', title: '¡Foto actualizada!', text: response.message, timer: 2000, showConfirmButton: false });
+                    // Limpiar el input para permitir subir la misma foto nuevamente
+                    $('#input_foto_empleado').val('');
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: response.message });
+                    $('#input_foto_empleado').val('');
+                }
+            },
+            error: function () {
+                $('#foto_empleado_container').removeClass('cargando');
+                Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar con el servidor.' });
+                $('#input_foto_empleado').val('');
+            }
+        });
+    });
+
+    // Botón eliminar foto
+    $(document).on('click', '#btn_eliminar_foto_empleado', function () {
+        const idEmpleado = $('#empleado_id').val();
+        if (!idEmpleado) return;
+
+        Swal.fire({
+            title: '¿Eliminar foto?',
+            text: 'Se eliminará la foto del empleado. ¿Deseas continuar?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then(function (result) {
+            if (result.isConfirmed) {
+                $.ajax({
+                    type: 'POST',
+                    url: rutaRaiz + 'gafetes/php/eliminar_foto_empleado.php',
+                    data: { id_empleado: idEmpleado },
+                    success: function (response) {
+                        if (response.success) {
+                            actualizarVistaFoto(null);
+                            Swal.fire({ icon: 'success', title: 'Foto eliminada', text: response.message, timer: 2000, showConfirmButton: false });
+                        } else {
+                            Swal.fire({ icon: 'error', title: 'Error', text: response.message });
+                        }
+                    },
+                    error: function () {
+                        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar con el servidor.' });
+                    }
+                });
+            }
+        });
+    });
 
 
     // ========================================================================================

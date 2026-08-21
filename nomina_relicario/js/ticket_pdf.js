@@ -1,5 +1,43 @@
 // ticket_pdf.js - Ticket general para nómina Relicario
 $(document).ready(function () {
+    function obtenerFiltroDepartamento() {
+        return parseInt($('#filtro-departamento').val() || '-1');
+    }
+
+    function obtenerFiltroPuesto() {
+        const selectPuesto = $('#filtro_puesto');
+        if (!selectPuesto.length) return -1;
+
+        const valor = parseInt(selectPuesto.val() || '-1');
+        return Number.isNaN(valor) ? -1 : valor;
+    }
+
+    function filtrarEmpleadosPorDepartamentoLocal(nomina, idDepartamento) {
+        if (!nomina || !Array.isArray(nomina.departamentos)) return { departamentos: [] };
+        if (idDepartamento === -1) return nomina;
+
+        return {
+            ...nomina,
+            departamentos: (nomina.departamentos || [])
+                .filter(departamento => Number(departamento.id_departamento) === Number(idDepartamento))
+        };
+    }
+
+    function filtrarEmpleadosPorPuestoLocal(nomina, idPuesto) {
+        if (!nomina || !Array.isArray(nomina.departamentos)) return { departamentos: [] };
+        if (idPuesto === -1) return nomina;
+
+        return {
+            ...nomina,
+            departamentos: (nomina.departamentos || [])
+                .map(departamento => ({
+                    ...departamento,
+                    empleados: (departamento.empleados || []).filter(empleado => Number(empleado.id_puesto) === Number(idPuesto))
+                }))
+                .filter(departamento => (departamento.empleados || []).length > 0)
+        };
+    }
+
     function filtrarNominaSoloVisibles(nomina) {
         if (!nomina || !Array.isArray(nomina.departamentos)) return { departamentos: [] };
         return {
@@ -49,8 +87,8 @@ $(document).ready(function () {
         const modal = bootstrap.Modal.getInstance(modalEl);
         modal.hide();
 
-        let idDepto = parseInt($('#filtro_departamento').val() || '-1');
-        let idPuesto = parseInt($('#filtro_puesto').val() || '-1');
+        let idDepto = obtenerFiltroDepartamento();
+        let idPuesto = obtenerFiltroPuesto();
 
         let datosFiltrados;
         if (idDepto === 800) {
@@ -60,8 +98,8 @@ $(document).ready(function () {
             let deptoPoda = (jsonNominaRelicario.departamentos || []).find(d => d.nombre.toUpperCase() === 'PODA');
             datosFiltrados = { departamentos: deptoPoda ? [{ nombre: 'Poda', empleados: deptoPoda.empleados || [] }] : [] };
         } else {
-            datosFiltrados = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, idDepto);
-            if (idPuesto !== -1) datosFiltrados = filtrarEmpleadosPorPuesto(datosFiltrados, idPuesto);
+            datosFiltrados = filtrarEmpleadosPorDepartamentoLocal(jsonNominaRelicario, idDepto);
+            if (idPuesto !== -1) datosFiltrados = filtrarEmpleadosPorPuestoLocal(datosFiltrados, idPuesto);
         }
 
         datosFiltrados = filtrarNominaSoloVisibles(datosFiltrados);
@@ -161,7 +199,12 @@ $(document).ready(function () {
     }
 
     function determinarVistaActiva() {
-        if (!$('#tabla-corte-container-relicario').prop('hidden')) return 'corte';
+        const idDepto = parseInt($('#filtro-departamento').val() || '-1');
+
+        if (idDepto === 800) return 'corte';
+        if (idDepto === 801) return 'poda';
+
+        if (!$('#tabla-corte-container').prop('hidden')) return 'corte';
         if (!$('#tabla_poda_container').prop('hidden')) return 'poda';
         return 'nomina';
     }
@@ -274,11 +317,11 @@ $(document).ready(function () {
     }
 
     function generarTicketsNominaNormal() {
-        let idDepto = parseInt($('#filtro_departamento').val() || '-1');
-        let idPuesto = parseInt($('#filtro_puesto').val() || '-1');
+        let idDepto = obtenerFiltroDepartamento();
+        let idPuesto = obtenerFiltroPuesto();
 
-        let datosFiltrados = filtrarEmpleadosPorDepartamento(jsonNominaRelicario, idDepto);
-        if (idPuesto !== -1) datosFiltrados = filtrarEmpleadosPorPuesto(datosFiltrados, idPuesto);
+        let datosFiltrados = filtrarEmpleadosPorDepartamentoLocal(jsonNominaRelicario, idDepto);
+        if (idPuesto !== -1) datosFiltrados = filtrarEmpleadosPorPuestoLocal(datosFiltrados, idPuesto);
 
         datosFiltrados = filtrarNominaSoloVisibles(datosFiltrados);
 

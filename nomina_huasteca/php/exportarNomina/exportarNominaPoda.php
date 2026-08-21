@@ -27,13 +27,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['jsonNomina'])) {
 }
 
 
+// ==========================
+// COLORES PARA USAR
+// ==========================
+$color_primario = 'B50600';  // Color primario Rojo
+$color_negro    = '000000';  // Color negro
+$color_blanco   = 'FFFFFF';  // Color blanco
+$colorConcepto  = 'F2F2F2';  // fondo columna CONCEPTO GRIS CLARO
+$colorNomina    = 'FFD6D6';  // fondo filas NOMINA
+$colorDias      = 'D5F5E3';  // verde claro para columnas de días (REJA)
+$colorTotales   = 'E0E0E0';  // Gris claro para columnas de totales
+$color_rojo_claro   = 'FFE8E8';  // rojo claro para columnas de totales
+$color_letras_encabezados = '000000'; // color para las letras de encabezados
+
 
 
 //==============================
 //  FUNCIONES AUXILIARES CORTE
 //==============================
-
-$nombre_nomina = "HUASTECA";
 
 /**
  * Convierte una fecha en formato 'DD/MM/AAA' a timestamp
@@ -228,7 +239,7 @@ function restarUnDia($fecha)
     $date = DateTime::createFromFormat("d/m/Y", "$dia/$mesNum/$anio");
 
     // Restar un día
-    $date->modify("0 day");
+    $date->modify("-1 day");
 
     // Buscar la abreviatura del mes resultante
     $mesAbrevNuevo = array_search((int)$date->format("m"), $meses);
@@ -297,13 +308,14 @@ function esDiaExtra($texto)
     return preg_match('/\(\d+\)/', $texto) === 1;
 }
 
+
 /**
- * --------------------------------------------------------------------------
- * FUNCIONA PARA OBTENER LOS COLORES DE FORMA DINAMICA DE LA BASE
- * --------------------------------------------------------------------------
+ * -----------------------------------------------------------------
+ * OBTENER EL COLOR DE FORMA DINAMICA 
+ * -----------------------------------------------------------------
  */
 
-
+$nombre_nomina = "HUASTECA";
 
 /**
  * Obtiene el color principal de una nómina (el color que más se repite).
@@ -371,24 +383,12 @@ function obtenerContraste($colorHex)
 
 
 
-// ==========================
-// COLORES PARA USAR
-// ==========================
-$color_primario = '32BA5B';  // Color primario Verde
-$color_negro    = '000000';  // Color negro
-$color_blanco   = 'FFFFFF';  // Color blanco
-$colorConcepto  = 'F2F2F2';  // fondo columna CONCEPTO GRIS CLARO
-$colorNomina    = 'FFD6D6';  // fondo filas NOMINA
-$colorDias      = 'D5F5E3';  // verde claro para columnas de días (REJA)
-$colorTotales   = 'E0E0E0';  // Gris claro para columnas de totales
-$color_rojo_claro   = 'FFE8E8';  // rojo claro para columnas de totales
-
-$color_letras_encabezados = '000000';
-
 // OBTENER COLOR DE LA BASE DE DATOS
 $color_primario = obtenerColorPrincipal($nombre_nomina) ?? 'B50600';
 // COLOR DE LAS LETRAS DE LOS ENCABEZADOS
 $color_letras_encabezados = obtenerContraste($color_primario) ?? '000000';
+
+
 
 // ===================================================
 // PROCESAR LAS FECHAS
@@ -500,7 +500,7 @@ $spreadsheet->getProperties()
     ->setLastModifiedBy("BRANDON HERNANDEZ LOPEZ")
     ->setTitle($tmp_nombre)
     ->setSubject("Corte de Nómina")
-    ->setDescription("Reporte de Corte Rancho HUASTECA S.I.G. SAAO")
+    ->setDescription("Reporte de Corte Rancho Huasteca S.I.G. SAAO")
     ->setKeywords("corte, nómina, excel")
     ->setCategory("Finanzas");
 
@@ -540,7 +540,7 @@ $logoPath = __DIR__ . '/../../../public/img/logo.jpg';
 if (file_exists($logoPath)) {
     $logo = new Drawing();
     $logo->setName('Logo');
-    $logo->setDescription('Logo de Rancho Huasteca');
+    $logo->setDescription('Logo de Rancho El Huasteca');
     $logo->setPath($logoPath);
     $logo->setHeight(110);
     $logo->setCoordinates('B1');
@@ -617,10 +617,10 @@ foreach ($encabezados as $col => $titulo) {
     $sheet->setCellValue($col . '6', $titulo);
 }
 
-// Formatear los encabezados (Negrita, Centrados, Tamaño 12, Fondo Rojo, Letra NEGRO)
+// Formatear los encabezados (Negrita, Centrados, Tamaño 12, Fondo Rojo, Letra Blanca)
 $sheet->getStyle('A6:N6')->getFont()->setBold(true);
 $sheet->getStyle('A6:N6')->getFont()->setSize(12);
-$sheet->getStyle('A6:N6')->getFont()->setColor(new Color($color_letras_encabezados)); // Letra NEGRO
+$sheet->getStyle('A6:N6')->getFont()->setColor(new Color($color_letras_encabezados)); // Letra BLANCA
 $sheet->getStyle('A6:N6')->getAlignment()->setHorizontal('center');
 $sheet->getStyle('A6:N6')->getAlignment()->setVertical('center');
 $sheet->getStyle('A6:N6')->getAlignment()->setWrapText(true); // Ajustar texto

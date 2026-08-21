@@ -3,7 +3,7 @@
     <div class="modal-content">
 
       <div class="modal-header bg-success bg-gradient text-white">
-        <h1 class="modal-title fs-5" id="modal_poda_detalle_label">Detalles de la Poda de Árboles - Rancho EL RELICARIO</h1>
+        <h1 class="modal-title fs-5" id="modal_poda_detalle_label">Detalles de la Poda de Árboles - Rancho EL PALMILLA</h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 

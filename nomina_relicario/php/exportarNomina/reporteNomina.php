@@ -257,7 +257,7 @@ foreach ($empleadosPorTipo as $empleado) {
         $pdf->Ln(5);
         $contador = 1; // reiniciar contador por tipo
     }
-
+    
     $primerEmpleado = false;
 
     $nombre = strtoupper($empleado['nombre'] ?? '');

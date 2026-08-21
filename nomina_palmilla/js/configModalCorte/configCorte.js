@@ -94,8 +94,8 @@ function obtenerRangoFechas(inicioStr, finStr, formatoCorto = true) {
     let fin = esFormatoISO(finStr) ? parseFechaISO(finStr) : parseFechaCorta(finStr);
 
     // Mantengo tu lógica original (restar 1 día)
-    inicio = moverDias(inicio, 0);
-    fin = moverDias(fin, 0);
+    inicio = moverDias(inicio, -1);
+    fin = moverDias(fin, -1);
 
     const resultado = [];
     let actual = new Date(inicio);
@@ -117,7 +117,8 @@ function obtenerRangoFechas(inicioStr, finStr, formatoCorto = true) {
  * @param {String} fechaStr Fecha con formato "12/Ene/2026"
  * @returns Nombre del día de la semana en español (ej. "LUNES")
  */
-function obtenerDiaSemana(fechaStr) {
+function obtenerDiaSemanaBHL(fechaStr) {
+
     // Mapeo de meses abreviados en español a número (0 = enero)
     const meses = {
         Ene: 0,
@@ -146,7 +147,10 @@ function obtenerDiaSemana(fechaStr) {
 
     // Ajustar al arreglo dias_nomina
     return dias_nomina[indice];
+
 }
+
+
 
 /**
  * Función para llenar el cuerpo de la tabla de pagos por día con las fechas del rango y los inputs correspondientes
@@ -174,13 +178,13 @@ function llenar_cuerpo_tabla_pagos_por_dia() {
     for (let i = 0; i < dias_nomina.length; i++) {
         tmp += `
             <tr>
-                <td>${obtenerDiaSemana(rangoFechas[i])}</td>
+                <td>${obtenerDiaSemanaBHL(rangoFechas[i])}</td>
                 <td>${rangoFechas[i]}</td>
                 <td>
                     <input type="number" step="0.01" min="0"
                         class="form-control shadow-sm pago_del_dia"
-                        name="pago_${obtenerDiaSemana(rangoFechas[i]).toLowerCase()}"
-                        id="pago_${obtenerDiaSemana(rangoFechas[i]).toLowerCase()}"
+                        name="pago_${obtenerDiaSemanaBHL(rangoFechas[i]).toLowerCase()}"
+                        id="pago_${obtenerDiaSemanaBHL(rangoFechas[i]).toLowerCase()}"
                         placeholder="Pago del día">
                 </td>
                 <td class="text-center">
@@ -210,13 +214,13 @@ function llenar_cuerpo_tabla_pagos_por_dia() {
     for (let i = 0; i < dias_nomina.length; i++) {
         tmp_editar += `
             <tr>
-                <td>${obtenerDiaSemana(rangoFechas[i])}</td>
+                <td>${obtenerDiaSemanaBHL(rangoFechas[i])}</td>
                 <td>${rangoFechas[i]}</td>
                 <td>
                     <input type="number" step="0.01" min="0"
                         class="form-control shadow-sm pago_del_dia_editar"
-                        name="pago_editar_${obtenerDiaSemana(rangoFechas[i]).toLowerCase()}"
-                        id="pago_editar_${obtenerDiaSemana(rangoFechas[i]).toLowerCase()}"
+                        name="pago_editar_${obtenerDiaSemanaBHL(rangoFechas[i]).toLowerCase()}"
+                        id="pago_editar_${obtenerDiaSemanaBHL(rangoFechas[i]).toLowerCase()}"
                         placeholder="Pago del día">
                 </td>
                 <td class="text-center">
@@ -301,8 +305,8 @@ function alerta(icono, titulo, texto, toast = false) {
  * cuenta dicho rancho
  */
 function obtenerTablasRancho() {
-    // Obtener el id_area del Palmilla (siempre es 5)
-    const id_area = 5;
+    // Obtener el id_area del Palmilla (siempre es 2)
+    const id_area = 2;
 
     $.ajax({
         type: "GET",
@@ -629,6 +633,7 @@ $(document).on("submit", "#form_corte", function (e) {
  */
 function guardarTicketCorte(folio, nombreCortador, fecha, datosRejas, precio) {
 
+    // Crear el nuevo ticket con los datos del formulario
     let nuevoTicket = {
         folio,
         fecha,
@@ -636,13 +641,15 @@ function guardarTicketCorte(folio, nombreCortador, fecha, datosRejas, precio) {
         precio_reja: precio
     };
 
+    // Buscar el departamento Corte
     let departamento = jsonNominaPalmilla.departamentos.find(
         d => d.nombre === "Corte"
     );
 
+    // Si no existe el departamento Corte, crearlo y agregarlo al JSON
     if (!departamento) {
         departamento = {
-            id_departamento: 800,
+            id_departamento: 800, // ID ficticio para Corte
             nombre: "Corte",
             empleados: []
         };
@@ -725,6 +732,7 @@ function limpiar_formulario_corte() {
 
 
 
+
 /** =============================== TICKETS PENDIENTES =============================== **/
 
 
@@ -775,14 +783,13 @@ function llenar_tabla_tickets_pendientes() {
         return;
     }
 
-    // ORDENAR LOS TICKETS POR FOLIO DE MANERA ASCENDENTE
-    cortes.sort((a, b) => a.folio.localeCompare(b.folio, 'es', { numeric: true }));
-
     // OBTENER FILTRO DE BUSQUEDA, LIMITE Y PAGINA ACTUAL
     const busqueda = $("#buscar_ticket").val().trim().toLowerCase();
     const limite = parseInt($('#limite_corte').val()) || 10;
     let paginaActual = parseInt($('#pagina-actual-corte').data('pagina')) || 1;
 
+    // Ordenar los cortes por folio de manera ascendente (alfabéticamente y numéricamente)
+    cortes.sort((a, b) => a.folio.localeCompare(b.folio, 'es', { numeric: true }));
 
     // Filtrar los tickets según el folio o el nombre del cortador
     let cortesFiltrados = cortes.filter(corte => {
@@ -966,7 +973,7 @@ $(document).on("change", ".check_select_corte", function (e) {
     const ticket = $(this).data("vale");
 
     // Buscar o crear el departamento Corte
-    let departamentoCorte = jsonNominaPalmilla.departamentos.find(d => d.nombre === "Corte");
+    let departamentoCorte = jsonNominaPalmilla.departamentos.find(d => d.id_departamento == 800);
     if (!departamentoCorte) {
         departamentoCorte = { id_departamento: 800, nombre: "Corte", empleados: [] };
         jsonNominaPalmilla.departamentos.push(departamentoCorte);
@@ -1000,6 +1007,7 @@ $(document).on("change", ".check_select_corte", function (e) {
 
             empleado.tickets.push(nuevoTicket);
         }
+        
     } else {
         // ELIMINAR POR FOLIO
         if (empleado && Array.isArray(empleado.tickets)) {
@@ -1015,7 +1023,7 @@ $(document).on("change", ".check_select_corte", function (e) {
     }
 
     // OBTENER EL DEPARTAMENTO SELECCIONADO
-    let dep = $("#filtro_departamento").val();
+    let dep = $("#filtro-departamento").val();
 
     if (dep == 800) {
         mostrarDatosTablaCorte(jsonNominaPalmilla);
@@ -1045,7 +1053,6 @@ $(document).ready(function () {
         $('body').append('<div id="pagina-actual-corte" data-pagina="1" style="display:none;"></div>');
     }
 });
-
 
 
 
@@ -1189,7 +1196,7 @@ $(document).on("click", "#btn_copiar_salario", function (e) {
                 input.val("");
                 return;
             }
-            
+
             // - Sin tickets → llenar todo
             // - Con tickets → solo fechas coincidentes
             if (fechasConReja.size === 0 || fechasConReja.has(fechaISO)) {
@@ -1368,7 +1375,6 @@ $(document).on('submit', '#form_corte_nomina', function (e) {
 
     if (!departamento) {
         departamento = {
-            id_departamento: 800,
             nombre: "Corte",
             empleados: []
         };
@@ -1410,7 +1416,7 @@ $(document).on('submit', '#form_corte_nomina', function (e) {
     //modalCorte.hide();
 
     // Cargar tabla principal
-    let dep = $("#filtro_departamento").val();
+    let dep = $("#filtro-departamento").val();
     if (dep == 800) {
         mostrarDatosTablaCorte(jsonNominaPalmilla);
     }

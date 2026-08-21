@@ -3,7 +3,7 @@
         <div class="modal-content">
 
             <div class="modal-header bg-light">
-                <h1 class="modal-title fs-5" id="modalPodaLabel text-uppercase"><i class="bi bi-tree-fill me-2 text-success"></i>Poda de Árboles - RANCHO EL RELICARIO</h1>
+                <h1 class="modal-title fs-5" id="modalPodaLabel text-uppercase"><i class="bi bi-tree-fill me-2 text-success"></i>Poda de Árboles - RANCHO HUASTECA</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 

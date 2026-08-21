@@ -1,13 +1,13 @@
 function mostrarDatosTablaCorte(jsonNominaHuasteca) {
     // Aquí sí filtras sobre el arreglo de departamentos
-    let departamentoCorte = jsonNominaHuasteca.departamentos.find(d => d.nombre === "Corte");
+    let departamentoCorte = jsonNominaHuasteca.departamentos.find(d => d.id_departamento === 800);
 
     // Limpiar la tabla
-    $('#tabla-body-corte-huasteca').empty();
+    $('#tabla-body-corte').empty();
 
     // Si no existe el departamento de corte, no mostrar nada
     if (!departamentoCorte || !departamentoCorte.empleados || departamentoCorte.empleados.length === 0) {
-        $('#tabla-body-corte-huasteca').html('<tr><td colspan="13">No se encontraron datos para mostrar.</td></tr>');
+        $('#tabla-body-corte').html('<tr><td colspan="13">No se encontraron datos para mostrar.</td></tr>');
         return;
     }
 
@@ -28,7 +28,7 @@ function mostrarDatosTablaCorte(jsonNominaHuasteca) {
 
                 // Generar fila HTML
                 const filaHTML = generarFilaTablaCorte(numeroFila, datosFila);
-                $('#tabla-body-corte-huasteca').append(filaHTML);
+                $('#tabla-body-corte').append(filaHTML);
 
                 // Guardar datos de la fila para calcular totales
                 todasLasFilas.push(datosFila);
@@ -42,7 +42,7 @@ function mostrarDatosTablaCorte(jsonNominaHuasteca) {
 
             // Generar fila HTML
             const filaHTML = generarFilaTablaCorte(numeroFila, datosFila);
-            $('#tabla-body-corte-huasteca').append(filaHTML);
+            $('#tabla-body-corte').append(filaHTML);
 
             // Guardar datos de la fila para calcular totales
             todasLasFilas.push(datosFila);
@@ -51,10 +51,10 @@ function mostrarDatosTablaCorte(jsonNominaHuasteca) {
         }
     });
 
-     // Agregar fila de totales si hay filas en la tabla
+    // Agregar fila de totales si hay filas en la tabla
     if (todasLasFilas.length > 0) {
         const filaTotal = generarFilaTotalesCorte(todasLasFilas);
-        $('#tabla-body-corte-huasteca').append(filaTotal);
+        $('#tabla-body-corte').append(filaTotal);
     }
 }
 

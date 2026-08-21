@@ -27,11 +27,109 @@
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 8px;
     justify-content: flex-end;
 }
 
-/* Grupos de botones */
+/* =============================================
+   TOOLBAR DROPDOWN BUTTONS - header-controls-relicario
+   ============================================= */
+
+/* Botón principal de cada grupo */
+.btn-toolbar-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    transition: all 0.18s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    white-space: nowrap;
+}
+
+.btn-toolbar-group:hover {
+    background: #f0fdf4;
+    border-color: #22c55e;
+    color: #15803d;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
+}
+
+.btn-toolbar-group:focus,
+.btn-toolbar-group.show {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+    background: #f0fdf4;
+    border-color: #22c55e;
+    color: #15803d;
+}
+
+.btn-toolbar-group .bi {
+    font-size: 15px;
+}
+
+/* Dropdown menu personalizado */
+.dropdown-menu-nomina {
+    min-width: 240px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 6px;
+    background: #ffffff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10) !important;
+    animation: dropdownFadeIn 0.15s ease;
+}
+
+@keyframes dropdownFadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Items del dropdown */
+.dropdown-menu-nomina .dropdown-item {
+    border-radius: 7px;
+    padding: 8px 10px;
+    font-size: 13px;
+    color: #374151;
+    transition: background 0.14s ease, color 0.14s ease;
+}
+
+.dropdown-menu-nomina .dropdown-item:hover {
+    background: #f0fdf4;
+    color: #15803d;
+}
+
+.dropdown-menu-nomina .dropdown-item .bi {
+    font-size: 15px;
+    width: 18px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+/* Encabezados de sección dentro del dropdown */
+.dropdown-menu-nomina .dropdown-header {
+    font-size: 11px;
+    font-weight: 600;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 8px 10px 4px;
+    display: flex;
+    align-items: center;
+}
+
+/* Separador */
+.dropdown-menu-nomina .dropdown-divider {
+    margin: 5px 0;
+    border-color: #f3f4f6;
+}
+
+/* ============================================= */
+
+/* Grupos de botones (legacy, por compatibilidad) */
 .btn-group-relicario {
     display: flex;
     align-items: center;

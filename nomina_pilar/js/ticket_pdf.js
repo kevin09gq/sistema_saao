@@ -1,4 +1,77 @@
 // ticket_pdf.js - Ticket general para nómina Pilar
+function filtrarEmpleadosPorDepartamento(jsonNomina, id_departamento) {
+    if (!jsonNomina || !Array.isArray(jsonNomina.departamentos)) {
+        return { departamentos: [] };
+    }
+
+    const departamentoId = Number(id_departamento);
+    
+    // Si el ID es -1, significa "todos los departamentos"
+    if (departamentoId === -1) {
+        const departamentos = (jsonNomina.departamentos || [])
+            .map(depto => ({
+                ...depto,
+                empleados: (depto.empleados || []).filter(emp => emp && emp.mostrar !== false)
+            }))
+            .filter(depto => (depto.empleados || []).length > 0);
+        
+        return {
+            ...jsonNomina,
+            departamentos
+        };
+    }
+
+    // Filtrar por departamento específico
+    const departamentos = (jsonNomina.departamentos || [])
+        .filter(depto => {
+            const deptoId = Number(depto.id_departamento);
+            return deptoId === departamentoId;
+        })
+        .map(depto => ({
+            ...depto,
+            empleados: (depto.empleados || []).filter(emp => emp && emp.mostrar !== false)
+        }))
+        .filter(depto => (depto.empleados || []).length > 0);
+
+    return {
+        ...jsonNomina,
+        departamentos
+    };
+}
+
+function filtrarEmpleadosPorPuesto(jsonNomina, id_puestoEspecial) {
+    if (!jsonNomina || !Array.isArray(jsonNomina.departamentos)) {
+        return { departamentos: [] };
+    }
+
+    const puestoId = Number(id_puestoEspecial);
+    if (puestoId === -1) {
+        return jsonNomina;
+    }
+
+    const departamentos = (jsonNomina.departamentos || [])
+        .map(depto => ({
+            ...depto,
+            empleados: (depto.empleados || []).filter(emp => {
+                if (!emp) return false;
+                const valoresPuesto = [
+                    emp.id_puestoEspecial,
+                    emp.id_puesto,
+                    emp.puestoEspecial,
+                    emp.puesto_especial,
+                    emp.idPuestoEspecial
+                ];
+                return valoresPuesto.some(valor => Number(valor) === puestoId);
+            })
+        }))
+        .filter(depto => (depto.empleados || []).length > 0);
+
+    return {
+        ...jsonNomina,
+        departamentos
+    };
+}
+
 $(document).ready(function () {
     function filtrarNominaSoloVisibles(nomina) {
         if (!nomina || !Array.isArray(nomina.departamentos)) return { departamentos: [] };
@@ -49,7 +122,7 @@ $(document).ready(function () {
         const modal = bootstrap.Modal.getInstance(modalEl);
         modal.hide();
 
-        let idDepto = parseInt($('#filtro_departamento').val() || '-1');
+        let idDepto = parseInt($('#filtro-departamento').val() || '-1');
         let idPuesto = parseInt($('#filtro_puesto').val() || '-1');
 
         let datosFiltrados;
@@ -185,7 +258,7 @@ $(document).ready(function () {
     }
 
     function determinarVistaActiva() {
-        if (!$('#tabla-corte-container-pilar').prop('hidden')) return 'corte';
+        if (!$('#tabla-corte-container').prop('hidden')) return 'corte';
         if (!$('#tabla_poda_container').prop('hidden')) return 'poda';
         return 'nomina';
     }
@@ -294,7 +367,7 @@ $(document).ready(function () {
     }
 
     function generarTicketsNominaNormal() {
-        let idDepto = parseInt($('#filtro_departamento').val() || '-1');
+        let idDepto = parseInt($('#filtro-departamento').val() || '-1');
         let idPuesto = parseInt($('#filtro_puesto').val() || '-1');
 
         let datosFiltrados = filtrarEmpleadosPorDepartamento(jsonNominaPilar, idDepto);

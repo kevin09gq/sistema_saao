@@ -419,6 +419,7 @@ function llenarTabTicketsRejas(tickets) {
  */
 function generarHtmlTicket(ticket, index) {
     let htmlTablas = '';
+    let totalRejasTicket = 0;
 
     // Generar HTML para cada tabla del ticket
     ticket.datosRejas.forEach((tabla, tablaIndex) => {
@@ -426,18 +427,20 @@ function generarHtmlTicket(ticket, index) {
             <div class="row align-items-center mb-2">
                 <div class="col-4">
                     <label class="form-label">Tabla de Origen:</label>
-                    <input type="number" class="form-control form-control-sm shadow-sm" 
+                    <input type="number" class="form-control form-control-sm shadow-sm border border-2 border-dark" 
                            value="${tabla.tabla}" 
                            id="tabla_${index}_${tablaIndex}">
                 </div>
                 <div class="col-4">
                     <label class="form-label">Cantidad:</label>
-                    <input type="number" class="form-control form-control-sm shadow-sm" 
-                           value="${tabla.cantidad}" 
-                           id="cantidad_${index}_${tablaIndex}">
+                    <input
+                        type="number"
+                        class="form-control form-control-sm shadow-sm border border-2 border-dark input_cantidad_reja_detalle" 
+                        value="${tabla.cantidad}" 
+                        id="cantidad_${index}_${tablaIndex}">
                 </div>
                 <div class="col-4">
-                    <button type="button" class="btn btn-outline-danger btn-sm mt-4 shadow-sm" 
+                    <button type="button" class="btn btn-outline-danger btn-sm mt-4 shadow-sm border border-2 border-danger" 
                             onclick="eliminarTabla(${index}, ${tablaIndex})" 
                             title="Eliminar tabla">
                         <i class="bi bi-trash"></i>
@@ -445,13 +448,15 @@ function generarHtmlTicket(ticket, index) {
                 </div>
             </div>
         `;
+
+        totalRejasTicket += parseInt(tabla.cantidad) || 0;
     });
 
     return `
-        <div class="card mb-3" id="ticket_${index}">
-            <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="card mb-3 shadow-sm border border-2 border-dark" id="ticket_${index}">
+            <div class="card-header d-flex justify-content-between align-items-center border-bottom border-2 border-dark">
                 <h6 class="mb-0">Ticket #${ticket.folio}</h6>
-                <button type="button" class="btn btn-outline-danger btn-sm" 
+                <button type="button" class="btn btn-outline-danger btn-sm border border-2 border-danger" 
                         onclick="eliminarTicket(${index})" 
                         title="Eliminar ticket completo">
                     <i class="bi bi-trash"></i> Eliminar Ticket
@@ -461,13 +466,13 @@ function generarHtmlTicket(ticket, index) {
                 <div class="row mb-3">
                     <div class="col-6">
                         <label class="form-label">Folio:</label>
-                        <input type="text" class="form-control form-control-sm shadow-sm" 
+                        <input type="text" class="form-control form-control-sm shadow-sm border border-2 border-dark" 
                                value="${ticket.folio}" 
                                id="folio_${index}">
                     </div>
                     <div class="col-6">
                         <label class="form-label">Fecha:</label>
-                        <input type="date" class="form-control form-control-sm shadow-sm" 
+                        <input type="date" class="form-control form-control-sm shadow-sm border border-2 border-dark" 
                                value="${ticket.fecha}" 
                                id="fecha_${index}">
                     </div>
@@ -478,18 +483,34 @@ function generarHtmlTicket(ticket, index) {
                     <div id="tablas_container_${index}">
                         ${htmlTablas}
                     </div>
-                    <button type="button" class="btn btn-outline-primary btn-sm mt-2" 
+                    <button type="button" class="btn btn-outline-primary btn-sm mt-2 border border-2 border-primary" 
                             onclick="agregarTabla(${index})">
                         <i class="bi bi-plus"></i> Agregar Tabla
                     </button>
                 </div>
                 
                 <div class="row">
-                    <div class="col-6">
+                    <div class="col-3">
+                        <label class="form-label">Total Rejas:</label>
+                        <input
+                            type="number" class="form-control form-control-sm shadow-sm border border-2 border-dark"
+                            disabled
+                            value="${totalRejasTicket}" 
+                            id="total_rejas_${index}">
+                    </div>
+                    <div class="col-3">
                         <label class="form-label">Precio por Reja:</label>
-                        <input type="number" step="0.01" class="form-control form-control-sm shadow-sm" 
-                               value="${ticket.precio_reja}" 
+                        <input type="number" step="0.01" class="form-control form-control-sm shadow-sm border border-2 border-dark" 
+                               value="${ (ticket.precio_reja).toFixed(2) }" 
                                id="precio_${index}">
+                    </div>
+                    <div class="col-3">
+                        <label class="form-label">Total efectivo:</label>
+                        <input
+                            disabled
+                            type="text" class="form-control form-control-sm shadow-sm border border-2 border-dark" 
+                            value="$ ${(totalRejasTicket * ticket.precio_reja).toFixed(2)} MXN" 
+                            id="total_efectivo_${index}">
                     </div>
                 </div>
             </div>
@@ -538,6 +559,9 @@ function eliminarTabla(ticketIndex, tablaIndex) {
         if (result.isConfirmed) {
             // Buscar y eliminar la fila de la tabla específica
             $(`#tabla_${ticketIndex}_${tablaIndex}`).closest('.row').remove();
+
+            // Recalcular los totales del ticket después de eliminar la tabla
+            recalcularTotalesTicket(ticketIndex);
         }
     });
 }
@@ -555,22 +579,28 @@ function agregarTabla(ticketIndex) {
         <div class="row align-items-center mb-2">
             <div class="col-4">
                 <label class="form-label">Tabla de Origen:</label>
-                <input type="number" class="form-control form-control-sm" 
-                       value="" 
-                       placeholder="Número de tabla"
-                       id="tabla_${ticketIndex}_${nuevoIndice}">
+                <input
+                    type="number"
+                    class="form-control form-control-sm border border-2 border-dark" 
+                    value="" 
+                    placeholder="Número de tabla"
+                    id="tabla_${ticketIndex}_${nuevoIndice}">
             </div>
             <div class="col-4">
                 <label class="form-label">Cantidad:</label>
-                <input type="number" class="form-control form-control-sm" 
-                       value="" 
-                       placeholder="Cantidad de rejas"
-                       id="cantidad_${ticketIndex}_${nuevoIndice}">
+                <input
+                    type="number"
+                    class="form-control form-control-sm border border-2 border-dark input_cantidad_reja_detalle" 
+                    value="" 
+                    placeholder="Cantidad de rejas"
+                    id="cantidad_${ticketIndex}_${nuevoIndice}">
             </div>
             <div class="col-4">
-                <button type="button" class="btn btn-outline-danger btn-sm mt-4" 
-                        onclick="eliminarTabla(${ticketIndex}, ${nuevoIndice})" 
-                        title="Eliminar tabla">
+                <button
+                    type="button"
+                    class="btn btn-outline-danger btn-sm mt-4 border border-2 border-danger" 
+                    onclick="eliminarTabla(${ticketIndex}, ${nuevoIndice})" 
+                    title="Eliminar tabla">
                     <i class="bi bi-trash"></i>
                 </button>
             </div>
@@ -580,6 +610,40 @@ function agregarTabla(ticketIndex) {
     $(`#tablas_container_${ticketIndex}`).append(nuevaTablaHtml);
     console.log(`Nueva tabla agregada al ticket ${ticketIndex}`);
 }
+
+/**
+ * Recalcula los totales de un ticket específico
+ * @param {Number} index - Índice del ticket
+ */
+function recalcularTotalesTicket(index) {
+    let totalRejas = 0;
+
+    // Recorrer todos los inputs de cantidad dentro del ticket
+    $(`#tablas_container_${index} .input_cantidad_reja_detalle`).each(function () {
+        let valor = parseInt($(this).val(), 10);
+        if (!isNaN(valor)) {
+            totalRejas += valor;
+        }
+    });
+
+    // Actualizar total de rejas
+    $(`#total_rejas_${index}`).val(totalRejas);
+
+    // Obtener precio por reja
+    let precio = parseFloat($(`#precio_${index}`).val()) || 0;
+
+    // Actualizar total efectivo
+    $(`#total_efectivo_${index}`).val(`$ ${(totalRejas * precio).toFixed(2)} MXN`);
+}
+
+// -------------------------------------------------------------------------------------------
+// Evento: cambio en cantidad de rejas
+// -------------------------------------------------------------------------------------------
+$(document).on("input", ".input_cantidad_reja_detalle", function () {
+    // Extraer el índice del ticket desde el id del input
+    const index = $(this).attr("id").split("_")[1];
+    recalcularTotalesTicket(index);
+});
 
 
 /**
@@ -765,7 +829,7 @@ $(document).on('click', '#btn_borrar_nomina', function (e) {
         cancelButtonText: "Cancelar"
     }).then((result) => {
         if (result.isConfirmed) {
-            
+
             if (jsonNominaHuasteca == null) {
                 alerta("error", "Error de datos", "No se pudo eliminar la nómina porque no se han cargado los datos correctamente.");
                 return;
@@ -774,14 +838,14 @@ $(document).on('click', '#btn_borrar_nomina', function (e) {
             try {
                 // Buscar el departamento "Corte"
                 const departamentoCorte = jsonNominaHuasteca.departamentos.find(dept => dept.nombre === 'Corte');
-                
+
                 if (!departamentoCorte) {
                     alerta("error", "Departamento no encontrado", "El departamento 'Corte' no existe en los datos.");
                     return;
                 }
 
                 // Buscar y eliminar el empleado con concepto "NOMINA"
-                const indexEmpleado = departamentoCorte.empleados.findIndex(emp => 
+                const indexEmpleado = departamentoCorte.empleados.findIndex(emp =>
                     emp.nombre === nombre && emp.concepto === 'NOMINA'
                 );
 

@@ -56,18 +56,18 @@ function respuesta(int $code, string $titulo, string $mensaje, string $icono, ar
 /** ============================= FUNCIONES AUXILIARES PARA OBTENER DATOS ============================= */
 
 /**
- * Función para obtener los departamentos que pertenecen a Huasteca
+ * Función para obtener los departamentos que pertenecen a huasteca
  */
 function obtenerDepartamento()
 {
     global $conexion;
 
-    // SQL PARA OBTENER LOS DEPARTAMENTOS ASIGNADOS AL ÁREA DE LA NÓMINA ESPECÍFICA (ID 6 - HUASTECA)
-    $sql = "SELECT d.* 
-            FROM departamentos d 
-            INNER JOIN areas_departamentos ad ON d.id_departamento = ad.id_departamento 
-            INNER JOIN nombre_nominas n ON ad.id_area = n.id_area 
-            WHERE n.id_nomina = 6";
+    // SQL PARA OBTENER LOS DEPARTAMENTOS ASIGNADOS AL ÁREA DE LA NÓMINA ESPECÍFICA (ID 4 - huasteca)
+    $sql = "SELECT d.id_departamento, d.nombre_departamento
+            FROM departamentos d
+            INNER JOIN nomina_departamento nd ON d.id_departamento = nd.id_departamento
+            WHERE nd.id_nomina = 4
+            ORDER BY d.nombre_departamento ASC";
 
     $stmt = $conexion->prepare($sql);
     $stmt->execute();
@@ -83,7 +83,7 @@ function obtenerDepartamento()
 
 
 /**
- * Función para obtener los puestos que pertenecen a Huasteca
+ * Función para obtener los puestos que pertenecen a huasteca
  */
 function obtenerPuesto()
 {
@@ -96,7 +96,7 @@ function obtenerPuesto()
 
     $id_departamento = $_GET["id_departamento"];
 
-    // SQL PARA OBTENER LOS DEPARTAMENTOS QUE PERTENECEN A RELICARIO
+    // SQL PARA OBTENER LOS DEPARTAMENTOS QUE PERTENECEN A huasteca
     $sql = "SELECT
                 dp.id_puestoEspecial,
                 pe.nombre_puesto

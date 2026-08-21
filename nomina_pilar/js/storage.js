@@ -1,12 +1,16 @@
-// Funciones simples y fáciles de entender para Local Storage
-// Guardar automáticamente antes de recargar la página
-// Solo guardar si jsonNominaPilar tiene datos válidos (evita re-grabar después de un clear)
+//======================================================================
+// FUNCION PARA GUARDAR LA NOMINA CUANDO SE RECARGA LA PAGINA 
+//======================================================================
+
 window.addEventListener('beforeunload', function () {
-    if (jsonNominaPilar && Array.isArray(jsonNominaPilar.departamentos) && jsonNominaPilar.departamentos.length > 0) {
+    if (typeof jsonNominaPilar !== 'undefined') {
         saveNomina(jsonNominaPilar);
     }
 });
 
+//======================================================================
+//FUNCION PARA GUARDAR EL JSON DE LA NOMINA EN EL LOCAL STORAGE
+//======================================================================
 
 function saveNomina(jsonNominaPilar) {
     try {
@@ -18,6 +22,10 @@ function saveNomina(jsonNominaPilar) {
     }
 }
 
+//======================================================================
+// FUNCION PARA OBTENER EL JSON DE LA NOMINA DESDE EL LOCAL STORAGE
+//======================================================================
+
 function loadNomina() {
     try {
         const str = localStorage.getItem('jsonNominaPilar');
@@ -28,24 +36,10 @@ function loadNomina() {
     }
 }
 
-function clearNomina() {
-    try {
-        localStorage.removeItem('jsonNominaPilar');
-        window.jsonNominaPilar = null;
+//====================================================================================
+// FUNCION PARA RESTAURAR LA NOMINA DESDE EL LOCAL STORAGE CUANDO SE CARGA LA PAGINA
+//====================================================================================
 
-        // Limpiar tabla, formulario y ocultar contenedor
-        $('#tabla-nomina-body-pilar').empty();
-        $('#form_excel_raya')[0].reset();
-        $('#tabla-nomina-responsive').prop('hidden', true);
-
-        return true;
-    } catch (err) {
-        return false;
-    }
-}
-
-
-// Restaura la nómina desde localStorage y actualiza la vista si las funciones UI están disponibles
 function restoreNomina() {
     try {
         const stored = loadNomina();
@@ -54,39 +48,12 @@ function restoreNomina() {
         // Poner la variable global para que el resto del código la use
         jsonNominaPilar = stored;
 
-        if (typeof initComponents === 'function') {
-            initComponents();
-        }
-
-        // Renderizar tabla restaurada
-        if (typeof mostrarDatosTabla === 'function') {
-            let id_departamento = parseInt($('#filtro_departamento').val());
-
-            // Si el select aún no tiene valor válido, usar el primer departamento del JSON
-            if (!id_departamento && jsonNominaPilar.departamentos && jsonNominaPilar.departamentos.length > 0) {
-                id_departamento = jsonNominaPilar.departamentos[0].id_departamento;
-            }
-
-            // Lógica para ocultar columnas (Modo Confianza)
-            const depaObjeto = jsonNominaPilar.departamentos.find(d => 
-                d.empleados && d.empleados.some(e => e.id_departamento == id_departamento)
-            );
-            
-            if (depaObjeto) {
-                const primerEmpleado = depaObjeto.empleados.find(e => e.id_departamento == id_departamento);
-                if (primerEmpleado && parseInt(primerEmpleado.tipo_horario) === 1) {
-                    $('#tabla-nomina-container-pilar').addClass('modo-confianza');
-                } else {
-                    $('#tabla-nomina-container-pilar').removeClass('modo-confianza');
-                }
-            }
-
-            let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaPilar, id_departamento);
-            mostrarDatosTabla(jsonFiltrado, 1);
-        }
-
-        actualizarCabeceraNomina(jsonNominaPilar);
-
+        cargarFiltroDepartamentos(); // Cargar el select
+        llenarTablaNomina(); // Llenar la tabla con los empleados
+        saveNomina(jsonNominaPilar); // Guardar el JSON de la nómina en el local storage
+        cambiarVistaTablaNomina(); // Cambiar la vista para mostrar la tabla de nómina
+        actualizarCabeceraNomina(jsonNominaPilar); // Actualizar la cabecera de la nómina
+        
         return true;
     } catch (err) {
 
@@ -94,4 +61,17 @@ function restoreNomina() {
     }
 }
 
+//=========================================================================
+// FUNCION PARA LIMPIAR LA NOMINA DEL LOCAL STORAGE Y DE LA VARIABLE GLOBAL
+//=========================================================================
 
+function clearNomina() {
+    try {
+        localStorage.removeItem('jsonNominaPilar');
+        // También limpiar la variable global para evitar que se vuelva a guardar en beforeunload
+            jsonNominaPilar = null;
+        return true;
+    } catch (err) {
+        return false;
+    }
+}

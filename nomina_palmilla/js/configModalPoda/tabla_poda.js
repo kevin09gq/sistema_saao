@@ -26,7 +26,7 @@ function mostrarDatosTablaPoda(json) {
 
     // Si no existe el departamento de poda, no mostrar nada
     if (!departamentoPoda || !departamentoPoda.empleados || departamentoPoda.empleados.length === 0) {
-        $('#tabla_body_poda').html('<tr><td colspan="13">No se encontraron datos para mostrar.</td></tr>');
+         $('#tabla_body_poda').html('<tr><td colspan="13">No se encontraron datos para mostrar.</td></tr>');
         return;
     }
 
@@ -76,7 +76,7 @@ function mostrarDatosTablaPoda(json) {
  */
 function agruparMovimientosConceptoPoda(movimientos) {
     const mapa = {};
-
+    
     movimientos.forEach(mov => {
         const monto = mov.monto;
         if (!mapa[monto]) {
@@ -98,7 +98,7 @@ function agruparMovimientosConceptoPoda(movimientos) {
  */
 function agruparMovimientosExtras(movimientos) {
     const mapa = {};
-
+    
     movimientos.forEach(mov => {
         const clave = `${mov.concepto}|${mov.monto}`;
         if (!mapa[clave]) {
@@ -119,7 +119,7 @@ function agruparMovimientosExtras(movimientos) {
  * @param {String} nombreEmpleado Nombre del empleado
  * @param {Object} grupo Grupo con {monto, movimientos}
  * @param {Number} numeroFila Número de fila para identificación
-  * @returns {Object} Objeto con propiedades {html: String, datos: Object}
+ * @returns {Object} Objeto con propiedades {html: String, datos: Object}
  */
 function crearFilaPoda(nombreEmpleado, grupo, numeroFila) {
     const diasArray = new Array(7).fill(null); // [V, SA, DO, L, MA, MI, J]
@@ -207,9 +207,9 @@ function crearFilaExtra(nombreEmpleado, grupo, numeroFila) {
  */
 function obtenerDiaSemanaPoda(fecha) {
     const dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
-
+    
     let fechaObj;
-
+    
     // Si es un string, parsearlo manualmente para evitar problemas de zona horaria
     if (typeof fecha === 'string') {
         // Formato esperado: YYYY-MM-DD
@@ -225,13 +225,13 @@ function obtenerDiaSemanaPoda(fecha) {
     } else {
         fechaObj = fecha;
     }
-
+    
     // Verificar si es un objeto Date válido
     if (!(fechaObj instanceof Date) || isNaN(fechaObj.getTime())) {
         console.error('Fecha inválida:', fecha);
         return null;
     }
-
+    
     return dias[fechaObj.getDay()];
 }
 

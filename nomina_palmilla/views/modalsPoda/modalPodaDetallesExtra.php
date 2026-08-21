@@ -3,7 +3,7 @@
   <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header bg-success bg-gradient text-white">
-        <h1 class="modal-title fs-5" id="modal_poda_detalle_extra_label">Detalles de la Poda EXTRA - Rancho EL RELICARIO</h1>
+        <h1 class="modal-title fs-5" id="modal_poda_detalle_extra_label">Detalles de la Poda EXTRA - Rancho EL PALMILLA</h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">

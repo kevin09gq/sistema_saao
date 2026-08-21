@@ -85,22 +85,24 @@ function obtenerDiaSemanaDesdeFechaPhp($fechaStr) {
 
 function renderTicketCortePdf($pdf, $empleado, $meta) {
     $nombre = safeText($empleado['nombre'] ?? '');
+    $rancho = safeText($meta['rancho'] ?? $meta['rancho_nombre'] ?? 'RANCHO HUASTECA');
+    $nombreConRancho = $nombre;
+    if ($rancho !== '') {
+        $nombreConRancho .= ' - ' . $rancho;
+    }
     $semana = safeText($meta['numero_semana'] ?? '');
-
+    
     $totalRejas = intval($empleado['totalRejas'] ?? 0);
     $preciosUnicos = is_array($empleado['preciosUnicos'] ?? null) ? $empleado['preciosUnicos'] : [];
     $efectivoRejas = toNumber($empleado['efectivoRejas'] ?? 0);
     $diasTrabajados = intval($empleado['diasTrabajados'] ?? 0);
     $preciosPorDia = is_array($empleado['preciosPorDia'] ?? null) ? $empleado['preciosPorDia'] : [];
     $totalNomina = toNumber($empleado['totalNomina'] ?? 0);
-    $subtotal = toNumber($empleado['subtotal'] ?? $empleado['totalEfectivo'] ?? 0);
-    $redondeo = toNumber($empleado['redondeo'] ?? 0);
-    $totalEfectivo = toNumber($empleado['totalEfectivo'] ?? 0);
 
     $pdf->SetTextColor(0, 0, 0);
     $dot = function ($d) { return ((float)$d) / 8.0; };
     $pt = function ($dotH) use ($dot) { return max(4.0, ($dot($dotH)) / 0.352777); };
-
+    
     $text = function ($xDot, $yDot, $fontPt, $value) use ($pdf, $dot) {
         $pdf->SetFont('helvetica', '', $fontPt);
         $pdf->Text($dot($xDot), $dot($yDot), (string)$value);
@@ -111,36 +113,132 @@ function renderTicketCortePdf($pdf, $empleado, $meta) {
     };
     $cellText = function ($xDot, $yDot, $wDot, $hDot, $fontPt, $value, $align = 'L') use ($pdf, $dot) {
         $pdf->SetFont('helvetica', '', $fontPt);
-        $pdf->SetXY($dot($xDot), $dot($yDot + 5));
+        $pdf->SetXY($dot($xDot), $dot($yDot + 5)); 
         $pdf->Cell($dot($wDot), $dot($hDot - 8), substr((string)$value, 0, 50), 0, 0, $align, false, '', 0, false, 'T', 'T');
     };
 
+    // ==========================================
+    // HOJA 1: REJAS
+    // ==========================================
     $pdf->SetLineWidth($dot(2));
     $pdf->Rect($dot(10), $dot(12), $dot(812), $dot(386));
-
-    $textB(12, 22, $pt(17), $nombre);
+    
+    // Encabezado
+    $textB(12, 22, $pt(17), $nombreConRancho);
     $text(710, 20, $pt(18), 'SEM ' . $semana);
     $pdf->SetLineWidth($dot(1));
     $pdf->Line($dot(10), $dot(42), $dot(822), $dot(42));
-    $text(280, 47, $pt(20), "Corte De Rejas");
+    $text(310, 47, $pt(20), "Corte De Rejas");
     $pdf->Line($dot(10), $dot(75), $dot(822), $dot(75));
-
-    $textB(150, 78, $pt(20), 'REJAS');
-    $textB(520, 78, $pt(20), 'NOMINA');
+    
+    // Títulos de columnas Rejas
+    $textB(150, 78, $pt(20), 'CONCEPTO');
+    $textB(520, 78, $pt(20), 'DETALLE');
     $pdf->Line($dot(10), $dot(107), $dot(822), $dot(107));
-
+    
+    // Construir lista de rejas
     $rejasList = [];
     $rejasList[] = ['label' => 'Total de rejas', 'monto' => $totalRejas];
-
+    
     $idx = 1;
     foreach ($preciosUnicos as $precio) {
         $rejasList[] = ['label' => 'Precio por reja ' . $idx, 'monto' => '$ ' . money($precio)];
         $idx++;
     }
 
+    // Renderizar tabla de Rejas
+    $lh = 26; $tableTop = 107;
+    $maxRows1 = 9; $maxRowsC = 11;
+    $row = 0; $currentY = $tableTop;
+
+    for ($i = 0; $i < count($rejasList); $i++) {
+        if ($i >= $maxRows1 && ($i - $maxRows1) % $maxRowsC === 0) {
+            $pdf->AddPage();
+            $pdf->SetLineWidth($dot(2)); $pdf->Rect($dot(10), $dot(12), $dot(812), $dot(386));
+            $textB(12, 22, $pt(15), $nombreConRancho);
+            $text(710, 20, $pt(18), 'SEM ' . $semana);
+            $pdf->SetLineWidth($dot(1)); $pdf->Line($dot(10), $dot(42), $dot(822), $dot(42));
+            $text(310, 47, $pt(20), "Corte De Rejas (cont.)");
+            $pdf->Line($dot(10), $dot(75), $dot(822), $dot(75));
+            $textB(150, 78, $pt(20), 'CONCEPTO');
+            $textB(520, 78, $pt(20), 'DETALLE');
+            $pdf->Line($dot(10), $dot(107), $dot(822), $dot(107));
+            $tableTop = 107; $row = 0;
+        }
+        $y = $tableTop + ($row * $lh);
+        $pdf->SetFont('helvetica', '', $pt(15));
+        $cellText(9, $y, 400, $lh, $pt(14), $rejasList[$i]['label'], 'L');
+        $cellText(410, $y, 400, $lh, $pt(16), $rejasList[$i]['monto'], 'C');
+        $pdf->SetLineWidth($dot(1));
+        $pdf->Line($dot(10), $dot($y + $lh), $dot(822), $dot($y + $lh));
+        $currentY = $y + $lh; $row++;
+    }
+
+    // Línea vertical divisoria Rejas
+    $pdf->SetLineWidth($dot(2));
+    $pdf->Line($dot(415), $dot($tableTop), $dot(415), $dot($currentY));
+
+    $yT = $currentY;
+    $limiteRejas = 340;
+    if ($yT > $limiteRejas) {
+        $pdf->AddPage();
+        $pdf->SetLineWidth($dot(2)); $pdf->Rect($dot(10), $dot(12), $dot(812), $dot(386));
+        $textB(12, 22, $pt(15), $nombreConRancho);
+        $text(710, 20, $pt(18), 'SEM ' . $semana);
+        $pdf->SetLineWidth($dot(1)); $pdf->Line($dot(10), $dot(42), $dot(822), $dot(42));
+        $yT = 55;
+    }
+
+    // Cálculo de redondeo para Rejas
+    $efectivoRejasRedondeado = round($efectivoRejas);
+    $redondeoRejas = $efectivoRejasRedondeado - $efectivoRejas;
+    $hayRedondeoRejas = round($redondeoRejas, 2) != 0;
+
+    $pdf->SetLineWidth($dot(2));
+    $pdf->Line($dot(10), $dot($yT), $dot(822), $dot($yT));
+
+    if ($hayRedondeoRejas) {
+        $signo = $redondeoRejas > 0 ? '+' : '-';
+        $text(18, $yT + 13, $pt(16), 'Efectivo rejas $' . money($efectivoRejas) . ' ---------- ajuste redondeo: ' . $signo . '$' . money(abs($redondeoRejas)));
+        $pdf->Line($dot(10), $dot($yT + 37), $dot(822), $dot($yT + 37));
+        $textB(18, $yT + 43, $pt(16), 'TOTAL REJAS');
+        $textB(620, $yT + 43, $pt(16), '$');
+        $textB(640, $yT + 43, $pt(16), money($efectivoRejasRedondeado));
+    } else {
+        $text(18, $yT + 13, $pt(16), 'Efectivo rejas');
+        $text(600, $yT + 13, $pt(16), '$' . money($efectivoRejas));
+        $pdf->Line($dot(10), $dot($yT + 37), $dot(822), $dot($yT + 37));
+        $textB(18, $yT + 43, $pt(16), 'TOTAL REJAS');
+        $textB(620, $yT + 43, $pt(16), '$');
+        $textB(640, $yT + 43, $pt(16), money($efectivoRejas));
+    }
+
+    // ==========================================
+    // HOJA 2: NOMINA
+    // ==========================================
+    $pdf->AddPage();
+    $pdf->SetTextColor(0, 0, 0);
+    $pdf->SetLineWidth($dot(2));
+    $pdf->Rect($dot(10), $dot(12), $dot(812), $dot(386));
+    
+    // Encabezado
+    $textB(12, 22, $pt(17), $nombreConRancho);
+    $text(710, 20, $pt(18), 'SEM ' . $semana);
+    $pdf->SetLineWidth($dot(1));
+    $pdf->Line($dot(10), $dot(42), $dot(822), $dot(42));
+    $text(310, 47, $pt(20), "Nómina");
+    $pdf->Line($dot(10), $dot(75), $dot(822), $dot(75));
+    
+    // Títulos de columnas Nómina
+    $textB(150, 78, $pt(20), 'CONCEPTO');
+    $textB(520, 78, $pt(20), 'DETALLE');
+    $pdf->Line($dot(10), $dot(107), $dot(822), $dot(107));
+
+    // Construir lista de Nómina
     $nominaList = [];
     if ($diasTrabajados > 0) {
         $nominaList[] = ['label' => 'Días trabajados', 'monto' => $diasTrabajados];
+        
         $idx = 1;
         foreach ($preciosPorDia as $precio) {
             $nominaList[] = ['label' => 'Precio por día ' . $idx, 'monto' => '$ ' . money($precio)];
@@ -148,72 +246,70 @@ function renderTicketCortePdf($pdf, $empleado, $meta) {
         }
     }
 
-    $lh = 26; $tableTop = 107;
-    $maxC = max(count($rejasList), count($nominaList));
-    $maxRows1 = 9; $maxRowsC = 11;
-    $row = 0; $currentY = $tableTop;
+    // Renderizar tabla de Nómina
+    $tableTop2 = 107;
+    $row2 = 0; $currentY2 = $tableTop2;
 
-    for ($i = 0; $i < $maxC; $i++) {
+    for ($i = 0; $i < count($nominaList); $i++) {
         if ($i >= $maxRows1 && ($i - $maxRows1) % $maxRowsC === 0) {
             $pdf->AddPage();
             $pdf->SetLineWidth($dot(2)); $pdf->Rect($dot(10), $dot(12), $dot(812), $dot(386));
-            $textB(12, 22, $pt(15), $nombre);
+            $textB(12, 22, $pt(15), $nombreConRancho);
             $text(710, 20, $pt(18), 'SEM ' . $semana);
             $pdf->SetLineWidth($dot(1)); $pdf->Line($dot(10), $dot(42), $dot(822), $dot(42));
-            $textB(150, 48, $pt(20), 'REJAS');
-            $textB(520, 48, $pt(20), 'NOMINA');
+            $text(310, 47, $pt(20), "Nómina (cont.)");
             $pdf->Line($dot(10), $dot(75), $dot(822), $dot(75));
-            $tableTop = 75; $row = 0;
+            $textB(150, 78, $pt(20), 'CONCEPTO');
+            $textB(520, 78, $pt(20), 'DETALLE');
+            $pdf->Line($dot(10), $dot(107), $dot(822), $dot(107));
+            $tableTop2 = 107; $row2 = 0;
         }
-        $y = $tableTop + ($row * $lh);
-        if (isset($rejasList[$i])) {
-            $pdf->SetFont('helvetica', '', $pt(15));
-            $cellText(9, $y, 170, $lh, $pt(14), $rejasList[$i]['label'], 'L');
-            $cellText(240, $y, 229, $lh, $pt(16), $rejasList[$i]['monto'], 'C');
-        }
-        if (isset($nominaList[$i])) {
-            $pdf->SetFont('helvetica', '', $pt(15));
-            $cellText(410, $y, 218, $lh, $pt(14), $nominaList[$i]['label'], 'L');
-            $cellText(660, $y, 182, $lh, $pt(16), $nominaList[$i]['monto'], 'C');
-        }
+        $y = $tableTop2 + ($row2 * $lh);
+        $pdf->SetFont('helvetica', '', $pt(15));
+        $cellText(9, $y, 400, $lh, $pt(14), $nominaList[$i]['label'], 'L');
+        $cellText(410, $y, 400, $lh, $pt(16), $nominaList[$i]['monto'], 'C');
         $pdf->SetLineWidth($dot(1));
         $pdf->Line($dot(10), $dot($y + $lh), $dot(822), $dot($y + $lh));
-        $pdf->SetLineWidth($dot(2));
-        $pdf->Line($dot(415), $dot($tableTop), $dot(415), $dot($y + $lh));
-        $currentY = $y + $lh; $row++;
+        $currentY2 = $y + $lh; $row2++;
     }
 
-    $yT = $currentY + 18;
-    if ($yT > 310) {
+    // Línea vertical divisoria Nómina
+    $pdf->SetLineWidth($dot(2));
+    $pdf->Line($dot(415), $dot($tableTop2), $dot(415), $dot($currentY2));
+
+    $yT2 = $currentY2;
+    $limiteNomina = 340;
+    if ($yT2 > $limiteNomina) {
         $pdf->AddPage();
         $pdf->SetLineWidth($dot(2)); $pdf->Rect($dot(10), $dot(12), $dot(812), $dot(386));
-        $textB(12, 22, $pt(15), $nombre);
+        $textB(12, 22, $pt(15), $nombreConRancho);
         $text(710, 20, $pt(18), 'SEM ' . $semana);
         $pdf->SetLineWidth($dot(1)); $pdf->Line($dot(10), $dot(42), $dot(822), $dot(42));
-        $pdf->Line($dot(415), $dot(12), $dot(415), $dot(42));
-        $yT = 55;
+        $yT2 = 55;
     }
 
-    $pdf->SetLineWidth($dot(2));
-    $pdf->Line($dot(10), $dot($yT), $dot(822), $dot($yT));
-    $text(18, $yT + 13, $pt(16), 'Efectivo rejas');
-    $text(310, $yT + 13, $pt(16), '$' . money($efectivoRejas));
-    $text(430, $yT + 13, $pt(16), 'Total nómina');
-    $text(710, $yT + 13, $pt(16), '$' . money($totalNomina));
-    $pdf->Line($dot(415), $dot($yT), $dot(415), $dot($yT + 37));
-    $pdf->Line($dot(10), $dot($yT + 37), $dot(822), $dot($yT + 37));
+    // Cálculo de redondeo para Nómina
+    $totalNominaRedondeado = round($totalNomina);
+    $redondeoNomina = $totalNominaRedondeado - $totalNomina;
+    $hayRedondeoNomina = round($redondeoNomina, 2) != 0;
 
-    if (round($redondeo, 2) != 0) {
-        $signo = $redondeo > 0 ? '+' : '';
-        $text(18, $yT + 42, $pt(16), 'Total efectivo $' . money($subtotal) . ' ---------- ajustes redondeo: ' . $signo . '$' . money($redondeo));
-        $pdf->Line($dot(10), $dot($yT + 62), $dot(822), $dot($yT + 62));
-        $textB(18, $yT + 68, $pt(22), 'TOTAL EFECTIVO');
-        $textB(620, $yT + 68, $pt(22), '$');
-        $textB(640, $yT + 68, $pt(22), money($totalEfectivo));
+    $pdf->SetLineWidth($dot(2));
+    $pdf->Line($dot(10), $dot($yT2), $dot(822), $dot($yT2));
+
+    if ($hayRedondeoNomina) {
+        $signo = $redondeoNomina > 0 ? '+' : '-';
+        $text(18, $yT2 + 13, $pt(16), 'Total nómina $' . money($totalNomina) . ' ---------- ajuste redondeo: ' . $signo . '$' . money(abs($redondeoNomina)));
+        $pdf->Line($dot(10), $dot($yT2 + 37), $dot(822), $dot($yT2 + 37));
+        $textB(18, $yT2 + 43, $pt(16), 'TOTAL EFECTIVO');
+        $textB(620, $yT2 + 43, $pt(16), '$');
+        $textB(640, $yT2 + 43, $pt(16), money($totalNominaRedondeado));
     } else {
-        $textB(18, $yT + 43, $pt(22), 'TOTAL EFECTIVO');
-        $textB(620, $yT + 43, $pt(22), '$');
-        $textB(640, $yT + 43, $pt(22), money($totalEfectivo));
+        $text(18, $yT2 + 13, $pt(16), 'Total nómina');
+        $text(600, $yT2 + 13, $pt(16), '$' . money($totalNomina));
+        $pdf->Line($dot(10), $dot($yT2 + 37), $dot(822), $dot($yT2 + 37));
+        $textB(18, $yT2 + 43, $pt(16), 'TOTAL EFECTIVO');
+        $textB(620, $yT2 + 43, $pt(16), '$');
+        $textB(640, $yT2 + 43, $pt(16), money($totalNomina));
     }
 }
 

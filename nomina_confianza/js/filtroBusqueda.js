@@ -1,145 +1,82 @@
-$(document).ready(function () {
-    inicializarEventosFiltros();
-});
+//=====================================================
+// FUNCIÓN PARA CARGAR EL SELECT DE DEPARTAMENTOS.
+// POR CADA DEPARTAMENTO SE AGREGAN DOS OPCIONES:
+//=====================================================
 
-function cargarSelectsConfianza() {
-    return $.when(cargarDepartamentos(), cargarEmpresas());
-}
+function cargarFiltroDepartamentos() {
 
-function cargarDepartamentos() {
-    return $.ajax({
-        url: '../php/infoNomina.php',
-        type: 'GET',
-        data: { case: 'obtenerDepartamentosNomina', id_nomina: 3 },
-        dataType: 'json',
-        success: function (response) {
-            if (response.success) {
-                const $select = $('#filtro-departamento');
-                $select.empty();
-                const vistos = new Set();
-                
-                response.departamentos.forEach(dept => {
-                    if (!vistos.has(dept.nombre_departamento)) {
-                        $select.append(`<option value="${dept.nombre_departamento}">${dept.nombre_departamento}</option>`);
-                        vistos.add(dept.nombre_departamento);
-                    }
-                });
-            } else {
-                console.error('Error al cargar departamentos:', response.error);
-            }
-        },
-        error: function (error) {
-            console.error('Error en la petición de departamentos:', error);
-        }
-    });
-}
+    // Limpiar el contenido del select
+    $('#filtro-departamento').empty();
 
-function cargarEmpresas() {
-    return $.ajax({
-        url: '../php/infoNomina.php',
-        type: 'GET',
-        data: { case: 'obtenerEmpresas' },
-        dataType: 'json',
-        success: function (response) {
-            if (response.success) {
-                const $select = $('#filtro-empresa');
-                $select.empty();
-                $select.append('<option value="all">Todas las Empresas</option>');
+    // Recorrer todos los departamentos
+    jsonNominaConfianza.departamentos.forEach(departamento => {
 
-                response.empresas.forEach(emp => {
-                    $select.append(`<option value="${emp.id_empresa}">${emp.nombre_empresa}</option>`);
-                });
-            } else {
-                console.error('Error al cargar empresas:', response.error);
-            }
-        },
-        error: function (error) {
-            console.error('Error en la petición de empresas:', error);
-        }
-    });
-}
+        // Guardar id_empresa e id_departamento separados por |
+        $('#filtro-departamento').append(`
+            <option value="${departamento.id_empresa}|${departamento.id_departamento}">
+                ${departamento.nombre}
+            </option>
+        `);
 
-
-function filtrarEmpleadosPorDepartamento(jsonNomina, id_departamento) {
-    let jsonFiltrado = {
-        ...jsonNomina,
-        departamentos: []
-    };
-
-    if (jsonNomina && jsonNomina.departamentos) {
-        jsonNomina.departamentos.forEach(departamento => {
-            if (id_departamento !== 'all' && departamento.nombre !== id_departamento) return;
-            
-            jsonFiltrado.departamentos.push({
-                nombre: departamento.nombre,
-                id_departamento: departamento.id_departamento,
-                empleados: departamento.empleados
-            });
-        });
-    }
-
-    return jsonFiltrado;
-}
-
-function inicializarEventosFiltros() {
-    // Eventos para los selects - Resetear a página 1
-    $('#filtro-departamento, #filtro-empresa').on('change', function () {
-        paginaActualNomina = 1;
-        aplicarFiltrosConfianza(1);
     });
 
-    // Evento para la búsqueda (con delay para rendimiento) - Resetear a página 1
-    let timeoutBusqueda;
+}
+//=====================================================
+//FUNCIÓN PARA DETECTAR EL CAMBIO DEL SELECT.
+//CADA VEZ QUE EL USUARIO CAMBIE DE DEPARTAMENTO
+//SE MOSTRARÁN LOS EMPLEADOS CORRESPONDIENTES.
+//=====================================================
+
+function eventoFiltroDepartamento() {
+
+    $('#filtro-departamento').change(function () {
+
+        // Regresar a la primera página
+        paginaActual = 1;
+
+        // Volver a llenar la tabla
+        llenarTablaNomina();
+
+    });
+
+}
+
+//=====================================================
+// FUNCIÓN PARA FILTRAR LOS EMPLEADOS
+//MIENTRAS EL USUARIO ESCRIBE EN EL BUSCADOR.
+//=====================================================
+
+function eventoBusquedaEmpleado() {
+
     $('#busqueda-nomina-confianza').on('keyup', function () {
-        clearTimeout(timeoutBusqueda);
-        timeoutBusqueda = setTimeout(function () {
-            paginaActualNomina = 1;
-            aplicarFiltrosConfianza(1);
-        }, 300);
+
+        // Regresar a la primera página
+        paginaActual = 1;
+
+        // Actualizar la tabla
+        llenarTablaNomina();
+
     });
 
-    // Botón para limpiar búsqueda - Resetear a página 1
-    $('#btn-clear-busqueda').on('click', function () {
-        $('#busqueda-nomina-confianza').val('');
-        paginaActualNomina = 1;
-        aplicarFiltrosConfianza(1);
-    });
 }
 
-function aplicarFiltrosConfianza(pagina) {
-    if (!jsonNominaConfianza) return;
+//=====================================================
+//FUNCIÓN PARA LIMPIAR EL TEXTO DEL BUSCADOR.
+//=====================================================
 
-    // Determinar qué página mostrar (usar la global si no se pasa una específica)
-    const paginaDestino = pagina || (typeof paginaActualNomina !== 'undefined' ? paginaActualNomina : 1);
-    if (typeof paginaActualNomina !== 'undefined') {
-        paginaActualNomina = paginaDestino;
-    }
+function limpiarBusqueda() {
 
-    let id_departamento = $('#filtro-departamento').val();
-    let id_empresa = $('#filtro-empresa').val();
-    let busqueda = $('#busqueda-nomina-confianza').val().toLowerCase().trim();
+    $('#btn-clear-busqueda').click(function () {
 
-    // 1. Filtrar por Departamento (usando tu lógica)
-    let jsonFiltrado = filtrarEmpleadosPorDepartamento(jsonNominaConfianza, id_departamento);
+        // Limpiar el campo de búsqueda
+        $('#busqueda-nomina-confianza').val('');
 
-    // 2. Filtrar por Empresa y Búsqueda sobre el JSON ya filtrado por departamento
-    jsonFiltrado.departamentos.forEach(depto => {
-        depto.empleados = depto.empleados.filter(emp => {
-            // Filtro de empresa
-            const cumpleEmpresa = (id_empresa === 'all' || emp.id_empresa == id_empresa);
+        // Regresar a la primera página
+        paginaActual = 1;
 
-            // Filtro de búsqueda (nombre o clave)
-            const cumpleBusqueda = (busqueda === '' ||
-                emp.nombre.toLowerCase().includes(busqueda) ||
-                (emp.clave && emp.clave.toString().includes(busqueda)));
+        // Actualizar la tabla
+        llenarTablaNomina();
 
-            return cumpleEmpresa && cumpleBusqueda;
-        });
     });
 
-    // Limpiar departamentos que se quedaron sin empleados después del segundo filtro
-    jsonFiltrado.departamentos = jsonFiltrado.departamentos.filter(d => d.empleados.length > 0);
-
-    // Mostrar en tabla usando la página decidida
-    mostrarDatosTabla(jsonFiltrado, paginaDestino);
 }

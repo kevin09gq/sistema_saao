@@ -2,6 +2,7 @@
 
 // Incluir autoload de Composer
 require_once __DIR__ . '/../../../vendor/autoload.php';
+require_once __DIR__ . '/../../../conexion/conexion.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -189,28 +190,34 @@ $tamanioLetraFilas = [
 
 function crearHoja($spreadsheet, $deptoData, $targetEmpresaId, $filtroEmpleados, $nombreHoja)
 {
-    global $jsonNomina, $mapaEmpresas, $columnas, $columnasAncho, $tamanioLetraColumnas, $tamanioLetraFilas, $fecha_inicio, $fecha_cierre, $numero_semana, $ano;
+    global $jsonNomina, $mapaEmpresas, $columnas, $columnasAncho, $tamanioLetraColumnas, $tamanioLetraFilas, $fecha_inicio, $fecha_cierre, $numero_semana, $ano, $conexion;
 
     $nombreDepto = $deptoData['nombre'] ?? 'DEPARTAMENTO';
     $colorExcel = 'FF0000'; // Color por defecto
-    $nombreEmpresaTarget = $mapaEmpresas[$targetEmpresaId] ?? 'EMPRESA ' . $targetEmpresaId;
+
+    // Obtener datos de la empresa desde la base de datos
+    $nombreEmpresaTarget = '';
+    $logoEmpresa = '';
+    if ($targetEmpresaId) {
+        $queryEmpresa = "SELECT nombre_empresa, logo_empresa FROM empresa WHERE id_empresa = $targetEmpresaId";
+        $resultEmpresa = mysqli_query($conexion, $queryEmpresa);
+        if ($resultEmpresa && mysqli_num_rows($resultEmpresa) > 0) {
+            $rowEmpresa = mysqli_fetch_assoc($resultEmpresa);
+            $nombreEmpresaTarget = $rowEmpresa['nombre_empresa'];
+            $logoEmpresa = $rowEmpresa['logo_empresa'];
+        }
+    }
+
+    // Si no se encontró el nombre de la empresa, usar un valor por defecto
+    if (empty($nombreEmpresaTarget)) {
+        $nombreEmpresaTarget = $mapaEmpresas[$targetEmpresaId] ?? 'EMPRESA ' . $targetEmpresaId;
+    }
 
     // Lógica dinámica para seleccionar el color del reporte
     if (isset($deptoData['color_reporte'])) {
-        if (is_array($deptoData['color_reporte'])) {
-            $encontrado = false;
-            // Buscamos si existe un color específico para la empresa actual
-            foreach ($deptoData['color_reporte'] as $c) {
-                if ($c['id_empresa'] == $targetEmpresaId) {
-                    $colorExcel = $c['color'];
-                    $encontrado = true;
-                    break;
-                }
-            }
-            // Si no hay color específico para esta empresa, usamos el primero de la lista
-            if (!$encontrado && !empty($deptoData['color_reporte'])) {
-                $colorExcel = $deptoData['color_reporte'][0]['color'];
-            }
+        if (is_array($deptoData['color_reporte']) && !empty($deptoData['color_reporte'])) {
+            // Ahora color_reporte es un array simple de strings hexadecimales
+            $colorExcel = $deptoData['color_reporte'][0];
         } else {
             $colorExcel = $deptoData['color_reporte'];
         }
@@ -290,11 +297,20 @@ function crearHoja($spreadsheet, $deptoData, $targetEmpresaId, $filtroEmpleados,
     // Centrar todos los títulos
     $sheet->getStyle('A1:A4')->getAlignment()->setHorizontal('center');
 
-    // Insertar logo dinámico
-    $logoPath = '../../../public/img/logo.jpg';
-    if ($targetEmpresaId == 2) {
-        if (file_exists('../../../public/img/sbgroup_logo.PNG')) {
-            $logoPath = '../../../public/img/sbgroup_logo.PNG';
+    // Insertar logo dinámico según la empresa
+    if ($targetEmpresaId == 1) {
+        // Si es empresa 1, usar el logo por defecto en public/img
+        $logoPath = '../../../public/img/logo.jpg';
+    } else {
+        // Si es diferente de 1, usar el logo de la base de datos en gafetes/logos_empresa
+        $logoPath = '../../../public/img/logo.jpg'; // Logo por defecto
+        if (!empty($logoEmpresa)) {
+            // Construir la ruta completa al logo (la ruta correcta es gafetes/logos_empresa/)
+            $logoPath = '../../../gafetes/logos_empresa/' . $logoEmpresa;
+            // Verificar si el archivo existe
+            if (!file_exists($logoPath)) {
+                $logoPath = '../../../public/img/logo.jpg'; // Logo por defecto si no existe
+            }
         }
     }
 
@@ -880,8 +896,22 @@ if ($jsonNomina && isset($jsonNomina['departamentos'])) {
 
         // Paso 2: Por cada empresa encontrada, creamos una pestaña individual en el Excel
         foreach ($empresasEnDepto as $idEmpresa) {
-            $nombreEmpresaFull = $mapaEmpresas[$idEmpresa] ?? 'EMP ' . $idEmpresa;
-            
+            // Obtener nombre de la empresa desde la base de datos
+            $nombreEmpresaFull = '';
+            if ($idEmpresa) {
+                $queryEmpresa = "SELECT nombre_empresa FROM empresa WHERE id_empresa = $idEmpresa";
+                $resultEmpresa = mysqli_query($conexion, $queryEmpresa);
+                if ($resultEmpresa && mysqli_num_rows($resultEmpresa) > 0) {
+                    $rowEmpresa = mysqli_fetch_assoc($resultEmpresa);
+                    $nombreEmpresaFull = $rowEmpresa['nombre_empresa'];
+                }
+            }
+
+            // Si no se encontró el nombre, usar el mapa o un valor por defecto
+            if (empty($nombreEmpresaFull)) {
+                $nombreEmpresaFull = $mapaEmpresas[$idEmpresa] ?? 'EMP ' . $idEmpresa;
+            }
+
             // Generamos el nombre de la pestaña: "DEPARTAMENTO - EMPRESA"
             $nombreHoja = mb_strtoupper($nombreDepto . ' - ' . $nombreEmpresaFull, 'UTF-8');
             $nombreHoja = mb_substr($nombreHoja, 0, 31, 'UTF-8'); // Límite de 31 caracteres para pestañas de Excel

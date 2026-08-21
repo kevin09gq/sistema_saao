@@ -10,43 +10,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 
-/**
- * Resta un día a una fecha en formato 'DD/MM/AAA' con meses abreviados en español (ENE, FEB, MAR, etc.) y devuelve la nueva fecha en el mismo formato.
- */
-function restarUnDia($fecha)
-{
-    // Mapeo de meses abreviados en español a número
-    $meses = [
-        "Ene" => 1,
-        "Feb" => 2,
-        "Mar" => 3,
-        "Abr" => 4,
-        "May" => 5,
-        "Jun" => 6,
-        "Jul" => 7,
-        "Ago" => 8,
-        "Sep" => 9,
-        "Oct" => 10,
-        "Nov" => 11,
-        "Dic" => 12
-    ];
 
-    // Separar la fecha
-    list($dia, $mesAbrev, $anio) = explode("/", $fecha);
-
-    // Crear objeto DateTime
-    $mesNum = $meses[$mesAbrev];
-    $date = DateTime::createFromFormat("d/m/Y", "$dia/$mesNum/$anio");
-
-    // Restar un día
-    $date->modify("-1 day");
-
-    // Buscar la abreviatura del mes resultante
-    $mesAbrevNuevo = array_search((int)$date->format("m"), $meses);
-
-    // Formatear resultado
-    return $date->format("d") . "/" . $mesAbrevNuevo . "/" . $date->format("Y");
-}
 
 /**
  * Determina si un color de fondo es oscuro o claro y devuelve el color de texto adecuado (blanco o negro).
@@ -89,32 +53,43 @@ $colorExcel = 'FF0000'; // Color por defecto para Relicario
 if ($jsonNomina && isset($jsonNomina['departamentos'])) {
     foreach ($jsonNomina['departamentos'] as $depto) {
         if ($depto['id_departamento'] == $idDeptoTarget) {
-            // Buscamos el color en el nuevo formato de arreglo color_reporte
-            if (!empty($depto['color_reporte']) && is_array($depto['color_reporte'])) {
-                $colorEncontrado = null;
-                
-                // Si tenemos una empresa seleccionada, buscamos su color específico
-                if ($idEmpresaSeleccionada) {
-                    foreach ($depto['color_reporte'] as $configColor) {
-                        if ($configColor['id_empresa'] == $idEmpresaSeleccionada) {
-                            $colorEncontrado = $configColor['color'];
-                            break;
+            $colorEncontrado = null;
+
+            if (!empty($depto['color_reporte'])) {
+                if (is_string($depto['color_reporte'])) {
+                    $colorEncontrado = $depto['color_reporte'];
+                } elseif (is_array($depto['color_reporte'])) {
+                    // Si tenemos una empresa seleccionada, buscamos su color específico
+                    if ($idEmpresaSeleccionada) {
+                        foreach ($depto['color_reporte'] as $configColor) {
+                            if (is_array($configColor) && isset($configColor['id_empresa']) && $configColor['id_empresa'] == $idEmpresaSeleccionada) {
+                                $colorEncontrado = $configColor['color'] ?? null;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Si no se encontró o no hay empresa, tomar el primero disponible
+                    if (!$colorEncontrado) {
+                        $primerItem = $depto['color_reporte'][0] ?? null;
+                        if (is_string($primerItem)) {
+                            $colorEncontrado = $primerItem;
+                        } elseif (is_array($primerItem)) {
+                            $colorEncontrado = $primerItem['color'] ?? null;
                         }
                     }
                 }
-                
-                // Si no se encontró o no se envió empresa, tomar el primero disponible
-                if (!$colorEncontrado) {
-                    $colorEncontrado = $depto['color_reporte'][0]['color'] ?? null;
-                }
+            }
 
-                if ($colorEncontrado) {
-                    $colorExcel = $colorEncontrado;
-                }
-            } 
-            // Fallback para el formato anterior (string plano o la clave vieja)
-            else if (!empty($depto['color_depto_nomina'])) {
-                $colorExcel = $depto['color_depto_nomina'];
+            if (!$colorEncontrado && !empty($depto['color'])) {
+                $colorEncontrado = $depto['color'];
+            }
+            if (!$colorEncontrado && !empty($depto['color_depto_nomina'])) {
+                $colorEncontrado = $depto['color_depto_nomina'];
+            }
+
+            if ($colorEncontrado) {
+                $colorExcel = $colorEncontrado;
             }
             break;
         }
@@ -144,8 +119,8 @@ $sheet->setTitle(substr(strtoupper($nombreDeptoTarget), 0, 31));
 
 // Usar datos del JSON si existen
 if ($jsonNomina) {
-    $fecha_inicio = restarUnDia($jsonNomina['fecha_inicio']) ?? 'Fecha Inicio';
-    $fecha_cierre = restarUnDia($jsonNomina['fecha_cierre']) ?? 'Fecha Cierre';
+    $fecha_inicio = $jsonNomina['fecha_inicio'] ?? 'Fecha Inicio';
+    $fecha_cierre = $jsonNomina['fecha_cierre'] ?? 'Fecha Cierre';
     $ano = date('Y');
 } else {
     $fecha_inicio = '16/Ene';

@@ -195,35 +195,73 @@ verificarSesion();
                             <!-- Trabajador -->
                             <div class="tab-pane fade" id="tab_trabajador" role="tabpanel" aria-labelledby="tab-trabajador">
                                 <input type="hidden" id="modal_id_empleado" name="id_empleado">
+                                <input type="hidden" id="empleado_id" value="">
+
+                                <!-- Layout: Foto a la izquierda + Campos a la derecha -->
                                 <div class="row">
-                                    <input type="hidden" id="empleado_id" value="">
-                                    <div class="col-md-4 mb-3">
-                                        <label for="modal_clave_empleado" class="form-label">Clave</label>
-                                        <input type="text" class="form-control" id="modal_clave_empleado" name="clave_empleado">
+
+                                    <!-- Panel de foto del empleado -->
+                                    <div class="col-md-3 mb-3 d-flex flex-column align-items-center order-md-2">
+                                        <label class="form-label fw-semibold mb-2 text-center">
+                                            <i class="bi bi-person-badge me-1"></i>Foto del Empleado
+                                        </label>
+                                        <!-- Contenedor de la foto -->
+                                        <div class="foto-empleado-container" id="foto_empleado_container">
+                                            <img
+                                                id="foto_empleado_preview"
+                                                src=""
+                                                alt="Foto del empleado"
+                                                class="foto-empleado-img"
+                                                style="display:none;"
+                                            >
+                                            <div class="foto-empleado-overlay" id="foto_overlay">
+                                                <i class="bi bi-person-fill foto-empleado-icon-placeholder" id="foto_icon_placeholder"></i>
+                                            </div>
+                                        </div>
+                                        <!-- Botones de acción -->
+                                        <div class="d-flex flex-column gap-2 mt-2 w-100">
+                                            <label for="input_foto_empleado" class="btn btn-sm btn-outline-primary w-100" style="cursor:pointer;">
+                                                <i class="bi bi-upload me-1"></i>Subir foto
+                                            </label>
+                                            <input type="file" id="input_foto_empleado" accept="image/jpeg,image/jpg,image/png,image/gif" style="display:none;">
+                                            <button type="button" class="btn btn-sm btn-outline-danger w-100" id="btn_eliminar_foto_empleado" title="Eliminar foto">
+                                                <i class="bi bi-trash me-1"></i>Eliminar foto
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div class="col-md-4 mb-3">
-                                        <label for="modal_nombre_empleado" class="form-label">Nombre</label>
-                                        <input type="text" class="form-control" id="modal_nombre_empleado" name="nombre_empleado">
-                                    </div>
-                                    <div class="col-md-4 mb-3">
-                                        <label for="modal_apellido_paterno" class="form-label">Apellido Paterno</label>
-                                        <input type="text" class="form-control" id="modal_apellido_paterno" name="apellido_paterno">
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-4 mb-3">
-                                        <label for="modal_apellido_materno" class="form-label">Apellido Materno</label>
-                                        <input type="text" class="form-control" id="modal_apellido_materno" name="apellido_materno">
-                                    </div>
-                                    <div class="col-md-4 mb-3">
-                                        <label for="modal_imss" class="form-label">IMSS</label>
-                                        <input type="text" class="form-control" id="modal_imss" name="imss">
-                                    </div>
-                                    <div class="col-md-4 mb-3">
-                                        <label for="modal_curp" class="form-label">CURP</label>
-                                        <input type="text" class="form-control" id="modal_curp" name="curp">
-                                    </div>
-                                </div>
+
+                                    <!-- Campos del empleado (derecha) -->
+                                    <div class="col-md-9">
+                                        <div class="row">
+                                            <div class="col-md-4 mb-3">
+                                                <label for="modal_clave_empleado" class="form-label">Clave</label>
+                                                <input type="text" class="form-control" id="modal_clave_empleado" name="clave_empleado">
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label for="modal_nombre_empleado" class="form-label">Nombre</label>
+                                                <input type="text" class="form-control" id="modal_nombre_empleado" name="nombre_empleado">
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label for="modal_apellido_paterno" class="form-label">Apellido Paterno</label>
+                                                <input type="text" class="form-control" id="modal_apellido_paterno" name="apellido_paterno">
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-4 mb-3">
+                                                <label for="modal_apellido_materno" class="form-label">Apellido Materno</label>
+                                                <input type="text" class="form-control" id="modal_apellido_materno" name="apellido_materno">
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label for="modal_imss" class="form-label">IMSS</label>
+                                                <input type="text" class="form-control" id="modal_imss" name="imss">
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label for="modal_curp" class="form-label">CURP</label>
+                                                <input type="text" class="form-control" id="modal_curp" name="curp">
+                                            </div>
+                                        </div>
+                                    </div><!-- /col-md-9 -->
+                                </div><!-- /row foto + campos -->
                                 <div class="row">
                                     <div class="col-md-8 mb-3">
                                         <label for="modal_domicilio" class="form-label">Domicilio</label>

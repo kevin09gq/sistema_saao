@@ -45,8 +45,8 @@ $spreadsheet->getDefaultStyle()->getFont()->setName('Arial');
 
 // Datos de fecha
 if ($jsonNomina) {
-    $fecha_inicio = restarUnDia($jsonNomina['fecha_inicio']) ?? 'Fecha Inicio';
-    $fecha_cierre = restarUnDia($jsonNomina['fecha_cierre']) ?? 'Fecha Cierre';
+    $fecha_inicio = $jsonNomina['fecha_inicio'] ?? 'Fecha Inicio';
+    $fecha_cierre = $jsonNomina['fecha_cierre'] ?? 'Fecha Cierre';
     $numero_semana = $jsonNomina['numero_semana'] ?? '00';
     $ano = date('Y');
 }
@@ -320,7 +320,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
     if (file_exists($logoPath)) {
         $logo = new Drawing();
         $logo->setName('Logo');
-        $logo->setDescription('Logo de Rancho Huasteca');
+        $logo->setDescription('Logo de Rancho El Huasteca');
         $logo->setPath($logoPath);
         $logo->setHeight(190); // Altura en píxeles
         $logo->setCoordinates('B1');
@@ -890,43 +890,6 @@ function procesarNominaParaFila(string $nombre, string $concepto, array $nomina)
     ];
 }
 
-/**
- * Resta un día a una fecha en formato 'DD/MM/AAA' con meses abreviados en español (ENE, FEB, MAR, etc.) y devuelve la nueva fecha en el mismo formato.
- */
-function restarUnDia($fecha)
-{
-    // Mapeo de meses abreviados en español a número
-    $meses = [
-        "Ene" => 1,
-        "Feb" => 2,
-        "Mar" => 3,
-        "Abr" => 4,
-        "May" => 5,
-        "Jun" => 6,
-        "Jul" => 7,
-        "Ago" => 8,
-        "Sep" => 9,
-        "Oct" => 10,
-        "Nov" => 11,
-        "Dic" => 12
-    ];
-
-    // Separar la fecha
-    list($dia, $mesAbrev, $anio) = explode("/", $fecha);
-
-    // Crear objeto DateTime
-    $mesNum = $meses[$mesAbrev];
-    $date = DateTime::createFromFormat("d/m/Y", "$dia/$mesNum/$anio");
-
-    // Restar un día
-    $date->modify("-1 day");
-
-    // Buscar la abreviatura del mes resultante
-    $mesAbrevNuevo = array_search((int)$date->format("m"), $meses);
-
-    // Formatear resultado
-    return $date->format("d") . "/" . $mesAbrevNuevo . "/" . $date->format("Y");
-}
 
 /**
  * Determina si un color de fondo es oscuro o claro y devuelve el color de texto adecuado (blanco o negro).
@@ -1752,7 +1715,7 @@ function crearHojaPoda($spreadsheet, $titulo2, $jsonNomina, $nombreHoja = 'PODA'
     if (file_exists($logoPath)) {
         $logo = new Drawing();
         $logo->setName('Logo');
-        $logo->setDescription('Logo de Rancho Huasteca');
+        $logo->setDescription('Logo de Rancho El Huasteca');
         $logo->setPath($logoPath);
         $logo->setHeight(110);
         $logo->setCoordinates('B1');
@@ -2114,11 +2077,22 @@ if ($jsonNomina && isset($jsonNomina['departamentos'])) {
         // Si no hay empleados válidos, no crear la hoja
         if (empty($empleadosValidos)) continue;
 
-        // Determinar el color del departamento (nuevo formato arreglo o fallback al anterior)
+        // Determinar el color del departamento (soporta string, arreglo de strings o arreglo de objetos con id_empresa)
         $colorDepto = 'FF0000';
-        if (!empty($departamento['color_reporte']) && is_array($departamento['color_reporte'])) {
-            $colorDepto = $departamento['color_reporte'][0]['color'] ?? 'FF0000';
-        } else if (!empty($departamento['color_depto_nomina'])) {
+        if (!empty($departamento['color_reporte'])) {
+            if (is_string($departamento['color_reporte'])) {
+                $colorDepto = $departamento['color_reporte'];
+            } elseif (is_array($departamento['color_reporte'])) {
+                $primerItem = $departamento['color_reporte'][0] ?? null;
+                if (is_string($primerItem)) {
+                    $colorDepto = $primerItem;
+                } elseif (is_array($primerItem)) {
+                    $colorDepto = $primerItem['color'] ?? 'FF0000';
+                }
+            }
+        } elseif (!empty($departamento['color'])) {
+            $colorDepto = $departamento['color'];
+        } elseif (!empty($departamento['color_depto_nomina'])) {
             $colorDepto = $departamento['color_depto_nomina'];
         }
 

@@ -186,3 +186,68 @@ a {
     text-decoration: none;  /* quita el subrayado */
    
 }
+
+/* ============================================
+   Panel de foto del empleado en modal actualizar
+   ============================================ */
+.foto-empleado-container {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid #e2e8f0;
+    background: #f1f5f9;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    flex-shrink: 0;
+}
+
+.foto-empleado-container:hover {
+    border-color: #22c55e;
+    box-shadow: 0 4px 18px rgba(34,197,94,0.18);
+}
+
+.foto-empleado-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 50%;
+}
+
+/* Icono placeholder cuando no hay foto */
+.foto-empleado-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e9f0fb;
+    border-radius: 50%;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+
+.foto-empleado-overlay.hidden {
+    opacity: 0;
+}
+
+.foto-empleado-icon-placeholder {
+    font-size: 4.5rem;
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+/* Estado de cargando foto */
+.foto-empleado-container.cargando::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.65);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

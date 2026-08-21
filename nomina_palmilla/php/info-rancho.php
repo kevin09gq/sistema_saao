@@ -56,18 +56,18 @@ function respuesta(int $code, string $titulo, string $mensaje, string $icono, ar
 /** ============================= FUNCIONES AUXILIARES PARA OBTENER DATOS ============================= */
 
 /**
- * Función para obtener los departamentos que pertenecen a Palmilla
+ * Función para obtener los departamentos que pertenecen a palmilla
  */
 function obtenerDepartamento()
 {
     global $conexion;
 
-    // SQL PARA OBTENER LOS DEPARTAMENTOS ASIGNADOS AL ÁREA DE LA NÓMINA ESPECÍFICA (ID 7 - PALMILLA)
-    $sql = "SELECT d.* 
-            FROM departamentos d 
-            INNER JOIN areas_departamentos ad ON d.id_departamento = ad.id_departamento 
-            INNER JOIN nombre_nominas n ON ad.id_area = n.id_area 
-            WHERE n.id_nomina = 7";
+    // SQL PARA OBTENER LOS DEPARTAMENTOS ASIGNADOS AL ÁREA DE LA NÓMINA ESPECÍFICA (ID 4 - palmilla)
+    $sql = "SELECT d.id_departamento, d.nombre_departamento
+            FROM departamentos d
+            INNER JOIN nomina_departamento nd ON d.id_departamento = nd.id_departamento
+            WHERE nd.id_nomina = 4
+            ORDER BY d.nombre_departamento ASC";
 
     $stmt = $conexion->prepare($sql);
     $stmt->execute();
@@ -83,7 +83,7 @@ function obtenerDepartamento()
 
 
 /**
- * Función para obtener los puestos que pertenecen a Palmilla
+ * Función para obtener los puestos que pertenecen a palmilla
  */
 function obtenerPuesto()
 {
@@ -96,7 +96,7 @@ function obtenerPuesto()
 
     $id_departamento = $_GET["id_departamento"];
 
-    // SQL PARA OBTENER LOS DEPARTAMENTOS QUE PERTENECEN A RELICARIO
+    // SQL PARA OBTENER LOS DEPARTAMENTOS QUE PERTENECEN A palmilla
     $sql = "SELECT
                 dp.id_puestoEspecial,
                 pe.nombre_puesto
@@ -144,6 +144,9 @@ function obtenerHorarioRancho()
         respuesta(404, "Error", "No se encontró horario para esta área", "error", []);
     }
 }
+
+
+
 
 
 /** ============================= RECUPERAR LOS TICKETS QUE ESTAN PENDIENTES DE AÑADIR A UNA NOMINA ============================= */

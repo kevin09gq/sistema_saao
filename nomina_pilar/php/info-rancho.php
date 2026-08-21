@@ -56,17 +56,17 @@ function respuesta(int $code, string $titulo, string $mensaje, string $icono, ar
 /** ============================= FUNCIONES AUXILIARES PARA OBTENER DATOS ============================= */
 
 /**
- * Función para obtener los departamentos que pertenecen a Pilar
+ * Función para obtener los departamentos que pertenecen a pilar
  */
 function obtenerDepartamento()
 {
     global $conexion;
 
-    // SQL PARA OBTENER LOS DEPARTAMENTOS ASIGNADOS AL ÁREA DE LA NÓMINA ESPECÍFICA (ID 5 - PILAR)
+    // SQL PARA OBTENER LOS DEPARTAMENTOS ASIGNADOS AL ÁREA DE LA NÓMINA ESPECÍFICA (ID 4 - pilar)
     $sql = "SELECT d.id_departamento, d.nombre_departamento
             FROM departamentos d
             INNER JOIN nomina_departamento nd ON d.id_departamento = nd.id_departamento
-            WHERE nd.id_nomina = 5
+            WHERE nd.id_nomina = 4
             ORDER BY d.nombre_departamento ASC";
 
     $stmt = $conexion->prepare($sql);
@@ -83,7 +83,7 @@ function obtenerDepartamento()
 
 
 /**
- * Función para obtener los puestos que pertenecen a Relicario
+ * Función para obtener los puestos que pertenecen a pilar
  */
 function obtenerPuesto()
 {
@@ -96,7 +96,7 @@ function obtenerPuesto()
 
     $id_departamento = $_GET["id_departamento"];
 
-    // SQL PARA OBTENER LOS DEPARTAMENTOS QUE PERTENECEN A RELICARIO
+    // SQL PARA OBTENER LOS DEPARTAMENTOS QUE PERTENECEN A pilar
     $sql = "SELECT
                 dp.id_puestoEspecial,
                 pe.nombre_puesto
@@ -144,6 +144,7 @@ function obtenerHorarioRancho()
         respuesta(404, "Error", "No se encontró horario para esta área", "error", []);
     }
 }
+
 
 
 
@@ -197,7 +198,7 @@ function obtener_tickets_pendientes()
     $result = $stmt->get_result();
     $rows = $result->fetch_all(MYSQLI_ASSOC);
 
-      // Agrupar por id_corte (único) en lugar de solo folio
+    // Agrupar por id_corte (único) en lugar de solo folio
     $structured = [];
     foreach ($rows as $row) {
         $id_corte = $row['id_corte'];

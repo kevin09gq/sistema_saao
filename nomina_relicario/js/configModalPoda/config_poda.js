@@ -302,7 +302,7 @@ function guardar_poda(nombre_empleado, fecha_poda, arboles_podados, pago_arbol) 
     alerta("success", "Poda guardado", "La poda se ha guardado correctamente", true);
     limpiar_formulario_poda();
 
-    let dep = $("#filtro_departamento").val();
+    let dep = $("#filtro-departamento").val();
 
     if (dep == 801) {
         mostrarDatosTablaPoda(jsonNominaRelicario);
@@ -575,7 +575,7 @@ function guardar_extra(nombre_empleado, fecha_extra, concepto_extra, monto_extra
     alerta("success", "Concepto extra guardado", "Se ha guardado correctamente", true);
     limpiar_formulario_poda();
 
-    let dep = $("#filtro_departamento").val();
+    let dep = $("#filtro-departamento").val();
 
     if (dep == 801) {
         mostrarDatosTablaPoda(jsonNominaRelicario);

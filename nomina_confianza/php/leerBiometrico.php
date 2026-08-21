@@ -2,7 +2,8 @@
 require '../../vendor/autoload.php';
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
-$tmpFile = $_FILES['archivo_excel2']['tmp_name'];
+// Se lee desde 'archivo_excel', que es el nombre enviado en el FormData de JS
+$tmpFile = $_FILES['archivo_excel']['tmp_name'];
 $spreadsheet = IOFactory::load($tmpFile);
 $sheet = $spreadsheet->getActiveSheet();
 $highestRow = $sheet->getHighestRow();
@@ -13,6 +14,9 @@ $spreadsheet->getCalculationEngine()->disableCalculationCache();
 $empleados = [];
 $empleadoActual = null;
 $leyendoRegistros = false;
+
+// Días de la semana en español
+$diasSemanaEspanol = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
 
 for ($i = 1; $i <= $highestRow; $i++) {
     $colA = trim($sheet->getCell("A{$i}")->getValue());
@@ -28,7 +32,7 @@ for ($i = 1; $i <= $highestRow; $i++) {
         }
         $empleadoActual = [
             'nombre' => $colD,
-            'id_biometrico' => null, 
+            'id_biometrico' => null, // Agregar campo para ID biométrico
             'registros' => [],
         ];
         $leyendoRegistros = false;
@@ -36,6 +40,7 @@ for ($i = 1; $i <= $highestRow; $i++) {
         $leyendoRegistros = true;
     } elseif (stripos($colA, 'Horas totales') !== false) {
         if ($empleadoActual !== null) {
+            // Nada que hacer aquí
         }
     } elseif (stripos($colG, 'Tiempo total') !== false) {
         if ($empleadoActual !== null) {
@@ -54,8 +59,19 @@ for ($i = 1; $i <= $highestRow; $i++) {
         $salida = trim($sheet->getCell("F{$i}")->getValue());
 
         if ($fecha !== "" || $entrada !== "" || $salida !== "" ) {
+            // Calcular el día de la semana en español a partir de la fecha (d/m/Y)
+            $diaSemana = '';
+            if ($fecha !== "") {
+                $fechaObjeto = DateTime::createFromFormat('d/m/Y', $fecha);
+                if ($fechaObjeto) {
+                    $indiceDia = (int)$fechaObjeto->format('w');
+                    $diaSemana = $diasSemanaEspanol[$indiceDia];
+                }
+            }
+
             $empleadoActual['registros'][] = [
                 'fecha' => $fecha,
+                'dia' => $diaSemana, // Se guarda el nombre del día en español para simplificar JS
                 'entrada' => $entrada,
                 'salida' => $salida,
             ];

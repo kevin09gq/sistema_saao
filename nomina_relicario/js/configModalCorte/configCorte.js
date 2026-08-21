@@ -171,20 +171,11 @@ function llenar_cuerpo_tabla_pagos_por_dia() {
     // Obtener el rango de fechas entre fecha_inicio y fecha_cierre
     const rangoFechas = obtenerRangoFechas(jsonNominaRelicario.fecha_inicio, jsonNominaRelicario.fecha_cierre);
 
-    console.log("RANGO DE FECHA: ", rangoFechas);
-
-
     // ======================================================
     // Generar las filas de la tabla con las fechas del rango
     // ====================================================== 
 
     for (let i = 0; i < dias_nomina.length; i++) {
-
-        console.log("LA FECHA ES: " + rangoFechas[i]);
-
-        console.log(obtenerDiaSemanaBHL(rangoFechas[i]));
-
-
         tmp += `
             <tr>
                 <td>${obtenerDiaSemanaBHL(rangoFechas[i])}</td>
@@ -982,7 +973,7 @@ $(document).on("change", ".check_select_corte", function (e) {
     const ticket = $(this).data("vale");
 
     // Buscar o crear el departamento Corte
-    let departamentoCorte = jsonNominaRelicario.departamentos.find(d => d.nombre === "Corte");
+    let departamentoCorte = jsonNominaRelicario.departamentos.find(d => d.id_departamento == 800);
     if (!departamentoCorte) {
         departamentoCorte = { id_departamento: 800, nombre: "Corte", empleados: [] };
         jsonNominaRelicario.departamentos.push(departamentoCorte);
@@ -1016,6 +1007,7 @@ $(document).on("change", ".check_select_corte", function (e) {
 
             empleado.tickets.push(nuevoTicket);
         }
+        
     } else {
         // ELIMINAR POR FOLIO
         if (empleado && Array.isArray(empleado.tickets)) {
@@ -1031,7 +1023,7 @@ $(document).on("change", ".check_select_corte", function (e) {
     }
 
     // OBTENER EL DEPARTAMENTO SELECCIONADO
-    let dep = $("#filtro_departamento").val();
+    let dep = $("#filtro-departamento").val();
 
     if (dep == 800) {
         mostrarDatosTablaCorte(jsonNominaRelicario);
@@ -1424,7 +1416,7 @@ $(document).on('submit', '#form_corte_nomina', function (e) {
     //modalCorte.hide();
 
     // Cargar tabla principal
-    let dep = $("#filtro_departamento").val();
+    let dep = $("#filtro-departamento").val();
     if (dep == 800) {
         mostrarDatosTablaCorte(jsonNominaRelicario);
     }

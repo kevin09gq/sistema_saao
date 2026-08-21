@@ -1,4 +1,57 @@
 // ticket_pdf.js - Ticket general para nómina huasteca
+function filtrarEmpleadosPorDepartamento(jsonNomina, id_departamento) {
+    if (!jsonNomina || !Array.isArray(jsonNomina.departamentos)) {
+        return { departamentos: [] };
+    }
+
+    const departamentoId = Number(id_departamento);
+    const departamentos = (jsonNomina.departamentos || [])
+        .filter(depto => departamentoId === -1 || Number(depto.id_departamento) === departamentoId)
+        .map(depto => ({
+            ...depto,
+            empleados: (depto.empleados || []).filter(emp => emp && emp.mostrar !== false)
+        }))
+        .filter(depto => (depto.empleados || []).length > 0);
+
+    return {
+        ...jsonNomina,
+        departamentos
+    };
+}
+
+function filtrarEmpleadosPorPuesto(jsonNomina, id_puestoEspecial) {
+    if (!jsonNomina || !Array.isArray(jsonNomina.departamentos)) {
+        return { departamentos: [] };
+    }
+
+    const puestoId = Number(id_puestoEspecial);
+    if (puestoId === -1) {
+        return jsonNomina;
+    }
+
+    const departamentos = (jsonNomina.departamentos || [])
+        .map(depto => ({
+            ...depto,
+            empleados: (depto.empleados || []).filter(emp => {
+                if (!emp) return false;
+                const valoresPuesto = [
+                    emp.id_puestoEspecial,
+                    emp.id_puesto,
+                    emp.puestoEspecial,
+                    emp.puesto_especial,
+                    emp.idPuestoEspecial
+                ];
+                return valoresPuesto.some(valor => Number(valor) === puestoId);
+            })
+        }))
+        .filter(depto => (depto.empleados || []).length > 0);
+
+    return {
+        ...jsonNomina,
+        departamentos
+    };
+}
+
 $(document).ready(function () {
     function filtrarNominaSoloVisibles(nomina) {
         if (!nomina || !Array.isArray(nomina.departamentos)) return { departamentos: [] };
@@ -56,16 +109,15 @@ $(document).ready(function () {
             return;
         }
 
-        // Obtener los datos filtrados actuales según el departamento y puesto seleccionados
-        let id_departamento = parseInt($('#filtro_departamento').val() || '-1');
-        let id_puestoEspecial = parseInt($('#filtro_puesto').val() || '-1');
+        // Obtener los datos filtrados actuales según el departamento seleccionado
+        let id_departamento = parseInt($('#filtro-departamento').val() || '-1');
+        let id_puestoEspecial = -1;
 
         let datosFiltrados;
         let totalEmpleados = 0;
 
         // Manejo especial para departamentos de Corte y Poda en huasteca
         if (id_departamento === 800) {
-            // Corte
             let deptoCorte = (jsonNominaHuasteca.departamentos || []).find(d => d.nombre === 'Corte');
             datosFiltrados = {
                 departamentos: deptoCorte ? [{
@@ -74,7 +126,6 @@ $(document).ready(function () {
                 }] : []
             };
         } else if (id_departamento === 801) {
-            // Poda
             let deptoPoda = (jsonNominaHuasteca.departamentos || []).find(d => d.nombre === 'Poda');
             datosFiltrados = {
                 departamentos: deptoPoda ? [{
@@ -83,11 +134,7 @@ $(document).ready(function () {
                 }] : []
             };
         } else {
-            // Aplicar los mismos filtros que se usan para mostrar la tabla
             datosFiltrados = filtrarEmpleadosPorDepartamento(jsonNominaHuasteca, id_departamento);
-            if (id_puestoEspecial !== -1) {
-                datosFiltrados = filtrarEmpleadosPorPuesto(datosFiltrados, id_puestoEspecial);
-            }
         }
 
         datosFiltrados = filtrarNominaSoloVisibles(datosFiltrados);
@@ -95,11 +142,13 @@ $(document).ready(function () {
         // Obtener departamento predominante antes de consolidar
         const deptoCount = {};
         (datosFiltrados.departamentos || []).forEach(depto => {
-            const nombreDepto = (depto.nombre || 'GENERAL').toUpperCase();
+            const nombreDepto = (depto.nombre || '').toUpperCase();
             const count = (depto.empleados || []).length;
-            deptoCount[nombreDepto] = (deptoCount[nombreDepto] || 0) + count;
+            if (nombreDepto) deptoCount[nombreDepto] = (deptoCount[nombreDepto] || 0) + count;
         });
-        const departamentoPredominante = Object.keys(deptoCount).reduce((a, b) => deptoCount[a] > deptoCount[b] ? a : b);
+        const departamentoPredominante = Object.keys(deptoCount).length
+            ? Object.keys(deptoCount).reduce((a, b) => deptoCount[a] > deptoCount[b] ? a : b)
+            : '';
 
         // Consolidar por nombre para que cada empleado aparezca solo UNA vez en los tickets por nombre
         const empleadosUnicos = {};
@@ -348,15 +397,11 @@ $(document).ready(function () {
      * Genera tickets para la nómina normal
      */
     function generarTicketsNominaNormal() {
-        // Obtener los datos filtrados actuales según el departamento y puesto seleccionados
-        let id_departamento = parseInt($('#filtro_departamento').val() || '-1');
-        let id_puestoEspecial = parseInt($('#filtro_puesto').val() || '-1');
+        // Obtener los datos filtrados actuales según el departamento seleccionado
+        let id_departamento = parseInt($('#filtro-departamento').val() || '-1');
 
         // Aplicar los mismos filtros que se usan para mostrar la tabla
         let datosFiltrados = filtrarEmpleadosPorDepartamento(jsonNominaHuasteca, id_departamento);
-        if (id_puestoEspecial !== -1) {
-            datosFiltrados = filtrarEmpleadosPorPuesto(datosFiltrados, id_puestoEspecial);
-        }
 
         datosFiltrados = filtrarNominaSoloVisibles(datosFiltrados);
 
@@ -380,13 +425,18 @@ $(document).ready(function () {
             });
         });
 
-        // Mostrar mensaje informativo
-        let nombreDepartamento = $('#filtro_departamento option:selected').text();
-        let nombrePuesto = $('#filtro_puesto').val() === '-1' ? 'Todos los puestos' : $('#filtro_puesto option:selected').text();
+        // Departamento según el FILTRO SELECCIONADO por el usuario:
+        // - Si seleccionó un departamento específico -> su nombre exacto del option
+        // - Si seleccionó "Todos" -> vacío (para que se detecte por conteo predominante real)
+        let nombreDepartamento = $('#filtro-departamento option:selected').text() || '';
+        let departamentoMeta = '';
+        if (id_departamento !== -1 && nombreDepartamento.trim() !== '') {
+            departamentoMeta = nombreDepartamento.trim().toUpperCase();
+        }
 
         Swal.fire({
             title: 'Generando tickets',
-            html: `Departamento: <strong>${nombreDepartamento}</strong><br>Puesto: <strong>${nombrePuesto}</strong><br>Empleados: <strong>${totalEmpleados}</strong>`,
+            html: `Departamento: <strong>${nombreDepartamento || 'Todos'}</strong><br>Empleados: <strong>${totalEmpleados}</strong>`,
             icon: 'info',
             timer: 2000,
             timerProgressBar: true,
@@ -396,7 +446,8 @@ $(document).ready(function () {
         var datosEnviar = {
             nomina: datosFiltrados,
             meta: {
-                numero_semana: jsonNominaHuasteca.numero_semana || ''
+                numero_semana: jsonNominaHuasteca.numero_semana || '',
+                departamento: departamentoMeta
             }
         };
 
@@ -409,42 +460,46 @@ $(document).ready(function () {
     function enviarDatosParaTickets(datos, tipo) {
         $('#btn_ticket_pdf').prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Generando...');
 
-        // Obtener departamento predominante y verificar si hay múltiples departamentos
-        let departamento = 'GENERAL';
-        let multiplesDepartamentos = false;
-        
-        if (datos.nomina && datos.nomina.departamentos) {
+        // Obtener departamento:
+        // 1) PRIORIDAD: si viene explícitamente en meta.departamento (filtro del usuario), usarlo
+        // 2) Si no (Todos): detectar departamento predominante por conteo de empleados
+        // EN AMBOS CASOS el departamento siempre se incluye en el nombre del archivo.
+        let departamento = '';
+
+        if (datos.meta && datos.meta.departamento && datos.meta.departamento.trim() !== '') {
+            departamento = datos.meta.departamento.trim().toUpperCase();
+        } else if (datos.nomina && datos.nomina.departamentos) {
             const deptoCount = {};
             datos.nomina.departamentos.forEach(depto => {
-                const nombreDepto = (depto.nombre || 'GENERAL').toUpperCase();
+                const nombreDepto = (depto.nombre || '').toUpperCase();
                 const count = (depto.empleados || []).length;
-                deptoCount[nombreDepto] = (deptoCount[nombreDepto] || 0) + count;
+                if (nombreDepto) deptoCount[nombreDepto] = (deptoCount[nombreDepto] || 0) + count;
             });
-            const departamentosUnicos = Object.keys(deptoCount);
-            multiplesDepartamentos = departamentosUnicos.length > 1;
-            departamento = Object.keys(deptoCount).reduce((a, b) => deptoCount[a] > deptoCount[b] ? a : b);
+            const keys = Object.keys(deptoCount);
+            if (keys.length) {
+                departamento = keys.reduce((a, b) => deptoCount[a] > deptoCount[b] ? a : b);
+            }
         } else if (datos.empleados) {
             const deptoCount = {};
             datos.empleados.forEach(emp => {
-                const depto = (emp.departamento || 'GENERAL').toUpperCase();
-                deptoCount[depto] = (deptoCount[depto] || 0) + 1;
+                const depto = (emp.departamento || '').toUpperCase();
+                if (depto) deptoCount[depto] = (deptoCount[depto] || 0) + 1;
             });
-            const departamentosUnicos = Object.keys(deptoCount);
-            multiplesDepartamentos = departamentosUnicos.length > 1;
-            departamento = Object.keys(deptoCount).reduce((a, b) => deptoCount[a] > deptoCount[b] ? a : b);
+            const keys = Object.keys(deptoCount);
+            if (keys.length) {
+                departamento = keys.reduce((a, b) => deptoCount[a] > deptoCount[b] ? a : b);
+            }
         }
-        
-        // Generar nombre del archivo con formato: SEMANA_DEPARTAMENTO_RANCHO_AÑO (sin departamento si hay múltiples)
+
         const numSemana = datos.meta ? (datos.meta.numero_semana || '') : '';
         const año = new Date().getFullYear();
         let nombreArchivo;
-        if (multiplesDepartamentos) {
-            nombreArchivo = `SEM_${numSemana}_HUASTECA_${año}.pdf`;
-            departamento = ''; // No enviar departamento si hay múltiples
-        } else {
+        if (departamento) {
             nombreArchivo = `SEM_${numSemana}_${departamento}_HUASTECA_${año}.pdf`;
+        } else {
+            nombreArchivo = `SEM_${numSemana}_HUASTECA_${año}.pdf`;
         }
-        
+
         // Agregar departamento y año al meta
         if (!datos.meta) datos.meta = {};
         datos.meta.departamento = departamento;

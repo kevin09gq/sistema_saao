@@ -143,17 +143,17 @@ function llenar_movimientos_poda(movimientos) {
             <tr data-index="${index}">
                 <td class="text-center" data-id="${element.id}">${element.id}</td>
                 <td>
-                    <input type="date" class="form-control form-control-sm shadow-sm fecha_poda"
+                    <input type="date" class="form-control form-control-sm shadow-sm border border-2 border-dark fecha_poda"
                         value="${element.fecha || ''}">
                 </td>
                 <td>
-                    <input type="number" class="form-control form-control-sm shadow-sm arboles" placeholder="Árboles podados"
+                    <input type="number" class="form-control form-control-sm shadow-sm border border-2 border-dark arboles" placeholder="Árboles podados"
                         value="${element.arboles_podados || 0}">
                 </td>
                 <td>
                     <div class="input-group input-group-sm mb-3">
                         <span class="input-group-text">$</span>
-                        <input type="number" step="0.01" class="form-control form-control-sm shadow-sm monto_poda"
+                        <input type="number" step="0.01" class="form-control form-control-sm shadow-sm border border-2 border-dark monto_poda"
                             value="${element.monto.toFixed(2) || 0}">
                     </div>
                 </td>
@@ -161,7 +161,7 @@ function llenar_movimientos_poda(movimientos) {
                     $ ${(element.arboles_podados * element.monto).toFixed(2)}
                 </td>
                 <td class="text-center">
-                    <button class="btn btn-sm btn-outline-danger btn_eliminar_poda" data-id="${element.id}">
+                    <button class="btn btn-sm btn-outline-danger border border-2 border-danger btn_eliminar_poda" data-id="${element.id}">
                         <i class="bi bi-trash-fill"></i>
                     </button>
                 </td>
@@ -242,7 +242,7 @@ $(document).on('input', '#movimientos_poda_body .arboles, #movimientos_poda_body
     movimiento.monto = monto;
 
     // 5. Actualizar la tabla si el filtro de departamento es Poda
-    let dep = $("#filtro_departamento").val();
+    let dep = $("#filtro-departamento").val();
     if (dep == 801) {
         mostrarDatosTablaPoda(jsonNominaHuasteca);
     }
@@ -301,7 +301,7 @@ $(document).on('click', '.btn_eliminar_poda', function (e) {
             alerta("success", "Registro de poda eliminado", "El registro de poda ha sido eliminado exitosamente.");
 
             // 6. Actualizar la tabla si el filtro de departamento es Poda
-            let dep = $("#filtro_departamento").val();
+            let dep = $("#filtro-departamento").val();
             if (dep == 801) {
                 mostrarDatosTablaPoda(jsonNominaHuasteca);
             }
@@ -411,22 +411,22 @@ function llenar_movimientos_extra(movimientos) {
             <tr data-index="${index}">
                 <td class="text-center" data-id="${element.id}">${element.id}</td>
                 <td>
-                    <input type="text" class="form-control form-control-sm shadow-sm concepto_extra"
+                    <input type="text" class="form-control form-control-sm shadow-sm concepto_extra border border-2 border-dark"
                         value="${element.concepto || ''}">
                 </td>
                 <td>
-                    <input type="date" class="form-control form-control-sm shadow-sm fecha_extra"
+                    <input type="date" class="form-control form-control-sm shadow-sm fecha_extra border border-2 border-dark"
                         value="${element.fecha || ''}">
                 </td>
                 <td>
                     <div class="input-group input-group-sm mb-3">
                         <span class="input-group-text">$</span>
-                        <input type="number" step="0.01" class="form-control form-control-sm shadow-sm monto_extra"
+                        <input type="number" step="0.01" class="form-control form-control-sm shadow-sm monto_extra border border-2 border-dark"
                             value="${element.monto.toFixed(2) || 0}">
                     </div>
                 </td>
                 <td class="text-center">
-                    <button class="btn btn-sm btn-outline-danger btn_eliminar_extra" data-id="${element.id}">
+                    <button class="btn btn-sm btn-outline-danger btn_eliminar_extra border border-2 border-danger" data-id="${element.id}">
                         <i class="bi bi-trash-fill"></i>
                     </button>
                 </td>
@@ -491,7 +491,7 @@ $(document).on('click', '.btn_eliminar_extra', function (e) {
             alerta("success", "Registro eliminado", "El registro extra ha sido eliminado exitosamente.");
 
             // 6. Actualizar la tabla si el filtro de departamento es Poda
-            let dep = $("#filtro_departamento").val();
+            let dep = $("#filtro-departamento").val();
             if (dep == 801) {
                 mostrarDatosTablaPoda(jsonNominaHuasteca);
             }
@@ -572,7 +572,7 @@ $(document).on('input', '#movimientos_body_extra .concepto_extra, #movimientos_b
     movimiento.monto = monto;
 
     // 5. Actualizar la tabla si el filtro de departamento es Poda
-    let dep = $("#filtro_departamento").val();
+    let dep = $("#filtro-departamento").val();
     if (dep == 801) {
         mostrarDatosTablaPoda(jsonNominaHuasteca);
     }

@@ -26,11 +26,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['jsonNomina'])) {
     $jsonNomina = json_decode($_POST['jsonNomina'], true);
 }
 
+
+// ==========================
+// COLORES PARA USAR
+// ==========================
+$color_primario = 'B50600';  // Color primario Rojo
+$color_negro    = '000000';  // Color negro
+$color_blanco   = 'FFFFFF';  // Color blanco
+$colorConcepto  = 'F2F2F2';  // fondo columna CONCEPTO GRIS CLARO
+$colorNomina    = 'FFD6D6';  // fondo filas NOMINA
+$colorDias      = 'D5F5E3';  // verde claro para columnas de días (REJA)
+$colorTotales   = 'E0E0E0';  // Gris claro para columnas de totales
+$color_rojo_claro   = 'FFE8E8';  // rojo claro para columnas de totales
+$color_letras_encabezados = '000000'; // color para las letras de encabezados
+
+
+
 //==============================
 //  FUNCIONES AUXILIARES CORTE
 //==============================
-
-$nombre_nomina = "PILAR";
 
 /**
  * Convierte una fecha en formato 'DD/MM/AAA' a timestamp
@@ -296,10 +310,12 @@ function esDiaExtra($texto)
 
 
 /**
- * --------------------------------------------------------------------------
- * FUNCIONA PARA OBTENER LOS COLORES DE FORMA DINAMICA DE LA BASE
- * --------------------------------------------------------------------------
+ * -----------------------------------------------------------------
+ * OBTENER EL COLOR DE FORMA DINAMICA 
+ * -----------------------------------------------------------------
  */
+
+$nombre_nomina = "PILAR";
 
 /**
  * Obtiene el color principal de una nómina (el color que más se repite).
@@ -366,31 +382,11 @@ function obtenerContraste($colorHex)
 }
 
 
-/**
- * ====================================================
- * COLORES
- * ====================================================
- */
-// ==========================
-// COLORES PARA USAR
-// ==========================
-$color_primario = 'E5C8E6';  // Color primario
-$color_secundario = '7030A0';  // Color secundario
-$color_negro    = '000000';  // Color negro
-$color_blanco   = 'FFFFFF';  // Color blanco
-$colorConcepto  = 'F2F2F2';  // fondo columna CONCEPTO GRIS CLARO
-$colorNomina    = 'FFD6D6';  // fondo filas NOMINA
-$colorDias      = 'D5F5E3';  // verde claro para columnas de días (REJA)
-$colorTotales   = 'E0E0E0';  // Gris claro para columnas de totales
-$color_rojo_claro   = 'FFE8E8';  // rojo claro para columnas de totales
-
-$color_letras_encabezados = '000000';
 
 // OBTENER COLOR DE LA BASE DE DATOS
 $color_primario = obtenerColorPrincipal($nombre_nomina) ?? 'B50600';
 // COLOR DE LAS LETRAS DE LOS ENCABEZADOS
 $color_letras_encabezados = obtenerContraste($color_primario) ?? '000000';
-
 
 
 
@@ -504,7 +500,7 @@ $spreadsheet->getProperties()
     ->setLastModifiedBy("BRANDON HERNANDEZ LOPEZ")
     ->setTitle($tmp_nombre)
     ->setSubject("Corte de Nómina")
-    ->setDescription("Reporte de Corte Rancho Pilar S.I.G. SAAO")
+    ->setDescription("Reporte de Corte Rancho PILAR S.I.G. SAAO")
     ->setKeywords("corte, nómina, excel")
     ->setCategory("Finanzas");
 
@@ -533,7 +529,7 @@ $sheet->mergeCells('A2:N2');
 $sheet->mergeCells('A3:N3');
 $sheet->mergeCells('A4:N4');
 
-$sheet->getStyle('A1')->getFont()->setBold(true)->setSize(24)->getColor()->setRGB($color_primario); // Título 1 con color secundario
+$sheet->getStyle('A1')->getFont()->setBold(true)->setSize(24)->getColor()->setRGB($color_primario);
 $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(20);
 $sheet->getStyle('A3')->getFont()->setBold(true)->setSize(14);
 $sheet->getStyle('A4')->getFont()->setBold(true)->setSize(14);
@@ -544,7 +540,7 @@ $logoPath = __DIR__ . '/../../../public/img/logo.jpg';
 if (file_exists($logoPath)) {
     $logo = new Drawing();
     $logo->setName('Logo');
-    $logo->setDescription('Logo de Rancho El Relicario');
+    $logo->setDescription('Logo de Rancho El PILAR');
     $logo->setPath($logoPath);
     $logo->setHeight(110);
     $logo->setCoordinates('B1');
@@ -621,10 +617,10 @@ foreach ($encabezados as $col => $titulo) {
     $sheet->setCellValue($col . '6', $titulo);
 }
 
-// Formatear los encabezados (Negrita, Centrados, Tamaño 12, Fondo Rojo, Letra Negra)
+// Formatear los encabezados (Negrita, Centrados, Tamaño 12, Fondo Rojo, Letra Blanca)
 $sheet->getStyle('A6:N6')->getFont()->setBold(true);
 $sheet->getStyle('A6:N6')->getFont()->setSize(12);
-$sheet->getStyle('A6:N6')->getFont()->setColor(new Color($color_letras_encabezados)); // Letra NEGRA
+$sheet->getStyle('A6:N6')->getFont()->setColor(new Color($color_letras_encabezados)); // Letra BLANCA
 $sheet->getStyle('A6:N6')->getAlignment()->setHorizontal('center');
 $sheet->getStyle('A6:N6')->getAlignment()->setVertical('center');
 $sheet->getStyle('A6:N6')->getAlignment()->setWrapText(true); // Ajustar texto

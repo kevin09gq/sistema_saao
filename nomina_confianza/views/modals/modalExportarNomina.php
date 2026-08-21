@@ -1,14 +1,12 @@
 <!-- Modal para Exportar Nómina -->
-<div class="modal fade" id="modalExportarNomina" tabindex="-1" aria-labelledby="modalExportarNominaLabel"
-    aria-hidden="true">
+<div class="modal fade" id="modalExportarNomina" tabindex="-1" aria-labelledby="modalExportarNominaLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="modalExportarNominaLabel">
                     <i class="bi bi-file-earmark-excel"></i> Exportar Nómina a Excel
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                    aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <p class="text-muted mb-4">Selecciona qué nómina deseas exportar:</p>
@@ -20,10 +18,8 @@
                 <hr class="my-4">
 
                 <div class="list-group shadow-sm">
-
                     <!-- Nómina Completa (Estático) -->
-                    <button type="button" class="list-group-item list-group-item-action" style="border-left: 4px solid #0d6efd;"
-                        id="btn-export-nomina-completa">
+                    <button type="button" class="list-group-item list-group-item-action" style="border-left: 4px solid #0d6efd;" id="btn-export-nomina-completa">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="mb-1 fw-bold text-primary">

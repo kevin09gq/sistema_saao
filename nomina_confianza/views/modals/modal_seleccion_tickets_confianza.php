@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="../css/modal_seleccion_tickets.css">
+
 <div class="modal fade" id="modal_seleccion_tickets" tabindex="-1" aria-labelledby="modal_seleccion_tickets_label" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">

@@ -1,7 +1,7 @@
 //=====================================================
 // FUNCIÓN PARA CARGAR EL SELECT DE DEPARTAMENTOS.
 // POR CADA DEPARTAMENTO SE AGREGAN DOS OPCIONES:
-//CSS = EMPLEADOS CON SEGURO SOCIAL.
+// CSS = EMPLEADOS CON SEGURO SOCIAL.
 // SSS = EMPLEADOS SIN SEGURO SOCIAL.
 //=====================================================
 

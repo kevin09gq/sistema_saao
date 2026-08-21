@@ -163,7 +163,7 @@ function crearFilaPoda(nombreEmpleado, grupo, numeroFila) {
  * @param {String} nombreEmpleado Nombre del empleado
  * @param {Object} grupo Grupo con {concepto, monto, movimientos}
  * @param {Number} numeroFila Número de fila para identificación
-* @returns {Object} Objeto con propiedades {html: String, datos: Object}
+ * @returns {Object} Objeto con propiedades {html: String, datos: Object}
  */
 function crearFilaExtra(nombreEmpleado, grupo, numeroFila) {
     const diasArray = new Array(7).fill(null); // [V, SA, DO, L, MA, MI, J]

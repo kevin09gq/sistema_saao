@@ -4,7 +4,7 @@ require_once 'conexion/conexion.php';
 
 
 //====================================================
-// MIGRACION NOMINA RELICARIO
+// MIGRACION NOMINA CONFIANZA
 //====================================================
 
 try {
@@ -13,26 +13,25 @@ try {
 
 
     //================================================
-    // OBTENER EMPLEADOS DE LA EMPRESA
+    // OBTENER EMPLEADOS DE LAS EMPRESAS
     //================================================
 
-    $empleadosBD = obtenerEmpleadosEmpresa(
-        $conexion,
-        1
+    $empleadosBD = obtenerEmpleadosEmpresas(
+        $conexion
     );
 
 
     //================================================
-    // OBTENER NOMINAS A MIGRAR
+    // OBTENER NOMINAS
     //================================================
 
     $sql = "
 
         SELECT
-            id_nomina_pilar,
-            nomina_pilar
+            id_nomina_confianza,
+            nomina_confianza
 
-        FROM nomina_pilar
+        FROM nomina_confianza
 
     ";
 
@@ -59,7 +58,7 @@ try {
         //============================================
 
         $json = json_decode(
-            $nomina['nomina_pilar'],
+            $nomina['nomina_confianza'],
             true
         );
 
@@ -82,7 +81,7 @@ try {
 
 
         //============================================
-        // CONVERTIR JSON
+        // CONVERTIR NUEVAMENTE A JSON
         //============================================
 
         $jsonGuardar = json_encode(
@@ -97,11 +96,11 @@ try {
 
         $sqlUpdate = "
 
-            UPDATE nomina_pilar
+            UPDATE nomina_confianza
 
-            SET nomina_pilar = ?
+            SET nomina_confianza = ?
 
-            WHERE id_nomina_pilar = ?
+            WHERE id_nomina_confianza = ?
 
         ";
 
@@ -111,7 +110,7 @@ try {
 
 
         $idNomina =
-            $nomina['id_nomina_pilar'];
+            $nomina['id_nomina_confianza'];
 
 
         $stmtUpdate->bind_param(
@@ -127,13 +126,13 @@ try {
 
 
     //================================================
-    // CONFIRMAR
+    // CONFIRMAR CAMBIOS
     //================================================
 
     $conexion->commit();
 
 
-    echo "Migración de Pilar completada correctamente";
+    echo "Migración de Nomina Confianza completada correctamente";
 
 
 } catch (Exception $e) {
@@ -152,12 +151,11 @@ try {
 
 
 //====================================================
-// OBTENER EMPLEADOS EMPRESA
+// OBTENER EMPLEADOS DE LAS EMPRESAS
 //====================================================
 
-function obtenerEmpleadosEmpresa(
-    $conexion,
-    $id_empresa
+function obtenerEmpleadosEmpresas(
+    $conexion
 ) {
 
     $sql = "
@@ -166,23 +164,17 @@ function obtenerEmpleadosEmpresa(
 
             id_empleado,
             clave_empleado,
-            biometrico
+            biometrico,
+            id_empresa
 
         FROM info_empleados
 
-        WHERE id_empresa = ?
+        WHERE id_empresa IN (1, 2)
 
     ";
 
 
     $stmt = $conexion->prepare($sql);
-
-
-    $stmt->bind_param(
-        "i",
-        $id_empresa
-    );
-
 
     $stmt->execute();
 
@@ -195,7 +187,7 @@ function obtenerEmpleadosEmpresa(
 
 
     //================================================
-    // CREAR INDICE POR CLAVE
+    // CREAR INDICE POR EMPRESA Y CLAVE
     //================================================
 
     while (
@@ -208,13 +200,20 @@ function obtenerEmpleadosEmpresa(
         );
 
 
-        $empleados[$clave] = [
+        $idEmpresa =
+            (int)$row['id_empresa'];
+
+
+        $empleados[$idEmpresa][$clave] = [
 
             'id_empleado' =>
                 $row['id_empleado'],
 
             'biometrico' =>
-                $row['biometrico']
+                $row['biometrico'],
+
+            'id_empresa' =>
+                $idEmpresa
 
         ];
 
@@ -248,78 +247,396 @@ function convertirNomina(
 
 
     //================================================
-    // RECORRER DEPARTAMENTOS
+    // VALIDAR DEPARTAMENTOS
     //================================================
 
     if (
-        isset($json['departamentos']) &&
-        is_array($json['departamentos'])
+        !isset($json['departamentos']) ||
+        !is_array($json['departamentos'])
     ) {
 
-
-        foreach (
-            $json['departamentos']
-            as &$departamento
-        ) {
-
-
-            //========================================
-            // CAMBIAR COLOR REPORTE
-            //========================================
-
-            if (
-                isset(
-                    $departamento['color_reporte'][0]['color']
-                )
-            ) {
-
-
-                $departamento['color_reporte'] = [
-
-                    $departamento['color_reporte'][0]['color']
-
-                ];
-
-            }
-
-
-            //========================================
-            // RECORRER EMPLEADOS
-            //========================================
-
-            if (
-                isset($departamento['empleados']) &&
-                is_array($departamento['empleados'])
-            ) {
-
-
-                foreach (
-                    $departamento['empleados']
-                    as &$empleado
-                ) {
-
-
-                    convertirEmpleado(
-                        $empleado,
-                        $empleadosBD
-                    );
-
-                }
-
-
-                unset($empleado);
-
-            }
-
-        }
-
-
-        unset($departamento);
+        return $json;
 
     }
 
 
+    //================================================
+    // NUEVOS DEPARTAMENTOS
+    //================================================
+
+    $nuevosDepartamentos = [];
+
+
+    //================================================
+    // RECORRER DEPARTAMENTOS ORIGINALES
+    //================================================
+
+    foreach (
+        $json['departamentos']
+        as $departamento
+    ) {
+
+
+        //============================================
+        // OBTENER ID DEL DEPARTAMENTO
+        //============================================
+
+        $idDepartamento =
+            isset($departamento['id_departamento'])
+                ? (int)$departamento['id_departamento']
+                : 0;
+
+
+        //============================================
+        // VALIDAR EMPLEADOS
+        //============================================
+
+        if (
+            !isset($departamento['empleados']) ||
+            !is_array($departamento['empleados'])
+        ) {
+
+            continue;
+
+        }
+
+
+        //============================================
+        // OBTENER EMPRESAS DEL COLOR_REPORTE
+        //============================================
+
+        $empresasDepartamento =
+            obtenerEmpresasColorReporte(
+                $departamento
+            );
+
+
+        //============================================
+        // CREAR UN DEPARTAMENTO POR EMPRESA
+        //============================================
+
+        foreach (
+            $empresasDepartamento
+            as $empresa
+        ) {
+
+
+            $idEmpresa =
+                $empresa['id_empresa'];
+
+
+            //========================================
+            // EMPLEADOS DE ESTA EMPRESA
+            //========================================
+
+            $empleadosEmpresa = [];
+
+
+            foreach (
+                $departamento['empleados']
+                as $empleado
+            ) {
+
+
+                //====================================
+                // ID DEPARTAMENTO DEL EMPLEADO
+                //====================================
+
+                $idDepartamentoEmpleado =
+                    isset(
+                        $empleado['id_departamento']
+                    )
+                        ? (int)$empleado['id_departamento']
+                        : 0;
+
+
+                //====================================
+                // EMPRESA DEL EMPLEADO
+                //====================================
+
+                $idEmpresaEmpleado =
+                    isset(
+                        $empleado['id_empresa']
+                    )
+                        ? (int)$empleado['id_empresa']
+                        : 0;
+
+
+                //====================================
+                // VALIDAR DEPARTAMENTO Y EMPRESA
+                //====================================
+
+                if (
+                    $idDepartamentoEmpleado !==
+                    $idDepartamento
+                ) {
+
+                    continue;
+
+                }
+
+
+                if (
+                    $idEmpresaEmpleado !==
+                    $idEmpresa
+                ) {
+
+                    continue;
+
+                }
+
+
+                //====================================
+                // CONVERTIR EMPLEADO
+                //====================================
+
+                convertirEmpleado(
+                    $empleado,
+                    $empleadosBD
+                );
+
+
+                //====================================
+                // AGREGAR EMPLEADO
+                //====================================
+
+                $empleadosEmpresa[] =
+                    $empleado;
+
+            }
+
+
+            //========================================
+            // SI NO HAY EMPLEADOS NO CREAR
+            //========================================
+
+            if (
+                count($empleadosEmpresa) === 0
+            ) {
+
+                continue;
+
+            }
+
+
+            //========================================
+            // CREAR NUEVO DEPARTAMENTO
+            //========================================
+
+            $nuevoDepartamento =
+                crearDepartamentoEmpresa(
+                    $departamento,
+                    $idEmpresa,
+                    $empresa['color'],
+                    $empleadosEmpresa
+                );
+
+
+            //========================================
+            // AGREGAR DEPARTAMENTO
+            //========================================
+
+            $nuevosDepartamentos[] =
+                $nuevoDepartamento;
+
+        }
+
+    }
+
+
+    //================================================
+    // REEMPLAZAR DEPARTAMENTOS
+    //================================================
+
+    $json['departamentos'] =
+        $nuevosDepartamentos;
+
+
     return $json;
+
+}
+
+
+//====================================================
+// OBTENER EMPRESAS DEL COLOR_REPORTE
+//====================================================
+
+function obtenerEmpresasColorReporte(
+    $departamento
+) {
+
+    $empresas = [];
+
+
+    //================================================
+    // VALIDAR COLOR_REPORTE
+    //================================================
+
+    if (
+        !isset($departamento['color_reporte']) ||
+        !is_array($departamento['color_reporte'])
+    ) {
+
+        return $empresas;
+
+    }
+
+
+    //================================================
+    // RECORRER COLORES
+    //================================================
+
+    foreach (
+        $departamento['color_reporte']
+        as $color
+    ) {
+
+
+        if (
+            !isset($color['id_empresa'])
+        ) {
+
+            continue;
+
+        }
+
+
+        $idEmpresa =
+            (int)$color['id_empresa'];
+
+
+        $empresas[] = [
+
+            'id_empresa' =>
+                $idEmpresa,
+
+            'color' =>
+                isset($color['color'])
+                    ? $color['color']
+                    : ''
+
+        ];
+
+    }
+
+
+    return $empresas;
+
+}
+
+
+//====================================================
+// CREAR DEPARTAMENTO POR EMPRESA
+//====================================================
+
+function crearDepartamentoEmpresa(
+    $departamentoOriginal,
+    $idEmpresa,
+    $color,
+    $empleados
+) {
+
+
+    //================================================
+    // COPIAR DEPARTAMENTO ORIGINAL
+    //================================================
+
+    $nuevoDepartamento =
+        $departamentoOriginal;
+
+
+    //================================================
+    // ASIGNAR ID EMPRESA
+    //================================================
+
+    $nuevoDepartamento['id_empresa'] =
+        $idEmpresa;
+
+
+    //================================================
+    // ASIGNAR NOMBRE
+    //================================================
+
+    $nombreOriginal =
+        isset(
+            $departamentoOriginal['nombre']
+        )
+            ? $departamentoOriginal['nombre']
+            : '';
+
+
+    $nuevoDepartamento['nombre'] =
+        obtenerNombreDepartamento(
+            $nombreOriginal,
+            $idEmpresa
+        );
+
+
+    //================================================
+    // ASIGNAR COLOR
+    //================================================
+
+    $nuevoDepartamento['color_reporte'] = [
+
+        $color
+
+    ];
+
+
+    //================================================
+    // ASIGNAR EMPLEADOS
+    //================================================
+
+    $nuevoDepartamento['empleados'] =
+        $empleados;
+
+
+    return $nuevoDepartamento;
+
+}
+
+
+//====================================================
+// OBTENER NOMBRE DEL DEPARTAMENTO
+//====================================================
+
+function obtenerNombreDepartamento(
+    $nombreOriginal,
+    $idEmpresa
+) {
+
+
+    //================================================
+    // ADMINISTRACION
+    //================================================
+
+    if (
+        $nombreOriginal === 'Administración' ||
+        $nombreOriginal === 'Administracion'
+    ) {
+
+
+        if ($idEmpresa === 1) {
+
+            return 'Administración - Citricos SAAO';
+
+        }
+
+
+        if ($idEmpresa === 2) {
+
+            return "Administración - SB citric´s group";
+
+        }
+
+    }
+
+
+    //================================================
+    // OTROS DEPARTAMENTOS
+    //================================================
+
+    return $nombreOriginal;
 
 }
 
@@ -346,14 +663,27 @@ function convertirEmpleado(
         );
 
 
+        $idEmpresa =
+            isset($empleado['id_empresa'])
+                ? (int)$empleado['id_empresa']
+                : 0;
+
+
+        //============================================
+        // BUSCAR EMPLEADO
+        //============================================
+
         if (
-            isset($empleadosBD[$clave])
+            isset(
+                $empleadosBD[$idEmpresa][$clave]
+            )
         ) {
 
 
             $empleado['id_empleado'] =
 
-                $empleadosBD[$clave]['id_empleado'];
+                $empleadosBD[$idEmpresa][$clave]
+                ['id_empleado'];
 
         }
 
@@ -373,7 +703,6 @@ function convertirEmpleado(
 
 
         $empleado['id_biometrico'] =
-
             $empleado['biometrico'];
 
 
@@ -407,7 +736,6 @@ function convertirEmpleado(
 
 
                 $registro['dia'] =
-
                     obtenerDia(
                         $registro['fecha']
                     );
@@ -423,45 +751,7 @@ function convertirEmpleado(
 
 
     //================================================
-    // ELIMINAR DIAS EXTRA
-    //================================================
-
-    if (
-        array_key_exists(
-            'dias_extra',
-            $empleado
-        )
-    ) {
-
-
-        unset(
-            $empleado['dias_extra']
-        );
-
-    }
-
-
-    //================================================
-    // ELIMINAR TIPO HORARIO
-    //================================================
-
-    if (
-        array_key_exists(
-            'tipo_horario',
-            $empleado
-        )
-    ) {
-
-
-        unset(
-            $empleado['tipo_horario']
-        );
-
-    }
-
-
-    //================================================
-    // ELIMINAR TIPO HISTORIAL INASISTENCIAS
+    // ELIMINAR TIPO DE INASISTENCIAS
     //================================================
 
     if (
@@ -502,7 +792,7 @@ function convertirEmpleado(
 
 
     //================================================
-    // ELIMINAR EDITADO HISTORIAL RETARDOS
+    // ELIMINAR EDITADO DE RETARDOS
     //================================================
 
     if (
@@ -565,7 +855,7 @@ function obtenerDia(
 
 
     //================================================
-    // CREAR FECHA
+    // CREAR OBJETO FECHA
     //================================================
 
     $fechaObj = new DateTime(
