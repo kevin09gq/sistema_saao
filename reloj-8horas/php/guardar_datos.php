@@ -50,13 +50,19 @@ try {
             if (isset($departamento['empleados']) && is_array($departamento['empleados'])) {
                 foreach ($departamento['empleados'] as $empleado) {
                     if (!isset($empleado['id_empleado'])) continue;
+
                     $empleado_id = intval($empleado['id_empleado']);
-                    $vacaciones = isset($empleado['dias_vacaciones']) ? intval($empleado['dias_vacaciones']) : 0;
-                    $ausencias = isset($empleado['ausencias']) ? intval($empleado['ausencias']) : 0;
-                    $incapacidades = isset($empleado['incapacidades']) ? intval($empleado['incapacidades']) : 0;
+
+                    // Las variables 'vacaciones', 'ausencias' e 'incapacidades' solo tiene true o false
+                    // Se debe recuperar los valores de los dias de la respectiva incidencia
+                    $vacaciones = isset($empleado['vacaciones']) ? intval($empleado['dias_vacaciones']) : 0;
+                    $ausencias = isset($empleado['ausencias']) ? intval($empleado['dias_ausencias']) : 0;
+                    $incapacidades = isset($empleado['incapacidades']) ? intval($empleado['dias_incapacidades']) : 0;
+
+                    // dias trabajados
                     $dias_trabajados = isset($empleado['dias_trabajados']) ? intval($empleado['dias_trabajados']) : 0;
 
-                    // Sumar al resumen general
+                    // Sumar al resumen general DE TODOS LOS EMPLEADOS
                     $total_vacaciones += $vacaciones;
                     $total_ausencias += $ausencias;
                     $total_incapacidades += $incapacidades;

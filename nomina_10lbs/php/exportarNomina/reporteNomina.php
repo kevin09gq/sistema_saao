@@ -241,7 +241,7 @@ foreach ($grupos as $nombreGrupo => $empleados) {
         }
         if (($emp['inasistencia'] ?? 0) != 0) $d['Inasistencia'] = (float)$emp['inasistencia'];
         if (($emp['permiso'] ?? 0) != 0) $d['Permiso'] = (float)$emp['permiso'];
-        if (($emp['uniforme'] ?? 0) != 0) $d['Uniforme'] = (float)$emp['uniforme'];
+        if (($emp['uniformes'] ?? 0) != 0) $d['Uniforme'] = (float)$emp['uniformes'];
         if (($emp['checador'] ?? 0) != 0) $d['Biométrico'] = (float)$emp['checador'];
         if (($emp['tarjeta'] ?? 0) != 0) $d['Tarjeta'] = (float)$emp['tarjeta'];
         if (($emp['prestamo'] ?? 0) != 0) $d['Préstamo'] = (float)$emp['prestamo'];
@@ -391,6 +391,105 @@ foreach ($grupos as $nombreGrupo => $empleados) {
             $pdf->Cell(35, 6, number_format($totalCajasEmpaque), 1, 0, 'C', true);
             $pdf->Cell(35, 6, '', 1, 0, 'C', true);
             $pdf->Cell(40, 6, formatoMoneda($totalSubtotalEmpaque), 1, 1, 'R', true);
+        }
+
+        // --- HISTORIAL DE PERMISOS ---
+        if (!empty($emp['historial_permisos']) && is_array($emp['historial_permisos'])) {
+            $pdf->Ln(4);
+            $pdf->SetFont('helvetica', 'B', 10);
+            $pdf->SetFillColor(230, 230, 230);
+            $pdf->Cell(190, 7, 'HISTORIAL DE PERMISOS', 0, 1, 'C', true);
+            $pdf->SetFont('helvetica', 'B', 9);
+            $pdf->SetFillColor(245, 245, 245);
+            $pdf->Cell(45, 6, 'DÍA', 1, 0, 'C', true);
+            $pdf->Cell(45, 6, 'MINUTOS', 1, 0, 'C', true);
+            $pdf->Cell(50, 6, 'COSTO X MINUTO', 1, 0, 'C', true);
+            $pdf->Cell(50, 6, 'DESCUENTO', 1, 1, 'C', true);
+
+            $pdf->SetFont('dejavusans', '', 9);
+            $totDescuentoPerm = 0;
+            foreach ($emp['historial_permisos'] as $hPerm) {
+                $dia = !empty($hPerm['dia']) ? $hPerm['dia'] : (!empty($hPerm['fecha']) ? $hPerm['fecha'] : '-');
+                $minutos = isset($hPerm['minutos_permiso']) ? $hPerm['minutos_permiso'] . ' min' : (isset($hPerm['minutos']) ? $hPerm['minutos'] . ' min' : '-');
+                $costoMin = formatoMoneda($hPerm['costo_por_minuto'] ?? 0);
+                $monto = (float) ($hPerm['descuento_permiso'] ?? 0);
+                $totDescuentoPerm += $monto;
+                $descuento = formatoMoneda($monto);
+
+                $pdf->Cell(45, 6, $dia, 1, 0, 'C');
+                $pdf->Cell(45, 6, $minutos, 1, 0, 'C');
+                $pdf->Cell(50, 6, $costoMin, 1, 0, 'C');
+                $pdf->SetFont('dejavusansmono', '', 9);
+                $pdf->Cell(50, 6, $descuento, 1, 1, 'R');
+                $pdf->SetFont('dejavusans', '', 9);
+            }
+            $pdf->SetFont('helvetica', 'B', 9);
+            $pdf->SetFillColor(240, 240, 240);
+            $pdf->Cell(140, 6, 'TOTAL PERMISOS', 1, 0, 'R', true);
+            $pdf->SetFont('dejavusansmono', 'B', 9);
+            $pdf->Cell(50, 6, formatoMoneda($totDescuentoPerm), 1, 1, 'R', true);
+        }
+
+        // --- HISTORIAL DE UNIFORMES ---
+        if (!empty($emp['historial_uniforme']) && is_array($emp['historial_uniforme'])) {
+            $pdf->Ln(4);
+            $pdf->SetFont('helvetica', 'B', 10);
+            $pdf->SetFillColor(230, 230, 230);
+            $pdf->Cell(190, 7, 'HISTORIAL DE UNIFORMES', 0, 1, 'C', true);
+            $pdf->SetFont('helvetica', 'B', 9);
+            $pdf->SetFillColor(245, 245, 245);
+            $pdf->Cell(95, 6, 'FOLIO', 1, 0, 'C', true);
+            $pdf->Cell(95, 6, 'CANTIDAD', 1, 1, 'C', true);
+
+            $pdf->SetFont('dejavusans', '', 9);
+            $totDescuentoUnif = 0;
+            foreach ($emp['historial_uniforme'] as $hUnif) {
+                $folio = !empty($hUnif['folio']) ? $hUnif['folio'] : '-';
+                $cantVal = (float) ($hUnif['cantidad'] ?? 0);
+                $totDescuentoUnif += $cantVal;
+                $cantidadStr = formatoMoneda($cantVal);
+
+                $pdf->Cell(95, 6, $folio, 1, 0, 'C');
+                $pdf->SetFont('dejavusansmono', '', 9);
+                $pdf->Cell(95, 6, $cantidadStr, 1, 1, 'R');
+                $pdf->SetFont('dejavusans', '', 9);
+            }
+            $pdf->SetFont('helvetica', 'B', 9);
+            $pdf->SetFillColor(240, 240, 240);
+            $pdf->Cell(95, 6, 'TOTAL UNIFORMES', 1, 0, 'R', true);
+            $pdf->SetFont('dejavusansmono', 'B', 9);
+            $pdf->Cell(95, 6, formatoMoneda($totDescuentoUnif), 1, 1, 'R', true);
+        }
+
+        // --- HISTORIAL DE OLVIDOS DE BIOMÉTRICO ---
+        if (!empty($emp['historial_olvidos']) && is_array($emp['historial_olvidos'])) {
+            $pdf->Ln(4);
+            $pdf->SetFont('helvetica', 'B', 10);
+            $pdf->SetFillColor(230, 230, 230);
+            $pdf->Cell(190, 7, 'HISTORIAL DE OLVIDOS DE BIOMÉTRICO', 0, 1, 'C', true);
+            $pdf->SetFont('helvetica', 'B', 9);
+            $pdf->SetFillColor(245, 245, 245);
+            $pdf->Cell(95, 6, 'DÍA', 1, 0, 'C', true);
+            $pdf->Cell(95, 6, 'DESCUENTO OLVIDO', 1, 1, 'C', true);
+
+            $pdf->SetFont('dejavusans', '', 9);
+            $totDescuentoOlv = 0;
+            foreach ($emp['historial_olvidos'] as $hOlv) {
+                $dia = !empty($hOlv['dia']) ? $hOlv['dia'] : (!empty($hOlv['fecha']) ? $hOlv['fecha'] : '-');
+                $monto = (float) ($hOlv['descuento_olvido'] ?? 0);
+                $totDescuentoOlv += $monto;
+                $descuento = formatoMoneda($monto);
+
+                $pdf->Cell(95, 6, $dia, 1, 0, 'C');
+                $pdf->SetFont('dejavusansmono', '', 9);
+                $pdf->Cell(95, 6, $descuento, 1, 1, 'R');
+                $pdf->SetFont('dejavusans', '', 9);
+            }
+            $pdf->SetFont('helvetica', 'B', 9);
+            $pdf->SetFillColor(240, 240, 240);
+            $pdf->Cell(95, 6, 'TOTAL OLVIDOS BIOMÉTRICO', 1, 0, 'R', true);
+            $pdf->SetFont('dejavusansmono', 'B', 9);
+            $pdf->Cell(95, 6, formatoMoneda($totDescuentoOlv), 1, 1, 'R', true);
         }
 
         // Acumular Totales por Grupo

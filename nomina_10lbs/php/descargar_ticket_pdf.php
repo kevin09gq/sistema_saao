@@ -71,6 +71,7 @@ function renderTicketPdf($pdf, $emp, $extra, $meta) {
         $sumaPercepcionesExtra += toNumber($pe['cantidad'] ?? 0);
     }
 
+    $historialEmpaque = is_array($emp['historial_empaque'] ?? null) ? $emp['historial_empaque'] : [];
     $sueldoExtraTotal = toNumber($emp['sueldo_extra_total'] ?? ($emp['extras'] ?? 0));
     // Si sueldoExtraTotal es 0 pero hay desglose, usamos la suma del desglose
     if ($sueldoExtraTotal <= 0 && $sumaPercepcionesExtra > 0) {
@@ -127,8 +128,49 @@ function renderTicketPdf($pdf, $emp, $extra, $meta) {
 
     $percepciones = [];
     $conceptoNum = 1;
-    $percepciones[] = ['label' => $conceptoNum++ . ' Sueldo base', 'monto' => $sueldoNetoBase];
-    
+
+    if (count($historialEmpaque) > 0) {
+        foreach ($historialEmpaque as $item) {
+            $montoItem = toNumber($item['subtotal'] ?? ($item['total'] ?? 0));
+            if ($montoItem <= 0) {
+                $cantidad = toNumber($item['cantidad'] ?? 0);
+                $precio = toNumber($item['precio_unitario'] ?? 0);
+                $montoItem = $cantidad * $precio;
+            }
+
+            if ($montoItem <= 0) continue;
+
+            $cliente = safeText($item['cliente'] ?? $item['nombre_cliente'] ?? $item['cliente_nombre'] ?? '');
+            $tipoCaja = safeText($item['tipo'] ?? $item['tipo_caja'] ?? $item['caja'] ?? '');
+            $precioUnitario = toNumber($item['precio_unitario'] ?? 0);
+            $cantidad = toNumber($item['cantidad'] ?? 0);
+            $detalle = [];
+
+            if ($cliente !== '') $detalle[] = $cliente;
+            if ($precioUnitario > 0) {
+                $detalle[] = 'P.Box $' . money($precioUnitario);
+            } elseif ($tipoCaja !== '') {
+                $detalle[] = $tipoCaja;
+            }
+            if ($cantidad > 0) $detalle[] = $cantidad . ' Box';
+
+            $label = '';
+            if (!empty($detalle)) {
+                $label = implode(' | ', $detalle);
+            }
+
+            $montoLabel = $montoItem > 0 ? 'Total $' . money($montoItem) : '';
+            $labelFinal = $label !== '' ? $label : 'Total';
+            if ($montoLabel !== '') {
+                $labelFinal .= ' | ' . $montoLabel;
+            }
+
+            $percepciones[] = ['label' => $conceptoNum++ . ' ' . $labelFinal, 'monto' => $montoItem];
+        }
+    } else {
+        $percepciones[] = ['label' => $conceptoNum++ . ' Sueldo base', 'monto' => $sueldoNetoBase];
+    }
+
     // Desglosar percepciones extras
     if (count($percepcionesExtraList) > 0) {
         foreach ($percepcionesExtraList as $pe) {
@@ -138,10 +180,10 @@ function renderTicketPdf($pdf, $emp, $extra, $meta) {
                 $percepciones[] = ['label' => $conceptoNum++ . ' ' . $nombreExtra, 'monto' => $montoExtra];
             }
         }
-    } else if ($sueldoExtraTotal > 0) {
+    } else if ($sueldoExtraTotal > 0 && count($historialEmpaque) === 0) {
         $percepciones[] = ['label' => $conceptoNum++ . ' Extras', 'monto' => $sueldoExtraTotal];
     }
-    
+
     if ($ajusteRedondeo > 0.001) {
         $percepciones[] = ['label' => $conceptoNum++ . ' Redondeo', 'monto' => $ajusteRedondeo];
     }
@@ -193,7 +235,8 @@ function renderTicketPdf($pdf, $emp, $extra, $meta) {
         $pdf->SetFont('helvetica', $style, $fontPt);
         $pdf->SetXY($dot($xDot), $dot($yDot));
         $value = substr((string)$value, 0, 50);
-        $pdf->Cell($dot($wDot), $dot($hDot), $value, 0, 0, $align, false, '', 0, false, 'C', 'M');
+        // El parámetro stretch=1 (9no arg) encoge la fuente para que quepa en el ancho de la celda
+        $pdf->Cell($dot($wDot), $dot($hDot), $value, 0, 0, $align, false, '', 1, false, 'C', 'M');
     };
 
     $maxConceptos = max(count($percepciones), count($deducciones));
@@ -297,13 +340,13 @@ function renderTicketPdf($pdf, $emp, $extra, $meta) {
         $yCellTop = ($tableTopPrimera + ($i * $lh)) + 16;
         if (isset($percepciones[$i])) {
             $p = $percepciones[$i];
-            $cellText(9, $yCellTop, 170, $lh, $f16, $p['label'], 'L');
-            $cellText(240, $yCellTop, 229, $lh, $f16, '$ ' . money($p['monto']), 'C');
+            $cellText(12, $yCellTop, 290, $lh, $f16, $p['label'], 'L');
+            $cellText(305, $yCellTop, 110, $lh, $f16, '$ ' . money($p['monto']), 'C');
         }
         if (isset($deducciones[$i])) {
             $d = $deducciones[$i];
-            $cellText(415, $yCellTop, 245, $lh, $f16, $d['label'], 'L');
-            $cellText(670, $yCellTop, 172, $lh, $f16, '-$ ' . money($d['monto']), 'C');
+            $cellText(418, $yCellTop, 279, $lh, $f16, $d['label'], 'L');
+            $cellText(700, $yCellTop, 122, $lh, $f16, '-$ ' . money($d['monto']), 'C');
         }
         $yLine = ($tableTopPrimera + (($i + 1) * $lh));
         $pdf->Line($dot(10), $dot($yLine), $dot(415), $dot($yLine));
@@ -333,13 +376,13 @@ function renderTicketPdf($pdf, $emp, $extra, $meta) {
             $yCellTop = ($tableTop + ($rowEnPagina * $lh)) + 16;
             if (isset($percepciones[$i])) {
                 $p = $percepciones[$i];
-                $cellText(9, $yCellTop, 170, $lh, $f16, $p['label'], 'L');
-                $cellText(240, $yCellTop, 229, $lh, $f16, '$ ' . money($p['monto']), 'C');
+                $cellText(12, $yCellTop, 290, $lh, $f16, $p['label'], 'L');
+                $cellText(305, $yCellTop, 110, $lh, $f16, '$ ' . money($p['monto']), 'C');
             }
             if (isset($deducciones[$i])) {
                 $d = $deducciones[$i];
-                $cellText(415, $yCellTop, 245, $lh, $f16, $d['label'], 'L');
-                $cellText(670, $yCellTop, 172, $lh, $f16, '-$ ' . money($d['monto']), 'C');
+                $cellText(418, $yCellTop, 279, $lh, $f16, $d['label'], 'L');
+                $cellText(700, $yCellTop, 122, $lh, $f16, '-$ ' . money($d['monto']), 'C');
             }
             $yLine = ($tableTop + (($rowEnPagina + 1) * $lh));
             $pdf->Line($dot(10), $dot($yLine), $dot(415), $dot($yLine));

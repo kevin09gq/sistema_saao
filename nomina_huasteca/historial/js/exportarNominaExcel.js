@@ -1,0 +1,348 @@
+abrirModalExportarExcel();
+exportarNominaDepartamento();
+exportarNominaCompleta();
+reporteNominaPdf();
+exportarDispersionTarjeta();
+
+function abrirModalExportarExcel() {
+    $(document).on('click', '#btn_export_excel', function (e) {
+        e.preventDefault();
+
+        // Cargar los departamentos dinámicamente antes de mostrar
+        cargarDepartamentosExportar();
+        $('#modalExportarNomina').modal('show');
+    });
+}
+
+function cargarDepartamentosExportar() {
+    const container = $('#contenedor-exportar-dinamico');
+    container.empty();
+
+    if (!jsonHistorialHuasteca || !Array.isArray(jsonHistorialHuasteca.departamentos)) {
+        container.html('<div class="alert alert-warning small">No hay departamentos disponibles</div>');
+        return;
+    }
+
+    jsonHistorialHuasteca.departamentos.forEach(depto => {
+        // Omitir el departamento de Corte porque es una opción estática fuera de esta lista
+        if (depto.nombre.toUpperCase() === 'CORTE' || depto.nombre.toUpperCase() === 'PODA') return;
+
+        const btnHtml = `
+       
+            <button type="button" class="list-group-item list-group-item-action" style="border-left: 4px solid #10b981;" id="btn-export-corte"   
+                data-id="${depto.id_departamento}" data-nombre="${depto.nombre}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1 text-success fw-bold">
+                                    <i class="bi bi-building"></i> ${depto.nombre}
+                                </h6>
+                            </div>
+                            <i class="bi bi-file-earmark-spreadsheet text-success fs-4"></i>
+                        </div>
+            </button>
+
+        `;
+        container.append(btnHtml);
+    });
+
+    if (container.children().length === 0) {
+        container.html('<div class="alert alert-info small text-center">Solo disponible Nómina Completa y Corte</div>');
+    }
+}
+
+function exportarNominaDepartamento() {
+    $(document).on('click', '#btn-export-corte', function (e) {
+        e.preventDefault();
+
+        // if (validarEmpleadosNegativos()) return;
+
+        const deptoId = $(this).data('id');
+        const deptoNombre = $(this).data('nombre');
+        let tmp_url = "";
+
+        switch (deptoNombre) {
+            case "Corte":
+                tmp_url = '../../generacion/php/exportarNomina/exportarNominaCorte.php';
+                break;
+            case "Poda":
+                tmp_url = '../../generacion/php/exportarNomina/exportarNominaPoda.php';
+                break;
+            default:
+                tmp_url = '../../generacion/php/exportarNomina/exportarNominaDepartamento.php';
+                break;
+        }
+
+        // Validar que jsonHistorialHuasteca exista
+        if (!jsonHistorialHuasteca) {
+            alert('No hay datos de nómina para exportar. Por favor, procesa los datos primero.');
+            return;
+        }
+
+        // Validar que el departamento exista
+        const departamento = jsonHistorialHuasteca.departamentos.find(d => d.id_departamento == deptoId);
+        if (!departamento || !departamento.empleados || departamento.empleados.length === 0) {
+            alerta("info", "Nomina no encontrada", "No se encontró el departamento de " + deptoNombre + " o no tiene empleados. Por favor, cargar los tickets de " + deptoNombre + ".");
+            return;
+        }
+
+
+
+        // Mostrar alerta de carga
+        Swal.fire({
+            title: 'Generando documento...',
+            html: 'Por favor espera mientras se genera el archivo Excel.',
+            icon: 'info',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: (modal) => {
+                Swal.showLoading();
+            }
+        });
+
+        // Identificar la empresa asociada a este departamento en el JSON
+        const idEmpresa = departamento && departamento.color_reporte && departamento.color_reporte.length > 0
+            ? departamento.color_reporte[0].id_empresa
+            : 1;
+
+        // Enviar el jsonHistorialHuasteca al servidor PHP mediante POST
+        $.ajax({
+            url: tmp_url,
+            type: 'POST',
+            data: {
+                jsonNomina: JSON.stringify(jsonHistorialHuasteca),
+                deptoId: deptoId,
+                deptoNombre: deptoNombre,
+                id_empresa: idEmpresa
+            },
+            xhrFields: {
+                responseType: 'blob'
+            },
+            success: function (blob) {
+                // Cerrar la alerta de carga
+                Swal.close();
+
+                // Crear un blob y descargar el archivo
+                var link = document.createElement('a');
+                var url = URL.createObjectURL(blob);
+                link.href = url;
+                var numeroSemana = String(jsonHistorialHuasteca.numero_semana).padStart(2, '0');
+                var aniosCierre = jsonHistorialHuasteca.fecha_cierre.split('/')[2];
+                var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
+                link.download = 'SEM ' + numeroSemana + ' - ' + deptoNombre.toUpperCase() + ' - ' + aniosCierre + '.xlsx';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            },
+            error: function (xhr, status, error) {
+                // Cerrar la alerta de carga
+                Swal.close();
+
+                console.error('Error al descargar el Excel:', error);
+                alerta("error", "Error al generar reporte excel", "No se pudo generar el archivo Excel para el departamento de " + deptoNombre + ". Por favor, intenta nuevamente o contacta al soporte.");
+            }
+        });
+
+    });
+}
+
+function exportarNominaCompleta() {
+    $(document).on('click', '#btn-export-nomina-completa', function (e) {
+        e.preventDefault();
+
+        // Validar que jsonHistorialHuasteca exista
+        if (!jsonHistorialHuasteca) {
+            alert('No hay datos de nómina para exportar. Por favor, procesa los datos primero.');
+            return;
+        }
+
+        // Validar que no haya empleados negativos
+        if (validarEmpleadosNegativos()) return;
+
+        // Mostrar alerta de carga
+        Swal.fire({
+            title: 'Generando documento...',
+            html: 'Por favor espera mientras se genera el archivo Excel.',
+            icon: 'info',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: (modal) => {
+                Swal.showLoading();
+            }
+        });
+
+        // Enviar el jsonHistorialHuasteca al servidor PHP mediante POST
+        $.ajax({
+            url: '../../generacion/php/exportarNomina/exportarNominaCompleta.php',
+            type: 'POST',
+            data: {
+                jsonNomina: JSON.stringify(jsonHistorialHuasteca)
+            },
+            xhrFields: {
+                responseType: 'blob'
+            },
+            success: function (blob) {
+                // Cerrar la alerta de carga
+                Swal.close();
+
+                // Crear un blob y descargar el archivo
+                var link = document.createElement('a');
+                var url = URL.createObjectURL(blob);
+                link.href = url;
+                var numeroSemana = String(jsonHistorialHuasteca.numero_semana).padStart(2, '0');
+                var aniosCierre = jsonHistorialHuasteca.fecha_cierre.split('/')[2];
+                var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
+                link.download = 'SEM ' + numeroSemana + ' - ' + 'RANCHO HUASTECA - ' + aniosCierre + '.xlsx';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            },
+            error: function (xhr, status, error) {
+                // Cerrar la alerta de carga
+                Swal.close();
+
+                console.error('Error al descargar el Excel:', error);
+                alerta("error", "Error al generar reporte excel", "No se pudo generar el archivo Excel para la nómina completa. Por favor, intenta nuevamente o contacta al soporte.");
+            }
+        });
+
+    });
+}
+
+function reporteNominaPdf() {
+    $("#btn_export_pdf_reporte").click(function (e) {
+        e.preventDefault();
+        // Validar que jsonHistorialHuasteca exista
+        if (!jsonHistorialHuasteca) {
+            alert('No hay datos de nómina para exportar. Por favor, procesa los datos primero.');
+            return;
+        }
+
+        if (validarEmpleadosNegativos()) return;
+
+        $.ajax({
+            url: '../../generacion/php/exportarNomina/reporteNomina.php',
+            type: 'POST',
+            data: {
+                numero_semana: jsonHistorialHuasteca.numero_semana || '',
+                fecha_cierre: jsonHistorialHuasteca.fecha_cierre || '',
+                fecha_inicio: jsonHistorialHuasteca.fecha_inicio || '',
+                periodo_nomina: jsonHistorialHuasteca.periodo_nomina || '',
+                jsonNomina: JSON.stringify(jsonHistorialHuasteca)
+            },
+            xhrFields: {
+                responseType: 'blob'
+            },
+            success: function (blob) {
+                // Descargar el PDF
+                var link = document.createElement('a');
+                var url = URL.createObjectURL(blob);
+                link.href = url;
+                var numeroSemana = String(jsonHistorialHuasteca.numero_semana).padStart(2, '0');
+                var aniosCierre = jsonHistorialHuasteca.fecha_cierre.split('/')[2];
+                var numeroSemana = String(jsonHistorialHuasteca.numero_semana).padStart(2, '0');
+                var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
+                link.download = 'SEM_' + numeroSemana + '_DESGLOSE_NOMINA_HUASTECA_' + '.pdf'; document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            },
+            error: function (xhr, status, error) {
+                console.error('Error al descargar el PDF:', error);
+                alert('Error: No se pudo generar el archivo PDF.');
+            }
+        });
+    });
+}
+
+function exportarDispersionTarjeta() {
+    $("#btn-export-dispersion-tarjeta").click(function (e) {
+        e.preventDefault();
+
+        if (!jsonHistorialHuasteca) {
+            alert('No hay datos de nómina para exportar. Por favor, procesa los datos primero.');
+            return;
+        }
+
+        Swal.fire({
+            title: 'Generando Dispersión...',
+            html: 'Por favor espera mientras se genera el archivo Excel.',
+            icon: 'info',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        $.ajax({
+            url: '../../generacion/php/exportarNomina/exportarDispersionTarjeta.php',
+            type: 'POST',
+            data: {
+                jsonNomina: JSON.stringify(jsonHistorialHuasteca)
+            },
+            xhrFields: {
+                responseType: 'blob'
+            },
+            success: function (blob) {
+                Swal.close();
+                var link = document.createElement('a');
+                var url = URL.createObjectURL(blob);
+                link.href = url;
+                var numeroSemana = String(jsonHistorialHuasteca.numero_semana).padStart(2, '0');
+                var anio = jsonHistorialHuasteca.fecha_cierre.split('/')[2];
+                link.download = 'SEM_' + numeroSemana + '_DISPERSION_TARJETA_HUASTECA_' + anio + '.xlsx';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            },
+            error: function (xhr, status, error) {
+                Swal.close();
+                console.error('Error al descargar el Excel:', error);
+                alert('No se pudo generar el archivo de dispersión.');
+            }
+        });
+    });
+}
+
+
+function validarEmpleadosNegativos() {
+
+    if (!jsonHistorialHuasteca || !jsonHistorialHuasteca.departamentos) {
+        return false;
+    }
+
+    let empleadosNegativos = [];
+
+    jsonHistorialHuasteca.departamentos.forEach(depto => {
+        depto.empleados.forEach(emp => {
+
+            if (emp.mostrar !== false && Number(emp.total_cobrar) < 0) {
+                empleadosNegativos.push(emp.nombre);
+            }
+
+        });
+    });
+
+    if (empleadosNegativos.length > 0) {
+
+        Swal.fire({
+            icon: 'error',
+            title: 'No se puede exportar la nómina',
+            html: `
+                <b>Existen empleados con saldo negativo.</b><br><br>
+                Corrige la nómina antes de descargar cualquier archivo.<br><br>
+                <b>Empleados afectados:</b><br>
+                ${empleadosNegativos.join('<br>')}
+            `,
+            confirmButtonText: 'Entendido'
+        });
+
+        return true; // bloquear descarga
+    }
+
+    return false; // permitir descarga
+}
+

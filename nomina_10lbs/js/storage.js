@@ -1,15 +1,16 @@
-// Funciones simples y fáciles de entender para Local Storage
-// Guardar automáticamente antes de recargar la página
-// Solo guardar si jsonNomina10lbs tiene datos válidos (evita re-grabar después de un clear)
+//======================================================================
+// FUNCION PARA GUARDAR LA NOMINA CUANDO SE RECARGA LA PAGINA 
+//======================================================================
+
 window.addEventListener('beforeunload', function () {
-    if (jsonNomina10lbs && Array.isArray(jsonNomina10lbs.departamentos) && jsonNomina10lbs.departamentos.length > 0) {
+    if (typeof jsonNomina10lbs !== 'undefined') {
         saveNomina(jsonNomina10lbs);
     }
 });
 
-//=======================================
-// GUARDA LA NOMINA EN LOCAL STORAGE
-//=======================================
+//======================================================================
+//FUNCION PARA GUARDAR EL JSON DE LA NOMINA EN EL LOCAL STORAGE
+//======================================================================
 
 function saveNomina(jsonNomina10lbs) {
     try {
@@ -21,9 +22,9 @@ function saveNomina(jsonNomina10lbs) {
     }
 }
 
-//=======================================
-// CARGA LA NOMINA DESDE LOCAL STORAGE
-//=======================================
+//======================================================================
+// FUNCION PARA OBTENER EL JSON DE LA NOMINA DESDE EL LOCAL STORAGE
+//======================================================================
 
 function loadNomina() {
     try {
@@ -35,29 +36,10 @@ function loadNomina() {
     }
 }
 
-//=======================================
-// LIMPIA LA NOMINA DE LOCAL STORAGE Y DE LA VARIABLE GLOBAL
-//=======================================
+//====================================================================================
+// FUNCION PARA RESTAURAR LA NOMINA DESDE EL LOCAL STORAGE CUANDO SE CARGA LA PAGINA
+//====================================================================================
 
-function clearNomina() {
-    try {
-        localStorage.removeItem('jsonNomina10lbs');
-        // También limpiar la variable global para evitar que se vuelva a guardar en beforeunload
-        if (typeof window !== 'undefined') {
-            window.jsonNomina10lbs = null;
-        }
-        return true;
-    } catch (err) {
-        return false;
-    }
-}
-
-
-//=======================================
-// RESTAURA LA NOMINA DESDE LOCAL STORAGE Y ACTUALIZA LA VISTA
-//=======================================
-
-// Restaura la nómina desde localStorage y actualiza la vista si las funciones UI están disponibles
 function restoreNomina() {
     try {
         const stored = loadNomina();
@@ -66,17 +48,12 @@ function restoreNomina() {
         // Poner la variable global para que el resto del código la use
         jsonNomina10lbs = stored;
 
-        if (typeof initComponents === 'function') {
-            initComponents();
-        }
-
-        // Renderizar tabla restaurada
-        if (typeof mostrarDatosTabla === 'function') {
-            poblarSelectDepartamentos(jsonNomina10lbs); // Poblar el select dinámico
-            refrescarTabla(); // Usar la lógica dinámica en lugar de ID estático
-        }
-        actualizarCabeceraNomina(jsonNomina10lbs);
-
+        cargarFiltroDepartamentos(); // Cargar el select
+        llenarTablaNomina(); // Llenar la tabla con los empleados
+        saveNomina(jsonNomina10lbs); // Guardar el JSON de la nómina en el local storage
+        cambiarVistaTablaNomina(); // Cambiar la vista para mostrar la tabla de nómina
+        actualizarCabeceraNomina(jsonNomina10lbs); // Actualizar la cabecera de la nómina
+        
         return true;
     } catch (err) {
 
@@ -84,4 +61,17 @@ function restoreNomina() {
     }
 }
 
+//=========================================================================
+// FUNCION PARA LIMPIAR LA NOMINA DEL LOCAL STORAGE Y DE LA VARIABLE GLOBAL
+//=========================================================================
 
+function clearNomina() {
+    try {
+        localStorage.removeItem('jsonNomina10lbs');
+        // También limpiar la variable global para evitar que se vuelva a guardar en beforeunload
+            jsonNomina10lbs = null;
+        return true;
+    } catch (err) {
+        return false;
+    }
+}

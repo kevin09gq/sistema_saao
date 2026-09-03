@@ -1,65 +1,136 @@
 <!DOCTYPE html>
 <html lang="es">
 
+<!--Incluir config.php para iniciar sesión -->
+<?php
+include "../../config/config.php";
+verificarSesion(); // Proteger esta página
+?>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nómina 10LBS</title>
-    <?php
-    include "../../config/config.php";
-    verificarSesion(); // Proteger esta página
-    ?>
+    <title>Nomina 10LBS</title>
+
+    <!-- Icono del sistema -->
     <link rel="icon" href="<?= ICONO_SISTEMA ?>" />
+    <!-- Bootstrap 5 -->
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
+    <!-- Bootstrap Iconos 5 -->
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
-    <link rel="stylesheet" href="../css/nomina_10lbs.css">
-    <link rel="stylesheet" href="../css/encabezados.css">
-    <link rel="stylesheet" href="../css/tablaNomina.css">
-    <link rel="stylesheet" href="../css/modal10lbs.css">
-    <link rel="stylesheet" href="../css/conceptos_totales.css">
-    <link rel="stylesheet" href="../css/modal_seleccion_tickets.css">
-
-
     <!-- SweetAlert2 CSS -->
     <script src="<?= SWEETALERT ?>"></script>
+    <!-- JQuery UI css -->
+    <link rel="stylesheet" href="<?= JQUERY_UI_CSS ?>">
+
+    <link rel="stylesheet" href="../css/encabezados.css">
+    <link rel="stylesheet" href="../css/tablaNomina.css">
+    <link rel="stylesheet" href="../css/modalDetallesNomina.css">
+    <link rel="stylesheet" href="../css/conceptos_totales.css">
+
 </head>
 
-<body>
+<body class="bg-secondary-subtle">
     <?php
     // Incluir el navbar (config.php ya fue incluido en el head)
     include "../../public/views/navbar.php"
     ?>
 
-    <!-- Contenedor principal centrado -->
-    <div class="container-nomina_10lbs" id="container-nomina_10lbs" hidden>
-        <!-- Contenedor tipo navbar para formulario y filtros -->
-        <div class="navbar-nomina_10lbs">
-            <div class="titulo-nomina_10lbs">Procesamiento de Nómina</div>
-            <div class="subtitulo-nomina_10lbs">Selecciona los archivos Excel para procesar la información</div>
+    <!-- CONTENEDOR DE LOS DATOS DE LA NOMINA -->
 
-            <form id="form_excel_raya" enctype="multipart/form-data" class="form-nomina-inline-10lbs">
-                <div>
-                    <label for="archivo_excel_lista_raya_10lbs">
-                        <i class="bi bi-file-earmark-excel-fill"></i> Lista de Raya
-                    </label>
-                    <input type="file" id="archivo_excel_lista_raya_10lbs" name="archivo_excel_lista_raya_10lbs"
-                        accept=".xls,.xlsx" required>
+    <div class="container" id="contenedor-data">
+
+        <div class="row justify-content-center align-items-center vh-100">
+
+            <div class="col-md-8 col-lg-6">
+
+                <div class="card shadow-lg border-0">
+
+                    <div class="card-header bg-success text-white text-center py-3">
+                        <h3 class="mb-0">
+                            Módulo de Nómina
+                        </h3>
+                    </div>
+
+                    <div class="card-body bg-light p-4">
+
+
+                        <div class="mb-3">
+                            <label for="fecha_inicio" class="form-label fw-semibold">
+                                Fecha de Inicio
+                            </label>
+                            <input
+                                type="date"
+                                class="form-control"
+                                id="fecha_inicio"
+                                name="fecha_inicio">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="fecha_fin" class="form-label fw-semibold">
+                                Fecha de Fin
+                            </label>
+                            <input
+                                type="date"
+                                class="form-control"
+                                id="fecha_fin"
+                                name="fecha_fin">
+                        </div>
+
+                        <div class="row">
+
+                            <div class="col-md-6 mb-3">
+                                <label for="semana" class="form-label fw-semibold">
+                                    Número de Semana
+                                </label>
+                                <input
+                                    type="number"
+                                    class="form-control"
+                                    id="numero_semana"
+                                    name="numero_semana"
+                                    min="1"
+                                    max="53"
+                                    placeholder="Ej. 27">
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="anio" class="form-label fw-semibold">
+                                    Año
+                                </label>
+                                <input
+                                    type="number"
+                                    class="form-control"
+                                    id="anio"
+                                    name="anio"
+                                    value="2026">
+                            </div>
+
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button class="btn btn-success" id="btn-continuar">
+                                Continuar
+                            </button>
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button class="btn btn-secondary" id="btn-recuperar-nomina">
+                                Recuperar Nómina
+                            </button>
+                        </div>
+
+                    </div>
+
                 </div>
-                <div>
-                    <label for="archivo_excel_biometrico_10lbs">
-                        <i class="bi bi-file-earmark-excel-fill"></i> Biometrico
-                    </label>
-                    <input type="file" id="archivo_excel_biometrico_10lbs" name="archivo_excel_biometrico_10lbs"
-                        accept=".xls,.xlsx" required>
-                </div>
-                <div>
-                    <button type="button" id="btn_procesar_nomina_10lbs" class="btn-procesar-nomina_10lbs">
-                        <i class="bi bi-arrow-repeat"></i> Procesar
-                    </button>
-                </div>
-            </form>
+
+            </div>
+
         </div>
+
     </div>
+
+
+    <!-- CONTENEDOR DE LA TABLA DE NÓMINA -->
 
     <div class="container-tabla-nomina-10lbs" id="tabla-nomina-responsive" hidden>
         <div class="header-tabla-10lbs">
@@ -68,82 +139,151 @@
                 <span class="sem-info-10lbs" id="num_semana"></span>
             </div>
             <div class="header-controls-10lbs">
-                <!-- Grupo 1: Servicios -->
-                <div class="btn-group-10lbs btn-group-servicios">
 
-                    <button class="btn btn-outline-primary" id="btn-seleccionar-empleados" title="Seleccionar empleados">
-                        <i class="bi bi-people"></i>
+
+                <!-- Grupo 1: Servicios -->
+                <div class="dropdown">
+                    <button class="btn btn-toolbar-group dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-grid-3x3-gap-fill"></i>
+                        <span>Servicios</span>
                     </button>
-                    <button class="btn btn-outline-primary" type="button" id="btn_precios_cajas" title="Ajustar Precios de Cajas">
-                        <i class="bi bi-box"></i>
-                    </button>
-                    <button class="btn btn-outline-primary" type="button" id="btn_capturar_clientes"
-                        title="Capturar Clientes" aria-label="Capturar Clientes">
-                        <i class="bi bi-people-fill"></i>
-                    </button>
-                    <button class="btn btn-outline-primary" type="button" id="btn_cajas_general" title="Captura General de Cajas">
-                        <i class="bi bi-grid-3x3-gap"></i>
-                    </button>
+                    <ul class="dropdown-menu dropdown-menu-nomina shadow-sm">
+                        <li>
+                            <h6 class="dropdown-header"><i class="bi bi-tools me-1"></i>Acciones de Servicio</h6>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_registro_clientes">
+                                <i class="bi bi-person-plus text-success"></i>
+                                <span>Registrar Clientes</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_configurar_cajas_utilidad">
+                                <i class="bi bi-gear text-warning"></i>
+                                <span>Configurar Cajas</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_cajas_general">
+                                <i class="bi bi-box-seam text-info"></i>
+                                <span>Capturar Cajas</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn-ocultar-empleados">
+                                <i class="bi bi-people text-primary"></i>
+                                <span>Ocultar Empleados</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn-agregar-nuevos-empleados">
+                                <i class="bi bi-person-plus text-primary"></i>
+                                <span>Agregar Nuevos Empleados</span>
+                            </button>
+                        </li>
+
+                    </ul>
                 </div>
 
                 <!-- Grupo 2: Configuración -->
-                <div class="btn-group-10lbs btn-group-config">
-                    <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_actualizar_biometrico"
-                        title="Actualizar Biometrico" aria-label="Actualizar Biometrico">
-                        <i class="bi bi-person-badge"></i>
+                <div class="dropdown">
+                    <button class="btn btn-toolbar-group dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-gear-fill"></i>
+                        <span>Configuración</span>
                     </button>
-                    <button class="btn btn-outline-primary btn-horarios" type="button" id="btn_establecer_horario_semanal"
-                        title="Establecer Horario Semanal" aria-label="Establecer Horario Semanal">
-                        <i class="bi bi-calendar-check"></i>
-                    </button>
-                    <button class="btn btn-outline-danger" id="btn_modal_olvidos_masivos"
-                        title="Perdonar olvidos de checador">
-                        <i class="bi bi-clipboard-check"></i>
-                    </button>
-                    <button class="btn btn-outline-primary" id="btn_add_percepciones_deducciones"
-                        title="Agregar Percepciones/Deducciones Extras">
-                        <i class="bi bi-patch-plus"></i>
-                    </button>
-                    <button class="btn btn-outline-info" id="btn_ver_dispersion" title="Ver Dispersión de Tarjeta">
-                        <i class="bi bi-list-columns-reverse"></i>
-                    </button>
+                    <ul class="dropdown-menu dropdown-menu-nomina shadow-sm">
+                        <li>
+                            <h6 class="dropdown-header"><i class="bi bi-sliders me-1"></i>Opciones de Configuración</h6>
+                        </li>
 
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_config_conceptos">
+                                <i class="bi bi-gear text-primary"></i>
+                                <span>Configurar Conceptos</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_olvidos_checador">
+                                <i class="bi bi-clipboard-check text-danger"></i>
+                                <span>Perdonar Olvidos de Checador</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_add_percepciones_deducciones">
+                                <i class="bi bi-patch-plus text-primary"></i>
+                                <span>Agregar Percepciones / Deducciones</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_dispersion_tarjeta">
+                                <i class="bi bi-list-columns-reverse text-info"></i>
+                                <span>Ver Dispersión de Tarjeta</span>
+                            </button>
+                        </li>
 
+                    </ul>
                 </div>
 
                 <!-- Grupo 3: Procesamiento -->
-                <div class="btn-group-10lbs btn-group-procesamiento">
-                    <button class="btn btn-outline-success" type="button" id="btn_redondear_sueldos"
-                        title="Redondear Sueldos Masivo" aria-label="Redondear Sueldos Masivo">
-                        <i class="bi bi-arrow-repeat"></i>
+                <div class="dropdown">
+                    <button class="btn btn-toolbar-group dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-cpu-fill"></i>
+                        <span>Procesamiento</span>
                     </button>
-                    <button class="btn-aplicar-copias btn btn-outline-success" id="btn_aplicar_copias_global" hidden
-                        title="Aplicar Tarjeta">
-                        <i class="bi bi-arrow-clockwise"></i>
-                    </button>
-                    <button class="btn btn-outline-danger btn-delete-tarjeta" id="btn_delete_tarjeta" title="Quitar tarjeta" hidden
-                        aria-label="Quitar tarjeta">
-                        <i class="bi bi-credit-card-2-back"></i>
-                    </button>
-                    <button class="btn btn-outline-info" id="btn_abrir_add_remove_tarjeta" title="Configurar Tarjeta/Impuestos por Empleado">
-                        <i class="bi bi-person-gear"></i>
-                    </button>
-                    <button class="btn btn-outline-primary btn-ticket-zebra" id="btn_ticket_pdf"
-                        title="Descargar Tickets">
-                        <i class="bi bi-ticket-perforated"></i>
-                    </button>
-                    <button class="btn btn-outline-success btn-ticket-zebra" id="btn_ticket_manual_10lbs"
-                        title="Descargar Tickets Seleccionados">
-                        <i class="bi bi-hand-index"></i>
-                    </button>
-                    <button class="btn btn-outline-primary btn-suma" type="button" id="btn_conceptos_totales"
-                        title="Totales por concepto" aria-label="Totales por concepto">
-                        <i class="bi bi-calculator"></i>
-                    </button>
+                    <ul class="dropdown-menu dropdown-menu-nomina shadow-sm">
+                        <li>
+                            <h6 class="dropdown-header"><i class="bi bi-lightning-charge me-1"></i>Acciones de Procesamiento</h6>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_lista_raya">
+                                <i class="bi bi-file-earmark-excel text-primary"></i>
+                                <span>Actualizar Lista de Raya</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_biometrico">
+                                <i class="bi bi-person-lines-fill text-primary"></i>
+                                <span>Actualizar Biometrico</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_redondear_sueldos">
+                                <i class="bi bi-arrow-repeat text-success"></i>
+                                <span>Redondear Sueldos </span>
+                            </button>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <h6 class="dropdown-header"><i class="bi bi-ticket me-1"></i>Tickets</h6>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2 btn-ticket-zebra" type="button" id="btn_ticket_pdf">
+                                <i class="bi bi-ticket-perforated text-primary"></i>
+                                <span>Descargar Tickets</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2 btn-ticket-zebra" type="button" id="btn_ticket_manual_10lbs">
+                                <i class="bi bi-hand-index text-success"></i>
+                                <span>Tickets Seleccionados</span>
+                            </button>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2 btn-suma" type="button" id="btn_conceptos_totales">
+                                <i class="bi bi-calculator text-primary"></i>
+                                <span>Totales por Concepto</span>
+                            </button>
+                        </li>
+                    </ul>
                 </div>
+
             </div>
         </div>
-
         <!-- Controles de filtro y búsqueda -->
         <div class="controles-tabla-10lbs">
             <div class="filtros-container-10lbs">
@@ -182,6 +322,7 @@
             </div>
         </div>
 
+        <!-- CONTENEDOR DE LA NOMINA NORMAL -->
         <div id="tabla-nomina-container-10lbs" class="tabla-nomina-container-10lbs">
             <div class="table-responsive-10lbs">
                 <table class="table-nomina-10lbs" id="tabla-nomina">
@@ -196,7 +337,6 @@
                             <th rowspan="2">IMSS</th>
                             <th rowspan="2">INFONAVIT</th>
                             <th rowspan="2">AJUSTES <br> AL SUB</th>
-                            <th rowspan="2" class="d-none">AUSENTISMO</th>
                             <th rowspan="2">PERMISO</th>
                             <th rowspan="2">UNIFORMES</th>
                             <th rowspan="2">BIOMETRICO</th>
@@ -215,13 +355,21 @@
                     <tbody id="tabla-nomina-body-10lbs">
                         <!-- Filas de la tabla se generarán dinámicamente -->
 
-                    </tbody>
 
+
+                    </tbody>
+                    <tfoot id="tabla-nomina-foot-10lbs">
+                        <!-- Fila de totales se generará dinámicamente -->
+                    </tfoot>
                 </table>
             </div>
             <ul id="paginacion-nomina" class="pagination" style="margin: 20px 0 0 0; justify-content: center;"></ul>
         </div>
+
+
+
     </div>
+
 
     <!-- Menú contextual simple para la tabla -->
     <div id="context-menu"
@@ -231,68 +379,64 @@
 
 
     <!-- Incluir el modal -->
-    <?php include 'modals/modal10lbs.php'; ?>
-    <?php include 'modals/modalPrecioCajas.php'; ?>
-    <?php include 'modals/modalHorarios.php'; ?>
-    <?php include 'modals/biometricoModal.php'; ?>
-    <?php include 'modals/addPercepcionesDeducciones.php'; ?>
-    <?php include 'modals/modalSeleccionarEmpleados.php'; ?>
-    <?php include 'modals/modalOlvidos.php'; ?>
+    <?php include 'modals/modalRegistrarClientes.php'; ?>
+    <?php include 'modals/modalConfigurarCajas.php'; ?>
+    <?php include 'modals/modalCajasEmpacadas.php'; ?>
+    <?php include 'modals/modalDetallesNomina.php'; ?>
+    <?php include 'modals/modalListaRaya.php'; ?>
+    <?php include 'modals/modalBiometrico.php'; ?>
+    <?php include 'modals/modalOcultarEmpleados.php'; ?>
+    <?php include 'modals/modalNuevosEmpleados.php'; ?>
+    <?php include 'modals/modalConfigConceptos.php'; ?>
+    <?php include 'modals/modalOlvidoChecador.php'; ?>
+    <?php include 'modals/modalAddPercepcionDeduccion.php'; ?>
+    <?php include 'modals/modalDispersionTarjeta.php'; ?>
+    <?php include 'modals/modalRedondearSueldos.php'; ?>
     <?php include 'modals/modalConceptosTotales.php'; ?>
     <?php include 'modals/modalExportarNomina.php'; ?>
-    <?php include 'modals/modalAddRemoveTarjeta.php'; ?>
-    <?php include 'modals/modalTicketsEmpleados.php'; ?>
+    <?php include 'modals/modalSeleccionTicket.php'; ?>
     <?php include 'modals/modal_seleccion_tickets_10lbs.php'; ?>
-    <?php include 'modals/modalRedondeoSueldos.php'; ?>
-    <?php include 'modals/modalCapturarClientes.php'; ?>
-    <?php include 'modals/modalCajasEmpacadas.php'; ?>
-    <?php include 'modals/dispersionTarjeta.php'; ?>
-
 
 
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
     <script src="<?= JQUERY_UI_JS ?>"></script>
-    <!-- Plugin Inputmask -->
-    <script src="<?= JQUERY_INPUTMASK ?>"></script>
     <!-- Bootstrap JS -->
     <script src="<?= BOOTSTRAP_JS ?>"></script>
+
     <!-- Archivo JS específico -->
-    <script src="../js/process_excel.js"></script>
-    <script src="../js/saveGetNomina.js"></script>
-    <script src="../js/configComponentes.js"></script>
-    <script src="../js/showDataTable.js"></script>
+    <script src="../js/crearEstructuraJson.js"></script>
+    <script src="../js/mostrarEmpleados.js"></script>
     <script src="../js/filtroBusqueda.js"></script>
+    <script src="../js/configVista.js"></script>
     <script src="../js/storage.js"></script>
-    <script src="../js/abrirModal.js"></script>
+    <script src="../js/guardarNomina.js"></script>
+    <script src="../js/exportarNominaExcel.js"></script>
+    <script src="../js/recuperarNomina.js"></script>
+
+    <script src="../js/modals/registrarClientes.js"></script>
+    <script src="../js/modals/configurarCajas.js"></script>
+    <script src="../js/modals/capturarCajasEmpacadas.js"></script>
+    <script src="../js/modals/listaDeRaya.js"></script>
+    <script src="../js/modals/biometrico.js"></script>
+    <script src="../js/modals/ocultarEmpleados.js"></script>
+    <script src="../js/modals/nuevosEmpleados.js"></script>
+    <script src="../js/modals/configConceptos.js"></script>
+    <script src="../js/modals/olvidoChecador.js"></script>
+    <script src="../js/modals/agregarPercepcionesDeducciones.js"></script>
+    <script src="../js/modals/dispersionTarjeta.js"></script>
+    <script src="../js/modals/redondearSueldos.js"></script>
+    <script src="../js/modals/conceptos_totales.js"></script>
     <script src="../js/ticket_pdf.js"></script>
     <script src="../js/ticket_seleccion_10lbs.js"></script>
 
-    <script src="../js/configModales/horariosSemanales.js"></script>
-    <script src="../js/configModales/preciosCajas.js"></script>
-    <script src="../js/configModales/actualizarBiomtrico.js"></script>
-    <script src="../js/configModales/seleccionar_empleados.js"></script>
-    <script src="../js/configModales/olvidosMasivos.js"></script>
-    <script src="../js/configModales/conceptos_totales.js"></script>
-    <script src="../js/configModales/exportarNominaExcel.js"></script>
-    <script src="../js/configModales/redondearSueldos.js"></script>
-    <script src="../js/configModales/capturarCajasEmpacadas.js"></script>
-    <script src="../js/configModales/capturarClientes.js"></script>
-    <script src="../js/configModales/addRemoveTarjeta.js"></script>
+    <script src="../js/modalsDetalles/establecerDataEmpleado.js"></script>
+    <script src="../js/modalsDetalles/crearNuevosConceptos.js"></script>
+    <script src="../js/modalsDetalles/calculosDetallesNomina.js"></script>
+    <script src="../js/modalsDetalles/incidencias.js"></script>
+    <script src="../js/modalsDetalles/editarDataEmpleado.js"></script>
+    <script src="../js/modalsDetalles/mostrarIncidencias.js"></script>-->
 
-    <script src="../js/configModal/establecerData.js"></script>
-    <script src="../js/configModal/editarData.js"></script>
-    <script src="../js/configModal/eventos.js"></script>
-    <script src="../js/configModal/configModal.js"></script>
-    <script src="../js/configModal/newConcepts.js"></script>
-    <script src="../js/configModal/agregarCajasEmpacadas.js"></script>
-    <script src="../js/configModales/addPercepcionesDeducciones.js"></script>
-
-
-    <!-- Dispersion Tarjeta -->
-    <script src="../js/configModalDispersionTarjeta/establecerData.js"></script>
-    <script src="../js/configModalDispersionTarjeta/filtroBusqueda.js"></script>
-    <script src="../js/configModalDispersionTarjeta/editarData.js"></script>
 
 </body>
 

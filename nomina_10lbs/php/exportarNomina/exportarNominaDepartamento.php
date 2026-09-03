@@ -10,43 +10,6 @@ use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 
-/**
- * Resta un día a una fecha en formato 'DD/MM/AAA' con meses abreviados en español (ENE, FEB, MAR, etc.) y devuelve la nueva fecha en el mismo formato.
- */
-function restarUnDia($fecha)
-{
-    // Mapeo de meses abreviados en español a número
-    $meses = [
-        "Ene" => 1,
-        "Feb" => 2,
-        "Mar" => 3,
-        "Abr" => 4,
-        "May" => 5,
-        "Jun" => 6,
-        "Jul" => 7,
-        "Ago" => 8,
-        "Sep" => 9,
-        "Oct" => 10,
-        "Nov" => 11,
-        "Dic" => 12
-    ];
-
-    // Separar la fecha
-    list($dia, $mesAbrev, $anio) = explode("/", $fecha);
-
-    // Crear objeto DateTime
-    $mesNum = $meses[$mesAbrev];
-    $date = DateTime::createFromFormat("d/m/Y", "$dia/$mesNum/$anio");
-
-    // Restar un día
-    $date->modify("-1 day");
-
-    // Buscar la abreviatura del mes resultante
-    $mesAbrevNuevo = array_search((int) $date->format("m"), $meses);
-
-    // Formatear resultado
-    return $date->format("d") . "/" . $mesAbrevNuevo . "/" . $date->format("Y");
-}
 
 /**
  * Determina si el color de fuente debe ser blanco o negro basándose en la luminancia del fondo.
@@ -87,7 +50,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['jsonNomina'])) {
 
     // Convertir seguroSocial a booleano (AJAX lo envía como string "true"/"false")
     $seguroSocialSeleccionado = filter_var($_POST['seguroSocial'] ?? true, FILTER_VALIDATE_BOOLEAN);
-    $idEmpresaSeleccionada = $_POST['id_empresa'] ?? null;
 }
 
 //=====================
@@ -100,30 +62,17 @@ $colorFuenteEncabezado = '000000'; // Negro por defecto
 if ($jsonNomina && isset($jsonNomina['departamentos'])) {
     foreach ($jsonNomina['departamentos'] as $departamento) {
         if ($departamento['id_departamento'] == $idDeptoSeleccionado) {
-            // Buscamos el color en el arreglo color_reporte
+            // Nueva estructura: color_reporte es array de strings directos ['#f7f13b']
+            // id_empresa ahora está en el nivel del departamento
             if (!empty($departamento['color_reporte']) && is_array($departamento['color_reporte'])) {
-                $colorEncontrado = null;
-                
-                // Si tenemos una empresa seleccionada, buscamos su color específico
-                if ($idEmpresaSeleccionada) {
-                    foreach ($departamento['color_reporte'] as $configColor) {
-                        if ($configColor['id_empresa'] == $idEmpresaSeleccionada) {
-                            $colorEncontrado = $configColor['color'];
-                            break;
-                        }
-                    }
-                }
-                
-                // Si no se encontró o no se envió empresa, tomar el primero disponible
-                if (!$colorEncontrado) {
-                    $colorEncontrado = $departamento['color_reporte'][0]['color'] ?? null;
-                }
+                // Tomamos el primer color disponible
+                $colorEncontrado = $departamento['color_reporte'][0] ?? null;
 
                 if ($colorEncontrado) {
                     $colorReporte = ltrim($colorEncontrado, '#');
                     $colorFuenteEncabezado = obtenerColorContraste($colorReporte);
                 }
-            } 
+            }
             // Fallback para el formato anterior (string plano)
             else if (!empty($departamento['color_reporte']) && is_string($departamento['color_reporte'])) {
                 $colorReporte = ltrim($departamento['color_reporte'], '#');
@@ -180,8 +129,8 @@ $sheet->setTitle(substr($nombreDeptoSeleccionado, 0, 25) . " $tipoSuffix");
 
 // Usar datos del JSON si existen
 if ($jsonNomina) {
-    $fecha_inicio = restarUnDia($jsonNomina['fecha_inicio']) ?? 'Fecha Inicio';
-    $fecha_cierre = restarUnDia($jsonNomina['fecha_cierre']) ?? 'Fecha Cierre';
+    $fecha_inicio = $jsonNomina['fecha_inicio'] ?? 'Fecha Inicio';
+    $fecha_cierre = $jsonNomina['fecha_cierre'] ?? 'Fecha Cierre';
     $ano = date('Y');
 } else {
     $fecha_inicio = '16/Ene';
@@ -248,18 +197,58 @@ foreach ($diasEmpaqueConfig as $diaConfig) {
 $columnasIniciales = ['N°', 'CD', 'NOMBRE'];
 
 // Definir las columnas fijas finales
-$columnasFinales = [
-    'SUELDO NETO',
-    'EXTRAS',
-    'TOTAL PERCEPCIONES',
-    'ISR',
-    'IMSS',
-    'INFONAVIT',
-    'AJUSTES AL SUB',
-    'PERMISOS',
-    'UNIFORMES',
-    'BIOMETRICO',
-    'F.A/GAFET/COFIA',
+// Buscar percepciones_extra y deducciones_extra únicas
+$extrasDinamicas = [];
+$mapExtrasCols = [];
+foreach ($empleados40Libras as $emp) {
+    if (!empty($emp['percepciones_extra']) && is_array($emp['percepciones_extra'])) {
+        foreach ($emp['percepciones_extra'] as $extra) {
+            $nombre = trim($extra['nombre'] ?? '');
+            $cant = (float) ($extra['cantidad'] ?? 0);
+            if ($nombre !== '' && $cant != 0) {
+                $key = mb_strtolower($nombre, 'UTF-8');
+                if (!isset($extrasDinamicas[$key])) {
+                    $extrasDinamicas[$key] = mb_strtoupper($nombre, 'UTF-8');
+                }
+            }
+        }
+    }
+}
+
+$deduccionesDinamicas = [];
+$mapDeduccionesExtrasCols = [];
+foreach ($empleados40Libras as $emp) {
+    if (!empty($emp['deducciones_extra']) && is_array($emp['deducciones_extra'])) {
+        foreach ($emp['deducciones_extra'] as $dextra) {
+            $nombre = trim($dextra['nombre'] ?? '');
+            $cant = (float) ($dextra['cantidad'] ?? 0);
+            if ($nombre !== '' && $cant != 0) {
+                $key = mb_strtolower($nombre, 'UTF-8');
+                if (!isset($deduccionesDinamicas[$key])) {
+                    $deduccionesDinamicas[$key] = mb_strtoupper($nombre, 'UTF-8');
+                }
+            }
+        }
+    }
+}
+
+$columnasFinales = ['SUELDO NETO'];
+foreach ($extrasDinamicas as $key => $dispName) {
+    $columnasFinales[] = $dispName;
+    $mapExtrasCols[$key] = $dispName;
+}
+$columnasFinales[] = 'TOTAL PERCEPCIONES';
+
+$colFinalesDeducciones = ['ISR', 'IMSS', 'INFONAVIT', 'AJUSTES AL SUB', 'PERMISOS', 'UNIFORMES', 'BIOMETRICO', 'F.A/GAFET/COFIA'];
+foreach ($colFinalesDeducciones as $dCol) {
+    $columnasFinales[] = $dCol;
+}
+foreach ($deduccionesDinamicas as $key => $dispName) {
+    $columnasFinales[] = $dispName;
+    $mapDeduccionesExtrasCols[$key] = $dispName;
+}
+
+$colFinalesResto = [
     'TOTAL DE DEDUCCIONES',
     'NETO A RECIBIR',
     'DISPERSION DE TARJETA',
@@ -270,6 +259,9 @@ $columnasFinales = [
     'TOTAL EFECTIVO REDONDEADO',
     'FIRMA RECIBIDO'
 ];
+foreach ($colFinalesResto as $rCol) {
+    $columnasFinales[] = $rCol;
+}
 
 // Mapeo dinámico de columnas
 $mapeoColumnas = [];
@@ -293,10 +285,10 @@ foreach ($diasAMostrar as $diaInfo) {
     $colInicioDia = $colIndice;
     foreach ($precioCajasUtilidad as $caja) {
         $letra = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndice);
-        
+
         // Fila 8: Precio de la caja
-        $sheet->setCellValue($letra . '8', (int)$caja['precio']); 
-        
+        $sheet->setCellValue($letra . '8', (int)$caja['precio']);
+
         // Estilo específico para sub-encabezados de caja
         if (!empty($caja['color']) && $caja['color'] !== '#000000') {
             $fondoCaja = ltrim($caja['color'], '#');
@@ -308,7 +300,7 @@ foreach ($diasAMostrar as $diaInfo) {
         $colIndice++;
     }
     $colFinDia = $colIndice - 1;
-    
+
     // Fila 7: Nombre del día (Combinado sobre sus cajas)
     $letraInicioDia = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colInicioDia);
     $letraFinDia = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colFinDia);
@@ -324,7 +316,7 @@ foreach ($precioCajasUtilidad as $caja) {
     $letraTotal = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndice);
     $sheet->setCellValue($letraTotal . '7', 'TOTAL DE CAJAS');
     $sheet->setCellValue($letraTotal . '8', (int)$caja['precio']); // Shorthand/Precio
-    
+
     // Aplicar color si existe
     if (!empty($caja['color']) && $caja['color'] !== '#000000') {
         $fondo = ltrim($caja['color'], '#');
@@ -338,11 +330,11 @@ foreach ($precioCajasUtilidad as $caja) {
     $letraPrecio = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndice);
     $sheet->mergeCells($letraPrecio . '7:' . $letraPrecio . '8');
     $sheet->setCellValue($letraPrecio . '7', 'PRECIO UNITARIO');
-    
+
     // Estilo amarillo para Precio Unitario (como en la imagen)
     $sheet->getStyle($letraPrecio . '7:' . $letraPrecio . '8')->getFill()->setFillType('solid')->getStartColor()->setRGB('FFFF00');
     $sheet->getStyle($letraPrecio . '7:' . $letraPrecio . '8')->getFont()->setColor(new Color('000000'));
-    
+
     $colIndice++;
 }
 $finResumen = $colIndice - 1;
@@ -405,7 +397,7 @@ if (file_exists($logoPath)) {
     $logo->setDescription('Logo de Rancho El Relicario');
     $logo->setPath($logoPath);
     $logo->setHeight(190); // Altura en píxeles
-    $logo->setCoordinates('B1'); 
+    $logo->setCoordinates('B1');
     $logo->setOffsetX(10);
     $logo->setWorksheet($sheet);
 }
@@ -439,7 +431,7 @@ for ($i = $inicioEmpaque; $i <= $finEmpaque; $i++) {
 // Ancho para columnas de resumen
 for ($i = $inicioResumen; $i <= $finResumen; $i++) {
     $letra = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($i);
-    $sheet->getColumnDimension($letra)->setWidth(15); 
+    $sheet->getColumnDimension($letra)->setWidth(15);
 }
 
 // Anchos para columnas finales (aproximados a los anteriores)
@@ -478,7 +470,7 @@ foreach ($empleados40Libras as $empleado) {
         $permisoTieneDatos = true;
     }
 
-    if (($empleado['uniforme'] ?? 0) != 0) {
+    if (($empleado['uniformes'] ?? 0) != 0) {
         $uniformeTieneDatos = true;
     }
 
@@ -546,7 +538,7 @@ foreach ($empleados40Libras as $empleado) {
     foreach ($columnasResumenCajas as $cols) {
         $partesNeto[] = '(' . $cols['total'] . $numeroFila . '*' . $cols['precio'] . $numeroFila . ')';
     }
-    
+
     $formulaSueldoNeto = !empty($partesNeto) ? '=' . implode('+', $partesNeto) : 0;
 
     // Escribir la fórmula en la columna SUELDO NETO
@@ -554,15 +546,23 @@ foreach ($empleados40Libras as $empleado) {
     $sheet->setCellValue($letraNeto . $numeroFila, $formulaSueldoNeto);
     $sheet->getStyle($letraNeto . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
 
-    // Agregar sueldo extra total en la columna EXTRAS
-    $sueldoExtraTotal = $empleado['sueldo_extra_total'] ?? 0;
-    if (!empty($sueldoExtraTotal) && $sueldoExtraTotal != 0) {
-        $sheet->setCellValue($mapeoColumnas['EXTRAS'] . $numeroFila, $sueldoExtraTotal);
-        $sheet->getStyle($mapeoColumnas['EXTRAS'] . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
+    if (!empty($empleado['percepciones_extra']) && is_array($empleado['percepciones_extra'])) {
+        foreach ($empleado['percepciones_extra'] as $extra) {
+            $nombre = trim($extra['nombre'] ?? '');
+            $cant = (float) ($extra['cantidad'] ?? 0);
+            if ($nombre !== '' && $cant != 0) {
+                $key = mb_strtolower($nombre, 'UTF-8');
+                if (isset($mapExtrasCols[$key])) {
+                    $sheet->setCellValue($mapeoColumnas[$mapExtrasCols[$key]] . $numeroFila, $cant);
+                    $sheet->getStyle($mapeoColumnas[$mapExtrasCols[$key]] . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
+                }
+            }
+        }
     }
 
-    // Agregar fórmula de TOTAL PERCEPCIONES (suma dinámica de columnas existentes)
-    $sheet->setCellValue($mapeoColumnas['TOTAL PERCEPCIONES'] . $numeroFila, '=SUM(' . $mapeoColumnas['SUELDO NETO'] . $numeroFila . ':' . $mapeoColumnas['EXTRAS'] . $numeroFila . ')');
+    $letraPrimeraPercepcion = $mapeoColumnas['SUELDO NETO'];
+    $letraUltimaPercepcion = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(\PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($mapeoColumnas['TOTAL PERCEPCIONES']) - 1);
+    $sheet->setCellValue($mapeoColumnas['TOTAL PERCEPCIONES'] . $numeroFila, "=SUM({$letraPrimeraPercepcion}{$numeroFila}:{$letraUltimaPercepcion}{$numeroFila})");
     $sheet->getStyle($mapeoColumnas['TOTAL PERCEPCIONES'] . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
 
     //=============================
@@ -613,7 +613,7 @@ foreach ($empleados40Libras as $empleado) {
 
     // Agregar uniforme en la columna UNIFORMES (solo si hay datos)
     if ($uniformeTieneDatos) {
-        $uniforme = $empleado['uniforme'] ?? 0;
+        $uniforme = $empleado['uniformes'] ?? 0;
         if (!empty($uniforme) && $uniforme != 0) {
             $letra = $mapeoColumnas['UNIFORMES'];
             $sheet->setCellValue($letra . $numeroFila, $uniforme);
@@ -644,8 +644,25 @@ foreach ($empleados40Libras as $empleado) {
         }
     }
 
-    // Agregar TOTAL DE DEDUCCIONES (suma de todas las deducciones)
-    $sheet->setCellValue($mapeoColumnas['TOTAL DE DEDUCCIONES'] . $numeroFila, '=SUM(' . $mapeoColumnas['ISR'] . $numeroFila . ':' . $mapeoColumnas['F.A/GAFET/COFIA'] . $numeroFila . ')');
+    if (!empty($empleado['deducciones_extra']) && is_array($empleado['deducciones_extra'])) {
+        foreach ($empleado['deducciones_extra'] as $dextra) {
+            $nombre = trim($dextra['nombre'] ?? '');
+            $cant = (float) ($dextra['cantidad'] ?? 0);
+            if ($nombre !== '' && $cant != 0) {
+                $key = mb_strtolower($nombre, 'UTF-8');
+                if (isset($mapDeduccionesExtrasCols[$key])) {
+                    $letra = $mapeoColumnas[$mapDeduccionesExtrasCols[$key]];
+                    $sheet->setCellValue($letra . $numeroFila, $cant);
+                    $sheet->getStyle($letra . $numeroFila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
+                    $sheet->getStyle($letra . $numeroFila)->getFont()->setColor(new Color('FF0000'));
+                }
+            }
+        }
+    }
+
+    $letraPrimeraDeduccion = $mapeoColumnas['ISR'];
+    $letraUltimaDeduccion = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(\PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($mapeoColumnas['TOTAL DE DEDUCCIONES']) - 1);
+    $sheet->setCellValue($mapeoColumnas['TOTAL DE DEDUCCIONES'] . $numeroFila, "=SUM({$letraPrimeraDeduccion}{$numeroFila}:{$letraUltimaDeduccion}{$numeroFila})");
     $sheet->getStyle($mapeoColumnas['TOTAL DE DEDUCCIONES'] . $numeroFila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
     $sheet->getStyle($mapeoColumnas['TOTAL DE DEDUCCIONES'] . $numeroFila)->getFont()->setColor(new Color('FF0000'));
 
@@ -782,7 +799,11 @@ foreach ($empleados40Libras as $empleado) {
 // Iterar sobre todas las filas de datos (9 hasta numeroFila-1)
 for ($fila = 9; $fila < $numeroFila; $fila++) {
     // Columnas con formato deducciones
-    $columnasDeducciones = ['ISR', 'IMSS', 'INFONAVIT', 'AJUSTES AL SUB', 'PERMISOS', 'UNIFORMES', 'BIOMETRICO', 'F.A/GAFET/COFIA', 'TOTAL DE DEDUCCIONES', 'DISPERSION DE TARJETA', 'PRÉSTAMO'];
+    $columnasDeducciones = array_merge(
+        ['ISR', 'IMSS', 'INFONAVIT', 'AJUSTES AL SUB', 'PERMISOS', 'UNIFORMES', 'BIOMETRICO', 'F.A/GAFET/COFIA'],
+        array_values($mapDeduccionesExtrasCols),
+        ['TOTAL DE DEDUCCIONES', 'DISPERSION DE TARJETA', 'PRÉSTAMO']
+    );
     foreach ($columnasDeducciones as $colName) {
         if (isset($mapeoColumnas[$colName])) {
             $letra = $mapeoColumnas[$colName];
@@ -792,14 +813,22 @@ for ($fila = 9; $fila < $numeroFila; $fila++) {
     }
 
     // Columna REDONDEADO
-    $letraRedondeado = $mapeoColumnas['REDONDEADO'];
-    $sheet->getStyle($letraRedondeado . $fila)->getNumberFormat()->setFormatCode('$#,##0.00;[RED]-$#,##0.00');
+    if (isset($mapeoColumnas['REDONDEADO'])) {
+        $letraRedondeado = $mapeoColumnas['REDONDEADO'];
+        $sheet->getStyle($letraRedondeado . $fila)->getNumberFormat()->setFormatCode('$#,##0.00;[RED]-$#,##0.00');
+    }
 
     // Columnas de moneda normal
-    $columnasMoneda = ['SUELDO NETO', 'EXTRAS', 'TOTAL PERCEPCIONES', 'NETO A RECIBIR', 'IMPORTE EN EFECTIVO', 'TOTAL A RECIBIR', 'TOTAL EFECTIVO REDONDEADO'];
+    $columnasMoneda = array_merge(
+        ['SUELDO NETO'],
+        array_values($mapExtrasCols),
+        ['TOTAL PERCEPCIONES', 'NETO A RECIBIR', 'IMPORTE EN EFECTIVO', 'TOTAL A RECIBIR', 'TOTAL EFECTIVO REDONDEADO']
+    );
     foreach ($columnasMoneda as $colName) {
-        $letra = $mapeoColumnas[$colName];
-        $sheet->getStyle($letra . $fila)->getNumberFormat()->setFormatCode('$#,##0.00');
+        if (isset($mapeoColumnas[$colName])) {
+            $letra = $mapeoColumnas[$colName];
+            $sheet->getStyle($letra . $fila)->getNumberFormat()->setFormatCode('$#,##0.00');
+        }
     }
 
     // Bordes para las columnas de empaque
@@ -818,7 +847,7 @@ for ($fila = 9; $fila < $numeroFila; $fila++) {
 
     // Alinear verticalmente el resto de las columnas y establecer tamaño de fuente 18 después de NOMBRE
     $sheet->getStyle('A' . $fila . ':' . $ultimaColumnaLetra . $fila)->getAlignment()->setVertical('center');
-    
+
     // Obtener la letra de la columna D (después de NOMBRE que es C)
     $letraDespuesNombre = 'D';
     $sheet->getStyle($letraDespuesNombre . $fila . ':' . $ultimaColumnaLetra . $fila)->getFont()->setSize(18);
@@ -841,7 +870,14 @@ $columnasData = array_merge($columnasFinales);
 // Quitar FIRMA RECIBIDO de las sumas
 $columnasData = array_diff($columnasData, ['FIRMA RECIBIDO']);
 
+$colsDeduccionTotales = array_merge(
+    ['ISR', 'IMSS', 'INFONAVIT', 'AJUSTES AL SUB', 'PERMISOS', 'UNIFORMES', 'BIOMETRICO', 'F.A/GAFET/COFIA'],
+    array_values($mapDeduccionesExtrasCols),
+    ['TOTAL DE DEDUCCIONES', 'DISPERSION DE TARJETA', 'PRÉSTAMO']
+);
+
 foreach ($columnasData as $colName) {
+    if (!isset($mapeoColumnas[$colName])) continue;
     $letra = $mapeoColumnas[$colName];
     $rangoSuma = $letra . '9:' . $letra . ($filaTotal - 1);
     $sheet->setCellValue($letra . $filaTotal, '=IF(SUM(' . $rangoSuma . ')=0,"",SUM(' . $rangoSuma . '))');
@@ -849,7 +885,7 @@ foreach ($columnasData as $colName) {
     $sheet->getStyle($letra . $filaTotal)->getFont()->setSize(18);
 
     // Aplicar formato de moneda según la columna
-    if (in_array($colName, ['ISR', 'IMSS', 'INFONAVIT', 'AJUSTES AL SUB', 'PERMISOS', 'UNIFORMES', 'BIOMETRICO', 'F.A/GAFET/COFIA', 'TOTAL DE DEDUCCIONES', 'DISPERSION DE TARJETA', 'PRÉSTAMO'])) {
+    if (in_array($colName, $colsDeduccionTotales)) {
         // Formato rojo con signo negativo
         $sheet->getStyle($letra . $filaTotal)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
         $sheet->getStyle($letra . $filaTotal)->getFont()->setColor(new Color('FF0000'));
@@ -954,9 +990,7 @@ if (!$faxGafetCofiaTieneDatos) {
     $sheet->getColumnDimension($mapeoColumnas['F.A/GAFET/COFIA'])->setVisible(false);
 }
 
-// Ocultar siempre Total Percepciones y Total Deducciones
-$sheet->getColumnDimension($mapeoColumnas['TOTAL PERCEPCIONES'])->setVisible(false);
-$sheet->getColumnDimension($mapeoColumnas['TOTAL DE DEDUCCIONES'])->setVisible(false);
+
 
 //=====================
 //  CONFIGURAR ALTURA DE FILAS Y TAMAÑO DE LETRA
@@ -1011,7 +1045,7 @@ for ($fila = 9; $fila < $numeroFila; $fila++) {
         elseif ($letra == 'C') $sheet->getStyle($letra . $fila)->getFont()->setSize(16);
         else $sheet->getStyle($letra . $fila)->getFont()->setSize(18);
     }
-    
+
     // Todas las columnas de empaque y resumen (que no están en mapeoColumnas fijo) van con 18
     for ($i = 4; $i <= \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($ultimaColumnaLetra); $i++) {
         $letra = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($i);

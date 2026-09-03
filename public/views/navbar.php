@@ -61,30 +61,25 @@
                         <span class="link-text">Nóminas</span>
                     </a>
                     <ul class="submenu dropdown-menu" aria-labelledby="nominasDropdown">
-                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_40lbs/views/nomina_40lbs.php">40 lbs</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_40lbs/generacion/views/nomina_40lbs.php">40 lbs</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_10lbs/views/nomina_10lbs.php">10 lbs</a></li>
-                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_confianza/views/nomina_confianza.php">Confianza</a></li>
-                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_relicario/views/nomina_relicario.php">Rancho Relicario</a></li>
-                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_pilar/views/nomina_pilar.php">Rancho Pilar</a></li>
-                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_palmilla/views/nomina_palmilla.php">Rancho Palmilla</a></li>
-                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_huasteca/views/nomina_huasteca.php">Rancho Huasteca</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_confianza/generacion/views/nomina_confianza.php">Confianza</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_relicario/generacion/views/nomina_relicario.php">Rancho Relicario</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_pilar/generacion/views/nomina_pilar.php">Rancho Pilar</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_palmilla/generacion/views/nomina_palmilla.php">Rancho Palmilla</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_huasteca/generacion/views/nomina_huasteca.php">Rancho Huasteca</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/gestion_ranchos/views/historial_cortes.php">Cortes Ranchos</a></li>
                         <li class="dropdown-divider"></li>
-                        <li class="dropdown-submenu">
-                            <a class="dropdown-item dropdown-toggle" href="#">Historial Cortes</a>
-                            <ul class="submenu dropdown-menu">
-                                <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_palmilla/views/historial_cortes.php">Palmilla</a></li>
-                                <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_relicario/views/historial_cortes.php">Relicario</a></li>
-                                <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_pilar/views/historial_cortes.php">Pilar</a></li>
-                                <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_huasteca/views/historial_cortes.php">Huasteca</a></li>
-                            </ul>
-                        </li>
+                    
                         <li class="dropdown-submenu">
                             <a class="dropdown-item dropdown-toggle" href="#">Historial Nominas</a>
                             <ul class="submenu dropdown-menu">
                                 <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_40lbs/historial/views/historial_40lbs.php">40 lbs</a></li>
-                                <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_10lbs/historial/views/historial_10lbs.php">10 lbs</a></li>
-
+                                <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_confianza/historial/views/historial_confianza.php">Confianza</a></li>
+                                <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_relicario/historial/views/historial_relicario.php">Relicario</a></li>
+                                <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_pilar/historial/views/historial_pilar.php">Pilar</a></li>
+                                <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_palmilla/historial/views/historial_palmilla.php">Palmilla</a></li>
+                                <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_huasteca/historial/views/historial_huasteca.php">Huasteca</a></li>  
                             </ul>
                         </li>
 

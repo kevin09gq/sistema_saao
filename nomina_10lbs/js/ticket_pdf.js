@@ -28,19 +28,30 @@ function obtenerEmpleadosFiltrados10lbs(options = {}) {
     const q = aplicarBusqueda ? String($('#busqueda-nomina-10lbs').val() || '').trim().toLowerCase() : '';
 
     let filtroDepto = 'all';
+    let filtroEmpresa = null;
     let seguroSocial = null;
 
     if (valorSelect !== 'all|all' && valorSelect !== '') {
         const partes = valorSelect.split('|');
-        filtroDepto = partes[0];
-        seguroSocial = partes[1] === 'true';
+        // Formato del select: id_empresa|id_departamento|CSS  o  id_empresa|id_departamento|SSS
+        if (partes.length >= 3) {
+            filtroEmpresa = partes[0]; // id_empresa
+            filtroDepto = partes[1];   // id_departamento
+            const tipo = partes[2].toUpperCase().trim();
+            seguroSocial = (tipo === 'CSS'); // CSS = con seguro (true), SSS = sin seguro (false)
+        } else {
+            // Formato legacy: id_departamento|true/false
+            filtroDepto = partes[0];
+            seguroSocial = partes[1] === 'true';
+        }
     }
 
     let empleados = [];
 
     nomina.departamentos.forEach(depto => {
-        // 1. Filtrar por departamento
+        // 1. Filtrar por empresa y departamento
         if (filtroDepto !== 'all') {
+            if (filtroEmpresa !== null && String(depto.id_empresa) !== String(filtroEmpresa)) return;
             const matchId = depto.id_departamento && String(depto.id_departamento) === String(filtroDepto);
             const matchNombre = depto.nombre && String(depto.nombre) === String(filtroDepto);
             if (!matchId && !matchNombre) return;

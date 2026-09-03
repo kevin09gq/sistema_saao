@@ -1,0 +1,331 @@
+abrirModalExportarExcel();
+exportarPorDepartamento();
+nominaCompleta();
+reporteNominaPdf();
+exportarDispersionTarjeta();
+
+function abrirModalExportarExcel() {
+    $(document).on('click', '#btn_export_excel', function (e) {
+        e.preventDefault();
+
+        // Poblar las opciones dinámicamente antes de mostrar
+        poblarOpcionesExportar(jsonHistorial40lbs);
+
+        $('#modalExportarNomina').modal('show');
+    });
+}
+
+function poblarOpcionesExportar(json) {
+    if (!json || !json.departamentos) return;
+
+    const $contenedor = $('#contenedor-exportar-dinamico');
+    $contenedor.empty();
+
+
+    // 2. Agregar Opciones por Departamento (Dinámico)
+    json.departamentos.forEach(depto => {
+
+
+        const nombre = depto.nombre;
+        const idDepto = depto.id_departamento || depto.nombre;
+
+        const tieneCSS = depto.empleados.some(emp => emp.seguroSocial === true);
+        const tieneSSS = depto.empleados.some(emp => emp.seguroSocial === false);
+
+        if (tieneCSS) {
+            $contenedor.append(`
+                <button type="button" class="list-group-item list-group-item-action btn-export-departamento-css" 
+                        data-id="${idDepto}" data-nombre="${nombre}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1"><i class="bi bi-person-badge"></i> ${nombre} CSS</h6>
+                        </div>
+                        <i class="bi bi-file-earmark-spreadsheet text-success fs-4"></i>
+                    </div>
+                </button>
+            `);
+        }
+
+        if (tieneSSS) {
+            $contenedor.append(`
+                <button type="button" class="list-group-item list-group-item-action btn-export-departamento-sss" 
+                        data-id="${idDepto}" data-nombre="${nombre}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1"><i class="bi bi-people"></i> ${nombre} SSS</h6>
+                        </div>
+                        <i class="bi bi-file-earmark-bar-graph text-primary fs-4"></i>
+                    </div>
+                </button>
+            `);
+        }
+    });
+
+
+}
+
+function exportarPorDepartamento() {
+    // Escuchar clics en botones de CSS o SSS generados dinámicamente
+    $(document).on('click', '.btn-export-departamento-css, .btn-export-departamento-sss', async function (e) {
+        e.preventDefault();
+
+        const $btn = $(this);
+        const idDepto = $btn.data('id');
+        const nombreDepto = $btn.data('nombre');
+        const esSeguroSocial = $btn.hasClass('btn-export-departamento-css'); // Determinar tipo por clase
+
+        // Determinar id_empresa buscando en el JSON (para obtener el color correcto en el backend)
+        let idEmpresa = 1;
+        if (jsonHistorial40lbs && jsonHistorial40lbs.departamentos) {
+            const deptoObj = jsonHistorial40lbs.departamentos.find(d => d.id_departamento == idDepto);
+            if (deptoObj && deptoObj.color_reporte && deptoObj.color_reporte.length > 0) {
+                idEmpresa = deptoObj.color_reporte[0].id_empresa;
+            }
+        }
+
+        // Validar que jsonHistorial40lbs exista
+        if (!jsonHistorial40lbs) {
+            alert('No hay datos de nómina para exportar. Por favor, procesa los datos primero.');
+            return;
+        }
+
+        //if (validarEmpleadosNegativos()) return;
+
+        // Mostrar alerta de carga
+        Swal.fire({
+            title: 'Generando documento...',
+            html: `Procesando: <b>${nombreDepto} ${esSeguroSocial ? 'CSS' : 'SSS'}</b><br>Por favor espera.`,
+            icon: 'info',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // Enviar datos al PHP genérico
+        $.ajax({
+            url: '../../generacion/php/exportarNomina/exportarNominaDepartamento.php',
+            type: 'POST',
+            data: {
+                jsonNomina: JSON.stringify(jsonHistorial40lbs),
+                id_departamento: idDepto,
+                nombre_departamento: nombreDepto,
+                id_empresa: idEmpresa,
+                seguroSocial: esSeguroSocial
+            },
+            xhrFields: {
+                responseType: 'blob'
+            },
+            success: function (blob) {
+                Swal.close();
+                // Descargar el archivo
+                var link = document.createElement('a');
+                var url = URL.createObjectURL(blob);
+                link.href = url;
+
+                var numeroSemana = String(jsonHistorial40lbs.numero_semana).padStart(2, '0');
+                var anio = jsonHistorial40lbs.fecha_cierre.split('/')[2];
+                var tipoSuffix = esSeguroSocial ? 'CSS' : 'SSS';
+                var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
+
+                link.download = `SEM ${numeroSemana} - ${anio} - ${nombreDepto} ${tipoSuffix} - ${timestamp}.xlsx`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            },
+            error: function (xhr, status, error) {
+                Swal.close();
+                console.error('Error al descargar el Excel:', error);
+                alert('No se pudo generar el archivo Excel para este departamento.');
+            }
+        });
+    });
+}
+
+function nominaCompleta() {
+    // Lógica para exportar todas las nóminas en un mismo archivo con diferentes hojas
+    $("#btn-export-nomina-completa").click(async function (e) {
+        e.preventDefault();
+        // Validar que jsonHistorial40lbs exista
+        if (!jsonHistorial40lbs) {
+            alert('No hay datos de nómina para exportar. Por favor, procesa los datos primero.');
+            return;
+        }
+        //if (validarEmpleadosNegativos()) return;
+
+        // Mostrar alerta de carga
+        Swal.fire({
+            title: 'Generando documento...',
+            html: 'Por favor espera mientras se genera el archivo Excel.',
+            icon: 'info',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: (modal) => {
+                Swal.showLoading();
+            }
+        });
+
+        // Enviar el jsonHistorial40lbs al servidor PHP mediante POST
+        $.ajax({
+            url: '../../generacion/php/exportarNomina/exportarNominaCompleta.php',
+            type: 'POST',
+            data: {
+                jsonNomina: JSON.stringify(jsonHistorial40lbs)
+            },
+            xhrFields: {
+                responseType: 'blob'
+            },
+            success: function (blob) {
+                Swal.close();
+                // Crear un blob y descargar el archivo
+                var link = document.createElement('a');
+                var url = URL.createObjectURL(blob);
+                link.href = url;
+                var numeroSemana = String(jsonHistorial40lbs.numero_semana).padStart(2, '0');
+                var aniosCierre = jsonHistorial40lbs.fecha_cierre.split('/')[2];
+                var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
+                link.download = 'SEM_' + numeroSemana + '_' + '40LBS_' + aniosCierre + '.xlsx';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            },
+            error: function (xhr, status, error) {
+                Swal.close();
+                console.error('Error al descargar el Excel:', error);
+                alert('Error: No se pudo generar el archivo Excel.');
+            }
+        });
+
+    });
+}
+
+function reporteNominaPdf() {
+    $("#btn_export_pdf_reporte").click(async function (e) {
+        e.preventDefault();
+        // Validar que jsonHistorial40lbs exista
+        if (!jsonHistorial40lbs) {
+            alert('No hay datos de nómina para exportar. Por favor, procesa los datos primero.');
+            return;
+        }
+
+        if (validarEmpleadosNegativos()) return;
+        $.ajax({
+            url: '../../generacion/php/exportarNomina/reporteNomina.php',
+            type: 'POST',
+            data: {
+                numero_semana: jsonHistorial40lbs.numero_semana || '',
+                fecha_cierre: jsonHistorial40lbs.fecha_cierre || '',
+                fecha_inicio: jsonHistorial40lbs.fecha_inicio || '',
+                periodo_nomina: jsonHistorial40lbs.periodo_nomina || '',
+                jsonNomina: JSON.stringify(jsonHistorial40lbs)
+            },
+            xhrFields: {
+                responseType: 'blob'
+            },
+            success: function (blob) {
+                // Descargar el PDF
+                var link = document.createElement('a');
+                var url = URL.createObjectURL(blob);
+                link.href = url;
+                var numeroSemana = String(jsonHistorial40lbs.numero_semana).padStart(2, '0');
+                var aniosCierre = jsonHistorial40lbs.fecha_cierre.split('/')[2];
+                var numeroSemana = String(jsonHistorial40lbs.numero_semana).padStart(2, '0');
+                var timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
+                link.download = 'SEM_' + numeroSemana + '_DESGLOSE_NOMINA_40LBS_' + '.pdf'; document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            },
+            error: function (xhr, status, error) {
+                console.error('Error al descargar el PDF:', error);
+                alert('Error: No se pudo generar el archivo PDF.');
+            }
+        });
+    });
+}
+
+
+function exportarDispersionTarjeta() {
+    $("#btn-export-dispersion-tarjeta").click(function (e) {
+        e.preventDefault();
+
+        if (!jsonHistorial40lbs) {
+            alert('No hay datos de nómina para exportar. Por favor, procesa los datos primero.');
+            return;
+        }
+
+        Swal.fire({
+            title: 'Generando Dispersión...',
+            html: 'Por favor espera mientras se genera el archivo Excel.',
+            icon: 'info',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        $.ajax({
+            url: '../php/exportarNomina/exportarDispersionTarjeta.php',
+            type: 'POST',
+            data: {
+                jsonNomina: JSON.stringify(jsonHistorial40lbs)
+            },
+            xhrFields: {
+                responseType: 'blob'
+            },
+            success: function (blob) {
+                Swal.close();
+                var link = document.createElement('a');
+                var url = URL.createObjectURL(blob);
+                link.href = url;
+                var numeroSemana = String(jsonHistorial40lbs.numero_semana).padStart(2, '0');
+                var anio = jsonHistorial40lbs.fecha_cierre.split('/')[2];
+                link.download = 'SEM_' + numeroSemana + '_DISPERSION_TARJETA_40LBS_' + anio + '.xlsx';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            },
+            error: function (xhr, status, error) {
+                Swal.close();
+                console.error('Error al descargar el Excel:', error);
+                alert('No se pudo generar el archivo de dispersión.');
+            }
+        });
+    });
+}
+
+function validarEmpleadosNegativos() {
+    if (!jsonHistorial40lbs || !jsonHistorial40lbs.departamentos) return false;
+
+    let nombresNegativos = [];
+
+    jsonHistorial40lbs.departamentos.forEach(depto => {
+
+        depto.empleados.forEach(emp => {
+            if (Number(emp.total_cobrar) < 0) {
+                nombresNegativos.push(emp.nombre);
+            }
+        });
+    });
+
+    if (nombresNegativos.length > 0) {
+        Swal.fire({
+            icon: 'error',
+            title: 'No se puede exportar la nómina',
+            html: `
+                <b>Existen empleados con saldo negativo.</b><br><br>
+                Corrige la nómina antes de descargar cualquier archivo.<br><br>
+                <b>Empleados afectados:</b><br>
+                ${nombresNegativos.join('<br>')}
+            `,
+            confirmButtonText: 'Entendido'
+        });
+        return true; // bloquear descarga
+    }
+    return false; // permitir descarga (todo normal)
+}

@@ -51,12 +51,19 @@ function cargarEmpleadosParaTickets10lbs() {
         });
     });
 
-    // Ordenar: primero con seguro (esSinSeguro = false), luego sin seguro (esSinSeguro = true)
+    // Ordenar: primero por departamento, luego con/sin seguro, luego por nombre
     empleadosParaTickets10lbs.sort((a, b) => {
-        if (a.esSinSeguro === b.esSinSeguro) {
-            return String(a.nombre || '').localeCompare(String(b.nombre || ''));
+        const deptoA = String(a.departamento || '').trim().toUpperCase();
+        const deptoB = String(b.departamento || '').trim().toUpperCase();
+        if (deptoA !== deptoB) {
+            return deptoA.localeCompare(deptoB, 'es', { numeric: true });
         }
-        return a.esSinSeguro ? 1 : -1;
+        const aSin = a.esSinSeguro || false;
+        const bSin = b.esSinSeguro || false;
+        if (aSin !== bSin) {
+            return aSin ? 1 : -1;
+        }
+        return String(a.nombre || '').localeCompare(String(b.nombre || ''), 'es', { numeric: true });
     });
 
     // Cargar opciones en el select de departamentos
@@ -102,7 +109,7 @@ function mostrarEmpleadosTickets10lbs(empleados) {
                 const claveBase = String(item.clave || '').trim();
                 const claveMostrar = esSinSeguro ? `SS/${claveBase}` : claveBase;
 
-                let badgeClass = 'bg-secondary';
+                let badgeClass = 'badge bg-secondary rounded-pill';
                 const deptoLower = departamento.toLowerCase();
                 if (deptoLower.includes('administracion') || deptoLower.includes('administración') || deptoLower.includes('admin')) {
                     badgeClass = 'badge bg-primary rounded-pill';

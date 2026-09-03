@@ -10,33 +10,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 
-/**
- * Resta un día a una fecha en formato 'DD/MM/AAA' con meses abreviados en español (ENE, FEB, MAR, etc.) y devuelve la nueva fecha en el mismo formato.
- */
-function restarUnDia($fecha)
-{
-    // Mapeo de meses abreviados en español a número
-    $meses = [
-        "Ene" => 1, "Feb" => 2, "Mar" => 3, "Abr" => 4, "May" => 5, "Jun" => 6,
-        "Jul" => 7, "Ago" => 8, "Sep" => 9, "Oct" => 10, "Nov" => 11, "Dic" => 12
-    ];
 
-    // Separar la fecha
-    list($dia, $mesAbrev, $anio) = explode("/", $fecha);
-
-    // Crear objeto DateTime
-    $mesNum = $meses[$mesAbrev];
-    $date = DateTime::createFromFormat("d/m/Y", "$dia/$mesNum/$anio");
-
-    // Restar un día
-    $date->modify("-1 day");
-
-    // Buscar la abreviatura del mes resultante
-    $mesAbrevNuevo = array_search((int)$date->format("m"), $meses);
-
-    // Formatear resultado
-    return $date->format("d") . "/" . $mesAbrevNuevo . "/" . $date->format("Y");
-}
 
 //=====================
 //  RECIBIR DATOS DEL JSON
@@ -58,8 +32,8 @@ $spreadsheet->getDefaultStyle()->getFont()->setName('Arial');
 
 // Datos de fecha
 if ($jsonNomina) {
-    $fecha_inicio = restarUnDia($jsonNomina['fecha_inicio']) ?? 'Fecha Inicio';
-    $fecha_cierre = restarUnDia($jsonNomina['fecha_cierre']) ?? 'Fecha Cierre';
+    $fecha_inicio = $jsonNomina['fecha_inicio'] ?? 'Fecha Inicio';
+    $fecha_cierre = $jsonNomina['fecha_cierre'] ?? 'Fecha Cierre';
     $numero_semana = $jsonNomina['numero_semana'] ?? '00';
     $ano = date('Y');
 }
@@ -103,12 +77,14 @@ function crearHoja($spreadsheet, $depto, $filtroEmpleados, $nombreHoja, $esPrime
     if (!empty($depto['color_reporte'])) {
         $colorEncontrado = null;
         if (is_array($depto['color_reporte'])) {
-            // Para la nómina completa tomamos el primer color definido como representativo
-            $colorEncontrado = $depto['color_reporte'][0]['color'] ?? null;
+            // Nueva estructura: array de strings directos ['#f7f13b']
+            // Tomamos el primer color definido como representativo
+            $colorEncontrado = $depto['color_reporte'][0] ?? null;
         } else {
+            // Fallback para formato anterior (string plano)
             $colorEncontrado = $depto['color_reporte'];
         }
-        
+
         if ($colorEncontrado) {
             $colorDepto = ltrim($colorEncontrado, '#');
             $colorFuenteEnc = obtenerColorContraste($colorDepto);
@@ -125,9 +101,12 @@ function crearHoja($spreadsheet, $depto, $filtroEmpleados, $nombreHoja, $esPrime
 
     // Configuración días empaque
     $diasConfig = [
-        ['abrv' => 'V', 'nombre' => 'Viernes'], ['abrv' => 'S', 'nombre' => 'Sábado'],
-        ['abrv' => 'D', 'nombre' => 'Domingo'], ['abrv' => 'L', 'nombre' => 'Lunes'],
-        ['abrv' => 'M', 'nombre' => 'Martes'], ['abrv' => 'MI', 'nombre' => 'Miércoles'],
+        ['abrv' => 'V', 'nombre' => 'Viernes'],
+        ['abrv' => 'S', 'nombre' => 'Sábado'],
+        ['abrv' => 'D', 'nombre' => 'Domingo'],
+        ['abrv' => 'L', 'nombre' => 'Lunes'],
+        ['abrv' => 'M', 'nombre' => 'Martes'],
+        ['abrv' => 'MI', 'nombre' => 'Miércoles'],
         ['abrv' => 'J', 'nombre' => 'Jueves']
     ];
 
@@ -151,14 +130,73 @@ function crearHoja($spreadsheet, $depto, $filtroEmpleados, $nombreHoja, $esPrime
         if (isset($diasProduccion[$dc['nombre']])) $diasAMostrar[] = $dc;
     }
 
+    // Buscar percepciones_extra y deducciones_extra únicas
+    $extrasDinamicas = [];
+    $mapExtrasCols = [];
+    foreach ($empleados as $emp) {
+        if (!empty($emp['percepciones_extra']) && is_array($emp['percepciones_extra'])) {
+            foreach ($emp['percepciones_extra'] as $extra) {
+                $nombre = trim($extra['nombre'] ?? '');
+                $cant = (float) ($extra['cantidad'] ?? 0);
+                if ($nombre !== '' && $cant != 0) {
+                    $key = mb_strtolower($nombre, 'UTF-8');
+                    if (!isset($extrasDinamicas[$key])) {
+                        $extrasDinamicas[$key] = mb_strtoupper($nombre, 'UTF-8');
+                    }
+                }
+            }
+        }
+    }
+
+    $deduccionesDinamicas = [];
+    $mapDeduccionesExtrasCols = [];
+    foreach ($empleados as $emp) {
+        if (!empty($emp['deducciones_extra']) && is_array($emp['deducciones_extra'])) {
+            foreach ($emp['deducciones_extra'] as $dextra) {
+                $nombre = trim($dextra['nombre'] ?? '');
+                $cant = (float) ($dextra['cantidad'] ?? 0);
+                if ($nombre !== '' && $cant != 0) {
+                    $key = mb_strtolower($nombre, 'UTF-8');
+                    if (!isset($deduccionesDinamicas[$key])) {
+                        $deduccionesDinamicas[$key] = mb_strtoupper($nombre, 'UTF-8');
+                    }
+                }
+            }
+        }
+    }
+
     // Columnas Fijas
     $colIniciales = ['N°', 'CD', 'NOMBRE'];
-    $colFinales = [
-        'SUELDO NETO', 'EXTRAS', 'TOTAL PERCEPCIONES', 'ISR', 'IMSS', 'INFONAVIT',
-        'AJUSTES AL SUB', 'PERMISOS', 'UNIFORMES', 'BIOMETRICO', 'F.A/GAFET/COFIA',
-        'TOTAL DE DEDUCCIONES', 'NETO A RECIBIR', 'DISPERSION DE TARJETA', 'IMPORTE EN EFECTIVO',
-        'PRÉSTAMO', 'TOTAL A RECIBIR', 'REDONDEADO', 'TOTAL EFECTIVO REDONDEADO', 'FIRMA RECIBIDO'
+    $colFinales = ['SUELDO NETO'];
+    foreach ($extrasDinamicas as $key => $dispName) {
+        $colFinales[] = $dispName;
+        $mapExtrasCols[$key] = $dispName;
+    }
+    $colFinales[] = 'TOTAL PERCEPCIONES';
+
+    $colFinalesDeducciones = ['ISR', 'IMSS', 'INFONAVIT', 'AJUSTES AL SUB', 'PERMISOS', 'UNIFORMES', 'BIOMETRICO', 'F.A/GAFET/COFIA'];
+    foreach ($colFinalesDeducciones as $dCol) {
+        $colFinales[] = $dCol;
+    }
+    foreach ($deduccionesDinamicas as $key => $dispName) {
+        $colFinales[] = $dispName;
+        $mapDeduccionesExtrasCols[$key] = $dispName;
+    }
+
+    $colFinalesResto = [
+        'TOTAL DE DEDUCCIONES',
+        'NETO A RECIBIR',
+        'DISPERSION DE TARJETA',
+        'IMPORTE EN EFECTIVO',
+        'PRÉSTAMO',
+        'TOTAL A RECIBIR',
+        'REDONDEADO',
+        'TOTAL EFECTIVO REDONDEADO',
+        'FIRMA RECIBIDO'
     ];
+    foreach ($colFinalesResto as $rCol) {
+        $colFinales[] = $rCol;
+    }
 
     $mapeo = [];
     $colIdx = 1;
@@ -212,7 +250,7 @@ function crearHoja($spreadsheet, $depto, $filtroEmpleados, $nombreHoja, $esPrime
         $sheet->mergeCells($letraPre . '7:' . $letraPre . '8');
         $sheet->setCellValue($letraPre . '7', 'PRECIO UNITARIO');
         $sheet->getStyle($letraPre . '7:' . $letraPre . '8')->getFill()->setFillType('solid')->getStartColor()->setRGB('FFFF00');
-        
+
         $columnasResumenCajas[] = ['total' => $letraTot, 'precio' => $letraPre];
         $colIdx++;
     }
@@ -280,10 +318,10 @@ function crearHoja($spreadsheet, $depto, $filtroEmpleados, $nombreHoja, $esPrime
     foreach ($colFinales as $n) $sheet->getColumnDimension($mapeo[$n])->setWidth(($n == 'FIRMA RECIBIDO') ? 28 : 20);
 
     // Banderas visibilidad deducciones
-    $flags = ['isr' => false, 'imss' => false, 'infonavit' => false, 'ajustes' => false, 'permiso' => false, 'uniforme' => false, 'checador' => false, 'fa' => false];
+    $flags = ['isr' => false, 'imss' => false, 'infonavit' => false, 'ajustes' => false, 'permiso' => false, 'uniformes' => false, 'checador' => false, 'fa' => false];
     foreach ($empleados as $emp) {
         if (($emp['permiso'] ?? 0) != 0) $flags['permiso'] = true;
-        if (($emp['uniforme'] ?? 0) != 0) $flags['uniforme'] = true;
+        if (($emp['uniformes'] ?? 0) != 0) $flags['uniformes'] = true;
         if (($emp['checador'] ?? 0) != 0) $flags['checador'] = true;
         if (($emp['fa_gafet_cofia'] ?? 0) != 0) $flags['fa'] = true;
         foreach ($emp['conceptos'] ?? [] as $c) {
@@ -313,7 +351,8 @@ function crearHoja($spreadsheet, $depto, $filtroEmpleados, $nombreHoja, $esPrime
                 $cant = 0;
                 foreach ($emp['historial_empaque'] ?? [] as $h) {
                     if ($h['dia'] === $dia['nombre'] && $h['tipo'] === $caja['valor']) {
-                        $cant = $h['cantidad']; break;
+                        $cant = $h['cantidad'];
+                        break;
                     }
                 }
                 if ($cant > 0) $sheet->setCellValue($letra . $row, $cant);
@@ -344,8 +383,21 @@ function crearHoja($spreadsheet, $depto, $filtroEmpleados, $nombreHoja, $esPrime
         }
 
         $sheet->setCellValue($mapeo['SUELDO NETO'] . $row, !empty($partesNeto) ? '=' . implode('+', $partesNeto) : 0);
-        if (($emp['sueldo_extra_total'] ?? 0) != 0) $sheet->setCellValue($mapeo['EXTRAS'] . $row, $emp['sueldo_extra_total']);
-        $sheet->setCellValue($mapeo['TOTAL PERCEPCIONES'] . $row, "=SUM(" . $mapeo['SUELDO NETO'] . "$row:" . $mapeo['EXTRAS'] . "$row)");
+        if (!empty($emp['percepciones_extra']) && is_array($emp['percepciones_extra'])) {
+            foreach ($emp['percepciones_extra'] as $extra) {
+                $nombre = trim($extra['nombre'] ?? '');
+                $cant = (float) ($extra['cantidad'] ?? 0);
+                if ($nombre !== '' && $cant != 0) {
+                    $key = mb_strtolower($nombre, 'UTF-8');
+                    if (isset($mapExtrasCols[$key])) {
+                        $sheet->setCellValue($mapeo[$mapExtrasCols[$key]] . $row, $cant);
+                    }
+                }
+            }
+        }
+        $letraPrimeraPercepcion = $mapeo['SUELDO NETO'];
+        $letraUltimaPercepcion = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(\PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($mapeo['TOTAL PERCEPCIONES']) - 1);
+        $sheet->setCellValue($mapeo['TOTAL PERCEPCIONES'] . $row, "=SUM({$letraPrimeraPercepcion}{$row}:{$letraUltimaPercepcion}{$row})");
 
         // Deducciones
         $mapC = ['45' => 'ISR', '52' => 'IMSS', '16' => 'INFONAVIT', '107' => 'AJUSTES AL SUB'];
@@ -353,11 +405,25 @@ function crearHoja($spreadsheet, $depto, $filtroEmpleados, $nombreHoja, $esPrime
             if (isset($mapC[$c['codigo']])) $sheet->setCellValue($mapeo[$mapC[$c['codigo']]] . $row, $c['resultado']);
         }
         if (($emp['permiso'] ?? 0) != 0) $sheet->setCellValue($mapeo['PERMISOS'] . $row, $emp['permiso']);
-        if (($emp['uniforme'] ?? 0) != 0) $sheet->setCellValue($mapeo['UNIFORMES'] . $row, $emp['uniforme']);
+        if (($emp['uniformes'] ?? 0) != 0) $sheet->setCellValue($mapeo['UNIFORMES'] . $row, $emp['uniformes']);
         if (($emp['checador'] ?? 0) != 0) $sheet->setCellValue($mapeo['BIOMETRICO'] . $row, $emp['checador']);
         if (($emp['fa_gafet_cofia'] ?? 0) != 0) $sheet->setCellValue($mapeo['F.A/GAFET/COFIA'] . $row, $emp['fa_gafet_cofia']);
 
-        $sheet->setCellValue($mapeo['TOTAL DE DEDUCCIONES'] . $row, "=SUM(" . $mapeo['ISR'] . "$row:" . $mapeo['F.A/GAFET/COFIA'] . "$row)");
+        if (!empty($emp['deducciones_extra']) && is_array($emp['deducciones_extra'])) {
+            foreach ($emp['deducciones_extra'] as $dextra) {
+                $nombre = trim($dextra['nombre'] ?? '');
+                $cant = (float) ($dextra['cantidad'] ?? 0);
+                if ($nombre !== '' && $cant != 0) {
+                    $key = mb_strtolower($nombre, 'UTF-8');
+                    if (isset($mapDeduccionesExtrasCols[$key])) {
+                        $sheet->setCellValue($mapeo[$mapDeduccionesExtrasCols[$key]] . $row, $cant);
+                    }
+                }
+            }
+        }
+        $letraPrimeraDeduccion = $mapeo['ISR'];
+        $letraUltimaDeduccion = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(\PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($mapeo['TOTAL DE DEDUCCIONES']) - 1);
+        $sheet->setCellValue($mapeo['TOTAL DE DEDUCCIONES'] . $row, "=SUM({$letraPrimeraDeduccion}{$row}:{$letraUltimaDeduccion}{$row})");
         $sheet->setCellValue($mapeo['NETO A RECIBIR'] . $row, "=" . $mapeo['TOTAL PERCEPCIONES'] . "$row-" . $mapeo['TOTAL DE DEDUCCIONES'] . "$row");
         if (($emp['tarjeta'] ?? 0) != 0) $sheet->setCellValue($mapeo['DISPERSION DE TARJETA'] . $row, $emp['tarjeta']);
         $sheet->setCellValue($mapeo['IMPORTE EN EFECTIVO'] . $row, "=" . $mapeo['NETO A RECIBIR'] . "$row-" . $mapeo['DISPERSION DE TARJETA'] . "$row");
@@ -370,19 +436,19 @@ function crearHoja($spreadsheet, $depto, $filtroEmpleados, $nombreHoja, $esPrime
         $sheet->getStyle('A' . $row . ':' . $ultimaLetra . $row)->getAlignment()->setHorizontal('center')->setVertical('center');
         $sheet->getStyle($mapeo['NOMBRE'] . $row)->getAlignment()->setHorizontal('left');
 
-        $colsMoneda = ['SUELDO NETO', 'EXTRAS', 'TOTAL PERCEPCIONES', 'NETO A RECIBIR', 'IMPORTE EN EFECTIVO', 'TOTAL A RECIBIR', 'TOTAL EFECTIVO REDONDEADO'];
-        foreach($colsMoneda as $m) $sheet->getStyle($mapeo[$m].$row)->getNumberFormat()->setFormatCode('$#,##0.00');
-        
-        $colsDed = ['ISR', 'IMSS', 'INFONAVIT', 'AJUSTES AL SUB', 'PERMISOS', 'UNIFORMES', 'BIOMETRICO', 'F.A/GAFET/COFIA', 'TOTAL DE DEDUCCIONES', 'DISPERSION DE TARJETA', 'PRÉSTAMO'];
-        foreach($colsDed as $d) {
-            $sheet->getStyle($mapeo[$d].$row)->getFont()->setColor(new Color('FF0000'));
-            $sheet->getStyle($mapeo[$d].$row)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
+        $colsMoneda = array_merge(['SUELDO NETO'], array_values($mapExtrasCols), ['TOTAL PERCEPCIONES', 'NETO A RECIBIR', 'IMPORTE EN EFECTIVO', 'TOTAL A RECIBIR', 'TOTAL EFECTIVO REDONDEADO']);
+        foreach ($colsMoneda as $m) $sheet->getStyle($mapeo[$m] . $row)->getNumberFormat()->setFormatCode('$#,##0.00');
+
+        $colsDed = array_merge(['ISR', 'IMSS', 'INFONAVIT', 'AJUSTES AL SUB', 'PERMISOS', 'UNIFORMES', 'BIOMETRICO', 'F.A/GAFET/COFIA'], array_values($mapDeduccionesExtrasCols), ['TOTAL DE DEDUCCIONES', 'DISPERSION DE TARJETA', 'PRÉSTAMO']);
+        foreach ($colsDed as $d) {
+            $sheet->getStyle($mapeo[$d] . $row)->getFont()->setColor(new Color('FF0000'));
+            $sheet->getStyle($mapeo[$d] . $row)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
         }
-        $sheet->getStyle($mapeo['REDONDEADO'].$row)->getNumberFormat()->setFormatCode('$#,##0.00;[RED]-$#,##0.00');
+        $sheet->getStyle($mapeo['REDONDEADO'] . $row)->getNumberFormat()->setFormatCode('$#,##0.00;[RED]-$#,##0.00');
 
         $sheet->getRowDimension($row)->setRowHeight(48);
-        $sheet->getStyle('A'.$row.':'.$mapeo['NOMBRE'].$row)->getFont()->setSize(15);
-        $sheet->getStyle($mapeo['NOMBRE'].$row)->getFont()->setSize(16);
+        $sheet->getStyle('A' . $row . ':' . $mapeo['NOMBRE'] . $row)->getFont()->setSize(15);
+        $sheet->getStyle($mapeo['NOMBRE'] . $row)->getFont()->setSize(16);
 
         // Tamaño 18 después de NOMBRE (Columna D en adelante)
         $letraDespuesNombre = 'D';
@@ -395,14 +461,14 @@ function crearHoja($spreadsheet, $depto, $filtroEmpleados, $nombreHoja, $esPrime
     $filaTot = $row;
     $sheet->setCellValue('A' . $filaTot, 'TOTALES');
     $sheet->getStyle('A' . $filaTot)->getFont()->setBold(true)->setSize(14);
-    
+
     $colsASumar = array_merge($colFinales);
     unset($colsASumar[array_search('FIRMA RECIBIDO', $colsASumar)]);
     foreach ($colsASumar as $n) {
         $l = $mapeo[$n];
-        $sheet->setCellValue($l . $filaTot, "=IF(SUM($l" . "9:$l" . ($filaTot-1) . ")=0,\"\",SUM($l" . "9:$l" . ($filaTot-1) . "))");
+        $sheet->setCellValue($l . $filaTot, "=IF(SUM($l" . "9:$l" . ($filaTot - 1) . ")=0,\"\",SUM($l" . "9:$l" . ($filaTot - 1) . "))");
         $sheet->getStyle($l . $filaTot)->getFont()->setBold(true)->setSize(18);
-        if (in_array($n, ['ISR', 'IMSS', 'INFONAVIT', 'AJUSTES AL SUB', 'PERMISOS', 'UNIFORMES', 'BIOMETRICO', 'F.A/GAFET/COFIA', 'TOTAL DE DEDUCCIONES', 'DISPERSION DE TARJETA', 'PRÉSTAMO'])) {
+        if (in_array($n, array_merge(['ISR', 'IMSS', 'INFONAVIT', 'AJUSTES AL SUB', 'PERMISOS', 'UNIFORMES', 'BIOMETRICO', 'F.A/GAFET/COFIA'], array_values($mapDeduccionesExtrasCols), ['TOTAL DE DEDUCCIONES', 'DISPERSION DE TARJETA', 'PRÉSTAMO']))) {
             $sheet->getStyle($l . $filaTot)->getFont()->setColor(new Color('FF0000'));
             $sheet->getStyle($l . $filaTot)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
         } elseif ($n === 'REDONDEADO') {
@@ -413,7 +479,7 @@ function crearHoja($spreadsheet, $depto, $filtroEmpleados, $nombreHoja, $esPrime
     }
     for ($i = $inicioEmpaque; $i <= $finResumen; $i += (($i >= $inicioResumen) ? 2 : 1)) {
         $l = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($i);
-        $sheet->setCellValue($l . $filaTot, "=IF(SUM($l" . "9:$l" . ($filaTot-1) . ")=0,\"\",SUM($l" . "9:$l" . ($filaTot-1) . "))");
+        $sheet->setCellValue($l . $filaTot, "=IF(SUM($l" . "9:$l" . ($filaTot - 1) . ")=0,\"\",SUM($l" . "9:$l" . ($filaTot - 1) . "))");
         $sheet->getStyle($l . $filaTot)->getFont()->setBold(true)->setSize(18);
     }
     $sheet->getStyle('A' . $filaTot . ':' . $ultimaLetra . $filaTot)->getFill()->setFillType('solid')->getStartColor()->setRGB('D3D3D3');
@@ -426,13 +492,11 @@ function crearHoja($spreadsheet, $depto, $filtroEmpleados, $nombreHoja, $esPrime
     if (!$flags['infonavit']) $sheet->getColumnDimension($mapeo['INFONAVIT'])->setVisible(false);
     if (!$flags['ajustes']) $sheet->getColumnDimension($mapeo['AJUSTES AL SUB'])->setVisible(false);
     if (!$flags['permiso']) $sheet->getColumnDimension($mapeo['PERMISOS'])->setVisible(false);
-    if (!$flags['uniforme']) $sheet->getColumnDimension($mapeo['UNIFORMES'])->setVisible(false);
+    if (!$flags['uniformes']) $sheet->getColumnDimension($mapeo['UNIFORMES'])->setVisible(false);
     if (!$flags['checador']) $sheet->getColumnDimension($mapeo['BIOMETRICO'])->setVisible(false);
     if (!$flags['fa']) $sheet->getColumnDimension($mapeo['F.A/GAFET/COFIA'])->setVisible(false);
 
-    // Ocultar siempre Total Percepciones y Total Deducciones
-    $sheet->getColumnDimension($mapeo['TOTAL PERCEPCIONES'])->setVisible(false);
-    $sheet->getColumnDimension($mapeo['TOTAL DE DEDUCCIONES'])->setVisible(false);
+
 
     // Margenes
     $ps = $sheet->getPageSetup();
@@ -462,17 +526,25 @@ if ($jsonNomina && isset($jsonNomina['departamentos'])) {
 
         // 1. Crear Hoja CSS si aplica
         if ($hayCSS) {
-            crearHoja($spreadsheet, $depto,
-                fn($e) => (($e['id_departamento'] ?? $e['nombre']) == $idDepto && ($e['mostrar'] ?? true) && ($e['seguroSocial'] ?? false)), 
-                substr($nombreDepto, 0, 20) . ' CSS', $esPrimeraHoja);
+            crearHoja(
+                $spreadsheet,
+                $depto,
+                fn($e) => (($e['id_departamento'] ?? $e['nombre']) == $idDepto && ($e['mostrar'] ?? true) && ($e['seguroSocial'] ?? false)),
+                substr($nombreDepto, 0, 20) . ' CSS',
+                $esPrimeraHoja
+            );
             $esPrimeraHoja = false;
         }
 
         // 2. Crear Hoja SSS si aplica
         if ($haySSS) {
-            crearHoja($spreadsheet, $depto,
-                fn($e) => (($e['id_departamento'] ?? $e['nombre']) == $idDepto && ($e['mostrar'] ?? true) && !($e['seguroSocial'] ?? false)), 
-                substr($nombreDepto, 0, 20) . ' SSS', $esPrimeraHoja);
+            crearHoja(
+                $spreadsheet,
+                $depto,
+                fn($e) => (($e['id_departamento'] ?? $e['nombre']) == $idDepto && ($e['mostrar'] ?? true) && !($e['seguroSocial'] ?? false)),
+                substr($nombreDepto, 0, 20) . ' SSS',
+                $esPrimeraHoja
+            );
             $esPrimeraHoja = false;
         }
     }
