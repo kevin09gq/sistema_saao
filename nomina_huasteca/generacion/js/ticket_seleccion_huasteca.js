@@ -435,7 +435,6 @@ function generarTicketsSeleccionados() {
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-                $('#modal_seleccion_tickets').modal('hide');
                 Swal.fire({ icon: 'success', title: 'Tickets generados', timer: 1500, showConfirmButton: false });
             }
             btn.prop('disabled', false).html(original);
@@ -520,7 +519,6 @@ function generarTicketsNombreSeleccionados() {
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-                $('#modal_seleccion_tickets').modal('hide');
                 Swal.fire({ icon: 'success', title: 'Tickets generados', timer: 1500, showConfirmButton: false });
             }
             btn.prop('disabled', false).html(original);

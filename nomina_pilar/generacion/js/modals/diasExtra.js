@@ -1,5 +1,6 @@
 $(document).ready(function () {
     abrirModalDiasExtra();
+    cambioAccionDiasExtra();
     pasoNavegacionDiasExtra();
     buscadorEmpleadosDiasExtra();
     seleccionarTodosEmpleadosDiasExtra();
@@ -18,6 +19,10 @@ function abrirModalDiasExtra() {
         // limpiar los selects del paso 1
         $('#selectDiaDiasExtra').val('');
         $('#selectAccionDiasExtra').val('');
+        $('#selectTipoDiaDiasExtra').val('');
+
+        // ocultar el select de tipo de día
+        $('#divTipoDiaDiasExtra').hide();
 
         // limpiar el buscador
         $('#txtBuscarEmpleadoDiasExtra').val('');
@@ -35,6 +40,28 @@ function abrirModalDiasExtra() {
 }
 
 //===================================================
+// CAMBIO DE ACCIÓN - MOSTRAR/OCULTAR TIPO DE DÍA
+//===================================================
+
+function cambioAccionDiasExtra() {
+
+    $('#selectAccionDiasExtra').change(function () {
+
+        let accion = $(this).val();
+
+        // mostrar el select de tipo de día solo si la acción es "quitar"
+        if (accion === 'quitar') {
+            $('#divTipoDiaDiasExtra').slideDown();
+        } else {
+            $('#divTipoDiaDiasExtra').slideUp();
+            $('#selectTipoDiaDiasExtra').val('');
+        }
+
+    });
+
+}
+
+//===================================================
 // NAVEGACIÓN PASO 1 A PASO 2
 //===================================================
 
@@ -45,6 +72,7 @@ function pasoNavegacionDiasExtra() {
         // obtener el día y la acción seleccionados
         let diaSeleccionado = $('#selectDiaDiasExtra').val();
         let accionSeleccionada = $('#selectAccionDiasExtra').val();
+        let tipoDiaSeleccionado = $('#selectTipoDiaDiasExtra').val();
 
         // validar que se haya seleccionado un día
         if (!diaSeleccionado) {
@@ -58,19 +86,26 @@ function pasoNavegacionDiasExtra() {
             return;
         }
 
+        // validar que se haya seleccionado el tipo de día si la acción es quitar
+        if (accionSeleccionada === 'quitar' && !tipoDiaSeleccionado) {
+            mostrarAlerta('warning', 'Advertencia', 'Debes seleccionar el tipo de día a quitar (extra o normal).');
+            return;
+        }
+
         // actualizar el label de la tabla según la acción elegida
         if (accionSeleccionada === 'agregar') {
             $('#labelTablaDiasExtra').html(
                 '<i class="bi bi-plus-circle text-success me-1"></i> Empleados — Agregar día: ' + diaSeleccionado
             );
         } else {
+            let tipoTexto = tipoDiaSeleccionado === 'extra' ? 'Día Extra' : 'Día Normal';
             $('#labelTablaDiasExtra').html(
-                '<i class="bi bi-dash-circle text-danger me-1"></i> Empleados — Quitar día: ' + diaSeleccionado
+                '<i class="bi bi-dash-circle text-danger me-1"></i> Empleados — Quitar ' + tipoTexto + ': ' + diaSeleccionado
             );
         }
 
         // cargar la lista de empleados jornaleros
-        cargarEmpleadosDiasExtra(diaSeleccionado, accionSeleccionada);
+        cargarEmpleadosDiasExtra(diaSeleccionado, accionSeleccionada, tipoDiaSeleccionado);
 
         // mostrar la sección del paso 2 con animación
         $('#divListaEmpleadosDiasExtra').slideDown();
@@ -83,7 +118,7 @@ function pasoNavegacionDiasExtra() {
 // CARGAR EMPLEADOS DE DEPARTAMENTOS TIPO_HORARIO = 2
 //===================================================
 
-function cargarEmpleadosDiasExtra(diaSeleccionado, accionSeleccionada) {
+function cargarEmpleadosDiasExtra(diaSeleccionado, accionSeleccionada, tipoDiaSeleccionado) {
 
     // limpiar la tabla y desmarcar el checkbox principal
     $('#tbody-empleados-dias-extra').empty();
@@ -258,13 +293,20 @@ function aplicarDiasExtra() {
 
     $('#btnAplicarDiasExtra').click(function () {
 
-        // leer la acción y el día del paso 1
+        // leer la acción, el día y el tipo de día del paso 1
         let diaSeleccionado = $('#selectDiaDiasExtra').val();
         let accionSeleccionada = $('#selectAccionDiasExtra').val();
+        let tipoDiaSeleccionado = $('#selectTipoDiaDiasExtra').val();
 
         // validar configuración del paso 1
         if (!diaSeleccionado || !accionSeleccionada) {
             mostrarAlerta('warning', 'Advertencia', 'Debes completar el Paso 1 antes de aplicar.');
+            return;
+        }
+
+        // validar tipo de día si la acción es quitar
+        if (accionSeleccionada === 'quitar' && !tipoDiaSeleccionado) {
+            mostrarAlerta('warning', 'Advertencia', 'Debes seleccionar el tipo de día a quitar.');
             return;
         }
 
@@ -308,22 +350,36 @@ function aplicarDiasExtra() {
 
                 } else if (accionSeleccionada === 'quitar') {
 
-                    // buscar el índice del día a quitar en el historial (solo la primera coincidencia)
-                    let indexQuitar = empleado.dias_extra_detalle.findIndex(function (item) {
-                        return normalizarDia(item.dia) === normalizarDia(diaSeleccionado);
-                    });
+                    if (tipoDiaSeleccionado === 'extra') {
 
-                    if (indexQuitar !== -1) {
+                        // buscar el índice del día a quitar en el historial de días extra
+                        let indexQuitar = empleado.dias_extra_detalle.findIndex(function (item) {
+                            return normalizarDia(item.dia) === normalizarDia(diaSeleccionado);
+                        });
 
-                        // eliminar el día del historial
-                        empleado.dias_extra_detalle.splice(indexQuitar, 1);
+                        if (indexQuitar !== -1) {
 
-                        // decrementar los días trabajados (mínimo 0)
-                        empleado.dias_trabajados = Math.max(0, (empleado.dias_trabajados || 0) - 1);
+                            // eliminar el día del historial de días extra
+                            empleado.dias_extra_detalle.splice(indexQuitar, 1);
 
-                    } else {
-                        // el empleado no tiene ese día extra registrado, omitir
-                        return;
+                            // decrementar los días trabajados (mínimo 0)
+                            empleado.dias_trabajados = Math.max(0, (empleado.dias_trabajados || 0) - 1);
+
+                        } else {
+                            // el empleado no tiene ese día extra registrado, omitir
+                            return;
+                        }
+
+                    } else if (tipoDiaSeleccionado === 'normal') {
+
+                        // quitar un día normal (decrementar días trabajados)
+                        if (empleado.dias_trabajados > 0) {
+                            empleado.dias_trabajados = empleado.dias_trabajados - 1;
+                        } else {
+                            // el empleado no tiene días trabajados, omitir
+                            return;
+                        }
+
                     }
 
                 }
@@ -341,12 +397,13 @@ function aplicarDiasExtra() {
         llenarTablaNomina();
 
         // recargar la lista de empleados para reflejar el cambio en los badges
-        cargarEmpleadosDiasExtra(diaSeleccionado, accionSeleccionada);
+        cargarEmpleadosDiasExtra(diaSeleccionado, accionSeleccionada, tipoDiaSeleccionado);
 
+        let mensajeTipo = tipoDiaSeleccionado === 'extra' ? 'día extra' : 'día normal';
         mostrarAlerta(
             'success',
             'Éxito',
-            `Se ${accionSeleccionada === 'agregar' ? 'agregó' : 'quitó'} el día correctamente a los empleados seleccionados.`
+            `Se ${accionSeleccionada === 'agregar' ? 'agregó' : 'quitó'} el ${mensajeTipo} correctamente a los empleados seleccionados.`
         );
 
     });

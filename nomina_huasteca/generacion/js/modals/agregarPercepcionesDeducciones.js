@@ -266,7 +266,7 @@ function aplicarConceptoExtraAEmpleados() {
                             });
 
                         }
-                        
+
                         // Si es una Deducción
                         else if (concepto.tipo === "deduccion") {
                             // Inicializar el arreglo de deducciones extras si no existe
@@ -279,7 +279,7 @@ function aplicarConceptoExtraAEmpleados() {
                                 cantidad: concepto.cantidad
                             });
 
-                           
+
                         }
 
                     }
@@ -287,10 +287,8 @@ function aplicarConceptoExtraAEmpleados() {
             });
         });
 
-        // 4. Limpiar campos del formulario
-        $("#inputNombreConceptoExtra").val("");
-        $("#inputCantidadConceptoExtra").val("");
-        $("#selectTipoConceptoExtra").val("percepcion");
+        // 4. Limpiar los campos del modal
+        limpiarCamposModalAddConceptos();
 
         // 5. Actualizar la tabla principal de la nómina
         llenarTablaNomina();
@@ -302,9 +300,25 @@ function aplicarConceptoExtraAEmpleados() {
             "Concepto agregado correctamente a los empleados seleccionados."
         );
 
-        $("#modalAddConceptos").modal("hide");
+        // 7. Cerrar el modal
+        //$("#modalAddConceptos").modal("hide");
 
     });
 
+}
+
+
+//==========================================================
+// FUNCIÓN PARA LIMPIAR LOS CAMPOS DEL MODAL
+//==========================================================
+
+function limpiarCamposModalAddConceptos() {
+    $("#inputNombreConceptoExtra").val("");
+    $("#inputCantidadConceptoExtra").val("");
+    $("#selectTipoConceptoExtra").val("percepcion");
+    $("#txtBuscarEmpleadoAddConceptos").val("");
+    $('#checkTodosAddConceptos').prop('checked', false);
+    $('.check-empleado-add-conceptos').prop('checked', false);
+    empleadosSeleccionadosAddConceptos = [];
 }
 

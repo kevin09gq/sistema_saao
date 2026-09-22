@@ -34,7 +34,16 @@ function obtenerEmpleadosFiltradosConfianza(opciones = {}) {
 
     let empleados = [];
 
-    if (valorDepartamento === '' || valorDepartamento === '0' || valorDepartamentoLower === 'all') {
+    // Parsear si el filtro viene en formato "id_empresa|id_departamento"
+    let filtroIdEmpresa = null;
+    let filtroIdDepto = null;
+    if (valorDepartamento.includes('|')) {
+        const partes = valorDepartamento.split('|');
+        filtroIdEmpresa = Number(partes[0]);
+        filtroIdDepto = Number(partes[1]);
+    }
+
+    if (valorDepartamento === '' || valorDepartamento === '0' || valorDepartamentoLower === 'all' || valorDepartamentoLower === 'todos') {
         nomina.departamentos.forEach(depto => {
             if (!Array.isArray(depto.empleados)) return;
             depto.empleados.forEach(emp => {
@@ -56,12 +65,19 @@ function obtenerEmpleadosFiltradosConfianza(opciones = {}) {
         nomina.departamentos.forEach(depto => {
             const nombreDepto = String(depto.nombre || '').trim();
             const nombreDeptoLower = nombreDepto.toLowerCase();
-            const deptoCoincidePorNombre = nombreDeptoLower === valorDepartamentoLower;
-            const deptoCoincidePorId = valorDepartamento !== '' &&
-                !Number.isNaN(Number(valorDepartamento)) &&
-                Number(depto.id_departamento) === Number(valorDepartamento);
 
-            if (!deptoCoincidePorNombre && !deptoCoincidePorId) return;
+            let coincide = false;
+            if (filtroIdEmpresa !== null && filtroIdDepto !== null) {
+                coincide = (Number(depto.id_empresa) === filtroIdEmpresa && Number(depto.id_departamento) === filtroIdDepto);
+            } else {
+                const deptoCoincidePorNombre = nombreDeptoLower === valorDepartamentoLower;
+                const deptoCoincidePorId = valorDepartamento !== '' &&
+                    !Number.isNaN(Number(valorDepartamento)) &&
+                    Number(depto.id_departamento) === Number(valorDepartamento);
+                coincide = deptoCoincidePorNombre || deptoCoincidePorId;
+            }
+
+            if (!coincide) return;
             if (!Array.isArray(depto.empleados)) return;
 
             depto.empleados.forEach(emp => {
@@ -70,6 +86,18 @@ function obtenerEmpleadosFiltradosConfianza(opciones = {}) {
                 }
             });
         });
+
+        // Si no hubo coincidencia con el filtro específico, usar todos los departamentos como fallback
+        if (empleados.length === 0) {
+            nomina.departamentos.forEach(depto => {
+                if (!Array.isArray(depto.empleados)) return;
+                depto.empleados.forEach(emp => {
+                    if (emp && emp.mostrar !== false) {
+                        empleados.push({ emp, deptoNombre: String(depto.nombre || '') });
+                    }
+                });
+            });
+        }
     }
 
     if (valorEmpresa !== '' && valorEmpresa !== '0' && valorEmpresa !== 'all') {

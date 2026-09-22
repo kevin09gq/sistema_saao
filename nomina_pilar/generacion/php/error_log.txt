@@ -1,0 +1,5 @@
+[03-Sep-2026 21:34:27 Europe/Berlin] PHP Warning:  require_once(C:\xampp\htdocs\sistema_saao\nomina_pilar\generacion\php/../../conexion/conexion.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\sistema_saao\nomina_pilar\generacion\php\descargar_ticket_pdf.php on line 9
+[03-Sep-2026 21:34:27 Europe/Berlin] PHP Fatal error:  Uncaught Error: Failed opening required 'C:\xampp\htdocs\sistema_saao\nomina_pilar\generacion\php/../../conexion/conexion.php' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\sistema_saao\nomina_pilar\generacion\php\descargar_ticket_pdf.php:9
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\sistema_saao\nomina_pilar\generacion\php\descargar_ticket_pdf.php on line 9

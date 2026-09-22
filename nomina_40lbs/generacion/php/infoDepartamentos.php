@@ -20,6 +20,10 @@ switch ($accion) {
     case 'obtenerSueldoBase':
         obtenerSueldoBase($conexion);
         break;
+    
+    case 'obtenerSueldoDiario':
+        obtenerSueldoDiario($conexion);
+        break;
 
     case 'guardarNomina':
         guardarNomina($conexion);
@@ -158,6 +162,36 @@ function obtenerSueldoBase(mysqli $conexion)
     $sql = "SELECT
                 id_empleado,
                 salario_semanal
+            FROM info_empleados
+            WHERE id_empleado IN (" . implode(',', $ids) . ")";
+
+    $resultado = $conexion->query($sql);
+
+    $sueldos = [];
+
+    while ($fila = $resultado->fetch_assoc()) {
+        $sueldos[] = $fila;
+    }
+
+    echo json_encode($sueldos);
+}
+
+// FUNCIÓN PARA OBTENER EL SUELDO DIARIO DE LOS EMPLEADOS A TRAVES DE SU ID DE EMPLEADO
+
+function obtenerSueldoDiario(mysqli $conexion)
+{
+
+    $empleados = json_decode($_POST['empleados'], true);
+
+    $ids = [];
+
+    foreach ($empleados as $empleado) {
+        $ids[] = $empleado['id_empleado'];
+    }
+
+    $sql = "SELECT
+                id_empleado,
+                salario_diario
             FROM info_empleados
             WHERE id_empleado IN (" . implode(',', $ids) . ")";
 

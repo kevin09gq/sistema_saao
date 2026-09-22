@@ -81,6 +81,21 @@
 
                             </div>
 
+                            <!-- SELECT TIPO DE DÍA (solo para quitar) -->
+                            <div class="col-md-3" id="divTipoDiaDiasExtra" style="display: none;">
+
+                                <label for="selectTipoDiaDiasExtra" class="form-label">
+                                    Tipo de día
+                                </label>
+
+                                <select class="form-select" id="selectTipoDiaDiasExtra">
+                                    <option value="">Seleccione...</option>
+                                    <option value="extra">Días Extra</option>
+                                    <option value="normal">Días Normales</option>
+                                </select>
+
+                            </div>
+
                             <!-- BOTÓN SIGUIENTE -->
                             <div class="col-md-3">
 

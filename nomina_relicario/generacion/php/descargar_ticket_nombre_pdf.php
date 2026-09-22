@@ -1,6 +1,6 @@
 <?php
 ob_start();
-require_once __DIR__ . '/../../../vendor/autoload.php';
+require_once __DIR__ . '/../../vendor/autoload.php';
 
 function safeText($s) {
     $s = (string)$s;
@@ -23,12 +23,8 @@ $semana = safeText($nomina['numero_semana'] ?? '');
 
 $empleados = [];
 foreach (($nomina['departamentos'] ?? []) as $depto) {
-    $deptoNombre = $depto['nombre'] ?? '';
     foreach (($depto['empleados'] ?? []) as $emp) {
         if (!is_array($emp)) continue;
-        if (!isset($emp['departamento']) || empty($emp['departamento'])) {
-            $emp['departamento'] = $deptoNombre;
-        }
         $empleados[] = $emp;
     }
 }
@@ -40,11 +36,6 @@ if (empty($empleados)) {
 }
 
 usort($empleados, function ($a, $b) {
-    $deptoA = strtoupper((string)($a['departamento'] ?? ''));
-    $deptoB = strtoupper((string)($b['departamento'] ?? ''));
-    if ($deptoA !== $deptoB) {
-        return strcasecmp($deptoA, $deptoB);
-    }
     return strcasecmp((string)($a['nombre'] ?? ''), (string)($b['nombre'] ?? ''));
 });
 

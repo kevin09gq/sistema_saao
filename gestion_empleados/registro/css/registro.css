@@ -1,0 +1,375 @@
+/* ==========================================================================
+   SISTEMA SAAO - MÓDULO DE REGISTRO DE EMPLEADOS
+   Hoja de estilos: registro.css
+   Diseño basado en el estilo visual de SAAO (Limpio, Moderno y Funcional)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   0. TIPOGRAFÍA Y FUENTES EXTERNAS
+   -------------------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* --------------------------------------------------------------------------
+   1. VARIABLES GLOBALES (PALETA DE COLORES Y SOMBRAS)
+   -------------------------------------------------------------------------- */
+:root {
+    /* Paleta de Verdes (Identidad Institucional SAAO) */
+    --primary-green: #2d6a4f;      /* Verde principal para botones y acentos destacados */
+    --accent-green:  #1b4332;      /* Verde oscuro para estados hover y énfasis */
+    --soft-green:    #95d5b2;      /* Verde medio para bordes activos y focos */
+    --light-green:   #d8f3dc;      /* Verde suave para fondos claros, píldoras y selecciones */
+    --hover-green:   #e8f7ee;      /* Verde ultraligero para filas de tabla al pasar el mouse */
+
+    /* Colores Neutros y Fondo */
+    --bg-gray:       #f8f9fa;      /* Fondo general de la página */
+    --border-color:  #e9ecef;      /* Color estándar de bordes para tarjetas e inputs */
+    --text-main:     #343a40;      /* Color principal de texto (alta legibilidad) */
+    --text-muted:    #6c757d;      /* Texto secundario para etiquetas, subtítulos y fechas */
+    --white:         #ffffff;      /* Blanco puro para tarjetas y contenedores */
+
+    /* Estados Adicionales (Alertas / Badges) */
+    --status-active-bg:   #eefdf3; /* Fondo suave para estado activo */
+    --status-active-txt:  #1e7e34; /* Texto para estado activo */
+    --status-inactive-bg: #fef2f2; /* Fondo suave para inactivo */
+    --status-inactive-txt:#dc2626; /* Texto para inactivo */
+    --status-danger-bg:   #fef2f2; /* Fondo de advertencia/peligro */
+    --status-danger-txt:  #dc2626; /* Texto de advertencia/peligro */
+
+    /* Elevaciones y Sombras */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+    /* Radios de redondeo */
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   2. ESTILOS GENERALES DEL DOCUMENTO
+   -------------------------------------------------------------------------- */
+body {
+    background-color: var(--bg-gray);
+    color: var(--text-main);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* --------------------------------------------------------------------------
+   3. TARJETAS Y CONTENEDORES (CARDS)
+   -------------------------------------------------------------------------- */
+.card {
+    background-color: var(--white);
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card-header {
+    background-color: var(--white) !important;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 1.25rem;
+    border-top-left-radius: var(--radius-lg) !important;
+    border-top-right-radius: var(--radius-lg) !important;
+}
+
+.card-footer {
+    background-color: var(--white) !important;
+    border-top: 1px solid var(--border-color);
+    padding: 0.85rem 1.25rem;
+    border-bottom-left-radius: var(--radius-lg) !important;
+    border-bottom-right-radius: var(--radius-lg) !important;
+}
+
+/* --------------------------------------------------------------------------
+   4. SECCIÓN DE FILTROS Y FORMULARIOS
+   -------------------------------------------------------------------------- */
+.form-label {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 0.4rem;
+}
+
+.form-control,
+.form-select {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-main);
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+    background-color: var(--white);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+    outline: none;
+    border-color: var(--soft-green);
+    box-shadow: 0 0 0 3px rgba(149, 213, 178, 0.35);
+}
+
+.form-control::placeholder {
+    color: #adb5bd;
+    font-size: 0.85rem;
+}
+
+/* --------------------------------------------------------------------------
+   5. BOTONES DE ACCIÓN
+   -------------------------------------------------------------------------- */
+.btn-success {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+    color: var(--white);
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    padding: 0.45rem 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+}
+
+.btn-success:hover,
+.btn-success:focus,
+.btn-success:active {
+    background-color: var(--accent-green) !important;
+    border-color: var(--accent-green) !important;
+    color: var(--white) !important;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-primary {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+    color: var(--white);
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    padding: 0.45rem 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    background-color: var(--accent-green) !important;
+    border-color: var(--accent-green) !important;
+    color: var(--white) !important;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary {
+    background-color: var(--white);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    padding: 0.45rem 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus,
+.btn-secondary:active {
+    background-color: var(--bg-gray);
+    border-color: var(--soft-green);
+    color: var(--primary-green);
+}
+
+.btn-outline-success {
+    background-color: var(--white);
+    border: 1px solid var(--primary-green);
+    color: var(--primary-green);
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    padding: 0.45rem 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+}
+
+.btn-outline-success:hover,
+.btn-outline-success:focus,
+.btn-outline-success:active {
+    background-color: var(--light-green) !important;
+    border-color: var(--primary-green) !important;
+    color: var(--accent-green) !important;
+}
+
+/* --------------------------------------------------------------------------
+   6. INDICADOR DE PASOS (STEP INDICATOR)
+   -------------------------------------------------------------------------- */
+#stepIndicator1,
+#stepIndicator2,
+#stepIndicator3 {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+#stepIndicator1.active,
+#stepIndicator2.active,
+#stepIndicator3.active {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+    color: var(--white);
+    box-shadow: var(--shadow-sm);
+}
+
+#stepIndicator1:not(.active),
+#stepIndicator2:not(.active),
+#stepIndicator3:not(.active) {
+    background-color: var(--white);
+    border-color: var(--border-color);
+    color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   7. TABLA DE BENEFICIARIOS
+   -------------------------------------------------------------------------- */
+.table {
+    margin-bottom: 0;
+    color: var(--text-main);
+}
+
+.table thead th {
+    background-color: #f8fbf9 !important;
+    color: var(--primary-green) !important;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.9rem 1rem;
+    border-bottom: 2px solid var(--border-color);
+    border-top: none;
+    vertical-align: middle;
+}
+
+.table tbody td {
+    padding: 0.95rem 1rem;
+    vertical-align: middle;
+    font-size: 0.885rem;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--white);
+    transition: background-color 0.15s ease;
+}
+
+.table-hover tbody tr:hover td {
+    background-color: var(--hover-green);
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* --------------------------------------------------------------------------
+   8. BADGES Y PÍLDORAS
+   -------------------------------------------------------------------------- */
+.badge {
+    padding: 0.35rem 0.75rem;
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.2px;
+}
+
+.card .badge.bg-success,
+.table .badge.bg-success,
+.modal .badge.bg-success {
+    background-color: var(--status-active-bg) !important;
+    color: var(--status-active-txt) !important;
+    border: 1px solid rgba(30, 126, 52, 0.2);
+}
+
+.card .badge.bg-primary,
+.table .badge.bg-primary,
+.modal .badge.bg-primary {
+    background-color: var(--status-active-bg) !important;
+    color: var(--status-active-txt) !important;
+    border: 1px solid rgba(30, 126, 52, 0.2);
+}
+
+/* --------------------------------------------------------------------------
+   9. PAGINACIÓN
+   -------------------------------------------------------------------------- */
+.pagination {
+    gap: 4px;
+}
+
+.page-link {
+    border-radius: var(--radius-sm) !important;
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    font-size: 0.825rem;
+    font-weight: 500;
+    padding: 0.35rem 0.75rem;
+    transition: all 0.2s ease;
+}
+
+/* Al pasar el cursor */
+.page-link:hover {
+    background-color: var(--light-green);
+    border-color: var(--soft-green);
+    color: var(--primary-green);
+}
+
+/* Página activa */
+.page-item.active .page-link,
+.page-link.bg-success {
+    background-color: var(--primary-green) !important;
+    border-color: var(--primary-green) !important;
+    color: var(--white) !important;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Páginas secundarias con clase text-success */
+.page-link.text-success {
+    color: var(--primary-green) !important;
+}
+
+/* Página deshabilitada */
+.page-item.disabled .page-link {
+    background-color: var(--bg-gray);
+    border-color: var(--border-color);
+    color: #adb5bd;
+}
+
+/* --------------------------------------------------------------------------
+   10. ADAPTACIONES RESPONSIVAS
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+    .card-header,
+    .card-footer {
+        padding: 0.75rem 1rem;
+    }
+
+    .table thead th,
+    .table tbody td {
+        padding: 0.75rem 0.6rem;
+    }
+
+    #stepIndicator1,
+    #stepIndicator2,
+    #stepIndicator3 {
+        width: 30px;
+        height: 30px;
+        font-size: 0.8rem;
+    }
+}

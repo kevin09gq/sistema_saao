@@ -526,19 +526,16 @@ foreach ($empleadosJornaleros as $empleado) {
         $sheet->setCellValue('D' . $numeroFila, $salarioSemanal);
     }
 
-    // Agregar sueldo extra total
-    $sueldoExtraTotal = $empleado['sueldo_extra_total'] ?? 0;
-    if (!empty($sueldoExtraTotal) && $sueldoExtraTotal != 0) {
-        $sheet->setCellValue('E' . $numeroFila, $sueldoExtraTotal);
-    }
-
     // Percepciones extras dinámicas
     if (!empty($empleado['percepciones_extra']) && is_array($empleado['percepciones_extra'])) {
         foreach ($empleado['percepciones_extra'] as $extra) {
             $nombre = trim($extra['nombre'] ?? '');
             $cant = (float) ($extra['cantidad'] ?? 0);
             if ($nombre !== '' && $cant != 0) {
-                $key = mb_strtolower($nombre, 'UTF-8');
+                // Sanitizar el nombre igual que cuando se construyeron las columnas
+                $nombreSanitizado = preg_replace('/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/', '', $nombre);
+                $nombreSanitizado = mb_substr($nombreSanitizado, 0, 30, 'UTF-8');
+                $key = mb_strtolower($nombreSanitizado, 'UTF-8');
                 if (isset($mapExtrasCols[$key])) {
                     $colL = Coordinate::stringFromColumnIndex($mapExtrasCols[$key]);
                     $sheet->setCellValue($colL . $numeroFila, $cant);
@@ -610,7 +607,10 @@ foreach ($empleadosJornaleros as $empleado) {
             $nombre = trim($dextra['nombre'] ?? '');
             $cant = (float) ($dextra['cantidad'] ?? 0);
             if ($nombre !== '' && $cant != 0) {
-                $key = mb_strtolower($nombre, 'UTF-8');
+                // Sanitizar el nombre igual que cuando se construyeron las columnas
+                $nombreSanitizado = preg_replace('/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/', '', $nombre);
+                $nombreSanitizado = mb_substr($nombreSanitizado, 0, 30, 'UTF-8');
+                $key = mb_strtolower($nombreSanitizado, 'UTF-8');
                 if (isset($mapDeduccionesExtrasCols[$key])) {
                     $colL = Coordinate::stringFromColumnIndex($mapDeduccionesExtrasCols[$key]);
                     $sheet->setCellValue($colL . $numeroFila, $cant);

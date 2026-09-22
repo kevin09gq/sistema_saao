@@ -288,9 +288,7 @@ function aplicarConceptoExtraAEmpleados() {
         });
 
         // 4. Limpiar campos del formulario
-        $("#inputNombreConceptoExtra").val("");
-        $("#inputCantidadConceptoExtra").val("");
-        $("#selectTipoConceptoExtra").val("percepcion");
+        limpiarCamposModalAddConceptos();
 
         // 5. Actualizar la tabla principal de la nómina
         llenarTablaNomina();
@@ -302,9 +300,23 @@ function aplicarConceptoExtraAEmpleados() {
             "Concepto agregado correctamente a los empleados seleccionados."
         );
 
-        $("#modalAddConceptos").modal("hide");
+        // 7. Cerrar el modal
+        //$("#modalAddConceptos").modal("hide");
 
     });
 
 }
 
+//==========================================================
+// FUNCIÓN PARA LIMPIAR LOS CAMPOS DEL MODAL
+//==========================================================
+
+function limpiarCamposModalAddConceptos() {
+    $("#inputNombreConceptoExtra").val("");
+    $("#inputCantidadConceptoExtra").val("");
+    $("#selectTipoConceptoExtra").val("percepcion");
+    $("#txtBuscarEmpleadoAddConceptos").val("");
+    $('#checkTodosAddConceptos').prop('checked', false);
+    $('.check-empleado-add-conceptos').prop('checked', false);
+    empleadosSeleccionadosAddConceptos = [];
+}

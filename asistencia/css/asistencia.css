@@ -1,0 +1,612 @@
+:root {
+    --bg-body: #f8fafc;
+    --card-bg: #ffffff;
+    --text-main: #334155;
+    --text-muted: #64748b;
+    --border-color: #e2e8f0;
+
+    --soft-green: #f0fdf4;
+    --accent-green: #22c55e;
+    --dark-green: #15803d;
+
+    --soft-amber: #fffbeb;
+    --accent-amber: #f59e0b;
+
+    --soft-red: #fef2f2;
+    --accent-red: #ef4444;
+
+    --soft-gray: #f1f5f9;
+    --border-soft: #f1f5f9;
+}
+
+body {
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.asistencia-container {
+    padding-top: 1.5rem;
+    padding-bottom: 3rem;
+}
+
+/* Minimalist Filter Section */
+.filter-section {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+.form-label-custom {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    margin-bottom: 0.5rem;
+}
+
+.search-input-wrapper {
+    position: relative;
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.search-input-wrapper .form-control-custom {
+    padding-left: 2.2rem;
+    padding-right: 2.2rem;
+}
+
+.clear-search-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: color 0.15s ease, transform 0.15s ease;
+    z-index: 5;
+}
+
+.clear-search-icon:hover {
+    color: #ef4444;
+    transform: translateY(-50%) scale(1.15);
+}
+
+.form-control-custom,
+.form-select-custom {
+    background-color: var(--soft-gray);
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    transition: all 0.2s ease;
+}
+
+.form-control-custom:focus,
+.form-select-custom:focus {
+    background-color: #fff;
+    border-color: var(--accent-green);
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+    outline: none;
+}
+
+/* Excel Actions Bar */
+.excel-actions-bar {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+.btn-config-excel {
+    background: white;
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.btn-config-excel:hover {
+    border-color: var(--accent-amber);
+    color: #b45309;
+    background: var(--soft-amber);
+}
+
+.btn-generate-excel {
+    background: var(--accent-green);
+    border: 1px solid transparent;
+    color: white;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.btn-generate-excel:hover {
+    background: var(--dark-green);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+    transform: translateY(-1px);
+}
+
+/* Table Design */
+.table-wrapper {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    overflow: hidden;
+}
+
+.table-custom {
+    margin-bottom: 0;
+}
+
+.table-custom thead th {
+    background: #fff;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 1rem 1.25rem;
+}
+
+.table-custom tbody tr {
+    border-bottom: 1px solid var(--border-soft);
+    transition: background 0.15s ease;
+    cursor: pointer;
+}
+
+.table-custom tbody tr:last-child {
+    border-bottom: none;
+}
+
+.table-custom tbody tr:hover {
+    background-color: var(--soft-green);
+}
+
+.table-custom tbody tr.selected {
+    background-color: var(--soft-green);
+    border-left: 3px solid var(--accent-green);
+}
+
+.table-custom td {
+    padding: 0.9rem 1.25rem;
+    vertical-align: middle;
+    font-size: 0.925rem;
+}
+
+/* Checkbox Styling */
+.check-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.custom-check {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent-green);
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+/* Employee Column Styling */
+.emp-info-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.emp-initials {
+    width: 38px;
+    height: 38px;
+    background: var(--soft-green);
+    color: var(--dark-green);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.selected .emp-initials {
+    background: var(--accent-green);
+    color: white;
+}
+
+.emp-name-main {
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.emp-dept-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* Area Badge */
+.area-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--soft-gray);
+    color: var(--text-muted);
+    padding: 0.3rem 0.65rem;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 500;
+}
+
+.area-badge i {
+    font-size: 0.75rem;
+}
+
+/* Department Badge */
+.dept-badge {
+    display: inline-block;
+    background: var(--soft-gray);
+    color: var(--text-muted);
+    padding: 0.3rem 0.65rem;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 500;
+}
+
+/* Action Buttons */
+.btn-action {
+    background: white;
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    padding: 0.5rem 0.85rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.btn-action:hover {
+    border-color: var(--accent-green);
+    color: var(--dark-green);
+    background: var(--soft-green);
+}
+
+.btn-action i {
+    font-size: 1rem;
+}
+
+/* Status Badges */
+.badge-activo {
+    background: var(--soft-green);
+    color: var(--dark-green);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.badge-seguro {
+    background: var(--soft-amber);
+    color: #b45309;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.badge-baja {
+    background: var(--soft-red);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.badge-sin-seguro {
+    background: var(--soft-gray);
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+/* Pagination */
+.pagination-container {
+    padding: 1.25rem;
+    background: #fff;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-info {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.custom-pagination .page-link {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    margin: 0 2px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    padding: 0.4rem 0.8rem;
+}
+
+.custom-pagination .page-item.active .page-link {
+    background: var(--accent-green);
+    color: white;
+}
+
+.custom-pagination .page-link:hover:not(.active) {
+    background: var(--soft-gray);
+    color: var(--text-main);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .excel-actions-bar {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .btn-config-excel,
+    .btn-generate-excel {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   VISTA PREVIA DE HOJA DE EXCEL / IMPRESIÓN (DISEÑO PREMIUM)
+   ───────────────────────────────────────────────────────────── */
+.excel-preview-canvas {
+    background: #e9eef2 !important;
+    overflow-x: auto;
+    overflow-y: auto;
+    min-height: calc(100vh - 70px);
+}
+
+.excel-preview-sheet {
+    background: #ffffff;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #000000;
+    width: 100%;
+    max-width: 1320px;
+    margin: 0 auto;
+    border: 1px solid #d1d5db;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+    padding: 24px 30px;
+    overflow-x: auto;
+    transition: transform 0.2s ease;
+    transform-origin: top center;
+}
+
+.table-excel-preview {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #000000;
+    font-size: 11px;
+    background: #ffffff;
+    margin: 0 auto;
+}
+
+.table-excel-preview td,
+.table-excel-preview th {
+    border: 1px solid #000000;
+    padding: 3px 4px;
+    text-align: center;
+    vertical-align: middle;
+    box-sizing: border-box;
+}
+
+.table-excel-preview .excel-bg-yellow {
+    background-color: #FFFF00 !important;
+}
+
+.table-excel-preview .excel-no-border {
+    border: none !important;
+}
+
+.table-excel-preview .excel-border-black {
+    border: 1px solid #000000 !important;
+}
+
+.table-excel-preview .excel-num-cell {
+    text-align: right;
+    padding-right: 6px;
+    font-weight: bold;
+    font-size: 11px;
+    width: 36px;
+}
+
+.table-excel-preview .excel-name-cell {
+    text-align: left;
+    padding-left: 8px;
+    padding-right: 8px;
+    font-weight: bold;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.table-excel-preview .excel-header-dept {
+    font-size: 11px;
+    font-weight: bold;
+    text-align: left;
+    padding: 6px 4px;
+    border: none !important;
+}
+
+.table-excel-preview .excel-header-semana {
+    font-size: 13px;
+    font-weight: bold;
+    text-align: center;
+    letter-spacing: 0.5px;
+    padding: 6px 4px;
+    border: none !important;
+}
+
+.table-excel-preview .excel-header-empresa {
+    font-size: 11px;
+    font-weight: bold;
+    text-align: right;
+    padding: 6px 8px;
+    border: none !important;
+}
+
+.table-excel-preview .excel-header-sem {
+    font-size: 11px;
+    font-weight: bold;
+    text-align: center;
+    border: 1px solid #000000 !important;
+    padding: 4px 8px;
+}
+
+.table-excel-preview .excel-header-dia {
+    font-size: 11px;
+    font-weight: bold;
+    text-align: center;
+    height: 24px;
+}
+
+.table-excel-preview .excel-sub-header {
+    font-size: 9.5px;
+    text-align: center;
+    height: 20px;
+}
+
+.table-excel-preview .excel-row-emp {
+    height: 23px;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   REGLAS PARA IMPRESIÓN DIRECTA (@media print)
+   ───────────────────────────────────────────────────────────── */
+@media print {
+    body * {
+        visibility: hidden !important;
+    }
+
+    #modalPreviewExcel,
+    #modalPreviewExcel .modal-content,
+    #modalPreviewExcel .modal-body,
+    #modalPreviewExcel .excel-preview-sheet,
+    #modalPreviewExcel .excel-preview-sheet * {
+        visibility: visible !important;
+    }
+
+    #modalPreviewExcel {
+        position: fixed !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        overflow: visible !important;
+        z-index: 999999 !important;
+    }
+
+    #modalPreviewExcel .modal-dialog {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    #modalPreviewExcel .modal-content {
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+    }
+
+    #modalPreviewExcel .preview-toolbar,
+    #modalPreviewExcel .btn-close {
+        display: none !important;
+    }
+
+    #modalPreviewExcel .excel-preview-canvas {
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: visible !important;
+    }
+
+    #modalPreviewExcel .excel-preview-sheet {
+        border: none !important;
+        box-shadow: none !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        transform: none !important;
+    }
+
+    .table-excel-preview {
+        width: 100% !important;
+        font-size: 10px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .table-excel-preview .excel-bg-yellow {
+        background-color: #FFFF00 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    @page {
+        size: letter landscape;
+        margin: 0.4cm;
+    }
+}

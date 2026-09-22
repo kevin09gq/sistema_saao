@@ -138,25 +138,12 @@ function renderTicketCortePdf($pdf, $empleado, $meta) {
     
     // Construir lista de rejas
     $rejasList = [];
-    $rejasList[] = ['label' => 'Total de rejas', 'monto' => $totalRejas . ' rejas'];
+    $rejasList[] = ['label' => 'Total de rejas', 'monto' => $totalRejas];
     
-    $rejasPorPrecio = isset($empleado['rejasPorPrecio']) && is_array($empleado['rejasPorPrecio']) ? $empleado['rejasPorPrecio'] : [];
-    if (!empty($rejasPorPrecio)) {
-        ksort($rejasPorPrecio, SORT_NUMERIC);
-        foreach ($rejasPorPrecio as $precio => $cantidad) {
-            if ($cantidad > 0) {
-                $rejasList[] = [
-                    'label' => 'Precio por reja $ ' . money($precio) . ' (' . (int)$cantidad . ' rejas)',
-                    'monto' => '$ ' . money($cantidad * $precio)
-                ];
-            }
-        }
-    } else {
-        $idx = 1;
-        foreach ($preciosUnicos as $precio) {
-            $rejasList[] = ['label' => 'Precio por reja ' . $idx, 'monto' => '$ ' . money($precio)];
-            $idx++;
-        }
+    $idx = 1;
+    foreach ($preciosUnicos as $precio) {
+        $rejasList[] = ['label' => 'Precio por reja ' . $idx, 'monto' => '$ ' . money($precio)];
+        $idx++;
     }
 
     // Renderizar tabla de Rejas
@@ -545,6 +532,9 @@ function renderTicketPdf($pdf, $emp, $extra, $meta) {
     // Departamento del JSON (eliminar número inicial)
     $departamento = safeText($emp['departamento'] ?? '');
     $departamento = preg_replace('/^\d+\s*/', '', $departamento);
+    $area = safeText($extra['nombre_area'] ?? ($emp['area'] ?? ($emp['nombre_area'] ?? '')));
+    $departamentoArea = $departamento;
+    if ($area !== '') $departamentoArea .= ' - ' . $area;
 
     $puesto      = safeText($extra['nombre_puesto'] ?? '');
     $fechaIngreso = safeText($extra['fecha_alta_empresa'] ?? '');
@@ -725,8 +715,13 @@ function renderTicketPdf($pdf, $emp, $extra, $meta) {
     $nombreFontSize = strlen($nombreCompleto) > 35 ? 8 : (strlen($nombreCompleto) >= 31 ? 13 : 15);
     $textB(12, 22, $pt($nombreFontSize), $nombreCompleto);
 
-    $deptoFontSize = 14;
-    $text(310, 22, $pt($deptoFontSize), $departamento);
+    $deptoFontSize = 16;
+    $pdf->SetFont('helvetica', '', $pt($deptoFontSize));
+    while ($pdf->GetStringWidth($departamentoArea) > $dot(205) && $deptoFontSize > 7) {
+        $deptoFontSize -= 0.5;
+        $pdf->SetFont('helvetica', '', $pt($deptoFontSize));
+    }
+    $text(310, 22, $pt($deptoFontSize), $departamentoArea);
 
     $esSinSeguro = !empty($emp['sin_seguro_ticket']) || 
                    (isset($emp['seguroSocial']) && $emp['seguroSocial'] === false) || 
@@ -1074,7 +1069,6 @@ if (isset($data['seleccion']) && $data['seleccion'] === true) {
 
         if ($depto === 'CORTE') {
             $totalRejas = 0; $efectivoRejas = 0; $preciosUnicos = [];
-            $rejasPorPrecio = [];
             $diasConCorte = [];
 
             foreach ($consolidado['rejasArray'] as $r) {
@@ -1085,15 +1079,8 @@ if (isset($data['seleccion']) && $data['seleccion'] === true) {
                     }
                 }
                 $totalRejas += $cantT;
-                $precio = $r['precio'] ?? 0;
-                $efectivoRejas += ($cantT * $precio);
-                if (!in_array($precio, $preciosUnicos)) $preciosUnicos[] = $precio;
-
-                $precioKey = (string)$precio;
-                if (!isset($rejasPorPrecio[$precioKey])) {
-                    $rejasPorPrecio[$precioKey] = 0;
-                }
-                $rejasPorPrecio[$precioKey] += $cantT;
+                $efectivoRejas += ($cantT * ($r['precio'] ?? 0));
+                if (!in_array($r['precio'], $preciosUnicos)) $preciosUnicos[] = $r['precio'];
 
                 if ($cantT > 0 && isset($r['ticket']['fecha'])) {
                     $dia = obtenerDiaSemanaDesdeFechaPhp($r['ticket']['fecha']);
@@ -1117,7 +1104,6 @@ if (isset($data['seleccion']) && $data['seleccion'] === true) {
             $consolidado['totalRejas'] = $totalRejas;
             $consolidado['efectivoRejas'] = $efectivoRejas;
             $consolidado['preciosUnicos'] = $preciosUnicos;
-            $consolidado['rejasPorPrecio'] = $rejasPorPrecio;
             $consolidado['diasTrabajados'] = $diasTrabajados;
             $consolidado['totalNomina'] = $totalNomina;
             $consolidado['preciosPorDia'] = $preciosPorDia;
@@ -1216,24 +1202,27 @@ foreach ($empleados as $emp) {
         'nombre_puesto'  => $emp['puesto'] ?? '',
         'fecha_alta_empresa'  => $emp['fecha_alta_empresa'] ?? '',
         'salario_semanal' => $emp['salario_semanal'] ?? 0,
-        'salario_diario'  => $emp['salario_diario'] ?? 0
+        'salario_diario'  => $emp['salario_diario'] ?? 0,
+        'nombre_area' => $emp['area'] ?? ($emp['nombre_area'] ?? '')
     ];
 
     if ($clave !== '') {
-        $sql = "SELECT p.nombre_puesto, e.fecha_alta_empresa, e.salario_semanal, e.salario_diario 
+        $sql = "SELECT p.nombre_puesto, e.fecha_alta_empresa, e.salario_semanal, e.salario_diario, a.nombre_area
                 FROM info_empleados e 
-                JOIN puestos_especiales p ON e.id_puestoEspecial = p.id_puestoEspecial 
+                LEFT JOIN puestos_especiales p ON e.id_puestoEspecial = p.id_puestoEspecial 
+                LEFT JOIN areas a ON e.id_area = a.id_area
                 WHERE e.clave_empleado = ? AND e.id_empresa = ? AND e.id_status = 1";
         $stmt = $conexion->prepare($sql);
         $stmt->bind_param("si", $clave, $id_empresa);
         $stmt->execute();
-        $stmt->bind_result($nombre_puesto, $fecha_alta_empresa, $salario_semanal, $salario_diario);
+        $stmt->bind_result($nombre_puesto, $fecha_alta_empresa, $salario_semanal, $salario_diario, $nombre_area);
         if ($stmt->fetch()) {
             $extra = [
                 'nombre_puesto'  => $nombre_puesto,
                 'fecha_alta_empresa'  => $fecha_alta_empresa,
                 'salario_semanal' => $salario_semanal,
-                'salario_diario'  => $salario_diario
+                'salario_diario'  => $salario_diario,
+                'nombre_area' => $nombre_area
             ];
         }
         $stmt->close();

@@ -92,25 +92,12 @@ function renderTicketCortePdf($pdf, $empleado, $meta) {
     
     // Construir lista de rejas
     $rejasList = [];
-    $rejasList[] = ['label' => 'Total de rejas', 'monto' => $totalRejas . ' rejas'];
+    $rejasList[] = ['label' => 'Total de rejas', 'monto' => $totalRejas];
     
-    $rejasPorPrecio = isset($empleado['rejasPorPrecio']) && is_array($empleado['rejasPorPrecio']) ? $empleado['rejasPorPrecio'] : [];
-    if (!empty($rejasPorPrecio)) {
-        ksort($rejasPorPrecio, SORT_NUMERIC);
-        foreach ($rejasPorPrecio as $precio => $cantidad) {
-            if ($cantidad > 0) {
-                $rejasList[] = [
-                    'label' => 'Precio por reja $ ' . money($precio) . ' (' . (int)$cantidad . ' rejas)',
-                    'monto' => '$ ' . money($cantidad * $precio)
-                ];
-            }
-        }
-    } else {
-        $idx = 1;
-        foreach ($preciosUnicos as $precio) {
-            $rejasList[] = ['label' => 'Precio por reja ' . $idx, 'monto' => '$ ' . money($precio)];
-            $idx++;
-        }
+    $idx = 1;
+    foreach ($preciosUnicos as $precio) {
+        $rejasList[] = ['label' => 'Precio por reja ' . $idx, 'monto' => '$ ' . money($precio)];
+        $idx++;
     }
 
     // Renderizar tabla de Rejas
@@ -423,6 +410,9 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
     $clave = safeText($emp['clave'] ?? '');
     $departamento = safeText($extra['nombre_departamento'] ?? ($emp['departamento'] ?? ''));
     $departamento = preg_replace('/^\d+\s*/', '', $departamento);
+    $area = safeText($extra['nombre_area'] ?? ($emp['area'] ?? ($emp['nombre_area'] ?? '')));
+    $departamentoArea = $departamento;
+    if ($area !== '') $departamentoArea .= ' - ' . $area;
     $puesto = safeText($extra['nombre_puesto'] ?? ($emp['puesto'] ?? ''));
     $fechaIngreso = safeText($extra['fecha_alta_empresa'] ?? ($emp['fecha_alta_empresa'] ?? ''));
     $fechaIngreso = str_replace('-', '/', $fechaIngreso);
@@ -534,7 +524,13 @@ function renderTicketPdf(TCPDF $pdf, $emp, $extra, $meta) {
     $nombreCompleto = $clave . ' ' . $nombre;
     $nombreFontSize = strlen($nombreCompleto) > 35 ? 8 : (strlen($nombreCompleto) >= 31 ? 13 : 15);
     $textB(12, 22, $pt($nombreFontSize), $nombreCompleto);
-    $text(310, 22, $pt(15), $departamento);
+    $fontDepartamentoArea = 15;
+    $pdf->SetFont('helvetica', '', $pt($fontDepartamentoArea));
+    while ($pdf->GetStringWidth($departamentoArea) > $dot(205) && $fontDepartamentoArea > 7) {
+        $fontDepartamentoArea -= 0.5;
+        $pdf->SetFont('helvetica', '', $pt($fontDepartamentoArea));
+    }
+    $text(310, 22, $pt($fontDepartamentoArea), $departamentoArea);
 
     $esSinSeguro = !empty($emp['sin_seguro_ticket']) || 
                    (isset($emp['seguroSocial']) && $emp['seguroSocial'] === false) || 
@@ -795,9 +791,6 @@ if (isset($data['seleccion']) && $data['seleccion'] === true) {
         if ($depto === 'CORTE') {
             // Re-calcular totales para Corte (Lógica similar a procesarTicketsCorteCombinado de JS)
             $totalRejas = 0; $efectivoRejas = 0; $preciosUnicos = [];
-            $rejasPorPrecio = [];
-            $diasConCorte = [];
-
             foreach ($consolidado['rejasArray'] as $r) {
                 $cantT = 0;
                 if (isset($r['ticket']['datosRejas'])) {
@@ -806,45 +799,27 @@ if (isset($data['seleccion']) && $data['seleccion'] === true) {
                     }
                 }
                 $totalRejas += $cantT;
-                $precio = $r['precio'] ?? 0;
-                $efectivoRejas += ($cantT * $precio);
-                if (!in_array($precio, $preciosUnicos)) $preciosUnicos[] = $precio;
-
-                $precioKey = (string)$precio;
-                if (!isset($rejasPorPrecio[$precioKey])) {
-                    $rejasPorPrecio[$precioKey] = 0;
-                }
-                $rejasPorPrecio[$precioKey] += $cantT;
-
-                if ($cantT > 0 && isset($r['ticket']['fecha'])) {
-                    $dia = obtenerDiaSemanaDesdeFechaPhp($r['ticket']['fecha']);
-                    if ($dia) $diasConCorte[$dia] = true;
-                }
+                $efectivoRejas += ($cantT * ($r['precio'] ?? 0));
+                if (!in_array($r['precio'], $preciosUnicos)) $preciosUnicos[] = $r['precio'];
             }
             
             $diasTrabajados = 0; $totalNomina = 0; $preciosPorDia = [];
-            $hayDiasConCorte = !empty($diasConCorte);
             foreach ($consolidado['nominaArray'] as $n) {
-                $nombreDia = normalizarDiaNominaPhp($n['dia'] ?? '');
                 $pago = toNumber($n['pago'] ?? 0);
-                if ($pago > 0 && (!$hayDiasConCorte || !empty($diasConCorte[$nombreDia]))) {
+                if ($pago > 0) {
                     $totalNomina += $pago;
                     $diasTrabajados++;
                     $preciosPorDia[] = $pago;
                 }
             }
             
-            $subtotal = $efectivoRejas + $totalNomina;
             $consolidado['totalRejas'] = $totalRejas;
             $consolidado['efectivoRejas'] = $efectivoRejas;
             $consolidado['preciosUnicos'] = $preciosUnicos;
-            $consolidado['rejasPorPrecio'] = $rejasPorPrecio;
             $consolidado['diasTrabajados'] = $diasTrabajados;
             $consolidado['totalNomina'] = $totalNomina;
             $consolidado['preciosPorDia'] = $preciosPorDia;
-            $consolidado['subtotal'] = $subtotal;
-            $consolidado['redondeo'] = round($subtotal) - $subtotal;
-            $consolidado['totalEfectivo'] = round($subtotal);
+            $consolidado['totalEfectivo'] = round($efectivoRejas + $totalNomina);
             
         } elseif ($depto === 'PODA') {
             // TICKET 1: PODA (Solo si hay movimientos de poda)
@@ -915,15 +890,16 @@ foreach ($empleados as $emp) {
         $pdf->AddPage(); renderTicketPodaPdf($pdf, $emp, $meta);
     } else {
         $clave = (string)($emp['clave'] ?? ''); $id_empresa = isset($emp['id_empresa']) ? intval($emp['id_empresa']) : 1;
-        $extra = ['nombre_puesto' => $emp['puesto'] ?? '', 'fecha_alta_empresa' => $emp['fecha_alta_empresa'] ?? '', 'salario_semanal' => $emp['salario_semanal'] ?? 0, 'salario_diario' => $emp['salario_diario'] ?? 0, 'nombre_departamento' => $emp['departamento'] ?? ''];
+        $extra = ['nombre_puesto' => $emp['puesto'] ?? '', 'fecha_alta_empresa' => $emp['fecha_alta_empresa'] ?? '', 'salario_semanal' => $emp['salario_semanal'] ?? 0, 'salario_diario' => $emp['salario_diario'] ?? 0, 'nombre_departamento' => $emp['departamento'] ?? '', 'nombre_area' => $emp['area'] ?? ($emp['nombre_area'] ?? '')];
         if ($clave !== '') {
-            $sql = "SELECT p.nombre_puesto, e.fecha_alta_empresa, e.salario_semanal, e.salario_diario, d.nombre_departamento 
+                $sql = "SELECT p.nombre_puesto, e.fecha_alta_empresa, e.salario_semanal, e.salario_diario, d.nombre_departamento, a.nombre_area
                     FROM info_empleados e 
-                    JOIN puestos_especiales p ON e.id_puestoEspecial = p.id_puestoEspecial 
+                    LEFT JOIN puestos_especiales p ON e.id_puestoEspecial = p.id_puestoEspecial 
                     JOIN departamentos d ON e.id_departamento = d.id_departamento
+                    LEFT JOIN areas a ON e.id_area = a.id_area
                     WHERE e.clave_empleado = ? AND e.id_empresa = ? AND e.id_status = 1";
             $stmt = $conexion->prepare($sql); $stmt->bind_param("si", $clave, $id_empresa); $stmt->execute();
-            $stmt->bind_result($np, $fi, $ss, $sd, $nd); if ($stmt->fetch()) $extra = ['nombre_puesto' => $np, 'fecha_alta_empresa' => $fi, 'salario_semanal' => $ss, 'salario_diario' => $sd, 'nombre_departamento' => $nd];
+            $stmt->bind_result($np, $fi, $ss, $sd, $nd, $na); if ($stmt->fetch()) $extra = ['nombre_puesto' => $np, 'fecha_alta_empresa' => $fi, 'salario_semanal' => $ss, 'salario_diario' => $sd, 'nombre_departamento' => $nd, 'nombre_area' => $na];
             $stmt->close();
         }
         $pdf->AddPage(); renderTicketPdf($pdf, $emp, $extra, $meta);

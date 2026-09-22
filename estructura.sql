@@ -89,10 +89,47 @@ CREATE TABLE rol (
 
 CREATE TABLE info_admin (
     id_admin INT AUTO_INCREMENT PRIMARY KEY,
+    nombre_admin VARCHAR(100) NOT NULL,
     id_rol INT NOT NULL,
     correo VARCHAR(100) NOT NULL,
+    id_status INT NOT NULL,
     password VARCHAR(255) NOT NULL,
-    FOREIGN KEY (id_rol) REFERENCES rol (id_rol) ON UPDATE CASCADE ON DELETE CASCADE
+    FOREIGN KEY (id_rol) REFERENCES rol (id_rol) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (id_status) REFERENCES status (id_status) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+-- =============================
+-- TABLAS DE MÓDULOS Y PERMISOS DINÁMICOS
+-- =============================
+
+-- Catálogo de Módulos del Sistema
+CREATE TABLE modulos (
+    id_modulo INT AUTO_INCREMENT PRIMARY KEY,
+    clave_modulo VARCHAR(50) NOT NULL UNIQUE,
+    nombre_modulo VARCHAR(100) NOT NULL,
+    categoria VARCHAR(50) NOT NULL DEFAULT 'General',
+    icono VARCHAR(50) DEFAULT 'bi-folder',
+    descripcion VARCHAR(255) NULL
+);
+
+-- Catálogo de Permisos y Acciones Específicas por Módulo
+CREATE TABLE permisos_modulo (
+    id_permiso INT AUTO_INCREMENT PRIMARY KEY,
+    id_modulo INT NOT NULL,
+    clave_permiso VARCHAR(60) NOT NULL UNIQUE,
+    nombre_permiso VARCHAR(100) NOT NULL,
+    descripcion VARCHAR(255) NULL,
+    FOREIGN KEY (id_modulo) REFERENCES modulos (id_modulo) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+-- Asignación de Permisos Específicos a Usuarios
+CREATE TABLE usuario_permisos (
+    id_admin INT NOT NULL,
+    id_permiso INT NOT NULL,
+    fecha_asignacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id_admin, id_permiso),
+    FOREIGN KEY (id_admin) REFERENCES info_admin (id_admin) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (id_permiso) REFERENCES permisos_modulo (id_permiso) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- =============================
@@ -121,7 +158,7 @@ CREATE TABLE info_empleados (
     fecha_creacion DATE,
     fecha_vigencia DATE,
     salario_semanal DECIMAL(10, 2) DEFAULT 0,
-    salario_diario DECIMAL(18, 10) DEFAULT 0, 
+    salario_diario DECIMAL(18, 10) DEFAULT 0,
     id_puestoEspecial INT,
     id_departamento INT,
     id_area INT,
@@ -337,7 +374,6 @@ CREATE TABLE aguinaldos (
     PRIMARY KEY (id_aguinaldo)
 );
 
-
 -- =============================
 -- TABLAS DE VACACIONES LFT
 -- =============================
@@ -359,7 +395,6 @@ CREATE TABLE dias_vacaciones_lft (
     dias_vacaciones_correspondientes INT NOT NULL,
     FOREIGN KEY (id_version_vacaciones) REFERENCES versiones_vacaciones_lft (id_version_vacaciones) ON UPDATE CASCADE ON DELETE CASCADE
 );
-
 
 -- ==========================================
 -- TABLAS DE CONTROL DE VACACIONES DE EMPLEADOS
@@ -792,15 +827,13 @@ CREATE TABLE podas_movimientos_palmilla (
 -- TABLAS DE NÓMINA PTU
 -- =============================
 CREATE TABLE repartos_utilidades (
-  id_utilidad INT NOT NULL AUTO_INCREMENT,
-  anio INT NOT NULL,
-  id_departamento INT NOT NULL,
-  json_empleados JSON NOT NULL,
-  fecha_creacion DATETIME,
-  PRIMARY KEY (id_utilidad),
-  FOREIGN KEY (id_departamento) REFERENCES departamentos(id_departamento)
-    ON DELETE CASCADE 
-    ON UPDATE CASCADE
+    id_utilidad INT NOT NULL AUTO_INCREMENT,
+    anio INT NOT NULL,
+    id_departamento INT NOT NULL,
+    json_empleados JSON NOT NULL,
+    fecha_creacion DATETIME,
+    PRIMARY KEY (id_utilidad),
+    FOREIGN KEY (id_departamento) REFERENCES departamentos (id_departamento) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- =============================
@@ -874,3 +907,16 @@ VALUES (2, 1, NULL, 12),
     (2, 21, 25, 28),
     (2, 26, 30, 30),
     (2, 31, 35, 32);
+
+-- ============================================================
+-- INSERTAR MÓDULOS DEL SISTEMA
+-- ============================================================
+INSERT INTO modulos (id_modulo, clave_modulo, nombre_modulo, categoria, icono, descripcion) VALUES
+(1, 'gestion_empleados', 'Gestión de Empleados', 'Empleados', 'bi-people', 'Registro, actualización y consulta de empleados')
+
+-- ============================================================
+-- INSERTAR PERMISOS ESPECÍFICOS POR MÓDULO
+-- ============================================================
+INSERT INTO permisos_modulo (id_modulo, clave_permiso, nombre_permiso, descripcion) VALUES
+-- Módulo 1: Gestión de Empleados
+(1, 'emp_ver', 'Ver Lista de Empleados', 'Permite acceder al módulo y consultar la tabla de empleados'),

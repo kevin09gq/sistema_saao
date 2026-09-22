@@ -158,9 +158,8 @@
     background: linear-gradient(135deg, #fafbff 0%, #f0f9ff 100%) !important;
 }
 
-/* Tamaño del logo - sobrescribir Bootstrap pero mantener funcionalidad */
-.navbar-brand .rounded-circle,
-.rounded-circle {
+/* Tamaño del logo en el navbar */
+.navbar-brand .rounded-circle {
     width: 55px !important;
     /* Reducir tamaño del logo para la navbar más pequeña */
     height: 55px !important;
@@ -174,8 +173,7 @@
     border-radius: 50% !important;
 }
 
-.navbar-brand .rounded-circle:hover,
-.rounded-circle:hover {
+.navbar-brand .rounded-circle:hover {
     border-color: rgba(148, 163, 184, 0.4) !important;
     transform: scale(1.05) !important;
 }
@@ -191,7 +189,7 @@
         gap: 8px !important;
     }
 
-    .rounded-circle {
+    .navbar-brand .rounded-circle {
         width: 55px !important;
         height: 55px !important;
     }
@@ -230,7 +228,7 @@
         font-size: 1.1rem !important;
     }
 
-    .rounded-circle {
+    .navbar-brand .rounded-circle {
         width: 50px !important;
         height: 50px !important;
     }
@@ -337,13 +335,15 @@
     border: 1px solid rgba(148, 163, 184, 0.08) !important;
 }
 
-.dropdown-item {
+.navbar-custom .dropdown-item,
+.submenu .dropdown-item {
     color: #334155 !important;
     padding: 8px 14px !important;
     font-weight: 600 !important;
 }
 
-.dropdown-item:hover {
+.navbar-custom .dropdown-item:hover,
+.submenu .dropdown-item:hover {
     background: rgba(34, 197, 94, 0.06) !important;
     color: #065f46 !important;
 }

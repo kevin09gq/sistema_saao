@@ -26,8 +26,10 @@
                         <span class="link-text">Empleados</span>
                     </a>
                     <ul class="submenu dropdown-menu" aria-labelledby="empleadosDropdown">
-                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/empleados/views/form_actualizar_empleado.php">Actualizar Empleado</a></li>
-                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/empleados/views/form_registro.php">Registrar Empleado</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/gestion_empleados/empleados/views/empleados.php">Actualizar Empleado</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/gestion_empleados/registro/views/registro.php">Registrar Empleado</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/expedientes/views/expedientes.php">Expedientes</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/asistencia/views/asistencia.php">Lista de Asistencia</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/claves_autorizacion/views/autorizacion.php">Claves de Autorización</a></li>
                     </ul>
                 </li>
@@ -62,7 +64,7 @@
                     </a>
                     <ul class="submenu dropdown-menu" aria-labelledby="nominasDropdown">
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_40lbs/generacion/views/nomina_40lbs.php">40 lbs</a></li>
-                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_10lbs/views/nomina_10lbs.php">10 lbs</a></li>
+                        <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_10lbs/generacion/views/nomina_10lbs.php">10 lbs</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_confianza/generacion/views/nomina_confianza.php">Confianza</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_relicario/generacion/views/nomina_relicario.php">Rancho Relicario</a></li>
                         <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_pilar/generacion/views/nomina_pilar.php">Rancho Pilar</a></li>
@@ -75,6 +77,7 @@
                             <a class="dropdown-item dropdown-toggle" href="#">Historial Nominas</a>
                             <ul class="submenu dropdown-menu">
                                 <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_40lbs/historial/views/historial_40lbs.php">40 lbs</a></li>
+                                <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_10lbs/historial/views/historial_10lbs.php">10 lbs</a></li>   
                                 <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_confianza/historial/views/historial_confianza.php">Confianza</a></li>
                                 <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_relicario/historial/views/historial_relicario.php">Relicario</a></li>
                                 <li><a class="dropdown-item" href="<?= $rutaRaiz ?>/nomina_pilar/historial/views/historial_pilar.php">Pilar</a></li>
@@ -92,6 +95,15 @@
                         <span class="link-text">Configuración</span>
                     </a>
                 </li>
+
+                <?php if (function_exists('tienePermiso') && tienePermiso('admin_ver')): ?>
+                <li class="menu-item nav-item">
+                    <a href="<?= $rutaRaiz ?>/admin/views/panel_administrativo.php" class="menu-link nav-link text-warning" data-page="admin">
+                        <i class="bi bi-shield-lock-fill me-2"></i>
+                        <span class="link-text">Panel Admin</span>
+                    </a>
+                </li>
+                <?php endif; ?>
 
                 <!-- Botón de Notificaciones en el Navbar -->
                 <li class="menu-item nav-item">

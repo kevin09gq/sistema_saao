@@ -414,36 +414,36 @@ $(document).ready(function () {
 
 function procesarTicketsCorteCombinado(nombre, rejasArray, datoNomina) {
     let totalRejas = 0;
-    let rejasConPrecio = [];
-    let rejasPorPrecio = {};
+    let rejasConPrecio = []; // Array de {cantidad, precio}
     let diasTrabajados = 0;
-    let preciosPorDia = [];
-    let diasConCorte = {};
+    let preciosPorDia = []; // Array de precios de nómina
+    
+    let diasConCorte = {}; // Para saber qué días tuvieron rejas > 0
 
+    // PASO 1 & 2: Procesar todas las REJAS - sumar cantidades y guardar precios
     if (Array.isArray(rejasArray) && rejasArray.length > 0) {
         rejasArray.forEach(rInfo => {
             const t = rInfo.ticket;
             let cantidadTicket = 0;
             (t.datosRejas || []).forEach(tr => {
-                cantidadTicket += Number(tr.cantidad || 0);
-                totalRejas += Number(tr.cantidad || 0);
+                cantidadTicket += tr.cantidad;
+                totalRejas += tr.cantidad;
             });
-
+            
+            // Guardar cantidad y precio de esta reja, y registrar el día
             if (cantidadTicket > 0) {
-                const diaSemana = obtenerDiaSemanaDesdeFecha(t.fecha);
+                const diaSemana = obtenerDiaSemana(t.fecha);
                 if (diaSemana) diasConCorte[diaSemana] = true;
-
+                
                 rejasConPrecio.push({
                     cantidad: cantidadTicket,
                     precio: rInfo.precio || 0
                 });
-
-                const precioKey = String(rInfo.precio || 0);
-                rejasPorPrecio[precioKey] = (rejasPorPrecio[precioKey] || 0) + cantidadTicket;
             }
         });
     }
 
+    // Eliminar precios duplicados de reja
     const preciosUnicos = [];
     const preciosYaAgregados = new Set();
     rejasConPrecio.forEach(rp => {
@@ -454,6 +454,7 @@ function procesarTicketsCorteCombinado(nombre, rejasArray, datoNomina) {
         }
     });
 
+    // PASO 3: Calcular Efectivo rejas (Suma de todas las rejas)
     let efectivoRejas = 0;
     if (rejasConPrecio.length > 0) {
         rejasConPrecio.forEach(rp => {
@@ -461,12 +462,15 @@ function procesarTicketsCorteCombinado(nombre, rejasArray, datoNomina) {
         });
     }
 
+    // PASO 4 & 5: Procesar NOMINA - contar días y sumar pagos (SOLO si hubo cortes ese día)
     let totalNomina = 0;
-    const hayDiasConCorte = Object.keys(diasConCorte).length > 0;
     if (datoNomina && Array.isArray(datoNomina)) {
         datoNomina.forEach(n => {
+            const nombreDia = String(n.dia || '').toLowerCase();
             const pago = parseFloat(n.pago) || 0;
-            if (pago > 0) {
+            
+            // Solo cuenta el día de nómina si en ese mismo día hubo corte de rejas
+            if (pago > 0 && diasConCorte[nombreDia]) {
                 preciosPorDia.push(pago);
                 totalNomina += pago;
                 diasTrabajados++;
@@ -474,19 +478,19 @@ function procesarTicketsCorteCombinado(nombre, rejasArray, datoNomina) {
         });
     }
 
+    // PASO 6: Calcular total efectivo
     const subtotal = efectivoRejas + totalNomina;
     const totalEfectivo = Math.round(subtotal);
     const redondeo = totalEfectivo - subtotal;
-
+    
     return {
         nombre,
         concepto: 'REJA_NOMINA',
         totalRejas,
-        preciosUnicos,
-        rejasPorPrecio,
+        preciosUnicos, // Array con precios únicos de reja
         efectivoRejas,
         diasTrabajados,
-        preciosPorDia,
+        preciosPorDia, // Array de precios individuales
         totalNomina,
         subtotal,
         redondeo,
@@ -575,54 +579,9 @@ function procesarExtrasParaTicket(nombre, movsExtras, original) {
     };
 }
 
-function normalizarDiaNomina(dia) {
-    if (!dia) return '';
-    const d = String(dia).trim().toLowerCase()
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-
-    const alias = {
-        dom: 'domingo', domingo: 'domingo',
-        lun: 'lunes', lunes: 'lunes',
-        mar: 'martes', martes: 'martes',
-        mie: 'miercoles', miercoles: 'miercoles',
-        jue: 'jueves', jueves: 'jueves',
-        vie: 'viernes', viernes: 'viernes',
-        sab: 'sabado', sabado: 'sabado'
-    };
-    return alias[d] || d;
-}
-
-function obtenerDiaSemanaDesdeFecha(fechaStr) {
-    if (!fechaStr) return '';
-    const s = String(fechaStr).trim();
-
-    if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
-        const [a, m, d] = s.split('-').map(Number);
-        const date = new Date(a, m - 1, d);
-        const dias = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
-        return normalizarDiaNomina(dias[date.getDay()]);
-    }
-
-    if (s.includes('/')) {
-        const meses = {
-            Ene: 0, Feb: 1, Mar: 2, Abr: 3, May: 4, Jun: 5,
-            Jul: 6, Ago: 7, Sep: 8, Oct: 9, Nov: 10, Dic: 11
-        };
-        const partes = s.split('/');
-        if (partes.length === 3) {
-            const [dia, mesStr, anio] = partes;
-            const mes = meses[mesStr];
-            if (mes !== undefined) {
-                const date = new Date(Number(anio), mes, Number(dia));
-                const dias = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
-                return normalizarDiaNomina(dias[date.getDay()]);
-            }
-        }
-    }
-
-    return normalizarDiaNomina(s);
-}
-
 function obtenerDiaSemana(fechaStr) {
-    return obtenerDiaSemanaDesdeFecha(fechaStr);
+    if (!fechaStr) return '';
+    const [a, m, d] = fechaStr.split('-').map(Number);
+    const date = new Date(a, m - 1, d);
+    return ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'][date.getDay()];
 }

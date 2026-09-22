@@ -184,7 +184,7 @@ function actualizarEstilosFiltrosConfianza() {
 }
 
 function limpiarCampoBusquedaTicketsConfianza() {
-    $('#buscar_empleado_ticket').val('').trigger('input');
+    $('#buscar_empleado_ticket').val('').trigger('input').focus();
     $('#btn_limpiar_busqueda').hide();
 }
 
@@ -249,7 +249,8 @@ async function generarTicketsSeleccionadosConfianza() {
         año: año
     };
 
-    $('#modal_seleccion_tickets').modal('hide');
+    // Se mantiene abierto el modal para que el usuario pueda seguir seleccionando
+    // $('#modal_seleccion_tickets').modal('hide');
 
     Swal.fire({
         title: 'Generando tickets...',
@@ -345,7 +346,8 @@ async function generarTicketsNombreSeleccionadosConfianza() {
         año: año
     };
 
-    $('#modal_seleccion_tickets').modal('hide');
+    // Se mantiene abierto el modal para que el usuario pueda seguir seleccionando
+    // $('#modal_seleccion_tickets').modal('hide');
 
     Swal.fire({
         title: 'Generando tickets de nombre...',
@@ -391,6 +393,8 @@ $(document).ready(function () {
         filtroSeguroActivoConfianza = 'todos';
         filtroDepartamentoActivoConfianza = 'todos';
         $('#filtro_departamento_ticket_confianza').val('todos');
+        $('#buscar_empleado_ticket').val('');
+        $('#btn_limpiar_busqueda').hide();
         actualizarEstilosFiltrosConfianza();
         cargarEmpleadosParaTicketsConfianza();
         $('#modal_seleccion_tickets').modal('show');

@@ -4,7 +4,7 @@
 <head>
     <?php
     include "../config/config.php";
-    verificarNoSesion(); // Si ya está logueado, redirigir al index
+    verificarNoSesion(); // Si ya inició sesión, redirigir al inicio
     ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,14 +12,15 @@
     <link rel="icon" href="<?= ICONO_SISTEMA ?>" />
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <link rel="stylesheet" href="login.css">
-     <!-- SweetAlert2 CSS -->
+    <!-- Librería SweetAlert2 -->
     <script src="<?= SWEETALERT ?>"></script>
 </head>
 
 <body>
     <div class="login-wrapper">
-        <!-- Left Column - Login Form Section -->
-        <div class="login-box" id="loginForm">
+
+        <!-- Sección izquierda: formulario de inicio de sesión -->
+        <div class="login-box" id="formularioInicioSesion">
             <div class="logo-container">
                 <img src="../public/img/logo.jpg" alt="CITRICOS SAAO" class="logo">
                 <h1>CITRICOS SAAO</h1>
@@ -28,34 +29,34 @@
             <h2>Iniciar Sesión</h2>
             <p class="form-description">Ingresa tus credenciales para acceder al sistema</p>
 
-            <form class="login-form" action="#" method="POST">
+            <div id="formularioInicioSesion">
                 <div class="form-group">
                     <div class="input-group">
                         <i class="bi bi-envelope-at"></i>
-                        <input type="email" name="email" placeholder="Correo electrónico" required>
+                        <input type="email" name="email" placeholder="Correo electrónico" required id="inputCorreo">
                     </div>
                 </div>
 
                 <div class="form-group">
                     <div class="input-group">
                         <i class="bi bi-lock"></i>
-                        <input type="password" name="password" placeholder="Contraseña" required>
+                        <input type="password" name="password" placeholder="Contraseña" required id="inputPassword">
                         <button type="button" class="toggle-password">
                             <i class="bi bi-eye"></i>
                         </button>
                     </div>
                 </div>
 
-                <button type="submit" class="login-button">Iniciar Sesión</button>
+                <button id="btnIniciarSesion" class="login-button">Iniciar Sesión</button>
 
                 <div class="form-footer">
-                    <a href="#" class="forgot-password" id="showRecovery">¿Olvidaste tu contraseña?</a>
+                    <a href="#" class="forgot-password" id="enlaceRecuperarContrasena">¿Olvidaste tu contraseña?</a>
                 </div>
-            </form>
+            </div>
         </div>
 
-        <!-- Left Column - Recovery Form Section (Hidden by default) -->
-        <div class="login-box recovery-box" id="recoveryForm">
+        <!-- Sección izquierda: formulario de recuperación, oculto inicialmente -->
+        <div class="login-box recovery-box" id="formularioRecuperacion">
             <div class="logo-container">
                 <img src="../public/img/logo.jpg" alt="CITRICOS SAAO" class="logo">
                 <h1>CITRICOS SAAO</h1>
@@ -71,17 +72,17 @@
                         <input type="email" name="email" placeholder="Correo electrónico" required>
                     </div>
                 </div>
-                
+
                 <button type="submit" class="login-button">Enviar Enlace de Recuperación</button>
             </form>
-            
+
             <div class="form-footer">
-                <a href="#" class="forgot-password" id="showLogin">← Volver al inicio de sesión</a>
+                <a href="#" class="forgot-password" id="enlaceVolverInicioSesion">← Volver al inicio de sesión</a>
             </div>
         </div>
 
-        <!-- Right Column - Visual Section for Login -->
-        <div class="visual-section" id="loginVisual">
+        <!-- Sección derecha: imagen del inicio de sesión -->
+        <div class="visual-section" id="visualInicioSesion">
             <div class="visual-content">
                 <img src="../public/img/botarga.png" alt="CITRICOS SAAO" class="logo">
                 <div class="welcome-text">
@@ -91,8 +92,8 @@
             </div>
         </div>
 
-        <!-- Right Column - Visual Section for Recovery (Hidden by default) -->
-        <div class="visual-section recovery-visual" id="recoveryVisual">
+        <!-- Sección derecha: imagen de recuperación, oculta inicialmente -->
+        <div class="visual-section recovery-visual" id="visualRecuperacion">
             <div class="visual-content">
                 <img src="../public/img/botarga.png" alt="CITRICOS SAAO" class="logo">
                 <div class="welcome-text">
@@ -103,68 +104,67 @@
         </div>
     </div>
 
-    <!-- jQuery -->
+    <!-- Librería jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
-    
-    <!-- Script de transición entre formularios -->
+
+    <!-- Transición entre los formularios -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const showRecoveryBtn = document.getElementById('showRecovery');
-            const showLoginBtn = document.getElementById('showLogin');
-            const loginForm = document.getElementById('loginForm');
-            const recoveryForm = document.getElementById('recoveryForm');
-            const loginVisual = document.getElementById('loginVisual');
-            const recoveryVisual = document.getElementById('recoveryVisual');
-            const wrapper = document.querySelector('.login-wrapper');
+            const enlaceRecuperarContrasena = document.getElementById('enlaceRecuperarContrasena');
+            const enlaceVolverInicioSesion = document.getElementById('enlaceVolverInicioSesion');
+            const formularioInicioSesion = document.getElementById('formularioInicioSesion');
+            const formularioRecuperacion = document.getElementById('formularioRecuperacion');
+            const visualInicioSesion = document.getElementById('visualInicioSesion');
+            const visualRecuperacion = document.getElementById('visualRecuperacion');
 
             // Mostrar formulario de recuperación
-            showRecoveryBtn.addEventListener('click', function(e) {
+            enlaceRecuperarContrasena.addEventListener('click', function(e) {
                 e.preventDefault();
-                
-                // Animar salida del login
-                loginForm.style.animation = 'slideOutLeft 0.5s ease forwards';
-                loginVisual.style.animation = 'slideOutRight 0.5s ease forwards';
-                
+
+                // Animar la salida del inicio de sesión
+                formularioInicioSesion.style.animation = 'slideOutLeft 0.5s ease forwards';
+                visualInicioSesion.style.animation = 'slideOutRight 0.5s ease forwards';
+
                 setTimeout(() => {
-                    loginForm.style.display = 'none';
-                    loginVisual.style.display = 'none';
-                    
+                    formularioInicioSesion.style.display = 'none';
+                    visualInicioSesion.style.display = 'none';
+
                     // Mostrar recuperación
-                    recoveryForm.style.display = 'flex';
-                    recoveryVisual.style.display = 'flex';
-                    
-                    // Animar entrada
-                    recoveryForm.style.animation = 'slideInRight 0.5s ease forwards';
-                    recoveryVisual.style.animation = 'slideInLeft 0.5s ease forwards';
+                    formularioRecuperacion.style.display = 'flex';
+                    visualRecuperacion.style.display = 'flex';
+
+                    // Animar la entrada
+                    formularioRecuperacion.style.animation = 'slideInRight 0.5s ease forwards';
+                    visualRecuperacion.style.animation = 'slideInLeft 0.5s ease forwards';
                 }, 500);
             });
 
-            // Mostrar formulario de login
-            showLoginBtn.addEventListener('click', function(e) {
+            // Mostrar el formulario de inicio de sesión
+            enlaceVolverInicioSesion.addEventListener('click', function(e) {
                 e.preventDefault();
-                
-                // Animar salida de recuperación
-                recoveryForm.style.animation = 'slideOutRight 0.5s ease forwards';
-                recoveryVisual.style.animation = 'slideOutLeft 0.5s ease forwards';
-                
+
+                // Animar la salida de recuperación
+                formularioRecuperacion.style.animation = 'slideOutRight 0.5s ease forwards';
+                visualRecuperacion.style.animation = 'slideOutLeft 0.5s ease forwards';
+
                 setTimeout(() => {
-                    recoveryForm.style.display = 'none';
-                    recoveryVisual.style.display = 'none';
-                    
-                    // Mostrar login
-                    loginForm.style.display = 'flex';
-                    loginVisual.style.display = 'flex';
-                    
-                    // Animar entrada
-                    loginForm.style.animation = 'slideInLeft 0.5s ease forwards';
-                    loginVisual.style.animation = 'slideInRight 0.5s ease forwards';
+                    formularioRecuperacion.style.display = 'none';
+                    visualRecuperacion.style.display = 'none';
+
+                    // Mostrar el inicio de sesión
+                    formularioInicioSesion.style.display = 'flex';
+                    visualInicioSesion.style.display = 'flex';
+
+                    // Animar la entrada
+                    formularioInicioSesion.style.animation = 'slideInLeft 0.5s ease forwards';
+                    visualInicioSesion.style.animation = 'slideInRight 0.5s ease forwards';
                 }, 500);
             });
         });
     </script>
-    
-    <!-- Script de validación -->
-    <script src="validar_login.js"></script>
+
+    <!-- Validación de los formularios -->
+    <script src="ValidarCredenciales.js"></script>
 </body>
 
 </html>

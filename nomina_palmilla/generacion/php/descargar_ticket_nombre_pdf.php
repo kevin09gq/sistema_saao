@@ -1,7 +1,7 @@
 <?php
 
+require_once __DIR__ . '/../../../conexion/conexion.php';
 require_once __DIR__ . '/../../../vendor/autoload.php';
-require_once __DIR__ . '/../../../vendor/tecnickcom/tcpdf/tcpdf.php';
 
 function safeText($s) {
     $s = (string)$s;

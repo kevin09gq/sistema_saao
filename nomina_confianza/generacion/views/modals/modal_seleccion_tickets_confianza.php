@@ -1,5 +1,41 @@
 
-<div class="modal fade" id="modal_seleccion_tickets" tabindex="-1" aria-labelledby="modal_seleccion_tickets_label" aria-hidden="true">
+<link rel="stylesheet" href="../css/modal_seleccion_tickets.css">
+
+<style>
+.btn-clear-inside {
+    position: absolute !important;
+    right: 12px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 28px !important;
+    height: 28px !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    border-radius: 50% !important;
+    background: transparent !important;
+    color: #8c98a4 !important;
+    display: none;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    z-index: 10 !important;
+    padding: 0 !important;
+    transition: all 0.2s ease !important;
+}
+.btn-clear-inside:hover {
+    background-color: rgba(220, 53, 69, 0.1) !important;
+    color: #dc3545 !important;
+    transform: translateY(-50%) scale(1.08) !important;
+}
+.btn-clear-inside i {
+    font-size: 1.15rem !important;
+    line-height: 1 !important;
+    pointer-events: none;
+}
+</style>
+
+<div class="modal fade" id="modal_seleccion_tickets" tabindex="-1" aria-labelledby="modal_seleccion_tickets_label" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
@@ -40,15 +76,15 @@
                     </div>
                     <div class="position-relative w-100" style="display: flex; align-items: center;">
                         <i class="bi bi-search position-absolute text-muted" style="left: 15px; z-index: 5; pointer-events: none;"></i>
-                        <input type="text" class="form-control" id="buscar_empleado_ticket" placeholder="Buscar empleado..." style="padding-left: 40px !important; padding-right: 40px !important; border-radius: 8px !important; height: 45px;">
-                        <button class="btn-clear-inside" type="button" id="btn_limpiar_busqueda" tabindex="-1" title="Limpiar búsqueda">
+                        <input type="text" class="form-control" id="buscar_empleado_ticket" placeholder="Buscar empleado..." style="padding-left: 42px !important; padding-right: 42px !important; border-radius: 8px !important; height: 45px;">
+                        <button class="btn-clear-inside" type="button" id="btn_limpiar_busqueda" tabindex="-1" title="Limpiar búsqueda" style="display: none; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: transparent; border: none; outline: none; cursor: pointer; padding: 0; z-index: 10;">
                             <i class="bi bi-x-circle-fill"></i>
                         </button>
                     </div>
                 </div>
                 
-                <div class="empleados-container" style="max-height: 400px; overflow-y: auto;">
-                    <div class="row" id="lista_empleados_tickets"></div>
+                <div class="empleados-container" style="max-height: 400px; overflow-y: auto; overflow-x: hidden;">
+                    <div class="row mx-0" id="lista_empleados_tickets"></div>
                 </div>
                 
                 <div class="mt-3">

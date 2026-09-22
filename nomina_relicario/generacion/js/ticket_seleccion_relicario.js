@@ -250,19 +250,14 @@ function cargarEmpleadosParaTickets(nominaData) {
         }
     });
 
-    // Ordenar: primero por departamento, luego con/sin seguro, luego por nombre
+    // Ordenar: primero con seguro (esSinSeguro = false), luego sin seguro (esSinSeguro = true)
     empleadosParaTickets.sort((a, b) => {
-        const deptoA = String(a.departamento || '').trim().toUpperCase();
-        const deptoB = String(b.departamento || '').trim().toUpperCase();
-        if (deptoA !== deptoB) {
-            return deptoA.localeCompare(deptoB, 'es', { numeric: true });
-        }
         const aSin = a.esSinSeguro || false;
         const bSin = b.esSinSeguro || false;
-        if (aSin !== bSin) {
-            return aSin ? 1 : -1;
+        if (aSin === bSin) {
+            return String(a.nombre || '').localeCompare(String(b.nombre || ''));
         }
-        return String(a.nombre || '').localeCompare(String(b.nombre || ''), 'es', { numeric: true });
+        return aSin ? 1 : -1;
     });
 
     // Cargar opciones en el select de departamentos
@@ -466,7 +461,6 @@ function generarTicketsSeleccionados() {
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-                $('#modal_seleccion_tickets').modal('hide');
                 Swal.fire({ icon: 'success', title: 'Tickets generados', timer: 1500, showConfirmButton: false });
             }
             btn.prop('disabled', false).html(original);
@@ -553,7 +547,6 @@ function generarTicketsNombreSeleccionados() {
                 document.body.appendChild(a);
                 a.click();
                 URL.revokeObjectURL(url);
-                $('#modal_seleccion_tickets').modal('hide');
                 Swal.fire({ icon: 'success', title: 'Tickets generados', timer: 1500, showConfirmButton: false });
             }
             btn.prop('disabled', false).html(original);

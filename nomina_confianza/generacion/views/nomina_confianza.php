@@ -27,7 +27,7 @@ verificarSesion(); // Proteger esta página
     <link rel="stylesheet" href="../css/tablaNomina.css">
     <link rel="stylesheet" href="../css/modalDetallesNomina.css">
     <link rel="stylesheet" href="../css/conceptos_totales.css">
-
+    <link rel="stylesheet" href="../css/modal_seleccion_tickets.css">
    
 
 </head>
