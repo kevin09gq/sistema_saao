@@ -1,5 +1,5 @@
 <?php
-include("../../conexion/conexion.php");
+require_once __DIR__ . "/../../conexion/conexion.php";
 /** @var mysqli $conexion */
 
 

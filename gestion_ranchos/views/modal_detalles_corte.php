@@ -91,9 +91,9 @@
 
             </div>
 
-            <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-sm btn-danger fw-bold"><i class="bi bi-file-earmark-pdf-fill me-2"></i>Exportar PDF</button>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-outline-success fw-bold"><i class="bi bi-file-earmark-pdf-fill me-2"></i>Exportar PDF</button>
             </div>
         </div>
     </div>

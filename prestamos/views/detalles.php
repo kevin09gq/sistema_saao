@@ -1,7 +1,12 @@
 <?php
-include __DIR__ . "/../../config/config.php";
+
+require_once __DIR__ . "/../../public/php/config.php";
+
+require_once __DIR__ . "/../../public/php/verificarSesion.php";
 
 verificarSesion();
+
+verificarPermiso("prestamos.ver_menu");
 
 $id = $_GET['id_empleado'] ?? null;
 
@@ -30,7 +35,7 @@ if (!$id) {
 
 <body class="bg-body-tertiary">
 
-    <?php include __DIR__ . '/../../public/views/navbar.php'; ?>
+    <?php require_once __DIR__ . "/../../navbar/navbar.php"; ?>
 
     <main>
 
@@ -166,7 +171,7 @@ if (!$id) {
 
                         <!-- Lado derecho -->
                         <div>
-                            <a class="btn btn-sm btn-outline-primary" href="nuevo.php">
+                            <a class="btn btn-sm btn-outline-primary" href="nuevo.php" id="btn-nuevo-prestamo" hidden>
                                 Nuevo
                             </a>
                         </div>
@@ -256,7 +261,7 @@ if (!$id) {
 
                         <!-- Lado derecho -->
                         <div>
-                            <button type="button" class="btn btn-sm btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#modalAbono">
+                            <button type="button" class="btn btn-sm btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#modalAbono" id="btn-abonar" hidden>
                                 Abonar
                             </button>
                         </div>
@@ -385,13 +390,19 @@ if (!$id) {
     <!-- Bootstrap JS -->
     <script src="<?= BOOTSTRAP_JS ?>"></script>
     <script src="<?= SWEETALERT ?>"></script>
+    <script src="<?= PERMISOS_JS ?>"></script>
 
     <script>
         window.ID_EMPLEADO_DETALLES = <?= (int)$id ?>;
     </script>
 
-    <script src="../js/detalles.js"></script>
+    <script>
+        // Pasar permisos de PHP a JavaScript
+        const permisosUsuario = <?php echo json_encode($_SESSION["permisos"] ?? []); ?>;
+    </script>
 
+    <script src="../js/detalles.js"></script>
+    <script src="../js/permisos.js"></script>
 </body>
 
 </html>

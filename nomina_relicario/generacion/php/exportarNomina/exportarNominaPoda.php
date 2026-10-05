@@ -2,7 +2,7 @@
 // LLAMAR A LA CONEXION
 require_once __DIR__ . '/../../../../conexion/conexion.php';
 // Incluir autoload de Composer
-require_once __DIR__ . '/../../../vendor/autoload.php';
+require_once __DIR__ . "/../../../../vendor/autoload.php";
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -239,7 +239,7 @@ function restarUnDia($fecha)
     $date = DateTime::createFromFormat("d/m/Y", "$dia/$mesNum/$anio");
 
     // Restar un día
-    $date->modify("-1 day");
+    $date->modify("0 day");
 
     // Buscar la abreviatura del mes resultante
     $mesAbrevNuevo = array_search((int)$date->format("m"), $meses);

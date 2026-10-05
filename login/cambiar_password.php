@@ -1,12 +1,17 @@
 <?php
-include "../config/config.php";
+include "../public/php/config.php";
+
+include "../public/php/verificarSesion.php";
+
+include "../conexion/conexion.php";
+
 verificarNoSesion();
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-include "../conexion/conexion.php";
+
 
 if (!isset($_GET['token']) || empty($_GET['token'])) {
     header("Location: login.php");
@@ -60,7 +65,7 @@ if (!isset($_SESSION['password_reset_token']) ||
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cambiar Contraseña - CITRICOS SAAO</title>
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
-    <link rel="stylesheet" href="login.css">
+    <link rel="stylesheet" href="css/login.css">
     <script src="<?= SWEETALERT ?>"></script>
     <script src="<?= JQUERY_JS ?>"></script>
 </head>

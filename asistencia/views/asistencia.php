@@ -6,8 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asistencia</title>
     <?php
-    include "../../config/config.php";
-    verificarSesion(); // Proteger esta página
+    require_once __DIR__ . "/../../public/php/config.php";
+    require_once __DIR__ . "/../../public/php/verificarSesion.php";
+    verificarSesion();
+    verificarPermiso("asistencia.ver_menu");
     ?>
     <link rel="icon" href="<?= ICONO_SISTEMA ?>" />
 
@@ -18,10 +20,10 @@
 
 <body>
     <?php
-    include "../../public/views/navbar.php";
+    require_once __DIR__ . "/../../navbar/navbar.php";
     ?>
 
-    <div class="container asistencia-container">
+    <div class="container-fluid asistencia-container">
         <!-- Minimalist Filters Section -->
         <div class="filter-section">
             <div class="row g-3">
@@ -41,9 +43,22 @@
                 </div>
                 <div class="col-md-2">
                     <label class="form-label-custom">Departamento</label>
-                    <select id="selectDepartamento" class="form-select-custom w-100">
-                        <option value="" selected>Todos los Departamentos</option>
-                    </select>
+                    <div class="multicheck-dropdown filter-multicheck" id="filterDropdownDeptos">
+                        <button type="button" class="multicheck-toggle filter-multicheck-toggle w-100" id="toggleFilterDeptos" disabled>
+                            <span id="labelFilterDeptos" class="multicheck-label-text text-truncate">Todos los Departamentos</span>
+                            <span id="badgeCountDeptos" class="multicheck-count-badge d-none">0</span>
+                            <i class="bi bi-chevron-down ms-auto flex-shrink-0"></i>
+                        </button>
+                        <div class="multicheck-menu" id="menuFilterDeptos">
+                            <div class="multicheck-search-wrap">
+                                <i class="bi bi-search multicheck-search-icon"></i>
+                                <input type="text" class="multicheck-search" id="searchFilterDeptos" placeholder="Buscar departamento...">
+                            </div>
+                            <div class="multicheck-options" id="optionsFilterDeptos">
+                                <div class="text-muted text-center py-2 multicheck-empty" style="font-size:0.8rem;">Selecciona un área primero</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-md-2">
                     <label class="form-label-custom">IMSS</label>
@@ -53,11 +68,21 @@
                         <option value="0">Sin Seguro</option>
                     </select>
                 </div>
-                <div class="col-md-1 d-flex align-items-end gap-2">
-                    <button id="btnLimpiar" class="btn-action w-100 justify-content-center" style="height: 40px; border-color: transparent; background: var(--soft-gray);">
+                <div class="col-md-2">
+                    <label class="form-label-custom">Sexo</label>
+                    <select id="selectSexo" class="form-select-custom w-100">
+                        <option value="" selected>Todos</option>
+                        <option value="M">Masculino</option>
+                        <option value="F">Femenino</option>
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label-custom">&nbsp;</label>
+                    <button id="btnLimpiar" class="btn-limpiar-filtros w-100" title="Limpiar todos los filtros">
                         <i class="bi bi-eraser"></i>
                     </button>
                 </div>
+
             </div>
         </div>
 
@@ -65,6 +90,11 @@
         <div class="excel-actions-bar">
             <button id="btnGenerarExcel" class="btn-action btn-generate-excel">
                 <i class="bi bi-file-earmark-spreadsheet"></i> Generar Excel
+            </button>
+            <!-- Botón Configurar Colores -->
+            <button id="btnAbrirConfigColores" class="btn-action btn-config-colores ms-auto"
+                title="Configurar colores por género en la lista de asistencia">
+                <i class="bi bi-palette"></i> Colores
             </button>
         </div>
 
@@ -76,7 +106,7 @@
                         <tr>
                             <th width="50">
                                 <div class="check-header">
-                                    <input type="checkbox" id="checkAll" class="custom-check" title="Seleccionar página actual">
+                                    <input type="checkbox" id="checkAll" class="custom-check" title="Seleccionar todos los filtrados">
                                 </div>
                             </th>
                             <th width="100">Clave</th>
@@ -111,22 +141,24 @@
             </div>
         </div>
 
-    <!-- Modal Configuración Excel -->
-    <?php include "modalConfigExcel.php"; ?>
-    <!-- Modal Previsualización Excel -->
-    <?php include "modalPreviewExcel.php"; ?>
+        <!-- Modal Configuración Excel -->
+        <?php include "modalConfigExcel.php"; ?>
+        <!-- Modal Previsualización Excel -->
+        <?php include "modalPreviewExcel.php"; ?>
+        <!-- Modal Configuración de Colores -->
+        <?php include "modalConfigColores.php"; ?>
 
-    <!-- SweetAlert2 -->
-    <script src="<?= SWEETALERT ?>"></script>
-    <!-- jQuery -->
-    <script src="<?= JQUERY_JS ?>"></script>
-    <script src="<?= JQUERY_UI_JS ?>"></script>
-    <!-- Plugin Inputmask -->
-    <script src="<?= JQUERY_INPUTMASK ?>"></script>
-    <!-- Bootstrap JS -->
-    <script src="<?= BOOTSTRAP_JS ?>"></script>
-    <!-- Archivo JS específico -->
-    <script src="../js/asistencia.js"></script>
+        <!-- SweetAlert2 -->
+        <script src="<?= SWEETALERT ?>"></script>
+        <!-- jQuery -->
+        <script src="<?= JQUERY_JS ?>"></script>
+        <script src="<?= JQUERY_UI_JS ?>"></script>
+        <!-- Plugin Inputmask -->
+        <script src="<?= JQUERY_INPUTMASK ?>"></script>
+        <!-- Bootstrap JS -->
+        <script src="<?= BOOTSTRAP_JS ?>"></script>
+        <!-- Archivo JS específico -->
+        <script src="../js/asistencia.js"></script>
 </body>
 
 </html>

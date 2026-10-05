@@ -1,6 +1,9 @@
 <?php
-include_once __DIR__ . "/../config/config.php";
+require_once __DIR__ . "/../public/php/config.php";
+require_once __DIR__ . "/../public/php/verificarSesion.php";
 verificarSesion();
+verificarPermiso("aguinaldos.ver_menu");
+verificarPermiso("aguinaldos.generar_aguinaldo");
 ?>
 
 <!DOCTYPE html>
@@ -24,7 +27,7 @@ verificarSesion();
 
 <body class="bg-body-tertiary">
 
-    <?php include __DIR__ . '/../public/views/navbar.php'; ?>
+    <?php require_once __DIR__ . '/../navbar/navbar.php'; ?>
 
     <main class="container-fluid py-4">
 
@@ -51,7 +54,7 @@ verificarSesion();
 
                         <!-- Enlace de volver atrás -->
                         <div class="text-center mt-3">
-                            <a href="index.php" class="text-secondary text-decoration-none small fw-semibold link-hover-custom">
+                            <a href="aguinaldo.php" class="text-secondary text-decoration-none small fw-semibold link-hover-custom">
                                 <i class="bi bi-arrow-left-short me-1"></i>Volver al historial
                             </a>
                         </div>

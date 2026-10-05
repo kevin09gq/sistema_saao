@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-include("../../conexion/conexion.php");
+require_once __DIR__ . "/../../conexion/conexion.php";
 
 function normalizarColor($color) {
     $color = trim((string)$color);

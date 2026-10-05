@@ -1,6 +1,15 @@
 <?php
-include __DIR__ . "/../../config/config.php";
+
+require_once __DIR__ . "/../../public/php/config.php";
+
+require_once __DIR__ . "/../../public/php/verificarSesion.php";
+
 verificarSesion();
+
+verificarPermiso("prestamos.ver_menu");
+
+verificarPermiso("prestamos.registrar_prestamo");
+
 ?>
 
 <!DOCTYPE html>
@@ -22,7 +31,7 @@ verificarSesion();
 
 <body class="bg-body-tertiary">
 
-    <?php include __DIR__ . '/../../public/views/navbar.php'; ?>
+    <?php include __DIR__ . '/../../navbar/navbar.php'; ?>
 
     <main>
 
@@ -53,7 +62,7 @@ verificarSesion();
                             <div class="col-12 col-md-6">
                                 <label for="empleado" class="form-label">Empleado</label>
                                 <input type="text" class="form-control form-control-lg shadow-sm" id="empleado" name="empleado" placeholder="Nombre del empleado" required>
-                                <input type="number" name="id_empleado" id="id_empleado" hidden required>
+                                <input type="number" name="id_empleado" id="id_empleado" hidden>
                             </div>
 
                             <div class="col-12 col-md-3">

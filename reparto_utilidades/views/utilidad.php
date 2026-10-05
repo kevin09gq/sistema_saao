@@ -1,6 +1,9 @@
 <?php
-require_once __DIR__ . "/../../config/config.php";
+require_once __DIR__ . "/../../public/php/config.php";
+require_once __DIR__ . "/../../public/php/verificarSesion.php";
 verificarSesion();
+verificarPermiso("ptu.ver_menu");
+verificarPermiso("ptu.generar_ptu");
 ?>
 
 <!DOCTYPE html>
@@ -21,37 +24,11 @@ verificarSesion();
         const rutaRaiz = '<?= $rutaRaiz ?>';
     </script>
 
-    <style>
-        /* Aplica a los encabezados de la tabla */
-        table th {
-            font-size: 12px;
-            /* Un poco más grande para diferenciar */
-            font-weight: bold;
-            /* Opcional, para resaltar */
-        }
-
-        /** Aplica para el cuerpo de la tabla */
-        #cuerpo_tabla_ptu td {
-            /* Ajusta según lo que necesites */
-            font-size: 13px;
-            /* Opcional, mejora la legibilidad */
-            line-height: 1.4;
-            /* Centrado vertical */
-            vertical-align: middle;
-        }
-
-        /* Esto asegura que el cuerpo del modal no crezca más allá de la pantalla */
-        .modal-dialog-scrollable .modal-body {
-            overflow-y: auto;
-            max-height: 70vh;
-            /* Ajusta este valor (vh = viewport height) según necesites */
-        }
-    </style>
 </head>
 
 <body class="bg-body-tertiary">
 
-    <?php include __DIR__ . '/../../public/views/navbar.php'; ?>
+    <?php require_once __DIR__ . '/../../navbar/navbar.php'; ?>
 
     <main class="container-fluid">
 

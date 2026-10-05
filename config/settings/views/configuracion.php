@@ -2,8 +2,12 @@
 <html lang="es">
 
 <?php
-include("../../config.php");
+require_once "../../../public/php/config.php";
+require_once "../../../public/php/verificarSesion.php";
+
 verificarSesion(); // Proteger esta página
+
+verificarPermiso("configuracion.ver_menu"); // Verificar permiso para acceder a la página
 ?>
 
 <head>
@@ -22,7 +26,7 @@ verificarSesion(); // Proteger esta página
 </head>
 
 <body>
-    <?php include("../../../public/views/navbar.php"); ?>
+    <?php require_once __DIR__ . "/../../../navbar/navbar.php"; ?>
 
     <div class="container mt-4">
         <div class="card main-card mb-5">

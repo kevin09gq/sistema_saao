@@ -6,8 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vacaciones</title>
     <?php
-    include "../../config/config.php";
+    require_once __DIR__ . '/../../public/php/config.php';
+    require_once __DIR__ . '/../../public/php/verificarSesion.php';
+
     verificarSesion(); // Proteger esta página
+    verificarPermiso("vacaciones.ver_menu");
     ?>
     <link rel="icon" href="<?= ICONO_SISTEMA ?>" />
 
@@ -18,8 +21,8 @@
 
 <body>
     <?php
-    include "../../public/views/navbar.php";
-    include "modalCalendario.php";
+    require_once __DIR__ . '/../../navbar/navbar.php';
+    require_once __DIR__ . '/modalCalendario.php';
     ?>
 
     <div class="container vacation-container">

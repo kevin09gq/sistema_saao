@@ -1,5 +1,13 @@
 $(document).ready(function () {
 
+    aplicarPermisosRegistrarPrestamo();
+
+    aplicarPermisosEditarPrestamo();
+
+    aplicarPermisosAbonarPrestamo();
+
+    aplicarPermisosPlanPagos();
+    
     const URL_SABE = "/sistema_saao/";
     const ID_EMPLEADO = window.ID_EMPLEADO_DETALLES;
     const LIMITE_DEFAULT = 5;
@@ -352,7 +360,7 @@ $(document).ready(function () {
         if (!items || items.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="6" class="text-center">Sin resultados</td>
+                    <td colspan="7" class="text-center">Sin resultados</td>
                 </tr>
             `;
             return;
@@ -375,6 +383,9 @@ $(document).ready(function () {
             `;
         });
         tbody.innerHTML = html;
+
+        // Aplicar permisos después de renderizar
+        aplicarPermisosEditarPrestamo();
     }
 
     /**
@@ -469,6 +480,9 @@ $(document).ready(function () {
             `;
         });
         tbody.innerHTML = html;
+
+        // Aplicar permisos después de renderizar
+        aplicarPermisosAbonarPrestamo();
     }
 
     /**
@@ -534,13 +548,16 @@ $(document).ready(function () {
                     <td class="text-center">${formatearFecha(item.fecha_registro)}</td>
                     <td class="text-center">
                         <button class="btn btn-sm btn-outline-success btn-ver-detalle-plan" title="Ver Detalles" data-id-plan="${item.id_plan}"><i class="bi bi-search"></i></button>
-                        <a href="editarPlan.php?id_plan=${item.id_plan}" class="btn btn-sm btn-outline-warning" title="Editar Plan"><i class="bi bi-pencil"></i></a>
+                        <a href="editarPlan.php?id_plan=${item.id_plan}" class="btn btn-sm btn-outline-warning btn-editar-plan" title="Editar Plan"><i class="bi bi-pencil"></i></a>
                         <a href="generarPdfPlan.php?id_plan=${item.id_plan}" target="_blank" class="btn btn-sm btn-outline-danger" title="Generar PDF del plan"><i class="bi bi-file-earmark-pdf-fill"></i></a>
                     </td>
                 </tr>
             `;
         });
         tbody.innerHTML = html;
+
+        // Aplicar permisos después de renderizar
+        aplicarPermisosPlanPagos();
 
         $(tbody).find('.btn-ver-detalle-plan').off('click').on('click', function () {
             let idPlan = Number($(this).data('id-plan'));
@@ -976,13 +993,13 @@ $(document).ready(function () {
 
                 // Verificar si hay aviso de solapamiento
                 let tieneAvisoSolapamiento = response.data && response.data.aviso_solapamiento === true;
-                
+
                 if (tieneAvisoSolapamiento && response.data.planes_solapados && response.data.planes_solapados.length > 0) {
                     // Construir lista de planes solapados
-                    let listaPlanes = response.data.planes_solapados.map(p => 
+                    let listaPlanes = response.data.planes_solapados.map(p =>
                         `<li><strong>Folio ${p.folio}</strong>: ${p.rango}</li>`
                     ).join('');
-                    
+
                     Swal.fire({
                         title: response.titulo || 'Semana pausada',
                         html: `

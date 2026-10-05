@@ -37,6 +37,9 @@ function abrirModalActualizarFoto(idEmpleado) {
     // Establecer la información del empleado en el modal
     establecerInformacionFoto(empleado);
 
+    // Aplicar permisos
+    aplicarPermisosActualizarFoto();
+
     // Abrir el modal
     $('#modalActualizarFoto').modal('show');
 }

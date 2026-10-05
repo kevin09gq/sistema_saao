@@ -34,19 +34,34 @@ try {
     
     $stmt_check_casillero->close();
 
-    // Verificar si el empleado ya está asignado a este casillero
+    // Verificar si el empleado ya tiene algún casillero asignado
+    $stmt_check_empleado = $conexion->prepare("SELECT COUNT(*) as total FROM empleado_casillero WHERE id_empleado = ?");
+    $stmt_check_empleado->bind_param("i", $id_empleado);
+    $stmt_check_empleado->execute();
+    $result_check_empleado = $stmt_check_empleado->get_result();
+    $row_check_empleado = $result_check_empleado->fetch_assoc();
+
+    if ($row_check_empleado['total'] > 0) {
+        // El empleado ya tiene un casillero asignado
+        echo json_encode(['success' => false, 'error' => 'El empleado ya tiene un casillero asignado. Un empleado solo puede tener un casillero.']);
+        exit;
+    }
+
+    $stmt_check_empleado->close();
+
+    // Verificar si el empleado ya está asignado a este casillero específico
     $stmt_check_asignacion = $conexion->prepare("SELECT COUNT(*) as total FROM empleado_casillero WHERE id_empleado = ? AND num_casillero = ?");
     $stmt_check_asignacion->bind_param("is", $id_empleado, $num_casillero);
     $stmt_check_asignacion->execute();
     $result_check_asignacion = $stmt_check_asignacion->get_result();
     $row_check_asignacion = $result_check_asignacion->fetch_assoc();
-    
+
     if ($row_check_asignacion['total'] > 0) {
         // El empleado ya está asignado a este casillero
         echo json_encode(['success' => true, 'message' => 'El empleado ya está asignado a este casillero.']);
         exit;
     }
-    
+
     $stmt_check_asignacion->close();
 
     // Verificar cuántos empleados ya están asignados a este casillero

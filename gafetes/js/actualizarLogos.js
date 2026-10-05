@@ -292,94 +292,51 @@ class ActualizadorLogos {
     }
 
     mostrarConfirmacionEliminarLogo(tipo, id, nombre) {
-        // Crear el modal de confirmación
-        const modalId = 'modalConfirmacionEliminarLogo';
-        
-        // Eliminar modal existente si lo hay
-        const modalExistente = document.getElementById(modalId);
-        if (modalExistente) {
-            modalExistente.remove();
-        }
-        
-        // Crear el nuevo modal
-        const modal = document.createElement('div');
-        modal.className = 'modal fade';
-        modal.id = modalId;
-        modal.tabIndex = -1;
-        modal.setAttribute('aria-labelledby', 'modalConfirmacionEliminarLogoLabel');
-        modal.setAttribute('aria-hidden', 'true');
-        
-        modal.innerHTML = `
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content confirmacion-limpiar-logos">
-                    <div class="modal-header">
-                        <div class="confirmacion-icon">
-                            <i class="bi bi-trash3"></i>
-                        </div>
-                        <h5 class="modal-title" id="modalConfirmacionEliminarLogoLabel">
-                            Confirmar Eliminación de Logo
-                        </h5>
-                    </div>
-                    <div class="modal-body">
-                        <div class="confirmacion-mensaje">
-                            <p><strong>¿Está seguro de que desea eliminar el logo de ${nombre}?</strong></p>
-                            <p class="text-muted">Esta acción eliminará permanentemente el logo y no se puede deshacer.</p>
-                            <div class="alert alert-warning d-flex align-items-center mt-3">
-                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                                <small>Esta acción no se puede deshacer</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            <i class="bi bi-x-lg"></i> Cancelar
-                        </button>
-                        <button type="button" class="btn btn-danger" id="btnConfirmarEliminarLogo">
-                            <i class="bi bi-trash3"></i> Sí, Eliminar Logo
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // Agregar el modal al DOM
-        document.body.appendChild(modal);
-        
-        // Configurar eventos
-        const btnConfirmar = modal.querySelector('#btnConfirmarEliminarLogo');
-        btnConfirmar.addEventListener('click', () => {
-            // Cerrar el modal
-            const modalInstance = bootstrap.Modal.getInstance(modal);
-            modalInstance.hide();
-            
-            // Ejecutar la eliminación
-            this.eliminarLogo(tipo, id)
-                .then(response => {
-                    if (response.success) {
-                        this.mostrarExito(response.message);
-                        // Recargar datos para reflejar los cambios
-                        setTimeout(() => this.cargarDatos(), 1000);
-                    } else {
-                        this.mostrarError(response.message);
-                    }
-                })
-                .catch(error => {
-                 
-                    this.mostrarError('Error al eliminar el logo');
-                });
+        Swal.fire({
+            title: `¿Eliminar logo de ${nombre}?`,
+            text: 'Esta acción eliminará permanentemente el logo y no se puede deshacer.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                this.eliminarLogo(tipo, id)
+                    .then(response => {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Logo eliminado!',
+                                text: response.message || 'El logo ha sido eliminado correctamente.',
+                                confirmButtonText: 'Aceptar',
+                                confirmButtonColor: '#2d6a4f'
+                            });
+                            // Recargar datos para reflejar los cambios
+                            this.cargarDatos();
+                            this.cargarDatosIniciales();
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: response.message || 'No se pudo eliminar el logo.',
+                                confirmButtonText: 'Aceptar',
+                                confirmButtonColor: '#2d6a4f'
+                            });
+                        }
+                    })
+                    .catch(() => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Error al eliminar el logo.',
+                            confirmButtonText: 'Aceptar',
+                            confirmButtonColor: '#2d6a4f'
+                        });
+                    });
+            }
         });
-        
-        // Limpiar el modal del DOM cuando se cierre
-        modal.addEventListener('hidden.bs.modal', () => {
-            modal.remove();
-        });
-        
-        // Mostrar el modal
-        const modalInstance = new bootstrap.Modal(modal, {
-            backdrop: 'static',
-            keyboard: false
-        });
-        modalInstance.show();
     }
 
     async eliminarLogo(tipo, id) {
@@ -429,17 +386,26 @@ class ActualizadorLogos {
             const fallidos = resultados.length - exitosos;
 
             if (fallidos === 0) {
-                this.mostrarExito(`Se actualizaron correctamente ${exitosos} logo(s)`);
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Logos actualizados!',
+                    text: `Se actualizaron correctamente ${exitosos} logo(s).`,
+                    confirmButtonText: 'Aceptar',
+                    confirmButtonColor: '#2d6a4f'
+                });
                 // Limpiar los logos pendientes
                 this.logosToUpdate.clear();
                 // Recargar datos para mostrar los logos actualizados
-                setTimeout(() => {
-                    this.cargarDatos();
-                    // También recargar datos iniciales para el sistema dinámico
-                    this.cargarDatosIniciales();
-                }, 1000);
+                this.cargarDatos();
+                this.cargarDatosIniciales();
             } else {
-                this.mostrarAdvertencia(`Se actualizaron ${exitosos} logo(s). ${fallidos} fallaron.`);
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Actualización parcial',
+                    text: `Se actualizaron ${exitosos} logo(s). ${fallidos} fallaron.`,
+                    confirmButtonText: 'Aceptar',
+                    confirmButtonColor: '#2d6a4f'
+                });
             }
 
         } catch (error) {
@@ -496,136 +462,69 @@ class ActualizadorLogos {
     }
 
     mostrarExito(mensaje) {
-        this.mostrarAlertaLogos(mensaje, 'success');
+        Swal.fire({
+            icon: 'success',
+            title: '¡Éxito!',
+            text: mensaje,
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#2d6a4f'
+        });
     }
 
     mostrarError(mensaje) {
-        this.mostrarAlertaLogos(mensaje, 'danger');
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: mensaje,
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#2d6a4f'
+        });
     }
 
     mostrarAdvertencia(mensaje) {
-        this.mostrarAlertaLogos(mensaje, 'warning');
+        Swal.fire({
+            icon: 'warning',
+            title: 'Atención',
+            text: mensaje,
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#2d6a4f'
+        });
     }
     
-    // Función para mostrar alertas específicas de logos (mismo estilo que gafetes/fotos)
+    // Función para mostrar alertas usando SweetAlert2
     mostrarAlertaLogos(mensaje, tipo = 'info') {
-        const alerta = document.createElement('div');
-        alerta.className = `alerta-gafete alerta-${tipo}`;
-        alerta.innerHTML = `
-            <div class="alerta-content">
-                <i class="bi bi-${tipo === 'warning' ? 'exclamation-triangle-fill' : tipo === 'danger' ? 'x-circle-fill' : tipo === 'success' ? 'check-circle-fill' : 'info-circle-fill'}"></i>
-                <span>${mensaje}</span>
-                <button type="button" class="btn-close-alerta">×</button>
-            </div>
-        `;
-        
-        document.body.appendChild(alerta);
-        
-        // Mostrar con animación
-        setTimeout(() => {
-            alerta.classList.add('show');
-        }, 100);
-        
-        // Configurar botón de cerrar
-        alerta.querySelector('.btn-close-alerta').addEventListener('click', () => {
-            alerta.classList.remove('show');
-            setTimeout(() => {
-                if (alerta.parentNode) {
-                    alerta.parentNode.removeChild(alerta);
-                }
-            }, 300);
+        const iconMap = {
+            'warning': 'warning',
+            'danger': 'error',
+            'error': 'error',
+            'success': 'success',
+            'info': 'info'
+        };
+        Swal.fire({
+            icon: iconMap[tipo] || 'info',
+            title: tipo === 'warning' ? 'Atención' : (tipo === 'danger' || tipo === 'error' ? 'Error' : (tipo === 'success' ? '¡Éxito!' : 'Información')),
+            text: mensaje,
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#2d6a4f'
         });
-        
-        // Auto-cerrar después de 5 segundos
-        setTimeout(() => {
-            if (alerta.parentNode) {
-                alerta.classList.remove('show');
-                setTimeout(() => {
-                    if (alerta.parentNode) {
-                        alerta.parentNode.removeChild(alerta);
-                    }
-                }, 300);
-            }
-        }, 5000);
     }
 
-    // Función para mostrar modal de confirmación para limpiar logos
+    // Función para mostrar confirmación para limpiar logos
     mostrarConfirmacionLimpiarLogos() {
-        // Crear el modal de confirmación
-        const modalId = 'modalConfirmacionLimpiarLogos';
-        
-        // Eliminar modal existente si lo hay
-        const modalExistente = document.getElementById(modalId);
-        if (modalExistente) {
-            modalExistente.remove();
-        }
-        
-        // Crear el nuevo modal
-        const modal = document.createElement('div');
-        modal.className = 'modal fade';
-        modal.id = modalId;
-        modal.tabIndex = -1;
-        modal.setAttribute('aria-labelledby', 'modalConfirmacionLimpiarLogosLabel');
-        modal.setAttribute('aria-hidden', 'true');
-        
-        modal.innerHTML = `
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content confirmacion-limpiar-logos">
-                    <div class="modal-header">
-                        <div class="confirmacion-icon">
-                            <i class="bi bi-images"></i>
-                        </div>
-                        <h5 class="modal-title" id="modalConfirmacionLimpiarLogosLabel">
-                            Confirmar Limpieza de Logos
-                        </h5>
-                    </div>
-                    <div class="modal-body">
-                        <div class="confirmacion-mensaje">
-                            <p><strong>¿Está seguro de que desea eliminar los logos que no están asociados a ninguna empresa o área?</strong></p>
-                            <p class="text-muted">Esta acción eliminará permanentemente todos los archivos de logo que no estén vinculados a empresas o áreas activas en el sistema.</p>
-                            <div class="alert alert-warning d-flex align-items-center mt-3">
-                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                                <small>Esta acción no se puede deshacer</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            <i class="bi bi-x-lg"></i> Cancelar
-                        </button>
-                        <button type="button" class="btn btn-danger" id="btnConfirmarLimpiarLogos">
-                            <i class="bi bi-images"></i> Sí, Eliminar Logos
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // Agregar el modal al DOM
-        document.body.appendChild(modal);
-        
-        // Configurar eventos
-        const btnConfirmar = modal.querySelector('#btnConfirmarLimpiarLogos');
-        btnConfirmar.addEventListener('click', () => {
-            // Cerrar el modal
-            const modalInstance = bootstrap.Modal.getInstance(modal);
-            modalInstance.hide();
-            
-            // Ejecutar la limpieza
-            this.limpiarLogosHuerfanos();
+        Swal.fire({
+            title: '¿Limpiar logos huérfanos?',
+            text: 'Esta acción eliminará permanentemente todos los archivos de logo que no estén vinculados a empresas o áreas activas.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, eliminar logos',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                this.limpiarLogosHuerfanos();
+            }
         });
-        
-        // Limpiar el modal del DOM cuando se cierre
-        modal.addEventListener('hidden.bs.modal', () => {
-            modal.remove();
-        });
-        
-        // Mostrar el modal
-        const modalInstance = new bootstrap.Modal(modal, {
-            backdrop: 'static',
-            keyboard: false
-        });
-        modalInstance.show();
     }
 
     async limpiarLogosHuerfanos() {

@@ -1,6 +1,7 @@
 <?php
 // contratos/views/lista_empleados.php
-include "../../config/config.php";
+require_once __DIR__ . "/../../public/php/config.php";
+require_once __DIR__ . "/../../public/php/verificarSesion.php";
 verificarSesion();
 ?>
 <!DOCTYPE html>
@@ -19,7 +20,7 @@ verificarSesion();
 </head>
 
 <body>
-  <?php include '../../public/views/navbar.php'; ?>
+  <?php require_once __DIR__ . "/../../navbar/navbar.php"; ?>
   <div class="container py-4">
     <!-- Header -->
     <div class="page-header">
@@ -105,7 +106,6 @@ verificarSesion();
 
   <script src="<?= JQUERY_JS ?>"></script>
   <script src="<?= BOOTSTRAP_JS ?>"></script>
-  <script src="<?= $rutaRaiz ?>/public/js/navbar.js"></script>
   <script src="<?= $rutaRaiz ?>/contratos/js/lista_empleados.js"></script>
 </body>
 

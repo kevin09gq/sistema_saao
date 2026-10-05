@@ -1,7 +1,10 @@
 <?php
 // contratos/views/plantillas.php
-include_once '../../config/config.php';
+require_once __DIR__ . "/../../public/php/config.php";
+require_once __DIR__ . "/../../public/php/verificarSesion.php";
 verificarSesion();
+verificarPermiso("contratos.ver_menu");
+verificarPermiso("contratos.personalizar_contratos");
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -28,7 +31,7 @@ verificarSesion();
   <script src="<?= SWEETALERT ?>"></script>
 </head>
 <body>
-  <?php include '../../public/views/navbar.php'; ?>
+  <?php require_once __DIR__ . "/../../navbar/navbar.php"; ?>
   <?php include 'modal_logos.php'; ?>
   <div class="container py-4">
     <div class="mb-4">
@@ -710,7 +713,6 @@ verificarSesion();
   <!-- quill-better-table JS -->
   <script src="https://unpkg.com/quill-better-table@1.2.10/dist/quill-better-table.js"></script>
   <script src="<?= BOOTSTRAP_JS ?>"></script>
-  <script src="<?= $rutaRaiz ?>/public/js/navbar.js"></script>
   <script src="<?= $rutaRaiz ?>/contratos/js/plantillas.js"></script>
 </body>
 </html>

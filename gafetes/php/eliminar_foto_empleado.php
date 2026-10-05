@@ -1,8 +1,7 @@
 <?php
 header('Content-Type: application/json');
+require_once __DIR__ . "/../../conexion/conexion.php";
 
-// Incluir conexión a la base de datos
-include("../../conexion/conexion.php");
 
 // Verificar que se envió el ID del empleado
 if (!isset($_POST['id_empleado'])) {
@@ -35,32 +34,29 @@ try {
         
         // Eliminar el archivo físico si existe
         if ($ruta_foto) {
-            // Construir la ruta completa del archivo
-            // Asegurarse de que la ruta sea correcta en todos los entornos
-            $ruta_archivo = dirname(__DIR__) . '/' . $ruta_foto;
+            $clean_ruta = preg_replace('/^(\.\.\/)+gafetes\//', '', $ruta_foto);
+            $clean_ruta = preg_replace('/^gafetes\//', '', $clean_ruta);
+            $clean_ruta = ltrim($clean_ruta, '/\\');
             
-            if (file_exists($ruta_archivo)) {
-                if (unlink($ruta_archivo)) {
-                    echo json_encode([
-                        'success' => true, 
-                        'message' => 'Foto eliminada correctamente'
-                    ]);
-                    exit;
-                } else {
-                    // Aunque el archivo no se pudo eliminar, la BD se actualizó
-                    echo json_encode([
-                        'success' => true, 
-                        'message' => 'Referencia eliminada (no se pudo eliminar el archivo físico)'
-                    ]);
-                    exit;
+            $posibles_rutas = [
+                dirname(__DIR__) . '/' . $clean_ruta,
+                dirname(__DIR__) . '/' . $ruta_foto,
+                __DIR__ . '/../' . $clean_ruta
+            ];
+            
+            $eliminado = false;
+            foreach ($posibles_rutas as $archivo) {
+                if (file_exists($archivo) && is_file($archivo)) {
+                    $eliminado = @unlink($archivo);
+                    if ($eliminado) break;
                 }
-            } else {
-                echo json_encode([
-                    'success' => true, 
-                    'message' => 'Referencia eliminada (archivo no encontrado)'
-                ]);
-                exit;
             }
+
+            echo json_encode([
+                'success' => true, 
+                'message' => 'Foto eliminada correctamente'
+            ]);
+            exit;
         } else {
             echo json_encode([
                 'success' => true, 

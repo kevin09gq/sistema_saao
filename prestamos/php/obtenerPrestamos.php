@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/../../config/config.php';
-  require_once __DIR__ . "/../../conexion/conexion.php";
+require_once __DIR__ . '/../../public/php/verificarSesion.php';
+require_once __DIR__ . "/../../conexion/conexion.php";
 
 // Respuesta
 function respuestas(int $code, string $titulo, string $mensaje, string $icono, array $data)
@@ -199,7 +199,6 @@ if (isset($_SESSION["logged_in"])) {
             'total_pages' => $totalPages
         ]
     ]);
-
 } else {
     respuestas(401, "No autenticado", "Debes primero iniciar sesión", "error", []);
     exit;

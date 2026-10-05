@@ -1,6 +1,8 @@
 <?php
-require_once __DIR__ . '/../../config/config.php';
+require_once __DIR__ . '/../../public/php/config.php';
+require_once __DIR__ . '/../../public/php/verificarSesion.php';
 verificarSesion();
+verificarPermiso("cortes.ver_menu");
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -12,6 +14,7 @@ verificarSesion();
 
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
+    <link rel="stylesheet" href="../css/cortes.css">
 
     <script src="<?= SWEETALERT ?>"></script>
 
@@ -37,14 +40,14 @@ verificarSesion();
 </head>
 
 <body>
-    <?php require_once __DIR__ . '/../../public/views/navbar.php'; ?>
+    <?php require_once __DIR__ . '/../../navbar/navbar.php'; ?>
 
     <div class="container-fluid bg-light py-4">
         <div class="container">
             <!-- Título y Botón -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="fw-bold">Historial de Vales de Corte</h2>
-                <button type="button" class="btn btn-primary fw-bold" id="btn_nuevo_vale">
+                <button type="button" class="btn btn-success fw-bold" id="btn_nuevo_vale" hidden>
                     <i class="bi bi-plus-lg"></i> Agregar
                 </button>
             </div>
@@ -81,7 +84,7 @@ verificarSesion();
                         </div>
                         <div class="text-center">
                             <button type="submit" class="btn btn-success fw-bold" id="btn_filtrar">
-                                <i class="bi bi-search me-2"></i>Buscar Historial
+                                <i class="bi bi-search me-2"></i>Buscar
                             </button>
                         </div>
                         <span class="my-0 text-muted">* Campo obligatorio</span>
@@ -144,10 +147,10 @@ verificarSesion();
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="mb-0 text-muted"><i class="bi bi-list-columns-reverse me-2"></i>Desglose Detallado de Cortes</h5>
                         <div>
-                            <button type="button" class="btn btn-sm btn-warning fw-bold shadow-sm" id="btn_ranking_extra">
+                            <button type="button" class="btn btn-sm btn-outline-success fw-bold shadow-sm" id="btn_ranking_extra">
                                 <i class="bi bi-trophy me-2"></i>Ranking
                             </button>
-                            <button type="button" class="btn btn-sm btn-danger fw-bold shadow-sm" id="btn_exportar_pdf_extra">
+                            <button type="button" class="btn btn-sm btn-outline-success fw-bold shadow-sm" id="btn_exportar_pdf_extra">
                                 <i class="bi bi-file-pdf me-2"></i>PDF
                             </button>
                             <button type="button" class="btn btn-sm btn-success fw-bold shadow-sm" id="btn_exportar_excel">
@@ -245,10 +248,18 @@ verificarSesion();
     </div>
 
     <!-- Bibliotecas JS -->
+
+    <script>
+        // Pasar permisos de PHP a JavaScript
+        const permisosUsuario = <?php echo json_encode($_SESSION["permisos"] ?? []); ?>;
+    </script>
+
     <script src="<?= JQUERY_JS ?>"></script>
     <script src="<?= BOOTSTRAP_JS ?>"></script>
+    <script src="<?= PERMISOS_JS ?>"></script>
 
     <!-- Script personalizado para la página -->
+    <script src="../js/permisos.js"></script>
     <script src="../js/historial_corte.js"></script>
     <script src="../js/utilidades.js"></script>
 

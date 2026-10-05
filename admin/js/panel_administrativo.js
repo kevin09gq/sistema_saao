@@ -1,177 +1,388 @@
-//====================================================
-// PANEL ADMINISTRATIVO - GESTIÓN DE USUARIOS Y PERMISOS
-//====================================================
+//==============================================
+// VARIABLES GLOBALES DE USUARIOS Y PAGINACIÓN
+//==============================================
 
-// Arreglo global de usuarios
-let usuariosSistema = [];
+// Almacena todos los usuarios obtenidos del servidor
+let usuarios = [];
+
+// Almacena los usuarios después de aplicar los filtros de búsqueda
+let usuariosFiltrados = [];
+
+// Variables de paginación
+let paginaActual = 1;
+let registrosPorPagina = 5;
+
+// Variables de filtros
+let statusSeleccionado = "todos"; // "todos", "activos", "inactivos"
+let rolSeleccionado = "todos";    // "todos", "1", "3", etc.
 
 
 $(document).ready(function () {
-
-    // 1. Cargar la lista inicial de usuarios y estadísticas
     obtenerUsuarios();
-
- 
 });
 
 
-//====================================================
-// FUNCIÓN PARA OBTENER TODOS LOS USUARIOS
-//====================================================
+//==============================================
+// OBTENER USUARIOS
+//==============================================
 
-function obtenerUsuarios() {
-
-    const tbody = $('#tbodyUsuarios');
-    tbody.html(`
-        <tr>
-            <td colspan="5" class="text-center py-4">
-                <div class="spinner-border spinner-border-sm text-success me-2" role="status"></div>
-                Cargando usuarios...
-            </td>
-        </tr>
-    `);
+function obtenerUsuarios(mantenerPagina = false) {
 
     $.ajax({
         type: "POST",
         url: "../php/adminUsuarios.php",
-        data: { accion: "obtenerUsuarios" },
-        dataType: "json",
-        success: function (res) {
-            if (res.success) {
-                usuariosSistema = res.usuarios;
+        data: {
+            accion: "obtenerUsuarios"
+        },
+        dataType: "JSON",
 
-                // Actualizar métricas
-                $('#statTotalUsuarios').text(res.estadisticas.total);
-                $('#statTotalAdmins').text(res.estadisticas.admins);
-                $('#statTotalEstandar').text(res.estadisticas.estandar);
-                $('#statTotalActivos').text(res.estadisticas.activos);
+        success: function (response) {
 
-                renderizarTablaUsuarios(usuariosSistema);
+            if (!response.success) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: response.mensaje
+                });
+
+                return;
+            }
+
+            // Guardar todos los usuarios
+            usuarios = response.usuarios || [];
+
+            // Si la función de filtros está disponible, coordinar
+            if (typeof aplicarFiltros === "function") {
+                aplicarFiltros(mantenerPagina);
             } else {
-                mostrarAlerta('error', 'Error', res.mensaje);
+                usuariosFiltrados = [...usuarios];
+                mostrarUsuarios();
             }
         },
-        error: function (xhr, status, error) {
-            console.error("Error AJAX al obtener usuarios:", error, xhr.responseText);
-            tbody.html(`
-                <tr>
-                    <td colspan="5" class="text-center text-danger py-4">
-                        <i class="bi bi-exclamation-triangle me-2"></i> Error al conectar con el servidor.
-                    </td>
-                </tr>
-            `);
+
+        error: function () {
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "No se pudieron obtener los usuarios."
+            });
         }
     });
 }
 
 
-//====================================================
-// FUNCIÓN PARA RENDERIZAR LA TABLA DE USUARIOS
-//====================================================
-function renderizarTablaUsuarios(lista) {
+//==============================================
+// MOSTRAR USUARIOS EN LA TABLA
+//==============================================
 
-    const tbody = $('#tbodyUsuarios');
+function mostrarUsuarios() {
+
+    const tbody = $("#tbodyUsuarios");
     tbody.empty();
 
-    if (!lista || lista.length === 0) {
+    if (usuariosFiltrados.length === 0) {
+
         tbody.html(`
             <tr>
-                <td colspan="5" class="text-center py-4 text-muted">
-                    <i class="bi bi-people me-2"></i> No se encontraron usuarios registrados.
+                <td colspan="4" class="text-center text-muted py-5">
+                    <i class="bi bi-search fs-3 d-block mb-2 text-secondary"></i>
+                    No se encontraron usuarios con los filtros aplicados.
                 </td>
             </tr>
         `);
+
+        crearPaginacion();
         return;
     }
 
-    lista.forEach(function (user) {
+    // Calcular inicio y fin para la página actual
+    const inicio = (paginaActual - 1) * registrosPorPagina;
+    const fin = inicio + registrosPorPagina;
+    const usuariosPagina = usuariosFiltrados.slice(inicio, fin);
 
-        // Badge de rol
-        const esAdmin = (user.id_rol == 1);
-        const badgeRol = esAdmin
-            ? `<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="bi bi-shield-fill-check me-1"></i> Administrador</span>`
-            : `<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1"><i class="bi bi-person-fill me-1"></i> Estándar</span>`;
+    usuariosPagina.forEach(usuario => {
 
-        // Badge de estatus
-        const esActivo = (user.id_status == 1);
-        const badgeStatus = esActivo
-            ? `<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> Activo</span>`
-            : `<span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i> Inactivo</span>`;
+        const iniciales = obtenerIniciales(usuario.nombre_admin);
+        const estado = obtenerEstadoUsuario(usuario);
 
-        const tr = `
+        tbody.append(`
             <tr>
-                <td class="fw-bold text-secondary">#${user.id_admin}</td>
+
                 <td>
-                    <div class="d-flex align-items-center">
-                        <div class="avatar-circle me-2 ${esAdmin ? 'bg-success text-white' : 'bg-primary text-white'}">
-                            ${user.nombre_admin.charAt(0).toUpperCase()}
+                    <div class="d-flex align-items-center gap-3">
+
+                        <div class="avatar-iniciales">
+                            ${iniciales}
                         </div>
+
                         <div>
-                            <div class="fw-semibold text-dark">${user.nombre_admin}</div>
-                            <small class="text-muted"><i class="bi bi-envelope me-1"></i>${user.correo}</small>
+                            <span class="fw-semibold">
+                                ${usuario.nombre_admin}
+                            </span>
+
+                            <small class="text-secondary d-block">
+                                ${usuario.nombre_rol}
+                            </small>
                         </div>
+
                     </div>
                 </td>
-                <td>${badgeRol}</td>
-                <td class="text-center">${badgeStatus}</td>
+
+                <td>
+                    <span class="text-muted">
+                        ${usuario.correo}
+                    </span>
+                </td>
+
                 <td class="text-center">
+                    ${estado}
+                </td>
+
+                <td class="text-center">
+
                     <div class="dropdown">
+
                         <button
                             type="button"
-                            class="btn btn-sm btn-light border"
+                            class="btn btn-light"
                             data-bs-toggle="dropdown"
-                            aria-expanded="false"
-                            data-id="${user.id_admin}">
-                            ⋮
+                            aria-expanded="false">
+
+                            <i class="bi bi-three-dots-vertical"></i>
+
                         </button>
 
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+
+                            <!-- EDITAR -->
                             <li>
-                                <a class="dropdown-item d-flex align-items-center gap-2" onclick="abrirModalEditar(${user.id_admin})">
-                                    <i class="bi bi-pencil-square text-primary"></i>
-                                    <span>Editar datos</span>
-                                </a>
+                                <button
+                                    type="button"
+                                    class="dropdown-item d-flex align-items-center gap-2"
+                                    onclick="abrirModalEditarInformacion('${usuario.nombre_admin}', '${usuario.id_rol}', '${usuario.correo}', ${usuario.id_admin})">
+
+                                    <i class="bi bi-pencil text-success"></i>
+                                    Editar información
+
+                                </button>
                             </li>
+
+                            <!-- PERMISOS -->
                             <li>
-                                <a class="dropdown-item d-flex align-items-center gap-2 ${esAdmin ? 'text-muted' : ''}" onclick="abrirModalMudulos()">
-                                    <i class="bi bi-shield-lock-fill ${esAdmin ? 'text-muted' : 'text-success'}"></i>
-                                    <span>Gestionar Permisos</span>
-                                </a>
+                                <button
+                                    type="button"
+                                    class="dropdown-item d-flex align-items-center gap-2"
+                                    onclick="abrirModalPermisos('${usuario.nombre_admin}', '${usuario.nombre_rol}', '${usuario.correo}', ${usuario.id_admin})">
+
+                                    <i class="bi bi-shield-check text-success"></i>
+                                    Permisos
+
+                                </button>
                             </li>
+
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li>
-                                <a class="dropdown-item d-flex align-items-center gap-2 ${esActivo ? 'text-danger' : 'text-success'}" onclick="cambiarEstadoUsuario(${user.id_admin}, ${user.id_status}, '${user.nombre_admin}')">
-                                    <i class="bi ${esActivo ? 'bi-person-x-fill' : 'bi-person-check-fill'}"></i>
-                                    <span>${esActivo ? 'Desactivar usuario' : 'Activar usuario'}</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </td>
-            </tr>
-        `;
 
-        tbody.append(tr);
+                            <!-- DAR DE BAJA / REACTIVAR -->
+                            <li>
+                                ${usuario.id_status == 1 ? `
+                                    <button
+                                        type="button" 
+                                        class="dropdown-item d-flex align-items-center gap-2 text-warning"
+                                        onclick="darBajaAltaUsuario('${usuario.id_admin}', '${usuario.id_status}', '${usuario.id_rol}')">
+                                        <i class="bi bi-person-slash"></i>
+                                        Dar de baja
+                                    </button>
+                                ` : `
+                                    <button
+                                        type="button" 
+                                        class="dropdown-item d-flex align-items-center gap-2 text-success"
+                                        onclick="darBajaAltaUsuario('${usuario.id_admin}', '${usuario.id_status}', '${usuario.id_rol}')">
+                                        <i class="bi bi-person-check"></i>
+                                        Reactivar usuario
+                                    </button>
+                                `}
+                            </li>
+                            
+
+                            <!-- ELIMINAR -->
+                            <li>
+                                <button
+                                    type="button"
+                                    class="dropdown-item d-flex align-items-center gap-2 text-danger"
+                                    onclick="eliminarUsuario('${usuario.id_admin}', '${usuario.id_rol}')">
+
+                                    <i class="bi bi-trash"></i>
+                                    Eliminar usuario
+                                </button>
+                            </li>
+
+                        </ul>
+
+                    </div>
+
+                </td>
+
+            </tr>
+        `);
     });
+
+    crearPaginacion();
 }
 
 
+//==============================================
+// FUNCIÓN PARA CREAR LA PAGINACIÓN
+//==============================================
+
+function crearPaginacion() {
+
+    const $paginacion = $('#paginacionUsuarios');
+
+    $paginacion.empty();
+
+    const totalRegistros = usuariosFiltrados.length;
+    const totalPaginas = Math.ceil(totalRegistros / registrosPorPagina) || 1;
+
+    if (totalRegistros === 0) {
+        return;
+    }
+
+    // Botón Anterior
+    $paginacion.append(`
+        <li class="page-item ${paginaActual === 1 ? 'disabled' : ''}">
+            <button
+                type="button"
+                class="page-link"
+                onclick="cambiarPagina(${paginaActual - 1})"
+                ${paginaActual === 1 ? 'tabindex="-1" aria-disabled="true"' : ''}>
+                <i class="bi bi-chevron-left"></i>
+            </button>
+        </li>
+    `);
+
+    // Generar números de página
+    if (totalPaginas <= 7) {
+
+        for (let p = 1; p <= totalPaginas; p++) {
+            agregarBotonPagina(p);
+        }
+
+    } else {
+
+        agregarBotonPagina(1);
+
+        let pInicio = paginaActual - 1;
+        let pFin = paginaActual + 1;
+
+        if (paginaActual <= 3) {
+            pInicio = 2;
+            pFin = 4;
+        }
+
+        if (paginaActual >= totalPaginas - 2) {
+            pInicio = totalPaginas - 3;
+            pFin = totalPaginas - 1;
+        }
+
+        if (pInicio > 2) {
+            $paginacion.append(`
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>
+            `);
+        }
+
+        for (let p = pInicio; p <= pFin; p++) {
+            agregarBotonPagina(p);
+        }
+
+        if (pFin < totalPaginas - 1) {
+            $paginacion.append(`
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>
+            `);
+        }
+
+        agregarBotonPagina(totalPaginas);
+    }
+
+    // Botón Siguiente
+    $paginacion.append(`
+        <li class="page-item ${paginaActual === totalPaginas ? 'disabled' : ''}">
+            <button
+                type="button"
+                class="page-link"
+                onclick="cambiarPagina(${paginaActual + 1})"
+                ${paginaActual === totalPaginas ? 'tabindex="-1" aria-disabled="true"' : ''}>
+                <i class="bi bi-chevron-right"></i>
+            </button>
+        </li>
+    `);
+}
+
+function agregarBotonPagina(numPagina) {
+    const esActiva = numPagina === paginaActual;
+    $('#paginacionUsuarios').append(`
+        <li class="page-item ${esActiva ? 'active' : ''}">
+            <button
+                type="button"
+                class="page-link"
+                onclick="cambiarPagina(${numPagina})">
+                ${numPagina}
+            </button>
+        </li>
+    `);
+}
+
+function cambiarPagina(nuevaPagina) {
+    const totalPaginas = Math.ceil(usuariosFiltrados.length / registrosPorPagina) || 1;
+    if (nuevaPagina < 1 || nuevaPagina > totalPaginas) return;
+
+    paginaActual = nuevaPagina;
+    mostrarUsuarios();
+}
 
 
+//==============================================
+// OBTENER INICIALES DEL USUARIO
+//==============================================
+
+function obtenerIniciales(nombre) {
+
+    const palabras = (nombre || '').trim().split(/\s+/);
+
+    if (palabras.length === 1) {
+        return palabras[0].substring(0, 2).toUpperCase();
+    }
+
+    return (
+        palabras[0].charAt(0) +
+        palabras[1].charAt(0)
+    ).toUpperCase();
+}
 
 
+//==============================================
+// MOSTRAR ESTADO DEL USUARIO
+//==============================================
 
+function obtenerEstadoUsuario(usuario) {
 
-//====================================================
-// FUNCIÓN HELPER DE SWEETALERT
-//====================================================
-function mostrarAlerta(icono, titulo, texto) {
-    Swal.fire({
-        icon: icono,
-        title: titulo,
-        text: texto,
-        confirmButtonColor: '#198754'
-    });
+    if (usuario.id_status == 1) {
+
+        return `
+            <span class="badge bg-success badge-status status-activo">
+                ${usuario.nombre_status}
+            </span>
+        `;
+    }
+
+    return `
+        <span class="badge bg-secondary badge-status status-inactivo">
+            ${usuario.nombre_status}
+        </span>
+    `;
 }

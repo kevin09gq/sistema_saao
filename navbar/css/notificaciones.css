@@ -1,0 +1,514 @@
+/* ==========================================================================
+   SISTEMA SAAO - MODAL DE NOTIFICACIONES
+   Hoja de estilos: notificaciones.css
+   Estilo: Limpio, Ejecutivo, Moderno y Profesional
+   Paleta: Identidad Institucional Cítricos SAAO (Verde Esmeralda, Slate, Ámbar, Índigo)
+   ========================================================================== */
+
+/* Importar fuente Inter */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* --------------------------------------------------------------------------
+   1. INDICADOR DE NOTIFICACIONES EN NAVBAR (BADGE)
+   -------------------------------------------------------------------------- */
+#notificationBadge {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 5px;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+    color: #ffffff;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 6px rgba(220, 38, 38, 0.4);
+    line-height: 1;
+}
+
+/* Animación de pulso cuando hay notificaciones pendientes */
+@keyframes notifPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7), 0 2px 6px rgba(220, 38, 38, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 7px rgba(239, 68, 68, 0), 0 2px 6px rgba(220, 38, 38, 0.4);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0), 0 2px 6px rgba(220, 38, 38, 0.4);
+    }
+}
+
+.notif-badge-pulse {
+    animation: notifPulse 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --------------------------------------------------------------------------
+   2. CONTENEDOR PRINCIPAL DEL MODAL
+   -------------------------------------------------------------------------- */
+.notif-modal-dialog {
+    max-width: 480px;
+    margin: 1.75rem auto;
+}
+
+.notif-modal-content {
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 16px;
+    overflow: hidden;
+    background: #ffffff;
+    box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.1),
+                0 10px 10px -5px rgba(15, 23, 42, 0.04),
+                0 30px 60px rgba(0, 0, 0, 0.12);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    transform: scale(0.96);
+    opacity: 0;
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+}
+
+.modal.show .notif-modal-content {
+    transform: scale(1);
+    opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   3. ENCABEZADO DEL MODAL (VERDE VIVO Y MODERNO)
+   -------------------------------------------------------------------------- */
+.notif-modal-header {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #15803d 100%);
+    color: #ffffff;
+    padding: 1.1rem 1.4rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    position: relative;
+    box-shadow: 0 4px 14px rgba(22, 163, 74, 0.2);
+}
+
+.notif-modal-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+/* Ícono de campana con animación suave */
+.notif-modal-icon {
+    font-size: 1.25rem;
+    color: #fef08a;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+    animation: bellSwingIntro 1s ease;
+}
+
+.notif-modal-header h5 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: #ffffff;
+}
+
+/* Badge que muestra el número de notificaciones */
+.notif-total-badge {
+    background: rgba(255, 255, 255, 0.22);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 30px;
+    padding: 2px 11px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+    letter-spacing: 0.3px;
+    backdrop-filter: blur(4px);
+    margin-left: auto;
+    margin-right: 0.75rem;
+}
+
+/* Botón cerrar del modal */
+.notif-modal-header .btn-close {
+    background-color: rgba(255, 255, 255, 0.2);
+    opacity: 0.9;
+    border-radius: 50%;
+    padding: 0.45rem;
+    font-size: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.notif-modal-header .btn-close:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    opacity: 1;
+    transform: scale(1.08);
+}
+
+/* --------------------------------------------------------------------------
+   4. CUERPO DEL MODAL (LISTA DE NOTIFICACIONES)
+   -------------------------------------------------------------------------- */
+.notif-modal-body {
+    padding: 0.65rem 0.5rem;
+    max-height: 460px;
+    overflow-y: auto;
+    background: #f8fafc;
+}
+
+/* Scrollbar personalizada */
+.notif-modal-body::-webkit-scrollbar {
+    width: 5px;
+}
+
+.notif-modal-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.notif-modal-body::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.35);
+    border-radius: 10px;
+}
+
+.notif-modal-body::-webkit-scrollbar-thumb:hover {
+    background: #2d6a4f;
+}
+
+/* --------------------------------------------------------------------------
+   5. TARJETAS DE NOTIFICACIÓN (.notif-item)
+   -------------------------------------------------------------------------- */
+.notif-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    margin: 8px 10px;
+    padding: 13px 15px;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.85);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02);
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    animation: cardSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Cascada de animación */
+.notif-item:nth-child(1) { animation-delay: 0.04s; }
+.notif-item:nth-child(2) { animation-delay: 0.08s; }
+.notif-item:nth-child(3) { animation-delay: 0.12s; }
+.notif-item:nth-child(4) { animation-delay: 0.16s; }
+.notif-item:nth-child(5) { animation-delay: 0.20s; }
+.notif-item:nth-child(n+6) { animation-delay: 0.24s; }
+
+/* Barra indicadora vertical a la izquierda */
+.notif-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    border-radius: 4px 0 0 4px;
+    transition: width 0.2s ease;
+}
+
+/* Hover de tarjeta */
+.notif-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+    border-color: rgba(148, 163, 184, 0.5);
+}
+
+.notif-item:hover::before {
+    width: 5px;
+}
+
+/* --------------------------------------------------------------------------
+   6. TIPOS DE NOTIFICACIONES (COLORES Y ACENTOS)
+   -------------------------------------------------------------------------- */
+
+/* 6.1 Próximo (Ámbar) */
+.notif-tipo-proximo::before { background: #f59e0b; }
+.notif-tipo-proximo:hover { background: linear-gradient(90deg, rgba(245, 158, 11, 0.04) 0%, #ffffff 100%); }
+
+/* 6.2 Hoy (Esmeralda) */
+.notif-tipo-hoy::before { background: #10b981; }
+.notif-tipo-hoy:hover { background: linear-gradient(90deg, rgba(16, 185, 129, 0.04) 0%, #ffffff 100%); }
+
+/* 6.3 Reciente (Índigo) */
+.notif-tipo-reciente::before { background: #6366f1; }
+.notif-tipo-reciente:hover { background: linear-gradient(90deg, rgba(99, 102, 241, 0.04) 0%, #ffffff 100%); }
+
+/* 6.4 Gafete Vencido (Rojo) */
+.notif-tipo-gafete_vencido::before { background: #ef4444; }
+.notif-tipo-gafete_vencido:hover { background: linear-gradient(90deg, rgba(239, 68, 68, 0.04) 0%, #ffffff 100%); }
+
+/* 6.5 Gafete Próximo (Naranja) */
+.notif-tipo-gafete_proximo::before { background: #f97316; }
+.notif-tipo-gafete_proximo:hover { background: linear-gradient(90deg, rgba(249, 115, 22, 0.04) 0%, #ffffff 100%); }
+
+/* --------------------------------------------------------------------------
+   7. AVATARES CIRCULARES CON INICIALES
+   -------------------------------------------------------------------------- */
+.notif-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    font-size: 0.88rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    letter-spacing: -0.01em;
+    position: relative;
+}
+
+.notif-avatar-proximo {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    color: #b45309;
+    border: 1.5px solid rgba(217, 119, 6, 0.25);
+}
+
+.notif-avatar-hoy {
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    color: #15803d;
+    border: 1.5px solid rgba(22, 163, 74, 0.25);
+    box-shadow: 0 0 10px rgba(74, 222, 128, 0.25);
+}
+
+.notif-avatar-reciente {
+    background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+    color: #6d28d9;
+    border: 1.5px solid rgba(139, 92, 246, 0.25);
+}
+
+.notif-avatar-gafete_vencido {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    color: #b91c1c;
+    border: 1.5px solid rgba(220, 38, 38, 0.25);
+}
+
+.notif-avatar-gafete_proximo {
+    background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%);
+    color: #c2410c;
+    border: 1.5px solid rgba(234, 88, 12, 0.25);
+}
+
+/* --------------------------------------------------------------------------
+   8. ESTRUCTURA DE TEXTOS Y BADGES
+   -------------------------------------------------------------------------- */
+.notif-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.notif-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.notif-nombre {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 210px;
+}
+
+/* Badges de Tipo */
+.notif-badge-tipo {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-radius: 20px;
+    padding: 2px 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.notif-badge-proximo {
+    background: rgba(254, 243, 199, 0.9);
+    color: #d97706;
+    border: 1px solid rgba(217, 119, 6, 0.2);
+}
+
+.notif-badge-hoy {
+    background: rgba(220, 252, 231, 0.95);
+    color: #16a34a;
+    border: 1px solid rgba(22, 163, 74, 0.25);
+    animation: badgeHoyGlow 2.5s infinite ease-in-out;
+}
+
+.notif-badge-reciente {
+    background: rgba(237, 233, 254, 0.9);
+    color: #7c3aed;
+    border: 1px solid rgba(124, 58, 237, 0.2);
+}
+
+.notif-badge-gafete_vencido {
+    background: rgba(254, 226, 226, 0.9);
+    color: #dc2626;
+    border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+.notif-badge-gafete_proximo {
+    background: rgba(255, 237, 213, 0.9);
+    color: #ea580c;
+    border: 1px solid rgba(234, 88, 12, 0.2);
+}
+
+/* Descripción */
+.notif-desc {
+    font-size: 0.83rem;
+    color: #334155;
+    margin-bottom: 0.4rem;
+    line-height: 1.45;
+    font-weight: 500;
+}
+
+.notif-desc strong {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.notif-desc i {
+    font-size: 0.9rem;
+    margin-right: 0.25rem;
+    vertical-align: middle;
+}
+
+.notif-tipo-proximo .notif-desc i { color: #d97706; }
+.notif-tipo-hoy .notif-desc i { color: #10b981; }
+.notif-tipo-reciente .notif-desc i { color: #6366f1; }
+.notif-tipo-gafete_vencido .notif-desc i { color: #dc2626; }
+.notif-tipo-gafete_proximo .notif-desc i { color: #ea580c; }
+
+/* Metadata de fecha y clave */
+.notif-fecha {
+    font-size: 0.72rem;
+    color: #64748b;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.notif-fecha i {
+    font-size: 0.78rem;
+    color: #94a3b8;
+}
+
+/* --------------------------------------------------------------------------
+   9. ESTADO VACÍO (SIN NOTIFICACIONES)
+   -------------------------------------------------------------------------- */
+.notif-vacio {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+    color: #64748b;
+    gap: 0.75rem;
+    text-align: center;
+    animation: fadeIn 0.35s ease-out;
+}
+
+.notif-vacio i {
+    font-size: 2.5rem;
+    color: #94a3b8;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(148, 163, 184, 0.08);
+    transition: all 0.3s ease;
+}
+
+.notif-vacio:hover i {
+    transform: rotate(15deg) scale(1.06);
+    color: #2d6a4f;
+    border-color: #95d5b2;
+}
+
+.notif-vacio p {
+    font-size: 0.88rem;
+    font-weight: 600;
+    margin: 0;
+    color: #475569;
+}
+
+/* --------------------------------------------------------------------------
+   10. PIE DEL MODAL
+   -------------------------------------------------------------------------- */
+.notif-modal-footer {
+    background: #ffffff;
+    border-top: 1px solid #f1f5f9;
+    padding: 0.75rem 1.4rem;
+}
+
+.notif-footer-texto {
+    font-size: 0.73rem;
+    font-weight: 500;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    line-height: 1.35;
+}
+
+.notif-footer-texto i {
+    color: #2d6a4f;
+    font-size: 0.82rem;
+}
+
+/* --------------------------------------------------------------------------
+   11. ANIMACIONES
+   -------------------------------------------------------------------------- */
+@keyframes cardSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes bellSwingIntro {
+    0% { transform: rotate(0); }
+    15% { transform: rotate(22deg); }
+    30% { transform: rotate(-18deg); }
+    45% { transform: rotate(14deg); }
+    60% { transform: rotate(-8deg); }
+    75% { transform: rotate(4deg); }
+    100% { transform: rotate(0); }
+}
+
+@keyframes badgeHoyGlow {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.3);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 0 8px 2px rgba(16, 185, 129, 0.18);
+        transform: scale(1.03);
+    }
+}

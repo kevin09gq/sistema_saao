@@ -23,7 +23,7 @@
 
                     <!-- Poner las rejas que se cortaron -->
                     <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
-                         <!-- FILTRO PARA LA TABLA DE TICKETS PENDIENTES -->
+                        <!-- FILTRO PARA LA TABLA DE TICKETS PENDIENTES -->
                         <div class="row">
                             <!-- BARRA DE BUSQUEDA -->
                             <div class="col-md-4 mb-3">
@@ -31,12 +31,29 @@
                                 <input type="text" class="form-control form-control-sm shadow-sm" id="buscar_ticket" placeholder="Buscar...">
                             </div>
                             <!-- SELECT DE LIMITE DE REGISTROS -->
-                            <div class="col-md-2 mb-3">
+                            <div class="col-md-1 mb-3">
                                 <label for="" class="form-label">Limite</label>
                                 <select class="form-select form-select-sm shadow-sm" id="limite_corte">
                                     <option value="10" selected>10</option>
                                     <option value="25">25</option>
                                     <option value="50">50</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-2 mb-3">
+                                <label for="" class="form-label">Ordenar Por:</label>
+                                <select class="form-select form-select-sm shadow-sm" id="ordenar">
+                                    <option value="folio">Folio</option>
+                                    <option value="nombre_cortador">Nombre Cortador</option>
+                                    <option value="fecha_corte">Fecha</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-2 mb-3">
+                                <label for="" class="form-label">Dirección:</label>
+                                <select class="form-select form-select-sm shadow-sm" id="direccion">
+                                    <option value="asc" selected>Ascendente</option>
+                                    <option value="desc">Descendente</option>
                                 </select>
                             </div>
                         </div>
@@ -97,7 +114,7 @@
                                             </tr>
                                         </thead>
                                         <tbody id="cuerpo_tabla_pagos_por_dia">
-                                           
+
                                         </tbody>
                                     </table>
                                 </div>

@@ -305,32 +305,44 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await response.json();
             
             if (data.success) {
-                // Mostrar animación de éxito
-                tarjetas.forEach(tarjeta => {
-                    tarjeta.classList.remove('uploading');
-                    tarjeta.classList.add('success');
-                });
-                
-                // Mostrar mensaje de éxito discreto
-                mostrarMensajeExito(data.message || 'Fotos subidas exitosamente');
-                
                 // Restaurar el botón inmediatamente
                 btnSubir.disabled = false;
                 btnSubir.innerHTML = '<i class="bi bi-upload"></i> Subir Fotos';
                 
-                // Cerrar el modal después de 1.5 segundos sin recargar
-                setTimeout(() => {
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('modalSubirFotos'));
+                // Cerrar el modal y resetear su contenido
+                const modalEl = document.getElementById('modalSubirFotos');
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) {
                     modal.hide();
-                    // Limpiar el contenido del modal para la próxima vez
-                    vistaPreviaFotos.innerHTML = '';
-                    inputFotos.value = '';
-                    listaEmpleadosSeleccionados.innerHTML = '';
-                    // Actualizar la tabla de empleados si existe la función
-                    if (typeof cargarEmpleados === 'function') {
-                        cargarEmpleados();
-                    }
-                }, 1500);
+                }
+                resetearModal();
+
+                // Actualizar las rutas en memoria si vienen en la respuesta
+                if (data.resultados && Array.isArray(data.resultados)) {
+                    data.resultados.forEach(res => {
+                        if (window.todosLosEmpleados && Array.isArray(window.todosLosEmpleados)) {
+                            const emp = window.todosLosEmpleados.find(e => e && e.id_empleado == res.empleado_id);
+                            if (emp) emp.ruta_foto = res.ruta;
+                        }
+                    });
+                }
+
+                // Recargar empleados para reflejar inmediatamente la foto en la tabla
+                if (typeof window.cargarEmpleadosPorDepartamento === 'function') {
+                    const deptoActual = (typeof $ !== 'undefined' && $('#departamentos').length) ? $('#departamentos').val() : 'todos';
+                    window.cargarEmpleadosPorDepartamento(deptoActual || 'todos', deptoActual === 'todos');
+                } else if (typeof window.actualizarTablaEmpleados === 'function') {
+                    window.actualizarTablaEmpleados();
+                }
+
+                // Mostrar alerta con SweetAlert2 estándar
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Fotos subidas!',
+                    text: data.message || 'Todas las fotos se subieron correctamente.',
+                    confirmButtonText: 'Aceptar',
+                    confirmButtonColor: '#2d6a4f'
+                });
             } else {
                 // Remover estado de carga si hay error
                 tarjetas.forEach(tarjeta => {
@@ -339,8 +351,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 mostrarAlerta(data.message || 'Error al subir las fotos', 'danger');
             }
             
-            // Mostrar errores si los hay (pero sin alertas molestas)
+            // Mostrar errores si los hay
             if (data.errores && data.errores.length > 0) {
+                mostrarAlerta(data.errores.join('<br>'), 'warning');
             }
         } catch (error) {
            // Remover estado de carga si hay error
@@ -378,46 +391,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         Swal.fire({
             icon: iconMap[tipo] || 'info',
-            title: mensaje,
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true,
-            didOpen: (toast) => {
-                toast.addEventListener('mouseenter', Swal.stopTimer);
-                toast.addEventListener('mouseleave', Swal.resumeTimer);
-            }
+            title: tipo === 'warning' ? 'Atención' : (tipo === 'danger' || tipo === 'error' ? 'Error' : 'Información'),
+            html: mensaje,
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#2d6a4f'
         });
-    }
-    
-    // Función para mostrar mensaje de éxito discreto
-    function mostrarMensajeExito(mensaje) {
-        const mensajeExito = document.createElement('div');
-        mensajeExito.className = 'mensaje-exito-discreto';
-        mensajeExito.innerHTML = `
-            <div class="mensaje-content">
-                <i class="bi bi-check-circle-fill"></i>
-                <span>${mensaje}</span>
-            </div>
-        `;
-        
-        document.body.appendChild(mensajeExito);
-        
-        // Mostrar con animación
-        setTimeout(() => {
-            mensajeExito.classList.add('show');
-        }, 100);
-        
-        // Ocultar después de 3 segundos
-        setTimeout(() => {
-            mensajeExito.classList.remove('show');
-            setTimeout(() => {
-                if (mensajeExito.parentNode) {
-                    mensajeExito.parentNode.removeChild(mensajeExito);
-                }
-            }, 300);
-        }, 3000);
     }
     
     // Función para resetear completamente el modal
@@ -435,14 +413,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const tarjetasAnteriores = document.querySelectorAll('.photo-card');
         tarjetasAnteriores.forEach(tarjeta => {
             tarjeta.classList.remove('uploading', 'success');
-        });
-        
-        // Remover cualquier mensaje de éxito que pueda estar visible
-        const mensajesExito = document.querySelectorAll('.mensaje-exito-discreto');
-        mensajesExito.forEach(mensaje => {
-            if (mensaje.parentNode) {
-                mensaje.parentNode.removeChild(mensaje);
-            }
         });
     }
 });

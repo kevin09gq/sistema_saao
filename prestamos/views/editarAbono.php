@@ -1,6 +1,14 @@
 <?php
-include __DIR__ . "/../../config/config.php";
+require_once __DIR__ . "/../../public/php/config.php";
+
+require_once __DIR__ . "/../../public/php/verificarSesion.php";
+
 verificarSesion();
+
+verificarPermiso("prestamos.ver_menu");
+
+verificarPermiso("prestamos.editar_abono");
+
 ?>
 
 <!DOCTYPE html>
@@ -22,7 +30,7 @@ verificarSesion();
 
 <body class="bg-body-tertiary">
 
-    <?php include __DIR__ . '/../../public/views/navbar.php'; ?>
+    <?php require_once __DIR__ . "/../../navbar/navbar.php"; ?>
 
     <main>
 

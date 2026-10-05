@@ -41,7 +41,7 @@
                 <!-- AGREGAR BENEFICIARIO -->
                 <!-- ========================================= -->
 
-                <div class="card border-0 bg-light mb-4">
+                <div class="card border-0 bg-light mb-4" id="cardAgregarBeneficiario">
 
                     <div class="card-body">
 
@@ -393,4 +393,5 @@
     </div>
 
 </div>
+
 

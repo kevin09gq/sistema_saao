@@ -39,7 +39,7 @@
 
                 <div class="card border-0 bg-light mb-4">
 
-                    <div class="card-body">
+                    <div class="card-body" id="copiarHorariosContainer">
 
                         <h6 class="fw-bold text-secondary mb-3">
                             <i class="bi bi-copy me-2"></i>

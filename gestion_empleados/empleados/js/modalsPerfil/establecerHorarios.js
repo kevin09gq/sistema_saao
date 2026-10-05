@@ -15,6 +15,8 @@ function abrirModalHorarios(idEmpleado) {
 
     obtenerHorarios(idEmpleado);
 
+    aplicarPermisosHorariosReloj8Hrs();
+    
     // Abrir el modal
     $('#modalHorarios').modal('show');
 }

@@ -3,8 +3,10 @@
 
 <!--Incluir config.php para iniciar sesión -->
 <?php
-include "../../../config/config.php";
+include "../../../public/php/config.php";
+include "../../../public/php/verificarSesion.php";
 verificarSesion(); // Proteger esta página
+verificarPermiso("nomina.ver_historial_confianza");
 ?>
 
 <head>

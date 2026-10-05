@@ -37,7 +37,7 @@
                 <!-- COPIAR HORARIOS -->
                 <!-- ========================================= -->
 
-                <div class="card border-0 bg-light mb-4">
+                <div class="card border-0 bg-light mb-4" id="copiarHorariosOficialesContainer">
 
                     <div class="card-body">
 

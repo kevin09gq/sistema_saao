@@ -55,12 +55,12 @@ color: #1a1717 !important;
     padding-top: 1rem;
     margin-top: -1rem;
     padding-bottom: 0.5rem;
+    border-bottom: 1px solid #dee2e6;
 }
 
 #labelNombreEmpleado,
 #labelTotalEmpleado {
     color: #ffffff !important;
 }
-
 
 

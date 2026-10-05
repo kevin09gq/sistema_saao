@@ -3,8 +3,12 @@
 
 <!--Incluir config.php para iniciar sesión -->
 <?php
-include "../../../config/config.php";
+require_once __DIR__ . "/../../../public/php/config.php";
+require_once __DIR__ . "/../../../public/php/verificarSesion.php";
+
 verificarSesion(); // Proteger esta página
+verificarPermiso("nomina.crear_nomina40lbs");
+
 ?>
 
 <head>
@@ -30,7 +34,7 @@ verificarSesion(); // Proteger esta página
 <body class="bg-secondary-subtle">
     <?php
     // Incluir el navbar (config.php ya fue incluido en el head)
-    include "../../../public/views/navbar.php"
+    require_once __DIR__ . "/../../../navbar/navbar.php";
     ?>
 
     <!-- CONTENEDOR DE LOS DATOS DE LA NOMINA -->
@@ -184,12 +188,6 @@ verificarSesion(); // Proteger esta página
                             </button>
                         </li>
                         <li>
-                            <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_establecer_sueldo_diario">
-                                <i class="bi bi-wallet2"></i>
-                                <span>Establecer Sueldo Diario</span>
-                            </button>
-                        </li>
-                        <li>
                             <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_config_conceptos">
                                 <i class="bi bi-gear text-primary"></i>
                                 <span>Configurar Conceptos</span>
@@ -207,7 +205,7 @@ verificarSesion(); // Proteger esta página
                                 <span>Agregar Percepciones / Deducciones</span>
                             </button>
                         </li>
-                         <li>
+                        <li>
                             <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btn_actualizar_percepciones">
                                 <i class="bi bi-pencil-square text-primary"></i>
                                 <span>Actualizar Percepciones</span>
@@ -383,7 +381,6 @@ verificarSesion(); // Proteger esta página
     <?php include 'modals/modalBiometrico.php'; ?>
     <?php include 'modals/modalHorarioSemanal.php'; ?>
     <?php include 'modals/modalSueldoBase.php'; ?>
-     <?php include 'modals/modalSueldoDiario.php'; ?>
     <?php include 'modals/modalConfigConceptos.php'; ?>
     <?php include 'modals/modalOlvidoChecador.php'; ?>
     <?php include 'modals/modalDetallesNomina.php'; ?>
@@ -425,7 +422,6 @@ verificarSesion(); // Proteger esta página
     <script src="../js/modals/redondearHorarios.js"></script>
     <script src="../js/modals/incidencias.js"></script>
     <script src="../js/modals/establecerSueldoBase.js"></script>
-    <script src="../js/modals/establecerSueldoDiario.js"></script>
     <script src="../js/modals/configConceptos.js"></script>
     <script src="../js/modals/olvidoChecador.js"></script>
     <script src="../js/modals/ocultarEmpleados.js"></script>

@@ -1,7 +1,8 @@
 <?php
-include("../conexion/conexion.php");
+require_once __DIR__ . "/../conexion/conexion.php";
 // Incluir la configuración para las rutas
-include "../config/config.php";
+require_once __DIR__ . "/../public/php/config.php";
+require_once __DIR__ . "/../public/php/verificarSesion.php";
 verificarSesion();
 ?>
 <!DOCTYPE html>
@@ -13,10 +14,10 @@ verificarSesion();
     <title>Generador de Gafetes</title>
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
-    <link rel="stylesheet" href="css/estilos.css">
+    <link rel="stylesheet" href="css/estilos.css?v=<?= filemtime(__DIR__ . '/css/estilos.css') ?>">
     <link rel="stylesheet" href="../nomina/styles/nomina_styles.css">
     <link rel="stylesheet" href="css/casillero.css">
-    <link rel="stylesheet" href="css/subir-fotos.css">
+    <link rel="stylesheet" href="css/subir-fotos.css?v=<?= filemtime(__DIR__ . '/css/subir-fotos.css') ?>">
     <link rel="stylesheet" href="css/logos-gafetes.css">
     <link rel="stylesheet" href="css/confirmacion.css">
     <link rel="stylesheet" href="../public/styles/main.css">
@@ -24,150 +25,47 @@ verificarSesion();
     <!-- SweetAlert2 CSS -->
     <script src="<?= SWEETALERT ?>"></script>
     
-    <!-- Estilos personalizados para validación de campos -->
-    <style>
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        @keyframes glow {
-            0%, 100% {
-                box-shadow: 0 0 20px rgba(220, 53, 69, 0.4), inset 0 1px 3px rgba(220, 53, 69, 0.1);
-            }
-            50% {
-                box-shadow: 0 0 30px rgba(220, 53, 69, 0.6), inset 0 1px 3px rgba(220, 53, 69, 0.2);
-            }
-        }
-        
-        @keyframes successGlow {
-            0%, 100% {
-                box-shadow: 0 0 15px rgba(40, 167, 69, 0.3), inset 0 1px 3px rgba(40, 167, 69, 0.1);
-            }
-            50% {
-                box-shadow: 0 0 25px rgba(40, 167, 69, 0.5), inset 0 1px 3px rgba(40, 167, 69, 0.2);
-            }
-        }
-        
-        .campo-invalido {
-            animation: glow 2s ease-in-out infinite;
-        }
-        
-        .campo-valido {
-            animation: successGlow 2s ease-in-out infinite;
-        }
-        
-        .error-indicator, .success-indicator {
-            font-weight: 500;
-            letter-spacing: 0.3px;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        }
-        
-        .error-indicator i, .success-indicator i {
-            margin-right: 4px;
-            font-size: 14px;
-        }
-        
-        /* Efecto hover mejorado para campos */
-        input:hover, select:hover, textarea:hover {
-            transition: all 0.3s ease;
-        }
-        
-        /* Efecto focus mejorado */
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
-            border-color: #0d6efd;
-            transition: all 0.3s ease;
-        }
-
-        /* Compactación (tipo nómina, sin recortes a la derecha) */
-        .container-tabla-nomina {
-            margin: 12px;
-        }
-
-        .header-tabla {
-            padding: 10px 12px;
-        }
-
-        .header-controls {
-            gap: 8px;
-            flex-wrap: wrap;
-            justify-content: flex-end;
-        }
-
-        .controles-tabla {
-            padding: 6px 12px;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .filtros-container {
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .export-buttons {
-            gap: 6px;
-            flex-wrap: wrap;
-            justify-content: flex-end;
-        }
-
-        #tablaEmpleados th,
-        #tablaEmpleados td {
-            padding: 6px 8px;
-            font-size: 11px;
-        }
-
-        #tablaEmpleados thead th {
-            font-size: 10px;
-        }
-    </style>
+    <!-- Estilos de Gafetes y Modal de Actualización -->
+    <link rel="stylesheet" href="css/gafetes.css?v=<?= filemtime(__DIR__ . '/css/gafetes.css') ?>">
 </head>
 
 <body>
     <?php
     // Incluir el navbar
-    include "../public/views/navbar.php";
+    require_once __DIR__ . "/../navbar/navbar.php";
     ?>
 
     <div class="container-tabla-nomina">
         <div class="header-tabla">
             <div>
                 <h3 class="m-0" style="font-weight: 700;">Generador de Gafetes</h3>
-                <div class="subtitulo-nomina" style="margin: 6px 0 0 0; font-size: 13px;">Selecciona empleados, genera gafetes y administra fotos</div>
+                <div class="subtitulo-nomina" style="margin: 4px 0 0 0; font-size: 13px;">Selecciona empleados, genera gafetes y administra fotos</div>
             </div>
             <div class="header-controls">
-                <button class="btn btn-outline-primary btn-lg-header" type="button" id="generarGafetes" title="Generar Gafetes">Gafetes
-                    <i class="bi bi-person-vcard"></i>
+                <button class="btn btn-outline-secondary btn-sm" type="button" id="generarGafetes" title="Generar Gafetes">
+                    <i class="bi bi-person-vcard text-primary"></i> Gafetes
                 </button>
-                <button class="btn btn-outline-primary btn-lg-header" type="button" id="generarFoto" title="Generar Foto">Foto
-                    <i class="bi bi-camera-fill"></i>
+                <button class="btn btn-outline-secondary btn-sm" type="button" id="generarFoto" title="Generar Hoja de Fotos">
+                    <i class="bi bi-camera text-success"></i> Foto
                 </button>
-                 <button class="btn btn-outline-primary btn-lg-header" type="button" id="btnCasillero" title="Casillero">Casillero
-                    <i class="bi bi-box-seam"></i>
+                <button class="btn btn-outline-secondary btn-sm" type="button" id="btnCasillero" title="Administrar Casillero">
+                    <i class="bi bi-box-seam text-primary"></i> Casillero
                 </button>
-                <button class="btn btn-outline-info btn-lg-header" type="button" id="subirFotos" data-bs-toggle="modal" data-bs-target="#modalSubirFotos" title="Subir fotos">Subir Fotos
-                    <i class="bi bi-cloud-upload"></i>
+                <button class="btn btn-outline-secondary btn-sm" type="button" id="subirFotos" data-bs-toggle="modal" data-bs-target="#modalSubirFotos" title="Subir fotos">
+                    <i class="bi bi-cloud-arrow-up text-info"></i> Subir Fotos
                 </button>
-                <button class="btn btn-outline-primary btn-lg-header" type="button" id="actualizarLogos" data-bs-toggle="modal" data-bs-target="#modalActualizarLogos" title="Actualizar logos">Actualizar Logos
-                    <i class="bi bi-images"></i>
+                <button class="btn btn-outline-secondary btn-sm" type="button" id="actualizarLogos" data-bs-toggle="modal" data-bs-target="#modalActualizarLogos" title="Actualizar logos">
+                    <i class="bi bi-images text-success"></i> Logos
                 </button>
-                <button class="btn btn-outline-primary btn-lg-header" type="button" id="btnConfigColoresAreas" data-bs-toggle="modal" data-bs-target="#modalColoresAreas" title="Colores por área">Colores 
-                    <i class="bi bi-palette-fill"></i>
+                <button class="btn btn-outline-secondary btn-sm" type="button" id="btnConfigColoresAreas" data-bs-toggle="modal" data-bs-target="#modalColoresAreas" title="Colores por área">
+                    <i class="bi bi-palette text-warning"></i> Colores
                 </button>
-                <button class="btn btn-outline-warning btn-lg-header" type="button" id="btnConfigVigencia" data-bs-toggle="modal" data-bs-target="#modalConfigVigencia" title="Configurar vigencia">Vigencia
-                    <i class="bi bi-calendar-check"></i>
+                <button class="btn btn-outline-secondary btn-sm" type="button" id="btnConfigVigencia" data-bs-toggle="modal" data-bs-target="#modalConfigVigencia" title="Configurar vigencia">
+                    <i class="bi bi-calendar-check text-secondary"></i> Vigencia
                 </button>
-               <button class="btn btn-outline-primary btn-lg-header" type="button" id="limpiarFotos" title="Limpiar fotos">
+              <!-- <button class="btn btn-outline-danger btn-sm" type="button" id="limpiarFotos" title="Limpiar fotos huérfanas">
                     <i class="bi bi-trash3"></i>
-                </button>
+                </button>-->
             </div>
         </div>
 
@@ -207,36 +105,38 @@ verificarSesion();
                 <button class="btn btn-sm btn-outline-secondary" type="button" id="limpiarFiltroEstadoBtn" title="Limpiar filtro" style="display:none;">
                     <i class="bi bi-eraser-fill"></i>
                 </button>
-            </div>
 
-            <div class="export-buttons">
-                <div class="btn-group" role="group" aria-label="Selección">
-                    <button id="seleccionarTodos" class="btn btn-outline-success btn-sm" type="button">
-                        <i class="bi bi-check2-square"></i> Todos
-                    </button>
-                    <button id="deseleccionarTodos" class="btn btn-outline-warning btn-sm" type="button">
-                        <i class="bi bi-square"></i> Ninguno
-                    </button>
-                </div>
-                            </div>
+                <button class="btn btn-sm btn-outline-primary" id="seleccionarTodos" title="Seleccionar todos los empleados">
+                    <i class="bi bi-check-all"></i> Seleccionar Todos
+                </button>
+                <button class="btn btn-sm btn-outline-danger" id="deseleccionarTodos" title="Deseleccionar todos los empleados">
+                    <i class="bi bi-x-square"></i> Quitar Selección
+                </button>
+            </div>
         </div>
 
         <div class="table-responsive">
-            <table class="table table-sm table-hover align-middle mb-0" id="tablaEmpleados">
-                <thead class="table-light">
+            <table class="table table-hover align-middle mb-0" id="tablaEmpleados">
+                <thead>
                     <tr>
-                        <th id="sortClave" data-sortable>
-                            Clave <span class="sort-icon"></span>
+                        <th class="text-center">
+                            Foto
                         </th>
-                        <th>Nombre</th>
-                        <th>Departamento</th>
-                        <th>Área</th>
-                        <th>Estado</th>
-                        <th>IMSS</th>
-                        <th>Orden Nombre</th>
-                        <th>Seleccionar</th>
-                        <th>Foto</th>
-                        <th>Editar</th>
+                        <th id="sortClave" data-sortable>
+                            Nombre <span class="sort-icon"></span>
+                        </th>
+                        <th>
+                            Depto. / Área
+                        </th>
+                        <th>
+                            Estado / IMSS
+                        </th>
+                        <th class="text-center">
+                            Orden Nombre
+                        </th>
+                        <th class="text-center">
+                            Acciones
+                        </th>
                     </tr>
                 </thead>
                 <tbody id="cuerpoTabla">
@@ -265,37 +165,51 @@ verificarSesion();
 
     <!-- Modal para subir fotos -->
     <div class="modal fade" id="modalSubirFotos" tabindex="-1" aria-labelledby="modalSubirFotosLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-info text-white">
-                    <h5 class="modal-title" id="modalSubirFotosLabel">Subir Fotos de Empleados</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header flex-shrink-0">
+                    <h5 class="modal-title" id="modalSubirFotosLabel">
+                        <i class="bi bi-cloud-upload text-success me-2"></i>Subir Fotos de Empleados
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle-fill me-2"></i>
-                        Seleccione los empleados y sus respectivas fotos. Puede seleccionar varias fotos a la vez.
+                <div class="modal-body flex-grow-1 overflow-auto">
+
+                    <!-- Nota informativa -->
+                    <div class="card border-0 bg-light mb-3">
+                        <div class="card-body py-2">
+                            <p class="text-muted mb-0 small">
+                                <i class="bi bi-info-circle me-1 text-success"></i>
+                                Seleccione los empleados y sus respectivas fotos. Puede seleccionar varias fotos a la vez.
+                            </p>
+                        </div>
                     </div>
 
-                    <div id="listaEmpleadosSeleccionados" class="mb-3">
-                        <!-- Aquí se mostrarán los empleados seleccionados -->
+                    <!-- Empleados seleccionados -->
+                    <div id="listaEmpleadosSeleccionados" class="mb-3"></div>
+
+                    <!-- Seleccionar fotos -->
+                    <div class="card border-0 bg-light mb-3">
+                        <div class="card-body">
+                            <h6 class="fw-bold text-secondary mb-3">
+                                <i class="bi bi-images me-2 text-success"></i>Seleccionar Fotos
+                            </h6>
+                            <input class="form-control" type="file" id="fotosEmpleados" multiple accept="image/*">
+                            <div class="form-text mt-1">Seleccione las fotos correspondientes a los empleados seleccionados.</div>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="fotosEmpleados" class="form-label">Seleccionar Fotos</label>
-                        <input class="form-control" type="file" id="fotosEmpleados" multiple accept="image/*">
-                        <div class="form-text">Seleccione las fotos correspondientes a los empleados seleccionados.</div>
-                    </div>
+                    <!-- Vista previa -->
+                    <div id="vistaPreviaFotos" class="row g-2"></div>
 
-                    <div id="vistaPreviaFotos" class="row g-2">
-                        <!-- Aquí se mostrará la vista previa de las fotos seleccionadas -->
-                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" id="btnSubirFotos">
-                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true" id="spinnerSubir"></span>
-                        Subir Fotos
+                <div class="modal-footer flex-shrink-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i>Cancelar
+                    </button>
+                    <button type="button" class="btn btn-success" id="btnSubirFotos">
+                        <span class="spinner-border spinner-border-sm d-none me-1" role="status" aria-hidden="true" id="spinnerSubir"></span>
+                        <i class="bi bi-cloud-upload me-1"></i>Subir Fotos
                     </button>
                 </div>
             </div>
@@ -305,12 +219,12 @@ verificarSesion();
     <!-- Modal para actualizar logos -->
     <div class="modal fade" id="modalActualizarLogos" tabindex="-1" aria-labelledby="modalActualizarLogosLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header">
                     <h5 class="modal-title" id="modalActualizarLogosLabel">
-                        <i class="bi bi-images"></i> Actualizar Logos de Empresas y Áreas
+                        <i class="bi bi-images text-primary me-2"></i>Actualizar Logos de Empresas y Áreas
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
                 <div class="modal-body">
                     <div class="alert alert-primary d-flex align-items-center">
@@ -392,19 +306,23 @@ verificarSesion();
 
     <!-- Modal para previsualizar gafetes -->
     <div class="modal fade" id="modalGafetes" tabindex="-1" aria-labelledby="modalGafetesLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="modalGafetesLabel">Vista Previa de Gafetes</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header flex-shrink-0">
+                    <h5 class="modal-title" id="modalGafetesLabel">
+                        <i class="bi bi-person-vcard text-primary me-2"></i>Vista Previa de Gafetes
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
-                <div class="modal-body" id="contenidoGafetes">
+                <div class="modal-body flex-grow-1 overflow-auto" id="contenidoGafetes">
                     <!-- Aquí se mostrarán los gafetes -->
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <div class="modal-footer flex-shrink-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i>Cerrar
+                    </button>
                     <button type="button" class="btn btn-primary" id="imprimirGafetes">
-                        <i class="bi bi-printer"></i> Imprimir
+                        <i class="bi bi-printer me-1"></i>Imprimir
                     </button>
                 </div>
             </div>
@@ -413,18 +331,21 @@ verificarSesion();
 
     <!-- Modal para previsualizar fotos -->
     <div class="modal fade" id="modalFotos" tabindex="-1" aria-labelledby="modalFotosLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title" id="modalFotosLabel">Vista Previa de Fotos de Empleados</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header flex-shrink-0">
+                    <h5 class="modal-title" id="modalFotosLabel">
+                        <i class="bi bi-camera text-success me-2"></i>Vista Previa de Fotos de Empleados
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="alert alert-success d-flex align-items-center">
-                        <i class="bi bi-camera-fill me-2"></i>
-                        <div>
-                            <strong>Fotos listas para imprimir</strong><br>
-                            <small>A continuación se muestran las fotos de los empleados seleccionados.</small>
+                <div class="modal-body flex-grow-1 overflow-auto">
+                    <div class="card border-0 bg-light mb-3">
+                        <div class="card-body py-2">
+                            <p class="text-muted mb-0 small">
+                                <i class="bi bi-camera-fill me-1 text-success"></i>
+                                <strong>Fotos listas para imprimir.</strong> A continuación se muestran las fotos de los empleados seleccionados.
+                            </p>
                         </div>
                     </div>
 
@@ -436,12 +357,12 @@ verificarSesion();
                         <!-- Aquí se mostrarán las fotos -->
                     </div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer flex-shrink-0">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="bi bi-x-circle"></i> Cancelar
+                        <i class="bi bi-x-circle me-1"></i>Cancelar
                     </button>
                     <button type="button" class="btn btn-success" id="imprimirFotos">
-                        <i class="bi bi-printer"></i> Imprimir
+                        <i class="bi bi-printer me-1"></i>Imprimir
                     </button>
                 </div>
             </div>
@@ -450,351 +371,283 @@ verificarSesion();
 
     <!-- Modal Actualizar Empleado -->
     <div class="modal fade" id="modal_actualizar_empleado" tabindex="-1" aria-labelledby="modalActualizarEmpleadoLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <form id="form_modal_actualizar_empleado">
-                    <div class="modal-header bg-primary text-white">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow">
+                <form id="form_modal_actualizar_empleado" class="d-flex flex-column h-100 overflow-hidden">
+                    <div class="modal-header flex-shrink-0">
                         <h5 class="modal-title" id="modalActualizarEmpleadoLabel">
-                            <i class="bi bi-pencil-square"></i> Actualizar Información del Empleado
+                            <i class="bi bi-pencil-square text-success me-2"></i>Actualizar Información del Empleado
                         </h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                     </div>
-                    <div class="modal-body">
+                    <div class="modal-body flex-grow-1 overflow-auto">
                         <!-- Nav tabs -->
-                        <ul class="nav nav-tabs" id="modalTabs" role="tablist">
+                        <ul class="nav nav-tabs mb-4" id="modalTabs" role="tablist">
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link active" id="tab-trabajador" data-bs-toggle="tab" data-bs-target="#tab_trabajador" type="button" role="tab" aria-controls="tab_trabajador" aria-selected="true">
-                                    Datos del Trabajador
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="tab-foto" data-bs-toggle="tab" data-bs-target="#tab_foto" type="button" role="tab" aria-controls="tab_foto" aria-selected="false">
-                                    Foto del Empleado
+                                    <i class="bi bi-person me-2"></i>Datos del Trabajador
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="tab-emergencia" data-bs-toggle="tab" data-bs-target="#tab_emergencia" type="button" role="tab" aria-controls="tab_emergencia" aria-selected="false">
-                                    Contacto de Emergencia
+                                    <i class="bi bi-telephone-plus me-2"></i>Contacto de Emergencia
                                 </button>
                             </li>
                         </ul>
+
                         <!-- Tab panes -->
                         <div class="tab-content">
-                            <!-- Trabajador -->
+                            <!-- ========================================== -->
+                            <!-- TAB 1: DATOS DEL TRABAJADOR                -->
+                            <!-- ========================================== -->
                             <div class="tab-pane fade show active" id="tab_trabajador" role="tabpanel" aria-labelledby="tab-trabajador">
                                 <input type="hidden" id="modal_id_empleado" name="id_empleado">
-                                <div class="row">
-                                    <input type="hidden" id="empleado_id" value="">
-                                    <div class="col-md-4 mb-4">
-                                        <label for="modal_clave_empleado" class="form-label">Clave</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-key"></i></span>
-                                            <input type="text" class="form-control" id="modal_clave_empleado" name="clave_empleado" placeholder="Clave del empleado">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-4">
-                                        <label for="modal_nombre_empleado" class="form-label">Nombre</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-person"></i></span>
-                                            <input type="text" class="form-control" id="modal_nombre_empleado" name="nombre_empleado" placeholder="Nombre del empleado">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-4">
-                                        <label for="modal_apellido_paterno" class="form-label">Apellido Paterno</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
-                                            <input type="text" class="form-control" id="modal_apellido_paterno" name="apellido_paterno" placeholder="Apellido paterno">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-4 mb-4">
-                                        <label for="modal_apellido_materno" class="form-label">Apellido Materno</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
-                                            <input type="text" class="form-control" id="modal_apellido_materno" name="apellido_materno" placeholder="Apellido materno">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-4">
-                                        <label for="modal_imss" class="form-label">IMSS</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
-                                            <input type="text" class="form-control" id="modal_imss" name="imss" placeholder="Número de IMSS">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-4">
-                                        <label for="modal_curp" class="form-label">CURP</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-card-text"></i></span>
-                                            <input type="text" class="form-control" id="modal_curp" name="curp" placeholder="Clave Única de Registro de Población">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-8 mb-4">
-                                        <label for="modal_domicilio" class="form-label">Domicilio</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-house-door"></i></span>
-                                            <textarea class="form-control" id="modal_domicilio" name="domicilio" rows="2" placeholder="Domicilio completo"></textarea>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-4">
-                                        <label for="modal_sexo" class="form-label">Sexo</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-gender-ambiguous"></i></span>
-                                            <select class="form-select" id="modal_sexo" name="sexo">
-                                                <option value="">Selecciona</option>
-                                                <option value="M">Masculino</option>
-                                                <option value="F">Femenino</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-4 mb-4">
-                                        <label for="modal_grupo_sanguineo" class="form-label">Grupo Sanguíneo</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-droplet"></i></span>
-                                            <input type="text" class="form-control" id="modal_grupo_sanguineo" name="grupo_sanguineo" placeholder="Tipo sanguíneo">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-4">
-                                        <label for="modal_estado_civil" class="form-label">Estado Civil</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-heart"></i></span>
-                                            <select class="form-select" id="modal_estado_civil" name="estado_civil">
-                                                <option value="">Selecciona</option>
-                                                <option value="SOLTERO">Soltero/a</option>
-                                                <option value="CASADO">Casado/a</option>
-                                                <option value="DIVORCIADO">Divorciado/a</option>
-                                                <option value="VIUDO">Viudo/a</option>
-                                                <option value="UNION_LIBRE">Unión Libre</option>
-                                               
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-4">
-                                        <label for="modal_fecha_nacimiento" class="form-label">Fecha de Nacimiento</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-calendar"></i></span>
-                                            <input type="date" class="form-control" id="modal_fecha_nacimiento" name="fecha_nacimiento">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-4 mb-4">
-                                        <label for="modal_num_casillero" class="form-label">Número de Casillero</label>
-                                        <div class="input-group">
-                                            <button class="btn btn-outline-info" type="button" id="btnAbrirCasillero" title="Abrir casillero">
-                                                <i class="bi bi-inbox"></i>
-                                            </button>
-                                            <input type="text" class="form-control" id="modal_num_casillero" name="num_casillero" placeholder="Ej: 101 o A15">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-4">
-                                        <label for="modal_biometrico" class="form-label">Biométrico</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-fingerprint"></i></span>
-                                            <input type="number" class="form-control" id="modal_biometrico" name="biometrico" min="0" placeholder="ID biométrico">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-4 mb-4">
-                                        <label for="modal_enfermedades_alergias" class="form-label">Enfermedades/Alergias</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-bandaid"></i></span>
-                                            <input type="text" class="form-control" id="modal_enfermedades_alergias" name="enfermedades_alergias" placeholder="Enfermedades o alergias">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-4">
-                                        <label for="modal_fecha_ingreso" class="form-label">Fecha de Ingreso</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-calendar-check"></i></span>
-                                            <input type="date" class="form-control" id="modal_fecha_ingreso" name="fecha_ingreso">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-4">
-                                        <label for="modal_fecha_reingreso" class="form-label">Fecha de Reingreso</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-calendar-range"></i></span>
-                                            <input type="date" class="form-control" id="modal_fecha_reingreso" name="fecha_reingreso">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-4">
-                                        <label for="modal_telefono_empleado" class="form-label">Teléfono</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-telephone"></i></span>
-                                            <input type="text" class="form-control" id="modal_telefono_empleado" name="telefono_empleado" placeholder="Teléfono del empleado">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-4 mb-4">
-                                        <label for="modal_departamento" class="form-label">Departamento</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-building"></i></span>
-                                            <select class="form-select" id="modal_departamento" name="id_departamento">
-                                                <!-- Opciones dinámicas -->
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-4">
-                                        <label for="modal_empresa" class="form-label">Empresa</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-building-check"></i></span>
-                                            <select class="form-select" id="modal_empresa" name="id_empresa">
-                                                <option value="">Selecciona una empresa</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-4">
-                                        <label for="modal_area" class="form-label">Área</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
-                                            <select class="form-select" id="modal_area" name="id_area">
-                                                <option value="">Selecciona un área</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-4 mb-4">
-                                        <label for="modal_puesto" class="form-label">Puesto</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-briefcase"></i></span>
-                                            <select class="form-select" id="modal_puesto" name="id_puestoEspecial">
-                                                <option value="">Selecciona un puesto</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Foto del empleado -->
-                            <div class="tab-pane fade" id="tab_foto" role="tabpanel" aria-labelledby="tab-foto">
-                                <div class="row justify-content-center">
-                                    <div class="col-md-8">
-                                        <div class="card">
-                                            <div class="card-header text-white" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);">
-                                                <h6 class="card-title mb-0">
-                                                    <i class="bi bi-camera-fill me-2"></i>Fotografía del Empleado
-                                                </h6>
+                                <input type="hidden" id="empleado_id" value="">
+
+                                <!-- ========================================= -->
+                                <!-- 1. DATOS PERSONALES -->
+                                <!-- ========================================= -->
+                                <div class="card border-0 bg-light mb-4">
+                                    <div class="card-body">
+                                        <h6 class="fw-bold text-secondary mb-3">
+                                            <i class="bi bi-person me-2 text-success"></i>Datos personales
+                                        </h6>
+                                        <div class="row g-3">
+                                            <!-- Clave -->
+                                            <div class="col-md-3">
+                                                <label for="modal_clave_empleado" class="form-label fw-semibold">Clave</label>
+                                                <input type="text" class="form-control" id="modal_clave_empleado" name="clave_empleado" placeholder="Clave">
                                             </div>
-                                            <div class="card-body text-center">
-                                                <!-- Nombre del empleado en la parte inferior izquierda -->
-                                                <div class="text-start mb-3">
-                                                    <h5 id="nombre_empleado_foto" class="fw-bold text-muted"></h5>
-                                                </div>
-                                                <!-- Vista previa de la foto actual -->
-                                                <div class="mb-4">
-                                                    <h6 class="mb-3">Foto Actual</h6>
-                                                    <div id="foto_preview_container" class="d-inline-block">
-                                                        <img id="foto_preview" src="" alt="Foto del empleado"
-                                                            class="img-thumbnail"
-                                                            style="width: 200px; height: 240px; object-fit: cover; display: none;">
-                                                        <div id="no_foto_preview" class="text-muted">
-                                                            <i class="bi bi-person-circle" style="font-size: 100px;"></i>
-                                                            <p class="mt-2">No hay foto disponible</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
 
-                                                <!-- Input para subir nueva foto -->
-                                                <div class="mb-4">
-                                                    <label for="nueva_foto" class="form-label">Seleccionar nueva foto</label>
-                                                    <div class="input-group">
-                                                        <input type="file" class="form-control" id="nueva_foto" name="nueva_foto"
-                                                            accept="image/*" capture="environment">
-                                                        <label class="input-group-text" for="nueva_foto">
-                                                            <i class="bi bi-folder2-open"></i>
-                                                        </label>
-                                                    </div>
-                                                    <div class="form-text">
-                                                        Formatos permitidos: JPG, PNG, GIF. Tamaño máximo: 5MB
-                                                    </div>
-                                                </div>
+                                            <!-- Nombre -->
+                                            <div class="col-md-3">
+                                                <label for="modal_nombre_empleado" class="form-label fw-semibold">Nombre</label>
+                                                <input type="text" class="form-control text-uppercase" id="modal_nombre_empleado" name="nombre_empleado" placeholder="Nombre">
+                                            </div>
 
-                                                <!-- Vista previa de la nueva foto -->
-                                                <div class="mb-4" id="nueva_foto_preview_container" style="display: none;">
-                                                    <h6>Vista previa de la nueva foto:</h6>
-                                                    <img id="nueva_foto_preview" src="" alt="Vista previa"
-                                                        class="img-thumbnail"
-                                                        style="width: 200px; height: 240px; object-fit: cover;">
-                                                </div>
+                                            <!-- Apellido Paterno -->
+                                            <div class="col-md-3">
+                                                <label for="modal_apellido_paterno" class="form-label fw-semibold">Apellido Paterno</label>
+                                                <input type="text" class="form-control text-uppercase" id="modal_apellido_paterno" name="apellido_paterno" placeholder="Apellido paterno">
+                                            </div>
 
-                                                <!-- Botones de acción -->
-                                                <div class="d-flex justify-content-center gap-3">
-                                                    <button type="button" id="btn_subir_foto" class="btn btn-success" disabled>
-                                                        <i class="bi bi-upload"></i> Subir Foto
+                                            <!-- Apellido Materno -->
+                                            <div class="col-md-3">
+                                                <label for="modal_apellido_materno" class="form-label fw-semibold">Apellido Materno</label>
+                                                <input type="text" class="form-control text-uppercase" id="modal_apellido_materno" name="apellido_materno" placeholder="Apellido materno">
+                                            </div>
+
+                                            <!-- IMSS -->
+                                            <div class="col-md-3">
+                                                <label for="modal_imss" class="form-label fw-semibold">IMSS</label>
+                                                <input type="text" class="form-control" id="modal_imss" name="imss" placeholder="Número de IMSS">
+                                            </div>
+
+                                            <!-- CURP -->
+                                            <div class="col-md-3">
+                                                <label for="modal_curp" class="form-label fw-semibold">CURP</label>
+                                                <input type="text" class="form-control text-uppercase" id="modal_curp" name="curp" maxlength="18" placeholder="CURP">
+                                            </div>
+
+                                            <!-- Domicilio -->
+                                            <div class="col-md-6">
+                                                <label for="modal_domicilio" class="form-label fw-semibold">Domicilio</label>
+                                                <input type="text" class="form-control" id="modal_domicilio" name="domicilio" placeholder="Domicilio completo">
+                                            </div>
+
+                                            <!-- Sexo -->
+                                            <div class="col-md-3">
+                                                <label for="modal_sexo" class="form-label fw-semibold">Sexo</label>
+                                                <select class="form-select" id="modal_sexo" name="sexo">
+                                                    <option value="">Seleccionar</option>
+                                                    <option value="M">Masculino</option>
+                                                    <option value="F">Femenino</option>
+                                                </select>
+                                            </div>
+
+                                            <!-- Grupo Sanguíneo -->
+                                            <div class="col-md-3">
+                                                <label for="modal_grupo_sanguineo" class="form-label fw-semibold">Grupo Sanguíneo</label>
+                                                <input type="text" class="form-control text-uppercase" id="modal_grupo_sanguineo" name="grupo_sanguineo" placeholder="Tipo sanguíneo">
+                                            </div>
+
+                                            <!-- Estado Civil -->
+                                            <div class="col-md-3">
+                                                <label for="modal_estado_civil" class="form-label fw-semibold">Estado Civil</label>
+                                                <select class="form-select" id="modal_estado_civil" name="estado_civil">
+                                                    <option value="">Seleccionar</option>
+                                                    <option value="SOLTERO">Soltero(a)</option>
+                                                    <option value="CASADO">Casado(a)</option>
+                                                    <option value="DIVORCIADO">Divorciado(a)</option>
+                                                    <option value="VIUDO">Viudo(a)</option>
+                                                    <option value="UNION_LIBRE">Unión Libre</option>
+                                                </select>
+                                            </div>
+
+                                            <!-- Fecha de Nacimiento -->
+                                            <div class="col-md-3">
+                                                <label for="modal_fecha_nacimiento" class="form-label fw-semibold">Fecha de Nacimiento</label>
+                                                <input type="date" class="form-control" id="modal_fecha_nacimiento" name="fecha_nacimiento">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- ========================================= -->
+                                <!-- 2. DATOS DE CONTACTO Y SALUD -->
+                                <!-- ========================================= -->
+                                <div class="card border-0 bg-light mb-4">
+                                    <div class="card-body">
+                                        <h6 class="fw-bold text-secondary mb-3">
+                                            <i class="bi bi-telephone me-2 text-success"></i>Datos de contacto y salud
+                                        </h6>
+                                        <div class="row g-3">
+                                            <!-- Teléfono -->
+                                            <div class="col-md-4">
+                                                <label for="modal_telefono_empleado" class="form-label fw-semibold">Teléfono</label>
+                                                <input type="tel" class="form-control" id="modal_telefono_empleado" name="telefono_empleado" maxlength="10" placeholder="10 dígitos">
+                                            </div>
+
+                                            <!-- Enfermedades / Alergias -->
+                                            <div class="col-md-8">
+                                                <label for="modal_enfermedades_alergias" class="form-label fw-semibold">Enfermedades / Alergias</label>
+                                                <input type="text" class="form-control" id="modal_enfermedades_alergias" name="enfermedades_alergias" placeholder="Escriba las enfermedades o alergias...">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- ========================================= -->
+                                <!-- 3. DATOS LABORALES -->
+                                <!-- ========================================= -->
+                                <div class="card border-0 bg-light mb-4">
+                                    <div class="card-body">
+                                        <h6 class="fw-bold text-secondary mb-3">
+                                            <i class="bi bi-building me-2 text-success"></i>Datos laborales
+                                        </h6>
+                                        <div class="row g-3">
+                                            <!-- Número de Casillero -->
+                                            <div class="col-md-3">
+                                                <label for="modal_num_casillero" class="form-label fw-semibold">Número de Casillero</label>
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control" id="modal_num_casillero" name="num_casillero" placeholder="Casillero">
+                                                    <button class="btn btn-outline-success" type="button" id="btnAbrirCasillero" title="Abrir casillero">
+                                                        <i class="bi bi-inbox"></i>
                                                     </button>
-                                                    <button type="button" id="btn_eliminar_foto" class="btn btn-danger">
-                                                        <i class="bi bi-trash"></i> Eliminar Foto
-                                                    </button>
                                                 </div>
+                                            </div>
+
+                                            <!-- Biométrico -->
+                                            <div class="col-md-3">
+                                                <label for="modal_biometrico" class="form-label fw-semibold">Biométrico</label>
+                                                <input type="number" class="form-control" id="modal_biometrico" name="biometrico" min="0" placeholder="ID biométrico">
+                                            </div>
+
+                                            <!-- Fecha de Ingreso -->
+                                            <div class="col-md-3">
+                                                <label for="modal_fecha_ingreso" class="form-label fw-semibold">Fecha de Ingreso</label>
+                                                <input type="date" class="form-control" id="modal_fecha_ingreso" name="fecha_ingreso">
+                                            </div>
+
+                                            <!-- Fecha de Reingreso -->
+                                            <div class="col-md-3">
+                                                <label for="modal_fecha_reingreso" class="form-label fw-semibold">Fecha de Reingreso</label>
+                                                <input type="date" class="form-control" id="modal_fecha_reingreso" name="fecha_reingreso">
+                                            </div>
+
+                                            <!-- Empresa -->
+                                            <div class="col-md-3">
+                                                <label for="modal_empresa" class="form-label fw-semibold">Empresa</label>
+                                                <select class="form-select" id="modal_empresa" name="id_empresa">
+                                                    <option value="">Selecciona una empresa</option>
+                                                </select>
+                                            </div>
+
+                                            <!-- Área -->
+                                            <div class="col-md-3">
+                                                <label for="modal_area" class="form-label fw-semibold">Área</label>
+                                                <select class="form-select" id="modal_area" name="id_area">
+                                                    <option value="">Selecciona un área</option>
+                                                </select>
+                                            </div>
+
+                                            <!-- Departamento -->
+                                            <div class="col-md-3">
+                                                <label for="modal_departamento" class="form-label fw-semibold">Departamento</label>
+                                                <select class="form-select" id="modal_departamento" name="id_departamento">
+                                                    <!-- Opciones dinámicas -->
+                                                </select>
+                                            </div>
+
+                                            <!-- Puesto -->
+                                            <div class="col-md-3">
+                                                <label for="modal_puesto" class="form-label fw-semibold">Puesto</label>
+                                                <select class="form-select" id="modal_puesto" name="id_puestoEspecial">
+                                                    <option value="">Selecciona un puesto</option>
+                                                </select>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <!-- Contacto de emergencia -->
+
+                            <!-- ========================================== -->
+                            <!-- TAB 2: CONTACTO DE EMERGENCIA              -->
+                            <!-- ========================================== -->
                             <div class="tab-pane fade" id="tab_emergencia" role="tabpanel" aria-labelledby="tab-emergencia">
-                                <div class="row">
-                                    <div class="col-md-4 mb-4">
-                                        <label for="modal_emergencia_nombre" class="form-label">Nombre</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-person"></i></span>
-                                            <input type="text" class="form-control" id="modal_emergencia_nombre" name="emergencia_nombre" placeholder="Nombre del contacto">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-4">
-                                        <label for="modal_emergencia_ap_paterno" class="form-label">Apellido Paterno</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
-                                            <input type="text" class="form-control" id="modal_emergencia_ap_paterno" name="emergencia_ap_paterno" placeholder="Apellido paterno">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-4">
-                                        <label for="modal_emergencia_ap_materno" class="form-label">Apellido Materno</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
-                                            <input type="text" class="form-control" id="modal_emergencia_ap_materno" name="emergencia_ap_materno" placeholder="Apellido materno">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-4 mb-4">
-                                        <label for="modal_emergencia_telefono" class="form-label">Teléfono</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-telephone"></i></span>
-                                            <input type="text" class="form-control" id="modal_emergencia_telefono" name="emergencia_telefono" placeholder="Teléfono de contacto">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-4">
-                                        <label for="modal_emergencia_parentesco" class="form-label">Parentesco</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-people"></i></span>
-                                            <input type="text" class="form-control" id="modal_emergencia_parentesco" name="emergencia_parentesco" placeholder="Relación con el empleado">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-12 mb-4">
-                                        <label for="modal_emergencia_domicilio" class="form-label">Domicilio</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-house-door"></i></span>
-                                            <textarea class="form-control" id="modal_emergencia_domicilio" name="emergencia_domicilio" rows="2" placeholder="Domicilio del contacto"></textarea>
+                                <div class="card border-0 bg-light mb-3">
+                                    <div class="card-body">
+                                        <h6 class="fw-bold text-secondary mb-3">
+                                            <i class="bi bi-person-lines-fill me-2 text-success"></i>Información del contacto de emergencia
+                                        </h6>
+                                        <div class="row g-3">
+                                            <!-- Nombre -->
+                                            <div class="col-md-4">
+                                                <label for="modal_emergencia_nombre" class="form-label fw-semibold">Nombre</label>
+                                                <input type="text" class="form-control text-uppercase" id="modal_emergencia_nombre" name="emergencia_nombre" placeholder="Nombre del contacto">
+                                            </div>
+
+                                            <!-- Apellido Paterno -->
+                                            <div class="col-md-4">
+                                                <label for="modal_emergencia_ap_paterno" class="form-label fw-semibold">Apellido Paterno</label>
+                                                <input type="text" class="form-control text-uppercase" id="modal_emergencia_ap_paterno" name="emergencia_ap_paterno" placeholder="Apellido paterno">
+                                            </div>
+
+                                            <!-- Apellido Materno -->
+                                            <div class="col-md-4">
+                                                <label for="modal_emergencia_ap_materno" class="form-label fw-semibold">Apellido Materno</label>
+                                                <input type="text" class="form-control text-uppercase" id="modal_emergencia_ap_materno" name="emergencia_ap_materno" placeholder="Apellido materno">
+                                            </div>
+
+                                            <!-- Teléfono -->
+                                            <div class="col-md-4">
+                                                <label for="modal_emergencia_telefono" class="form-label fw-semibold">Teléfono</label>
+                                                <input type="tel" class="form-control" id="modal_emergencia_telefono" name="emergencia_telefono" maxlength="10" placeholder="10 dígitos">
+                                            </div>
+
+                                            <!-- Parentesco -->
+                                            <div class="col-md-4">
+                                                <label for="modal_emergencia_parentesco" class="form-label fw-semibold">Parentesco</label>
+                                                <input type="text" class="form-control" id="modal_emergencia_parentesco" name="emergencia_parentesco" placeholder="Relación con el empleado">
+                                            </div>
+
+                                            <!-- Domicilio -->
+                                            <div class="col-md-12">
+                                                <label for="modal_emergencia_domicilio" class="form-label fw-semibold">Domicilio</label>
+                                                <textarea class="form-control" id="modal_emergencia_domicilio" name="emergencia_domicilio" rows="2" placeholder="Ingrese el domicilio del contacto de emergencia..."></textarea>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer">
+                    <div class="modal-footer flex-shrink-0">
                         <button type="button" id="btn_cancelar" class="btn btn-secondary" data-bs-dismiss="modal">
-                            <i class="bi bi-x-circle"></i> Cancelar
+                            Cancelar
                         </button>
-                        <button type="submit" id="btn_actualizar" class="btn text-white" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);">
-                            <i class="bi bi-check-circle"></i> Guardar Cambios
+                        <button type="submit" id="btn_actualizar" class="btn btn-success">
+                            <i class="bi bi-check-lg me-1"></i> Guardar Cambios
                         </button>
                     </div>
                 </form>
@@ -802,82 +655,159 @@ verificarSesion();
         </div>
     </div>
 
+    <!-- Modal Actualizar Foto de Perfil (estilo gestión empleados) -->
+    <div class="modal fade" id="modalActualizarFoto" tabindex="-1" aria-labelledby="modalActualizarFotoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <!-- ENCABEZADO -->
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalActualizarFotoLabel">
+                        <i class="bi bi-camera me-2"></i> Foto de perfil
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+
+                <!-- CUERPO -->
+                <div class="modal-body">
+                    <form id="formActualizarFoto" enctype="multipart/form-data">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body">
+                                <h6 class="fw-bold text-secondary mb-3">
+                                    <i class="bi bi-image me-2"></i> Fotografía
+                                </h6>
+                                <!-- Vista previa del avatar -->
+                                <div class="d-flex justify-content-center mb-4">
+                                    <div id="contenedorPreviewFotoModal" class="avatar-modal-preview">
+                                        <!-- Aquí se inyecta la foto o las iniciales -->
+                                    </div>
+                                </div>
+                                <!-- Selector de archivo -->
+                                <div>
+                                    <label for="inputFotoEmpleado" class="form-label fw-semibold">
+                                        Seleccionar nueva imagen
+                                    </label>
+                                    <input type="file" id="inputFotoEmpleado" name="foto" accept="image/jpeg,image/png,image/webp,image/gif" class="form-control">
+                                    <div class="form-text text-muted">
+                                        Formatos permitidos: <strong>JPG, PNG, WEBP, GIF</strong> (Máximo 5 MB).
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- PIE DE MODAL -->
+                <div class="modal-footer d-flex justify-content-between align-items-center flex-nowrap">
+                    <div>
+                        <button type="button" id="btnEliminarFotoPerfil" class="btn btn-outline-danger btn-sm text-nowrap" title="Eliminar foto actual">
+                            <i class="bi bi-trash me-1"></i> Eliminar foto
+                        </button>
+                    </div>
+                    <div class="d-flex gap-2 ms-auto">
+                        <button type="button" class="btn btn-secondary btn-sm text-nowrap" data-bs-dismiss="modal">
+                            <i class="bi bi-x-lg me-1"></i> Cerrar
+                        </button>
+                        <button type="button" id="btnGuardarFoto" class="btn btn-success btn-sm text-nowrap">
+                            <i class="bi bi-check-lg me-1"></i> Guardar Foto
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal para editar casillero -->
     <div class="modal fade" id="modalEditarCasillero" tabindex="-1" aria-labelledby="modalEditarCasilleroLabel" aria-hidden="true" style="z-index: 1061;">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header flex-shrink-0">
                     <h5 class="modal-title" id="modalEditarCasilleroLabel">
-                        <i class="bi bi-pencil-square"></i> Editar Casillero
+                        <i class="bi bi-pencil-square text-success me-2"></i>Editar Casillero
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body flex-grow-1 overflow-auto">
+
                     <!-- Contenedor para mostrar información del empleado asignado -->
                     <div id="infoEmpleadoAsignado" class="mb-3"></div>
-                    
+
                     <!-- Pestañas -->
                     <ul class="nav nav-tabs mb-3" id="casilleroTabs" role="tablist">
                         <li class="nav-item" role="presentation">
                             <button class="nav-link active" id="editar-tab" data-bs-toggle="tab" data-bs-target="#editar" type="button" role="tab" aria-controls="editar" aria-selected="true">
-                                <i class="bi bi-pencil-square"></i> Editar
+                                <i class="bi bi-pencil-square me-1"></i>Editar
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="asignar-tab" data-bs-toggle="tab" data-bs-target="#asignar" type="button" role="tab" aria-controls="asignar" aria-selected="false">
-                                <i class="bi bi-person-plus"></i> Asignar Empleado
+                                <i class="bi bi-person-plus me-1"></i>Asignar Empleado
                             </button>
                         </li>
                     </ul>
 
                     <!-- Contenido de las pestañas -->
                     <div class="tab-content" id="casilleroTabsContent">
+
                         <!-- Pestaña Editar -->
                         <div class="tab-pane fade show active" id="editar" role="tabpanel" aria-labelledby="editar-tab">
-                            <form id="formEditarCasillero">
-                                <input type="hidden" id="casillero_id" name="casillero_id">
-                                <div class="mb-3">
-                                    <label for="nuevo_numero" class="form-label">Nuevo Número de Casillero</label>
-                                    <input type="text" class="form-control" id="nuevo_numero" name="nuevo_numero" required>
-                                    <div class="form-text">Ingrese el nuevo número para este casillero.</div>
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="fw-bold text-secondary mb-3">
+                                        <i class="bi bi-hash me-2 text-success"></i>Número de Casillero
+                                    </h6>
+                                    <form id="formEditarCasillero">
+                                        <input type="hidden" id="casillero_id" name="casillero_id">
+                                        <div class="mb-3">
+                                            <label for="nuevo_numero" class="form-label fw-semibold">Nuevo Número</label>
+                                            <input type="text" class="form-control" id="nuevo_numero" name="nuevo_numero" placeholder="Ej: 1, 1A, 2B..." required>
+                                            <div class="form-text">Ingrese el nuevo número identificador para este casillero.</div>
+                                        </div>
+                                    </form>
                                 </div>
-                            </form>
+                            </div>
                         </div>
 
                         <!-- Pestaña Asignar Empleado -->
                         <div class="tab-pane fade" id="asignar" role="tabpanel" aria-labelledby="asignar-tab">
-                            <div class="mb-3 position-relative">
-                                <label for="buscarEmpleado" class="form-label">Buscar Empleado</label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control pe-5" id="buscarEmpleado" placeholder="Nombre o ID del empleado">
-                                    <button class="btn btn-outline-primary" type="button" id="btnBuscarEmpleado">
-                                        <i class="bi bi-search"></i> Buscar
-                                    </button>
+                            <div class="card border-0 bg-light mb-3">
+                                <div class="card-body">
+                                    <h6 class="fw-bold text-secondary mb-3">
+                                        <i class="bi bi-person-search me-2 text-success"></i>Buscar Empleado
+                                    </h6>
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text bg-white border-end-0">
+                                            <i class="bi bi-search text-muted"></i>
+                                        </span>
+                                        <input type="text" class="form-control border-start-0 pe-5" id="buscarEmpleado" placeholder="Nombre o ID del empleado">
+                                        <button class="btn btn-outline-success" type="button" id="btnBuscarEmpleado">
+                                            <i class="bi bi-search me-1"></i>Buscar
+                                        </button>
+                                        <button class="btn btn-outline-secondary" type="button" id="btnLimpiarBusquedaEmpleado" title="Limpiar búsqueda">
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                    </div>
+                                    <div class="form-text">Escriba el nombre o ID del empleado y presione Buscar</div>
                                 </div>
-                                <button class="btn btn-link p-0 position-absolute" type="button" id="btnLimpiarBusquedaEmpleado" title="Limpiar búsqueda" style="right: 115px; top: 40px;">
-                                    <i class="bi bi-x-circle-fill text-secondary"></i>
-                                </button>
-                                <div class="form-text">Escriba el nombre o ID del empleado y presione Buscar</div>
                             </div>
-                            
-                            <div id="resultadoBusqueda" class="mt-3">
-                                <div class="text-center text-muted">
+
+                            <div id="resultadoBusqueda" class="mt-2">
+                                <div class="text-center text-muted py-3">
                                     <i class="bi bi-person-lines-fill fs-1"></i>
-                                    <p class="mt-2">Busque un empleado para asignar al casillero</p>
+                                    <p class="mt-2 mb-0">Busque un empleado para asignar al casillero</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" id="btnEliminarCasillero">
-                        <i class="bi bi-trash"></i> Eliminar
+                <div class="modal-footer flex-shrink-0">
+                    <button type="button" class="btn btn-danger me-auto" id="btnEliminarCasillero">
+                        <i class="bi bi-trash me-1"></i>Eliminar
                     </button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="bi bi-x-circle"></i> Cancelar
+                        <i class="bi bi-x-circle me-1"></i>Cancelar
                     </button>
-                    <button type="button" class="btn btn-primary" id="btnGuardarCambios">
-                        <i class="bi bi-save"></i> Guardar Cambios
+                    <button type="button" class="btn btn-success" id="btnGuardarCambios">
+                        <i class="bi bi-check-lg me-1"></i>Guardar Cambios
                     </button>
                 </div>
             </div>
@@ -887,32 +817,45 @@ verificarSesion();
     <!-- Modal para agregar nuevo casillero -->
     <div class="modal fade" id="modalAgregarCasillero" tabindex="-1" aria-labelledby="modalAgregarCasilleroLabel" aria-hidden="true" style="z-index: 1071;">
         <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header flex-shrink-0">
                     <h5 class="modal-title" id="modalAgregarCasilleroLabel">
-                        <i class="bi bi-plus-circle"></i> Agregar Nuevo Casillero
+                        <i class="bi bi-plus-circle text-success me-2"></i>Agregar Nuevo Casillero
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="formAgregarCasillero">
-                        <div class="mb-3">
-                            <label for="numeroCasillero" class="form-label">Número del Casillero</label>
-                            <input type="text" class="form-control" id="numeroCasillero" name="numeroCasillero" placeholder="Ej: 1, 1A, 2B, etc." required>
-                            <div class="form-text">Ingrese el número identificador único para el nuevo casillero.</div>
+                    <!-- Número del casillero -->
+                    <div class="card border-0 bg-light mb-3">
+                        <div class="card-body">
+                            <h6 class="fw-bold text-secondary mb-3">
+                                <i class="bi bi-hash me-2 text-success"></i>Número del Casillero
+                            </h6>
+                            <form id="formAgregarCasillero">
+                                <div class="mb-3">
+                                    <label for="numeroCasillero" class="form-label fw-semibold">Número identificador</label>
+                                    <input type="text" class="form-control" id="numeroCasillero" name="numeroCasillero" placeholder="Ej: 1, 1A, 2B, etc." required>
+                                    <div class="form-text">Ingrese el número identificador único para el nuevo casillero.</div>
+                                </div>
+                            </form>
                         </div>
-                        <div class="alert alert-info">
-                            <h6 class="alert-heading"><i class="bi bi-info-circle"></i> Nota importante</h6>
-                            <p class="mb-0">El sistema validará automáticamente que el número de casillero no entre en conflicto con los existentes. Por ejemplo, si ya existe "1", no podrá crear "1A" y viceversa.</p>
+                    </div>
+                    <!-- Nota informativa -->
+                    <div class="card border-0 bg-light">
+                        <div class="card-body py-2">
+                            <p class="text-muted mb-0 small">
+                                <i class="bi bi-info-circle me-1 text-success"></i>
+                                <strong>Nota:</strong> El sistema validará automáticamente que el número no entre en conflicto con los existentes. Por ejemplo, si ya existe "1", no podrá crear "1A" y viceversa.
+                            </p>
                         </div>
-                    </form>
+                    </div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer flex-shrink-0">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="bi bi-x-circle"></i> Cancelar
+                        <i class="bi bi-x-circle me-1"></i>Cancelar
                     </button>
-                    <button type="button" class="btn btn-primary" id="btnConfirmarAgregar">
-                        <i class="bi bi-plus-circle"></i> Agregar Casillero
+                    <button type="button" class="btn btn-success" id="btnConfirmarAgregar">
+                        <i class="bi bi-plus-circle me-1"></i>Agregar Casillero
                     </button>
                 </div>
             </div>
@@ -922,10 +865,12 @@ verificarSesion();
     <!-- Modal: Configurar colores por área -->
     <div class="modal fade" id="modalColoresAreas" tabindex="-1" aria-labelledby="modalColoresAreasLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header bg-secondary text-white">
-                    <h5 class="modal-title" id="modalColoresAreasLabel"><i class="bi bi-palette-fill me-2"></i>Colores por Área</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header flex-shrink-0">
+                    <h5 class="modal-title" id="modalColoresAreasLabel">
+                        <i class="bi bi-palette-fill text-warning me-2"></i>Colores por Área
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
                 <div class="modal-body">
                     <div class="alert alert-info mb-3">
@@ -965,30 +910,36 @@ verificarSesion();
     <!-- Modal: Configurar vigencia de gafetes -->
     <div class="modal fade" id="modalConfigVigencia" tabindex="-1" aria-labelledby="modalConfigVigenciaLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-warning text-dark">
-                    <h5 class="modal-title" id="modalConfigVigenciaLabel"><i class="bi bi-calendar-check me-2"></i>Configurar Vigencia</h5>
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalConfigVigenciaLabel">
+                        <i class="bi bi-calendar-check text-secondary me-2"></i>Configurar Vigencia
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="alert alert-info mb-3">
-                        <i class="bi bi-info-circle-fill me-2"></i>
-                        Establece el tiempo de vigencia para los gafetes. Puedes configurar separadamente para empleados con y sin IMSS.
+                    <div class="card border-0 bg-light mb-3">
+                        <div class="card-body py-2">
+                            <p class="text-muted mb-0 small">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Establece el tiempo de vigencia para los gafetes. Puedes configurar separadamente para empleados con y sin IMSS.
+                            </p>
+                        </div>
                     </div>
 
                     <!-- Configuración para CON IMSS -->
-                    <div class="card mb-3 border-success">
-                        <div class="card-header bg-success text-white">
-                            <i class="bi bi-shield-lock me-2"></i>Empleados CON IMSS
-                        </div>
+                    <div class="card border-0 bg-light mb-3">
                         <div class="card-body">
-                            <div class="row align-items-center">
+                            <h6 class="fw-bold text-secondary mb-3">
+                                <i class="bi bi-shield-lock me-2 text-success"></i>Empleados CON IMSS
+                            </h6>
+                            <div class="row align-items-center g-3">
                                 <div class="col-md-5">
-                                    <label for="con_imss_valor" class="form-label">Valor</label>
+                                    <label for="con_imss_valor" class="form-label fw-semibold">Valor</label>
                                     <input type="number" class="form-control" id="con_imss_valor" min="1" value="1">
                                 </div>
                                 <div class="col-md-7">
-                                    <label for="con_imss_unidad" class="form-label">Unidad</label>
+                                    <label for="con_imss_unidad" class="form-label fw-semibold">Unidad</label>
                                     <select class="form-select" id="con_imss_unidad">
                                         <option value="days">Días</option>
                                         <option value="weeks">Semanas</option>
@@ -1001,18 +952,18 @@ verificarSesion();
                     </div>
 
                     <!-- Configuración para SIN IMSS -->
-                    <div class="card border-secondary">
-                        <div class="card-header bg-secondary text-white">
-                            <i class="bi bi-person-x me-2"></i>Empleados SIN IMSS
-                        </div>
+                    <div class="card border-0 bg-light">
                         <div class="card-body">
-                            <div class="row align-items-center">
+                            <h6 class="fw-bold text-secondary mb-3">
+                                <i class="bi bi-person-x me-2 text-secondary"></i>Empleados SIN IMSS
+                            </h6>
+                            <div class="row align-items-center g-3">
                                 <div class="col-md-5">
-                                    <label for="sin_imss_valor" class="form-label">Valor</label>
+                                    <label for="sin_imss_valor" class="form-label fw-semibold">Valor</label>
                                     <input type="number" class="form-control" id="sin_imss_valor" min="1" value="45">
                                 </div>
                                 <div class="col-md-7">
-                                    <label for="sin_imss_unidad" class="form-label">Unidad</label>
+                                    <label for="sin_imss_unidad" class="form-label fw-semibold">Unidad</label>
                                     <select class="form-select" id="sin_imss_unidad">
                                         <option value="days" selected>Días</option>
                                         <option value="weeks">Semanas</option>
@@ -1025,14 +976,14 @@ verificarSesion();
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" id="btnResetConfigVigencia">
-                        <i class="bi bi-arrow-counterclockwise"></i> Restablecer
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnResetConfigVigencia">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>Restablecer
                     </button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="bi bi-x-circle"></i> Cerrar
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i>Cerrar
                     </button>
-                    <button type="button" class="btn btn-warning text-dark" id="btnGuardarConfigVigencia">
-                        <i class="bi bi-check-circle"></i> Guardar
+                    <button type="button" class="btn btn-success btn-sm" id="btnGuardarConfigVigencia">
+                        <i class="bi bi-check-circle me-1"></i>Guardar
                     </button>
                 </div>
             </div>
@@ -1041,12 +992,12 @@ verificarSesion();
 
     <script src="<?= JQUERY_JS ?>"></script>
     <script src="<?= BOOTSTRAP_JS ?>"></script>
-    <script src="js/actualizarLogos.js"></script>
+    <script src="js/actualizarLogos.js?v=<?php echo filemtime(__DIR__ . '/js/actualizarLogos.js'); ?>"></script>
     <script src="js/generarFotos.js?v=<?php echo filemtime(__DIR__ . '/js/generarFotos.js'); ?>"></script>
-    <script src="js/funciones.js"></script>
+    <script src="js/funciones.js?v=<?php echo filemtime(__DIR__ . '/js/funciones.js'); ?>"></script>
     <script src="js/configColoresAreas.js?v=<?php echo filemtime(__DIR__ . '/js/configColoresAreas.js'); ?>"></script>
-    <script src="js/subirFotos.js"></script>
-    <script src="js/casillero.js"></script>
+    <script src="js/subirFotos.js?v=<?php echo filemtime(__DIR__ . '/js/subirFotos.js'); ?>"></script>
+    <script src="js/casillero.js?v=<?php echo filemtime(__DIR__ . '/js/casillero.js'); ?>"></script>
     <script>
         // Abrir modal de Casillero desde el botón junto al campo "Número de Casillero"
         document.addEventListener('DOMContentLoaded', function() {

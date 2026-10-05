@@ -267,7 +267,9 @@ function guardarRegistroEmpleado(indice, fila) {
     if (empleado) {
 
         // Sincronizar los registros actuales con el empleado
-        empleado.registros = registrosEmpleadoActuales;
+        if (empleado.registros) {
+            empleado.registros = registrosEmpleadoActuales;
+        }
 
         // Redondear registros del empleado (calcula biométrico redondeado, sueldo neto, incentivo e historiales de biométrico e inasistencias)
         redondearRegistrosEmpleado(empleado, false);
@@ -360,7 +362,9 @@ function eliminarFilaRegistro(indice) {
     if (empleado) {
 
         // Sincronizar los registros actuales con el empleado
-        empleado.registros = registrosEmpleadoActuales;
+        if (empleado.registros) {
+            empleado.registros = registrosEmpleadoActuales;
+        }
 
         // Redondear registros del empleado (calcula biométrico redondeado, sueldo neto, incentivo e historiales de biométrico e inasistencias)
         redondearRegistrosEmpleado(empleado, false);

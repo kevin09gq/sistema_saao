@@ -39,6 +39,23 @@
                                     <option value="50">50</option>
                                 </select>
                             </div>
+
+                            <div class="col-md-2 mb-3">
+                                <label for="" class="form-label">Ordenar Por:</label>
+                                <select class="form-select form-select-sm shadow-sm" id="ordenar">
+                                    <option value="folio">Folio</option>
+                                    <option value="nombre_cortador">Nombre Cortador</option>
+                                    <option value="fecha_corte">Fecha</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-2 mb-3">
+                                <label for="" class="form-label">Dirección:</label>
+                                <select class="form-select form-select-sm shadow-sm" id="direccion">
+                                    <option value="asc" selected>Ascendente</option>
+                                    <option value="desc">Descendente</option>
+                                </select>
+                            </div>
                         </div>
 
                         <!-- TABLA DE TICKETS -->

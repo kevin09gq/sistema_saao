@@ -15,7 +15,7 @@
             <div class="modal-header">
 
                 <h5 class="modal-title" id="modalContactoEmergenciaLabel">
-                    Contacto de emergencia
+                    Editar Contacto de emergencia
                 </h5>
 
                 <button

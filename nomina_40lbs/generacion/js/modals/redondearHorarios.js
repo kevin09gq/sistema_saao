@@ -27,8 +27,10 @@ function redondearHorarios() {
             if (!empleado.mostrar) {
                 return; // Si no se debe mostrar, continuamos con el siguiente empleado
             }
-            // Redondear marcajes y calcular sueldo/minutos (incluso si no tiene registros o están vacíos)
-            redondearRegistrosEmpleado(empleado, true);
+            // Si el empleado tiene marcajes registrados en el biométrico, procedemos a redondearlos
+            if (empleado.registros && empleado.registros.length > 0) {
+                redondearRegistrosEmpleado(empleado, true);
+            }
         });
     });
 
@@ -53,11 +55,17 @@ function redondearRegistrosEmpleado(empleado, editarHistoriales) {
 
     // Agrupamos todos los marcajes del biométrico por su fecha.
     // Esto se hace porque un empleado puede registrar múltiples entradas o salidas en un mismo día.
+    // Ejemplo de salida:
+    // registrosPorFecha = {
+    //    "13/06/2026": [{ fecha: "13/06/2026", dia: "sábado", entrada: "07:41", salida: "13:19" }],
+    //    "16/06/2026": [
+    //         { fecha: "16/06/2026", dia: "martes", entrada: "07:37", salida: "13:09" },
+    //         { fecha: "16/06/2026", dia: "martes", entrada: "13:42", salida: "22:51" }
+    //    ]
+    // }
     var registrosPorFecha = {};
 
-    var registros = (empleado.registros && Array.isArray(empleado.registros)) ? empleado.registros : [];
-
-    registros.forEach(function (registro) {
+    empleado.registros.forEach(function (registro) {
         if (registro.fecha) {
             if (!registrosPorFecha[registro.fecha]) {
                 registrosPorFecha[registro.fecha] = [];
@@ -504,12 +512,6 @@ function formatearMinutosAHHMM(totalMinutos) {
 // Sirve para: Restar el bono a $0.00 si se detecta que el empleado faltó algún día de la semana.
 // Ejemplo: Si el empleado tiene un registro con entrada "00:00" y salida "00:00" (inasistencia) -> incentivo = 0.
 function aplicarIncentivoEmpleado(empleado) {
-    // Si tiene sueldo diario o no trabajó ningún minuto, el incentivo debe ser 0
-    if (empleado.sueldo_diario || !empleado.minutos_trabajados || empleado.minutos_trabajados <= 0) {
-        empleado.incentivo = 0;
-        return;
-    }
-
     var registros = empleado && empleado.biometrico_redondeado ? empleado.biometrico_redondeado : [];
 
     // Comprobamos si el empleado tiene algún día con inasistencia completa ("00:00" en entrada y salida)

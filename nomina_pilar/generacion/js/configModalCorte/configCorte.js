@@ -2,6 +2,7 @@ let rejas_totales = document.getElementById("rejas_totales");
 let precio_reja = document.getElementById("precio_reja");
 let total_pagar = document.getElementById("total_pagar");
 const modalCorte = new bootstrap.Modal(document.getElementById("modalCorte"));
+let cortes = []; // Array para almacenar los tickets pendientes
 
 // Dias de la semana en el orden ideal para la nómina (DOMINGO = 0, LUNES = 1, ..., SABADO = 6)
 const dias_nomina = ["DOMINGO", "LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO"];
@@ -786,10 +787,47 @@ function llenar_tabla_tickets_pendientes() {
     // OBTENER FILTRO DE BUSQUEDA, LIMITE Y PAGINA ACTUAL
     const busqueda = $("#buscar_ticket").val().trim().toLowerCase();
     const limite = parseInt($('#limite_corte').val()) || 10;
+
+    const ordenar = $('#ordenar').val() || 'folio';
+    const direccion = $('#direccion').val() || 'asc';
+
+    console.log(cortes);
+
+
     let paginaActual = parseInt($('#pagina-actual-corte').data('pagina')) || 1;
 
     // Ordenar los cortes por folio de manera ascendente (alfabéticamente y numéricamente)
-    cortes.sort((a, b) => a.folio.localeCompare(b.folio, 'es', { numeric: true }));
+    cortes.sort((a, b) => {
+        let valorA = a[ordenar];
+        let valorB = b[ordenar];
+
+        // Comparación especial para fechas
+        if (ordenar === 'fecha_corte') {
+            valorA = new Date(valorA);
+            valorB = new Date(valorB);
+            return direccion === 'asc'
+                ? valorA - valorB
+                : valorB - valorA;
+        }
+
+        // Comparación para números
+        if (typeof valorA === 'number' && typeof valorB === 'number') {
+            return direccion === 'asc'
+                ? valorA - valorB
+                : valorB - valorA;
+        }
+
+        // Comparación para texto
+        const resultado = String(valorA).localeCompare(
+            String(valorB),
+            'es',
+            { numeric: true, sensitivity: 'base' }
+        );
+
+        return direccion === 'asc'
+            ? resultado
+            : -resultado;
+    });
 
     // Filtrar los tickets según el folio o el nombre del cortador
     let cortesFiltrados = cortes.filter(corte => {
@@ -1007,7 +1045,7 @@ $(document).on("change", ".check_select_corte", function (e) {
 
             empleado.tickets.push(nuevoTicket);
         }
-        
+
     } else {
         // ELIMINAR POR FOLIO
         if (empleado && Array.isArray(empleado.tickets)) {
@@ -1044,6 +1082,12 @@ $(document).ready(function () {
 
     // Evento de límite por página
     $('#limite_corte').on('change', function () {
+        $('#pagina-actual-corte').data('pagina', 1);
+        llenar_tabla_tickets_pendientes();
+    });
+
+    // Evento de ordenamiento
+    $('#ordenar, #direccion').on('change', function () {
         $('#pagina-actual-corte').data('pagina', 1);
         llenar_tabla_tickets_pendientes();
     });

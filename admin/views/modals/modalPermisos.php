@@ -1,78 +1,53 @@
-<div class="modal fade" id="modalModulosPermisos" tabindex="-1" aria-hidden="true">
+<!-- Modal Gestión de Permisos -->
+<div
+    class="modal fade"
+    id="modalPermisos"
+    tabindex="-1"
+    aria-labelledby="modalPermisosLabel"
+    aria-hidden="true">
 
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
 
         <div class="modal-content">
 
-            <!-- ENCABEZADO -->
+            <!-- Encabezado -->
             <div class="modal-header">
 
-                <h5 class="modal-title">
-                    <i class="bi bi-shield-lock me-2"></i>
-                    Módulos y permisos
-                </h5>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="bg-success bg-opacity-10 rounded p-2">
+                        <i class="bi bi-shield-check text-success fs-5"></i>
+                    </div>
+                    <h5 class="modal-title mb-0" id="modalPermisosLabel">
+                        Gestión de Permisos
+                    </h5>
+                </div>
 
-                <button type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal">
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Cerrar">
                 </button>
 
             </div>
 
 
-            <!-- CONTENIDO -->
+            <!-- Cuerpo -->
             <div class="modal-body">
 
-                <div class="row">
+                <!-- Información del usuario -->
+                <div class="card border-0 bg-light mb-4">
 
-                    <!-- ========================= -->
-                    <!-- LISTA DE MÓDULOS -->
-                    <!-- ========================= -->
-                    <div class="col-md-4 border-end">
+                    <div class="card-body">
 
-                        <h6 class="mb-3">
-                            Módulos
-                        </h6>
+                        <div class="d-flex align-items-center gap-3">
 
-                        <div id="listaModulos">
+                            <div class="avatar-iniciales" id="inicialesUsuarioPermisos"></div>
 
-                            <div class="text-center py-4">
-
-                                <div class="spinner-border"
-                                     role="status">
-                                </div>
-
-                                <p class="text-muted mt-2 mb-0">
-                                    Cargando módulos...
-                                </p>
-
+                            <div>
+                                <h6 class="mb-0 fw-semibold" id="nombreUsuarioPermisos"></h6>
+                                <small class="text-muted" id="datosUsuarioPermisos"></small>
                             </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- ========================= -->
-                    <!-- LISTA DE PERMISOS -->
-                    <!-- ========================= -->
-                    <div class="col-md-8">
-
-                        <div id="tituloModuloPermisos">
-
-                            <h6 class="mb-3">
-                                Selecciona un módulo
-                            </h6>
-
-                            <p class="text-muted">
-                                Selecciona un módulo de la izquierda
-                                para visualizar sus permisos.
-                            </p>
-
-                        </div>
-
-
-                        <div id="listaPermisosModulo">
 
                         </div>
 
@@ -80,18 +55,27 @@
 
                 </div>
 
+                <!-- Contenedor de permisos dinámicos -->
+                <div id="contenedorPermisos"></div>
+
             </div>
 
 
-            <!-- PIE -->
+            <!-- Pie -->
             <div class="modal-footer">
 
-                <button type="button"
-                        class="btn btn-secondary"
-                        data-bs-dismiss="modal">
+                <button
+                    type="button"
+                    class="btn btn-back"
+                    data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i> Cancelar
+                </button>
 
-                    Cerrar
-
+                <button
+                    type="button"
+                    class="btn btn-success"
+                    id= "btnGuardarPermisos">
+                    <i class="bi bi-check-lg"></i> Guardar cambios
                 </button>
 
             </div>

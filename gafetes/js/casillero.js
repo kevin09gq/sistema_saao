@@ -2,7 +2,7 @@
 let casilleroActual = null;
 let paginaActual = 1;
 let totalPaginas = 1;
-let filtroActual = 'todos'; // 'todos', 'disponibles', 'asignados'
+let filtroActual = 'todos'; // 'todos', 'disponibles', 'parciales', 'completos'
 let busquedaActual = ''; // Texto de búsqueda actual
 
 // Función para cargar los casilleros desde la base de datos
@@ -12,18 +12,27 @@ function cargarCasilleros(pagina = 1, filtro = 'todos', busqueda = '') {
     paginaActual = paginaValida;
     filtroActual = filtro;
     busquedaActual = busqueda;
-    
+
     const contenedor = document.getElementById('contenedor-casilleros');
     if (!contenedor) return;
 
-    // Mostrar indicador de carga
-    contenedor.innerHTML = `
-        <div class="col-12 text-center">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Cargando...</span>
-            </div>
-            <p class="mt-2">Cargando casilleros...</p>
-        </div>`;
+    // Fade out suave antes de actualizar el contenido
+    contenedor.style.transition = 'opacity 0.15s ease';
+    contenedor.style.opacity = '0';
+
+    // Mostrar spinner solo si la respuesta tarda más de 250ms (evita el flash)
+    const spinnerTimer = setTimeout(() => {
+        if (contenedor.style.opacity === '0') {
+            contenedor.innerHTML = `
+                <div class="col-12 text-center py-4">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Cargando casilleros...</p>
+                </div>`;
+            contenedor.style.opacity = '1';
+        }
+    }, 250);
 
     // Construir la URL con todos los parámetros
     let url = `php/obtener_casilleros.php?pagina=${paginaValida}&filtro=${filtro}`;
@@ -35,28 +44,31 @@ function cargarCasilleros(pagina = 1, filtro = 'todos', busqueda = '') {
     fetch(url)
         .then(response => response.json())
         .then(data => {
+            clearTimeout(spinnerTimer);
             if (data.success) {
                 paginaActual = data.pagina_actual;
                 totalPaginas = data.total_paginas;
                 filtroActual = data.filtro_actual;
                 busquedaActual = data.busqueda_actual || '';
+                actualizarBotonesFiltro(filtro);
                 mostrarCasilleros(data.data);
                 mostrarPaginacion();
-                actualizarBotonesFiltro(filtro);
             } else {
                 throw new Error(data.error || 'Error al cargar los casilleros');
             }
         })
         .catch(error => {
+            clearTimeout(spinnerTimer);
             console.error('Error:', error);
             contenedor.innerHTML = `
-                <div class="col-12 text-center text-danger">
+                <div class="col-12 text-center text-danger py-4">
                     <i class="bi bi-exclamation-triangle-fill fs-1"></i>
                     <p class="mt-2">Error al cargar los casilleros: ${error.message}</p>
-                    <button class="btn btn-sm btn-outline-primary" onclick="cargarCasilleros(1, '${filtro}', '${busqueda}')">
+                    <button class="btn btn-sm btn-outline-danger" onclick="cargarCasilleros(1, '${filtro}', '${busqueda}')">
                         <i class="bi bi-arrow-clockwise"></i> Reintentar
                     </button>
                 </div>`;
+            contenedor.style.opacity = '1';
         });
 }
 
@@ -65,15 +77,19 @@ function actualizarBotonesFiltro(filtro) {
     // Remover clase active de todos los botones
     document.getElementById('btnFiltroTodos').classList.remove('active');
     document.getElementById('btnFiltroDisponibles').classList.remove('active');
-    document.getElementById('btnFiltroAsignados').classList.remove('active');
-    
+    document.getElementById('btnFiltroParciales').classList.remove('active');
+    document.getElementById('btnFiltroCompletos').classList.remove('active');
+
     // Agregar clase active al botón correspondiente
     switch (filtro) {
         case 'disponibles':
             document.getElementById('btnFiltroDisponibles').classList.add('active');
             break;
-        case 'asignados':
-            document.getElementById('btnFiltroAsignados').classList.add('active');
+        case 'parciales':
+            document.getElementById('btnFiltroParciales').classList.add('active');
+            break;
+        case 'completos':
+            document.getElementById('btnFiltroCompletos').classList.add('active');
             break;
         default:
             document.getElementById('btnFiltroTodos').classList.add('active');
@@ -85,164 +101,127 @@ function mostrarCasilleros(casilleros) {
     const contenedor = document.getElementById('contenedor-casilleros');
     if (!contenedor) return;
 
+    let html = '';
+
     if (casilleros.length === 0) {
-        contenedor.innerHTML = `
-            <div class="col-12 text-center">
-                <div class="alert alert-info">
+        html = `
+            <div class="col-12 text-center py-4">
+                <div class="alert alert-info d-inline-flex align-items-center gap-2">
                     <i class="bi bi-info-circle"></i> No hay casilleros registrados.
                 </div>
             </div>`;
-        return;
+    } else {
+        // Crear la cuadrícula de casilleros
+        casilleros.forEach(casillero => {
+            // Asegurarse de que los valores sean del tipo correcto
+            const numCasillero = String(casillero.num_casillero || '');
+            const totalEmpleados = parseInt(casillero.total_empleados) || 0;
+            const estado = String(casillero.estado || 'Disponible');
+            const empleadoNombre = String(casillero.empleado_nombre || '');
+
+            // Determinar el color según el estado y número de empleados
+            let claseEstado = 'bg-success'; // Disponible
+            if (totalEmpleados > 0) {
+                claseEstado = 'bg-warning'; // Parcialmente ocupado (1 empleado)
+                if (totalEmpleados >= 2) {
+                    claseEstado = 'bg-danger'; // Completamente ocupado (2 empleados)
+                }
+            }
+
+            // Mostrar solo los primeros nombres de empleados si están asignados
+            let infoEmpleado = '';
+            if (empleadoNombre && empleadoNombre.trim() !== '') {
+                if (totalEmpleados > 1) {
+                    const nombres = empleadoNombre.split(', ').map(nombreCompleto => {
+                        return nombreCompleto.split(' ')[0];
+                    });
+                    infoEmpleado = `<div class="casillero-empleado" title="${empleadoNombre}">${nombres.join(', ')}</div>`;
+                } else {
+                    let nombreMostrar = empleadoNombre.split(' ')[0];
+                    infoEmpleado = `<div class="casillero-empleado" title="${empleadoNombre}">${nombreMostrar}</div>`;
+                }
+            }
+
+            html += `
+            <div class="col-auto p-1">
+                <div class="casillero-item ${claseEstado}"
+                     onclick="manejarClicCasillero('${numCasillero.replace(/'/g, "\\'")}', ${totalEmpleados > 0})">
+                    <div class="casillero-numero">${numCasillero}</div>
+                    <div class="casillero-estado">${estado} (${totalEmpleados}/2)</div>
+                    ${infoEmpleado}
+                </div>
+            </div>`;
+        });
     }
 
-    // Crear la cuadrícula de casilleros
-    let html = '';
-    casilleros.forEach(casillero => {
-        // Asegurarse de que los valores sean del tipo correcto
-        const numCasillero = String(casillero.num_casillero || '');
-        const totalEmpleados = parseInt(casillero.total_empleados) || 0;
-        const estado = String(casillero.estado || 'Disponible');
-        const empleadoNombre = String(casillero.empleado_nombre || '');
-        
-        // Determinar el color según el estado y número de empleados
-        let claseEstado = 'bg-success'; // Disponible
-        if (totalEmpleados > 0) {
-            claseEstado = 'bg-warning'; // Parcialmente ocupado (1 empleado)
-            if (totalEmpleados >= 2) {
-                claseEstado = 'bg-danger'; // Completamente ocupado (2 empleados)
-            }
-        }
-        
-        // Mostrar solo los primeros nombres de empleados si están asignados
-        let infoEmpleado = '';
-        if (empleadoNombre && empleadoNombre.trim() !== '') {
-            // Si hay múltiples empleados, mostrar solo los primeros nombres separados por coma
-            if (totalEmpleados > 1) {
-                // Para múltiples empleados, mostrar solo los primeros nombres separados por coma
-                const nombres = empleadoNombre.split(', ').map(nombreCompleto => {
-                    // Extraer solo el primer nombre de cada empleado
-                    return nombreCompleto.split(' ')[0];
-                });
-                infoEmpleado = `<div class="casillero-empleado" title="${empleadoNombre}">${nombres.join(', ')}</div>`;
-            } else {
-                // Para un solo empleado, mostrar solo el primer nombre
-                let nombreMostrar = empleadoNombre.split(' ')[0];
-                infoEmpleado = `<div class="casillero-empleado" title="${empleadoNombre}">${nombreMostrar}</div>`;
-            }
-        }
-        
-        html += `
-        <div class="col-auto p-1">
-            <div class="casillero-item ${claseEstado}" 
-                 onclick="manejarClicCasillero('${numCasillero.replace(/'/g, "\\'")}', ${totalEmpleados > 0})">
-                <div class="casillero-numero">${numCasillero}</div>
-                <div class="casillero-estado">${estado} (${totalEmpleados}/2)</div>
-                ${infoEmpleado}
-            </div>
-        </div>`;
-    });
-
+    // Actualizar el DOM de una sola vez y hacer fade in suave
     contenedor.innerHTML = html;
+    contenedor.style.transition = 'opacity 0.15s ease';
+    contenedor.style.opacity = '0';
+    // Forzar reflow para que la transición se active
+    contenedor.getBoundingClientRect();
+    contenedor.style.opacity = '1';
 }
 
 // Función para mostrar la paginación
 function mostrarPaginacion() {
-    const contenedor = document.getElementById('contenedor-casilleros');
-    if (!contenedor) return;
+    // Usar el contenedor dedicado de paginación (fuera del grid de casilleros)
+    const paginacionWrapper = document.getElementById('controles-paginacion');
+    const infoPaginacion = document.getElementById('info-paginacion');
+    const paginacionEl = document.getElementById('paginacion-casilleros');
 
-    // Solo mostrar paginación si hay más de una página
-    if (totalPaginas <= 1) return;
+    if (!paginacionWrapper || !paginacionEl) return;
 
-    let paginacionHtml = `
-        <div class="col-12 mt-3">
-            <nav aria-label="Navegación de casilleros">
-                <ul class="pagination justify-content-center">
-    `;
-
-    // Botón anterior
-    if (paginaActual > 1) {
-        paginacionHtml += `
-            <li class="page-item">
-                <a class="page-link" href="#" onclick="cargarCasilleros(${paginaActual - 1}, '${filtroActual}', '${busquedaActual}'); return false;">
-                    <i class="bi bi-chevron-left"></i> Anterior
-                </a>
-            </li>
-        `;
-    } else {
-        paginacionHtml += `
-            <li class="page-item disabled">
-                <span class="page-link">
-                    <i class="bi bi-chevron-left"></i> Anterior
-                </span>
-            </li>
-        `;
+    // Actualizar info de página
+    if (infoPaginacion) {
+        infoPaginacion.textContent = `Página ${paginaActual} de ${totalPaginas}`;
     }
 
-    // Mostrar siempre la página 1
-    paginacionHtml += `
-        <li class="page-item ${paginaActual === 1 ? 'active' : ''}">
-            <a class="page-link" href="#" onclick="cargarCasilleros(1, '${filtroActual}', '${busquedaActual}'); return false;">1</a>
-        </li>
-    `;
+    // Ocultar si solo hay una página
+    if (totalPaginas <= 1) {
+        paginacionWrapper.style.display = 'none';
+        return;
+    }
 
-    // Mostrar puntos suspensivos si es necesario
+    paginacionWrapper.style.display = '';
+
+    let items = '';
+
+    // Botón anterior
+    items += paginaActual > 1
+        ? `<li class="page-item"><a class="page-link" href="#" onclick="cargarCasilleros(${paginaActual - 1}, '${filtroActual}', '${busquedaActual}'); return false;"><i class="bi bi-chevron-left"></i></a></li>`
+        : `<li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-left"></i></span></li>`;
+
+    // Página 1
+    items += `<li class="page-item ${paginaActual === 1 ? 'active' : ''}"><a class="page-link" href="#" onclick="cargarCasilleros(1, '${filtroActual}', '${busquedaActual}'); return false;">1</a></li>`;
+
     if (paginaActual > 3) {
-        paginacionHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+        items += `<li class="page-item disabled"><span class="page-link">…</span></li>`;
     }
 
     // Páginas intermedias
     const rangoInicio = Math.max(2, paginaActual - 1);
     const rangoFin = Math.min(totalPaginas - 1, paginaActual + 1);
-
     for (let i = rangoInicio; i <= rangoFin; i++) {
-        paginacionHtml += `
-            <li class="page-item ${paginaActual === i ? 'active' : ''}">
-                <a class="page-link" href="#" onclick="cargarCasilleros(${i}, '${filtroActual}', '${busquedaActual}'); return false;">${i}</a>
-            </li>
-        `;
+        items += `<li class="page-item ${paginaActual === i ? 'active' : ''}"><a class="page-link" href="#" onclick="cargarCasilleros(${i}, '${filtroActual}', '${busquedaActual}'); return false;">${i}</a></li>`;
     }
 
-    // Mostrar puntos suspensivos si es necesario
     if (paginaActual < totalPaginas - 2) {
-        paginacionHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+        items += `<li class="page-item disabled"><span class="page-link">…</span></li>`;
     }
 
-    // Mostrar la última página si hay más de una página
+    // Última página
     if (totalPaginas > 1) {
-        paginacionHtml += `
-            <li class="page-item ${paginaActual === totalPaginas ? 'active' : ''}">
-                <a class="page-link" href="#" onclick="cargarCasilleros(${totalPaginas}, '${filtroActual}', '${busquedaActual}'); return false;">${totalPaginas}</a>
-            </li>
-        `;
+        items += `<li class="page-item ${paginaActual === totalPaginas ? 'active' : ''}"><a class="page-link" href="#" onclick="cargarCasilleros(${totalPaginas}, '${filtroActual}', '${busquedaActual}'); return false;">${totalPaginas}</a></li>`;
     }
 
     // Botón siguiente
-    if (paginaActual < totalPaginas) {
-        paginacionHtml += `
-            <li class="page-item">
-                <a class="page-link" href="#" onclick="cargarCasilleros(${paginaActual + 1}, '${filtroActual}', '${busquedaActual}'); return false;">
-                    Siguiente <i class="bi bi-chevron-right"></i>
-                </a>
-            </li>
-        `;
-    } else {
-        paginacionHtml += `
-            <li class="page-item disabled">
-                <span class="page-link">
-                    Siguiente <i class="bi bi-chevron-right"></i>
-                </span>
-            </li>
-        `;
-    }
+    items += paginaActual < totalPaginas
+        ? `<li class="page-item"><a class="page-link" href="#" onclick="cargarCasilleros(${paginaActual + 1}, '${filtroActual}', '${busquedaActual}'); return false;"><i class="bi bi-chevron-right"></i></a></li>`
+        : `<li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-right"></i></span></li>`;
 
-    paginacionHtml += `
-                </ul>
-            </nav>
-        </div>
-    `;
-
-    // Agregar la paginación después de los casilleros
-    contenedor.innerHTML += paginacionHtml;
+    // Actualizar solo el <ul> sin tocar el contenedor de casilleros
+    paginacionEl.innerHTML = items;
 }
 
 // Función para manejar el clic en un casillero
@@ -301,11 +280,8 @@ function manejarClicCasillero(numCasillero, estaOcupado) {
     // Configurar el botón de limpiar búsqueda
     const btnLimpiarBusqueda = document.getElementById('btnLimpiarBusquedaEmpleado');
     const inputBuscarEmpleado = document.getElementById('buscarEmpleado');
-    
+
     if (btnLimpiarBusqueda && inputBuscarEmpleado) {
-        // Hacer que el botón de limpiar siempre sea visible
-        btnLimpiarBusqueda.style.display = 'block';
-        
         // Función para manejar el clic en el botón de limpiar
         function manejarClicLimpiar() {
             inputBuscarEmpleado.value = '';
@@ -314,13 +290,13 @@ function manejarClicCasillero(numCasillero, estaOcupado) {
             const resultadosDiv = document.getElementById('resultadoBusqueda');
             if (resultadosDiv) {
                 resultadosDiv.innerHTML = `
-                    <div class="text-center text-muted">
+                    <div class="text-center text-muted py-3">
                         <i class="bi bi-person-lines-fill fs-1"></i>
-                        <p class="mt-2">Busque un empleado para asignar al casillero</p>
+                        <p class="mt-2 mb-0">Busque un empleado para asignar al casillero</p>
                     </div>`;
             }
         }
-        
+
         // Configurar el clic del botón de limpiar
         btnLimpiarBusqueda.onclick = manejarClicLimpiar;
     }
@@ -377,66 +353,76 @@ function manejarClicCasillero(numCasillero, estaOcupado) {
 function buscarEmpleado() {
     const busqueda = document.getElementById('buscarEmpleado').value.trim();
     const resultadosDiv = document.getElementById('resultadoBusqueda');
-    
+
     if (!busqueda) {
         resultadosDiv.innerHTML = `
-            <div class="alert alert-warning">
-                <i class="bi bi-exclamation-triangle"></i> Por favor ingrese un nombre o ID de empleado
-            </div>
-        `;
+            <div class="card border-0 bg-light">
+                <div class="card-body py-2">
+                    <p class="text-warning mb-0 small">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        Por favor ingrese un nombre o ID de empleado
+                    </p>
+                </div>
+            </div>`;
         return;
     }
-    
+
     // Mostrar indicador de carga
     resultadosDiv.innerHTML = `
-        <div class="text-center">
-            <div class="spinner-border text-primary" role="status">
+        <div class="text-center py-3">
+            <div class="spinner-border spinner-border-sm text-success" role="status">
                 <span class="visually-hidden">Buscando...</span>
             </div>
-            <p class="mt-2">Buscando empleados...</p>
-        </div>
-    `;
-    
+            <span class="ms-2 text-muted">Buscando empleados...</span>
+        </div>`;
+
     // Realizar la búsqueda
     fetch(`php/buscar_empleados.php?q=${encodeURIComponent(busqueda)}`)
         .then(response => response.json())
         .then(data => {
             if (data.success && data.results && data.results.length > 0) {
                 // Mostrar resultados
-                let html = '<div class="list-group">';
+                let html = '<div class="list-group list-group-flush">';
                 data.results.forEach(empleado => {
                     const nombreCompleto = `${empleado.nombre} ${empleado.apellido_paterno} ${empleado.apellido_materno || ''}`.trim();
                     html += `
-                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div class="list-group-item list-group-item-action border-0 bg-light rounded mb-1 d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="mb-1">${nombreCompleto}</h6>
-                                <small class="text-muted">ID: ${empleado.id_empleado}</small>
+                                <div class="fw-semibold">${nombreCompleto}</div>
+                                <small class="text-muted"><i class="bi bi-hash me-1"></i>ID: ${empleado.id_empleado}</small>
                             </div>
-                            <button class="btn btn-sm btn-primary" 
+                            <button class="btn btn-sm btn-success"
                                     onclick="asignarEmpleado('${casilleroActual}', ${empleado.id_empleado}, '${nombreCompleto.replace(/'/g, "\\'")}')">
-                                <i class="bi bi-check-lg"></i> Asignar
+                                <i class="bi bi-check-lg me-1"></i>Asignar
                             </button>
-                        </div>
-                    `;
+                        </div>`;
                 });
                 html += '</div>';
                 resultadosDiv.innerHTML = html;
             } else {
                 // No se encontraron resultados
                 resultadosDiv.innerHTML = `
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle"></i> No se encontraron empleados que coincidan con "${busqueda}"
-                    </div>
-                `;
+                    <div class="card border-0 bg-light">
+                        <div class="card-body py-2">
+                            <p class="text-muted mb-0 small">
+                                <i class="bi bi-info-circle me-1"></i>
+                                No se encontraron empleados que coincidan con &ldquo;${busqueda}&rdquo;
+                            </p>
+                        </div>
+                    </div>`;
             }
         })
         .catch(error => {
             console.error('Error en la búsqueda:', error);
             resultadosDiv.innerHTML = `
-                <div class="alert alert-danger">
-                    <i class="bi bi-exclamation-triangle"></i> Ocurrió un error al buscar empleados
-                </div>
-            `;
+                <div class="card border-0 bg-light">
+                    <div class="card-body py-2">
+                        <p class="text-danger mb-0 small">
+                            <i class="bi bi-exclamation-triangle me-1"></i>
+                            Ocurrió un error al buscar empleados
+                        </p>
+                    </div>
+                </div>`;
         });
 }
 
@@ -446,39 +432,55 @@ function cargarInfoEmpleadoAsignado(numCasillero) {
         .then(response => response.json())
         .then(data => {
             const infoContainer = document.getElementById('infoEmpleadoAsignado');
-            
+
             if (data.success && data.empleados && data.empleados.length > 0) {
                 let empleadosHtml = '';
                 data.empleados.forEach(empleado => {
                     empleadosHtml += `
-                        <div class="alert alert-info">
-                            <h6><i class="bi bi-person-badge"></i> Empleado Asignado:</h6>
-                            <p class="mb-1"><strong>Nombre:</strong> ${empleado.nombre} ${empleado.apellido_paterno} ${empleado.apellido_materno || ''}</p>
-                            <p class="mb-1"><strong>ID Empleado:</strong> ${empleado.id_empleado}</p>
-                            ${empleado.departamento ? `<p class="mb-1"><strong>Departamento:</strong> ${empleado.departamento}</p>` : ''}
-                            <p class="mb-0">
-                                <button class="btn btn-sm btn-danger" onclick="liberarCasillero('${numCasillero}', ${empleado.id_empleado})">
-                                    <i class="bi bi-person-dash"></i> Liberar Casillero
-                                </button>
-                            </p>
+                        <div class="card border-0 bg-light mb-2">
+                            <div class="card-body py-2">
+                                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                    <div>
+                                        <div class="fw-bold mb-1">
+                                            <i class="bi bi-person-badge text-success me-1"></i>
+                                            ${empleado.nombre} ${empleado.apellido_paterno} ${empleado.apellido_materno || ''}
+                                        </div>
+                                        <div class="text-muted small">
+                                            <span class="me-3"><i class="bi bi-hash me-1"></i>ID: ${empleado.id_empleado}</span>
+                                            ${empleado.departamento ? `<span><i class="bi bi-building me-1"></i>${empleado.departamento}</span>` : ''}
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="liberarCasillero('${numCasillero}', ${empleado.id_empleado})">
+                                        <i class="bi bi-person-dash me-1"></i>Liberar
+                                    </button>
+                                </div>
+                            </div>
                         </div>`;
                 });
-                
+
                 infoContainer.innerHTML = empleadosHtml;
             } else {
                 infoContainer.innerHTML = `
-                    <div class="alert alert-warning">
-                        <h6><i class="bi bi-info-circle"></i> Información</h6>
-                        <p class="mb-0">Este casillero está marcado como ocupado pero no se encontró información del empleado asignado.</p>
+                    <div class="card border-0 bg-light mb-2">
+                        <div class="card-body py-2">
+                            <p class="text-muted mb-0 small">
+                                <i class="bi bi-info-circle me-1 text-warning"></i>
+                                Este casillero está marcado como ocupado pero no se encontró información del empleado asignado.
+                            </p>
+                        </div>
                     </div>`;
             }
         })
         .catch(error => {
             console.error('Error al cargar información del empleado:', error);
             document.getElementById('infoEmpleadoAsignado').innerHTML = `
-                <div class="alert alert-danger">
-                    <h6><i class="bi bi-exclamation-triangle"></i> Error</h6>
-                    <p class="mb-0">Ocurrió un error al cargar la información del empleado asignado.</p>
+                <div class="card border-0 bg-light mb-2">
+                    <div class="card-body py-2">
+                        <p class="text-danger mb-0 small">
+                            <i class="bi bi-exclamation-triangle me-1"></i>
+                            Error al cargar la información del empleado asignado.
+                        </p>
+                    </div>
                 </div>`;
         });
 }
@@ -507,7 +509,12 @@ function ejecutarAsignacion(numCasillero, idEmpleado, nombreEmpleado) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            mostrarNotificacion('success', 'Asignación exitosa', `El casillero ${numCasillero} ha sido asignado a ${nombreEmpleado}`);
+            Swal.fire({
+                icon: 'success',
+                title: 'Casillero asignado',
+                text: `El casillero ${numCasillero} ha sido asignado a ${nombreEmpleado}.`,
+                confirmButtonText: 'Aceptar'
+            });
             cargarCasilleros(paginaActual, filtroActual, busquedaActual);
             // Cerrar el modal después de 1 segundo
             setTimeout(() => {
@@ -517,9 +524,19 @@ function ejecutarAsignacion(numCasillero, idEmpleado, nombreEmpleado) {
         } else {
             // Verificar si el error es porque el casillero está ocupado
             if (data.error && data.error.includes('máximo')) {
-                mostrarNotificacion('warning', 'Casillero lleno', data.error);
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Casillero lleno',
+                    text: data.error,
+                    confirmButtonText: 'Aceptar'
+                });
             } else if (data.error && data.error.includes('ya tiene asignado')) {
-                mostrarNotificacion('warning', 'Empleado con casillero', data.error);
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Empleado con casillero',
+                    text: data.error,
+                    confirmButtonText: 'Aceptar'
+                });
             } else {
                 throw new Error(data.error || 'Error al asignar el casillero');
             }
@@ -527,7 +544,12 @@ function ejecutarAsignacion(numCasillero, idEmpleado, nombreEmpleado) {
     })
     .catch(error => {
         console.error('Error al asignar casillero:', error);
-        mostrarNotificacion('danger', 'Error', error.message || 'Ocurrió un error al asignar el casillero');
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message || 'Ocurrió un error al asignar el casillero',
+            confirmButtonText: 'Aceptar'
+        });
     });
 }
 
@@ -539,7 +561,12 @@ function eliminarCasillero(numCasillero) {
         .then(data => {
             if (data.success && data.empleados && data.empleados.length > 0) {
                 // El casillero está ocupado
-                mostrarNotificacion('warning', 'Casillero ocupado', 'No se puede eliminar un casillero ocupado. Libere el casillero primero.');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Casillero ocupado',
+                    text: 'No se puede eliminar un casillero ocupado. Libere el casillero primero.',
+                    confirmButtonText: 'Aceptar'
+                });
                 return;
             }
             
@@ -575,21 +602,36 @@ function eliminarCasillero(numCasillero) {
                             bootstrap.Modal.getInstance(document.getElementById('modalEditarCasillero')).hide();
                             cargarCasilleros(paginaActual, filtroActual, busquedaActual);
                             // Mostrar notificación de éxito
-                            mostrarNotificacion('success', 'Casillero eliminado', `El casillero ${numCasillero} ha sido eliminado correctamente`);
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Casillero eliminado',
+                                text: `El casillero ${numCasillero} ha sido eliminado correctamente.`,
+                                confirmButtonText: 'Aceptar'
+                            });
                         } else {
                             throw new Error(data.error || 'Error al eliminar el casillero');
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        mostrarNotificacion('danger', 'Error', error.message || 'Ocurrió un error al eliminar el casillero');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: error.message || 'Ocurrió un error al eliminar el casillero',
+                            confirmButtonText: 'Aceptar'
+                        });
                     });
                 }
             });
         })
         .catch(error => {
             console.error('Error al verificar estado del casillero:', error);
-            mostrarNotificacion('danger', 'Error', 'Ocurrió un error al verificar el estado del casillero');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Ocurrió un error al verificar el estado del casillero',
+                confirmButtonText: 'Aceptar'
+            });
         });
 }
 
@@ -664,7 +706,12 @@ function ejecutarLiberacion(numCasillero, idEmpleado) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            mostrarNotificacion('success', 'Casillero liberado', `El casillero ${numCasillero} ha sido liberado correctamente para este empleado`);
+            Swal.fire({
+                icon: 'success',
+                title: 'Casillero liberado',
+                text: `El casillero ${numCasillero} ha sido liberado correctamente para este empleado.`,
+                confirmButtonText: 'Aceptar'
+            });
             cargarCasilleros(paginaActual, filtroActual, busquedaActual);
             cargarInfoEmpleadoAsignado(numCasillero); // Recargar la información
             // Limpiar el campo de búsqueda
@@ -675,7 +722,12 @@ function ejecutarLiberacion(numCasillero, idEmpleado) {
     })
     .catch(error => {
         console.error('Error al liberar casillero:', error);
-        mostrarNotificacion('danger', 'Error', error.message || 'Ocurrió un error al liberar el casillero');
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message || 'Ocurrió un error al liberar el casillero',
+            confirmButtonText: 'Aceptar'
+        });
     });
 }
 
@@ -684,7 +736,12 @@ function actualizarNumeroCasillero(numeroAnterior) {
     const nuevoNumero = document.getElementById('nuevo_numero').value.trim();
     
     if (!nuevoNumero) {
-        alert('Por favor ingrese un número de casillero válido');
+        Swal.fire({
+            icon: 'warning',
+            title: 'Dato requerido',
+            text: 'Por favor ingrese un número de casillero válido',
+            confirmButtonText: 'Aceptar'
+        });
         return;
     }
     
@@ -714,14 +771,24 @@ function actualizarNumeroCasillero(numeroAnterior) {
             bootstrap.Modal.getInstance(document.getElementById('modalEditarCasillero')).hide();
             cargarCasilleros(paginaActual, filtroActual, busquedaActual);
             // Mostrar notificación de éxito
-            mostrarNotificacion('success', 'Casillero actualizado', `El casillero se actualizó correctamente a ${nuevoNumero}`);
+            Swal.fire({
+                icon: 'success',
+                title: 'Casillero actualizado',
+                text: `El casillero se ha actualizado correctamente a ${nuevoNumero}.`,
+                confirmButtonText: 'Aceptar'
+            });
         } else {
             throw new Error(data.error || 'Error al actualizar el casillero');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        mostrarNotificacion('danger', 'Error', error.message || 'Ocurrió un error al actualizar el casillero');
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message || 'Ocurrió un error al actualizar el casillero',
+            confirmButtonText: 'Aceptar'
+        });
     })
     .finally(() => {
         // Restaurar el botón
@@ -803,15 +870,19 @@ function inicializarEventosCasillero() {
     document.getElementById('btnFiltroTodos')?.addEventListener('click', function() {
         cargarCasilleros(1, 'todos', busquedaActual);
     });
-    
+
     document.getElementById('btnFiltroDisponibles')?.addEventListener('click', function() {
         cargarCasilleros(1, 'disponibles', busquedaActual);
     });
-    
-    document.getElementById('btnFiltroAsignados')?.addEventListener('click', function() {
-        cargarCasilleros(1, 'asignados', busquedaActual);
+
+    document.getElementById('btnFiltroParciales')?.addEventListener('click', function() {
+        cargarCasilleros(1, 'parciales', busquedaActual);
     });
-    
+
+    document.getElementById('btnFiltroCompletos')?.addEventListener('click', function() {
+        cargarCasilleros(1, 'completos', busquedaActual);
+    });
+
     // Configurar evento para la búsqueda
     const inputBusqueda = document.getElementById('busquedaCasilleros');
     const btnLimpiar = document.getElementById('btnLimpiarBusqueda');

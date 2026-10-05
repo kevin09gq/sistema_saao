@@ -6,7 +6,7 @@
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 require_once __DIR__ . '/../../conexion/conexion.php';
-require_once __DIR__ . '/../../config/config.php';
+require_once __DIR__ . '/../../public/php/verificarSesion.php';
 
 verificarSesion();
 
@@ -53,6 +53,17 @@ $departamento  = trim($_POST['departamento'] ?? 'departamento');
 $empresa       = trim($_POST['empresa'] ?? 'CITRICOS SAAO');
 $dias          = $_POST['dias'] ?? ['VIERNES', 'SABADO', 'DOMINGO'];
 
+// Procesar días con fechas dinámicas si están disponibles
+$diasFechasRaw = $_POST['dias_fechas'] ?? '';
+$diasConFechas = [];
+if (!empty($diasFechasRaw)) {
+    $diasConFechas = json_decode($diasFechasRaw, true);
+    if (is_array($diasConFechas) && !empty($diasConFechas)) {
+        // Usar los días con sus fechas en orden cronológico
+        $dias = array_column($diasConFechas, 'dia');
+    }
+}
+
 if (!is_array($dias) || empty($dias)) {
     $dias = ['VIERNES', 'SABADO', 'DOMINGO'];
 }
@@ -64,7 +75,7 @@ $inIds = implode(',', $empleadosIds);
 $sql = "SELECT id_empleado, clave_empleado, nombre, ap_paterno, ap_materno, sexo
         FROM info_empleados
         WHERE id_empleado IN ($inIds)
-        ORDER BY ap_paterno ASC, ap_materno ASC, nombre ASC";
+        ORDER BY CONCAT(nombre, ' ', ap_paterno, ' ', ap_materno) ASC";
 
 $resultado = mysqli_query($conexion, $sql);
 $empleados = [];
@@ -123,8 +134,23 @@ $spreadsheet->getDefaultStyle()->getFont()->setName('Arial')->setSize(9);
 // Colores
 $colorAmarillo = 'FFFF00'; // Amarillo idéntico a la plantilla
 $colorBorde    = '000000'; // Bordes negros limpios
-$colorAzul     = 'D6EAF8'; // Azul claro para varones
-$colorRosa     = 'F5B7B1'; // Rosa claro para mujeres
+
+// Leer colores configurados desde la BD
+$colorAzulHex  = '#D6EAF8'; // Valor por defecto (varones)
+$colorRosaHex  = '#F5B7B1'; // Valor por defecto (mujeres)
+
+$sqlColores = "SELECT sexo, color_hex FROM asistencia_colores";
+$resColores = mysqli_query($conexion, $sqlColores);
+if ($resColores) {
+    while ($filaColor = mysqli_fetch_assoc($resColores)) {
+        if ($filaColor['sexo'] === 'M') $colorAzulHex = $filaColor['color_hex'];
+        if ($filaColor['sexo'] === 'F') $colorRosaHex = $filaColor['color_hex'];
+    }
+}
+
+// Convertir HEX (#RRGGBB) a formato ARGB para PhpSpreadsheet (sin # y con FF al inicio)
+$colorAzul = 'FF' . ltrim($colorAzulHex, '#');
+$colorRosa = 'FF' . ltrim($colorRosaHex, '#');
 
 $bordeDelgado = [
     'borders' => [
@@ -262,7 +288,7 @@ $sheet->getStyle('B2:B4')->applyFromArray($bordeDelgado);
 // Recorrer cada día seleccionado y generar sus 4 columnas
 $colActual = 3;
 
-foreach ($dias as $nombreDia) {
+foreach ($dias as $index => $nombreDia) {
     $c1 = Coordinate::stringFromColumnIndex($colActual);     // ENTRADA
     $c2 = Coordinate::stringFromColumnIndex($colActual + 1); // Sale
     $c3 = Coordinate::stringFromColumnIndex($colActual + 2); // Entra

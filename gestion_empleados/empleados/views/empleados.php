@@ -3,8 +3,16 @@
 
 <!--Incluir config.php para iniciar sesión -->
 <?php
-include "../../../config/config.php";
-verificarSesion(); // Proteger esta página
+require_once  __DIR__ . "/../../../public/php/config.php";
+
+require_once __DIR__ . "/../../../public/php/verificarSesion.php";
+
+// Proteger esta página
+verificarSesion(); 
+
+// Verifica que tenga permiso para entrar a esta página
+verificarPermiso("empleados.ver_menu");
+
 ?>
 
 <head>
@@ -29,7 +37,8 @@ verificarSesion(); // Proteger esta página
 
     <?php
     // Incluir el navbar (config.php ya fue incluido en el head)
-    include "../../../public/views/navbar.php"
+    require_once  __DIR__ . "/../../../navbar/navbar.php";
+
     ?>
 
     <div class="container-fluid py-4">
@@ -344,6 +353,13 @@ verificarSesion(); // Proteger esta página
 
     <!-- Archivo JS específico -->
 
+    <script>
+        // Pasar permisos de PHP a JavaScript
+        const permisosUsuario = <?php echo json_encode($_SESSION["permisos"] ?? []); ?>;
+    </script>
+
+    <script src="<?= PERMISOS_JS ?>"></script>
+    <script src="../js/modalsPerfil/permisosPerfil.js"></script>
     <script src="../js/mostrarEmpleados.js"></script>
     <script src="../js/filtroBusqueda.js"></script>
     <script src="../js/exportar_informacion.js"></script>
@@ -361,7 +377,7 @@ verificarSesion(); // Proteger esta página
     <script src="../js/modalsPerfil/actualizarFoto.js"></script>
     <script src="../js/modalsPerfil/actualizarNss.js"></script>
     <script src="../js/modalsPerfil/actualizarStatusEmpleado.js"></script>
-
+    <script src="../js/modalsPerfil/permisosPerfil.js"></script>
 </body>
 
 </html>

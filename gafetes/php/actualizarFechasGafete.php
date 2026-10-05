@@ -6,7 +6,7 @@ ini_set('log_errors', 1);
 
 // Incluir archivos necesarios
 require_once('../../conexion/conexion.php');
-require_once('../config_vigencia.php');
+require_once('config_vigencia.php');
 /** @var mysqli $conexion */
 // Establecer la zona horaria a México
 date_default_timezone_set('America/Mexico_City');

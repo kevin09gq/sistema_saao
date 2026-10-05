@@ -54,13 +54,9 @@ function cargarEmpleadosSueldoBase() {
             return;
         }
 
-        // Separar empleados por seguro social
-        const empleadosCSS = empleadosMostrar.filter(emp => emp.seguroSocial === true);
-        const empleadosSSS = empleadosMostrar.filter(emp => !emp.seguroSocial);
-
         // Encabezado del departamento
         $('#tbody-empleados-sueldo-base').append(`
-            <tr class="table-secondary fila-encabezado">
+            <tr class="table-secondary">
                 <td colspan="3" class="fw-bold">
                     <i class="bi bi-building me-2"></i>
                     ${departamento.nombre}
@@ -68,59 +64,27 @@ function cargarEmpleadosSueldoBase() {
             </tr>
         `);
 
-        // Subgrupo Con Seguro Social (CSS)
-        if (empleadosCSS.length > 0) {
+        // Empleados del departamento
+        empleadosMostrar.forEach(empleado => {
+
             $('#tbody-empleados-sueldo-base').append(`
-                <tr class="table-light fila-encabezado">
-                    <td colspan="3" class="fw-semibold ps-4 text-primary">
-                        <i class="bi bi-shield-check me-1"></i>
-                        CSS (Con Seguro Social)
+                <tr>
+
+                    <td class="text-center">
+                        <input
+                            type="checkbox"
+                            class="form-check-input check-empleado-sueldo-base"
+                            value="${empleado.id_empleado}">
                     </td>
+
+                    <td>${empleado.clave}</td>
+
+                    <td>${empleado.nombre}</td>
+
                 </tr>
             `);
 
-            empleadosCSS.forEach(empleado => {
-                $('#tbody-empleados-sueldo-base').append(`
-                    <tr>
-                        <td class="text-center">
-                            <input
-                                type="checkbox"
-                                class="form-check-input check-empleado-sueldo-base"
-                                value="${empleado.id_empleado}">
-                        </td>
-                        <td>${empleado.clave}</td>
-                        <td>${empleado.nombre}</td>
-                    </tr>
-                `);
-            });
-        }
-
-        // Subgrupo Sin Seguro Social (SSS)
-        if (empleadosSSS.length > 0) {
-            $('#tbody-empleados-sueldo-base').append(`
-                <tr class="table-light fila-encabezado">
-                    <td colspan="3" class="fw-semibold ps-4 text-secondary">
-                        <i class="bi bi-shield-x me-1"></i>
-                        SSS (Sin Seguro Social)
-                    </td>
-                </tr>
-            `);
-
-            empleadosSSS.forEach(empleado => {
-                $('#tbody-empleados-sueldo-base').append(`
-                    <tr>
-                        <td class="text-center">
-                            <input
-                                type="checkbox"
-                                class="form-check-input check-empleado-sueldo-base"
-                                value="${empleado.id_empleado}">
-                        </td>
-                        <td>${empleado.clave}</td>
-                        <td>${empleado.nombre}</td>
-                    </tr>
-                `);
-            });
-        }
+        });
 
     });
 
@@ -143,9 +107,9 @@ function buscadorEmpleadosSueldoBase() {
         // Recorrer todas las filas de la tabla
         $('#tbody-empleados-sueldo-base tr').each(function () {
 
-            // Si la fila corresponde al encabezado de un departamento o subgrupo,
+            // Si la fila corresponde al encabezado de un departamento,
             // no se realiza la búsqueda sobre ella.
-            if ($(this).hasClass('table-secondary') || $(this).hasClass('table-success') || $(this).hasClass('table-light') || $(this).hasClass('fila-encabezado')) {
+            if ($(this).hasClass('table-secondary') || $(this).hasClass('table-success')) {
                 return;
             }
 
@@ -303,8 +267,6 @@ function copiarInformacionEmpleadoSueldoBase(empleadosConSueldoBase) {
                     empleado.sueldo_neto = empleadoServidor.salario_semanal;
 
                     empleado.sueldo_base = true;
-
-                    delete empleado.sueldo_diario;
 
                     // Limpiar historial de inasistencias para recalcularlo
                     empleado.historial_inasistencias = [];

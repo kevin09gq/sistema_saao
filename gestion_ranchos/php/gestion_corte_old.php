@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../config/config.php';
+require_once __DIR__ . '/../..//public/php/verificarSesion.php';
 require_once __DIR__ . '/../../conexion/conexion.php';
 
 // Verificar si la conexión a la base de datos es válida

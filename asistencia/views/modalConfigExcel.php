@@ -18,6 +18,8 @@
             <form id="formGenerarExcel" method="POST" action="../php/generarExcel.php" target="_blank">
                 <!-- Campo oculto con los IDs seleccionados en JSON -->
                 <input type="hidden" name="empleados_ids" id="hiddenEmpleadosIds">
+                <!-- Campo oculto con las fechas de los días seleccionados en JSON -->
+                <input type="hidden" name="dias_fechas" id="hiddenDiasFechas">
 
                 <div class="modal-body px-4 py-3">
                     <div class="row g-3">
@@ -74,37 +76,13 @@
                                 </div>
                             </div>
 
-                            <div class="p-3 bg-light rounded-3 border d-flex flex-wrap gap-3 justify-content-between">
-                                <div class="form-check">
-                                    <input class="form-check-input check-dia" type="checkbox" name="dias[]" value="LUNES" id="diaLunes">
-                                    <label class="form-check-label fw-medium" for="diaLunes">Lunes</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input check-dia" type="checkbox" name="dias[]" value="MARTES" id="diaMartes">
-                                    <label class="form-check-label fw-medium" for="diaMartes">Martes</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input check-dia" type="checkbox" name="dias[]" value="MIERCOLES" id="diaMiercoles">
-                                    <label class="form-check-label fw-medium" for="diaMiercoles">Miércoles</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input check-dia" type="checkbox" name="dias[]" value="JUEVES" id="diaJueves">
-                                    <label class="form-check-label fw-medium" for="diaJueves">Jueves</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input check-dia" type="checkbox" name="dias[]" value="VIERNES" id="diaViernes">
-                                    <label class="form-check-label fw-medium" for="diaViernes">Viernes</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input check-dia" type="checkbox" name="dias[]" value="SABADO" id="diaSabado">
-                                    <label class="form-check-label fw-medium" for="diaSabado">Sábado</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input check-dia" type="checkbox" name="dias[]" value="DOMINGO" id="diaDomingo">
-                                    <label class="form-check-label fw-medium" for="diaDomingo">Domingo</label>
+                            <div class="p-3 bg-light rounded-3 border d-flex flex-wrap gap-3 justify-content-between" id="contenedorDias">
+                                <!-- Los días se generarán dinámicamente según el rango de fechas -->
+                                <div class="text-muted small w-100 text-center">
+                                    Selecciona las fechas para ver los días disponibles
                                 </div>
                             </div>
-                            <small class="text-muted" style="font-size: 0.75rem;">Cada día generará sus 4 columnas: ENTRADA, COMIDA (Sale / Entra) y SALIDA.</small>
+                            <small class="text-muted" style="font-size: 0.75rem;">Los días se ordenan cronológicamente según la fecha de inicio. Cada día generará sus 4 columnas: ENTRADA, COMIDA (Sale / Entra) y SALIDA.</small>
                         </div>
                     </div>
                 </div>

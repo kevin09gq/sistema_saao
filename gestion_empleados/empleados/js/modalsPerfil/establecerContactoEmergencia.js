@@ -14,6 +14,9 @@ function abrirModalContactoEmergencia(idEmpleado) {
 
     guardarContactoEmergencia();
 
+    // 3. Aplicar permisos de edición
+    aplicarPermisosContactoEmergencia();
+
     // 4. Abrir el modal
     $('#modalContactoEmergencia').modal('show');
 }

@@ -1,6 +1,10 @@
 <?php
-require_once __DIR__ . '/../../config/config.php';
+
 require_once __DIR__ . '/../../conexion/conexion.php';
+
+require_once __DIR__ . "/../../public/php/verificarSesion.php";
+
+verificarPermiso("prestamos.ver_menu");
 
 if (!isset($_SESSION["logged_in"])) {
     http_response_code(401);

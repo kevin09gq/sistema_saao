@@ -585,7 +585,7 @@
                     <!-- DATOS SALARIALES -->
                     <!-- ========================================= -->
 
-                    <div class="card border-0 bg-light">
+                    <div class="card border-0 bg-light" id="datosSalarialesContainer">
 
                         <div class="card-body">
 
@@ -689,3 +689,4 @@
     </div>
 
 </div>
+

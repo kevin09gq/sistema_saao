@@ -97,7 +97,8 @@
 #btnLimpiarBusquedaEmpleado {
     display: none;
     position: absolute;
-    right: 120px; /* Ajustar según el ancho del botón de búsqueda */
+    right: 120px;
+    /* Ajustar según el ancho del botón de búsqueda */
     top: 40px;
     background: transparent;
     border: none;
@@ -213,46 +214,55 @@ th[data-sortable] {
     white-space: nowrap;
 }
 
-/* Ajustes específicos para las columnas Nombre y Departamento */
+/* Ajustes específicos para las columnas Nombre y Depto/Área */
 #tablaEmpleados th:nth-child(2),
 #tablaEmpleados td:nth-child(2) {
-    width: 120px; /* Ancho fijo para la columna Nombre */
-    max-width: 120px;
+    width: auto;
+    max-width: 160px;
     white-space: normal;
     word-wrap: break-word;
     overflow-wrap: break-word;
-    padding: 5px;
+    padding: 4px 6px;
 }
 
 #tablaEmpleados th:nth-child(3),
 #tablaEmpleados td:nth-child(3) {
-    width: 100px; /* Ancho fijo para la columna Departamento */
-    max-width: 100px;
+    width: auto;
+    max-width: 140px;
     white-space: normal;
     word-wrap: break-word;
     overflow-wrap: break-word;
-    padding: 5px;
+    padding: 4px 6px;
+}
+
+#tablaEmpleados th:nth-child(4),
+#tablaEmpleados td:nth-child(4) {
+    width: auto;
+    max-width: 150px;
+    white-space: normal;
+    padding: 4px 6px;
 }
 
 /* Estilos específicos para la columna de orden de nombre */
 .orden-nombre-select {
-    min-width: 140px;
-    font-size: 11px !important;
+    min-width: 110px;
+    font-size: 10px !important;
+    padding: 2px 4px;
 }
 
-/* Ajustes para las columnas de botones */
-#tablaEmpleados th:nth-child(8),
-#tablaEmpleados th:nth-child(9),
-#tablaEmpleados th:nth-child(10) {
-    width: 80px;
+/* Ajustes para la columna de Acciones */
+#tablaEmpleados th:nth-child(6),
+#tablaEmpleados td:nth-child(6) {
+    width: auto;
+    min-width: 130px;
     text-align: center;
+    padding: 4px 4px;
 }
 
-#tablaEmpleados td:nth-child(8),
-#tablaEmpleados td:nth-child(9),
-#tablaEmpleados td:nth-child(10) {
-    width: 80px;
+#tablaEmpleados th:nth-child(5),
+#tablaEmpleados td:nth-child(5) {
     text-align: center;
+    padding: 4px 6px;
 }
 
 th[data-sortable]:hover {
@@ -287,7 +297,7 @@ th[data-sortable] .sort-icon {
 
 th[data-sortable]:hover .sort-icon {
     color: #ffffff;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 th[data-sort-asc] .sort-icon::after {
@@ -311,7 +321,7 @@ th[data-sort-asc] .sort-icon,
 th[data-sort-desc] .sort-icon {
     color: #ffffff;
     font-weight: bold;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 /* Estilo de scroll personalizado */
@@ -337,7 +347,7 @@ th[data-sort-desc] .sort-icon {
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     border-radius: 8px !important;
-    border: 1px solid rgba(0,0,0,0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
     font-size: 0.95rem;
     color: #4a5568;
 }
@@ -370,7 +380,8 @@ th[data-sort-desc] .sort-icon {
     border-collapse: separate;
     border-spacing: 0;
     width: 100%;
-    margin-left: 0; /* Move table to the left */
+    margin-left: 0;
+    /* Move table to the left */
 }
 
 #tablaEmpleados thead {
@@ -382,14 +393,18 @@ th[data-sort-desc] .sort-icon {
 /* Ajustes específicos para las columnas */
 #tablaEmpleados th:nth-child(3),
 #tablaEmpleados td:nth-child(3) {
-    text-align: left; /* Move department text to the left */
-    width: 12%; /* Make department column smaller */
+    text-align: left;
     padding-left: 5px;
+}
+
+#tablaEmpleados tbody tr td {
+    padding: 4px 6px;
 }
 
 /* Ajustar el contenedor de la tabla para mayor ancho */
 .card-body .table-responsive {
-    margin-left: -10px; /* Move table container to the left */
+    margin-left: -10px;
+    /* Move table container to the left */
     margin-right: -10px;
     padding-left: 5px;
     padding-right: 5px;
@@ -420,38 +435,24 @@ th[data-sort-desc] .sort-icon {
 }
 
 /* Estilos mejorados para botones de selección */
-#seleccionarTodos, #deseleccionarTodos {
+#seleccionarTodos,
+#deseleccionarTodos {
     font-weight: 600;
     border-width: 2px;
     transition: all 0.3s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-#seleccionarTodos {
-    background: linear-gradient(135deg, #28a745, #20c997);
-    border-color: #28a745;
-    color: white;
-}
-
 #seleccionarTodos:hover {
-    background: linear-gradient(135deg, #218838, #1db584);
-    border-color: #1e7e34;
+    background-color: #0d6efd;
+    color: white;
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
-}
-
-#deseleccionarTodos {
-    background: linear-gradient(135deg, #ffc107, #fd7e14);
-    border-color: #ffc107;
-    color: #212529;
+    box-shadow: 0 4px 8px rgba(13, 110, 253, 0.3);
 }
 
 #deseleccionarTodos:hover {
-    background: linear-gradient(135deg, #e0a800, #ea5a00);
-    border-color: #d39e00;
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
-    color: white;
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
 }
 
 /* Estilos mejorados para todos los botones de acción */
@@ -548,15 +549,15 @@ th[data-sort-desc] .sort-icon {
         align-items: stretch;
         gap: 1rem;
     }
-    
+
     .btn-group {
         width: 100%;
     }
-    
+
     .btn-group .btn {
         flex: 1;
     }
-    
+
     .d-flex.flex-wrap {
         justify-content: center;
     }
@@ -577,9 +578,17 @@ th[data-sort-desc] .sort-icon {
 }
 
 @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-    100% { transform: scale(1); }
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
 /* Container for button + badge to prevent layout shift */
@@ -595,18 +604,7 @@ th[data-sort-desc] .sort-icon {
     z-index: 1;
 }
 
-/* Botones blancos para Generar Foto y Generar Gafetes */
-#generarFoto, #generarGafetes {
-    background: #ffffff !important;
-    border-color: #dee2e6 !important;
-    color: #495057 !important;
-}
 
-#generarFoto:hover, #generarGafetes:hover {
-    background: #f8f9fa !important;
-    border-color: #adb5bd !important;
-    color: #495057 !important;
-}
 
 
 
@@ -618,12 +616,14 @@ th[data-sort-desc] .sort-icon {
         flex-direction: column !important;
         align-items: stretch !important;
     }
+
     .card-header .btn-group {
         width: 100%;
         justify-content: space-between;
         flex-direction: column !important;
         align-items: stretch !important;
     }
+
     .card-header .btn {
         font-size: 0.75rem;
         padding: 0.2rem 0.5rem;
@@ -631,6 +631,7 @@ th[data-sort-desc] .sort-icon {
         width: 100%;
         text-align: left;
     }
+
     .card-header .btn i {
         margin-right: 2px;
     }
@@ -641,9 +642,9 @@ th[data-sort-desc] .sort-icon {
     background: linear-gradient(135deg, #27ae60 0%, #219653 100%);
     color: white;
     border: none;
-    padding: 12px 15px;
+    padding: 6px 8px;
     text-transform: uppercase;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     letter-spacing: 0.5px;
 }
 
@@ -671,7 +672,7 @@ th[data-sort-desc] .sort-icon {
 }
 
 #tablaEmpleados tbody tr td {
-    padding: 12px 15px;
+    padding: 4px 6px;
     vertical-align: middle;
     color: #000000;
     border-top: 1px solid #edf2f7;
@@ -760,7 +761,7 @@ th[data-sort-desc] .sort-icon {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
     transition: left 0.6s;
 }
 
@@ -806,43 +807,16 @@ th[data-sort-desc] .sort-icon {
 }
 
 
-/* Efecto de reflejo para botones de selección */
-#seleccionarTodos, #deseleccionarTodos {
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-
-#seleccionarTodos::before, #deseleccionarTodos::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-    transition: left 0.6s;
-}
-
-#seleccionarTodos:hover::before, #deseleccionarTodos:hover::before {
-    left: 100%;
-}
-
-#seleccionarTodos:hover, #deseleccionarTodos:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
 /* Responsive: ocultar texto en pantallas pequeñas */
 @media (max-width: 768px) {
     .btn-editar .btn-text {
         display: none;
     }
-    
+
     .btn-editar {
         padding: 0.3rem 0.5rem;
     }
-    
+
     .btn-editar i {
         margin-right: 0;
         font-size: 0.9rem;
@@ -854,7 +828,7 @@ th[data-sort-desc] .sort-icon {
     .table-responsive {
         font-size: 0.85rem;
     }
-    
+
     .btn-editar {
         padding: 0.25rem 0.4rem;
     }
@@ -879,38 +853,31 @@ th[data-sort-desc] .sort-icon {
 }
 
 #modalActualizarLogos .modal-header {
-    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-    border-bottom: 1px solid #e1e8ed;
-    padding: 1.25rem 1.5rem;
+    background: #ffffff !important;
+    border-bottom: 1px solid #e9ecef !important;
+    padding: 1.1rem 1.5rem;
     text-align: left;
 }
 
 #modalActualizarLogos .modal-title {
-    color: white;
-    font-weight: 600;
-    font-size: 1.25rem;
+    color: #343a40 !important;
+    font-weight: 700;
+    font-size: 1.05rem;
     margin: 0;
-    letter-spacing: 0.3px;
+    letter-spacing: -0.2px;
     display: flex;
     align-items: center;
 }
 
 #modalActualizarLogos .modal-title i {
-    font-size: 1.1rem;
-    margin-right: 10px;
+    font-size: 1.05rem;
+    margin-right: 8px;
 }
 
 #modalActualizarLogos .btn-close {
-    filter: invert(1);
-    opacity: 0.9;
-    transition: opacity 0.3s;
-    padding: 0.5rem;
-}
-
-#modalActualizarLogos .btn-close:hover {
-    opacity: 1;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
+    filter: none;
+    opacity: 0.7;
+    transition: opacity 0.2s;
 }
 
 #modalActualizarLogos .modal-body {
@@ -1161,38 +1128,38 @@ th[data-sort-desc] .sort-icon {
         margin: 0.75rem;
         max-width: calc(100% - 1.5rem);
     }
-    
+
     #modalActualizarLogos .modal-header,
     #modalActualizarLogos .modal-body,
     #modalActualizarLogos .modal-footer {
         padding: 1.1rem;
     }
-    
+
     .logo-item {
         padding: 0.75rem;
     }
-    
+
     .logo-preview {
         max-height: 70px;
     }
-    
+
     .custom-file-label {
         padding: 0.5rem 0.9rem;
         font-size: 0.8rem;
     }
-    
+
     #modalActualizarLogos .card-body {
         padding: 1rem;
     }
-    
+
     .logo-preview-container {
         min-height: 90px;
     }
-    
+
     .logo-item h6 {
         font-size: 0.9rem;
     }
-    
+
     #modalActualizarLogos .btn {
         padding: 0.5rem 0.9rem;
         font-size: 0.8rem;
@@ -1203,24 +1170,24 @@ th[data-sort-desc] .sort-icon {
     #modalActualizarLogos .modal-title {
         font-size: 1.2rem;
     }
-    
+
     .logo-item h6 {
         font-size: 0.95rem;
     }
-    
+
     .logo-preview-container {
         min-height: 100px;
     }
-    
+
     .custom-file-label {
         padding: 0.5rem 0.8rem;
     }
-    
+
     #modalActualizarLogos .modal-footer {
         flex-direction: column;
         gap: 0.5rem;
     }
-    
+
     #modalActualizarLogos .modal-footer .btn {
         width: 100%;
         margin: 0;
@@ -1242,7 +1209,7 @@ th[data-sort-desc] .sort-icon {
     transform: translateX(20px);
     transition: all 0.3s ease;
     z-index: 2000;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
     border-radius: 10px;
 }
 
@@ -1373,13 +1340,13 @@ th[data-sort-desc] .sort-icon {
     bottom: 0;
     height: 3px;
     width: 100%;
-    background: rgba(0,0,0,0.05);
+    background: rgba(0, 0, 0, 0.05);
     overflow: hidden;
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
 }
 
-.alerta-gafete .alerta-progress > span {
+.alerta-gafete .alerta-progress>span {
     display: block;
     height: 100%;
     width: 100%;
@@ -1388,10 +1355,21 @@ th[data-sort-desc] .sort-icon {
     transition: transform 5s linear;
 }
 
-.alerta-gafete.alerta-success .alerta-progress > span { background: #198754; }
-.alerta-gafete.alerta-warning .alerta-progress > span { background: #ffc107; }
-.alerta-gafete.alerta-danger  .alerta-progress > span { background: #dc3545; }
-.alerta-gafete.alerta-info    .alerta-progress > span { background: #0dcaf0; }
+.alerta-gafete.alerta-success .alerta-progress>span {
+    background: #198754;
+}
+
+.alerta-gafete.alerta-warning .alerta-progress>span {
+    background: #ffc107;
+}
+
+.alerta-gafete.alerta-danger .alerta-progress>span {
+    background: #dc3545;
+}
+
+.alerta-gafete.alerta-info .alerta-progress>span {
+    background: #0dcaf0;
+}
 
 .btn:hover {
     transform: translateY(-2px);
@@ -1428,32 +1406,33 @@ th[data-sort-desc] .sort-icon {
 /* Estilos para el modal de gafetes */
 #modalGafetes .modal-content {
     border: none;
-    border-radius: 15px;
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
 #modalGafetes .modal-header {
-    background: linear-gradient(135deg, #27ae60 0%, #219653 100%);
-    border-bottom: none;
-    padding: 1.5rem 2rem;
+    background: #ffffff !important;
+    border-bottom: 1px solid #e9ecef !important;
+    padding: 1.1rem 1.5rem;
 }
 
 #modalGafetes .modal-title {
-    font-weight: 600;
-    font-size: 1.4rem;
-    color: white;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #343a40 !important;
+    display: flex;
+    align-items: center;
 }
 
 #contenidoGafetes {
     display: flex;
     flex-wrap: wrap;
     gap: 25px;
-    justify-content: center;
-    padding: 30px;
-    background-color: #f8fafc;
-    min-height: 60vh;
-    max-height: 80vh;
+    justify-content: flex-start;
+    padding: 1.25rem 1.5rem;
+    background-color: #ffffff;
+    min-height: 100px;
     overflow-y: auto;
 }
 
@@ -1463,13 +1442,13 @@ th[data-sort-desc] .sort-icon {
 }
 
 #contenidoGafetes::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
+    background: #f1f5f3;
+    border-radius: 4px;
 }
 
 #contenidoGafetes::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #27ae60, #219653);
-    border-radius: 10px;
+    background: #95d5b2;
+    border-radius: 4px;
 }
 
 .modal-footer {
@@ -1594,7 +1573,7 @@ th[data-sort-desc] .sort-icon {
     background: white;
     border-radius: 10px;
     border: 1px solid #dee2e6;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .gafete-info {
@@ -1653,13 +1632,15 @@ th[data-sort-desc] .sort-icon {
 }
 
 @media print {
-    body, html {
+
+    body,
+    html {
         margin: 0;
         padding: 0;
         visibility: hidden;
         background: white;
     }
-    
+
     #modalGafetes {
         visibility: visible;
         position: absolute;
@@ -1669,13 +1650,13 @@ th[data-sort-desc] .sort-icon {
         height: 100%;
         overflow: visible;
     }
-    
+
     .modal-dialog {
         max-width: 100%;
         margin: 0;
         padding: 0;
     }
-    
+
     .modal-content {
         border: none;
         box-shadow: none;
@@ -1683,14 +1664,14 @@ th[data-sort-desc] .sort-icon {
         padding: 0;
         margin: 0;
     }
-    
+
     #contenidoGafetes {
         visibility: visible;
         width: 100%;
         padding: 0;
         margin: 0;
     }
-    
+
     .gafetes-container {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -1698,12 +1679,12 @@ th[data-sort-desc] .sort-icon {
         width: 100%;
         page-break-inside: avoid;
     }
-    
+
     .gafete {
         width: 5.5cm !important;
         height: 9cm !important;
         margin: 0 auto;
-        box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
         border: none;
         page-break-inside: avoid;
         break-inside: avoid;
@@ -1711,37 +1692,37 @@ th[data-sort-desc] .sort-icon {
         overflow: hidden;
         padding: 0.1cm 0.4cm 0.4cm 0.4cm !important;
     }
-    
+
     /* Asegurar que no se corten los gafetes entre páginas */
     .gafete {
         page-break-inside: avoid;
         break-inside: avoid;
     }
-    
+
     /* Ajustar para cuando hay un número impar de gafetes */
     .gafete:nth-child(3n) {
         margin-right: 0;
     }
-    
+
     .gafete:nth-child(3n+1) {
         clear: left;
     }
-    
+
     /* Ocultar elementos no deseados en la impresión */
     .modal-header,
     .modal-footer,
     .btn-close,
     .modal-backdrop,
-    .modal-footer, 
+    .modal-footer,
     .modal-header {
         display: none !important;
     }
-    
+
     /* Asegurar que los gafetes se ajusten a la página */
     @page :first {
         margin-top: 0;
     }
-    
+
     /* Ajustar para impresión a color */
     @media print and (color) {
         * {
@@ -1749,7 +1730,7 @@ th[data-sort-desc] .sort-icon {
             print-color-adjust: exact;
         }
     }
-    
+
     /* Estilos para los saltos de página */
     .page-break {
         page-break-after: always;
@@ -1759,13 +1740,13 @@ th[data-sort-desc] .sort-icon {
         margin: 0;
         padding: 0;
     }
-    
+
     /* Asegurar que los gafetes no se corten entre páginas */
     .gafete {
         page-break-inside: avoid;
         break-inside: avoid;
     }
-    
+
     /* Ajustar el espaciado entre filas de gafetes */
     .gafetes-container {
         row-gap: 1cm;
@@ -1775,20 +1756,24 @@ th[data-sort-desc] .sort-icon {
     .gafete-info p,
     .gafete-info strong,
     .gafete-info h2 {
-      font-size: 20pt !important;
-      text-align: center !important;
+        font-size: 20pt !important;
+        text-align: center !important;
     }
 
-    .gafete, .gafete * {
-      font-size: 26pt !important;
-    text-align: center !important;
-      margin-bottom: 0.5em !important;
-  }
-    .gafetes-container, .gafetes-fila-atras {
+    .gafete,
+    .gafete * {
+        font-size: 26pt !important;
+        text-align: center !important;
+        margin-bottom: 0.5em !important;
+    }
+
+    .gafetes-container,
+    .gafetes-fila-atras {
         border: none !important;
         background: none !important;
         box-shadow: none !important;
     }
+
     .gafete[style*='visibility:hidden'] {
         border: none !important;
         background: none !important;
@@ -2052,6 +2037,7 @@ th[data-sort-desc] .sort-icon {
     0% {
         transform: rotate(0deg);
     }
+
     100% {
         transform: rotate(360deg);
     }
@@ -2063,26 +2049,26 @@ th[data-sort-desc] .sort-icon {
         margin: 0.75rem;
         max-width: calc(100% - 1.5rem);
     }
-    
+
     #modalConfirmacionLimpiar .modal-header,
     #modalConfirmacionLimpiar .modal-body,
     #modalConfirmacionLimpiar .modal-footer {
         padding: 1.2rem;
     }
-    
+
     #modalConfirmacionLimpiar .confirmacion-icon {
         width: 45px;
         height: 45px;
     }
-    
+
     #modalConfirmacionLimpiar .confirmacion-icon i {
         font-size: 1.3rem;
     }
-    
+
     #modalConfirmacionLimpiar .modal-title {
         font-size: 1.1rem;
     }
-    
+
     #modalConfirmacionLimpiar .btn {
         padding: 0.5rem 1rem;
         font-size: 0.8rem;
@@ -2347,26 +2333,26 @@ th[data-sort-desc] .sort-icon {
         margin: 0.75rem;
         max-width: calc(100% - 1.5rem);
     }
-    
+
     #modalConfirmacionLimpiarLogos .modal-header,
     #modalConfirmacionLimpiarLogos .modal-body,
     #modalConfirmacionLimpiarLogos .modal-footer {
         padding: 1.2rem;
     }
-    
+
     #modalConfirmacionLimpiarLogos .confirmacion-icon {
         width: 45px;
         height: 45px;
     }
-    
+
     #modalConfirmacionLimpiarLogos .confirmacion-icon i {
         font-size: 1.3rem;
     }
-    
+
     #modalConfirmacionLimpiarLogos .modal-title {
         font-size: 1.1rem;
     }
-    
+
     #modalConfirmacionLimpiarLogos .btn {
         padding: 0.5rem 1rem;
         font-size: 0.8rem;
@@ -2631,26 +2617,26 @@ th[data-sort-desc] .sort-icon {
         margin: 0.75rem;
         max-width: calc(100% - 1.5rem);
     }
-    
+
     #modalConfirmacionEliminarLogo .modal-header,
     #modalConfirmacionEliminarLogo .modal-body,
     #modalConfirmacionEliminarLogo .modal-footer {
         padding: 1.2rem;
     }
-    
+
     #modalConfirmacionEliminarLogo .confirmacion-icon {
         width: 45px;
         height: 45px;
     }
-    
+
     #modalConfirmacionEliminarLogo .confirmacion-icon i {
         font-size: 1.3rem;
     }
-    
+
     #modalConfirmacionEliminarLogo .modal-title {
         font-size: 1.1rem;
     }
-    
+
     #modalConfirmacionEliminarLogo .btn {
         padding: 0.5rem 1rem;
         font-size: 0.8rem;
@@ -2667,235 +2653,780 @@ th[data-sort-desc] .sort-icon {
    ===================================================== */
 
 :root {
-  --gafete-green-600: #16a34a; /* primario */
-  --gafete-green-500: #22c55e; /* acento */
-  --gafete-green-700: #15803d; /* hover */
-  --gafete-green-200: #bbf7d0; /* soft */
-  --gafete-green-50:  #f0fdf4; /* bg */
-  --gafete-surface:   #ffffff;
-  --gafete-muted:     #64748b;
+    --gafete-green-600: #16a34a;
+    /* primario */
+    --gafete-green-500: #22c55e;
+    /* acento */
+    --gafete-green-700: #15803d;
+    /* hover */
+    --gafete-green-200: #bbf7d0;
+    /* soft */
+    --gafete-green-50: #f0fdf4;
+    /* bg */
+    --gafete-surface: #ffffff;
+    --gafete-muted: #64748b;
 }
 
 /* Encabezados de tarjeta (incluye .bg-success del header) */
 .card-header,
 .bg-success {
-  background: linear-gradient(135deg, var(--gafete-green-600) 0%, var(--gafete-green-500) 100%) !important;
+    background: linear-gradient(135deg, var(--gafete-green-600) 0%, var(--gafete-green-500) 100%) !important;
 }
 
 /* Botones principales en verde moderno */
 .btn-success,
 .btn-primary {
-  background: linear-gradient(135deg, var(--gafete-green-600), var(--gafete-green-500)) !important;
-  border: none !important;
-  color: #fff !important;
+    background: linear-gradient(135deg, var(--gafete-green-600), var(--gafete-green-500)) !important;
+    border: none !important;
+    color: #fff !important;
 }
 
 .btn-success:hover,
 .btn-primary:hover {
-  background: linear-gradient(135deg, var(--gafete-green-700), var(--gafete-green-600)) !important;
+    background: linear-gradient(135deg, var(--gafete-green-700), var(--gafete-green-600)) !important;
 }
 
 /* Badges de estado más frescos */
-.badge.bg-success { background-color: var(--gafete-green-600) !important; }
-.badge.bg-warning { background-color: #facc15 !important; color: #1f2937 !important; }
-.badge.bg-danger  { background-color: #ef4444 !important; }
-.badge.bg-secondary { background-color: #94a3b8 !important; }
+.badge.bg-success {
+    background-color: var(--gafete-green-600) !important;
+}
+
+.badge.bg-warning {
+    background-color: #facc15 !important;
+    color: #1f2937 !important;
+}
+
+.badge.bg-danger {
+    background-color: #ef4444 !important;
+}
+
+.badge.bg-secondary {
+    background-color: #94a3b8 !important;
+}
 
 /* Filtro de estado y buscador: estilo moderno */
 .card-header .filtro-estado .input-group-text,
 .card-header .buscador-empleados .input-group-text {
-  background: var(--gafete-surface) !important;
-  border: 1px solid #e2e8f0 !important;
-  border-right: 0 !important;
-  color: var(--gafete-muted);
+    background: var(--gafete-surface) !important;
+    border: 1px solid #e2e8f0 !important;
+    border-right: 0 !important;
+    color: var(--gafete-muted);
 }
 
 #filtroEstadoGafete.form-select,
 .card-header .buscador-empleados input[type="text"] {
-  border: 1px solid #e2e8f0 !important;
-  border-left: 0 !important;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-  transition: border-color .2s, box-shadow .2s;
+    border: 1px solid #e2e8f0 !important;
+    border-left: 0 !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+    transition: border-color .2s, box-shadow .2s;
 }
 
 #filtroEstadoGafete.form-select:focus,
 .card-header .buscador-empleados input[type="text"]:focus {
-  border-color: var(--gafete-green-500) !important;
-  box-shadow: 0 0 0 .2rem rgba(34,197,94,.15) !important;
+    border-color: var(--gafete-green-500) !important;
+    box-shadow: 0 0 0 .2rem rgba(34, 197, 94, .15) !important;
 }
 
 #limpiarBuscador.btn.btn-link {
-  color: #94a3b8 !important;
+    color: #94a3b8 !important;
 }
 
 #limpiarBuscador.btn.btn-link:hover {
-  color: #ef4444 !important;
+    color: #ef4444 !important;
 }
 
 /* Tabla: encabezado y filas con look actualizado */
 #tablaEmpleados thead th {
-  background: linear-gradient(135deg, var(--gafete-green-600), var(--gafete-green-500));
-  color: #fff;
-  border: none;
+    background: linear-gradient(135deg, var(--gafete-green-600), var(--gafete-green-500));
+    color: #fff;
+    border: none;
 }
 
 #tablaEmpleados tbody tr {
-  border-bottom: 1px solid #eef2f7;
+    border-bottom: 1px solid #eef2f7;
 }
 
 #tablaEmpleados tbody tr:hover {
-  background: var(--gafete-green-50);
-  transform: translateX(2px);
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.08);
+    background: var(--gafete-green-50);
+    transform: translateX(2px);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.08);
 }
 
 #tablaEmpleados td {
-  color: #000000;
+    color: #000000;
 }
 
 /* Select pequeño de orden nombre más limpio */
 .orden-nombre-select.form-select.form-select-sm {
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: .25rem .5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: .25rem .5rem;
 }
 
 .orden-nombre-select.form-select.form-select-sm:focus {
-  border-color: var(--gafete-green-500);
-  box-shadow: 0 0 0 .2rem rgba(34,197,94,.15);
+    border-color: var(--gafete-green-500);
+    box-shadow: 0 0 0 .2rem rgba(34, 197, 94, .15);
 }
 
 /* Paginación moderna */
 .pagination.pagination-sm .page-link {
-  border: 1px solid #e2e8f0;
-  color: #334155;
-  margin: 0 2px;
-  border-radius: 8px !important;
-  transition: all .2s ease;
+    border: 1px solid #e2e8f0;
+    color: #334155;
+    margin: 0 2px;
+    border-radius: 8px !important;
+    transition: all .2s ease;
 }
 
 .pagination.pagination-sm .page-link:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
+    background: #f8fafc;
+    border-color: #cbd5e1;
 }
 
 .pagination.pagination-sm .page-item.active .page-link {
-  background: var(--gafete-green-600);
-  border-color: var(--gafete-green-600);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(22,163,74,.25);
+    background: var(--gafete-green-600);
+    border-color: var(--gafete-green-600);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(22, 163, 74, .25);
 }
 
 .pagination.pagination-sm .page-item.disabled .page-link {
-  color: #94a3b8;
-  background: #f1f5f9;
+    color: #94a3b8;
+    background: #f1f5f9;
 }
 
 /* Lista de departamentos activa y hover con nueva paleta */
 #listaDepartamentos .list-group-item.active {
-  background: linear-gradient(135deg, var(--gafete-green-600), var(--gafete-green-500));
-  box-shadow: 0 4px 12px rgba(22,163,74,.25);
+    background: linear-gradient(135deg, var(--gafete-green-600), var(--gafete-green-500));
+    box-shadow: 0 4px 12px rgba(22, 163, 74, .25);
 }
 
 #listaDepartamentos .list-group-item:hover {
-  background: #f8fafc;
+    background: #f8fafc;
 }
 
 /* Switch IMSS y labels más legibles */
 .form-check-input.imss-toggle:focus {
-  border-color: var(--gafete-green-500);
-  box-shadow: 0 0 0 .2rem rgba(34,197,94,.2);
+    border-color: var(--gafete-green-500);
+    box-shadow: 0 0 0 .2rem rgba(34, 197, 94, .2);
 }
 
 .form-check-input.imss-toggle:checked {
-  background-color: var(--gafete-green-600);
-  border-color: var(--gafete-green-600);
+    background-color: var(--gafete-green-600);
+    border-color: var(--gafete-green-600);
 }
 
 .form-check-label .toggle-text {
-  color: #475569;
-  font-weight: 600;
+    color: #475569;
+    font-weight: 600;
 }
 
 /* Botón editar más consistente con el tema */
 .btn-editar {
-  background: linear-gradient(135deg, var(--gafete-green-600), var(--gafete-green-500)) !important;
-  color: #fff !important;
+    background: linear-gradient(135deg, var(--gafete-green-600), var(--gafete-green-500)) !important;
+    color: #fff !important;
 }
 
 .btn-editar:hover {
-  background: linear-gradient(135deg, var(--gafete-green-700), var(--gafete-green-600)) !important;
+    background: linear-gradient(135deg, var(--gafete-green-700), var(--gafete-green-600)) !important;
 }
 
 /* --- Filtros más agradables (estado + buscador + limpiar) --- */
 .card-header .input-group.input-group-sm {
-  background: rgba(255,255,255,.95);
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(2, 6, 23, .05);
+    background: rgba(255, 255, 255, .95);
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(2, 6, 23, .05);
 }
 
 .card-header .input-group.input-group-sm .input-group-text {
-  height: 34px;
+    height: 34px;
 }
 
 .card-header .input-group.input-group-sm .form-control,
 .card-header .input-group.input-group-sm .form-select {
-  height: 34px;
+    height: 34px;
 }
 
 /* Select de estado con flecha personalizada */
 #filtroEstadoGafete.form-select {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2316a34a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right .6rem center;
-  background-size: 14px;
-  padding-right: 1.8rem !important;
-  border-radius: 0 10px 10px 0;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2316a34a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right .6rem center;
+    background-size: 14px;
+    padding-right: 1.8rem !important;
+    border-radius: 0 10px 10px 0;
 }
 
 /* Buscador más suave */
 .card-header .buscador-empleados input[type="text"]::placeholder {
-  color: #9aa7b7;
+    color: #9aa7b7;
 }
 
 .card-header .buscador-empleados {
-  border-radius: 10px;
-  overflow: visible !important; /* evitar que la X se recorte */
+    border-radius: 10px;
+    overflow: visible !important;
+    /* evitar que la X se recorte */
 }
 
 #limpiarBuscador {
-  opacity: .8;
-  z-index: 10; /* asegurar que quede encima del input */
-  width: 24px;
-  height: 24px;
-  display: inline-flex; /* mantener visible cuando JS hace show() */
-  align-items: center;
-  justify-content: center;
-  background: transparent;
+    opacity: .8;
+    z-index: 10;
+    /* asegurar que quede encima del input */
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    /* mantener visible cuando JS hace show() */
+    align-items: center;
+    justify-content: center;
+    background: transparent;
 }
 
 #limpiarBuscador:hover {
-  opacity: 1;
+    opacity: 1;
 }
 
 /* Botón Limpiar filtro como chip claro sobre header verde */
 #limpiarFiltroEstadoBtn.btn.btn-outline-light {
-  border-color: rgba(255,255,255,.9) !important;
-  color: #fff !important;
-  background: rgba(255,255,255,.08) !important;
-  backdrop-filter: saturate(140%) blur(2px);
+    border-color: rgba(255, 255, 255, .9) !important;
+    color: #fff !important;
+    background: rgba(255, 255, 255, .08) !important;
+    backdrop-filter: saturate(140%) blur(2px);
 }
 
 #limpiarFiltroEstadoBtn.btn.btn-outline-light:hover {
-  background: rgba(255,255,255,.18) !important;
+    background: rgba(255, 255, 255, .18) !important;
 }
 
-/* Compactar ligeramente el grupo de filtros */
-.card-header .d-flex.align-items-center.gap-2 > * {
-  margin-right: .15rem;
+/* ============================================================
+   RESET DE TABLA (MISMO ESTILO QUE GESTION EMPLEADOS)
+   Sobrescribe todos los estilos feos anteriores
+   ============================================================ */
+:root {
+    --primary-green: #2d6a4f;
+    --soft-green: #95d5b2;
+    --light-green: #d8f3dc;
+    --hover-green: #e8f7ee;
+    --border-color: #e9ecef;
+    --text-main: #343a40;
+    --text-muted: #6c757d;
+    --radius-lg: 12px;
+    --radius-md: 8px;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+body {
+    background-color: #f8f9fa !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    color: var(--text-main) !important;
+}
+
+.container-tabla-nomina {
+    padding: 24px 12px !important;
+    max-width: 100% !important;
+    background: none !important;
+}
+
+/* -------- Tarjetas: header de filtros y controles -------- */
+.header-tabla,
+.controles-tabla {
+    background-color: #ffffff !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-sm) !important;
+    padding: 1rem 1.25rem !important;
+    margin-bottom: 16px !important;
+    background-image: none !important;
+}
+
+.header-tabla h3 {
+    color: var(--primary-green) !important;
+    font-weight: 700 !important;
+}
+
+.header-tabla .subtitulo-nomina {
+    color: var(--text-muted) !important;
+}
+
+.filtro-departamento {
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-md) !important;
+    color: var(--text-main) !important;
+    font-size: 0.85rem !important;
+    padding: 0.4rem 0.7rem !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+}
+
+.btn-lg-header {
+    border-radius: var(--radius-md) !important;
+    font-weight: 500 !important;
+    padding: 6px 12px !important;
+    font-size: 0.82rem !important;
+}
+
+/* -------- Contenedor de tabla -------- */
+.table-responsive {
+    background-color: #ffffff !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-sm) !important;
+    margin: 0 !important;
+    background-image: none !important;
+}
+
+/* -------- TABLA: table-layout fixed SIN espacios vacíos -------- */
+#tablaEmpleados {
+    margin: 0 !important;
+    table-layout: fixed !important;
+    width: 100% !important;
+}
+
+/* Anchors fijos por columna */
+#tablaEmpleados th:nth-child(1),
+#tablaEmpleados td:nth-child(1) {
+    width: 75px !important;
+    min-width: 75px !important;
+    max-width: 75px !important;
+    text-align: center !important;
+}
+
+/* Foto         */
+#tablaEmpleados th:nth-child(2),
+#tablaEmpleados td:nth-child(2) {
+    min-width: 210px !important;
+    text-align: left !important;
+}
+
+/* Nombre + clave abajo */
+#tablaEmpleados th:nth-child(3),
+#tablaEmpleados td:nth-child(3) {
+    width: 24% !important;
+    min-width: 160px !important;
+    text-align: left !important;
+}
+
+/* Depto/Área   */
+#tablaEmpleados th:nth-child(4),
+#tablaEmpleados td:nth-child(4) {
+    width: 210px !important;
+    min-width: 210px !important;
+    max-width: 210px !important;
+    text-align: left !important;
+}
+
+/* Estado/IMSS  */
+#tablaEmpleados th:nth-child(5),
+#tablaEmpleados td:nth-child(5) {
+    width: 150px !important;
+    min-width: 150px !important;
+    max-width: 150px !important;
+    text-align: center !important;
+}
+
+/* Orden Nombre */
+#tablaEmpleados th:nth-child(6),
+#tablaEmpleados td:nth-child(6) {
+    width: 240px !important;
+    min-width: 240px !important;
+    max-width: 240px !important;
+    text-align: center !important;
+}
+
+/* Acciones     */
+
+/* -------- Encabezado de tabla -------- */
+#tablaEmpleados thead th {
+    background: #f8fbf9 !important;
+    background-image: none !important;
+    color: var(--primary-green) !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    padding: 0.7rem 0.6rem !important;
+    border-bottom: 2px solid var(--border-color) !important;
+    border-top: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    vertical-align: middle !important;
+    border-radius: 0 !important;
+    text-align: left !important;
+}
+
+#tablaEmpleados th:nth-child(1) {
+    text-align: center !important;
+}
+
+#tablaEmpleados th:nth-child(5) {
+    text-align: center !important;
+}
+
+#tablaEmpleados th:nth-child(6) {
+    text-align: center !important;
+}
+
+#tablaEmpleados th:first-child {
+    border-top-left-radius: var(--radius-lg) !important;
+}
+
+#tablaEmpleados th:last-child {
+    border-top-right-radius: var(--radius-lg) !important;
+}
+
+/* -------- Filas y celdas -------- */
+#tablaEmpleados tbody tr {
+    transition: background-color 0.15s ease !important;
+    transform: none !important;
+    background: none !important;
+    background-image: none !important;
+    box-shadow: none !important;
+}
+
+#tablaEmpleados tbody tr:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    background: none !important;
+}
+
+#tablaEmpleados tbody tr:hover td {
+    background-color: var(--hover-green) !important;
+}
+
+#tablaEmpleados tbody td {
+    padding: 0.6rem 0.6rem !important;
+    vertical-align: middle !important;
+    font-size: 0.85rem !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+    color: var(--text-main) !important;
+    border-top: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+#tablaEmpleados tbody tr:last-child td {
+    border-bottom: none !important;
+}
+
+#tablaEmpleados td:nth-child(5) {
+    text-align: center !important;
+}
+
+#tablaEmpleados td:nth-child(6) {
+    text-align: center !important;
+}
+
+/* -------- FOTO / AVATAR (igual que gestión empleados — elegante) -------- */
+#tablaEmpleados td:nth-child(1) {
+    padding-left: 0.4rem !important;
+    padding-right: 0.4rem !important;
+    text-align: center !important;
+}
+
+#tablaEmpleados td img.rounded-circle {
+    border: 2px solid #e8f7ee !important;
+    object-fit: cover !important;
+    width: 48px !important;
+    height: 48px !important;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
+    background-color: #f0fdf4 !important;
+    box-shadow: 0 1px 3px rgba(45, 106, 79, 0.1) !important;
+}
+
+#tablaEmpleados tbody tr:hover td img.rounded-circle {
+    transform: scale(1.05) !important;
+    border-color: #74c69d !important;
+    box-shadow: 0 3px 8px rgba(45, 106, 79, 0.15) !important;
+}
+
+.avatar-iniciales {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, #d8f3dc 0%, #b7e4c7 100%) !important;
+    color: #1b4332 !important;
+    font-weight: 700 !important;
+    font-size: 0.9rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 2px solid #d8f3dc !important;
+    letter-spacing: 0.4px !important;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
+    user-select: none !important;
+    box-shadow: 0 1px 3px rgba(45, 106, 79, 0.1) !important;
+    line-height: 1 !important;
+    background-image: none !important;
+}
+
+#tablaEmpleados tbody tr:hover td .avatar-iniciales {
+    transform: scale(1.05) !important;
+    border-color: #74c69d !important;
+    box-shadow: 0 3px 8px rgba(45, 106, 79, 0.15) !important;
+}
+
+/* Nombre + Depto en negritas con small debajo + CLAVE SUBTITULO */
+#tablaEmpleados td .fw-semibold {
+    color: var(--text-main) !important;
+    font-weight: 600 !important;
+    font-size: 0.88rem !important;
+    background: none !important;
+}
+
+#tablaEmpleados td small,
+#tablaEmpleados td small.text-muted {
+    display: block !important;
+    font-size: 0.76rem !important;
+    color: var(--text-muted) !important;
+    margin-top: 2px !important;
+}
+
+#tablaEmpleados td small.clave-subtitulo {
+    color: var(--primary-green) !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.3px !important;
+    display: block !important;
+    font-size: 0.76rem !important;
+    margin-top: 3px !important;
+}
+
+/* -------- Columna: Depto. / Área -------- */
+#tablaEmpleados th:nth-child(3),
+#tablaEmpleados td:nth-child(3) {
+    text-align: left !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    padding-left: 0.6rem !important;
+}
+
+/* -------- Columna: Estado / IMSS (EN LÍNEA HORIZONTAL) -------- */
+#tablaEmpleados th:nth-child(4),
+#tablaEmpleados td:nth-child(4) {
+    white-space: nowrap !important;
+    padding: 0.6rem 0.5rem !important;
+    background-image: none !important;
+    text-align: left !important;
+}
+
+#tablaEmpleados td:nth-child(4) .d-flex {
+    gap: 10px !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+    align-items: center !important;
+}
+
+#tablaEmpleados td:nth-child(4) .badge {
+    flex-shrink: 0 !important;
+}
+
+#tablaEmpleados td:nth-child(4) .form-check {
+    min-height: auto !important;
+    margin: 0 !important;
+    padding-left: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+}
+
+#tablaEmpleados td:nth-child(4) .form-check-input {
+    margin: 0 !important;
+    margin-top: 1px !important;
+}
+
+/* -------- Columna: Orden Nombre (COMPACTA) -------- */
+.orden-nombre-select {
+    border: 1px solid var(--border-color) !important;
+    border-radius: 6px !important;
+    font-size: 0.73rem !important;
+    padding: 0.2rem 0.4rem !important;
+    width: 132px !important;
+    min-width: 132px !important;
+    max-width: 132px !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+    color: var(--text-main) !important;
+    line-height: 1.2 !important;
+    height: 28px !important;
+}
+
+.orden-nombre-select:focus {
+    outline: none !important;
+    border-color: var(--soft-green) !important;
+    box-shadow: 0 0 0 3px rgba(149, 213, 178, 0.35) !important;
+}
+
+/* -------- Columna: Acciones (MÁS GRANDE Y LEGIBLE) -------- */
+#tablaEmpleados td:nth-child(6)>div {
+    width: 100% !important;
+    gap: 20px !important;
+    flex-wrap: nowrap !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+#tablaEmpleados td:nth-child(6) small {
+    display: inline-block !important;
+    font-size: 0.9rem !important;
+    color: var(--text-main) !important;
+    margin-top: 0 !important;
+    white-space: nowrap !important;
+    font-weight: 500 !important;
+}
+
+#tablaEmpleados td:nth-child(6) .d-inline-flex.align-items-center {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+}
+
+#tablaEmpleados td:nth-child(6) .form-check-input {
+    width: 20px !important;
+    height: 20px !important;
+    cursor: pointer !important;
+    margin: 0 !important;
+}
+
+#tablaEmpleados .btn-editar {
+    background-color: #ffffff !important;
+    background-image: none !important;
+    border: 1.5px solid var(--border-color) !important;
+    color: var(--primary-green) !important;
+    border-radius: 8px !important;
+    width: 40px !important;
+    height: 40px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s ease !important;
+    box-shadow: none !important;
+    transform: none !important;
+    flex-shrink: 0 !important;
+}
+
+#tablaEmpleados .btn-editar:hover {
+    background-color: var(--light-green) !important;
+    background-image: none !important;
+    color: var(--accent-green) !important;
+    border-color: var(--soft-green) !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+#tablaEmpleados .btn-editar i {
+    margin: 0 !important;
+    font-size: 1.2rem !important;
+}
+
+/* -------- Badges (SUAVES, como gestión empleados) -------- */
+#tablaEmpleados .badge {
+    padding: 0.28rem 0.6rem !important;
+    font-weight: 600 !important;
+    font-size: 0.7rem !important;
+    letter-spacing: 0.2px !important;
+    border-radius: 999px !important;
+    display: inline-block !important;
+    background-image: none !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+}
+
+#tablaEmpleados .badge.bg-success {
+    background-color: #eefdf3 !important;
+    color: #1e7e34 !important;
+    border: 1px solid rgba(30, 126, 52, 0.2) !important;
+}
+
+#tablaEmpleados .badge.bg-danger {
+    background-color: #fef2f2 !important;
+    color: #dc2626 !important;
+    border: 1px solid rgba(220, 38, 38, 0.2) !important;
+}
+
+#tablaEmpleados .badge.bg-warning {
+    background-color: #fff4e5 !important;
+    color: #d97706 !important;
+    border: 1px solid rgba(217, 119, 6, 0.2) !important;
+}
+
+#tablaEmpleados .badge.bg-secondary {
+    background-color: #f3f4f6 !important;
+    color: #4b5563 !important;
+    border: 1px solid #e5e7eb !important;
+}
+
+/* -------- Toggle IMSS compacto -------- */
+#tablaEmpleados .form-check-input.imss-toggle {
+    width: 28px !important;
+    height: 16px !important;
+}
+
+#tablaEmpleados .toggle-text {
+    font-size: 0.72rem !important;
+    color: var(--text-muted) !important;
+    font-weight: 500 !important;
+    white-space: nowrap !important;
+}
+
+#tablaEmpleados .form-check-label {
+    margin-left: 4px !important;
+    margin-bottom: 0 !important;
+}
+
+/* -------- Paginación (mismo estilo) -------- */
+#paginacion {
+    background-color: #ffffff !important;
+    border: 1px solid var(--border-color) !important;
+    border-top: none !important;
+    border-bottom-left-radius: var(--radius-lg) !important;
+    border-bottom-right-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-sm) !important;
+    padding: 0.85rem 1.25rem !important;
+    margin: 0 !important;
+    background-image: none !important;
+}
+
+.pagination {
+    gap: 4px !important;
+}
+
+.page-link {
+    border-radius: 6px !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-main) !important;
+    font-size: 0.825rem !important;
+    font-weight: 500 !important;
+    padding: 0.35rem 0.75rem !important;
+    background-image: none !important;
+}
+
+.page-link:hover {
+    background-color: var(--light-green) !important;
+    border-color: var(--soft-green) !important;
+    color: var(--primary-green) !important;
+    background-image: none !important;
+}
+
+.page-item.active .page-link {
+    background-color: var(--primary-green) !important;
+    border-color: var(--primary-green) !important;
+    color: #ffffff !important;
+    box-shadow: var(--shadow-sm) !important;
+    background-image: none !important;
+}
+
+.page-item.disabled .page-link {
+    background-color: #f8f9fa !important;
+    border-color: var(--border-color) !important;
+    color: #adb5bd !important;
+    background-image: none !important;
 }

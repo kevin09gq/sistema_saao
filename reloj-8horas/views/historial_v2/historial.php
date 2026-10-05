@@ -1,5 +1,8 @@
 <?php
-include "../../../config/config.php";
+require_once __DIR__ . "/../../../public/php/config.php";
+require_once __DIR__ . "/../../../public/php/verificarSesion.php";
+verificarSesion();
+verificarPermiso("reloj_8hrs.ver_historial");
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -21,7 +24,7 @@ include "../../../config/config.php";
 <body class="bg-light">
     <?php
     $rutaRaiz = '/sistema_saao';
-    include "../../../public/views/navbar.php";
+    require_once __DIR__ . "/../../../navbar/navbar.php";
     ?>
 
     <div class="container-fluid py-4">

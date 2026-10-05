@@ -8,7 +8,7 @@
     page-break-inside: avoid;
     position: relative;
     background-color: white;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .logo-empresa {
@@ -50,7 +50,8 @@
     color: #333;
 }
 
-.puesto-empleado, .departamento-empleado {
+.puesto-empleado,
+.departamento-empleado {
     font-size: 10pt;
     margin: 2px 0;
     color: #555;
@@ -70,38 +71,1149 @@
     body * {
         visibility: hidden;
     }
-    #contenedorGafetes, #contenedorGafetes * {
+
+    #contenedorGafetes,
+    #contenedorGafetes * {
         visibility: visible;
     }
+
     #contenedorGafetes {
         position: absolute;
         left: 0;
         top: 0;
         width: 100%;
     }
-    .no-print, .no-print * {
+
+    .no-print,
+    .no-print * {
         display: none !important;
     }
+
     .gafete {
         border: none;
         margin: 0;
         box-shadow: none;
         page-break-after: always;
     }
+
     .row {
         display: flex;
         flex-wrap: wrap;
     }
+
     .col-6 {
         flex: 0 0 50%;
         max-width: 50%;
     }
+
     .col-md-4 {
         flex: 0 0 33.333333%;
         max-width: 33.333333%;
     }
-    .col-lg-3 {
-        flex: 0 0 25%;
-        max-width: 25%;
+}
+
+/* ==========================================================================
+   SISTEMA SAAO - MÓDULO DE GAFETES
+   Estilos basados en Gestión Empleados (Kardex limpio) y Modal de Actualización
+   ========================================================================== */
+
+:root {
+    --primary-green: #2d6a4f;
+    --accent-green: #1b4332;
+    --soft-green: #95d5b2;
+    --light-green: #d8f3dc;
+    --hover-green: #e8f7ee;
+    --bg-gray: #f8f9fa;
+    --border-color: #e9ecef;
+    --text-main: #343a40;
+    --text-muted: #6c757d;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
     }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+body {
+    background-color: var(--bg-gray);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--text-main);
+}
+
+.container-tabla-nomina {
+    padding: 24px 12px;
+    max-width: 100%;
+}
+
+/* ================ HEADER SUPERIOR (Tarjeta de filtros y controles) ================ */
+.header-tabla,
+.controles-tabla {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 1rem 1.25rem;
+    margin-bottom: 16px;
+}
+
+.header-tabla {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.header-tabla h3 {
+    color: #1e293b !important;
+    font-weight: 700;
+    font-size: 1.35rem;
+}
+
+.header-tabla .subtitulo-nomina {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+/* Botón Verde General (si se usa) */
+.header-controls .btn-success {
+    background: linear-gradient(135deg, #2d6a4f 0%, #1b4332 100%) !important;
+    border: 1px solid #1b4332 !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    font-size: 0.83rem !important;
+    padding: 0.42rem 0.85rem !important;
+    border-radius: 8px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    box-shadow: 0 2px 5px rgba(45, 106, 79, 0.22) !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    cursor: pointer !important;
+    line-height: 1.3 !important;
+}
+
+.header-controls .btn-success:hover {
+    background: linear-gradient(135deg, #357a5b 0%, #22543d 100%) !important;
+    color: #ffffff !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 10px rgba(45, 106, 79, 0.32) !important;
+}
+
+.header-controls .btn-success:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 1px 3px rgba(45, 106, 79, 0.2) !important;
+}
+
+/* Botones de Gestión y Configuración (Estilo Kardex/Gestión Empleados) */
+.header-controls .btn-outline-secondary {
+    background-color: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    color: #374151 !important;
+    font-weight: 500 !important;
+    font-size: 0.82rem !important;
+    padding: 0.42rem 0.82rem !important;
+    border-radius: 8px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+    transition: all 0.2s ease !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    cursor: pointer !important;
+    line-height: 1.3 !important;
+}
+
+.header-controls .btn-outline-secondary:hover {
+    background-color: #f9fafb !important;
+    border-color: #9ca3af !important;
+    color: #111827 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+}
+
+.header-controls .btn-outline-secondary:active {
+    transform: translateY(0) !important;
+    box-shadow: none !important;
+}
+
+.header-controls .btn-outline-secondary i {
+    font-size: 0.95rem !important;
+}
+
+/* Botón Peligro / Limpiar */
+#limpiarFotos,
+.header-controls .btn-outline-danger {
+    background-color: #ffffff !important;
+    border: 1px solid #fecaca !important;
+    color: #dc2626 !important;
+    font-size: 0.85rem !important;
+    padding: 0.42rem 0.65rem !important;
+    border-radius: 8px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s ease !important;
+    cursor: pointer !important;
+    line-height: 1.3 !important;
+}
+
+.header-controls .btn-outline-danger:hover {
+    background-color: #fef2f2 !important;
+    border-color: #f87171 !important;
+    color: #b91c1c !important;
+    transform: translateY(-1px) !important;
+}
+
+.controles-tabla {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.filtros-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.filtro-departamento {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-main);
+    font-size: 0.85rem;
+    padding: 0.4rem 0.7rem;
+    background-color: #ffffff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.filtro-departamento:focus {
+    outline: none;
+    border-color: var(--soft-green);
+    box-shadow: 0 0 0 3px rgba(149, 213, 178, 0.35);
+}
+
+.filtro-departamento:disabled {
+    background-color: #f3f4f6;
+    color: #9ca3af;
+    cursor: not-allowed;
+    opacity: 0.65;
+    border-color: #e5e7eb;
+}
+
+/* ================ TABLA (MISMO ESTILO QUE GESTION EMPLEADOS) ================ */
+.table-responsive {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    margin: 0;
+}
+
+#tablaEmpleados {
+    margin: 0;
+    table-layout: fixed;
+    width: 100%;
+}
+
+/* Anchors fijos por columna (sin espacios vacíos de más) */
+#tablaEmpleados th:nth-child(1),
+#tablaEmpleados td:nth-child(1) {
+    width: 75px;
+    min-width: 75px;
+    max-width: 75px;
+    text-align: center;
+}
+
+/* Foto         */
+#tablaEmpleados th:nth-child(2),
+#tablaEmpleados td:nth-child(2) {
+    width: auto;
+    min-width: 210px;
+    text-align: left;
+}
+
+/* Nombre (con clave abajo) */
+#tablaEmpleados th:nth-child(3),
+#tablaEmpleados td:nth-child(3) {
+    width: 24%;
+    min-width: 160px;
+    text-align: left;
+}
+
+/* Depto/Área   */
+#tablaEmpleados th:nth-child(4),
+#tablaEmpleados td:nth-child(4) {
+    width: 210px;
+    min-width: 210px;
+    max-width: 210px;
+    text-align: left;
+}
+
+/* Estado/IMSS  */
+#tablaEmpleados th:nth-child(5),
+#tablaEmpleados td:nth-child(5) {
+    width: 150px;
+    min-width: 150px;
+    max-width: 150px;
+    text-align: center;
+}
+
+/* Orden Nombre */
+#tablaEmpleados th:nth-child(6),
+#tablaEmpleados td:nth-child(6) {
+    width: 240px;
+    min-width: 240px;
+    max-width: 240px;
+    text-align: center;
+}
+
+/* Acciones     */
+
+/* Encabezado: verde ultraclaro con texto verde oscuro */
+#tablaEmpleados thead th {
+    background-color: #f8fbf9 !important;
+    color: var(--primary-green) !important;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.7rem 0.6rem;
+    border-bottom: 2px solid var(--border-color);
+    border-top: none;
+    vertical-align: middle;
+    text-align: left;
+}
+
+#tablaEmpleados th:nth-child(1),
+#tablaEmpleados td:nth-child(1) {
+    text-align: center;
+}
+
+/* Foto */
+#tablaEmpleados th:nth-child(5),
+#tablaEmpleados td:nth-child(5) {
+    text-align: center;
+}
+
+/* Orden Nombre */
+#tablaEmpleados th:nth-child(6),
+#tablaEmpleados td:nth-child(6) {
+    text-align: center;
+}
+
+/* Acciones */
+#tablaEmpleados th:nth-child(2),
+#tablaEmpleados th:nth-child(3),
+#tablaEmpleados th:nth-child(4) {
+    text-align: left;
+}
+
+#tablaEmpleados th:first-child {
+    border-top-left-radius: var(--radius-lg);
+}
+
+#tablaEmpleados th:last-child {
+    border-top-right-radius: var(--radius-lg);
+}
+
+/* Celdas */
+#tablaEmpleados tbody td {
+    padding: 0.6rem 0.6rem;
+    vertical-align: middle;
+    font-size: 0.85rem;
+    border-bottom: 1px solid var(--border-color);
+    background-color: #ffffff;
+    color: var(--text-main);
+    transition: background-color 0.15s ease;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#tablaEmpleados tbody tr:last-child td {
+    border-bottom: none;
+}
+
+#tablaEmpleados tbody tr:hover td {
+    background-color: var(--hover-green);
+}
+
+/* ================ FOTO / AVATAR (igual que gestión empleados — más elegante) ================ */
+#tablaEmpleados td:nth-child(1) {
+    padding-left: 0.4rem !important;
+    padding-right: 0.4rem !important;
+}
+
+#tablaEmpleados td img.rounded-circle {
+    border: 2px solid #e8f7ee;
+    object-fit: cover;
+    width: 48px;
+    height: 48px;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    background-color: #f0fdf4;
+    box-shadow: 0 1px 3px rgba(45, 106, 79, 0.1);
+}
+
+#tablaEmpleados tbody tr:hover td img.rounded-circle {
+    transform: scale(1.05);
+    border-color: #74c69d;
+    box-shadow: 0 3px 8px rgba(45, 106, 79, 0.15);
+}
+
+.avatar-iniciales {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #d8f3dc 0%, #b7e4c7 100%);
+    color: #1b4332;
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #d8f3dc;
+    letter-spacing: 0.4px;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    user-select: none;
+    box-shadow: 0 1px 3px rgba(45, 106, 79, 0.1);
+    line-height: 1;
+}
+
+#tablaEmpleados tbody tr:hover td .avatar-iniciales {
+    transform: scale(1.05);
+    border-color: #74c69d;
+    box-shadow: 0 3px 8px rgba(45, 106, 79, 0.15);
+}
+
+/* Nombre destacado + CLAVE abajo del nombre */
+#tablaEmpleados td .fw-semibold {
+    color: var(--text-main);
+    font-weight: 600;
+    font-size: 0.86rem;
+    letter-spacing: 0.1px;
+    line-height: 1.3;
+    display: block;
+}
+
+#tablaEmpleados td small.text-muted,
+#tablaEmpleados td small {
+    display: block;
+    font-size: 0.76rem;
+    color: var(--text-muted) !important;
+    margin-top: 2px;
+}
+
+/* Clave que va abajo del nombre */
+#tablaEmpleados td small.clave-subtitulo {
+    color: #2d6a4f !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.5px;
+    display: inline-block !important;
+    font-size: 0.72rem !important;
+    margin-top: 4px !important;
+    padding: 1px 7px !important;
+    background-color: #f0fdf4 !important;
+    border: 1px solid #d8f3dc !important;
+    border-radius: 4px !important;
+}
+
+/* ================ COLUMNA ORDEN NOMBRE (MUY COMPACTA) ================ */
+.orden-nombre-select {
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.73rem !important;
+    padding: 0.2rem 0.4rem;
+    width: 132px !important;
+    min-width: 132px;
+    max-width: 132px;
+    background-color: #ffffff;
+    color: var(--text-main);
+    line-height: 1.2;
+    height: 28px;
+}
+
+.orden-nombre-select:focus {
+    outline: none;
+    border-color: var(--soft-green);
+    box-shadow: 0 0 0 3px rgba(149, 213, 178, 0.35);
+}
+
+/* ================ BADGES DE ESTADO (COMO GESTION EMPLEADOS - SUAVES) ================ */
+#tablaEmpleados .badge {
+    padding: 0.28rem 0.6rem;
+    font-weight: 600;
+    font-size: 0.7rem;
+    letter-spacing: 0.2px;
+    border-radius: 999px;
+    display: inline-block;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+#tablaEmpleados .badge.bg-success {
+    background-color: #eefdf3 !important;
+    color: #1e7e34 !important;
+    border: 1px solid rgba(30, 126, 52, 0.2);
+}
+
+#tablaEmpleados .badge.bg-danger {
+    background-color: #fef2f2 !important;
+    color: #dc2626 !important;
+    border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+#tablaEmpleados .badge.bg-warning {
+    background-color: #fff4e5 !important;
+    color: #d97706 !important;
+    border: 1px solid rgba(217, 119, 6, 0.2);
+}
+
+#tablaEmpleados .badge.bg-secondary {
+    background-color: #f3f4f6 !important;
+    color: #4b5563 !important;
+    border: 1px solid #e5e7eb;
+}
+
+/* ================ TOGGLE IMSS (EN LÍNEA CON BADGE) ================ */
+#tablaEmpleados td:nth-child(4) .d-flex {
+    gap: 10px;
+    flex-wrap: nowrap;
+    width: 100%;
+}
+
+#tablaEmpleados td:nth-child(4) .badge {
+    flex-shrink: 0;
+}
+
+#tablaEmpleados td:nth-child(4) .form-check {
+    min-height: auto;
+    margin: 0;
+    padding-left: 0;
+}
+
+#tablaEmpleados td:nth-child(4) .form-check-input {
+    width: 28px;
+    height: 16px;
+    margin: 0;
+    margin-top: 1px;
+}
+
+#tablaEmpleados .toggle-text {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+#tablaEmpleados .form-check-label {
+    margin-left: 4px;
+    margin-bottom: 0;
+}
+
+/* ================ COLUMNA ACCIONES (MÁS GRANDE Y LEGIBLE) ================ */
+#tablaEmpleados td:nth-child(6)>div {
+    width: 100%;
+    gap: 20px !important;
+    flex-wrap: nowrap;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+#tablaEmpleados td:nth-child(6) small {
+    display: inline-block !important;
+    font-size: 0.9rem !important;
+    color: var(--text-main) !important;
+    margin-top: 0 !important;
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+#tablaEmpleados td:nth-child(6) .d-inline-flex.align-items-center {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+}
+
+#tablaEmpleados td:nth-child(6) .form-check-input {
+    width: 20px !important;
+    height: 20px !important;
+    cursor: pointer;
+    margin: 0;
+}
+
+#tablaEmpleados .btn-editar {
+    background-color: #ffffff !important;
+    border: 1.5px solid var(--border-color) !important;
+    color: var(--primary-green) !important;
+    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    padding: 0 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+#tablaEmpleados .btn-editar:hover {
+    background-color: var(--light-green) !important;
+    color: var(--accent-green) !important;
+    border-color: var(--soft-green) !important;
+    transform: none;
+    box-shadow: none;
+}
+
+#tablaEmpleados .btn-editar i {
+    margin: 0 !important;
+    font-size: 1.2rem;
+}
+
+/* ================ PAGINACIÓN (MISMO ESTILO) ================ */
+#paginacion {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-top: none;
+    border-bottom-left-radius: var(--radius-lg);
+    border-bottom-right-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 0.85rem 1.25rem !important;
+    margin: 0;
+}
+
+.pagination {
+    gap: 4px;
+}
+
+.page-link {
+    border-radius: 6px !important;
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    font-size: 0.825rem;
+    font-weight: 500;
+    padding: 0.35rem 0.75rem;
+}
+
+.page-link:hover {
+    background-color: var(--light-green);
+    border-color: var(--soft-green);
+    color: var(--primary-green);
+}
+
+.page-item.active .page-link {
+    background-color: var(--primary-green) !important;
+    border-color: var(--primary-green) !important;
+    color: #ffffff !important;
+    box-shadow: var(--shadow-sm);
+}
+
+.page-item.disabled .page-link {
+    background-color: var(--bg-gray);
+    border-color: var(--border-color);
+    color: #adb5bd;
+}
+
+/* Quitar efectos raros de hover con translate X */
+#tablaEmpleados tbody tr:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* Validación */
+.campo-invalido {
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25);
+}
+
+.campo-valido {
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.25);
+}
+
+/* ================ MODAL ACTUALIZAR EMPLEADO (ESTILO GESTIÓN EMPLEADOS) ================ */
+#modal_actualizar_empleado .modal-dialog-scrollable {
+    height: calc(100% - 3.5rem);
+}
+
+#modal_actualizar_empleado .modal-dialog-scrollable .modal-content {
+    max-height: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+#modal_actualizar_empleado #form_modal_actualizar_empleado {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
+}
+
+#modal_actualizar_empleado .modal-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.1rem 1.5rem;
+    border-top-left-radius: var(--radius-lg);
+    border-top-right-radius: var(--radius-lg);
+    flex-shrink: 0;
+}
+
+#modal_actualizar_empleado .modal-title {
+    color: var(--text-main);
+    font-weight: 700;
+    font-size: 1.15rem;
+    letter-spacing: -0.2px;
+}
+
+#modal_actualizar_empleado .modal-body {
+    padding: 1.5rem;
+    background-color: #ffffff;
+    overflow-y: auto !important;
+    flex: 1 1 auto;
+}
+
+/* Barra de scroll moderna */
+#modal_actualizar_empleado .modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+#modal_actualizar_empleado .modal-body::-webkit-scrollbar-track {
+    background: #f1f5f3;
+    border-radius: 4px;
+}
+
+#modal_actualizar_empleado .modal-body::-webkit-scrollbar-thumb {
+    background: #95d5b2;
+    border-radius: 4px;
+}
+
+#modal_actualizar_empleado .modal-body::-webkit-scrollbar-thumb:hover {
+    background: #2d6a4f;
+}
+
+#modal_actualizar_empleado .modal-footer {
+    background-color: #ffffff;
+    border-top: 1px solid var(--border-color);
+    padding: 0.9rem 1.5rem;
+    border-bottom-left-radius: var(--radius-lg);
+    border-bottom-right-radius: var(--radius-lg);
+    flex-shrink: 0;
+}
+
+/* Pestañas modernas tipo píldora */
+#modal_actualizar_empleado #modalTabs {
+    border-bottom: 2px solid var(--border-color);
+    gap: 6px;
+    margin-bottom: 1.5rem;
+}
+
+#modal_actualizar_empleado #modalTabs .nav-link {
+    border: 1px solid transparent;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.5rem 1.1rem;
+    border-radius: 20px;
+    background-color: transparent;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+}
+
+#modal_actualizar_empleado #modalTabs .nav-link:hover {
+    color: var(--primary-green);
+    background-color: var(--hover-green);
+}
+
+#modal_actualizar_empleado #modalTabs .nav-link.active {
+    color: var(--primary-green) !important;
+    background-color: var(--light-green) !important;
+    border-color: var(--soft-green) !important;
+}
+
+/* Tarjetas de sección dentro del modal */
+#modal_actualizar_empleado .card.bg-light {
+    background-color: var(--bg-gray) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: none;
+}
+
+#modal_actualizar_empleado .card-body h6 {
+    font-size: 0.9rem;
+    letter-spacing: 0.2px;
+    color: #495057 !important;
+}
+
+/* Etiquetas e inputs */
+#modal_actualizar_empleado .form-label {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 0.35rem;
+}
+
+#modal_actualizar_empleado .form-control,
+#modal_actualizar_empleado .form-select {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-main);
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+    background-color: #ffffff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#modal_actualizar_empleado .form-control:focus,
+#modal_actualizar_empleado .form-select:focus {
+    outline: none;
+    border-color: var(--soft-green);
+    box-shadow: 0 0 0 3px rgba(149, 213, 178, 0.35);
+}
+
+#modal_actualizar_empleado .input-group .btn-outline-success {
+    border: 1px solid var(--border-color);
+    border-left: none;
+    background-color: #ffffff;
+    color: var(--primary-green);
+}
+
+#modal_actualizar_empleado .input-group .btn-outline-success:hover {
+    background-color: var(--light-green);
+    border-color: var(--soft-green);
+    color: var(--accent-green);
+}
+
+#modal_actualizar_empleado .input-group-text {
+    border-color: var(--border-color);
+}
+
+/* ===================================================
+       AVATAR CLICKABLE & MODAL ACTUALIZAR FOTO (IDÉNTICO A EMPLEADOS)
+       =================================================== */
+.avatar-clickable {
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    transition: transform 0.2s ease;
+}
+
+.avatar-clickable:hover {
+    transform: scale(1.08);
+}
+
+.avatar-clickable:hover img {
+    border-color: #52b788;
+    box-shadow: 0 4px 10px rgba(45, 106, 79, 0.25);
+}
+
+.avatar-clickable:hover .avatar-iniciales {
+    border-color: #52b788;
+    box-shadow: 0 4px 10px rgba(45, 106, 79, 0.25);
+}
+
+.avatar-clickable:active {
+    transform: scale(0.96);
+}
+
+#modalActualizarFoto .modal-content {
+    border: none;
+    border-radius: var(--radius-lg, 12px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+#modalActualizarFoto .modal-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--border-color, #e9ecef);
+    padding: 1rem 1.25rem;
+}
+
+#modalActualizarFoto .modal-title {
+    color: var(--primary-green, #2d6a4f);
+    font-size: 1.15rem;
+    font-weight: 600;
+}
+
+#modalActualizarFoto .modal-body {
+    padding: 1.25rem;
+    background-color: #ffffff;
+}
+
+#modalActualizarFoto .card.bg-light {
+    border-radius: var(--radius-md, 8px);
+    background-color: #f8f9fa !important;
+}
+
+#modalActualizarFoto .card-body h6 {
+    color: #495057 !important;
+    font-size: 0.95rem;
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 0.5rem;
+}
+
+#modalActualizarFoto .form-label {
+    font-size: 0.85rem;
+    color: #495057;
+    margin-bottom: 0.35rem;
+}
+
+#modalActualizarFoto .form-control {
+    border-radius: var(--radius-md, 8px);
+    border: 1px solid #ced4da;
+    font-size: 0.875rem;
+    padding: 0.45rem 0.75rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#modalActualizarFoto .form-control:focus {
+    outline: none;
+    border-color: var(--soft-green, #95d5b2);
+    box-shadow: 0 0 0 3px rgba(149, 213, 178, 0.35);
+}
+
+#modalActualizarFoto .modal-dialog {
+    max-width: 480px;
+}
+
+#modalActualizarFoto .modal-footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid var(--border-color, #e9ecef);
+    padding: 0.75rem 1.25rem;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 10px;
+}
+
+#modalActualizarFoto .modal-footer .btn {
+    white-space: nowrap !important;
+    font-weight: 500;
+    font-size: 0.85rem;
+    padding: 0.42rem 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar-modal-preview {
+    width: 220px;
+    height: 220px;
+    max-width: 220px;
+    max-height: 220px;
+    margin: 0 auto;
+    border-radius: 16px;
+    overflow: hidden;
+    background-color: #f8fafc;
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    user-select: none;
+    transition: all 0.2s ease;
+}
+
+.avatar-modal-preview img {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+    background-color: #f8fafc;
+}
+
+.avatar-modal-preview .avatar-modal-iniciales {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background-color: var(--light-green, #d8f3dc);
+    border: 3px solid var(--soft-green, #95d5b2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--primary-green, #2d6a4f);
+    letter-spacing: 2px;
+    user-select: none;
+    text-transform: uppercase;
+}
+
+@media (max-width: 576px) {
+    .avatar-modal-preview {
+        width: 190px;
+        height: 190px;
+        max-width: 190px;
+        max-height: 190px;
+        border-radius: 12px;
+    }
+
+    .avatar-modal-preview .avatar-modal-iniciales {
+        width: 90px;
+        height: 90px;
+        font-size: 2.5rem;
+    }
+}
+
+/* ==========================================================================
+   ESTILOS UNIFORMES PARA TODOS LOS MODALES (MISMO PATRÓN QUE ACTUALIZAR EMPLEADO)
+   ========================================================================== */
+
+/* Patrón base aplicado a todos los modales del módulo */
+#modalGafetes .modal-content,
+#modalFotos .modal-content,
+#modalActualizarLogos .modal-content,
+#modalColoresAreas .modal-content,
+#modalConfigVigencia .modal-content,
+#modalSubirFotos .modal-content {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+/* Header limpio blanco con borde inferior */
+#modalGafetes .modal-header,
+#modalFotos .modal-header,
+#modalActualizarLogos .modal-header,
+#modalColoresAreas .modal-header,
+#modalConfigVigencia .modal-header,
+#modalSubirFotos .modal-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.1rem 1.5rem;
+}
+
+/* Título del modal uniforme */
+#modalGafetes .modal-title,
+#modalFotos .modal-title,
+#modalActualizarLogos .modal-title,
+#modalColoresAreas .modal-title,
+#modalConfigVigencia .modal-title,
+#modalSubirFotos .modal-title {
+    color: var(--text-main);
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: -0.2px;
+    display: flex;
+    align-items: center;
+}
+
+/* Body blanco */
+#modalGafetes .modal-body,
+#modalFotos .modal-body,
+#modalActualizarLogos .modal-body,
+#modalColoresAreas .modal-body,
+#modalConfigVigencia .modal-body,
+#modalSubirFotos .modal-body {
+    background-color: #ffffff;
+    padding: 1.25rem 1.5rem;
+}
+
+/* Footer uniforme */
+#modalGafetes .modal-footer,
+#modalFotos .modal-footer,
+#modalActualizarLogos .modal-footer,
+#modalColoresAreas .modal-footer,
+#modalConfigVigencia .modal-footer,
+#modalSubirFotos .modal-footer {
+    background-color: #ffffff;
+    border-top: 1px solid var(--border-color);
+    padding: 0.9rem 1.5rem;
+}
+
+/* Cards de sección dentro de los modales */
+#modalGafetes .card.bg-light,
+#modalFotos .card.bg-light,
+#modalActualizarLogos .card.bg-light,
+#modalColoresAreas .card.bg-light,
+#modalConfigVigencia .card.bg-light,
+#modalSubirFotos .card.bg-light {
+    background-color: var(--bg-gray) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: none;
+}
+
+/* Subtítulo de sección */
+#modalGafetes .card-body h6,
+#modalFotos .card-body h6,
+#modalActualizarLogos .card-body h6,
+#modalColoresAreas .card-body h6,
+#modalConfigVigencia .card-body h6,
+#modalSubirFotos .card-body h6 {
+    font-size: 0.9rem;
+    letter-spacing: 0.2px;
+    color: #495057 !important;
+    display: flex;
+    align-items: center;
+}
+
+/* Botones del footer */
+#modalGafetes .modal-footer .btn,
+#modalFotos .modal-footer .btn,
+#modalActualizarLogos .modal-footer .btn,
+#modalColoresAreas .modal-footer .btn,
+#modalConfigVigencia .modal-footer .btn,
+#modalSubirFotos .modal-footer .btn {
+    font-weight: 500;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+/* Scrollbar moderno en modal body */
+#modalGafetes .modal-body::-webkit-scrollbar,
+#modalFotos .modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+#modalGafetes .modal-body::-webkit-scrollbar-track,
+#modalFotos .modal-body::-webkit-scrollbar-track {
+    background: #f1f5f3;
+    border-radius: 4px;
+}
+
+#modalGafetes .modal-body::-webkit-scrollbar-thumb,
+#modalFotos .modal-body::-webkit-scrollbar-thumb {
+    background: #95d5b2;
+    border-radius: 4px;
+}
+
+#modalGafetes .modal-body::-webkit-scrollbar-thumb:hover,
+#modalFotos .modal-body::-webkit-scrollbar-thumb:hover {
+    background: #2d6a4f;
 }

@@ -1,7 +1,10 @@
 <?php
 // contratos/views/generar.php
-include_once '../../config/config.php';
+require_once __DIR__ . "/../../public/php/config.php";
+require_once __DIR__ . "/../../public/php/verificarSesion.php";
 verificarSesion();
+verificarPermiso("contratos.ver_menu");
+verificarPermiso("contratos.generar_contratos");
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -21,7 +24,7 @@ verificarSesion();
 </head>
 
 <body>
-  <?php include '../../public/views/navbar.php'; ?>
+  <?php require_once __DIR__ . "/../../navbar/navbar.php"; ?>
   <div class="container py-4">
     <!-- Header con gradiente -->
     <div class="page-header">
@@ -396,7 +399,6 @@ verificarSesion();
 
   <script src="<?= JQUERY_JS ?>"></script>
   <script src="<?= BOOTSTRAP_JS ?>"></script>
-  <script src="<?= $rutaRaiz ?>/public/js/navbar.js"></script>
   <script>
     // Mapear parámetros de URL a los nombres esperados por generar.js
     (function() {

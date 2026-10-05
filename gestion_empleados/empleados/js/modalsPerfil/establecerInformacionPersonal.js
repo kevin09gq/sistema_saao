@@ -1,6 +1,6 @@
 //====================================================
 // FUNCIÓN PARA ABRIR EL MODAL DE INFORMACIÓN PERSONAL
-// FUNCIÓN LLAMADA DESDE EL SWITCH DE ACCIONES 
+// FUNCIÓN LLAMADA DESDE EL SWITCH DE ACCIONES
 //====================================================
 
 async function abrirModalEditarEmpleado(idEmpleado) {
@@ -15,7 +15,13 @@ async function abrirModalEditarEmpleado(idEmpleado) {
     // 3. Obtener información del empleado y llenar campos
     await obtenerInfoEmpleado(idEmpleado);
 
-    // 4. Abrir el modal
+    // 4. Aplicar permisos de edición
+    aplicarPermisosInformacionPersonal();
+
+    // 5. Aplicar permisos de Salarios
+    aplicarPermisosSalarios();
+
+    // 5. Abrir el modal
     $('#modalEditarEmpleado').modal('show');
 }
 

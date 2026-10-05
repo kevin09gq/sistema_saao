@@ -3,7 +3,7 @@
  * Obtiene los préstamos activos de un empleado con sus detalles de plan
  * Ordenados del más antiguo al más reciente
  */
-require_once __DIR__ . '/../../config/config.php';
+require_once __DIR__ . '/../../public/php/verificarSesion.php';
 require_once __DIR__ . "/../../conexion/conexion.php";
 
 function respuestas(int $code, string $titulo, string $mensaje, string $icono, array $data = [])

@@ -413,6 +413,9 @@ async function generarTicketsSeleccionados40lbs() {
             return;
         }
 
+        // Cerrar modal
+        $('#modal_seleccion_tickets_40lbs').modal('hide');
+        
         // Mostrar muestra de carga
         Swal.fire({
             title: 'Generando tickets...',
@@ -650,6 +653,9 @@ async function generarTicketsNombreSeleccionados40lbs() {
             });
             return;
         }
+        
+        // Ocultar modal
+        $('#modal_seleccion_tickets_40lbs').modal('hide');
         
         // Mostrar carga
         Swal.fire({

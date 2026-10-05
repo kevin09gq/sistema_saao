@@ -152,9 +152,15 @@ function mostrarEmpleados() {
 
                 <!-- Foto -->
                 <td class="text-center">
+                    ${tienePermiso('empleados.actualizar_foto') ? `
                     <div role="button" class="d-inline-block position-relative avatar-clickable" onclick="abrirModalActualizarFoto(${empleado.id_empleado})" title="Clic para actualizar foto de perfil">
                         ${avatarHtml}
                     </div>
+                    ` : `
+                    <div class="d-inline-block position-relative">
+                        ${avatarHtml}
+                    </div>
+                    `}
                 </td>
 
                 <!-- Nombre -->
@@ -177,7 +183,7 @@ function mostrarEmpleados() {
 
                 <!-- NSS -->
                 <td class="text-center">
-                    <span 
+                    <span
                         role="button"
                         class="badge ${empleado.status_nss == 1 ? 'bg-success' : 'bg-danger'} badge-nss-clickable"
                         onclick="cambiarStatusNss(${empleado.id_empleado}, ${empleado.status_nss})"
@@ -188,7 +194,7 @@ function mostrarEmpleados() {
 
                 <!-- Status -->
                 <td class="text-center">
-                    <span 
+                    <span
                         role="button"
                         class="badge rounded-pill ${empleado.id_status == 1 ? 'bg-success' : 'bg-secondary'} badge-status-clickable"
                         onclick="cambiarStatusEmpleado(${empleado.id_empleado}, ${empleado.id_status})"
@@ -210,45 +216,64 @@ function mostrarEmpleados() {
                         </button>
 
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                            ${tienePermiso('empleados.ver_informacion') ? `
                             <li>
                                 <a class="dropdown-item d-flex align-items-center gap-2" onclick="accionEmpleado('editar', ${empleado.id_empleado})">
                                     <i class="bi bi-pencil-square text-primary"></i>
                                     <span>Editar Información del empleado</span>
                                 </a>
                             </li>
+                            ` : ''}
+
+                            ${tienePermiso('empleados.ver_contacto_emergencia') ? `
                             <li>
                                 <a class="dropdown-item d-flex align-items-center gap-2" onclick="accionEmpleado('contacto_emergencia', ${empleado.id_empleado})">
                                     <i class="bi bi-telephone-plus text-danger"></i>
                                     <span>Contacto de emergencia</span>
                                 </a>
                             </li>
+                            ` : ''}
+
+                            ${tienePermiso('empleados.ver_beneficiarios') ? `
                             <li>
                                 <a class="dropdown-item d-flex align-items-center gap-2" onclick="accionEmpleado('beneficiarios', ${empleado.id_empleado})">
                                     <i class="bi bi-people text-success"></i>
                                     <span>Beneficiarios</span>
                                 </a>
                             </li>
+                            ` : ''}
+
+                            ${tienePermiso('empleados.ver_reingresos') ? `
                             <li>
                                 <a class="dropdown-item d-flex align-items-center gap-2" onclick="accionEmpleado('reingresos', ${empleado.id_empleado})">
                                     <i class="bi bi-arrow-repeat text-warning"></i>
                                     <span>Reingresos</span>
                                 </a>
                             </li>
+                            ` : ''}
+
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
+
+                            ${tienePermiso('empleados.ver_horarios') ? `
                             <li>
                                 <a class="dropdown-item d-flex align-items-center gap-2" onclick="accionEmpleado('horarios', ${empleado.id_empleado})">
                                     <i class="bi bi-clock text-info"></i>
                                     <span>Horarios</span>
                                 </a>
                             </li>
+                            ` : ''}
+
+                            ${tienePermiso('empleados.ver_horarios_oficiales') ? `
                             <li>
                                 <a class="dropdown-item d-flex align-items-center gap-2" href="javascript:void(0)" onclick="accionEmpleado('horarios_oficiales', ${empleado.id_empleado})">
                                     <i class="bi bi-calendar-check text-secondary"></i>
                                     <span>Horarios Oficiales</span>
                                 </a>
                             </li>
+                            ` : ''}
+
                         </ul>
                     </div>
                 </td>
@@ -259,6 +284,12 @@ function mostrarEmpleados() {
 
     // Crear la paginación
     crearPaginacion();
+
+    // Aplicar permisos de NSS después de renderizar la tabla
+    aplicarPermisosNss();
+
+    // Aplicar permisos de estatus después de renderizar la tabla
+    aplicarPermisosStatusEmpleado();
 }
 
 

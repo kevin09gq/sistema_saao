@@ -391,9 +391,9 @@ function copiarInformacionEmpleadoBiometrico(empleadoSeleccionado, empleadoBiome
             // Buscar el empleado por su id_empleado
             if (empleado.id_empleado == empleadoSeleccionado.id_empleado) {
 
-                // Guardar los registros del biométrico con copias independientes (Deep Clone)
-                empleado.registros = JSON.parse(JSON.stringify(empleadoBiometrico.registros || []));
-                empleado.registros_copia = JSON.parse(JSON.stringify(empleadoBiometrico.registros || []));
+                // Guardar los registros del biométrico
+                empleado.registros = empleadoBiometrico.registros;
+                empleado.registros_copia = empleadoBiometrico.registros;
 
                 // Vaciamos los arreglos de olvidos de checador e inasistencias para recalcularlos
                 empleado.historial_olvidos = [];

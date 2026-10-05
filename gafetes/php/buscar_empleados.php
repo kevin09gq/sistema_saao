@@ -42,13 +42,15 @@ try {
     $busquedaLike = "%$busqueda%";
     
     // Consulta corregida para buscar empleados (usando la nueva estructura de casilleros)
-    $sql = "SELECT 
-                e.id_empleado, 
-                TRIM(e.nombre) as nombre, 
-                TRIM(e.ap_paterno) as apellido_paterno, 
+    // Excluye empleados que ya tienen casillero asignado
+    $sql = "SELECT
+                e.id_empleado,
+                TRIM(e.nombre) as nombre,
+                TRIM(e.ap_paterno) as apellido_paterno,
                 TRIM(IFNULL(e.ap_materno, '')) as apellido_materno
             FROM info_empleados e
-            WHERE e.id_status = 1 
+            WHERE e.id_status = 1
+            AND e.id_empleado NOT IN (SELECT id_empleado FROM empleado_casillero)
             AND (
                 CONCAT_WS(' ', e.nombre, e.ap_paterno, e.ap_materno) LIKE ?
                 OR e.nombre LIKE ?
@@ -95,15 +97,17 @@ try {
     }
     
     // Contar total de resultados para la paginación
-    $countSql = "SELECT COUNT(*) as total 
-                FROM info_empleados 
-                WHERE id_status = 1 
+    // Excluye empleados que ya tienen casillero asignado
+    $countSql = "SELECT COUNT(*) as total
+                FROM info_empleados e
+                WHERE e.id_status = 1
+                AND e.id_empleado NOT IN (SELECT id_empleado FROM empleado_casillero)
                 AND (
-                    nombre LIKE ? 
-                    OR ap_paterno LIKE ? 
-                    OR ap_materno LIKE ? 
-                    OR CONCAT(nombre, ' ', ap_paterno, ' ', IFNULL(ap_materno, '')) LIKE ?
-                    OR id_empleado = ?
+                    e.nombre LIKE ?
+                    OR e.ap_paterno LIKE ?
+                    OR e.ap_materno LIKE ?
+                    OR CONCAT(e.nombre, ' ', e.ap_paterno, ' ', IFNULL(e.ap_materno, '')) LIKE ?
+                    OR e.id_empleado = ?
                 )";
     
     $countStmt = $conexion->prepare($countSql);

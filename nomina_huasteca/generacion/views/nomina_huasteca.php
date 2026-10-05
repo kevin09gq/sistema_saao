@@ -3,8 +3,10 @@
 
 <!--Incluir config.php para iniciar sesión -->
 <?php
-include "../../../config/config.php";
+require_once __DIR__ . "/../../../public/php/config.php";
+require_once __DIR__ . "/../../../public/php/verificarSesion.php";
 verificarSesion(); // Proteger esta página
+verificarPermiso("nomina.crear_nomina_huasteca");
 ?>
 
 <head>
@@ -36,7 +38,7 @@ verificarSesion(); // Proteger esta página
 <body class="bg-secondary-subtle">
     <?php
     // Incluir el navbar (config.php ya fue incluido en el head)
-    include "../../../public/views/navbar.php"
+    require_once __DIR__ . "/../../../navbar/navbar.php";
     ?>
 
     <!-- CONTENEDOR DE LOS DATOS DE LA NOMINA -->

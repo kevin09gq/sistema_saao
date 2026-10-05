@@ -3,8 +3,10 @@
 
 <!-- Incluir config.php para iniciar sesión -->
 <?php
-include "../../../config/config.php";
+require_once __DIR__ . "/../../../public/php/config.php";
+require_once __DIR__ . "/../../../public/php/verificarSesion.php";
 verificarSesion(); // Proteger esta página
+verificarPermiso("nomina.ver_historial10lbs");
 ?>
 
 <head>
@@ -24,13 +26,16 @@ verificarSesion(); // Proteger esta página
 
     <!-- SweetAlert2 -->
     <script src="<?= SWEETALERT ?>"></script>
+
+    <!-- CSS específico -->
+    <link rel="stylesheet" href="../css/historial.css">
 </head>
 
 <body class="bg-secondary-subtle">
 
     <?php
     // Incluir navbar
-    include "../../../public/views/navbar.php";
+    require_once __DIR__ . "/../../../navbar/navbar.php";
     ?>
 
     <!-- ===================================================== -->

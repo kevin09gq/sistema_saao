@@ -7,6 +7,9 @@ const modal_detalles_aguinaldo = new bootstrap.Modal(document.getElementById('mo
 // Inicialización del módulo
 $(document).ready(function () {
     init();
+
+    aplicarPermisosGenerarAguinaldo(); // Aplicar permisos para el botón de generar aguinaldo
+    aplicarPermisosEliminarAguinaldo(); // Aplicar permisos para los botones de eliminar aguinaldo
 });
 
 
@@ -163,6 +166,9 @@ function render_tabla_aguinaldos_historial(data) {
         // AGREGAR LA FILA AL CUERPO DE LA TABLA
         tbody.append(fila);
     });
+
+    // Aplicar permisos después de renderizar la tabla
+    aplicarPermisosEliminarAguinaldo();
 }
 
 /**

@@ -198,7 +198,7 @@ function llenar_tabla_principal(data, inicio) {
                             <button
                                 data-idutilidad="${elemento.id_utilidad}"
                                 class="dropdown-item text-danger btn_eliminar_utilidad">
-                                <i class="bi bi-trash me-2"></i>Eliminar</button>
+                                <i class="bi bi-trash me-2 "></i>Eliminar</button>
                         </li>
                     </ul>
                 </div>
@@ -226,6 +226,9 @@ function llenar_tabla_principal(data, inicio) {
         // Agregar la fila a la tabla
         $("#cuerpo_tabla_principal").append(fila);
     });
+
+    // Aplicar permisos después de renderizar la tabla
+    aplicarPermisosEliminarPTU();
 }
 
 /**
@@ -351,6 +354,8 @@ function init() {
 // Evento que se ejecuta cuando el DOM está completamente cargado
 $(document).ready(function () {
     init();
+    aplicarPermisosGenerarPTU();
+    aplicarPermisosEliminarPTU();
 });
 
 
@@ -448,3 +453,4 @@ $(document).on('click', '.btn_eliminar_utilidad', function (e) {
         }
     });
 });
+

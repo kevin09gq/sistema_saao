@@ -1,12 +1,77 @@
-/* =========================================================
-   HEADER MINIMALISTA DE PÁGINA
-   ========================================================= */
+/* ==========================================================================
+   SISTEMA SAAO - MÓDULO DE CONTROL DE EXPEDIENTES
+   Hoja de estilos: expedientes.css
+   Diseño basado en el estándar visual institucional (empleados.css / Kardex)
+   Limpio, Moderno, Funcional y Altamente Legible
+   ========================================================================== */
 
+/* --------------------------------------------------------------------------
+   0. TIPOGRAFÍA Y FUENTES EXTERNAS
+   -------------------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* --------------------------------------------------------------------------
+   1. VARIABLES GLOBALES (PALETA INSTITUCIONAL SAAO)
+   -------------------------------------------------------------------------- */
+:root {
+    /* Paleta de Verdes Institucionales */
+    --primary-green:      #2d6a4f;      /* Verde principal para botones y acentos destacados */
+    --accent-green:       #1b4332;      /* Verde oscuro para estados hover y énfasis */
+    --soft-green:         #95d5b2;      /* Verde medio para bordes activos y focos */
+    --light-green:        #d8f3dc;      /* Verde suave para fondos claros y selecciones */
+    --hover-green:        #e8f7ee;      /* Verde ultraligero para filas de tabla al pasar el mouse */
+
+    /* Colores Neutros y Fondo */
+    --bg-gray:            #f8f9fa;      /* Fondo general de la página */
+    --border-color:       #e9ecef;      /* Color estándar de bordes para tarjetas e inputs */
+    --text-main:          #343a40;      /* Color principal de texto (alta legibilidad) */
+    --text-muted:         #6c757d;      /* Texto secundario para etiquetas, subtítulos y fechas */
+    --white:              #ffffff;      /* Blanco puro para tarjetas y contenedores */
+
+    /* Estados Adicionales y Badges */
+    --status-active-bg:   #eefdf3;      /* Fondo suave para estado activo / completo */
+    --status-active-txt:  #1e7e34;      /* Texto verde para estado activo / completo */
+    --status-inactive-bg: #fef2f2;      /* Fondo suave para inactivo / sin entregar */
+    --status-inactive-txt:#dc2626;      /* Texto rojo para inactivo / sin entregar */
+    --status-warning-bg:  #fff4e5;      /* Fondo ámbar para incompleto */
+    --status-warning-txt: #d97706;      /* Texto ámbar para incompleto */
+    --status-info-bg:     #eff6ff;      /* Fondo suave azul informativo */
+    --status-info-txt:    #2563eb;      /* Texto azul informativo */
+
+    /* Sombras y Elevaciones */
+    --shadow-xs:          0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-sm:          0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md:          0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg:          0 8px 24px rgba(0, 0, 0, 0.12);
+
+    /* Radios de Redondeo */
+    --radius-sm:          6px;
+    --radius-md:          8px;
+    --radius-lg:          12px;
+    --radius-xl:          16px;
+}
+
+/* --------------------------------------------------------------------------
+   2. ESTILOS GENERALES DEL DOCUMENTO Y PÁGINA
+   -------------------------------------------------------------------------- */
+body.expedientes-page {
+    background-color: var(--bg-gray);
+    color: var(--text-main);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* --------------------------------------------------------------------------
+   3. ENCABEZADO DE PÁGINA (.exp-page-header)
+   -------------------------------------------------------------------------- */
 .exp-page-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 .exp-page-header-left {
@@ -18,821 +83,390 @@
 .exp-page-icon {
     width: 48px;
     height: 48px;
-    background: #f0fdf4;
-    color: #15803d;
-    border: 1px solid #bbf7d0;
-    border-radius: 12px;
+    background-color: var(--light-green);
+    color: var(--primary-green);
+    border: 1px solid var(--soft-green);
+    border-radius: var(--radius-lg);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.4rem;
     flex-shrink: 0;
+    box-shadow: var(--shadow-xs);
 }
 
 .exp-page-title {
-    font-size: 1.35rem;
+    font-size: 1.4rem;
     font-weight: 700;
-    color: #1e293b;
-    margin: 0;
-    line-height: 1.2;
+    color: var(--text-main);
+    margin-bottom: 0.15rem;
+    letter-spacing: -0.3px;
 }
 
 .exp-page-desc {
-    font-size: 0.875rem;
-    color: #64748b;
-    margin: 0.2rem 0 0;
+    font-size: 0.86rem;
+    color: var(--text-muted);
+    margin-bottom: 0;
 }
 
-/* =========================================================
-   PESTAÑAS DE NAVEGACIÓN CUSTOM
-   ========================================================= */
-
+/* --------------------------------------------------------------------------
+   4. PESTAÑAS DE NAVEGACIÓN (.exp-tabs-nav & .exp-tab-btn)
+   -------------------------------------------------------------------------- */
 .exp-tabs-nav {
     display: flex;
     gap: 0.5rem;
-    background: #f1f5f9;
-    border-radius: 10px;
-    padding: 0.3rem;
-    margin-bottom: 1.5rem;
-    width: fit-content;
+    margin-bottom: 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.75rem;
 }
 
 .exp-tab-btn {
-    background: transparent;
-    border: none;
-    border-radius: 8px;
-    padding: 0.5rem 1.1rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #64748b;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-}
-
-.exp-tab-btn:hover {
-    color: #1e293b;
-    background: rgba(255, 255, 255, 0.6);
-}
-
-.exp-tab-btn.active,
-.exp-tab-btn.show {
-    background: #ffffff;
-    color: #15803d;
+    border: 1px solid var(--border-color);
+    background-color: var(--white);
+    color: var(--text-muted);
     font-weight: 600;
-    box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
-}
-
-
-.expedientes-page .card {
-    border: none;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-}
-
-.expedientes-page .card-header {
-    background: #f8f9fa;
-    border-bottom: 1px solid #e9ecef;
-    border-radius: 12px 12px 0 0 !important;
-    padding: 1rem 1.25rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-}
-
-.expedientes-page .card-header h5 {
-    margin: 0;
-    font-weight: 700;
-    color: #1f2937;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.expedientes-page .badge-tipo {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.65rem;
+    font-size: 0.85rem;
+    padding: 0.5rem 1.15rem;
     border-radius: 20px;
-    font-weight: 600;
-}
-
-.badge-tipo-BOOLEAN {
-    background: #d1e7dd;
-    color: #0f5132;
-}
-
-.badge-tipo-INT {
-    background: #cff4fc;
-    color: #055160;
-}
-
-.badge-tipo-DECIMAL {
-    background: #e7f1ff;
-    color: #084298;
-}
-
-.badge-tipo-TEXT {
-    background: #f3e8ff;
-    color: #6b21a8;
-}
-
-.badge-tipo-DATE {
-    background: #fff4e5;
-    color: #9a3412;
-}
-
-.badge-tipo-YEAR {
-    background: #ffe4e6;
-    color: #9f1239;
-}
-
-.expedientes-page .table thead th {
-    background: #f1f5f9;
-    color: #1e293b;
-    font-weight: 700;
-    border-bottom: 2px solid #e2e8f0;
-    padding: 0.85rem 1rem;
-    font-size: 0.88rem;
-}
-
-.expedientes-page .table tbody td {
-    padding: 0.85rem 1rem;
-    vertical-align: middle;
-    font-size: 0.9rem;
-}
-
-.expedientes-page .btn-icon {
-    width: 34px;
-    height: 34px;
-    padding: 0;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-    margin-left: 2px;
-    margin-right: 2px;
-}
-
-.expedientes-page .form-select.tipo-dato-select {
-    font-weight: 600;
-}
-
-.expedientes-page .form-check-input:checked {
-    background-color: #198754;
-    border-color: #198754;
-}
-
-/* Los estilos del header ahora usan Bootstrap nativo (bg-success text-white) */
-
-/* Secciones internas del modal */
-.exp-modal-section {
-    padding: 0.3rem 0;
-}
-
-/* Etiqueta de sección con badge numerado */
-.exp-section-label {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    font-weight: 700;
-    font-size: 0.82rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #475569;
-}
-
-.exp-step-badge {
-    width: 22px;
-    height: 22px;
-    background: #f0fdf4;
-    color: #15803d;
-    border: 1px solid #bbf7d0;
-    border-radius: 50%;
-    font-size: 0.75rem;
-    font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-/* Grilla de tarjetas de tipo de dato */
-.tipo-dato-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.75rem;
-}
-
-@media (max-width: 576px) {
-    .tipo-dato-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-.tipo-dato-card {
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 0.9rem 0.75rem;
-    text-align: center;
+    gap: 0.45rem;
     cursor: pointer;
     transition: all 0.2s ease;
-    background: #ffffff;
-    position: relative;
-    user-select: none;
-    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.03);
-}
-
-.tipo-dato-card:hover {
-    border-color: #22c55e;
-    background: #f0fdf4;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 6px -1px rgb(34 197 94 / 0.1);
-}
-
-.tipo-dato-card.selected {
-    border-color: #22c55e;
-    background: #f0fdf4;
-    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
-}
-
-.tipo-dato-card.selected::after {
-    content: '✓';
-    position: absolute;
-    top: 6px;
-    right: 10px;
-    font-size: 0.75rem;
-    color: #15803d;
-    font-weight: 900;
-}
-
-.tipo-dato-icon {
-    font-size: 1.6rem;
-    line-height: 1;
-    margin-bottom: 0.4rem;
-}
-
-.tipo-dato-titulo {
-    font-weight: 700;
-    font-size: 0.8rem;
-    color: #1e293b;
-    line-height: 1.2;
-}
-
-.tipo-dato-desc {
-    font-size: 0.7rem;
-    color: #64748b;
-    margin-top: 0.25rem;
-    line-height: 1.2;
-}
-
-/* Hint de tipo de dato */
-.exp-tipo-hint {
-    background: #f0fdf4;
-    border: 1px solid #bbf7d0;
-    border-radius: 10px;
-    padding: 0.75rem 1rem;
-    color: #15803d;
-    font-size: 0.83rem;
-    display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
-}
-
-/* Toggle cards de opciones */
-.exp-toggle-card {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.85rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 1rem;
-    background: #ffffff;
-    transition: all 0.2s ease;
-    cursor: pointer;
-    height: 100%;
-}
-
-.exp-toggle-card:hover {
-    border-color: #cbd5e1;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-}
-
-.exp-toggle-card.activo {
-    border-color: #bbf7d0;
-    background: #f0fdf4;
-}
-
-.exp-toggle-icon {
-    flex-shrink: 0;
-    margin-top: 2px;
-}
-
-.exp-toggle-info {
-    min-width: 0;
-}
-
-.exp-toggle-input {
-    cursor: pointer;
-    width: 2.5em;
-    height: 1.3em;
-    flex-shrink: 0;
-}
-
-.exp-toggle-input:checked {
-    background-color: #198754;
-    border-color: #198754;
-}
-
-/* Botón guardar del modal */
-.exp-btn-guardar {
-    background: linear-gradient(135deg, #0f5132 0%, #198754 100%);
-    border: none;
-    transition: all 0.2s;
-}
-
-.exp-btn-guardar:hover {
-    background: linear-gradient(135deg, #0a3d22 0%, #146c43 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(25, 135, 84, 0.35);
-}
-
-.exp-campo-card {
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    padding: 1rem 1.1rem;
-    margin-bottom: 0.85rem;
-    transition: all 0.2s;
-    background: white;
-}
-
-.exp-campo-card:hover {
-    border-color: #198754;
-    box-shadow: 0 2px 8px rgba(25, 135, 84, 0.08);
-}
-
-.exp-campo-card .campo-label {
-    font-weight: 700;
-    color: #1f2937;
-    margin-bottom: 0.35rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-
-.exp-campo-card .campo-meta {
-    font-size: 0.78rem;
-    color: #6b7280;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 0.65rem;
-}
-
-.exp-campo-card .campo-actualizacion {
-    font-size: 0.75rem;
-    color: #9ca3af;
-    margin-top: 0.4rem;
-    font-style: italic;
-}
-
-.exp-campo-card.obligatorio {
-    border-left: 4px solid #dc3545;
-}
-
-.exp-valor-display {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #111827;
-    padding: 0.5rem 0.75rem;
-    background: #f9fafb;
-    border-radius: 8px;
-    min-height: 40px;
-    display: flex;
-    align-items: center;
-}
-
-.exp-valor-display.vacio {
-    color: #9ca3af;
-    font-weight: 400;
-    font-style: italic;
-}
-
-.btn-expediente-empleado {
-    background: linear-gradient(135deg, #0f5132 0%, #198754 100%);
-    border: none;
-    color: white !important;
-    font-weight: 600;
-    padding: 0.4rem 0.85rem;
-    border-radius: 8px;
-    font-size: 0.83rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    transition: all 0.2s;
     text-decoration: none;
 }
 
-.btn-expediente-empleado:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 3px 8px rgba(25, 135, 84, 0.35);
-    color: white !important;
+.exp-tab-btn:hover {
+    background-color: var(--light-green);
+    color: var(--primary-green);
+    border-color: var(--soft-green);
 }
 
-.empleado-expediente-info {
-    background: #f0fdf4;
-    border: 1px solid #86efac;
-    border-radius: 10px;
-    padding: 1rem 1.25rem;
-    margin-bottom: 1.25rem;
+.exp-tab-btn.active {
+    background-color: var(--primary-green) !important;
+    border-color: var(--primary-green) !important;
+    color: var(--white) !important;
+    box-shadow: var(--shadow-sm);
 }
 
-.tabla-catalogo-wrap {
-    max-height: 550px;
-    overflow-y: auto;
-}
-
-.progreso-expediente {
-    background: #e5e7eb;
-    height: 8px;
-    border-radius: 4px;
-    overflow: hidden;
-    margin-top: 0.5rem;
-}
-
-.progreso-expediente-barra {
-    height: 100%;
-    background: linear-gradient(90deg, #198754, #22c55e);
-    transition: width 0.4s;
-}
-
-.historial-item {
-    padding: 0.6rem 0.85rem;
-    border-left: 3px solid #198754;
-    background: #f0fdf4;
-    border-radius: 0 6px 6px 0;
-    margin-bottom: 0.5rem;
-}
-
-.historial-item .historial-valor {
-    font-weight: 600;
-    color: #1f2937;
-}
-
-.historial-item .historial-fecha {
-    font-size: 0.75rem;
-    color: #6b7280;
-    font-style: italic;
-}
-
-.empty-historial {
-    padding: 1rem;
-    text-align: center;
-    color: #9ca3af;
-    font-style: italic;
-    background: #f9fafb;
-    border-radius: 8px;
-}
-
-/* Scroll del modal */
-#modalCampoCatalogo .modal-body {
-    max-height: 70vh;
-    overflow-y: auto;
-}
-
-#modalCampoCatalogo .modal-body::-webkit-scrollbar {
-    width: 8px;
-}
-
-#modalCampoCatalogo .modal-body::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
-}
-
-#modalCampoCatalogo .modal-body::-webkit-scrollbar-thumb {
-    background: #198754;
-    border-radius: 4px;
-}
-
-#modalCampoCatalogo .modal-body::-webkit-scrollbar-thumb:hover {
-    background: #146c43;
-}
-
-/* =========================================================
-   TABLA EMPLEADOS — ESTILO VACACIONES
-   ========================================================= */
-
-/* Sección de filtros */
+/* --------------------------------------------------------------------------
+   5. SECCIÓN DE FILTROS (.emp-filter-section)
+   -------------------------------------------------------------------------- */
 .emp-filter-section {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    background-color: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
     padding: 1.25rem;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.08);
+    margin-bottom: 1.25rem;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
+.emp-filter-section:hover {
+    border-color: #dee2e6;
+    box-shadow: var(--shadow-md);
+}
+
+/* Etiquetas de formulario */
 .emp-form-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.025em;
     display: block;
-    margin-bottom: 0.45rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 0.4rem;
 }
 
+/* Controles de entrada e inputs */
+.emp-form-control,
+.emp-form-select {
+    width: 100%;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-main);
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+    background-color: var(--white);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    height: 38px;
+}
+
+.emp-form-control:focus,
+.emp-form-select:focus {
+    outline: none;
+    border-color: var(--soft-green);
+    box-shadow: 0 0 0 3px rgba(149, 213, 178, 0.35);
+}
+
+.emp-form-control::placeholder {
+    color: #adb5bd;
+    font-size: 0.85rem;
+}
+
+/* Wrapper de búsqueda con ícono */
 .emp-input-wrapper {
     position: relative;
+    display: flex;
+    align-items: center;
 }
 
 .emp-input-icon {
     position: absolute;
-    left: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #94a3b8;
+    left: 12px;
+    color: var(--text-muted);
     font-size: 0.85rem;
     pointer-events: none;
 }
 
-.emp-form-control {
-    width: 100%;
-    background-color: #f1f5f9;
-    border: 1px solid transparent;
-    border-radius: 8px;
-    padding: 0.6rem 0.8rem 0.6rem 2.2rem;
-    font-size: 0.9rem;
-    color: #334155;
-    transition: all 0.2s ease;
-    outline: none;
+.emp-input-wrapper .emp-form-control {
+    padding-left: 2.2rem;
 }
 
-.emp-form-control:focus {
-    background-color: #fff;
-    border-color: #22c55e;
-    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
-}
-
-.emp-form-select {
-    width: 100%;
-    background-color: #f1f5f9;
-    border: 1px solid transparent;
-    border-radius: 8px;
-    padding: 0.6rem 0.8rem;
-    font-size: 0.9rem;
-    color: #334155;
-    transition: all 0.2s ease;
-    outline: none;
-    appearance: auto;
-}
-
-.emp-form-select:focus {
-    background-color: #fff;
-    border-color: #22c55e;
-    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
-}
-
+/* Botón limpiar filtros */
 .emp-btn-limpiar {
-    background: #f1f5f9;
-    border: 1px solid transparent;
-    border-radius: 8px;
-    padding: 0.6rem 1rem;
-    font-size: 0.87rem;
-    font-weight: 500;
-    color: #334155;
-    cursor: pointer;
+    background-color: var(--white);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    border-radius: var(--radius-md);
+    height: 38px;
+    padding: 0 0.85rem;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .emp-btn-limpiar:hover {
-    background: #e2e8f0;
-    color: #1e293b;
+    background-color: #fff1f2;
+    border-color: #fecdd3;
+    color: #e11d48;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-xs);
 }
 
-/* Tabla wrapper */
-.emp-table-wrapper {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.08);
-    overflow: hidden;
-}
-
-/* Encabezados */
-.emp-table-custom {
-    margin-bottom: 0;
-}
-
-.emp-table-custom thead th {
-    background: #ffffff;
-    border-bottom: 1px solid #e2e8f0;
-    color: #64748b;
-    font-weight: 600;
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 0.95rem 1.25rem;
-}
-
-/* Filas */
-.emp-table-custom tbody tr {
-    border-bottom: 1px solid #f1f5f9;
-    transition: background 0.15s ease;
-}
-
-.emp-table-custom tbody tr:last-child {
-    border-bottom: none;
-}
-
-.emp-table-custom tbody tr:hover {
-    background-color: #f0fdf4;
-}
-
-.emp-table-custom td {
-    padding: 1rem 1.25rem;
-    vertical-align: middle;
-    font-size: 0.915rem;
-}
-
-/* Badge de clave */
-.emp-clave-badge {
+/* --------------------------------------------------------------------------
+   6. BOTONES DE ACCIÓN (.emp-btn-action)
+   -------------------------------------------------------------------------- */
+.emp-btn-action {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    background: #f0fdf4;
-    color: #15803d;
-    border: 1px solid #bbf7d0;
-    border-radius: 8px;
-    font-size: 0.78rem;
-    font-weight: 700;
-    padding: 0.25rem 0.65rem;
-    white-space: nowrap;
-    letter-spacing: 0.02em;
-}
-
-/* Avatar de iniciales */
-.emp-info-cell {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.emp-initials {
-    width: 38px;
-    height: 38px;
-    background: #f0fdf4;
-    color: #15803d;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 0.85rem;
-    flex-shrink: 0;
-}
-
-.emp-name-main {
-    font-weight: 600;
-    color: #1e293b;
-    line-height: 1.3;
-}
-
-.emp-dept-label {
-    font-size: 0.875rem;
-    color: #64748b;
-}
-
-/* Barra de progreso */
-.emp-progress-wrapper {
-    min-width: 160px;
-}
-
-.emp-progress-track {
-    background: #e5e7eb;
-    height: 8px;
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.emp-progress-bar {
-    height: 100%;
-    border-radius: 4px;
-    transition: width 0.5s ease-in-out;
-    background: linear-gradient(90deg, #198754, #22c55e);
-}
-
-.emp-progress-bar.color-success {
-    background: linear-gradient(90deg, #198754, #22c55e);
-}
-
-.emp-progress-bar.color-warning {
-    background: linear-gradient(90deg, #d97706, #f59e0b);
-}
-
-.emp-progress-bar.color-danger {
-    background: linear-gradient(90deg, #b91c1c, #ef4444);
-}
-
-/* Botón acción */
-.emp-btn-action {
-    background: white;
-    border: 1px solid #e2e8f0;
-    color: #334155;
-    padding: 0.48rem 0.9rem;
-    border-radius: 8px;
-    font-size: 0.84rem;
+    gap: 0.45rem;
     font-weight: 500;
+    font-size: 0.85rem;
+    padding: 0.45rem 0.95rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    background-color: var(--white);
+    color: var(--text-main);
     cursor: pointer;
     transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
+    text-decoration: none;
 }
 
 .emp-btn-action:hover {
-    border-color: #22c55e;
-    color: #15803d;
-    background: #f0fdf4;
+    background-color: var(--hover-green);
+    border-color: var(--soft-green);
+    color: var(--primary-green);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-xs);
 }
 
-/* Paginación integrada */
-.emp-pagination-container {
-    padding: 1rem 1.25rem;
-    background: #ffffff;
-    border-top: 1px solid #e2e8f0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.75rem;
+.emp-btn-action:active {
+    transform: translateY(0);
 }
 
-.emp-page-info {
-    font-size: 0.83rem;
-    color: #64748b;
+/* Botón de acción principal verde */
+.emp-btn-action.btn-ver-expediente,
+.exp-btn-guardar {
+    background-color: var(--primary-green) !important;
+    border-color: var(--primary-green) !important;
+    color: var(--white) !important;
+    font-weight: 600;
 }
 
-.emp-custom-pagination .page-link {
-    border: none;
-    background: transparent;
-    color: #64748b;
-    margin: 0 2px;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    padding: 0.4rem 0.8rem;
-    cursor: pointer;
-    transition: all 0.15s ease;
+.emp-btn-action.btn-ver-expediente:hover,
+.exp-btn-guardar:hover {
+    background-color: var(--accent-green) !important;
+    border-color: var(--accent-green) !important;
+    color: var(--white) !important;
+    box-shadow: var(--shadow-sm);
 }
 
-.emp-custom-pagination .page-item.active .page-link {
-    background: #22c55e;
-    color: white;
+/* --------------------------------------------------------------------------
+   7. TABLAS DE EXPEDIENTES Y CATÁLOGO (.emp-table-wrapper & .emp-table-custom)
+   -------------------------------------------------------------------------- */
+.emp-table-wrapper {
+    background-color: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    transition: box-shadow 0.2s ease;
 }
 
-.emp-custom-pagination .page-link:hover {
-    background: #f1f5f9;
-    color: #1e293b;
+.emp-table-wrapper:hover {
+    box-shadow: var(--shadow-md);
 }
 
-/* =========================================================
-   CATÁLOGO DE REQUISITOS — ESTILOS ESPECÍFICOS
-   ========================================================= */
-
-/* Barra superior de la tabla del catálogo */
+/* Barra superior en tabla de catálogo */
 .cat-table-topbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 1rem 1.25rem;
-    border-bottom: 1px solid #e2e8f0;
-    background: #ffffff;
+    background-color: #f8fbf9;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .cat-table-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--primary-green);
     display: flex;
     align-items: center;
     gap: 0.5rem;
+}
+
+/* Tabla personalizada estilo Kardex */
+.emp-table-custom {
+    width: 100%;
+    margin-bottom: 0;
+    border-collapse: collapse;
+    color: var(--text-main);
+}
+
+/* Encabezados de tabla */
+.emp-table-custom thead th {
+    background-color: #f8fbf9 !important;
+    color: var(--primary-green) !important;
+    font-size: 0.75rem;
     font-weight: 700;
-    font-size: 0.95rem;
-    color: #1e293b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.9rem 1rem;
+    border-bottom: 2px solid var(--border-color);
+    border-top: none;
+    vertical-align: middle;
+    white-space: nowrap;
 }
 
-.cat-table-title i {
-    color: #22c55e;
-    font-size: 1.05rem;
+/* Celdas de cuerpo de tabla */
+.emp-table-custom tbody td {
+    padding: 0.9rem 1rem;
+    vertical-align: middle;
+    font-size: 0.885rem;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--white);
+    transition: background-color 0.15s ease;
 }
 
-/* Celda de campo */
+/* Hover de filas */
+.emp-table-custom tbody tr:hover td {
+    background-color: var(--hover-green);
+}
+
+.emp-table-custom tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Clave del empleado destacada */
+.emp-clave-badge {
+    font-weight: 700;
+    color: var(--text-main);
+    font-size: 0.85rem;
+    letter-spacing: 0.3px;
+    background-color: #f1f5f9;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid #e2e8f0;
+}
+
+/* Celdas de información del empleado */
+.emp-info-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.emp-initials {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background-color: var(--light-green);
+    color: var(--primary-green);
+    font-weight: 700;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--light-green);
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+    user-select: none;
+}
+
+.emp-table-custom tbody tr:hover .emp-initials {
+    transform: scale(1.06);
+    border-color: var(--soft-green);
+}
+
+.emp-name-main {
+    font-weight: 600;
+    color: var(--text-main);
+    letter-spacing: 0.2px;
+}
+
+/* Etiquetas de Área y Departamento */
+.emp-dept-label,
+.emp-area-label {
+    display: inline-block;
+    font-size: 0.825rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* Barras de Progreso en la tabla */
+.emp-progress-wrapper {
+    min-width: 140px;
+    max-width: 220px;
+}
+
+.emp-progress-track {
+    width: 100%;
+    height: 7px;
+    background-color: #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.emp-progress-bar {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.4s ease, background-color 0.3s ease;
+}
+
+.emp-progress-bar.color-success {
+    background-color: #16a34a !important;
+}
+
+.emp-progress-bar.color-warning {
+    background-color: #f59e0b !important;
+}
+
+.emp-progress-bar.color-danger {
+    background-color: #ef4444 !important;
+}
+
+/* --------------------------------------------------------------------------
+   8. CATÁLOGO DE REQUISITOS - ELEMENTOS Y BADGES
+   -------------------------------------------------------------------------- */
 .cat-campo-cell {
     display: flex;
     flex-direction: column;
@@ -841,384 +475,465 @@
 
 .cat-campo-nombre {
     font-weight: 600;
-    color: #1e293b;
-    display: flex;
-    align-items: center;
-    gap: 0.45rem;
-    font-size: 0.92rem;
-}
-
-.cat-obligatorio-dot {
-    display: inline-block;
-    width: 7px;
-    height: 7px;
-    background: #ef4444;
-    border-radius: 50%;
-    flex-shrink: 0;
+    color: var(--text-main);
+    font-size: 0.9rem;
 }
 
 .cat-tipos-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.3rem;
-    margin-top: 0.1rem;
+    gap: 0.35rem;
 }
 
 .cat-tipo-badge {
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    color: #64748b;
-    border-radius: 6px;
+    background-color: var(--status-info-bg);
+    color: var(--status-info-txt);
+    border: 1px solid #bfdbfe;
+    border-radius: 20px;
+    padding: 0.2rem 0.6rem;
     font-size: 0.72rem;
-    font-weight: 500;
-    padding: 0.2rem 0.55rem;
+    font-weight: 600;
 }
 
-/* Badges de historial */
+/* Badges Sí / No */
 .cat-badge-si {
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
-    background: #f0fdf4;
-    color: #15803d;
-    border: 1px solid #bbf7d0;
+    background-color: var(--status-active-bg);
+    color: var(--status-active-txt);
+    border: 1px solid rgba(30, 126, 52, 0.2);
     border-radius: 20px;
-    font-size: 0.78rem;
-    font-weight: 600;
     padding: 0.25rem 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 600;
 }
 
 .cat-badge-no {
     display: inline-flex;
     align-items: center;
-    background: #f1f5f9;
-    color: #94a3b8;
+    gap: 0.3rem;
+    background-color: var(--status-inactive-bg);
+    color: var(--status-inactive-txt);
+    border: 1px solid rgba(220, 38, 38, 0.2);
     border-radius: 20px;
-    font-size: 0.78rem;
-    font-weight: 500;
     padding: 0.25rem 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 600;
 }
 
-/* Botones de icono del catálogo */
+/* Botones de acción en catálogo */
 .cat-btn-icon {
     width: 32px;
     height: 32px;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    background: white;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background-color: var(--white);
+    color: var(--text-muted);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.2s ease;
-    padding: 0;
-}
-
-.cat-btn-edit {
-    color: #3b82f6;
 }
 
 .cat-btn-edit:hover {
-    background: #eff6ff;
-    border-color: #bfdbfe;
-    color: #1d4ed8;
-}
-
-.cat-btn-delete {
-    color: #ef4444;
+    background-color: var(--light-green);
+    border-color: var(--soft-green);
+    color: var(--primary-green);
 }
 
 .cat-btn-delete:hover {
-    background: #fef2f2;
-    border-color: #fecaca;
-    color: #b91c1c;
+    background-color: var(--status-danger-bg);
+    border-color: #fca5a5;
+    color: var(--status-danger-txt);
 }
 
-/* Toggle switch — color verde */
-.toggle-activo:checked {
-    background-color: #22c55e;
-    border-color: #22c55e;
-}
-
-/* =========================================================
-   MODAL DE EXPEDIENTE — TARJETAS Y REQUISITOS
-   ========================================================= */
-
-.emp-modal-card {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 1.1rem 1.25rem;
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05);
-}
-
-.emp-req-card {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    margin-bottom: 1rem;
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05);
-    overflow: hidden;
-    transition: all 0.2s ease;
-}
-
-.emp-req-card:hover {
-    border-color: #cbd5e1;
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.07);
-}
-
-.emp-req-header {
+/* --------------------------------------------------------------------------
+   9. PAGINACIÓN (.emp-pagination-container & .emp-custom-pagination)
+   -------------------------------------------------------------------------- */
+.emp-pagination-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.95rem 1.25rem;
-    border-bottom: 1px solid #f1f5f9;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    background: #ffffff;
+    padding: 0.9rem 1.25rem;
+    background-color: var(--white);
+    border-top: 1px solid var(--border-color);
 }
 
-.emp-req-title {
-    font-weight: 700;
-    color: #1e293b;
-    font-size: 0.93rem;
-    margin: 0;
+.emp-page-info {
+    font-size: 0.84rem;
+    color: var(--text-muted);
+}
+
+.emp-custom-pagination {
     display: flex;
     align-items: center;
-    gap: 0.45rem;
+    gap: 4px;
+    list-style: none;
+    padding-left: 0;
 }
 
-.emp-req-body {
-    padding: 1.1rem 1.25rem;
+.emp-custom-pagination .page-link {
+    border-radius: var(--radius-sm) !important;
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    font-size: 0.825rem;
+    font-weight: 500;
+    padding: 0.35rem 0.75rem;
+    background-color: var(--white);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
 }
 
-.emp-req-switch-container {
+.emp-custom-pagination .page-link:hover {
+    background-color: var(--light-green);
+    border-color: var(--soft-green);
+    color: var(--primary-green);
+}
+
+.emp-custom-pagination .page-item.active .page-link {
+    background-color: var(--primary-green) !important;
+    border-color: var(--primary-green) !important;
+    color: var(--white) !important;
+    box-shadow: var(--shadow-xs);
+}
+
+.emp-custom-pagination .page-item.disabled .page-link {
+    background-color: var(--bg-gray);
+    border-color: var(--border-color);
+    color: #adb5bd;
+    cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------------------
+   10. MODAL: AGREGAR / EDITAR CAMPO DE CATÁLOGO (#modalCampoCatalogo)
+   -------------------------------------------------------------------------- */
+.exp-modal-section {
+    margin-bottom: 1.25rem;
+}
+
+.exp-section-label {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: var(--text-main);
+}
+
+.exp-step-badge {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background-color: var(--primary-green);
+    color: var(--white);
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Grid de tipos de datos interactivos */
+.tipo-dato-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 0.75rem;
+}
+
+.tipo-dato-card {
+    background-color: var(--white);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.85rem 0.65rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.tipo-dato-card:hover {
+    border-color: var(--soft-green);
+    background-color: var(--hover-green);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.tipo-dato-card.selected {
+    border-color: var(--primary-green);
+    background-color: var(--light-green);
+    box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.15);
+}
+
+.tipo-dato-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.35rem;
+}
+
+.tipo-dato-titulo {
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: var(--text-main);
+    margin-bottom: 0.2rem;
+}
+
+.tipo-dato-desc {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    line-height: 1.2;
+}
+
+.exp-tipo-hint {
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: var(--radius-md);
+    padding: 0.65rem 0.85rem;
+    font-size: 0.8rem;
+    color: #166534;
+}
+
+/* Toggle Card para Historial */
+.exp-toggle-card {
+    background-color: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.85rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.exp-toggle-card:hover,
+.exp-toggle-card.activo {
+    border-color: var(--soft-green);
+    background-color: var(--hover-green);
+}
+
+/* --------------------------------------------------------------------------
+   11. MODAL: EXPEDIENTE COMPLETO DEL EMPLEADO (#modalExpedienteEmpleado)
+   -------------------------------------------------------------------------- */
+
+/* Estilos para habilitar scroll en modales con modal-dialog-scrollable */
+.modal-dialog-scrollable .modal-body {
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+}
+
+.emp-modal-card {
+    background-color: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xs);
+    padding: 1.15rem 1.25rem;
+}
+
+/* Tarjeta individual de requisito */
+.emp-req-card {
+    background-color: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-xs);
+    margin-bottom: 0.85rem;
+    overflow: hidden;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.emp-req-card:hover {
+    box-shadow: var(--shadow-sm);
+    border-color: #cbd5e1;
+}
+
+.emp-req-header {
+    padding: 0.85rem 1.15rem;
+    background-color: #f8fafc;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.emp-req-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 0;
+}
+
+.emp-req-body {
+    padding: 1.15rem;
+}
+
+/* Switch principal de entrega */
+.emp-req-switch-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
     padding: 0.75rem 1rem;
+    background-color: #f8fafc;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
     transition: all 0.2s ease;
 }
 
 .emp-req-switch-container.is-checked {
-    background: #f0fdf4;
+    background-color: #f0fdf4;
     border-color: #bbf7d0;
 }
 
 .emp-req-extras {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    padding: 1.1rem 1.25rem;
-    margin-top: 0.85rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--border-color);
 }
 
-/* =========================================================
-   FIJACIÓN DE FOOTER Y SCROLL DE MODAL EXPORTAR EXCEL
-   ========================================================= */
-#modalExportarExcel .modal-dialog {
-    max-height: calc(100vh - 2.5rem);
-    margin-top: 1.25rem;
-    margin-bottom: 1.25rem;
+/* Switch de formulario general */
+.form-switch .form-check-input.toggle-activo:checked {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
 }
 
-#modalExportarExcel .modal-content {
-    max-height: calc(100vh - 2.5rem);
-    display: flex;
-    flex-direction: column;
-}
-
-#modalExportarExcel form#formExportarExcel {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    flex: 1 1 auto;
-    min-height: 0;
-    margin: 0;
-}
-
-#modalExportarExcel .modal-body {
-    overflow-y: auto !important;
-    flex: 1 1 auto;
-    max-height: 58vh;
-}
-
-#modalExportarExcel .modal-footer {
-    flex-shrink: 0;
-    background-color: #ffffff;
-    z-index: 10;
-}
-
-/* =========================================================
-   ACORDEÓN DE REQUISITOS EN MODAL EXPORTAR EXCEL
-   ========================================================= */
-#contenedorCheckboxesReq {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    background: #ffffff;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 10px;
-    overflow: hidden;
-    padding: 0 !important;
-}
-
+/* --------------------------------------------------------------------------
+   12. MODAL: EXPORTACIÓN PERSONALIZADA A EXCEL (#modalExportarExcel)
+   -------------------------------------------------------------------------- */
 .exp-req-row {
-    display: flex;
-    flex-direction: column;
-    border-bottom: 1px solid #f1f5f9;
+    background-color: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.65rem 0.85rem;
+    margin-bottom: 0.5rem;
+    transition: all 0.2s ease;
 }
 
-.exp-req-row:last-child {
-    border-bottom: none;
+.exp-req-row.is-unchecked {
+    opacity: 0.6;
+    background-color: #f8fafc;
 }
 
-.exp-req-row.is-unchecked .exp-req-main label {
-    color: #94a3b8;
-    text-decoration: line-through;
-}
-
-/* Fila principal del requisito */
 .exp-req-main {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
-    padding: 0.5rem 0.75rem;
-    min-height: 40px;
-}
-
-.exp-req-main input[type="checkbox"] {
-    flex-shrink: 0;
-    width: 15px;
-    height: 15px;
-    cursor: pointer;
-    accent-color: #16a34a;
+    gap: 0.65rem;
 }
 
 .exp-req-main label {
-    font-size: 0.82rem;
     font-weight: 600;
-    color: #1e293b;
-    cursor: default;
-    flex-grow: 1;
-    margin: 0;
-    letter-spacing: 0.01em;
-    user-select: none;
-    line-height: 1.3;
-    transition: color 0.15s;
+    font-size: 0.86rem;
+    color: var(--text-main);
+    cursor: pointer;
+    flex: 1;
+    margin-bottom: 0;
 }
 
-/* Botón flecha para desplegar extras */
 .exp-req-toggle-btn {
-    flex-shrink: 0;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
-    font-size: 0.68rem;
+    gap: 0.35rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    color: #3b82f6;
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
+    color: var(--primary-green);
+    background-color: var(--light-green);
+    padding: 0.2rem 0.55rem;
     border-radius: 20px;
-    padding: 0.12rem 0.5rem;
     cursor: pointer;
     transition: all 0.2s ease;
     user-select: none;
-    white-space: nowrap;
-}
-
-.exp-req-toggle-btn:hover {
-    background: #dbeafe;
-    border-color: #93c5fd;
 }
 
 .exp-req-toggle-btn .toggle-arrow {
-    font-size: 0.65rem;
-    transition: transform 0.25s ease;
-    display: inline-block;
+    transition: transform 0.2s ease;
 }
 
 .exp-req-toggle-btn.open .toggle-arrow {
     transform: rotate(90deg);
 }
 
-/* Panel extras colapsable */
-.exp-req-extras {
+.sub-extras-container {
     display: none;
     flex-wrap: wrap;
-    gap: 0.35rem;
-    padding: 0.4rem 0.8rem 0.5rem 2.45rem;
-    background: #f8fafc;
-    border-top: 1px solid #f1f5f9;
+    gap: 0.5rem;
+    margin-top: 0.65rem;
+    padding-top: 0.65rem;
+    border-top: 1px dashed var(--border-color);
 }
 
-.exp-req-extras.is-open {
+.sub-extras-container.is-open {
     display: flex;
-    animation: fadeInExtras 0.2s ease;
 }
 
-@keyframes fadeInExtras {
-    from {
-        opacity: 0;
-        transform: translateY(-3px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Chips de campos extra */
 .exp-req-extra-item {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
-    font-size: 0.73rem;
-    font-weight: 500;
-    color: #15803d;
-    background: #f0fdf4;
-    border: 1px solid #86efac;
+    gap: 0.4rem;
+    background-color: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    color: #475569;
     border-radius: 20px;
-    padding: 0.18rem 0.6rem;
+    padding: 0.25rem 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.15s ease;
-    user-select: none;
+    margin-bottom: 0;
 }
 
-.exp-req-extra-item:hover {
-    filter: brightness(0.95);
+.exp-req-extra-item.is-checked {
+    background-color: var(--light-green);
+    border-color: var(--soft-green);
+    color: var(--primary-green);
+    font-weight: 600;
 }
 
-.exp-req-extra-item.is-unchecked {
-    color: #b91c1c;
-    background: #fef2f2;
-    border-color: #fca5a5;
-    text-decoration: line-through;
-    opacity: 0.8;
-}
-
-.exp-req-extra-item input[type="checkbox"] {
-    width: 12px;
-    height: 12px;
-    flex-shrink: 0;
+.exp-req-extra-item input {
+    accent-color: var(--primary-green);
     cursor: pointer;
-    accent-color: #16a34a;
-    margin: 0;
 }
 
-.exp-req-extra-item i {
-    font-size: 0.7rem;
-    flex-shrink: 0;
+/* --------------------------------------------------------------------------
+   13. ADAPTABILIDAD RESPONSIVA (MÓVILES Y TABLETS)
+   -------------------------------------------------------------------------- */
+@media (max-width: 992px) {
+    .exp-page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }
 
-.exp-req-extra-item span {
-    white-space: nowrap;
+@media (max-width: 768px) {
+    .exp-page-title {
+        font-size: 1.2rem;
+    }
+
+    .exp-filter-section {
+        padding: 1rem;
+    }
+
+    .emp-table-custom thead th,
+    .emp-table-custom tbody td {
+        padding: 0.75rem 0.6rem;
+    }
+
+    .emp-pagination-container {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: center;
+        text-align: center;
+    }
+
+    .tipo-dato-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }

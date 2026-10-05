@@ -1,6 +1,8 @@
 <?php
-require_once __DIR__ . "/../../config/config.php";
+require_once __DIR__ . "/../../public/php/config.php";
+require_once __DIR__ . "/../../public/php/verificarSesion.php";
 verificarSesion();
+verificarPermiso("ptu.ver_menu");
 ?>
 
 <!DOCTYPE html>
@@ -16,36 +18,6 @@ verificarSesion();
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
 
-    <style>
-        /* Estilos personalizados para un look más limpio 
-        .table thead th {
-            background-color: #f8f9fa;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.5px;
-            padding: 1rem;
-        }
-
-        .table tbody td {
-            padding: 1rem;
-            vertical-align: middle; 
-        } */
-
-        .card {
-            border: none;
-            border-radius: 12px;
-        }
-
-        .btn-dropdown-custom {
-            background: transparent;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-        }
-
-        .badge-status {
-            font-weight: 500;
-        }
-    </style>
 
     <script>
         const rutaRaiz = '<?= $rutaRaiz ?>';
@@ -54,7 +26,7 @@ verificarSesion();
 
 <body class="bg-body-tertiary">
 
-    <?php include __DIR__ . '/../../public/views/navbar.php'; ?>
+    <?php require_once __DIR__ . '/../../navbar/navbar.php'; ?>
 
     <main class="container-fluid py-4">
 
@@ -90,7 +62,7 @@ verificarSesion();
                         </select>
                     </div>
 
-                     <div style="width: 160px;">
+                    <div style="width: 160px;">
                         <select class="form-select shadow-sm" id="filtro_limite">
                             <option value="20" selected>20</option>
                             <option value="50">50</option>
@@ -102,7 +74,7 @@ verificarSesion();
 
                 <!-- Botón Nuevo (Alineado a la derecha) -->
                 <div>
-                    <a href="utilidad.php" class="btn btn-primary px-4">
+                    <a href="utilidad.php" class="btn btn-primary px-4" id="btn-nuevo-ptu" hidden>
                         <i class="bi bi-plus-lg me-2"></i>Nuevo
                     </a>
                 </div>
@@ -173,13 +145,19 @@ verificarSesion();
         <?php require_once __DIR__ . '/modal_historial/modal_detalles.php'; ?>
 
     </main>
+    <script>
+        // Pasar permisos de PHP a JavaScript
+        const permisosUsuario = <?php echo json_encode($_SESSION["permisos"] ?? []); ?>;
+    </script>
 
     <script src="<?= JQUERY_JS ?>"></script>
     <script src="<?= JQUERY_UI_JS ?>"></script>
     <script src="<?= BOOTSTRAP_JS ?>"></script>
     <script src="<?= SWEETALERT ?>"></script>
+    <script src="<?= PERMISOS_JS ?>"></script>
 
     <!-- Script para manejar la lógica de la página -->
+    <script src="../js/permisos.js"></script>
     <script src="../js/historial/index.js"></script>
     <script src="../js/historial/detalles.js"></script>
 

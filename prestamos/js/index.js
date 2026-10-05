@@ -1,5 +1,7 @@
 $(document).ready(function () {
 
+    aplicarPermisosRegistrarPrestamo();
+    
     // Constantes
     const URL_SABE = "/sistema_saao/";
     let departamentos = document.getElementById("departamento");
@@ -199,5 +201,7 @@ $(document).ready(function () {
             obtenerPrestamos();
         });
     }
+
+
 
 });

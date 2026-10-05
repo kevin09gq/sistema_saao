@@ -3,8 +3,16 @@
 
 <!--Incluir config.php para iniciar sesión -->
 <?php
-include "../../../config/config.php";
-verificarSesion(); // Proteger esta página
+require_once __DIR__ . "/../../../public/php/config.php";
+
+require_once __DIR__ . "/../../../public/php/verificarSesion.php";
+
+// Proteger esta página
+verificarSesion();
+
+// Verifica que tenga permiso para entrar a esta página
+verificarPermiso("registro_empleados.ver_menu");
+
 ?>
 
 <head>
@@ -28,7 +36,7 @@ verificarSesion(); // Proteger esta página
 
     <?php
     // Incluir el navbar (config.php ya fue incluido en el head)
-    include "../../../public/views/navbar.php"
+    require_once __DIR__ . "/../../../navbar/navbar.php"
     ?>
 
     <div class="container-fluid py-4">

@@ -2,8 +2,16 @@
 <html lang="es">
 
 <?php
-include "../../config/config.php";
+
+require_once __DIR__ . "/../../public/php/config.php";
+
+require_once __DIR__ . "/../../public/php/verificarSesion.php";
+
 verificarSesion(); // Proteger esta página
+
+// Verificar si el usuario tiene permiso para ver el panel administrativo
+verificarPermiso("panel_admin.ver_menu"); 
+
 ?>
 
 <head>
@@ -11,26 +19,28 @@ verificarSesion(); // Proteger esta página
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Administrativo - CITRICOS SAAO</title>
     <link rel="icon" href="<?= ICONO_SISTEMA ?>" />
-    
+
     <!-- Bootstrap CSS -->
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
-    
+
     <!-- SweetAlert2 CSS -->
     <script src="<?= SWEETALERT ?>"></script>
-    
+
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="../css/admin.css">
+    <!-- Estilos de empleados para mantener ética de colores -->
+    <link rel="stylesheet" href="../../gestion_empleados/empleados/css/empleados.css">
 </head>
 
 <body class="bg-light">
 
-    <?php include "../../public/views/navbar.php"; ?>
+    <?php require_once __DIR__ . "/../../navbar/navbar.php"; ?>
 
     <div class="container-fluid py-4">
 
         <!-- ========================================== -->
-        <!-- FILTROS -->
+        <!-- FILTROS Y BUSQUEDA -->
         <!-- ========================================== -->
 
         <div class="card border-0 shadow-sm mb-4">
@@ -43,7 +53,7 @@ verificarSesion(); // Proteger esta página
                     <div class="col-md-4">
 
                         <label for="inputBuscarUsuario" class="form-label fw-semibold small text-muted">
-                            Buscar
+                            Buscar usuario
                         </label>
 
                         <input
@@ -54,32 +64,31 @@ verificarSesion(); // Proteger esta página
 
                     </div>
 
-                    <!-- Filtro por Rol -->
+                    <!-- Rol -->
                     <div class="col-md-3">
 
-                        <label for="filtroRol" class="form-label fw-semibold small text-muted">
+                        <label for="selectRolUsuario" class="form-label fw-semibold small text-muted">
                             Rol
                         </label>
 
-                        <select class="form-select form-select-sm" id="filtroRol">
-                            <option value="todos">Todos los Roles</option>
-                            <option value="1">Solo Administradores</option>
-                            <option value="2">Solo Estándar</option>
+                        <select id="selectRolUsuario" class="form-select form-select-sm">
+                            <option value="todos">Todos los roles</option>
+                            <option value="1">Administrador</option>
+                            <option value="3">Estándar</option>
                         </select>
 
                     </div>
 
-                    <!-- Botones principales -->
+                    <!-- Botón para agregar nuevo usuario -->
                     <div class="col-md-5">
 
                         <div class="d-flex gap-2 justify-content-md-end">
 
                             <button
                                 type="button"
-                                class="btn btn-success btn-sm"
-                                data-bs-toggle="modal"
-                                data-bs-target="#modalCrearUsuario">
-                                <i class="bi bi-person-plus"></i> Nuevo Usuario
+                                id="btnNuevoUsuario"
+                                class="btn btn-success btn-sm">
+                                <i class="bi bi-person-plus"></i> Nuevo usuario
                             </button>
 
                         </div>
@@ -94,7 +103,7 @@ verificarSesion(); // Proteger esta página
 
 
         <!-- ========================================== -->
-        <!-- TABLA -->
+        <!-- TABLA DE USUARIOS -->
         <!-- ========================================== -->
 
         <div class="card border-0 shadow-sm">
@@ -103,12 +112,11 @@ verificarSesion(); // Proteger esta página
 
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
 
-                    <!-- Título -->
-                    <div>
-                        <h5 class="mb-0 text-dark fw-semibold">
-                            <i class="bi bi-shield-lock-fill text-success me-2"></i>
-                            Usuarios del Sistema
-                        </h5>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="bg-success bg-opacity-10 rounded p-2">
+                            <i class="bi bi-people-fill text-success fs-5"></i>
+                        </div>
+                        <h6 class="mb-0 fw-semibold text-success">Panel Administrativo</h6>
                     </div>
 
                     <!-- Status Filter Tabs -->
@@ -153,29 +161,25 @@ verificarSesion(); // Proteger esta página
 
             <div class="table-responsive">
 
-                <table class="table table-hover align-middle mb-0">
+                <table id="tablaUsuarios" class="table table-hover align-middle mb-0">
 
                     <thead class="table-success">
 
                         <tr>
 
-                            <th class="ps-4">
-                                ID
+                            <th>
+                                Nombre de usuario
                             </th>
 
                             <th>
-                                Usuario / Correo
-                            </th>
-
-                            <th>
-                                Rol
+                                Correo electrónico
                             </th>
 
                             <th class="text-center">
                                 Estado
                             </th>
 
-                            <th class="text-center pe-4">
+                            <th class="text-center">
                                 Acción
                             </th>
 
@@ -186,12 +190,6 @@ verificarSesion(); // Proteger esta página
 
                     <tbody id="tbodyUsuarios">
 
-                        <tr>
-                            <td colspan="5" class="text-center py-4">
-                                <div class="spinner-border spinner-border-sm text-success me-2" role="status"></div>
-                                Cargando usuarios...
-                            </td>
-                        </tr>
 
                     </tbody>
 
@@ -199,11 +197,30 @@ verificarSesion(); // Proteger esta página
 
             </div>
 
+
+            <!-- ========================================== -->
+            <!-- PAGINACIÓN -->
+            <!-- ========================================== -->
+
+            <div class="card-footer bg-white py-3">
+
+                <div class="d-flex justify-content-center">
+
+                    <nav aria-label="Navegación de usuarios">
+                        <ul class="pagination pagination-sm mb-0" id="paginacionUsuarios">
+                        </ul>
+                    </nav>
+
+                </div>
+
+            </div>
         </div>
 
     </div>
 
     <?php include "modals/modalPermisos.php"; ?>
+    <?php include "modals/modalEditarInformacion.php"; ?>
+    <?php include "modals/modalNuevoUsuario.php"; ?>
 
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
@@ -214,7 +231,9 @@ verificarSesion(); // Proteger esta página
     <script src="../js/filtroBusqueda.js"></script>
 
     <script src="../js/modals/permisos.js"></script>
-
+    <script src="../js/modals/editarInformacion.js"></script>
+    <script src="../js/modals/EliminarEmpleado.js"></script>
+    <script src="../js/modals/CrearNuevoUsuario.js"></script>
 </body>
 
 </html>

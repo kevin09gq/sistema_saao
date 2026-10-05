@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
-include("../../conexion/conexion.php");
-include("../../config/config.php");
+require_once __DIR__ . "/../../conexion/conexion.php";
+require_once __DIR__ . "/../../public/php/verificarSesion.php";
 
 try {
     $sql = "SELECT id_empresa, nombre_empresa, marca_empresa FROM empresa ORDER BY nombre_empresa";

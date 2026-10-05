@@ -25,11 +25,11 @@ if ($resultado->num_rows === 0) {
 }
 
 // Validaciones del archivo
-$tipos_permitidos = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+$tipos_permitidos = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
 $tamaño_maximo = 5 * 1024 * 1024; // 5MB
 
 if (!in_array($archivo['type'], $tipos_permitidos)) {
-    echo json_encode(['success' => false, 'message' => 'Tipo de archivo no permitido. Use JPG, PNG o GIF']);
+    echo json_encode(['success' => false, 'message' => 'Tipo de archivo no permitido. Use JPG, PNG, WEBP o GIF']);
     exit;
 }
 

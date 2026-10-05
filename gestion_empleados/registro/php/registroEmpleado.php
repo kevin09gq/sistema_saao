@@ -1,6 +1,6 @@
 <?php
 
-require_once '../../../conexion/conexion.php';
+require_once __DIR__ . "/../../../conexion/conexion.php";
 /** @var mysqli $conexion */
 
 $accion = $_POST['accion'] ?? $_GET['accion'] ?? '';

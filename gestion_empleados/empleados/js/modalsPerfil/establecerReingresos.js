@@ -14,6 +14,8 @@ function abrirModalReingresos(idEmpleado) {
 
     actualizarFechaAltaImss(idEmpleado);
 
+    aplicarPermisosReingresosFechas();
+
     // 4. Abrir el modal
     $('#modalReingresos').modal('show');
 }
@@ -182,6 +184,9 @@ function obtenerReingresos(idEmpleado) {
                 $('#editarFechaAltaEmpresa').prop('disabled', false);
                 $('#btnActualizarFechaAltaEmpresa').prop('disabled', false);
 
+                // Aplicar permisos DESPUÉS de habilitar/deshabilitar
+                aplicarPermisosReingresosFechas();
+
                 return;
             }
 
@@ -244,6 +249,9 @@ function obtenerReingresos(idEmpleado) {
                 $('#editarFechaAltaEmpresa').prop('disabled', false);
                 $('#btnActualizarFechaAltaEmpresa').prop('disabled', false);
             }
+
+            // Aplicar permisos DESPUÉS de habilitar/deshabilitar según reingresos
+            aplicarPermisosReingresosFechas();
         },
 
         error: function (xhr, status, error) {

@@ -22,7 +22,7 @@ header('Content-Type: application/json');
 try {
     // Obtener parámetros de paginación, filtro y búsqueda con valores por defecto
     $pagina = isset($_GET['pagina']) ? max(1, intval($_GET['pagina'])) : 1;
-    $filtro = isset($_GET['filtro']) ? $_GET['filtro'] : 'todos'; // 'todos', 'disponibles', 'asignados'
+    $filtro = isset($_GET['filtro']) ? $_GET['filtro'] : 'todos'; // 'todos', 'disponibles', 'parciales', 'completos'
     $busqueda = isset($_GET['busqueda']) ? trim($_GET['busqueda']) : ''; // Texto de búsqueda
     $limite = 50; // Casilleros por página
     $offset = ($pagina - 1) * $limite;
@@ -36,12 +36,16 @@ try {
     // Aplicar filtro
     switch ($filtro) {
         case 'disponibles':
-            // Casilleros que tienen menos de 2 empleados asignados
-            $where_conditions[] = "(SELECT COUNT(*) FROM empleado_casillero ec WHERE ec.num_casillero = c.num_casillero) < 2";
+            // Casilleros con 0 empleados asignados (verdes)
+            $where_conditions[] = "(SELECT COUNT(*) FROM empleado_casillero ec WHERE ec.num_casillero = c.num_casillero) = 0";
             break;
-        case 'asignados':
-            // Casilleros que tienen al menos un empleado asignado
-            $where_conditions[] = "(SELECT COUNT(*) FROM empleado_casillero ec WHERE ec.num_casillero = c.num_casillero) > 0";
+        case 'parciales':
+            // Casilleros con 1 empleado asignado (amarillos)
+            $where_conditions[] = "(SELECT COUNT(*) FROM empleado_casillero ec WHERE ec.num_casillero = c.num_casillero) = 1";
+            break;
+        case 'completos':
+            // Casilleros con 2 empleados asignados (rojos)
+            $where_conditions[] = "(SELECT COUNT(*) FROM empleado_casillero ec WHERE ec.num_casillero = c.num_casillero) = 2";
             break;
         default:
             // No se aplica filtro

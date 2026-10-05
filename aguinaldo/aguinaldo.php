@@ -1,6 +1,10 @@
 <?php
-include_once __DIR__ . "/../config/config.php";
+require_once __DIR__ . "/../public/php/config.php";
+require_once __DIR__ . "/../public/php/verificarSesion.php";
+
 verificarSesion();
+
+verificarPermiso("aguinaldos.ver_menu");
 ?>
 
 <!DOCTYPE html>
@@ -24,7 +28,7 @@ verificarSesion();
 
 <body class="bg-body-tertiary">
 
-    <?php include __DIR__ . '/../public/views/navbar.php'; ?>
+    <?php require_once __DIR__ . '/../navbar/navbar.php'; ?>
 
     <main class="container py-4">
 
@@ -49,7 +53,7 @@ verificarSesion();
 
             <!-- Botón a la derecha -->
             <div>
-                <a href="generar_aguinaldo.php" class="btn btn-primary shadow-sm fw-bold">
+                <a href="generar_aguinaldo.php" class="btn btn-primary shadow-sm fw-bold" id="btn-nuevo-aguinaldo" hidden>
                     <i class="bi bi-plus-circle me-2"></i>Nuevo Aguinaldo
                 </a>
             </div>
@@ -98,15 +102,23 @@ verificarSesion();
     * Scripts necesarios para el funcionamiento de la página
     * ==============================================================
     -->
+    <script>
+        // Pasar permisos de PHP a JavaScript
+        const permisosUsuario = <?php echo json_encode($_SESSION["permisos"] ?? []); ?>;
+    </script>
+
+
     <script src="<?= JQUERY_JS ?>"></script>
     <script src="<?= JQUERY_UI_JS ?>"></script>
     <script src="<?= BOOTSTRAP_JS ?>"></script>
     <script src="<?= SWEETALERT ?>"></script>
     <script src="<?= JQUERY_UI_JS ?>"></script>
+    <script src="<?= PERMISOS_JS ?>"></script>
 
     <script src="js/historial/index.js"></script>
     <script src="js/historial/detalles.js"></script>
     <script src="js/historial/borrar.js"></script>
+    <script src="js/permisos.js"></script>
 
 
 </body>

@@ -20,7 +20,7 @@ $(document).ready(function () {
 
 function aplicarFiltrosComponentes() {
 
-        // Filtrar cuando cambie el departamento
+    // Filtrar cuando cambie el departamento
     $('#selectDepartamento').change(function () {
 
         // Aplicar filtros
@@ -371,11 +371,7 @@ function aplicarFiltros(mantenerPagina = false) {
         // NOMBRE COMPLETO
         //================================================
 
-        let nombreCompleto = `
-            ${empleado.nombre ?? ''}
-            ${empleado.ap_paterno ?? ''}
-            ${empleado.ap_materno ?? ''}
-        `.toLowerCase();
+        let nombreCompleto = `${empleado.nombre ?? ''} ${empleado.ap_paterno ?? ''} ${empleado.ap_materno ?? ''}`.toLowerCase().trim();
 
 
         //================================================
@@ -518,8 +514,8 @@ function compararClaves(claveA, claveB, orden = 'desc') {
 
     // si los números son distintos, comparar por el valor numérico
     if (a.numero !== b.numero) {
-        return orden === 'asc' 
-            ? a.numero - b.numero 
+        return orden === 'asc'
+            ? a.numero - b.numero
             : b.numero - a.numero;
     }
 
@@ -624,14 +620,14 @@ function actualizarIconosOrden() {
 
     // actualizar icono según el criterio y dirección
     if (criterioOrdenActual === 'nombre') {
-        let icono = direccionOrdenActual === 'desc' 
-            ? 'bi bi-sort-alpha-up-alt text-success ms-1 small' 
+        let icono = direccionOrdenActual === 'desc'
+            ? 'bi bi-sort-alpha-up-alt text-success ms-1 small'
             : 'bi bi-sort-alpha-down text-success ms-1 small';
         $('#iconoOrdenNombre').attr('class', icono);
         $('#btnOrdenar').html(`<i class="${direccionOrdenActual === 'desc' ? 'bi bi-sort-alpha-up-alt' : 'bi bi-sort-alpha-down'} me-1"></i> Ordenar`);
     } else if (criterioOrdenActual === 'clave') {
-        let icono = direccionOrdenActual === 'desc' 
-            ? 'bi bi-sort-numeric-up-alt text-success ms-1 small' 
+        let icono = direccionOrdenActual === 'desc'
+            ? 'bi bi-sort-numeric-up-alt text-success ms-1 small'
             : 'bi bi-sort-numeric-down text-success ms-1 small';
         $('#iconoOrdenClave').attr('class', icono);
         $('#btnOrdenar').html(`<i class="${direccionOrdenActual === 'desc' ? 'bi bi-sort-numeric-up-alt' : 'bi bi-sort-numeric-down'} me-1"></i> Ordenar`);

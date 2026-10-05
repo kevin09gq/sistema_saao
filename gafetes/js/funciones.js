@@ -142,6 +142,9 @@ $(document).ready(function () {
     // Cargar departamentos al iniciar
     cargarDepartamentos();
 
+    // Bloquear inicialmente el filtro de departamento hasta que se seleccione un área
+    $('#filtroDepartamento').prop('disabled', true);
+
     // Cargar configuración de vigencia
     cargarConfigVigencia();
 
@@ -949,10 +952,14 @@ $(document).ready(function () {
         // Cargar departamentos filtrados por área
         cargarDepartamentos(filtroArea);
         paginaActual = 1;
-        
+
         if (filtroArea === 'todos') {
+            // Bloquear el filtro de departamento si no hay área seleccionada
+            $('#filtroDepartamento').prop('disabled', true);
             cargarEmpleadosPorDepartamento('todos');
         } else {
+            // Habilitar el filtro de departamento cuando hay área seleccionada
+            $('#filtroDepartamento').prop('disabled', false);
             actualizarTablaEmpleados();
         }
     });
@@ -1004,6 +1011,10 @@ $(document).ready(function () {
         });
     }
 
+    // Exportar globalmente para otros scripts (como subirFotos.js)
+    window.cargarEmpleadosPorDepartamento = cargarEmpleadosPorDepartamento;
+    window.actualizarTablaEmpleados = actualizarTablaEmpleados;
+
     // Función para actualizar la tabla de empleados con paginación
     function actualizarTablaEmpleados() {
         // Obtener la lista a mostrar aplicando búsqueda y filtro de estado
@@ -1035,7 +1046,7 @@ $(document).ready(function () {
         $cuerpo.empty();
 
         if (totalEmpleados === 0) {
-            $cuerpo.append('<tr><td colspan="10" class="text-center">No se encontraron empleados</td></tr>');
+            $cuerpo.append('<tr><td colspan="6" class="text-center">No se encontraron empleados</td></tr>');
             return;
         }
 
@@ -1069,17 +1080,53 @@ $(document).ready(function () {
             
             // Obtener el orden de nombre seleccionado para este empleado (por defecto: nombre primero)
             const ordenSeleccionado = window.ordenNombre[empleado.id_empleado] || 'nombre-primero';
+
+            // =========== AVATAR / FOTO (igual que gestión empleados) ===========
+            // SOLO 2 iniciales: nombre[0] + ap_paterno[0], igual que la tabla de gestión empleados
+            let inicialNombre  = empleado.nombre    ? empleado.nombre.trim().charAt(0).toUpperCase()     : '';
+            let inicialApellido = empleado.ap_paterno ? empleado.ap_paterno.trim().charAt(0).toUpperCase() : '';
+            let iniciales = (inicialNombre + inicialApellido) || '??';
+
+            // Ruta de foto relativa para gafetes.php
+            let rutaFotoAjustada = '';
+            if (empleado.ruta_foto && empleado.ruta_foto.trim() !== '') {
+                if (/^https?:\/\//i.test(empleado.ruta_foto)) {
+                    rutaFotoAjustada = empleado.ruta_foto;
+                } else {
+                    let cleanRuta = empleado.ruta_foto.replace(/^(\.\.\/)+gafetes\//, '').replace(/^\/+/, '');
+                    rutaFotoAjustada = `${cleanRuta}?t=${Date.now()}`;
+                }
+            }
+            const avatarHtml = rutaFotoAjustada
+                ? `<img
+                        src="${rutaFotoAjustada}"
+                        alt="Foto del empleado"
+                        class="rounded-circle"
+                        width="48"
+                        height="48"
+                        style="object-fit: cover;"
+                        onerror="this.outerHTML='<div class=\\'avatar-iniciales\\'>${iniciales}</div>'">`
+                : `<div class="avatar-iniciales">${iniciales}</div>`;
             
             $cuerpo.append(`
                 <tr>
-                    <td>${empleado.clave_empleado}</td>
-                    <td>${empleado.nombre} ${empleado.ap_paterno || ''} ${empleado.ap_materno || ''}</td>
-                    <td>${obtenerNombreDepartamento(empleado.id_departamento)}</td>
-                    <td>${empleado.nombre_area || 'Sin asignar'}</td>
                     <td class="text-center">
-                        <div class="d-flex justify-content-center" style="min-width: 120px;">
+                        <div role="button" class="d-inline-block position-relative avatar-clickable" onclick="abrirModalActualizarFoto(${empleado.id_empleado})" title="Clic para actualizar foto de perfil">
+                            ${avatarHtml}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="fw-semibold">${empleado.nombre} ${empleado.ap_paterno || ''} ${empleado.ap_materno || ''}</span>
+                        <small class="clave-subtitulo">${empleado.clave_empleado}</small>
+                    </td>
+                    <td>
+                        <span class="fw-semibold">${obtenerNombreDepartamento(empleado.id_departamento)}</span>
+                        <small>${empleado.nombre_area || 'Sin asignar'}</small>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center justify-content-between gap-2">
                             <span 
-                                class="badge ${estadoGafete === 'Vigente' ? 'bg-success' : estadoGafete === 'Expirado' ? 'bg-danger' : estadoGafete === 'Próximo a vencer' ? 'bg-warning text-dark' : 'bg-secondary'}"
+                                class="badge ${estadoGafete === 'Vigente' ? 'bg-success' : estadoGafete === 'Expirado' ? 'bg-danger' : estadoGafete === 'Próximo a vencer' ? 'bg-warning' : 'bg-secondary'}"
                                 data-bs-toggle="tooltip"
                                 data-bs-placement="top"
                                 title="${
@@ -1087,47 +1134,49 @@ $(document).ready(function () {
                                 }">
                                 ${estadoGafete}
                             </span>
-                        </div>
-                    </td>
-                    <td class="text-center">
-                        <div class="form-check form-switch d-flex justify-content-center">
-                            <input class="form-check-input imss-toggle" type="checkbox" 
-                                   id="imss_toggle_${empleado.id_empleado}" 
-                                   data-empleado-id="${empleado.id_empleado}"
-                                   ${toggleIMSS ? 'checked' : ''}
-                                   ${!tieneIMSS ? 'disabled' : ''}>
-                            <label class="form-check-label ms-2 small" for="imss_toggle_${empleado.id_empleado}">
-                                <span class="toggle-text">${toggleIMSS ? 'Con IMSS' : 'Sin IMSS'}</span>
-                            </label>
+                            <div class="form-check form-switch m-0 p-0 d-inline-flex align-items-center">
+                                <input class="form-check-input imss-toggle" type="checkbox" 
+                                       id="imss_toggle_${empleado.id_empleado}" 
+                                       data-empleado-id="${empleado.id_empleado}"
+                                       ${toggleIMSS ? 'checked' : ''}
+                                       ${!tieneIMSS ? 'disabled' : ''}>
+                                <label class="form-check-label ms-1" for="imss_toggle_${empleado.id_empleado}">
+                                    <span class="toggle-text">${toggleIMSS ? 'Con IMSS' : 'Sin IMSS'}</span>
+                                </label>
+                            </div>
                         </div>
                     </td>
                     <td class="text-center">
                         <select class="form-select form-select-sm orden-nombre-select" value="${empleado.id_empleado}">
                             <option value="${empleado.id_empleado}" data-orden="nombre-primero" ${ordenSeleccionado === 'nombre-primero' ? 'selected' : ''}>
-                                Nombre + Apellidos
+                                Nombre + Aps.
                             </option>
                             <option value="${empleado.id_empleado}" data-orden="apellido-primero" ${ordenSeleccionado === 'apellido-primero' ? 'selected' : ''}>
-                                Apellidos + Nombre
+                                Aps. + Nombre
                             </option>
                         </select>
                     </td>
                     <td class="text-center">
-                        <input type="checkbox" class="form-check-input empleado-checkbox" 
-                               data-id="${empleado.id_empleado}" value="${empleado.id_empleado}" 
-                               ${estaSeleccionado ? 'checked' : ''}>
-                    </td>
-                    <td class="text-center">
-                        <input type="checkbox" class="form-check-input foto-checkbox" 
-                               data-id="${empleado.id_empleado}" value="${empleado.id_empleado}" 
-                               ${fotoSeleccionada ? 'checked' : ''}>
-                    </td>
-                    <td class="text-center">
-                        <button class="btn btn-sm btn-outline-primary btn-editar" 
-                                data-id="${empleado.id_empleado}" 
-                                data-clave="${empleado.clave_empleado}" 
-                                title="Editar información del empleado">
-                            <i class="bi bi-pencil-square"></i>
-                        </button>
+                        <div class="d-inline-flex align-items-center justify-content-center gap-3">
+                            <div class="d-inline-flex align-items-center gap-1" title="Seleccionar">
+                                <input type="checkbox" class="form-check-input empleado-checkbox" 
+                                       data-id="${empleado.id_empleado}" value="${empleado.id_empleado}" 
+                                       ${estaSeleccionado ? 'checked' : ''}>
+                                <small class="text-muted">Sel.</small>
+                            </div>
+                            <div class="d-inline-flex align-items-center gap-1" title="Incluir foto">
+                                <input type="checkbox" class="form-check-input foto-checkbox" 
+                                       data-id="${empleado.id_empleado}" value="${empleado.id_empleado}" 
+                                       ${fotoSeleccionada ? 'checked' : ''}>
+                                <small class="text-muted">Foto</small>
+                            </div>
+                            <button class="btn btn-sm btn-outline-primary btn-editar" 
+                                    data-id="${empleado.id_empleado}" 
+                                    data-clave="${empleado.clave_empleado}" 
+                                    title="Editar información del empleado">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
             `);
@@ -1234,16 +1283,7 @@ $(document).ready(function () {
 
     // Función para actualizar el contador de empleados seleccionados
     function actualizarContadorSeleccionados() {
-        const total = empleadosSeleccionados.size;
-        const $boton = $('#generarGafetes');
-
-        if (total > 0) {
-            // Solo cambiar color del botón cuando hay empleados seleccionados
-            $boton.removeClass('btn-warning').addClass('btn-success');
-        } else {
-            // Volver al color original cuando no hay empleados seleccionados
-            $boton.removeClass('btn-success').addClass('btn-warning');
-        }
+        // Mantiene el diseño limpio y no altera las clases ni colores del botón al seleccionar o deseleccionar
     }
     
     // Función para refrescar los datos de los empleados seleccionados
@@ -1295,19 +1335,19 @@ $(document).ready(function () {
             $contenido.html('<p class="text-center">No hay empleados seleccionados</p>');
             return;
         }
-        // Tabla con diseño moderno y bonito
+        // Tabla con diseño limpio (sin colores verdes)
         let html = `
-        <div class="d-flex flex-column align-items-center w-100">
-            <h4 class="mb-4" style="font-weight:700;color:#219653;letter-spacing:1px;">Empleados seleccionados para generar gafete</h4>
-            <div class="table-responsive w-100" style="max-width:700px;">
-                <table class="table table-hover align-middle shadow-sm" style="border-radius:16px;overflow:hidden;background:#fff;">
-                    <thead style="background:linear-gradient(90deg,#27ae60 0%,#219653 100%);color:#fff;">
+        <div class="w-100">
+            <p class="mb-3 fw-bold text-secondary" style="letter-spacing:0.5px;text-transform:uppercase;font-size:0.72rem;">Empleados seleccionados para generar gafete</p>
+            <div class="table-responsive w-100">
+                <table class="table table-hover align-middle mb-0" style="background:#fff;border:1px solid #e9ecef;border-radius:8px;overflow:hidden;">
+                    <thead style="background:#f8f9fa;color:#343a40;">
                         <tr>
-                            <th style="border-top-left-radius:12px;">#</th>
-                            <th>Clave</th>
-                            <th>Nombre</th>
-                            <th>Departamento</th>
-                            <th style="border-top-right-radius:12px;">Área</th>
+                            <th style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:0.6rem 0.75rem;border-bottom:2px solid #e9ecef;width:40px;">#</th>
+                            <th style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:0.6rem 0.75rem;border-bottom:2px solid #e9ecef;">Clave</th>
+                            <th style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:0.6rem 0.75rem;border-bottom:2px solid #e9ecef;">Nombre</th>
+                            <th style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:0.6rem 0.75rem;border-bottom:2px solid #e9ecef;">Departamento</th>
+                            <th style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:0.6rem 0.75rem;border-bottom:2px solid #e9ecef;">Área</th>
                         </tr>
                     </thead>
                     <tbody>`;
@@ -1316,12 +1356,12 @@ $(document).ready(function () {
             if (!empleado) return;
             const nombreCompleto = `${empleado.nombre} ${empleado.ap_paterno || ''} ${empleado.ap_materno || ''}`.trim();
             const departamento = obtenerNombreDepartamento(empleado.id_departamento);
-            html += `<tr style="transition:background 0.2s;">
-                        <td style="font-weight:600;color:#219653;">${idx + 1}</td>
-                        <td style="font-weight:500;">${empleado.clave_empleado}</td>
-                        <td>${nombreCompleto}</td>
-                        <td>${departamento}</td>
-                        <td>${empleado.nombre_area || 'Sin asignar'}</td>
+            html += `<tr>
+                        <td style="font-weight:600;color:#6c757d;font-size:0.85rem;padding:0.55rem 0.75rem;">${idx + 1}</td>
+                        <td style="font-weight:500;font-size:0.85rem;padding:0.55rem 0.75rem;">${empleado.clave_empleado}</td>
+                        <td style="font-size:0.85rem;padding:0.55rem 0.75rem;">${nombreCompleto}</td>
+                        <td style="font-size:0.85rem;padding:0.55rem 0.75rem;">${departamento}</td>
+                        <td style="font-size:0.85rem;padding:0.55rem 0.75rem;">${empleado.nombre_area || 'Sin asignar'}</td>
                     </tr>`;
         });
         html += `</tbody></table></div></div>`;
@@ -2680,16 +2720,10 @@ $(document).ready(function () {
         
         Swal.fire({
             icon: iconMap[tipo] || 'info',
-            title: mensaje,
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true,
-            didOpen: (toast) => {
-                toast.addEventListener('mouseenter', Swal.stopTimer);
-                toast.addEventListener('mouseleave', Swal.resumeTimer);
-            }
+            title: tipo === 'warning' ? 'Atención' : (tipo === 'danger' || tipo === 'error' ? 'Error' : (tipo === 'success' ? '¡Éxito!' : 'Información')),
+            text: mensaje,
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#2d6a4f'
         });
     }
     
@@ -2760,16 +2794,35 @@ $(document).ready(function () {
             success: function(response) {
                 if (response.success) {
                     configVigencia = response.config;
-                    mostrarAlertaGafete('Configuración guardada correctamente', 'success');
                     // Cerrar el modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('modalConfigVigencia'));
                     if (modal) modal.hide();
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Guardado!',
+                        text: 'Configuración guardada correctamente.',
+                        confirmButtonText: 'Aceptar',
+                        confirmButtonColor: '#2d6a4f'
+                    });
                 } else {
-                    mostrarAlertaGafete(response.message || 'Error al guardar la configuración', 'error');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.message || 'Error al guardar la configuración',
+                        confirmButtonText: 'Aceptar',
+                        confirmButtonColor: '#2d6a4f'
+                    });
                 }
             },
             error: function() {
-                mostrarAlertaGafete('Error al guardar la configuración', 'error');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al guardar la configuración',
+                    confirmButtonText: 'Aceptar',
+                    confirmButtonColor: '#2d6a4f'
+                });
             }
         });
     }
@@ -3330,12 +3383,22 @@ $(document).ready(function () {
         }
 
         if (!obligatoriosValidos) {
-            mostrarAlerta('Existen campos obligatorios vacíos o incorrectos. Revisa los campos marcados en rojo.', 'warning');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campos requeridos',
+                text: 'Existen campos obligatorios vacíos o incorrectos. Revisa los campos marcados en rojo.',
+                confirmButtonText: 'Aceptar'
+            });
             return;
         }
 
         if (!opcionalesValidos) {
-            mostrarAlerta('Hay datos opcionales incorrectos. Revisa los campos marcados en rojo.', 'warning');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Datos no válidos',
+                text: 'Hay datos opcionales incorrectos. Revisa los campos marcados en rojo.',
+                confirmButtonText: 'Aceptar'
+            });
             return;
         }
 
@@ -3349,7 +3412,12 @@ $(document).ready(function () {
                 // Verificar si hay una advertencia (casillero ocupado u otros errores)
                 if (response.type === 'warning' || response.type === 'info') {
                     // Mostrar la advertencia con el mensaje específico
-                    mostrarAlerta(response.text, response.type);
+                    Swal.fire({
+                        icon: response.type,
+                        title: 'Atención',
+                        text: response.text,
+                        confirmButtonText: 'Aceptar'
+                    });
                     return;
                 }
                 
@@ -3391,280 +3459,390 @@ $(document).ready(function () {
                     }, 100);
                 }
                 
-                // Mostrar mensaje de éxito
-                mostrarAlerta('Empleado actualizado correctamente', 'success');
+                // Mostrar alerta modal idéntica a gestión empleados
+                Swal.fire({
+                    icon: "success",
+                    title: "Empleado actualizado",
+                    text: "La información del empleado se ha actualizado correctamente.",
+                    confirmButtonText: "Aceptar"
+                });
             },
             error: function(xhr, status, error) {
-                 mostrarAlerta('Error al actualizar el empleado. Por favor, inténtelo de nuevo.', 'error');
+                Swal.fire({
+                    icon: "error",
+                    title: "Error al actualizar",
+                    text: "Hubo un error al actualizar la información del empleado. Por favor, intenta de nuevo.",
+                    confirmButtonText: "Aceptar"
+                });
             }
         });
     });
 
     // ======================================
 
-    // Función para cargar y mostrar la foto actual del empleado
-    function cargarFotoEmpleado(empleado) {
-        const $fotoPreview = $('#foto_preview');
-        const $noFotoPreview = $('#no_foto_preview');
-        const $nombreEmpleadoFoto = $('#nombre_empleado_foto');
-        
-        
-        // Store employee data globally for access in other functions
-        window.empleadoActual = empleado;
-        
-        // Set the employee's full name
-        const nombreCompleto = `${empleado.nombre_empleado || ''} ${empleado.apellido_paterno_empleado || ''} ${empleado.apellido_materno_empleado || ''}`.trim();
-        $nombreEmpleadoFoto.text(nombreCompleto);
-        
+    // =========================================================================
+    // MODAL ACTUALIZAR FOTO DE PERFIL (IDÉNTICO A GESTIÓN EMPLEADOS)
+    // =========================================================================
+
+    // Función auxiliar para obtener iniciales
+    function obtenerInicialesFoto(nombre, apPaterno) {
+        let n = nombre ? nombre.trim().charAt(0).toUpperCase() : '';
+        let a = apPaterno ? apPaterno.trim().charAt(0).toUpperCase() : '';
+        return (n + a) || '--';
+    }
+
+    // Función para abrir el modal de actualizar foto
+    window.abrirModalActualizarFoto = function(idEmpleado) {
+        limpiarModalFoto();
+        $('#formActualizarFoto').data('id_empleado', idEmpleado);
+
+        // Buscar empleado en los arreglos globales
+        let empleado = null;
+        if (typeof todosLosEmpleados !== 'undefined' && Array.isArray(todosLosEmpleados)) {
+            empleado = todosLosEmpleados.find(e => e && e.id_empleado == idEmpleado);
+        }
+        if (!empleado && typeof empleados !== 'undefined' && Array.isArray(empleados)) {
+            empleado = empleados.find(e => e && e.id_empleado == idEmpleado);
+        }
+
+        if (!empleado) {
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "No se encontró la información del empleado.",
+                confirmButtonColor: "#2d6a4f"
+            });
+            return;
+        }
+
+        establecerInformacionFotoModal(empleado);
+        $('#modalActualizarFoto').modal('show');
+    };
+
+    // Establecer foto actual o iniciales en el modal
+    function establecerInformacionFotoModal(empleado) {
+        const iniciales = obtenerInicialesFoto(empleado.nombre, empleado.ap_paterno);
+
         if (empleado.ruta_foto && empleado.ruta_foto.trim() !== '') {
-            $fotoPreview.attr('src', empleado.ruta_foto);
-            $fotoPreview.show();
-            $noFotoPreview.hide();
-            $('#btn_eliminar_foto').prop('disabled', false);
+            let cleanRuta = empleado.ruta_foto.replace(/^(\.\.\/)+gafetes\//, '').replace(/^\/+/, '');
+            const rutaCompleta = `${cleanRuta}?t=${Date.now()}`;
+
+            $('#contenedorPreviewFotoModal').html(`
+                <img
+                    src="${rutaCompleta}"
+                    alt="Foto del empleado"
+                    onerror="establecerInicialesModal('${iniciales}')">
+            `);
+            $('#btnEliminarFotoPerfil').show();
         } else {
-            $fotoPreview.hide();
-            $('#btn_eliminar_foto').prop('disabled', true);
+            establecerInicialesModal(iniciales);
+            $('#btnEliminarFotoPerfil').hide();
         }
     }
 
-    // Manejador para vista previa de nueva foto
-    $(document).on('change', '#nueva_foto', function() {
-        const file = this.files[0];
-
-        if (file) {
-            // Validar tipo de archivo
-            if (!file.type.startsWith('image/')) {
-                mostrarAlerta('Por favor seleccione un archivo de imagen válido', 'warning');
-                $(this).val('');
-                return;
-            }
-            
-            // Validar tamaño (máximo 5MB)
-            const maxSize = 5 * 1024 * 1024;
-            if (file.size > maxSize) {
-                mostrarAlerta('El archivo es demasiado grande. Máximo 5MB permitido', 'warning');
-                $(this).val('');
-                return;
-            }
-            
-            // Crear vista previa
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                $('#nueva_foto_preview').attr('src', e.target.result);
-                $('#nueva_foto_preview_container').show();
-                $('#btn_subir_foto').prop('disabled', false);
-            };
-            reader.readAsDataURL(file);
-        } else {
-            $('#nueva_foto_preview_container').hide();
-            $('#btn_subir_foto').prop('disabled', true);
-        }
-    });
-
-    // Event listener para subir foto
-    $('#btn_subir_foto').on('click', function() {
-        const fileInput = $('#nueva_foto')[0];
-        const file = fileInput.files[0];
-        const idEmpleado = $('#empleado_id').val();
-        
-        
-        if (!file || !idEmpleado) {
-            mostrarAlerta('Seleccione una foto e intente de nuevo', 'warning');
-            return;
-        }
-        
-        const formData = new FormData();
-        formData.append('foto', file);
-        formData.append('id_empleado', idEmpleado);
-        
-        // Mostrar indicador de carga
-        const $btnSubir = $(this);
-        const textoOriginal = $btnSubir.html();
-        $btnSubir.html('<i class="bi bi-hourglass-split"></i> Subiendo...');
-        $btnSubir.prop('disabled', true);
-        
-        $.ajax({
-            url: 'php/subir_foto_empleado.php',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                try {
-                    // Handle both JSON and plain text responses
-                    let result;
-                    if (typeof response === 'string') {
-                        result = JSON.parse(response);
-                    } else {
-                        result = response;
-                    }
-                    if (result.success) {
-                        mostrarAlerta('Foto subida correctamente', 'success');
-                        // Actualizar la vista previa de la foto
-                        $('#foto_preview').attr('src', result.ruta_foto).show();
-                        $('#no_foto_preview').hide();
-                        $('#btn_eliminar_foto').prop('disabled', false);
-                        // Limpiar el input y la vista previa de nueva foto
-                        $('#nueva_foto').val('');
-                        $('#nueva_foto_preview_container').hide();
-                        $('#btn_subir_foto').prop('disabled', true);
-                        
-                        // Actualizar también la ruta de foto en el objeto empleado actual
-                        // para que se refleje en otros lugares donde se use
-                        if (typeof window.empleadoActual !== 'undefined') {
-                            window.empleadoActual.ruta_foto = result.ruta_foto;
-                        }
-                        
-                        // Forzar la actualización de la imagen para evitar problemas de caché
-                        $('#foto_preview').attr('src', result.ruta_foto + '?t=' + new Date().getTime());
-                    } else {
-                        mostrarAlerta(result.message || 'Error al subir la foto', 'error');
-                    }
-                } catch (e) {
-                   
-                    mostrarAlerta('Error al procesar la respuesta del servidor', 'error');
-                }
-            },
-            error: function(xhr, status, error) {
-                mostrarAlerta('Error al subir la foto: ' + error, 'error');
-            },
-            complete: function() {
-                // Restaurar el botón
-                $btnSubir.html(textoOriginal);
-                $btnSubir.prop('disabled', false);
-            }
-        });
-    });
-
-    // Event listener para eliminar foto
-    $('#btn_eliminar_foto').on('click', function() {
-        const idEmpleado = $('#empleado_id').val();
-        
-        
-        if (!idEmpleado) {
-            mostrarAlerta('No se puede eliminar la foto: ID de empleado no encontrado', 'warning');
-            return;
-        }
-        
-        // Mostrar modal de confirmación personalizado
-        mostrarConfirmacionEliminarFoto(idEmpleado);
-    });
-    
-    // Función para mostrar confirmación personalizada para eliminar foto
-    function mostrarConfirmacionEliminarFoto(idEmpleado) {
-        // Crear el modal de confirmación
-        const modalId = 'modalConfirmacionEliminarFoto';
-        
-        // Eliminar modal existente si lo hay
-        const modalExistente = document.getElementById(modalId);
-        if (modalExistente) {
-            modalExistente.remove();
-        }
-        
-        // Crear el nuevo modal
-        const modal = document.createElement('div');
-        modal.className = 'modal fade';
-        modal.id = modalId;
-        modal.tabIndex = -1;
-        modal.setAttribute('aria-labelledby', 'modalConfirmacionEliminarFotoLabel');
-        modal.setAttribute('aria-hidden', 'true');
-        
-        modal.innerHTML = `
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content confirmacion-modal">
-                    <div class="confirmacion-header">
-                        <div class="confirmacion-icon">
-                            <i class="bi bi-trash3-fill"></i>
-                        </div>
-                        <h5 class="confirmacion-title" id="modalConfirmacionEliminarFotoLabel">
-                            Confirmar Eliminación
-                        </h5>
-                    </div>
-                    <div class="confirmacion-body">
-                        <p class="confirmacion-message">
-                            ¿Está seguro de que desea eliminar la foto de este empleado?
-                        </p>
-                        <div class="confirmacion-warning">
-                            <small>Esta acción no se puede deshacer</small>
-                        </div>
-                    </div>
-                    <div class="confirmacion-footer">
-                        <button type="button" class="btn btn-confirmacion btn-cancelar" data-bs-dismiss="modal">
-                            <i class="bi bi-x-lg"></i> Cancelar
-                        </button>
-                        <button type="button" class="btn btn-confirmacion btn-confirmar" id="btnConfirmarEliminarFoto">
-                            <i class="bi bi-trash3"></i> Sí, Eliminar
-                        </button>
-                    </div>
-                </div>
+    // Mostrar iniciales en el contenedor
+    window.establecerInicialesModal = function(iniciales) {
+        const texto = iniciales ? iniciales.toUpperCase() : '--';
+        $('#contenedorPreviewFotoModal').html(`
+            <div class="avatar-modal-iniciales">
+                ${texto}
             </div>
-        `;
-        
-        // Agregar el modal al DOM
-        document.body.appendChild(modal);
-        
-        // Configurar eventos
-        const btnConfirmar = modal.querySelector('#btnConfirmarEliminarFoto');
-        btnConfirmar.addEventListener('click', () => {
-            // Cerrar el modal
-            const modalInstance = bootstrap.Modal.getInstance(modal);
-            modalInstance.hide();
-            
-            // Ejecutar la eliminación
-            ejecutarEliminarFoto(idEmpleado);
-        });
-        
-        // Limpiar el modal del DOM cuando se cierre
-        modal.addEventListener('hidden.bs.modal', () => {
-            modal.remove();
-        });
-        
-        // Mostrar el modal
-        const modalInstance = new bootstrap.Modal(modal, {
-            backdrop: 'static',
-            keyboard: false
-        });
-        modalInstance.show();
-    }
-    // Función para ejecutar la eliminación de la foto
-    function ejecutarEliminarFoto(idEmpleado) {
-        const $btnEliminar = $('#btn_eliminar_foto');
-        const textoOriginal = $btnEliminar.html();
-        $btnEliminar.html('<i class="bi bi-hourglass-split"></i> Eliminando...');
-        $btnEliminar.prop('disabled', true);
-        
-        $.ajax({
-            url: 'php/eliminar_foto_empleado.php',
-            type: 'POST',
-            data: { id_empleado: idEmpleado },
-            dataType: 'json', // Especificar que esperamos JSON
-            success: function(result) {
-              
-                if (result.success) {
-                    mostrarAlerta('Foto eliminada correctamente', 'success');
-                    // Actualizar la vista previa
-                    $('#foto_preview').hide();
-                    $('#no_foto_preview').show();
-                    $('#btn_eliminar_foto').prop('disabled', true);
-                    // Limpiar el input y la vista previa de nueva foto
-                    $('#nueva_foto').val('');
-                    $('#nueva_foto_preview_container').hide();
-                    $('#btn_subir_foto').prop('disabled', true);
-                } else {
-                    mostrarAlerta(result.message || 'Error al eliminar la foto', 'error');
-                }
-            },
-            error: function(xhr, status, error) {
-             
-                mostrarAlerta('Error al eliminar la foto: ' + error, 'error');
-            },
-            complete: function() {
-                // Restaurar el botón
-                $btnEliminar.html(textoOriginal);
-                $btnEliminar.prop('disabled', false);
+        `);
+    };
+
+    // Previsualizar nueva imagen seleccionada
+    function previsualizarNuevaFotoModal() {
+        $('#inputFotoEmpleado').off('change').on('change', function () {
+            const archivo = this.files && this.files[0];
+            if (!archivo) return;
+
+            const tiposPermitidos = [
+                'image/jpeg',
+                'image/jpg',
+                'image/png',
+                'image/webp',
+                'image/gif'
+            ];
+
+            if (!tiposPermitidos.includes(archivo.type)) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Formato no válido",
+                    text: "Solo se permiten imágenes en formato JPG, PNG, WEBP o GIF.",
+                    confirmButtonColor: "#2d6a4f"
+                });
+                $(this).val('');
+                return;
             }
+
+            const tamanoMaximo = 5 * 1024 * 1024;
+            if (archivo.size > tamanoMaximo) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Tamaño excedido",
+                    text: "La imagen no debe superar los 5 MB.",
+                    confirmButtonColor: "#2d6a4f"
+                });
+                $(this).val('');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                $('#contenedorPreviewFotoModal').html(`
+                    <img src="${e.target.result}" alt="Previsualización de la foto">
+                `);
+            };
+            reader.readAsDataURL(archivo);
         });
     }
+
+    // Limpiar formulario y vista previa del modal
+    function limpiarModalFoto() {
+        $('#formActualizarFoto').removeData('id_empleado');
+        const form = document.getElementById('formActualizarFoto');
+        if (form) form.reset();
+        $('#contenedorPreviewFotoModal').empty();
+        $('#btnEliminarFotoPerfil').hide();
+    }
+
+    // Eliminar foto de perfil
+    function eliminarFotoPerfilModal() {
+        $('#btnEliminarFotoPerfil').off('click').on('click', function () {
+            const idEmpleado = $('#formActualizarFoto').data('id_empleado');
+            if (!idEmpleado) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Atención",
+                    text: "No se ha seleccionado ningún empleado.",
+                    confirmButtonColor: "#2d6a4f"
+                });
+                return;
+            }
+
+            // Buscar si el empleado tiene foto guardada
+            let empleado = null;
+            if (typeof todosLosEmpleados !== 'undefined' && Array.isArray(todosLosEmpleados)) {
+                empleado = todosLosEmpleados.find(e => e && e.id_empleado == idEmpleado);
+            }
+            if (!empleado && typeof empleados !== 'undefined' && Array.isArray(empleados)) {
+                empleado = empleados.find(e => e && e.id_empleado == idEmpleado);
+            }
+
+            const tieneFotoGuardada = empleado && empleado.ruta_foto && empleado.ruta_foto.trim() !== '';
+            const inputArchivo = document.getElementById('inputFotoEmpleado');
+            const tieneArchivoSeleccionado = inputArchivo && inputArchivo.files && inputArchivo.files.length > 0;
+
+            // Si solo seleccionó un archivo nuevo pero aún no lo guarda y no tiene foto en BD
+            if (!tieneFotoGuardada && tieneArchivoSeleccionado) {
+                if (inputArchivo) inputArchivo.value = '';
+                const iniciales = empleado ? obtenerInicialesFoto(empleado.nombre, empleado.ap_paterno) : '--';
+                establecerInicialesModal(iniciales);
+                $('#btnEliminarFotoPerfil').hide();
+                return;
+            }
+
+            if (!tieneFotoGuardada) {
+                Swal.fire({
+                    icon: "info",
+                    title: "Sin foto",
+                    text: "Este empleado no tiene una foto de perfil asignada.",
+                    confirmButtonColor: "#2d6a4f"
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: "¿Eliminar foto de perfil?",
+                text: "Se eliminará permanentemente la foto actual del empleado. ¿Deseas continuar?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#dc3545",
+                cancelButtonColor: "#6c757d",
+                confirmButtonText: "Sí, eliminar",
+                cancelButtonText: "Cancelar"
+            }).then(function (result) {
+                if (result.isConfirmed) {
+                    const $btn = $('#btnEliminarFotoPerfil');
+                    const originalHtml = $btn.html();
+                    $btn.prop('disabled', true).html(`
+                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                        Eliminando...
+                    `);
+
+                    $.ajax({
+                        type: "POST",
+                        url: "php/eliminar_foto_empleado.php",
+                        data: { id_empleado: idEmpleado },
+                        dataType: "json",
+                        success: function (response) {
+                            if (response.success) {
+                                // Actualizar en todosLosEmpleados
+                                if (typeof todosLosEmpleados !== 'undefined' && Array.isArray(todosLosEmpleados)) {
+                                    const empIndex = todosLosEmpleados.findIndex(e => e && e.id_empleado == idEmpleado);
+                                    if (empIndex !== -1) {
+                                        todosLosEmpleados[empIndex].ruta_foto = null;
+                                    }
+                                }
+
+                                // Actualizar en empleados
+                                if (typeof empleados !== 'undefined' && Array.isArray(empleados)) {
+                                    const empIndex = empleados.findIndex(e => e && e.id_empleado == idEmpleado);
+                                    if (empIndex !== -1) {
+                                        empleados[empIndex].ruta_foto = null;
+                                    }
+                                }
+
+                                // Re-renderizar la tabla de empleados
+                                if (typeof actualizarTablaEmpleados === 'function') {
+                                    actualizarTablaEmpleados();
+                                }
+
+                                // Cerrar modal
+                                $('#modalActualizarFoto').modal('hide');
+
+                                Swal.fire({
+                                    icon: "success",
+                                    title: "Foto eliminada",
+                                    text: response.message || "La foto de perfil se ha eliminado correctamente.",
+                                    confirmButtonColor: "#2d6a4f"
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: "error",
+                                    title: "Error",
+                                    text: response.message || "No se pudo eliminar la foto de perfil.",
+                                    confirmButtonColor: "#2d6a4f"
+                                });
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Error al eliminar la foto:", error);
+                            Swal.fire({
+                                icon: "error",
+                                title: "Error de servidor",
+                                text: "Ocurrió un error al intentar comunicarse con el servidor.",
+                                confirmButtonColor: "#2d6a4f"
+                            });
+                        },
+                        complete: function () {
+                            $btn.prop('disabled', false).html(originalHtml);
+                        }
+                    });
+                }
+            });
+        });
+    }
+
+    // Guardar foto de perfil
+    function guardarFotoPerfilModal() {
+        $('#btnGuardarFoto').off('click').on('click', function () {
+            const idEmpleado = $('#formActualizarFoto').data('id_empleado');
+            const inputArchivo = document.getElementById('inputFotoEmpleado');
+            const archivo = inputArchivo && inputArchivo.files ? inputArchivo.files[0] : null;
+
+            if (!idEmpleado) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Atención",
+                    text: "No se ha seleccionado ningún empleado.",
+                    confirmButtonColor: "#2d6a4f"
+                });
+                return;
+            }
+
+            if (!archivo) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Atención",
+                    text: "Debes seleccionar una imagen para actualizar la foto de perfil.",
+                    confirmButtonColor: "#2d6a4f"
+                });
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('id_empleado', idEmpleado);
+            formData.append('foto', archivo);
+
+            const $btn = $('#btnGuardarFoto');
+            const originalHtml = $btn.html();
+            $btn.prop('disabled', true).html(`
+                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                Guardando...
+            `);
+
+            $.ajax({
+                type: "POST",
+                url: "php/subir_foto_empleado.php",
+                data: formData,
+                processData: false,
+                contentType: false,
+                dataType: "json",
+                success: function (response) {
+                    if (response.success) {
+                        const nuevaRuta = response.ruta_foto;
+
+                        // Actualizar en todosLosEmpleados
+                        if (typeof todosLosEmpleados !== 'undefined' && Array.isArray(todosLosEmpleados)) {
+                            const empIndex = todosLosEmpleados.findIndex(e => e && e.id_empleado == idEmpleado);
+                            if (empIndex !== -1) {
+                                todosLosEmpleados[empIndex].ruta_foto = nuevaRuta;
+                            }
+                        }
+
+                        // Actualizar en empleados
+                        if (typeof empleados !== 'undefined' && Array.isArray(empleados)) {
+                            const empIndex = empleados.findIndex(e => e && e.id_empleado == idEmpleado);
+                            if (empIndex !== -1) {
+                                empleados[empIndex].ruta_foto = nuevaRuta;
+                            }
+                        }
+
+                        // Re-renderizar la tabla de empleados
+                        actualizarTablaEmpleados();
+
+                        // Cerrar modal
+                        $('#modalActualizarFoto').modal('hide');
+
+                        Swal.fire({
+                            icon: "success",
+                            title: "Foto actualizada",
+                            text: response.message || "La foto de perfil se ha actualizado correctamente.",
+                            confirmButtonText: "Aceptar"
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Error",
+                            text: response.message || "No se pudo actualizar la foto de perfil.",
+                            confirmButtonText: "Aceptar"
+                        });
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error al actualizar la foto:", error);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error de servidor",
+                        text: "Ocurrió un error al intentar comunicarse con el servidor.",
+                        confirmButtonText: "Aceptar"
+                    });
+                },
+                complete: function () {
+                    $btn.prop('disabled', false).html(originalHtml);
+                }
+            });
+        });
+    }
+
+    // Inicializar eventos de foto
+    previsualizarNuevaFotoModal();
+    guardarFotoPerfilModal();
+    eliminarFotoPerfilModal();
+
+    // Compatibilidad para evitar llamadas rotas
+    function cargarFotoEmpleado(empleado) {}
 
     // Event listener para abrir el modal de editar empleado
     $('#btn_editar_empleado').on('click', function() {
@@ -3714,46 +3892,23 @@ $(document).ready(function () {
     // FUNCIÓN DE ALERTA ESTILO GAFETES
     // ======================================
     
-    // Función para mostrar alertas específicas de gafetes (mismo estilo que fotos)
+    // Función para mostrar alertas usando SweetAlert2
     function mostrarAlertaGafete(mensaje, tipo = 'info') {
-        const alerta = document.createElement('div');
-        alerta.className = `alerta-gafete alerta-${tipo}`;
-        alerta.innerHTML = `
-            <div class="alerta-content">
-                <i class="bi bi-${tipo === 'warning' ? 'exclamation-triangle-fill' : tipo === 'danger' ? 'x-circle-fill' : 'info-circle-fill'}"></i>
-                <span>${mensaje}</span>
-                <button type="button" class="btn-close-alerta">×</button>
-            </div>
-        `;
+        const iconMap = {
+            'warning': 'warning',
+            'danger': 'error',
+            'error': 'error',
+            'success': 'success',
+            'info': 'info'
+        };
         
-        document.body.appendChild(alerta);
-        
-        // Mostrar con animación
-        setTimeout(() => {
-            alerta.classList.add('show');
-        }, 100);
-        
-        // Configurar botón de cerrar
-        alerta.querySelector('.btn-close-alerta').addEventListener('click', () => {
-            alerta.classList.remove('show');
-            setTimeout(() => {
-                if (alerta.parentNode) {
-                    alerta.parentNode.removeChild(alerta);
-                }
-            }, 300);
+        Swal.fire({
+            icon: iconMap[tipo] || 'info',
+            title: tipo === 'warning' ? 'Atención' : (tipo === 'danger' || tipo === 'error' ? 'Error' : (tipo === 'success' ? '¡Éxito!' : 'Información')),
+            text: mensaje,
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#2d6a4f'
         });
-        
-        // Auto-cerrar después de 5 segundos
-        setTimeout(() => {
-            if (alerta.parentNode) {
-                alerta.classList.remove('show');
-                setTimeout(() => {
-                    if (alerta.parentNode) {
-                        alerta.parentNode.removeChild(alerta);
-                    }
-                }, 300);
-            }
-        }, 5000);
     }
     
     // ======================================

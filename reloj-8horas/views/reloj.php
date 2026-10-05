@@ -1,6 +1,8 @@
 <?php
-include "../../config/config.php";
+require_once __DIR__ . "/../../public/php/config.php";
+require_once __DIR__ . "/../../public/php/verificarSesion.php";
 verificarSesion();
+verificarPermiso("reloj_8hrs.ver_menu");
 ?>
 
 <!DOCTYPE html>
@@ -30,7 +32,7 @@ verificarSesion();
 
     <?php
     // Incluir el navbar (config.php ya fue incluido en el head)
-    include "../../public/views/navbar.php"
+    require_once __DIR__ . "/../../navbar/navbar.php";
     ?>
 
     <!-- Formulario principal -->

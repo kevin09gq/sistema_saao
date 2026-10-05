@@ -1,6 +1,7 @@
 <?php
-require_once __DIR__ . '/../../config/config.php';
+
 require_once __DIR__ . "/../../conexion/conexion.php";
+require_once __DIR__ . "/../../public/php/verificarSesion.php";
 
 // Respuesta
 function respuestas(int $code, string $titulo, string $mensaje, string $icono, array $data)

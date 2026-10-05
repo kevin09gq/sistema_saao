@@ -71,6 +71,13 @@ CREATE TABLE info_ranchos (
     FOREIGN KEY (id_area) REFERENCES areas (id_area) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
+-- Crear tabla de colores para la asistencia
+CREATE TABLE asistencia_colores (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sexo ENUM('M', 'F') NOT NULL UNIQUE,
+    color_hex VARCHAR(7) NOT NULL
+);
+
 -- =============================
 -- TABLAS DE ADMINISTRACION DE USUARIOS
 -- =============================
@@ -102,34 +109,27 @@ CREATE TABLE info_admin (
 -- TABLAS DE MÓDULOS Y PERMISOS DINÁMICOS
 -- =============================
 
--- Catálogo de Módulos del Sistema
 CREATE TABLE modulos (
     id_modulo INT AUTO_INCREMENT PRIMARY KEY,
-    clave_modulo VARCHAR(50) NOT NULL UNIQUE,
-    nombre_modulo VARCHAR(100) NOT NULL,
-    categoria VARCHAR(50) NOT NULL DEFAULT 'General',
-    icono VARCHAR(50) DEFAULT 'bi-folder',
-    descripcion VARCHAR(255) NULL
+    clave_modulo VARCHAR(100) NOT NULL UNIQUE,
+    nombre_modulo VARCHAR(100) NOT NULL
 );
 
--- Catálogo de Permisos y Acciones Específicas por Módulo
-CREATE TABLE permisos_modulo (
+CREATE TABLE permisos (
     id_permiso INT AUTO_INCREMENT PRIMARY KEY,
     id_modulo INT NOT NULL,
-    clave_permiso VARCHAR(60) NOT NULL UNIQUE,
-    nombre_permiso VARCHAR(100) NOT NULL,
-    descripcion VARCHAR(255) NULL,
-    FOREIGN KEY (id_modulo) REFERENCES modulos (id_modulo) ON UPDATE CASCADE ON DELETE CASCADE
+    clave_permiso VARCHAR(150) NOT NULL UNIQUE,
+    nombre_permiso VARCHAR(150) NOT NULL,
+    descripcion VARCHAR(255),
+    FOREIGN KEY (id_modulo) REFERENCES modulos (id_modulo) ON UPDATE CASCADE
 );
 
--- Asignación de Permisos Específicos a Usuarios
-CREATE TABLE usuario_permisos (
+CREATE TABLE admin_permisos (
+    id_admin_permiso INT AUTO_INCREMENT PRIMARY KEY,
     id_admin INT NOT NULL,
     id_permiso INT NOT NULL,
-    fecha_asignacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id_admin, id_permiso),
     FOREIGN KEY (id_admin) REFERENCES info_admin (id_admin) ON UPDATE CASCADE ON DELETE CASCADE,
-    FOREIGN KEY (id_permiso) REFERENCES permisos_modulo (id_permiso) ON UPDATE CASCADE ON DELETE CASCADE
+    FOREIGN KEY (id_permiso) REFERENCES permisos (id_permiso) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- =============================
@@ -239,6 +239,39 @@ CREATE TABLE historial_reingresos (
     FOREIGN KEY (id_empleado) REFERENCES info_empleados (id_empleado) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
+-- =============================
+-- TABLA ASIGNACION DE EXPEDIENTES
+-- =============================
+
+-- Crear tabla catalogo_expediente
+CREATE TABLE catalogo_expediente (
+    id_expediente INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(150) NOT NULL,
+    tipo_dato VARCHAR(255) NOT NULL,
+    historial BOOLEAN NOT NULL DEFAULT FALSE,
+    activo BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+-- Almacena los valores reales de cada empleado para cada campo del expediente
+CREATE TABLE campo_expediente (
+    id_campo INT AUTO_INCREMENT PRIMARY KEY,
+    id_empleado INT NOT NULL,
+    id_expediente INT NOT NULL,
+    valor TEXT NULL,
+    fecha_actualizacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_empleado) REFERENCES info_empleados (id_empleado) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (id_expediente) REFERENCES catalogo_expediente (id_expediente) ON UPDATE CASCADE ON DELETE CASCADE,
+    UNIQUE (id_empleado, id_expediente)
+);
+
+-- Guarda el historial de cambios cuando un campo tiene activada la opción de historial
+CREATE TABLE historial_expediente (
+    id_historial INT AUTO_INCREMENT PRIMARY KEY,
+    id_campo INT NOT NULL,
+    valor TEXT NULL,
+    fecha_registro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_campo) REFERENCES campo_expediente (id_campo) ON UPDATE CASCADE ON DELETE CASCADE
+);
 -- =============================
 -- TABLA ASIGNACION DE CASILLEROS
 -- =============================
@@ -550,6 +583,18 @@ CREATE TABLE nomina_40lbs (
     FOREIGN KEY (id_empresa) REFERENCES empresa (id_empresa) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
+CREATE TABLE nomina_40lbs_jornal (
+    id_nomina_40lbs_jornal INT AUTO_INCREMENT PRIMARY KEY,
+    id_empresa INT NOT NULL,
+    anio INT NOT NULL,
+    numero_semana INT NOT NULL,
+    nomina_40lbs_jornal LONGTEXT NOT NULL,
+    total_percepciones DECIMAL(14, 2) DEFAULT 0,
+    total_deducciones DECIMAL(14, 2) DEFAULT 0,
+    total_neto DECIMAL(14, 2) DEFAULT 0,
+    FOREIGN KEY (id_empresa) REFERENCES empresa (id_empresa) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
 -- =============================
 -- TABLAS DE NÓMINA 10 LBS
 -- =============================
@@ -846,29 +891,6 @@ INSERT INTO status (nombre_status) VALUES ('Activo'), ('Baja');
 -- Insertar roles
 INSERT INTO rol (nombre_rol) VALUES ('admin'), ('empleado');
 
--- Procedimiento para crear casilleros del 1 al 300
-DELIMITER /
-/
-
-CREATE PROCEDURE crear_casilleros()
-BEGIN
-    DECLARE i INT DEFAULT 1;
-    WHILE i <= 300 DO
-        INSERT INTO casilleros (num_casillero)
-        VALUES (i);
-        SET i = i + 1;
-    END WHILE;
-END
-/
-/
-
-DELIMITER;
-
--- Ejecutar el procedimiento
-CALL crear_casilleros ();
-
-INSERT INTO tabulador ( id_tabulador, id_empresa, info_tabulador )
-
 -- Versiones de Tablas de Vacaciones LFT
 
 INSERT INTO
@@ -908,15 +930,621 @@ VALUES (2, 1, NULL, 12),
     (2, 26, 30, 30),
     (2, 31, 35, 32);
 
--- ============================================================
--- INSERTAR MÓDULOS DEL SISTEMA
--- ============================================================
-INSERT INTO modulos (id_modulo, clave_modulo, nombre_modulo, categoria, icono, descripcion) VALUES
-(1, 'gestion_empleados', 'Gestión de Empleados', 'Empleados', 'bi-people', 'Registro, actualización y consulta de empleados')
+-- Insertar Modulos
+INSERT INTO
+    modulos (clave_modulo, nombre_modulo)
+VALUES (
+        'actualizar_empleados',
+        'Actualizar Empleados'
+    ),
+    (
+        'registrar_empleados',
+        'Registrar Empleados'
+    ),
+    (
+        'prestamos',
+        'Registro y Abono de Préstamos'
+    ),
+    ('aguinaldos', 'Aguinaldos'),
+    ('ptu', 'PTU'),
+    ('reloj_8hrs', 'Reloj 8 Hrs'),
+    (
+        'tickets_manuales',
+        'Tickets Manuales'
+    ),
+    ('vacaciones', 'Vacaciones'),
+    ('gafetes', 'Gafetes'),
+    ('contratos', 'Contratos'),
+    ('expedientes', 'Expedientes'),
+    (
+        'asistencia',
+        'Lista de Asistencia'
+    ),
+    ('nominas', 'Nominas'),
+    ('cortes', 'Gestion de Cortes'),
+    (
+        'configuracion',
+        'Configuración de Sistema'
+    ),
+    (
+        'panel_admin',
+        'Panel de Administración'
+    ),
+    ('casilleros', 'Casilleros')
 
--- ============================================================
--- INSERTAR PERMISOS ESPECÍFICOS POR MÓDULO
--- ============================================================
-INSERT INTO permisos_modulo (id_modulo, clave_permiso, nombre_permiso, descripcion) VALUES
--- Módulo 1: Gestión de Empleados
-(1, 'emp_ver', 'Ver Lista de Empleados', 'Permite acceder al módulo y consultar la tabla de empleados'),
+-- Insertar Permisos Para de actualizar Empleado
+INSERT INTO
+    permisos (
+        id_modulo,
+        clave_permiso,
+        nombre_permiso,
+        descripcion
+    )
+VALUES (
+        1,
+        'empleados.ver_menu',
+        'Visualizar Actualización de Empleados',
+        'Permite visualizar la actualización de Empleados en el menú lateral'
+    ),
+    (
+        1,
+        'empleados.actualizar_foto',
+        'Actualizar Foto del Empleado',
+        'Permite actualizar la foto del empleado'
+    ),
+    (
+        1,
+        'empleados.actualizar_nss',
+        'Actualizar NSS del Empleado',
+        'Permite actualizar el NSS del empleado'
+    ),
+    (
+        1,
+        'empleados.actualizar_status',
+        'Actualizar Status del Empleado',
+        'Permite actualizar el status del empleado'
+    ),
+    (
+        1,
+        'empleados.ver_informacion',
+        'Visualizar Información del Empleado',
+        'Permite visualizar la información del empleado'
+    ),
+    (
+        1,
+        'empleados.editar_informacion',
+        'Editar Información del Empleado',
+        'Permite editar la información del empleado'
+    ),
+    (
+        1,
+        'empleados.ver_salarios',
+        'Visualizar Salarios del Empleado',
+        'Permite visualizar los salarios del empleado'
+    ),
+    (
+        1,
+        'empleados.ver_contacto_emergencia',
+        'Visualizar Contacto de Emergencia',
+        'Permite visualizar el contacto de emergencia'
+    ),
+    (
+        1,
+        'empleados.editar_contacto_emergencia',
+        'Editar Contacto de Emergencia',
+        'Permite editar el contacto de emergencia'
+    ),
+    (
+        1,
+        'empleados.ver_beneficiarios',
+        'Visualizar Beneficiarios',
+        'Permite visualizar los beneficiarios del empleado'
+    ),
+    (
+        1,
+        'empleados.editar_beneficiarios',
+        'Editar Beneficiarios',
+        'Permite editar los beneficiarios del empleado'
+    ),
+    (
+        1,
+        'empleados.ver_reingresos',
+        'Visualizar Reingresos',
+        'Permite visualizar el apartado de reingresos'
+    ),
+    (
+        1,
+        'empleados.ver_fecha_alta_empresa',
+        'Visualizar Fecha Alta Empresa',
+        'Permite visualizar la fecha de alta en la empresa'
+    ),
+    (
+        1,
+        'empleados.editar_fecha_alta_empresa',
+        'Editar Fecha Alta Empresa',
+        'Permite editar la fecha de alta en la empresa'
+    ),
+    (
+        1,
+        'empleados.ver_fecha_alta_imss',
+        'Visualizar Fecha Alta IMSS',
+        'Permite visualizar la fecha de alta ante el IMSS'
+    ),
+    (
+        1,
+        'empleados.editar_fecha_alta_imss',
+        'Editar Fecha Alta IMSS',
+        'Permite editar la fecha de alta ante el IMSS'
+    ),
+    (
+        1,
+        'empleados.ver_historial_reingresos',
+        'Visualizar Historial de Reingresos',
+        'Permite visualizar el historial de reingresos'
+    ),
+    (
+        1,
+        'empleados.editar_historial_reingresos',
+        'Editar Historial de Reingresos',
+        'Permite editar el historial de reingresos'
+    ),
+    (
+        1,
+        'empleados.ver_horarios',
+        'Visualizar Horarios',
+        'Permite visualizar los horarios de los empleados'
+    ),
+    (
+        1,
+        'empleados.editar_horarios',
+        'Editar Horarios',
+        'Permite editar los horarios de los empleados'
+    ),
+    (
+        1,
+        'empleados.ver_horarios_oficiales',
+        'Visualizar Horarios Oficiales',
+        'Permite visualizar los horarios oficiales'
+    ),
+    (
+        1,
+        'empleados.editar_horarios_oficiales',
+        'Editar Horarios Oficiales',
+        'Permite editar los horarios oficiales'
+    );
+
+-- Insertar Permisos Para Registro
+INSERT INTO
+    permisos (
+        id_modulo,
+        clave_permiso,
+        nombre_permiso,
+        descripcion
+    )
+VALUES (
+        2,
+        'registro_empleados.ver_menu',
+        'Registrar Empleados',
+        'Permite visualizar el apartado de registro de empleados en el menú lateral'
+    );
+
+-- Insertar Permisos para prestamos
+
+INSERT INTO
+    permisos (
+        id_modulo,
+        clave_permiso,
+        nombre_permiso,
+        descripcion
+    )
+VALUES (
+        3,
+        'prestamos.ver_menu',
+        'Visualzar Prestamos',
+        'Permite visualizar el apartado de Prestamos de empleados en el menú lateral'
+    ),
+    (
+        3,
+        'prestamos.registrar_prestamo',
+        'Registrar Prestamo',
+        'Permite registrar nuevos préstamos para los empleados'
+    ),
+    (
+        3,
+        'prestamos.editar_prestamo',
+        'Editar Prestamo',
+        'Permite editar los préstamos existentes de los empleados'
+    ),
+    (
+        3,
+        'prestamos.registrar_abono',
+        'Registrar Abono',
+        'Permite registrar nuevos abonos para los préstamos de los empleados'
+    ),
+    (
+        3,
+        'prestamos.editar_abono',
+        'Editar Abono',
+        'Permite editar los abonos existentes de los préstamos de los empleados'
+    ),
+    (
+        3,
+        'prestamos.editar_plan_pago',
+        'Editar Plan de Pago',
+        'Permite editar el plan de pago de los préstamos de los empleados'
+    );
+
+-- Insertar Permisos para Aguinaldos
+INSERT INTO
+    permisos (
+        id_modulo,
+        clave_permiso,
+        nombre_permiso,
+        descripcion
+    )
+VALUES (
+        4,
+        'aguinaldos.ver_menu',
+        'Visualizar Aguinaldos',
+        'Permite visualizar el apartado de Aguinaldos en el menú lateral'
+    ),
+    (
+        4,
+        'aguinaldos.generar_aguinaldo',
+        'Generar Aguinaldo',
+        'Permite generar nuevos aguinaldos para los empleados'
+    ),
+    (
+        4,
+        'aguinaldos.eliminar_aguinaldo',
+        'Eliminar Aguinaldo',
+        'Permite eliminar la información de aguinaldos existentes de los empleados'
+    );
+
+-- Insertar Permisos para PTU
+INSERT INTO
+    permisos (
+        id_modulo,
+        clave_permiso,
+        nombre_permiso,
+        descripcion
+    )
+VALUES (
+        5,
+        'ptu.ver_menu',
+        'Visualizar PTU',
+        'Permite visualizar el apartado de PTU en el menú lateral'
+    ),
+    (
+        5,
+        'ptu.generar_ptu',
+        'Generar PTU',
+        'Permite generar nuevos PTU para los empleados'
+    ),
+    (
+        5,
+        'ptu.eliminar_ptu',
+        'Eliminar PTU',
+        'Permite eliminar la información de PTU existentes de los empleados'
+    );
+
+-- Insertar Permisos para reloj 8 hrs
+INSERT INTO
+    permisos (
+        id_modulo,
+        clave_permiso,
+        nombre_permiso,
+        descripcion
+    )
+VALUES (
+        6,
+        'reloj_8hrs.ver_menu',
+        'Visualizar Reloj 8 Hrs',
+        'Permite visualizar el apartado de Reloj 8 Hrs en el menú lateral'
+    ),
+    (
+        6,
+        'reloj_8hrs.ver_historial',
+        'Ver Historial',
+        'Permite visualizar el historial de Reloj 8 Hrs'
+    );
+
+-- Insertar Permisos para tickets manuales
+INSERT INTO
+    permisos (
+        id_modulo,
+        clave_permiso,
+        nombre_permiso,
+        descripcion
+    )
+VALUES (
+        7,
+        'tickets_manuales.ver_menu',
+        'Visualizar tickets Manuales',
+        'Permite visualizar el apartado de tickets Manuales en el menú lateral para crear tickets de empleados'
+    );
+
+-- Insertar Permisos para el control de vacaciones
+INSERT INTO
+    permisos (
+        id_modulo,
+        clave_permiso,
+        nombre_permiso,
+        descripcion
+    )
+VALUES (
+        8,
+        'vacaciones.ver_menu',
+        'Visualizar Vacaciones',
+        'Permite visualizar el apartado de Vacaciones en el menú lateral para gestionar las vacaciones de los empleados'
+    );
+
+-- Insertar Permisos para el control de gafetes
+INSERT INTO
+    permisos (
+        id_modulo,
+        clave_permiso,
+        nombre_permiso,
+        descripcion
+    )
+VALUES (
+        9,
+        'gafetes.ver_menu',
+        'Visualizar Gafetes',
+        'Permite visualizar el apartado de Gafetes en el menú lateral para gestionar los gafetes de los empleados'
+    );
+
+-- Insertar Permisos para el control de contratos
+INSERT INTO
+    permisos (
+        id_modulo,
+        clave_permiso,
+        nombre_permiso,
+        descripcion
+    )
+VALUES (
+        10,
+        'contratos.ver_menu',
+        'Visualizar Contratos',
+        'Permite visualizar el apartado de Contratos en el menú lateral para gestionar los contratos     de los empleados'
+    ),
+    (
+        10,
+        'contratos.generar_contratos',
+        'Generar Contratos de Empleados',
+        'Permite generar nuevos contratos para los empleados'
+    ),
+    (
+        10,
+        'contratos.personalizar_contratos',
+        'Personalizar Contratos de Empleados',
+        'Permite personalizar los contratos de los empleados'
+    );
+
+-- Insertar Permisos para el control de Expedientes
+INSERT INTO
+    permisos (
+        id_modulo,
+        clave_permiso,
+        nombre_permiso,
+        descripcion
+    )
+VALUES (
+        11,
+        'expedientes.ver_menu',
+        'Visualizar Expedientes',
+        'Permite visualizar el apartado de Expedientes en el menú lateral para gestionar los expedientes de los empleados'
+    );
+
+-- Insertar Permisos para el control de Lista de asistencia
+INSERT INTO
+    permisos (
+        id_modulo,
+        clave_permiso,
+        nombre_permiso,
+        descripcion
+    )
+VALUES (
+        12,
+        'asistencia.ver_menu',
+        'Visualizar Lista de Asistencia',
+        'Permite visualizar el apartado de Lista de Asistencia en el menú lateral para gestionar la asistencia de los empleados'
+    );
+
+-- Insertar Permisos para el control de Claves de autorización
+INSERT INTO
+    permisos (
+        id_modulo,
+        clave_permiso,
+        nombre_permiso,
+        descripcion
+    )
+VALUES (
+        13,
+        'claves_autorizacion.ver_menu',
+        'Visualizar Claves de Autorización',
+        'Permite visualizar el apartado de Claves de Autorización en el menú lateral para gestionar las claves de autorización'
+    );
+
+-- Insertar Permisos para el control de Nominas
+INSERT INTO
+    permisos (
+        id_modulo,
+        clave_permiso,
+        nombre_permiso,
+        descripcion
+    )
+VALUES (
+        14,
+        'nomina.crear_nomina40lbs',
+        'Crear Nómina 40 Lbs',
+        'Permite crear la nómina de 40 Libras de los empleados'
+    ),
+    (
+        14,
+        'nomina.crear_nomina40lbs_jornal',
+        'Crear Nómina 40 Lbs Por salario Diario',
+        'Permite crear la nómina de 40 Libras de los empleados que trabajan por sueldo diario'
+    ),
+    (
+        14,
+        'nomina.crear_nomina10lbs',
+        'Crear Nómina 10 Lbs',
+        'Permite crear la nómina de 10 Libras de los empleados'
+    ),
+    (
+        14,
+        'nomina.crear_nomina_confianza',
+        'Crear Nómina Confianza',
+        'Permite crear la nómina de Confianza de los empleados'
+    ),
+    (
+        14,
+        'nomina.crear_nomina_relicario',
+        'Crear Nómina Relicario',
+        'Permite crear la nómina de Relicario de los empleados'
+    ),
+    (
+        14,
+        'nomina.crear_nomina_pilar',
+        'Crear Nómina Pilar',
+        'Permite crear la nómina de Pilar de los empleados'
+    ),
+    (
+        14,
+        'nomina.crear_nomina_huasteca',
+        'Crear Nómina Huasteca',
+        'Permite crear la nómina de Huasteca de los empleados'
+    ),
+    (
+        14,
+        'nomina.crear_nomina_palmilla',
+        'Crear Nómina Palmilla',
+        'Permite crear la nómina de Palmilla de los empleados'
+    ),
+    (
+        14,
+        'nomina.ver_historial40lbs',
+        'Ver el Historial y Estadísticas de Nómina 40 Lbs',
+        'Permite ver el historial y las estadísticas de la nómina de 40 Libras de los empleados'
+    ),
+    (
+        14,
+        'nomina.ver_historial40lbs_jornal',
+        'Ver el Historial y Estadísticas de Nómina 40 Lbs Por salario Diario',
+        'Permite ver el historial y las estadísticas de la nómina de 40 Libras de los empleados que trabajan por sueldo diario'
+    ),
+    (
+        14,
+        'nomina.ver_historial10lbs',
+        'Ver el Historial y Estadísticas de Nómina 10 Lbs',
+        'Permite ver el historial y las estadísticas de la nómina de 10 Libras de los empleados'
+    ),
+    (
+        14,
+        'nomina.ver_historial_confianza',
+        'Ver el Historial y Estadísticas de Nómina Confianza',
+        'Permite ver el historial y las estadísticas de la nómina de Confianza de los empleados'
+    ),
+    (
+        14,
+        'nomina.ver_historial_relicario',
+        'Ver el Historial y Estadísticas de Nómina Relicario',
+        'Permite ver el historial y las estadísticas de la nómina de Relicario de los empleados'
+    ),
+    (
+        14,
+        'nomina.ver_historial_pilar',
+        'Ver el Historial y Estadísticas de Nómina Pilar',
+        'Permite ver el historial y las estadísticas de la nómina de Pilar de los empleados'
+    ),
+    (
+        14,
+        'nomina.ver_historial_huasteca',
+        'Ver el Historial y Estadísticas de Nómina Huasteca',
+        'Permite ver el historial y las estadísticas de la nómina de Huasteca de los empleados'
+    ),
+    (
+        14,
+        'nomina.ver_historial_palmilla',
+        'Ver el Historial y Estadísticas de Nómina Palmilla',
+        'Permite ver el historial y las estadísticas de la nómina de Palmilla de los empleados'
+    );
+
+-- Insertar Permisos para el control de Nominas
+INSERT INTO
+    permisos (
+        id_modulo,
+        clave_permiso,
+        nombre_permiso,
+        descripcion
+    )
+VALUES (
+        15,
+        'cortes.ver_menu',
+        'Visualizar Vales de Corte',
+        'Permite visualizar el apartado de Vales de Corte en el menú lateral para gestionar los vales de corte de cada Rancho'
+    ),
+    (
+        15,
+        'cortes.agregar_corte',
+        'Agregar Corte',
+        'Permite agregar un nuevo corte de cada Rancho'
+    ),
+    (
+        15,
+        'cortes.editar_corte',
+        'Modificar Corte',
+        'Permite editar un corte existente de cada Rancho'
+    ),
+    (
+        15,
+        'cortes.cancelar_corte',
+        'Cancelar Corte',
+        'Permite cancelar un corte existente de cada Rancho'
+    );
+
+-- Insertar Permisos para las configuraciones del sistema
+INSERT INTO
+    permisos (
+        id_modulo,
+        clave_permiso,
+        nombre_permiso,
+        descripcion
+    )
+VALUES (
+        16,
+        'configuracion.ver_menu',
+        'Visualizar Configuración',
+        'Permite visualizar el apartado de Configuración en el menú lateral para gestionar la configuración del sistema'
+    );
+
+-- Insertar Permisos para el panel de administración del sistema
+INSERT INTO
+    permisos (
+        id_modulo,
+        clave_permiso,
+        nombre_permiso,
+        descripcion
+    )
+VALUES (
+        17,
+        'panel_admin.ver_menu',
+        'Visualizar Panel de Administración',
+        'Permite visualizar el apartado de Panel de Administración en el menú lateral para gestionar los permisos del sistema'
+    );
+
+-- Insertar Permisos para Administración de los Casilleros
+INSERT INTO
+    permisos (
+        id_modulo,
+        clave_permiso,
+        nombre_permiso,
+        descripcion
+    )
+VALUES (
+        18,
+        'casilleros.ver_menu',
+        'Visualizar Casilleros',
+        'Permite visualizar el apartado de Casilleros en el menú lateral para gestionar los casilleros del sistema'
+    );

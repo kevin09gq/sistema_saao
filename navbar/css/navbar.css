@@ -1,0 +1,827 @@
+/* ==========================================================================
+   SISTEMA SAAO - BARRA DE NAVEGACIÓN Y MENÚ LATERAL VERTICAL (SIDEBAR)
+   Hoja de estilos: navbar.css
+   Estilo: Ultra Limpio, Ejecutivo, Altamente Legible y Profesional
+   Paleta: Identidad Institucional Cítricos SAAO (Basado en empleados.css)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   0. TIPOGRAFÍA Y FUENTES EXTERNAS
+   -------------------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* --------------------------------------------------------------------------
+   1. VARIABLES DE DISEÑO (PALETA SAAO Y TONOS SLATE DE ALTA LEGIBILIDAD)
+   -------------------------------------------------------------------------- */
+:root {
+    /* Verdes Institucionales SAAO */
+    --saao-primary: #2d6a4f;
+    /* Verde principal */
+    --saao-accent: #1b4332;
+    /* Verde oscuro contraste */
+    --saao-soft: #95d5b2;
+    /* Verde medio para bordes */
+    --saao-light: #d8f3dc;
+    /* Verde suave fondos activos */
+    --saao-hover: #f0fdf4;
+    /* Verde ultraligero hover */
+    --saao-subtle: #e8f7ee;
+    /* Fondo para contenedores de icono */
+
+    /* Neutros y Fondos de Alta Claridad */
+    --saao-bg-white: #ffffff;
+    /* Blanco puro */
+    --saao-bg-canvas: #f8fafc;
+    /* Gris pizarra muy suave */
+    --saao-border: #e2e8f0;
+    /* Borde refinado moderno */
+    --saao-border-light: #f1f5f9;
+    /* Borde sutil para divisores */
+
+    /* Escala de Textos (Contraste y Legibilidad Superior) */
+    --saao-text-title: #0f172a;
+    /* Títulos (Slate 900) */
+    --saao-text-main: #1e293b;
+    /* Texto principal (Slate 800) */
+    --saao-text-sub: #475569;
+    /* Texto secundario (Slate 600) */
+    --saao-text-muted: #94a3b8;
+    /* Texto apagado / placeholders (Slate 400) */
+
+    /* Acentos de Acción */
+    --saao-admin-txt: #b45309;
+    /* Ámbar panel admin */
+    --saao-admin-bg: #fffbeb;
+    /* Fondo admin */
+    --saao-admin-border: #fde68a;
+    /* Borde admin */
+
+    --saao-danger-txt: #dc2626;
+    /* Rojo peligro / salida */
+    --saao-danger-bg: #fef2f2;
+    /* Fondo rojo suave */
+    --saao-danger-border: #fecaca;
+    /* Borde rojo suave */
+
+    /* Elevaciones y Radios */
+    --saao-shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+    --saao-shadow-md: 0 4px 16px -2px rgba(0, 0, 0, 0.08), 0 2px 6px -2px rgba(0, 0, 0, 0.04);
+    --saao-shadow-lg: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05);
+
+    --saao-radius-sm: 6px;
+    --saao-radius-md: 8px;
+    --saao-radius-lg: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   2. BARRA SUPERIOR (TOPBAR EJECUTIVA Y LIMPIA)
+   -------------------------------------------------------------------------- */
+.saao-topbar {
+    background-color: rgba(255, 255, 255, 0.97);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--saao-border);
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 4px -1px rgba(15, 23, 42, 0.02);
+    min-height: 64px;
+    padding: 0.6rem 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.saao-topbar.scrolled {
+    background-color: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.03);
+}
+
+.saao-topbar-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+/* Lado izquierdo: Botón Menú + Identidad SAAO */
+.saao-topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+/* Botón disparador del menú vertical */
+.saao-btn-menu-trigger {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid var(--saao-border);
+    color: var(--saao-text-main);
+    padding: 0.52rem 1.1rem;
+    border-radius: var(--saao-radius-md);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 600;
+    font-size: 0.885rem;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+    line-height: 1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.saao-btn-menu-trigger i {
+    font-size: 1.15rem;
+    color: var(--saao-primary);
+    transition: transform 0.25s ease, color 0.2s ease;
+}
+
+.saao-btn-menu-trigger:hover {
+    background: #e8f7ee;
+    color: var(--saao-accent);
+    border-color: var(--saao-soft);
+    box-shadow: 0 4px 14px rgba(45, 106, 79, 0.15);
+    transform: translateY(-1px);
+}
+
+.saao-btn-menu-trigger:hover i {
+    transform: scale(1.12);
+    color: var(--saao-accent);
+}
+
+.saao-btn-menu-trigger:active {
+    transform: translateY(0);
+}
+
+/* Marca y Logotipo */
+.saao-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    text-decoration: none;
+    color: var(--saao-text-title);
+    transition: opacity 0.2s ease;
+}
+
+.saao-brand-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ffffff;
+    outline: 2px solid var(--saao-soft);
+    box-shadow: 0 2px 8px rgba(45, 106, 79, 0.18);
+    transition: transform 0.25s ease, outline-color 0.2s ease;
+}
+
+.saao-brand:hover .saao-brand-logo {
+    transform: scale(1.08) rotate(3deg);
+    outline-color: var(--saao-primary);
+}
+
+.saao-brand-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.saao-brand-name {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--saao-accent);
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+}
+
+.saao-brand-badge {
+    align-self: flex-start;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--saao-primary);
+    background-color: var(--saao-subtle);
+    border: 1px solid var(--saao-light);
+    border-radius: 20px;
+    padding: 0.1rem 0.55rem;
+    letter-spacing: 0.35px;
+    text-transform: uppercase;
+}
+
+/* Lado derecho: Notificaciones + Perfil Ejecutivo */
+.saao-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Botón rápido de Notificaciones */
+.saao-topbar-btn-notif {
+    background: #ffffff;
+    border: 1px solid var(--saao-border);
+    color: var(--saao-text-sub);
+    width: 40px;
+    height: 40px;
+    border-radius: var(--saao-radius-md);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    text-decoration: none;
+    font-size: 1.15rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.saao-topbar-btn-notif:hover {
+    background-color: var(--saao-hover);
+    color: var(--saao-primary);
+    border-color: var(--saao-soft);
+    box-shadow: 0 4px 12px rgba(45, 106, 79, 0.12);
+    transform: translateY(-1px);
+}
+
+/* Separador vertical sutil */
+.saao-topbar-divider {
+    width: 1px;
+    height: 30px;
+    background: linear-gradient(to bottom, transparent, #cbd5e1 25%, #cbd5e1 75%, transparent);
+}
+
+/* --------------------------------------------------------------------------
+   2.1 CHIP DE PERFIL DE USUARIO (AVATAR DE INICIALES - SOLO VISUAL)
+   -------------------------------------------------------------------------- */
+
+/* Chip de usuario: contenedor refinado de tarjeta ejecutiva */
+.saao-user-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.35rem 0.9rem 0.35rem 0.45rem;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid var(--saao-border);
+    border-radius: var(--saao-radius-lg);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    user-select: none;
+    transition: all 0.2s ease;
+}
+
+.saao-user-chip:hover {
+    border-color: var(--saao-soft);
+    background: #ffffff;
+    box-shadow: 0 4px 14px rgba(45, 106, 79, 0.09);
+    transform: translateY(-1px);
+}
+
+/* Botón compacto de cerrar sesión en topbar */
+.saao-btn-salir {
+    background: var(--saao-danger-bg);
+    border: 1px solid var(--saao-danger-border);
+    color: var(--saao-danger-txt);
+    padding: 0.38rem 0.85rem;
+    border-radius: var(--saao-radius-md);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.845rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.saao-btn-salir i {
+    font-size: 1rem;
+}
+
+.saao-btn-salir:hover {
+    background-color: var(--saao-danger-txt);
+    color: #ffffff;
+    border-color: var(--saao-danger-txt);
+    box-shadow: 0 3px 10px rgba(220, 38, 38, 0.25);
+    transform: translateY(-1px);
+}
+
+.saao-btn-salir:active {
+    transform: translateY(0);
+}
+
+/* Avatar circular con letras iniciales (ej. KG) */
+.saao-avatar-iniciales {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #2d6a4f 0%, #1b4332 100%);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.875rem;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ffffff;
+    box-shadow: 0 3px 8px rgba(45, 106, 79, 0.25);
+    flex-shrink: 0;
+    text-transform: uppercase;
+    transition: transform 0.2s ease;
+}
+
+.saao-user-chip:hover .saao-avatar-iniciales {
+    transform: scale(1.05);
+}
+
+/* Meta información del usuario */
+.saao-user-info {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    line-height: 1.15;
+    gap: 0.15rem;
+}
+
+.saao-user-welcome {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--saao-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1;
+}
+
+.saao-user-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--saao-text-title);
+    letter-spacing: -0.01em;
+    max-width: 170px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.1;
+}
+
+.saao-user-role {
+    font-size: 0.685rem;
+    font-weight: 600;
+    color: var(--saao-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+/* --------------------------------------------------------------------------
+   3. MENÚ VERTICAL LATERAL (SIDEBAR DRAWER)
+   -------------------------------------------------------------------------- */
+.saao-sidebar-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(5px);
+    z-index: 1040;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.28s ease;
+}
+
+.saao-sidebar-backdrop.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.saao-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 395px;
+    max-width: 90vw;
+    height: 100vh;
+    background-color: var(--saao-bg-white);
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(15, 23, 42, 0.05);
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(-100%);
+    visibility: hidden;
+    pointer-events: none;
+    transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.32s ease;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+.saao-sidebar.active {
+    transform: translateX(0);
+    visibility: visible;
+    pointer-events: auto;
+}
+
+/* --------------------------------------------------------------------------
+   4. COMPONENTES INTERNOS DEL SIDEBAR
+   -------------------------------------------------------------------------- */
+.saao-sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.15rem 1.25rem;
+    border-bottom: 1px solid var(--saao-border-light);
+    background-color: var(--saao-bg-white);
+}
+
+.saao-sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.saao-sidebar-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--saao-light);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.saao-sidebar-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--saao-accent);
+    margin: 0;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+
+.saao-sidebar-subtitle {
+    font-size: 0.72rem;
+    color: var(--saao-text-sub);
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.saao-sidebar-close {
+    background: var(--saao-bg-canvas);
+    border: 1px solid var(--saao-border);
+    color: var(--saao-text-sub);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.saao-sidebar-close:hover {
+    background-color: var(--saao-danger-bg);
+    color: var(--saao-danger-txt);
+    border-color: var(--saao-danger-border);
+    transform: rotate(90deg);
+}
+
+/* 4.2 Buscador rápido de módulos */
+.saao-sidebar-search-wrap {
+    padding: 0.85rem 1.25rem 0.4rem 1.25rem;
+}
+
+.saao-sidebar-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.saao-sidebar-search i {
+    position: absolute;
+    left: 0.8rem;
+    color: var(--saao-text-muted);
+    font-size: 0.9rem;
+    pointer-events: none;
+}
+
+.saao-sidebar-search input {
+    width: 100%;
+    padding: 0.55rem 0.85rem 0.55rem 2.3rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: 1px solid var(--saao-border);
+    border-radius: var(--saao-radius-md);
+    background-color: var(--saao-bg-canvas);
+    color: var(--saao-text-main);
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.saao-sidebar-search input::placeholder {
+    color: var(--saao-text-muted);
+    font-size: 0.82rem;
+}
+
+.saao-sidebar-search input:focus {
+    background-color: var(--saao-bg-white);
+    border-color: var(--saao-soft);
+    box-shadow: 0 0 0 3px rgba(149, 213, 178, 0.35);
+}
+
+/* 4.3 Cuerpo con Scroll Suave */
+.saao-sidebar-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem 0.85rem 1rem 0.85rem;
+}
+
+.saao-sidebar-body::-webkit-scrollbar {
+    width: 4px;
+}
+
+.saao-sidebar-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.saao-sidebar-body::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.3);
+    border-radius: 10px;
+}
+
+.saao-sidebar-body::-webkit-scrollbar-thumb:hover {
+    background: var(--saao-primary);
+}
+
+/* 4.4 Encabezados de Categoría */
+.saao-menu-category {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--saao-text-muted);
+    padding: 0.85rem 0.75rem 0.35rem 0.75rem;
+    margin-top: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* 4.5 Elementos de Menú Vertical */
+.saao-menu-item {
+    margin-bottom: 0.2rem;
+    position: relative;
+}
+
+.saao-menu-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.58rem 0.75rem;
+    border-radius: var(--saao-radius-md);
+    color: var(--saao-text-main);
+    text-decoration: none;
+    font-size: 0.885rem;
+    font-weight: 500;
+    transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    user-select: none;
+    border: 1px solid transparent;
+}
+
+.saao-menu-link-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.saao-menu-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--saao-radius-sm);
+    background-color: var(--saao-subtle);
+    color: var(--saao-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.saao-menu-chevron {
+    font-size: 0.8rem;
+    color: var(--saao-text-muted);
+    transition: transform 0.25s ease;
+}
+
+.saao-menu-link:hover {
+    background-color: var(--saao-hover);
+    color: var(--saao-accent);
+    border-color: rgba(149, 213, 178, 0.35);
+}
+
+.saao-menu-link:hover .saao-menu-icon {
+    background-color: var(--saao-primary);
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(45, 106, 79, 0.25);
+}
+
+.saao-menu-link.active {
+    background-color: var(--saao-light);
+    color: var(--saao-accent);
+    font-weight: 600;
+    border-color: var(--saao-soft);
+}
+
+.saao-menu-link.active .saao-menu-icon {
+    background-color: var(--saao-primary);
+    color: #ffffff;
+}
+
+.saao-menu-item.open>.saao-menu-link {
+    background-color: var(--saao-bg-canvas);
+    color: var(--saao-accent);
+    font-weight: 600;
+}
+
+.saao-menu-item.open>.saao-menu-link .saao-menu-chevron {
+    transform: rotate(180deg);
+    color: var(--saao-primary);
+}
+
+/* 4.6 Submenús Verticales Desplegables */
+.saao-submenu {
+    list-style: none;
+    padding: 0.25rem 0 0.25rem 1.75rem;
+    margin: 0;
+    position: relative;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+    opacity: 0;
+}
+
+.saao-submenu::before {
+    content: '';
+    position: absolute;
+    left: 2rem;
+    top: 0.35rem;
+    bottom: 0.35rem;
+    width: 2px;
+    background-color: var(--saao-border);
+    border-radius: 2px;
+}
+
+.saao-menu-item.open>.saao-submenu {
+    max-height: 800px;
+    opacity: 1;
+}
+
+.saao-submenu-link {
+    display: block;
+    padding: 0.46rem 0.75rem 0.46rem 1.25rem;
+    font-size: 0.84rem;
+    font-weight: 500;
+    color: var(--saao-text-sub);
+    text-decoration: none;
+    border-radius: var(--saao-radius-sm);
+    position: relative;
+    transition: all 0.15s ease;
+}
+
+.saao-submenu-link::before {
+    content: '•';
+    position: absolute;
+    left: 0.45rem;
+    color: var(--saao-text-muted);
+    font-size: 0.95rem;
+    transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.saao-submenu-link:hover {
+    color: var(--saao-accent);
+    background-color: var(--saao-hover);
+    padding-left: 1.45rem;
+}
+
+.saao-submenu-link:hover::before {
+    color: var(--saao-primary);
+    transform: scale(1.3);
+}
+
+.saao-submenu-link.active {
+    color: var(--saao-accent);
+    font-weight: 700;
+    background-color: var(--saao-light);
+}
+
+.saao-submenu-link.active::before {
+    color: var(--saao-primary);
+}
+
+.saao-sub-submenu {
+    list-style: none;
+    padding-left: 1rem;
+    margin: 0.2rem 0;
+    border-left: 2px solid var(--saao-soft);
+    display: none;
+}
+
+.saao-sub-dropdown.open .saao-sub-submenu {
+    display: block;
+}
+
+/* 4.7 Pie del Menú Lateral (Footer con Tarjeta de Usuario) */
+.saao-sidebar-footer {
+    padding: 1rem 1.15rem;
+    border-top: 1px solid var(--saao-border-light);
+    background-color: var(--saao-bg-white);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.saao-sidebar-user-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    background-color: var(--saao-bg-canvas);
+    border: 1px solid var(--saao-border);
+    border-radius: var(--saao-radius-md);
+}
+
+.saao-sidebar-user-meta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.saao-sidebar-user-name {
+    font-size: 0.855rem;
+    color: var(--saao-text-title);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.saao-sidebar-user-role {
+    font-size: 0.7rem;
+    color: var(--saao-primary);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.saao-sidebar-btn-salir {
+    background-color: var(--saao-danger-bg);
+    border: 1px solid var(--saao-danger-border);
+    color: var(--saao-danger-txt);
+    font-weight: 600;
+    font-size: 0.865rem;
+    padding: 0.55rem 1rem;
+    border-radius: var(--saao-radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.saao-sidebar-btn-salir:hover {
+    background-color: var(--saao-danger-txt);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+    transform: translateY(-1px);
+}
+
+/* --------------------------------------------------------------------------
+   5. RESPONSIVIDAD Y AJUSTES MÓVILES
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+    .saao-user-info {
+        display: none;
+        /* Ocultar texto y dejar avatar en tablets/móviles */
+    }
+
+    .saao-user-btn {
+        padding: 0.25rem;
+    }
+
+    .saao-brand-badge {
+        display: none;
+    }
+}
+
+@media (max-width: 576px) {
+    .saao-topbar {
+        padding: 0.5rem 0.85rem;
+    }
+
+    .saao-btn-menu-trigger span {
+        display: none;
+    }
+}

@@ -1,7 +1,7 @@
 <?php
 // contratos/php/obtener_empleados.php
 header('Content-Type: application/json');
-include("../../conexion/conexion.php");
+require_once __DIR__ . "/../../conexion/conexion.php";
 
 // En Contratos solo duplicamos la funcionalidad que se consume desde generar.js
 // Soporta: accion=cargarEmpleados (GET) y accion=dataEmpleado (POST)

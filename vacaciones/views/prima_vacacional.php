@@ -6,8 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prima Vacacional</title>
     <?php
-    include "../../config/config.php";
+    require_once __DIR__ . '/../../public/php/config.php';
+    require_once __DIR__ . '/../../public/php/verificarSesion.php';
     verificarSesion();
+    verificarPermiso("vacaciones.ver_menu");
     ?>
     <!-- SweetAlert2 CSS -->
     <script src="<?= SWEETALERT ?>"></script>
@@ -20,7 +22,7 @@
 </head>
 
 <body>
-    <?php include "../../public/views/navbar.php" ?>
+    <?php include "../../navbar/navbar.php" ?>
 
     <div class="container kardex-container">
         <!-- Navegación Superior / Acciones -->
@@ -199,7 +201,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="desglose-separator"></div>
 
                 <!-- Resumen de Pago -->

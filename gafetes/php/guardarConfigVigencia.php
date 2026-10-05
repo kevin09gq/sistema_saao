@@ -5,7 +5,7 @@ ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
 // Incluir archivo de configuración
-require_once('../config_vigencia.php');
+require_once('config_vigencia.php');
 
 // Establecer el tipo de contenido como JSON
 header('Content-Type: application/json');
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $config_content .= "}\n";
     
     // Ruta del archivo de configuración
-    $file_path = '../config_vigencia.php';
+    $file_path = 'config_vigencia.php';
     
     // Intentar guardar el archivo
     if (file_put_contents($file_path, $config_content) !== false) {

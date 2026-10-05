@@ -263,6 +263,7 @@ function llenar_resultados_historial() {
     // COSAS PARA LA SECCION DE LAS TARJETAS DE RESUMEN
     // --------------------------------------------------------
 
+
     // LIMPIAR EL TOTAL DE REJAS
     $('#total_rejas_visual').val("");
     // OBTENER EL TOTAL DE REJAS DE TODOS LOS CORTES
@@ -372,13 +373,13 @@ function llenar_resultados_historial() {
         let boton_estado = "";
         if (vale.estado) {
             boton_estado = `
-                    <button class="dropdown-item text-primary btn_cambiar_estado" data-id="${vale.id_corte}" data-estado="${vale.estado}">
+                    <button class="dropdown-item text-primary btn_cambiar_estado btn_cambiar_estado_corte" data-id="${vale.id_corte}" data-estado="${vale.estado}">
                         <i class="bi bi-x-circle me-2"></i>Cancelar
                     </button>
                     `;
         } else {
             boton_estado = `
-                    <button class="dropdown-item text-primary btn_cambiar_estado" data-id="${vale.id_corte}" data-estado="${vale.estado}">
+                    <button class="dropdown-item text-primary btn_cambiar_estado btn_cambiar_estado_corte" data-id="${vale.id_corte}" data-estado="${vale.estado}">
                         <i class="bi bi-check2-circle me-2"></i>Activar
                     </button>`;
         }
@@ -444,8 +445,21 @@ function llenar_resultados_historial() {
         $("#cuerpo_tabla_historial_corte").append(fila);
     });
 
+    // Obtener el total de rejas visual
+    const totalRejas = vales
+        .filter(ticket => ticket.seleccionado)
+        .reduce((total, ticket) => {
+            return total + ticket.rejas.reduce((suma, r) => suma + r.rejas, 0);
+        }, 0);
+
+    $('#total_rejas_visual').val(totalRejas === 0 ? "" : totalRejas);
+
     // RENDIZAR LA PAGINACION
     renderizarPaginacion(vales.length, paginaActual, limite);
+
+    // Aplicar permisos después de renderizar la tabla
+    aplicarPermisosEditarCortes();
+    aplicarPermisosCancelarCortes();
 
     // QUITAR LA CLASE D-NONE DE LA SECCION DE RESULTADOS
     $("#seccion_tabla_resultados").removeClass("d-none");
@@ -526,6 +540,9 @@ function cambiarPagina(nuevaPagina) {
 
 // EVENTOS PARA CONTROLAR LA PAGINACION Y EL LIMITE DE RESULTADOS POR PAGINA
 $(document).ready(function () {
+    //Funcion para aplicar permisos en la vista historial_cortes.php
+    aplicarPermisosAgregarCortes();
+    
     // Evento de límite por página
     $('#select_limite').on('change', function () {
         $('#pagina-actual').data('pagina', 1);

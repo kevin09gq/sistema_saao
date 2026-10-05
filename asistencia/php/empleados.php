@@ -1,5 +1,5 @@
 <?php
-include("../../conexion/conexion.php");
+require_once __DIR__ . "/../../conexion/conexion.php";
 
 /** @var mysqli $conexion */
 $action = $_POST['action'] ?? '';
@@ -36,7 +36,7 @@ function obtenerEmpleados($conexion)
             LEFT JOIN departamentos d ON e.id_departamento = d.id_departamento
             LEFT JOIN areas a ON e.id_area = a.id_area
             WHERE e.id_status = 1
-            ORDER BY e.clave_empleado ASC";
+            ORDER BY CONCAT(e.nombre, ' ', e.ap_paterno, ' ', e.ap_materno) ASC";
 
     $result = mysqli_query($conexion, $sql);
 

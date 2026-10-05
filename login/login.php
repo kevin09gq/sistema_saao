@@ -3,16 +3,20 @@
 
 <head>
     <?php
-    include "../config/config.php";
+    
+    include "../public/php/config.php";
+
+    include "../public/php/verificarSesion.php";
+
     verificarNoSesion(); // Si ya inició sesión, redirigir al inicio
+
     ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CITRICOS SAAO - Iniciar Sesión</title>
     <link rel="icon" href="<?= ICONO_SISTEMA ?>" />
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
-    <link rel="stylesheet" href="login.css">
-    <!-- Librería SweetAlert2 -->
+    <link rel="stylesheet" href="css/login.css">
     <script src="<?= SWEETALERT ?>"></script>
 </head>
 
@@ -65,7 +69,7 @@
             <h2>Recuperar Contraseña</h2>
             <p class="form-description">Te enviaremos un enlace para restablecer tu contraseña</p>
 
-            <form class="login-form" action="recuperar_password.php" method="POST">
+            <form class="login-form" action="php/recuperar_password.php" method="POST">
                 <div class="form-group">
                     <div class="input-group">
                         <i class="bi bi-envelope-at"></i>
@@ -164,7 +168,7 @@
     </script>
 
     <!-- Validación de los formularios -->
-    <script src="ValidarCredenciales.js"></script>
+    <script src="js/ValidarCredenciales.js"></script>
 </body>
 
 </html>

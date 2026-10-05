@@ -51,7 +51,7 @@
                             <div class="row g-3">
 
                                 <!-- Fecha Alta Empresa -->
-                                <div class="col-md-6">
+                                <div class="col-md-6" id="fechaAltaEmpresaContainer">
 
                                     <label
                                         for="editarFechaAltaEmpresa"
@@ -78,7 +78,7 @@
 
 
                                 <!-- Fecha Alta IMSS -->
-                                <div class="col-md-6">
+                                <div class="col-md-6" id="fechaAltaImssContainer">
 
                                     <label
                                         for="editarFechaAltaImss"
@@ -116,7 +116,7 @@
                 <!-- HISTORIAL DE REINGRESOS -->
                 <!-- ========================================= -->
 
-                <div class="card border-0 bg-light">
+                <div class="card border-0 bg-light" id="historialReingresosContainer">
 
                     <div class="card-body">
 
@@ -129,6 +129,7 @@
                             <button
                                 type="button"
                                 class="btn btn-sm btn-primary"
+                                id="btnActualizarHistorialReingresos"
                                 onclick="abrirModalNuevoReingreso()">
                                 <i class="bi bi-plus-lg me-1"></i>
                                 Nuevo reingreso
@@ -343,5 +344,3 @@
     </div>
 
 </div>
-
-

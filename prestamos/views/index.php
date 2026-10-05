@@ -1,6 +1,12 @@
 <?php
-include __DIR__ . "/../../config/config.php";
+
+require_once __DIR__ . "/../../public/php/config.php";
+
+require_once __DIR__ . "/../../public/php/verificarSesion.php";
+
 verificarSesion();
+
+verificarPermiso("prestamos.ver_menu");
 ?>
 
 <!DOCTYPE html>
@@ -33,7 +39,7 @@ verificarSesion();
 
 <body class="bg-body-tertiary">
 
-    <?php include __DIR__ . '/../../public/views/navbar.php'; ?>
+    <?php include __DIR__ . '/../../navbar/navbar.php'; ?>
 
     <main>
 
@@ -77,7 +83,7 @@ verificarSesion();
 
                         <!-- Botón para nuevo préstamo -->
                         <div class="col-12 col-md-2 text-md-end d-grid d-md-flex">
-                            <a href="nuevo.php" class="btn btn-primary w-100 w-md-auto shadow-sm" id="link-nuevo-prestamo">
+                            <a href="nuevo.php" class="btn btn-primary w-100 w-md-auto shadow-sm" id="link-nuevo-prestamo" hidden>
                                 <i class="bi bi-plus-circle"></i> Nuevo Prestamo
                             </a>
                         </div>
@@ -147,9 +153,16 @@ verificarSesion();
     <!-- Bootstrap JS -->
     <script src="<?= BOOTSTRAP_JS ?>"></script>
     <script src="<?= SWEETALERT ?>"></script>
+    <script src="<?= PERMISOS_JS ?>"></script>
+
+     <script>
+        // Pasar permisos de PHP a JavaScript
+        const permisosUsuario = <?php echo json_encode($_SESSION["permisos"] ?? []); ?>;
+    </script>
 
     <script src="../js/index.js"></script>
     <script src="../js/generar_reportes.js"></script>
+    <script src="../js/permisos.js"></script>
 
 </body>
 

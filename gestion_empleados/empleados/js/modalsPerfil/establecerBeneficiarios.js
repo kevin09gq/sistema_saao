@@ -7,7 +7,7 @@ $(document).ready(function () {
 
 //====================================================
 // FUNCIÓN PARA ABRIR EL MODAL DE BENEFICIARIOS
-// FUNCIÓN LLAMADA DESDE EL SWITCH DE ACCIONES 
+// FUNCIÓN LLAMADA DESDE EL SWITCH DE ACCIONES
 //====================================================
 
 function abrirModalBeneficiarios(idEmpleado) {
@@ -21,7 +21,10 @@ function abrirModalBeneficiarios(idEmpleado) {
     // 3. Obtener los beneficiarios del empleado
     obtenerBeneficiarios(idEmpleado);
 
-    // 4. Abrir el modal
+    // 4. Aplicar permisos de edición
+    aplicarPermisosBeneficiarios();
+
+    // 5. Abrir el modal
     $('#modalBeneficiarios').modal('show');
 }
 
@@ -154,6 +157,7 @@ function establecerBeneficiarios(beneficiarios) {
                 </td>
 
                 <td class="text-center">
+                    ${tienePermiso('empleados.editar_beneficiarios') ? `
                     <button
                         type="button"
                         class="btn btn-sm btn-outline-primary btn-editar-beneficiario"
@@ -169,6 +173,7 @@ function establecerBeneficiarios(beneficiarios) {
                         title="Eliminar">
                         <i class="bi bi-trash-fill"></i>
                     </button>
+                    ` : '<span class="text-muted">-</span>'}
                 </td>
             </tr>
         `);

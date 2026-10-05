@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-include("../../conexion/conexion.php");
+require_once __DIR__ . "/../../conexion/conexion.php";
 
 // Limpiar el buffer de salida para evitar corrupción de JSON
 ob_start();

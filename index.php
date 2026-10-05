@@ -1,6 +1,10 @@
 <?php
-include("config/config.php");
+include "public/php/config.php";
+
+include "public/php/verificarSesion.php";
+
 verificarSesion();
+
 
 $landingHeroImageRel = 'public/img/fondo3.png';
 $landingHeroImageFs = __DIR__ . '/public/img/fondo3.png';
@@ -26,7 +30,7 @@ if (file_exists($landingHeroImageFs)) {
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="public/styles/main.css?v=<?= filemtime(__DIR__ . '/public/styles/main.css') ?>">
-    <link rel="stylesheet" href="public/styles/notificacion.css?v=<?= filemtime(__DIR__ . '/public/styles/notificacion.css') ?>">
+    <link rel="stylesheet" href="public/navbar/css/notificaciones.css?v=<?= filemtime(__DIR__ . '/navbar/css/notificaciones.css') ?>">
    
     <!-- Iconos Bootstrap -->
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
@@ -36,7 +40,7 @@ if (file_exists($landingHeroImageFs)) {
 
 <body class="landing-index">
     
-    <?php include("public/views/navbar.php"); ?>
+    <?php include "navbar/navbar.php"; ?>
 
     <section class="landing-hero">
         <div class="container">

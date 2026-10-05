@@ -35,34 +35,6 @@ function getTabulador() {
 }
 
 //===========================================================
-// FUNCION PARA OBTENER EL SALARIO DIARIO DE UN EMPLEADO
-// DIRECTAMENTE DEL SERVIDOR
-//===========================================================
-
-function obtenerSalarioDiarioEmpleado(idEmpleado) {
-    var salarioDiario = 0;
-    $.ajax({
-        url: '../php/infoDepartamentos.php',
-        type: 'POST',
-        async: false,
-        data: {
-            accion: 'obtenerSueldoDiario',
-            empleados: JSON.stringify([{ id_empleado: idEmpleado }])
-        },
-        dataType: 'json',
-        success: function (respuesta) {
-            if (respuesta && respuesta.length > 0) {
-                salarioDiario = parseFloat(respuesta[0].salario_diario || 0);
-            }
-        },
-        error: function (xhr, status, error) {
-            console.error("Error al obtener el salario diario:", error);
-        }
-    });
-    return salarioDiario;
-}
-
-//===========================================================
 // FUNCION PARA ESTABLECER EL SUELDO NETO DE UN EMPLEADO
 // DE ACUERDO A LOS MINUTOS TRABAJADOS Y EL TABULADOR
 //===========================================================
@@ -75,7 +47,6 @@ function establecerSueldoNeto(empleado, editarHistoriales) {
         // Si tiene sueldo base, no se hace nada, solo calcular el sueldo por horas extra si es necesario
         calcularSueldoHorasExtra(empleado);
 
-        // Si es true se crean los historiales de olvidos de checador e inasistencias
         if (editarHistoriales) {
             // Establecer historial de olvidos de checador
             crearHistorialOlvidosChecador(empleado);
@@ -86,51 +57,6 @@ function establecerSueldoNeto(empleado, editarHistoriales) {
 
         return;
 
-    }
-
-    // Verificar si el empleado tiene sueldo diario asignado
-    if (empleado.sueldo_diario) {
-
-        // 1. Obtener el salario diario directamente del servidor
-        var salarioDiario = obtenerSalarioDiarioEmpleado(empleado.id_empleado);
-
-        // 2. Calcular los días trabajados y sueldo neto
-      
-        calcularDiasTrabajados(empleado, salarioDiario);
-        
-
-        // 3. Reiniciar incentivo si tiene sueldo diario
-        empleado.incentivo = 0;
-
-        // 4. Reiniciar horas extra y minutos extras
-        empleado.horas_extra = 0;
-        empleado.minutos_extras_trabajados = 0;
-
-        // 5. Si se requiere editar los historiales, se crean
-        if (editarHistoriales) {
-
-            // Establecer historial de olvidos de checador
-            crearHistorialOlvidosChecador(empleado);
-
-        }
-        return;
-    }
-
-
-    // Si los minutos trabajados son 0 o menores a 0 (o no existen)
-    if (!empleado.minutos_trabajados || empleado.minutos_trabajados <= 0) {
-
-        empleado.sueldo_neto = 0;
-        empleado.minutos_extras_trabajados = 0;
-        empleado.horas_extra = 0;
-
-        if (editarHistoriales) {
-            // Establecer historial de olvidos de checador
-            crearHistorialOlvidosChecador(empleado);
-            //crearHistorialInasistencias(empleado);
-        }
-
-        return;
     }
 
     // Verificar si el tabulador está cargado
@@ -191,7 +117,7 @@ function establecerSueldoNeto(empleado, editarHistoriales) {
 
                     //crearHistorialInasistencias(empleado);
                 }
-
+                
                 return;
             }
         }

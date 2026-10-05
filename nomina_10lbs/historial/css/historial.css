@@ -1,0 +1,528 @@
+/* ==========================================================================
+   SISTEMA SAAO - MÓDULO DE HISTORIAL NÓMINA 10 LBS
+   Hoja de estilos: historial.css
+   Diseño basado en empleados.css (Limpio, Moderno y Funcional)
+   Estilos limitados a la vista historial_10lbs
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   0. TIPOGRAFÍA Y FUENTES EXTERNAS
+   -------------------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* --------------------------------------------------------------------------
+   1. VARIABLES GLOBALES (PALETA DE COLORES Y SOMBRAS)
+   -------------------------------------------------------------------------- */
+:root {
+    /* Paleta de Verdes (Identidad Institucional SAAO) */
+    --primary-green: #2d6a4f;      /* Verde principal para botones y acentos destacados */
+    --accent-green:  #1b4332;      /* Verde oscuro para estados hover y énfasis */
+    --soft-green:    #95d5b2;      /* Verde medio para bordes activos y focos */
+    --light-green:   #d8f3dc;      /* Verde suave para fondos claros, píldoras y selecciones */
+    --hover-green:   #e8f7ee;      /* Verde ultraligero para filas de tabla al pasar el mouse */
+
+    /* Colores Neutros y Fondo */
+    --bg-gray:       #f8f9fa;      /* Fondo general de la página */
+    --border-color:  #e9ecef;      /* Color estándar de bordes para tarjetas e inputs */
+    --text-main:     #343a40;      /* Color principal de texto (alta legibilidad) */
+    --text-muted:    #6c757d;      /* Texto secundario para etiquetas, subtítulos y fechas */
+    --white:         #ffffff;      /* Blanco puro para tarjetas y contenedores */
+
+    /* Estados Adicionales (Alertas / Badges) */
+    --status-active-bg:   #eefdf3; /* Fondo suave para estado activo */
+    --status-active-txt:  #1e7e34; /* Texto para estado activo */
+    --status-inactive-bg: #fef2f2; /* Fondo suave para inactivo */
+    --status-inactive-txt:#dc2626; /* Texto para inactivo */
+    --status-danger-bg:   #fef2f2; /* Fondo de advertencia/peligro */
+    --status-danger-txt:  #dc2626; /* Texto de advertencia/peligro */
+
+    /* Elevaciones y Sombras */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+    /* Radios de redondeo */
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   2. ESTILOS GENERALES - LIMITADOS A HISTORIAL
+   -------------------------------------------------------------------------- */
+.container-fluid {
+    background-color: var(--bg-gray);
+    color: var(--text-main);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* --------------------------------------------------------------------------
+   3. TARJETAS Y CONTENEDORES (CARDS) - HISTORIAL
+   -------------------------------------------------------------------------- */
+.container-fluid .card {
+    background-color: var(--white);
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.container-fluid .card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+/* Cabecera y pie de tarjeta */
+.container-fluid .card-header {
+    background-color: var(--white) !important;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 1.25rem;
+    border-top-left-radius: var(--radius-lg) !important;
+    border-top-right-radius: var(--radius-lg) !important;
+}
+
+.container-fluid .card-footer {
+    background-color: var(--white) !important;
+    border-top: 1px solid var(--border-color);
+    padding: 0.85rem 1.25rem;
+    border-bottom-left-radius: var(--radius-lg) !important;
+    border-bottom-right-radius: var(--radius-lg) !important;
+}
+
+/* --------------------------------------------------------------------------
+   4. SECCIÓN DE FILTROS Y FORMULARIOS - HISTORIAL
+   -------------------------------------------------------------------------- */
+/* Etiquetas de filtros y formularios */
+.container-fluid .form-label {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 0.4rem;
+}
+
+/* Controles de entrada (Inputs y Selects) */
+.container-fluid .form-control,
+.container-fluid .form-select {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-main);
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+    background-color: var(--white);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Efecto de foco con anillo verde suave */
+.container-fluid .form-control:focus,
+.container-fluid .form-select:focus {
+    outline: none;
+    border-color: var(--soft-green);
+    box-shadow: 0 0 0 3px rgba(149, 213, 178, 0.35);
+}
+
+/* Placeholder discreto */
+.container-fluid .form-control::placeholder {
+    color: #adb5bd;
+    font-size: 0.85rem;
+}
+
+/* Input group */
+.container-fluid .input-group-text {
+    background-color: var(--white);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+}
+
+.container-fluid .input-group:focus-within .input-group-text {
+    border-color: var(--soft-green);
+    color: var(--primary-green);
+}
+
+/* --------------------------------------------------------------------------
+   5. BOTONES DE ACCIÓN - HISTORIAL
+   -------------------------------------------------------------------------- */
+/* Botón principal verde */
+.container-fluid .btn-success {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+    color: var(--white);
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    padding: 0.45rem 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+}
+
+.container-fluid .btn-success:hover,
+.container-fluid .btn-success:focus,
+.container-fluid .btn-success:active {
+    background-color: var(--accent-green) !important;
+    border-color: var(--accent-green) !important;
+    color: var(--white) !important;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Botón secundario con borde verde */
+.container-fluid .btn-outline-success {
+    background-color: var(--white);
+    border: 1px solid var(--primary-green);
+    color: var(--primary-green);
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    padding: 0.45rem 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+}
+
+.container-fluid .btn-outline-success:hover,
+.container-fluid .btn-outline-success:focus,
+.container-fluid .btn-outline-success:active {
+    background-color: var(--light-green) !important;
+    border-color: var(--primary-green) !important;
+    color: var(--accent-green) !important;
+}
+
+/* Botón de regreso */
+.container-fluid .btn-back {
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.container-fluid .btn-back:hover {
+    background: var(--bg-gray);
+    color: var(--primary-green);
+    border-color: var(--soft-green);
+}
+
+/* Botón outline-secondary */
+.container-fluid .btn-outline-secondary {
+    border-color: var(--border-color);
+    color: var(--text-muted);
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
+}
+
+.container-fluid .btn-outline-secondary:hover {
+    background-color: var(--hover-green);
+    border-color: var(--soft-green);
+    color: var(--primary-green);
+}
+
+/* Botón primary */
+.container-fluid .btn-primary {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+    color: var(--white);
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
+}
+
+.container-fluid .btn-primary:hover {
+    background-color: var(--accent-green);
+    border-color: var(--accent-green);
+    color: var(--white);
+    box-shadow: var(--shadow-sm);
+}
+
+/* --------------------------------------------------------------------------
+   6. TABLA DE HISTORIAL (ESTILO KARDEX) - HISTORIAL
+   -------------------------------------------------------------------------- */
+/* Contenedor responsivo */
+.container-fluid .table-responsive {
+    border-radius: 0;
+    min-height: 320px;
+}
+
+/* Tabla base */
+.container-fluid .table {
+    margin-bottom: 0;
+    color: var(--text-main);
+}
+
+/* Encabezado de tabla con estilo refinado */
+.container-fluid .table thead th,
+.container-fluid .table-success th {
+    background-color: #f8fbf9 !important;
+    color: var(--primary-green) !important;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.9rem 1rem;
+    border-bottom: 2px solid var(--border-color);
+    border-top: none;
+    vertical-align: middle;
+}
+
+/* Celdas del cuerpo */
+.container-fluid .table tbody td {
+    padding: 0.95rem 1rem;
+    vertical-align: middle;
+    font-size: 0.885rem;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--white);
+    transition: background-color 0.15s ease;
+}
+
+/* Efecto hover en filas */
+.container-fluid .table-hover tbody tr:hover td {
+    background-color: var(--hover-green);
+}
+
+/* Quitar borde en la última fila */
+.container-fluid .table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* --------------------------------------------------------------------------
+   7. INSIGNIAS Y BADGES DE ESTADO - HISTORIAL
+   -------------------------------------------------------------------------- */
+/* Estilo base refinado para badges */
+.container-fluid .badge {
+    padding: 0.35rem 0.75rem;
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.2px;
+}
+
+/* Badge Activo / Éxito (Verde suave) */
+.container-fluid .table .badge.bg-success,
+.container-fluid .card .badge.bg-success,
+.container-fluid .modal .badge.bg-success {
+    background-color: var(--status-active-bg) !important;
+    color: var(--status-active-txt) !important;
+    border: 1px solid rgba(30, 126, 52, 0.2);
+}
+
+/* Badge Inactivo / Secundario (Gris suave) */
+.container-fluid .table .badge.bg-secondary,
+.container-fluid .card .badge.bg-secondary,
+.container-fluid .modal .badge.bg-secondary {
+    background-color: var(--status-inactive-bg) !important;
+    color: var(--status-inactive-txt) !important;
+    border: 1px solid var(--border-color);
+}
+
+/* Badge de Advertencia (Amarillo/Ámbar) */
+.container-fluid .table .badge.bg-warning,
+.container-fluid .card .badge.bg-warning,
+.container-fluid .modal .badge.bg-warning {
+    background-color: #fff4e5 !important;
+    color: #d97706 !important;
+    border: 1px solid rgba(217, 119, 6, 0.2);
+}
+
+/* Badge de Peligro / Vencido (Rojo suave) */
+.container-fluid .table .badge.bg-danger,
+.container-fluid .card .badge.bg-danger,
+.container-fluid .modal .badge.bg-danger {
+    background-color: var(--status-danger-bg) !important;
+    color: var(--status-danger-txt) !important;
+    border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+/* --------------------------------------------------------------------------
+   8. MENÚ DESPLEGABLE DE ACCIONES EN TABLA (DROPDOWN) - HISTORIAL
+   -------------------------------------------------------------------------- */
+/* Botón de 3 puntos (⋮) en la tabla */
+.container-fluid .table .dropdown .btn-light {
+    background-color: var(--white);
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-muted);
+    border-radius: var(--radius-md);
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    line-height: 1;
+    transition: all 0.2s ease;
+}
+
+.container-fluid .table .dropdown .btn-light:hover,
+.container-fluid .table .dropdown .btn-light:focus {
+    background-color: var(--light-green);
+    color: var(--primary-green);
+    border-color: var(--soft-green) !important;
+}
+
+/* Caja del menú flotante de la tabla */
+.container-fluid .table .dropdown-menu {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    padding: 0.4rem;
+    font-size: 0.85rem;
+}
+
+/* Opciones del menú de la tabla */
+.container-fluid .table .dropdown-item {
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.85rem;
+    color: var(--text-main);
+    font-weight: 500;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.container-fluid .table .dropdown-item:hover {
+    background-color: var(--light-green);
+    color: var(--primary-green);
+}
+
+/* Opción de acción crítica/eliminar/desactivar en la tabla */
+.container-fluid .table .dropdown-item.text-danger:hover {
+    background-color: var(--status-danger-bg);
+    color: var(--status-danger-txt) !important;
+}
+
+/* Opción de activar en la tabla */
+.container-fluid .table .dropdown-item.text-success:hover {
+    background-color: var(--status-active-bg);
+    color: var(--status-active-txt) !important;
+}
+
+/* Divisor sutil en menú de tabla */
+.container-fluid .table .dropdown-divider {
+    border-top: 1px solid var(--border-color);
+    margin: 0.35rem 0;
+}
+
+/* --------------------------------------------------------------------------
+   9. PAGINACIÓN - HISTORIAL
+   -------------------------------------------------------------------------- */
+.container-fluid .pagination {
+    gap: 4px;
+}
+
+.container-fluid .page-link {
+    border-radius: var(--radius-sm) !important;
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    font-size: 0.825rem;
+    font-weight: 500;
+    padding: 0.35rem 0.75rem;
+    transition: all 0.2s ease;
+}
+
+/* Al pasar el cursor */
+.container-fluid .page-link:hover {
+    background-color: var(--light-green);
+    border-color: var(--soft-green);
+    color: var(--primary-green);
+}
+
+/* Página activa */
+.container-fluid .page-item.active .page-link,
+.container-fluid .page-link.bg-success {
+    background-color: var(--primary-green) !important;
+    border-color: var(--primary-green) !important;
+    color: var(--white) !important;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Páginas secundarias con clase text-success */
+.container-fluid .page-link.text-success {
+    color: var(--primary-green) !important;
+}
+
+/* Página deshabilitada */
+.container-fluid .page-item.disabled .page-link {
+    background-color: var(--bg-gray);
+    border-color: var(--border-color);
+    color: #adb5bd;
+}
+
+/* --------------------------------------------------------------------------
+   10. MODALES - HISTORIAL
+   -------------------------------------------------------------------------- */
+/* Estilos para habilitar scroll en modales con modal-dialog-scrollable */
+.modal-dialog-scrollable .modal-body {
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+}
+
+/* Modal content con borde redondeado */
+.modal-content {
+    border-radius: var(--radius-lg) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+/* Modal header verde */
+.modal-header.bg-primary {
+    background-color: var(--primary-green) !important;
+    border-bottom: 1px solid var(--soft-green) !important;
+}
+
+/* Modal body */
+.modal-body {
+    background-color: #f8fafc;
+}
+
+/* Modal footer */
+.modal-footer {
+    background-color: var(--white);
+    border-top: 1px solid var(--border-color);
+}
+
+/* Tablas dentro de modales */
+.modal .table thead th {
+    background-color: #f8fbf9 !important;
+    color: var(--primary-green) !important;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.9rem 1rem;
+    border-bottom: 2px solid var(--border-color);
+    border-top: none;
+    vertical-align: middle;
+}
+
+.modal .table tbody td {
+    padding: 0.95rem 1rem;
+    vertical-align: middle;
+    font-size: 0.885rem;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--white);
+    transition: background-color 0.15s ease;
+}
+
+.modal .table-hover tbody tr:hover td {
+    background-color: var(--hover-green);
+}
+
+/* --------------------------------------------------------------------------
+   11. ADAPTACIONES RESPONSIVAS (MÓVILES Y TABLETS) - HISTORIAL
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+    .container-fluid .card-header,
+    .container-fluid .card-footer {
+        padding: 0.75rem 1rem;
+    }
+
+    .container-fluid .table thead th,
+    .container-fluid .table tbody td {
+        padding: 0.75rem 0.6rem;
+    }
+}

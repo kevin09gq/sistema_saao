@@ -6,8 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tickets Manuales</title>
     <?php
-    include "../../config/config.php";
+    require_once __DIR__ . "/../../public/php/config.php";
+    require_once __DIR__ . "/../../public/php/verificarSesion.php";
     verificarSesion();
+    verificarPermiso("tickets_manuales.ver_menu");
     ?>
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
@@ -19,7 +21,7 @@
 </head>
 
 <body>
-    <?php include "../../public/views/navbar.php"; ?>
+    <?php require_once __DIR__ . "/../../navbar/navbar.php"; ?>
 
     <div class="tm-container">
         <div class="tm-header">

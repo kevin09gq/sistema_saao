@@ -1,0 +1,733 @@
+/* ==========================================================================
+   MÓDULO CASILLERO - ESTILOS PRINCIPALES
+   Diseño e identidad visual basados en "Actualizar Empleados" (empleados.css)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* --------------------------------------------------------------------------
+   1. VARIABLES GLOBALES (PALETA EXACTA DE ACTUALIZAR EMPLEADOS)
+   -------------------------------------------------------------------------- */
+:root {
+    /* Paleta Institucional SAAO */
+    --primary-green: #2d6a4f;
+    /* Verde institucional principal */
+    --accent-green: #1b4332;
+    /* Verde oscuro para hover y énfasis */
+    --soft-green: #95d5b2;
+    /* Verde medio para bordes activos y focos */
+    --light-green: #d8f3dc;
+    /* Verde suave para píldoras y selecciones */
+    --hover-green: #e8f7ee;
+    /* Verde ultraligero para hover */
+
+    /* Colores Neutros y Fondo */
+    --bg-gray: #f8f9fa;
+    /* Fondo general de la página */
+    --border-color: #e9ecef;
+    /* Color estándar de bordes */
+    --text-main: #343a40;
+    /* Color principal de texto */
+    --text-muted: #6c757d;
+    /* Texto secundario */
+    --white: #ffffff;
+    /* Blanco puro */
+
+    /* Estados de Casillero */
+    --color-disponible: #2d6a4f;
+    /* Verde institucional sólido */
+    --color-parcial: #d97706;
+    /* Ámbar / amarillo 1/2 ocupado */
+    --color-ocupado: #dc2626;
+    /* Rojo 2/2 ocupado */
+
+    /* Elevaciones y Sombras */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+    /* Radios */
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-pill: 20px;
+}
+
+/* --------------------------------------------------------------------------
+   2. BASE
+   -------------------------------------------------------------------------- */
+body {
+    background-color: var(--bg-gray);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--text-main);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* --------------------------------------------------------------------------
+   3. ENCABEZADO DEL MÓDULO
+   -------------------------------------------------------------------------- */
+.module-header {
+    display: flex;
+    align-items: center;
+}
+
+.module-icon {
+    width: 52px;
+    height: 52px;
+    background: linear-gradient(135deg, var(--primary-green), var(--accent-green));
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    font-size: 1.5rem;
+    box-shadow: 0 4px 14px rgba(45, 106, 79, 0.28);
+    flex-shrink: 0;
+}
+
+.module-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1.2;
+}
+
+.module-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   4. BARRA DE HERRAMIENTAS
+   -------------------------------------------------------------------------- */
+.toolbar-card {
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 0.875rem 1.25rem;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Búsqueda */
+.search-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.search-icon {
+    position: absolute;
+    left: 10px;
+    color: #94a3b8;
+    pointer-events: none;
+    font-size: 0.9rem;
+    z-index: 1;
+}
+
+.search-input {
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    padding: 0.45rem 2.6rem 0.45rem 2rem;
+    font-size: 0.875rem;
+    outline: none;
+    width: 230px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    background: #ffffff;
+    color: var(--text-main);
+}
+
+.search-input:focus {
+    border-color: var(--soft-green);
+    box-shadow: 0 0 0 3px rgba(149, 213, 178, 0.35);
+    background: var(--white);
+}
+
+.btn-clear-search {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: color 0.15s ease;
+    padding: 0;
+}
+
+.btn-clear-search:hover {
+    color: #ef4444;
+}
+
+/* --------------------------------------------------------------------------
+   5. FILTROS (ESTILO PÍLDORAS IDENTICO A ACTUALIZAR EMPLEADOS)
+   -------------------------------------------------------------------------- */
+.filter-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    padding: 0;
+}
+
+.filter-btn {
+    border: 1px solid var(--border-color);
+    background-color: var(--white);
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.825rem;
+    padding: 0.4rem 1rem;
+    border-radius: var(--radius-pill);
+    /* Estilo píldora como en empleados.php */
+    transition: all 0.2s ease;
+    cursor: pointer;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+}
+
+.filter-btn:hover {
+    background-color: var(--light-green);
+    color: var(--primary-green);
+    border-color: var(--soft-green);
+}
+
+/* Filtro activo: Verde institucional (#2d6a4f) con texto blanco */
+.filter-btn.active {
+    background-color: var(--primary-green) !important;
+    border-color: var(--primary-green) !important;
+    color: var(--white) !important;
+    box-shadow: var(--shadow-sm);
+    font-weight: 600;
+}
+
+.filter-disponible.active {
+    background-color: var(--primary-green) !important;
+    border-color: var(--primary-green) !important;
+    color: var(--white) !important;
+}
+
+.filter-parcial.active {
+    background-color: var(--color-parcial) !important;
+    border-color: var(--color-parcial) !important;
+    color: var(--white) !important;
+}
+
+.filter-completo.active {
+    background-color: var(--color-ocupado) !important;
+    border-color: var(--color-ocupado) !important;
+    color: var(--white) !important;
+}
+
+/* Badge contador */
+.badge-count {
+    background-color: var(--light-green);
+    border: 1px solid var(--soft-green);
+    color: var(--accent-green);
+    border-radius: var(--radius-pill);
+    padding: 0.4rem 0.9rem;
+    font-size: 0.825rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+/* Botón exportar Excel (estilo institucional) */
+.btn-export-excel {
+    background-color: var(--white);
+    border: 1px solid var(--primary-green);
+    color: var(--primary-green);
+    border-radius: var(--radius-md);
+    padding: 0.45rem 0.95rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+}
+
+.btn-export-excel:hover,
+.btn-export-excel:focus {
+    background-color: var(--light-green) !important;
+    border-color: var(--primary-green) !important;
+    color: var(--accent-green) !important;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-export-excel:active {
+    background-color: #c7eed0 !important;
+}
+
+/* Botón agregar casillero */
+.btn-add-main {
+    background-color: var(--primary-green);
+    border: 1px solid var(--primary-green);
+    color: var(--white);
+    border-radius: var(--radius-md);
+    padding: 0.45rem 1rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+}
+
+.btn-add-main:hover,
+.btn-add-main:focus {
+    background-color: var(--accent-green) !important;
+    border-color: var(--accent-green) !important;
+    color: var(--white) !important;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-add-main:active {
+    background-color: #143326 !important;
+    border-color: #143326 !important;
+}
+
+/* --------------------------------------------------------------------------
+   6. LEYENDA DE ESTADOS
+   -------------------------------------------------------------------------- */
+.legend-bar {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.825rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.legend-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.legend-disponible {
+    background: var(--primary-green);
+    border: 1px solid var(--accent-green);
+}
+
+.legend-parcial {
+    background: var(--color-parcial);
+    border: 1px solid #b45309;
+}
+
+.legend-ocupado {
+    background: var(--color-ocupado);
+    border: 1px solid #b91c1c;
+}
+
+/* --------------------------------------------------------------------------
+   7. PANEL Y GRID DE CASILLEROS
+   -------------------------------------------------------------------------- */
+.casilleros-panel {
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 1.25rem;
+    min-height: 200px;
+    box-shadow: var(--shadow-sm);
+}
+
+#contenedor-casilleros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    min-height: 120px;
+}
+
+/* Estado de carga */
+.loading-state {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 1rem;
+    color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   8. CASILLERO ITEMS (COLORES VIBRANTES INSTITUCIONALES)
+   -------------------------------------------------------------------------- */
+.casillero-item {
+    width: 95px;
+    height: 95px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 6px 4px;
+    box-sizing: border-box;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    user-select: none;
+    color: var(--white);
+}
+
+.casillero-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.14);
+    filter: brightness(0.96);
+}
+
+.casillero-item:active {
+    transform: translateY(0);
+    filter: brightness(0.92);
+}
+
+/* Casillero Disponible: Verde institucional de Actualizar Empleados (#2d6a4f) */
+.casillero-item.disponible {
+    background-color: var(--primary-green);
+    border: 1.5px solid var(--accent-green);
+    color: var(--white);
+}
+
+.casillero-item.disponible .casillero-estado {
+    color: var(--light-green);
+}
+
+/* Casillero Parcial (1/2 ocupado) */
+.casillero-item.parcial {
+    background-color: var(--color-parcial);
+    border: 1.5px solid #b45309;
+    color: var(--white);
+}
+
+.casillero-item.parcial .casillero-estado {
+    color: #fef3c7;
+}
+
+/* Casillero Ocupado (2/2 ocupado) */
+.casillero-item.ocupado {
+    background-color: var(--color-ocupado);
+    border: 1.5px solid #b91c1c;
+    color: var(--white);
+}
+
+.casillero-item.ocupado .casillero-estado {
+    color: #fee2e2;
+}
+
+/* Partes del casillero */
+.casillero-numero {
+    font-weight: 700;
+    font-size: 1.25rem;
+    line-height: 1;
+    margin-bottom: 4px;
+    color: var(--white);
+}
+
+.casillero-estado {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    line-height: 1.1;
+    font-weight: 600;
+}
+
+.casillero-empleado {
+    font-size: 0.65rem;
+    line-height: 1.2;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-top: 3px;
+    padding: 1px 4px;
+    font-weight: 600;
+    color: var(--white);
+    background: rgba(0, 0, 0, 0.22);
+    border-radius: 4px;
+}
+
+/* --------------------------------------------------------------------------
+   9. PAGINACIÓN
+   -------------------------------------------------------------------------- */
+.paginacion-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.pagination .page-link {
+    color: var(--primary-green);
+    border: none;
+    background: none;
+    font-weight: 500;
+    border-radius: var(--radius-sm) !important;
+}
+
+.pagination .active .page-link {
+    background: var(--primary-green) !important;
+    color: var(--white) !important;
+    border-color: var(--primary-green) !important;
+}
+
+.pagination .page-link:hover {
+    background: var(--light-green);
+    color: var(--accent-green);
+}
+
+/* --------------------------------------------------------------------------
+   10. ESTILOS DE MODALES (Bootstrap + Personalización)
+   -------------------------------------------------------------------------- */
+
+/* Tabs personalizados con verde institucional */
+.nav-tabs .nav-link {
+    color: var(--text-muted);
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-weight: 500;
+    padding: 0.75rem 1rem;
+    transition: all 0.2s ease;
+}
+
+.nav-tabs .nav-link:hover {
+    color: var(--primary-green);
+    background-color: transparent !important;
+    border-bottom: 3px solid transparent !important;
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--primary-green) !important;
+    background-color: transparent !important;
+    border-bottom-color: var(--primary-green) !important;
+    font-weight: 600;
+}
+
+/* Botón de guardar cambios con verde institucional */
+#btnGuardarCambios {
+    background-color: var(--primary-green) !important;
+    border-color: var(--primary-green) !important;
+    color: var(--white) !important;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+#btnGuardarCambios:hover {
+    background-color: var(--accent-green) !important;
+    border-color: var(--accent-green) !important;
+    color: var(--white) !important;
+}
+
+/* Mejorar apariencia del botón de cerrar (X) del modal */
+.modal-header .btn-close {
+    opacity: 0.5;
+    transition: all 0.2s ease;
+    filter: none;
+    background-size: 1.25em;
+}
+
+.modal-header .btn-close:hover {
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.1);
+    transform: rotate(90deg);
+}
+
+/* Mejorar apariencia del botón de limpiar búsqueda */
+#btnLimpiarBusquedaEmpleado {
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+    color: #6c757d;
+}
+
+#btnLimpiarBusquedaEmpleado:hover {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    color: #dc3545;
+    transform: scale(1.05);
+}
+
+/* --------------------------------------------------------------------------
+   11. RESULTADOS DE BÚSQUEDA DE EMPLEADOS
+   -------------------------------------------------------------------------- */
+.resultados-busqueda {
+    max-height: 280px;
+    overflow-y: auto;
+    border-radius: var(--radius-md);
+}
+
+.empty-search-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    color: #94a3b8;
+    text-align: center;
+}
+
+.empty-search-state i {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.6;
+}
+
+.empty-search-state p {
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+/* Cards de empleados en modal */
+.empleado-card-assigned {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.empleado-card-assigned .empleado-info .nombre {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.875rem;
+}
+
+.empleado-card-assigned .empleado-info .detalle {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.empleado-result-item {
+    background: #f8fafc;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.6rem 0.875rem;
+    margin-bottom: 0.375rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.empleado-result-item:hover {
+    background: var(--hover-green);
+    border-color: var(--soft-green);
+}
+
+.empleado-result-item .nombre {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #1e293b;
+}
+
+.empleado-result-item .detalle {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Estado sin casilleros */
+.empty-casilleros {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 3rem 1rem;
+    color: #94a3b8;
+    text-align: center;
+}
+
+.empty-casilleros i {
+    font-size: 3rem;
+    opacity: 0.5;
+    margin-bottom: 0.75rem;
+}
+
+.empty-casilleros p {
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* Tarjetas de opciones para exportar a Excel */
+.export-option-card {
+    border: 1px solid var(--border-color);
+    background-color: var(--white);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
+    transition: all 0.15s ease;
+    cursor: pointer;
+}
+
+.export-option-card:hover {
+    border-color: var(--soft-green);
+    background-color: var(--hover-green);
+}
+
+.export-option-card.active {
+    border-color: var(--primary-green);
+    background-color: #f0fdf4;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* --------------------------------------------------------------------------
+   11. RESPONSIVE
+   -------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+    .casillero-item {
+        width: 80px;
+        height: 80px;
+    }
+
+    .casillero-numero {
+        font-size: 1rem;
+    }
+
+    .casillero-estado {
+        font-size: 0.58rem;
+    }
+
+    .casillero-empleado {
+        font-size: 0.58rem;
+    }
+
+    .search-input {
+        width: 160px;
+    }
+
+    .module-title {
+        font-size: 1.2rem;
+    }
+}

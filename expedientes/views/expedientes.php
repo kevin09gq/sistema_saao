@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <?php
-include("../../config/config.php");
+require_once __DIR__ . "/../../public/php/config.php";
+require_once __DIR__ . "/../../public/php/verificarSesion.php";
 verificarSesion();
+verificarPermiso("expedientes.ver_menu");
 ?>
 <html lang="es">
 
@@ -18,9 +20,9 @@ verificarSesion();
 
 <body class="bg-body-tertiary expedientes-page">
 
-    <?php include("../../public/views/navbar.php"); ?>
+    <?php require_once __DIR__ . "/../../navbar/navbar.php"; ?>
 
-    <div class="container py-4">
+    <div class="container-fluid py-4">
 
         <!-- Header minimalista -->
         <div class="exp-page-header">

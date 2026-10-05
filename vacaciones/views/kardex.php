@@ -7,8 +7,10 @@
     <title>Kardex de Vacaciones</title>
     
     <?php
-    include "../../config/config.php";
+    require_once __DIR__ . '/../../public/php/config.php';
+    require_once __DIR__ . '/../../public/php/verificarSesion.php';
     verificarSesion();
+    verificarPermiso("vacaciones.ver_menu");
     ?>
        <link rel="icon" href="<?= ICONO_SISTEMA ?>" />
 
@@ -21,7 +23,7 @@
 </head>
 
 <body>
-    <?php include "../../public/views/navbar.php" ?>
+    <?php require_once __DIR__ . '/../../navbar/navbar.php' ?>
 
     <div class="container kardex-container">
         <!-- Navegación Superior / Acciones -->
