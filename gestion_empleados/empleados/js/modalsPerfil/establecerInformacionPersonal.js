@@ -4,6 +4,15 @@
 //====================================================
 
 async function abrirModalEditarEmpleado(idEmpleado) {
+    // Obtener y mostrar el nombre del empleado en el pie del modal
+    const emp = (typeof empleados !== 'undefined' && Array.isArray(empleados))
+        ? empleados.find(e => e.id_empleado == idEmpleado)
+        : null;
+    const nombreCompleto = emp
+        ? `${emp.nombre || ''} ${emp.ap_paterno || ''} ${emp.ap_materno || ''}`.replace(/\s+/g, ' ').trim()
+        : '---';
+    $('#nombreEmpleadoModalInformacionPersonal').text(nombreCompleto);
+
     // 1. Cargar selects iniciales
     await cargarEmpresas();
     await cargarAreas();
@@ -21,7 +30,7 @@ async function abrirModalEditarEmpleado(idEmpleado) {
     // 5. Aplicar permisos de Salarios
     aplicarPermisosSalarios();
 
-    // 5. Abrir el modal
+    // 6. Abrir el modal
     $('#modalEditarEmpleado').modal('show');
 }
 
@@ -398,6 +407,12 @@ function establecerDatosPersonales(empleado) {
 
     // Establecer ID del empleado
     $('#formEditarEmpleado').data('id_empleado', empleado.id_empleado);
+
+    // Actualizar nombre en el pie del modal
+    if (empleado.nombre || empleado.ap_paterno) {
+        const nombreCompleto = `${empleado.nombre || ''} ${empleado.ap_paterno || ''} ${empleado.ap_materno || ''}`.replace(/\s+/g, ' ').trim();
+        $('#nombreEmpleadoModalInformacionPersonal').text(nombreCompleto);
+    }
 
     // Establecer Clave
     $('#editarClave').val(empleado.clave);

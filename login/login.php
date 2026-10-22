@@ -69,15 +69,15 @@
             <h2>Recuperar Contraseña</h2>
             <p class="form-description">Te enviaremos un enlace para restablecer tu contraseña</p>
 
-            <form class="login-form" action="php/recuperar_password.php" method="POST">
+            <form class="login-form" id="formRecuperarPassword" method="POST">
                 <div class="form-group">
                     <div class="input-group">
                         <i class="bi bi-envelope-at"></i>
-                        <input type="email" name="email" placeholder="Correo electrónico" required>
+                        <input type="email" id="inputEmailRecuperar" name="email" placeholder="Correo electrónico" required>
                     </div>
                 </div>
 
-                <button type="submit" class="login-button">Enviar Enlace de Recuperación</button>
+                <button type="submit" id="btnRecuperarPassword" class="login-button">Enviar Enlace de Recuperación</button>
             </form>
 
             <div class="form-footer">

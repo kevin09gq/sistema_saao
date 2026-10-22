@@ -41,8 +41,12 @@ function obtenerNotificaciones($conexion)
                  FROM historial_reingresos hr
                  WHERE hr.id_empleado = e.id_empleado),
                 e.fecha_alta_empresa
-            ) AS fecha_ingreso_final
+            ) AS fecha_ingreso_final,
+            d.nombre_departamento,
+            p.nombre_puesto
         FROM info_empleados e
+        LEFT JOIN departamentos d ON e.id_departamento = d.id_departamento
+        LEFT JOIN puestos_especiales p ON e.id_puestoEspecial = p.id_puestoEspecial
         WHERE e.id_status = 1
           AND e.fecha_alta_empresa IS NOT NULL
           AND CAST(e.fecha_alta_empresa AS CHAR) != '0000-00-00'
@@ -105,6 +109,8 @@ function obtenerNotificaciones($conexion)
             'id_empleado'       => $emp['id_empleado'],
             'clave_empleado'    => $emp['clave_empleado'],
             'nombre'            => $nombre,
+            'departamento'      => $emp['nombre_departamento'] ?? '',
+            'puesto'            => $emp['nombre_puesto'] ?? '',
             'fecha_aniversario' => $anivEsteAnio->format('Y-m-d'),
             'anios'             => $aniosCumple,
             'dias_diferencia'   => $difDias,
@@ -167,10 +173,135 @@ function obtenerNotificaciones($conexion)
         }
     }
 
-    // Ordenar: HOY primero, luego PROXIMO, luego RECIENTE, luego gafetes
-    // Pero mantenemos el orden original para lo que ya existía
-    $orden = ['HOY' => 0, 'PROXIMO' => 1, 'RECIENTE' => 2, 'GAFETE_VENCIDO' => 3, 'GAFETE_PROXIMO' => 4];
-    usort($notificaciones, fn($a, $b) => $orden[$a['tipo']] - $orden[$b['tipo']]);
+    // ======================================================
+    // NOTIFICACIONES DE CUMPLEAÑOS
+    // ======================================================
+    // Tipos de notificación:
+    //   CUMPLE_HOY      → el cumpleaños es exactamente hoy
+    //   CUMPLE_PROXIMO  → cumpleaños en los próximos 1 o 2 días
+    //   CUMPLE_RECIENTE → el cumpleaños fue hace 1 o 2 días
+    $sql_cumple = "
+        SELECT
+            e.id_empleado,
+            e.clave_empleado,
+            e.nombre,
+            e.ap_paterno,
+            e.ap_materno,
+            e.fecha_nacimiento,
+            d.nombre_departamento,
+            p.nombre_puesto
+        FROM info_empleados e
+        LEFT JOIN departamentos d ON e.id_departamento = d.id_departamento
+        LEFT JOIN puestos_especiales p ON e.id_puestoEspecial = p.id_puestoEspecial
+        WHERE e.id_status = 1
+          AND e.fecha_nacimiento IS NOT NULL
+          AND CAST(e.fecha_nacimiento AS CHAR) != '0000-00-00'
+          AND e.fecha_nacimiento >= '1900-01-01'
+        ORDER BY e.clave_empleado ASC
+    ";
+
+    $result_cumple = mysqli_query($conexion, $sql_cumple);
+    if ($result_cumple) {
+        $anioHoy = (int)$hoy->format('Y');
+
+        while ($emp = mysqli_fetch_assoc($result_cumple)) {
+            $fn = $emp['fecha_nacimiento'] ?? '';
+            if (empty($fn) || $fn === '0000-00-00' || $fn < '1900-01-01') continue;
+
+            try {
+                $fechaNac = new DateTime($fn);
+            } catch (Exception $e) {
+                continue;
+            }
+
+            $mesNac = (int)$fechaNac->format('n');
+            $diaNac = (int)$fechaNac->format('j');
+
+            // Evaluamos el año actual y adyacentes para cubrir cambios de año (ej. 31 Dic / 1 Ene)
+            $aniosEvaluar = [$anioHoy, $anioHoy - 1, $anioHoy + 1];
+            $mejorCumple = null;
+            $menorDiffDias = null;
+
+            foreach ($aniosEvaluar as $yr) {
+                $dia = $diaNac;
+                // Si nació el 29 de febrero y el año evaluado no es bisiesto, se celebra el 28 de febrero
+                if ($mesNac === 2 && $diaNac === 29 && !checkdate(2, 29, $yr)) {
+                    $dia = 28;
+                }
+
+                $candCumple = (new DateTime('today'))->setDate($yr, $mesNac, $dia);
+                // Diferencia firmada en días: positivo = futuro (próximo), negativo = pasado (reciente)
+                $diff = (int)$hoy->diff($candCumple)->format('%r%a');
+
+                if ($diff >= -2 && $diff <= 2) {
+                    if ($menorDiffDias === null || abs($diff) < abs($menorDiffDias)) {
+                        $menorDiffDias = $diff;
+                        $mejorCumple = $candCumple;
+                    }
+                }
+            }
+
+            if ($mejorCumple === null) {
+                continue;
+            }
+
+            // Calcular la edad que cumple/cumplió en este cumpleaños
+            $edadCumple = (int)$fechaNac->diff($mejorCumple)->y;
+            if ($edadCumple <= 0) continue;
+
+            $difAbs = abs($menorDiffDias);
+            if ($menorDiffDias === 0) {
+                $tipoCumple = 'CUMPLE_HOY';
+            } elseif ($menorDiffDias > 0) {
+                $tipoCumple = 'CUMPLE_PROXIMO';
+            } else {
+                $tipoCumple = 'CUMPLE_RECIENTE';
+            }
+
+            $nombre = trim($emp['nombre'] . ' ' . $emp['ap_paterno'] . ' ' . $emp['ap_materno']);
+
+            $notificaciones[] = [
+                'id_empleado'       => $emp['id_empleado'],
+                'clave_empleado'    => $emp['clave_empleado'],
+                'nombre'            => $nombre,
+                'departamento'      => $emp['nombre_departamento'] ?? '',
+                'puesto'            => $emp['nombre_puesto'] ?? '',
+                'fecha_cumpleanos'  => $mejorCumple->format('Y-m-d'),
+                'fecha_nacimiento'  => $fn,
+                'edad'              => $edadCumple,
+                'anios'             => $edadCumple,
+                'dias_diferencia'   => $difAbs,
+                'tipo'              => $tipoCumple,
+                'es_cumpleanos'     => true,
+            ];
+        }
+    }
+
+    // Ordenar: Cumpleaños y Aniversarios de HOY primero, luego PROXIMO, luego RECIENTE, luego gafetes
+    $orden = [
+        'CUMPLE_HOY'      => 0,
+        'HOY'             => 1,
+        'CUMPLE_PROXIMO'  => 2,
+        'PROXIMO'         => 3,
+        'CUMPLE_RECIENTE' => 4,
+        'RECIENTE'        => 5,
+        'GAFETE_VENCIDO'  => 6,
+        'GAFETE_PROXIMO'  => 7,
+    ];
+
+    usort($notificaciones, function ($a, $b) use ($orden) {
+        $prioA = $orden[$a['tipo']] ?? 99;
+        $prioB = $orden[$b['tipo']] ?? 99;
+        if ($prioA !== $prioB) {
+            return $prioA - $prioB;
+        }
+        $diffA = $a['dias_diferencia'] ?? 0;
+        $diffB = $b['dias_diferencia'] ?? 0;
+        if ($diffA !== $diffB) {
+            return $diffA - $diffB;
+        }
+        return strcmp($a['nombre'] ?? '', $b['nombre'] ?? '');
+    });
 
     echo json_encode([
         'total'          => count($notificaciones),

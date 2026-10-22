@@ -138,7 +138,7 @@ verificarPermiso("nomina.ver_historial_palmilla");
                     </tfoot>
                 </table>
             </div>
-            <ul id="detalle-paginacion-nomina" class="pagination" style="margin: 20px 0 0 0; justify-content: center;"></ul>
+            <ul id="paginacion-nomina" class="pagination" style="margin: 20px 0 0 0; justify-content: center;"></ul>
         </div>
     </div>
 

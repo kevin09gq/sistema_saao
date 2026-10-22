@@ -25,31 +25,41 @@ $(document).ready(function () {
             var sel = $('#filtroDeptoEmp').html('<option value="-1">Todos los depto.</option>');
             $.each(departamentosTodos, function (i, d) { sel.append('<option value="' + d.id_departamento + '" data-id-area="' + (d.id_area || '') + '">' + d.nombre_departamento + '</option>'); });
             sel.on('change', function () { paginaActualEmp = 1; renderEmpleados(); });
+            filtrarDepartamentosPorArea();
             cargarRequisitosFiltro();
         });
+    }
+
+    // Un departamento puede pertenecer a varias áreas (id_areas)
+    function deptoPerteneceArea(d, idArea) {
+        if (Array.isArray(d.id_areas)) {
+            return d.id_areas.indexOf(idArea) !== -1;
+        }
+        return parseInt(d.id_area) === idArea;
     }
 
     function filtrarDepartamentosPorArea() {
         var idArea = parseInt($('#filtroAreaEmp').val());
         var sel = $('#filtroDeptoEmp');
         var valorActual = sel.val();
-        
-        sel.html('<option value="-1">Todos los depto.</option>');
-        
+
+        // Si no hay un área específica, el departamento se bloquea (transparente)
         if (idArea === -1) {
-            // Mostrar todos los departamentos
-            $.each(departamentosTodos, function (i, d) {
-                sel.append('<option value="' + d.id_departamento + '" data-id-area="' + (d.id_area || '') + '">' + d.nombre_departamento + '</option>');
-            });
-        } else {
-            // Mostrar solo departamentos de esa área
-            $.each(departamentosTodos, function (i, d) {
-                if (parseInt(d.id_area) === idArea) {
-                    sel.append('<option value="' + d.id_departamento + '" data-id-area="' + (d.id_area || '') + '">' + d.nombre_departamento + '</option>');
-                }
-            });
+            sel.html('<option value="-1">Todos los depto.</option>');
+            sel.val('-1').prop('disabled', true);
+            return;
         }
-        
+
+        sel.prop('disabled', false);
+        sel.html('<option value="-1">Todos los depto.</option>');
+
+        // Mostrar solo departamentos de esa área
+        $.each(departamentosTodos, function (i, d) {
+            if (deptoPerteneceArea(d, idArea)) {
+                sel.append('<option value="' + d.id_departamento + '" data-id-area="' + (d.id_area || '') + '">' + d.nombre_departamento + '</option>');
+            }
+        });
+
         // Si el valor seleccionado ya no existe, resetear a -1
         if (valorActual !== '-1' && !sel.find('option[value="' + valorActual + '"]').length) {
             sel.val('-1');
@@ -90,14 +100,35 @@ $(document).ready(function () {
         });
     }
 
+    function tieneImssEmpleado(e) {
+        if (!e) return false;
+        var statusNss = parseInt(e.status_nss);
+        if (statusNss === 1) return true;
+        var nss = (e.imss !== null && e.imss !== undefined) ? String(e.imss).trim() : '';
+        return (nss !== '' && nss !== '0' && nss !== '-');
+    }
+
     function filtrarEmpleadosExp() {
         var texto = $('#buscadorEmpExp').val().toLowerCase().trim();
+        var idStatus = parseInt($('#filtroStatusEmp').val());
+        var filtroImss = $('#filtroImssEmp').val() || 'todos';
         var idArea = parseInt($('#filtroAreaEmp').val());
         var idDepto = parseInt($('#filtroDeptoEmp').val());
         var filtroAvance = $('#filtroAvanceEmp').val() || 'todos';
         var idFaltaReq = parseInt($('#filtroFaltaRequisitoEmp').val());
 
         return empleadosTodos.filter(function (e) {
+            // Filtro por estatus (1 = Activo, 2 = Baja/Inactivo)
+            if (idStatus === 1 && parseInt(e.id_status) !== 1) return false;
+            if (idStatus === 2 && parseInt(e.id_status) === 1) return false;
+
+            // Filtro por IMSS / Seguro Social
+            if (filtroImss !== 'todos') {
+                var tieneSeguro = tieneImssEmpleado(e);
+                if (filtroImss === 'con_imss' && !tieneSeguro) return false;
+                if (filtroImss === 'sin_imss' && tieneSeguro) return false;
+            }
+
             if (idArea !== -1 && parseInt(e.id_area) !== idArea) return false;
             if (idDepto !== -1 && parseInt(e.id_departamento) !== idDepto) return false;
             
@@ -114,7 +145,7 @@ $(document).ready(function () {
             var pct = totalReq > 0 ? Math.round((numEntregados / totalReq) * 100) : 0;
 
             if (filtroAvance === 'completos' && (pct < 100 || totalReq === 0)) return false;
-            if (filtroAvance === 'incompletos' && (pct === 100 || totalReq === 0)) return false;
+            if (filtroAvance === 'incompletos' && (pct === 100 || numEntregados === 0)) return false;
             if (filtroAvance === 'sin_documentos' && numEntregados > 0) return false;
 
             if (idFaltaReq !== -1) {
@@ -143,7 +174,7 @@ $(document).ready(function () {
         }
 
         if (pagina.length === 0) {
-            tbody.append('<tr><td colspan="5" class="text-center text-muted py-5"><i class="bi bi-person-slash fs-3 d-block mb-2 text-muted opacity-50"></i>No hay empleados que coincidan con los filtros aplicados.</td></tr>');
+            tbody.append('<tr><td colspan="6" class="text-center text-muted py-5"><i class="bi bi-person-slash fs-3 d-block mb-2 text-muted opacity-50"></i>No hay empleados que coincidan con los filtros aplicados.</td></tr>');
         } else {
             $.each(pagina, function (i, e) {
                 var nombre = e.nombre + ' ' + e.ap_paterno + ' ' + e.ap_materno;
@@ -163,11 +194,25 @@ $(document).ready(function () {
                 // Clave
                 tr.append('<td><span class="emp-clave-badge">' + e.clave_empleado + '</span></td>');
 
-                // Empleado con iniciales
+                // Badges de Estatus e IMSS
+                var esActivo = parseInt(e.id_status) === 1;
+                var badgeStatus = esActivo
+                    ? '<span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size:0.67rem; font-weight:600; padding:2px 6px;">Activo</span>'
+                    : '<span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size:0.67rem; font-weight:600; padding:2px 6px;">Baja</span>';
+
+                var tieneSeguro = tieneImssEmpleado(e);
+                var badgeImss = tieneSeguro
+                    ? '<span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size:0.67rem; font-weight:600; padding:2px 6px;" title="NSS: ' + (e.imss || 'Registrado') + '"><i class="bi bi-shield-check me-0.5"></i> IMSS</span>'
+                    : '<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" style="font-size:0.67rem; font-weight:500; padding:2px 6px;">Sin IMSS</span>';
+
+                // Empleado con iniciales y badges informativos
                 tr.append(
                     '<td><div class="emp-info-cell">'
                     + '<div class="emp-initials">' + iniciales + '</div>'
-                    + '<div><div class="emp-name-main">' + nombre + '</div></div>'
+                    + '<div>'
+                    + '<div class="emp-name-main">' + nombre + '</div>'
+                    + '<div class="d-flex align-items-center gap-1 mt-1">' + badgeStatus + badgeImss + '</div>'
+                    + '</div>'
                     + '</div></td>'
                 );
 
@@ -246,15 +291,20 @@ $(document).ready(function () {
     }
 
     $('#buscadorEmpExp').on('input', function () { paginaActualEmp = 1; renderEmpleados(); });
+    $('#filtroStatusEmp').on('change', function () { paginaActualEmp = 1; renderEmpleados(); });
+    $('#filtroImssEmp').on('change', function () { paginaActualEmp = 1; renderEmpleados(); });
     $('#filtroAvanceEmp').on('change', function () { paginaActualEmp = 1; renderEmpleados(); });
 
     $('#btnLimpiarEmpExp').on('click', function () {
         $('#buscadorEmpExp').val('');
+        $('#filtroStatusEmp').val('-1');
+        $('#filtroImssEmp').val('todos');
         $('#filtroAreaEmp').val('-1');
         $('#filtroDeptoEmp').val('-1');
         $('#filtroAvanceEmp').val('todos');
         $('#filtroFaltaRequisitoEmp').val('-1');
         paginaActualEmp = 1;
+        filtrarDepartamentosPorArea();
         renderEmpleados();
     });
 
@@ -266,12 +316,16 @@ $(document).ready(function () {
     $('#btnExportarGeneral').on('click', function () {
         var idArea = $('#filtroAreaEmp').val() || '-1';
         var idDepto = $('#filtroDeptoEmp').val() || '-1';
+        var idStatus = $('#filtroStatusEmp').val() || '-1';
+        var filtroImss = $('#filtroImssEmp').val() || 'todos';
         var filtroAvance = $('#filtroAvanceEmp').val() || 'todos';
         var idFaltaReq = $('#filtroFaltaRequisitoEmp').val() || '-1';
 
         var url = '../php/exportar_excel.php?tipo_exportacion=general'
             + '&id_area=' + encodeURIComponent(idArea)
             + '&id_departamento=' + encodeURIComponent(idDepto)
+            + '&id_status=' + encodeURIComponent(idStatus)
+            + '&filtro_imss=' + encodeURIComponent(filtroImss)
             + '&filtro_avance=' + encodeURIComponent(filtroAvance)
             + '&id_falta_requisito=' + encodeURIComponent(idFaltaReq)
             + '&_t=' + new Date().getTime();
@@ -313,7 +367,8 @@ $(document).ready(function () {
         filtrarDepartamentosModal();
 
         $('#expModalAvance').val($('#filtroAvanceEmp').val());
-        $('#expModalStatus').val('-1');
+        $('#expModalStatus').val($('#filtroStatusEmp').val() || '-1');
+        $('#expModalImss').val($('#filtroImssEmp').val() || 'todos');
     }
 
     $('#expModalArea').on('change', function () {
@@ -322,19 +377,23 @@ $(document).ready(function () {
 
     function filtrarDepartamentosModal() {
         var idArea = parseInt($('#expModalArea').val());
-        var selDeptoModal = $('#expModalDepto').html('<option value="-1">Todos los departamentos</option>');
+        var selDeptoModal = $('#expModalDepto');
 
+        // Bloquear (transparente) el filtro de departamento mientras no haya un área específica
         if (idArea === -1) {
-            $.each(departamentosTodos, function (i, d) {
-                selDeptoModal.append('<option value="' + d.id_departamento + '">' + d.nombre_departamento + '</option>');
-            });
-        } else {
-            $.each(departamentosTodos, function (i, d) {
-                if (parseInt(d.id_area) === idArea) {
-                    selDeptoModal.append('<option value="' + d.id_departamento + '">' + d.nombre_departamento + '</option>');
-                }
-            });
+            selDeptoModal.html('<option value="-1">Todos los departamentos</option>');
+            selDeptoModal.val('-1').prop('disabled', true);
+            return;
         }
+
+        selDeptoModal.prop('disabled', false);
+        selDeptoModal.html('<option value="-1">Todos los departamentos</option>');
+
+        $.each(departamentosTodos, function (i, d) {
+            if (deptoPerteneceArea(d, idArea)) {
+                selDeptoModal.append('<option value="' + d.id_departamento + '">' + d.nombre_departamento + '</option>');
+            }
+        });
 
         var deptoActual = $('#filtroDeptoEmp').val();
         if (deptoActual !== '-1' && selDeptoModal.find('option[value="' + deptoActual + '"]').length) {

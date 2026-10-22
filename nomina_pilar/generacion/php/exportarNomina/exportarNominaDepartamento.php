@@ -192,10 +192,11 @@ $columnasDinamicas = [
     'SUELDO SEMANAL',      // 5 (E)
     'PASAJE',              // 6 (F)
     'COMIDA',              // 7 (G)
+    'TARDEADA',            // 8 (H)
 ];
 
 $mapExtrasCols = [];
-$colIndex = 8;
+$colIndex = 9;
 foreach ($extrasDinamicas as $key => $dispName) {
     $columnasDinamicas[] = $dispName;
     $mapExtrasCols[$key] = $colIndex;
@@ -238,6 +239,7 @@ $totalCols = count($columnasDinamicas);
 $lastColLetter = Coordinate::stringFromColumnIndex($totalCols);
 
 // Letras para fórmulas dinámicas
+$colTARDEADALetter = 'H';
 $lastPercepcionLetter = Coordinate::stringFromColumnIndex($colTotalPercepciones - 1);
 $colTotalPercepcionesLetter = Coordinate::stringFromColumnIndex($colTotalPercepciones);
 $colISRLetter = Coordinate::stringFromColumnIndex($colISR);
@@ -371,6 +373,9 @@ $comidaTieneDatos = false;
 // Determinar si la columna PASAJE tiene datos
 $pasajeTieneDatos = false;
 
+// Determinar si la columna TARDEADA tiene datos
+$tardeadaTieneDatos = false;
+
 // Determinar si las columnas de deducciones de conceptos tienen datos
 $isrTieneDatos = false;
 $imssTieneDatos = false;
@@ -398,7 +403,11 @@ foreach ($empleadosJornaleros as $empleado) {
     if (($empleado['pasaje'] ?? 0) != 0) {
         $pasajeTieneDatos = true;
     }
-    
+
+    if (($empleado['tardeada'] ?? 0) != 0) {
+        $tardeadaTieneDatos = true;
+    }
+
     if (($empleado['inasistencia'] ?? 0) != 0) {
         $ausentismoTieneDatos = true;
     }
@@ -498,6 +507,15 @@ foreach ($empleadosJornaleros as $empleado) {
         if (!empty($comida) && $comida != 0) {
             $sheet->setCellValue('G' . $numeroFila, $comida);
             $sheet->getStyle('G' . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
+        }
+    }
+
+    // Agregar TARDEADA
+    if ($tardeadaTieneDatos) {
+        $tardeada = $empleado['tardeada'] ?? 0;
+        if (!empty($tardeada) && $tardeada != 0) {
+            $sheet->setCellValue($colTARDEADALetter . $numeroFila, $tardeada);
+            $sheet->getStyle($colTARDEADALetter . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
         }
     }
 
@@ -857,6 +875,11 @@ if (!$pasajeTieneDatos) {
 // Ocultar columna COMIDA si no tiene datos
 if (!$comidaTieneDatos) {
     $sheet->getColumnDimension('G')->setVisible(false);
+}
+
+// Ocultar columna TARDEADA si no tiene datos
+if (!$tardeadaTieneDatos) {
+    $sheet->getColumnDimension($colTARDEADALetter)->setVisible(false);
 }
 
 // Ocultar columna ISR si no tiene datos

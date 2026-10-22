@@ -3,8 +3,8 @@
 
 <!--Incluir config.php para iniciar sesión -->
 <?php
-include "../../../public/php/config.php";
-include "../../../public/php/verificarSesion.php";
+require_once __DIR__ . "/../../../public/php/config.php";
+require_once __DIR__ . "/../../../public/php/verificarSesion.php";
 verificarSesion(); // Proteger esta página
 verificarPermiso("nomina.ver_historial_confianza");
 ?>
@@ -33,7 +33,7 @@ verificarPermiso("nomina.ver_historial_confianza");
 <body class="bg-secondary-subtle">
     <?php
     // Incluir el navbar (config.php ya fue incluido en el head)
-    include "../../../public/views/navbar.php"
+    require_once __DIR__ . "/../../../navbar/navbar.php";
     ?>
 
 

@@ -56,7 +56,7 @@ if ($jsonNomina) {
 //  DEFINIR COLUMNAS COMUNES
 //=====================
 
-// Nominas normales
+// Nominas normales - columnas base (sin EXTRAS ni F.A/GAFET/COFIA)
 $columnas = [
     'N°',
     'CD',
@@ -65,7 +65,6 @@ $columnas = [
     'SUELDO SEMANAL',
     'PASAJE',
     'COMIDA',
-    'EXTRAS',
     'TOTAL PERCEPCIONES',
     'ISR',
     'IMSS',
@@ -76,7 +75,6 @@ $columnas = [
     'PERMISOS',
     'RETARDOS',
     'BIOMETRICO',
-    'F.A/GAFET/COFIA',
     'TOTAL DE DEDUCCIONES',
     'NETO A RECIBIR',
     'DISPERSION DE TARJETA',
@@ -96,27 +94,25 @@ $columnasAncho = [
     'E' => 22,  // SUELDO SEMANAL
     'F' => 20,  // PASAJE
     'G' => 20,  // COMIDA
-    'H' => 20,  // EXTRAS
-    'I' => 22,  // TOTAL PERCEPCIONES
-    'J' => 20,  // ISR
-    'K' => 20,  // IMSS
-    'L' => 20,  // INFONAVIT
-    'M' => 22,  // AJUSTES AL SUB
-    'N' => 21,  // AUSENTISMO
-    'O' => 20,  // UNIFORMES
-    'P' => 20,  // PERMISOS
-    'Q' => 20,  // RETARDOS
-    'R' => 20,  // CHECADOR
-    'S' => 22,  // F.A/GAFET/COFIA
-    'T' => 22,  // TOTAL DE DEDUCCIONES
-    'U' => 22,  // NETO A RECIBIR
-    'V' => 22,  // DISPERSION DE TARJETA
-    'W' => 22,  // IMPORTE EN EFECTIVO
-    'X' => 22,  // PRÉSTAMO
-    'Y' => 22,  // TOTAL A RECIBIR
-    'Z' => 20,  // REDONDEADO
-    'AA' => 23, // TOTAL EFECTIVO REDONDEADO
-    'AB' => 25  // FIRMA RECIBIDO
+    'H' => 22,  // TOTAL PERCEPCIONES (dynamic)
+    'I' => 20,  // ISR (dynamic)
+    'J' => 20,  // IMSS (dynamic)
+    'K' => 20,  // INFONAVIT (dynamic)
+    'L' => 22,  // AJUSTES AL SUB (dynamic)
+    'M' => 21,  // AUSENTISMO (dynamic)
+    'N' => 20,  // UNIFORMES (dynamic)
+    'O' => 20,  // PERMISOS (dynamic)
+    'P' => 20,  // RETARDOS (dynamic)
+    'Q' => 20,  // BIOMETRICO (dynamic)
+    'R' => 22,  // TOTAL DE DEDUCCIONES (dynamic)
+    'S' => 22,  // NETO A RECIBIR (dynamic)
+    'T' => 22,  // DISPERSION DE TARJETA (dynamic)
+    'U' => 22,  // IMPORTE EN EFECTIVO (dynamic)
+    'V' => 22,  // PRÉSTAMO (dynamic)
+    'W' => 22,  // TOTAL A RECIBIR (dynamic)
+    'X' => 20,  // REDONDEADO (dynamic)
+    'Y' => 23,  // TOTAL EFECTIVO REDONDEADO (dynamic)
+    'Z' => 25   // FIRMA RECIBIDO (dynamic)
 ];
 
 $tamanioLetraColumnas = [
@@ -127,27 +123,25 @@ $tamanioLetraColumnas = [
     'E' => 14,  // SUELDO SEMANAL
     'F' => 14,  // PASAJE
     'G' => 14,  // COMIDA
-    'H' => 14,  // EXTRAS
-    'I' => 13,  // TOTAL PERCEPCIONES
-    'J' => 14,  // ISR
-    'K' => 14,  // IMSS
-    'L' => 14,  // INFONAVIT
-    'M' => 14,  // AJUSTES AL SUB
-    'N' => 14,  // AUSENTISMO
-    'O' => 14,  // UNIFORMES
-    'P' => 14,  // PERMISOS
-    'Q' => 14,  // RETARDOS
-    'R' => 14,  // CHECADOR
-    'S' => 13,  // F.A/GAFET/COFIA
-    'T' => 13,  // TOTAL DE DEDUCCIONES
-    'U' => 13,  // NETO A RECIBIR
-    'V' => 13,  // DISPERSION DE TARJETA
-    'W' => 13,  // IMPORTE EN EFECTIVO
-    'X' => 14,  // PRÉSTAMO
-    'Y' => 13,  // TOTAL A RECIBIR
-    'Z' => 14,  // REDONDEADO
-    'AA' => 13, // TOTAL EFECTIVO REDONDEADO
-    'AB' => 14  // FIRMA RECIBIDO
+    'H' => 13,  // TOTAL PERCEPCIONES (dynamic)
+    'I' => 14,  // ISR (dynamic)
+    'J' => 14,  // IMSS (dynamic)
+    'K' => 14,  // INFONAVIT (dynamic)
+    'L' => 14,  // AJUSTES AL SUB (dynamic)
+    'M' => 14,  // AUSENTISMO (dynamic)
+    'N' => 14,  // UNIFORMES (dynamic)
+    'O' => 14,  // PERMISOS (dynamic)
+    'P' => 14,  // RETARDOS (dynamic)
+    'Q' => 14,  // BIOMETRICO (dynamic)
+    'R' => 13,  // TOTAL DE DEDUCCIONES (dynamic)
+    'S' => 13,  // NETO A RECIBIR (dynamic)
+    'T' => 13,  // DISPERSION DE TARJETA (dynamic)
+    'U' => 13,  // IMPORTE EN EFECTIVO (dynamic)
+    'V' => 14,  // PRÉSTAMO (dynamic)
+    'W' => 13,  // TOTAL A RECIBIR (dynamic)
+    'X' => 14,  // REDONDEADO (dynamic)
+    'Y' => 13,  // TOTAL EFECTIVO REDONDEADO (dynamic)
+    'Z' => 14   // FIRMA RECIBIDO (dynamic)
 ];
 
 $tamanioLetraFilas = [
@@ -158,27 +152,25 @@ $tamanioLetraFilas = [
     'E' => 15,  // SUELDO SEMANAL
     'F' => 15,  // PASAJE
     'G' => 15,  // COMIDA
-    'H' => 15,  // EXTRAS
-    'I' => 15,  // TOTAL PERCEPCIONES
-    'J' => 15,  // ISR
-    'K' => 15,  // IMSS
-    'L' => 15,  // INFONAVIT
-    'M' => 15,  // AJUSTES AL SUB
-    'N' => 15,  // AUSENTISMO
-    'O' => 15,  // UNIFORMES
-    'P' => 15,  // PERMISOS
-    'Q' => 15,  // RETARDOS
-    'R' => 15,  // CHECADOR
-    'S' => 15,  // F.A/GAFET/COFIA
-    'T' => 15,  // TOTAL DE DEDUCCIONES
-    'U' => 15,  // NETO A RECIBIR
-    'V' => 15,  // DISPERSION DE TARJETA
-    'W' => 15,  // IMPORTE EN EFECTIVO
-    'X' => 15,  // PRÉSTAMO
-    'Y' => 15,  // TOTAL A RECIBIR
-    'Z' => 15,  // REDONDEADO
-    'AA' => 15, // TOTAL EFECTIVO REDONDEADO
-    'AB' => 15  // FIRMA RECIBIDO
+    'H' => 15,  // TOTAL PERCEPCIONES (dynamic)
+    'I' => 15,  // ISR (dynamic)
+    'J' => 15,  // IMSS (dynamic)
+    'K' => 15,  // INFONAVIT (dynamic)
+    'L' => 15,  // AJUSTES AL SUB (dynamic)
+    'M' => 15,  // AUSENTISMO (dynamic)
+    'N' => 15,  // UNIFORMES (dynamic)
+    'O' => 15,  // PERMISOS (dynamic)
+    'P' => 15,  // RETARDOS (dynamic)
+    'Q' => 15,  // BIOMETRICO (dynamic)
+    'R' => 15,  // TOTAL DE DEDUCCIONES (dynamic)
+    'S' => 15,  // NETO A RECIBIR (dynamic)
+    'T' => 15,  // DISPERSION DE TARJETA (dynamic)
+    'U' => 15,  // IMPORTE EN EFECTIVO (dynamic)
+    'V' => 15,  // PRÉSTAMO (dynamic)
+    'W' => 15,  // TOTAL A RECIBIR (dynamic)
+    'X' => 15,  // REDONDEADO (dynamic)
+    'Y' => 15,  // TOTAL EFECTIVO REDONDEADO (dynamic)
+    'Z' => 15   // FIRMA RECIBIDO (dynamic)
 ];
 
 
@@ -348,10 +340,11 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
         'SUELDO SEMANAL',      // 5 (E)
         'PASAJE',              // 6 (F)
         'COMIDA',              // 7 (G)
+        'TARDEADA',            // 8 (H)
     ];
 
     $mapExtrasCols = [];
-    $colIndex = 8;
+    $colIndex = 9;
     foreach ($extrasDinamicas as $key => $dispName) {
         $columnasDinamicas[] = $dispName;
         $mapExtrasCols[$key] = $colIndex;
@@ -371,7 +364,6 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
     $colPERMISOS = $colIndex; $columnasDinamicas[] = 'PERMISOS'; $colIndex++;
     $colRETARDOS = $colIndex; $columnasDinamicas[] = 'RETARDOS'; $colIndex++;
     $colBIOMETRICO = $colIndex; $columnasDinamicas[] = 'BIOMETRICO'; $colIndex++;
-    $colFAGAFETCOFIA = $colIndex; $columnasDinamicas[] = 'F.A/GAFET/COFIA'; $colIndex++;
 
     $mapDeduccionesExtrasCols = [];
     foreach ($deduccionesDinamicas as $key => $dispName) {
@@ -394,6 +386,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
     $lastColLetter = Coordinate::stringFromColumnIndex($totalCols);
 
     // Letras para fórmulas dinámicas
+    $colTARDEADALetter = 'H';
     $lastPercepcionLetter = Coordinate::stringFromColumnIndex($colTotalPercepciones - 1);
     $colTotalPercepcionesLetter = Coordinate::stringFromColumnIndex($colTotalPercepciones);
     $colISRLetter = Coordinate::stringFromColumnIndex($colISR);
@@ -405,7 +398,6 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
     $colPERMISOSLetter = Coordinate::stringFromColumnIndex($colPERMISOS);
     $colRETARDOSLetter = Coordinate::stringFromColumnIndex($colRETARDOS);
     $colBIOMETRICOLetter = Coordinate::stringFromColumnIndex($colBIOMETRICO);
-    $colFAGAFETCOFIALetter = Coordinate::stringFromColumnIndex($colFAGAFETCOFIA);
     $lastDeduccionLetter = Coordinate::stringFromColumnIndex($colTotalDeducciones - 1);
     $colTotalDeduccionesLetter = Coordinate::stringFromColumnIndex($colTotalDeducciones);
     $colNetoRecibirLetter = Coordinate::stringFromColumnIndex($colNetoRecibir);
@@ -436,7 +428,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
     $sheet->mergeCells("A3:{$lastColLetter}3");
     $sheet->mergeCells("A4:{$lastColLetter}4");
 
-    // Formatear título 1 (Purpura, Negrita, Tamaño 24)
+    // Formatear título 1 - RANCHO PALMILLA (Purpura, Negrita, Tamaño 24)
     $sheet->getStyle('A1')->getFont()->setBold(true);
     $sheet->getStyle('A1')->getFont()->setSize(24);
     $sheet->getStyle('A1')->getFont()->setColor(new Color($colorExcel));
@@ -445,6 +437,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
     $sheet->getStyle('A2')->getFont()->setBold(true);
     $sheet->getStyle('A2')->getFont()->setSize(20);
     $sheet->getStyle('A2')->getFont()->setColor(new Color($colorExcel));
+
 
     // Formatear título 3 - NOMINA (Negrita, Tamaño 14)
     $sheet->getStyle('A3')->getFont()->setBold(true);
@@ -511,6 +504,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
 
     $comidaTieneDatos = false;
     $pasajeTieneDatos = false;
+    $tardeadaTieneDatos = false;
     $isrTieneDatos = false;
     $imssTieneDatos = false;
     $infonavitTieneDatos = false;
@@ -520,7 +514,6 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
     $permisoTieneDatos = false;
     $retardosTieneDatos = false;
     $checadorTieneDatos = false;
-    $faxGafetCofiaTieneDatos = false;
     $diasTrabajadosTieneDatos = false;
 
     foreach ($empleados as $empleado) {
@@ -529,6 +522,9 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
         }
         if (($empleado['pasaje'] ?? 0) != 0) {
             $pasajeTieneDatos = true;
+        }
+        if (($empleado['tardeada'] ?? 0) != 0) {
+            $tardeadaTieneDatos = true;
         }
         if (($empleado['inasistencia'] ?? 0) != 0) {
             $ausentismoTieneDatos = true;
@@ -544,9 +540,6 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
         }
         if (($empleado['checador'] ?? 0) != 0) {
             $checadorTieneDatos = true;
-        }
-        if (($empleado['fa_gafet_cofia'] ?? 0) != 0) {
-            $faxGafetCofiaTieneDatos = true;
         }
 
         if (($empleado['tipo_horario'] ?? 0) == 2) {
@@ -612,6 +605,15 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
             }
         }
 
+        // TARDEADA
+        if ($tardeadaTieneDatos) {
+            $tardeada = $empleado['tardeada'] ?? 0;
+            if (!empty($tardeada) && $tardeada != 0) {
+                $sheet->setCellValue($colTARDEADALetter . $numeroFila, $tardeada);
+                $sheet->getStyle($colTARDEADALetter . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
+            }
+        }
+
         // Percepciones extras dinámicas
         if (!empty($empleado['percepciones_extra']) && is_array($empleado['percepciones_extra'])) {
             foreach ($empleado['percepciones_extra'] as $extra) {
@@ -634,14 +636,14 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
         $sheet->getStyle($colTotalPercepcionesLetter . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
 
         //=============================
-        //  AGREGAR DEDUCCIONES
+        //  AGREGAR DEDUCCIONES 
         //=============================
 
         $mapeoConceptos = [
-            '45'  => $colISRLetter,   // ISR
-            '52'  => $colIMSSLetter,   // IMSS
-            '16'  => $colINFONAVITLetter,   // INFONAVIT
-            '107' => $colAJUSTESLetter,   // AJUSTES AL SUB
+            '45'  => $colISRLetter,
+            '52'  => $colIMSSLetter,
+            '16'  => $colINFONAVITLetter,
+            '107' => $colAJUSTESLetter,
         ];
 
         if (!empty($empleado['conceptos']) && is_array($empleado['conceptos'])) {
@@ -662,7 +664,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
             }
         }
 
-        // Descuentos adicionales (AUSENTISMO, PERMISO, RETARDOS, UNIFORMES, CHECADOR, F.A/GAFET/COFIA)
+        // Descuentos adicionales (AUSENTISMO, PERMISO, RETARDOS, UNIFORMES, CHECADOR)
         $inasistencia = $empleado['inasistencia'] ?? 0;
         if (!empty($inasistencia) && $inasistencia != 0) {
             $sheet->setCellValue($colAUSENTISMOLetter . $numeroFila, $inasistencia);
@@ -698,13 +700,6 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
             $sheet->getStyle($colBIOMETRICOLetter . $numeroFila)->getFont()->setColor(new Color('FF0000'));
         }
 
-        $faxGafetCofia = $empleado['fa_gafet_cofia'] ?? 0;
-        if (!empty($faxGafetCofia) && $faxGafetCofia != 0) {
-            $sheet->setCellValue($colFAGAFETCOFIALetter . $numeroFila, $faxGafetCofia);
-            $sheet->getStyle($colFAGAFETCOFIALetter . $numeroFila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
-            $sheet->getStyle($colFAGAFETCOFIALetter . $numeroFila)->getFont()->setColor(new Color('FF0000'));
-        }
-
         // Deducciones extras dinámicas
         if (!empty($empleado['deducciones_extra']) && is_array($empleado['deducciones_extra'])) {
             foreach ($empleado['deducciones_extra'] as $dextra) {
@@ -717,8 +712,6 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
                     if (isset($mapDeduccionesExtrasCols[$key])) {
                         $colL = Coordinate::stringFromColumnIndex($mapDeduccionesExtrasCols[$key]);
                         $sheet->setCellValue($colL . $numeroFila, $cant);
-                        $sheet->getStyle($colL . $numeroFila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
-                        $sheet->getStyle($colL . $numeroFila)->getFont()->setColor(new Color('FF0000'));
                     }
                 }
             }
@@ -783,53 +776,26 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
     //  APLICAR FORMATOS A TODAS LAS CELDAS DE DATOS
     //=====================
 
+    // Aplicar formatos a todas las celdas de datos
+    $colsRojas = [
+        $colISRLetter, $colIMSSLetter, $colINFONAVITLetter, $colAJUSTESLetter,
+        $colAUSENTISMOLetter, $colUNIFORMESLetter, $colPERMISOSLetter, $colRETARDOSLetter, $colBIOMETRICOLetter
+    ];
+    foreach ($mapDeduccionesExtrasCols as $cIdx) {
+        $colsRojas[] = Coordinate::stringFromColumnIndex($cIdx);
+    }
+    $colsRojas[] = $colTotalDeduccionesLetter;
+    $colsRojas[] = $colTarjetaLetter;
+    $colsRojas[] = $colPrestamoLetter;
+
     for ($fila = 7; $fila < $numeroFila; $fila++) {
-        // Formatear columnas de conceptos (deducciones estándar)
-        $sheet->getStyle($colISRLetter . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
-        $sheet->getStyle($colISRLetter . $fila)->getFont()->setColor(new Color('FF0000'));
-        $sheet->getStyle($colIMSSLetter . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
-        $sheet->getStyle($colIMSSLetter . $fila)->getFont()->setColor(new Color('FF0000'));
-        $sheet->getStyle($colINFONAVITLetter . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
-        $sheet->getStyle($colINFONAVITLetter . $fila)->getFont()->setColor(new Color('FF0000'));
-        $sheet->getStyle($colAJUSTESLetter . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
-        $sheet->getStyle($colAJUSTESLetter . $fila)->getFont()->setColor(new Color('FF0000'));
+        $sheet->getStyle("E{$fila}:{$colTotalRedondeadoLetter}{$fila}")->getNumberFormat()->setFormatCode('$#,##0.00');
 
-        $sheet->getStyle($colAUSENTISMOLetter . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
-        $sheet->getStyle($colAUSENTISMOLetter . $fila)->getFont()->setColor(new Color('FF0000'));
-        $sheet->getStyle($colUNIFORMESLetter . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
-        $sheet->getStyle($colUNIFORMESLetter . $fila)->getFont()->setColor(new Color('FF0000'));
-        $sheet->getStyle($colPERMISOSLetter . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
-        $sheet->getStyle($colPERMISOSLetter . $fila)->getFont()->setColor(new Color('FF0000'));
-        $sheet->getStyle($colRETARDOSLetter . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
-        $sheet->getStyle($colRETARDOSLetter . $fila)->getFont()->setColor(new Color('FF0000'));
-        $sheet->getStyle($colBIOMETRICOLetter . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
-        $sheet->getStyle($colBIOMETRICOLetter . $fila)->getFont()->setColor(new Color('FF0000'));
-        $sheet->getStyle($colFAGAFETCOFIALetter . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
-        $sheet->getStyle($colFAGAFETCOFIALetter . $fila)->getFont()->setColor(new Color('FF0000'));
-
-        $sheet->getStyle($colTotalDeduccionesLetter . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
-        $sheet->getStyle($colTotalDeduccionesLetter . $fila)->getFont()->setColor(new Color('FF0000'));
-        $sheet->getStyle($colTarjetaLetter . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
-        $sheet->getStyle($colTarjetaLetter . $fila)->getFont()->setColor(new Color('FF0000'));
-        $sheet->getStyle($colPrestamoLetter . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
-        $sheet->getStyle($colPrestamoLetter . $fila)->getFont()->setColor(new Color('FF0000'));
-        $sheet->getStyle($colRedondeadoLetter . $fila)->getNumberFormat()->setFormatCode('$#,##0.00;[RED]-$#,##0.00');
-
-        // Formatear percepciones y resultados positivos
-        $sheet->getStyle('E' . $fila)->getNumberFormat()->setFormatCode('$#,##0.00');
-        $sheet->getStyle('F' . $fila)->getNumberFormat()->setFormatCode('$#,##0.00');
-        $sheet->getStyle('G' . $fila)->getNumberFormat()->setFormatCode('$#,##0.00');
-        $sheet->getStyle($colTotalPercepcionesLetter . $fila)->getNumberFormat()->setFormatCode('$#,##0.00');
-        $sheet->getStyle($colNetoRecibirLetter . $fila)->getNumberFormat()->setFormatCode('$#,##0.00');
-        $sheet->getStyle($colEfectivoLetter . $fila)->getNumberFormat()->setFormatCode('$#,##0.00');
-        $sheet->getStyle($colTotalRecibirLetter . $fila)->getNumberFormat()->setFormatCode('$#,##0.00');
-        $sheet->getStyle($colTotalRedondeadoLetter . $fila)->getNumberFormat()->setFormatCode('$#,##0.00');
-
-        // Formatear percepciones extras dinámicas
-        foreach ($mapExtrasCols as $key => $colIndex) {
-            $colL = Coordinate::stringFromColumnIndex($colIndex);
-            $sheet->getStyle($colL . $fila)->getNumberFormat()->setFormatCode('$#,##0.00');
+        foreach ($colsRojas as $cL) {
+            $sheet->getStyle($cL . $fila)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
+            $sheet->getStyle($cL . $fila)->getFont()->setColor(new Color('FF0000'));
         }
+        $sheet->getStyle($colRedondeadoLetter . $fila)->getNumberFormat()->setFormatCode('$#,##0.00;[RED]-$#,##0.00');
     }
 
     //=====================
@@ -843,74 +809,31 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
     $sheet->getStyle('A' . $filaTotal)->getAlignment()->setHorizontal('center');
     $sheet->getStyle('A' . $filaTotal)->getAlignment()->setVertical('center');
 
-    // Columnas de datos para totales (usando las letras dinámicas)
-    $columnasData = [
-        'D' => 'dias_trabajados',
-        'E' => 'sueldo_semanal',
-        'F' => 'pasaje',
-        'G' => 'comida',
-    ];
+    $colsTotalesIndices = range(4, $colTotalRedondeado);
+    foreach ($colsTotalesIndices as $idxC) {
+        $cL = Coordinate::stringFromColumnIndex($idxC);
+        $rangoSuma = $cL . '7:' . $cL . ($filaTotal - 1);
+        $sheet->setCellValue($cL . $filaTotal, '=IF(SUM(' . $rangoSuma . ')=0,"",SUM(' . $rangoSuma . '))');
+        $sheet->getStyle($cL . $filaTotal)->getFont()->setBold(true);
+        $sheet->getStyle($cL . $filaTotal)->getFont()->setSize(14);
 
-    // Agregar columnas de percepciones extras dinámicas
-    foreach ($mapExtrasCols as $key => $colIndex) {
-        $colL = Coordinate::stringFromColumnIndex($colIndex);
-        $columnasData[$colL] = 'percepcion_extra_' . $key;
-    }
-
-    // Agregar columnas fijas restantes
-    $columnasData[$colTotalPercepcionesLetter] = 'total_percepciones';
-    $columnasData[$colISRLetter] = 'isr';
-    $columnasData[$colIMSSLetter] = 'imss';
-    $columnasData[$colINFONAVITLetter] = 'infonavit';
-    $columnasData[$colAJUSTESLetter] = 'ajustes_al_sub';
-    $columnasData[$colAUSENTISMOLetter] = 'ausentismo';
-    $columnasData[$colUNIFORMESLetter] = 'uniformes';
-    $columnasData[$colPERMISOSLetter] = 'permisos';
-    $columnasData[$colRETARDOSLetter] = 'retardos';
-    $columnasData[$colBIOMETRICOLetter] = 'biometrico';
-    $columnasData[$colFAGAFETCOFIALetter] = 'fa_gafet_cofia';
-
-    // Agregar columnas de deducciones extras dinámicas
-    foreach ($mapDeduccionesExtrasCols as $key => $colIndex) {
-        $colL = Coordinate::stringFromColumnIndex($colIndex);
-        $columnasData[$colL] = 'deduccion_extra_' . $key;
-    }
-
-    // Agregar columnas de totales y cálculos
-    $columnasData[$colTotalDeduccionesLetter] = 'total_deducciones';
-    $columnasData[$colNetoRecibirLetter] = 'neto_recibir';
-    $columnasData[$colTarjetaLetter] = 'tarjeta';
-    $columnasData[$colEfectivoLetter] = 'efectivo';
-    $columnasData[$colPrestamoLetter] = 'prestamo';
-    $columnasData[$colTotalRecibirLetter] = 'total_recibir';
-    $columnasData[$colRedondeadoLetter] = 'redondeado';
-    $columnasData[$colTotalRedondeadoLetter] = 'total_redondeado';
-
-    foreach ($columnasData as $columna => $tipo) {
-        $rangoSuma = $columna . '7:' . $columna . ($filaTotal - 1);
-        $sheet->setCellValue($columna . $filaTotal, '=IF(SUM(' . $rangoSuma . ')=0,"",SUM(' . $rangoSuma . '))');
-        $sheet->getStyle($columna . $filaTotal)->getFont()->setBold(true);
-        $sheet->getStyle($columna . $filaTotal)->getFont()->setSize(14);
-
-        if ($columna === 'D') {
-            $sheet->getStyle($columna . $filaTotal)->getNumberFormat()->setFormatCode('0');
-        } elseif (in_array($tipo, ['isr', 'imss', 'infonavit', 'ajustes_al_sub', 'ausentismo', 'uniformes', 'permisos', 'retardos', 'biometrico', 'fa_gafet_cofia', 'total_deducciones', 'tarjeta', 'prestamo']) || strpos($tipo, 'deduccion_extra_') === 0) {
-            $sheet->getStyle($columna . $filaTotal)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
-            $sheet->getStyle($columna . $filaTotal)->getFont()->setColor(new Color('FF0000'));
-        } elseif ($columna === $colRedondeadoLetter) {
-            $sheet->getStyle($columna . $filaTotal)->getNumberFormat()->setFormatCode('$#,##0.00;[RED]-$#,##0.00');
+        if (in_array($cL, $colsRojas)) {
+            $sheet->getStyle($cL . $filaTotal)->getNumberFormat()->setFormatCode('"-"$#,##0.00');
+            $sheet->getStyle($cL . $filaTotal)->getFont()->setColor(new Color('FF0000'));
+        } elseif ($cL === $colRedondeadoLetter) {
+            $sheet->getStyle($cL . $filaTotal)->getNumberFormat()->setFormatCode('$#,##0.00;[RED]-$#,##0.00');
         } else {
-            $sheet->getStyle($columna . $filaTotal)->getNumberFormat()->setFormatCode('$#,##0.00');
+            $sheet->getStyle($cL . $filaTotal)->getNumberFormat()->setFormatCode('$#,##0.00');
         }
 
-        $sheet->getStyle($columna . $filaTotal)->getAlignment()->setHorizontal('center');
-        $sheet->getStyle($columna . $filaTotal)->getAlignment()->setVertical('center');
+        $sheet->getStyle($cL . $filaTotal)->getAlignment()->setHorizontal('center');
+        $sheet->getStyle($cL . $filaTotal)->getAlignment()->setVertical('center');
     }
 
     // Altura y color de fondo
     $sheet->getRowDimension($filaTotal)->setRowHeight(25);
-    $sheet->getStyle('A' . $filaTotal . ':' . $lastColLetter . $filaTotal)->getFill()->setFillType('solid');
-    $sheet->getStyle('A' . $filaTotal . ':' . $lastColLetter . $filaTotal)->getFill()->getStartColor()->setRGB('D3D3D3');
+    $sheet->getStyle("A{$filaTotal}:{$lastColLetter}{$filaTotal}")->getFill()->setFillType('solid');
+    $sheet->getStyle("A{$filaTotal}:{$lastColLetter}{$filaTotal}")->getFill()->getStartColor()->setRGB('D3D3D3');
 
     //=====================
     //  AGREGAR BORDES
@@ -925,7 +848,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
         ],
     ];
 
-    $sheet->getStyle('A6:' . $lastColLetter . $filaTotal)->applyFromArray($estiloBordesTabla);
+    $sheet->getStyle("A6:{$lastColLetter}{$filaTotal}")->applyFromArray($estiloBordesTabla);
 
     //=====================
     //  OCULTAR COLUMNAS SIN DATOS
@@ -939,6 +862,9 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
     }
     if (!$comidaTieneDatos) {
         $sheet->getColumnDimension('G')->setVisible(false);
+    }
+    if (!$tardeadaTieneDatos) {
+        $sheet->getColumnDimension($colTARDEADALetter)->setVisible(false);
     }
     if (!$isrTieneDatos) {
         $sheet->getColumnDimension($colISRLetter)->setVisible(false);
@@ -966,9 +892,6 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
     }
     if (!$checadorTieneDatos) {
         $sheet->getColumnDimension($colBIOMETRICOLetter)->setVisible(false);
-    }
-    if (!$faxGafetCofiaTieneDatos) {
-        $sheet->getColumnDimension($colFAGAFETCOFIALetter)->setVisible(false);
     }
 
     //=====================
@@ -1005,7 +928,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
     $sheet->getPageSetup()->setFitToPage(true);
     $sheet->getPageSetup()->setFitToHeight(1);
     $sheet->getPageSetup()->setFitToWidth(1);
-    $sheet->getPageSetup()->setPrintArea('A1:' . $lastColLetter . $filaTotal);
+    $sheet->getPageSetup()->setPrintArea('A1:AB' . $filaTotal);
 }
 
 

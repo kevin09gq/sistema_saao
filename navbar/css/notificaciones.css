@@ -247,6 +247,18 @@
 .notif-tipo-gafete_proximo::before { background: #f97316; }
 .notif-tipo-gafete_proximo:hover { background: linear-gradient(90deg, rgba(249, 115, 22, 0.04) 0%, #ffffff 100%); }
 
+/* 6.6 Cumpleaños Hoy (Rosa Fucsia Festivo) */
+.notif-tipo-cumple_hoy::before { background: #ec4899; }
+.notif-tipo-cumple_hoy:hover { background: linear-gradient(90deg, rgba(236, 72, 153, 0.05) 0%, #ffffff 100%); }
+
+/* 6.7 Cumpleaños Próximo (Púrpura / Violeta Festivo) */
+.notif-tipo-cumple_proximo::before { background: #a855f7; }
+.notif-tipo-cumple_proximo:hover { background: linear-gradient(90deg, rgba(168, 85, 247, 0.05) 0%, #ffffff 100%); }
+
+/* 6.8 Cumpleaños Reciente (Orquídea / Morado Suave) */
+.notif-tipo-cumple_reciente::before { background: #c084fc; }
+.notif-tipo-cumple_reciente:hover { background: linear-gradient(90deg, rgba(192, 132, 252, 0.05) 0%, #ffffff 100%); }
+
 /* --------------------------------------------------------------------------
    7. AVATARES CIRCULARES CON INICIALES
    -------------------------------------------------------------------------- */
@@ -293,6 +305,25 @@
     background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%);
     color: #c2410c;
     border: 1.5px solid rgba(234, 88, 12, 0.25);
+}
+
+.notif-avatar-cumple_hoy {
+    background: linear-gradient(135deg, #fdf2f8 0%, #fbcfe8 100%);
+    color: #db2777;
+    border: 1.5px solid rgba(219, 39, 119, 0.3);
+    box-shadow: 0 0 12px rgba(236, 72, 153, 0.3);
+}
+
+.notif-avatar-cumple_proximo {
+    background: linear-gradient(135deg, #faf5ff 0%, #e9d5ff 100%);
+    color: #7e22ce;
+    border: 1.5px solid rgba(168, 85, 247, 0.3);
+}
+
+.notif-avatar-cumple_reciente {
+    background: linear-gradient(135deg, #fdf4ff 0%, #f5d0fe 100%);
+    color: #86198f;
+    border: 1.5px solid rgba(192, 132, 252, 0.3);
 }
 
 /* --------------------------------------------------------------------------
@@ -364,6 +395,25 @@
     border: 1px solid rgba(234, 88, 12, 0.2);
 }
 
+.notif-badge-cumple_hoy {
+    background: rgba(253, 242, 248, 0.95);
+    color: #be185d;
+    border: 1px solid rgba(219, 39, 119, 0.3);
+    animation: badgeCumpleGlow 2.5s infinite ease-in-out;
+}
+
+.notif-badge-cumple_proximo {
+    background: rgba(250, 245, 255, 0.95);
+    color: #7e22ce;
+    border: 1px solid rgba(168, 85, 247, 0.25);
+}
+
+.notif-badge-cumple_reciente {
+    background: rgba(253, 244, 255, 0.95);
+    color: #86198f;
+    border: 1px solid rgba(192, 132, 252, 0.25);
+}
+
 /* Descripción */
 .notif-desc {
     font-size: 0.83rem;
@@ -389,6 +439,9 @@
 .notif-tipo-reciente .notif-desc i { color: #6366f1; }
 .notif-tipo-gafete_vencido .notif-desc i { color: #dc2626; }
 .notif-tipo-gafete_proximo .notif-desc i { color: #ea580c; }
+.notif-tipo-cumple_hoy .notif-desc i { color: #ec4899; }
+.notif-tipo-cumple_proximo .notif-desc i { color: #a855f7; }
+.notif-tipo-cumple_reciente .notif-desc i { color: #c084fc; }
 
 /* Metadata de fecha y clave */
 .notif-fecha {
@@ -512,3 +565,452 @@
         transform: scale(1.03);
     }
 }
+
+/* --------------------------------------------------------------------------
+   12. BARRA DE METADATOS Y BOTÓN DE FELICITACIÓN EN TARJETA
+   -------------------------------------------------------------------------- */
+.notif-meta-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.45rem;
+    padding-top: 0.4rem;
+    border-top: 1px dashed rgba(226, 232, 240, 0.8);
+}
+
+.notif-btn-felicitacion {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border: none;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.32rem 0.7rem;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+    line-height: 1.2;
+    text-decoration: none;
+}
+
+.notif-btn-felicitacion:hover {
+    transform: translateY(-1.5px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.42);
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    color: #ffffff;
+}
+
+.notif-btn-felicitacion:active {
+    transform: translateY(0);
+}
+
+.notif-btn-felicitacion-proximo {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    box-shadow: 0 2px 6px rgba(245, 158, 11, 0.25);
+}
+
+.notif-btn-felicitacion-proximo:hover {
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.42);
+}
+
+.notif-btn-felicitacion-reciente {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    box-shadow: 0 2px 6px rgba(99, 102, 241, 0.25);
+}
+
+.notif-btn-felicitacion-reciente:hover {
+    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.42);
+}
+
+.notif-btn-felicitacion-cumple_hoy {
+    background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+    box-shadow: 0 2px 6px rgba(236, 72, 153, 0.25);
+}
+
+.notif-btn-felicitacion-cumple_hoy:hover {
+    background: linear-gradient(135deg, #db2777 0%, #be185d 100%);
+    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.42);
+}
+
+.notif-btn-felicitacion-cumple_proximo {
+    background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+    box-shadow: 0 2px 6px rgba(168, 85, 247, 0.25);
+}
+
+.notif-btn-felicitacion-cumple_proximo:hover {
+    background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.42);
+}
+
+.notif-btn-felicitacion-cumple_reciente {
+    background: linear-gradient(135deg, #c084fc 0%, #a855f7 100%);
+    box-shadow: 0 2px 6px rgba(192, 132, 252, 0.25);
+}
+
+.notif-btn-felicitacion-cumple_reciente:hover {
+    background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+    box-shadow: 0 4px 12px rgba(192, 132, 252, 0.42);
+}
+
+/* Tarjeta especial para "HOY": sutil resplandor esmeralda festivo */
+.notif-tipo-hoy {
+    border-color: rgba(16, 185, 129, 0.4);
+    background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);
+}
+
+/* Tarjeta especial para Cumpleaños "HOY": sutil resplandor fucsia festivo */
+.notif-tipo-cumple_hoy {
+    border-color: rgba(236, 72, 153, 0.4);
+    background: linear-gradient(180deg, #ffffff 0%, #fdf2f8 100%);
+}
+
+@keyframes badgeCumpleGlow {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.35);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 0 8px 2px rgba(236, 72, 153, 0.25);
+        transform: scale(1.03);
+    }
+}
+
+/* Utilidades para badges de cumpleaños */
+.bg-pink-subtle { background-color: #fdf2f8 !important; }
+.text-pink { color: #db2777 !important; }
+.border-pink-subtle { border-color: #fbcfe8 !important; }
+
+/* --------------------------------------------------------------------------
+   13. MODAL DE TARJETA CONMEMORATIVA (ESTILO INSTITUCIONAL EMPLEADOS)
+   -------------------------------------------------------------------------- */
+.felicitacion-dialog {
+    max-width: 820px;
+    margin: 0.5rem auto;
+    max-height: calc(100vh - 1rem);
+}
+
+.felicitacion-dialog .modal-content {
+    border-radius: 14px;
+    border: 0;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    background: #ffffff;
+    color: #1e293b;
+    position: relative;
+    max-height: calc(100vh - 1rem);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Cabecera idéntica al modal de actualizar empleado (compacta) */
+.felicitacion-dialog .modal-header {
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0.65rem 1.25rem;
+    flex-shrink: 0;
+}
+
+.felicitacion-dialog .modal-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.felicitacion-dialog .btn-close {
+    filter: none;
+    opacity: 0.7;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.felicitacion-dialog .btn-close:hover {
+    opacity: 1;
+    transform: rotate(90deg);
+}
+
+/* Cuerpo del modal con fondo sutil (ajustado para no desbordar pantalla) */
+.felicitacion-body {
+    padding: 0.5rem 1.25rem;
+    background: #f8fafc;
+    position: relative;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+/* Barra de Paleta de Colores en UN SOLO RENGLÓN (compacta) */
+.felicitacion-palette-bar {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.35rem 0.75rem;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    flex-shrink: 0;
+}
+
+.felicitacion-palette-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: nowrap;
+    width: 100%;
+    overflow-x: auto;
+    padding: 0.15rem 0;
+}
+
+/* Scrollbar sutil para pantallas estrechas */
+.felicitacion-palette-row::-webkit-scrollbar {
+    height: 4px;
+}
+.felicitacion-palette-row::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.felicitacion-palette-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+/* Muestras circulares de temas predefinidos (Swatches) */
+.felicitacion-swatch {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    padding: 0;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.felicitacion-swatch:hover {
+    transform: scale(1.22);
+    border-color: #0f172a;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+    z-index: 2;
+}
+
+.felicitacion-swatch.active {
+    border-color: #ffffff;
+    box-shadow: 0 0 0 2.5px #10b981, 0 3px 8px rgba(16, 185, 129, 0.45);
+    transform: scale(1.18);
+    z-index: 3;
+}
+
+/* Divisor sutil */
+.felicitacion-swatch-divider {
+    width: 1px;
+    height: 22px;
+    background: #e2e8f0;
+    margin: 0 0.15rem;
+    flex-shrink: 0;
+}
+
+/* Contenedor de paneles de color (Centro/Contraste y Letras) */
+.felicitacion-custom-colors {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    padding: 0.18rem 0.45rem;
+    flex-shrink: 0;
+}
+
+.felicitacion-custom-colors.active-custom {
+    border-color: #10b981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+}
+
+/* Panel individual (label con selector de color) */
+.felicitacion-color-panel {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    cursor: pointer;
+    padding: 0.12rem 0.3rem;
+    border-radius: 12px;
+    transition: background 0.18s ease;
+    position: relative;
+}
+
+.felicitacion-color-panel:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+/* Círculo de previsualización del color elegido */
+.felicitacion-color-panel-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #94a3b8;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    display: inline-block;
+    flex-shrink: 0;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.felicitacion-color-panel:hover .felicitacion-color-panel-dot {
+    border-color: #0f172a;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.35);
+}
+
+/* Etiqueta de texto pequeña */
+.felicitacion-color-panel-txt {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+    user-select: none;
+}
+
+/* Input color oculto pero clickeable */
+.felicitacion-color-panel input[type="color"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+}
+
+/* Preview del degradado entre los dos colores */
+.felicitacion-color-gradient-preview {
+    width: 32px;
+    height: 16px;
+    border-radius: 5px;
+    border: 1px solid #cbd5e1;
+    flex-shrink: 0;
+    transition: background 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+/* Botón de nueva frase con estilo limpio */
+.felicitacion-btn-frase {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    color: #92400e;
+    border: 1px solid #fcd34d;
+    border-radius: 20px;
+    padding: 0.3rem 0.85rem;
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 4px rgba(245, 158, 11, 0.15);
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.felicitacion-btn-frase:hover {
+    background: linear-gradient(135deg, #fde68a 0%, #fcd34d 100%);
+    color: #78350f;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(245, 158, 11, 0.3);
+}
+
+.felicitacion-btn-frase.active {
+    transform: scale(0.96);
+}
+
+/* Contenedor del Canvas */
+.felicitacion-canvas-wrap {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.15rem 0;
+    flex-grow: 1;
+}
+
+#canvasFelicitacion {
+    max-width: 100%;
+    width: auto;
+    height: auto;
+    /* Se adapta dinámicamente a la altura de la pantalla para nunca desbordar el footer */
+    max-height: min(480px, calc(100vh - 215px));
+    aspect-ratio: 1 / 1;
+    display: block;
+    margin: 0 auto;
+    border-radius: 12px;
+    box-shadow: 0 10px 26px -4px rgba(0, 0, 0, 0.25), 0 3px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.25s ease;
+}
+
+#canvasFelicitacion:hover {
+    transform: scale(1.008);
+}
+
+/* Pie del modal idéntico a actualizar empleado (compacto) */
+.felicitacion-dialog .modal-footer {
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    padding: 0.55rem 1.25rem;
+    flex-shrink: 0;
+}
+
+/* Toast de feedback */
+.felicitacion-toast {
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: rgba(16, 185, 129, 0.95);
+    color: #ffffff;
+    padding: 0.5rem 1.2rem;
+    border-radius: 30px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.felicitacion-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Confeti festivo */
+#confettiCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 50;
+}
+

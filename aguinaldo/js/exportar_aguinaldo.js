@@ -2,6 +2,8 @@
 // Evemtp ára abrir el modal de exportación
 $('#btn_reportes').click(function (e) {
     e.preventDefault();
+    console.log("HOLA DESDE EXPORTAR");
+    
     modal_reporte_excel.show();
 });
 

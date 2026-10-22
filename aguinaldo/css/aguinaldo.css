@@ -1,0 +1,594 @@
+/* ==========================================================================
+   SISTEMA SAAO - MÓDULO DE AGUINALDO
+   Hoja de estilos: aguinaldo.css
+   Diseño e identidad visual basados en "Actualizar Empleado" (empleados.css)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   0. TIPOGRAFÍA Y FUENTES EXTERNAS
+   -------------------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* --------------------------------------------------------------------------
+   1. VARIABLES GLOBALES (PALETA EXACTA DE ACTUALIZAR EMPLEADO)
+   -------------------------------------------------------------------------- */
+:root {
+    /* Paleta Institucional SAAO */
+    --primary-green: #2d6a4f;      /* Verde principal para botones y acentos destacados */
+    --accent-green:  #1b4332;      /* Verde oscuro para hover y énfasis */
+    --soft-green:    #95d5b2;      /* Verde medio para bordes activos y focos */
+    --light-green:   #d8f3dc;      /* Verde suave para píldoras y selecciones */
+    --hover-green:   #e8f7ee;      /* Verde ultraligero para hover en tablas */
+
+    /* Colores Neutros y Fondo */
+    --bg-gray:       #f8f9fa;      /* Fondo general de la página */
+    --border-color:  #e9ecef;      /* Color estándar de bordes */
+    --text-main:     #343a40;      /* Color principal de texto */
+    --text-muted:    #6c757d;      /* Texto secundario */
+    --white:         #ffffff;      /* Blanco puro */
+
+    /* Estados Adicionales (Alertas / Badges) */
+    --status-active-bg:   #eefdf3; /* Fondo suave para estado activo */
+    --status-active-txt:  #1e7e34; /* Texto para estado activo */
+    --status-inactive-bg: #f8f9fa; /* Fondo suave para inactivo */
+    --status-inactive-txt:#6c757d; /* Texto para inactivo */
+    --status-danger-bg:   #fef2f2; /* Fondo de advertencia/peligro */
+    --status-danger-txt:  #dc2626; /* Texto de advertencia/peligro */
+    --status-info-bg:     #eff6ff; /* Fondo suave informativo */
+    --status-info-txt:    #2563eb; /* Texto informativo */
+    --status-warning-bg:  #fffbeb; /* Fondo de advertencia */
+    --status-warning-txt: #d97706; /* Texto advertencia */
+
+    /* Elevaciones y Sombras */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+    /* Radios */
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-pill: 20px;
+}
+
+/* --------------------------------------------------------------------------
+   2. ESTILOS GENERALES
+   -------------------------------------------------------------------------- */
+body {
+    background-color: var(--bg-gray);
+    color: var(--text-main);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* --------------------------------------------------------------------------
+   3. ENCABEZADO DEL MÓDULO (IDENTIDAD ACTUALIZAR EMPLEADO)
+   -------------------------------------------------------------------------- */
+.module-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.module-header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.module-icon {
+    width: 52px;
+    height: 52px;
+    background: linear-gradient(135deg, var(--primary-green), var(--accent-green));
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    font-size: 1.5rem;
+    box-shadow: 0 4px 14px rgba(45, 106, 79, 0.28);
+    flex-shrink: 0;
+}
+
+.module-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1.2;
+    margin-bottom: 0.2rem;
+}
+
+.module-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 0;
+}
+
+/* --------------------------------------------------------------------------
+   4. TARJETAS Y CONTENEDORES (CARDS)
+   -------------------------------------------------------------------------- */
+.card {
+    background-color: var(--white);
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card-header {
+    background-color: var(--white) !important;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 1.25rem;
+    border-top-left-radius: var(--radius-lg) !important;
+    border-top-right-radius: var(--radius-lg) !important;
+}
+
+.card-footer {
+    background-color: var(--white) !important;
+    border-top: 1px solid var(--border-color);
+    padding: 0.85rem 1.25rem;
+    border-bottom-left-radius: var(--radius-lg) !important;
+    border-bottom-right-radius: var(--radius-lg) !important;
+}
+
+/* Barra de herramientas / Filtros */
+.toolbar-card {
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.25rem;
+    box-shadow: var(--shadow-sm);
+}
+
+/* --------------------------------------------------------------------------
+   5. FORMULARIOS Y CONTROLES
+   -------------------------------------------------------------------------- */
+.form-label {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 0.4rem;
+}
+
+.form-control,
+.form-select {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-main);
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+    background-color: var(--white);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+    outline: none;
+    border-color: var(--soft-green);
+    box-shadow: 0 0 0 3px rgba(149, 213, 178, 0.35);
+}
+
+.form-control::placeholder {
+    color: #adb5bd;
+    font-size: 0.85rem;
+}
+
+/* Input group con icono */
+.input-group-text {
+    border: 1px solid var(--border-color);
+    background-color: var(--white);
+    color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   6. BOTONES DE ACCIÓN (ESTILO ACTUALIZAR EMPLEADO)
+   -------------------------------------------------------------------------- */
+/* Botón principal verde institucional */
+.btn-success,
+.btn-primary-green {
+    background-color: var(--primary-green) !important;
+    border-color: var(--primary-green) !important;
+    color: var(--white) !important;
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    padding: 0.45rem 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-success:hover,
+.btn-success:focus,
+.btn-primary-green:hover,
+.btn-primary-green:focus {
+    background-color: var(--accent-green) !important;
+    border-color: var(--accent-green) !important;
+    color: var(--white) !important;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Botón outline verde */
+.btn-outline-success {
+    color: var(--primary-green) !important;
+    border-color: var(--primary-green) !important;
+    background-color: transparent !important;
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    padding: 0.45rem 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+}
+
+.btn-outline-success:hover,
+.btn-outline-success:focus {
+    background-color: var(--light-green) !important;
+    color: var(--primary-green) !important;
+    border-color: var(--primary-green) !important;
+}
+
+/* Botones de barra de acciones en generación de aguinaldo */
+.btn-action-tool {
+    font-size: 0.825rem;
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    padding: 0.42rem 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: all 0.2s ease;
+    border: 1px solid var(--border-color);
+    background-color: var(--white);
+    color: var(--text-main);
+}
+
+.btn-action-tool:hover {
+    background-color: var(--light-green);
+    color: var(--primary-green);
+    border-color: var(--soft-green);
+    transform: translateY(-1px);
+}
+
+.btn-action-tool.btn-action-danger:hover {
+    background-color: var(--status-danger-bg);
+    color: var(--status-danger-txt);
+    border-color: rgba(220, 38, 38, 0.3);
+}
+
+/* Botón 3 puntos dropdown en la tabla */
+.btn-dropdown-custom {
+    background-color: var(--white);
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-muted);
+    border-radius: var(--radius-md);
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    line-height: 1;
+    transition: all 0.2s ease;
+}
+
+.btn-dropdown-custom:hover,
+.btn-dropdown-custom:focus {
+    background-color: var(--light-green);
+    color: var(--primary-green);
+    border-color: var(--soft-green) !important;
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    padding: 0.4rem;
+    font-size: 0.85rem;
+}
+
+.dropdown-item {
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.85rem;
+    color: var(--text-main);
+    font-weight: 500;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.dropdown-item:hover {
+    background-color: var(--light-green);
+    color: var(--primary-green);
+}
+
+.dropdown-item.text-danger:hover {
+    background-color: var(--status-danger-bg);
+    color: var(--status-danger-txt) !important;
+}
+
+/* --------------------------------------------------------------------------
+   7. TABLAS (DISEÑO ACTUALIZAR EMPLEADO)
+   -------------------------------------------------------------------------- */
+.table {
+    color: var(--text-main);
+    margin-bottom: 0;
+    font-size: 0.875rem;
+    vertical-align: middle;
+}
+
+.table thead th {
+    background-color: #f1f8f5 !important;
+    color: var(--accent-green) !important;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.85rem 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    border-top: none;
+    white-space: nowrap;
+}
+
+.table tbody td {
+    padding: 0.85rem 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-main);
+    transition: background-color 0.15s ease;
+}
+
+.table-hover tbody tr:hover td {
+    background-color: var(--hover-green) !important;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Fila de totales */
+.table tfoot tr td,
+.table tbody tr.fila-totales td,
+.table tbody tr.table-light.fw-bold td {
+    background-color: #f1f8f5 !important;
+    font-weight: 700 !important;
+    border-top: 2px solid var(--soft-green) !important;
+    color: var(--accent-green) !important;
+}
+
+/* --------------------------------------------------------------------------
+   8. BADGES Y ESTADOS (PILLS REFINADAS)
+   -------------------------------------------------------------------------- */
+.badge {
+    padding: 0.35rem 0.75rem;
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.2px;
+    border-radius: var(--radius-pill);
+}
+
+/* Badge Departamento / Primary */
+.badge.bg-primary-subtle,
+.badge.text-bg-primary {
+    background-color: var(--status-info-bg) !important;
+    color: var(--status-info-txt) !important;
+    border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+/* Badge Success */
+.badge.bg-success,
+.badge.bg-success-subtle,
+.badge.text-bg-success {
+    background-color: var(--status-active-bg) !important;
+    color: var(--status-active-txt) !important;
+    border: 1px solid rgba(30, 126, 52, 0.2);
+}
+
+/* Badge Inactivo / Secondary */
+.badge.bg-secondary,
+.badge.bg-secondary-subtle,
+.badge.text-bg-secondary {
+    background-color: var(--status-inactive-bg) !important;
+    color: var(--status-inactive-txt) !important;
+    border: 1px solid var(--border-color);
+}
+
+/* --------------------------------------------------------------------------
+   9. PAGINACIÓN (ESTILO ACTUALIZAR EMPLEADO)
+   -------------------------------------------------------------------------- */
+.pagination {
+    gap: 4px;
+    margin-bottom: 0;
+    padding: 0.5rem 0;
+}
+
+.page-link {
+    border-radius: var(--radius-sm) !important;
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    font-size: 0.825rem;
+    font-weight: 500;
+    padding: 0.35rem 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.page-link:hover {
+    background-color: var(--light-green);
+    border-color: var(--soft-green);
+    color: var(--primary-green);
+}
+
+.page-item.active .page-link,
+.page-link.bg-success {
+    background-color: var(--primary-green) !important;
+    border-color: var(--primary-green) !important;
+    color: var(--white) !important;
+    box-shadow: var(--shadow-sm);
+}
+
+.page-item.disabled .page-link {
+    background-color: var(--bg-gray);
+    border-color: var(--border-color);
+    color: #adb5bd;
+}
+
+/* --------------------------------------------------------------------------
+   10. FORMULARIO CENTRALIZADO (GENERAR AGUINALDO)
+   -------------------------------------------------------------------------- */
+.form-central-card {
+    max-width: 460px;
+    margin: 2rem auto;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+    background: var(--white);
+    overflow: hidden;
+}
+
+.form-central-header {
+    background: linear-gradient(135deg, rgba(45, 106, 79, 0.06), rgba(216, 243, 220, 0.3));
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.75rem 1.5rem 1.25rem;
+    text-align: center;
+}
+
+.form-central-icon {
+    width: 58px;
+    height: 58px;
+    background: linear-gradient(135deg, var(--primary-green), var(--accent-green));
+    color: var(--white);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    margin-bottom: 0.85rem;
+    box-shadow: 0 6px 16px rgba(45, 106, 79, 0.25);
+}
+
+.form-central-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+}
+
+.form-central-desc {
+    font-size: 0.825rem;
+    color: var(--text-muted);
+    margin-bottom: 0;
+}
+
+.form-central-body {
+    padding: 1.75rem;
+}
+
+/* --------------------------------------------------------------------------
+   11. ESTILOS UNIFORMES PARA MODALES (PATRÓN ACTUALIZAR EMPLEADO)
+   -------------------------------------------------------------------------- */
+.modal-content {
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+}
+
+.modal-header {
+    background-color: var(--white);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.1rem 1.5rem;
+    border-top-left-radius: var(--radius-lg);
+    border-top-right-radius: var(--radius-lg);
+}
+
+.modal-title {
+    color: var(--text-main);
+    font-weight: 700;
+    font-size: 1.15rem;
+    letter-spacing: -0.2px;
+    display: flex;
+    align-items: center;
+}
+
+.modal-title i {
+    color: var(--primary-green) !important;
+}
+
+.modal-body {
+    padding: 1.5rem;
+    background-color: #fafbfc;
+}
+
+.modal-footer {
+    background-color: var(--white);
+    border-top: 1px solid var(--border-color);
+    padding: 0.9rem 1.5rem;
+    border-bottom-left-radius: var(--radius-lg);
+    border-bottom-right-radius: var(--radius-lg);
+}
+
+/* Scrollbar verde institucional para modales */
+.modal-body::-webkit-scrollbar,
+.table-responsive::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track,
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f5f3;
+    border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb,
+.table-responsive::-webkit-scrollbar-thumb {
+    background: var(--soft-green);
+    border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover,
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-green);
+}
+
+/* List groups para selección */
+.list-group-item {
+    border: 1px solid var(--border-color);
+    padding: 0.75rem 1rem;
+    color: var(--text-main);
+    transition: background-color 0.15s ease;
+}
+
+.list-group-item:hover {
+    background-color: var(--hover-green);
+}
+
+/* --------------------------------------------------------------------------
+   12. MENÚ CONTEXTUAL
+   -------------------------------------------------------------------------- */
+#context_menu {
+    border-radius: var(--radius-md) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: var(--shadow-md) !important;
+    overflow: hidden;
+}
+
+#context_menu .cm_item {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-main);
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+#context_menu .cm_item:hover {
+    background-color: var(--light-green);
+    color: var(--primary-green);
+}

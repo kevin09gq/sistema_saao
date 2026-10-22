@@ -1,9 +1,7 @@
 <?php
 require_once __DIR__ . "/../public/php/config.php";
 require_once __DIR__ . "/../public/php/verificarSesion.php";
-
 verificarSesion();
-
 verificarPermiso("aguinaldos.ver_menu");
 ?>
 
@@ -13,81 +11,122 @@ verificarPermiso("aguinaldos.ver_menu");
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aguinaldo</title>
+    <title>Historial de Aguinaldos | Sistema SAAO</title>
     <link rel="icon" href="<?= ICONO_SISTEMA ?>" />
 
-    <!-- Estilos Bootstrap -->
+    <!-- Estilos Bootstrap y Fuentes -->
     <link rel="stylesheet" href="<?= JQUERY_UI_CSS ?>">
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
+    <link rel="stylesheet" href="css/aguinaldo.css">
 
     <script>
         const rutaRaiz = '<?= $rutaRaiz ?>';
     </script>
 </head>
 
-<body class="bg-body-tertiary">
+<body>
 
-    <?php require_once __DIR__ . '/../navbar/navbar.php'; ?>
+    <?php include __DIR__ . '/../navbar/navbar.php'; ?>
 
-    <main class="container py-4">
+    <main class="container-fluid py-4">
 
-        <!-- Título de la página -->
-        <div class="row mb-4">
-            <div class="col">
-                <h2 class="fw-bold text-dark"><i class="bi bi-clock-history me-2"></i>Historial de Aguinaldos</h2>
-            </div>
-        </div>
-
-        <!-- Barra de Controles: Búsqueda y Nuevo Registro -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <!-- Buscador a la izquierda -->
-            <div class="col-md-4 col-lg-3">
-                <div class="input-group shadow-sm">
-                    <span class="input-group-text bg-white border-end-0">
-                        <i class="bi bi-search text-muted"></i>
-                    </span>
-                    <input type="text" id="busqueda" class="form-control border-start-0" placeholder="Buscar por año...">
+        <!-- Encabezado del módulo (Estilo Actualizar Empleado) -->
+        <div class="module-header mb-4">
+            <div class="module-header-left">
+                <div class="module-icon">
+                    <i class="bi bi-gift-fill"></i>
+                </div>
+                <div>
+                    <h1 class="module-title mb-0">Historial de Aguinaldos</h1>
+                    <p class="module-subtitle mb-0">Gestión y seguimiento de repartos de aguinaldos</p>
                 </div>
             </div>
-
-            <!-- Botón a la derecha -->
             <div>
-                <a href="generar_aguinaldo.php" class="btn btn-primary shadow-sm fw-bold" id="btn-nuevo-aguinaldo" hidden>
-                    <i class="bi bi-plus-circle me-2"></i>Nuevo Aguinaldo
+                <a href="generar_aguinaldo.php" class="btn btn-success" id="btn-nuevo-aguinaldo" hidden>
+                    <i class="bi bi-plus-lg me-1"></i>Nuevo Cálculo
                 </a>
             </div>
         </div>
 
-        <!-- Contenedor de la Tabla -->
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light">
-                            <tr>
-                                <th class="ps-4 py-3 text-secondary text-uppercase fs-xs">#</th>
-                                <th class="ps-4 py-3 text-secondary text-uppercase fs-xs">Año</th>
-                                <th class="text-center py-3 text-secondary text-uppercase fs-xs">Total Empleados</th>
-                                <th class="text-center py-3 text-secondary text-uppercase fs-xs">Total Aguinaldos</th>
-                                <th class="text-center py-3 text-secondary text-uppercase fs-xs">Total ISR</th>
-                                <th class="text-center py-3 text-secondary text-uppercase fs-xs">Total Dispersión Tarjeta</th>
-                                <th class="text-center py-3 text-secondary text-uppercase fs-xs">Total Neto</th>
-                                <th class="text-center py-3 text-secondary text-uppercase fs-xs" width="150">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="border-top-0" id="cuerpo_tabla_aguinaldos">
-
-                        </tbody>
-                    </table>
+        <!-- Filtros y Herramientas (Toolbar Card) -->
+        <div class="toolbar-card mb-4">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label for="busqueda" class="form-label">Buscar</label>
+                    <div class="input-group shadow-sm">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" placeholder="Buscar por departamento o año..." id="busqueda">
+                    </div>
                 </div>
 
-                <!-- Paginación -->
-                <nav aria-label="Page navigation" id="contenedor-paginacion">
-                    <ul class="pagination justify-content-center my-3" id="paginacion">
+                <div class="col-md-2">
+                    <label for="filtro_anio" class="form-label">Año</label>
+                    <select class="form-select shadow-sm" id="filtro_anio">
+                        <!-- Las opciones se llenarán dinámicamente mediante JavaScript -->
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label for="filtro_area" class="form-label">Área</label>
+                    <select class="form-select shadow-sm" id="filtro_area">
+                        <option value="">-- Todas las áreas --</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label for="filtro_departamento" class="form-label">Departamento</label>
+                    <select class="form-select shadow-sm" id="filtro_departamento" disabled>
+                        <option value="">-- Selecciona un área --</option>
+                    </select>
+                </div>
+
+                <div class="col-md-1">
+                    <label for="filtro_limite" class="form-label">Registros</label>
+                    <select class="form-select shadow-sm" id="filtro_limite">
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="-1">Todos</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla Estilizada -->
+        <div class="card border-0 shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">N°</th>
+                            <th>Año</th>
+                            <th>Departamento</th>
+                            <th class="text-center">Total Empleados</th>
+                            <th class="text-end">Total Aguinaldo</th>
+                            <th class="text-end">Total ISR</th>
+                            <th class="text-end">Total Tarjeta</th>
+                            <th class="text-end">Neto</th>
+                            <th class="text-center">Fecha Registro</th>
+                            <th class="text-center">Opciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpo_tabla_principal">
+                        <!-- El contenido de la tabla se llenará dinámicamente mediante JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginación -->
+            <div class="card-footer bg-white py-3">
+                <nav aria-label="Page navigation" id="contenedor_paginacion">
+                    <ul class="pagination justify-content-center" id="paginacion">
                         <!-- Se genera dinámicamente -->
                     </ul>
                 </nav>
+                <!-- Contenedor para almacenar la página actual -->
+                <div id="pagina_actual" data-pagina="1" style="display:none;"></div>
             </div>
         </div>
 
@@ -96,23 +135,16 @@ verificarPermiso("aguinaldos.ver_menu");
     <!-- Modal de Detalles del Aguinaldo -->
     <?php include __DIR__ . '/modal_detalles_historial.php'; ?>
 
-
-    <!--
-    * ==============================================================
-    * Scripts necesarios para el funcionamiento de la página
-    * ==============================================================
-    -->
     <script>
         // Pasar permisos de PHP a JavaScript
         const permisosUsuario = <?php echo json_encode($_SESSION["permisos"] ?? []); ?>;
     </script>
 
-
+    <!-- Scripts necesarios para el funcionamiento de la página -->
     <script src="<?= JQUERY_JS ?>"></script>
     <script src="<?= JQUERY_UI_JS ?>"></script>
     <script src="<?= BOOTSTRAP_JS ?>"></script>
     <script src="<?= SWEETALERT ?>"></script>
-    <script src="<?= JQUERY_UI_JS ?>"></script>
     <script src="<?= PERMISOS_JS ?>"></script>
 
     <script src="js/historial/index.js"></script>

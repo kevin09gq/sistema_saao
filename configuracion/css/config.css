@@ -1,0 +1,685 @@
+/* ==========================================================================
+   SISTEMA SAAO - MÓDULO DE CONFIGURACIÓN
+   Hoja de estilos: config.css
+   Diseño basado en empleados.css (Limpio, Moderno y Funcional)
+   Adaptable a dispositivos móviles con Bootstrap
+   Estilos limitados únicamente a la vista de configuración (.config-page)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   0. TIPOGRAFÍA Y FUENTES EXTERNAS
+   -------------------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* --------------------------------------------------------------------------
+   1. VARIABLES GLOBALES (PALETA DE COLORES Y SOMBRAS)
+   -------------------------------------------------------------------------- */
+:root {
+    /* Paleta de Verdes (Identidad Institucional SAAO) */
+    --primary-green: #2d6a4f;
+    --accent-green:  #1b4332;
+    --soft-green:    #95d5b2;
+    --light-green:   #d8f3dc;
+    --hover-green:   #e8f7ee;
+
+    /* Colores Neutros y Fondo */
+    --bg-gray:       #f8f9fa;
+    --border-color:  #e9ecef;
+    --text-main:     #343a40;
+    --text-muted:    #6c757d;
+    --white:         #ffffff;
+
+    /* Estados Adicionales */
+    --status-active-bg:   #eefdf3;
+    --status-active-txt:  #1e7e34;
+    --status-inactive-bg: #fef2f2;
+    --status-inactive-txt: #dc2626;
+    --status-danger-bg:   #fef2f2;
+    --status-danger-txt:  #dc2626;
+
+    /* Elevaciones y Sombras */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+    /* Radios de redondeo */
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+}
+
+/* ==========================================================================
+   ESTILOS LIMITADOS A LA VISTA DE CONFIGURACIÓN
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   2. CONTENEDOR PRINCIPAL DE CONFIGURACIÓN
+   -------------------------------------------------------------------------- */
+.config-page {
+    background-color: var(--bg-gray);
+}
+
+/* --------------------------------------------------------------------------
+   3. TARJETAS Y CONTENEDORES (CARDS)
+   -------------------------------------------------------------------------- */
+.config-page .card {
+    background-color: var(--white);
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.config-page .card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.config-page .card-header {
+    background-color: var(--white) !important;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 1.25rem;
+    border-top-left-radius: var(--radius-lg) !important;
+    border-top-right-radius: var(--radius-lg) !important;
+}
+
+.config-page .card-footer {
+    background-color: var(--white) !important;
+    border-top: 1px solid var(--border-color);
+    padding: 0.85rem 1.25rem;
+    border-bottom-left-radius: var(--radius-lg) !important;
+    border-bottom-right-radius: var(--radius-lg) !important;
+}
+
+/* --------------------------------------------------------------------------
+   4. MENÚ LATERAL DE CONFIGURACIÓN
+   -------------------------------------------------------------------------- */
+.config-page .config-menu-card {
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.config-page .config-menu-card .card-body {
+    padding: 0.5rem;
+}
+
+.config-page .menu-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+
+.config-page .config-menu {
+    gap: 0.25rem;
+}
+
+.config-page .config-menu .nav-link {
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 0.6rem 0.85rem;
+    color: var(--text-main);
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    transition: all 0.2s ease;
+}
+
+.config-page .config-menu .nav-link i:first-child {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    width: 20px;
+    text-align: center;
+}
+
+.config-page .config-menu .nav-link span {
+    flex: 1;
+}
+
+.config-page .config-menu .nav-link:hover {
+    background-color: var(--light-green);
+    color: var(--primary-green);
+}
+
+.config-page .config-menu .nav-link:hover i:first-child {
+    color: var(--primary-green);
+}
+
+.config-page .config-menu .nav-link.active {
+    background-color: var(--primary-green) !important;
+    color: var(--white) !important;
+    box-shadow: var(--shadow-sm);
+}
+
+.config-page .config-menu .nav-link.active i:first-child {
+    color: var(--white) !important;
+}
+
+.config-page .menu-arrow {
+    font-size: 0.85rem;
+    color: var(--white) !important;
+}
+
+/* --------------------------------------------------------------------------
+   5. TARJETA DE AYUDA (HELP CARD)
+   -------------------------------------------------------------------------- */
+.config-page .help-card {
+    background: linear-gradient(135deg, var(--light-green) 0%, #f0f9f4 100%);
+    border: 1px solid var(--soft-green) !important;
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.config-page .help-card i {
+    font-size: 1.5rem;
+    color: var(--primary-green);
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+}
+
+.config-page .help-card strong {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 0.35rem;
+}
+
+.config-page .help-card p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.config-page .help-card a {
+    font-size: 0.8rem;
+    color: var(--primary-green);
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: color 0.2s ease;
+}
+
+.config-page .help-card a:hover {
+    color: var(--accent-green);
+}
+
+/* --------------------------------------------------------------------------
+   6. TARJETA DE CONTENIDO DE CONFIGURACIÓN
+   -------------------------------------------------------------------------- */
+.config-page .config-content-card {
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.config-page .config-content-card .card-header {
+    padding: 1.25rem 1.5rem;
+}
+
+.config-page .section-kicker {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 0.35rem;
+}
+
+.config-page .config-content-card h2 {
+    color: var(--text-main);
+    font-weight: 700;
+}
+
+.config-page .config-content-card p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   7. PÍLDORA DE ESTADO (STATUS PILL)
+   -------------------------------------------------------------------------- */
+.config-page .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.85rem;
+    background-color: var(--status-active-bg);
+    color: var(--status-active-txt);
+    border: 1px solid rgba(30, 126, 52, 0.2);
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.config-page .status-pill i {
+    font-size: 0.9rem;
+}
+
+/* --------------------------------------------------------------------------
+   8. FORMULARIOS Y NOTAS
+   -------------------------------------------------------------------------- */
+.config-page .form-label {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 0.4rem;
+}
+
+.config-page .form-control,
+.config-page .form-select {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-main);
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+    background-color: var(--white);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.config-page .form-control:focus,
+.config-page .form-select:focus {
+    outline: none;
+    border-color: var(--soft-green);
+    box-shadow: 0 0 0 3px rgba(149, 213, 178, 0.35);
+}
+
+.config-page .form-control::placeholder {
+    color: #adb5bd;
+    font-size: 0.85rem;
+}
+
+.config-page .form-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background-color: #f8fbf9;
+    border: 1px solid var(--light-green);
+    border-radius: var(--radius-md);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.config-page .form-note i {
+    color: var(--primary-green);
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+/* --------------------------------------------------------------------------
+   9. BOTONES DE ACCIÓN
+   -------------------------------------------------------------------------- */
+.config-page .btn-success {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+    color: var(--white);
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    padding: 0.45rem 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+}
+
+.config-page .btn-success:hover,
+.config-page .btn-success:focus,
+.config-page .btn-success:active {
+    background-color: var(--accent-green) !important;
+    border-color: var(--accent-green) !important;
+    color: var(--white) !important;
+    box-shadow: var(--shadow-sm);
+}
+
+.config-page .btn-outline-success {
+    background-color: var(--white);
+    border: 1px solid var(--primary-green);
+    color: var(--primary-green);
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    padding: 0.45rem 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+}
+
+.config-page .btn-outline-success:hover,
+.config-page .btn-outline-success:focus,
+.config-page .btn-outline-success:active {
+    background-color: var(--light-green) !important;
+    border-color: var(--primary-green) !important;
+    color: var(--accent-green) !important;
+}
+
+.config-page .btn-light {
+    background-color: var(--white);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    padding: 0.45rem 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.config-page .btn-light:hover {
+    background-color: var(--bg-gray);
+    border-color: var(--soft-green);
+    color: var(--primary-green);
+}
+
+.config-page .action-button {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+}
+
+.config-page .action-button:hover {
+    background-color: var(--light-green);
+    color: var(--primary-green);
+    border-color: var(--soft-green);
+}
+
+/* --------------------------------------------------------------------------
+   10. TABLA DE CONFIGURACIÓN
+   -------------------------------------------------------------------------- */
+.config-page .config-table {
+    margin-bottom: 0;
+    color: var(--text-main);
+}
+
+.config-page .config-table thead th {
+    background-color: #f8fbf9 !important;
+    color: var(--primary-green) !important;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.9rem 1rem;
+    border-bottom: 2px solid var(--border-color);
+    border-top: none;
+    vertical-align: middle;
+}
+
+.config-page .config-table tbody td {
+    padding: 0.95rem 1rem;
+    vertical-align: middle;
+    font-size: 0.885rem;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--white);
+    transition: background-color 0.15s ease;
+}
+
+.config-page .config-table tbody tr:hover td {
+    background-color: var(--hover-green);
+}
+
+.config-page .config-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Avatar con iniciales cuando no hay logo */
+.config-page .avatar-iniciales {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--light-green);
+    color: var(--primary-green);
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--light-green);
+    letter-spacing: 0.5px;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+    user-select: none;
+}
+
+/* Avatar interactivo para actualizar logo */
+.avatar-clickable {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.avatar-clickable:hover {
+    transform: scale(1.08);
+}
+
+.avatar-clickable:active {
+    transform: scale(0.96);
+}
+
+/* Avatar y contenedor de logo en el modal (Adaptable e idéntico a empleados) */
+.avatar-modal-preview {
+    width: 100%;
+    max-width: 280px;
+    height: 280px;
+    margin: 0 auto;
+    border-radius: 16px;
+    overflow: hidden;
+    background-color: #f1f8f5;
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    user-select: none;
+    transition: all 0.2s ease;
+}
+
+.avatar-modal-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    background-color: #f8fafc;
+}
+
+.avatar-modal-preview .avatar-modal-iniciales {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background-color: var(--light-green);
+    border: 3px solid var(--soft-green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--primary-green);
+    letter-spacing: 2px;
+    user-select: none;
+    text-transform: uppercase;
+}
+
+@media (max-width: 576px) {
+    .avatar-modal-preview {
+        max-width: 220px;
+        height: 220px;
+        border-radius: 12px;
+    }
+
+    .avatar-modal-preview .avatar-modal-iniciales {
+        width: 100px;
+        height: 100px;
+        font-size: 2.8rem;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   11. BADGES / INSIGNIAS
+   -------------------------------------------------------------------------- */
+.config-page .badge {
+    padding: 0.35rem 0.75rem;
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.2px;
+}
+
+.config-page .badge.bg-success {
+    background-color: var(--status-active-bg) !important;
+    color: var(--status-active-txt) !important;
+    border: 1px solid rgba(30, 126, 52, 0.2);
+}
+
+.config-page .badge.bg-secondary {
+    background-color: var(--status-inactive-bg) !important;
+    color: var(--status-inactive-txt) !important;
+    border: 1px solid var(--border-color);
+}
+
+.config-page .badge.bg-warning {
+    background-color: #fff4e5 !important;
+    color: #d97706 !important;
+    border: 1px solid rgba(217, 119, 6, 0.2);
+}
+
+.config-page .badge.bg-danger {
+    background-color: var(--status-danger-bg) !important;
+    color: var(--status-danger-txt) !important;
+    border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+/* --------------------------------------------------------------------------
+   12. ADAPTACIONES RESPONSIVAS (MÓVILES Y TABLETS)
+   -------------------------------------------------------------------------- */
+/* Móviles pequeños (hasta 576px) */
+@media (max-width: 576px) {
+    .config-page .config-menu-card {
+        order: 2;
+    }
+
+    .config-page .config-content-card {
+        order: 1;
+    }
+
+    .config-page .help-card {
+        padding: 0.85rem 1rem;
+    }
+
+    .config-page .config-content-card .card-header {
+        padding: 1rem 1.25rem;
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+
+    .config-page .config-content-card .card-body {
+        padding: 1rem;
+    }
+
+    .config-page .config-table thead th,
+    .config-page .config-table tbody td {
+        padding: 0.75rem 0.6rem;
+        font-size: 0.8rem;
+    }
+
+    .config-page .action-button {
+        width: 28px;
+        height: 28px;
+    }
+
+    .config-page .btn-sm {
+        padding: 0.35rem 0.75rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* Tablets (577px - 768px) */
+@media (min-width: 577px) and (max-width: 768px) {
+    .config-page .config-menu .nav-link {
+        padding: 0.55rem 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    .config-page .config-content-card .card-header {
+        padding: 1.1rem 1.3rem;
+    }
+
+    .config-page .config-content-card .card-body {
+        padding: 1.1rem;
+    }
+}
+
+/* Tablets grandes (769px - 991px) */
+@media (min-width: 769px) and (max-width: 991px) {
+    .config-page .config-menu .nav-link {
+        padding: 0.6rem 0.85rem;
+        font-size: 0.875rem;
+    }
+
+    .config-page .config-content-card .card-header {
+        padding: 1.15rem 1.4rem;
+    }
+}
+
+/* Laptops pequeñas (992px - 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+    .config-page .config-menu .nav-link span {
+        font-size: 0.875rem;
+    }
+}
+
+/* Pantallas extra grandes (1200px en adelante) */
+@media (min-width: 1200px) {
+    .config-page .config-menu .nav-link {
+        padding: 0.65rem 0.9rem;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   13. OPTIMIZACIONES DE SCROLL Y TRANSICIONES
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    .config-page * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Scroll suave en contenedores */
+.config-page .table-responsive {
+    scrollbar-width: thin;
+    scrollbar-color: var(--soft-green) var(--bg-gray);
+}
+
+.config-page .table-responsive::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.config-page .table-responsive::-webkit-scrollbar-track {
+    background: var(--bg-gray);
+    border-radius: 4px;
+}
+
+.config-page .table-responsive::-webkit-scrollbar-thumb {
+    background: var(--soft-green);
+    border-radius: 4px;
+}
+
+.config-page .table-responsive::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-green);
+}

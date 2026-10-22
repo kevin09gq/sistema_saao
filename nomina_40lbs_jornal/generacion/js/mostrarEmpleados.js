@@ -87,8 +87,6 @@ function llenarTablaNomina() {
             // Verificar si el empleado pertenece al rango de la página actual
             if (contador >= inicio && contador < fin) {
 
-                let cobroEmpleado = obtenerTotalCobrar(empleado);
-
                 // Agregar la fila del empleado a la tabla
                 $('#tabla-nomina-body-40lbs').append(`
                     <tr data-id-empleado="${empleado.id_empleado}">
@@ -121,7 +119,7 @@ function llenarTablaNomina() {
                         <td>${formatoMoneda(empleado.prestamo)}</td>
                         <td>${formatoMoneda(obtenerTotalRecibir(empleado))}</td>
                         <td class="${parseFloat(empleado.redondeo) < 0 ? 'redondeo-negativo' : 'redondeo-positivo'}">${formatoMoneda(empleado.redondeo || 0)}</td>
-                        <td class="${cobroEmpleado < 0 ? 'sueldo-negativo' : ''}">${formatoMoneda(cobroEmpleado)}</td>
+                        <td class="${obtenerTotalCobrar(empleado) < 0 ? 'sueldo-negativo' : ''}">${formatoMoneda(obtenerTotalCobrar(empleado))}</td>
 
                     </tr>
                 `);

@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-require_once __DIR__ . "/../../conexion/conexion.php";
+include("../../conexion/conexion.php");
 
 ob_start();
 

@@ -177,12 +177,29 @@ $(document).ready(function () {
         $('.empleado-checkbox').prop('checked', false);
         empleadosSeleccionados.clear();
         window.empleadosSeleccionados = empleadosSeleccionados;
-        
+
         // Limpiar las preferencias de inclusión de fotos y orden de nombre
         window.fotoInclusion = {};
         window.ordenNombre = {};
-        
+
         actualizarContadorSeleccionados();
+    });
+
+    // Evento para seleccionar todas las fotos
+    $('#seleccionarFotos').click(function () {
+        $('.foto-checkbox').prop('checked', true);
+        // Actualizar el objeto global de inclusión de fotos
+        $('.foto-checkbox').each(function() {
+            const idEmpleado = $(this).val();
+            window.fotoInclusion[idEmpleado] = true;
+        });
+    });
+
+    // Evento para deseleccionar todas las fotos
+    $('#deseleccionarFotos').click(function () {
+        $('.foto-checkbox').prop('checked', false);
+        // Limpiar el objeto global de inclusión de fotos
+        window.fotoInclusion = {};
     });
 
     // Función para actualizar los controles de paginación
@@ -418,13 +435,16 @@ $(document).ready(function () {
     
     // Evento para refrescar la tabla cuando se cierra el modal de actualizar empleado
     $('#modal_actualizar_empleado').on('hidden.bs.modal', function () {
-        
+
+        // Limpiar el nombre del empleado en el footer
+        $("#nombre_empleado_footer").text('-');
+
         // Recargar los empleados del departamento actual
         const departamentoActual = $('#filtroDepartamento').val() || 'todos';
-        
+
         // Recargar empleados con carga global para actualizar todosLosEmpleados
         cargarEmpleadosPorDepartamento(departamentoActual, true);
-        
+
     });
 
     // Evento para imprimir gafetes
@@ -2924,15 +2944,35 @@ $(document).ready(function () {
         // Obtener los datos del empleado
         $.ajax({
             type: "POST",
-            url: "../empleados/php/obtenerEmpleados.php",
-            data: data,
-            success: function (empleado) {
-                if (!empleado.error) {
+            url: "../gestion_empleados/empleados/php/infoEmpleado.php",
+            data: {
+                id_empleado: idEmpleado,
+                accion: "obtenerInformacionPersonal"
+            },
+            dataType: "json",
+            success: function (response) {
+                if (response.success && response.empleado) {
+                    const empleado = response.empleado;
+                    const datosModal = {
+                        ...empleado,
+                        clave_empleado: empleado.clave,
+                        nombre_empleado: empleado.nombre,
+                        apellido_paterno_empleado: empleado.ap_paterno,
+                        apellido_materno_empleado: empleado.ap_materno,
+                        domicilio_empleado: empleado.domicilio,
+                        grupo_sanguineo: empleado.grupo_sanguineo,
+                        fecha_alta_empresa: empleado.fecha_alta_empresa,
+                        num_casillero: empleado.numero_casillero,
+                        biometrico: empleado.id_biometrico,
+                        id_puesto: empleado.id_puestoEspecial,
+                        telefono_empleado: empleado.telefono
+                    };
+
                     // Llenar los campos del modal con los datos del empleado
-                    llenarCamposModal(empleado, idEmpleado, claveEmpleado);
+                    llenarCamposModal(datosModal, idEmpleado, empleado.clave || claveEmpleado);
                     
                     // Cargar dropdowns
-                    cargarDropdownsModal(empleado);
+                    cargarDropdownsModal(datosModal);
                     
                     // Mostrar el modal
                     $("#modal_actualizar_empleado").modal("show");
@@ -2945,7 +2985,7 @@ $(document).ready(function () {
                 }
             },
             error: function(xhr, status, error) {
-                  alert('Error al cargar los datos del empleado');
+                alert('Error al cargar los datos del empleado');
             }
         });
     }
@@ -2963,6 +3003,13 @@ $(document).ready(function () {
         $("#modal_curp").val(empleado.curp || '');
         $("#modal_sexo").val(empleado.sexo || '');
         $("#modal_grupo_sanguineo").val(empleado.grupo_sanguineo || '');
+
+        // Mostrar nombre del empleado en el footer del modal
+        const nombreCompleto = [empleado.nombre_empleado, empleado.apellido_paterno_empleado, empleado.apellido_materno_empleado]
+            .filter(Boolean)
+            .join(' ')
+            .trim();
+        $("#nombre_empleado_footer").text(nombreCompleto || '-');
         
         // Seleccionar estado civil con mapeo adecuado
         (function(){
@@ -3405,17 +3452,37 @@ $(document).ready(function () {
         // Enviar datos al servidor
         $.ajax({
             type: "POST",
-            url: "../empleados/php/update_empleado.php",
-            data: datos,
+            url: "../gestion_empleados/empleados/php/infoEmpleado.php",
+            data: {
+                accion: "actualizarEmpleado",
+                id_empleado: datos.id_empleado,
+                clave: datos.clave_empleado,
+                nombre: datos.nombre_empleado,
+                ap_paterno: datos.apellido_paterno_empleado,
+                ap_materno: datos.apellido_materno_empleado,
+                imss: datos.imss,
+                curp: datos.curp,
+                domicilio: datos.domicilio_empleado,
+                sexo: datos.sexo,
+                grupo_sanguineo: datos.grupo_sanguineo,
+                estado_civil: datos.estado_civil,
+                enfermedades_alergias: datos.enfermedades_alergias,
+                telefono: datos.telefono_empleado,
+                numero_casillero: datos.num_casillero,
+                id_biometrico: datos.biometrico,
+                id_empresa: datos.id_empresa === "0" ? "" : datos.id_empresa,
+                id_area: datos.id_area === "0" ? "" : datos.id_area,
+                id_departamento: datos.id_departamento === "0" ? "" : datos.id_departamento,
+                id_puestoEspecial: datos.id_puestoEspecial === "0" ? "" : datos.id_puestoEspecial,
+                fecha_nacimiento: datos.fecha_nacimiento
+            },
             dataType: "json", // Asegurar que la respuesta se trate como JSON
             success: function (response) {
-                // Verificar si hay una advertencia (casillero ocupado u otros errores)
-                if (response.type === 'warning' || response.type === 'info') {
-                    // Mostrar la advertencia con el mensaje específico
+                if (!response.success) {
                     Swal.fire({
-                        icon: response.type,
-                        title: 'Atención',
-                        text: response.text,
+                        icon: 'error',
+                        title: 'Error al actualizar',
+                        text: response.mensaje || 'No se pudo actualizar el empleado.',
                         confirmButtonText: 'Aceptar'
                     });
                     return;
@@ -3886,6 +3953,7 @@ $(document).ready(function () {
         $('#nueva_foto_preview_container').hide();
         $('#btn_subir_foto').prop('disabled', true);
         $('#foto_preview').hide();
+        $("#nombre_empleado_footer").text('-');
     });
 
     // ======================================

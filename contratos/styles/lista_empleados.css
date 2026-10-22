@@ -1,169 +1,332 @@
-/* contratos/styles/lista_empleados.css */
+/* ==========================================================================
+   SISTEMA SAAO - MÓDULO DE CONTRATOS
+   Hoja de estilos: lista_empleados.css
+   Diseño consistente con el estilo institucional de Empleados (Kardex)
+   ========================================================================== */
 
+/* --------------------------------------------------------------------------
+   0. TIPOGRAFÍA Y FUENTES EXTERNAS
+   -------------------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* --------------------------------------------------------------------------
+   1. VARIABLES GLOBALES (PALETA INSTITUCIONAL SAAO)
+   -------------------------------------------------------------------------- */
+:root {
+    /* Paleta de Verdes Institucionales */
+    --primary-green: #2d6a4f;      /* Verde principal */
+    --accent-green:  #1b4332;      /* Verde oscuro para hover */
+    --soft-green:    #95d5b2;      /* Verde medio para focos y bordes */
+    --light-green:   #d8f3dc;      /* Verde suave para selecciones y píldoras */
+    --hover-green:   #e8f7ee;      /* Verde ultraligero para hover en tablas */
+
+    /* Colores Neutros y Fondo */
+    --bg-gray:       #f8f9fa;      /* Fondo general */
+    --border-color:  #e9ecef;      /* Color de bordes */
+    --text-main:     #343a40;      /* Texto principal */
+    --text-muted:    #6c757d;      /* Texto secundario */
+    --white:         #ffffff;      /* Blanco */
+
+    /* Estados */
+    --status-active-bg:   #eefdf3;
+    --status-active-txt:  #1e7e34;
+
+    /* Sombras y Radios */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   2. ESTILOS GENERALES
+   -------------------------------------------------------------------------- */
 body {
-  background-color: #f8f9fa;
+    background-color: var(--bg-gray);
+    color: var(--text-main);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-/* Header */
-.page-header {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
-  padding: 1.5rem;
-  border-radius: 8px;
-  margin-bottom: 1.5rem;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+/* --------------------------------------------------------------------------
+   3. TARJETAS (CARDS)
+   -------------------------------------------------------------------------- */
+.card {
+    background-color: var(--white);
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s ease;
 }
 
-.page-header h1 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
+.card-header {
+    background-color: var(--white) !important;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 1.25rem;
+    border-top-left-radius: var(--radius-lg) !important;
+    border-top-right-radius: var(--radius-lg) !important;
 }
 
-.page-header p {
-  margin: 0.5rem 0 0 0;
-  opacity: 0.95;
-  font-size: 0.9rem;
+.card-footer {
+    background-color: var(--white) !important;
+    border-top: 1px solid var(--border-color);
+    padding: 0.85rem 1.25rem;
+    border-bottom-left-radius: var(--radius-lg) !important;
+    border-bottom-right-radius: var(--radius-lg) !important;
 }
 
-/* Filtros */
-.filter-card {
-  background: white;
-  border-radius: 8px;
-  padding: 1.25rem;
-  margin-bottom: 1.25rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  border: 1px solid #e5e7eb;
+/* --------------------------------------------------------------------------
+   4. ETIQUETAS Y FORMULARIOS (FILTROS)
+   -------------------------------------------------------------------------- */
+.form-label {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.785rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 0.4rem;
 }
 
-.filter-card label {
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 0.4rem;
-  font-size: 0.875rem;
+.form-control,
+.form-select {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-main);
+    font-size: 0.875rem;
+    background-color: var(--white);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Tabla */
-.table-card {
-  background: white;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  border: 1px solid #e5e7eb;
+.form-control:focus,
+.form-select:focus {
+    outline: none;
+    border-color: var(--soft-green);
+    box-shadow: 0 0 0 3px rgba(149, 213, 178, 0.35);
 }
 
-.table-card-header {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
-  padding: 0.875rem 1.25rem;
-  font-weight: 600;
-  font-size: 1rem;
+.form-control::placeholder {
+    color: #adb5bd;
+    font-size: 0.85rem;
 }
 
-.table thead th {
-  background: #f9fafb;
-  color: #374151;
-  font-weight: 600;
-  border-bottom: 2px solid #e5e7eb;
-  padding: 0.75rem;
-  font-size: 0.875rem;
-  white-space: nowrap;
+.form-control:disabled,
+.form-select:disabled {
+    background-color: #f1f3f5;
+    color: #868e96;
+    cursor: not-allowed;
+    border-color: #dee2e6;
+    opacity: 0.85;
 }
 
-.table tbody tr {
-  transition: background-color 0.15s ease;
+.input-group-text {
+    border-color: var(--border-color);
+    border-radius: var(--radius-md) 0 0 var(--radius-md);
+    font-size: 0.875rem;
 }
 
-.table tbody tr:hover {
-  background-color: #f9fafb;
-}
-
-.table tbody td {
-  padding: 0.75rem;
-  vertical-align: middle;
-}
-
-/* Badge de clave */
-.badge-clave {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
-  padding: 0.35rem 0.7rem;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.8rem;
-  display: inline-block;
-}
-
-/* Botón generar */
+/* --------------------------------------------------------------------------
+   5. BOTONES
+   -------------------------------------------------------------------------- */
+.btn-success,
 .btn-generar {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  border: none;
-  padding: 0.4rem 0.9rem;
-  border-radius: 6px;
-  font-weight: 600;
-  color: white;
-  transition: all 0.2s ease;
-  font-size: 0.875rem;
+    background-color: var(--primary-green) !important;
+    border-color: var(--primary-green) !important;
+    color: var(--white) !important;
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    padding: 0.42rem 0.9rem;
+    font-size: 0.825rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: all 0.2s ease;
 }
 
+.btn-success:hover,
 .btn-generar:hover {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+    background-color: var(--accent-green) !important;
+    border-color: var(--accent-green) !important;
+    color: var(--white) !important;
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
 }
 
-/* Paginación */
-.pagination-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.25rem;
-  background: #f9fafb;
-  border-top: 1px solid #e5e7eb;
+.btn-success:active,
+.btn-generar:active {
+    transform: translateY(0);
 }
 
-.pagination {
-  margin: 0;
+.btn-outline-success {
+    background-color: var(--white);
+    border: 1px solid var(--primary-green);
+    color: var(--primary-green);
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    padding: 0.42rem 0.85rem;
+    font-size: 0.825rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: all 0.2s ease;
 }
 
-.page-link {
-  border-radius: 6px;
-  margin: 0 0.15rem;
-  border: 1px solid #e5e7eb;
-  color: #10b981;
-  font-weight: 600;
-  padding: 0.4rem 0.7rem;
-  font-size: 0.875rem;
+.btn-outline-success:hover {
+    background-color: var(--light-green) !important;
+    border-color: var(--primary-green) !important;
+    color: var(--accent-green) !important;
 }
 
-.page-link:hover {
-  background-color: #10b981;
-  color: white;
-  border-color: #10b981;
+.btn-outline-secondary {
+    border-color: var(--border-color);
+    color: var(--text-muted);
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    padding: 0.42rem 0.85rem;
+    font-size: 0.825rem;
+    transition: all 0.2s ease;
 }
 
-.page-item.active .page-link {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  border-color: #10b981;
+.btn-outline-secondary:hover {
+    background-color: var(--bg-gray);
+    color: var(--text-main);
+    border-color: #ced4da;
 }
 
-.info-text {
-  color: #6b7280;
-  font-size: 0.875rem;
-  font-weight: 500;
+/* --------------------------------------------------------------------------
+   6. TABLA (ESTILO KARDEX / EMPLEADOS)
+   -------------------------------------------------------------------------- */
+.table {
+    margin-bottom: 0;
+    color: var(--text-main);
 }
 
-/* Select plantilla */
+/* Encabezado refinado */
+.table thead th,
+.table-success th {
+    background-color: #f8fbf9 !important;
+    color: var(--primary-green) !important;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.85rem 1rem;
+    border-bottom: 2px solid var(--border-color);
+    border-top: none;
+    vertical-align: middle;
+}
+
+/* Celdas del cuerpo */
+.table tbody td {
+    padding: 0.85rem 1rem;
+    vertical-align: middle;
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--white);
+    transition: background-color 0.15s ease;
+}
+
+/* Hover de filas */
+.table-hover tbody tr:hover td {
+    background-color: var(--hover-green);
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* --------------------------------------------------------------------------
+   7. ELEMENTOS DE FILA (BADGES, SELECTS)
+   -------------------------------------------------------------------------- */
+/* Badge de clave institucional */
+.badge-clave {
+    background-color: var(--light-green);
+    color: var(--accent-green);
+    border: 1px solid var(--soft-green);
+    padding: 0.28rem 0.65rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.785rem;
+    letter-spacing: 0.3px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    font-family: 'Inter', monospace, sans-serif;
+}
+
+/* Select de plantilla dentro de la tabla */
 .select-plantilla {
-  border-radius: 6px;
-  border: 1px solid #d1d5db;
-  padding: 0.4rem;
-  font-size: 0.875rem;
-  min-width: 220px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.4rem 0.75rem;
+    font-size: 0.84rem;
+    color: var(--text-main);
+    background-color: var(--white);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    max-width: 320px;
 }
 
 .select-plantilla:focus {
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-  outline: none;
+    border-color: var(--soft-green);
+    box-shadow: 0 0 0 3px rgba(149, 213, 178, 0.35);
+    outline: none;
+}
+
+/* --------------------------------------------------------------------------
+   8. PAGINACIÓN
+   -------------------------------------------------------------------------- */
+.pagination {
+    gap: 4px;
+    margin: 0;
+}
+
+.page-link {
+    border-radius: var(--radius-sm) !important;
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    font-size: 0.825rem;
+    font-weight: 500;
+    padding: 0.35rem 0.75rem;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.page-link:hover {
+    background-color: var(--light-green);
+    border-color: var(--soft-green);
+    color: var(--primary-green);
+}
+
+.page-item.active .page-link {
+    background-color: var(--primary-green) !important;
+    border-color: var(--primary-green) !important;
+    color: var(--white) !important;
+    box-shadow: var(--shadow-sm);
+}
+
+.page-item.disabled .page-link {
+    background-color: var(--bg-gray);
+    border-color: var(--border-color);
+    color: #adb5bd;
+}
+
+/* --------------------------------------------------------------------------
+   9. RESPONSIVIDAD
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+    .card-header,
+    .card-footer {
+        padding: 0.75rem 1rem;
+    }
+
+    .table thead th,
+    .table tbody td {
+        padding: 0.75rem 0.6rem;
+    }
+
+    .select-plantilla {
+        max-width: 100%;
+    }
 }

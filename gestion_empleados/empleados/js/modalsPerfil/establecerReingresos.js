@@ -8,6 +8,16 @@ function abrirModalReingresos(idEmpleado) {
     // 2. Guardar el ID del empleado en el formulario
     $('#formReingresoEmpleado').data('id_empleado', idEmpleado);
 
+    // Obtener y mostrar el nombre del empleado en el pie del modal
+    const emp = (typeof empleados !== 'undefined' && Array.isArray(empleados))
+        ? empleados.find(e => e.id_empleado == idEmpleado)
+        : null;
+    const nombreCompleto = emp
+        ? `${emp.nombre || ''} ${emp.ap_paterno || ''} ${emp.ap_materno || ''}`.replace(/\s+/g, ' ').trim()
+        : '---';
+    $('#nombreEmpleadoModalReingresos').text(nombreCompleto);
+    $('#nombreEmpleadoModalNuevoReingreso').text(nombreCompleto);
+
     obtenerReingresos(idEmpleado);
 
     actualizarFechaAltaEmpresa(idEmpleado);
@@ -618,6 +628,16 @@ function validarFechasReingreso(fechaReingreso, fechaSalida, fechaAltaEmpresa, f
 function abrirModalNuevoReingreso() {
     // Limpiar el formulario
     $('#formNuevoReingreso')[0].reset();
+
+    // Asegurar que el nombre del empleado esté en el pie del submodal
+    const idEmpleado = $('#formReingresoEmpleado').data('id_empleado');
+    const emp = (typeof empleados !== 'undefined' && Array.isArray(empleados))
+        ? empleados.find(e => e.id_empleado == idEmpleado)
+        : null;
+    const nombreCompleto = emp
+        ? `${emp.nombre || ''} ${emp.ap_paterno || ''} ${emp.ap_materno || ''}`.replace(/\s+/g, ' ').trim()
+        : '---';
+    $('#nombreEmpleadoModalNuevoReingreso').text(nombreCompleto);
 
     // Obtener la fecha de alta empresa
     const fechaAltaEmpresa = $('#editarFechaAltaEmpresa').val();

@@ -32,6 +32,11 @@ $tienePermisoNominas =
     tienePermiso('nomina.crear_nomina_palmilla') ||
     tienePermiso('cortes.ver_menu');
 
+// Verificar si el usuario tiene al menos un permiso de estadísticas o responsivas
+$tienePermisoEstadisticas =
+    tienePermiso('nomina.ver_estadisticas_nomina') ||
+    tienePermiso('nomina.crear_responsivas');
+
 // ==========================================================================
 // OBTENER DATOS DEL ADMINISTRADOR EN SESIÓN PARA EL AVATAR
 // ==========================================================================
@@ -205,7 +210,7 @@ $inicialesAdmin = mb_strtoupper($inicialesAdmin);
                     <?php endif; ?>
 
                     <?php if (tienePermiso("contratos.ver_menu")): ?>
-                        <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/contratos/contratos.php">Contratos</a></li>
+                        <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/contratos/views/lista_empleados.php">Contratos</a></li>
                     <?php endif; ?>
 
                     <?php if (tienePermiso("prestamos.ver_menu")): ?>
@@ -248,9 +253,10 @@ $inicialesAdmin = mb_strtoupper($inicialesAdmin);
         <?php endif; ?>
 
         <!-- SECCIÓN: NÓMINAS Y RANCHOS -->
-        <?php if ($tienePermisoNominas): ?>
+        <?php if ($tienePermisoNominas || $tienePermisoEstadisticas): ?>
             <div class="saao-menu-category">Finanzas y Nóminas</div>
 
+            <?php if ($tienePermisoNominas): ?>
             <div class="saao-menu-item saao-accordion-item">
                 <div class="saao-menu-link saao-accordion-toggle" data-page="nominas">
                     <div class="saao-menu-link-content">
@@ -333,6 +339,29 @@ $inicialesAdmin = mb_strtoupper($inicialesAdmin);
                     <?php endif; ?>
                 </ul>
             </div>
+            <?php endif; ?>
+
+            <!-- SECCIÓN: ESTADÍSTICAS Y RESPONSIVAS -->
+            <?php if ($tienePermisoEstadisticas): ?>
+            <div class="saao-menu-item saao-accordion-item">
+                <div class="saao-menu-link saao-accordion-toggle" data-page="estadisticas_nominas">
+                    <div class="saao-menu-link-content">
+                        <div class="saao-menu-icon"><i class="bi bi-graph-up-arrow"></i></div>
+                        <span>Estadísticas y Responsivas</span>
+                    </div>
+                    <i class="bi bi-chevron-down saao-menu-chevron"></i>
+                </div>
+                <ul class="saao-submenu">
+                    <?php if (tienePermiso("nomina.ver_estadisticas_nomina")): ?>
+                        <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/estadisticas_nominas/views/estadisticas.php">Estadísticas de Nóminas</a></li>
+                    <?php endif; ?>
+
+                    <?php if (tienePermiso("nomina.crear_responsivas")): ?>
+                        <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/estadisticas_nominas/views/responsiva.php">Responsivas de Nómina</a></li>
+                    <?php endif; ?>
+                </ul>
+            </div>
+            <?php endif; ?>
         <?php endif; ?>
 
         <!-- SECCIÓN: SISTEMA Y AJUSTES -->
@@ -379,6 +408,11 @@ $inicialesAdmin = mb_strtoupper($inicialesAdmin);
 
 </aside>
 
+<!-- Modales de Notificaciones y Tarjeta de Felicitación -->
+<?php include __DIR__ . '/views/modalNotificaciones.php'; ?>
+<?php include __DIR__ . '/views/modalFelicitacion.php'; ?>
+
 <!-- Scripts -->
 <script src="<?= $rutaRaiz ?>/navbar/js/navbar.js"></script>
+<script src="<?= $rutaRaiz ?>/navbar/js/felicitaciones.js?v=<?= filemtime(__DIR__ . '/js/felicitaciones.js') ?>"></script>
 <script src="<?= $rutaRaiz ?>/navbar/js/notifications.js"></script>

@@ -265,6 +265,10 @@ verificarPermiso("empleados.ver_menu");
 
                         <tr>
 
+                            <th class="text-center" style="width: 50px;">
+                                #
+                            </th>
+
                             <th class="text-center">
                                 Foto
                             </th>
@@ -313,6 +317,9 @@ verificarPermiso("empleados.ver_menu");
 
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
 
+                    <small class="text-muted" id="infoTotalEmpleados">
+                        Mostrando 0 empleados
+                    </small>
 
                     <nav>
 

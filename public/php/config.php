@@ -15,6 +15,7 @@ define('SWEETALERT', $rutaRaiz . '/public/plugins/sweetalert2011.js');
 define('JQUERY_INPUTMASK', $rutaRaiz . '/public/plugins/jquery.inputmask.min.js');
 define('JQUERY_UI_JS', $rutaRaiz . '/public/plugins/jquery-ui.min.js');
 define('JQUERY_UI_CSS', $rutaRaiz . '/public/plugins/jquery-ui.min.css');
+define('CHART_JS', $rutaRaiz . '/public/plugins/chart.min.js');
 // Icono del sistema
 define('ICONO_SISTEMA', $rutaRaiz . '/public/img/icon.png');
 // Archivo JS de permisos global

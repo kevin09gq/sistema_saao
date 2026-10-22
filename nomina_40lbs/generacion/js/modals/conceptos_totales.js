@@ -52,6 +52,7 @@ function calcularYMostrarTotales() {
     const deducciones = {};
     let totalPercepcionesGeneral = 0;
     let totalDeduccionesGeneral = 0;
+    let totalNetoGeneral = 0;
 
     // Inicializar todos los conceptos con cero
     PERCEPCIONES.forEach(p => percepciones[p.nombre] = { total: 0, departamentos: {} });
@@ -91,12 +92,15 @@ function calcularYMostrarTotales() {
         departamento.empleados.forEach(empleado => {
             if (empleado.mostrar === false) return;
 
+            let percepcionesEmpleado = 0;
+            let deduccionesEmpleado = 0;
+
             // Procesar percepciones fijas
             PERCEPCIONES.forEach(perc => {
                 const valor = parseFloat(empleado[perc.propiedad]) || 0;
                 if (valor > 0) {
                     agregarAlConcepto(percepciones, perc.nombre, deptoNombre, empleado, valor);
-                    totalPercepcionesGeneral += valor;
+                    percepcionesEmpleado += valor;
                 }
             });
 
@@ -106,7 +110,7 @@ function calcularYMostrarTotales() {
                     const valor = parseFloat(extra.cantidad) || 0;
                     if (valor > 0) {
                         agregarAlConcepto(percepciones, 'Otras Percepciones', deptoNombre, empleado, valor);
-                        totalPercepcionesGeneral += valor;
+                        percepcionesEmpleado += valor;
                     }
                 });
             }
@@ -122,7 +126,7 @@ function calcularYMostrarTotales() {
                 }
                 if (valor > 0) {
                     agregarAlConcepto(deducciones, dedu.nombre, deptoNombre, empleado, valor);
-                    totalDeduccionesGeneral += valor;
+                    deduccionesEmpleado += valor;
                 }
             });
 
@@ -132,19 +136,23 @@ function calcularYMostrarTotales() {
                     const valor = parseFloat(extra.cantidad) || 0;
                     if (valor > 0) {
                         agregarAlConcepto(deducciones, 'F.A/Gafet/Cofia', deptoNombre, empleado, valor);
-                        totalDeduccionesGeneral += valor;
+                        deduccionesEmpleado += valor;
                     }
                 });
             }
+
+            // Acumular totales generales
+            totalPercepcionesGeneral += percepcionesEmpleado;
+            totalDeduccionesGeneral += deduccionesEmpleado;
+            // Calcular neto por empleado con redondeo individual
+            totalNetoGeneral += Math.round(percepcionesEmpleado - deduccionesEmpleado);
         });
     });
-
-    const totalNetoGeneral = totalPercepcionesGeneral - totalDeduccionesGeneral;
 
     // Mostrar totales generales
     $('#total-percepciones-general').text(formatearMonedaMXNModales(totalPercepcionesGeneral));
     $('#total-deducciones-general').text(formatearMonedaMXNModales(totalDeduccionesGeneral));
-    $('#total-neto-general').text(formatearMonedaMXNModales(Math.round(totalNetoGeneral)));
+    $('#total-neto-general').text(formatearMonedaMXNModales(totalNetoGeneral));
 
     // Renderizar datos
     renderizarConceptos('percepciones-accordion', percepciones);

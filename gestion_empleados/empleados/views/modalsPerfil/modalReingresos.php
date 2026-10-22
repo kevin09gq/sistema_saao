@@ -211,6 +211,12 @@
 
             <div class="modal-footer">
 
+                <div class="me-auto d-flex align-items-center gap-2 text-start pe-2">
+                    <i class="bi bi-person-badge text-primary fs-5"></i>
+                    <span class="text-secondary small fw-medium">Empleado:</span>
+                    <strong class="text-dark text-uppercase" id="nombreEmpleadoModalReingresos">---</strong>
+                </div>
+
                 <button
                     type="button"
                     class="btn btn-secondary"
@@ -275,7 +281,7 @@
                                 <!-- Fecha de Reingreso -->
                                 <div class="col-md-6">
 
-                                    <label
+                                     <label
                                         for="nuevaFechaReingreso"
                                         class="form-label fw-semibold">
                                         Fecha de Reingreso
@@ -319,6 +325,12 @@
 
             <!-- Pie -->
             <div class="modal-footer">
+
+                <div class="me-auto d-flex align-items-center gap-2 text-start pe-2">
+                    <i class="bi bi-person-badge text-primary fs-5"></i>
+                    <span class="text-secondary small fw-medium">Empleado:</span>
+                    <strong class="text-dark text-uppercase" id="nombreEmpleadoModalNuevoReingreso">---</strong>
+                </div>
 
                 <button
                     type="button"

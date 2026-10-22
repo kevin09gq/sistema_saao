@@ -18,6 +18,15 @@ function abrirModalBeneficiarios(idEmpleado) {
     // 2. Guardar el ID del empleado en el modal
     $('#modalBeneficiarios').data('id_empleado', idEmpleado);
 
+    // Obtener y mostrar el nombre del empleado en el pie del modal
+    const emp = (typeof empleados !== 'undefined' && Array.isArray(empleados))
+        ? empleados.find(e => e.id_empleado == idEmpleado)
+        : null;
+    const nombreCompleto = emp
+        ? `${emp.nombre || ''} ${emp.ap_paterno || ''} ${emp.ap_materno || ''}`.replace(/\s+/g, ' ').trim()
+        : '---';
+    $('#nombreEmpleadoModalBeneficiarios').text(nombreCompleto);
+
     // 3. Obtener los beneficiarios del empleado
     obtenerBeneficiarios(idEmpleado);
 

@@ -54,9 +54,10 @@ $(document).ready(function () {
 
 			const idArea = empleado.id_area || '';
 			const idDepartamento = empleado.id_departamento || '';
+			const idStatus = empleado.id_status || '';
 
 			return `
-				<label class="list-group-item d-flex align-items-start gap-2 empleado-item" data-search="${search}" data-seguro="${seguroAttr}" data-area="${idArea}" data-departamento="${idDepartamento}">
+				<label class="list-group-item d-flex align-items-start gap-2 empleado-item" data-search="${search}" data-seguro="${seguroAttr}" data-area="${idArea}" data-departamento="${idDepartamento}" data-status="${idStatus}">
 					<input class="form-check-input mt-1 empleado-exportar-checkbox" type="checkbox" value="${empleado.id_empleado}">
 					<div class="flex-grow-1">
 						<div class="fw-semibold">${nombre}</div>
@@ -204,6 +205,7 @@ $(document).ready(function () {
 	function filtrarListaEmpleados() {
 		const texto = $('#buscador-empleados-exportar').val().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, ' ').trim();
 		const filtroSeguro = $('#filtro-seguro-exportar').val(); // 'todos', 'con_seguro', 'sin_seguro'
+		const filtroStatus = $('#filtro-status-exportar').val(); // 'todos', '1', '2'
 		const filtroArea = $('#filtro-area-exportar').val();
 		const filtroDepartamento = $('#filtro-departamento-exportar').val();
 
@@ -213,13 +215,15 @@ $(document).ready(function () {
 			const seguro = String($item.attr('data-seguro') || '');
 			const area = String($item.attr('data-area') || '');
 			const departamento = String($item.attr('data-departamento') || '');
+			const status = String($item.attr('data-status') || '');
 
 			const coincideTexto = search.includes(texto);
 			const coincideSeguro = filtroSeguro === 'todos' || seguro === filtroSeguro;
 			const coincideArea = filtroArea === 'todos' || area === filtroArea;
 			const coincideDepartamento = filtroDepartamento === 'todos' || departamento === filtroDepartamento;
+			const coincideStatus = filtroStatus === 'todos' || status === filtroStatus;
 
-			if (coincideTexto && coincideSeguro && coincideArea && coincideDepartamento) {
+			if (coincideTexto && coincideSeguro && coincideArea && coincideDepartamento && coincideStatus) {
 				$item.removeClass('d-none').addClass('d-flex');
 			} else {
 				$item.removeClass('d-flex').addClass('d-none');
@@ -245,6 +249,10 @@ $(document).ready(function () {
 	});
 
 	$(document).on('change', '#filtro-seguro-exportar', function () {
+		filtrarListaEmpleados();
+	});
+
+	$(document).on('change', '#filtro-status-exportar', function () {
 		filtrarListaEmpleados();
 	});
 

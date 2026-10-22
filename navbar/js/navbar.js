@@ -261,6 +261,7 @@ function marcarModuloActivo() {
 
     var mejorCoincidencia = null;
     var mayorLongitud = 0;
+    var coincidenciaExactaEncontrada = false;
 
     enlaces.each(function () {
         var link = $(this);
@@ -274,14 +275,29 @@ function marcarModuloActivo() {
         // limpiar la ruta del enlace
         var hrefLimpio = href.split('?')[0].toLowerCase();
 
-        // 1. Coincidencia exacta de archivo o ruta completa
-        if (rutaActual.indexOf(hrefLimpio) !== -1 || hrefLimpio.indexOf(rutaActual) !== -1) {
+        // 1. Coincidencia exacta por nombre de archivo (prioridad máxima)
+        var nombreArchivoActual = rutaActual.split('/').pop();
+        var nombreArchivoEnlace = hrefLimpio.split('/').pop();
+
+        if (nombreArchivoActual === nombreArchivoEnlace) {
+            mejorCoincidencia = link;
+            mayorLongitud = hrefLimpio.length;
+            coincidenciaExactaEncontrada = true;
+        }
+
+        // Si ya encontramos coincidencia exacta, no seguir buscando por coincidencia parcial
+        if (coincidenciaExactaEncontrada) {
+            return; // Solo salta a la siguiente iteración, no detiene el each
+        }
+
+        // 2. Coincidencia de ruta completa
+        if (rutaActual === hrefLimpio) {
             if (hrefLimpio.length > mayorLongitud) {
                 mayorLongitud = hrefLimpio.length;
                 mejorCoincidencia = link;
             }
         }
-        // 2. Coincidencia para subpáginas (ej. detalle_nomina.php) mediante la carpeta del módulo (ej. /nomina_40lbs/historial/)
+        // 3. Coincidencia para subpáginas (ej. detalle_nomina.php) mediante la carpeta del módulo (ej. /nomina_40lbs/historial/)
         else {
             var indiceViews = rutaActual.lastIndexOf('/views/');
             var carpetaModulo = indiceViews !== -1 ? rutaActual.substring(0, indiceViews) : '';
@@ -292,7 +308,7 @@ function marcarModuloActivo() {
                 }
             }
         }
-        // 3. Coincidencia para página de inicio
+        // 4. Coincidencia para página de inicio
         if (hrefLimpio.indexOf('index.php') !== -1 && (rutaActual.endsWith('/') || rutaActual.endsWith('/sistema_saao/'))) {
             if (!mejorCoincidencia) {
                 mejorCoincidencia = link;

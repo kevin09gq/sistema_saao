@@ -1,592 +1,764 @@
-/* Estilos profesionales y atractivos para plantillas.php */
+/* ==========================================================================
+   SISTEMA SAAO - MÓDULO DE PLANTILLAS DE CONTRATOS
+   Hoja de estilos: plantillas-profesional.css
+   Diseño basado en el estilo visual de Empleados (Limpio, Moderno y Funcional)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   0. TIPOGRAFÍA Y FUENTES EXTERNAS
+   -------------------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* --------------------------------------------------------------------------
+   1. VARIABLES GLOBALES (PALETA DE COLORES Y SOMBRAS)
+   -------------------------------------------------------------------------- */
+:root {
+    /* Paleta de Verdes (Identidad Institucional SAAO) */
+    --primary-green: #2d6a4f;
+    --accent-green: #1b4332;
+    --soft-green: #95d5b2;
+    --light-green: #d8f3dc;
+    --hover-green: #e8f7ee;
+
+    /* Colores Neutros y Fondo */
+    --bg-gray: #f8f9fa;
+    --border-color: #e9ecef;
+    --text-main: #343a40;
+    --text-muted-c: #6c757d;
+    --white: #ffffff;
+
+    /* Elevaciones y Sombras */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+    /* Radios de redondeo */
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   2. ESTILOS GENERALES DEL DOCUMENTO
+   -------------------------------------------------------------------------- */
 body {
-  background: linear-gradient(135deg, #f8fafc 0%, #eef7ff 100%);
-  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  color: #1f2937; /* Mejor contraste */
-  line-height: 1.6;
-  min-height: 100vh;
-  padding: 0;
-  margin: 0;
+    background-color: var(--bg-gray) !important;
+    background-image: none !important;
+    color: var(--text-main);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 0;
+    margin: 0;
 }
 
 .container {
-  max-width: 1400px;
-  padding: 20px;
+    max-width: 1400px;
+    padding: 20px;
 }
 
-/* Encabezado principal más suave */
+/* --------------------------------------------------------------------------
+   3. ENCABEZADO PRINCIPAL
+   -------------------------------------------------------------------------- */
 h1.h3 {
-  color: #2d3748;
-  font-weight: 600;
-  margin-bottom: 1.5rem;
-  position: relative;
-  padding-bottom: 0.8rem;
-  text-align: center;
-  font-size: 1.7rem;
+    color: var(--text-main);
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    position: relative;
+    padding-bottom: 0;
+    text-align: left;
+    font-size: 1.5rem;
 }
 
+/* Sin línea decorativa debajo del título */
 h1.h3::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 3px;
-  background: linear-gradient(90deg, #48bb78, #81e6d9);
-  border-radius: 2px;
+    display: none;
 }
 
-/* Tarjetas más ligeras y atractivas */
+/* --------------------------------------------------------------------------
+   4. TARJETAS Y CONTENEDORES (CARDS) - Estilo Empleados
+   -------------------------------------------------------------------------- */
 .card {
-  border: none;
-  border-radius: 12px;
-  box-shadow: 0 6px 18px rgba(16, 24, 40, 0.06);
-  background: #ffffff;
-  border: 1px solid rgba(17, 24, 39, 0.06);
-  overflow: hidden;
-  position: relative;
-  transition: all 0.3s ease;
+    background-color: var(--white);
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    position: relative;
+    transition: box-shadow 0.2s ease;
+    animation: none;
 }
 
+/* Sin hover lift en cards */
 .card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(16, 24, 40, 0.10);
+    transform: none;
+    box-shadow: var(--shadow-md);
 }
 
+/* Sin línea decorativa superior */
 .card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #10b981, #60a5fa);
+    display: none;
 }
 
 .card-header {
-  background: linear-gradient(180deg, rgba(16,185,129,0.06), rgba(96,165,250,0.06));
-  border-bottom: 1px solid rgba(17, 24, 39, 0.06);
-  font-weight: 600;
-  color: #0f172a;
-  padding: 0.9rem 1.2rem;
-  font-size: 1.03rem;
+    background-color: var(--white) !important;
+    background-image: none !important;
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 600;
+    color: var(--text-main);
+    padding: 1rem 1.25rem;
+    font-size: 0.95rem;
+    border-top-left-radius: var(--radius-lg) !important;
+    border-top-right-radius: var(--radius-lg) !important;
 }
 
 .card-body {
-  padding: 1.2rem;
+    padding: 1.25rem;
 }
 
-/* Formularios más suaves */
-.form-control, .form-select {
-  border-radius: 6px;
-  border: 1px solid #e5e7eb;
-  padding: 0.45rem 0.7rem;
-  transition: all 0.2s ease;
-  font-size: 0.9rem;
+/* --------------------------------------------------------------------------
+   5. FORMULARIOS
+   -------------------------------------------------------------------------- */
+.form-control,
+.form-select {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-main);
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+    background-color: var(--white);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.form-control:focus, .form-select:focus {
-  border-color: #60a5fa;
-  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.25);
-  outline: none;
+.form-control:focus,
+.form-select:focus {
+    outline: none;
+    border-color: var(--soft-green);
+    box-shadow: 0 0 0 3px rgba(149, 213, 178, 0.35);
+}
+
+.form-control::placeholder {
+    color: #adb5bd;
+    font-size: 0.85rem;
 }
 
 .form-label {
-  font-weight: 500;
-  color: #4a5568;
-  margin-bottom: 0.25rem;
-  font-size: 0.85rem;
+    color: var(--text-muted-c);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 0.4rem;
 }
 
-/* Botones más atractivos y menos robustos */
+/* --------------------------------------------------------------------------
+   6. BOTONES DE ACCIÓN - Estilo Empleados
+   -------------------------------------------------------------------------- */
 .btn {
-  font-weight: 500;
-  padding: 0.45rem 0.9rem;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  font-size: 0.8rem;
-  border: none;
-  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.03);
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
 }
 
 .btn-sm {
-  padding: 0.35rem 0.7rem;
-  font-size: 0.75rem;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
 }
 
 .btn-primary {
-  background: #48bb78;
-  color: white;
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+    color: var(--white);
 }
 
 .btn-primary:hover {
-  background: #38a169;
-  transform: translateY(-1px);
-  box-shadow: 0 3px 6px rgba(72, 187, 120, 0.2);
+    background-color: var(--accent-green);
+    border-color: var(--accent-green);
+    box-shadow: var(--shadow-sm);
+    transform: none;
 }
 
 .btn-success {
-  background: #48bb78;
-  color: white;
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+    color: var(--white);
 }
 
 .btn-success:hover {
-  background: #38a169;
-  transform: translateY(-1px);
-  box-shadow: 0 3px 6px rgba(72, 187, 120, 0.2);
+    background-color: var(--accent-green);
+    border-color: var(--accent-green);
+    box-shadow: var(--shadow-sm);
+    transform: none;
 }
 
 .btn-outline-danger {
-  border: 1px solid #feb2b2;
-  color: #e53e3e;
-  background: #fff5f5;
+    border: 1px solid #dc3545;
+    color: #dc3545;
+    background: var(--white);
 }
 
 .btn-outline-danger:hover {
-  background: #fed7d7;
-  border-color: #fc8181;
-  transform: translateY(-1px);
-  box-shadow: 0 3px 6px rgba(229, 62, 62, 0.1);
+    background-color: #fef2f2;
+    border-color: #dc3545;
+    color: #dc2626;
+    transform: none;
+}
+
+.btn-outline-warning {
+    border: 1px solid #f59e0b;
+    color: #d97706;
+    background: var(--white);
+}
+
+.btn-outline-warning:hover {
+    background-color: #fff4e5;
+    border-color: #f59e0b;
+    color: #b45309;
+    transform: none;
 }
 
 .btn-outline-secondary {
-  border: 1px solid #cbd5e1;
-  color: #334155;
-  background: #ffffff;
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    background: var(--white);
 }
 
 .btn-outline-secondary:hover {
-  background: #f1f5f9;
-  border-color: #94a3b8;
-  transform: translateY(-1px);
-  box-shadow: 0 3px 6px rgba(51, 65, 85, 0.12);
+    background-color: var(--light-green);
+    border-color: var(--soft-green);
+    color: var(--primary-green);
+    transform: none;
 }
 
 .btn-outline-primary {
-  border: 1px solid #90cdf4;
-  color: #1d4ed8;
-  background: #eef2ff;
+    border: 1px solid var(--primary-green);
+    color: var(--primary-green);
+    background: var(--white);
 }
 
 .btn-outline-primary:hover {
-  background: #e0e7ff;
-  border-color: #60a5fa;
-  transform: translateY(-1px);
-  box-shadow: 0 3px 6px rgba(29, 78, 216, 0.15);
+    background-color: var(--light-green);
+    border-color: var(--primary-green);
+    color: var(--accent-green);
+    transform: none;
+}
+
+.btn-outline-info {
+    border: 1px solid var(--border-color);
+    color: var(--text-muted-c);
+    background: var(--white);
+}
+
+.btn-outline-info:hover {
+    background-color: var(--hover-green);
+    border-color: var(--soft-green);
+    color: var(--primary-green);
+    transform: none;
 }
 
 .btn:disabled {
-  opacity: 0.5;
-  transform: none;
-  box-shadow: none;
+    opacity: 0.5;
+    transform: none;
+    box-shadow: none;
 }
 
-/* Barra compacta de plantillas - ESTILOS LIGEROS */
+/* --------------------------------------------------------------------------
+   7. BARRA COMPACTA DE PLANTILLAS
+   -------------------------------------------------------------------------- */
 .plantillas-compact-bar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 15px;
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  flex-wrap: wrap;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    flex-wrap: wrap;
 }
 
 .btn-toggle-plantillas {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: #48bb78;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--primary-green);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
 }
 
 .btn-toggle-plantillas:hover {
-  background: #38a169;
+    background: var(--accent-green);
 }
 
 .btn-toggle-plantillas .arrow {
-  font-size: 10px;
+    font-size: 10px;
 }
 
 .separator {
-  width: 1px;
-  height: 24px;
-  background: #cbd5e0;
+    width: 1px;
+    height: 24px;
+    background: var(--border-color);
 }
 
 .input-nueva {
-  flex: 1;
-  min-width: 200px;
-  padding: 8px 12px;
-  border: 1px solid #cbd5e0;
-  border-radius: 6px;
-  font-size: 14px;
+    flex: 1;
+    min-width: 200px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    color: var(--text-main);
+    background-color: var(--white);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .input-nueva:focus {
-  outline: none;
-  border-color: #48bb78;
+    outline: none;
+    border-color: var(--soft-green);
+    box-shadow: 0 0 0 3px rgba(149, 213, 178, 0.35);
 }
 
 .btn-nueva {
-  padding: 8px 16px;
-  background: #48bb78;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
+    padding: 8px 16px;
+    background: var(--primary-green);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
 }
 
 .btn-nueva:hover {
-  background: #38a169;
+    background: var(--accent-green);
 }
 
-/* Panel de plantillas colapsable - SIN ANIMACIONES PESADAS */
+/* --------------------------------------------------------------------------
+   8. PANEL DE PLANTILLAS COLAPSABLE
+   -------------------------------------------------------------------------- */
 .plantillas-panel {
-  margin-top: 10px;
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  overflow: hidden;
+    margin-top: 10px;
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
 }
 
 .plantillas-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  max-height: 250px;
-  overflow-y: auto;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 250px;
+    overflow-y: auto;
 }
 
 .plantillas-list li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  border-bottom: 1px solid #f1f5f9;
-  cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
 }
 
 .plantillas-list li:last-child {
-  border-bottom: none;
+    border-bottom: none;
 }
 
 .plantillas-list li:hover {
-  background: #f8fafc;
+    background: var(--hover-green);
 }
 
 .plantillas-list .plantilla-item {
-  font-weight: 500;
-  color: #2d3748;
-  font-size: 14px;
+    font-weight: 500;
+    color: var(--text-main);
+    font-size: 14px;
 }
 
 .plantillas-list .text-muted {
-  color: #94a3b8;
-  font-size: 12px;
+    color: var(--text-muted-c) !important;
+    font-size: 12px;
 }
 
-/* Scrollbar ligero */
+/* Scrollbar estilo empleados */
 .plantillas-list::-webkit-scrollbar {
-  width: 6px;
+    width: 6px;
 }
 
 .plantillas-list::-webkit-scrollbar-track {
-  background: #f1f5f9;
+    background: var(--bg-gray);
 }
 
 .plantillas-list::-webkit-scrollbar-thumb {
-  background: #cbd5e0;
-  border-radius: 3px;
+    background: #ced4da;
+    border-radius: 3px;
 }
 
 .plantillas-list::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+    background: #adb5bd;
 }
 
-/* Lista de plantillas más suave */
+/* --------------------------------------------------------------------------
+   9. LISTA DE PLANTILLAS (LIST GROUP)
+   -------------------------------------------------------------------------- */
 .list-group {
-  max-height: 300px;
-  overflow-y: auto;
-  border-radius: 6px;
+    max-height: 300px;
+    overflow-y: auto;
+    border-radius: var(--radius-md);
 }
 
 .list-group-item {
-  border: 1px solid #edf2f7;
-  padding: 0.7rem 0.9rem;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  font-size: 0.9rem;
+    border: 1px solid var(--border-color);
+    padding: 0.7rem 0.9rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    font-size: 0.875rem;
 }
 
 .list-group-item:hover {
-  background: rgba(72, 187, 120, 0.05);
+    background: var(--hover-green);
 }
 
 .list-group-item.active {
-  background: #48bb78;
-  border-color: #48bb78;
-  color: white;
-  font-weight: 500;
+    background: var(--primary-green);
+    border-color: var(--primary-green);
+    color: white;
+    font-weight: 500;
 }
 
-/* Editor de plantillas más suave */
+/* --------------------------------------------------------------------------
+   10. EDITOR DE PLANTILLAS (QUILL)
+   -------------------------------------------------------------------------- */
 #editorContainer {
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  overflow: hidden;
-  margin-top: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    margin-top: 1rem;
 }
 
 .ql-toolbar {
-  border: none;
-  border-bottom: 1px solid #e5e7eb;
-  background: linear-gradient(180deg, #f8fafc, #f1f5f9);
-  border-radius: 6px 6px 0 0 !important;
-  padding: 0.5rem;
+    border: none !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    background: var(--bg-gray);
+    border-radius: var(--radius-md) var(--radius-md) 0 0 !important;
+    padding: 0.5rem;
 }
 
 .ql-container {
-  border: none;
-  font-size: 0.95rem;
-  min-height: 400px;
+    border: none !important;
+    font-size: 0.95rem;
+    min-height: 400px;
 }
 
 .ql-editor {
-  min-height: 400px;
-  padding: 1.2rem;
-  font-size: 0.98rem;
-  line-height: 1.7;
+    min-height: 400px;
+    padding: 1.2rem;
+    font-size: 0.98rem;
+    line-height: 1.7;
 }
 
 /* Estilos para tablas en el editor Quill */
 .ql-editor table {
-  border-collapse: collapse;
-  width: 100%;
-  margin: 10px 0;
-  border: 1px solid #000 !important;
-  display: table !important;
+    border-collapse: collapse;
+    width: 100%;
+    margin: 10px 0;
+    border: 1px solid #000 !important;
+    display: table !important;
 }
 
 .ql-editor table td,
 .ql-editor table th {
-  border: 1px solid #000 !important;
-  padding: 8px 12px;
-  vertical-align: top;
-  display: table-cell !important;
+    border: 1px solid #000 !important;
+    padding: 8px 12px;
+    vertical-align: top;
+    display: table-cell !important;
 }
 
 .ql-editor table th {
-  font-weight: bold;
-  text-align: left;
+    font-weight: bold;
+    text-align: left;
 }
 
 .ql-editor table tr {
-  display: table-row !important;
+    display: table-row !important;
 }
 
 .ql-editor .tabla-contrato {
-  border-collapse: collapse;
-  width: 100%;
-  margin: 10px 0;
-  border: 1px solid #000 !important;
+    border-collapse: collapse;
+    width: 100%;
+    margin: 10px 0;
+    border: 1px solid #000 !important;
 }
 
 .ql-editor .tabla-contrato td,
 .ql-editor .tabla-contrato th {
-  border: 1px solid #000 !important;
-  padding: 8px 12px;
-  vertical-align: top;
+    border: 1px solid #000 !important;
+    padding: 8px 12px;
+    vertical-align: top;
 }
 
 .ql-editor .tabla-contrato th {
-  font-weight: bold;
-  text-align: left;
+    font-weight: bold;
+    text-align: left;
 }
 
-/* Texto de ayuda más suave */
+/* --------------------------------------------------------------------------
+   11. TEXTO DE AYUDA
+   -------------------------------------------------------------------------- */
 .text-muted {
-  color: #64748b !important;
-  font-size: 0.84rem;
+    color: var(--text-muted-c) !important;
+    font-size: 0.85rem;
 }
 
-/* Quick insert buttons: estilo más moderno */
+/* --------------------------------------------------------------------------
+   12. BOTONES QUICK INSERT (PLACEHOLDERS)
+   -------------------------------------------------------------------------- */
 .quick-insert {
-  border-radius: 10px;
-  border-color: #e5e7eb;
-  background: #ffffff;
-  color: #0f172a;
-  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    background: var(--white);
+    color: var(--text-main);
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .quick-insert:hover {
-  background: #ecfdf5;
-  border-color: #10b981;
-  color: #065f46;
-  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.15);
-  transform: translateY(-1px);
+    background: var(--light-green);
+    border-color: var(--soft-green);
+    color: var(--primary-green);
 }
 
 .quick-insert:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.12);
+    background: var(--hover-green);
 }
 
-/* Espaciado y layout */
-.py-4 {
-  padding-top: 1.2rem !important;
-  padding-bottom: 1.2rem !important;
-}
-
-.g-3 {
-  --bs-gutter-x: 1.2rem;
-  --bs-gutter-y: 1.2rem;
-}
-
-/* Placeholder personalizado */
+/* --------------------------------------------------------------------------
+   13. TÍTULO DE EDICIÓN
+   -------------------------------------------------------------------------- */
 #tituloEdicion {
-  font-weight: 500;
-  color: #2d3748;
-  font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-main);
+    font-size: 0.95rem;
 }
 
-/* Scrollbar personalizado más suave */
-.list-group::-webkit-scrollbar {
-  width: 5px;
-}
-
-.list-group::-webkit-scrollbar-track {
-  background: #f7fafc;
-  border-radius: 10px;
-}
-
-.list-group::-webkit-scrollbar-thumb {
-  background: #c5c5c5;
-  border-radius: 10px;
-}
-
-.list-group::-webkit-scrollbar-thumb:hover {
-  background: #a0aec0;
-}
-
-/* Scroll independiente para la lista de placeholders */
+/* --------------------------------------------------------------------------
+   14. SCROLL DE PLACEHOLDERS
+   -------------------------------------------------------------------------- */
 .placeholders-scroll {
-  max-height: 60vh;
-  overflow-y: auto;
-  padding-right: 4px;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 4px;
 }
 
 .placeholders-scroll::-webkit-scrollbar {
-  width: 6px;
+    width: 6px;
 }
 
 .placeholders-scroll::-webkit-scrollbar-track {
-  background: #f8fafc;
-  border-radius: 10px;
+    background: var(--bg-gray);
+    border-radius: 10px;
 }
 
 .placeholders-scroll::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 10px;
+    background: #ced4da;
+    border-radius: 10px;
 }
 
 .placeholders-scroll::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+    background: #adb5bd;
 }
 
-/* Responsive design más suave */
+/* List group scrollbar */
+.list-group::-webkit-scrollbar {
+    width: 5px;
+}
+
+.list-group::-webkit-scrollbar-track {
+    background: var(--bg-gray);
+    border-radius: 10px;
+}
+
+.list-group::-webkit-scrollbar-thumb {
+    background: #ced4da;
+    border-radius: 10px;
+}
+
+.list-group::-webkit-scrollbar-thumb:hover {
+    background: #adb5bd;
+}
+
+/* --------------------------------------------------------------------------
+   15. SECCIONES DE CATEGORÍA EN PLACEHOLDERS
+   -------------------------------------------------------------------------- */
+.text-uppercase.text-muted.small.fw-semibold {
+    color: var(--primary-green) !important;
+    font-size: 0.7rem;
+    letter-spacing: 0.5px;
+}
+
+/* --------------------------------------------------------------------------
+   16. RESPONSIVE
+   -------------------------------------------------------------------------- */
 @media (max-width: 992px) {
-  .container {
-    padding: 15px;
-  }
-  
-  h1.h3 {
-    font-size: 1.5rem;
-    margin-bottom: 1.2rem;
-  }
-  
-  .card-body {
-    padding: 1rem;
-  }
-  
-  .g-3 {
-    --bs-gutter-x: 1rem;
-    --bs-gutter-y: 1rem;
-  }
-  
-  /* Ajuste para móviles: hacer que los placeholders estén en la parte superior */
-  .row.mb-4 {
-    order: 1;
-  }
+    .container {
+        padding: 15px;
+    }
+
+    h1.h3 {
+        font-size: 1.35rem;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
 }
 
 @media (max-width: 768px) {
-  .container {
-    padding: 10px;
-  }
-  
-  h1.h3 {
-    font-size: 1.4rem;
-  }
-  
-  .card-header {
-    padding: 0.7rem 1rem;
+    .container {
+        padding: 10px;
+    }
+
+    h1.h3 {
+        font-size: 1.25rem;
+    }
+
+    .card-header {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .btn {
+        padding: 0.35rem 0.65rem;
+        font-size: 0.78rem;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   17. MODALES - Estilo Empleados (Limpio y Neutro)
+   -------------------------------------------------------------------------- */
+.modal-content {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+}
+
+.modal-header {
+    background-color: var(--white) !important;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 1.25rem;
+}
+
+.modal-header .modal-title {
+    font-weight: 600;
+    color: var(--text-main);
     font-size: 1rem;
-  }
-  
-  .btn {
-    padding: 0.35rem 0.65rem;
+    display: flex;
+    align-items: center;
+}
+
+.modal-header .modal-title i {
+    color: var(--primary-green);
+}
+
+.modal-body {
+    padding: 1.25rem;
+}
+
+.modal-footer {
+    background-color: var(--white);
+    border-top: 1px solid var(--border-color);
+    padding: 0.85rem 1.25rem;
+}
+
+/* Accordion dentro de modales */
+.modal .accordion-item {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md) !important;
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+}
+
+.modal .accordion-button {
+    background-color: var(--bg-gray);
+    color: var(--text-main);
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md) !important;
+}
+
+.modal .accordion-button:not(.collapsed) {
+    background-color: var(--hover-green);
+    color: var(--primary-green);
+    box-shadow: none;
+}
+
+.modal .accordion-button:focus {
+    box-shadow: 0 0 0 3px rgba(149, 213, 178, 0.35);
+    border-color: var(--soft-green);
+}
+
+.modal .accordion-button i {
+    color: var(--primary-green);
+}
+
+.modal .accordion-body {
+    padding: 1rem;
+}
+
+/* Tablas dentro de modales */
+.modal .table {
+    font-size: 0.85rem;
+    margin-bottom: 0;
+}
+
+.modal .table thead th {
+    background-color: var(--bg-gray) !important;
+    color: var(--primary-green) !important;
     font-size: 0.75rem;
-  }
-  
-  .mt-2 {
-    margin-top: 0.4rem !important;
-  }
-  
-  .d-grid {
-    display: block !important;
-  }
-  
-  .btn + .btn {
-    margin-top: 0.4rem;
-  }
-  
-  /* En móviles, mantener los placeholders arriba */
-  .row.mb-4 {
-    order: 1;
-  }
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 0.75rem 1rem;
+    border-bottom: 2px solid var(--border-color);
+    border-top: none;
 }
 
-/* Animaciones suaves */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.modal .table tbody td {
+    padding: 0.7rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-main);
 }
 
-.card {
-  animation: fadeIn 0.4s ease-out forwards;
+.modal .table-hover tbody tr:hover td {
+    background-color: var(--hover-green);
 }
 
-.card:nth-child(1) {
-  animation-delay: 0.05s;
+.modal .table tbody tr:last-child td {
+    border-bottom: none;
 }
 
-.card:nth-child(2) {
-  animation-delay: 0.1s;
+.modal .table code {
+    background-color: var(--light-green);
+    color: var(--primary-green);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
 }

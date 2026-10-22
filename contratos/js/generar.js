@@ -1457,7 +1457,7 @@
     // Mostrar indicador de carga
     if (btnDescargarWord) {
       btnDescargarWord.disabled = true;
-      btnDescargarWord.innerHTML = '⏳ Generando Word...';
+      btnDescargarWord.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Generando Word...';
     }
     
     fetch(API_EXPORTAR_WORD, { method: 'POST', body: fd })
@@ -1513,7 +1513,7 @@
         // Restaurar el botón
         if (btnDescargarWord) {
           btnDescargarWord.disabled = false;
-          btnDescargarWord.innerHTML = '📄 Descargar Word';
+          btnDescargarWord.innerHTML = '<i class="bi bi-file-earmark-word me-1"></i> Descargar Word';
         }
       });
   }

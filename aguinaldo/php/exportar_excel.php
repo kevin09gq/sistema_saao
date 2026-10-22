@@ -29,9 +29,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['departamentos'])) {
 // Recuperar el año seleccionado por el usuario, o usar el año actual si no se proporciona
 $anio = $_POST['anio'] ?? date('Y');
 // Recuperar la empresa seleccionada por el usuario, o usar un valor predeterminado si no se proporciona
-$empresa = $_POST['empresa'] ?? 1; // '1' para Citricos SAAO, '2' para SB citric´s group
+$empresa = $_POST['empresa'] ?? 1; // '1' para Citricos SAAO, '2' para SB citric´s group, 'todas' para ambas
 // Determinar el nombre de la empresa basado en la selección
-$nombre_empresa = ($empresa == '1') ? 'CITRICOS SAAO' : "SB CITRIC'S GROUP";
+if ($empresa == 'todas') {
+    $nombre_empresa = 'AMBAS EMPRESAS';
+} else {
+    $nombre_empresa = ($empresa == '1') ? 'CITRICOS SAAO' : "SB CITRIC'S GROUP";
+}
 
 // Nombre del archivo temporal (se usará para el título del documento)
 $tmp_nombre = 'REPORTE_AGUINALDOS_' . $anio . '_' . str_replace(' ', '_', $nombre_empresa) . '_' . date('Ymd_His');
@@ -144,14 +148,19 @@ $color_secundario = '1E7842'; // Verde oscuro
  *
  * @param Spreadsheet $spreadsheet  Instancia del libro de cálculo donde se añadirá la hoja.
  * @param string      $titulo2      Título secundario o encabezado que se mostrará en la hoja.
- * @param array       $filtroEmpleados Conjunto de empleados filtrados que se incluirán en la hoja.
+ * @param array       $empleados    Conjunto de empleados filtrados que se incluirán en la hoja.
  * @param string      $nombreHoja   Nombre que se asignará a la nueva hoja dentro del libro.
+ * @param string      $color        Color para los encabezados de la hoja.
+ * @param string      $tituloEmpresa Título de la empresa (opcional, usa $nombre_empresa por defecto).
  *
  * @return void
  */
-function crearHoja(Spreadsheet $spreadsheet, String $titulo2, array $empleados, String $nombreHoja, String $color = '85C02A')
+function crearHoja(Spreadsheet $spreadsheet, String $titulo2, array $empleados, String $nombreHoja, String $color = '85C02A', String $tituloEmpresa = null)
 {
     global $columnas, $columnasAncho, $tamanioLetraColumnas, $tamanioLetraFilas, $nombre_empresa, $anio, $color_primario, $color_secundario;
+
+    // Usar el título de empresa proporcionado o el global
+    $tituloEmpresaFinal = $tituloEmpresa ?? $nombre_empresa;
 
     // COLOR DE LA LETRA
     $color_letra = colorContraste($color);
@@ -169,7 +178,7 @@ function crearHoja(Spreadsheet $spreadsheet, String $titulo2, array $empleados, 
     //  TÍTULOS
     //=====================
 
-    $titulo1 = $nombre_empresa;
+    $titulo1 = $tituloEmpresaFinal;
     $titulo3 = 'REPORTE DE AGUINALDOS ' . ' - ' . $anio;
     $titulo4 = 'FECHA DE GENERACIÓN: ' . formatearFecha(date('Y-m-d'));
 
@@ -254,11 +263,7 @@ function crearHoja(Spreadsheet $spreadsheet, String $titulo2, array $empleados, 
         $sheet->getStyle($columna . '6')->getFont()->setSize($tamanio);
     }
 
-    // Agregar autofiltro a la fila de encabezados
-    $sheet->setAutoFilter('A6:N6');
-
-    // Congelar la fila de encabezados para que siempre sea visible al hacer scroll
-    $sheet->freezePane('D7');
+    // Sin autofiltro ni freezePane para un diseño limpio y desplazamiento normal
 
 
     //==================================================
@@ -630,47 +635,100 @@ function colorContraste($hexColor)
 $empleadosData = $jsonAguinaldo['empleados'] ?? [];
 
 
-// 1. Filtrar empleados por id_empresa
+// 1. Filtrar empleados por visibilidad
 $empleadosFiltrados = array_values(array_filter(
     $empleadosData,
-    fn($emp) => ($emp['id_empresa'] ?? null) == $empresa &&
-        ($emp['visible'] ?? false) === true
+    function($emp) {
+        if (isset($emp['visible']) && $emp['visible'] === false) {
+            return false;
+        }
+        return true;
+    }
 ));
 
+// 2. Si se seleccionó "todas" las empresas, agrupar por empresa y crear pestañas por empresa manteniendo el color del departamento
+if ($empresa === 'todas') {
+    // Agrupar empleados por empresa
+    $empleadosPorEmpresa = [];
 
-// 2. Agrupar empleados por departamento
-$empleadosPorDepartamento = [];
-
-foreach ($empleadosFiltrados as $emp) {
-    $empleadosPorDepartamento[$emp['id_departamento']][] = $emp;
-}
-
-
-// 3. Generar hojas por departamento
-foreach ($departamentos_seleccionados as $departamento) {
-
-    // Obtener el ID del departamento para filtrar empleados
-    $idDep = $departamento['id_departamento'];
-
-    // Obtener empleados del departamento actual
-    $empleados = $empleadosPorDepartamento[$idDep] ?? [];
-
-    // Si no hay empleados, no crear hoja
-    if (empty($empleados)) {
-        continue;
+    foreach ($empleadosFiltrados as $emp) {
+        $idEmpresa = $emp['id_empresa'] ?? 1;
+        $empleadosPorEmpresa[$idEmpresa][] = $emp;
     }
 
-    // Obtener el color del departamento del primer empleado
-    $colorDepartamento = str_replace('#', '', $empleados[0]['color_departamento'] ?? '85C02A');
+    // Nombres de las empresas
+    $nombresEmpresas = [
+        1 => 'CITRICOS SAAO',
+        2 => "SB CITRIC'S GROUP"
+    ];
 
-    // Crear hoja
-    crearHoja(
-        $spreadsheet,
-        $departamento['nombre_departamento'],
-        $empleados,
-        $departamento['nombre_departamento'],
-        $colorDepartamento
-    );
+    // Generar hojas por empresa
+    foreach ($empleadosPorEmpresa as $idEmpresa => $empleadosEmpresa) {
+        if (empty($empleadosEmpresa)) {
+            continue;
+        }
+
+        // Obtener el color del departamento del primer empleado (mantener color original)
+        $colorDepartamento = str_replace('#', '', $empleadosEmpresa[0]['color_departamento'] ?? '85C02A');
+
+        // Crear hoja para esta empresa
+        crearHoja(
+            $spreadsheet,
+            $nombresEmpresas[$idEmpresa] ?? 'EMPRESA',
+            $empleadosEmpresa,
+            $nombresEmpresas[$idEmpresa] ?? 'EMPRESA',
+            $colorDepartamento,
+            $nombresEmpresas[$idEmpresa] ?? 'EMPRESA'
+        );
+    }
+} else {
+    // 3. Si se seleccionó una empresa específica, agrupar por departamento
+    $empleadosPorEmpresa = array_values(array_filter(
+        $empleadosFiltrados,
+        function($emp) use ($empresa) {
+            return ($emp['id_empresa'] ?? null) == $empresa;
+        }
+    ));
+
+    // Agrupar empleados por departamento
+    $empleadosPorDepartamento = [];
+
+    foreach ($empleadosPorEmpresa as $emp) {
+        $idDeptoEmp = $emp['id_departamento'] ?? 0;
+        $empleadosPorDepartamento[$idDeptoEmp][] = $emp;
+    }
+
+    // Generar hojas por departamento
+    foreach ($departamentos_seleccionados as $departamento) {
+
+        // Obtener el ID del departamento para filtrar empleados
+        $idDep = $departamento['id_departamento'];
+
+        // Obtener empleados del departamento actual
+        $empleados = $empleadosPorDepartamento[$idDep] ?? [];
+
+        // Fallback: si es un solo departamento a exportar y no coincidió la clave, usar todos los empleados filtrados
+        if (empty($empleados) && count($departamentos_seleccionados) === 1) {
+            $empleados = $empleadosPorEmpresa;
+        }
+
+        // Si no hay empleados, no crear hoja
+        if (empty($empleados)) {
+            continue;
+        }
+
+        // Obtener el color del departamento del primer empleado
+        $colorDepartamento = str_replace('#', '', $empleados[0]['color_departamento'] ?? '85C02A');
+
+        // Crear hoja
+        crearHoja(
+            $spreadsheet,
+            $departamento['nombre_departamento'],
+            $empleados,
+            $departamento['nombre_departamento'],
+            $colorDepartamento
+        );
+    }
 }
 
 

@@ -41,11 +41,14 @@ function cargarEmpleadosContratos(mysqli $conexion)
         e.status_nss,
         s.id_status, 
         s.nombre_status, 
+        e.id_area,
+        a.nombre_area,
         d.id_departamento, 
         d.nombre_departamento
         FROM info_empleados e
         LEFT JOIN status s ON e.id_status = s.id_status
         LEFT JOIN departamentos d ON e.id_departamento = d.id_departamento
+        LEFT JOIN areas a ON e.id_area = a.id_area
         ORDER BY e.nombre ASC");
     $sql->execute();
     $resultado = $sql->get_result();
@@ -61,6 +64,8 @@ function cargarEmpleadosContratos(mysqli $conexion)
             'status_nss' => $row['status_nss'],
             'id_status' => $row['id_status'],
             'nombre_status' => $row['nombre_status'],
+            'id_area' => $row['id_area'],
+            'nombre_area' => $row['nombre_area'],
             'id_departamento' => $row['id_departamento'],
             'nombre_departamento' => $row['nombre_departamento']
         ];

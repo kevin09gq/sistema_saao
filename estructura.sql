@@ -400,11 +400,12 @@ CREATE TABLE detalle_planes (
 -- =============================
 
 CREATE TABLE aguinaldos (
-    id_aguinaldo INT() NOT NULL AUTO_INCREMENT,
-    jsonAguinaldo JSON NOT NULL,
-    anio INT() NOT NULL,
+    id_aguinaldo INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    jsonAguinaldo LONGTEXT NOT NULL,
+    id_departamento INT NOT NULL,
+    anio YEAR NOT NULL,
     fecha_creacion DATETIME NOT NULL,
-    PRIMARY KEY (id_aguinaldo)
+    FOREIGN KEY (id_departamento) REFERENCES departamentos (id_departamento) ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
 -- =============================
@@ -959,6 +960,10 @@ VALUES (
     (
         'asistencia',
         'Lista de Asistencia'
+    ),
+    (
+        'claves_autorizacion',
+        'Claves de Autorización'
     ),
     ('nominas', 'Nominas'),
     ('cortes', 'Gestion de Cortes'),
@@ -1548,3 +1553,24 @@ VALUES (
         'Visualizar Casilleros',
         'Permite visualizar el apartado de Casilleros en el menú lateral para gestionar los casilleros del sistema'
     );
+
+
+    INSERT INTO
+    permisos (
+        id_modulo,
+        clave_permiso,
+        nombre_permiso,
+        descripcion
+    )
+VALUES (
+        14,
+        'nomina.ver_estadisticas_nomina',
+        'Visualizar Estadísticas de las Nóminas',
+        'Permite visualizar el apartado de Estadísticas de Nómina en el menú lateral para gestionar las estadísticas de la nómina'
+    ),
+    (
+        14,
+        'nomina.crear_responsivas',
+        'Realizar Responsivas de Nómina',
+        'Permite Realizar las responsivas de nominas'
+    )

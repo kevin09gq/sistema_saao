@@ -18,6 +18,9 @@ function guardarNomina() {
             return;
         }
 
+        // Actualizar total_cobrar de todos los empleados antes de guardar
+        actualizarTotalCobrarTodos(jsonNomina10lbs);
+
         // Calcular totales de percepciones y deducciones
         const totales = calcularTotalesNomina(jsonNomina10lbs);
 
@@ -76,6 +79,7 @@ function guardarNomina() {
 function calcularTotalesNomina(jsonNomina) {
     let totalPercepciones = 0;
     let totalDeducciones = 0;
+    let totalNeto = 0;
 
     // Definición de percepciones alineada con conceptos_totales.js
     const PERCEPCIONES_GUARDAR = [
@@ -96,11 +100,14 @@ function calcularTotalesNomina(jsonNomina) {
             // Saltar empleados ocultos (igual que conceptos_totales.js)
             if (empleado.mostrar === false) return;
 
+            let percepcionesEmpleado = 0;
+            let deduccionesEmpleado = 0;
+
             // ── PERCEPCIONES ──
             PERCEPCIONES_GUARDAR.forEach(perc => {
                 const valor = parseFloat(empleado[perc.propiedad]) || 0;
                 if (valor > 0) {
-                    totalPercepciones += valor;
+                    percepcionesEmpleado += valor;
                 }
             });
 
@@ -109,7 +116,7 @@ function calcularTotalesNomina(jsonNomina) {
                 empleado.percepciones_extra.forEach(extra => {
                     const valor = parseFloat(extra.cantidad) || 0;
                     if (valor > 0) {
-                        totalPercepciones += valor;
+                        percepcionesEmpleado += valor;
                     }
                 });
             }
@@ -119,7 +126,7 @@ function calcularTotalesNomina(jsonNomina) {
             DEDUCCIONES_POR_PROPIEDAD.forEach(prop => {
                 const valor = parseFloat(empleado[prop]) || 0;
                 if (valor > 0) {
-                    totalDeducciones += valor;
+                    deduccionesEmpleado += valor;
                 }
             });
 
@@ -129,7 +136,7 @@ function calcularTotalesNomina(jsonNomina) {
                     const concepto = empleado.conceptos.find(c => String(c.codigo) === codigo);
                     const valor = concepto ? (parseFloat(concepto.resultado) || 0) : 0;
                     if (valor > 0) {
-                        totalDeducciones += valor;
+                        deduccionesEmpleado += valor;
                     }
                 });
             }
@@ -139,19 +146,25 @@ function calcularTotalesNomina(jsonNomina) {
                 empleado.deducciones_extra.forEach(extra => {
                     const valor = parseFloat(extra.cantidad) || 0;
                     if (valor > 0) {
-                        totalDeducciones += valor;
+                        deduccionesEmpleado += valor;
                     }
                 });
             }
+
+            // Calcular neto por empleado con redondeo individual
+            const netoEmpleado = Math.round(percepcionesEmpleado - deduccionesEmpleado);
+
+            // Acumular totales
+            totalPercepciones += percepcionesEmpleado;
+            totalDeducciones += deduccionesEmpleado;
+            totalNeto += netoEmpleado;
         });
     });
-
-    const totalNeto = totalPercepciones - totalDeducciones;
 
     return {
         totalPercepciones: totalPercepciones,
         totalDeducciones: totalDeducciones,
-        totalNeto: Math.round(totalNeto)
+        totalNeto: totalNeto
     };
 }
 
@@ -200,6 +213,75 @@ function eliminarPropiedades(json) {
 
             });
         }
+    });
+}
+
+//==========================================================
+// FUNCIÓN PARA ACTUALIZAR TOTAL_A COBRAR DE TODOS LOS EMPLEADOS
+//==========================================================
+
+function actualizarTotalCobrarTodos(jsonNomina) {
+    if (!jsonNomina || !jsonNomina.departamentos) return;
+
+    jsonNomina.departamentos.forEach(departamento => {
+        if (!departamento.empleados) return;
+
+        departamento.empleados.forEach(empleado => {
+            // Solo actualizar empleados visibles
+            if (empleado.mostrar === false) return;
+
+            // ── PERCEPCIONES ──
+            let totalPercepciones = parseFloat(empleado.sueldo_neto || 0);
+
+            // Percepciones extras
+            if (Array.isArray(empleado.percepciones_extra)) {
+                empleado.percepciones_extra.forEach(extra => {
+                    totalPercepciones += parseFloat(extra.cantidad) || 0;
+                });
+            }
+
+            // ── DEDUCCIONES ──
+            let totalDeducciones = 0;
+
+            // Deducciones por propiedad
+            totalDeducciones += parseFloat(empleado.retardos || 0);
+            totalDeducciones += parseFloat(empleado.inasistencia || 0);
+            totalDeducciones += parseFloat(empleado.permiso || 0);
+            totalDeducciones += parseFloat(empleado.uniformes || 0);
+            totalDeducciones += parseFloat(empleado.checador || 0);
+            totalDeducciones += parseFloat(empleado.prestamo || 0);
+            totalDeducciones += parseFloat(empleado.tarjeta || 0);
+
+            // Deducciones extras
+            if (Array.isArray(empleado.deducciones_extra)) {
+                empleado.deducciones_extra.forEach(extra => {
+                    totalDeducciones += parseFloat(extra.cantidad) || 0;
+                });
+            }
+
+            // Conceptos por código (ISR, IMSS, Infonavit, Ajuste al Sub)
+            if (Array.isArray(empleado.conceptos)) {
+                const codigos = ['45', '52', '16', '107'];
+                codigos.forEach(codigo => {
+                    const concepto = empleado.conceptos.find(c => String(c.codigo) === codigo);
+                    if (concepto) {
+                        totalDeducciones += parseFloat(concepto.resultado) || 0;
+                    }
+                });
+            }
+
+            // ── TOTAL A COBRAR CON REDONDEO ──
+            let total = totalPercepciones - totalDeducciones;
+
+            if (empleado.redondeo_activo) {
+                let totalRedondeado = Math.round(total);
+                empleado.redondeo = parseFloat((totalRedondeado - total).toFixed(2));
+                empleado.total_cobrar = parseFloat(totalRedondeado.toFixed(2));
+            } else {
+                empleado.redondeo = 0;
+                empleado.total_cobrar = parseFloat(total.toFixed(2));
+            }
+        });
     });
 }
 

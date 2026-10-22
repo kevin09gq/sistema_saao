@@ -16,26 +16,38 @@ $(document).ready(function () {
 /**
  * Función para llenar la tabla de aguinaldos con datos del servidor
  */
-function obtener_aguinaldos_historial(pagina = 1) {
+function obtener_aguinaldos_historial() {
+    // Obtener los valores seleccionados en los filtros
+    let busqueda = $("#busqueda").val();
+    let anioSeleccionado = $("#filtro_anio").val();
+    let areaSeleccionada = $("#filtro_area").val();
+    let departamentoSeleccionado = $("#filtro_departamento").val();
+    let limite = $("#filtro_limite").val() || 20;
+    let paginaActual = parseInt($("#pagina_actual").data("pagina")) || 1;
 
-    const busqueda = $('#busqueda').val().trim();
 
     $.ajax({
-        type: "GET",
-        url: `${RUTA_RAIZ}/aguinaldo/php/aguinaldo.php`,
+        type: "POST",
+        url: RUTA_RAIZ + "/aguinaldo/php/aguinaldo.php",
         data: {
-            accion: 'obtener_aguinaldos_historial',
-            pagina: pagina,
-            busqueda: busqueda
+            accion: "obtener_aguinaldos",
+            busqueda: busqueda,
+            anio: anioSeleccionado,
+            area: areaSeleccionada,
+            departamento: departamentoSeleccionado,
+            limite: limite,
+            pagina: paginaActual
         },
         dataType: "json",
         success: function (response) {
+            // OBTENER SOLO LA DATA DE LA BASE
+            let data = response.data.data;
 
-            // Recuperar los datos del historial de aguinaldos
-            let dataRespuesta = response.data || {};
-            let data = dataRespuesta.registros || [];
+            console.log(response.data);
 
-            data.forEach((elemento, index) => {
+
+            // RECORRER CADA ELEMENTO DE LA INFORMACION
+            data.forEach(elemento => {
 
                 // Obtener la lista de empleados del aguinaldo
                 let empleados = elemento.jsonAguinaldo.empleados || [];
@@ -86,198 +98,242 @@ function obtener_aguinaldos_historial(pagina = 1) {
 
                 // ELIMINAR EL jsonAguinaldo PARA EVITAR CONFUSIONES
                 delete elemento.jsonAguinaldo;
+
             });
 
-            // Renderizar la tabla de aguinaldos en el historial con los datos obtenidos
-            render_tabla_aguinaldos_historial(data);
+            // LLENAR LA TABLA PRINCIPAL CON LOS DATOS FILTRADOS
+            llenar_tabla_principal(data, response.data.inicio);
 
-            // Generar la paginación
-            generar_paginacion(dataRespuesta);
-
+            // RENDERIZAR LA PAGINACION
+            renderizar_paginacion_principal(response.data.total, response.data.pagina, response.data.limite);
+        },
+        error: function (xhr, status, error) {
+            console.error("Error al obtener los departamentos:", error);
         }
     });
 }
 
 /**
- * Función para renderizar la tabla de aguinaldos en el historial
- * @param {JsonArray} data La data obtenida del servidor para renderizar la tabla de aguinaldos en el historial
+ * Función para llenar la tabla principal con los datos obtenidos
  */
-function render_tabla_aguinaldos_historial(data) {
-    // Limpiar tabla
-    const tbody = $('#cuerpo_tabla_aguinaldos');
-    tbody.empty();
-
-    // Verificar si no hay datos para mostrar
+function llenar_tabla_principal(data, inicio) {
+    // Limpiar la tabla antes de llenarla
+    $("#cuerpo_tabla_principal").empty();
+    // VERIFICAR QUE LA DATA NO ESTE VACIA
     if (data.length === 0) {
-        const filaVacia = `
-            <tr>
-                <td colspan="8" class="text-center">No hay datos para mostrar</td>
-            </tr>
-        `;
-        tbody.append(filaVacia);
+        // Si no hay datos, mostrar un mensaje en la tabla
+        $("#cuerpo_tabla_principal").html('<tr><td colspan="9" class="text-center">No se encontraron registros.</td></tr>');
         return;
     }
 
-    console.log(data);
-    
-
-    // RECORRER LOS DATOS OBTENIDOS Y CREAR LAS FILAS DE LA TABLA
+    // Recorrer los datos y agregarlos a la tabla
     data.forEach((elemento, index) => {
 
-        const contador = index + 1;
+        const contador = (inicio || 0) + index + 1; // Ajustar el contador según el inicio de la página
+
+        let opciones = ``;
+
+        if (elemento.id_aguinaldo != 0) {
+            opciones = `
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-dropdown-custom" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-three-dots-vertical"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                        <li>
+                            <button
+                                data-anio="${elemento.anio}"
+                                data-departamento="${elemento.nombre_departamento}"
+                                data-iddepartamento="${elemento.id_departamento}"
+                                data-id="${elemento.id_aguinaldo}"
+                                data-empleados='${JSON.stringify(elemento.empleados)}'
+                                data-fecha_creacion="${elemento.fecha_creacion}"
+                                data-total="${elemento.total_empleados_visibles}"
+                                class="dropdown-item btn_ver_detalles">
+                                <i class="bi bi-eye me-2"></i>Ver Detalles</button>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <button
+                                data-id="${elemento.id_aguinaldo}"
+                                data-empleados='${JSON.stringify(elemento.empleados)}'
+                                data-anio="${elemento.anio}"
+                                data-iddepartamento="${elemento.id_departamento}"
+                                data-departamento="${elemento.nombre_departamento}"
+                                data-fecha="${elemento.fecha_creacion}"
+                                class="dropdown-item btn_descargar_excel">
+                                <i class="bi bi-file-earmark-excel-fill text-success me-2"></i>Descargar Excel</button>
+                        </li>
+                         <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <button
+                                data-id="${elemento.id_aguinaldo}"
+                                class="dropdown-item text-danger btn_borrar_aguinaldo">
+                                <i class="bi bi-trash me-2"></i>Eliminar</button>
+                        </li>
+                    </ul>
+                </div>
+            `;
+        } else {
+            opciones = `<span class="text-muted">Pendiente</span>`;
+        }
 
         const fila = `
-            <tr>
-                <td class="ps-4 fw-bold">${contador}</td>
-                <td class="ps-4 fw-bold text-primary">${elemento.anio}</td>
-                <td class="text-center">${elemento.total_empleados_visibles}</td>
-                <td class="text-center">${estructuraDinero(elemento.totalAguinaldo)}</td>
-                <td class="text-center">${estructuraDinero(elemento.totalISR)}</td>
-                <td class="text-center">${estructuraDinero(elemento.totalTarjeta)}</td>
-                <td class="text-center fw-bold">${estructuraDinero(elemento.totalNeto)}</td>
-                <td class="text-center">
-                    <button
-                        data-empleados='${JSON.stringify(elemento.empleados)}'
-                        data-anio='${elemento.anio}'
-                        data-total='${elemento.total_empleados_visibles}'
-                        type="button"
-                        class="btn btn-outline-primary btn-sm px-3 shadow-sm btn_ver_detalles_aguinaldo"
-                        title="Ver Detalles">
-                        <i class="bi bi-eye-fill"></i>
-                    </button>
-                    <button
-                        data-id='${elemento.id_aguinaldo}'
-                        type="button"
-                        class="btn btn-outline-danger btn-sm px-3 shadow-sm btn_borrar_aguinaldo"
-                        title="Borrar Aguinaldo">
-                        <i class="bi bi-trash-fill"></i>
-                    </button>
-                    <!-- 
-                    <a
-                        href="generar_aguinaldo.php?cv=${elemento.anio}"
-                        class="btn btn-outline-success btn-sm px-3 shadow-sm"
-                        title="Editar Aguinaldo">
-                        <i class="bi bi-pencil-fill"></i>
-                    </a> -->
-                </td>
-            </tr>
+         <tr>
+            <td class="ps-4 fw-bold">${contador}</td>
+            <td>${elemento.anio}</td>
+            <td><span class="badge bg-primary-subtle text-primary">${elemento.nombre_departamento.toUpperCase()}</span></td>
+            <td class="fw-bold text-center">${elemento.total_empleados_visibles == 0 ? '<span class="text-muted">Pendiente</span>' : elemento.total_empleados_visibles}</td>
+            <td class="fw-semibold text-end">${ elemento.id_aguinaldo != 0 ? formatoMoneda(elemento.totalAguinaldo) : '<span class="text-muted">Pendiente</span>' }</td>
+            <td class="text-end">${ elemento.id_aguinaldo != 0 ? formatoMoneda(elemento.totalISR) : '<span class="text-muted">Pendiente</span>' }</td>
+            <td class="text-end">${ elemento.id_aguinaldo != 0 ? formatoMoneda(elemento.totalTarjeta) : '<span class="text-muted">Pendiente</span>' }</td>
+            <td class="text-end">${ elemento.id_aguinaldo != 0 ? formatoMoneda(elemento.totalNeto) : '<span class="text-muted">Pendiente</span>' }</td>
+            <td class="small text-center">${elemento.fecha_creacion == "Pendiente" ? '<span class="text-muted">Pendiente</span>' : formatearFecha(elemento.fecha_creacion)}</td>
+            <td class="text-center">
+                ${opciones}
+            </td>
+        </tr>
         `;
 
-        // AGREGAR LA FILA AL CUERPO DE LA TABLA
-        tbody.append(fila);
+        // Agregar la fila a la tabla
+        $("#cuerpo_tabla_principal").append(fila);
     });
-
     // Aplicar permisos después de renderizar la tabla
     aplicarPermisosEliminarAguinaldo();
 }
 
 /**
- * Función para generar la paginación de los resultados
- * @param {Object} dataPaginacion Objeto con información de paginación
+ * Renderizar los botones de paginación
  */
-function generar_paginacion(dataPaginacion) {
-    const contenedorPaginacion = document.getElementById('paginacion');
-    contenedorPaginacion.innerHTML = '';
-
-    const paginaActual = dataPaginacion.paginaActual || 1;
-    const totalPaginas = dataPaginacion.totalPaginas || 1;
-
-    // Si hay solo una página, no mostrar paginación
-    if (totalPaginas <= 1) {
+function renderizar_paginacion_principal(totalEmpleados, paginaActual, limite) {
+    if (limite === -1) {
+        $('#paginacion').empty();
         return;
     }
 
-    // BOTÓN INICIO
+    const totalPaginas = Math.ceil(totalEmpleados / limite);
+    const paginacion = $('#paginacion');
+    paginacion.empty();
+
+    // Botón Inicio
     if (paginaActual > 1) {
-        const li = document.createElement('li');
-        li.className = 'page-item';
-        li.innerHTML = `<a class="page-link" href="#" onclick="obtener_aguinaldos_historial(1); return false;"><i class="bi bi-skip-start-fill"></i> Inicio</a>`;
-        contenedorPaginacion.appendChild(li);
+        paginacion.append(`
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="cambiarPaginaPrincipal(1); return false;"><i class="bi bi-chevron-double-left me-1"></i>Inicio</a>
+            </li>
+        `);
     }
 
-    // BOTÓN ANTERIOR
+    // Botón anterior
     if (paginaActual > 1) {
-        const li = document.createElement('li');
-        li.className = 'page-item';
-        li.innerHTML = `<a class="page-link" href="#" onclick="obtener_aguinaldos_historial(${paginaActual - 1}); return false;">Anterior</a>`;
-        contenedorPaginacion.appendChild(li);
+        paginacion.append(`
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="cambiarPaginaPrincipal(${paginaActual - 1}); return false;">Anterior</a>
+            </li>
+        `);
     }
 
-    // NÚMEROS DE PÁGINA
-    // Mostrar máximo 5 números de página
-    let paginaInicio = Math.max(1, paginaActual - 2);
-    let paginaFin = Math.min(totalPaginas, paginaActual + 2);
+    // Botones de páginas
+    const rangoInicio = Math.max(1, paginaActual - 2);
+    const rangoFin = Math.min(totalPaginas, paginaActual + 2);
 
-    // Ajustar si estamos al inicio o final
-    if (paginaFin - paginaInicio < 4) {
-        if (paginaInicio === 1) {
-            paginaFin = Math.min(totalPaginas, paginaInicio + 4);
-        } else {
-            paginaInicio = Math.max(1, paginaFin - 4);
-        }
+    for (let i = rangoInicio; i <= rangoFin; i++) {
+        const activa = i === paginaActual ? 'active' : '';
+        paginacion.append(`
+            <li class="page-item ${activa}">
+                <a class="page-link" href="#" onclick="cambiarPaginaPrincipal(${i}); return false;">${i}</a>
+            </li>
+        `);
     }
 
-    // Mostrar botón a primera página si no está en el rango
-    if (paginaInicio > 1) {
-        const li = document.createElement('li');
-        li.className = 'page-item';
-        li.innerHTML = `<a class="page-link" href="#" onclick="obtener_aguinaldos_historial(1); return false;">1</a>`;
-        contenedorPaginacion.appendChild(li);
-
-        if (paginaInicio > 2) {
-            const liPuntos = document.createElement('li');
-            liPuntos.className = 'page-item disabled';
-            liPuntos.innerHTML = '<span class="page-link">...</span>';
-            contenedorPaginacion.appendChild(liPuntos);
-        }
-    }
-
-    // Números de página
-    for (let i = paginaInicio; i <= paginaFin; i++) {
-        const li = document.createElement('li');
-        li.className = `page-item ${i === paginaActual ? 'active' : ''}`;
-        li.innerHTML = `<a class="page-link" href="#" onclick="obtener_aguinaldos_historial(${i}); return false;">${i}</a>`;
-        contenedorPaginacion.appendChild(li);
-    }
-
-    // Mostrar botón a última página si no está en el rango
-    if (paginaFin < totalPaginas) {
-        if (paginaFin < totalPaginas - 1) {
-            const liPuntos = document.createElement('li');
-            liPuntos.className = 'page-item disabled';
-            liPuntos.innerHTML = '<span class="page-link">...</span>';
-            contenedorPaginacion.appendChild(liPuntos);
-        }
-
-        const li = document.createElement('li');
-        li.className = 'page-item';
-        li.innerHTML = `<a class="page-link" href="#" onclick="obtener_aguinaldos_historial(${totalPaginas}); return false;">${totalPaginas}</a>`;
-        contenedorPaginacion.appendChild(li);
-    }
-
-    // BOTÓN SIGUIENTE
+    // Botón siguiente
     if (paginaActual < totalPaginas) {
-        const li = document.createElement('li');
-        li.className = 'page-item';
-        li.innerHTML = `<a class="page-link" href="#" onclick="obtener_aguinaldos_historial(${paginaActual + 1}); return false;">Siguiente</a>`;
-        contenedorPaginacion.appendChild(li);
+        paginacion.append(`
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="cambiarPaginaPrincipal(${paginaActual + 1}); return false;">Siguiente</a>
+            </li>
+        `);
     }
 
-    // BOTÓN FINAL
+    // Botón Final
     if (paginaActual < totalPaginas) {
-        const li = document.createElement('li');
-        li.className = 'page-item';
-        li.innerHTML = `<a class="page-link" href="#" onclick="obtener_aguinaldos_historial(${totalPaginas}); return false;">Final <i class="bi bi-skip-end-fill"></i></a>`;
-        contenedorPaginacion.appendChild(li);
+        paginacion.append(`
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="cambiarPaginaPrincipal(${totalPaginas}); return false;">Final <i class="bi bi-chevron-double-right ms-1"></i></a>
+            </li>
+        `);
     }
 }
 
-// EVENTO DE BÚSQUEDA EN TIEMPO REAL
-$(document).on('input', '#busqueda', function (e) {
-    e.preventDefault();
+/**
+ * Cambiar a una página específica
+ */
+function cambiarPaginaPrincipal(nuevaPagina) {
+    $('#pagina_actual').data('pagina', nuevaPagina);
+    obtener_aguinaldos_historial();
+}
 
-    obtener_aguinaldos_historial(1);
+// ===================================================================================================
+// EVENTOS: CONTROLA LOS CAMBIOS EN LOS FILTROS PARA CAMBIAR LA TABLA PRINCIPAL
+// ===================================================================================================
+$(document).ready(function () {
+    // Evento de búsqueda
+    $('#busqueda').on('keyup', function () {
+        $('#pagina_actual').data('pagina', 1);
+        obtener_aguinaldos_historial();
+    });
+
+    // Evento de filtro área — carga departamentos filtrados y habilita el select
+    $('#filtro_area').on('change', function () {
+        const idArea = $(this).val();
+        $('#pagina_actual').data('pagina', 1);
+
+        if (!idArea) {
+            // Sin área: bloquear y resetear departamento
+            $('#filtro_departamento')
+                .prop('disabled', true)
+                .html('<option value="">-- Selecciona un área --</option>');
+        } else {
+            // Con área: cargar departamentos del área seleccionada
+            obtener_departamentos_por_area_historial(idArea);
+        }
+
+        obtener_aguinaldos_historial();
+    });
+
+    // Evento de filtro departamento
+    $('#filtro_departamento').on('change', function () {
+        $('#pagina_actual').data('pagina', 1);
+        obtener_aguinaldos_historial();
+    });
+
+    // Evento de filtro empresa
+    $('#filtro_anio').on('change', function () {
+        $('#pagina_actual').data('pagina', 1);
+        obtener_aguinaldos_historial();
+    });
+
+    // Evento de límite por página
+    $('#filtro_limite').on('change', function () {
+        $('#pagina_actual').data('pagina', 1);
+        obtener_aguinaldos_historial();
+    });
+
+    // Inicializar variable de página actual si no existe
+    if (!$('#pagina_actual').length) {
+        $('body').append('<div id="pagina_actual" data-pagina="1" style="display:none;"></div>');
+    }
 });
+
+
+
+
+
+
 
 
 /**
@@ -329,6 +385,13 @@ function obtener_departamentos() {
         dataType: "json",
         success: function (data) {
 
+            // render_select_departamentos({
+            //     selector: '#filtro_departamento',
+            //     data: data,
+            //     keepFirstOption: true,
+            //     selectFirst: true
+            // });
+
             // Renderizar departamentos en el select del filtro
             render_select_departamentos({
                 selector: '#id_departamento',
@@ -340,6 +403,51 @@ function obtener_departamentos() {
         },
         error: function () {
             console.error("Error al cargar departamentos");
+        }
+    });
+}
+
+/**
+ * Cargar departamentos de un área específica en el filtro de historial
+ * @param {number|string} idArea
+ */
+function obtener_departamentos_por_area_historial(idArea) {
+    $.ajax({
+        url: RUTA_RAIZ + "/public/php/obtenerDepartamentos.php",
+        type: "GET",
+        data: { id_area: idArea },
+        dataType: "json",
+        success: function (data) {
+            const select = $('#filtro_departamento');
+            select.html('<option value="">-- Todos los dep. del área --</option>');
+            data.forEach(function (depto) {
+                select.append(`<option value="${depto.id_departamento}">${depto.nombre_departamento}</option>`);
+            });
+            select.prop('disabled', false);
+        },
+        error: function () {
+            console.error("Error al cargar departamentos por área");
+        }
+    });
+}
+
+/**
+ * Obtener la lista de áreas para el filtro del historial
+ */
+function obtener_areas_historial() {
+    $.ajax({
+        url: RUTA_RAIZ + "/public/php/obtenerAreas.php",
+        type: "GET",
+        dataType: "json",
+        success: function (data) {
+            const select = $('#filtro_area');
+            select.find('option:not(:first)').remove();
+            data.forEach(function (area) {
+                select.append(`<option value="${area.id_area}">${area.nombre_area}</option>`);
+            });
+        },
+        error: function () {
+            console.error("Error al cargar áreas");
         }
     });
 }
@@ -359,6 +467,31 @@ function obtener_empresas() {
         },
         error: function () {
             console.error("Error al cargar empresas");
+        }
+    });
+}
+
+/**
+ * Función para obtener los años disponibles desde el servidor.
+ */
+function obtener_anios() {
+    $.ajax({
+        type: "GET",
+        url: RUTA_RAIZ + "/aguinaldo/php/aguinaldo.php",
+        data: { accion: "obtener_anios" },
+        dataType: "json",
+        success: function (response) {
+            // Manejar la respuesta del servidor
+            let anios = response.data;
+            // LLENAR EL SELECT filtro_anio con un -1 para indicar "Todos los años" y luego los años obtenidos
+            $("#filtro_anio").append('<option value="">-- Todos los años --</option>');
+            // Recorrer los años y agregarlos al select
+            anios.forEach(anio => {
+                $("#filtro_anio").append(`<option value="${anio}">${anio}</option>`);
+            });
+        },
+        error: function (xhr, status, error) {
+            console.error("Error al obtener los años:", error);
         }
     });
 }
@@ -452,8 +585,96 @@ function render_select_empresas(data) {
 function init() {
     // CARGAR EL HISTORIAL DE AGUINALDOS
     obtener_aguinaldos_historial();
-    // CARGAR LA LISTA DE DEPARTAMENTOS PARA EL FILTRO
-    obtener_departamentos();
+    // CARGAR LA LISTA DE ÁREAS PARA EL FILTRO
+    obtener_areas_historial();
     // CARGAR LA LISTA DE EMPRESAS PARA EL FILTRO
     obtener_empresas();
+    // CARGAR LA LISTA DE AÑOS PARA EL FILTRO
+    obtener_anios();
+    // CARGAR LA LISTA DE DEPARTAMENTOS PARA EL FILTRO
+    obtener_departamentos();
 }
+
+/**
+ * Evento para descargar el reporte de Excel de un cálculo de aguinaldo específico desde el historial
+ */
+$(document).on('click', '.btn_descargar_excel', function (e) {
+    e.preventDefault();
+
+    const anio = $(this).data('anio');
+    const idDepartamento = $(this).data('iddepartamento');
+    const nombreDepartamento = $(this).data('departamento') || 'Departamento';
+    let empleados = $(this).data('empleados');
+
+    if (typeof empleados === 'string') {
+        try {
+            empleados = JSON.parse(empleados);
+        } catch (err) {
+            empleados = [];
+        }
+    }
+
+    if (!empleados || empleados.length === 0) {
+        Swal.fire('Sin datos', 'No hay colaboradores registrados en este cálculo para exportar.', 'warning');
+        return;
+    }
+
+    // Enviar todas las empresas para generar pestañas separadas por empresa
+    const empresa = 'todas';
+
+    const jsonAguinaldo = {
+        anio: anio,
+        empleados: empleados
+    };
+
+    const departamentosSeleccionados = [{
+        id_departamento: idDepartamento,
+        nombre_departamento: nombreDepartamento
+    }];
+
+    Swal.fire({
+        title: 'Generando Reporte...',
+        html: `Preparando Excel de aguinaldo para <b>${nombreDepartamento}</b> (${anio}) con ambas empresas...`,
+        icon: 'info',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    $.ajax({
+        url: RUTA_RAIZ + '/aguinaldo/php/exportar_excel.php',
+        type: 'POST',
+        data: {
+            jsonAguinaldo: JSON.stringify(jsonAguinaldo),
+            anio: anio,
+            departamentos: JSON.stringify(departamentosSeleccionados),
+            empresa: empresa
+        },
+        xhrFields: {
+            responseType: 'blob'
+        },
+        success: function (blob) {
+            Swal.close();
+
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            const timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
+            const deptoLimpio = nombreDepartamento.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ_-]/g, '_');
+            const nombreArchivo = `REPORTE_AGUINALDOS_${anio}_AMBAS_EMPRESAS_${deptoLimpio}_${timestamp}.xlsx`;
+
+            link.href = url;
+            link.download = nombreArchivo;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        },
+        error: function (xhr, status, error) {
+            Swal.close();
+            console.error('Error al descargar el Excel:', error);
+            Swal.fire('Error', 'No se pudo generar el archivo Excel.', 'error');
+        }
+    });
+});

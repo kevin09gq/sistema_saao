@@ -4,6 +4,7 @@ require_once __DIR__ . "/../conexion/conexion.php";
 require_once __DIR__ . "/../public/php/config.php";
 require_once __DIR__ . "/../public/php/verificarSesion.php";
 verificarSesion();
+verificarPermiso("gafetes.ver_menu");
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -12,6 +13,7 @@ verificarSesion();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador de Gafetes</title>
+    <link rel="icon" type="image/png" href="<?= ICONO_SISTEMA ?>">
     <link href="<?= BOOTSTRAP_CSS ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= BOOTSTRAP_ICONS ?>">
     <link rel="stylesheet" href="css/estilos.css?v=<?= filemtime(__DIR__ . '/css/estilos.css') ?>">
@@ -42,27 +44,47 @@ verificarSesion();
                 <div class="subtitulo-nomina" style="margin: 4px 0 0 0; font-size: 13px;">Selecciona empleados, genera gafetes y administra fotos</div>
             </div>
             <div class="header-controls">
+                <?php if (tienePermiso("gafetes.generar_gafetes")): ?>
                 <button class="btn btn-outline-secondary btn-sm" type="button" id="generarGafetes" title="Generar Gafetes">
                     <i class="bi bi-person-vcard text-primary"></i> Gafetes
                 </button>
+                <?php endif; ?>
+
+                <?php if (tienePermiso("gafetes.generar_fotos")): ?>
                 <button class="btn btn-outline-secondary btn-sm" type="button" id="generarFoto" title="Generar Hoja de Fotos">
                     <i class="bi bi-camera text-success"></i> Foto
                 </button>
+                <?php endif; ?>
+
+                <?php if (tienePermiso("gafetes.administrar_casillero")): ?>
                 <button class="btn btn-outline-secondary btn-sm" type="button" id="btnCasillero" title="Administrar Casillero">
                     <i class="bi bi-box-seam text-primary"></i> Casillero
                 </button>
+                <?php endif; ?>
+
+                <?php if (tienePermiso("gafetes.subir_fotos")): ?>
                 <button class="btn btn-outline-secondary btn-sm" type="button" id="subirFotos" data-bs-toggle="modal" data-bs-target="#modalSubirFotos" title="Subir fotos">
                     <i class="bi bi-cloud-arrow-up text-info"></i> Subir Fotos
                 </button>
+                <?php endif; ?>
+
+                <?php if (tienePermiso("gafetes.actualizar_logos")): ?>
                 <button class="btn btn-outline-secondary btn-sm" type="button" id="actualizarLogos" data-bs-toggle="modal" data-bs-target="#modalActualizarLogos" title="Actualizar logos">
                     <i class="bi bi-images text-success"></i> Logos
                 </button>
+                <?php endif; ?>
+
+                <?php if (tienePermiso("gafetes.configurar_colores")): ?>
                 <button class="btn btn-outline-secondary btn-sm" type="button" id="btnConfigColoresAreas" data-bs-toggle="modal" data-bs-target="#modalColoresAreas" title="Colores por área">
                     <i class="bi bi-palette text-warning"></i> Colores
                 </button>
+                <?php endif; ?>
+
+                <?php if (tienePermiso("gafetes.configurar_vigencia")): ?>
                 <button class="btn btn-outline-secondary btn-sm" type="button" id="btnConfigVigencia" data-bs-toggle="modal" data-bs-target="#modalConfigVigencia" title="Configurar vigencia">
                     <i class="bi bi-calendar-check text-secondary"></i> Vigencia
                 </button>
+                <?php endif; ?>
               <!-- <button class="btn btn-outline-danger btn-sm" type="button" id="limpiarFotos" title="Limpiar fotos huérfanas">
                     <i class="bi bi-trash3"></i>
                 </button>-->
@@ -94,14 +116,6 @@ verificarSesion();
                     <option value="sin_imss">Sin IMSS</option>
                 </select>
 
-                <div class="busqueda-container">
-                    <i class="bi bi-search"></i>
-                    <input type="text" class="campo-busqueda" placeholder="Buscar..." id="buscadorEmpleados">
-                    <button type="button" id="limpiarBuscador" title="Limpiar" style="display:none;">
-                        <i class="bi bi-x-circle"></i>
-                    </button>
-                </div>
-
                 <button class="btn btn-sm btn-outline-secondary" type="button" id="limpiarFiltroEstadoBtn" title="Limpiar filtro" style="display:none;">
                     <i class="bi bi-eraser-fill"></i>
                 </button>
@@ -112,6 +126,20 @@ verificarSesion();
                 <button class="btn btn-sm btn-outline-danger" id="deseleccionarTodos" title="Deseleccionar todos los empleados">
                     <i class="bi bi-x-square"></i> Quitar Selección
                 </button>
+                <button class="btn btn-sm btn-outline-success" id="seleccionarFotos" title="Seleccionar todas las fotos">
+                    <i class="bi bi-images"></i> Seleccionar Fotos
+                </button>
+                <button class="btn btn-sm btn-outline-warning" id="deseleccionarFotos" title="Quitar selección de todas las fotos">
+                    <i class="bi bi-x-circle"></i> Quitar Fotos
+                </button>
+
+                <div class="busqueda-container">
+                    <i class="bi bi-search"></i>
+                    <input type="text" class="campo-busqueda" placeholder="Buscar..." id="buscadorEmpleados">
+                    <button type="button" id="limpiarBuscador" title="Limpiar" style="display:none;">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -643,6 +671,7 @@ verificarSesion();
                         </div>
                     </div>
                     <div class="modal-footer flex-shrink-0">
+                        <span id="nombre_empleado_footer" class="fw-semibold text-success me-auto">-</span>
                         <button type="button" id="btn_cancelar" class="btn btn-secondary" data-bs-dismiss="modal">
                             Cancelar
                         </button>

@@ -6,6 +6,13 @@
 
 let empleadosSeleccionadosAguinaldo = new Set();
 let empleadosListaAguinaldo = [];
+let filtroSeguroTicket = 'todos'; // 'todos' | 'con_seguro' | 'sin_seguro'
+
+function tieneSeguroEmpleadoTicket(emp) {
+    return parseInt(emp.status_nss) === 1 || 
+           parseInt(emp.status_seguro) === 1 || 
+           Boolean(emp.fecha_ingreso_imss && emp.fecha_ingreso_imss !== '0000-00-00');
+}
 
 $(document).ready(function() {
     // Evento para Ticket General (basado en filtros actuales)
@@ -33,6 +40,9 @@ $(document).ready(function() {
         }
 
         $('#buscar_empleado_ticket').val('');
+        filtroSeguroTicket = 'todos';
+        $('.btn-filtro-seguro').removeClass('active');
+        $('.btn-filtro-seguro[data-filtro="todos"]').addClass('active');
         empleadosSeleccionadosAguinaldo.clear();
         cargarListaParaSeleccion();
         const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modal_seleccion_tickets_aguinaldo'));
@@ -44,6 +54,14 @@ $(document).ready(function() {
     $('#btn_seleccionar_todos_tickets').on('click', () => toggleTodos(true));
     $('#btn_deseleccionar_todos_tickets').on('click', () => toggleTodos(false));
     $('#btn_generar_tickets_seleccionados').on('click', generarSeleccionados);
+
+    // Evento para los botones de filtro de seguro
+    $(document).on('click', '.btn-filtro-seguro', function() {
+        $('.btn-filtro-seguro').removeClass('active');
+        $(this).addClass('active');
+        filtroSeguroTicket = $(this).data('filtro') || 'todos';
+        filtrarListaSeleccion();
+    });
 
     $(document).on('click', '.empleado-item-aguinaldo', function(e) {
         if ($(e.target).is('input')) return;
@@ -84,7 +102,27 @@ function obtenerEmpleadosFiltradosActuales() {
 
 function cargarListaParaSeleccion() {
     empleadosListaAguinaldo = jsonAguinaldo.empleados.filter(e => e.derecho_aguinaldo && e.visible);
-    renderizarListaSeleccion(empleadosListaAguinaldo);
+    renderizarListaSeleccion(obtenerEmpleadosFiltradosTickets());
+}
+
+function obtenerEmpleadosFiltradosTickets() {
+    const query = ($('#buscar_empleado_ticket').val() || '').toLowerCase().trim();
+    return empleadosListaAguinaldo.filter(emp => {
+        const nombreCompleto = `${emp.nombre || ''} ${emp.ap_paterno || ''} ${emp.ap_materno || ''}`.toLowerCase();
+        const matchBusqueda = !query || 
+            nombreCompleto.includes(query) || 
+            (emp.clave_empleado && emp.clave_empleado.toLowerCase().includes(query));
+
+        const tieneSeguro = tieneSeguroEmpleadoTicket(emp);
+        let matchSeguro = true;
+        if (filtroSeguroTicket === 'con_seguro') {
+            matchSeguro = tieneSeguro;
+        } else if (filtroSeguroTicket === 'sin_seguro') {
+            matchSeguro = !tieneSeguro;
+        }
+
+        return matchBusqueda && matchSeguro;
+    });
 }
 
 function renderizarListaSeleccion(lista) {
@@ -92,19 +130,26 @@ function renderizarListaSeleccion(lista) {
     container.empty();
     
     if (lista.length === 0) {
-        container.html('<div class="col-12 text-center py-3">No se encontraron empleados</div>');
+        container.html('<div class="col-12 text-center py-4 text-muted"><i class="bi bi-person-x fs-3 d-block mb-1"></i>No se encontraron colaboradores</div>');
         return;
     }
 
     const html = `<div class="list-group w-100">
         ${lista.map(emp => {
             const isSelected = empleadosSeleccionadosAguinaldo.has(String(emp.id_empleado));
-            // Concatenar nombre completo: Nombre + Ap Paterno + Ap Materno
             const nombreCompleto = `${emp.nombre || ''} ${emp.ap_paterno || ''} ${emp.ap_materno || ''}`.trim();
+            const tieneSeguro = tieneSeguroEmpleadoTicket(emp);
+            const badgeSeguro = tieneSeguro 
+                ? '<span class="badge bg-success-subtle text-success border border-success-subtle ms-2" style="font-size:0.72rem; font-weight:600;"><i class="bi bi-shield-check me-1"></i>Con Seguro</span>'
+                : '<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle ms-2" style="font-size:0.72rem; font-weight:500;"><i class="bi bi-shield-x me-1"></i>Sin Seguro</span>';
+
             return `
                 <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center empleado-item-aguinaldo ${isSelected ? 'active' : ''}" data-id="${emp.id_empleado}">
                     <div>
-                        <div class="fw-bold text-dark">${nombreCompleto}</div>
+                        <div class="fw-bold text-dark d-flex align-items-center flex-wrap">
+                            ${nombreCompleto}
+                            ${badgeSeguro}
+                        </div>
                         <small class="text-muted">Clave: ${emp.clave_empleado} | ${emp.nombre_departamento || 'General'}</small>
                     </div>
                     <input class="form-check-input" type="checkbox" ${isSelected ? 'checked' : ''}>
@@ -117,29 +162,19 @@ function renderizarListaSeleccion(lista) {
 }
 
 function filtrarListaSeleccion() {
-    const query = $(this).val().toLowerCase().trim();
-    const filtrados = empleadosListaAguinaldo.filter(emp => {
-        const nombreCompleto = `${emp.nombre || ''} ${emp.ap_paterno || ''} ${emp.ap_materno || ''}`.toLowerCase();
-        return nombreCompleto.includes(query) || 
-               (emp.clave_empleado && emp.clave_empleado.toLowerCase().includes(query));
-    });
-    renderizarListaSeleccion(filtrados);
+    renderizarListaSeleccion(obtenerEmpleadosFiltradosTickets());
 }
 
 function toggleTodos(estado) {
-    const query = $('#buscar_empleado_ticket').val().toLowerCase().trim();
-    empleadosListaAguinaldo.forEach(emp => {
-        const nombreCompleto = `${emp.nombre || ''} ${emp.ap_paterno || ''} ${emp.ap_materno || ''}`.toLowerCase();
-        if (!query || nombreCompleto.includes(query) || (emp.clave_empleado && emp.clave_empleado.toLowerCase().includes(query))) {
-            if (estado) empleadosSeleccionadosAguinaldo.add(String(emp.id_empleado));
-            else empleadosSeleccionadosAguinaldo.delete(String(emp.id_empleado));
+    const listaActual = obtenerEmpleadosFiltradosTickets();
+    listaActual.forEach(emp => {
+        if (estado) {
+            empleadosSeleccionadosAguinaldo.add(String(emp.id_empleado));
+        } else {
+            empleadosSeleccionadosAguinaldo.delete(String(emp.id_empleado));
         }
     });
-    const listaRender = query ? empleadosListaAguinaldo.filter(emp => {
-        const nombreCompleto = `${emp.nombre || ''} ${emp.ap_paterno || ''} ${emp.ap_materno || ''}`.toLowerCase();
-        return nombreCompleto.includes(query) || (emp.clave_empleado && emp.clave_empleado.toLowerCase().includes(query));
-    }) : empleadosListaAguinaldo;
-    renderizarListaSeleccion(listaRender);
+    renderizarListaSeleccion(listaActual);
 }
 
 function actualizarContadores() {

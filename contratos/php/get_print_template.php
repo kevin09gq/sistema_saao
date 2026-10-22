@@ -14,7 +14,7 @@ $watermark_path = '/sistema_saao/contratos/img/agua.jpeg'; // Valor por defecto
 
 // Si se proporciona un ID de empresa, obtener su marca de agua
 if ($id_empresa > 0) {
-    require_once __DIR__ . "/../../conexion/conexion.php";
+    include("../../conexion/conexion.php");
     
     $sql = $conexion->prepare("SELECT marca_empresa FROM empresa WHERE id_empresa = ?");
     $sql->bind_param("i", $id_empresa);

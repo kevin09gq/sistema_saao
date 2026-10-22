@@ -215,10 +215,11 @@ $columnasNombres = [
     'SUELDO SEMANAL',      // 5 (E)
     'PASAJE',              // 6 (F)
     'COMIDA',              // 7 (G)
+    'TARDEADA',            // 8 (H)
 ];
 
 $mapExtrasCols = []; // key: normalized name => colIndex
-$colIndex = 8;
+$colIndex = 9;
 foreach ($extrasDinamicas as $key => $dispName) {
     $columnasNombres[] = $dispName;
     $mapExtrasCols[$key] = $colIndex;
@@ -338,6 +339,7 @@ $sheet->getStyle("A6:{$lastColLetter}6")->getAlignment()->setHorizontal('center'
 $sheet->getStyle("A6:{$lastColLetter}6")->getFill()->setFillType('solid')->getStartColor()->setRGB($colorExcel);
 
 // Letras para fórmulas (columnas dinámicas)
+$colTARDEADALetter = 'H';
 $lastPercepcionLetter = Coordinate::stringFromColumnIndex($colTotalPercepciones - 1);
 $colTotalPercepcionesLetter = Coordinate::stringFromColumnIndex($colTotalPercepciones);
 $colISRLetter = Coordinate::stringFromColumnIndex($colISR);
@@ -378,6 +380,9 @@ $comidaTieneDatos = false;
 // Determinar si la columna PASAJE tiene datos
 $pasajeTieneDatos = false;
 
+// Determinar si la columna TARDEADA tiene datos
+$tardeadaTieneDatos = false;
+
 // Determinar si las columnas de deducciones de conceptos tienen datos
 $isrTieneDatos = false;
 $imssTieneDatos = false;
@@ -404,7 +409,11 @@ foreach ($empleadosJornaleros as $empleado) {
     if (($empleado['pasaje'] ?? 0) != 0) {
         $pasajeTieneDatos = true;
     }
-    
+
+    if (($empleado['tardeada'] ?? 0) != 0) {
+        $tardeadaTieneDatos = true;
+    }
+
     if (($empleado['inasistencia'] ?? 0) != 0) {
         $ausentismoTieneDatos = true;
     }
@@ -497,6 +506,14 @@ foreach ($empleadosJornaleros as $empleado) {
         $comida = $empleado['comida'] ?? 0;
         if (!empty($comida) && $comida != 0) {
             $sheet->setCellValue('G' . $numeroFila, $comida);
+        }
+    }
+
+    // Agregar TARDEADA
+    if ($tardeadaTieneDatos) {
+        $tardeada = $empleado['tardeada'] ?? 0;
+        if (!empty($tardeada) && $tardeada != 0) {
+            $sheet->setCellValue($colTARDEADALetter . $numeroFila, $tardeada);
         }
     }
 
@@ -687,6 +704,7 @@ $sheet->getStyle("A6:{$lastColLetter}{$filaTotal}")->applyFromArray([
 if (!$diasTrabajadosTieneDatos) $sheet->getColumnDimension('D')->setVisible(false);
 if (!$pasajeTieneDatos) $sheet->getColumnDimension('F')->setVisible(false);
 if (!$comidaTieneDatos) $sheet->getColumnDimension('G')->setVisible(false);
+if (!$tardeadaTieneDatos) $sheet->getColumnDimension($colTARDEADALetter)->setVisible(false);
 if (!$isrTieneDatos) $sheet->getColumnDimension($colISRLetter)->setVisible(false);
 if (!$imssTieneDatos) $sheet->getColumnDimension($colIMSSLetter)->setVisible(false);
 if (!$infonavitTieneDatos) $sheet->getColumnDimension($colINFONAVITLetter)->setVisible(false);

@@ -73,6 +73,8 @@ function recuperarUltimaNomina() {
                         llenarTablaNomina();
                         saveNomina(jsonNomina40lbs);
                         cambiarVistaNomina40lbs();
+                        console.log(jsonNomina40lbs);
+                        
 
                         mostrarAlerta(
                             'success',

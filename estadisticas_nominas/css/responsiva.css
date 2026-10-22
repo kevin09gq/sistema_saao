@@ -1,0 +1,537 @@
+/* ==========================================================================
+   SISTEMA SAAO - MÓDULO DE RESPONSIVAS INDIVIDUALES DE NÓMINA
+   Hoja de estilos: responsiva.css
+   Diseño institucional SAAO con emulación de formato Excel para responsivas
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. VARIABLES ESPECÍFICAS DE RESPONSIVA
+   -------------------------------------------------------------------------- */
+:root {
+    --banner-red: #A71919;
+    --banner-green: #1B5E20;
+    --table-header-green: #194D25;
+    --border-excel: #333333;
+    --border-excel-light: #b0b0b0;
+    --bg-kpi-light: #f8fafc;
+    --accent-red-text: #D32F2F;
+}
+
+/* --------------------------------------------------------------------------
+   2. CONTENEDORES Y TARJETAS DEL MÓDULO
+   -------------------------------------------------------------------------- */
+.responsiva-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+.filter-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 20px;
+    background-color: #e8f5e9;
+    color: #1b5e20;
+    border: 1px solid #c8e6c9;
+}
+
+/* --------------------------------------------------------------------------
+   3. SELECTOR DE NÓMINAS Y DEPARTAMENTOS
+   -------------------------------------------------------------------------- */
+.rancho-selector-item {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    transition: all 0.2s ease-in-out;
+    background: #ffffff;
+}
+
+.rancho-selector-item:hover {
+    border-color: #2d6a4f;
+    box-shadow: 0 4px 10px rgba(45, 106, 79, 0.08);
+}
+
+.rancho-selector-item.active {
+    border-color: #2d6a4f;
+    background: #f0fdf4;
+}
+
+.rancho-selector-item .form-check-input:checked {
+    background-color: #2d6a4f;
+    border-color: #2d6a4f;
+}
+
+.depto-tag {
+    display: inline-flex;
+    align-items: center;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #334155;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s ease;
+}
+
+.depto-tag:hover {
+    background: #e2e8f0;
+}
+
+.depto-tag input[type="checkbox"] {
+    margin-right: 6px;
+    accent-color: #2d6a4f;
+}
+
+.depto-tag.selected {
+    background: #e8f5e9;
+    border-color: #81c784;
+    color: #1b5e20;
+    font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   4. FORMATO HOJA DE RESPONSIVA (EMULACIÓN EXACTA DE EXCEL)
+   -------------------------------------------------------------------------- */
+.sheet-container {
+    background: #ffffff;
+    border: 1px solid #cfd8dc;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    padding: 24px;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+/* Franja superior Cítricos SAAO */
+.sheet-top-title {
+    background-color: #1b5e20;
+    color: #ffffff;
+    text-align: center;
+    font-weight: 800;
+    font-size: 0.95rem;
+    letter-spacing: 2px;
+    padding: 4px 0;
+    text-transform: uppercase;
+}
+
+/* Banner rojo principal */
+.sheet-main-banner {
+    background-color: #a71919;
+    color: #ffffff;
+    text-align: center;
+    font-weight: 800;
+    font-size: 1.15rem;
+    letter-spacing: 1px;
+    padding: 8px 12px;
+    text-transform: uppercase;
+    border-top: 1px solid #ffffff;
+    border-bottom: 2px solid #000000;
+}
+
+/* --------------------------------------------------------------------------
+   5. TABLA DE METADATOS (ENCABEZADO DE DATOS GENERALES)
+   -------------------------------------------------------------------------- */
+.meta-table {
+    width: 100%;
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+    background: #ffffff;
+}
+
+.meta-table td {
+    border: 1px solid #000000;
+    padding: 6px 8px;
+    vertical-align: middle;
+}
+
+.meta-table .label-cell {
+    font-weight: 700;
+    color: #000000;
+    background-color: #ffffff;
+}
+
+.meta-table .value-cell {
+    color: #000000;
+    background-color: #ffffff;
+}
+
+/* Estilos específicos para tabla de información general */
+.general-info-table {
+    width: 100%;
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+    background: #ffffff;
+}
+
+.general-info-table td {
+    border: 1px solid #000000;
+    padding: 6px 8px;
+    vertical-align: middle;
+}
+
+.general-info-table .label-cell {
+    font-weight: 700;
+    color: #000000;
+    background-color: #ffffff;
+    width: 35%;
+}
+
+.general-info-table .value-cell {
+    color: #000000;
+    background-color: #ffffff;
+    width: 65%;
+}
+
+/* Estilos específicos para tabla responsiva individual */
+.responsiva-meta-table {
+    width: 100%;
+    min-width: 800px; /* Ancho mínimo para forzar scroll en móviles */
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+    background: #ffffff;
+}
+
+.responsiva-meta-table td {
+    border: 1px solid #000000;
+    padding: 6px 8px;
+    vertical-align: middle;
+    white-space: nowrap; /* Evitar que el texto se corte */
+}
+
+.responsiva-meta-table .label-cell {
+    font-weight: 700;
+    color: #000000;
+    background-color: #ffffff;
+}
+
+.responsiva-meta-table .value-cell {
+    color: #000000;
+    background-color: #ffffff;
+}
+
+.meta-table .highlight-red {
+    color: #d32f2f;
+    font-weight: 700;
+    font-size: 0.92rem;
+}
+
+.meta-table .highlight-bold {
+    font-weight: 700;
+}
+
+/* Estilos específicos para tabla de información general */
+.general-info-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    background: #ffffff;
+}
+
+.general-info-table td {
+    border: 1px solid #000000;
+    padding: 4px 8px;
+    vertical-align: middle;
+}
+
+.general-info-table .label-cell {
+    font-weight: 700;
+    color: #000000;
+    background-color: #ffffff;
+}
+
+.general-info-table .value-cell {
+    color: #000000;
+    background-color: #ffffff;
+}
+
+.general-info-table .highlight-red {
+    color: #d32f2f;
+    font-weight: 700;
+}
+
+.general-info-table .highlight-bold {
+    font-weight: 700;
+}
+
+/* Inputs editables en tabla de información general */
+.general-info-table .form-control {
+    border: none;
+    background: transparent;
+    padding: 4px 6px;
+    font-size: 0.85rem;
+}
+
+.general-info-table .form-control:focus {
+    outline: 2px solid #2d6a4f;
+    background: #f0fdf4;
+    box-shadow: none;
+}
+
+/* Inputs editables en tabla responsiva individual */
+.responsiva-meta-table .form-control {
+    border: none;
+    background: transparent;
+    padding: 4px 6px;
+    font-size: 0.85rem;
+}
+
+.responsiva-meta-table .form-control:focus {
+    outline: 2px solid #2d6a4f;
+    background: #f0fdf4;
+    box-shadow: none;
+}
+
+/* --------------------------------------------------------------------------
+   6. TABLA PRINCIPAL DE NÓMINA / EFECTIVO
+   -------------------------------------------------------------------------- */
+.responsiva-table {
+    width: 100%;
+    min-width: 1200px; /* Ancho mínimo para forzar scroll horizontal */
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    background: #ffffff;
+    table-layout: fixed;
+}
+
+.responsiva-table.table-fixed {
+    table-layout: fixed;
+}
+
+/* Contenedor con scroll horizontal */
+.table-responsive {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.responsiva-table thead th {
+    background-color: #194d25;
+    color: #ffffff;
+    font-weight: 700;
+    text-align: center;
+    padding: 8px 6px;
+    border: 1px solid #000000;
+    vertical-align: middle;
+    font-size: 0.86rem;
+}
+
+.responsiva-table tbody td {
+    border: 1px solid #000000;
+    padding: 6px 8px;
+    vertical-align: middle;
+    color: #000000;
+}
+
+.responsiva-table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+.responsiva-table .col-depto {
+    text-align: left;
+    font-weight: 600;
+}
+
+.responsiva-table .col-center {
+    text-align: center;
+}
+
+.responsiva-table .col-money {
+    text-align: right;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 600;
+}
+
+.responsiva-table .col-text {
+    text-align: center;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+/* Fila de Totales */
+.responsiva-table tfoot td {
+    border: 1px solid #000000;
+    border-top: 2px solid #000000;
+    border-bottom: 2px solid #000000;
+    padding: 8px 8px;
+    font-weight: 800;
+    font-size: 0.95rem;
+    background-color: #ffffff;
+    color: #000000;
+}
+
+/* Inputs editables en tabla principal */
+.responsiva-table input {
+    border: none;
+    background: transparent;
+    padding: 4px 6px;
+    font-size: 0.85rem;
+    width: 100%;
+    border-radius: 0;
+}
+
+.responsiva-table input:focus {
+    outline: 2px solid #2d6a4f;
+    background: #f0fdf4;
+}
+
+.responsiva-table input[readonly] {
+    background: #f8fafc;
+    color: #64748b;
+    font-weight: 700;
+}
+
+.responsiva-table .col-center input {
+    text-align: center;
+}
+
+.responsiva-table .col-money input {
+    text-align: right;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   7. SECCIÓN DE FIRMAS Y OBSERVACIONES AL PIE
+   -------------------------------------------------------------------------- */
+.signatures-container {
+    margin-top: 40px;
+    padding-top: 15px;
+}
+
+.signature-line {
+    border-top: 1.5px solid #000000;
+    width: 80%;
+    margin: 40px auto 6px auto;
+}
+
+.signature-label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-align: center;
+    color: #1e293b;
+    text-transform: uppercase;
+}
+
+/* --------------------------------------------------------------------------
+   7.1. AUTOCOMPLETADO DE RESPONSABLE Y PUESTO
+   -------------------------------------------------------------------------- */
+.cell-responsable,
+.cell-elaboro {
+    position: relative !important;
+}
+
+.autocomplete-suggestions-dropdown {
+    position: absolute;
+    top: calc(100% + 2px);
+    left: 0;
+    width: 100%;
+    min-width: 320px;
+    max-height: 250px;
+    overflow-y: auto;
+    background: #ffffff;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+    z-index: 1060;
+    padding: 4px 0;
+    margin: 0;
+    list-style: none;
+}
+
+.autocomplete-suggestion-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background-color 0.15s ease;
+    text-align: left;
+}
+
+.autocomplete-suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.autocomplete-suggestion-item:hover,
+.autocomplete-suggestion-item.active {
+    background-color: #e0f2fe;
+}
+
+.autocomplete-suggestion-name {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 0.88rem;
+    line-height: 1.2;
+}
+
+.autocomplete-suggestion-meta {
+    font-size: 0.76rem;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 3px;
+    flex-wrap: wrap;
+}
+
+.autocomplete-suggestion-meta .badge-puesto {
+    background: #e2e8f0;
+    color: #0f172a;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 0.73rem;
+    font-weight: 600;
+}
+
+.autocomplete-suggestion-meta .badge-clave {
+    background: #f1f5f9;
+    color: #475569;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 0.72rem;
+}
+
+.autocomplete-no-results {
+    padding: 10px 14px;
+    font-size: 0.82rem;
+    color: #94a3b8;
+    text-align: center;
+    font-style: italic;
+}
+
+/* --------------------------------------------------------------------------
+   8. ESTILOS DE IMPRESIÓN
+   -------------------------------------------------------------------------- */
+@media print {
+    .autocomplete-suggestions-dropdown {
+        display: none !important;
+    }
+    body {
+        background: #ffffff !important;
+    }
+    
+    .no-print,
+    .navbar,
+    .filter-card {
+        display: none !important;
+    }
+    
+    .sheet-container {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+    }
+
+    .responsiva-table thead th,
+    .sheet-top-title,
+    .sheet-main-banner {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+}

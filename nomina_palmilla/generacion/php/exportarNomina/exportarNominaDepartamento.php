@@ -192,10 +192,11 @@ $columnasDinamicas = [
     'SUELDO SEMANAL',      // 5 (E)
     'PASAJE',              // 6 (F)
     'COMIDA',              // 7 (G)
+    'TARDEADA',            // 8 (H)
 ];
 
 $mapExtrasCols = [];
-$colIndex = 8;
+$colIndex = 9;
 foreach ($extrasDinamicas as $key => $dispName) {
     $columnasDinamicas[] = $dispName;
     $mapExtrasCols[$key] = $colIndex;
@@ -238,6 +239,7 @@ $totalCols = count($columnasDinamicas);
 $lastColLetter = Coordinate::stringFromColumnIndex($totalCols);
 
 // Letras para fórmulas dinámicas
+$colTARDEADALetter = 'H';
 $lastPercepcionLetter = Coordinate::stringFromColumnIndex($colTotalPercepciones - 1);
 $colTotalPercepcionesLetter = Coordinate::stringFromColumnIndex($colTotalPercepciones);
 $colISRLetter = Coordinate::stringFromColumnIndex($colISR);
@@ -501,6 +503,13 @@ foreach ($empleadosJornaleros as $empleado) {
         }
     }
 
+    // TARDEADA
+    $tardeada = $empleado['tardeada'] ?? 0;
+    if (!empty($tardeada) && $tardeada != 0) {
+        $sheet->setCellValue($colTARDEADALetter . $numeroFila, $tardeada);
+        $sheet->getStyle($colTARDEADALetter . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
+    }
+
     // Percepciones extras dinámicas
     if (!empty($empleado['percepciones_extra']) && is_array($empleado['percepciones_extra'])) {
         foreach ($empleado['percepciones_extra'] as $extra) {
@@ -725,6 +734,7 @@ for ($fila = 7; $fila < $numeroFila; $fila++) {
     $sheet->getStyle('E' . $fila)->getNumberFormat()->setFormatCode('$#,##0.00');
     $sheet->getStyle('F' . $fila)->getNumberFormat()->setFormatCode('$#,##0.00');
     $sheet->getStyle('G' . $fila)->getNumberFormat()->setFormatCode('$#,##0.00');
+    $sheet->getStyle($colTARDEADALetter . $fila)->getNumberFormat()->setFormatCode('$#,##0.00');
     $sheet->getStyle($colTotalPercepcionesLetter . $fila)->getNumberFormat()->setFormatCode('$#,##0.00');
     $sheet->getStyle($colNetoRecibirLetter . $fila)->getNumberFormat()->setFormatCode('$#,##0.00');
     $sheet->getStyle($colEfectivoLetter . $fila)->getNumberFormat()->setFormatCode('$#,##0.00');
@@ -756,6 +766,7 @@ $columnasData = [
     'E' => 'sueldo_semanal',
     'F' => 'pasaje',
     'G' => 'comida',
+    $colTARDEADALetter => 'tardeada',
 ];
 
 // Agregar columnas de percepciones extras dinámicas

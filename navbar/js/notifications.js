@@ -1,51 +1,41 @@
 /**
  * notifications.js
- * Sistema de notificaciones de aniversarios laborales.
- *
- * Tipos de notificación que se manejan:
- *   PROXIMO  → El aniversario ocurre en 1 o 2 días (alerta previa)
- *   HOY      → El aniversario es exactamente hoy (celebración)
- *   RECIENTE → El aniversario ocurrió hace 1 o 2 días (recordatorio)
+ * Sistema de notificaciones de aniversarios laborales y vigencia de gafetes.
+ * Muestra alertas en la campana del navbar y lista en el modal principal.
+ * La generación, personalización y descarga de tarjetas conmemorativas se delega a felicitaciones.js.
  */
 
 // ======================================================
 // CONFIGURACIÓN GLOBAL DEL MÓDULO
 // ======================================================
 const NOTIF_CONFIG = {
-    // Ruta al archivo PHP que devuelve las notificaciones
-    endpoint: '/sistema_saao/public/php/notificaciones.php',
-    // Intervalo de refresco automático: cada 5 minutos
+    endpoint: '/sistema_saao/navbar/php/notificaciones.php',
     pollingMs: 5 * 60 * 1000,
-    // ID del modal de notificaciones en el DOM
-    modalId: 'modalNotificaciones',
+    modalId: 'modalNotificaciones'
 };
 
+let notificacionesActuales = [];
+
 // ======================================================
-// INICIALIZACIÓN — espera a que jQuery esté disponible
+// INICIALIZACIÓN
 // ======================================================
 (function iniciarCuandoJqueryEste() {
     if (typeof $ === 'undefined' || typeof $.fn === 'undefined') {
-        // jQuery aún no ha cargado, reintentar en 50 ms
         setTimeout(iniciarCuandoJqueryEste, 50);
         return;
     }
 
     $(document).ready(function () {
-        // Cargar notificaciones al iniciar y repetir cada 5 min
         obtenerYMostrarNotificaciones();
         setInterval(obtenerYMostrarNotificaciones, NOTIF_CONFIG.pollingMs);
 
-        // Crear el modal en el DOM si no existe
-        crearModalSiNoExiste();
-
-        // Conectar el botón de la campana con el modal
         vincularBotonCampana();
+        vincularBotonFelicitacion();
     });
 })();
 
 // ======================================================
 // FETCH PRINCIPAL
-// Consulta el servidor y actualiza el indicador + la lista
 // ======================================================
 function obtenerYMostrarNotificaciones() {
     $.ajax({
@@ -58,10 +48,9 @@ function obtenerYMostrarNotificaciones() {
                 console.warn('[Notificaciones] Error del servidor:', respuesta.error);
                 return;
             }
-            // Actualizar el número en la campana del navbar
+            notificacionesActuales = respuesta.notificaciones || [];
             actualizarContadorNavbar(respuesta.total);
-            // Pintar la lista dentro del modal
-            mostrarListaEnModal(respuesta.notificaciones);
+            mostrarListaEnModal(notificacionesActuales);
         },
         error: function (xhr, estado, errorDetalle) {
             console.warn('[Notificaciones] Error HTTP', xhr.status, errorDetalle);
@@ -71,49 +60,76 @@ function obtenerYMostrarNotificaciones() {
 
 // ======================================================
 // CONTADOR EN EL NAVBAR
-// Muestra o esconde el número rojo sobre la campana
 // ======================================================
 function actualizarContadorNavbar(totalNotificaciones) {
     const elementoContador = $('#notificationBadge');
     elementoContador.text(totalNotificaciones);
 
     if (totalNotificaciones > 0) {
-        // Mostrar el indicador con animación de pulso
         elementoContador.removeClass('d-none').addClass('notif-badge-pulse');
     } else {
-        // Ocultar el indicador si no hay notificaciones
         elementoContador.addClass('d-none').removeClass('notif-badge-pulse');
     }
 }
 
 // ======================================================
 // LISTA DE NOTIFICACIONES EN EL MODAL
-// Recorre el array y construye cada tarjeta
 // ======================================================
 function mostrarListaEnModal(listaNotificaciones) {
     const elementoLista = $('#notifLista');
     elementoLista.empty();
 
-    // Si no hay notificaciones, mostrar estado vacío
     if (!listaNotificaciones || listaNotificaciones.length === 0) {
         elementoLista.html(crearMensajeSinNotificaciones());
         return;
     }
 
-    // Construir y agregar una tarjeta por cada notificación
     $.each(listaNotificaciones, function (indice, notificacion) {
-        elementoLista.append(crearTarjetaNotificacion(notificacion));
+        elementoLista.append(crearTarjetaNotificacion(notificacion, indice));
     });
 }
 
-// ── Construye el HTML de una tarjeta individual ────────
-function crearTarjetaNotificacion(notificacion) {
-    // Si es una notificación de gafete
+function crearTarjetaNotificacion(notificacion, indice) {
+    // Si es notificación de cumpleaños (CUMPLE_HOY, CUMPLE_PROXIMO, CUMPLE_RECIENTE)
+    if (notificacion.tipo === 'CUMPLE_HOY' || notificacion.tipo === 'CUMPLE_PROXIMO' || notificacion.tipo === 'CUMPLE_RECIENTE') {
+        const configuracion = obtenerConfiguracionTipo(notificacion.tipo, notificacion.dias_diferencia);
+        const iniciales = obtenerIniciales(notificacion.nombre);
+        const fechaLegible = formatearFechaCumple(notificacion.fecha_cumpleanos || notificacion.fecha_nacimiento);
+        const tipoCss = notificacion.tipo.toLowerCase();
+
+        return `
+            <div class="notif-item notif-tipo-${tipoCss}">
+                <div class="notif-avatar notif-avatar-${tipoCss}">${iniciales}</div>
+                <div class="notif-content">
+                    <div class="notif-header-row">
+                        <span class="notif-nombre" title="${notificacion.nombre}">${notificacion.nombre}</span>
+                        <span class="notif-badge-tipo notif-badge-${tipoCss}">${configuracion.etiqueta}</span>
+                    </div>
+                    <div class="notif-desc">
+                        <i class="${configuracion.icono}"></i> ${configuracion.mensaje(notificacion)}
+                    </div>
+                    <div class="notif-meta-bar">
+                        <div class="notif-fecha">
+                            <i class="bi bi-cake2"></i> ${fechaLegible} &nbsp;·&nbsp;
+                            <i class="bi bi-person-badge"></i> Clave: ${notificacion.clave_empleado}
+                        </div>
+                        <button type="button" class="notif-btn-felicitacion notif-btn-felicitacion-${tipoCss}" 
+                                data-indice="${indice}" title="Descargar o ver tarjeta de felicitación de cumpleaños">
+                            <i class="bi bi-gift-fill"></i>
+                            <span>Felicitación</span>
+                            <i class="bi bi-download opacity-75"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+    }
+
+    // Si es notificación de gafete
     if (notificacion.tipo === 'GAFETE_VENCIDO' || notificacion.tipo === 'GAFETE_PROXIMO') {
         const configuracion = obtenerConfiguracionTipo(notificacion.tipo);
         const iniciales = obtenerIniciales(notificacion.nombre);
         const fechaLegible = formatearFecha(notificacion.fecha_vigencia);
-        const tipoCss = notificacion.tipo.toLowerCase(); // "gafete_vencido", "gafete_proximo"
+        const tipoCss = notificacion.tipo.toLowerCase();
 
         return `
             <div class="notif-item notif-tipo-${tipoCss}">
@@ -134,32 +150,39 @@ function crearTarjetaNotificacion(notificacion) {
             </div>`;
     }
 
-    // Si es una notificación de aniversario (original)
+    // Si es aniversario laboral (HOY, PROXIMO, RECIENTE)
     const configuracion = obtenerConfiguracionTipo(notificacion.tipo, notificacion.dias_diferencia);
     const iniciales = obtenerIniciales(notificacion.nombre);
     const fechaLegible = formatearFecha(notificacion.fecha_aniversario);
-    const tipoCss = notificacion.tipo.toLowerCase(); // "proximo", "hoy", "reciente"
+    const tipoCss = notificacion.tipo.toLowerCase();
 
     return `
         <div class="notif-item notif-tipo-${tipoCss}">
             <div class="notif-avatar notif-avatar-${tipoCss}">${iniciales}</div>
             <div class="notif-content">
                 <div class="notif-header-row">
-                    <span class="notif-nombre">${notificacion.nombre}</span>
+                    <span class="notif-nombre" title="${notificacion.nombre}">${notificacion.nombre}</span>
                     <span class="notif-badge-tipo notif-badge-${tipoCss}">${configuracion.etiqueta}</span>
                 </div>
                 <div class="notif-desc">
                     <i class="${configuracion.icono}"></i> ${configuracion.mensaje(notificacion)}
                 </div>
-                <div class="notif-fecha">
-                    <i class="bi bi-calendar3"></i> ${fechaLegible} &nbsp;·&nbsp;
-                    <i class="bi bi-person-badge"></i> Clave: ${notificacion.clave_empleado}
+                <div class="notif-meta-bar">
+                    <div class="notif-fecha">
+                        <i class="bi bi-calendar3"></i> ${fechaLegible} &nbsp;·&nbsp;
+                        <i class="bi bi-person-badge"></i> Clave: ${notificacion.clave_empleado}
+                    </div>
+                    <button type="button" class="notif-btn-felicitacion notif-btn-felicitacion-${tipoCss}" 
+                            data-indice="${indice}" title="Descargar o ver tarjeta de felicitación">
+                        <i class="bi bi-gift-fill"></i>
+                        <span>Felicitación</span>
+                        <i class="bi bi-download opacity-75"></i>
+                    </button>
                 </div>
             </div>
         </div>`;
 }
 
-// ── Mensaje cuando no hay notificaciones activas ───────
 function crearMensajeSinNotificaciones() {
     return `
         <div class="notif-vacio">
@@ -168,13 +191,26 @@ function crearMensajeSinNotificaciones() {
         </div>`;
 }
 
-// ======================================================
-// CONFIGURACIÓN POR TIPO DE NOTIFICACIÓN
-// Define etiqueta, icono y mensaje de cada tipo
-// ======================================================
 function obtenerConfiguracionTipo(tipo) {
     const configuraciones = {
-        // 📅 Próximo: el aniversario aún no ha llegado
+        CUMPLE_HOY: {
+            etiqueta: '🎂 Cumpleaños Hoy',
+            icono: 'bi bi-cake2-fill',
+            mensaje: (n) =>
+                `¡Hoy es su cumpleaños! Cumple <strong>${n.edad} año${n.edad > 1 ? 's' : ''}</strong>.`,
+        },
+        CUMPLE_PROXIMO: {
+            etiqueta: '🎂 Próximo Cumple',
+            icono: 'bi bi-gift',
+            mensaje: (n) =>
+                `Cumplirá <strong>${n.edad} año${n.edad > 1 ? 's' : ''}</strong> en <strong>${n.dias_diferencia === 1 ? '1 día' : n.dias_diferencia + ' días'}</strong>.`,
+        },
+        CUMPLE_RECIENTE: {
+            etiqueta: '🎂 Cumpleaños',
+            icono: 'bi bi-cake2',
+            mensaje: (n) =>
+                `Celebró su cumpleaños (<strong>${n.edad} año${n.edad > 1 ? 's' : ''}</strong>) hace <strong>${n.dias_diferencia === 1 ? '1 día' : n.dias_diferencia + ' días'}</strong>.`,
+        },
         PROXIMO: {
             etiqueta: '📅 Próximo',
             icono: 'bi bi-clock',
@@ -182,14 +218,12 @@ function obtenerConfiguracionTipo(tipo) {
                 `Cumple <strong>${n.anios} año${n.anios > 1 ? 's' : ''}</strong> de antigüedad ` +
                 `en <strong>${n.dias_diferencia === 1 ? '1 día' : '2 días'}</strong>.`,
         },
-        // 🎉 Hoy: es el día del aniversario
         HOY: {
             etiqueta: '🎉 Hoy',
             icono: 'bi bi-stars',
             mensaje: (n) =>
                 `¡Hoy cumple <strong>${n.anios} año${n.anios > 1 ? 's' : ''}</strong> de antigüedad!`,
         },
-        // ✅ Reciente: el aniversario ya ocurrió (1–2 días antes)
         RECIENTE: {
             etiqueta: '✅ Cumplido',
             icono: 'bi bi-check-circle',
@@ -197,14 +231,12 @@ function obtenerConfiguracionTipo(tipo) {
                 `Cumplió <strong>${n.anios} año${n.anios > 1 ? 's' : ''}</strong> de antigüedad hace ` +
                 `<strong>${n.dias_diferencia === 1 ? '1 día' : '2 días'}</strong>.`,
         },
-        // ❌ Gafete vencido
         GAFETE_VENCIDO: {
             etiqueta: '❌ Vencido',
             icono: 'bi bi-exclamation-triangle',
             mensaje: (n) =>
                 `El gafete vence desde hace <strong>${n.dias_vencidos} día${n.dias_vencidos > 1 ? 's' : ''}</strong>.`,
         },
-        // ⚠️ Gafete próximo a vencer
         GAFETE_PROXIMO: {
             etiqueta: '⚠️ Por vencer',
             icono: 'bi bi-exclamation-circle',
@@ -213,79 +245,18 @@ function obtenerConfiguracionTipo(tipo) {
         },
     };
 
-    // Si el tipo no se reconoce, usar PROXIMO como fallback
     return configuraciones[tipo] ?? configuraciones['PROXIMO'];
 }
 
-// ======================================================
-// MODAL DE NOTIFICACIONES
-// Se inserta dinámicamente en el body una sola vez
-// ======================================================
-function crearModalSiNoExiste() {
-    if ($('#' + NOTIF_CONFIG.modalId).length === 0) {
-        $('body').append(generarHTMLModal());
-    }
-}
-
-// ── Genera la estructura HTML completa del modal ──────
-function generarHTMLModal() {
-    return `
-    <div class="modal fade" id="${NOTIF_CONFIG.modalId}" tabindex="-1"
-         aria-labelledby="notifModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-scrollable notif-modal-dialog">
-            <div class="modal-content notif-modal-content">
-
-                <!-- Encabezado del modal -->
-                <div class="modal-header notif-modal-header">
-                    <div class="notif-modal-title-wrap">
-                        <i class="bi bi-bell-fill notif-modal-icon"></i>
-                        <h5 class="modal-title" id="notifModalLabel">Notificaciones</h5>
-                    </div>
-                    <!-- Badge que muestra el total de notificaciones activas -->
-                    <span class="notif-total-badge" id="notifTotalBadge">0</span>
-                    <button type="button" class="btn-close btn-close-white"
-                            data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                </div>
-
-                <!-- Cuerpo con scroll vertical para la lista de notificaciones -->
-                <div class="modal-body notif-modal-body" id="notifLista">
-                    <div class="notif-vacio">
-                        <i class="bi bi-bell-slash"></i>
-                        <p>Cargando notificaciones…</p>
-                    </div>
-                </div>
-
-                <!-- Pie con nota informativa -->
-                <div class="modal-footer notif-modal-footer">
-                    <small class="notif-footer-texto">
-                        <i class="bi bi-info-circle"></i>
-                        Se muestran aniversarios próximos (2 días antes), del día y recientes (2 días después).
-                    </small>
-                </div>
-
-            </div>
-        </div>
-    </div>`;
-}
-
-// ======================================================
-// BOTÓN DE LA CAMPANA EN EL NAVBAR
-// Al hacer clic, abre el modal de notificaciones
-// ======================================================
 function vincularBotonCampana() {
     $(document).on('click', '#notificationNavbarButton', function (evento) {
-        // Evitar que el enlace navegue a otra página
         evento.preventDefault();
-
-        // Actualizar el texto del badge dentro del modal antes de abrirlo
         sincronizarContadorModal();
-
         const modal = new bootstrap.Modal(document.getElementById(NOTIF_CONFIG.modalId));
         modal.show();
     });
 }
 
-// ── Sincroniza el contador del modal con el del navbar ─
 function sincronizarContadorModal() {
     const totalActual = parseInt($('#notificationBadge').text()) || 0;
     const textoContador = totalActual > 0
@@ -294,11 +265,18 @@ function sincronizarContadorModal() {
     $('#notifTotalBadge').text(textoContador);
 }
 
-// ======================================================
-// UTILIDADES
-// ======================================================
+function vincularBotonFelicitacion() {
+    $(document).on('click', '.notif-btn-felicitacion', function (evento) {
+        evento.preventDefault();
+        evento.stopPropagation();
+        const indice = parseInt($(this).data('indice'));
+        const notif = notificacionesActuales[indice];
+        if (notif && typeof abrirModalFelicitacion === 'function') {
+            abrirModalFelicitacion(notif);
+        }
+    });
+}
 
-// Obtiene las 2 primeras letras del nombre completo para el avatar
 function obtenerIniciales(nombreCompleto) {
     const palabras = nombreCompleto.trim().split(' ').filter(Boolean);
     const primeraLetra = palabras[0]?.charAt(0) || '';
@@ -306,11 +284,23 @@ function obtenerIniciales(nombreCompleto) {
     return (primeraLetra + segundaLetra).toUpperCase();
 }
 
-// Convierte "2026-06-16" → "16 Jun 2026"
 function formatearFecha(fechaString) {
     if (!fechaString) return '---';
     const nombresMeses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
         'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
     const [anio, mes, dia] = fechaString.split('-').map(Number);
     return `${dia} ${nombresMeses[mes - 1]} ${anio}`;
+}
+
+function formatearFechaCumple(fechaString) {
+    if (!fechaString) return '---';
+    const nombresMeses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+        'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const parts = fechaString.split('-').map(Number);
+    if (parts.length >= 3) {
+        const dia = parts[2];
+        const mes = parts[1];
+        return `${dia} ${nombresMeses[mes - 1]}`;
+    }
+    return fechaString;
 }

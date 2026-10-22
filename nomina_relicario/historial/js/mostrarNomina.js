@@ -343,7 +343,7 @@ function calcularTotalesPorColumna() {
             totales.retardos += parseFloat(empleado.retardos || 0);
             totales.uniformes += parseFloat(empleado.uniformes || 0);
             totales.checador += parseFloat(empleado.checador || 0);
-            totales.faGafetCofia += parseFloat(empleado.faGafetCofia || 0);
+            totales.faGafetCofia += parseFloat(empleado.fa_gafet_cofia || 0);
             totales.totalDeducciones += parseFloat(obtenerTotalDeducciones(empleado) || 0);
 
             totales.netoPagar += parseFloat(obtenerNetoPagar(empleado) || 0);

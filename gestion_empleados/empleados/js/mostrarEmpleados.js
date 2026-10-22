@@ -106,13 +106,14 @@ function mostrarEmpleados() {
     if (empleadosFiltrados.length === 0) {
         $('#tbodyEmpleados').append(`
             <tr>
-                <td colspan="6" class="text-center py-5 text-muted">
+                <td colspan="7" class="text-center py-5 text-muted">
                     <i class="bi bi-search fs-3 d-block mb-2 text-secondary"></i>
                     No se encontraron empleados con los filtros aplicados.
                 </td>
             </tr>
         `);
 
+        $('#infoTotalEmpleados').text('Mostrando 0 empleados');
         crearPaginacion();
         return;
     }
@@ -127,7 +128,10 @@ function mostrarEmpleados() {
     let empleadosPagina = empleadosFiltrados.slice(inicio, fin);
 
     // Recorrer los empleados de la página actual
-    empleadosPagina.forEach(empleado => {
+    empleadosPagina.forEach((empleado, index) => {
+
+        // Número correlativo del empleado
+        let numero = inicio + index + 1;
 
         // Obtener las iniciales del empleado
         let iniciales = obtenerIniciales(
@@ -149,6 +153,11 @@ function mostrarEmpleados() {
         // Agregar la fila del empleado
         $('#tbodyEmpleados').append(`
             <tr>
+
+                <!-- # -->
+                <td class="text-center fw-semibold text-muted">
+                    ${numero}
+                </td>
 
                 <!-- Foto -->
                 <td class="text-center">
@@ -281,6 +290,18 @@ function mostrarEmpleados() {
             </tr>
         `);
     });
+
+    // Actualizar texto de información de paginación
+    let mostrandoDesde = inicio + 1;
+    let mostrandoHasta = Math.min(fin, empleadosFiltrados.length);
+    let totalFiltrados = empleadosFiltrados.length;
+    let totalGeneral = empleados.length;
+
+    let textoInfo = `Mostrando ${mostrandoDesde} a ${mostrandoHasta} de ${totalFiltrados} empleados`;
+    if (totalGeneral > 0 && totalGeneral !== totalFiltrados) {
+        textoInfo += ` (filtrados de ${totalGeneral} en total)`;
+    }
+    $('#infoTotalEmpleados').text(textoInfo);
 
     // Crear la paginación
     crearPaginacion();

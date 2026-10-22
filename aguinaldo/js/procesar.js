@@ -8,6 +8,7 @@ $(document).on('submit', '#form_aguinaldo', function (e) {
     // Obtener el año ingresado
     const anio = parseInt($('#anio').val(), 10);
     const dias_pago = parseInt($('#dias_pago').val(), 10);
+    const id_departamento = parseInt($('#id_departamento_confg').val(), 10);
 
     if (anio == 0 || !anio) {
         alerta("info", "Año inválido", "Por favor, ingresa un año válido para procesar el aguinaldo.");
@@ -16,6 +17,11 @@ $(document).on('submit', '#form_aguinaldo', function (e) {
 
     if (dias_pago == 0 || dias_pago < 1 || !dias_pago) {
         alerta("info", "Días de pago inválidos", "Por favor, ingresa un número válido de días de pago para procesar el aguinaldo.");
+        return;
+    }
+
+    if (id_departamento == -1 || !id_departamento) {
+        alerta("info", "Departamento inválido", "Por favor, selecciona un departamento válido para procesar el aguinaldo.");
         return;
     }
 
@@ -33,7 +39,7 @@ $(document).on('submit', '#form_aguinaldo', function (e) {
 
     setTimeout(() => {
         // VALIDAR SI YA EXISTE UN CALCULO DE AGUINALDO PARA EL AÑO INGRESADO
-        validar_existe_aguinaldo(anio, dias_pago);
+        validar_existe_aguinaldo(anio, id_departamento, dias_pago);
     }, 2500);
 });
 
@@ -41,15 +47,17 @@ $(document).on('submit', '#form_aguinaldo', function (e) {
 /**
  * Función para validar si ya existe un cálculo de aguinaldo para el año ingresado
  * @param {number} anio Año a validar
+ * @param {number} id_departamento ID del departamento
  * @param {number} dias_pago Número de días de pago
  */
-function validar_existe_aguinaldo(anio, dias_pago = 15) {
+function validar_existe_aguinaldo(anio, id_departamento, dias_pago = 15) {
     $.ajax({
         type: "GET",
         url: "php/aguinaldo.php",
         data: {
             accion: "existe_aguinaldo",
-            anio: anio
+            anio: anio,
+            id_departamento: id_departamento
         },
         dataType: "json",
         success: function (response) {
@@ -79,6 +87,8 @@ function validar_existe_aguinaldo(anio, dias_pago = 15) {
                     // YA EXISTEN DATOS GUARDADOS EN LA BASE DE DATOS PARA EL AÑO INGRESADO
                     // SIMPLEMENTE SE RECUPERAN Y SE MUESTRAN EN LA INTERFAZ
                     setAguinaldo(response.data);
+                    // Obtener los departamentos
+                    obtener_departamentos();
                     // Se llena la tabla con los datos obtenidos del storage
                     llenar_tabla_aguinaldo();
                     // Se muestra la tabla y se oculta el formulario
@@ -90,7 +100,7 @@ function validar_existe_aguinaldo(anio, dias_pago = 15) {
             } else {
                 // NO EXISTEN DATOS GUARDADOS EN LA BASE DE DATOS PARA EL AÑO INGRESADO
                 // SE PROCEDE A RECUPERAR LOS DATOS DE LOS EMPLEADOS
-                obtener_empleados(anio, dias_pago);
+                obtener_empleados(anio, id_departamento, dias_pago);
             }
         }
     });
@@ -106,9 +116,10 @@ function validar_existe_aguinaldo(anio, dias_pago = 15) {
 /**
  * Función para obtener los datos de los empleados desde la base de datos
  * @param {number} anio Año para el cual se van a obtener los empleados (opcional, por defecto el año actual)
+ * @param {number} id_departamento ID del departamento
  * @param {number} dias_pago Número de días de pago
  */
-function obtener_empleados(anio, dias_pago = 15) {
+function obtener_empleados(anio, id_departamento, dias_pago = 15) {
     // Si ya hay datos, no volver a hacer la solicitud
     if (jsonAguinaldo !== null && Array.isArray(jsonAguinaldo) && jsonAguinaldo.length > 0) return;
 
@@ -116,13 +127,17 @@ function obtener_empleados(anio, dias_pago = 15) {
         type: "GET",
         url: "php/aguinaldo.php",
         data: {
-            accion: "obtener_empleados"
+            accion: "obtener_empleados",
+            id_departamento: id_departamento,
         },
         dataType: "json",
         success: function (response) {
 
             // Se van a recuperar los datos de los empleados
             let empleados = response.data;
+
+            console.log("SE TRAJERON LOS EMPLEADOS DE LA BASE: ", empleados);
+
 
             // PROCESAR DATOS PARA CADA EMPLEADO
             empleados.forEach(empleado => {
@@ -163,6 +178,7 @@ function obtener_empleados(anio, dias_pago = 15) {
             // SE ASIGNA EL RESULTADO LA ESTRUCTURA BASE DEL AGUINALDO
             let estructura = {
                 "configuraciones": 0,
+                "id_departamento": id_departamento,
                 "empleados": empleados,
                 "anio": anio,
                 "dias_pago_general": dias_pago
@@ -174,6 +190,9 @@ function obtener_empleados(anio, dias_pago = 15) {
 
             // LLENAR TABLA CON LOS DATOS PROCESADOS
             llenar_tabla_aguinaldo();
+
+            // Obtener los departamentos
+            obtener_departamentos();
 
             // SE MUESTRA LA TABLA Y SE OCULTA EL FORMULARIO
             mostrar_tabla();

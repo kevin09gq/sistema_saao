@@ -5,6 +5,15 @@
 $('#btn_redondeos').click(function (e) {
     e.preventDefault();
 
+    // Cargar departamentos si no están cargados
+    let departamentoSeleccionado = $('#select_departamento_redondeos').val();
+    if (!departamentoSeleccionado || departamentoSeleccionado === "-1") {
+        // Si no hay departamento seleccionado, usar el del jsonAguinaldo
+        if (window.jsonAguinaldo && window.jsonAguinaldo.id_departamento) {
+            $('#select_departamento_redondeos').val(window.jsonAguinaldo.id_departamento);
+        }
+    }
+
     // Lamar a la función para llenar la lista de empleados en el modal de redondeos
     llenar_lista_empleados_redondeos();
 
@@ -22,8 +31,17 @@ function llenar_lista_empleados_redondeos() {
 
     // Filtrar empleados por departamentos
     let departamentoSeleccionado = $('#select_departamento_redondeos').val();
+    let areaSeleccionada = $('#select_area_redondeos').val();
+    let empresaSeleccionada = $('#select_empresa_redondeos').val();
     // Obtener el texto de búsqueda y convertirlo a minúsculas para comparación
     let textoBusqueda = $('#buscar_empleado_redondeos').val().toLowerCase();
+
+    // VALIDAR QUE EL jsonAguinaldo si exista
+    if (!json || !json.empleados || json.empleados.length === 0) {
+        console.warn("No hay datos en jsonAguinaldo para mostrar");
+        $('#contenedor_empleados_redondeos').html('<span class="p-3 text-center text-secondary">Registros no encontrados.</span>');
+        return;
+    }
 
     // Filtrar empleados: De acuerdo al departamento seleccionado
     let empleadosFiltrados = json.empleados.filter(emp => {
@@ -33,10 +51,17 @@ function llenar_lista_empleados_redondeos() {
             (emp.nombre && emp.nombre.toLowerCase().includes(textoBusqueda)) ||
             (emp.ap_paterno && emp.ap_paterno.toLowerCase().includes(textoBusqueda)) ||
             (emp.ap_materno && emp.ap_materno.toLowerCase().includes(textoBusqueda));
+        // Filtro de empresa
+        const coincideEmpresa = !empresaSeleccionada || empresaSeleccionada === "-1" ||
+            parseInt(emp.id_empresa) === parseInt(empresaSeleccionada);
+        // Filtro de área
+        const coincideArea = !areaSeleccionada || areaSeleccionada === "-1" ||
+            parseInt(emp.id_area) === parseInt(areaSeleccionada);
         // Filtro de departamento por id
-        const coincideDepartamento = parseInt(emp.id_departamento) === parseInt(departamentoSeleccionado);
+        const coincideDepartamento = !departamentoSeleccionado || departamentoSeleccionado === "-1" ||
+            parseInt(emp.id_departamento) === parseInt(departamentoSeleccionado);
 
-        return coincideDepartamento && coincideBusqueda;
+        return coincideBusqueda && coincideEmpresa && coincideArea && coincideDepartamento;
     });
 
     // Limpiar tabla
@@ -74,22 +99,31 @@ function llenar_lista_empleados_redondeos() {
 $('#btn_poner_redondeos').click(function (e) {
     e.preventDefault();
 
-    // RECUPERAR EL DEPARTAMENTO SELECCIONADO EN EL FILTRO
+    // RECUPERAR LOS FILTROS SELECCIONADOS
     let departamentoSeleccionado = $('#select_departamento_redondeos').val();
+    let areaSeleccionada = $('#select_area_redondeos').val();
+    let empresaSeleccionada = $('#select_empresa_redondeos').val();
 
     // RECUPERAR EL JSON ACTUAL
     let json = getAguinaldo();
 
-    // APLICAR REDONDEOS A TODOS LOS EMPLEADOS
+    // APLICAR REDONDEOS A TODOS LOS EMPLEADOS SEGÚN LOS FILTROS
     json.empleados.forEach(empleado => {
-        // SI EL DEPARTAMENTO DEL EMPLEADO COINCIDE CON EL DEPARTAMENTO SELECCIONADO, APLICAR REDONDEO
-        if (parseInt(empleado.id_departamento) === parseInt(departamentoSeleccionado)) {
+        // VERIFICAR SI COINCIDE CON LOS FILTROS
+        const coincideEmpresa = !empresaSeleccionada || empresaSeleccionada === "-1" ||
+            parseInt(empleado.id_empresa) === parseInt(empresaSeleccionada);
+        const coincideArea = !areaSeleccionada || areaSeleccionada === "-1" ||
+            parseInt(empleado.id_area) === parseInt(areaSeleccionada);
+        const coincideDepartamento = !departamentoSeleccionado || departamentoSeleccionado === "-1" ||
+            parseInt(empleado.id_departamento) === parseInt(departamentoSeleccionado);
+
+        if (coincideEmpresa && coincideArea && coincideDepartamento) {
             empleado.aplicar_redondeo = true;
 
             // CALCULAR EL REDONDEO
             empleado.redondeo = empleado.aplicar_redondeo ? diferenciaRedondeo(empleado.neto_pagar) : 0;
             // CALCULAR EL NETO A PAGAR CON REDONDEO
-            empleado.neto_pagar_redondeado = calcularNetoPagarRedondeado(empleado.neto_pagar, empleado.redondeo);
+            empleado.neto_pagar_redondeado = calcularNetoPagarRedondeo(empleado.neto_pagar, empleado.redondeo);
         }
     });
 
@@ -107,22 +141,31 @@ $('#btn_poner_redondeos').click(function (e) {
 $('#btn_quitar_redondeos').click(function (e) {
     e.preventDefault();
 
-    // OBTENER EL DEPARTAMENTO SELECCIONADO EN EL FILTRO
+    // OBTENER LOS FILTROS SELECCIONADOS
     let departamentoSeleccionado = $('#select_departamento_redondeos').val();
+    let areaSeleccionada = $('#select_area_redondeos').val();
+    let empresaSeleccionada = $('#select_empresa_redondeos').val();
 
     // RECUPERAR EL JSON ACTUAL
     let json = getAguinaldo();
 
-    // APLICAR REDONDEOS A TODOS LOS EMPLEADOS
+    // QUITAR REDONDEOS A TODOS LOS EMPLEADOS SEGÚN LOS FILTROS
     json.empleados.forEach(empleado => {
-        // SI EL DEPARTAMENTO DEL EMPLEADO COINCIDE CON EL DEPARTAMENTO SELECCIONADO, QUITAR REDONDEO
-        if (parseInt(empleado.id_departamento) === parseInt(departamentoSeleccionado)) {
+        // VERIFICAR SI COINCIDE CON LOS FILTROS
+        const coincideEmpresa = !empresaSeleccionada || empresaSeleccionada === "-1" ||
+            parseInt(empleado.id_empresa) === parseInt(empresaSeleccionada);
+        const coincideArea = !areaSeleccionada || areaSeleccionada === "-1" ||
+            parseInt(empleado.id_area) === parseInt(areaSeleccionada);
+        const coincideDepartamento = !departamentoSeleccionado || departamentoSeleccionado === "-1" ||
+            parseInt(empleado.id_departamento) === parseInt(departamentoSeleccionado);
+
+        if (coincideEmpresa && coincideArea && coincideDepartamento) {
             empleado.aplicar_redondeo = false;
 
             // CALCULAR EL REDONDEO
             empleado.redondeo = empleado.aplicar_redondeo ? diferenciaRedondeo(empleado.neto_pagar) : 0;
             // CALCULAR EL NETO A PAGAR CON REDONDEO
-            empleado.neto_pagar_redondeado = calcularNetoPagarRedondeado(empleado.neto_pagar, empleado.redondeo);
+            empleado.neto_pagar_redondeado = calcularNetoPagarRedondeo(empleado.neto_pagar, empleado.redondeo);
         }
     });
 
@@ -159,7 +202,7 @@ $(document).on('change', '.checkbox_empleado_redondeos', function (e) {
         // CALCULAR EL REDONDEO
         json.empleados[empleado].redondeo = aplicar_redondeo ? diferenciaRedondeo(json.empleados[empleado].neto_pagar) : 0;
         // CALCULAR EL NETO A PAGAR CON REDONDEO
-        json.empleados[empleado].neto_pagar_redondeado = calcularNetoPagarRedondeado(json.empleados[empleado].neto_pagar, json.empleados[empleado].redondeo);
+        json.empleados[empleado].neto_pagar_redondeado = calcularNetoPagarRedondeo(json.empleados[empleado].neto_pagar, json.empleados[empleado].redondeo);
     }
 
     // GUARDAR LOS CAMBIOS EN EL JSON ACTUALIZADO
@@ -172,7 +215,7 @@ $(document).on('change', '.checkbox_empleado_redondeos', function (e) {
 
 /**
  * ========================================================================================
- * Eventos para el modal de visibilidad de empleados
+ * Eventos para el modal de redondeos
 * =========================================================================================
  */
 
@@ -181,7 +224,59 @@ $('#buscar_empleado_redondeos').on('keyup', function () {
     llenar_lista_empleados_redondeos();
 });
 
+// Evento de filtro empresa
+$('#select_empresa_redondeos').on('change', function () {
+    llenar_lista_empleados_redondeos();
+});
+
+// Evento de filtro área - carga departamentos y desbloquea el select
+$('#select_area_redondeos').on('change', function () {
+    let areaSeleccionada = $(this).val();
+    const selectDepartamento = $('#select_departamento_redondeos');
+
+    if (areaSeleccionada && areaSeleccionada !== "-1") {
+        // Obtener departamentos por área
+        obtener_departamentos_por_area_redondeos(areaSeleccionada);
+        // Desbloquear select de departamentos
+        selectDepartamento.prop('disabled', false);
+        // Resetear a "Todos"
+        selectDepartamento.val('-1');
+    } else {
+        // Bloquear select de departamentos y limpiar
+        selectDepartamento.prop('disabled', true);
+        selectDepartamento.find('option:not(:first)').remove();
+        selectDepartamento.val('-1');
+    }
+    llenar_lista_empleados_redondeos();
+});
+
 // Evento de filtro departamento
 $('#select_departamento_redondeos').on('change', function () {
     llenar_lista_empleados_redondeos();
 });
+
+/**
+ * Función para obtener departamentos filtrados por área en el modal redondeos
+ */
+function obtener_departamentos_por_area_redondeos(id_area) {
+    $.ajax({
+        url: RUTA_RAIZ + "/public/php/obtenerDepartamentos.php",
+        type: "GET",
+        data: { id_area: id_area },
+        dataType: "json",
+        success: function (data) {
+            // Renderizar departamentos filtrados
+            const select = $("#select_departamento_redondeos");
+            select.find("option:not(:first)").remove();
+
+            data.forEach(function (depto) {
+                select.append(
+                    `<option value="${depto.id_departamento}">${depto.nombre_departamento}</option>`
+                );
+            });
+        },
+        error: function () {
+            console.error("Error al cargar departamentos por área");
+        }
+    });
+}

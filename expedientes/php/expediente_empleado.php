@@ -355,10 +355,17 @@ function obtenerDepartamentos()
 
     // Construir arreglo
     while ($row = $query->fetch_object()) {
+        // Un departamento puede pertenecer a varias áreas; conservar todas
+        $areas = array();
+        if (isset($row->id_area) && $row->id_area !== null && $row->id_area !== '') {
+            $areas = array_values(array_filter(array_map('intval', explode(',', $row->id_area))));
+        }
+
         $arreglo[] = array(
             "id_departamento" => $row->id_departamento,
             "nombre_departamento" => $row->nombre_departamento,
-            "id_area" => isset($row->id_area) ? explode(',', $row->id_area)[0] : null
+            "id_area" => $areas[0] ?? null,
+            "id_areas" => $areas
         );
     }
 

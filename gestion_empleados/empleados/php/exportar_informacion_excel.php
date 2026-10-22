@@ -42,7 +42,7 @@ if (!is_array($camposSeleccionados)) {
 }
 
 $camposFijos = ['clave_empleado', 'nombre', 'ap_paterno', 'ap_materno'];
-$camposEmpleadoInfo = ['imss', 'curp', 'domicilio', 'sexo', 'grupo_sanguineo', 'fecha_nacimiento', 'rfc_empleado', 'estado_civil', 'num_casillero', 'biometrico', 'telefono_empleado', 'enfermedades_alergias', 'id_empresa', 'id_area', 'id_departamento', 'id_puestoEspecial', 'salario_semanal', 'salario_diario', 'horario_fijo', 'fecha_alta_empresa', 'fecha_alta_imss', 'status_nss'];
+$camposEmpleadoInfo = ['imss', 'curp', 'domicilio', 'sexo', 'grupo_sanguineo', 'fecha_nacimiento', 'edad', 'rfc_empleado', 'estado_civil', 'num_casillero', 'biometrico', 'telefono_empleado', 'enfermedades_alergias', 'id_empresa', 'id_area', 'id_departamento', 'id_puestoEspecial', 'salario_semanal', 'salario_diario', 'horario_fijo', 'fecha_alta_empresa', 'fecha_alta_imss', 'status_nss'];
 $camposEmergencia = ['emergencia_nombre', 'emergencia_ap_paterno', 'emergencia_ap_materno', 'emergencia_telefono', 'emergencia_parentesco', 'emergencia_domicilio'];
 $camposBeneficiario = ['beneficiario_nombre', 'beneficiario_ap_paterno', 'beneficiario_ap_materno', 'beneficiario_parentesco', 'beneficiario_porcentaje'];
 $ordenCampos = [
@@ -52,6 +52,7 @@ $ordenCampos = [
     'sexo',
     'grupo_sanguineo',
     'fecha_nacimiento',
+    'edad',
     'rfc_empleado',
     'estado_civil',
     'num_casillero',
@@ -96,6 +97,7 @@ $labels = [
     'sexo' => 'Sexo',
     'grupo_sanguineo' => 'Grupo sanguíneo',
     'fecha_nacimiento' => 'Fecha de nacimiento',
+    'edad' => 'Edad',
     'rfc_empleado' => 'RFC',
     'estado_civil' => 'Estado civil',
     'num_casillero' => 'Número de casillero',
@@ -321,6 +323,22 @@ function formatoFecha(?string $valor): string
     $anio = date('Y', $timestamp);
 
     return "{$dia}/{$mes}/{$anio}";
+}
+
+function calcularEdad(?string $fechaNacimiento): string
+{
+    if (!$fechaNacimiento || $fechaNacimiento === '0000-00-00') {
+        return '';
+    }
+
+    try {
+        $nacimiento = new DateTime($fechaNacimiento);
+        $hoy = new DateTime();
+        $diferencia = $hoy->diff($nacimiento);
+        return (string)$diferencia->y;
+    } catch (Exception $e) {
+        return '';
+    }
 }
 
 function formatoMoneda($valor): string
@@ -571,6 +589,7 @@ function obtenerDatosEmpleado(mysqli $conexion, int $idEmpleado): array
         'sexo' => ($empleado['sexo'] ?? '') === 'M' ? 'Masculino' : (($empleado['sexo'] ?? '') === 'F' ? 'Femenino' : ''),
         'grupo_sanguineo' => textoSeguro($empleado['grupo_sanguineo'] ?? ''),
         'fecha_nacimiento' => formatoFecha($empleado['fecha_nacimiento'] ?? null),
+        'edad' => calcularEdad($empleado['fecha_nacimiento'] ?? null),
         'rfc_empleado' => textoSeguro($empleado['rfc_empleado'] ?? ''),
         'estado_civil' => textoSeguro($empleado['estado_civil'] ?? ''),
         'num_casillero' => textoSeguro($empleado['num_casillero'] ?? ''),

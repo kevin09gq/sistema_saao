@@ -6,6 +6,7 @@ $camposEmpleado = [
 	['id' => 'curp', 'label' => 'CURP'],
 	['id' => 'sexo', 'label' => 'Sexo'],
 	['id' => 'fecha_nacimiento', 'label' => 'Fecha de nacimiento'],
+	['id' => 'edad', 'label' => 'Edad'],
 	['id' => 'domicilio', 'label' => 'Domicilio'],
 	['id' => 'telefono_empleado', 'label' => 'Teléfono'],
 	['id' => 'grupo_sanguineo', 'label' => 'Grupo sanguíneo'],
@@ -148,16 +149,21 @@ $renderChecklist = function (array $campos, string $prefijo) {
 									<small class="text-muted">Cada registro tendrá su checkbox para seleccionarlo.</small>
 								</div>
 								<div class="d-flex flex-wrap gap-2">
-									<select class="form-select form-select-sm" id="filtro-area-exportar" style="width: 150px;">
+									<select class="form-select form-select-sm" id="filtro-area-exportar" style="width: 160px;">
 										<option value="todos">Todas las áreas</option>
 									</select>
-									<select class="form-select form-select-sm" id="filtro-departamento-exportar" style="width: 180px;">
+									<select class="form-select form-select-sm" id="filtro-departamento-exportar" style="width: 210px;">
 										<option value="todos">Todos los departamentos</option>
 									</select>
-									<select class="form-select form-select-sm" id="filtro-seguro-exportar" style="width: 140px;">
-										<option value="todos">Todos</option>
+									<select class="form-select form-select-sm" id="filtro-seguro-exportar" style="width: 155px;">
+										<option value="todos">Todos (Seguro)</option>
 										<option value="con_seguro">Con Seguro</option>
 										<option value="sin_seguro">Sin Seguro</option>
+									</select>
+									<select class="form-select form-select-sm" id="filtro-status-exportar" style="width: 155px;">
+										<option value="todos">Todos (Estatus)</option>
+										<option value="1">Activo</option>
+										<option value="2">Baja</option>
 									</select>
 									<div class="input-group input-group-sm employee-search position-relative">
 										<span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>

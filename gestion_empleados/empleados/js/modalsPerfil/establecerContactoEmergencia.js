@@ -6,9 +6,17 @@
 function abrirModalContactoEmergencia(idEmpleado) {
     limpiarContactoEmergencia();
 
-
     // 2. Guardar el ID del empleado en el formulario
     $('#formContactoEmergencia').data('id_empleado', idEmpleado);
+
+    // Obtener y mostrar el nombre del empleado en el pie del modal
+    const emp = (typeof empleados !== 'undefined' && Array.isArray(empleados))
+        ? empleados.find(e => e.id_empleado == idEmpleado)
+        : null;
+    const nombreCompleto = emp
+        ? `${emp.nombre || ''} ${emp.ap_paterno || ''} ${emp.ap_materno || ''}`.replace(/\s+/g, ' ').trim()
+        : '---';
+    $('#nombreEmpleadoModalContactoEmergencia').text(nombreCompleto);
 
     obtenerContactoEmergencia(idEmpleado);
 

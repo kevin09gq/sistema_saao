@@ -348,10 +348,11 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
         'SUELDO SEMANAL',      // 5 (E)
         'PASAJE',              // 6 (F)
         'COMIDA',              // 7 (G)
+        'TARDEADA',            // 8 (H)
     ];
 
     $mapExtrasCols = [];
-    $colIndex = 8;
+    $colIndex = 9;
     foreach ($extrasDinamicas as $key => $dispName) {
         $columnasDinamicas[] = $dispName;
         $mapExtrasCols[$key] = $colIndex;
@@ -394,6 +395,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
     $lastColLetter = Coordinate::stringFromColumnIndex($totalCols);
 
     // Letras para fórmulas dinámicas
+    $colTARDEADALetter = 'H';
     $lastPercepcionLetter = Coordinate::stringFromColumnIndex($colTotalPercepciones - 1);
     $colTotalPercepcionesLetter = Coordinate::stringFromColumnIndex($colTotalPercepciones);
     $colISRLetter = Coordinate::stringFromColumnIndex($colISR);
@@ -511,6 +513,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
 
     $comidaTieneDatos = false;
     $pasajeTieneDatos = false;
+    $tardeadaTieneDatos = false;
     $isrTieneDatos = false;
     $imssTieneDatos = false;
     $infonavitTieneDatos = false;
@@ -529,6 +532,9 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
         }
         if (($empleado['pasaje'] ?? 0) != 0) {
             $pasajeTieneDatos = true;
+        }
+        if (($empleado['tardeada'] ?? 0) != 0) {
+            $tardeadaTieneDatos = true;
         }
         if (($empleado['inasistencia'] ?? 0) != 0) {
             $ausentismoTieneDatos = true;
@@ -609,6 +615,15 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
             if (!empty($comida) && $comida != 0) {
                 $sheet->setCellValue('G' . $numeroFila, $comida);
                 $sheet->getStyle('G' . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
+            }
+        }
+
+        // TARDEADA
+        if ($tardeadaTieneDatos) {
+            $tardeada = $empleado['tardeada'] ?? 0;
+            if (!empty($tardeada) && $tardeada != 0) {
+                $sheet->setCellValue($colTARDEADALetter . $numeroFila, $tardeada);
+                $sheet->getStyle($colTARDEADALetter . $numeroFila)->getNumberFormat()->setFormatCode('$#,##0.00');
             }
         }
 
@@ -939,6 +954,9 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
     }
     if (!$comidaTieneDatos) {
         $sheet->getColumnDimension('G')->setVisible(false);
+    }
+    if (!$tardeadaTieneDatos) {
+        $sheet->getColumnDimension($colTARDEADALetter)->setVisible(false);
     }
     if (!$isrTieneDatos) {
         $sheet->getColumnDimension($colISRLetter)->setVisible(false);

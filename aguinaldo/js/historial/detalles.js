@@ -1,30 +1,167 @@
 
 // EVENTO PARA ABRIR EL MODAL DE LOS DETALLES DEL AGUINALDO
-$(document).on('click', '.btn_ver_detalles_aguinaldo', function () {
+$(document).on('click', '.btn_ver_detalles', function () {
 
     // Obtener los datos del botón
     const empleados = $(this).data('empleados');
     const anio = $(this).data('anio');
     const totalEmpleados = $(this).data('total');
+    const id_departamento = $(this).data('iddepartamento');
+    const departamentoNombre = $(this).data('departamento');
 
     // VACIAR LOS DATOS ANTERIORES DEL MODAL
     $('#span_anio_detalle').text('');
+    $('#span_departamento_detalle').text('');
     $('#total_registros_modal').text('');
     $('#empleados').val('');
     $('#cuerpo_tabla_detalles_aguinaldo').empty();
 
     // LLENAR EL MODAL CON LOS DATOS CORRESPONDIENTES
     $('#span_anio_detalle').text(anio);
+    // LLENAR EL NOMBRE DEL DEPARTAMENTO EN EL MODAL
+    $('#span_departamento_detalle').text(departamentoNombre);
     // LLENAR EL INPUT OCULTO CON LOS EMPLEADOS (EN FORMATO JSON)
     $('#empleados').val(JSON.stringify(empleados));
     // LLENAR EL TOTAL DE EMPLEADOS EN EL MODAL
     $('#total_registros_modal').text(totalEmpleados);
+
+    // SELECCIONAR EL DEPARTAMENTO CORRESPONDIENTE EN EL SELECT DEL MODAL
+    $('#id_departamento').val(id_departamento);
+
+    console.log("LOS EMPLEADOS SON: ", empleados);
+
 
     // Llenar la tabla con los empleados
     llenar_tabla_aguinaldo(empleados);
 
     // Abrir el modal
     modal_detalles_aguinaldo.show();
+});
+
+
+/**
+ * Evento para descargar Excel con los filtros aplicados en el modal de detalles
+ */
+$(document).on('click', '#btn_descargar_excel_filtrado', function(e) {
+    e.preventDefault();
+
+    // Obtener todos los empleados del input oculto
+    let empleados = $('#empleados').val();
+    if (!empleados) {
+        Swal.fire('Sin datos', 'No hay datos para exportar.', 'warning');
+        return;
+    }
+
+    try {
+        empleados = JSON.parse(empleados);
+    } catch (err) {
+        Swal.fire('Error', 'Error al procesar los datos.', 'error');
+        return;
+    }
+
+    // Obtener los valores de los filtros actuales
+    const textoBusqueda = $('#busqueda_detalles').val().toLowerCase();
+    const departamentoSeleccionado = $('#id_departamento').val();
+    const empresaSeleccionada = $('#id_empresa').val();
+
+    // Filtrar empleados según los filtros actuales
+    let empleadosFiltrados = empleados.filter(emp => {
+        // Filtro de búsqueda (clave, nombre y apellidos)
+        const coincideBusqueda = !textoBusqueda ||
+            (emp.clave_empleado && emp.clave_empleado.toLowerCase().includes(textoBusqueda)) ||
+            (emp.nombre && emp.nombre.toLowerCase().includes(textoBusqueda)) ||
+            (emp.ap_paterno && emp.ap_paterno.toLowerCase().includes(textoBusqueda)) ||
+            (emp.ap_materno && emp.ap_materno.toLowerCase().includes(textoBusqueda));
+
+        // Filtro de departamento por id
+        const coincideDepartamento = departamentoSeleccionado === "-1" ||
+            (parseInt(emp.id_departamento) === parseInt(departamentoSeleccionado));
+
+        // Filtro de empresa por id
+        const coincideEmpresa = empresaSeleccionada === "-1" ||
+            (parseInt(emp.id_empresa) === parseInt(empresaSeleccionada));
+
+        // Filtro de derecho a aguinaldo y visibilidad
+        const cumpleDerechoYVisible = emp.derecho_aguinaldo === true && emp.visible === true;
+
+        return coincideBusqueda && coincideDepartamento && coincideEmpresa && cumpleDerechoYVisible;
+    });
+
+    if (empleadosFiltrados.length === 0) {
+        Swal.fire('Sin datos', 'No hay colaboradores que coincidan con los filtros actuales.', 'warning');
+        return;
+    }
+
+    // Obtener el año y el departamento
+    const anio = $('#span_anio_detalle').text();
+    const departamentoNombre = $('#span_departamento_detalle').text();
+
+    // Determinar si descargar todas las empresas o solo la seleccionada
+    let empresa;
+    if (empresaSeleccionada === "-1") {
+        // Si está en "Todas las empresas", descargar con pestañas separadas
+        empresa = 'todas';
+    } else {
+        // Si está seleccionada una empresa específica, descargar solo esa empresa
+        empresa = empresaSeleccionada;
+    }
+
+    const jsonAguinaldo = {
+        anio: anio,
+        empleados: empleadosFiltrados
+    };
+
+    const departamentosSeleccionados = [{
+        id_departamento: -1,
+        nombre_departamento: departamentoNombre
+    }];
+
+    Swal.fire({
+        title: 'Generando Reporte...',
+        html: `Preparando Excel con <b>${empleadosFiltrados.length}</b> colaboradores según los filtros...`,
+        icon: 'info',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    $.ajax({
+        url: RUTA_RAIZ + '/aguinaldo/php/exportar_excel.php',
+        type: 'POST',
+        data: {
+            jsonAguinaldo: JSON.stringify(jsonAguinaldo),
+            anio: anio,
+            departamentos: JSON.stringify(departamentosSeleccionados),
+            empresa: empresa
+        },
+        xhrFields: {
+            responseType: 'blob'
+        },
+        success: function (blob) {
+            Swal.close();
+
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            const timestamp = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
+            const deptoLimpio = departamentoNombre.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ_-]/g, '_');
+            const nombreEmpresa = (empresa === 'todas') ? 'AMBAS_EMPRESAS' : ((empresa == 2) ? 'SB_CITRICS_GROUP' : 'CITRICOS_SAAO');
+            const nombreArchivo = `REPORTE_AGUINALDOS_${anio}_${nombreEmpresa}_FILTRADO_${deptoLimpio}_${timestamp}.xlsx`;
+
+            link.href = url;
+            link.download = nombreArchivo;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        },
+        error: function (xhr, status, error) {
+            Swal.close();
+            console.error('Error al descargar el Excel:', error);
+            Swal.fire('Error', 'No se pudo generar el archivo Excel.', 'error');
+        }
+    });
 });
 
 
@@ -38,10 +175,16 @@ function llenar_tabla_aguinaldo(empleados) {
     const departamentoSeleccionado = $('#id_departamento').val();
     const empresaSeleccionada = $('#id_empresa').val();
     const limite = parseInt($('#limite').val()) || 10;
-
     // Obtener la página actual de la paginación
     let paginaActual = parseInt($('#pagina_actual_detalles').data('pagina')) || 1;
 
+    console.log("LOS FILTROS SON:");
+    console.log("Texto de búsqueda: ", textoBusqueda);
+    console.log("Departamento seleccionado: ", departamentoSeleccionado);
+    console.log("Empresa seleccionada: ", empresaSeleccionada);
+    console.log("Límite por página: ", limite);
+    console.log("Página actual: ", paginaActual);
+    
 
     // Filtrar empleados
     let empleadosFiltrados = empleados.filter(emp => {

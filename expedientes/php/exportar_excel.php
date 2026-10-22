@@ -9,6 +9,7 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Font;
 use PhpOffice\PhpSpreadsheet\Style\Color;
+use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
 
 /** @var mysqli $conexion */
 
@@ -17,6 +18,7 @@ $tipoExportacion  = $_GET['tipo_exportacion'] ?? $_POST['tipo_exportacion'] ?? '
 $idArea           = isset($_GET['id_area']) ? (int)$_GET['id_area'] : (isset($_POST['id_area']) ? (int)$_POST['id_area'] : -1);
 $idDepartamento   = isset($_GET['id_departamento']) ? (int)$_GET['id_departamento'] : (isset($_POST['id_departamento']) ? (int)$_POST['id_departamento'] : -1);
 $idStatus         = isset($_GET['id_status']) ? (int)$_GET['id_status'] : (isset($_POST['id_status']) ? (int)$_POST['id_status'] : -1);
+$filtroImss       = $_GET['filtro_imss'] ?? $_POST['filtro_imss'] ?? 'todos';
 $filtroAvance     = $_GET['filtro_avance'] ?? $_POST['filtro_avance'] ?? 'todos';
 $idFaltaRequisito = isset($_GET['id_falta_requisito']) ? (int)$_GET['id_falta_requisito'] : (isset($_POST['id_falta_requisito']) ? (int)$_POST['id_falta_requisito'] : -1);
 
@@ -95,7 +97,16 @@ if ($idArea > 0) {
     $whereClause[] = "e.id_departamento = " . $idDepartamento;
 }
 if ($idStatus > 0) {
-    $whereClause[] = "e.id_status = " . $idStatus;
+    if ($idStatus === 1) {
+        $whereClause[] = "e.id_status = 1";
+    } elseif ($idStatus === 2) {
+        $whereClause[] = "(e.id_status != 1 OR e.id_status IS NULL)";
+    }
+}
+if ($filtroImss === 'con_imss') {
+    $whereClause[] = "(e.status_nss = 1 OR (e.imss IS NOT NULL AND TRIM(e.imss) != '' AND TRIM(e.imss) != '0'))";
+} elseif ($filtroImss === 'sin_imss') {
+    $whereClause[] = "((e.status_nss IS NULL OR e.status_nss != 1) AND (e.imss IS NULL OR TRIM(e.imss) = '' OR TRIM(e.imss) = '0'))";
 }
 
 $sqlWhere = count($whereClause) > 0 ? " WHERE " . implode(" AND ", $whereClause) : "";
@@ -107,6 +118,7 @@ $sqlEmpleados = "SELECT
     e.ap_paterno, 
     e.ap_materno, 
     e.imss,
+    COALESCE(e.status_nss, 0) AS status_nss,
     e.curp,
     e.grupo_sanguineo,
     e.id_status, 
@@ -194,7 +206,7 @@ foreach ($empleados as $emp) {
     $pct = $totalRequisitosActivos > 0 ? (int)round(($numEntregados / $totalRequisitosActivos) * 100) : 0;
 
     if ($filtroAvance === 'completos' && ($pct < 100 || $totalRequisitosActivos === 0)) continue;
-    if ($filtroAvance === 'incompletos' && ($pct === 100 || $totalRequisitosActivos === 0)) continue;
+    if ($filtroAvance === 'incompletos' && ($pct === 100 || $numEntregados === 0)) continue;
     if ($filtroAvance === 'sin_documentos' && $numEntregados > 0) continue;
 
     if ($idFaltaRequisito > 0 && isset($entregadosMap[$idFaltaRequisito])) {
@@ -323,6 +335,20 @@ foreach ($empleadosPorArea as $nombreAreaGroup => $listaDeptosArea) {
     $nombrePestana = sanitizarNombreHoja($nombreAreaGroup, $titulosHojasUsados);
     $sheet->setTitle($nombrePestana);
     $sheet->setShowGridLines(true);
+
+    // ── CONFIGURACIÓN DE IMPRESIÓN: HOJA VERTICAL (PORTRAIT) ──────────────
+    $sheet->getPageSetup()
+        ->setOrientation(PageSetup::ORIENTATION_LANDSCAPE)
+        ->setPaperSize(PageSetup::PAPERSIZE_LETTER)
+        ->setFitToWidth(1)
+        ->setFitToHeight(0);
+    $sheet->getPageMargins()
+        ->setTop(0.4)
+        ->setRight(0.3)
+        ->setLeft(0.3)
+        ->setBottom(0.4)
+        ->setHeader(0.2)
+        ->setFooter(0.2);
 
     $rowNum = 1;
 

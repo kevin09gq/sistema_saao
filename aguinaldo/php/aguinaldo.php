@@ -1,10 +1,20 @@
 <?php
-require_once __DIR__ . '/../../public/php/verificarSesion.php';
+session_start();
+require_once __DIR__ . '/../../public/php/config.php';
 require_once __DIR__ . '/../../conexion/conexion.php';
+
+// Verificar sesión
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    header('Content-Type: application/json');
+    echo json_encode(['titulo' => 'No autenticado', 'texto' => 'Debes iniciar sesión', 'icono' => 'error', 'data' => []]);
+    exit;
+}
 
 // Verificar si la conexión a la base de datos es válida
 if (!$conexion) {
-    die("Error de conexión: " . mysqli_connect_error());
+    header('Content-Type: application/json');
+    echo json_encode(['titulo' => 'Error', 'texto' => 'Error de conexión: ' . mysqli_connect_error(), 'icono' => 'error', 'data' => []]);
+    exit;
 }
 
 if (isset($_GET['accion']) || isset($_POST['accion'])) {
@@ -24,11 +34,16 @@ if (isset($_GET['accion']) || isset($_POST['accion'])) {
         case 'buscar_anio':
             buscar_anio();
             break;
-        case 'obtener_aguinaldos_historial':
-            obtener_aguinaldos_historial();
+
+
+        case 'obtener_aguinaldos':
+            obtener_aguinaldos();
             break;
         case 'borrar_aguinaldo':
             borrar_aguinaldo();
+            break;
+        case 'obtener_anios':
+            obtener_anios();
             break;
 
         default:
@@ -68,13 +83,19 @@ function existe_aguinaldo()
     global $conexion;
 
     $anio = isset($_GET['anio']) ? (int)$_GET['anio'] : null;
+    $id_departamento = isset($_GET['id_departamento']) ? (int)$_GET['id_departamento'] : null;
 
     if (empty($anio)) {
         respuesta(400, "Error", "Año no proporcionado", "error", []);
         return;
     }
 
-    $sql = "SELECT jsonAguinaldo FROM aguinaldos WHERE anio = ? LIMIT 1";
+    if (empty($id_departamento)) {
+        respuesta(400, "Error", "ID de departamento no proporcionado", "error", []);
+        return;
+    }
+
+    $sql = "SELECT jsonAguinaldo FROM aguinaldos WHERE anio = ? AND id_departamento = ? LIMIT 1";
     $stmt = $conexion->prepare($sql);
 
     if (!$stmt) {
@@ -82,7 +103,7 @@ function existe_aguinaldo()
         return;
     }
 
-    $stmt->bind_param("i", $anio);
+    $stmt->bind_param("ii", $anio, $id_departamento);
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -106,12 +127,13 @@ function guardar_aguinaldo()
 {
     global $conexion;
 
-    if (!isset($_POST['anio']) || !isset($_POST['json'])) {
+    if (!isset($_POST['anio']) || !isset($_POST['json']) || !isset($_POST['id_departamento'])) {
         respuesta(400, "Error", "Datos incompletos", "error", []);
         return;
     }
 
     $anio = (int)$_POST['anio'];
+    $id_departamento = (int)$_POST['id_departamento'];
     // $jsonAguinaldo = json_encode($_POST['json'], JSON_UNESCAPED_UNICODE);
     $jsonAguinaldo = $_POST['json'];
 
@@ -120,14 +142,14 @@ function guardar_aguinaldo()
     try {
 
         // 1. Verificar si ya existe el año
-        $sql = "SELECT id_aguinaldo FROM aguinaldos WHERE anio = ? LIMIT 1";
+        $sql = "SELECT id_aguinaldo FROM aguinaldos WHERE anio = ? AND id_departamento = ? LIMIT 1";
         $stmt = $conexion->prepare($sql);
 
         if (!$stmt) {
             throw new Exception("Error en SELECT: " . $conexion->error);
         }
 
-        $stmt->bind_param("i", $anio);
+        $stmt->bind_param("ii", $anio, $id_departamento);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -136,7 +158,7 @@ function guardar_aguinaldo()
             // Si existe actualiza el json y la fecha de creación
             $sql = "UPDATE aguinaldos 
                     SET jsonAguinaldo = ?, fecha_creacion = NOW() 
-                    WHERE anio = ?";
+                    WHERE anio = ? AND id_departamento = ?";
 
             $stmt = $conexion->prepare($sql);
 
@@ -144,15 +166,15 @@ function guardar_aguinaldo()
                 throw new Exception("Error en UPDATE: " . $conexion->error);
             }
 
-            $stmt->bind_param("si", $jsonAguinaldo, $anio);
+            $stmt->bind_param("sii", $jsonAguinaldo, $anio, $id_departamento);
             $stmt->execute();
 
             $mensaje = "Registro de aguinaldo actualizado exitosamente";
         } else {
 
             // Si no existe, inserta un nuevo registro
-            $sql = "INSERT INTO aguinaldos (jsonAguinaldo, anio, fecha_creacion) 
-                    VALUES (?, ?, NOW())";
+            $sql = "INSERT INTO aguinaldos (jsonAguinaldo, anio, id_departamento, fecha_creacion) 
+                    VALUES (?, ?, ?, NOW())";
 
             $stmt = $conexion->prepare($sql);
 
@@ -160,7 +182,7 @@ function guardar_aguinaldo()
                 throw new Exception("Error en INSERT: " . $conexion->error);
             }
 
-            $stmt->bind_param("si", $jsonAguinaldo, $anio);
+            $stmt->bind_param("sii", $jsonAguinaldo, $anio, $id_departamento);
             $stmt->execute();
 
             $mensaje = "Registro de aguinaldo guardado exitosamente";
@@ -193,6 +215,13 @@ function obtener_empleados()
         respuestas(401, [], "Debes primero iniciar sesión", "Sesión no válida", "error");
     }
 
+    $id_departamento = isset($_GET['id_departamento']) ? (int)$_GET['id_departamento'] : null;
+
+    if (empty($id_departamento)) {
+        respuesta(400, "Error", "ID de departamento no proporcionado", "error", []);
+        return;
+    }
+
     // ==============================
     // CONSULTA SQL
     // ==============================
@@ -216,7 +245,7 @@ function obtener_empleados()
                 e.fecha_alta_imss AS fecha_ingreso_imss,
 
                 d.nombre_departamento,
-                d.id_departamento,
+                e.id_departamento,
 
                 e.id_puestoEspecial AS id_puesto,
                 p.nombre_puesto,
@@ -239,7 +268,7 @@ function obtener_empleados()
             LEFT JOIN nomina_departamento nd
                 ON d.id_departamento = nd.id_departamento
 
-            WHERE e.id_status = 1
+            WHERE e.id_status = 1 AND e.id_departamento = ?
 
             GROUP BY e.id_empleado, e.clave_empleado, e.nombre, e.ap_paterno, e.ap_materno, 
                      e.id_empresa, e.status_nss, e.salario_diario, d.nombre_departamento, 
@@ -253,6 +282,7 @@ function obtener_empleados()
         respuestas(500, [], "Error en la consulta SQL", "Error", "error");
     }
 
+    $stmtDatos->bind_param("i", $id_departamento);
     $stmtDatos->execute();
     $resultDatos = $stmtDatos->get_result();
 
@@ -351,15 +381,17 @@ function buscar_anio()
         $buscar = $_GET["buscar"] ?? '';
 
         if ($buscar === '') {
-            // Sin búsqueda → solo 10 años
-            $sql = "SELECT anio 
+            // Sin búsqueda → solo 10 años únicos ordenados descendentemente
+            $sql = "SELECT DISTINCT anio 
                 FROM aguinaldos 
+                ORDER BY anio DESC
                 LIMIT 10";
         } else {
-            // Con búsqueda → todos los años que empiecen con el prefijo
-            $sql = "SELECT anio 
-                FROM aguinaldos 
-                WHERE anio LIKE CONCAT(?, '%')";
+            // Con búsqueda → años únicos que empiecen con el prefijo
+            $sql = "SELECT DISTINCT anio 
+                FROM aguinaldos
+                WHERE anio LIKE CONCAT(?, '%')
+                ORDER BY anio DESC";
         }
 
         $pr = $conexion->prepare($sql);
@@ -381,6 +413,13 @@ function buscar_anio()
 }
 
 
+
+
+
+
+
+
+
 /**
  * =========================================================================
  * TODO ESTO ES PARA EL HISTORIAL
@@ -388,7 +427,9 @@ function buscar_anio()
  */
 
 /**
- * Función para obtener los aguinaldos con paginación y búsqueda
+ * Función para obtener el historial de aguinaldos con paginación y búsqueda
+ * ESTA CHINGADERA YA NO SIRVE, SE USABA EN LA VIEJA VERSION
+ * HAY QUE BORRARLA LUEGO A LA VRG
  */
 function obtener_aguinaldos_historial()
 {
@@ -489,6 +530,137 @@ function obtener_aguinaldos_historial()
     }
 }
 
+
+
+
+/**
+ * Función para obtener el historial de aguinaldos con paginación y búsqueda
+ */
+function obtener_aguinaldos()
+{
+    global $conexion;
+
+    // OBTENER LOS VALORES DE FILTRADO
+    $busqueda     = $_POST['busqueda'] ?? '';
+    $anio         = $_POST['anio'] ?? '';
+    $area         = $_POST['area'] ?? '';
+    $departamento = $_POST['departamento'] ?? '';
+    $limite       = $_POST['limite'] ?? 20;
+    $pagina       = $_POST['pagina'] ?? 1;
+
+    // Consulta base
+    $sqlBase = "SELECT
+                    COALESCE(u.id_aguinaldo, 0) AS id_aguinaldo,
+                    y.anio,
+                    d.nombre_departamento,
+                    d.id_departamento,
+                    COALESCE(JSON_UNQUOTE(u.jsonAguinaldo), 'Pendiente') AS jsonAguinaldo,
+                    COALESCE(DATE_FORMAT(u.fecha_creacion, '%Y-%m-%d'), 'Pendiente') AS fecha_creacion
+                FROM departamentos d
+                CROSS JOIN (SELECT DISTINCT anio FROM aguinaldos) y
+                LEFT JOIN aguinaldos u
+                    ON d.id_departamento = u.id_departamento
+                    AND u.anio = y.anio";
+
+    // Si viene filtro de área, hacer JOIN con areas_departamentos
+    if (!empty($area)) {
+        $sqlBase .= " INNER JOIN areas_departamentos ad ON d.id_departamento = ad.id_departamento";
+    }
+
+    $sqlBase .= " WHERE 1=1";
+
+    // Filtros dinámicos
+    $params = [];
+    $types  = "";
+
+    if (!empty($area)) {
+        $sqlBase .= " AND ad.id_area = ?";
+        $types   .= "i";
+        $params[] = $area;
+    }
+
+    if (!empty($anio)) {
+        $sqlBase .= " AND y.anio = ?";
+        $types   .= "i";
+        $params[] = $anio;
+    }
+
+    if (!empty($departamento)) {
+        $sqlBase .= " AND d.id_departamento = ?";
+        $types   .= "i";
+        $params[] = $departamento;
+    }
+
+    if (!empty($busqueda)) {
+        $sqlBase .= " AND d.nombre_departamento LIKE ?";
+        $types   .= "s";
+        $params[] = "%$busqueda%";
+    }
+
+    // Ordenar por año descendente y nombre de departamento
+    $sqlBase .= " ORDER BY y.anio DESC, d.nombre_departamento ASC";
+
+    // ---- 1. Contar total de registros ----
+    $stmtTotal = $conexion->prepare($sqlBase);
+    if (!$stmtTotal) {
+        respuesta(500, "Error", "Error en prepare (total): " . $conexion->error, "error", []);
+        return;
+    }
+    if (!empty($params)) {
+        $stmtTotal->bind_param($types, ...$params);
+    }
+    $stmtTotal->execute();
+    $resultTotal    = $stmtTotal->get_result();
+    $totalRegistros = $resultTotal->num_rows;
+    $stmtTotal->close();
+
+    // ---- 2. Aplicar paginación ----
+    $offset = 0;
+    if ($limite != -1) {
+        $offset   = ($pagina - 1) * $limite;
+        $sqlBase .= " LIMIT ? OFFSET ?";
+        $types   .= "ii";
+        $params[] = $limite;
+        $params[] = $offset;
+    }
+
+    $stmt = $conexion->prepare($sqlBase);
+    if (!$stmt) {
+        respuesta(500, "Error", "Error en prepare (data): " . $conexion->error, "error", []);
+        return;
+    }
+    if (!empty($params)) {
+        $stmt->bind_param($types, ...$params);
+    }
+
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $utilidades = [];
+    while ($row = $result->fetch_assoc()) {
+        $utilidades[] = [
+            'id_aguinaldo'       => $row['id_aguinaldo'],
+            'anio'              => $row['anio'],
+            'nombre_departamento'=> $row['nombre_departamento'],
+            'id_departamento'   => $row['id_departamento'],
+            'jsonAguinaldo'         => $row['jsonAguinaldo'] == 'Pendiente' ? [] : json_decode($row['jsonAguinaldo'], true),
+            'fecha_creacion'    => $row['fecha_creacion']
+        ];
+    }
+
+    $stmt->close();
+
+    // ---- 3. Respuesta con metadatos ----
+    respuesta(200, "", "existe", "", [
+        'total'  => $totalRegistros,
+        'pagina' => (int)$pagina,
+        'limite' => (int)$limite,
+        'inicio' => $offset,
+        'data'   => $utilidades
+    ]);
+}
+
+
 /**
  * Función para borrar un registro de aguinaldo por su ID
  */
@@ -525,4 +697,37 @@ function borrar_aguinaldo()
         $conexion->rollback();
         respuesta(500, "Se encontro un error", $e->getMessage(), "error", []);
     }
+}
+
+/**
+ * Función para obtener los años disponibles en la tabla de aguinaldos
+ */
+function obtener_anios()
+{
+    global $conexion;
+
+    $sql = "SELECT DISTINCT anio FROM aguinaldos ORDER BY anio DESC";
+    $stmt = $conexion->prepare($sql);
+
+    if (!$stmt) {
+        respuesta(500, "Error", "Error en prepare: " . $conexion->error, "error", []);
+        return;
+    }
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($row = $result->fetch_assoc()) {
+
+        // Convertir el resultado a un array de años
+        $anios = [];
+        do {
+            $anios[] = $row['anio'];
+        } while ($row = $result->fetch_assoc());
+
+        respuesta(200, "", "existe", "", $anios);
+    } else {
+        respuesta(200, "", "no_existe", "", []);
+    }
+
+    $stmt->close();
 }

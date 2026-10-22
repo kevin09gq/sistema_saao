@@ -4,7 +4,7 @@ require_once __DIR__ . "/../../public/php/config.php";
 require_once __DIR__ . "/../../public/php/verificarSesion.php";
 verificarSesion();
 verificarPermiso("contratos.ver_menu");
-verificarPermiso("contratos.personalizar_contratos");
+verificarPermiso("contratos.generar_contratos");
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -30,7 +30,7 @@ verificarPermiso("contratos.personalizar_contratos");
   <!-- SweetAlert2 -->
   <script src="<?= SWEETALERT ?>"></script>
 </head>
-<body>
+<body class="bg-light">
   <?php require_once __DIR__ . "/../../navbar/navbar.php"; ?>
   <?php include 'modal_logos.php'; ?>
   <div class="container py-4">
@@ -41,9 +41,9 @@ verificarPermiso("contratos.personalizar_contratos");
 
     <div class="row mb-3">
       <div class="col-12">
-        <a href="<?= $rutaRaiz ?>/contratos/contratos.php" class="btn btn-outline-primary btn-sm">
+        <a href="<?= $rutaRaiz ?>/contratos/views/lista_empleados.php" class="btn btn-outline-primary btn-sm">
           <i class="bi bi-arrow-left-circle me-1"></i>
-          Regresar a Contratos
+          Regresar a Generar Contratos
         </a>
       </div>
     </div>
@@ -324,7 +324,7 @@ verificarPermiso("contratos.personalizar_contratos");
                   <i class="bi bi-table"></i> Insertar Tabla
                 </button>
                 <button id="btnVerDetalles" class="btn btn-outline-info btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#modalDetallesPlaceholders">
-                  <i class="bi bi-info-circle"></i> Detalles de Placeholders
+                  <i class="bi bi-book"></i> Guía 
                 </button>
               </div>
             </div>
@@ -361,11 +361,11 @@ verificarPermiso("contratos.personalizar_contratos");
   <div class="modal fade" id="modalDetallesPlaceholders" tabindex="-1" aria-labelledby="modalDetallesPlaceholdersLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
       <div class="modal-content">
-        <div class="modal-header bg-primary text-white">
+        <div class="modal-header">
           <h5 class="modal-title" id="modalDetallesPlaceholdersLabel">
-            <i class="bi bi-info-circle me-2"></i>Detalles de Placeholders
+            <i class="bi bi-book me-2"></i>Guía de Placeholders
           </h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
         <div class="modal-body">
           <p class="text-muted">

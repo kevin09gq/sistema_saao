@@ -5,6 +5,9 @@ $(document).on('click', '.btn_borrar_aguinaldo', function (e) {
     // OBTENER EL ID DEL AGUINALDO A BORRAR
     const id_aguinaldo = $(this).data('id');
 
+    console.log(id_aguinaldo);
+    
+
     Swal.fire({
         title: "¿Borrar registros?",
         text: "¡No podrás revertir esto!",

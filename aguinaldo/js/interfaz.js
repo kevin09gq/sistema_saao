@@ -10,8 +10,28 @@
  */
 function llenar_tabla_aguinaldo() {
 
-    if (!window.jsonAguinaldo || window.jsonAguinaldo.length === 0) {
+    if (!window.jsonAguinaldo) {
         console.warn("No hay datos en jsonAguinaldo para mostrar en la tabla");
+        $('#cuerpo_tabla_aguinaldo').html(
+            '<tr><td colspan="13" class="text-center text-muted">No hay empleados disponibles</td></tr>'
+        );
+        return;
+    }
+
+    // Normalizar si window.jsonAguinaldo es un arreglo plano de empleados
+    if (Array.isArray(window.jsonAguinaldo)) {
+        const primerDepto = window.jsonAguinaldo.length > 0 && window.jsonAguinaldo[0].id_departamento ? window.jsonAguinaldo[0].id_departamento : null;
+        window.jsonAguinaldo = {
+            configuraciones: 0,
+            id_departamento: primerDepto || parseInt($('#id_departamento_confg').val()) || null,
+            empleados: window.jsonAguinaldo,
+            anio: parseInt($('#anio_calculo_label').text()) || parseInt($('#anio').val()) || new Date().getFullYear(),
+            dias_pago_general: 15
+        };
+    }
+
+    if (!window.jsonAguinaldo.empleados || window.jsonAguinaldo.empleados.length === 0) {
+        console.warn("No hay empleados en jsonAguinaldo para mostrar en la tabla");
         $('#cuerpo_tabla_aguinaldo').html(
             '<tr><td colspan="13" class="text-center text-muted">No hay empleados disponibles</td></tr>'
         );
@@ -24,6 +44,7 @@ function llenar_tabla_aguinaldo() {
     // Obtener valores de los filtros
     const textoBusqueda = $('#busqueda').val().toLowerCase();
     const departamentoSeleccionado = $('#id_departamento').val();
+    const areaSeleccionada = $('#id_area').val();
     const empresaSeleccionada = $('#id_empresa').val();
     const limite = parseInt($('#limite').val()) || 10;
     // Obtener la página actual de la paginación
@@ -31,7 +52,7 @@ function llenar_tabla_aguinaldo() {
 
 
     // Filtrar empleados
-    let empleadosFiltrados = jsonAguinaldo.empleados.filter(emp => {
+    let empleadosFiltrados = (window.jsonAguinaldo.empleados || []).filter(emp => {
         // Filtro de búsqueda (clave, nombre y apellidos)
         const coincideBusqueda = !textoBusqueda ||
             (emp.clave_empleado && emp.clave_empleado.toLowerCase().includes(textoBusqueda)) ||
@@ -44,6 +65,9 @@ function llenar_tabla_aguinaldo() {
         // Si no, mostrar solo los empleado de ese departamento
         const coincideDepartamento = departamentoSeleccionado === "-1" ||
             (parseInt(emp.id_departamento) === parseInt(departamentoSeleccionado));
+        // Filtro de área por id
+        const coincideArea = areaSeleccionada === "-1" ||
+            (parseInt(emp.id_area) === parseInt(areaSeleccionada));
         // Filtro de empresa por id
         const coincideEmpresa = empresaSeleccionada === "-1" ||
             (parseInt(emp.id_empresa) === parseInt(empresaSeleccionada));
@@ -51,8 +75,9 @@ function llenar_tabla_aguinaldo() {
         // Filtro de derecho a aguinaldo y visibilidad
         const cumpleDerechoYVisible = emp.derecho_aguinaldo === true && emp.visible === true;
 
-        return coincideBusqueda && coincideDepartamento && coincideEmpresa && cumpleDerechoYVisible;
+        return coincideBusqueda && coincideDepartamento && coincideArea && coincideEmpresa && cumpleDerechoYVisible;
     });
+
 
     // Calcular paginación
     let inicio = 0;
@@ -326,6 +351,28 @@ $(document).ready(function () {
         llenar_tabla_aguinaldo();
     });
 
+    // Evento de filtro área - carga departamentos y desbloquea el select
+    $('#id_area').on('change', function () {
+        let areaSeleccionada = $(this).val();
+        const selectDepartamento = $('#id_departamento');
+
+        if (areaSeleccionada && areaSeleccionada !== "-1") {
+            // Obtener departamentos por área
+            obtener_departamentos_por_area_principal(areaSeleccionada);
+            // Desbloquear select de departamentos
+            selectDepartamento.prop('disabled', false);
+            // Resetear a "Todos" para que muestre todos los departamentos de esa área
+            selectDepartamento.val('-1');
+        } else {
+            // Bloquear select de departamentos y limpiar
+            selectDepartamento.prop('disabled', true);
+            selectDepartamento.find('option:not(:first)').remove();
+            selectDepartamento.val('-1');
+        }
+        $('#pagina-actual').data('pagina', 1);
+        llenar_tabla_aguinaldo();
+    });
+
     // Evento de filtro departamento
     $('#id_departamento').on('change', function () {
         $('#pagina-actual').data('pagina', 1);
@@ -350,6 +397,32 @@ $(document).ready(function () {
     }
 });
 
+/**
+ * Función para obtener departamentos filtrados por área en la vista principal
+ */
+function obtener_departamentos_por_area_principal(id_area) {
+    $.ajax({
+        url: RUTA_RAIZ + "/public/php/obtenerDepartamentos.php",
+        type: "GET",
+        data: { id_area: id_area },
+        dataType: "json",
+        success: function (data) {
+            // Renderizar departamentos filtrados
+            const select = $("#id_departamento");
+            select.find("option:not(:first)").remove();
+
+            data.forEach(function (depto) {
+                select.append(
+                    `<option value="${depto.id_departamento}">${depto.nombre_departamento}</option>`
+                );
+            });
+        },
+        error: function () {
+            console.error("Error al cargar departamentos por área");
+        }
+    });
+}
+
 
 /**
  * =========================================================================================================================
@@ -361,6 +434,11 @@ $(document).ready(function () {
 function inicializar_interfaz() {
     // PONER EL AÑO EN EL TITULO
     $('#anio_calculo_label').text(window.jsonAguinaldo.anio || new Date().getFullYear());
+
+    // SELECCIONAR EL DEPARTAMENTO EN EL SELECT PRINCIPAL SI EXISTE EN EL JSON
+    // console.log("SE LLENO EL SELECT CON EL ID: ", window.jsonAguinaldo.id_departamento);
+
+    // $('#id_departamento').val(window.jsonAguinaldo.id_departamento);
 }
 
 
@@ -384,6 +462,13 @@ $(document).on('click', '#btn_cerrar', function (e) {
             clearStorage();
             // Mostrar formulario y ocultar tabla
             mostrar_formulario();
+            // limpiar tabla de aguinaldo
+            $('#cuerpo_tabla_aguinaldo').empty();
+            // Limpiar filtros
+            $('#busqueda').val('');
+            $('#id_departamento').html('<option value="-1" selected>Todos los departamentos</option>');
+            $('#id_empresa').val('-1');
+            $('#limite').val('10');
         }
     });
 });
@@ -394,6 +479,58 @@ $(document).on('click', '#btn_cerrar', function (e) {
  */
 $(document).on('click', '#btn_guardar', function (e) {
     e.preventDefault();
+
+    if (!window.jsonAguinaldo) {
+        alerta("warning", "Sin datos", "No hay información de aguinaldo calculada para guardar.");
+        return;
+    }
+
+    // Resolver anio e id_departamento de forma segura
+    let anio = (window.jsonAguinaldo && window.jsonAguinaldo.anio) ? parseInt(window.jsonAguinaldo.anio) : null;
+    if (!anio || isNaN(anio)) {
+        anio = parseInt($('#anio_calculo_label').text()) || parseInt($('#anio').val()) || new Date().getFullYear();
+    }
+
+    let id_departamento = (window.jsonAguinaldo && window.jsonAguinaldo.id_departamento) ? parseInt(window.jsonAguinaldo.id_departamento) : null;
+    if (!id_departamento || isNaN(id_departamento) || id_departamento <= 0) {
+        id_departamento = parseInt($('#id_departamento_confg').val()) || parseInt($('#id_departamento').val()) || null;
+    }
+
+    // Si aún no se tiene id_departamento, buscar en la lista de empleados
+    if ((!id_departamento || id_departamento <= 0) && window.jsonAguinaldo) {
+        const listaEmpleados = Array.isArray(window.jsonAguinaldo) ? window.jsonAguinaldo : (window.jsonAguinaldo.empleados || []);
+        const empConDepto = listaEmpleados.find(e => e.id_departamento && parseInt(e.id_departamento) > 0);
+        if (empConDepto) {
+            id_departamento = parseInt(empConDepto.id_departamento);
+        }
+    }
+
+    // Normalizar estructura de window.jsonAguinaldo si fuera un array
+    if (Array.isArray(window.jsonAguinaldo)) {
+        window.jsonAguinaldo = {
+            configuraciones: 0,
+            id_departamento: id_departamento,
+            empleados: window.jsonAguinaldo,
+            anio: anio,
+            dias_pago_general: 15
+        };
+    } else {
+        window.jsonAguinaldo.anio = anio;
+        if (id_departamento) {
+            window.jsonAguinaldo.id_departamento = id_departamento;
+        }
+    }
+
+    if (!anio || isNaN(anio)) {
+        alerta("error", "Año no definido", "No se pudo determinar el año del aguinaldo a guardar.");
+        return;
+    }
+
+    if (!id_departamento || isNaN(id_departamento) || id_departamento <= 0) {
+        alerta("warning", "Departamento requerido", "No se pudo identificar el departamento para este cálculo. Selecciona un departamento válido.");
+        return;
+    }
+
     Swal.fire({
         title: "¿Seguro de guardar?",
         text: "Una vez guardados, los cambios no podrán ser deshechos. ¿Deseas continuar?",
@@ -413,32 +550,37 @@ $(document).on('click', '#btn_guardar', function (e) {
                 icon: 'info',
                 allowOutsideClick: false,
                 allowEscapeKey: false,
-                didOpen: (modal) => {
+                didOpen: () => {
                     Swal.showLoading();
                 }
             });
 
-            setTimeout(() => {
-                Swal.close();
-                // Obtener el año del calculo desde el jsonAguinaldo o usar el año actual si no está definido
-                let anio = window.jsonAguinaldo.anio;
-
-                $.ajax({
-                    type: "POST",
-                    url: "php/aguinaldo.php",
-                    data: {
-                        anio: anio,
-                        json: JSON.stringify(window.jsonAguinaldo),
-                        accion: "guardar_aguinaldo"
-                    },
-                    dataType: "json",
-                    success: function (response) {
-
-                        alerta(response.icono, response.titulo, response.texto);
-
-                    }
-                });
-            }, 3000);
+            $.ajax({
+                type: "POST",
+                url: "php/aguinaldo.php",
+                data: {
+                    anio: anio,
+                    id_departamento: id_departamento,
+                    json: JSON.stringify(window.jsonAguinaldo),
+                    accion: "guardar_aguinaldo"
+                },
+                dataType: "json",
+                success: function (response) {
+                    Swal.close();
+                    alerta(response.icono, response.titulo, response.texto);
+                    if (typeof syncStorage === 'function') syncStorage();
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    Swal.close();
+                    console.error("Error al guardar:", jqXHR.responseText);
+                    let msj = "No se pudo guardar la información. Intenta de nuevo.";
+                    try {
+                        let res = JSON.parse(jqXHR.responseText);
+                        if (res && res.texto) msj = res.texto;
+                    } catch (e) {}
+                    alerta("error", "Error al guardar", msj);
+                }
+            });
         }
     });
 });

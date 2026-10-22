@@ -5,6 +5,8 @@ $(document).ready(function () {
 
     mostrarPassword();
 
+    recuperarPassword();
+
 });
 
 
@@ -176,4 +178,75 @@ function mostrarPassword() {
                 .addClass("bi-eye");
         }
     });
+}
+
+
+//====================================================
+// FUNCIÓN PARA RECUPERAR CONTRASEÑA VÍA AJAX
+//====================================================
+
+function recuperarPassword() {
+
+    $("#formRecuperarPassword").on("submit", function (e) {
+
+        e.preventDefault();
+
+        const email = $("#inputEmailRecuperar").val().trim();
+
+        if (email === "") {
+            Swal.fire({
+                icon: "warning",
+                title: "Campo requerido",
+                text: "Por favor, ingresa tu correo electrónico."
+            });
+            $("#inputEmailRecuperar").focus();
+            return;
+        }
+
+        const $btn = $("#btnRecuperarPassword");
+        const textoOriginal = $btn.text();
+
+        // Desactivar botón y mostrar estado de carga
+        $btn.prop("disabled", true).text("Enviando enlace...");
+
+        $.ajax({
+            url: "php/recuperar_password.php",
+            type: "POST",
+            dataType: "json",
+            data: { email: email },
+
+            success: function (respuesta) {
+                if (respuesta.success) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "¡Enlace enviado!",
+                        text: respuesta.message,
+                        confirmButtonColor: "#22c55e"
+                    });
+                    $("#inputEmailRecuperar").val("");
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "No se pudo enviar",
+                        text: respuesta.message || "Ocurrió un error al procesar tu solicitud."
+                    });
+                }
+            },
+
+            error: function (xhr) {
+                console.error("Error AJAX:", xhr.responseText);
+                Swal.fire({
+                    icon: "error",
+                    title: "Error de conexión",
+                    text: "Ocurrió un error al comunicarse con el servidor."
+                });
+            },
+
+            complete: function () {
+                $btn.prop("disabled", false).text(textoOriginal);
+            }
+        });
+
+    });
+
 }

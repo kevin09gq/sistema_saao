@@ -1,6 +1,5 @@
 <?php
 // Este archivo solo responde a solicitudes AJAX y devuelve JSON
-include "../../config/config.php";
 include "../../conexion/conexion.php";
 
 header('Content-Type: application/json');

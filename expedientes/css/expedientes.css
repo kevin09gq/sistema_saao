@@ -160,6 +160,7 @@ body.expedientes-page {
     padding: 1.25rem;
     margin-bottom: 1.25rem;
     transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    overflow: visible;
 }
 
 .emp-filter-section:hover {
@@ -182,6 +183,7 @@ body.expedientes-page {
 .emp-form-control,
 .emp-form-select {
     width: 100%;
+    min-width: 0;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     color: var(--text-main);
@@ -190,6 +192,10 @@ body.expedientes-page {
     background-color: var(--white);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
     height: 38px;
+    /* Evitar que el texto desborde el select */
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .emp-form-control:focus,
@@ -197,6 +203,14 @@ body.expedientes-page {
     outline: none;
     border-color: var(--soft-green);
     box-shadow: 0 0 0 3px rgba(149, 213, 178, 0.35);
+}
+
+/* Selector deshabilitado (transparente) */
+.emp-form-select:disabled {
+    background-color: var(--white);
+    color: var(--text-main);
+    opacity: 0.4;
+    cursor: not-allowed;
 }
 
 .emp-form-control::placeholder {
@@ -239,6 +253,7 @@ body.expedientes-page {
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
 .emp-btn-limpiar:hover {
@@ -731,6 +746,32 @@ body.expedientes-page {
     overflow-y: auto;
 }
 
+/* Modal de expediente - tamaño máximo */
+#modalExpedienteEmpleado .modal-dialog {
+    max-width: 95vw;
+    max-height: 95vh;
+}
+
+#modalExpedienteEmpleado .modal-content {
+    max-height: 95vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#modalExpedienteEmpleado .modal-header {
+    flex-shrink: 0;
+}
+
+#modalExpedienteEmpleado .modal-body {
+    overflow-y: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+#modalExpedienteEmpleado .modal-footer {
+    flex-shrink: 0;
+}
+
 .emp-modal-card {
     background-color: var(--white);
     border: 1px solid var(--border-color);
@@ -936,4 +977,101 @@ body.expedientes-page {
     .tipo-dato-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+}
+
+/* --------------------------------------------------------------------------
+   MODAL EXPORTAR EXCEL - Fix: footer siempre visible sin importar zoom
+   -------------------------------------------------------------------------- */
+#modalExportarExcel .modal-dialog {
+    max-height: 90vh;
+}
+
+#modalExportarExcel .modal-content {
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#modalExportarExcel .modal-content > .modal-header {
+    flex-shrink: 0;
+}
+
+#modalExportarExcel #formExportarExcel {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+    flex: 1 1 auto;
+}
+
+#modalExportarExcel .modal-body {
+    overflow-y: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+#modalExportarExcel .modal-footer {
+    flex-shrink: 0;
+}
+
+/* --------------------------------------------------------------------------
+   MODAL CAMPO CATÁLOGO - Fix: footer siempre visible sin importar zoom
+   -------------------------------------------------------------------------- */
+#modalCampoCatalogo .modal-dialog {
+    max-height: 90vh;
+}
+
+#modalCampoCatalogo .modal-content {
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#modalCampoCatalogo .modal-content > .modal-header {
+    flex-shrink: 0;
+}
+
+#modalCampoCatalogo #formCampoCatalogo {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+    flex: 1 1 auto;
+}
+
+#modalCampoCatalogo .modal-body {
+    overflow-y: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+#modalCampoCatalogo .modal-footer {
+    flex-shrink: 0;
+}
+
+/* --------------------------------------------------------------------------
+   MODAL EXPEDIENTE EMPLEADO - Fix: footer siempre visible sin importar zoom
+   -------------------------------------------------------------------------- */
+#modalExpedienteEmpleado .modal-dialog {
+    max-height: 90vh;
+}
+
+#modalExpedienteEmpleado .modal-content {
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#modalExpedienteEmpleado .modal-content > .modal-header {
+    flex-shrink: 0;
+}
+
+#modalExpedienteEmpleado .modal-body {
+    overflow-y: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+#modalExpedienteEmpleado .modal-footer {
+    flex-shrink: 0;
 }

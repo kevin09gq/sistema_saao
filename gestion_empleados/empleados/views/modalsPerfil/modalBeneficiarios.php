@@ -376,6 +376,12 @@
 
             <div class="modal-footer">
 
+                <div class="me-auto d-flex align-items-center gap-2 text-start pe-2">
+                    <i class="bi bi-person-badge text-primary fs-5"></i>
+                    <span class="text-secondary small fw-medium">Empleado:</span>
+                    <strong class="text-dark text-uppercase" id="nombreEmpleadoModalBeneficiarios">---</strong>
+                </div>
+
                 <button
                     type="button"
                     class="btn btn-secondary"

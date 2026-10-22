@@ -55,29 +55,47 @@ verificarPermiso("expedientes.ver_menu");
             <!-- ============================ -->
             <div class="tab-pane fade show active" id="tab-empleados" role="tabpanel">
 
-                <!-- Filtros avanzados estilo vacaciones -->
-                <div class="emp-filter-section">
-                    <div class="row g-2.5 align-items-end">
-                        <div class="col-lg-3 col-md-6">
+                <!-- Filtros avanzados -->
+                <div class="emp-filter-section mb-3">
+                    <div class="row g-2 align-items-end">
+                        <!-- Fila 1: Buscar, Estatus, IMSS, Área, Departamento -->
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                             <label class="emp-form-label">Buscar Empleado</label>
                             <div class="emp-input-wrapper">
                                 <i class="bi bi-search emp-input-icon"></i>
                                 <input type="text" id="buscadorEmpExp" class="emp-form-control" placeholder="Nombre o clave...">
                             </div>
                         </div>
-                        <div class="col-lg-2 col-md-3">
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                            <label class="emp-form-label">Estatus</label>
+                            <select id="filtroStatusEmp" class="emp-form-select">
+                                <option value="-1">Todos (Activos / Bajas)</option>
+                                <option value="1">Solo Activos</option>
+                                <option value="2">Solo Bajas</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                            <label class="emp-form-label">Seguro Social (IMSS)</label>
+                            <select id="filtroImssEmp" class="emp-form-select">
+                                <option value="todos">Todos (Con / Sin IMSS)</option>
+                                <option value="con_imss">Con IMSS</option>
+                                <option value="sin_imss">Sin IMSS</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-6 col-lg-2">
                             <label class="emp-form-label">Área</label>
                             <select id="filtroAreaEmp" class="emp-form-select">
                                 <option value="-1">Todas las áreas</option>
                             </select>
                         </div>
-                        <div class="col-lg-2 col-md-3">
+                        <div class="col-12 col-sm-6 col-md-6 col-lg-3">
                             <label class="emp-form-label">Departamento</label>
                             <select id="filtroDeptoEmp" class="emp-form-select">
-                                <option value="-1">Todos los depto.</option>
+                                <option value="-1">Todos los departamentos</option>
                             </select>
                         </div>
-                        <div class="col-lg-2 col-md-4">
+                        <!-- Fila 2: Estado Expediente, Falta Requisito, Limpiar -->
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                             <label class="emp-form-label">Estado Expediente</label>
                             <select id="filtroAvanceEmp" class="emp-form-select">
                                 <option value="todos">Todos los avances</option>
@@ -86,15 +104,15 @@ verificarPermiso("expedientes.ver_menu");
                                 <option value="sin_documentos">🔴 Sin documentos (0%)</option>
                             </select>
                         </div>
-                        <div class="col-lg-2 col-md-5">
+                        <div class="col-12 col-sm-6 col-md-5 col-lg-7">
                             <label class="emp-form-label">Falta Requisito</label>
                             <select id="filtroFaltaRequisitoEmp" class="emp-form-select">
                                 <option value="-1">Cualquier requisito</option>
                             </select>
                         </div>
-                        <div class="col-lg-1 col-md-3">
+                        <div class="col-12 col-sm-6 col-md-3 col-lg-2 d-flex align-items-end">
                             <button id="btnLimpiarEmpExp" class="emp-btn-limpiar w-100" title="Limpiar Filtros">
-                                <i class="bi bi-eraser"></i> Limpiar
+                                <i class="bi bi-eraser"></i> Limpiar Filtros
                             </button>
                         </div>
                     </div>
@@ -201,10 +219,10 @@ verificarPermiso("expedientes.ver_menu");
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
-                <form id="formCampoCatalogo">
+                <form id="formCampoCatalogo" class="d-flex flex-column" style="overflow:hidden; min-height:0;">
                     <input type="hidden" id="modal_id_expediente" value="0">
 
-                    <div class="modal-body p-4" style="background-color: #f8fafc;">
+                    <div class="modal-body p-4" style="background-color: #f8fafc; overflow-y:auto;">
 
                         <!-- SECCIÓN 1: NOMBRE -->
                         <div class="exp-modal-section">
@@ -308,7 +326,7 @@ verificarPermiso("expedientes.ver_menu");
                     </div>
 
                     <!-- FOOTER -->
-                    <div class="modal-footer border-top border-light-subtle bg-white px-4 py-3">
+                    <div class="modal-footer border-top border-light-subtle bg-white px-4 py-3" style="flex-shrink:0;">
                         <div class="d-flex justify-content-between align-items-center w-100">
                             <small class="text-muted"><i class="bi bi-asterisk text-danger me-1" style="font-size:.6rem"></i>Campos obligatorios</small>
                             <div class="d-flex gap-2">
@@ -372,7 +390,7 @@ verificarPermiso("expedientes.ver_menu");
                 </div>
 
                 <!-- FOOTER -->
-                <div class="modal-footer border-top border-light-subtle bg-white px-4 py-3">
+                <div class="modal-footer border-top border-light-subtle bg-white px-4 py-3" style="flex-shrink:0;">
                     <button type="button" class="emp-btn-action ms-auto" data-bs-dismiss="modal" style="background:#f0fdf4; border-color:#bbf7d0; color:#15803d; font-weight:600; padding: 0.55rem 1.25rem;">
                         <i class="bi bi-check-lg me-1"></i> Concluir Revisión
                     </button>
@@ -454,10 +472,10 @@ verificarPermiso("expedientes.ver_menu");
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
-                <form id="formExportarExcel" action="../php/exportar_excel.php" method="POST">
+                <form id="formExportarExcel" action="../php/exportar_excel.php" method="POST" class="d-flex flex-column" style="overflow:hidden; min-height:0;">
                     <input type="hidden" name="tipo_exportacion" value="personalizada">
 
-                    <div class="modal-body p-4" style="background-color: #f8fafc;">
+                    <div class="modal-body p-4" style="background-color: #f8fafc; overflow-y:auto;">
 
                         <!-- SECCIÓN 1: FILTROS DE PERSONAL -->
                         <div class="exp-modal-section">
@@ -478,7 +496,7 @@ verificarPermiso("expedientes.ver_menu");
                                         <option value="-1">Todos los departamentos</option>
                                     </select>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label class="emp-form-label">Estatus del Empleado</label>
                                     <select name="id_status" id="expModalStatus" class="emp-form-select">
                                         <option value="-1">Todos (Activos y Bajas)</option>
@@ -486,7 +504,15 @@ verificarPermiso("expedientes.ver_menu");
                                         <option value="2">Solo Bajas</option>
                                     </select>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
+                                    <label class="emp-form-label">Seguro Social (IMSS)</label>
+                                    <select name="filtro_imss" id="expModalImss" class="emp-form-select">
+                                        <option value="todos">Todos (Con y Sin IMSS)</option>
+                                        <option value="con_imss">Con IMSS</option>
+                                        <option value="sin_imss">Sin IMSS</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
                                     <label class="emp-form-label">Estado del Expediente</label>
                                     <select name="filtro_avance" id="expModalAvance" class="emp-form-select">
                                         <option value="todos">Todos los avances</option>
@@ -529,7 +555,7 @@ verificarPermiso("expedientes.ver_menu");
                     </div>
 
                     <!-- FOOTER -->
-                    <div class="modal-footer border-top border-light-subtle bg-white px-4 py-3">
+                    <div class="modal-footer border-top border-light-subtle bg-white px-4 py-3" style="flex-shrink:0;">
                         <div class="d-flex justify-content-between align-items-center w-100">
                             <small class="text-muted"><i class="bi bi-file-earmark-excel text-success me-1"></i>Se descargará un archivo .xlsx profesional</small>
                             <div class="d-flex gap-2">
