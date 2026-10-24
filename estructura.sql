@@ -755,7 +755,7 @@ CREATE TABLE podas_movimientos_pilar (
 );
 
 -- =============================
--- TABLAS DE NÓMINA HUASTECA
+-- TABLAS DE NÓMINA HUASTECA 
 -- =============================
 
 --- Crear tabla nomina_huasteca

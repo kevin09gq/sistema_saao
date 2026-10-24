@@ -331,7 +331,7 @@ $inicialesAdmin = mb_strtoupper($inicialesAdmin);
                     <i class="bi bi-chevron-down saao-menu-chevron"></i>
                 </div>
                 <ul class="saao-submenu">
-                    <?php if (tienePermiso("nomina.ver_historial40lbs") || tienePermiso("nomina.ver_historial40lbs_jornal")): ?>
+                    <?php if (tienePermiso("nomina.ver_historial40lbs")): ?>
                         <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/nomina_40lbs/historial/views/historial_40lbs.php">Historial 40 lbs</a></li>
                     <?php endif; ?>
                     <?php if (tienePermiso("nomina.ver_historial10lbs")): ?>

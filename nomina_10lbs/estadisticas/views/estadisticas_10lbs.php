@@ -7,8 +7,8 @@ require_once __DIR__ . "/../../../public/php/config.php";
 require_once __DIR__ . "/../../../public/php/verificarSesion.php";
 
 // Proteger la vista
-//verificarSesion();
-//verificarPermiso("nomina.ver_historial10lbs");
+verificarSesion();
+verificarPermiso("nomina.ver_estadisticas10lbs");
 
 ?>
 
@@ -68,10 +68,16 @@ require_once __DIR__ . "/../../../public/php/verificarSesion.php";
                     </div>
 
                     <div class="col-12 col-md-auto ms-auto d-flex align-items-center gap-2">
-                        <a href="../../historial/views/historial_10lbs.php" class="btn btn-outline-success btn-sm">
-                            <i class="bi bi-list-check me-1"></i>Historial
-                        </a>
-                        <button id="btn_exportar_excel" class="btn btn-success btn-sm">
+                        <?php
+                        if (tienePermiso("nomina.ver_historial10lbs")) {
+                        ?>
+                            <a href="../../historial/views/historial_10lbs.php" class="btn btn-outline-success btn-sm">
+                                <i class="bi bi-list-check me-1"></i>Historial
+                            </a>
+                        <?php
+                        }
+                        ?>
+                        <button id="btn_exportar_excel" class="btn btn-success btn-sm" hidden>
                             <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
                         </button>
                     </div>

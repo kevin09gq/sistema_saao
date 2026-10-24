@@ -24,6 +24,11 @@ $(document).ready(function () {
     // Limpiar los filtros 
     limpiarFiltros();
 
+    
+    // Redirigir a estadísticas de nómina confianza
+    $('#btn-estadisticas').click(function () {
+        window.location.href = '../../estadisticas/views/estadisticas_confianza.php';
+    });
 });
 
 function veficarExistenciaNomina() {

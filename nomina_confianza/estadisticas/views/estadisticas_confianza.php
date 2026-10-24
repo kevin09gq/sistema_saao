@@ -68,10 +68,18 @@ verificarPermiso("nomina.ver_estadisticas_confianza");
                     </div>
 
                     <div class="col-12 col-md-auto ms-auto d-flex align-items-center gap-2">
-                        <a href="../../historial/views/historial_confianza.php" class="btn btn-outline-success btn-sm">
-                            <i class="bi bi-list-check me-1"></i>Historial
-                        </a>
-                        <button id="btn_exportar_excel" class="btn btn-success btn-sm">
+
+                        <?php
+                        // Verificar si el usuario tiene permiso para ver historial
+                        if (tienePermiso("nomina.ver_historial_confianza")) {
+                        ?>
+                            <a href="../../historial/views/historial_confianza.php" class="btn btn-outline-success btn-sm">
+                                <i class="bi bi-list-check me-1"></i>Historial
+                            </a>
+                        <?php
+                        }
+                        ?>
+                        <button id="btn_exportar_excel" class="btn btn-success btn-sm" hidden>
                             <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
                         </button>
                     </div>

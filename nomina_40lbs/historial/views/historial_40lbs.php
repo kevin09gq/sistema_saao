@@ -6,7 +6,7 @@
 require_once __DIR__ . "/../../../public/php/config.php";
 require_once __DIR__ . "/../../../public/php/verificarSesion.php";
 verificarSesion(); // Proteger esta página
-verificarPermiso("nomina.ver_estadisticas40lbs");
+verificarPermiso("nomina.ver_historial40lbs"); 
 ?>
 
 <head>
@@ -67,10 +67,19 @@ verificarPermiso("nomina.ver_estadisticas40lbs");
                             <i class="bi bi-check-circle me-1"></i>
                             Nóminas registradas
                         </span>
-                        <button type="button" id="btn-estadisticas" class="btn btn-primary btn-sm px-3 py-2 shadow-sm fw-semibold">
-                            <i class="bi bi-bar-chart-line-fill me-1"></i>
-                            Ver Estadísticas
-                        </button>
+
+                        <?php
+                        // Verificar si el usuario tiene permiso para ver estadísticas
+                        if (tienePermiso("nomina.ver_estadisticas40lbs")) {
+                        ?>
+                            <button type="button" id="btn-estadisticas" class="btn btn-primary btn-sm px-3 py-2 shadow-sm fw-semibold">
+                                <i class="bi bi-bar-chart-line-fill me-1"></i>
+                                Ver Estadísticas
+                            </button>
+
+                        <?php
+                        }
+                        ?>
                     </div>
 
                 </div>

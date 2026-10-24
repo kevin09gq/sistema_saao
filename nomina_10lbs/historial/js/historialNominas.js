@@ -24,6 +24,12 @@ $(document).ready(function () {
     // Limpiar los filtros 
     limpiarFiltros();
 
+    
+    // Redirigir a estadísticas de nómina 10lbs
+    $('#btn-estadisticas').click(function () {
+        window.location.href = '../../estadisticas/views/estadisticas_10lbs.php';
+    });
+
 });
 
 function veficarExistenciaNomina() {
