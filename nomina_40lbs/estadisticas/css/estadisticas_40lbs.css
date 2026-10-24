@@ -1,167 +1,483 @@
 /* ==========================================================================
-   ESTILOS PERSONALIZADOS PARA ESTADÍSTICAS DE NÓMINA 40 LBS
+   SISTEMA SAAO - MÓDULO DE ESTADÍSTICAS DE NÓMINA 40 LBS
+   Hoja de estilos: estadisticas_40lbs.css
+   Diseño basado en el estilo visual de empleados.css (Identidad Institucional SAAO)
    ========================================================================== */
 
-/* Variables de tema */
+/* --------------------------------------------------------------------------
+   0. TIPOGRAFÍA Y FUENTES EXTERNAS
+   -------------------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* --------------------------------------------------------------------------
+   1. VARIABLES GLOBALES (IDENTIDAD SAAO BASADA EN empleados.css)
+   -------------------------------------------------------------------------- */
 :root {
-    --stat-gradient-success: linear-gradient(135deg, rgba(25, 135, 84, 0.12) 0%, rgba(25, 135, 84, 0.02) 100%);
-    --stat-gradient-danger: linear-gradient(135deg, rgba(220, 53, 69, 0.12) 0%, rgba(220, 53, 69, 0.02) 100%);
-    --stat-gradient-primary: linear-gradient(135deg, rgba(13, 110, 253, 0.12) 0%, rgba(13, 110, 253, 0.02) 100%);
-    --stat-gradient-info: linear-gradient(135deg, rgba(13, 202, 240, 0.12) 0%, rgba(13, 202, 240, 0.02) 100%);
+    /* Paleta de Verdes Institucional SAAO */
+    --primary-green: #2d6a4f;      /* Verde principal para botones y acentos destacados */
+    --accent-green:  #1b4332;      /* Verde oscuro para estados hover y énfasis */
+    --soft-green:    #95d5b2;      /* Verde medio para bordes activos y focos */
+    --light-green:   #d8f3dc;      /* Verde suave para fondos claros, píldoras y selecciones */
+    --hover-green:   #e8f7ee;      /* Verde ultraligero para filas de tabla al pasar el mouse */
+
+    /* Colores Neutros y Fondo */
+    --bg-gray:       #f8f9fa;      /* Fondo general de la página */
+    --border-color:  #e9ecef;      /* Color estándar de bordes para tarjetas e inputs */
+    --text-main:     #343a40;      /* Color principal de texto (alta legibilidad) */
+    --text-muted:    #6c757d;      /* Texto secundario para etiquetas, subtítulos y fechas */
+    --white:         #ffffff;      /* Blanco puro para tarjetas y contenedores */
+
+    /* Estados Adicionales (Alertas / Badges) */
+    --status-active-bg:   #eefdf3; /* Fondo suave para estado activo / éxito */
+    --status-active-txt:  #1e7e34; /* Texto para estado activo / éxito */
+    --status-inactive-bg: #fef2f2; /* Fondo suave para inactivo / alerta */
+    --status-inactive-txt:#dc2626; /* Texto para inactivo / alerta */
+    --status-warning-bg:  #fff4e5; /* Fondo advertencia */
+    --status-warning-txt: #d97706; /* Texto advertencia */
+
+    /* Elevaciones y Sombras de empleados.css */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+    /* Radios de redondeo */
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+
+    /* Paleta para Nómina 40 Lbs */
+    --color-40lbs: #2d6a4f; /* Verde Corporativo SAAO */
 }
 
-/* Transición suave para cards interactivos */
-.stat-card {
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-    border-radius: 0.75rem;
+/* --------------------------------------------------------------------------
+   2. ESTILOS GENERALES DEL DOCUMENTO
+   -------------------------------------------------------------------------- */
+body {
+    background-color: var(--bg-gray);
+    color: var(--text-main);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* --------------------------------------------------------------------------
+   3. TARJETAS Y CONTENEDORES (ESTILO KARDEX DE empleados.css)
+   -------------------------------------------------------------------------- */
+.card {
+    background-color: var(--white);
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card-header {
+    background-color: var(--white) !important;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 1.25rem;
+    border-top-left-radius: var(--radius-lg) !important;
+    border-top-right-radius: var(--radius-lg) !important;
+}
+
+.card-footer {
+    background-color: var(--white) !important;
+    border-top: 1px solid var(--border-color);
+    padding: 0.85rem 1.25rem;
+    border-bottom-left-radius: var(--radius-lg) !important;
+    border-bottom-right-radius: var(--radius-lg) !important;
+}
+
+/* Tarjetas KPI para Estadísticas (Inspiradas en el diseño limpio de empleados.css) */
+.kpi-stat-card {
+    background-color: var(--white);
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 1.25rem;
+    transition: all 0.2s ease;
+    position: relative;
     overflow: hidden;
 }
 
-.stat-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.08) !important;
+.kpi-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--soft-green) !important;
 }
 
-/* Íconos circulares con fondo translúcido */
-.stat-icon-wrapper {
+.kpi-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background-color: var(--border-color);
+}
+
+.kpi-accent-total::before    { background-color: var(--primary-green); }
+.kpi-accent-pico::before     { background-color: #16a34a; }
+.kpi-accent-acumulado::before{ background-color: var(--accent-green); }
+.kpi-accent-promedio::before { background-color: #0d9488; }
+
+/* Burbuja de ícono de KPI (con verde SAAO) */
+.kpi-icon-box {
     width: 48px;
     height: 48px;
+    border-radius: var(--radius-md);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 12px;
     font-size: 1.4rem;
+    background-color: var(--light-green);
+    color: var(--primary-green);
+    border: 1px solid rgba(149, 213, 178, 0.4);
 }
 
-.stat-icon-success {
-    background-color: rgba(25, 135, 84, 0.15);
-    color: #198754;
+.kpi-icon-box.icon-pico {
+    background-color: #dcfce7;
+    color: #15803d;
 }
 
-.stat-icon-danger {
-    background-color: rgba(220, 53, 69, 0.15);
-    color: #dc3545;
+.kpi-icon-box.icon-promedio {
+    background-color: #ccfbf1;
+    color: #0f766e;
 }
 
-.stat-icon-primary {
-    background-color: rgba(13, 110, 253, 0.15);
-    color: #0d6efd;
+/* --------------------------------------------------------------------------
+   4. FILTROS, ENTRADAS Y FORMULARIOS (DE empleados.css)
+   -------------------------------------------------------------------------- */
+.form-label {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.785rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 0.4rem;
 }
 
-.stat-icon-info {
-    background-color: rgba(13, 202, 240, 0.15);
-    color: #0aa2c0;
+.form-control,
+.form-select {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-main);
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+    background-color: var(--white);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Contenedor de gráficos */
-.chart-container-wrapper {
-    position: relative;
-    height: 330px;
-    width: 100%;
+.form-control:focus,
+.form-select:focus {
+    outline: none;
+    border-color: var(--soft-green);
+    box-shadow: 0 0 0 3px rgba(149, 213, 178, 0.35);
 }
 
-.chart-doughnut-wrapper {
-    position: relative;
-    height: 280px;
-    width: 100%;
+/* Pestañas de filtro estilo píldora (Status Tabs de empleados.css) */
+.filter-pill-tab {
+    border: 1px solid var(--border-color);
+    background-color: var(--white);
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.825rem;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
 }
 
-/* Badges con estilo píldora y sombras sutiles */
-.badge-soft-success {
-    background-color: rgba(25, 135, 84, 0.15);
-    color: #0f5132;
-    border: 1px solid rgba(25, 135, 84, 0.25);
+.filter-pill-tab:hover {
+    background-color: var(--light-green);
+    color: var(--primary-green);
+    border-color: var(--soft-green);
 }
 
-.badge-soft-danger {
-    background-color: rgba(220, 53, 69, 0.15);
-    color: #842029;
-    border: 1px solid rgba(220, 53, 69, 0.25);
+.filter-pill-tab.active {
+    background-color: var(--primary-green) !important;
+    border-color: var(--primary-green) !important;
+    color: var(--white) !important;
+    box-shadow: var(--shadow-sm);
 }
 
-.badge-soft-primary {
-    background-color: rgba(13, 110, 253, 0.15);
-    color: #084298;
-    border: 1px solid rgba(13, 110, 253, 0.25);
+/* --------------------------------------------------------------------------
+   5. BOTONES INSTITUCIONALES SAAO (DE empleados.css)
+   -------------------------------------------------------------------------- */
+.btn-success {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+    color: var(--white);
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    padding: 0.45rem 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
 }
 
-.badge-soft-info {
-    background-color: rgba(13, 202, 240, 0.15);
-    color: #055160;
-    border: 1px solid rgba(13, 202, 240, 0.25);
+.btn-success:hover,
+.btn-success:focus,
+.btn-success:active {
+    background-color: var(--accent-green) !important;
+    border-color: var(--accent-green) !important;
+    color: var(--white) !important;
+    box-shadow: var(--shadow-sm);
 }
 
-.badge-soft-warning {
-    background-color: rgba(255, 193, 7, 0.2);
-    color: #664d03;
-    border: 1px solid rgba(255, 193, 7, 0.35);
+.btn-outline-success {
+    background-color: var(--white);
+    border: 1px solid var(--primary-green);
+    color: var(--primary-green);
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    padding: 0.45rem 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
 }
 
-/* Filas destacadas de tabla */
-.table-row-highest {
-    background-color: rgba(25, 135, 84, 0.08) !important;
+.btn-outline-success:hover,
+.btn-outline-success:focus,
+.btn-outline-success:active {
+    background-color: var(--light-green) !important;
+    border-color: var(--primary-green) !important;
+    color: var(--accent-green) !important;
 }
 
-.table-row-lowest {
-    background-color: rgba(220, 53, 69, 0.08) !important;
+.btn-saao-light {
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    padding: 0.45rem 0.9rem;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
 }
 
-/* Barra de porcentaje en tabla */
-.table-progress-bar {
+.btn-saao-light:hover {
+    background: var(--bg-gray);
+    color: var(--primary-green);
+    border-color: var(--soft-green);
+}
+
+/* --------------------------------------------------------------------------
+   6. TABLAS DE ESTADÍSTICAS (ESTILO KARDEX DE empleados.css)
+   -------------------------------------------------------------------------- */
+.table {
+    margin-bottom: 0;
+    color: var(--text-main);
+}
+
+.table thead th,
+.table-saao-header th {
+    background-color: #f8fbf9 !important; /* Tono verde ultraclaro */
+    color: var(--primary-green) !important;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.9rem 1rem;
+    border-bottom: 2px solid var(--border-color);
+    border-top: none;
+    vertical-align: middle;
+}
+
+.table tbody td {
+    padding: 0.85rem 1rem;
+    vertical-align: middle;
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--white);
+    transition: background-color 0.15s ease;
+}
+
+.table-hover tbody tr:hover td {
+    background-color: var(--hover-green) !important;
+}
+
+/* Filas destacadas de récord */
+.tr-record-alto td {
+    background-color: #f0fdf4 !important;
+}
+
+.tr-record-bajo td {
+    background-color: #fef2f2 !important;
+}
+
+/* Scroll con cabecera fija */
+.table-fixed-container {
+    max-height: 520px;
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
+.table-fixed-container thead th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    box-shadow: inset 0 -2px 0 var(--border-color);
+}
+
+/* --------------------------------------------------------------------------
+   7. BADGES Y CHIPS (ESTILO PÍLDORA SAAO)
+   -------------------------------------------------------------------------- */
+.badge-saao-pill {
+    padding: 0.35rem 0.75rem;
+    font-weight: 600;
+    font-size: 0.75rem;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    white-space: nowrap;
+}
+
+/* Badges de estado */
+.badge-saao-success {
+    background-color: var(--status-active-bg) !important;
+    color: var(--status-active-txt) !important;
+    border: 1px solid rgba(30, 126, 52, 0.25);
+}
+
+.badge-saao-danger {
+    background-color: var(--status-inactive-bg) !important;
+    color: var(--status-inactive-txt) !important;
+    border: 1px solid rgba(220, 38, 38, 0.25);
+}
+
+.badge-saao-neutral {
+    background-color: #f1f5f9 !important;
+    color: #475569 !important;
+    border: 1px solid var(--border-color);
+}
+
+/* Chips representativos para nómina 40 Lbs */
+.chip-40lbs {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.65rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+    background: rgba(45, 106, 79, 0.12);
+    color: #1b4332;
+    border-color: rgba(45, 106, 79, 0.25);
+}
+
+/* Indicadores circulares para las leyendas */
+.indicator-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+/* Mini barra de progreso en tabla */
+.progress-kardex {
     height: 6px;
+    background-color: #f1f5f9;
     border-radius: 3px;
-    background-color: #e9ecef;
     overflow: hidden;
     margin-top: 4px;
 }
 
-.table-progress-fill {
+.progress-kardex-fill {
     height: 100%;
     border-radius: 3px;
 }
 
-/* Encabezados de tabla pegajosos si hay scroll */
-.table-responsive-custom {
-    max-height: 540px;
-    overflow-y: auto;
+/* --------------------------------------------------------------------------
+   8. CONTENEDORES DE GRÁFICAS (CON ALTURA Y RESPONSIVIDAD GARANTIZADA)
+   -------------------------------------------------------------------------- */
+.chart-box-wrapper {
+    position: relative;
+    width: 100%;
+    height: 350px;
+    min-height: 320px;
 }
 
-.table-sticky-header thead th {
-    position: sticky;
-    top: 0;
-    background-color: #f8f9fa;
-    z-index: 2;
-    box-shadow: inset 0 -1px 0 #dee2e6;
+.chart-donut-wrapper {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    min-height: 280px;
 }
 
-/* Mini resumen visual en cards */
-.mini-stat-label {
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 600;
+.chart-secondary-wrapper {
+    position: relative;
+    width: 100%;
+    height: 290px;
+    min-height: 260px;
 }
 
-/* Animación sutil de pulso para el pico más alto */
-@keyframes pulse-subtle {
+/* Desglose en la última semana */
+.breakdown-box {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.9rem;
+    background-color: var(--white);
+    transition: all 0.2s ease;
+}
+
+.breakdown-box:hover {
+    border-color: var(--soft-green);
+    background-color: #fafdfb;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Indicador pulsante */
+@keyframes pulse-green {
     0% {
-        box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.35);
+        box-shadow: 0 0 0 0 rgba(45, 106, 79, 0.4);
     }
     70% {
-        box-shadow: 0 0 0 8px rgba(25, 135, 84, 0);
+        box-shadow: 0 0 0 7px rgba(45, 106, 79, 0);
     }
     100% {
-        box-shadow: 0 0 0 0 rgba(25, 135, 84, 0);
+        box-shadow: 0 0 0 0 rgba(45, 106, 79, 0);
     }
 }
 
-.pulse-indicator {
-    display: inline-block;
+.pulse-green-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background-color: #198754;
-    animation: pulse-subtle 2s infinite;
+    background-color: var(--primary-green);
+    display: inline-block;
+    animation: pulse-green 2s infinite;
     vertical-align: middle;
-    margin-right: 4px;
+    margin-right: 5px;
+}
+
+/* --------------------------------------------------------------------------
+   9. MEDIA QUERIES PARA IMPRESIÓN Y MÓVIL
+   -------------------------------------------------------------------------- */
+@media print {
+    body {
+        background-color: #fff !important;
+    }
+    .navbar, .saao-sidebar, header, .no-print {
+        display: none !important;
+    }
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+        break-inside: avoid;
+    }
+    .chart-box-wrapper, .chart-donut-wrapper, .chart-secondary-wrapper {
+        height: 240px !important;
+    }
 }

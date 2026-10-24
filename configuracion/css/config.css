@@ -563,7 +563,71 @@
 }
 
 /* --------------------------------------------------------------------------
-   12. ADAPTACIONES RESPONSIVAS (MÓVILES Y TABLETS)
+   12. PREVIEW DE COLOR
+   -------------------------------------------------------------------------- */
+.config-page .color-preview {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    transition: transform 0.2s ease;
+}
+
+.config-page .color-preview:hover {
+    transform: scale(1.1);
+}
+
+/* --------------------------------------------------------------------------
+   12.1 MENSAJE DE ESTADO VACÍO
+   -------------------------------------------------------------------------- */
+.config-page .empty-state {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    color: var(--text-muted);
+}
+
+.config-page .empty-state i {
+    font-size: 3rem;
+    color: var(--soft-green);
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.config-page .empty-state p {
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   13. PAGINACIÓN
+   -------------------------------------------------------------------------- */
+.config-page .pagination .page-link {
+    color: var(--primary-green);
+    border-color: var(--border-color);
+    background-color: var(--white);
+    font-weight: 500;
+    padding: 0.4rem 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.config-page .pagination .page-link:hover {
+    background-color: var(--light-green);
+    border-color: var(--soft-green);
+    color: var(--accent-green);
+}
+
+.config-page .pagination .page-item.active .page-link {
+    background-color: var(--primary-green) !important;
+    border-color: var(--primary-green) !important;
+    color: var(--white) !important;
+}
+
+.config-page .pagination .page-item.disabled .page-link {
+    color: var(--text-muted);
+    background-color: var(--bg-gray);
+    border-color: var(--border-color);
+}
+
+/* --------------------------------------------------------------------------
+   14. ADAPTACIONES RESPONSIVAS (MÓVILES Y TABLETS)
    -------------------------------------------------------------------------- */
 /* Móviles pequeños (hasta 576px) */
 @media (max-width: 576px) {
@@ -649,7 +713,7 @@
 }
 
 /* --------------------------------------------------------------------------
-   13. OPTIMIZACIONES DE SCROLL Y TRANSICIONES
+   15. OPTIMIZACIONES DE SCROLL Y TRANSICIONES
    -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
     .config-page * {

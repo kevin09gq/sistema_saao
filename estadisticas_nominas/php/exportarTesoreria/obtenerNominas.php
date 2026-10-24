@@ -184,7 +184,8 @@ function obtenerNominas(mysqli $conexion)
             SELECT
                 (COALESCE(c.total_cortes, 0) + COALESCE(p.total_podas, 0)) AS sueldo_bruto,
                 COALESCE(c.total_cortes, 0) AS total_cortes,
-                COALESCE(p.total_podas, 0) AS total_podas
+                COALESCE(p.total_podas, 0) AS total_podas,
+                COALESCE(p.total_cabos, 0) AS total_cabos
             FROM `nomina_{$rancho}` n
             LEFT JOIN (
                 SELECT
@@ -199,7 +200,8 @@ function obtenerNominas(mysqli $conexion)
             LEFT JOIN (
                 SELECT
                     po.id_nomina,
-                    SUM(pm.monto) AS total_podas
+                    SUM(pm.arboles_podados * pm.monto) AS total_podas,
+                    COUNT(DISTINCT po.id_poda) AS total_cabos
                 FROM `podas_{$rancho}` po
                 INNER JOIN `podas_movimientos_{$rancho}` pm
                     ON pm.id_poda = po.id_poda
@@ -220,7 +222,8 @@ function obtenerNominas(mysqli $conexion)
             $cortes_podas["nomina_{$rancho}"] = [
                 'sueldo_bruto' => (float) ($fila_cp['sueldo_bruto'] ?? 0),
                 'total_cortes' => (float) ($fila_cp['total_cortes'] ?? 0),
-                'total_podas'  => (float) ($fila_cp['total_podas'] ?? 0)
+                'total_podas'  => (float) ($fila_cp['total_podas'] ?? 0),
+                'total_cabos'  => (int) ($fila_cp['total_cabos'] ?? 0)
             ];
         } else {
             $cortes_podas["nomina_{$rancho}"] = [

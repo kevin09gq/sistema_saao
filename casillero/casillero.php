@@ -40,10 +40,10 @@ verificarPermiso("casilleros.ver_menu");
 
         <!-- Barra de herramientas -->
         <div class="toolbar-card mb-4">
-            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-                <div class="d-flex align-items-center gap-2 flex-wrap">
+            <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center justify-content-between gap-3">
+                <div class="toolbar-filters d-flex flex-column flex-md-row align-items-stretch align-items-md-center gap-2">
                     <!-- Búsqueda -->
-                    <div class="search-wrap">
+                    <div class="search-wrap w-100">
                         <i class="bi bi-search search-icon"></i>
                         <input type="text" class="search-input" id="inputBusqueda" placeholder="Buscar por número o empleado...">
                         <button type="button" class="btn-clear-search" id="btnLimpiarBusqueda" title="Limpiar búsqueda">
@@ -51,14 +51,14 @@ verificarPermiso("casilleros.ver_menu");
                         </button>
                     </div>
                     <!-- Filtros -->
-                    <div class="filter-group" role="group" aria-label="Filtros">
+                    <div class="filter-group d-flex flex-wrap" role="group" aria-label="Filtros">
                         <button type="button" class="filter-btn active" id="btnFiltroTodos" data-filtro="todos">Todos</button>
                         <button type="button" class="filter-btn filter-disponible" id="btnFiltroDisponibles" data-filtro="disponibles">Disponibles</button>
                         <button type="button" class="filter-btn filter-parcial" id="btnFiltroParciales" data-filtro="parciales">1 Empleado</button>
                         <button type="button" class="filter-btn filter-completo" id="btnFiltroCompletos" data-filtro="completos">Completos</button>
                     </div>
                 </div>
-                <div class="d-flex align-items-center gap-2">
+                <div class="toolbar-actions d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end gap-2">
                     <!-- Contador -->
                     <span class="badge-count" id="contadorCasilleros">
                         <i class="bi bi-box-seam me-1"></i>

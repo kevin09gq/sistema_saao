@@ -32,9 +32,23 @@ $tienePermisoNominas =
     tienePermiso('nomina.crear_nomina_palmilla') ||
     tienePermiso('cortes.ver_menu');
 
+// Verificar si el usuario tiene al menos un permiso de historial de nóminas
+$tienePermisoHistorial =
+    tienePermiso('nomina.ver_historial40lbs') ||
+    tienePermiso('nomina.ver_historial40lbs_jornal') ||
+    tienePermiso('nomina.ver_historial10lbs') ||
+    tienePermiso('nomina.ver_historial_confianza') ||
+    tienePermiso('nomina.ver_historial_relicario') ||
+    tienePermiso('nomina.ver_historial_pilar') ||
+    tienePermiso('nomina.ver_historial_huasteca') ||
+    tienePermiso('nomina.ver_historial_palmilla');
+
 // Verificar si el usuario tiene al menos un permiso de estadísticas o responsivas
 $tienePermisoEstadisticas =
     tienePermiso('nomina.ver_estadisticas_nomina') ||
+    tienePermiso('nomina.ver_estadisticas40lbs') ||
+    tienePermiso('nomina.ver_estadisticas10lbs') ||
+    tienePermiso('nomina.ver_estadisticas_confianza') ||
     tienePermiso('nomina.crear_responsivas');
 
 // ==========================================================================
@@ -253,7 +267,7 @@ $inicialesAdmin = mb_strtoupper($inicialesAdmin);
         <?php endif; ?>
 
         <!-- SECCIÓN: NÓMINAS Y RANCHOS -->
-        <?php if ($tienePermisoNominas || $tienePermisoEstadisticas): ?>
+        <?php if ($tienePermisoNominas || $tienePermisoHistorial || $tienePermisoEstadisticas): ?>
             <div class="saao-menu-category">Finanzas y Nóminas</div>
 
             <?php if ($tienePermisoNominas): ?>
@@ -302,40 +316,41 @@ $inicialesAdmin = mb_strtoupper($inicialesAdmin);
                         <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/gestion_ranchos/views/historial_cortes.php">Cortes de Ranchos</a></li>
                     <?php endif; ?>
 
-                    <?php if (
-                        tienePermiso("nomina.ver_historial40lbs") || tienePermiso("nomina.ver_historial40lbs_jornal") ||
-                        tienePermiso("nomina.ver_historial10lbs") || tienePermiso("nomina.ver_historial_confianza") ||
-                        tienePermiso("nomina.ver_historial_relicario") || tienePermiso("nomina.ver_historial_pilar") ||
-                        tienePermiso("nomina.ver_historial_huasteca") || tienePermiso("nomina.ver_historial_palmilla")
-                    ): ?>
-                        <li class="saao-sub-dropdown">
-                            <a class="saao-submenu-link saao-sub-toggle" href="javascript:void(0);">
-                                <strong>Historial de Nóminas</strong> <i class="bi bi-chevron-right float-end small"></i>
-                            </a>
-                            <ul class="saao-sub-submenu">
-                                <?php if (tienePermiso("nomina.ver_historial40lbs") || tienePermiso("nomina.ver_historial40lbs_jornal")): ?>
-                                    <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/nomina_40lbs/historial/views/historial_40lbs.php">Historial 40 lbs</a></li>
-                                <?php endif; ?>
-                                <?php if (tienePermiso("nomina.ver_historial10lbs")): ?>
-                                    <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/nomina_10lbs/historial/views/historial_10lbs.php">Historial 10 lbs</a></li>
-                                <?php endif; ?>
-                                <?php if (tienePermiso("nomina.ver_historial_confianza")): ?>
-                                    <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/nomina_confianza/historial/views/historial_confianza.php">Historial Confianza</a></li>
-                                <?php endif; ?>
-                                <?php if (tienePermiso("nomina.ver_historial_relicario")): ?>
-                                    <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/nomina_relicario/historial/views/historial_relicario.php">Historial Relicario</a></li>
-                                <?php endif; ?>
-                                <?php if (tienePermiso("nomina.ver_historial_pilar")): ?>
-                                    <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/nomina_pilar/historial/views/historial_pilar.php">Historial Pilar</a></li>
-                                <?php endif; ?>
-                                <?php if (tienePermiso("nomina.ver_historial_palmilla")): ?>
-                                    <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/nomina_palmilla/historial/views/historial_palmilla.php">Historial Palmilla</a></li>
-                                <?php endif; ?>
-                                <?php if (tienePermiso("nomina.ver_historial_huasteca")): ?>
-                                    <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/nomina_huasteca/historial/views/historial_huasteca.php">Historial Huasteca</a></li>
-                                <?php endif; ?>
-                            </ul>
-                        </li>
+                </ul>
+            </div>
+            <?php endif; ?>
+
+            <!-- SECCIÓN: HISTORIAL DE NÓMINAS -->
+            <?php if ($tienePermisoHistorial): ?>
+            <div class="saao-menu-item saao-accordion-item">
+                <div class="saao-menu-link saao-accordion-toggle" data-page="historial_nominas">
+                    <div class="saao-menu-link-content">
+                        <div class="saao-menu-icon"><i class="bi bi-clock-history"></i></div>
+                        <span>Historial</span>
+                    </div>
+                    <i class="bi bi-chevron-down saao-menu-chevron"></i>
+                </div>
+                <ul class="saao-submenu">
+                    <?php if (tienePermiso("nomina.ver_historial40lbs") || tienePermiso("nomina.ver_historial40lbs_jornal")): ?>
+                        <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/nomina_40lbs/historial/views/historial_40lbs.php">Historial 40 lbs</a></li>
+                    <?php endif; ?>
+                    <?php if (tienePermiso("nomina.ver_historial10lbs")): ?>
+                        <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/nomina_10lbs/historial/views/historial_10lbs.php">Historial 10 lbs</a></li>
+                    <?php endif; ?>
+                    <?php if (tienePermiso("nomina.ver_historial_confianza")): ?>
+                        <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/nomina_confianza/historial/views/historial_confianza.php">Historial Confianza</a></li>
+                    <?php endif; ?>
+                    <?php if (tienePermiso("nomina.ver_historial_relicario")): ?>
+                        <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/nomina_relicario/historial/views/historial_relicario.php">Historial Relicario</a></li>
+                    <?php endif; ?>
+                    <?php if (tienePermiso("nomina.ver_historial_pilar")): ?>
+                        <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/nomina_pilar/historial/views/historial_pilar.php">Historial Pilar</a></li>
+                    <?php endif; ?>
+                    <?php if (tienePermiso("nomina.ver_historial_palmilla")): ?>
+                        <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/nomina_palmilla/historial/views/historial_palmilla.php">Historial Palmilla</a></li>
+                    <?php endif; ?>
+                    <?php if (tienePermiso("nomina.ver_historial_huasteca")): ?>
+                        <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/nomina_huasteca/historial/views/historial_huasteca.php">Historial Huasteca</a></li>
                     <?php endif; ?>
                 </ul>
             </div>
@@ -354,6 +369,18 @@ $inicialesAdmin = mb_strtoupper($inicialesAdmin);
                 <ul class="saao-submenu">
                     <?php if (tienePermiso("nomina.ver_estadisticas_nomina")): ?>
                         <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/estadisticas_nominas/views/estadisticas.php">Estadísticas de Nóminas</a></li>
+                    <?php endif; ?>
+
+                    <?php if (tienePermiso("nomina.ver_estadisticas40lbs")): ?>
+                        <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/nomina_40lbs/estadisticas/views/estadisticas_40lbs.php">Estadísticas 40 lbs</a></li>
+                    <?php endif; ?>
+
+                    <?php if (tienePermiso("nomina.ver_estadisticas10lbs")): ?>
+                        <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/nomina_10lbs/estadisticas/views/estadisticas_10lbs.php">Estadísticas 10 lbs</a></li>
+                    <?php endif; ?>
+
+                    <?php if (tienePermiso("nomina.ver_estadisticas_confianza")): ?>
+                        <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/nomina_confianza/estadisticas/views/estadisticas_confianza.php">Estadísticas Confianza</a></li>
                     <?php endif; ?>
 
                     <?php if (tienePermiso("nomina.crear_responsivas")): ?>

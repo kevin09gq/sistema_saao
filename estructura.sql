@@ -892,44 +892,6 @@ INSERT INTO status (nombre_status) VALUES ('Activo'), ('Baja');
 -- Insertar roles
 INSERT INTO rol (nombre_rol) VALUES ('admin'), ('empleado');
 
--- Versiones de Tablas de Vacaciones LFT
-
-INSERT INTO
-    dias_vacaciones_lft (
-        id_version_vacaciones,
-        anios_antiguedad_inicio,
-        anios_antiguedad_fin,
-        dias_vacaciones_correspondientes
-    )
-VALUES (1, 1, NULL, 6),
-    (1, 2, NULL, 8),
-    (1, 3, NULL, 10),
-    (1, 4, NULL, 12),
-    (1, 5, 9, 14),
-    (1, 10, 14, 16),
-    (1, 15, 19, 18),
-    (1, 20, 24, 20),
-    (1, 25, 29, 22),
-    (1, 30, 34, 24);
-
-INSERT INTO
-    dias_vacaciones_lft (
-        id_version_vacaciones,
-        anios_antiguedad_inicio,
-        anios_antiguedad_fin,
-        dias_vacaciones_correspondientes
-    )
-VALUES (2, 1, NULL, 12),
-    (2, 2, NULL, 14),
-    (2, 3, NULL, 16),
-    (2, 4, NULL, 18),
-    (2, 5, NULL, 20),
-    (2, 6, 10, 22),
-    (2, 11, 15, 24),
-    (2, 16, 20, 26),
-    (2, 21, 25, 28),
-    (2, 26, 30, 30),
-    (2, 31, 35, 32);
 
 -- Insertar Modulos
 INSERT INTO
@@ -1573,4 +1535,61 @@ VALUES (
         'nomina.crear_responsivas',
         'Realizar Responsivas de Nómina',
         'Permite Realizar las responsivas de nominas'
+    );
+
+
+        INSERT INTO
+    permisos (
+        id_modulo,
+        clave_permiso,
+        nombre_permiso,
+        descripcion
     )
+VALUES (
+        14,
+        'nomina.ver_estadisticas40lbs',
+        'Visualizar Estadísticas de 40 Lbs',
+        'Permite visualizar el apartado de Estadísticas de 40 Lbs en el menú lateral para gestionar las estadísticas de la nómina'
+    ),
+    (
+        14,
+        'nomina.ver_estadisticas40lbs_jornal',
+        'Visualizar Estadísticas de 40 Lbs por Jornal',
+        'Permite visualizar el apartado de Estadísticas de 40 Lbs por Jornal en el menú lateral para gestionar las estadísticas de la nómina'
+    ),
+    (
+        14,
+        'nomina.ver_estadisticas10lbs',
+        'Visualizar Estadísticas de 10 Lbs',
+        'Permite visualizar el apartado de Estadísticas de 10 Lbs en el menú lateral para gestionar las estadísticas de la nómina'
+    ),
+    (
+        14,
+        'nomina.ver_estadisticas_confianza',
+        'Visualizar Estadísticas de Confianza',
+        'Permite visualizar el apartado de Estadísticas de Confianza en el menú lateral para gestionar las estadísticas de la nómina'
+    ),
+    (
+        14,
+        'nomina.ver_estadisticas_relicario',
+        'Visualizar Estadísticas de Relicario',
+        'Permite visualizar el apartado de Estadísticas de Relicario en el menú lateral para gestionar las estadísticas de la nómina'
+    ),
+    (
+        14,
+        'nomina.ver_estadisticas_pilar',
+        'Visualizar Estadísticas de Pilar',
+        'Permite visualizar el apartado de Estadísticas de Pilar en el menú lateral para gestionar las estadísticas de la nómina'
+    ),
+    (
+        14,
+        'nomina.ver_estadisticas_huasteca',
+        'Visualizar Estadísticas de Huasteca',
+        'Permite visualizar el apartado de Estadísticas de Huasteca en el menú lateral para gestionar las estadísticas de la nómina'
+    ),
+    (
+        14,
+        'nomina.ver_estadisticas_palmilla',
+        'Visualizar Estadísticas de Palmilla',
+        'Permite visualizar el apartado de Estadísticas de Palmilla en el menú lateral para gestionar las estadísticas de la nómina'
+    );

@@ -414,12 +414,7 @@ verificarPermiso("nomina.ver_estadisticas_nomina");
     <script src="<?= BOOTSTRAP_JS ?>"></script>
 
     <!-- Chart.js Local (Garantizado sin dependencias externas) -->
-    <script src="<?= defined('CHART_JS') ? CHART_JS : '/sistema_saao/public/plugins/chart.min.js' ?>"></script>
-    <script>
-        if (typeof Chart === 'undefined') {
-            document.write('<script src="../js/chart.min.js"><\/script>');
-        }
-    </script>
+    <script src="<?= CHART_JS ?>"></script>
 
     <!-- Script de lógica y renderizado de estadísticas -->
     <script src="../js/estadisticas.js"></script>

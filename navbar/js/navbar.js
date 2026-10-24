@@ -261,7 +261,7 @@ function marcarModuloActivo() {
 
     var mejorCoincidencia = null;
     var mayorLongitud = 0;
-    var coincidenciaExactaEncontrada = false;
+    var coincidenciasPorArchivo = [];
 
     enlaces.each(function () {
         var link = $(this);
@@ -275,46 +275,59 @@ function marcarModuloActivo() {
         // limpiar la ruta del enlace
         var hrefLimpio = href.split('?')[0].toLowerCase();
 
-        // 1. Coincidencia exacta por nombre de archivo (prioridad máxima)
-        var nombreArchivoActual = rutaActual.split('/').pop();
-        var nombreArchivoEnlace = hrefLimpio.split('/').pop();
-
-        if (nombreArchivoActual === nombreArchivoEnlace) {
-            mejorCoincidencia = link;
-            mayorLongitud = hrefLimpio.length;
-            coincidenciaExactaEncontrada = true;
-        }
-
-        // Si ya encontramos coincidencia exacta, no seguir buscando por coincidencia parcial
-        if (coincidenciaExactaEncontrada) {
-            return; // Solo salta a la siguiente iteración, no detiene el each
-        }
-
-        // 2. Coincidencia de ruta completa
+        // 1. La ruta completa evita confundir archivos con el mismo nombre.
         if (rutaActual === hrefLimpio) {
             if (hrefLimpio.length > mayorLongitud) {
                 mayorLongitud = hrefLimpio.length;
                 mejorCoincidencia = link;
             }
+            return;
         }
-        // 3. Coincidencia para subpáginas (ej. detalle_nomina.php) mediante la carpeta del módulo (ej. /nomina_40lbs/historial/)
-        else {
-            var indiceViews = rutaActual.lastIndexOf('/views/');
-            var carpetaModulo = indiceViews !== -1 ? rutaActual.substring(0, indiceViews) : '';
-            if (carpetaModulo && hrefLimpio.indexOf(carpetaModulo) !== -1) {
-                if (hrefLimpio.length > mayorLongitud) {
+
+        // 2. Guardar coincidencias por archivo como respaldo.
+        var nombreArchivoActual = rutaActual.split('/').pop();
+        var nombreArchivoEnlace = hrefLimpio.split('/').pop();
+        if (nombreArchivoActual === nombreArchivoEnlace) {
+            coincidenciasPorArchivo.push(link);
+        }
+    });
+
+    // El nombre del archivo solo es confiable cuando aparece una sola vez.
+    if (!mejorCoincidencia && coincidenciasPorArchivo.length === 1) {
+        mejorCoincidencia = coincidenciasPorArchivo[0];
+    }
+
+    // Coincidencia para subpáginas dentro del módulo actual.
+    if (!mejorCoincidencia) {
+        var indiceViews = rutaActual.lastIndexOf('/views/');
+        var carpetaModulo = indiceViews !== -1 ? rutaActual.substring(0, indiceViews) : '';
+
+        if (carpetaModulo) {
+            enlaces.each(function () {
+                var link = $(this);
+                var href = link.attr('href');
+                var hrefLimpio = href ? href.split('?')[0].toLowerCase() : '';
+
+                if (hrefLimpio.indexOf(carpetaModulo) !== -1 && hrefLimpio.length > mayorLongitud) {
                     mayorLongitud = hrefLimpio.length;
                     mejorCoincidencia = link;
                 }
-            }
+            });
         }
-        // 4. Coincidencia para página de inicio
-        if (hrefLimpio.indexOf('index.php') !== -1 && (rutaActual.endsWith('/') || rutaActual.endsWith('/sistema_saao/'))) {
-            if (!mejorCoincidencia) {
+    }
+
+    // Coincidencia para la página de inicio cuando se accede sin archivo.
+    if (!mejorCoincidencia && (rutaActual.endsWith('/') || rutaActual.endsWith('/sistema_saao/'))) {
+        enlaces.each(function () {
+            var link = $(this);
+            var href = link.attr('href') || '';
+
+            if (href.toLowerCase().split('?')[0].endsWith('/index.php')) {
                 mejorCoincidencia = link;
+                return false;
             }
-        }
-    });
+        });
+    }
 
     // Aplicar estado activo y desplegar acordeones padres
     if (mejorCoincidencia && mejorCoincidencia.length) {

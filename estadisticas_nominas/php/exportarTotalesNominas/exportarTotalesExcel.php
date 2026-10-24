@@ -309,7 +309,7 @@ function construirHojaNomina(
                 GROUP BY cr.id_nomina
             ) c ON c.id_nomina = n.`id_nomina_{$rancho}`
             LEFT JOIN (
-                SELECT po.id_nomina, SUM(pm.monto) AS total_podas
+                SELECT po.id_nomina, SUM(pm.arboles_podados * pm.monto) AS total_podas
                 FROM `podas_{$rancho}` po
                 INNER JOIN `podas_movimientos_{$rancho}` pm ON pm.id_poda = po.id_poda
                 GROUP BY po.id_nomina

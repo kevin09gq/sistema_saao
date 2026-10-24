@@ -6,7 +6,7 @@
 require_once __DIR__ . "/../../../public/php/config.php";
 require_once __DIR__ . "/../../../public/php/verificarSesion.php";
 verificarSesion(); // Proteger esta página
-verificarPermiso("nomina.ver_historial40lbs");
+verificarPermiso("nomina.ver_estadisticas40lbs");
 ?>
 
 <head>

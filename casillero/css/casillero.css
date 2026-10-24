@@ -110,6 +110,11 @@ body {
     box-shadow: var(--shadow-sm);
 }
 
+.toolbar-filters,
+.toolbar-actions {
+    min-width: 0;
+}
+
 /* Búsqueda */
 .search-wrap {
     position: relative;
@@ -136,6 +141,20 @@ body {
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
     background: #ffffff;
     color: var(--text-main);
+}
+
+.search-wrap .search-input {
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .toolbar-filters .search-wrap {
+        width: auto !important;
+    }
+
+    .toolbar-filters .search-input {
+        width: 230px;
+    }
 }
 
 .search-input:focus {
@@ -706,6 +725,31 @@ body {
    11. RESPONSIVE
    -------------------------------------------------------------------------- */
 @media (max-width: 640px) {
+    .toolbar-card {
+        padding: 0.75rem;
+    }
+
+    .toolbar-filters,
+    .toolbar-actions {
+        width: 100%;
+    }
+
+    .filter-group {
+        width: 100%;
+    }
+
+    .filter-btn {
+        flex: 1 1 auto;
+        justify-content: center;
+        padding-left: 0.65rem;
+        padding-right: 0.65rem;
+    }
+
+    .toolbar-actions > * {
+        flex: 1 1 auto;
+        justify-content: center;
+    }
+
     .casillero-item {
         width: 80px;
         height: 80px;
@@ -721,10 +765,6 @@ body {
 
     .casillero-empleado {
         font-size: 0.58rem;
-    }
-
-    .search-input {
-        width: 160px;
     }
 
     .module-title {

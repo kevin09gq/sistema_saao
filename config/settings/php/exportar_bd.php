@@ -1,4 +1,8 @@
 <?php
+// Los historiales biométricos pueden contener JSON de varios cientos de KB.
+set_time_limit(300);
+ini_set('memory_limit', '512M');
+
 // Usar la conexión existente
 require_once __DIR__ . '/../../../conexion/conexion.php';
 

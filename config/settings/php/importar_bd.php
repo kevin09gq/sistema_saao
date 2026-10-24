@@ -88,9 +88,12 @@ try {
         }
     }
     
-    // Agregar la última consulta si existe
+    // Un respaldo válido siempre termina cada consulta con punto y coma.
     if (!empty($current_query)) {
-        $queries[] = trim($current_query);
+        throw new RuntimeException(
+            'El archivo SQL está incompleto: la última consulta no termina con punto y coma. ' .
+            'Genera un respaldo nuevo antes de importarlo.'
+        );
     }
     
     // Ejecutar cada consulta
@@ -108,19 +111,17 @@ try {
                 } while ($mysqli->more_results() && $mysqli->next_result());
                 $executed++;
             } else {
-                // Solo registrar errores críticos
-                if ($mysqli->errno !== 0) {
-                    $errors[] = 'Error: ' . $mysqli->error;
-                }
+                $errors[] = 'Error en la consulta ' . ($executed + count($errors) + 1) . ': ' . $mysqli->error;
             }
         }
     }
     
-    // Si hubo muchos errores, hacer rollback
-    if (count($errors) > 10) {
+    // No dejar una importación parcial cuando alguna consulta falla.
+    if (count($errors) > 0) {
         $mysqli->rollback();
+        $detalleErrores = implode(' | ', array_slice($errors, 0, 3));
         echo "<script>
-            alert('Hubo demasiados errores al importar la base de datos. Por favor, verifica el archivo SQL.');
+            alert('No se importó la base de datos porque fallaron consultas: " . addslashes($detalleErrores) . "');
             window.location.href = '../views/configuracion.php';
         </script>";
     } else {

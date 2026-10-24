@@ -98,7 +98,7 @@ function obtenerHistorialSemanal(mysqli $conexion)
                     WHERE cr.id_nomina = nr.id_nomina_relicario
                 ), 0) +
                 COALESCE((
-                    SELECT SUM(pm.monto)
+                    SELECT SUM(pm.arboles_podados * pm.monto)
                     FROM podas_relicario pr
                     INNER JOIN podas_movimientos_relicario pm ON pm.id_poda = pr.id_poda
                     WHERE pr.id_nomina = nr.id_nomina_relicario
@@ -122,7 +122,7 @@ function obtenerHistorialSemanal(mysqli $conexion)
                     WHERE cp.id_nomina = np.id_nomina_pilar
                 ), 0) +
                 COALESCE((
-                    SELECT SUM(ppm.monto)
+                    SELECT SUM(ppm.arboles_podados * ppm.monto)
                     FROM podas_pilar pp
                     INNER JOIN podas_movimientos_pilar ppm ON ppm.id_poda = pp.id_poda
                     WHERE pp.id_nomina = np.id_nomina_pilar
@@ -146,7 +146,7 @@ function obtenerHistorialSemanal(mysqli $conexion)
                     WHERE ch.id_nomina = nh.id_nomina_huasteca
                 ), 0) +
                 COALESCE((
-                    SELECT SUM(phm.monto)
+                    SELECT SUM(phm.arboles_podados * phm.monto)
                     FROM podas_huasteca ph
                     INNER JOIN podas_movimientos_huasteca phm ON phm.id_poda = ph.id_poda
                     WHERE ph.id_nomina = nh.id_nomina_huasteca
@@ -170,7 +170,7 @@ function obtenerHistorialSemanal(mysqli $conexion)
                     WHERE cpa.id_nomina = npa.id_nomina_palmilla
                 ), 0) +
                 COALESCE((
-                    SELECT SUM(ppmm.monto)
+                    SELECT SUM(ppmm.arboles_podados * ppmm.monto)
                     FROM podas_palmilla pp
                     INNER JOIN podas_movimientos_palmilla ppmm ON ppmm.id_poda = pp.id_poda
                     WHERE pp.id_nomina = npa.id_nomina_palmilla

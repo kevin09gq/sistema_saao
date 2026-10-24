@@ -615,11 +615,19 @@ function obtenerImportes(tabla, nombreDepartamento) {
 function obtenerSobres(tabla, nombreDepartamento) {
     var totalSobres = 0;
 
-    // 1. Si es CORTE o PODA, se cuenta como 1 sobre (agrupado)
-    if (nombreDepartamento.trim().toUpperCase() === 'CORTE' || nombreDepartamento.trim().toUpperCase() === 'PODA') {
+    // 1. Si es CORTE, se cuenta como 1 sobre (agrupado)
+    if (nombreDepartamento.trim().toUpperCase() === 'CORTE') {
         // Verificar si hay importe > 0
         var importe = obtenerImportes(tabla, nombreDepartamento);
         return importe > 0 ? 1 : 0;
+    }
+
+    // 2. Si es PODA, usar la cantidad de cabos del servidor
+    if (nombreDepartamento.trim().toUpperCase() === 'PODA') {
+        if (datosCortesPodasGlobal && datosCortesPodasGlobal[tabla]) {
+            return datosCortesPodasGlobal[tabla].total_cabos || 0;
+        }
+        return 0;
     }
 
     // 2. Validar que existan los datos de la nómina

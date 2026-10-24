@@ -123,7 +123,13 @@ verificarSesion();
 
     <?php require_once __DIR__ . '/modals/modalEditarEmpresas.php'; ?>
     <?php require_once __DIR__ . '/modals/modalAgregarEmpresas.php'; ?>
-    <?php require_once __DIR__ . '/modals/modalActualizarLogo.php'; ?>
+    <?php require_once __DIR__ . '/modals/modalActualizarLogoEmpresa.php'; ?>
+    <?php require_once __DIR__ . '/modals/modalEditarAreas.php'; ?>
+    <?php require_once __DIR__ . '/modals/modalAgregarAreas.php'; ?>
+    <?php require_once __DIR__ . '/modals/modalActualizarLogoArea.php'; ?>
+    <?php require_once __DIR__ . '/modals/modalEditarDepartamentos.php'; ?>
+    <?php require_once __DIR__ . '/modals/modalAgregarDepartamentos.php'; ?>
+    <?php require_once __DIR__ . '/modals/modalVerAreasDepartamento.php'; ?>
 
     <!-- jQuery -->
     <script src="<?= JQUERY_JS ?>"></script>
@@ -141,6 +147,8 @@ verificarSesion();
     </script>
 
     <script src="../js/empresas.js"></script>
+    <script src="../js/areas.js"></script>
+    <script src="../js/departamentos.js"></script>
     <script src="../js/funcionesAuxiliares.js"></script>
 </body>
 </html>
