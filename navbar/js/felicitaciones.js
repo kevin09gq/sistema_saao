@@ -34,7 +34,7 @@ const FELICITACIONES_STATE = {
     img.onerror = function () {
         FELICITACIONES_STATE.logoListo = false;
     };
-    img.src = '/sistema_saao/public/img/logo.jpg';
+    img.src = '/sistema_saao/public/img/logoSaao.png';
 })();
 
 // ======================================================

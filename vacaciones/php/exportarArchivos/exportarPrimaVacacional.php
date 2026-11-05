@@ -184,7 +184,7 @@ function pdfSeparador(TCPDF $pdf): void
 // CREAR PDF
 // ─────────────────────────────────────────────────────────────────────────────
 $pdf = new PDFPrimaVacacional('P', 'mm', 'A4', true, 'UTF-8', false);
-$pdf->setLogoPath(__DIR__ . '/../../../../public/img/logo.jpg');
+$pdf->setLogoPath(__DIR__ . '/../../../../public/img/logoSaao.png');
 $pdf->SetCreator('Sistema SAAO');
 $pdf->SetAuthor('Sistema SAAO');
 $pdf->SetTitle('Prima Vacacional - ' . $empleado['nombre'] . ' ' . $empleado['ap_paterno']);

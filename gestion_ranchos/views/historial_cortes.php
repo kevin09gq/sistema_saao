@@ -45,8 +45,24 @@ verificarPermiso("cortes.ver_menu");
     <div class="container-fluid bg-light py-4">
         <div class="container">
             <!-- Título y Botón -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="fw-bold">Historial de Vales de Corte</h2>
+            <div class="d-flex justify-content-between align-items-start mb-4">
+                <div>
+                    <h2 class="fw-bold mb-1">Historial de Vales de Corte</h2>
+
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item">
+                                <a href="../../index.php">Inicio</a>
+                            </li>
+                            <li class="breadcrumb-item active">
+                                Vales
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="nomina/historial_nominas.php">Nominas</a>
+                            </li>
+                        </ol>
+                    </nav>
+                </div>
                 <button type="button" class="btn btn-success fw-bold" id="btn_nuevo_vale" hidden>
                     <i class="bi bi-plus-lg"></i> Agregar
                 </button>

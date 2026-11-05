@@ -536,7 +536,7 @@ $sheet->getStyle('A4')->getFont()->setBold(true)->setSize(14);
 $sheet->getStyle('A1:A4')->getAlignment()->setHorizontal('center');
 
 // Logo
-$logoPath = __DIR__ . '/../../../../public/img/logo.jpg';
+$logoPath = __DIR__ . '/../../../../public/img/logoSaao.png';
 if (file_exists($logoPath)) {
     $logo = new Drawing();
     $logo->setName('Logo');

@@ -263,7 +263,6 @@ function llenar_resultados_historial() {
     // COSAS PARA LA SECCION DE LAS TARJETAS DE RESUMEN
     // --------------------------------------------------------
 
-
     // LIMPIAR EL TOTAL DE REJAS
     $('#total_rejas_visual').val("");
     // OBTENER EL TOTAL DE REJAS DE TODOS LOS CORTES

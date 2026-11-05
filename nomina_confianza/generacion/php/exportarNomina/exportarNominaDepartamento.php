@@ -184,10 +184,10 @@ $sheet->getStyle('A1:A4')->getAlignment()->setHorizontal('center');
 // Insertar logo dinámico según la empresa
 if ($idEmpresaTarget == 1) {
     // Si es empresa 1, usar el logo por defecto en public/img
-    $logoPath = '../../../../public/img/logo.jpg';
+    $logoPath = '../../../../public/img/logoSaao.png';
 } else {
     // Si es diferente de 1, usar el logo de la base de datos en gafetes/logos_empresa
-    $logoPath = '../../../../public/img/logo.jpg'; // Logo por defecto
+    $logoPath = '../../../../public/img/logoSaao.png'; // Logo por defecto
     if (!empty($logoEmpresa)) {
         // Construir la ruta completa al logo (la ruta correcta es gafetes/logos_empresa/)
         $logoPath = '../../../../gafetes/logos_empresa/' . $logoEmpresa;
@@ -195,7 +195,7 @@ if ($idEmpresaTarget == 1) {
         // Verificar si el archivo existe
         if (!file_exists($logoPath)) {
             error_log("El logo no existe en la ruta: $logoPath");
-            $logoPath = '../../../../public/img/logo.jpg'; // Logo por defecto si no existe
+            $logoPath = '../../../../public/img/logoSaao.png'; // Logo por defecto si no existe
         } else {
             error_log("Logo encontrado exitosamente: $logoPath");
         }

@@ -283,16 +283,16 @@ function crearHoja($spreadsheet, $deptoData, $targetEmpresaId, $filtroEmpleados,
     // Insertar logo dinámico según la empresa
     if ($targetEmpresaId == 1) {
         // Si es empresa 1, usar el logo por defecto en public/img
-        $logoPath = '../../../../public/img/logo.jpg';
+        $logoPath = '../../../../public/img/logoSaao.png';
     } else {
         // Si es diferente de 1, usar el logo de la base de datos en gafetes/logos_empresa
-        $logoPath = '../../../../public/img/logo.jpg'; // Logo por defecto
+        $logoPath = '../../../../public/img/logoSaao.png'; // Logo por defecto
         if (!empty($logoEmpresa)) {
             // Construir la ruta completa al logo (la ruta correcta es gafetes/logos_empresa/)
             $logoPath = '../../../../gafetes/logos_empresa/' . $logoEmpresa;
             // Verificar si el archivo existe
             if (!file_exists($logoPath)) {
-                $logoPath = '../../../../public/img/logo.jpg'; // Logo por defecto si no existe
+                $logoPath = '../../../../public/img/logoSaao.png'; // Logo por defecto si no existe
             }
         }
     }

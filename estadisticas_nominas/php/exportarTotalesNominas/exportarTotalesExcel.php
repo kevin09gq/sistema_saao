@@ -299,7 +299,9 @@ function construirHojaNomina(
             SELECT 
                 n.numero_semana,
                 COALESCE(c.total_cortes, 0) AS total_cortes,
-                COALESCE(p.total_podas, 0) AS total_podas
+                COALESCE(nc.total_nomina_cabo, 0) AS total_nomina_cabo,
+                COALESCE(p.total_podas, 0) AS total_podas,
+                COALESCE(pe.total_podas_extra, 0) AS total_podas_extra
             FROM `{$tabla}` n
             LEFT JOIN (
                 SELECT cr.id_nomina, SUM(ct.rejas * cr.precio_reja) AS total_cortes
@@ -309,11 +311,24 @@ function construirHojaNomina(
                 GROUP BY cr.id_nomina
             ) c ON c.id_nomina = n.`id_nomina_{$rancho}`
             LEFT JOIN (
+                SELECT nc.id_nomina, SUM(nc.total) AS total_nomina_cabo
+                FROM `nomina_{$rancho}_corte` nc
+                GROUP BY nc.id_nomina
+            ) nc ON nc.id_nomina = n.`id_nomina_{$rancho}`
+            LEFT JOIN (
                 SELECT po.id_nomina, SUM(pm.arboles_podados * pm.monto) AS total_podas
                 FROM `podas_{$rancho}` po
                 INNER JOIN `podas_movimientos_{$rancho}` pm ON pm.id_poda = po.id_poda
+                WHERE pm.es_extra = 0 OR pm.es_extra IS NULL
                 GROUP BY po.id_nomina
             ) p ON p.id_nomina = n.`id_nomina_{$rancho}`
+            LEFT JOIN (
+                SELECT po.id_nomina, SUM(pm.monto) AS total_podas_extra
+                FROM `podas_{$rancho}` po
+                INNER JOIN `podas_movimientos_{$rancho}` pm ON pm.id_poda = po.id_poda
+                WHERE pm.es_extra = 1
+                GROUP BY po.id_nomina
+            ) pe ON pe.id_nomina = n.`id_nomina_{$rancho}`
             WHERE n.anio = ?
             ORDER BY n.numero_semana ASC
         ";
@@ -324,9 +339,16 @@ function construirHojaNomina(
             mysqli_stmt_execute($stmtCP);
             $resCP = mysqli_stmt_get_result($stmtCP);
             while ($filaCP = mysqli_fetch_assoc($resCP)) {
+                $totalCorte = (float) $filaCP['total_cortes'];
+                $totalNominaCaboCorte = (float) $filaCP['total_nomina_cabo'];
+                $totalPoda = (float) $filaCP['total_podas'];
+                $totalPodaExtra = (float) $filaCP['total_podas_extra'];
+                
                 $cortesPodasPorSemana[(int) $filaCP['numero_semana']] = [
-                    'corte' => (float) $filaCP['total_cortes'],
-                    'poda'  => (float) $filaCP['total_podas']
+                    'corte' => $totalCorte + $totalNominaCaboCorte,
+                    'nomina_cabo_corte' => $totalNominaCaboCorte,
+                    'poda'  => $totalPoda + $totalPodaExtra,
+                    'nomina_cabo_poda' => $totalPodaExtra
                 ];
             }
             mysqli_stmt_close($stmtCP);
@@ -706,10 +728,10 @@ function construirHojaNomina(
                                 $tieneSeguro = !empty($emp['seguroSocial']);
                                 if ($tieneSeguro) {
                                     $cantPersonalConSeguro++;
-                                    $totalConSeguro += parsearNumeroMoneda($emp['total_cobrar'] ?? 0);
+                                    $totalConSeguro += calcularTotalPercepcionesEmpleado($emp);
                                 } else {
                                     $cantPersonalSinSeguro++;
-                                    $totalSinSeguro += parsearNumeroMoneda($emp['total_cobrar'] ?? 0);
+                                    $totalSinSeguro += calcularTotalPercepcionesEmpleado($emp);
                                 }
                             }
                         }
@@ -732,8 +754,8 @@ function construirHojaNomina(
                             // Solo contar empleados que tienen mostrar = true
                             if (!empty($emp['mostrar'])) {
                                 $cantPersonal++;
-                                // Parsear el valor de total_cobrar para eliminar formato de moneda
-                                $totalDepto += parsearNumeroMoneda($emp['total_cobrar'] ?? 0);
+                                // Calcular total de percepciones del empleado (EXCLUYENDO redondeo)
+                                $totalDepto += calcularTotalPercepcionesEmpleado($emp);
                             }
                         }
                     }
@@ -1321,6 +1343,42 @@ function parsearNumeroMoneda($valor): float
 // FUNCIÓN AUXILIAR: calcularTotalEstimadoSemana
 // Suma rápidamente los netos de departamentos y corte/poda de una semana
 //======================================================================
+// FUNCIÓN AUXILIAR: calcularTotalPercepcionesEmpleado
+// Calcula el total de percepciones de un empleado (EXCLUYENDO redondeo)
+// Siguiendo la lógica de exportarArchivoTesoreria.js
+//======================================================================
+function calcularTotalPercepcionesEmpleado(array $emp): float
+{
+    $total = 0.0;
+
+    // Sueldo bruto (puede venir como salario_semanal o sueldo_neto)
+    $sueldoBruto = parsearNumeroMoneda($emp['salario_semanal'] ?? $emp['sueldo_neto'] ?? 0);
+    $total += $sueldoBruto;
+
+    // Otras percepciones
+    $total += parsearNumeroMoneda($emp['incentivo'] ?? 0);
+    $total += parsearNumeroMoneda($emp['horas_extra'] ?? 0);
+    $total += parsearNumeroMoneda($emp['bono_antiguedad'] ?? 0);
+    $total += parsearNumeroMoneda($emp['actividades_especiales'] ?? 0);
+    $total += parsearNumeroMoneda($emp['puesto'] ?? 0);
+    $total += parsearNumeroMoneda($emp['pasaje'] ?? 0);
+    $total += parsearNumeroMoneda($emp['comida'] ?? 0);
+    $total += parsearNumeroMoneda($emp['tardeada'] ?? 0);
+
+    // NOTA: redondeo NO se incluye porque no es una percepción
+
+    // Percepciones extra
+    if (!empty($emp['percepciones_extra']) && is_array($emp['percepciones_extra'])) {
+        foreach ($emp['percepciones_extra'] as $percepcion) {
+            $cantidad = parsearNumeroMoneda($percepcion['cantidad'] ?? 0);
+            $total += $cantidad;
+        }
+    }
+
+    return $total;
+}
+
+//======================================================================
 function calcularTotalEstimadoSemana(array $json, array $cp): float
 {
     $total = 0.0;
@@ -1330,8 +1388,8 @@ function calcularTotalEstimadoSemana(array $json, array $cp): float
             if (!empty($depto['empleados']) && is_array($depto['empleados'])) {
                 foreach ($depto['empleados'] as $emp) {
                     if (!empty($emp['mostrar'])) {
-                        // Parsear el valor de total_cobrar para eliminar formato de moneda
-                        $total += parsearNumeroMoneda($emp['total_cobrar'] ?? 0);
+                        // Calcular total de percepciones del empleado (EXCLUYENDO redondeo)
+                        $total += calcularTotalPercepcionesEmpleado($emp);
                     }
                 }
             }

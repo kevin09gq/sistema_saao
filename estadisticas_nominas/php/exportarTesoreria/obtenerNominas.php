@@ -182,15 +182,18 @@ function obtenerNominas(mysqli $conexion)
 
         $sql_cp = "
             SELECT
-                (COALESCE(c.total_cortes, 0) + COALESCE(p.total_podas, 0)) AS sueldo_bruto,
                 COALESCE(c.total_cortes, 0) AS total_cortes,
+                COALESCE(c.total_cabos, 0) AS total_cabos_corte,
+                COALESCE(nc.total_nomina_cabo, 0) AS total_nomina_cabo_corte,
                 COALESCE(p.total_podas, 0) AS total_podas,
-                COALESCE(p.total_cabos, 0) AS total_cabos
+                COALESCE(p.total_cabos, 0) AS total_cabos_poda,
+                COALESCE(pe.total_podas_extra, 0) AS total_podas_extra
             FROM `nomina_{$rancho}` n
             LEFT JOIN (
                 SELECT
                     cr.id_nomina,
-                    SUM(ct.rejas * cr.precio_reja) AS total_cortes
+                    SUM(ct.rejas * cr.precio_reja) AS total_cortes,
+                    COUNT(DISTINCT cr.id) AS total_cabos
                 FROM `cortes_{$rancho}` cr
                 INNER JOIN `cortes_{$rancho}_tablas` ct
                     ON ct.id_corte = cr.id
@@ -199,14 +202,32 @@ function obtenerNominas(mysqli $conexion)
             ) c ON c.id_nomina = n.`id_nomina_{$rancho}`
             LEFT JOIN (
                 SELECT
+                    nc.id_nomina,
+                    SUM(nc.total) AS total_nomina_cabo
+                FROM `nomina_{$rancho}_corte` nc
+                GROUP BY nc.id_nomina
+            ) nc ON nc.id_nomina = n.`id_nomina_{$rancho}`
+            LEFT JOIN (
+                SELECT
                     po.id_nomina,
                     SUM(pm.arboles_podados * pm.monto) AS total_podas,
                     COUNT(DISTINCT po.id_poda) AS total_cabos
                 FROM `podas_{$rancho}` po
                 INNER JOIN `podas_movimientos_{$rancho}` pm
                     ON pm.id_poda = po.id_poda
+                WHERE pm.es_extra = 0 OR pm.es_extra IS NULL
                 GROUP BY po.id_nomina
             ) p ON p.id_nomina = n.`id_nomina_{$rancho}`
+            LEFT JOIN (
+                SELECT
+                    po.id_nomina,
+                    SUM(pm.monto) AS total_podas_extra
+                FROM `podas_{$rancho}` po
+                INNER JOIN `podas_movimientos_{$rancho}` pm
+                    ON pm.id_poda = po.id_poda
+                WHERE pm.es_extra = 1
+                GROUP BY po.id_nomina
+            ) pe ON pe.id_nomina = n.`id_nomina_{$rancho}`
             WHERE n.anio = ? AND n.numero_semana = ?
             LIMIT 1
         ";
@@ -220,16 +241,29 @@ function obtenerNominas(mysqli $conexion)
             mysqli_stmt_close($stmt_cp);
 
             $cortes_podas["nomina_{$rancho}"] = [
-                'sueldo_bruto' => (float) ($fila_cp['sueldo_bruto'] ?? 0),
-                'total_cortes' => (float) ($fila_cp['total_cortes'] ?? 0),
-                'total_podas'  => (float) ($fila_cp['total_podas'] ?? 0),
-                'total_cabos'  => (int) ($fila_cp['total_cabos'] ?? 0)
+                'corte' => [
+                    'total' => (float) ($fila_cp['total_cortes'] ?? 0),
+                    'cabos' => (int) ($fila_cp['total_cabos_corte'] ?? 0),
+                    'nomina_cabo' => (float) ($fila_cp['total_nomina_cabo_corte'] ?? 0)
+                ],
+                'poda' => [
+                    'total' => (float) ($fila_cp['total_podas'] ?? 0),
+                    'cabos' => (int) ($fila_cp['total_cabos_poda'] ?? 0),
+                    'nomina_cabo' => (float) ($fila_cp['total_podas_extra'] ?? 0)
+                ]
             ];
         } else {
             $cortes_podas["nomina_{$rancho}"] = [
-                'sueldo_bruto' => 0,
-                'total_cortes' => 0,
-                'total_podas'  => 0
+                'corte' => [
+                    'total' => 0,
+                    'cabos' => 0,
+                    'nomina_cabo' => 0
+                ],
+                'poda' => [
+                    'total' => 0,
+                    'cabos' => 0,
+                    'nomina_cabo' => 0
+                ]
             ];
         }
     }

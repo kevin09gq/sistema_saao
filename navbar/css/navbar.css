@@ -293,6 +293,16 @@
     white-space: nowrap;
 }
 
+/* Botón de salir móvil - oculto por defecto en desktop */
+.saao-btn-salir-mobile {
+    display: none;
+    padding: 0.4rem;
+}
+
+.saao-btn-salir-mobile i {
+    font-size: 1.1rem;
+}
+
 .saao-btn-salir i {
     font-size: 1rem;
 }
@@ -813,6 +823,11 @@
 
     .saao-brand-badge {
         display: none;
+    }
+
+    /* Mostrar botón de salir en móvil */
+    .saao-btn-salir-mobile {
+        display: inline-flex;
     }
 }
 

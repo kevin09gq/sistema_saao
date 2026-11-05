@@ -59,7 +59,7 @@ function armarConsultaNominaAgricola(string $huerta, bool $conSemana = false, bo
     $whereSemana = $filtroSemana ? " AND n.numero_semana = ?" : "";
     $idCol       = "id_nomina_{$huerta}";
 
-    // retornar la consulta sumando neto cortes y podas
+    // retornar la consulta sumando: nomina principal + corte tradicional + corte cabos + poda normal + poda extra
     return "
         SELECT
             {$colSemana}
@@ -71,10 +71,23 @@ function armarConsultaNominaAgricola(string $huerta, bool $conSemana = false, bo
                 WHERE c.id_nomina = n.{$idCol}
             ), 0) +
             COALESCE((
+                SELECT SUM(nc.total)
+                FROM nomina_{$huerta}_corte nc
+                WHERE nc.id_nomina = n.{$idCol}
+            ), 0) +
+            COALESCE((
                 SELECT SUM(pm.arboles_podados * pm.monto)
                 FROM podas_{$huerta} p
                 INNER JOIN podas_movimientos_{$huerta} pm ON pm.id_poda = p.id_poda
                 WHERE p.id_nomina = n.{$idCol}
+                AND (pm.es_extra = 0 OR pm.es_extra IS NULL)
+            ), 0) +
+            COALESCE((
+                SELECT SUM(pm.monto)
+                FROM podas_{$huerta} p
+                INNER JOIN podas_movimientos_{$huerta} pm ON pm.id_poda = p.id_poda
+                WHERE p.id_nomina = n.{$idCol}
+                AND pm.es_extra = 1
             ), 0) AS total
         FROM nomina_{$huerta} n
         WHERE n.anio = ?{$whereSemana}

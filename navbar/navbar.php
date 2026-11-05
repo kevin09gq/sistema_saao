@@ -49,6 +49,10 @@ $tienePermisoEstadisticas =
     tienePermiso('nomina.ver_estadisticas40lbs') ||
     tienePermiso('nomina.ver_estadisticas10lbs') ||
     tienePermiso('nomina.ver_estadisticas_confianza') ||
+    tienePermiso('nomina.ver_estadisticas_huasteca') ||
+    tienePermiso('nomina.ver_estadisticas_pilar') ||
+    tienePermiso('nomina.ver_estadisticas_relicario') ||
+    tienePermiso('nomina.ver_estadisticas_palmilla') ||
     tienePermiso('nomina.crear_responsivas');
 
 // ==========================================================================
@@ -87,7 +91,7 @@ $inicialesAdmin = mb_strtoupper($inicialesAdmin);
             </button>
 
             <a class="saao-brand" href="<?= $rutaRaiz ?>/index.php">
-                <img src="<?= $rutaRaiz ?>/public/img/logo.jpg" alt="Logo SAAO" class="saao-brand-logo">
+                <img src="<?= $rutaRaiz ?>/public/img/logoSaao.png" alt="Logo SAAO" class="saao-brand-logo">
                 <div class="saao-brand-info">
                     <span class="saao-brand-name">Cítricos SAAO</span>
                     <span class="saao-brand-badge">Sistema Integral</span>
@@ -116,6 +120,11 @@ $inicialesAdmin = mb_strtoupper($inicialesAdmin);
                 </div>
             </div>
 
+            <!-- Botón de Cerrar Sesión (solo visible en móvil) -->
+            <button class="saao-btn-salir saao-btn-salir-mobile btn-salir" type="button" title="Cerrar Sesión">
+                <i class="bi bi-box-arrow-right"></i>
+            </button>
+
         </div>
 
     </div>
@@ -132,7 +141,7 @@ $inicialesAdmin = mb_strtoupper($inicialesAdmin);
     <!-- Encabezado del Menú Lateral -->
     <div class="saao-sidebar-header">
         <div class="saao-sidebar-brand">
-            <img src="<?= $rutaRaiz ?>/public/img/logo.jpg" alt="Logo SAAO" class="saao-sidebar-logo">
+            <img src="<?= $rutaRaiz ?>/public/img/logoSaao.png" alt="Logo SAAO" class="saao-sidebar-logo">
             <div>
                 <h2 class="saao-sidebar-title">Cítricos SAAO</h2>
                 <span class="saao-sidebar-subtitle">Menú de Navegación</span>
@@ -381,6 +390,22 @@ $inicialesAdmin = mb_strtoupper($inicialesAdmin);
 
                     <?php if (tienePermiso("nomina.ver_estadisticas_confianza")): ?>
                         <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/nomina_confianza/estadisticas/views/estadisticas_confianza.php">Estadísticas Confianza</a></li>
+                    <?php endif; ?>
+
+                    <?php if (tienePermiso("nomina.ver_estadisticas_huasteca")): ?>
+                        <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/nomina_huasteca/estadisticas/views/estadisticas_huasteca.php">Estadísticas Huasteca</a></li>
+                    <?php endif; ?>
+
+                    <?php if (tienePermiso("nomina.ver_estadisticas_pilar")): ?>
+                        <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/nomina_pilar/estadisticas/views/estadisticas_pilar.php">Estadísticas Pilar</a></li>
+                    <?php endif; ?>
+
+                    <?php if (tienePermiso("nomina.ver_estadisticas_relicario")): ?>
+                        <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/nomina_relicario/estadisticas/views/estadisticas_relicario.php">Estadísticas Relicario</a></li>
+                    <?php endif; ?>
+
+                    <?php if (tienePermiso("nomina.ver_estadisticas_palmilla")): ?>
+                        <li><a class="saao-submenu-link" href="<?= $rutaRaiz ?>/nomina_palmilla/estadisticas/views/estadisticas_palmilla.php">Estadísticas Palmilla</a></li>
                     <?php endif; ?>
 
                     <?php if (tienePermiso("nomina.crear_responsivas")): ?>

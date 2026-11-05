@@ -1,5 +1,11 @@
 <?php
 
+require_once __DIR__ . '/config.php';
+
+if (!defined('RUTA_RAIZ')) {
+    define('RUTA_RAIZ', '/sistema_saao');
+}
+
 // INICIAR SESION PARA VERIFICAR SI HAY UNA SESION ACTIVA
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -13,7 +19,7 @@ if (session_status() === PHP_SESSION_NONE) {
 function verificarSesion()
 {
     if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
-        header("Location: /sistema_saao/login/login.php");
+        header("Location: " . RUTA_RAIZ . "/login/login.php");
         exit;
     }
 }
@@ -27,7 +33,7 @@ function verificarSesion()
 function verificarNoSesion()
 {
     if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) {
-        header("Location: /sistema_saao/index.php");
+        header("Location: " . RUTA_RAIZ . "/index.php");
         exit;
     }
 }
@@ -78,7 +84,7 @@ function verificarPermiso(string $clavePermiso)
 {
     if (!tienePermiso($clavePermiso)) {
 
-        header("Location: /sistema_saao/index.php");
+        header("Location: " . RUTA_RAIZ . "/index.php");
         exit;
     }
 }

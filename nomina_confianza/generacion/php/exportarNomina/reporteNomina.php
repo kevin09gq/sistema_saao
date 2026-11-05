@@ -25,7 +25,7 @@ class PDFEncabezado extends TCPDF
     public function Header()
     {
         // Logo (opcional, comentar si no se requiere)
-        $logo = __DIR__ . '/../../../../public/img/logo.jpg';
+        $logo = __DIR__ . '/../../../../public/img/logoSaao.png';
         if (file_exists($logo)) {
             $this->Image($logo, 15, 10, 25, 0, '', '', '', false, 300);
         }

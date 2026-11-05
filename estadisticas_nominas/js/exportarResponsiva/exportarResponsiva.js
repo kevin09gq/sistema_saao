@@ -293,20 +293,10 @@ function mostrarDepartamentos(datos) {
             );
         });
 
-        // Agregar departamentos de cortes y podas si existen
-        if (nomina.departamentos_cortes_poda) {
-            nomina.departamentos_cortes_poda.forEach(function (depto) {
-                contenedor.append(
-                    '<label class="depto-tag">' +
-                    '<input type="checkbox" data-id-departamento="' + (depto.id_departamento || '') + '"> ' +
-                    depto.nombre +
-                    '</label>'
-                );
-            });
-        }
+
 
         // Agregar departamento de CORTE si hay cortes en los datos
-        if (datosCortesPodasGlobal && datosCortesPodasGlobal[tabla] && datosCortesPodasGlobal[tabla].total_cortes > 0) {
+        if (datosCortesPodasGlobal && datosCortesPodasGlobal[tabla] && datosCortesPodasGlobal[tabla].corte && datosCortesPodasGlobal[tabla].corte.total > 0) {
             contenedor.append(
                 '<label class="depto-tag">' +
                 '<input type="checkbox" data-id-departamento="1000"> ' +
@@ -316,7 +306,7 @@ function mostrarDepartamentos(datos) {
         }
 
         // Agregar departamento de PODA si hay podas en los datos
-        if (datosCortesPodasGlobal && datosCortesPodasGlobal[tabla] && datosCortesPodasGlobal[tabla].total_podas > 0) {
+        if (datosCortesPodasGlobal && datosCortesPodasGlobal[tabla] && datosCortesPodasGlobal[tabla].poda && datosCortesPodasGlobal[tabla].poda.total > 0) {
             contenedor.append(
                 '<label class="depto-tag">' +
                 '<input type="checkbox" data-id-departamento="2000"> ' +
@@ -559,16 +549,20 @@ function obtenerImportes(tabla, nombreDepartamento) {
 
     // 1. Si es CORTE, obtener de los datos de cortes_podas
     if (nombreDepartamento.trim().toUpperCase() === 'CORTE') {
-        if (datosCortesPodasGlobal && datosCortesPodasGlobal[tabla]) {
-            return datosCortesPodasGlobal[tabla].total_cortes || 0;
+        if (datosCortesPodasGlobal && datosCortesPodasGlobal[tabla] && datosCortesPodasGlobal[tabla].corte) {
+            var totalCorte = datosCortesPodasGlobal[tabla].corte.total || 0;
+            var nominaCaboCorte = datosCortesPodasGlobal[tabla].corte.nomina_cabo || 0;
+            return totalCorte + nominaCaboCorte;
         }
         return 0;
     }
 
     // 2. Si es PODA, obtener de los datos de cortes_podas
     if (nombreDepartamento.trim().toUpperCase() === 'PODA') {
-        if (datosCortesPodasGlobal && datosCortesPodasGlobal[tabla]) {
-            return datosCortesPodasGlobal[tabla].total_podas || 0;
+        if (datosCortesPodasGlobal && datosCortesPodasGlobal[tabla] && datosCortesPodasGlobal[tabla].poda) {
+            var totalPoda = datosCortesPodasGlobal[tabla].poda.total || 0;
+            var nominaCaboPoda = datosCortesPodasGlobal[tabla].poda.nomina_cabo || 0;
+            return totalPoda + nominaCaboPoda;
         }
         return 0;
     }
@@ -615,17 +609,18 @@ function obtenerImportes(tabla, nombreDepartamento) {
 function obtenerSobres(tabla, nombreDepartamento) {
     var totalSobres = 0;
 
-    // 1. Si es CORTE, se cuenta como 1 sobre (agrupado)
+    // 1. Si es CORTE, usar la cantidad de cabos del servidor
     if (nombreDepartamento.trim().toUpperCase() === 'CORTE') {
-        // Verificar si hay importe > 0
-        var importe = obtenerImportes(tabla, nombreDepartamento);
-        return importe > 0 ? 1 : 0;
+        if (datosCortesPodasGlobal && datosCortesPodasGlobal[tabla] && datosCortesPodasGlobal[tabla].corte) {
+            return datosCortesPodasGlobal[tabla].corte.cabos || 0;
+        }
+        return 0;
     }
 
     // 2. Si es PODA, usar la cantidad de cabos del servidor
     if (nombreDepartamento.trim().toUpperCase() === 'PODA') {
-        if (datosCortesPodasGlobal && datosCortesPodasGlobal[tabla]) {
-            return datosCortesPodasGlobal[tabla].total_cabos || 0;
+        if (datosCortesPodasGlobal && datosCortesPodasGlobal[tabla] && datosCortesPodasGlobal[tabla].poda) {
+            return datosCortesPodasGlobal[tabla].poda.cabos || 0;
         }
         return 0;
     }

@@ -47,139 +47,85 @@ function obtenerDistribucionPresupuestal(mysqli $conexion)
     // para relicario, pilar, huasteca, palmilla se suma también total de cortes y podas
     // esta gráfica sirve para visualizar el porcentaje de participación de cada nómina
     // en el presupuesto total anual, permitiendo identificar qué nómina tiene mayor peso
-    $sql_distribucion = "
-        SELECT
-            '40 Lbs' AS nomina,
-            COALESCE(SUM(total_neto), 0) AS total_anual
-        FROM nomina_40lbs
-        WHERE anio = ?
 
-        UNION ALL
+    // obtener datos individuales primero para evitar múltiples placeholders
+    $nominas_simples = [
+        '40 Lbs' => 'nomina_40lbs',
+        '40 Lbs Jornal' => 'nomina_40lbs_jornal',
+        '10 Lbs' => 'nomina_10lbs',
+        'Confianza' => 'nomina_confianza'
+    ];
 
-        SELECT
-            '40 Lbs Jornal' AS nomina,
-            COALESCE(SUM(total_neto), 0) AS total_anual
-        FROM nomina_40lbs_jornal
-        WHERE anio = ?
-
-        UNION ALL
-
-        SELECT
-            '10 Lbs' AS nomina,
-            COALESCE(SUM(total_neto), 0) AS total_anual
-        FROM nomina_10lbs
-        WHERE anio = ?
-
-        UNION ALL
-
-        SELECT
-            'Confianza' AS nomina,
-            COALESCE(SUM(total_neto), 0) AS total_anual
-        FROM nomina_confianza
-        WHERE anio = ?
-
-        UNION ALL
-
-        SELECT
-            'Relicario' AS nomina,
-            COALESCE(SUM(nr.total_neto), 0) +
-            COALESCE((
-                SELECT SUM(cr.precio_reja * crt.rejas)
-                FROM cortes_relicario cr
-                INNER JOIN cortes_relicario_tablas crt ON crt.id_corte = cr.id
-                INNER JOIN nomina_relicario nr2 ON nr2.id_nomina_relicario = cr.id_nomina
-                WHERE nr2.anio = ?
-            ), 0) +
-            COALESCE((
-                SELECT SUM(pm.arboles_podados * pm.monto)
-                FROM podas_relicario pr
-                INNER JOIN podas_movimientos_relicario pm ON pm.id_poda = pr.id_poda
-                INNER JOIN nomina_relicario nr3 ON nr3.id_nomina_relicario = pr.id_nomina
-                WHERE nr3.anio = ?
-            ), 0) AS total_anual
-        FROM nomina_relicario nr
-        WHERE nr.anio = ?
-
-        UNION ALL
-
-        SELECT
-            'Pilar' AS nomina,
-            COALESCE(SUM(np.total_neto), 0) +
-            COALESCE((
-                SELECT SUM(cp.precio_reja * cpt.rejas)
-                FROM cortes_pilar cp
-                INNER JOIN cortes_pilar_tablas cpt ON cpt.id_corte = cp.id
-                INNER JOIN nomina_pilar np2 ON np2.id_nomina_pilar = cp.id_nomina
-                WHERE np2.anio = ?
-            ), 0) +
-            COALESCE((
-                SELECT SUM(ppm.arboles_podados * ppm.monto)
-                FROM podas_pilar pp
-                INNER JOIN podas_movimientos_pilar ppm ON ppm.id_poda = pp.id_poda
-                INNER JOIN nomina_pilar np3 ON np3.id_nomina_pilar = pp.id_nomina
-                WHERE np3.anio = ?
-            ), 0) AS total_anual
-        FROM nomina_pilar np
-        WHERE np.anio = ?
-
-        UNION ALL
-
-        SELECT
-            'Huasteca' AS nomina,
-            COALESCE(SUM(nh.total_neto), 0) +
-            COALESCE((
-                SELECT SUM(ch.precio_reja * cht.rejas)
-                FROM cortes_huasteca ch
-                INNER JOIN cortes_huasteca_tablas cht ON cht.id_corte = ch.id
-                INNER JOIN nomina_huasteca nh2 ON nh2.id_nomina_huasteca = ch.id_nomina
-                WHERE nh2.anio = ?
-            ), 0) +
-            COALESCE((
-                SELECT SUM(phm.arboles_podados * phm.monto)
-                FROM podas_huasteca ph
-                INNER JOIN podas_movimientos_huasteca phm ON phm.id_poda = ph.id_poda
-                INNER JOIN nomina_huasteca nh3 ON nh3.id_nomina_huasteca = ph.id_nomina
-                WHERE nh3.anio = ?
-            ), 0) AS total_anual
-        FROM nomina_huasteca nh
-        WHERE nh.anio = ?
-
-        UNION ALL
-
-        SELECT
-            'Palmilla' AS nomina,
-            COALESCE(SUM(npa.total_neto), 0) +
-            COALESCE((
-                SELECT SUM(cpa.precio_reja * cpah.rejas)
-                FROM cortes_palmilla cpa
-                INNER JOIN cortes_palmilla_tablas cpah ON cpah.id_corte = cpa.id
-                INNER JOIN nomina_palmilla npa2 ON npa2.id_nomina_palmilla = cpa.id_nomina
-                WHERE npa2.anio = ?
-            ), 0) +
-            COALESCE((
-                SELECT SUM(ppmm.arboles_podados * ppmm.monto)
-                FROM podas_palmilla pp
-                INNER JOIN podas_movimientos_palmilla ppmm ON ppmm.id_poda = pp.id_poda
-                INNER JOIN nomina_palmilla npa3 ON npa3.id_nomina_palmilla = pp.id_nomina
-                WHERE npa3.anio = ?
-            ), 0) AS total_anual
-        FROM nomina_palmilla npa
-        WHERE npa.anio = ?
-    ";
-
-    // preparar y ejecutar la consulta
-    $stmt = mysqli_prepare($conexion, $sql_distribucion);
-    mysqli_stmt_bind_param($stmt, "iiiiiiiiiiiiiiii", $anio, $anio, $anio, $anio, $anio, $anio, $anio, $anio, $anio, $anio, $anio, $anio, $anio, $anio, $anio, $anio);
-    mysqli_stmt_execute($stmt);
-    $resultado = mysqli_stmt_get_result($stmt);
-
-    // recorrer los resultados y guardar en un array
     $distribucion = [];
-    while ($fila = mysqli_fetch_assoc($resultado)) {
-        $distribucion[] = $fila;
+
+    // obtener totales de nóminas simples
+    foreach ($nominas_simples as $nombre => $tabla) {
+        $sql = "SELECT COALESCE(SUM(total_neto), 0) AS total_anual FROM $tabla WHERE anio = ?";
+        $stmt = mysqli_prepare($conexion, $sql);
+        mysqli_stmt_bind_param($stmt, "i", $anio);
+        mysqli_stmt_execute($stmt);
+        $res = mysqli_stmt_get_result($stmt);
+        $fila = mysqli_fetch_assoc($res);
+        mysqli_stmt_close($stmt);
+
+        $distribucion[] = [
+            'nomina' => $nombre,
+            'total_anual' => (float)($fila['total_anual'] ?? 0)
+        ];
     }
 
-    mysqli_stmt_close($stmt);
+    // obtener totales de nóminas agrícolas
+    $ranchos = ['relicario', 'pilar', 'huasteca', 'palmilla'];
+    $nombres_ranchos = ['Relicario', 'Pilar', 'Huasteca', 'Palmilla'];
+
+    foreach ($ranchos as $i => $rancho) {
+        $nombre = $nombres_ranchos[$i];
+
+        $sql_agricola = "
+            SELECT
+                COALESCE(SUM(nr.total_neto), 0) +
+                COALESCE((
+                    SELECT SUM(cr.precio_reja * crt.rejas)
+                    FROM cortes_{$rancho} cr
+                    INNER JOIN cortes_{$rancho}_tablas crt ON crt.id_corte = cr.id
+                    WHERE cr.id_nomina IN (SELECT id_nomina_{$rancho} FROM nomina_{$rancho} WHERE anio = ?)
+                ), 0) +
+                COALESCE((
+                    SELECT SUM(nc.total)
+                    FROM nomina_{$rancho}_corte nc
+                    WHERE nc.id_nomina IN (SELECT id_nomina_{$rancho} FROM nomina_{$rancho} WHERE anio = ?)
+                ), 0) +
+                COALESCE((
+                    SELECT SUM(pm.arboles_podados * pm.monto)
+                    FROM podas_{$rancho} pr
+                    INNER JOIN podas_movimientos_{$rancho} pm ON pm.id_poda = pr.id_poda
+                    WHERE pr.id_nomina IN (SELECT id_nomina_{$rancho} FROM nomina_{$rancho} WHERE anio = ?)
+                    AND (pm.es_extra = 0 OR pm.es_extra IS NULL)
+                ), 0) +
+                COALESCE((
+                    SELECT SUM(pm.monto)
+                    FROM podas_{$rancho} pr
+                    INNER JOIN podas_movimientos_{$rancho} pm ON pm.id_poda = pr.id_poda
+                    WHERE pr.id_nomina IN (SELECT id_nomina_{$rancho} FROM nomina_{$rancho} WHERE anio = ?)
+                    AND pm.es_extra = 1
+                ), 0) AS total_anual
+            FROM nomina_{$rancho} nr
+            WHERE nr.anio = ?
+        ";
+
+        $stmt = mysqli_prepare($conexion, $sql_agricola);
+        mysqli_stmt_bind_param($stmt, "iiiii", $anio, $anio, $anio, $anio, $anio);
+        mysqli_stmt_execute($stmt);
+        $res = mysqli_stmt_get_result($stmt);
+        $fila = mysqli_fetch_assoc($res);
+        mysqli_stmt_close($stmt);
+
+        $distribucion[] = [
+            'nomina' => $nombre,
+            'total_anual' => (float)($fila['total_anual'] ?? 0)
+        ];
+    }
+
 
     //====================================================
     // CALCULAR EL TOTAL ANUAL CONSOLIDADO

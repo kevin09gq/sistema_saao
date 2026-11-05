@@ -24,6 +24,11 @@ $(document).ready(function () {
     // Limpiar los filtros 
     limpiarFiltros();
 
+    // Redirigir a estadísticas de nómina pilar
+    $('#btn-estadisticas').click(function () {
+        window.location.href = '../../estadisticas/views/estadisticas_pilar.php';
+    });
+
 });
 
 function veficarExistenciaNomina() {

@@ -5,6 +5,10 @@ date_default_timezone_set('America/Mexico_City');
 
 // Ruta raiz del sistema
 $rutaRaiz = "/sistema_saao";
+if (!defined('RUTA_RAIZ')) {
+    define('RUTA_RAIZ', $rutaRaiz);
+}
+
 
 // Define paths for local libraries
 define('BOOTSTRAP_CSS', $rutaRaiz . '/public/plugins/bootstrap.min.css');
@@ -24,4 +28,3 @@ define('PERMISOS_JS', $rutaRaiz . '/public/js/permisos.js');
 define('DIAS_SEMANA', ['SABADO', 'DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES']);
 // Dias de la semana para las nominas de VIERNES a JUEVES
 define('DIAS_SEMANA_NOMINA', ['VIERNES', 'SABADO', 'DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES']);
-

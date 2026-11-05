@@ -1403,8 +1403,6 @@ $(document).on('submit', '#form_corte_nomina', function (e) {
     // RECUPERAR LOS PAGOS POR DIA
     let pagos = obtenerPagosPorDia();
 
-    console.log(pagos);
-
 
     if (pagos.length === 0) {
         alerta("info", "Pago requerido", "Debes ingresar pago en al menos un día");
@@ -1475,6 +1473,7 @@ function obtenerPagosPorDia() {
     $("#cuerpo_tabla_pagos_por_dia tr").not(":last").each(function () {
 
         let dia = $(this).find("td:eq(0)").text().trim();
+        let fecha = $(this).find("td:eq(1)").text().trim();
         let valor = parseFloat($(this).find(".pago_del_dia").val());
 
         // Si es NaN o vacío, convertir a 0
@@ -1484,10 +1483,40 @@ function obtenerPagosPorDia() {
 
         pagos.push({
             dia: dia,
+            fecha: convertirFechaAAAAMMDD(fecha),
             pago: parseFloat(valor.toFixed(2))
         });
 
     });
 
     return pagos;
+}
+
+
+/**
+ * Convierte una fecha en formato DD/MM/AAAA a formato AAAA-MM-DD.
+ * @param {String} fecha Recibe una fecha en formato DD/MM/AAAA. Ejemplo: "23/Ene/2026"
+ * @returns {String} Devuelve la fecha en formato AAAA-MM-DD. Ejemplo: "2026-01-23"
+ */
+function convertirFechaAAAAMMDD(fecha) {
+    // Mapeo de abreviaturas de meses a números
+    const meses = {
+        Ene: '01',
+        Feb: '02',
+        Mar: '03',
+        Abr: '04',
+        May: '05',
+        Jun: '06',
+        Jul: '07',
+        Ago: '08',
+        Sep: '09',
+        Oct: '10',
+        Nov: '11',
+        Dic: '12'
+    };
+
+    // Separar la fecha en partes
+    const [dia, mes, anio] = fecha.split('/');
+    // Validar que el mes exista en el mapeo
+    return `${anio}-${meses[mes]}-${dia.padStart(2, '0')}`;
 }

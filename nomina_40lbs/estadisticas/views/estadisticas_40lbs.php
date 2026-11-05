@@ -8,7 +8,7 @@ require_once __DIR__ . "/../../../public/php/verificarSesion.php";
 
 // Proteger la vista
 verificarSesion();
-verificarPermiso("nomina.ver_estadisticas40lbs");
+//verificarPermiso("nomina.ver_estadisticas40lbs");
 
 ?>
 

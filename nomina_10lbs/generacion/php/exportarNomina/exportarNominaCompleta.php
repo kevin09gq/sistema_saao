@@ -283,7 +283,7 @@ function crearHoja($spreadsheet, $depto, $filtroEmpleados, $nombreHoja, $esPrime
     $sheet->getStyle('A1:' . $ultimaLetra . '4')->getAlignment()->setHorizontal('center')->setVertical('center');
 
     // Logo
-    $logoPath = '../../../../public/img/logo.jpg';
+    $logoPath = '../../../../public/img/logoSaao.png';
     if (file_exists($logoPath)) {
         $logo = new Drawing();
         $logo->setName('Logo');

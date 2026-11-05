@@ -221,6 +221,10 @@ function guardarNomina(mysqli $conexion)
     $corte = $_POST['corte'] ?? [];
     $poda = $_POST['poda'] ?? [];
 
+    // Decodificar el JSON de corte y poda si vienen como strings
+    $corte_json = json_decode($corte, true);
+    $poda_json = json_decode($poda, true);
+
     // Validar datos requeridos
     if (empty($jsonNomina) || empty($anio) || empty($numeroSemana)) {
         echo json_encode([
@@ -257,9 +261,19 @@ function guardarNomina(mysqli $conexion)
         if ($stmtUpdate->execute()) {
 
             // También actualizar los tickets de corte
-            asignarTicketsCorteANomina($corte, $idNomina, $conexion);
+            asignarTicketsCorteANomina($corte_json, $idNomina, $conexion);
             // También actualizar los movimientos de poda
-            guardarPoda($poda, $idNomina, $conexion);
+            guardarPoda($poda_json, $idNomina, $conexion);
+
+            // GUARDAR LA NOMINA DEL CORTE
+            $nominas_corte = array_filter($corte_json, function ($empleado) {
+                // Filtrar solo los empleados con concepto "NOMINA"
+                return ($empleado['concepto'] ?? '') === 'NOMINA';
+            });
+            if (!empty($nominas_corte)) {
+                // Si hay empleados con concepto "NOMINA", guardar la nómina del corte
+                guardar_nomina_corte(array_values($nominas_corte), $idNomina, $conexion);
+            }
 
             echo json_encode([
                 "success" => true,
@@ -287,9 +301,19 @@ function guardarNomina(mysqli $conexion)
             // Recuperar el ID recién insertado
             $idNominaInsertada = $conexion->insert_id;
             // Guardar los tickets de corte relacionados con esta nómina
-            asignarTicketsCorteANomina($corte, $idNominaInsertada, $conexion);
+            asignarTicketsCorteANomina($corte_json, $idNominaInsertada, $conexion);
             // Guardar los movimientos de poda relacionados con esta nómina
-            guardarPoda($poda, $idNominaInsertada, $conexion);
+            guardarPoda($poda_json, $idNominaInsertada, $conexion);
+
+             // GUARDAR LA NOMINA DEL CORTE
+            $nominas_corte = array_filter($corte_json, function ($empleado) {
+                // Filtrar solo los empleados con concepto "NOMINA"
+                return ($empleado['concepto'] ?? '') === 'NOMINA';
+            });
+            if (!empty($nominas_corte)) {
+                // Si hay empleados con concepto "NOMINA", guardar la nómina del corte
+                guardar_nomina_corte(array_values($nominas_corte), $idNominaInsertada, $conexion);
+            }
 
 
             echo json_encode([
@@ -664,74 +688,18 @@ function normalizarFechaMysql($fechaStr)
  */
 
 /**
- * NOTA: BORRAR LUEGO
- * Función para guardar tickets de corte (llamada desde guardarNominaRelicario)
- */
-function guardarTicketsCorte($corte, $idNomina, $conexion)
-{
-    try {
-        // Decodificar el JSON de los empleados cortadores
-        $empleadosCorte = json_decode($corte, true);
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            error_log("Error al decodificar JSON de cortes: " . json_last_error_msg());
-            return;
-        }
-
-        // Primero limpiar tickets existentes para esta nómina (en caso de actualización)
-        $deleteQuery = "DELETE FROM cortes_relicario WHERE id_nomina = ?";
-        $deleteStmt = $conexion->prepare($deleteQuery);
-        $deleteStmt->bind_param("i", $idNomina);
-        $deleteStmt->execute();
-
-        // Procesar cada empleado cortador
-        foreach ($empleadosCorte as $empleado) {
-            $nombreCortador = $empleado['nombre'];
-
-            // Procesar cada ticket del empleado
-            foreach ($empleado['tickets'] as $ticket) {
-                $folio = $ticket['folio'];
-                $fechaCorte = $ticket['fecha'];
-                $precioReja = $ticket['precio_reja'];
-
-                // Insertar el ticket principal en cortes_relicario
-                $insertCorteQuery = "INSERT INTO cortes_relicario (id_nomina, nombre_cortador, folio, precio_reja, fecha_corte) VALUES (?, ?, ?, ?, ?)";
-                $insertCorteStmt = $conexion->prepare($insertCorteQuery);
-                $insertCorteStmt->bind_param("issds", $idNomina, $nombreCortador, $folio, $precioReja, $fechaCorte);
-
-                if ($insertCorteStmt->execute()) {
-                    // Obtener el ID del corte recién insertado
-                    $idCorte = $conexion->insert_id;
-
-                    // Insertar los detalles de las tablas de rejas
-                    foreach ($ticket['datosRejas'] as $datosTabla) {
-                        $numTabla = intval($datosTabla['tabla']);
-                        $cantidadRejas = intval($datosTabla['cantidad']);
-
-                        $insertTablaQuery = "INSERT INTO cortes_relicario_tablas (id_corte, num_tabla, rejas) VALUES (?, ?, ?)";
-                        $insertTablaStmt = $conexion->prepare($insertTablaQuery);
-                        $insertTablaStmt->bind_param("iii", $idCorte, $numTabla, $cantidadRejas);
-                        $insertTablaStmt->execute();
-                    }
-                } else {
-                    error_log("Error al insertar corte: " . $conexion->error);
-                }
-            }
-        }
-
-        error_log("Tickets de corte guardados correctamente para nómina ID: " . $idNomina);
-    } catch (Exception $e) {
-        error_log("Error en guardarTicketsCorte: " . $e->getMessage());
-    }
-}
-
-/**
  * Función para asignar tickets de corte a una nómina existente
  */
 function asignarTicketsCorteANomina($corte, $idNomina, $conexion)
 {
     try {
-        $empleadosCorte = json_decode($corte, true);
+        // $empleadosCorte = json_decode($corte, true);
+        // Si viene como JSON string, decodificar
+        if (is_string($corte)) {
+            $empleadosCorte = json_decode($corte, true);
+        } else {
+            $empleadosCorte = $corte; // ya es array
+        }
 
         if (json_last_error() !== JSON_ERROR_NONE) {
             error_log("Error al decodificar JSON de cortes: " . json_last_error_msg());
@@ -828,6 +796,10 @@ function obtenerTicketsCorte($data, $conexion)
 
 /**
  * Función interna para obtener tickets de corte desde un ID de nómina
+ * Adicionalmente, también recupera la información de la nómina de corte si existe.
+ * @param int $idNomina El ID de la nómina
+ * @param mysqli $conexion La conexión a la base de datos
+ * @return array Un arreglo de empleados con sus tickets de corte
  */
 function obtenerTicketsCorteInterno($idNomina, $conexion)
 {
@@ -890,6 +862,31 @@ function obtenerTicketsCorteInterno($idNomina, $conexion)
         ];
     }
 
+    // *************************************************************************************************
+    // AQUI SE RECUPERA LO RELACIONADO CON LA NOMNINA DE CORTE Y SE UNE CON EL CONCEPTO REJA
+    // *************************************************************************************************
+    
+    $queryNominas = "SELECT nombre_cortador, json_dias FROM nomina_relicario_corte WHERE id_nomina = ? ORDER BY nombre_cortador";
+
+    $stmtNominas = $conexion->prepare($queryNominas);
+    $stmtNominas->bind_param("i", $idNomina);
+    $stmtNominas->execute();
+
+    $resultNominas = $stmtNominas->get_result();
+
+    while ($nomina = $resultNominas->fetch_assoc()) {
+
+        $dias = json_decode($nomina['json_dias'], true);
+
+        $empleadosCorte[] = [
+            'nombre' => $nomina['nombre_cortador'],
+            'concepto' => 'NOMINA',
+            'nomina' => is_array($dias) ? $dias : []
+        ];
+    }
+
+    $stmtNominas->close();
+
     return $empleadosCorte;
 }
 
@@ -916,6 +913,8 @@ function guardarPoda($poda, $idNomina, $conexion)
         // Si viene como JSON string, decodificar
         if (is_string($poda)) {
             $poda = json_decode($poda, true);
+        } else {
+            $poda = $poda; // ya es array
         }
 
         if (!is_array($poda)) {
@@ -1095,4 +1094,134 @@ function obtenerPodaInterno($idNomina, $conexion)
     }
 
     return $empleadosPoda;
+}
+
+
+
+/**
+ * ================================================================================
+ * GUARDAR LAS NOMINAS DEL CORTE Y DEL PODA
+ * ===============================================================================
+ */
+
+/**
+ * Función para guardar la nómina del corte en la base de datos
+ * @param array $nominas Arreglo de empleados con sus días y pagos
+ * @param int $idNomina El ID de la nómina a la que pertenecen
+ * @param mysqli $conexion La conexión a la base de datos
+ * @return bool Retorna true si se guardó correctamente, false en caso de error
+ */
+function guardar_nomina_corte(array $nominas, int $idNomina, mysqli $conexion): bool
+{
+    try {
+        // Iniciar transacción
+        $conexion->begin_transaction();
+
+        foreach ($nominas as $empleado) {
+
+            $nombreCortador = trim($empleado['nombre'] ?? '');
+
+            if (empty($nombreCortador) || empty($empleado['nomina'])) {
+                continue;
+            }
+
+            // Calcular total
+            $total = 0;
+
+            foreach ($empleado['nomina'] as $dia) {
+                $total += floatval($dia['pago'] ?? 0);
+            }
+
+            // Guardar todo el arreglo de días como JSON
+            $jsonDias = json_encode(
+                $empleado['nomina'],
+                JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+            );
+
+            // Verificar si ya existe registro para esta nómina y cortador
+            $sqlExiste = "SELECT id FROM nomina_relicario_corte WHERE id_nomina = ? AND nombre_cortador = ? LIMIT 1";
+
+            $stmtExiste = $conexion->prepare($sqlExiste);
+
+            if (!$stmtExiste) {
+                throw new Exception("Error al preparar consulta de validación: " . $conexion->error);
+            }
+
+            $stmtExiste->bind_param(
+                "is",
+                $idNomina,
+                $nombreCortador
+            );
+
+            $stmtExiste->execute();
+            $resultado = $stmtExiste->get_result();
+
+            if ($resultado->num_rows > 0) {
+
+                // Actualizar
+                $row = $resultado->fetch_assoc();
+                $idRegistro = intval($row['id']);
+
+                $sqlUpdate = "UPDATE nomina_relicario_corte SET total = ?,json_dias = ?,fecha_modificacion = NOW() WHERE id = ?";
+
+                $stmtUpdate = $conexion->prepare($sqlUpdate);
+
+                if (!$stmtUpdate) {
+                    throw new Exception("Error al preparar UPDATE: " . $conexion->error);
+                }
+
+                $stmtUpdate->bind_param(
+                    "dsi",
+                    $total,
+                    $jsonDias,
+                    $idRegistro
+                );
+
+                if (!$stmtUpdate->execute()) {
+                    throw new Exception("Error al actualizar: " . $stmtUpdate->error);
+                }
+
+                $stmtUpdate->close();
+            } else {
+
+                // Insertar
+                $sqlInsert = "INSERT INTO nomina_relicario_corte (id_nomina,nombre_cortador,total,json_dias,fecha_creacion,fecha_modificacion) VALUES (?, ?, ?, ?, NOW(),NOW())";
+
+                $stmtInsert = $conexion->prepare($sqlInsert);
+
+                if (!$stmtInsert) {
+                    throw new Exception("Error al preparar INSERT: " . $conexion->error);
+                }
+
+                $stmtInsert->bind_param(
+                    "isds",
+                    $idNomina,
+                    $nombreCortador,
+                    $total,
+                    $jsonDias
+                );
+
+                if (!$stmtInsert->execute()) {
+                    throw new Exception("Error al insertar: " . $stmtInsert->error);
+                }
+
+                $stmtInsert->close();
+            }
+
+            $stmtExiste->close();
+        }
+
+        // Confirmar transacción
+        $conexion->commit();
+
+        return true;
+    } catch (Exception $e) {
+        // Revertir cambios
+        $conexion->rollback();
+        error_log(
+            "Error en guardar_nomina_corte (ROLLBACK): " .
+                $e->getMessage()
+        );
+        return false;
+    }
 }

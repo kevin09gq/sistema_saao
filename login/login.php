@@ -26,7 +26,7 @@
         <!-- Sección izquierda: formulario de inicio de sesión -->
         <div class="login-box" id="formularioInicioSesion">
             <div class="logo-container">
-                <img src="../public/img/logo.jpg" alt="CITRICOS SAAO" class="logo">
+                <img src="../public/img/logoSaao.png" alt="CITRICOS SAAO" class="logo">
                 <h1>CITRICOS SAAO</h1>
             </div>
 
@@ -62,7 +62,7 @@
         <!-- Sección izquierda: formulario de recuperación, oculto inicialmente -->
         <div class="login-box recovery-box" id="formularioRecuperacion">
             <div class="logo-container">
-                <img src="../public/img/logo.jpg" alt="CITRICOS SAAO" class="logo">
+                <img src="../public/img/logoSaao.png" alt="CITRICOS SAAO" class="logo">
                 <h1>CITRICOS SAAO</h1>
             </div>
 

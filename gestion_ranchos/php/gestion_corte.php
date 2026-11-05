@@ -249,6 +249,9 @@ function obtener_semanas_cortes()
     $stmt->close();
 }
 
+
+
+
 /**
  * Función para obtener los cortes de un rancho específico según los filtros proporcionados.
  */

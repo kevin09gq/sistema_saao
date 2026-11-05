@@ -73,7 +73,7 @@ if (!isset($_SESSION['password_reset_token']) ||
     <div class="login-wrapper">
         <div class="login-box">
             <div class="logo-container">
-                <img src="../public/img/logo.jpg" alt="CITRICOS SAAO" class="logo">
+                <img src="../public/img/logoSaao.png" alt="CITRICOS SAAO" class="logo">
                 <h1>CITRICOS SAAO</h1>
             </div>
             

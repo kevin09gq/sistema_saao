@@ -192,7 +192,7 @@ function crearHoja(Spreadsheet $spreadsheet, String $titulo2, array $empleados, 
     $sheet->getStyle('A1:A4')->getAlignment()->setVertical('center');
 
     // Insertar logo a la derecha de los títulos
-    $logoPath = '../../public/img/logo.jpg';
+    $logoPath = '../../public/img/logoSaao.png';
     if (file_exists($logoPath)) {
         $logo = new Drawing();
         $logo->setName('Logo');

@@ -167,6 +167,14 @@ function generarExcelTesoreria()
             'tipo'       => 'moneda',
             'ancho'      => 24,
             'alineacion' => Alignment::HORIZONTAL_CENTER
+        ],
+        [
+            'titulo'     => 'NOMINA CABO',
+            'campo'      => 'nomina_cabo',
+            'categoria'  => 'percepcion',
+            'tipo'       => 'moneda',
+            'ancho'      => 26,
+            'alineacion' => Alignment::HORIZONTAL_CENTER
         ]
     ];
 
@@ -351,7 +359,7 @@ function generarExcelTesoreria()
     // 3. IMPORTE EN EFECTIVO = NETO A RECIBIR - DISPERSION DE TARJETA
     // 4. PRÉSTAMO = valor de préstamo (color rojo)
     // 5. TOTAL A RECIBIR = IMPORTE EN EFECTIVO - PRÉSTAMO
-    // 6. AJUSTE AL NETO = ROUND(TOTAL A RECIBIR, 0) - TOTAL A RECIBIR
+    // 6. AJUSTE AL NETO = valor directo de la suma de redondeo de empleados (puede ser positivo o negativo)
     // 7. IMPORTE EN EFECTIVO REDONDEADO = TOTAL A RECIBIR + AJUSTE AL NETO
     // -----------------------------------------------------------------
     $columnas_finales = [
@@ -402,9 +410,8 @@ function generarExcelTesoreria()
         ],
         [
             'titulo'       => 'AJUSTE AL NETO',
-            'campo'        => 'ajuste_al_neto',
-            'categoria'    => 'formula',
-            'tipo_formula' => 'ajuste_al_neto',
+            'campo'        => 'redondeo',
+            'categoria'    => 'dato',
             'tipo'         => 'moneda',
             'ancho'        => 24,
             'alineacion'   => Alignment::HORIZONTAL_CENTER
@@ -475,7 +482,7 @@ function generarExcelTesoreria()
             $col_prestamo = $letra;
         } elseif ($tf === 'total_a_recibir') {
             $col_total_recibir = $letra;
-        } elseif ($tf === 'ajuste_al_neto') {
+        } elseif ($cp === 'redondeo') {
             $col_ajuste = $letra;
         } elseif ($tf === 'efectivo_redondeado') {
             $col_redondeado = $letra;
@@ -657,13 +664,8 @@ function generarExcelTesoreria()
                         $formula = "={$col_efectivo}{$fila_actual} - {$col_prestamo}{$fila_actual}";
                         break;
 
-                    case 'ajuste_al_neto':
-                        // Redondeo al entero más cercano menos el valor: si resta da negativo (-0.22), si suma da positivo (+0.20)
-                        $formula = "=ROUND({$col_total_recibir}{$fila_actual}, 0) - {$col_total_recibir}{$fila_actual}";
-                        break;
-
                     case 'efectivo_redondeado':
-                        // Total a recibir más el ajuste al neto = resultado redondeado exacto
+                        // Total a recibir más el ajuste al neto (valor directo de redondeo de empleados)
                         $formula = "={$col_total_recibir}{$fila_actual} + {$col_ajuste}{$fila_actual}";
                         break;
                 }

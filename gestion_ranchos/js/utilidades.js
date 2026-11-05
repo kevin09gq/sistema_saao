@@ -131,3 +131,79 @@ function formatoMoneda(cantidad) {
         maximumFractionDigits: 2
     });
 }
+
+
+
+/**
+ * Convierte una fecha en formato DD/MM/AAAA a formato AAAA-MM-DD.
+ * @param {String} fecha Recibe una fecha en formato DD/MM/AAAA. Ejemplo: "23/Ene/2026"
+ * @returns {String} Devuelve la fecha en formato AAAA-MM-DD. Ejemplo: "2026-01-23"
+ */
+function convertirFechaAAAAMMDD(fecha) {
+    // Mapeo de abreviaturas de meses a números
+    const meses = {
+        Ene: '01',
+        Feb: '02',
+        Mar: '03',
+        Abr: '04',
+        May: '05',
+        Jun: '06',
+        Jul: '07',
+        Ago: '08',
+        Sep: '09',
+        Oct: '10',
+        Nov: '11',
+        Dic: '12'
+    };
+
+    // Separar la fecha en partes
+    const [dia, mes, anio] = fecha.split('/');
+    // Validar que el mes exista en el mapeo
+    return `${anio}-${meses[mes]}-${dia.padStart(2, '0')}`;
+}
+
+/**
+ * Obtiene el total de registros en un arreglo.
+ * ESTA FUNCION SE USA EN LA GESTION DE LAS NOMINAS DE LOS CORTES
+ * @param {Array} datos 
+ * @returns 
+ */
+function obtenerTotalRegistros(datos) {
+    if (!Array.isArray(datos) || datos.length === 0) {
+        return 0;
+    }
+
+    return datos.length;
+}
+
+/**
+ * Obtiene el total de una semana en un arreglo.
+ * ESTA FUNCION SE USA EN LA GESTION DE LAS NOMINAS DE LOS CORTES
+ * @param {Array} datos 
+ * @returns 
+ */
+function obtenerTotalSemana(datos) {
+    if (!Array.isArray(datos) || datos.length === 0) {
+        return 0;
+    }
+
+    return datos.reduce((suma, item) => suma + (Number(item.total) || 0), 0);
+}
+
+/**
+ * Formatea una fecha en el formato DD/MM/AAAA.
+ * @param {String} fecha - La fecha a formatear en formato AAAA-MM-DD.
+ * @returns {String} La fecha formateada en formato DD/MM/AAAA.
+ */
+function formatearFechaSinHora(fecha) {
+    if (!fecha) return "";
+
+    const [anio, mes, dia] = fecha.split(" ")[0].split("-");
+
+    const meses = [
+        "Ene", "Feb", "Mar", "Abr", "May", "Jun",
+        "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"
+    ];
+
+    return `${dia}/${meses[parseInt(mes, 10) - 1]}/${anio}`;
+}

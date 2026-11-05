@@ -413,30 +413,44 @@ function obtenerConceptosDepartamentos(datos, cortesPodas = {}) {
             let infoRancho = cortesPodas[tablaNomina];
             let sufijo = sufijosRanchos[tablaNomina];
 
-            let totalCortes = parseFloat(infoRancho.total_cortes) || 0;
-            let totalPodas  = parseFloat(infoRancho.total_podas) || 0;
+            let totalCortes = parseFloat(infoRancho.corte?.total) || 0;
+            let totalNominaCaboCorte = parseFloat(infoRancho.corte?.nomina_cabo) || 0;
+            let totalPodas = parseFloat(infoRancho.poda?.total) || 0;
+            let totalNominaCaboPoda = parseFloat(infoRancho.poda?.nomina_cabo) || 0;
 
             // Departamento individual de Corte
             if (totalCortes > 0) {
-                conceptosDepartamentos.push({
+                let deptoCorte = {
                     color: colorRancho,
                     nombre_departamento: 'Corte ' + sufijo,
                     sueldo_bruto: totalCortes
-                });
+                };
+
+                // Agregar nomina_cabo si hay nómina de cabos por corte
+                if (totalNominaCaboCorte > 0) {
+                    deptoCorte.nomina_cabo = totalNominaCaboCorte;
+                }
+
+                conceptosDepartamentos.push(deptoCorte);
             }
 
             // Departamento individual de Poda
             if (totalPodas > 0) {
-                conceptosDepartamentos.push({
+                let deptoPoda = {
                     color: colorRancho,
                     nombre_departamento: 'Poda ' + sufijo,
                     sueldo_bruto: totalPodas
-                });
+                };
+
+                // Agregar nomina_cabo si hay podas extras (es_extra = true)
+                if (totalNominaCaboPoda > 0) {
+                    deptoPoda.nomina_cabo = totalNominaCaboPoda;
+                }
+
+                conceptosDepartamentos.push(deptoPoda);
             }
         }
     });
-
-    console.log("conceptos de departamentos:", conceptosDepartamentos);
 
     return conceptosDepartamentos;
 }
@@ -458,6 +472,7 @@ function calcularTotalesGrupo(empleados) {
     let totalPasaje = 0;
     let totalComida = 0;
     let totalTardeada = 0;
+    let totalRedondeo = 0;
 
     let totalISR = 0;
     let totalIMSS = 0;
@@ -474,17 +489,18 @@ function calcularTotalesGrupo(empleados) {
 
     empleados.forEach(function (empleado) {
 
-        let sueldoBruto = empleado.salario_semanal || empleado.sueldo_neto || 0;
-        let incentivo = empleado.incentivo || 0;
-        let horasExtra = empleado.horas_extra || 0;
-        let bonoAntiguedad = empleado.bono_antiguedad || 0;
-        let actividadesEspeciales = empleado.actividades_especiales || 0;
-        let puesto = empleado.puesto || 0;
-        let pasaje = empleado.pasaje || 0;
-        let comida = empleado.comida || 0;
+        let sueldoBruto = parseFloat(empleado.salario_semanal) || parseFloat(empleado.sueldo_neto) || 0;
+        let incentivo = parseFloat(empleado.incentivo) || 0;
+        let horasExtra = parseFloat(empleado.horas_extra) || 0;
+        let bonoAntiguedad = parseFloat(empleado.bono_antiguedad) || 0;
+        let actividadesEspeciales = parseFloat(empleado.actividades_especiales) || 0;
+        let puesto = parseFloat(empleado.puesto) || 0;
+        let pasaje = parseFloat(empleado.pasaje) || 0;
+        let comida = parseFloat(empleado.comida) || 0;
         let tardeada = parseFloat(empleado.tardeada) || 0;
-        let ausentismo = empleado.inasistencia || 0;
-        let permisos = empleado.permiso || 0;
+        let ausentismo = parseFloat(empleado.inasistencia) || 0;
+        let permisos = parseFloat(empleado.permiso) || 0;
+        let redondeo = parseFloat(empleado.redondeo) || 0;
 
         let isr = 0;
         let imss = 0;
@@ -505,12 +521,12 @@ function calcularTotalesGrupo(empleados) {
             });
         }
 
-        let retardos = empleado.retardos || 0;
-        let uniformes = empleado.uniformes || 0;
-        let checador = empleado.checador || 0;
-        let faGafetCofia = empleado.fa_gafet_cofia || 0;
-        let tarjeta = empleado.tarjeta || 0;
-        let prestamo = empleado.prestamo || 0;
+        let retardos = parseFloat(empleado.retardos) || 0;
+        let uniformes = parseFloat(empleado.uniformes) || 0;
+        let checador = parseFloat(empleado.checador) || 0;
+        let faGafetCofia = parseFloat(empleado.fa_gafet_cofia) || 0;
+        let tarjeta = parseFloat(empleado.tarjeta) || 0;
+        let prestamo = parseFloat(empleado.prestamo) || 0;
 
         totalSueldoBruto += sueldoBruto;
         totalIncentivo += incentivo;
@@ -521,6 +537,7 @@ function calcularTotalesGrupo(empleados) {
         totalPasaje += pasaje;
         totalComida += comida;
         totalTardeada += tardeada;
+        totalRedondeo += redondeo;
 
         totalISR += isr;
         totalIMSS += imss;
@@ -549,6 +566,7 @@ function calcularTotalesGrupo(empleados) {
         pasaje: totalPasaje,
         comida: totalComida,
         tardeada: totalTardeada,
+        redondeo: totalRedondeo,
         isr: totalISR,
         imss: totalIMSS,
         infonavit: totalInfonavit,
@@ -584,6 +602,8 @@ function crearObjetoDepartamento(nombre, totales, color = '') {
         pasaje: totales.pasaje,
         comida: totales.comida,
         tardeada: totales.tardeada,
+        redondeo: totales.redondeo || 0,
+        nomina_cabo: totales.nomina_cabo || 0,
         isr: totales.isr,
         imss: totales.imss,
         infonavit: totales.infonavit,

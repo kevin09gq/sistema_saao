@@ -451,7 +451,7 @@ function crearHoja($spreadsheet, $titulo2, $filtroEmpleados, $nombreHoja, $color
     $sheet->getStyle('A1:A4')->getAlignment()->setHorizontal('center');
 
     // Insertar logo a la derecha de los títulos
-    $logoPath = '../../../../public/img/logo.jpg';
+    $logoPath = '../../../../public/img/logoSaao.png';
     if (file_exists($logoPath)) {
         $logo = new Drawing();
         $logo->setName('Logo');
@@ -1443,7 +1443,7 @@ function crearHojaCorte($spreadsheet, $titulo2, $jsonNomina, $nombreHoja)
     $sheet->getStyle('A1:A4')->getAlignment()->setHorizontal('center');
 
     // Logo
-    $logoPath = __DIR__ . '/../../../public/img/logo.jpg';
+    $logoPath = __DIR__ . '/../../../public/img/logoSaao.png';
     if (file_exists($logoPath)) {
         $logo = new Drawing();
         $logo->setName('Logo');
@@ -1841,7 +1841,7 @@ function crearHojaPoda($spreadsheet, $titulo2, $jsonNomina, $nombreHoja = 'PODA'
     $sheet->getStyle('A1:A4')->getAlignment()->setHorizontal('center');
 
     // Logo
-    $logoPath = __DIR__ . '/../../../public/img/logo.jpg';
+    $logoPath = __DIR__ . '/../../../public/img/logoSaao.png';
     if (file_exists($logoPath)) {
         $logo = new Drawing();
         $logo->setName('Logo');

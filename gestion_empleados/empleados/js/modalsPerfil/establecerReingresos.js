@@ -44,10 +44,21 @@ function formatearFecha(fecha) {
         'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'
     ];
 
-    const fechaObj = new Date(fecha);
-    const dia = String(fechaObj.getDate()).padStart(2, '0');
-    const mes = meses[fechaObj.getMonth()];
-    const anio = fechaObj.getFullYear();
+    const fechaTexto = String(fecha).trim();
+    const fechaSolo = fechaTexto.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+    // Las fechas SQL sin hora deben interpretarse como fecha local.
+    // new Date('YYYY-MM-DD') las interpreta como UTC y puede mostrar el día anterior.
+    const dia = fechaSolo
+        ? fechaSolo[3]
+        : String(new Date(fechaTexto).getDate()).padStart(2, '0');
+    const mesNumero = fechaSolo
+        ? Number(fechaSolo[2]) - 1
+        : new Date(fechaTexto).getMonth();
+    const anio = fechaSolo
+        ? fechaSolo[1]
+        : new Date(fechaTexto).getFullYear();
+    const mes = meses[mesNumero];
 
     return `${dia}/${mes}/${anio}`;
 }

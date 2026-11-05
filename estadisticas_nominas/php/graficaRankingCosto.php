@@ -95,135 +95,83 @@ function obtenerRankingUltimaSemana(mysqli $conexion)
     // para relicario, pilar, huasteca, palmilla se suma también total de cortes y podas
     // esta gráfica sirve para visualizar qué nómina tiene mayor costo en la última semana
     // permitiendo identificar rápidamente las nóminas con mayor gasto individual
-    $sql_ranking = "
-        SELECT
-            '40 Lbs' AS nomina,
-            COALESCE((SELECT total_neto FROM nomina_40lbs WHERE anio = ? AND numero_semana = ?), 0) AS monto
 
-        UNION ALL
+    $nominas_simples = [
+        '40 Lbs' => 'nomina_40lbs',
+        '40 Lbs Jornal' => 'nomina_40lbs_jornal',
+        '10 Lbs' => 'nomina_10lbs',
+        'Confianza' => 'nomina_confianza'
+    ];
 
-        SELECT
-            '40 Lbs Jornal' AS nomina,
-            COALESCE((SELECT total_neto FROM nomina_40lbs_jornal WHERE anio = ? AND numero_semana = ?), 0) AS monto
-
-        UNION ALL
-
-        SELECT
-            '10 Lbs' AS nomina,
-            COALESCE((SELECT total_neto FROM nomina_10lbs WHERE anio = ? AND numero_semana = ?), 0) AS monto
-
-        UNION ALL
-
-        SELECT
-            'Confianza' AS nomina,
-            COALESCE((SELECT total_neto FROM nomina_confianza WHERE anio = ? AND numero_semana = ?), 0) AS monto
-
-        UNION ALL
-
-        SELECT
-            'Relicario' AS nomina,
-            COALESCE((
-                SELECT
-                    COALESCE(nr.total_neto, 0) +
-                    COALESCE((
-                        SELECT SUM(cr.precio_reja * crt.rejas)
-                        FROM cortes_relicario cr
-                        INNER JOIN cortes_relicario_tablas crt ON crt.id_corte = cr.id
-                        WHERE cr.id_nomina = nr.id_nomina_relicario
-                    ), 0) +
-                    COALESCE((
-                        SELECT SUM(pm.arboles_podados * pm.monto)
-                        FROM podas_relicario pr
-                        INNER JOIN podas_movimientos_relicario pm ON pm.id_poda = pr.id_poda
-                        WHERE pr.id_nomina = nr.id_nomina_relicario
-                    ), 0)
-                FROM nomina_relicario nr
-                WHERE nr.anio = ? AND nr.numero_semana = ?
-            ), 0) AS monto
-
-        UNION ALL
-
-        SELECT
-            'Pilar' AS nomina,
-            COALESCE((
-                SELECT
-                    COALESCE(np.total_neto, 0) +
-                    COALESCE((
-                        SELECT SUM(cp.precio_reja * cpt.rejas)
-                        FROM cortes_pilar cp
-                        INNER JOIN cortes_pilar_tablas cpt ON cpt.id_corte = cp.id
-                        WHERE cp.id_nomina = np.id_nomina_pilar
-                    ), 0) +
-                    COALESCE((
-                        SELECT SUM(ppm.arboles_podados * ppm.monto)
-                        FROM podas_pilar pp
-                        INNER JOIN podas_movimientos_pilar ppm ON ppm.id_poda = pp.id_poda
-                        WHERE pp.id_nomina = np.id_nomina_pilar
-                    ), 0)
-                FROM nomina_pilar np
-                WHERE np.anio = ? AND np.numero_semana = ?
-            ), 0) AS monto
-
-        UNION ALL
-
-        SELECT
-            'Huasteca' AS nomina,
-            COALESCE((
-                SELECT
-                    COALESCE(nh.total_neto, 0) +
-                    COALESCE((
-                        SELECT SUM(ch.precio_reja * cht.rejas)
-                        FROM cortes_huasteca ch
-                        INNER JOIN cortes_huasteca_tablas cht ON cht.id_corte = ch.id
-                        WHERE ch.id_nomina = nh.id_nomina_huasteca
-                    ), 0) +
-                    COALESCE((
-                        SELECT SUM(phm.arboles_podados * phm.monto)
-                        FROM podas_huasteca ph
-                        INNER JOIN podas_movimientos_huasteca phm ON phm.id_poda = ph.id_poda
-                        WHERE ph.id_nomina = nh.id_nomina_huasteca
-                    ), 0)
-                FROM nomina_huasteca nh
-                WHERE nh.anio = ? AND nh.numero_semana = ?
-            ), 0) AS monto
-
-        UNION ALL
-
-        SELECT
-            'Palmilla' AS nomina,
-            COALESCE((
-                SELECT
-                    COALESCE(npa.total_neto, 0) +
-                    COALESCE((
-                        SELECT SUM(cpa.precio_reja * cpah.rejas)
-                        FROM cortes_palmilla cpa
-                        INNER JOIN cortes_palmilla_tablas cpah ON cpah.id_corte = cpa.id
-                        WHERE cpa.id_nomina = npa.id_nomina_palmilla
-                    ), 0) +
-                    COALESCE((
-                        SELECT SUM(ppmm.arboles_podados * ppmm.monto)
-                        FROM podas_palmilla pp
-                        INNER JOIN podas_movimientos_palmilla ppmm ON ppmm.id_poda = pp.id_poda
-                        WHERE pp.id_nomina = npa.id_nomina_palmilla
-                    ), 0)
-                FROM nomina_palmilla npa
-                WHERE npa.anio = ? AND npa.numero_semana = ?
-            ), 0) AS monto
-    ";
-
-    // preparar y ejecutar la consulta
-    $stmt = mysqli_prepare($conexion, $sql_ranking);
-    mysqli_stmt_bind_param($stmt, "iiiiiiiiiiiiiiii", $anio, $ultima_semana, $anio, $ultima_semana, $anio, $ultima_semana, $anio, $ultima_semana, $anio, $ultima_semana, $anio, $ultima_semana, $anio, $ultima_semana, $anio, $ultima_semana);
-    mysqli_stmt_execute($stmt);
-    $resultado = mysqli_stmt_get_result($stmt);
-
-    // recorrer los resultados y guardar en un array
     $ranking = [];
-    while ($fila = mysqli_fetch_assoc($resultado)) {
-        $ranking[] = $fila;
+
+    // obtener totales de nóminas simples
+    foreach ($nominas_simples as $nombre => $tabla) {
+        $sql = "SELECT COALESCE(total_neto, 0) AS monto FROM $tabla WHERE anio = ? AND numero_semana = ?";
+        $stmt = mysqli_prepare($conexion, $sql);
+        mysqli_stmt_bind_param($stmt, "ii", $anio, $ultima_semana);
+        mysqli_stmt_execute($stmt);
+        $res = mysqli_stmt_get_result($stmt);
+        $fila = mysqli_fetch_assoc($res);
+        mysqli_stmt_close($stmt);
+
+        $ranking[] = [
+            'nomina' => $nombre,
+            'monto' => (float)($fila['monto'] ?? 0)
+        ];
     }
 
-    mysqli_stmt_close($stmt);
+    // obtener totales de nóminas agrícolas
+    $ranchos = ['relicario', 'pilar', 'huasteca', 'palmilla'];
+    $nombres_ranchos = ['Relicario', 'Pilar', 'Huasteca', 'Palmilla'];
+
+    foreach ($ranchos as $i => $rancho) {
+        $nombre = $nombres_ranchos[$i];
+
+        $sql_agricola = "
+            SELECT
+                COALESCE(nr.total_neto, 0) +
+                COALESCE((
+                    SELECT SUM(cr.precio_reja * crt.rejas)
+                    FROM cortes_{$rancho} cr
+                    INNER JOIN cortes_{$rancho}_tablas crt ON crt.id_corte = cr.id
+                    WHERE cr.id_nomina IN (SELECT id_nomina_{$rancho} FROM nomina_{$rancho} WHERE anio = ? AND numero_semana = ?)
+                ), 0) +
+                COALESCE((
+                    SELECT SUM(nc.total)
+                    FROM nomina_{$rancho}_corte nc
+                    WHERE nc.id_nomina IN (SELECT id_nomina_{$rancho} FROM nomina_{$rancho} WHERE anio = ? AND numero_semana = ?)
+                ), 0) +
+                COALESCE((
+                    SELECT SUM(pm.arboles_podados * pm.monto)
+                    FROM podas_{$rancho} pr
+                    INNER JOIN podas_movimientos_{$rancho} pm ON pm.id_poda = pr.id_poda
+                    WHERE pr.id_nomina IN (SELECT id_nomina_{$rancho} FROM nomina_{$rancho} WHERE anio = ? AND numero_semana = ?)
+                    AND (pm.es_extra = 0 OR pm.es_extra IS NULL)
+                ), 0) +
+                COALESCE((
+                    SELECT SUM(pm.monto)
+                    FROM podas_{$rancho} pr
+                    INNER JOIN podas_movimientos_{$rancho} pm ON pm.id_poda = pr.id_poda
+                    WHERE pr.id_nomina IN (SELECT id_nomina_{$rancho} FROM nomina_{$rancho} WHERE anio = ? AND numero_semana = ?)
+                    AND pm.es_extra = 1
+                ), 0) AS monto
+            FROM nomina_{$rancho} nr
+            WHERE nr.anio = ? AND nr.numero_semana = ?
+        ";
+
+        $stmt = mysqli_prepare($conexion, $sql_agricola);
+        mysqli_stmt_bind_param($stmt, "iiiiiiiiii", $anio, $ultima_semana, $anio, $ultima_semana, $anio, $ultima_semana, $anio, $ultima_semana, $anio, $ultima_semana);
+        mysqli_stmt_execute($stmt);
+        $res = mysqli_stmt_get_result($stmt);
+        $fila = mysqli_fetch_assoc($res);
+        mysqli_stmt_close($stmt);
+
+        $ranking[] = [
+            'nomina' => $nombre,
+            'monto' => (float)($fila['monto'] ?? 0)
+        ];
+    }
 
     //====================================================
     // ORDENAR EL RANKING DE MAYOR A MENOR

@@ -37,7 +37,7 @@ $spreadsheet->removeSheetByIndex(0);
 
 $numeroSemana = isset($jsonNomina['numero_semana']) ? str_pad($jsonNomina['numero_semana'], 2, '0', STR_PAD_LEFT) : '00';
 $anio = isset($jsonNomina['fecha_cierre']) ? explode('/', $jsonNomina['fecha_cierre'])[2] : date('Y');
-$logoPath = '../../../public/img/logo.jpg';
+$logoPath = '../../../public/img/logoSaao.png';
 
 // Estilo de cabecera de tabla
 $estiloCabecera = [

@@ -45,108 +45,88 @@ function obtenerEvolucionSemanal(mysqli $conexion)
     // consulta para obtener el total consolidado de cada semana
     // fórmula: agrupar por numero_semana, sumar(total_neto) de las 8 nóminas
     // para relicario, pilar, huasteca, palmilla se suma también total de cortes y podas
-    $sql_evolucion = "
-        SELECT
-            numero_semana,
-            SUM(total) AS total_semana
-        FROM (
-            SELECT numero_semana, total_neto AS total FROM nomina_40lbs WHERE anio = ?
-            UNION ALL
-            SELECT numero_semana, total_neto AS total FROM nomina_40lbs_jornal WHERE anio = ?
-            UNION ALL
-            SELECT numero_semana, total_neto AS total FROM nomina_10lbs WHERE anio = ?
-            UNION ALL
-            SELECT numero_semana, total_neto AS total FROM nomina_confianza WHERE anio = ?
-            UNION ALL
+
+    $todas_semanas = [];
+
+    // obtener datos de nóminas simples
+    $nominas_simples = ['nomina_40lbs', 'nomina_40lbs_jornal', 'nomina_10lbs', 'nomina_confianza'];
+    foreach ($nominas_simples as $tabla) {
+        $sql = "SELECT numero_semana, total_neto AS total FROM $tabla WHERE anio = ?";
+        $stmt = mysqli_prepare($conexion, $sql);
+        mysqli_stmt_bind_param($stmt, "i", $anio);
+        mysqli_stmt_execute($stmt);
+        $res = mysqli_stmt_get_result($stmt);
+        while ($fila = mysqli_fetch_assoc($res)) {
+            $todas_semanas[] = $fila;
+        }
+        mysqli_stmt_close($stmt);
+    }
+
+    // obtener datos de nóminas agrícolas
+    $ranchos = ['relicario', 'pilar', 'huasteca', 'palmilla'];
+    foreach ($ranchos as $rancho) {
+        $sql_agricola = "
             SELECT
                 nr.numero_semana,
                 COALESCE(nr.total_neto, 0) +
                 COALESCE((
                     SELECT SUM(cr.precio_reja * crt.rejas)
-                    FROM cortes_relicario cr
-                    INNER JOIN cortes_relicario_tablas crt ON crt.id_corte = cr.id
-                    WHERE cr.id_nomina = nr.id_nomina_relicario
+                    FROM cortes_{$rancho} cr
+                    INNER JOIN cortes_{$rancho}_tablas crt ON crt.id_corte = cr.id
+                    WHERE cr.id_nomina = nr.id_nomina_{$rancho}
+                ), 0) +
+                COALESCE((
+                    SELECT SUM(nc.total)
+                    FROM nomina_{$rancho}_corte nc
+                    WHERE nc.id_nomina = nr.id_nomina_{$rancho}
                 ), 0) +
                 COALESCE((
                     SELECT SUM(pm.arboles_podados * pm.monto)
-                    FROM podas_relicario pr
-                    INNER JOIN podas_movimientos_relicario pm ON pm.id_poda = pr.id_poda
-                    WHERE pr.id_nomina = nr.id_nomina_relicario
+                    FROM podas_{$rancho} pr
+                    INNER JOIN podas_movimientos_{$rancho} pm ON pm.id_poda = pr.id_poda
+                    WHERE pr.id_nomina = nr.id_nomina_{$rancho}
+                    AND (pm.es_extra = 0 OR pm.es_extra IS NULL)
+                ), 0) +
+                COALESCE((
+                    SELECT SUM(pm.monto)
+                    FROM podas_{$rancho} pr
+                    INNER JOIN podas_movimientos_{$rancho} pm ON pm.id_poda = pr.id_poda
+                    WHERE pr.id_nomina = nr.id_nomina_{$rancho}
+                    AND pm.es_extra = 1
                 ), 0) AS total
-            FROM nomina_relicario nr
+            FROM nomina_{$rancho} nr
             WHERE nr.anio = ?
-            UNION ALL
-            SELECT
-                np.numero_semana,
-                COALESCE(np.total_neto, 0) +
-                COALESCE((
-                    SELECT SUM(cp.precio_reja * cpt.rejas)
-                    FROM cortes_pilar cp
-                    INNER JOIN cortes_pilar_tablas cpt ON cpt.id_corte = cp.id
-                    WHERE cp.id_nomina = np.id_nomina_pilar
-                ), 0) +
-                COALESCE((
-                    SELECT SUM(ppm.arboles_podados * ppm.monto)
-                    FROM podas_pilar pp
-                    INNER JOIN podas_movimientos_pilar ppm ON ppm.id_poda = pp.id_poda
-                    WHERE pp.id_nomina = np.id_nomina_pilar
-                ), 0) AS total
-            FROM nomina_pilar np
-            WHERE np.anio = ?
-            UNION ALL
-            SELECT
-                nh.numero_semana,
-                COALESCE(nh.total_neto, 0) +
-                COALESCE((
-                    SELECT SUM(ch.precio_reja * cht.rejas)
-                    FROM cortes_huasteca ch
-                    INNER JOIN cortes_huasteca_tablas cht ON cht.id_corte = ch.id
-                    WHERE ch.id_nomina = nh.id_nomina_huasteca
-                ), 0) +
-                COALESCE((
-                    SELECT SUM(phm.arboles_podados * phm.monto)
-                    FROM podas_huasteca ph
-                    INNER JOIN podas_movimientos_huasteca phm ON phm.id_poda = ph.id_poda
-                    WHERE ph.id_nomina = nh.id_nomina_huasteca
-                ), 0) AS total
-            FROM nomina_huasteca nh
-            WHERE nh.anio = ?
-            UNION ALL
-            SELECT
-                npa.numero_semana,
-                COALESCE(npa.total_neto, 0) +
-                COALESCE((
-                    SELECT SUM(cpa.precio_reja * cpah.rejas)
-                    FROM cortes_palmilla cpa
-                    INNER JOIN cortes_palmilla_tablas cpah ON cpah.id_corte = cpa.id
-                    WHERE cpa.id_nomina = npa.id_nomina_palmilla
-                ), 0) +
-                COALESCE((
-                    SELECT SUM(ppmm.arboles_podados * ppmm.monto)
-                    FROM podas_palmilla pp
-                    INNER JOIN podas_movimientos_palmilla ppmm ON ppmm.id_poda = pp.id_poda
-                    WHERE pp.id_nomina = npa.id_nomina_palmilla
-                ), 0) AS total
-            FROM nomina_palmilla npa
-            WHERE npa.anio = ?
-        ) AS todas_semanas
-        GROUP BY numero_semana
-        ORDER BY numero_semana ASC
-    ";
+        ";
 
-    // preparar y ejecutar la consulta
-    $stmt = mysqli_prepare($conexion, $sql_evolucion);
-    mysqli_stmt_bind_param($stmt, "iiiiiiii", $anio, $anio, $anio, $anio, $anio, $anio, $anio, $anio);
-    mysqli_stmt_execute($stmt);
-    $resultado = mysqli_stmt_get_result($stmt);
-
-    // recorrer los resultados y guardar en un array
-    $evolucion = [];
-    while ($fila = mysqli_fetch_assoc($resultado)) {
-        $evolucion[] = $fila;
+        $stmt = mysqli_prepare($conexion, $sql_agricola);
+        mysqli_stmt_bind_param($stmt, "i", $anio);
+        mysqli_stmt_execute($stmt);
+        $res = mysqli_stmt_get_result($stmt);
+        while ($fila = mysqli_fetch_assoc($res)) {
+            $todas_semanas[] = $fila;
+        }
+        mysqli_stmt_close($stmt);
     }
 
-    mysqli_stmt_close($stmt);
+    // agrupar por semana y sumar totales
+    $evolucion_agrupada = [];
+    foreach ($todas_semanas as $fila) {
+        $semana = $fila['numero_semana'];
+        if (!isset($evolucion_agrupada[$semana])) {
+            $evolucion_agrupada[$semana] = 0;
+        }
+        $evolucion_agrupada[$semana] += $fila['total'];
+    }
+
+    // convertir a array ordenado
+    $evolucion = [];
+    ksort($evolucion_agrupada);
+    foreach ($evolucion_agrupada as $semana => $total) {
+        $evolucion[] = [
+            'numero_semana' => $semana,
+            'total_semana' => $total
+        ];
+    }
 
     //====================================================
     // CALCULAR EL PROMEDIO SEMANAL

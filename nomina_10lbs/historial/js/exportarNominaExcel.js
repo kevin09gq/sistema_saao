@@ -275,8 +275,7 @@ function exportarDispersionTarjeta() {
                 var url = URL.createObjectURL(blob);
                 link.href = url;
                 var numeroSemana = String(jsonHistorial10lbs .numero_semana).padStart(2, '0');
-                var anio = jsonHistorial10lbs .fecha_cierre.split('/')[2];
-                link.download = 'SEM_' + numeroSemana + '_DESGLOSE_NOMINA_10LBS_' + '.pdf'; document.body.appendChild(link);
+                link.download = 'SEM_' + numeroSemana + '_DISPERSION_TARJETA_10LBS.xlsx';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);

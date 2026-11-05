@@ -35,8 +35,11 @@ function guardarNomina() {
         }).then((result) => {
             if (result.isConfirmed) {
 
-                // Limpiamos los datos 
-                eliminarPropiedades(jsonNomina10lbs)
+                // Limpiamos los datos
+                eliminarPropiedades(jsonNomina10lbs);
+
+                // Eliminar empleados ocultos antes de guardar
+                eliminarEmpleadosOcultos(jsonNomina10lbs);
 
                 // Enviar datos al servidor
                 $.ajax({
@@ -152,7 +155,9 @@ function calcularTotalesNomina(jsonNomina) {
             }
 
             // Calcular neto por empleado con redondeo individual
-            const netoEmpleado = Math.round(percepcionesEmpleado - deduccionesEmpleado);
+            const netoEmpleado = Math.round(
+                parseFloat((percepcionesEmpleado - deduccionesEmpleado).toFixed(2))
+            );
 
             // Acumular totales
             totalPercepciones += percepcionesEmpleado;
@@ -162,9 +167,9 @@ function calcularTotalesNomina(jsonNomina) {
     });
 
     return {
-        totalPercepciones: totalPercepciones,
-        totalDeducciones: totalDeducciones,
-        totalNeto: totalNeto
+        totalPercepciones: parseFloat(totalPercepciones.toFixed(2)),
+        totalDeducciones: parseFloat(totalDeducciones.toFixed(2)),
+        totalNeto: parseFloat(totalNeto.toFixed(2))
     };
 }
 
@@ -213,6 +218,21 @@ function eliminarPropiedades(json) {
 
             });
         }
+    });
+}
+
+//==========================================================
+// FUNCIÓN PARA ELIMINAR EMPLEADOS OCULTOS (mostrar = false)
+//==========================================================
+
+function eliminarEmpleadosOcultos(jsonNomina) {
+    if (!jsonNomina || !jsonNomina.departamentos) return;
+
+    jsonNomina.departamentos.forEach(departamento => {
+        if (!departamento.empleados || !Array.isArray(departamento.empleados)) return;
+
+        // Filtrar solo empleados visibles (mostrar !== false)
+        departamento.empleados = departamento.empleados.filter(empleado => empleado.mostrar !== false);
     });
 }
 
@@ -271,7 +291,7 @@ function actualizarTotalCobrarTodos(jsonNomina) {
             }
 
             // ── TOTAL A COBRAR CON REDONDEO ──
-            let total = totalPercepciones - totalDeducciones;
+            let total = parseFloat((totalPercepciones - totalDeducciones).toFixed(2));
 
             if (empleado.redondeo_activo) {
                 let totalRedondeado = Math.round(total);
@@ -284,4 +304,3 @@ function actualizarTotalCobrarTodos(jsonNomina) {
         });
     });
 }
-

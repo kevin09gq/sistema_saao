@@ -675,6 +675,18 @@ CREATE TABLE cortes_relicario_tablas (
     FOREIGN KEY (id_corte) REFERENCES cortes_relicario (id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
+CREATE TABLE nomina_relicario_corte (
+    id INT AUTO_INCREMENT,
+    id_nomina INT NOT NULL,
+    nombre_cortador VARCHAR(150) NOT NULL,
+    total DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    json_dias JSON NOT NULL,
+    fecha_creacion DATETIME NOT NULL,
+    fecha_modificacion DATETIME NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (id_nomina) REFERENCES nomina_relicario (id_nomina_relicario) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
 -- Tabla principal: podas_relicario
 CREATE TABLE podas_relicario (
     id_poda INT AUTO_INCREMENT PRIMARY KEY,
@@ -733,6 +745,18 @@ CREATE TABLE cortes_pilar_tablas (
     FOREIGN KEY (id_corte) REFERENCES cortes_pilar (id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
+CREATE TABLE nomina_pilar_corte (
+    id INT AUTO_INCREMENT,
+    id_nomina INT NOT NULL,
+    nombre_cortador VARCHAR(150) NOT NULL,
+    total DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    json_dias JSON NOT NULL,
+    fecha_creacion DATETIME NOT NULL,
+    fecha_modificacion DATETIME NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (id_nomina) REFERENCES nomina_pilar (id_nomina_pilar) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
 -- Tabla principal: podas_pilar
 CREATE TABLE podas_pilar (
     id_poda INT AUTO_INCREMENT PRIMARY KEY,
@@ -755,7 +779,7 @@ CREATE TABLE podas_movimientos_pilar (
 );
 
 -- =============================
--- TABLAS DE NÓMINA HUASTECA 
+-- TABLAS DE NÓMINA HUASTECA
 -- =============================
 
 --- Crear tabla nomina_huasteca
@@ -789,6 +813,18 @@ CREATE TABLE cortes_huasteca_tablas (
     num_tabla INT NOT NULL,
     rejas INT NOT NULL,
     FOREIGN KEY (id_corte) REFERENCES cortes_huasteca (id) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+CREATE TABLE nomina_huasteca_corte (
+    id INT AUTO_INCREMENT,
+    id_nomina INT NOT NULL,
+    nombre_cortador VARCHAR(150) NOT NULL,
+    total DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    json_dias JSON NOT NULL,
+    fecha_creacion DATETIME NOT NULL,
+    fecha_modificacion DATETIME NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (id_nomina) REFERENCES nomina_huasteca (id_nomina_huasteca) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE podas_huasteca (
@@ -848,6 +884,18 @@ CREATE TABLE cortes_palmilla_tablas (
     FOREIGN KEY (id_corte) REFERENCES cortes_palmilla (id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
+CREATE TABLE nomina_palmilla_corte (
+    id INT AUTO_INCREMENT,
+    id_nomina INT NOT NULL,
+    nombre_cortador VARCHAR(150) NOT NULL,
+    total DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    json_dias JSON NOT NULL,
+    fecha_creacion DATETIME NOT NULL,
+    fecha_modificacion DATETIME NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (id_nomina) REFERENCES nomina_palmilla (id_nomina_palmilla) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
 -- Tabla principal: podas_palmilla
 CREATE TABLE podas_palmilla (
     id_poda INT AUTO_INCREMENT PRIMARY KEY,
@@ -891,7 +939,6 @@ INSERT INTO status (nombre_status) VALUES ('Activo'), ('Baja');
 
 -- Insertar roles
 INSERT INTO rol (nombre_rol) VALUES ('admin'), ('empleado');
-
 
 -- Insertar Modulos
 INSERT INTO
@@ -1516,8 +1563,7 @@ VALUES (
         'Permite visualizar el apartado de Casilleros en el menú lateral para gestionar los casilleros del sistema'
     );
 
-
-    INSERT INTO
+INSERT INTO
     permisos (
         id_modulo,
         clave_permiso,
@@ -1537,8 +1583,7 @@ VALUES (
         'Permite Realizar las responsivas de nominas'
     );
 
-
-        INSERT INTO
+INSERT INTO
     permisos (
         id_modulo,
         clave_permiso,
